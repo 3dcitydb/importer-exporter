@@ -1,0 +1,115 @@
+3D City Database Import/Export Tool
+
+  This program is free software and comes WITHOUT ANY WARRANTY. 
+  See the file LICENSE for more details. 
+
+
+0. Index
+--------
+
+1. Licence
+2. Copyright
+3. About
+4. System requirements
+5. Installation
+6. Developers
+7. Contact
+8. Websites
+
+
+1. Licence
+----------
+
+The "3D City Database Import/Export" program is free software under
+the GNU Lesser General Public License Version 3.0. See the file LICENSE 
+for more details. For a copy of the GNU Lesser General Public License see 
+the files COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
+
+
+2. Copyright
+------------
+
+(c) 2007 - 2008
+Institute for Geodesy and Geoinformation Science (IGG)
+Technische Universitaet Berlin, Germany
+http://www.igg.tu-berlin.de/
+
+
+3. About
+--------
+
+The 3D City Database Import/Export Tool is a Java based front-end for 
+the 3D City Database version 2.0. It allows for high-performance 
+importing and exporting spatial data for a virtual 3d city model.
+
+Main characteristics:
+* Full support for CityGML version 1.0.0, 0.4.0, 0.3.1, and 0.3.0
+* Reading/Writing CityGML instance documents of arbitrary file size
+* Multithreaded programming facilitating high-performance CityGML processing
+* Support for CityGML appearances such as textures
+* Resolving of Xlinks
+
+The 3D City Database Import/Export Tool is shipped with both a Graphical
+User Interface (GUI) for end-user interaction and a Command Line 
+Interface (CLI). The latter one allows for employing the tool in batch 
+processing workflows or embedding its functionality into third party
+programs.     
+
+
+4. System requirements
+----------------------
+
+* Java JRE or JDK >= 1.6
+* 3D City Database version 2.0 on an Oracle Spatial DBMS >= 10G R2
+
+5. Installation
+---------------
+
+There is no installation necessary.
+
+The subfolders /lib and /config of this package have to be in the same folder
+as the impexp.jar.
+
+For running the 3D Database Import/Export tool use one of the following 
+options:
+
+a) Recommended:
+   * Edit the starter scripts according to your needs (in particular, 
+     adapt the memory limits). Included are the following starter scripts:
+     - start_unix.sh (use for UNIX/Linux and derivates, MacOS, etc.)
+     - start_win.bat (use for MS Windows family, tested for XP) 
+   * Double click onto the starter script.
+   
+c) Open a Shell and type the following: java -jar impexp.jar [-options]
+   Again, define the memory limits for the JVM. This is the recommended
+   way to use the CLI version of the program. See the starter scripts
+   for further examples. Type 'java -jar impexp.jar -help' to get
+   a list of supported command line parameters.
+
+b) Double click onto the impexp.jar file. However, this is not the recommended
+   way of starting the application since you may quickly run into heap space
+   memory lacks due to JVM default values.
+   
+   
+6. Developers
+-------------
+
+Claus Nagel <nagel@igg.tu-berlin.de>
+Alexandra Stadler <stadler@igg.tu-berlin.de>
+Gerhard Koenig <gerhard.koenig@tu-berlin.de>
+Prof. Dr. Thomas H. Kolbe <kolbe@igg.tu-berlin.de>
+
+
+7. Contact
+----------
+
+nagel@igg.tu-berlin.de
+
+
+8. Websites
+-----------
+
+http://www.igg.tu-berlin.de/
+http://www.citygml.org/
+http://www.citygmlwiki.org/
+http://www.opengeospatial.org/standards/citygml

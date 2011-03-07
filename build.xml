@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="3DCityDB-Import/Export-Tool" default="dist" basedir=".">
+
+    <!-- application specific variables -->
+    <property name="app.name" value="impexp"/>
+    <property name="app.jar" value="${app.name}.jar"/>
+    <property name="app.title" value="3D City Database Import/Export Tool"/>
+    <property name="app.vendor" value="IGG, Technical University Berlin, Germany, http://www.igg.tu-berlin.de"/>
+    <property name="app.version" value="1.0"/>
+    <property name="app.class" value="de.tub.citydb.ImpExp"/>
+	
+    <!-- dirs -->
+    <property name="project.basedir" location=".."/>
+    <property name="src" location="src"/>
+    <property name="lib" location="lib"/>
+	<property name="scripts" location="scripts"/>
+	<property name="doc" location="doc"/>
+    <property name="build" location="build"/>
+    <property name="build.classes" location="${build}/classes"/>
+    <property name="build.lib" location="${build}/lib"/>
+    <property name="dist" location="3dcitydb_impexp"/>
+    <property name="dist.lib" location="${dist}/lib"/>
+    <property name="dist.config" location="${dist}/config"/>
+	<property name="pkg.test" value="de/tub/citydb/test"/>
+	
+	<!-- classpath -->
+    <path id="classpath">
+        <fileset dir="lib" includes="*.jar"/>
+    </path>
+
+    <tstamp>
+        <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss"/>
+    </tstamp>
+
+    <target name="clean" description="clean up">
+        <!-- Delete the ${build} and ${dist} directory trees -->
+        <delete dir="${build}"/>
+        <delete dir="${dist}"/>
+    </target>
+
+    <target name="init" description="init build environment">
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${build.classes}"/>
+        <mkdir dir="${build.lib}"/>
+    </target>
+
+    <target name="compile" depends="init" description="compile the source">
+        <!-- Compile the java code from ${src} into ${build} -->
+        <javac classpathref="classpath" srcdir="${src}" destdir="${build.classes}" excludes="${pkg.test}/**"/>
+
+        <!-- Move resources from ${src} into ${build} -->
+        <copy todir="${build.classes}">
+            <fileset dir="${src}" includes="**/*.properties"/>
+            <fileset dir="${src}" includes="**/jaxb.index"/>
+        </copy>
+
+        <copy todir="${build.lib}">
+            <fileset dir="${lib}" includes="**/*.jar"/>
+        </copy>
+    </target>
+
+    <target name="dist" depends="clean, compile" description="generate the distribution">
+        <!-- Create the distribution directory -->
+        <mkdir dir="${dist}"/>
+
+        <!-- set package variables -->
+        <pathconvert property="manifest.classpath" dirsep="/" pathsep=" " refid="classpath">
+            <map from="${basedir}${file.separator}lib" to="lib"/>
+        </pathconvert>       
+        <buildnumber file="build.num"/>
+
+        <!-- Put everything in ${build} into .jar file -->
+        <jar jarfile="${dist}/${app.jar}" basedir="${build}/classes">
+        	<fileset dir="${doc}" includes="**/*"/>
+        	<manifest>
+            	<attribute name="Built-Id" value="${user.name}-${app.name}-${app.version}"/>
+                <attribute name="Built-Date" value="${TODAY}"/>
+                <attribute name="Implementation-Title" value="${app.title}"/>
+                <attribute name="Implementation-Version" value="${app.version}-b${build.number}"/>
+                <attribute name="Implementation-Vendor" value="${app.vendor}"/>
+                <attribute name="Class-Path" value="${manifest.classpath}"/>
+                <attribute name="Main-Class" value="${app.class}"/>
+            </manifest>
+        </jar>
+
+        <copy todir="${dist.lib}">
+            <fileset dir="${build.lib}" includes="**/*.jar"/>
+        </copy>
+
+    	<copy toDir="${dist}">
+    		<fileset dir="${scripts}" includes="**/*"/>
+    		<fileset dir="${doc}" includes="**/*"/>
+    	</copy>
+    	
+        <mkdir dir="${dist.config}"/>
+    </target>
+
+    <target name="run" depends="dist" description="run importer/exporter application">
+        <java jar="${dist}/${app.jar}" fork="true"/>
+    </target>
+</project>
