@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<langpack> 
+    <str id="core" txt="Core application files"/>
+    <str id="core.description" txt="The mandatory core application files of the ${APP_NAME}"/>
+    
+    <str id="3dcitydb" txt="3D City Database"/>
+    <str id="3dcitydb.description" txt="3D City Database ${3DCITYDB_VER} SQL scripts for Oracle Spatial 10G and 11G"/>
+    
+    <str id="manual" txt="Documentation"/>
+    <str id="manual.description" txt="The documentation of the ${3DCITYDB_NAME} and the ${APP_NAME}"/>
+
+    <str id="samples" txt="Sample CityGML datasets"/>
+    <str id="samples.description" txt="Sample CityGML datasets taken from the official CityGML website at http://www.citygml.org/"/>
+</langpack>
