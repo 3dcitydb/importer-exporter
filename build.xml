@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="3D City Database Importer Exporter" default="dist" basedir=".">
+
+	<!-- application specific variables -->
+	<property name="app.name" value="3dcitydb-impexp" />
+	<property name="app.version" value="1.3" />
+	<property name="app.jar" value="${app.name}.jar" />
+	<property name="app.title" value="3D City Database Importer/Exporter" />
+	<property name="app.vendor" value="IGG, Technical University Berlin, Germany, http://www.igg.tu-berlin.de" />
+	<property name="app.class" value="de.tub.citydb.ImpExp" />
+
+	<!-- 3DCityDB version -->
+	<property name="3dcitydb.version" value="2.0.5" />
+
+	<!-- izpack specific variables -->
+	<property name="izpack.shortcut.name" value="3DCityDB Importer Exporter" />
+	<property name="izpack.setup.name" value="3DCityDB-Importer-Exporter-${app.version}-Setup.jar" />
+	<property name="izpack.setup.folder" value="3DCityDB-Importer-Exporter" />
+
+	<!-- dirs -->
+	<property name="project.basedir" location=".." />
+	<property name="src" location="src" />
+	<property name="lib" location="lib" />
+	<property name="samples" location="samples" />
+
+	<property name="resources" location="resources" />
+	<property name="resources.doc" location="${resources}/doc" />
+	<property name="resources.license" location="${resources}/license" />
+	<property name="resources.jar" location="${resources}/jar" />
+	<property name="resources.scripts" location="${resources}/scripts" />
+	<property name="resources.3dcitydb" location="${resources}/3dcitydb" />
+	<property name="resources.manual" location="${resources}/manual" />
+
+	<property name="resources.izpack" location="${resources}/izpack" />
+	<property name="resources.izpack.lib" location="${resources.izpack}/lib" />
+	<property name="resources.izpack.config" location="${resources.izpack}/config" />
+
+	<property name="build" location="build" />
+	<property name="build.classes" location="${build}/classes" />
+
+	<property name="dist" location="${app.name}-${app.version}" />
+	<property name="dist.lib" location="${dist}/lib" />
+	<property name="dist.license" location="${dist}/license" />
+	<property name="inst" location="${dist}-setup" />
+
+	<!-- classpath -->
+	<path id="classpath">
+		<fileset dir="lib" includes="*.jar" />
+	</path>
+
+	<!-- IzPack taskdef -->
+	<taskdef name="IzPack" classname="com.izforge.izpack.ant.IzPackTask">
+		<classpath>
+			<fileset dir="${resources.izpack.lib}">
+				<include name="**/*.jar" />
+			</fileset>
+		</classpath>
+	</taskdef>
+
+	<tstamp>
+		<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+	</tstamp>
+
+	<target name="clean" description="clean up">
+		<!-- delete the ${build} and ${dist} directory trees -->
+		<delete dir="${build}" />
+		<delete dir="${dist}" />
+		<delete dir="${inst}" />
+	</target>
+
+	<target name="compile" description="compile the source">
+		<!-- create the build directory structure used by compile -->
+		<mkdir dir="${build.classes}" />
+
+		<!-- compile the java code from ${src} into ${build} -->
+		<javac classpathref="classpath" srcdir="${src}" destdir="${build.classes}" />
+	</target>
+
+	<target name="dist" depends="clean, compile" description="generate the distribution">
+		<!-- create the distribution directory -->
+		<mkdir dir="${dist}" />
+
+		<!-- copy resources -->
+		<copy todir="${build.classes}">
+			<fileset dir="${src}" includes="**/*.properties" />
+			<fileset dir="${src}" includes="**/jaxb.index" />
+		</copy>
+
+		<copy todir="${build.classes}">
+			<fileset dir="${resources.jar}" includes="**/*" />
+		</copy>
+
+		<!-- copy library files -->
+		<copy todir="${dist.lib}">
+			<fileset dir="${lib}" includes="**/*.jar" />
+		</copy>
+
+		<!-- copy LICENSE template -->
+		<copy todir="${dist.license}">
+			<fileset dir="${resources.license}" includes="**/*" />
+		</copy>
+
+		<!-- copy starter script and README templates -->
+		<copy toDir="${dist}">
+			<fileset dir="${resources.scripts}" includes="**/*" />
+			<fileset dir="${resources.doc}" includes="**/*" />
+		</copy>
+
+		<!-- replace tokens in template files -->
+		<replace file="${dist}/3DCityDB-Importer-Exporter.bat" token="!app.jar!" value="${app.jar}" />
+		<replace file="${dist}/3DCityDB-Importer-Exporter.bat" token="!app.title!" value="${app.title}" />
+		<replace file="${dist}/3DCityDB-Importer-Exporter.sh" token="!app.jar!" value="${app.jar}" />
+		<replace file="${dist}/3DCityDB-Importer-Exporter.sh" token="!app.title!" value="${app.title}" />
+		<replace file="${dist.license}/LICENSE.txt" token="!app.title!" value="${app.title}" />
+		<replace file="${dist}/README.txt" token="!app.title!" value="${app.title}" />
+		<replace file="${dist}/README.txt" token="!app.jar!" value="${app.jar}" />
+		<replace file="${dist}/README.txt" token="!app.version!" value="${app.version}" />
+
+		<!-- set package variables -->
+		<pathconvert property="manifest.classpath" dirsep="/" pathsep=" " refid="classpath">
+			<map from="${basedir}${file.separator}lib${file.separator}" to="" />
+		</pathconvert>
+		<buildnumber file="build.num" />
+
+		<!-- put everything in ${build} into .jar file -->
+		<jar jarfile="${dist.lib}/${app.jar}" basedir="${build}/classes">
+			<fileset dir="${dist}" includes="README.txt" />
+			<fileset dir="${dist.license}" includes="**/*" />
+			<manifest>
+				<attribute name="Built-Id" value="${user.name}-${app.name}-${app.version}" />
+				<attribute name="Built-Date" value="${TODAY}" />
+				<attribute name="Implementation-Title" value="${app.title}" />
+				<attribute name="Implementation-Version" value="${app.version}-b${build.number}" />
+				<attribute name="Implementation-Vendor" value="${app.vendor}" />
+				<attribute name="Class-Path" value="${manifest.classpath}" />
+				<attribute name="Main-Class" value="${app.class}" />
+			</manifest>
+		</jar>
+
+		<!-- clean up -->
+		<delete dir="${build}" />
+	</target>
+
+	<target name="generate_setup" depends="dist" description="create installer package">
+		<mkdir dir="${inst}" />
+
+		<!-- prepare license template for setup dialog -->
+		<loadfile property="app.license" srcfile="${dist.license}/LICENSE.txt" />
+		<loadfile property="gpl" srcfile="${dist.license}/COPYING.txt" />
+		<loadfile property="lgpl" srcfile="${dist.license}/COPYING.LESSER.txt" />
+
+		<copy file="${resources.izpack.config}/license/license_template" tofile="${resources.izpack.config}/license/license" />
+		<replace file="${resources.izpack.config}/license/license" token="!app.license!" value="${app.license}" />
+		<replace file="${resources.izpack.config}/license/license" token="!gpl!" value="${gpl}" />
+		<replace file="${resources.izpack.config}/license/license" token="!lgpl!" value="${lgpl}" />
+
+		<!-- prepare izpack installation file -->
+		<copy file="${resources.izpack}/izpack-install-template.xml" tofile="${resources.izpack}/izpack-install.xml" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!app.title!" value="${app.title}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!app.version!" value="${app.version}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!izpack.shortcut.name!" value="${izpack.shortcut.name}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!izpack.setup.folder!" value="${izpack.setup.folder}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!resources.izpack.config!" value="${resources.izpack.config}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!dist!" value="${dist}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!resources.3dcitydb!" value="${resources.3dcitydb}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!resources.manual!" value="${resources.manual}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!samples!" value="${samples}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!3dcitydb.version!" value="${3dcitydb.version}" />
+
+		<!-- call izpack to create installation package -->
+		<IzPack input="${resources.izpack}/izpack-install.xml" output="${inst}/${izpack.setup.name}" basedir="${resources.izpack}" />
+
+		<!-- clean up -->
+		<delete file="${resources.izpack.config}/license/license" />
+		<delete file="${resources.izpack}/izpack-install.xml" />
+	</target>
+
+	<target name="run" depends="dist" description="run importer/exporter application">
+		<java jar="${dist}/${app.jar}" fork="true" dir="${dist}" />
+	</target>
+</project>
