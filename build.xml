@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="3D City Database Import/Export Tool" default="dist" basedir=".">
+
+    <!-- application specific variables -->
+    <property name="app.name" value="impexp"/>
+    <property name="app.version" value="1.2"/>
+    <property name="app.jar" value="${app.name}.jar"/>
+    <property name="app.title" value="3D City Database Import/Export Tool"/>
+    <property name="app.vendor"
+        value="IGG, Technical University Berlin, Germany, http://www.igg.tu-berlin.de"/>
+    <property name="app.class" value="de.tub.citydb.ImpExp"/>
+
+    <!-- dirs -->
+    <property name="project.basedir" location=".."/>
+    <property name="src" location="src"/>
+    <property name="lib" location="lib"/>
+    <property name="schemas" location="schemas"/>
+    <property name="resources" location="resources"/>
+    <property name="resources.doc" location="${resources}/doc"/>
+    <property name="resources.license" location="${resources}/license"/>
+    <property name="resources.img" location="${resources}/img"/>
+    <property name="scripts" location="scripts"/>
+    <property name="build" location="build"/>
+    <property name="build.classes" location="${build}/classes"/>
+    <property name="build.lib" location="${build}/lib"/>
+    <property name="build.res" location="${build.classes}/res"/>
+    <property name="dist" location="3dcitydb_${app.name}"/>
+    <property name="dist.lib" location="${dist}/lib"/>
+    <property name="dist.config" location="${dist}/config"/>
+    <property name="dist.license" location="${dist}/license"/>
+    <property name="dist.schemas" location="${dist}/schemas"/>
+    <property name="dist.log" location="${dist}/log"/>
+
+    <!-- classpath -->
+    <path id="classpath">
+        <fileset dir="lib" includes="*.jar"/>
+    </path>
+
+    <tstamp>
+        <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss"/>
+    </tstamp>
+
+    <target name="clean" description="clean up">
+        <!-- delete the ${build} and ${dist} directory trees -->
+        <delete dir="${build}"/>
+        <delete dir="${dist}"/>
+    </target>
+
+    <target name="init" description="init build environment">
+        <!-- create the build directory structure used by compile -->
+        <mkdir dir="${build.classes}"/>
+        <mkdir dir="${build.lib}"/>
+    </target>
+
+    <target name="compile" depends="init" description="compile the source">
+        <!-- compile the java code from ${src} into ${build} -->
+        <javac classpathref="classpath" srcdir="${src}" destdir="${build.classes}"/>
+
+        <!-- copy resources to ${build} -->
+        <copy todir="${build.classes}">
+            <fileset dir="${src}" includes="**/*.properties"/>
+            <fileset dir="${src}" includes="**/jaxb.index"/>
+        </copy>
+
+        <copy todir="${build.res}/img">
+            <fileset dir="${resources.img}" includes="**/*"/>
+        </copy>
+
+        <!-- copy libraries to ${build} -->
+        <copy todir="${build.lib}">
+            <fileset dir="${lib}" includes="**/*.jar"/>
+        </copy>
+    </target>
+
+    <target name="dist" depends="clean, compile" description="generate the distribution">
+        <!-- create the distribution directory -->
+        <mkdir dir="${dist}"/>
+        <mkdir dir="${dist.config}"/>
+        <mkdir dir="${dist.log}"/>
+
+        <!-- copy library files -->
+        <copy todir="${dist.lib}">
+            <fileset dir="${build.lib}" includes="**/*.jar"/>
+        </copy>
+
+        <!-- copy CityGML schema files -->
+        <copy todir="${dist.schemas}">
+            <fileset dir="${schemas}" includes="**/*"/>
+        </copy>
+
+        <!-- copy LICENSE template -->
+        <copy todir="${dist.license}">
+            <fileset dir="${resources.license}" includes="**/*"/>
+        </copy>
+
+        <!-- copy starter script and README templates -->
+        <copy toDir="${dist}">
+            <fileset dir="${scripts}" includes="**/*"/>
+            <fileset dir="${resources.doc}" includes="**/*"/>
+        </copy>
+
+        <!-- replace tokens in template files -->
+        <replace file="${dist}/start_win.bat" token="!app.jar!" value="${app.jar}"/>
+        <replace file="${dist}/start_win.bat" token="!app.title!" value="${app.title}"/>
+        <replace file="${dist}/start_unix.sh" token="!app.jar!" value="${app.jar}"/>
+        <replace file="${dist}/start_unix.sh" token="!app.title!" value="${app.title}"/>
+        <replace file="${dist.license}/LICENSE" token="!app.title!" value="${app.title}"/>
+        <replace file="${dist}/README" token="!app.title!" value="${app.title}"/>
+        <replace file="${dist}/README" token="!app.jar!" value="${app.jar}"/>
+        <replace file="${dist}/README" token="!app.version!" value="${app.version}"/>
+
+        <!-- set package variables -->
+        <pathconvert property="manifest.classpath" dirsep="/" pathsep=" " refid="classpath">
+            <map from="${basedir}${file.separator}lib" to="lib"/>
+        </pathconvert>
+        <buildnumber file="build.num"/>
+
+        <!-- put everything in ${build} into .jar file -->
+        <jar jarfile="${dist}/${app.jar}" basedir="${build}/classes">
+            <fileset dir="${dist}" includes="README"/>
+            <fileset dir="${dist.license}" includes="**/*"/>
+            <manifest>
+                <attribute name="Built-Id" value="${user.name}-${app.name}-${app.version}"/>
+                <attribute name="Built-Date" value="${TODAY}"/>
+                <attribute name="Implementation-Title" value="${app.title}"/>
+                <attribute name="Implementation-Version" value="${app.version}-b${build.number}"/>
+                <attribute name="Implementation-Vendor" value="${app.vendor}"/>
+                <attribute name="Class-Path" value="${manifest.classpath}"/>
+                <attribute name="Main-Class" value="${app.class}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="dist" description="run importer/exporter application">
+        <java jar="${dist}/${app.jar}" fork="true" dir="${dist}"/>
+    </target>
+</project>

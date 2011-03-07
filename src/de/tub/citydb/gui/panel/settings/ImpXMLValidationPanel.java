@@ -1,0 +1,180 @@
+package de.tub.citydb.gui.panel.settings;
+
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.util.Set;
+
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+
+import de.tub.citydb.config.Config;
+import de.tub.citydb.config.project.importer.ImpSchemaType;
+import de.tub.citydb.config.project.importer.ImpXMLValidation;
+import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.gui.util.GuiUtil;
+
+public class ImpXMLValidationPanel extends PrefPanelBase {
+	private JPanel block1;
+	private JPanel block2;
+	private JPanel block3;
+	private JCheckBox useXMLValidation;
+	private JLabel useXMLValidationDescr;
+	private JRadioButton remoteSchemaRadio;
+	private JRadioButton localSchemaRadio;
+	private JCheckBox[] localSchemas;
+	private JCheckBox oneError;
+	
+	public ImpXMLValidationPanel(Config config) {
+		super(config);
+		initGui();
+	}
+	
+	public boolean isModified() {
+		if (super.isModified()) return true;
+		
+		ImpXMLValidation xmlValidation = config.getProject().getImporter().getXMLValidation();
+		
+		if (useXMLValidation.isSelected() != xmlValidation.isSetUseXMLValidation()) return true;
+		if (remoteSchemaRadio.isSelected() && xmlValidation.getUseLocalSchemas().isSet()) return true;
+		if (localSchemaRadio.isSelected() && !xmlValidation.getUseLocalSchemas().isSet()) return true;
+		
+		Set<ImpSchemaType> schemas = xmlValidation.getUseLocalSchemas().getSchemas();
+		for (JCheckBox schema : localSchemas) 
+			if (schema.isSelected() != schemas.contains(ImpSchemaType.fromValue(schema.getText()))) return true;
+		
+		if (oneError.isSelected() != xmlValidation.isSetReportOneErrorPerFeature()) return true;
+		
+		return false;
+	}
+	
+	private void initGui() {
+		useXMLValidation = new JCheckBox("");
+		useXMLValidationDescr = new JLabel("");
+		remoteSchemaRadio = new JRadioButton("");
+		localSchemaRadio = new JRadioButton("");
+		ButtonGroup schemas = new ButtonGroup();
+		schemas.add(remoteSchemaRadio);
+		schemas.add(localSchemaRadio);
+		localSchemas = new JCheckBox[ImpSchemaType.values().length];
+		oneError = new JCheckBox("");
+		
+		// layout
+		setLayout(new GridBagLayout());
+		{
+			block1 = new JPanel();
+			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
+			block1.setBorder(BorderFactory.createTitledBorder(""));
+			block1.setLayout(new GridBagLayout());
+			useXMLValidation.setIconTextGap(10);
+			useXMLValidationDescr.setFont(useXMLValidationDescr.getFont().deriveFont(Font.ITALIC));
+			int lmargin = (int)(useXMLValidation.getPreferredSize().getWidth()) + 11;
+			{
+				block1.add(useXMLValidation, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block1.add(useXMLValidationDescr, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,0,lmargin,5,5));		
+			}
+			
+			block2 = new JPanel();
+			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
+			block2.setBorder(BorderFactory.createTitledBorder(""));
+			block2.setLayout(new GridBagLayout());
+			remoteSchemaRadio.setIconTextGap(10);
+			localSchemaRadio.setIconTextGap(10);
+			{
+				block2.add(remoteSchemaRadio, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block2.add(localSchemaRadio, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				int i = 0;
+				for (ImpSchemaType type : ImpSchemaType.values()) {
+					localSchemas[i] = new JCheckBox(type.value());
+					localSchemas[i].setIconTextGap(10);
+					lmargin = (int)(localSchemaRadio.getPreferredSize().getWidth()) + 11;
+					block2.add(localSchemas[i], GuiUtil.setConstraints(0,++i+1,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));					
+				}
+			}
+			
+			block3 = new JPanel();
+			add(block3, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
+			block3.setBorder(BorderFactory.createTitledBorder(""));
+			block3.setLayout(new GridBagLayout());
+			oneError.setIconTextGap(10);
+			{
+				block3.add(oneError, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+			}
+		}
+	}
+	
+	@Override
+	public void doTranslation() {
+		block1.setBorder(BorderFactory.createTitledBorder(ImpExpGui.labels.getString("pref.import.xmlValidation.border.import")));
+		useXMLValidation.setText(ImpExpGui.labels.getString("pref.import.xmlValidation.label.useXMLValidation"));
+		useXMLValidationDescr.setText(ImpExpGui.labels.getString("pref.import.xmlValidation.label.useXMLValidation.description"));
+
+		block2.setBorder(BorderFactory.createTitledBorder(ImpExpGui.labels.getString("pref.import.xmlValidation.border.schemas")));	
+		remoteSchemaRadio.setText(ImpExpGui.labels.getString("pref.import.xmlValidation.label.schemas.remote"));
+		localSchemaRadio.setText(ImpExpGui.labels.getString("pref.import.xmlValidation.label.schemas.local"));
+		
+		block3.setBorder(BorderFactory.createTitledBorder(ImpExpGui.labels.getString("pref.import.xmlValidation.border.options")));
+		oneError.setText(ImpExpGui.labels.getString("pref.import.xmlValidation.label.oneError"));
+	}
+
+	@Override
+	public void loadSettings() {
+		ImpXMLValidation xmlValidation = config.getProject().getImporter().getXMLValidation();
+
+		useXMLValidation.setSelected(xmlValidation.isSetUseXMLValidation());
+		
+		if (!xmlValidation.getUseLocalSchemas().isSet())
+			remoteSchemaRadio.setSelected(true);
+		else 
+			localSchemaRadio.setSelected(true);
+		
+		Set<ImpSchemaType> schemas = xmlValidation.getUseLocalSchemas().getSchemas();
+		if (schemas.isEmpty() && xmlValidation.getUseLocalSchemas().isSet())
+			for (ImpSchemaType schema : ImpSchemaType.values())
+				schemas.add(schema);
+		
+		for (JCheckBox schema : localSchemas) 
+			schema.setSelected(schemas.contains(ImpSchemaType.fromValue(schema.getText())));
+		
+		oneError.setSelected(xmlValidation.isSetReportOneErrorPerFeature());
+	}
+
+	@Override
+	public void setSettings() {
+		ImpXMLValidation xmlValidation = config.getProject().getImporter().getXMLValidation();
+
+		xmlValidation.setUseXMLValidation(useXMLValidation.isSelected());
+		
+		if (localSchemaRadio.isSelected())
+			xmlValidation.getUseLocalSchemas().setActive(true);
+		else
+			xmlValidation.getUseLocalSchemas().setActive(false);
+		
+		Set<ImpSchemaType> schemas = xmlValidation.getUseLocalSchemas().getSchemas();
+		for (JCheckBox schema : localSchemas) {
+			ImpSchemaType type = ImpSchemaType.fromValue(schema.getText());			
+			if (schema.isSelected())
+				schemas.add(type);
+			else
+				schemas.remove(type);
+		}
+		
+		if (schemas.isEmpty() && localSchemaRadio.isSelected()) {
+			ImpSchemaType defaultSchema = ImpSchemaType.CityGML_v1_0_0;
+			schemas.add(defaultSchema);
+			for (JCheckBox schema : localSchemas) {
+				if (ImpSchemaType.fromValue(schema.getText()) == defaultSchema) {
+					schema.setSelected(true);
+					break;
+				}
+			}
+		}
+		
+		xmlValidation.setReportOneErrorPerFeature(oneError.isSelected());
+	}
+
+}
