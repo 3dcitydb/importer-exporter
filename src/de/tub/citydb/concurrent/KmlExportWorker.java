@@ -631,6 +631,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
 		if (!DBUtil.getInstance(dbConnectionPool).getAppearanceThemeList().contains(selectedTheme)) {
 			Logger.getInstance().error("Database does not contain appearance theme " + selectedTheme);
+			return null;
 		}
 
 		Building currentBuilding = new Building();
@@ -659,22 +660,23 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					X3DMaterial x3dMaterial = cityGMLFactory.createX3DMaterial();
 					fillX3dMaterialValues(x3dMaterial, rs2);
 
-					if (buildingGeometryObj == null) { // surface_root
+					if (buildingGeometryObj == null) { // root or parent
 						if (selectedTheme.equalsIgnoreCase(theme)) {
 							// x3dMaterial will only added if not all x3dMaterial members are null
 							currentBuilding.addX3dMaterial(surfaceId, x3dMaterial);
-							ignoreTextureInSurfaceMembers = (currentBuilding.getX3dMaterial(surfaceId) != null);
+//							ignoreTextureInSurfaceMembers = (currentBuilding.getX3dMaterial(surfaceId) != null);
 						}
 						continue; 
 					}
 
 					// from hier on it is a surfaceMember
+					long parentId = rs2.getLong("parent_id");
 
 					String texImageUri = null;
 					OrdImage texImage = null;
 					StringTokenizer texCoordsTokenized = null;
 					if (ignoreTextureInSurfaceMembers) {
-						currentBuilding.addX3dMaterial(surfaceId, currentBuilding.getX3dMaterial(surfaceRootId));
+						currentBuilding.addX3dMaterial(surfaceId, currentBuilding.getX3dMaterial(parentId));
 					}
 					else {
 						// x3dMaterial will only added if not all x3dMaterial members are null

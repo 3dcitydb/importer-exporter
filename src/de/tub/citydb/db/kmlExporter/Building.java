@@ -458,8 +458,13 @@ public class Building {
 				VertexInfo vertexInfo = getVertexInfoForXYZ(coordPoint.x, coordPoint.y, coordPoint.z);
 				if (vertexInfo == null || (surfaceTextured && vertexInfo.getTexCoords(surfaceId) == null)) {
 					// no node or wrong node found
-					// use best fit only in extreme cases (it is usually too good due to triangulation imprecision)
-					vertexInfo = getVertexInfoBestFitForXYZ(coordPoint.x, coordPoint.y, coordPoint.z);
+					// use best fit only in extreme cases (it is slow)
+					if (surfaceTextured) {
+						vertexInfo = getVertexInfoBestFitForXYZ(coordPoint.x, coordPoint.y, coordPoint.z, surfaceId);
+					}
+					else  {
+						vertexInfo = getVertexInfoBestFitForXYZ(coordPoint.x, coordPoint.y, coordPoint.z);
+					}
 				}
 				triangles.getP().add(vertexInfo.getVertexId());
 
@@ -481,7 +486,7 @@ public class Building {
 						}
 					}
 					else { // should never happen
-						triangles.getP().add(texCoordsCounter); // wrong data is better than triangles out of synchrony
+						triangles.getP().add(texCoordsCounter); // wrong data is better than triangles out of sync
 						Logger.getInstance().log(LogLevelType.DEBUG, 
 								"texCoords not found for (" + coordPoint.x + ", " + coordPoint.y + ", "
 								+ coordPoint.z + "). TOLERANCE = " + TOLERANCE_AFTER_TRIANGULATION);
@@ -650,13 +655,6 @@ public class Building {
 		return vertexInfo;
 	}
 
-		protected VertexInfo getVertexInfoBestFitForXYZ(double x, double y, double z){
-		NodeY rootY = (NodeY) getValueBestFit(z, coordinateTree, Double.MAX_VALUE, null);
-		NodeX rootX = (NodeX) getValueBestFit(y, rootY,  Double.MAX_VALUE, null);
-		VertexInfo vertexInfo = (VertexInfo) getValueBestFit(x, rootX, Double.MAX_VALUE, null);
-		return vertexInfo;
-	}
-
 	private void insertNode(Node currentBasis, Node nodeToInsert) {
 		int compareKeysResult = compareKeys(nodeToInsert.key, currentBasis.key, TOLERANCE_BEFORE_TRIANGULATION);
 		if (compareKeysResult > 0) {
@@ -696,25 +694,45 @@ public class Building {
 		return currentBasis.value;
 	}
 
-	private Object getValueBestFit(double key, Node currentBasis,
-								   double shortestDistanceSoFar, Object bestValueSoFar) {
-		if (currentBasis == null) {
-			return bestValueSoFar;
+
+    public VertexInfo getVertexInfoBestFitForXYZ(double x, double y, double z, long surfaceId) {
+		VertexInfo result = null;
+    	double distance = Double.MAX_VALUE;
+		VertexInfo vertexInfoIterator = firstVertexInfo;
+		while (vertexInfoIterator != null) {
+			if (vertexInfoIterator.getTexCoords(surfaceId) != null) {
+				double currentDistance = Math.sqrt(Math.pow(x - vertexInfoIterator.getX(), 2) + 
+									 	 		   Math.pow(y - vertexInfoIterator.getY(), 2) +
+									 	 		   Math.pow(z - vertexInfoIterator.getZ(), 2));
+				if (currentDistance < distance) {
+					distance = currentDistance;
+					result = vertexInfoIterator;
+				}
+			}
+			vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
 		}
-		double distance = key - currentBasis.key;
-		if (Math.abs(distance) < shortestDistanceSoFar) {
-			shortestDistanceSoFar = Math.abs(distance);
-			bestValueSoFar = currentBasis.value;
+		if (result == null) {
+			result = getVertexInfoBestFitForXYZ(x, y, z);
 		}
-		if (distance > 0) {
-			return getValueBestFit(key, currentBasis.rightArc, shortestDistanceSoFar, bestValueSoFar);
+		return result;
+    }
+
+    public VertexInfo getVertexInfoBestFitForXYZ(double x, double y, double z) {
+		VertexInfo result = null;
+    	double distance = Double.MAX_VALUE;
+		VertexInfo vertexInfoIterator = firstVertexInfo;
+		while (vertexInfoIterator != null) {
+			double currentDistance = Math.sqrt(Math.pow(x - vertexInfoIterator.getX(), 2) + 
+								 	 		   Math.pow(y - vertexInfoIterator.getY(), 2) +
+								 	 		   Math.pow(z - vertexInfoIterator.getZ(), 2));
+			if (currentDistance < distance) {
+				distance = currentDistance;
+				result = vertexInfoIterator;
+			}
+			vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
 		}
-		else if (distance < 0) {
-			return getValueBestFit(key, currentBasis.leftArc, shortestDistanceSoFar, bestValueSoFar);
-		}
-		// when here, distance == 0
-		return currentBasis.value;
-	}
+		return result;
+    }
 
 	private void replaceOrAddValue(Node currentBasis, Node nodeToInsert) {
 		if (nodeToInsert.value instanceof VertexInfo) {

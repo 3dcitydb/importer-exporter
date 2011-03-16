@@ -191,7 +191,7 @@ public class TileQueries {
 
 	public static final String QUERY_COLLADA_GET_BUILDING_DATA =
 		// geometry will not be transformed: cartesian coordinates needed for collada
-		"SELECT sg.geometry, sg.id, " +
+		"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, " +
 				"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
 				"sd.tex_image_uri, sd.tex_image, tp.texture_coordinates, a.theme " +
 		"FROM SURFACE_GEOMETRY sg " +
