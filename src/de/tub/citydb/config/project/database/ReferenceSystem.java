@@ -5,7 +5,6 @@ import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.util.UUIDManager;
 
 @XmlType(name="ReferenceSystemType", propOrder={
@@ -13,9 +12,7 @@ import de.tub.citydb.util.UUIDManager;
 		"srsName",
 		"description"
 		})
-public class ReferenceSystem implements Comparable<ReferenceSystem> {
-	public static final ReferenceSystem SAME_AS_IN_DB =  new ReferenceSystem("", 0, "n/a", "", true);
-	
+public class ReferenceSystem implements Comparable<ReferenceSystem> {	
 	@XmlAttribute
 	@XmlID
 	private String id;
@@ -74,8 +71,7 @@ public class ReferenceSystem implements Comparable<ReferenceSystem> {
 	}
 
 	public String getDescription() {
-		return this != SAME_AS_IN_DB ? description :
-			Internal.I18N.getString("common.label.boundingBox.crs.sameAsInDB");
+		return description;
 	}
 
 	public String toString() {

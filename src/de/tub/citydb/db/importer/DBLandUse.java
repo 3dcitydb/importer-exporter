@@ -8,7 +8,6 @@ import java.sql.Types;
 import org.citygml4j.model.citygml.landuse.LandUse;
 import org.citygml4j.model.gml.MultiSurfaceProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -16,27 +15,22 @@ import de.tub.citydb.util.Util;
 
 public class DBLandUse implements DBImporter {
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psLandUse;
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
-	public DBLandUse(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBLandUse(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
-	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-		
+	private void init() throws SQLException {		
 		psLandUse = batchConn.prepareStatement("insert into LAND_USE (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
 				"LOD0_MULTI_SURFACE_ID, LOD1_MULTI_SURFACE_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID) values " +
 				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -70,7 +64,7 @@ public class DBLandUse implements DBImporter {
 
 		// gml:name
 		if (landUse.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(landUse, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(landUse);
 
 			psLandUse.setString(2, dbGmlName[0]);
 			psLandUse.setString(3, dbGmlName[1]);

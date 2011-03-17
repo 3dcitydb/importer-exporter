@@ -27,7 +27,6 @@ import org.citygml4j.model.gml.MultiCurveProperty;
 import org.citygml4j.model.gml.StringOrRef;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
@@ -46,7 +45,6 @@ public class DBGenericCityObject implements DBExporter {
 	private DBSdoGeometry sdoGeometry;
 	private FeatureClassFilter featureClassFilter;
 
-	private String gmlNameDelimiter;
 	private GenericsModule gen;
 	private CoreModule core;
 	private boolean transformCoords;
@@ -62,7 +60,6 @@ public class DBGenericCityObject implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		gen = config.getProject().getExporter().getModuleVersion().getGenerics().getModule();
 		core = (CoreModule)gen.getModuleDependencies().getModule(CityGMLModuleType.CORE);
 		transformCoords = config.getInternal().isTransformCoordinates();
@@ -70,8 +67,7 @@ public class DBGenericCityObject implements DBExporter {
 		if (!transformCoords) {
 			psGenericCityObject = connection.prepareStatement("select * from GENERIC_CITYOBJECT where ID = ?");
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
-			int srid = targetSRS.getSrid();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psGenericCityObject = connection.prepareStatement("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
 					"geodb_util.transform_or_null(LOD0_TERRAIN_INTERSECTION, " + srid + ") AS LOD0_TERRAIN_INTERSECTION, " +
@@ -114,7 +110,7 @@ public class DBGenericCityObject implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(genericCityObject, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(genericCityObject, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

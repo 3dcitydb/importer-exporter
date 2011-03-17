@@ -30,7 +30,6 @@ import org.citygml4j.model.gml.MultiSurfaceProperty;
 import org.citygml4j.model.gml.StringOrRef;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
@@ -48,7 +47,6 @@ public class DBTransportationComplex implements DBExporter {
 	private DBSdoGeometry sdoGeometry;
 	private FeatureClassFilter featureClassFilter;
 
-	private String gmlNameDelimiter;
 	private TransportationModule tran;
 	private boolean transformCoords;
 
@@ -63,7 +61,6 @@ public class DBTransportationComplex implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		tran = config.getProject().getExporter().getModuleVersion().getTransportation().getModule();
 		transformCoords = config.getInternal().isTransformCoordinates();
 
@@ -75,12 +72,12 @@ public class DBTransportationComplex implements DBExporter {
 					"ta.SURFACE_MATERIAL, ta.LOD2_MULTI_SURFACE_ID as TA_LOD2_MULTI_SURFACE_ID, ta.LOD3_MULTI_SURFACE_ID as TA_LOD3_MULTI_SURFACE_ID, " +
 			"ta.LOD4_MULTI_SURFACE_ID as TA_LOD4_MULTI_SURFACE_ID from TRANSPORTATION_COMPLEX tc left join TRAFFIC_AREA ta on tc.ID=ta.TRANSPORTATION_COMPLEX_ID where tc.ID=?");
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psTranComplex = connection.prepareStatement("select tc.ID as TC_ID, tc.NAME as TC_NAME, tc.NAME_CODESPACE as TC_NAME_CODESPACE, tc.DESCRIPTION as TC_DESCRIPTION, tc.FUNCTION as TC_FUNCTION, tc.USAGE as TC_USAGE, " +
 					"upper(tc.TYPE) as TC_TYPE, tc.LOD1_MULTI_SURFACE_ID as TC_LOD1_MULTI_SURFACE_ID, tc.LOD2_MULTI_SURFACE_ID as TC_LOD2_MULTI_SURFACE_ID, tc.LOD3_MULTI_SURFACE_ID as TC_LOD3_MULTI_SURFACE_ID, " +
 					"tc.LOD4_MULTI_SURFACE_ID as TC_LOD4_MULTI_SURFACE_ID, " +
-					"geodb_util.transform_or_null(tc.LOD0_NETWORK, " + targetSRS.getSrid() + ") as TC_LOD0_NETWORK, " +
+					"geodb_util.transform_or_null(tc.LOD0_NETWORK, " + srid + ") as TC_LOD0_NETWORK, " +
 					"ta.ID as TA_ID, ta.IS_AUXILIARY, ta.NAME as TA_NAME, ta.NAME_CODESPACE as TA_NAME_CODESPACE, ta.DESCRIPTION as TA_DESCRIPTION, ta.FUNCTION as TA_FUNCTION, ta.USAGE as TA_USAGE, " +
 					"ta.SURFACE_MATERIAL, ta.LOD2_MULTI_SURFACE_ID as TA_LOD2_MULTI_SURFACE_ID, ta.LOD3_MULTI_SURFACE_ID as TA_LOD3_MULTI_SURFACE_ID, " +
 			"ta.LOD4_MULTI_SURFACE_ID as TA_LOD4_MULTI_SURFACE_ID from TRANSPORTATION_COMPLEX tc left join TRAFFIC_AREA ta on tc.ID=ta.TRANSPORTATION_COMPLEX_ID where tc.ID=?");
@@ -130,7 +127,7 @@ public class DBTransportationComplex implements DBExporter {
 					String gmlName = rs.getString("TC_NAME");
 					String gmlNameCodespace = rs.getString("TC_NAME_CODESPACE");
 
-					Util.dbGmlName2featureName(transComplex, gmlName, gmlNameCodespace, gmlNameDelimiter);
+					Util.dbGmlName2featureName(transComplex, gmlName, gmlNameCodespace);
 
 					String description = rs.getString("TC_DESCRIPTION");
 					if (description != null) {
@@ -215,7 +212,7 @@ public class DBTransportationComplex implements DBExporter {
 				String gmlName = rs.getString("TA_NAME");
 				String gmlNameCodespace = rs.getString("TA_NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(transObject, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(transObject, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("TA_DESCRIPTION");
 				if (description != null) {

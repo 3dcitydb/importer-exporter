@@ -11,7 +11,6 @@ import org.citygml4j.model.citygml.building.Opening;
 import org.citygml4j.model.citygml.building.OpeningProperty;
 import org.citygml4j.model.gml.MultiSurfaceProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -22,7 +21,6 @@ public class DBThematicSurface implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psThematicSurface;
@@ -30,20 +28,16 @@ public class DBThematicSurface implements DBImporter {
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBOpening openingImporter;
 
-	private String gmlNameDelimiter;
 	private int batchCounter;
 	
-	public DBThematicSurface(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBThematicSurface(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
-	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-		
+	private void init() throws SQLException {		
 		psThematicSurface = batchConn.prepareStatement("insert into THEMATIC_SURFACE (ID, NAME, NAME_CODESPACE, DESCRIPTION, TYPE, BUILDING_ID, ROOM_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID) values " +
 				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
@@ -68,7 +62,7 @@ public class DBThematicSurface implements DBImporter {
 
 		// gml:name
 		if (boundarySurface.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(boundarySurface, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(boundarySurface);
 
 			psThematicSurface.setString(2, dbGmlName[0]);
 			psThematicSurface.setString(3, dbGmlName[1]);

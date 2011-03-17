@@ -12,7 +12,6 @@ import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.MultiSurfaceProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
 import de.tub.citydb.log.Logger;
@@ -22,7 +21,6 @@ public class DBOpening implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 	
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psOpening;
@@ -30,20 +28,15 @@ public class DBOpening implements DBImporter {
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBOpeningToThemSurface openingToThemSurfaceImporter;
 	private DBAddress addressImporter;
-
-	private String gmlNameDelimiter;
 	
-	public DBOpening(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBOpening(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
-	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-		
+	private void init() throws SQLException {		
 		psOpening = batchConn.prepareStatement("insert into OPENING (ID, NAME, NAME_CODESPACE, DESCRIPTION, TYPE, ADDRESS_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID) values " +
 		"(?, ?, ?, ?, ?, ?, ?, ?)");
 
@@ -69,7 +62,7 @@ public class DBOpening implements DBImporter {
 
 		// gml:name
 		if (opening.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(opening, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(opening);
 
 			psOpening.setString(2, dbGmlName[0]);
 			psOpening.setString(3, dbGmlName[1]);

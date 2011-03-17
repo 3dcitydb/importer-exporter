@@ -29,7 +29,6 @@ import org.citygml4j.model.gml.MultiCurveProperty;
 import org.citygml4j.model.gml.MultiSurfaceProperty;
 import org.citygml4j.model.gml.SolidProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -40,7 +39,6 @@ public class DBBuilding implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psBuilding;
@@ -52,20 +50,16 @@ public class DBBuilding implements DBImporter {
 	private DBAddress addressImporter;
 	private DBSdoGeometry sdoGeometry;
 
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
-	public DBBuilding(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBBuilding(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-
 		psBuilding = batchConn.prepareStatement("insert into BUILDING (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, YEAR_OF_CONSTRUCTION, YEAR_OF_DEMOLITION, ROOF_TYPE, MEASURED_HEIGHT, " +
 				"STOREYS_ABOVE_GROUND, STOREYS_BELOW_GROUND, STOREY_HEIGHTS_ABOVE_GROUND, STOREY_HEIGHTS_BELOW_GROUND, BUILDING_PARENT_ID, BUILDING_ROOT_ID, LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, " +
 				"LOD4_GEOMETRY_ID, LOD1_TERRAIN_INTERSECTION, LOD2_TERRAIN_INTERSECTION, LOD3_TERRAIN_INTERSECTION, LOD4_TERRAIN_INTERSECTION, LOD2_MULTI_CURVE, LOD3_MULTI_CURVE, LOD4_MULTI_CURVE) values " +
@@ -119,7 +113,7 @@ public class DBBuilding implements DBImporter {
 
 		// gml:name
 		if (building.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(building, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(building);
 
 			psBuilding.setString(2, dbGmlName[0]);
 			psBuilding.setString(3, dbGmlName[1]);

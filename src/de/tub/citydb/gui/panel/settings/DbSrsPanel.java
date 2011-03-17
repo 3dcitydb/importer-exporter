@@ -416,7 +416,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		srsNameText.setText(refSys.getSrsName());
 		descriptionText.setText(refSys.toString());
 
-		boolean enabled = refSys != ReferenceSystem.SAME_AS_IN_DB;
+		boolean enabled = !srsComboBox.isDBReferenceSystemSelected();
 		sridText.setEnabled(enabled);
 		srsNameText.setEnabled(enabled);
 		descriptionText.setEnabled(enabled);
@@ -432,7 +432,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		String name = refSys.getDescription().replaceAll("\\s*-\\s*" + Internal.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "");
 		String copy = name + " - " + Internal.I18N.getString("pref.db.srs.label.copyReferenceSystem");
 
-		if (ReferenceSystem.SAME_AS_IN_DB.getDescription().replaceAll("\\s*-\\s*" + Internal.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
+		if (Internal.I18N.getString("common.label.boundingBox.crs.sameAsInDB").replaceAll("\\s*-\\s*" + Internal.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
 			nr++;
 
 		for (ReferenceSystem tmp : config.getProject().getDatabase().getReferenceSystems()) 
@@ -638,7 +638,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 
 			checkButton.setEnabled(isConnected);
 			updateSrsComboBoxes(false);			
-			if (srsComboBox.getSelectedItem() == ReferenceSystem.SAME_AS_IN_DB)
+			if (srsComboBox.isDBReferenceSystemSelected())
 				displaySelectedValues();
 		}
 	}

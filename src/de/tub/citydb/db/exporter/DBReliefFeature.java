@@ -41,7 +41,6 @@ import org.citygml4j.model.gml.Tin;
 import org.citygml4j.model.gml.TriangulatedSurface;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.log.Logger;
@@ -63,7 +62,6 @@ public class DBReliefFeature implements DBExporter {
 	private DBSdoGeometry sdoGeometry;
 	private FeatureClassFilter featureClassFilter;
 
-	private String gmlNameDelimiter;
 	private ReliefModule dem;
 	private boolean useXLink;
 	private boolean appendOldGmlId;
@@ -83,7 +81,6 @@ public class DBReliefFeature implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		dem = config.getProject().getExporter().getModuleVersion().getRelief().getModule();
 
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
@@ -106,8 +103,7 @@ public class DBReliefFeature implements DBExporter {
 					"left join MASSPOINT_RELIEF mr on mr.ID=rc.ID " +
 			"left join BREAKLINE_RELIEF br on br.ID=rc.ID where rf.ID=?");
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
-			int srid = targetSRS.getSrid();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psReliefFeature = connection.prepareStatement("select rf.ID as RF_ID, rf.NAME as RF_NAME, rf.NAME_CODESPACE as RF_NAME_CODESPACE, rf.DESCRIPTION as RF_DESCRIPTION, rf.LOD as RF_LOD, " +
 					"rc.ID as RC_ID, rc.NAME as RC_NAME, rc.NAME_CODESPACE as RC_NAME_CODESPACE, rc.DESCRIPTION as RC_DESCRIPTION, rc.LOD as RC_LOD, " +
@@ -159,7 +155,7 @@ public class DBReliefFeature implements DBExporter {
 					String gmlName = rs.getString("RF_NAME");
 					String gmlNameCodespace = rs.getString("RF_NAME_CODESPACE");
 
-					Util.dbGmlName2featureName(reliefFeature, gmlName, gmlNameCodespace, gmlNameDelimiter);
+					Util.dbGmlName2featureName(reliefFeature, gmlName, gmlNameCodespace);
 
 					String description = rs.getString("RF_DESCRIPTION");
 					if (description != null) {
@@ -236,7 +232,7 @@ public class DBReliefFeature implements DBExporter {
 				String gmlName = rs.getString("RC_NAME");
 				String gmlNameCodespace = rs.getString("RC_NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(reliefComponent, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(reliefComponent, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("RC_DESCRIPTION");
 				if (description != null) {

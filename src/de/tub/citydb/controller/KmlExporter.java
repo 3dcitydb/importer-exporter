@@ -47,7 +47,6 @@ import de.tub.citydb.concurrent.SingleWorkerPool;
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
@@ -475,12 +474,13 @@ public class KmlExporter implements EventListener {
 		tileMatrix = new BoundingVolume(new Point(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(), 0),
 										new Point(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY(), 0));
 
-		if (bbox.getSRS().getSrid() != ReferenceSystem.SAME_AS_IN_DB.getSrid()) {
+		int dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
+		if (bbox.getSRS().getSrid() != dbSrid) {
 			wgs84TileMatrix = dbUtil.transformBBox(tileMatrix, bbox.getSRS().getSrid(), WGS84_SRID);
-			tileMatrix = dbUtil.transformBBox(tileMatrix, bbox.getSRS().getSrid(), ReferenceSystem.SAME_AS_IN_DB.getSrid());
+			tileMatrix = dbUtil.transformBBox(tileMatrix, bbox.getSRS().getSrid(), dbSrid);
 		}
 		else {
-			wgs84TileMatrix = dbUtil.transformBBox(tileMatrix, ReferenceSystem.SAME_AS_IN_DB.getSrid(), WGS84_SRID);
+			wgs84TileMatrix = dbUtil.transformBBox(tileMatrix, dbSrid, WGS84_SRID);
 		}
 		
 		if (tilingMode.equals(TilingMode.NO_TILING)) {

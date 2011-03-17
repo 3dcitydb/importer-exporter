@@ -51,7 +51,6 @@ import org.citygml4j.model.gml.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.TriangulatedSurface;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.UUIDManager;
 
@@ -90,10 +89,10 @@ public class DBSurfaceGeometry implements DBExporter {
 		if (!transformCoords) {
 			psSurfaceGeometry = connection.prepareStatement("select * from SURFACE_GEOMETRY where ROOT_ID = ?");
 		} else {	
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psSurfaceGeometry = connection.prepareStatement("select ID, GMLID, PARENT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, " +
-					"geodb_util.transform_or_null(GEOMETRY, " + targetSRS.getSrid() + ") AS GEOMETRY " +
+					"geodb_util.transform_or_null(GEOMETRY, " + srid + ") AS GEOMETRY " +
 			"from SURFACE_GEOMETRY where ROOT_ID = ?");
 		}
 	}

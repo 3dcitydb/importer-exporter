@@ -89,13 +89,13 @@ public class DBExporterManager {
 				dbExporter = new DBBuilding(connection, cityGMLFactory, exportFilter, config, this);
 				break;
 			case ROOM:
-				dbExporter = new DBRoom(connection, cityGMLFactory, config, this);
+				dbExporter = new DBRoom(connection, cityGMLFactory, this);
 				break;
 			case BUILDING_FURNITURE:
 				dbExporter = new DBBuildingFurniture(connection, cityGMLFactory, config, this);
 				break;
 			case BUILDING_INSTALLATION:
-				dbExporter = new DBBuildingInstallation(connection, cityGMLFactory, config, this);
+				dbExporter = new DBBuildingInstallation(connection, cityGMLFactory, this);
 				break;
 			case THEMATIC_SURFACE:
 				dbExporter = new DBThematicSurface(connection, cityGMLFactory, config, this);

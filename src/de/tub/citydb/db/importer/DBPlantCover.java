@@ -9,7 +9,6 @@ import org.citygml4j.model.citygml.vegetation.PlantCover;
 import org.citygml4j.model.gml.MultiSolidProperty;
 import org.citygml4j.model.gml.MultiSurfaceProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -17,27 +16,22 @@ import de.tub.citydb.util.Util;
 
 public class DBPlantCover implements DBImporter {
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psPlantCover;
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
-	public DBPlantCover(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBPlantCover(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
-	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-		
+	private void init() throws SQLException {		
 		psPlantCover = batchConn.prepareStatement("insert into PLANT_COVER (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, " +
 				"AVERAGE_HEIGHT, LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID) values " +
 				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -71,7 +65,7 @@ public class DBPlantCover implements DBImporter {
 
 		// gml:name
 		if (plantCover.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(plantCover, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(plantCover);
 
 			psPlantCover.setString(2, dbGmlName[0]);
 			psPlantCover.setString(3, dbGmlName[1]);

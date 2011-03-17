@@ -20,13 +20,11 @@ import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.gml.GeometryProperty;
 import org.citygml4j.model.gml.StringOrRef;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.util.Util;
 
 public class DBBuildingInstallation implements DBExporter {
 	private final DBExporterManager dbExporterManager;
 	private final CityGMLFactory cityGMLFactory;
-	private final Config config;
 	private final Connection connection;
 
 	private PreparedStatement psBuildingInstallation;
@@ -35,20 +33,15 @@ public class DBBuildingInstallation implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectReader;
 
-	private String gmlNameDelimiter;
-
-	public DBBuildingInstallation(Connection connection, CityGMLFactory cityGMLFactory, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBBuildingInstallation(Connection connection, CityGMLFactory cityGMLFactory, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.cityGMLFactory = cityGMLFactory;
-		this.config = config;
 		this.dbExporterManager = dbExporterManager;
 
 		init();
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-
 		psBuildingInstallation = connection.prepareStatement("select * from BUILDING_INSTALLATION where BUILDING_ID = ?");
 		psRoomInstallation = connection.prepareStatement("select * from BUILDING_INSTALLATION where ROOM_ID =  ?");
 
@@ -79,9 +72,9 @@ public class DBBuildingInstallation implements DBExporter {
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
 				if (buildingInstallation != null)
-					Util.dbGmlName2featureName(buildingInstallation, gmlName, gmlNameCodespace, gmlNameDelimiter);
+					Util.dbGmlName2featureName(buildingInstallation, gmlName, gmlNameCodespace);
 				else
-					Util.dbGmlName2featureName(intBuildingInstallation, gmlName, gmlNameCodespace, gmlNameDelimiter);
+					Util.dbGmlName2featureName(intBuildingInstallation, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {
@@ -192,7 +185,7 @@ public class DBBuildingInstallation implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(intBuildingInstallation, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(intBuildingInstallation, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

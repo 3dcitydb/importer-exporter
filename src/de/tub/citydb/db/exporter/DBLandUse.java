@@ -37,7 +37,6 @@ public class DBLandUse implements DBExporter {
 	private DBCityObject cityObjectExporter;
 	private FeatureClassFilter featureClassFilter;
 
-	private String gmlNameDelimiter;
 	private LandUseModule luse;
 
 	public DBLandUse(Connection connection, CityGMLFactory cityGMLFactory, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
@@ -51,7 +50,6 @@ public class DBLandUse implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		luse = config.getProject().getExporter().getModuleVersion().getLandUse().getModule();
 
 		psLandUse = connection.prepareStatement("select * from LAND_USE where ID = ?");
@@ -79,7 +77,7 @@ public class DBLandUse implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(landUse, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(landUse, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

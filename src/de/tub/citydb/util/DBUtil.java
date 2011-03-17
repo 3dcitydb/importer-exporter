@@ -1,6 +1,7 @@
 package de.tub.citydb.util;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,6 +22,8 @@ import org.citygml4j.geometry.BoundingVolume;
 import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.config.project.database.DBMetaData;
+import de.tub.citydb.config.project.database.DBMetaData.Versioning;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
 import de.tub.citydb.db.DBConnectionPool;
@@ -49,23 +52,33 @@ public class DBUtil {
 		return instance;
 	}
 
-	public String[] getDatabaseInfo() throws SQLException {
-		String[] dbInfo = null;
+	public DBMetaData getDatabaseInfo() throws SQLException {
+		DBMetaData metaData = new DBMetaData();
 		Connection conn = null;
 
 		try {
-			conn = getConnection();
+			conn = dbConnectionPool.getConnection();
+			
+			// get vendor specific meta data
+			DatabaseMetaData dbMetaData = conn.getMetaData();			
+			
+			// get 3dcitydb specific meta data
 			callableStmt = (OracleCallableStatement)conn.prepareCall("{call geodb_util.db_info(?, ?, ?)}");
 			callableStmt.registerOutParameter(1, Types.VARCHAR);
 			callableStmt.registerOutParameter(2, Types.VARCHAR);
 			callableStmt.registerOutParameter(3, Types.VARCHAR);
 			callableStmt.executeUpdate();
 
-			dbInfo = new String[3];
-			dbInfo[0] = callableStmt.getString(1);
-			dbInfo[1] = callableStmt.getString(2);
-			dbInfo[2] = callableStmt.getString(3);
-
+			metaData.setSrid(callableStmt.getInt(1));
+			metaData.setSrsName(callableStmt.getString(2));
+			metaData.setVersioning(Versioning.valueOf(callableStmt.getString(3)));
+			metaData.setProductName(dbMetaData.getDatabaseProductName());
+			metaData.setProductVersion(dbMetaData.getDatabaseProductVersion());
+			metaData.setMajorVersion(dbMetaData.getDatabaseMajorVersion());
+			metaData.setMinorVersion(dbMetaData.getDatabaseMinorVersion());
+			
+			return metaData;
+			
 		} catch (SQLException sqlEx) {
 			throw sqlEx;
 		} finally {
@@ -87,8 +100,6 @@ public class DBUtil {
 				}
 			}
 		}
-
-		return dbInfo;
 	}
 
 	public String[] databaseReport(Workspace workspace) throws SQLException {
@@ -96,7 +107,7 @@ public class DBUtil {
 		Connection conn = null;
 
 		try {
-			conn = getConnection();
+			conn = dbConnectionPool.getConnection();
 			dbConnectionPool.changeWorkspace(conn, workspace);		
 
 			callableStmt = (OracleCallableStatement)conn.prepareCall("{? = call geodb_stat.table_contents}");
@@ -142,7 +153,7 @@ public class DBUtil {
 		ResultSet rs = null;
 
 		try {
-			conn = getConnection();
+			conn = dbConnectionPool.getConnection();
 			dbConnectionPool.changeWorkspace(conn, workspace);	
 			stmt = conn.createStatement();
 
@@ -287,7 +298,7 @@ public class DBUtil {
 					"{? = call geodb_idx.drop_normal_indexes}";
 
 		try {
-			conn = getConnection();
+			conn = dbConnectionPool.getConnection();
 			callableStmt = (OracleCallableStatement)conn.prepareCall(call);
 			callableStmt.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
 			callableStmt.executeUpdate();
@@ -329,7 +340,7 @@ public class DBUtil {
 					"{? = call geodb_idx.create_normal_indexes}";
 
 		try {
-			conn = getConnection();
+			conn = dbConnectionPool.getConnection();
 			callableStmt = (OracleCallableStatement)conn.prepareCall(call);
 			callableStmt.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
 			callableStmt.executeUpdate();
@@ -367,7 +378,7 @@ public class DBUtil {
 		boolean isIndexed = false;
 
 		try {
-			conn = getConnection();
+			conn = dbConnectionPool.getConnection();
 			callableStmt = (OracleCallableStatement)conn.prepareCall("{? = call geodb_idx.index_status(?, ?)}");
 			callableStmt.setString(2, tableName);
 			callableStmt.setString(3, columnName);
@@ -422,7 +433,7 @@ public class DBUtil {
 		Connection conn = null;
 
 		try {
-			conn = getConnection();
+			conn = dbConnectionPool.getConnection();
 			callableStmt = (OracleCallableStatement)conn.prepareCall("{? = call geodb_util.error_msg(?)}");
 			callableStmt.setString(2, errorCode);
 			callableStmt.registerOutParameter(1, Types.VARCHAR);
@@ -455,11 +466,6 @@ public class DBUtil {
 		return errorMessage;
 	}
 
-	private Connection getConnection() throws SQLException {
-		Connection conn = dbConnectionPool.getConnection();	
-		return conn;
-	}
-
 	public void cancelOperation() {	
 		cancelled = true;
 
@@ -486,7 +492,7 @@ public class DBUtil {
 		Connection conn = null;
 		
 		try {
-			conn = getConnection();
+			conn = dbConnectionPool.getConnection();
 			psQuery = conn.prepareStatement("select SDO_CS.TRANSFORM(MDSYS.SDO_GEOMETRY(2003, " + sourceSrid +
 					", NULL, MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 1), " +
 					"MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), " + targetSrid + ") from dual");
@@ -553,7 +559,7 @@ public class DBUtil {
 		boolean isSupported = false;
 
 		try {
-			conn = getConnection();
+			conn = dbConnectionPool.getConnection();
 			psQuery = conn.prepareStatement("select count(*) from MDSYS.CS_SRS where srid = ?");
 
 			psQuery.setInt(1, srid);
@@ -607,7 +613,7 @@ public class DBUtil {
 		ArrayList<String> appearanceThemes = new ArrayList<String>();
 
 		try {
-			conn = getConnection();
+			conn = dbConnectionPool.getConnection();
 			psQuery = conn.prepareStatement("select distinct theme from appearance order by theme");
 			rs = (OracleResultSet)psQuery.executeQuery();
 			while (rs.next()) {

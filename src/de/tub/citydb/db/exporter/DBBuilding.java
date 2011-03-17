@@ -58,7 +58,6 @@ import org.citygml4j.model.gml.MultiCurveProperty;
 import org.citygml4j.model.gml.MultiPointProperty;
 import org.citygml4j.model.gml.MultiSurface;
 import org.citygml4j.model.gml.MultiSurfaceProperty;
-import org.citygml4j.model.gml.Solid;
 import org.citygml4j.model.gml.SolidProperty;
 import org.citygml4j.model.gml.StringOrRef;
 import org.citygml4j.model.xal.AddressDetails;
@@ -75,7 +74,6 @@ import org.citygml4j.model.xal.ThoroughfareName;
 import org.citygml4j.model.xal.ThoroughfareNumber;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.log.Logger;
@@ -100,7 +98,6 @@ public class DBBuilding implements DBExporter {
 	private FeatureClassFilter featureClassFilter;
 	private DatatypeFactory datatypeFactory;
 
-	private String gmlNameDelimiter;
 	private BuildingModule bldg;
 	private CoreModule core;
 	private boolean transformCoords;
@@ -116,7 +113,6 @@ public class DBBuilding implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		bldg = config.getProject().getExporter().getModuleVersion().getBuilding().getModule();
 		core = (CoreModule)bldg.getModuleDependencies().getModule(CityGMLModuleType.CORE);
 		transformCoords = config.getInternal().isTransformCoordinates();
@@ -130,8 +126,7 @@ public class DBBuilding implements DBExporter {
 					"a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT " +
 			"from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
-			int srid = targetSRS.getSrid();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psBuilding = connection.prepareStatement("select b.ID, b.BUILDING_PARENT_ID, b.NAME, b.NAME_CODESPACE, b.DESCRIPTION, b.CLASS, b.FUNCTION, " +
 					"b.USAGE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, b.ROOF_TYPE, b.MEASURED_HEIGHT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, " +
@@ -389,7 +384,7 @@ public class DBBuilding implements DBExporter {
 		String gmlName = buildingNode.name;
 		String gmlNameCodespace = buildingNode.nameCodespace;
 
-		Util.dbGmlName2featureName(abstractBuilding, gmlName, gmlNameCodespace, gmlNameDelimiter);
+		Util.dbGmlName2featureName(abstractBuilding, gmlName, gmlNameCodespace);
 
 		if (buildingNode.description != null) {
 			StringOrRef stringOrRef = new StringOrRefImpl();

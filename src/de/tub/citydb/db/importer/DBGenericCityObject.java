@@ -15,7 +15,6 @@ import org.citygml4j.model.citygml.generics.GenericCityObject;
 import org.citygml4j.model.gml.GeometryProperty;
 import org.citygml4j.model.gml.MultiCurveProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -23,7 +22,6 @@ import de.tub.citydb.util.Util;
 
 public class DBGenericCityObject implements DBImporter {
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 	
 	private PreparedStatement psGenericCityObject;
@@ -32,20 +30,16 @@ public class DBGenericCityObject implements DBImporter {
 	private DBImplicitGeometry implicitGeometryImporter;
 	private DBSdoGeometry sdoGeometry;
 
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
-	public DBGenericCityObject(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBGenericCityObject(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 	
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-
 		psGenericCityObject = batchConn.prepareStatement("insert into GENERIC_CITYOBJECT (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
 				"LOD0_GEOMETRY_ID, LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, " +
 				"LOD0_IMPLICIT_REP_ID, LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID, " +
@@ -85,7 +79,7 @@ public class DBGenericCityObject implements DBImporter {
 
 		// gml:name
 		if (genericCityObject.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(genericCityObject, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(genericCityObject);
 
 			psGenericCityObject.setString(2, dbGmlName[0]);
 			psGenericCityObject.setString(3, dbGmlName[1]);

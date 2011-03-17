@@ -19,7 +19,6 @@ import org.citygml4j.model.gml.GeometryProperty;
 import org.citygml4j.model.gml.StringOrRef;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
@@ -37,7 +36,6 @@ public class DBCityObjectGroup implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 
-	private String gmlNameDelimiter;
 	private CityObjectGroupModule grp;
 	private boolean transformCoords;
 
@@ -51,7 +49,6 @@ public class DBCityObjectGroup implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		grp = config.getProject().getExporter().getModuleVersion().getCityObjectGroup().getModule();
 		transformCoords = config.getInternal().isTransformCoordinates();
 
@@ -60,10 +57,10 @@ public class DBCityObjectGroup implements DBExporter {
 					"gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp " +
 			"inner join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psCityObjectGroup = connection.prepareStatement("select grp.ID, grp.NAME, grp.NAME_CODESPACE, grp.DESCRIPTION, grp.CLASS, grp.FUNCTION, grp.USAGE, " +
-					"geodb_util.transform_or_null(grp.GEOMETRY, " + targetSRS.getSrid() + ") AS GEOMETRY, " +
+					"geodb_util.transform_or_null(grp.GEOMETRY, " + srid + ") AS GEOMETRY, " +
 					"grp.SURFACE_GEOMETRY_ID, grp.PARENT_CITYOBJECT_ID, " +
 					"gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp " +
 			"inner join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
@@ -96,7 +93,7 @@ public class DBCityObjectGroup implements DBExporter {
 					String gmlName = rs.getString("NAME");
 					String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-					Util.dbGmlName2featureName(cityObjectGroup, gmlName, gmlNameCodespace, gmlNameDelimiter);
+					Util.dbGmlName2featureName(cityObjectGroup, gmlName, gmlNameCodespace);
 
 					String description = rs.getString("DESCRIPTION");
 					if (description != null) {

@@ -42,7 +42,6 @@ public class DBPlantCover implements DBExporter {
 	private DBCityObject cityObjectExporter;
 	private FeatureClassFilter featureClassFilter;
 
-	private String gmlNameDelimiter;
 	private VegetationModule veg;
 
 	public DBPlantCover(Connection connection, CityGMLFactory cityGMLFactory, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
@@ -56,7 +55,6 @@ public class DBPlantCover implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		veg = config.getProject().getExporter().getModuleVersion().getVegetation().getModule();
 
 		psPlantCover = connection.prepareStatement("select * from PLANT_COVER where ID = ?");
@@ -84,7 +82,7 @@ public class DBPlantCover implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(plantCover, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(plantCover, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

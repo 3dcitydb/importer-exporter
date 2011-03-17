@@ -28,7 +28,6 @@ public class DBAppearance implements DBImporter {
 	private DBSurfaceData surfaceDataImporter;
 
 	private boolean replaceGmlId;
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
 	public DBAppearance(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
@@ -41,7 +40,6 @@ public class DBAppearance implements DBImporter {
 
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 
 		if (gmlIdCodespace != null && gmlIdCodespace.length() != 0)
@@ -94,7 +92,7 @@ public class DBAppearance implements DBImporter {
 
 		// gml:name
 		if (appearance.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(appearance, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(appearance);
 
 			psAppearance.setString(3, dbGmlName[0]);
 			psAppearance.setString(4, dbGmlName[1]);

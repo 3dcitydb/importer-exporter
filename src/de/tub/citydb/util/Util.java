@@ -14,6 +14,7 @@ import org.citygml4j.model.gml.AbstractFeature;
 import org.citygml4j.model.gml.Code;
 import org.citygml4j.model.gml.GMLClass;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Workspace;
 
 public class Util {
@@ -316,7 +317,7 @@ public class Util {
 		return url != null;
 	}
 
-	public static String[] gmlName2dbString(AbstractFeature feature, String delimiter) {
+	public static String[] gmlName2dbString(AbstractFeature feature) {
 		String[] dbGmlName = new String[2];
 
 		dbGmlName[0] = null;
@@ -337,16 +338,16 @@ public class Util {
 				gmlNameCodespaceList.add(codespace);
 			}
 
-			dbGmlName[0] = Util.collection2string(gmlNameList, delimiter);
-			dbGmlName[1] = Util.collection2string(gmlNameCodespaceList, delimiter);
+			dbGmlName[0] = Util.collection2string(gmlNameList, Internal.GML_NAME_DELIMITER);
+			dbGmlName[1] = Util.collection2string(gmlNameCodespaceList, Internal.GML_NAME_DELIMITER);
 		}
 
 		return dbGmlName;
 	}
 
-	public static void dbGmlName2featureName(AbstractFeature feature, String dbGmlName, String dbGmlCodeSpace, String delimiter) {
+	public static void dbGmlName2featureName(AbstractFeature feature, String dbGmlName, String dbGmlCodeSpace) {
 		// this is weird, isn't it...
-		delimiter = delimiter.replaceAll("\\\\", "\\\\\\\\");
+		String delimiter = Internal.GML_NAME_DELIMITER.replaceAll("\\\\", "\\\\\\\\");
 
 		// decompose gml:name
 		List<String> gmlNameList = Util.string2string(dbGmlName, delimiter);

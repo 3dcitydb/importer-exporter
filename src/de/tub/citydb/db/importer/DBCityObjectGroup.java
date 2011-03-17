@@ -10,7 +10,6 @@ import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupMember;
 import org.citygml4j.model.gml.GeometryProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -22,27 +21,22 @@ public class DBCityObjectGroup implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 	
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psCityObjectGroup;
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
-	public DBCityObjectGroup(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBCityObjectGroup(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-
 		psCityObjectGroup = batchConn.prepareStatement("insert into CITYOBJECTGROUP (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
 				"GEOMETRY, SURFACE_GEOMETRY_ID, PARENT_CITYOBJECT_ID) values " +
 		"(?, ?, ?, ?, ?, ?, ?, null, ?, ?)");
@@ -78,7 +72,7 @@ public class DBCityObjectGroup implements DBImporter {
 
 		// gml:name
 		if (cityObjectGroup.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(cityObjectGroup, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(cityObjectGroup);
 
 			psCityObjectGroup.setString(2, dbGmlName[0]);
 			psCityObjectGroup.setString(3, dbGmlName[1]);

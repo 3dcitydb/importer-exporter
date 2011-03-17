@@ -9,7 +9,6 @@ import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficArea;
 import org.citygml4j.model.citygml.transportation.TrafficArea;
 import org.citygml4j.model.gml.MultiSurfaceProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -17,27 +16,22 @@ import de.tub.citydb.util.Util;
 
 public class DBTrafficArea implements DBImporter {
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psTrafficArea;
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 
-	private String gmlNameDelimiter;
 	private int batchCounter;
 	
-	public DBTrafficArea(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBTrafficArea(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
-	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-		
+	private void init() throws SQLException {		
 		psTrafficArea = batchConn.prepareStatement("insert into TRAFFIC_AREA (ID, IS_AUXILIARY, NAME, NAME_CODESPACE, DESCRIPTION, FUNCTION, USAGE, " +
 				"SURFACE_MATERIAL, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID, " +
 				"TRANSPORTATION_COMPLEX_ID) values "+
@@ -64,7 +58,7 @@ public class DBTrafficArea implements DBImporter {
 
 		// gml:name
 		if (trafficArea.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(trafficArea, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(trafficArea);
 
 			psTrafficArea.setString(3, dbGmlName[0]);
 			psTrafficArea.setString(4, dbGmlName[1]);
@@ -192,7 +186,7 @@ public class DBTrafficArea implements DBImporter {
 
 		// gml:name
 		if (auxiliaryTrafficArea.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(auxiliaryTrafficArea, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(auxiliaryTrafficArea);
 
 			psTrafficArea.setString(3, dbGmlName[0]);
 			psTrafficArea.setString(4, dbGmlName[1]);

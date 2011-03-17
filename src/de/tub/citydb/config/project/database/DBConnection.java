@@ -6,7 +6,6 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.internal.DBVersioning;
 import de.tub.citydb.util.UUIDManager;
 
 @XmlType(name="ConnectionType", propOrder={
@@ -32,7 +31,7 @@ public class DBConnection implements Comparable<DBConnection> {
 	private String password = "";
 	private Boolean savePassword = false;
 	@XmlTransient
-	private DBVersioning versioning = DBVersioning.OFF;
+	private DBMetaData metaData;
 		
 	public DBConnection() {
 		id = UUIDManager.randomUUID();
@@ -113,12 +112,12 @@ public class DBConnection implements Comparable<DBConnection> {
 		return description;
 	}
 	
-	public DBVersioning getVersioning() {
-		return versioning;
+	public DBMetaData getMetaData() {
+		return metaData;
 	}
 
-	public void setVersioning(DBVersioning versioning) {
-		this.versioning = versioning;
+	public void setMetaData(DBMetaData metaData) {
+		this.metaData = metaData;
 	}
 
 	@Override

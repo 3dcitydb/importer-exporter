@@ -14,7 +14,6 @@ import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.GeometryProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -22,7 +21,6 @@ import de.tub.citydb.util.Util;
 
 public class DBBuildingFurniture implements DBImporter {
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psBuildingFurniture;
@@ -31,20 +29,16 @@ public class DBBuildingFurniture implements DBImporter {
 	private DBImplicitGeometry implicitGeometryImporter;
 	private DBSdoGeometry sdoGeometry;
 
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
-	public DBBuildingFurniture(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBBuildingFurniture(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-
 		psBuildingFurniture = batchConn.prepareStatement("insert into BUILDING_FURNITURE (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, ROOM_ID, LOD4_GEOMETRY_ID, " +
 				"LOD4_IMPLICIT_REP_ID, LOD4_IMPLICIT_REF_POINT, LOD4_IMPLICIT_TRANSFORMATION) values " +
 		"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -69,7 +63,7 @@ public class DBBuildingFurniture implements DBImporter {
 
 		// gml:name
 		if (buildingFurniture.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(buildingFurniture, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(buildingFurniture);
 
 			psBuildingFurniture.setString(2, dbGmlName[0]);
 			psBuildingFurniture.setString(3, dbGmlName[1]);

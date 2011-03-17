@@ -7,12 +7,14 @@ import java.util.List;
 import javax.swing.JComboBox;
 
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 
 public class SrsComboBoxManager {
 	private static SrsComboBoxManager instance = null;
-	private final Config config;
+	private final ReferenceSystem dbRefSys = new ReferenceSystem(Internal.DEFAULT_DB_REF_SYS);
 	private final List<SrsComboBox> srsBoxes = new ArrayList<SrsComboBox>();
+	private final Config config;
 
 	private SrsComboBoxManager(Config config) {
 		// just to thwart instantiation
@@ -63,16 +65,28 @@ public class SrsComboBoxManager {
 			if (anObject instanceof ReferenceSystem)
 				super.addItem(anObject);
 		}
+		
+		public boolean isDBReferenceSystemSelected() {
+			return getSelectedItem() == dbRefSys;
+		}
 
 		public void updateContent() {
+			if (config.getInternal().isConnected()) {
+				dbRefSys.setSrid(config.getInternal().getOpenConnection().getMetaData().getSrid());
+				dbRefSys.setSrsName(config.getInternal().getOpenConnection().getMetaData().getSrsName());
+			} else {
+				dbRefSys.setSrid(Internal.DEFAULT_DB_REF_SYS.getSrid());
+				dbRefSys.setSrsName(Internal.DEFAULT_DB_REF_SYS.getSrsName());				
+			}		
+			
 			ReferenceSystem selectedItem = getSelectedItem();
 			if (selectedItem == null)
-				selectedItem = ReferenceSystem.SAME_AS_IN_DB;
+				selectedItem = dbRefSys;
 
 			removeAllItems();
 
 			// default reference systems
-			addItem(ReferenceSystem.SAME_AS_IN_DB);
+			addItem(dbRefSys);
 
 			// user-defined reference systems
 			for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems())
@@ -83,6 +97,8 @@ public class SrsComboBoxManager {
 		}
 
 		public void doTranslation() {
+			dbRefSys.setDescription(Internal.I18N.getString("common.label.boundingBox.crs.sameAsInDB"));
+			updateContent();
 			repaint();
 			fireActionEvent();
 		}

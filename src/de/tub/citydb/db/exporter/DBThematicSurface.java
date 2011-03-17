@@ -59,7 +59,6 @@ import org.citygml4j.model.xal.ThoroughfareName;
 import org.citygml4j.model.xal.ThoroughfareNumber;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.util.UUIDManager;
 import de.tub.citydb.util.Util;
 
@@ -76,7 +75,6 @@ public class DBThematicSurface implements DBExporter {
 	private DBCityObject cityObjectExporter;
 	private DBSdoGeometry sdoGeometry;
 
-	private String gmlNameDelimiter;
 	private boolean useXLink;
 	private boolean appendOldGmlId;
 	private boolean keepOldGmlId;
@@ -94,8 +92,6 @@ public class DBThematicSurface implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
 		if (!useXLink) {
 			appendOldGmlId = config.getProject().getExporter().getXlink().getFeature().isSetAppendId();
@@ -116,8 +112,7 @@ public class DBThematicSurface implements DBExporter {
 					"a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT " +
 			"from THEMATIC_SURFACE ts left join OPENING_TO_THEM_SURFACE o2t on ts.ID = o2t.THEMATIC_SURFACE_ID left join OPENING op on op.ID = o2t.OPENING_ID left join ADDRESS a on op.ADDRESS_ID=a.ID where ts.ROOM_ID = ?");
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
-			int srid = targetSRS.getSrid();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psBuildingThematicSurface = connection.prepareStatement("select ts.ID as TSID, ts.NAME, ts.NAME_CODESPACE, ts.DESCRIPTION, upper(ts.TYPE) as TYPE, ts.LOD2_MULTI_SURFACE_ID, ts.LOD3_MULTI_SURFACE_ID, ts.LOD4_MULTI_SURFACE_ID, "+
 					"op.ID as OPID, op.NAME as OPNAME, op.NAME_CODESPACE as OPNAME_CODESPACE, op.DESCRIPTION as OPDESCRIPTION, upper(op.TYPE) as OPTYPE, op.ADDRESS_ID as OPADDR, op.LOD3_MULTI_SURFACE_ID as OPLOD3_MULTI_SURFACE_ID, op.LOD4_MULTI_SURFACE_ID as OPLOD4_MULTI_SURFACE_ID, " +
@@ -179,7 +174,7 @@ public class DBThematicSurface implements DBExporter {
 					String gmlName = rs.getString("NAME");
 					String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-					Util.dbGmlName2featureName(boundarySurface, gmlName, gmlNameCodespace, gmlNameDelimiter);
+					Util.dbGmlName2featureName(boundarySurface, gmlName, gmlNameCodespace);
 
 					String description = rs.getString("DESCRIPTION");
 					if (description != null) {
@@ -285,7 +280,7 @@ public class DBThematicSurface implements DBExporter {
 				String gmlName = rs.getString("OPNAME");
 				String gmlNameCodespace = rs.getString("OPNAME_CODESPACE");
 
-				Util.dbGmlName2featureName(opening, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(opening, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("OPDESCRIPTION");
 				if (description != null) {
@@ -397,7 +392,7 @@ public class DBThematicSurface implements DBExporter {
 					String gmlName = rs.getString("NAME");
 					String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-					Util.dbGmlName2featureName(boundarySurface, gmlName, gmlNameCodespace, gmlNameDelimiter);
+					Util.dbGmlName2featureName(boundarySurface, gmlName, gmlNameCodespace);
 
 					String description = rs.getString("DESCRIPTION");
 					if (description != null) {
@@ -503,7 +498,7 @@ public class DBThematicSurface implements DBExporter {
 				String gmlName = rs.getString("OPNAME");
 				String gmlNameCodespace = rs.getString("OPNAME_CODESPACE");
 
-				Util.dbGmlName2featureName(opening, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(opening, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("OPDESCRIPTION");
 				if (description != null) {

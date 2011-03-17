@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 
 @XmlType(name="BoundingBoxType", propOrder={
@@ -17,7 +18,7 @@ public class BoundingBox {
 	@XmlElement(required=true)
 	private BoundingBoxMode mode = BoundingBoxMode.OVERLAP;
 	@XmlIDREF
-	private ReferenceSystem srs = ReferenceSystem.SAME_AS_IN_DB;
+	private ReferenceSystem srs = Internal.DEFAULT_DB_REF_SYS;
 	private BoundingBoxPoint lowerLeftCorner;
 	private BoundingBoxPoint upperRightCorner;
 	@XmlAttribute(required=true)

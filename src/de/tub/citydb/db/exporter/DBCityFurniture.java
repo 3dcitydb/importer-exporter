@@ -27,7 +27,6 @@ import org.citygml4j.model.gml.MultiCurveProperty;
 import org.citygml4j.model.gml.StringOrRef;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
@@ -46,7 +45,6 @@ public class DBCityFurniture implements DBExporter {
 	private DBSdoGeometry sdoGeometry;
 	private FeatureClassFilter featureClassFilter;
 
-	private String gmlNameDelimiter;
 	private CityFurnitureModule frn;
 	private CoreModule core;
 	private boolean transformCoords;
@@ -62,7 +60,6 @@ public class DBCityFurniture implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		frn = config.getProject().getExporter().getModuleVersion().getCityFurniture().getModule();
 		core = (CoreModule)frn.getModuleDependencies().getModule(CityGMLModuleType.CORE);
 		transformCoords = config.getInternal().isTransformCoordinates();
@@ -70,8 +67,7 @@ public class DBCityFurniture implements DBExporter {
 		if (!transformCoords) {
 			psCityFurniture = connection.prepareStatement("select * from CITY_FURNITURE where ID = ?");		
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
-			int srid = targetSRS.getSrid();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psCityFurniture = connection.prepareStatement("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, " +
 					"geodb_util.transform_or_null(LOD1_TERRAIN_INTERSECTION, " + srid + ") AS LOD1_TERRAIN_INTERSECTION, " +
@@ -112,7 +108,7 @@ public class DBCityFurniture implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(cityFurniture, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(cityFurniture, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

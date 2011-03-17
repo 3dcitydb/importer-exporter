@@ -49,6 +49,7 @@ import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.log.LogLevelType;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
@@ -204,9 +205,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 				topFrame.getConsoleText().setText("");
 				DBConnection conn = config.getInternal().getOpenConnection();
 				LOG.info("Connected to database profile '" + conn.getDescription() + "'.");
-				LOG.info("Database SRID: " + ReferenceSystem.SAME_AS_IN_DB.getSrid());
-				LOG.info("Database GML_SRS_Name: " + ReferenceSystem.SAME_AS_IN_DB.getSrsName());
-				LOG.info("Database versioning: " + conn.getVersioning());
+				conn.getMetaData().toConsole(LogLevelType.INFO);
 			}
 		});
 
@@ -502,9 +501,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 
 				if (intConfig.isConnected()) {
 					LOG.info("Database connection established.");
-					LOG.info("Database SRID: " + ReferenceSystem.SAME_AS_IN_DB.getSrid());
-					LOG.info("Database GML_SRS_Name: " + ReferenceSystem.SAME_AS_IN_DB.getSrsName());
-					LOG.info("Database versioning: " + conn.getVersioning());
+					conn.getMetaData().toConsole(LogLevelType.INFO);
 
 					// check whether user-defined SRSs are supported
 					try {
@@ -652,7 +649,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 
 		try {
 			setSettings();
-			Database db = config.getProject().getDatabase();
+			Database db = config.getProject().getDatabase();			
 			Workspace workspace = db.getWorkspaces().getOperationWorkspace();
 			if (!checkWorkspaceInput(workspace))
 				return;
@@ -695,13 +692,12 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 				if (changeWorkspace(workspace, dbPool)) {
 					bbox = geodbBBox.calcBoundingBox(workspace, featureClass);
 					if (bbox != null) {
-						if (db.getOperation().getBoundingBoxSRS() != ReferenceSystem.SAME_AS_IN_DB) {
+						int dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
+						int bboxSrid = db.getOperation().getBoundingBoxSRS().getSrid();
+						
+						if (db.getOperation().getBoundingBoxSRS().isSupported() && bboxSrid != dbSrid) {
 							try {
-								// todo: if db.getSrid() == 0, then we could not read SRID from database
-								// in that case, transformation will certainly fail...						
-								bbox = geodbBBox.transformBBox(bbox, 
-										ReferenceSystem.SAME_AS_IN_DB.getSrid(),
-										db.getOperation().getBoundingBoxSRS().getSrid());
+								bbox = geodbBBox.transformBBox(bbox, dbSrid, bboxSrid);
 							} catch (SQLException e) {
 								//
 							}					

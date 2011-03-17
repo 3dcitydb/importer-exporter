@@ -74,22 +74,22 @@ public class DBImporterManager {
 				dbImporter = new DBExternalReference(batchConn, this);
 				break;
 			case BUILDING:
-				dbImporter = new DBBuilding(batchConn, config, this);
+				dbImporter = new DBBuilding(batchConn, this);
 				break;
 			case ROOM:
-				dbImporter = new DBRoom(batchConn, config, this);
+				dbImporter = new DBRoom(batchConn, this);
 				break;
 			case BUILDING_FURNITURE:
-				dbImporter = new DBBuildingFurniture(batchConn, config, this);
+				dbImporter = new DBBuildingFurniture(batchConn, this);
 				break;
 			case BUILDING_INSTALLATION:
-				dbImporter = new DBBuildingInstallation(batchConn, config, this);
+				dbImporter = new DBBuildingInstallation(batchConn, this);
 				break;
 			case THEMATIC_SURFACE:
-				dbImporter = new DBThematicSurface(batchConn, config, this);
+				dbImporter = new DBThematicSurface(batchConn, this);
 				break;
 			case OPENING:
-				dbImporter = new DBOpening(batchConn, config, this);
+				dbImporter = new DBOpening(batchConn, this);
 				break;
 			case OPENING_TO_THEM_SURFACE:
 				dbImporter = new DBOpeningToThemSurface(batchConn, this);
@@ -101,10 +101,10 @@ public class DBImporterManager {
 				dbImporter = new DBAddressToBuilding(batchConn, this);
 				break;
 			case CITY_FURNITURE:
-				dbImporter = new DBCityFurniture(batchConn, config, this);
+				dbImporter = new DBCityFurniture(batchConn, this);
 				break;
 			case LAND_USE:
-				dbImporter = new DBLandUse(batchConn, config, this);
+				dbImporter = new DBLandUse(batchConn, this);
 				break;
 			case APPEARANCE:
 				dbImporter = new DBAppearance(batchConn, config, this);
@@ -119,43 +119,43 @@ public class DBImporterManager {
 				dbImporter = new DBDeprecatedMaterialModel(cityGMLFactory, config, this);
 				break;
 			case WATERBODY:
-				dbImporter = new DBWaterBody(batchConn, config, this);
+				dbImporter = new DBWaterBody(batchConn, this);
 				break;
 			case WATERBOUNDARY_SURFACE:
-				dbImporter = new DBWaterBoundarySurface(batchConn, config, this);
+				dbImporter = new DBWaterBoundarySurface(batchConn, this);
 				break;
 			case WATERBOD_TO_WATERBND_SRF:
 				dbImporter = new DBWaterBodToWaterBndSrf(batchConn, this);
 				break;
 			case PLANT_COVER:
-				dbImporter = new DBPlantCover(batchConn, config, this);
+				dbImporter = new DBPlantCover(batchConn, this);
 				break;
 			case SOLITARY_VEGETAT_OBJECT:
-				dbImporter = new DBSolitaryVegetatObject(batchConn, config, this);
+				dbImporter = new DBSolitaryVegetatObject(batchConn, this);
 				break;
 			case TRANSPORTATION_COMPLEX:
-				dbImporter = new DBTransportationComplex(batchConn, config, this);
+				dbImporter = new DBTransportationComplex(batchConn, this);
 				break;
 			case TRAFFIC_AREA:
-				dbImporter = new DBTrafficArea(batchConn, config, this);
+				dbImporter = new DBTrafficArea(batchConn, this);
 				break;
 			case RELIEF_FEATURE:
-				dbImporter = new DBReliefFeature(batchConn, config, this);
+				dbImporter = new DBReliefFeature(batchConn, this);
 				break;
 			case RELIEF_COMPONENT:
-				dbImporter = new DBReliefComponent(batchConn, config, this);
+				dbImporter = new DBReliefComponent(batchConn, this);
 				break;
 			case RELIEF_FEAT_TO_REL_COMP:
 				dbImporter = new DBReliefFeatToRelComp(batchConn, this);
 				break;
 			case GENERIC_CITYOBJECT:
-				dbImporter = new DBGenericCityObject(batchConn, config, this);
+				dbImporter = new DBGenericCityObject(batchConn, this);
 				break;
 			case CITYOBJECTGROUP:
-				dbImporter = new DBCityObjectGroup(batchConn, config, this);
+				dbImporter = new DBCityObjectGroup(batchConn, this);
 				break;
 			case SDO_GEOMETRY:
-				dbImporter = new DBSdoGeometry();
+				dbImporter = new DBSdoGeometry(config);
 				break;
 			}
 

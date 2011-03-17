@@ -17,7 +17,6 @@ import org.citygml4j.model.gml.MultiCurveProperty;
 import org.citygml4j.model.gml.MultiSurfaceProperty;
 import org.citygml4j.model.gml.SolidProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -28,7 +27,6 @@ public class DBWaterBody implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 	
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psWaterBody;
@@ -37,20 +35,16 @@ public class DBWaterBody implements DBImporter {
 	private DBWaterBoundarySurface boundarySurfaceImporter;
 	private DBSdoGeometry sdoGeometry;
 	
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
-	public DBWaterBody(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBWaterBody(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
-	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-		
+	private void init() throws SQLException {		
 		psWaterBody = batchConn.prepareStatement("insert into WATERBODY (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
 				"LOD1_SOLID_ID, LOD2_SOLID_ID, LOD3_SOLID_ID, LOD4_SOLID_ID, " +
 				"LOD0_MULTI_SURFACE_ID, LOD1_MULTI_SURFACE_ID, LOD0_MULTI_CURVE, LOD1_MULTI_CURVE) values " +
@@ -89,7 +83,7 @@ public class DBWaterBody implements DBImporter {
 
 		// gml:name
 		if (waterBody.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(waterBody, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(waterBody);
 
 			psWaterBody.setString(2, dbGmlName[0]);
 			psWaterBody.setString(3, dbGmlName[1]);

@@ -24,7 +24,6 @@ import org.citygml4j.model.citygml.generics.GenericAttribute;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
 import de.tub.citydb.log.Logger;
@@ -66,7 +65,7 @@ public class DBCityObject implements DBImporter {
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		rememberGmlId = config.getProject().getImporter().getGmlId().isSetKeepGmlIdAsExternalReference();
-		dbSrid = ReferenceSystem.SAME_AS_IN_DB.getSrid();
+		dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 

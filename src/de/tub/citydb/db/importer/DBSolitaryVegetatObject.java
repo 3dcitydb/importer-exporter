@@ -14,7 +14,6 @@ import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
 import org.citygml4j.model.gml.GeometryProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -22,7 +21,6 @@ import de.tub.citydb.util.Util;
 
 public class DBSolitaryVegetatObject implements DBImporter {
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psSolitVegObject;
@@ -31,20 +29,16 @@ public class DBSolitaryVegetatObject implements DBImporter {
 	private DBImplicitGeometry implicitGeometryImporter;
 	private DBSdoGeometry sdoGeometry;
 
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
-	public DBSolitaryVegetatObject(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBSolitaryVegetatObject(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-
 		psSolitVegObject = batchConn.prepareStatement("insert into SOLITARY_VEGETAT_OBJECT (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, SPECIES, FUNCTION, " +
 				"HEIGHT, TRUNC_DIAMETER, CROWN_DIAMETER, " +
 				"LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, " +
@@ -84,7 +78,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 
 		// gml:name
 		if (solVegObject.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(solVegObject, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(solVegObject);
 
 			psSolitVegObject.setString(2, dbGmlName[0]);
 			psSolitVegObject.setString(3, dbGmlName[1]);

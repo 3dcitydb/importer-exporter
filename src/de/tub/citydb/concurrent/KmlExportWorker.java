@@ -37,18 +37,17 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
-import com.sun.j3d.utils.geometry.GeometryInfo;
-import com.sun.j3d.utils.geometry.NormalGenerator;
-
 import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.appearance.X3DMaterial;
 import org.citygml4j.model.citygml.appearance.Color;
+import org.citygml4j.model.citygml.appearance.X3DMaterial;
+
+import com.sun.j3d.utils.geometry.GeometryInfo;
+import com.sun.j3d.utils.geometry.NormalGenerator;
 
 import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.db.kmlExporter.BalloonTemplateHandler;
@@ -1145,7 +1144,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					coords[index++] = point3d.y;
 					coords[index++] = point3d.z;
 				}
-				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, ReferenceSystem.SAME_AS_IN_DB.getSrid());
+				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, config.getInternal().getOpenConnection().getMetaData().getSrid());
 				coords = convertToWGS84(jGeometry).getOrdinatesArray();
 				
 				Logger.getInstance().info("Getting zOffset from Google's elevation API for " + gmlId);
@@ -1214,7 +1213,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		double[] pointCoords = null; 
 		// createLinearLineString is a workaround for Oracle11g!
-		JGeometry jGeometry = JGeometry.createLinearLineString(coords, coords.length, ReferenceSystem.SAME_AS_IN_DB.getSrid());
+		JGeometry jGeometry = JGeometry.createLinearLineString(coords, coords.length, config.getInternal().getOpenConnection().getMetaData().getSrid());
 		JGeometry convertedPointGeom = convertToWGS84(jGeometry);
 		if (convertedPointGeom != null) {
 			pointCoords = convertedPointGeom.getFirstPoint();

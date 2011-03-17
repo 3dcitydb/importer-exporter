@@ -26,7 +26,6 @@ import org.citygml4j.model.gml.Point;
 import org.citygml4j.model.gml.PointProperty;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.db.xlink.DBXlinkTextureFile;
 import de.tub.citydb.db.xlink.DBXlinkTextureFileEnum;
 import de.tub.citydb.db.xlink.DBXlinkTextureParam;
@@ -50,7 +49,6 @@ public class DBSurfaceData implements DBImporter {
 	private int dbSrid;
 	private boolean replaceGmlId;
 	private boolean importTextureImage;
-	private String gmlNameDelimiter;
 
 	public DBSurfaceData(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -62,9 +60,8 @@ public class DBSurfaceData implements DBImporter {
 
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-		dbSrid = ReferenceSystem.SAME_AS_IN_DB.getSrid();
+		dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
 		importTextureImage = config.getProject().getImporter().getAppearances().isSetImportTextureFiles();
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 
 		if (gmlIdCodespace != null && gmlIdCodespace.length() != 0)
@@ -134,7 +131,7 @@ public class DBSurfaceData implements DBImporter {
 
 		// gml:name
 		if (abstractSurfData.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(abstractSurfData, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(abstractSurfData);
 
 			psSurfaceData.setString(3, dbGmlName[0]);
 			psSurfaceData.setString(4, dbGmlName[1]);

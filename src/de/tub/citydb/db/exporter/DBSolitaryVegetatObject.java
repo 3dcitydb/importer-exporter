@@ -28,7 +28,6 @@ import org.citygml4j.model.gml.Length;
 import org.citygml4j.model.gml.StringOrRef;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
@@ -46,7 +45,6 @@ public class DBSolitaryVegetatObject implements DBExporter {
 	private DBImplicitGeometry implicitGeometryExporter;
 	private FeatureClassFilter featureClassFilter;
 
-	private String gmlNameDelimiter;
 	private VegetationModule veg;
 	private CoreModule core;
 	private boolean transformCoords;
@@ -62,7 +60,6 @@ public class DBSolitaryVegetatObject implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		veg = config.getProject().getExporter().getModuleVersion().getVegetation().getModule();
 		core = (CoreModule)veg.getModuleDependencies().getModule(CityGMLModuleType.CORE);
 		transformCoords = config.getInternal().isTransformCoordinates();
@@ -70,8 +67,7 @@ public class DBSolitaryVegetatObject implements DBExporter {
 		if (!transformCoords) {
 			psSolVegObject = connection.prepareStatement("select * from SOLITARY_VEGETAT_OBJECT where ID = ?");
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
-			int srid = targetSRS.getSrid();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psSolVegObject = connection.prepareStatement("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, SPECIES, FUNCTION, HEIGHT, TRUNC_DIAMETER, CROWN_DIAMETER," +
 					"LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, " +
@@ -107,7 +103,7 @@ public class DBSolitaryVegetatObject implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(solVegObject, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(solVegObject, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

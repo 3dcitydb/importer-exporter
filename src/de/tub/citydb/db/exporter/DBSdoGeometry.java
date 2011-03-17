@@ -57,7 +57,10 @@ public class DBSdoGeometry implements DBExporter {
 	private String gmlSrsName;
 
 	public DBSdoGeometry(Config config) {
-		gmlSrsName = config.getInternal().getExportTargetSRS().getSrsName();
+		if (config.getInternal().isTransformCoordinates())
+			gmlSrsName = config.getInternal().getExportTargetSRS().getSrsName();
+		else
+			gmlSrsName = config.getInternal().getOpenConnection().getMetaData().getSrsName();
 	}
 
 	public PointProperty getPoint(JGeometry geom, boolean setSrsName) {

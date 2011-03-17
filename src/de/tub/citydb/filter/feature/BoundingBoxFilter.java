@@ -9,7 +9,6 @@ import org.citygml4j.model.gml.DirectPosition;
 import org.citygml4j.model.gml.Envelope;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
 import de.tub.citydb.config.project.filter.BoundingBox;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
@@ -23,6 +22,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	private final AbstractFilterConfig filterConfig;
 	private final FilterMode mode;
 	private final DBUtil dbUtil;
+	private final Config config;
 
 	private boolean isActive;
 	private boolean useTiling;
@@ -30,7 +30,6 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 
 	private BoundingVolume boundingBox;
 	private BoundingVolume activeBoundingBox;
-	private int dbSrid;
 
 	private double rowHeight = 0;  
 	private double columnWidth = 0;
@@ -42,6 +41,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	public BoundingBoxFilter(Config config, FilterMode mode, DBUtil dbUtil) {
 		this.mode = mode;
 		this.dbUtil = dbUtil;
+		this.config = config;
 
 		if (mode == FilterMode.EXPORT)
 			filterConfig = config.getProject().getExporter().getFilter();
@@ -50,7 +50,6 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 		else
 			filterConfig = config.getProject().getImporter().getFilter();			
 
-		dbSrid = ReferenceSystem.SAME_AS_IN_DB.getSrid();		
 		init();
 	}
 
@@ -75,10 +74,12 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 				);
 
 				// check whether we have to transform coordinate values
-				if (boundingBoxConfig.getSRS().isSupported() &&
-						boundingBoxConfig.getSRS().getSrid() != ReferenceSystem.SAME_AS_IN_DB.getSrid()) {			
+				int dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
+				int bboxSrid = boundingBoxConfig.getSRS().getSrid();
+
+				if (boundingBoxConfig.getSRS().isSupported() && bboxSrid != dbSrid) {			
 					try {
-						boundingBox = dbUtil.transformBBox(boundingBox, boundingBoxConfig.getSRS().getSrid(), dbSrid);
+						boundingBox = dbUtil.transformBBox(boundingBox, bboxSrid, dbSrid);
 					} catch (SQLException sqlEx) {
 						//
 					}

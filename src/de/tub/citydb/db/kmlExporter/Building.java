@@ -1,18 +1,12 @@
 package de.tub.citydb.db.kmlExporter;
 
-import com.sun.j3d.utils.geometry.GeometryInfo;
-import com.sun.j3d.utils.geometry.NormalGenerator;
-import com.sun.j3d.utils.geometry.Stripifier;
-
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
-
 import java.io.IOException;
 import java.math.BigInteger;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -25,28 +19,64 @@ import java.util.StringTokenizer;
 
 import javax.media.j3d.GeometryArray;
 import javax.vecmath.Point3d;
+import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import de.tub.citydb.log.LogLevelType;
-import de.tub.citydb.log.Logger;
+import oracle.ord.im.OrdImage;
 
 import org.citygml.textureAtlasAPI.TextureAtlasGenerator;
 import org.citygml.textureAtlasAPI.dataStructure.TexImage;
 import org.citygml.textureAtlasAPI.dataStructure.TexImageInfo;
-
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
-
-import oracle.ord.im.OrdImage;
-
-import org.collada._2005._11.colladaschema.*;
+import org.collada._2005._11.colladaschema.Accessor;
+import org.collada._2005._11.colladaschema.Asset;
+import org.collada._2005._11.colladaschema.BindMaterial;
+import org.collada._2005._11.colladaschema.COLLADA;
+import org.collada._2005._11.colladaschema.CommonColorOrTextureType;
+import org.collada._2005._11.colladaschema.CommonFloatOrParamType;
+import org.collada._2005._11.colladaschema.CommonNewparamType;
+import org.collada._2005._11.colladaschema.Effect;
+import org.collada._2005._11.colladaschema.Extra;
+import org.collada._2005._11.colladaschema.FloatArray;
+import org.collada._2005._11.colladaschema.FxSampler2DCommon;
+import org.collada._2005._11.colladaschema.FxSurfaceCommon;
+import org.collada._2005._11.colladaschema.FxSurfaceInitFromCommon;
+import org.collada._2005._11.colladaschema.Geometry;
+import org.collada._2005._11.colladaschema.Image;
+import org.collada._2005._11.colladaschema.InputLocal;
+import org.collada._2005._11.colladaschema.InputLocalOffset;
+import org.collada._2005._11.colladaschema.InstanceEffect;
+import org.collada._2005._11.colladaschema.InstanceGeometry;
+import org.collada._2005._11.colladaschema.InstanceMaterial;
+import org.collada._2005._11.colladaschema.InstanceWithExtra;
+import org.collada._2005._11.colladaschema.LibraryEffects;
+import org.collada._2005._11.colladaschema.LibraryGeometries;
+import org.collada._2005._11.colladaschema.LibraryImages;
+import org.collada._2005._11.colladaschema.LibraryMaterials;
+import org.collada._2005._11.colladaschema.LibraryVisualScenes;
+import org.collada._2005._11.colladaschema.Material;
+import org.collada._2005._11.colladaschema.Mesh;
+import org.collada._2005._11.colladaschema.ObjectFactory;
+import org.collada._2005._11.colladaschema.Param;
+import org.collada._2005._11.colladaschema.ProfileCOMMON;
+import org.collada._2005._11.colladaschema.Source;
+import org.collada._2005._11.colladaschema.Technique;
+import org.collada._2005._11.colladaschema.Triangles;
+import org.collada._2005._11.colladaschema.UpAxisType;
+import org.collada._2005._11.colladaschema.Vertices;
+import org.collada._2005._11.colladaschema.VisualScene;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import com.sun.j3d.utils.geometry.GeometryInfo;
+
+import de.tub.citydb.log.LogLevelType;
+import de.tub.citydb.log.Logger;
 
 public class Building {
 	

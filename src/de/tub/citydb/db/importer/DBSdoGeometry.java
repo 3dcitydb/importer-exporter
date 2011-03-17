@@ -36,7 +36,7 @@ import org.citygml4j.model.gml.PointProperty;
 import org.citygml4j.model.gml.Polygon;
 import org.citygml4j.model.gml.PolygonProperty;
 
-import de.tub.citydb.config.project.database.ReferenceSystem;
+import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
@@ -44,8 +44,8 @@ public class DBSdoGeometry implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 	private int dbSrid;
 
-	public DBSdoGeometry() {
-		dbSrid = ReferenceSystem.SAME_AS_IN_DB.getSrid();
+	public DBSdoGeometry(Config config) {
+		dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
 	}
 
 	public JGeometry getPoint(PointProperty pointProperty) {

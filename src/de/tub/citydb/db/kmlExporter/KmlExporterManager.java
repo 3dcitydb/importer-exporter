@@ -22,7 +22,6 @@ import net.opengis.kml._2.PlacemarkType;
 import oracle.ord.im.OrdImage;
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.sax.SAXBuffer;
 

@@ -18,6 +18,7 @@ import de.tub.citydb.controller.KmlExporter;
 import de.tub.citydb.controller.XMLValidator;
 import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.event.EventDispatcher;
+import de.tub.citydb.log.LogLevelType;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.DBUtil;
 
@@ -194,9 +195,7 @@ public class ImpExpCmd {
 			dbPool.init();
 			
 			LOG.info("Database connection established.");
-			LOG.info("Database SRID: " + ReferenceSystem.SAME_AS_IN_DB.getSrid());
-			LOG.info("Database GML_SRS_Name: " + ReferenceSystem.SAME_AS_IN_DB.getSrsName());
-			LOG.info("Database versioning: " + conn.getVersioning());
+			conn.getMetaData().toConsole(LogLevelType.INFO);
 			
 			// check whether user-defined SRSs are supported
 			try {

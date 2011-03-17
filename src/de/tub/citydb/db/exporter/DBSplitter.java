@@ -16,7 +16,6 @@ import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.TilingMode;
@@ -122,7 +121,7 @@ public class DBSplitter {
 			// check whether spatial indexes are active
 			if (dbUtil.isIndexed("CITYOBJECT", "ENVELOPE")) {			
 				TiledBoundingBox tiledBBox = expFilterConfig.getComplexFilter().getTiledBoundingBox();
-				int dbSrid = ReferenceSystem.SAME_AS_IN_DB.getSrid();
+				int dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
 
 				double minX = bbox.getLowerCorner().getX();
 				double minY = bbox.getLowerCorner().getY();

@@ -1,10 +1,9 @@
 package de.tub.citydb.db.kmlExporter;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
-
-import java.math.BigInteger;
 
 public class VertexInfo {
 	

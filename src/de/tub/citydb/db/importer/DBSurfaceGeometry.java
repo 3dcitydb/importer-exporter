@@ -51,7 +51,6 @@ import org.citygml4j.util.CityGMLModules;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.db.xlink.DBXlinkLinearRing;
 import de.tub.citydb.db.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.log.Logger;
@@ -85,7 +84,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-		dbSrid = ReferenceSystem.SAME_AS_IN_DB.getSrid();
+		dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 

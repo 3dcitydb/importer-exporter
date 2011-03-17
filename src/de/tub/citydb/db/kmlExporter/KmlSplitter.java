@@ -12,7 +12,6 @@ import org.citygml4j.geometry.BoundingVolume;
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.event.EventDispatcher;
@@ -82,7 +81,7 @@ public class KmlSplitter {
 			try {
 				spatialQuery = connection.prepareStatement(TileQueries.QUERY_GET_GMLIDS);
 
-				int srid = ReferenceSystem.SAME_AS_IN_DB.getSrid();
+				int srid = config.getInternal().getOpenConnection().getMetaData().getSrid();
 
 				spatialQuery.setInt(1, srid);
 				// coordinates for inside

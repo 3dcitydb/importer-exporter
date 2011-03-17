@@ -16,7 +16,6 @@ import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.gml.MultiSurfaceProperty;
 import org.citygml4j.model.gml.SolidProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -27,7 +26,6 @@ public class DBRoom implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 	
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psRoom;
@@ -37,20 +35,16 @@ public class DBRoom implements DBImporter {
 	private DBBuildingFurniture buildingFurnitureImporter;
 	private DBBuildingInstallation buildingInstallationImporter;
 
-	private String gmlNameDelimiter;
 	private int batchCounter;
 	
-	public DBRoom(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBRoom(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
-	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-		
+	private void init() throws SQLException {		
 		psRoom = batchConn.prepareStatement("insert into ROOM (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, BUILDING_ID, LOD4_GEOMETRY_ID) values "+
 				"(?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
@@ -77,7 +71,7 @@ public class DBRoom implements DBImporter {
 
 		// gml:name
 		if (room.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(room, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(room);
 
 			psRoom.setString(2, dbGmlName[0]);
 			psRoom.setString(3, dbGmlName[1]);

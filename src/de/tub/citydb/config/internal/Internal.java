@@ -10,33 +10,39 @@ import de.tub.citydb.config.project.database.ReferenceSystem;
 
 public class Internal {
 	public static final int ORACLE_MAX_BATCH_SIZE = 65535;
-	public static ResourceBundle I18N;	
+	public static final String GML_NAME_DELIMITER = " --/\\-- ";
+	public static final ReferenceSystem DEFAULT_DB_REF_SYS =  new ReferenceSystem("", 0, "n/a", "", true);
+	public static ResourceBundle I18N;
 	
+	// path names and files
 	private String userDir = System.getProperty("user.home") + File.separator + "3DCityDB-Importer-Exporter";	
-	private String currentGmlIdCodespace = "";
-	private String currentDbPassword = "";
-	private DBConnection openConnection;
-	private String gmlNameDelimiter = " --/\\-- ";
-	private String exportPath = "";
-	private String exportTextureFilePath = "";
-	private ReferenceSystem exportTargetSRS;
-	private String importPath = "";
-	private String exportFileName = "";
-	private String importFileName = "";
-	private String currentImportFileName = "";
-	private String locale = "de";
 	private String configPath =  userDir + File.separator + "config";
 	private String configProject = "project.xml";
 	private String configGui = "gui.xml";
+	private String importPath = "";
+	private String importFileName = "";
+	private String currentImportFileName = "";
+	private String exportPath = "";
+	private String exportFileName = "";
+	private String exportTextureFilePath = "";
 	private String logPath = userDir + File.separator + "log";
+	private String currentLogPath = "";
 
+	// database related settings
+	private DBConnection openConnection;
+	private ReferenceSystem exportTargetSRS;
+	private String currentDbPassword = "";
+	
+	// internal variables
+	private String currentGmlIdCodespace = "";
+	private String locale = "de";
+
+	// internal flags
 	private boolean isShuttingDown = false;
 	private boolean isConnected = false;
 	private boolean useXMLValidation = false;
 	private boolean useInternalBBoxFilter = false;
 	private boolean transformCoordinates = false;
-	
-	private String currentLogPath = "";
 	
 	private PropertyChangeSupport changes = new PropertyChangeSupport(this);
 	
@@ -69,14 +75,14 @@ public class Internal {
 	
 	public void setOpenConnection(DBConnection openedConnection) {
 		this.openConnection = openedConnection;
-		changes.firePropertyChange("database.isConnected", isConnected, true);
 		isConnected = true;
+		changes.firePropertyChange("database.isConnected", false, true);
 	}
 	
 	public void unsetOpenConnection() {
 		openConnection = null;
-		changes.firePropertyChange("database.isConnected", isConnected, false);
 		isConnected = false;
+		changes.firePropertyChange("database.isConnected", true, false);
 	}
 
 	public boolean isConnected() {
@@ -149,14 +155,6 @@ public class Internal {
 
 	public void setExportTextureFilePath(String exportTextureFilePath) {
 		this.exportTextureFilePath = exportTextureFilePath;
-	}
-
-	public String getGmlNameDelimiter() {
-		return gmlNameDelimiter;
-	}
-
-	public void setGmlNameDelimiter(String gmlNameDelimiter) {
-		this.gmlNameDelimiter = gmlNameDelimiter;
 	}
 
 	public String getConfigProject() {

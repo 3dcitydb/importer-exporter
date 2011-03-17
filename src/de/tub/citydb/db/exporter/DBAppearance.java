@@ -48,7 +48,6 @@ import org.citygml4j.model.gml.StringOrRef;
 import org.citygml4j.util.CityGMLModules;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.db.xlink.DBXlinkTextureFile;
 import de.tub.citydb.db.xlink.DBXlinkTextureFileEnum;
 import de.tub.citydb.util.UUIDManager;
@@ -66,7 +65,6 @@ public class DBAppearance implements DBExporter {
 	private DBTextureParam textureParamExporter;
 	private boolean exportTextureImage;
 	private String texturePath;
-	private String gmlNameDelimiter;
 	private AppearanceModule globalApp;
 	private boolean useXLink;
 	private boolean appendOldGmlId;
@@ -85,7 +83,6 @@ public class DBAppearance implements DBExporter {
 	private void init() throws SQLException {
 		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
 		texturePath = config.getInternal().getExportTextureFilePath();
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		globalApp = config.getProject().getExporter().getModuleVersion().getAppearance().getModule();
 
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
@@ -111,8 +108,7 @@ public class DBAppearance implements DBExporter {
 					"tp.WORLD_TO_TEXTURE, tp.TEXTURE_COORDINATES, tp.SURFACE_GEOMETRY_ID " +
 			"from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID inner join TEXTUREPARAM tp on tp.SURFACE_DATA_ID=sd.ID where app.ID=? order by sd.ID");
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
-			int srid = targetSRS.getSrid();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psAppearanceCityObject = connection.prepareStatement("select app.ID as APP_ID, app.GMLID as APP_GMLID, app.NAME as APP_NAME, app.NAME_CODESPACE as APP_NAME_CODESPACE, app.DESCRIPTION as APP_DESCRIPTION, app.THEME, " +
 					"sd.ID as SD_ID, sd.GMLID as SD_GMLID, sd.NAME as SD_NAME, sd.NAME_CODESPACE as SD_NAME_CODESPACE, sd.DESCRIPTION as SD_DESCRIPTION, sd.IS_FRONT, upper(sd.TYPE) as TYPE, " +
@@ -161,7 +157,7 @@ public class DBAppearance implements DBExporter {
 					String gmlName = rs.getString("APP_NAME");
 					String gmlNameCodespace = rs.getString("APP_NAME_CODESPACE");
 
-					Util.dbGmlName2featureName(appearance, gmlName, gmlNameCodespace, gmlNameDelimiter);
+					Util.dbGmlName2featureName(appearance, gmlName, gmlNameCodespace);
 
 					String description = rs.getString("APP_DESCRIPTION");
 					if (description != null) {
@@ -240,7 +236,7 @@ public class DBAppearance implements DBExporter {
 					String gmlName = rs.getString("SD_NAME");
 					String gmlNameCodespace = rs.getString("SD_NAME_CODESPACE");
 
-					Util.dbGmlName2featureName(surfaceData, gmlName, gmlNameCodespace, gmlNameDelimiter);
+					Util.dbGmlName2featureName(surfaceData, gmlName, gmlNameCodespace);
 
 					String description = rs.getString("SD_DESCRIPTION");
 					if (description != null) {
@@ -548,7 +544,7 @@ public class DBAppearance implements DBExporter {
 						String gmlName = rs.getString("APP_NAME");
 						String gmlNameCodespace = rs.getString("APP_NAME_CODESPACE");
 
-						Util.dbGmlName2featureName(appearance, gmlName, gmlNameCodespace, gmlNameDelimiter);
+						Util.dbGmlName2featureName(appearance, gmlName, gmlNameCodespace);
 
 						String description = rs.getString("APP_DESCRIPTION");
 						if (description != null) {
@@ -619,7 +615,7 @@ public class DBAppearance implements DBExporter {
 				String gmlName = rs.getString("SD_NAME");
 				String gmlNameCodespace = rs.getString("SD_NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(surfaceData, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(surfaceData, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("SD_DESCRIPTION");
 				if (description != null) {

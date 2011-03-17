@@ -21,13 +21,11 @@ import org.citygml4j.model.gml.MultiSurfaceProperty;
 import org.citygml4j.model.gml.SolidProperty;
 import org.citygml4j.model.gml.StringOrRef;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.util.Util;
 
 public class DBRoom implements DBExporter {
 	private final DBExporterManager dbExporterManager;
 	private final CityGMLFactory cityGMLFactory;
-	private final Config config;
 	private final Connection connection;
 
 	private PreparedStatement psRoom;
@@ -38,20 +36,15 @@ public class DBRoom implements DBExporter {
 	private DBThematicSurface thematicSurfaceExporter;
 	private DBBuildingFurniture buildingFurnitureExporter;
 
-	private String gmlNameDelimiter;
-
-	public DBRoom(Connection connection, CityGMLFactory cityGMLFactory, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBRoom(Connection connection, CityGMLFactory cityGMLFactory, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.cityGMLFactory = cityGMLFactory;
-		this.config = config;
 		this.dbExporterManager = dbExporterManager;
 
 		init();
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-
 		psRoom = connection.prepareStatement("select * from ROOM where BUILDING_ID = ?");
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
@@ -75,7 +68,7 @@ public class DBRoom implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(room, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(room, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

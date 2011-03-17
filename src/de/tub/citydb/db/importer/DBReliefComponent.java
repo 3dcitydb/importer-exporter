@@ -19,7 +19,6 @@ import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.Tin;
 import org.citygml4j.model.gml.TriangulatedSurface;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
@@ -27,7 +26,6 @@ public class DBReliefComponent implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psReliefComponent;
@@ -39,19 +37,14 @@ public class DBReliefComponent implements DBImporter {
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBSdoGeometry sdoGeometry;
 
-	private String gmlNameDelimiter;
-
-	public DBReliefComponent(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBReliefComponent(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-
 		psReliefComponent = batchConn.prepareStatement("insert into RELIEF_COMPONENT (ID, NAME, NAME_CODESPACE, DESCRIPTION, LOD, EXTENT) values " +
 		"(?, ?, ?, ?, ?, ?)");
 		psTinRelief = batchConn.prepareStatement("insert into TIN_RELIEF (ID, MAX_LENGTH, STOP_LINES, BREAK_LINES, CONTROL_POINTS, SURFACE_GEOMETRY_ID) values " +
@@ -81,7 +74,7 @@ public class DBReliefComponent implements DBImporter {
 
 		// gml:name
 		if (reliefComponent.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(reliefComponent, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(reliefComponent);
 
 			psReliefComponent.setString(2, dbGmlName[0]);
 			psReliefComponent.setString(3, dbGmlName[1]);

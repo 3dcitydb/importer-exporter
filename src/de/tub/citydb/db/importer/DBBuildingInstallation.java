@@ -10,7 +10,6 @@ import org.citygml4j.model.citygml.building.BuildingInstallation;
 import org.citygml4j.model.citygml.building.IntBuildingInstallation;
 import org.citygml4j.model.gml.GeometryProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -18,27 +17,22 @@ import de.tub.citydb.util.Util;
 
 public class DBBuildingInstallation implements DBImporter {
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psBuildingInstallation;
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
-	public DBBuildingInstallation(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBBuildingInstallation(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
-	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-		
+	private void init() throws SQLException {		
 		psBuildingInstallation = batchConn.prepareStatement("insert into BUILDING_INSTALLATION (ID, IS_EXTERNAL, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, BUILDING_ID, ROOM_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID) values " +
 				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
@@ -63,7 +57,7 @@ public class DBBuildingInstallation implements DBImporter {
 
 		// gml:name
 		if (buildingInstallation.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(buildingInstallation, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(buildingInstallation);
 
 			psBuildingInstallation.setString(3, dbGmlName[0]);
 			psBuildingInstallation.setString(4, dbGmlName[1]);
@@ -204,7 +198,7 @@ public class DBBuildingInstallation implements DBImporter {
 
 		// gml:name
 		if (intBuildingInstallation.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(intBuildingInstallation, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(intBuildingInstallation);
 
 			psBuildingInstallation.setString(3, dbGmlName[0]);
 			psBuildingInstallation.setString(4, dbGmlName[1]);

@@ -37,7 +37,6 @@ import org.citygml4j.model.gml.StringOrRef;
 import org.citygml4j.model.gml.SurfaceProperty;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.UUIDManager;
@@ -56,7 +55,6 @@ public class DBWaterBody implements DBExporter {
 	private DBSdoGeometry sdoGeometry;
 	private FeatureClassFilter featureClassFilter;
 
-	private String gmlNameDelimiter;
 	private WaterBodyModule wtr;
 	private boolean useXLink;
 	private boolean appendOldGmlId;
@@ -76,7 +74,6 @@ public class DBWaterBody implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		wtr = config.getProject().getExporter().getModuleVersion().getWaterBody().getModule();
 
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
@@ -96,8 +93,7 @@ public class DBWaterBody implements DBExporter {
 					"ws.LOD2_SURFACE_ID, ws.LOD3_SURFACE_ID, ws.LOD4_SURFACE_ID " +
 			"from WATERBODY wb left join WATERBOD_TO_WATERBND_SRF w2s on wb.ID=w2s.WATERBODY_ID left join WATERBOUNDARY_SURFACE ws on ws.ID=w2s.WATERBOUNDARY_SURFACE_ID where wb.ID=?");
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
-			int srid = targetSRS.getSrid();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psWaterBody = connection.prepareStatement("select wb.NAME as WB_NAME, wb.NAME_CODESPACE as WB_NAME_CODESPACE, wb.DESCRIPTION as WB_DESCRIPTION, wb.CLASS, wb.FUNCTION, wb.USAGE, " +
 					"wb.LOD1_SOLID_ID, wb.LOD2_SOLID_ID, wb.LOD3_SOLID_ID, wb.LOD4_SOLID_ID, wb.LOD0_MULTI_SURFACE_ID, wb.LOD1_MULTI_SURFACE_ID, " +
@@ -136,7 +132,7 @@ public class DBWaterBody implements DBExporter {
 					String gmlName = rs.getString("WB_NAME");
 					String gmlNameCodespace = rs.getString("WB_NAME_CODESPACE");
 
-					Util.dbGmlName2featureName(waterBody, gmlName, gmlNameCodespace, gmlNameDelimiter);
+					Util.dbGmlName2featureName(waterBody, gmlName, gmlNameCodespace);
 
 					String description = rs.getString("WB_DESCRIPTION");
 					if (description != null) {
@@ -308,7 +304,7 @@ public class DBWaterBody implements DBExporter {
 				String gmlName = rs.getString("WS_NAME");
 				String gmlNameCodespace = rs.getString("WS_NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(waterBoundarySurface, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(waterBoundarySurface, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("WS_DESCRIPTION");
 				if (description != null) {

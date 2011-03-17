@@ -18,7 +18,6 @@ import org.citygml4j.model.gml.GeometryProperty;
 import org.citygml4j.model.gml.StringOrRef;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.util.Util;
 
 public class DBBuildingFurniture implements DBExporter {
@@ -32,7 +31,6 @@ public class DBBuildingFurniture implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 
-	private String gmlNameDelimiter;
 	private boolean transformCoords;
 
 	public DBBuildingFurniture(Connection connection, CityGMLFactory cityGMLFactory, Config config, DBExporterManager dbExporterManager) throws SQLException {
@@ -45,17 +43,16 @@ public class DBBuildingFurniture implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
 		transformCoords = config.getInternal().isTransformCoordinates();
 
 		if (!transformCoords) {		
 			psBuildingFurniture = connection.prepareStatement("select * from BUILDING_FURNITURE where ROOM_ID = ?");
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psBuildingFurniture = connection.prepareStatement("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
 					"ROOM_ID, LOD4_GEOMETRY_ID, LOD4_IMPLICIT_REP_ID, " +
-					"geodb_util.transform_or_null(LOD4_IMPLICIT_REF_POINT, " + targetSRS.getSrid() + ") AS LOD4_IMPLICIT_REF_POINT, " +
+					"geodb_util.transform_or_null(LOD4_IMPLICIT_REF_POINT, " + srid + ") AS LOD4_IMPLICIT_REF_POINT, " +
 			"LOD4_IMPLICIT_TRANSFORMATION from BUILDING_FURNITURE where ROOM_ID = ?");
 		}
 
@@ -77,7 +74,7 @@ public class DBBuildingFurniture implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(buildingFurniture, gmlName, gmlNameCodespace, gmlNameDelimiter);
+				Util.dbGmlName2featureName(buildingFurniture, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

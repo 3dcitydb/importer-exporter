@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
 import net.opengis.kml._2.PlacemarkType;
-
 import oracle.ord.im.OrdImage;
 
 import org.collada._2005._11.colladaschema.COLLADA;

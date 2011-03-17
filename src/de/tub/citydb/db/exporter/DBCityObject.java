@@ -39,7 +39,6 @@ import org.citygml4j.model.gml.Envelope;
 import org.citygml4j.util.CityGMLModules;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.filter.ExportFilter;
@@ -86,7 +85,7 @@ public class DBCityObject implements DBExporter {
 
 	private void init() throws SQLException {
 		exportAppearance = config.getProject().getExporter().getAppearances().isSetExportAppearance();
-		gmlSrsName = ReferenceSystem.SAME_AS_IN_DB.getSrsName();
+		gmlSrsName = config.getInternal().getOpenConnection().getMetaData().getSrsName();
 		useInternalBBoxFilter = config.getInternal().isUseInternalBBoxFilter();
 
 		tiling = config.getProject().getExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
@@ -107,11 +106,10 @@ public class DBCityObject implements DBExporter {
 					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID " +
 			"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
-			gmlSrsName = targetSRS.getSrsName();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psCityObject = connection.prepareStatement("select co.GMLID, " +
-					"geodb_util.transform_or_null(co.ENVELOPE, " + targetSRS.getSrid() + ") AS ENVELOPE, " +
+					"geodb_util.transform_or_null(co.ENVELOPE, " + srid + ") AS ENVELOPE, " +
 					"co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
 					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
 					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +

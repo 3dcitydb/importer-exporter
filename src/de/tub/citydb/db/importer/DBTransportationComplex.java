@@ -23,7 +23,6 @@ import org.citygml4j.model.gml.GeometricComplexProperty;
 import org.citygml4j.model.gml.GeometricPrimitiveProperty;
 import org.citygml4j.model.gml.MultiSurfaceProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -34,7 +33,6 @@ public class DBTransportationComplex implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 	
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psTransComplex;
@@ -43,20 +41,16 @@ public class DBTransportationComplex implements DBImporter {
 	private DBTrafficArea trafficAreaImporter;
 	private DBSdoGeometry sdoGeometry;
 	
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
-	public DBTransportationComplex(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBTransportationComplex(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
-	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-		
+	private void init() throws SQLException {		
 		psTransComplex = batchConn.prepareStatement("insert into TRANSPORTATION_COMPLEX (ID, NAME, NAME_CODESPACE, DESCRIPTION, FUNCTION, USAGE, " +
 				"TYPE, LOD1_MULTI_SURFACE_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID, LOD0_NETWORK) values " +
 				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -94,7 +88,7 @@ public class DBTransportationComplex implements DBImporter {
 
 		// gml:name
 		if (transComplex.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(transComplex, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(transComplex);
 
 			psTransComplex.setString(2, dbGmlName[0]);
 			psTransComplex.setString(3, dbGmlName[1]);

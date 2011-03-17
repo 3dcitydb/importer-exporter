@@ -242,13 +242,13 @@ public class Exporter implements EventListener {
 		
 		// set target reference system for export
 		ReferenceSystem targetSRS = config.getProject().getExporter().getTargetSRS();
-		internalConfig.setTransformCoordinates(targetSRS.isSupported() && targetSRS != ReferenceSystem.SAME_AS_IN_DB);
+		internalConfig.setTransformCoordinates(targetSRS.isSupported() && 
+				targetSRS.getSrid() != config.getInternal().getOpenConnection().getMetaData().getSrid());
 		if (internalConfig.isTransformCoordinates()) {
 			internalConfig.setExportTargetSRS(targetSRS);
 			LOG.info("Transforming geometry representation to reference system '" + targetSRS.getDescription() + "' (SRID: " + targetSRS.getSrid() + ").");
 			LOG.warn("Transformation is NOT applied to height reference system.");
-		} else
-			internalConfig.setExportTargetSRS(ReferenceSystem.SAME_AS_IN_DB);
+		}
 
 		// getting export filter
 		exportFilter = new ExportFilter(config, DBUtil.getInstance(dbPool));

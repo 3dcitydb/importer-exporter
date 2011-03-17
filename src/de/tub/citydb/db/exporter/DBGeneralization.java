@@ -20,7 +20,6 @@ import org.citygml4j.model.citygml.core.GeneralizationRelation;
 import org.citygml4j.model.gml.Envelope;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.BoundingBoxFilter;
@@ -64,10 +63,10 @@ public class DBGeneralization implements DBExporter {
 		if (!transformCoords) {	
 			psGeneralization = connection.prepareStatement("select GMLID, CLASS_ID, ENVELOPE from CITYOBJECT where ID=?");
 		} else {
-			ReferenceSystem targetSRS = config.getInternal().getExportTargetSRS();
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psGeneralization = connection.prepareStatement("select GMLID, CLASS_ID, " +
-					"geodb_util.transform_or_null(co.ENVELOPE, " + targetSRS.getSrid() + ") AS ENVELOPE " +
+					"geodb_util.transform_or_null(co.ENVELOPE, " + srid + ") AS ENVELOPE " +
 			"from CITYOBJECT where ID=?");
 		}
 	}

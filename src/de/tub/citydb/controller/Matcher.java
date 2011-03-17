@@ -462,7 +462,6 @@ public class Matcher implements EventListener {
 		int masterLODGeometry = matching.getMasterBuildings().getLodGeometry();
 		int candLODGeometry = matching.getCandidateBuildings().getLodGeometry();					
 		String lineage = mergeConfig.getLineage();
-		String delimiter = config.getInternal().getGmlNameDelimiter();
 
 		int gmlNameModeInt = 0;
 		if (mergeConfig.isGmlNameModeIgnore()) 
@@ -519,7 +518,7 @@ public class Matcher implements EventListener {
 			cstmt = conn.prepareCall("{CALL geodb_merge.create_and_put_container(?, ?, ?)}");
 			cstmt.setInt(1, masterLODGeometry); //master LOD
 			cstmt.setInt(2, gmlNameModeInt); //GmlNameMode
-			cstmt.setString(3, delimiter); //delimiter
+			cstmt.setString(3, Internal.GML_NAME_DELIMITER); //delimiter
 			cstmt.executeUpdate();
 
 			cstmt = conn.prepareCall("{CALL geodb_merge.move_appearance()}");

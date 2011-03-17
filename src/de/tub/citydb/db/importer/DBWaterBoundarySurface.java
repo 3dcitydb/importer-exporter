@@ -10,14 +10,12 @@ import org.citygml4j.model.citygml.waterbody.WaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.WaterSurface;
 import org.citygml4j.model.gml.SurfaceProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
 
 public class DBWaterBoundarySurface implements DBImporter {
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psWaterBoundarySurface;
@@ -25,19 +23,14 @@ public class DBWaterBoundarySurface implements DBImporter {
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBWaterBodToWaterBndSrf bodyToSurfaceImporter;
 	
-	private String gmlNameDelimiter;
-
-	public DBWaterBoundarySurface(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBWaterBoundarySurface(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
-	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-		
+	private void init() throws SQLException {		
 		psWaterBoundarySurface = batchConn.prepareStatement("insert into WATERBOUNDARY_SURFACE (ID, NAME, NAME_CODESPACE, DESCRIPTION, TYPE, WATER_LEVEL, " +
 				"LOD2_SURFACE_ID, LOD3_SURFACE_ID, LOD4_SURFACE_ID) values " +
 				"(?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -61,7 +54,7 @@ public class DBWaterBoundarySurface implements DBImporter {
 
 		// gml:name
     	if (waterBoundarySurface.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(waterBoundarySurface, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(waterBoundarySurface);
 
 			psWaterBoundarySurface.setString(2, dbGmlName[0]);
 			psWaterBoundarySurface.setString(3, dbGmlName[1]);

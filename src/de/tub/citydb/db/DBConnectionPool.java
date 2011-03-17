@@ -10,10 +10,8 @@ import java.util.Properties;
 import oracle.jdbc.pool.OracleConnectionCacheManager;
 import oracle.jdbc.pool.OracleDataSource;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.DBVersioning;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.util.DBUtil;
 
@@ -87,26 +85,7 @@ public class DBConnectionPool {
 
 			// set internal connection info
 			DBUtil dbUtil = DBUtil.getInstance(this);
-			String[] dbInfo = dbUtil.getDatabaseInfo();
-			if (dbInfo != null) {
-				int srid = 0;							
-				try {
-					srid = Integer.valueOf(dbInfo[0]);
-				} catch (NumberFormatException e) {
-					//
-				}
-
-				ReferenceSystem.SAME_AS_IN_DB.setSrid(srid);
-				if (dbInfo[1] != null)
-					ReferenceSystem.SAME_AS_IN_DB.setSrsName(dbInfo[1]);
-				else
-					ReferenceSystem.SAME_AS_IN_DB.setSrsName("urn:ogc:def:crs,crs:EPSG:6.12:3068,crs:EPSG:6.12:5783");
-
-				if (dbInfo[2] != null)
-					dbConnection.setVersioning(DBVersioning.fromValue(dbInfo[2]));
-				else
-					dbConnection.setVersioning(DBVersioning.OFF);
-			}
+			dbConnection.setMetaData(dbUtil.getDatabaseInfo());
 
 			// fire property change events
 			config.getInternal().setOpenConnection(dbConnection);
@@ -209,10 +188,6 @@ public class DBConnectionPool {
 		if (ods != null) {
 			ods.close();
 			ods = null;
-
-			// set internal connection info
-			ReferenceSystem.SAME_AS_IN_DB.setSrid(0);
-			ReferenceSystem.SAME_AS_IN_DB.setSrsName("n/a");
 
 			// fire property change events
 			config.getInternal().unsetOpenConnection();

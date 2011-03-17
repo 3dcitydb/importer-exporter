@@ -15,7 +15,6 @@ import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.GeometryProperty;
 import org.citygml4j.model.gml.MultiCurveProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -23,7 +22,6 @@ import de.tub.citydb.util.Util;
 
 public class DBCityFurniture implements DBImporter {
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psCityFurniture;
@@ -32,20 +30,16 @@ public class DBCityFurniture implements DBImporter {
 	private DBImplicitGeometry implicitGeometryImporter;
 	private DBSdoGeometry sdoGeometry;
 
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
-	public DBCityFurniture(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBCityFurniture(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-
 		psCityFurniture = batchConn.prepareStatement("insert into CITY_FURNITURE (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, " +
 				"LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, " +
 				"LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID, " +
@@ -85,7 +79,7 @@ public class DBCityFurniture implements DBImporter {
 
 		// gml:name
 		if (cityFurniture.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(cityFurniture, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(cityFurniture);
 
 			psCityFurniture.setString(2, dbGmlName[0]);
 			psCityFurniture.setString(3, dbGmlName[1]);

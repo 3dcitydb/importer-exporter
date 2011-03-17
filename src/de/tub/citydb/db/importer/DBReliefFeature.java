@@ -9,7 +9,6 @@ import org.citygml4j.model.citygml.relief.ReliefComponent;
 import org.citygml4j.model.citygml.relief.ReliefComponentProperty;
 import org.citygml4j.model.citygml.relief.ReliefFeature;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -20,27 +19,22 @@ public class DBReliefFeature implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 	
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psReliefFeature;
 	private DBCityObject cityObjectImporter;
 	private DBReliefComponent reliefComponentImporter;
 	
-	private String gmlNameDelimiter;
 	private int batchCounter;
 
-	public DBReliefFeature(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBReliefFeature(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 	
 	private void init() throws SQLException {
-		gmlNameDelimiter = config.getInternal().getGmlNameDelimiter();
-
 		psReliefFeature = batchConn.prepareStatement("insert into RELIEF_FEATURE (ID, NAME, NAME_CODESPACE, DESCRIPTION, LOD) values " +
 				"(?, ?, ?, ?, ?)");
 
@@ -75,7 +69,7 @@ public class DBReliefFeature implements DBImporter {
 
 		// gml:name
 		if (reliefFeature.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(reliefFeature, gmlNameDelimiter);
+			String[] dbGmlName = Util.gmlName2dbString(reliefFeature);
 
 			psReliefFeature.setString(2, dbGmlName[0]);
 			psReliefFeature.setString(3, dbGmlName[1]);

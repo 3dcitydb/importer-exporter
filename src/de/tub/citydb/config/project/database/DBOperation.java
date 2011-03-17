@@ -3,6 +3,7 @@ package de.tub.citydb.config.project.database;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.general.FeatureClassMode;
 
 @XmlType(name="DBOperationType", propOrder={
@@ -14,7 +15,7 @@ public class DBOperation {
 	private DBOperationMode execute = DBOperationMode.REPORT;
 	private FeatureClassMode boundingBoxFeatureClass = FeatureClassMode.CITYOBJECT;
 	@XmlIDREF
-	private ReferenceSystem boundingBoxSrs = ReferenceSystem.SAME_AS_IN_DB;
+	private ReferenceSystem boundingBoxSrs = Internal.DEFAULT_DB_REF_SYS;
 	
 	public DBOperation() {
 	}
