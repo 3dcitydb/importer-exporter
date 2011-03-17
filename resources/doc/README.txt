@@ -34,7 +34,7 @@ the files COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
 (c) 2007 - 2011
 Institute for Geodesy and Geoinformation Science (IGG)
 Technische Universitaet Berlin, Germany
-http://www.igg.tu-berlin.de/
+!vendor.homepage!
 
 
 3. About
@@ -159,7 +159,7 @@ financially supported by the following cooperation partners:
   (http://www.businesslocationcenter.de)
 * virtualcitySYSTEMS GmbH, Berlin
   (www.virtualcitysystems.de)
-* Berliner Senatsverwaltung fuer Wirtschaft, Technologie und Frauen
+* Berlin Senate of Business, Technology and Women
   (http://www.berlin.de/sen/wtf/)
   
    
@@ -184,10 +184,10 @@ javier.herreruela@tu-berlin.de
 -----------
 
 Official !app.title! website: 
-http://www.igg.tu-berlin.de/software
+!app.homepage!
 
 Related websites:
-http://www.igg.tu-berlin.de/
+!vendor.homepage!
 http://www.citygml.org/
 http://www.citygmlwiki.org/
 http://www.opengeospatial.org/standards/citygml

@@ -11,7 +11,7 @@
             <author name="Gerhard Koenig" email="gerhard.koenig@tu-berlin.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tu-berlin.de"/>
         </authors>
-        <url>http://www.igg.tu-berlin.de/software</url>
+        <url>!app.homepage!</url>
         <uninstaller write="yes" path="$INSTALL_PATH/uninstaller"/>
         <javaversion>1.6</javaversion>
         <writeinstallationinformation>no</writeinstallationinformation>

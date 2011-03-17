@@ -6,7 +6,9 @@
 	<property name="app.version" value="1.3" />
 	<property name="app.jar" value="${app.name}.jar" />
 	<property name="app.title" value="3D City Database Importer/Exporter" />
-	<property name="app.vendor" value="IGG, Technical University Berlin, Germany, http://www.igg.tu-berlin.de" />
+	<property name="app.homepage" value="http://www.gis.tu-berlin.de/software"/>
+	<property name="vendor.homepage" value="http://www.gis.tu-berlin.de/"/>
+	<property name="app.vendor" value="IGG, Technical University Berlin, Germany, ${vendor.homepage}" />
 	<property name="app.class" value="de.tub.citydb.ImpExp" />
 
 	<!-- 3DCityDB version -->
@@ -115,6 +117,8 @@
 		<replace file="${dist}/README.txt" token="!app.title!" value="${app.title}" />
 		<replace file="${dist}/README.txt" token="!app.jar!" value="${app.jar}" />
 		<replace file="${dist}/README.txt" token="!app.version!" value="${app.version}" />
+		<replace file="${dist}/README.txt" token="!app.homepage!" value="${app.homepage}" />
+		<replace file="${dist}/README.txt" token="!vendor.homepage!" value="${vendor.homepage}" />
 
 		<!-- set package variables -->
 		<pathconvert property="manifest.classpath" dirsep="/" pathsep=" " refid="classpath">
@@ -158,6 +162,7 @@
 		<copy file="${resources.izpack}/izpack-install-template.xml" tofile="${resources.izpack}/izpack-install.xml" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!app.title!" value="${app.title}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!app.version!" value="${app.version}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!app.homepage!" value="${app.homepage}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!izpack.shortcut.name!" value="${izpack.shortcut.name}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!izpack.setup.folder!" value="${izpack.setup.folder}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!resources.izpack.config!" value="${resources.izpack.config}" />
