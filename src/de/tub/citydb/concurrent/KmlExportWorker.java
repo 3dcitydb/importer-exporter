@@ -654,7 +654,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
-			boolean ignoreTextureInSurfaceMembers = false;
 			PreparedStatement psQuery = null;
 			OracleResultSet rs2 = null;
 			try {
@@ -677,7 +676,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						if (selectedTheme.equalsIgnoreCase(theme)) {
 							// x3dMaterial will only added if not all x3dMaterial members are null
 							currentBuilding.addX3dMaterial(surfaceId, x3dMaterial);
-//							ignoreTextureInSurfaceMembers = (currentBuilding.getX3dMaterial(surfaceId) != null);
 						}
 						continue; 
 					}
@@ -688,12 +686,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					String texImageUri = null;
 					OrdImage texImage = null;
 					StringTokenizer texCoordsTokenized = null;
-					if (ignoreTextureInSurfaceMembers) {
+					if (!selectedTheme.equalsIgnoreCase(theme) && // no surface data for this surface and theme
+							currentBuilding.getX3dMaterial(parentId) != null) { // material for parent surface known
 						currentBuilding.addX3dMaterial(surfaceId, currentBuilding.getX3dMaterial(parentId));
 					}
 					else {
 						// x3dMaterial will only added if not all x3dMaterial members are null
-						currentBuilding.addX3dMaterial(surfaceId, x3dMaterial);
+//						currentBuilding.addX3dMaterial(surfaceId, x3dMaterial);
 						texImageUri = rs2.getString("tex_image_uri");
 						texImage = (OrdImage)rs2.getORAData("tex_image", OrdImage.getORADataFactory());
 						String texCoords = rs2.getString("texture_coordinates");
