@@ -156,11 +156,11 @@ The development of the !app.title! has been
 financially supported by the following cooperation partners:
 
 * Business Location Center, Berlin 
-  (http://www.businesslocationcenter.de)
+  http://www.businesslocationcenter.de/
 * virtualcitySYSTEMS GmbH, Berlin
-  (www.virtualcitysystems.de)
+  http://www.virtualcitysystems.de/
 * Berlin Senate of Business, Technology and Women
-  (http://www.berlin.de/sen/wtf/)
+  http://www.berlin.de/sen/wtf/
   
    
 8. Developers

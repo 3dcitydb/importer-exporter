@@ -7,16 +7,21 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
+import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class MenuHelp extends JMenu {
+	private final Config config;
+	private final ImpExpGui topFrame;
 	private JMenuItem info;
 	private JMenuItem readMe;
 	
-	public MenuHelp() {
+	public MenuHelp(Config config, ImpExpGui topFrame) {
+		this.config = config;
+		this.topFrame = topFrame;
 		init();
 	}
 	
@@ -41,15 +46,15 @@ public class MenuHelp extends JMenu {
 	}
 	
 	public void doTranslation() {
-		info.setText(Internal.I18N.getString("menu.file.info.label"));		
-		readMe.setText(Internal.I18N.getString("menu.file.readMe.label"));
+		info.setText(Internal.I18N.getString("menu.help.info.label"));		
+		readMe.setText(Internal.I18N.getString("menu.help.readMe.label"));
 		
-		GuiUtil.setMnemonic(info, "menu.file.info.label", "menu.file.info.label.mnemonic");
-		GuiUtil.setMnemonic(readMe, "menu.file.readMe.label", "menu.file.readMe.label.mnemonic");
+		GuiUtil.setMnemonic(info, "menu.help.info.label", "menu.help.info.label.mnemonic");
+		GuiUtil.setMnemonic(readMe, "menu.help.readMe.label", "menu.help.readMe.label.mnemonic");
 	}
 	
 	private void printHelp() {		
-		final InfoDialog infoDialog = new InfoDialog((ImpExpGui)getTopLevelAncestor());
+		final InfoDialog infoDialog = new InfoDialog(config, topFrame);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				infoDialog.setLocationRelativeTo(getTopLevelAncestor());
@@ -59,7 +64,7 @@ public class MenuHelp extends JMenu {
 	}
 	
 	private void printReadMe() {		
-		final ReadMeDialog readMeDialog = new ReadMeDialog((ImpExpGui)getTopLevelAncestor());
+		final ReadMeDialog readMeDialog = new ReadMeDialog(topFrame);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				readMeDialog.setLocationRelativeTo(getTopLevelAncestor());

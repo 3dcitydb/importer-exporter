@@ -30,7 +30,7 @@ public class MenuBar extends JMenuBar {
 		file = new MenuFile();
 		project = new MenuProject(config, ctx, topFrame);
 		window = new MenuWindow(config, topFrame);
-		help = new MenuHelp();
+		help = new MenuHelp(config, topFrame);
 		
 		add(file);
 		add(project);

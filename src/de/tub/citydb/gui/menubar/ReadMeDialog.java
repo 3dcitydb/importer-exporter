@@ -9,7 +9,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 
 import javax.swing.BorderFactory;
@@ -29,7 +28,7 @@ import de.tub.citydb.gui.util.GuiUtil;
 public class ReadMeDialog extends JDialog {
 
 	public ReadMeDialog(JFrame frame) {
-		super(frame, Internal.I18N.getString("menu.file.readMe.label"), true);
+		super(frame, Internal.I18N.getString("menu.help.readMe.label"), true);
 		initGUI();
 	}
 
@@ -42,7 +41,7 @@ public class ReadMeDialog extends JDialog {
 			add(main, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 			main.setLayout(new GridBagLayout());
 			{
-				JLabel readMeHeader = new JLabel(Internal.I18N.getString("menu.file.readMe.information"));
+				JLabel readMeHeader = new JLabel(Internal.I18N.getString("menu.help.readMe.information"));
 				main.add(readMeHeader, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,10,2,2,5));
 
 				JTextArea readMe = new JTextArea();
@@ -65,9 +64,9 @@ public class ReadMeDialog extends JDialog {
 
 					readMe.setText(builder.toString());					
 
-				} catch (IOException e) {
-					readMe.setText("The README file could not be found.\n\n" + "" +
-							"Please refer to the README file provided with the installation package.\n\n");
+				} catch (Exception e) {
+					readMe.setText("The README.txt file could not be found.\n\n" + "" +
+							"Please refer to the README.txt file provided with the installation package.\n\n");
 				}
 
 				readMe.setCaretPosition(0);
