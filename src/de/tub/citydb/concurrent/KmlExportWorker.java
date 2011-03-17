@@ -282,7 +282,27 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 			rs = (OracleResultSet)psQuery.executeQuery();
 
-			if (rs.isBeforeFirst()) { // result not empty
+			if (!rs.isBeforeFirst()) { // result empty, try alternative query
+				psQuery = connection.prepareStatement(
+						TileQueries.getSingleBuildingQueryAlt(config.getProject().getKmlExporter().getLodToExportFrom(), work.getDisplayLevel()),
+						// work-around for JDBC problem with rs.getDouble() and ResultSet.TYPE_SCROLL_INSENSITIVE
+						work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED ? ResultSet.TYPE_FORWARD_ONLY: ResultSet.TYPE_SCROLL_INSENSITIVE,
+						ResultSet.CONCUR_READ_ONLY);
+
+				for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
+					psQuery.setString(i, work.getGmlId());
+				}
+				rs = (OracleResultSet)psQuery.executeQuery();
+			}
+			
+			if (!rs.isBeforeFirst()) { // result empty, give up
+				if (config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
+					// only for single building exports, tiles would fill the whole textarea
+					Logger.getInstance().info("No info found for object " + work.getGmlId() 
+											  + " to display as " + work.getDisplayLevel().getName() + ".");
+				}
+			}
+			else { // result not empty
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1));
 
 				switch (work.getDisplayLevel().getLevel()) {
@@ -356,13 +376,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						buildingGroupCounter = 0;
 					}
 					break;
-				}
-			}
-			else {
-				if (config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
-					// only for single building exports, tiles would fill the whole textarea
-					Logger.getInstance().info("No info found for object " + work.getGmlId() 
-											  + " to display as " + work.getDisplayLevel().getName() + ".");
 				}
 			}
 		}

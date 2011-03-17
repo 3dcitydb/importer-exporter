@@ -697,18 +697,19 @@ public class Building {
 
     public VertexInfo getVertexInfoBestFitForXYZ(double x, double y, double z, long surfaceId) {
 		VertexInfo result = null;
-    	double distance = Double.MAX_VALUE;
 		VertexInfo vertexInfoIterator = firstVertexInfo;
-		while (vertexInfoIterator != null) {
-			if (vertexInfoIterator.getTexCoords(surfaceId) != null) {
-				double currentDistance = Math.sqrt(Math.pow(x - vertexInfoIterator.getX(), 2) + 
-									 	 		   Math.pow(y - vertexInfoIterator.getY(), 2) +
-									 	 		   Math.pow(z - vertexInfoIterator.getZ(), 2));
-				if (currentDistance < distance) {
-					distance = currentDistance;
-					result = vertexInfoIterator;
-				}
-			}
+    	double distancePow2 = Double.MAX_VALUE;
+    	double currentDistancePow2;
+    	while (vertexInfoIterator != null) {
+    		if (vertexInfoIterator.getTexCoords(surfaceId) != null) {
+    			currentDistancePow2 = Math.pow(x - vertexInfoIterator.getX(), 2) + 
+    								  Math.pow(y - vertexInfoIterator.getY(), 2) +
+    								  Math.pow(z - vertexInfoIterator.getZ(), 2);
+    			if (currentDistancePow2 < distancePow2) {
+    				distancePow2 = currentDistancePow2;
+    				result = vertexInfoIterator;
+    			}
+    		}
 			vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
 		}
 		if (result == null) {
@@ -719,14 +720,15 @@ public class Building {
 
     public VertexInfo getVertexInfoBestFitForXYZ(double x, double y, double z) {
 		VertexInfo result = null;
-    	double distance = Double.MAX_VALUE;
 		VertexInfo vertexInfoIterator = firstVertexInfo;
+    	double distancePow2 = Double.MAX_VALUE;
+    	double currentDistancePow2;
 		while (vertexInfoIterator != null) {
-			double currentDistance = Math.sqrt(Math.pow(x - vertexInfoIterator.getX(), 2) + 
-								 	 		   Math.pow(y - vertexInfoIterator.getY(), 2) +
-								 	 		   Math.pow(z - vertexInfoIterator.getZ(), 2));
-			if (currentDistance < distance) {
-				distance = currentDistance;
+			currentDistancePow2 = Math.pow(x - vertexInfoIterator.getX(), 2) + 
+								  Math.pow(y - vertexInfoIterator.getY(), 2) +
+								  Math.pow(z - vertexInfoIterator.getZ(), 2);
+			if (currentDistancePow2 < distancePow2) {
+				distancePow2 = currentDistancePow2;
 				result = vertexInfoIterator;
 			}
 			vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();

@@ -57,7 +57,7 @@ public class TileQueries {
 
 	private static final String QUERY_GEOMETRY_LOD4_GET_BUILDING_DATA_ALT =
 		"SELECT sg.geometry, ts.type " +
-		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg " +
+		"FROM BUILDING b, SURFACE_GEOMETRY sg, CITYOBJECT co " +
 			"LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = co.id " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -140,7 +140,7 @@ public class TileQueries {
 
 	private static final String QUERY_GEOMETRY_LOD3_GET_BUILDING_DATA_ALT =
 		"SELECT sg.geometry, ts.type " +
-		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg " +
+		"FROM BUILDING b, SURFACE_GEOMETRY sg, CITYOBJECT co " +
 			"LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = co.id " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -206,7 +206,7 @@ public class TileQueries {
 
 	private static final String QUERY_GEOMETRY_LOD2_GET_BUILDING_DATA_ALT =
 		"SELECT sg.geometry, ts.type " +
-		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg " +
+		"FROM BUILDING b, SURFACE_GEOMETRY sg, CITYOBJECT co " +
 			"LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = co.id " +
 		"WHERE " +
 			"co.gmlid = ? " +
