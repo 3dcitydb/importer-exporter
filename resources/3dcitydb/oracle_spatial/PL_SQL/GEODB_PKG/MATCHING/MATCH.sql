@@ -422,8 +422,12 @@ AS
   return mdsys.sdo_geometry
   is
     aggr_mbr mdsys.sdo_geometry;
+    srid number;
   begin
+    execute immediate 'select srid from database_srs' into srid;
     execute immediate 'select sdo_aggr_mbr(geometry) from '||table_name||'' into aggr_mbr;
+    aggr_mbr.sdo_srid := srid;
+    
     return aggr_mbr;
   exception
     when others then 
@@ -509,7 +513,7 @@ AS
   
     -- Construct and prepare the output geometry
     geom_2d := mdsys.sdo_geometry (
-                2000+gtype, geom.sdo_srid, geom.sdo_point,
+                2000+gtype, null, geom.sdo_point,
                 mdsys.sdo_elem_info_array (), mdsys.sdo_ordinate_array()
                 );
   

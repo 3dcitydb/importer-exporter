@@ -32,15 +32,16 @@ CREATE OR REPLACE TYPE INDEX_OBJ AS OBJECT
    table_name 				VARCHAR2(100),
    attribute_name 		VARCHAR2(100),
    type       				NUMBER(1),
+   srid               NUMBER,
    is_3d 							NUMBER(1, 0),
      STATIC function construct_spatial_3d
-     (index_name VARCHAR2, table_name VARCHAR2, attribute_name VARCHAR2)
+     (index_name VARCHAR2, table_name VARCHAR2, attribute_name VARCHAR2, srid NUMBER := 0)
      RETURN INDEX_OBJ,
      STATIC function construct_spatial_2d
-     (index_name VARCHAR2, table_name VARCHAR2, attribute_name VARCHAR2)
+     (index_name VARCHAR2, table_name VARCHAR2, attribute_name VARCHAR2, srid NUMBER := 0)
      RETURN INDEX_OBJ,
      STATIC function construct_normal
-     (index_name VARCHAR2, table_name VARCHAR2, attribute_name VARCHAR2)
+     (index_name VARCHAR2, table_name VARCHAR2, attribute_name VARCHAR2, srid NUMBER := 0)
      RETURN INDEX_OBJ
   );
 /
@@ -52,22 +53,22 @@ CREATE OR REPLACE TYPE INDEX_OBJ AS OBJECT
 ******************************************************************/
 CREATE OR REPLACE TYPE BODY INDEX_OBJ IS
   STATIC FUNCTION construct_spatial_3d
-  (index_name VARCHAR2, table_name VARCHAR2, attribute_name VARCHAR2)
+  (index_name VARCHAR2, table_name VARCHAR2, attribute_name VARCHAR2, srid NUMBER := 0)
   RETURN INDEX_OBJ IS
   BEGIN
-    return INDEX_OBJ(upper(index_name), upper(table_name), upper(attribute_name), 1, 1);
+    return INDEX_OBJ(upper(index_name), upper(table_name), upper(attribute_name), 1, srid, 1);
   END;
   STATIC FUNCTION construct_spatial_2d
-  (index_name VARCHAR2, table_name VARCHAR2, attribute_name VARCHAR2)
+  (index_name VARCHAR2, table_name VARCHAR2, attribute_name VARCHAR2, srid NUMBER := 0)
   RETURN INDEX_OBJ IS
   BEGIN
-    return INDEX_OBJ(upper(index_name), upper(table_name), upper(attribute_name), 1, 0);
+    return INDEX_OBJ(upper(index_name), upper(table_name), upper(attribute_name), 1, srid, 0);
   END;
   STATIC FUNCTION construct_normal
-  (index_name VARCHAR2, table_name VARCHAR2, attribute_name VARCHAR2)
+  (index_name VARCHAR2, table_name VARCHAR2, attribute_name VARCHAR2, srid NUMBER := 0)
   RETURN INDEX_OBJ IS
   BEGIN
-    return INDEX_OBJ(upper(index_name), upper(table_name), upper(attribute_name), 0, 0);
+    return INDEX_OBJ(upper(index_name), upper(table_name), upper(attribute_name), 0, srid, 0);
   END;
 END;
 /
@@ -186,7 +187,12 @@ AS
     END IF;    
   
     execute immediate 'DELETE FROM USER_SDO_GEOM_METADATA WHERE TABLE_NAME=:1 AND COLUMN_NAME=:2' using table_name, idx.attribute_name;
-    execute immediate 'select SRID from DATABASE_SRS' into srid; 
+    
+    if idx.srid = 0 then
+      execute immediate 'select SRID from DATABASE_SRS' into srid;
+    else
+      srid := idx.srid;
+    end if;
     
     IF idx.is_3d = 0 THEN
       execute immediate 'INSERT INTO USER_SDO_GEOM_METADATA (TABLE_NAME, COLUMN_NAME, DIMINFO, SRID)

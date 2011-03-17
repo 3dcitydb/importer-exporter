@@ -112,11 +112,11 @@ The development of the 3D City Database version 2.0.5 has been
 financially supported by the following cooperation partners:
 
 * Business Location Center, Berlin 
-  (http://www.businesslocationcenter.de)
+  http://www.businesslocationcenter.de/
 * virtualcitySYSTEMS GmbH, Berlin
-  (www.virtualcitysystems.de)
-* Berliner Senatsverwaltung fuer Wirtschaft, Technologie und Frauen
-  (http://www.berlin.de/sen/wtf/)
+  http://www.virtualcitysystems.de/
+* Berlin Senate of Business, Technology and Women
+  http://www.berlin.de/sen/wtf/
 
   
 9. Developers
