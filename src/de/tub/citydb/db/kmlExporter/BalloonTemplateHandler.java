@@ -417,7 +417,7 @@ public class BalloonTemplateHandler {
 		}
 	}
 	
-	public String getBalloonContent(String template, String gmlId) {
+	public String getBalloonContent(String template, String gmlId, int lod) {
 		String balloonContent = "";
 		List<BalloonStatement> statementListBackup = statementList;
 		List<String> htmlChunkListBackup = htmlChunkList;
@@ -425,7 +425,7 @@ public class BalloonTemplateHandler {
 		htmlChunkList = new ArrayList<String>();
 		try {
 			fillStatementAndHtmlChunkList(template);
-			balloonContent = getBalloonContent(gmlId);
+			balloonContent = getBalloonContent(gmlId, lod);
 		}
 		catch (Exception e) {
 			Logger.getInstance().warn("Following message applies to generic attribute 'Balloon_Content' for cityobject with gmlid = " + gmlId);
@@ -436,13 +436,13 @@ public class BalloonTemplateHandler {
 		return balloonContent;
 	}
 
-	public String getBalloonContent(String gmlId) {
+	public String getBalloonContent(String gmlId, int lod) {
 		StringBuffer balloonContent = new StringBuffer();
 		
 		if (statementList != null) {
 			List<String> resultList = new ArrayList<String>();
 			for (BalloonStatement statement: statementList) {
-				resultList.add(executeStatement(statement, gmlId));
+				resultList.add(executeStatement(statement, gmlId, lod));
 			}
 
 			Iterator<String> htmlChunkIterator = htmlChunkList.iterator();
@@ -458,14 +458,14 @@ public class BalloonTemplateHandler {
 		return balloonContent.toString();
 	}
 	
-	private String executeStatement(BalloonStatement statement, String gmlId) {
+	private String executeStatement(BalloonStatement statement, String gmlId, int lod) {
 		String result = "";
 		if (statement != null) {
 			PreparedStatement preparedStatement = null;
 			OracleResultSet rs = null;
 			try {
 				if (statement.isForeach()) {
-					return executeForeachStatement(statement, gmlId);
+					return executeForeachStatement(statement, gmlId, lod);
 				}
 
 				if (statement.isNested()) {
@@ -507,7 +507,7 @@ public class BalloonTemplateHandler {
 					if (nestedStatementList != null) {
 						List<String> resultList = new ArrayList<String>();
 						for (BalloonStatement nestedStatement: nestedStatementList) {
-							resultList.add(executeStatement(nestedStatement, gmlId));
+							resultList.add(executeStatement(nestedStatement, gmlId, lod));
 						}
 
 						Iterator<String> textIterator = textBetweenNestedStatements.iterator();
@@ -522,14 +522,14 @@ public class BalloonTemplateHandler {
 					}
 
 					BalloonStatement dummy = new BalloonStatement(notNestedAnymore.toString());
-					preparedStatement = connection.prepareStatement(dummy.getProperSQLStatement());
+					preparedStatement = connection.prepareStatement(dummy.getProperSQLStatement(lod));
 				}
 				else { // not nested
-					if (statement.getProperSQLStatement() == null) {
+					if (statement.getProperSQLStatement(lod) == null) {
 						// malformed expression between proper START_TAG and END_TAG
 						return result; // skip db call, rs and preparedStatement are currently null
 					}
-					preparedStatement = connection.prepareStatement(statement.getProperSQLStatement());
+					preparedStatement = connection.prepareStatement(statement.getProperSQLStatement(lod));
 				}
 
 				for (int i = 1; i <= preparedStatement.getParameterMetaData().getParameterCount(); i++) {
@@ -583,13 +583,13 @@ public class BalloonTemplateHandler {
 		return result;
 	}
 
-	private String executeForeachStatement(BalloonStatement statement, String gmlId) {
+	private String executeForeachStatement(BalloonStatement statement, String gmlId, int lod) {
 		String resultBody = "";
 		PreparedStatement preparedStatement = null;
 		OracleResultSet rs = null;
 		try {
-			if (statement != null && statement.getProperSQLStatement() != null) {
-				preparedStatement = connection.prepareStatement(statement.getProperSQLStatement());
+			if (statement != null && statement.getProperSQLStatement(lod) != null) {
+				preparedStatement = connection.prepareStatement(statement.getProperSQLStatement(lod));
 				for (int i = 1; i <= preparedStatement.getParameterMetaData().getParameterCount(); i++) {
 					preparedStatement.setString(i, gmlId);
 				}
@@ -741,9 +741,9 @@ public class BalloonTemplateHandler {
 			this.properSQLStatement = properSQLStatement;
 		}
 
-		public String getProperSQLStatement() throws Exception {
+		public String getProperSQLStatement(int lod) throws Exception {
 			if (!conversionTried && properSQLStatement == null) {
-				this.convertStatementToProperSQL();
+				this.convertStatementToProperSQL(lod);
 				conversionTried = true;
 			}
 			return properSQLStatement;
@@ -773,7 +773,7 @@ public class BalloonTemplateHandler {
 			this.columnAmount = columnAmount;
 		}
 		
-		private void convertStatementToProperSQL() throws Exception {
+		private void convertStatementToProperSQL(int lod) throws Exception {
 			String sqlStatement = null;
 			String table = null;
 			String aggregateFunction = null;
@@ -1027,13 +1027,17 @@ public class BalloonTemplateHandler {
 							   " FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY " + tableShortId +
 							   " WHERE co.gmlid = ?" +
 							   " AND b.id = co.id" +
-							   " AND sg.root_id = b.lod2_geometry_id" +
+							   " AND sg.root_id = b.lod" + lod + "_geometry_id";
+				if (lod > 1) {
+					sqlStatement = sqlStatement +
 							   " UNION " +
 							   "SELECT sg.id" +
 							   " FROM CITYOBJECT co, THEMATIC_SURFACE ts, SURFACE_GEOMETRY " + tableShortId +
 							   " WHERE co.gmlid = ?" +
 							   " AND ts.building_id = co.id " + 
-							   " AND sg.root_id = ts.lod2_multi_surface_id)";
+							   " AND sg.root_id = ts.lod" + lod + "_multi_surface_id";
+				}
+				sqlStatement = sqlStatement + ")";
 			}
 			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "tp";
@@ -1044,13 +1048,17 @@ public class BalloonTemplateHandler {
 						   	   " FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg" + 
 						   	   " WHERE co.gmlid = ?" +
 						   	   " AND b.id = co.id" +
-						   	   " AND sg.root_id = b.lod2_geometry_id" +
-						   	   " UNION " +
+						   	   " AND sg.root_id = b.lod" + lod + "_geometry_id";
+				if (lod > 1) {
+					sqlStatement = sqlStatement +
+							   " UNION " +
 						   	   "SELECT sg.id" + 
 						   	   " FROM CITYOBJECT co, THEMATIC_SURFACE ts, SURFACE_GEOMETRY sg" +
 						   	   " WHERE co.gmlid = ?" +
 						   	   " AND ts.building_id = co.id " + 
-						   	   " AND sg.root_id = ts.lod2_multi_surface_id)";
+						   	   " AND sg.root_id = ts.lod" + lod + "_multi_surface_id";
+				}
+				sqlStatement = sqlStatement + ")";
 			}
 			else if (THEMATIC_SURFACE_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "ts";

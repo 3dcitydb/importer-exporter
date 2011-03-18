@@ -656,7 +656,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 
 			if (surfaceType == null) {
-				String likelySurfaceType = probablyRoof ? CityGMLClass.ROOFSURFACE.toString() : CityGMLClass.WALLSURFACE.toString();
+				String likelySurfaceType = (probablyRoof && config.getProject().getKmlExporter().getLodToExportFrom() < 3) ?
+										   CityGMLClass.ROOFSURFACE.toString() :
+										   CityGMLClass.WALLSURFACE.toString();
 //				placemark.setName(gmlId + "_" + likelySurfaceType);
 				placemark.setName(gmlId);
 				placemark.setId(DisplayLevel.GEOMETRY_PLACEMARK_ID + placemark.getName() + "_" + likelySurfaceType);
@@ -1051,22 +1053,23 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	}
 
 	private void addBalloonContents(PlacemarkType placemark, String gmlId) {
+		int lod = config.getProject().getKmlExporter().getLodToExportFrom();
 		switch (config.getProject().getKmlExporter().getBalloonContentMode()) {
 		case GEN_ATTRIB:
 			String balloonTemplate = getBalloonContentGenericAttribute(gmlId);
 			if (balloonTemplate != null) {
-				placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId));
+				placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, lod));
 			}
 			break;
 		case GEN_ATTRIB_AND_FILE:
 			balloonTemplate = getBalloonContentGenericAttribute(gmlId);
 			if (balloonTemplate != null) {
-				placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId));
+				placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, lod));
 				break;
 			}
 		case FILE :
 			if (balloonTemplateHandler != null) {
-				placemark.setDescription(balloonTemplateHandler.getBalloonContent(gmlId));
+				placemark.setDescription(balloonTemplateHandler.getBalloonContent(gmlId, lod));
 			}
 			break;
 		}
@@ -1161,7 +1164,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		double zOffset = 0;
 		
 		if (config.getProject().getKmlExporter().isCallGElevationService()) { // allowed to query
-			double lowestElevation = Double.MAX_VALUE;
 			PreparedStatement insertQuery = null;
 			OracleResultSet rs = null;
 			try {
