@@ -203,10 +203,10 @@ AS
       select b.id, b.building_parent_id parent_id, b.building_root_id root_id, b.lod'||to_char(lod)||'_geometry_id geometry_id
         from building b, cityobject c
         where c.id = b.id
-              and c.lineage <> :1
-              and sdo_filter(c.envelope, :2) = ''TRUE''' 
-      using lineage,
-            aggregate_mbr(CAND_GEOMETRY_TABLE);
+              and sdo_filter(c.envelope, :2) = ''TRUE''
+              and (c.lineage <> :1 or c.lineage is null)' 
+      using aggregate_mbr(CAND_GEOMETRY_TABLE),
+            lineage;
   end;
   
   procedure collect_geometry(lod number)
