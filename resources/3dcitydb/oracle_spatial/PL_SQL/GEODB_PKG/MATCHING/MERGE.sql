@@ -4,7 +4,7 @@
 --              Claus Nagel <claus.nagel@tu-berlin.de>
 --
 -- Copyright:   (c) 2007-2011  Institute for Geodesy and Geoinformation Science,
---                             Technische Universität Berlin, Germany
+--                             Technische Universitï¿½t Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -141,7 +141,7 @@ AS
                 and b.building_root_id = m.id1
                 and r.lod4_geometry_id is not null';
   
-      -- building furniture (in rooms) --bei lod r in f geändert
+      -- building furniture (in rooms) --bei lod r in f geï¿½ndert
       execute immediate 'insert all /*+ append nologging */ into merge_collect_geom
         select b.building_root_id, f.lod4_geometry_id, f.id
           from match_overlap_relevant m, room r, building b, building_furniture f
@@ -236,7 +236,7 @@ AS
         (select b.id from match_overlap_relevant m, building b
         where b.building_root_id = m.id1)';
   
-      -- building furniture (in rooms) --bei lod r in f geändert
+      -- building furniture (in rooms) --bei lod r in f geï¿½ndert
       execute immediate 'update building_furniture f
       set f.lod4_geometry_id = null
       where f.room_id in
@@ -372,13 +372,15 @@ AS
     for building_rec in building_cur loop
       declare
         cursor app_cur is
-          select a.*, sd.id as sd_id, tp.surface_geometry_id as geometry_id, cg.geometry_id as hierarchy_id
-            from appearance a, appear_to_surface_data asd, surface_data sd, textureparam tp, merge_collect_geom cg
-            where a.id=asd.appearance_id
+          select a.id, a.theme, a.description, a.cityobject_id, sd.id as sd_id, tp.surface_geometry_id as geometry_id, cg.geometry_id as hierarchy_id
+            from merge_collect_geom cg, surface_geometry sg, textureparam tp, surface_data sd, appear_to_surface_data asd, appearance a 
+            where cg.building_id=building_rec.building_id
+            and sg.root_id=cg.geometry_id
+            and tp.surface_geometry_id=sg.id
+            and sd.id=tp.surface_data_id            
             and asd.surface_data_id=sd.id  
-            and sd.id=tp.surface_data_id
-            and tp.surface_geometry_id in (select id from surface_geometry where root_id=cg.geometry_id)
-            and cg.building_id=building_rec.building_id order by a.id;
+            and a.id=asd.appearance_id
+            order by a.id;
       begin
         app_id := -1;
         app_is_global := 0;
@@ -559,7 +561,7 @@ AS
           and b.building_root_id = m.id1)'
       using lineage;
   
-      -- building furniture (in rooms) --bei lod r in f geändert
+      -- building furniture (in rooms) --bei lod r in f geï¿½ndert
       execute immediate 'update cityobject c
       set c.lineage = :1
       where c.id in (select f.id from building_furniture f, match_overlap_relevant m, room r, building b
