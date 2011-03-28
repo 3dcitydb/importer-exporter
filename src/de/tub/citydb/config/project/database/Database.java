@@ -43,6 +43,7 @@ import javax.xml.bind.annotation.XmlType;
 		"activeConnection",
 		"updateBatching",
 		"workspaces",
+		"indexes",
 		"operation"
 })
 public class Database {
@@ -56,6 +57,7 @@ public class Database {
 	private UpdateBatching updateBatching;
 	@XmlElement(required=true)
 	private Workspaces workspaces;
+	private Index indexes;
 	private DBOperation operation;
 	
 	public Database() {
@@ -63,6 +65,7 @@ public class Database {
 		connections = new ArrayList<DBConnection>();
 		updateBatching = new UpdateBatching();
 		workspaces = new Workspaces();
+		indexes = new Index();
 		operation = new DBOperation();
 	}
 
@@ -116,6 +119,15 @@ public class Database {
 	public void setWorkspaces(Workspaces workspaces) {
 		if (workspaces != null)
 			this.workspaces = workspaces;
+	}
+	
+	public Index getIndexes() {
+		return indexes;
+	}
+
+	public void setIndexes(Index indexes) {
+		if (indexes != null)
+			this.indexes = indexes;
 	}
 
 	public DBOperation getOperation() {

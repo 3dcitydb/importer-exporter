@@ -59,9 +59,9 @@ import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
+import de.tub.citydb.config.project.database.Index;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.importer.ImportGmlId;
-import de.tub.citydb.config.project.importer.Index;
 import de.tub.citydb.config.project.importer.LocalXMLSchemaType;
 import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.db.DBConnectionPool;
@@ -143,7 +143,7 @@ public class Importer implements EventListener {
 		// get config shortcuts
 		de.tub.citydb.config.project.system.System system = config.getProject().getImporter().getSystem();
 		Database database = config.getProject().getDatabase();
-		Index index = config.getProject().getImporter().getIndexes();
+		Index index = database.getIndexes();
 		Internal intConfig = config.getInternal();
 		ImportGmlId gmlId = config.getProject().getImporter().getGmlId();
 

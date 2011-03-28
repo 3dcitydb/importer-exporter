@@ -48,8 +48,8 @@ import javax.swing.SwingUtilities;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.importer.Index;
-import de.tub.citydb.config.project.importer.IndexMode;
+import de.tub.citydb.config.project.database.Index;
+import de.tub.citydb.config.project.database.IndexMode;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.util.GuiUtil;
@@ -89,7 +89,7 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 
 	@Override
 	public boolean isModified() {
-		Index index = config.getProject().getImporter().getIndexes();
+		Index index = config.getProject().getDatabase().getIndexes();
 
 		if (impSIRadioNoDeac.isSelected() != index.isSpatialIndexModeUnchanged()) return true;
 		if (impSIRadioDeacAc.isSelected() != index.isSpatialIndexModeDeactivateActivate()) return true;
@@ -439,7 +439,7 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 
 	@Override
 	public void loadSettings() {
-		Index index = config.getProject().getImporter().getIndexes();
+		Index index = config.getProject().getDatabase().getIndexes();
 
 		if (index.isSpatialIndexModeUnchanged())
 			impSIRadioNoDeac.setSelected(true);
@@ -458,7 +458,7 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 
 	@Override
 	public void setSettings() {
-		Index index = config.getProject().getImporter().getIndexes();
+		Index index = config.getProject().getDatabase().getIndexes();
 
 		if (impSIRadioNoDeac.isSelected())
 			index.setSpatial(IndexMode.UNCHANGED);

@@ -111,7 +111,7 @@ public class InfoDialog extends JDialog {
 			add(button, GuiUtil.setConstraints(0,3,0.0,0.0,GridBagConstraints.NONE,5,5,5,5));
 		}
 
-		setPreferredSize(new Dimension(420, 470));		
+		setMinimumSize(new Dimension(400, 450));		
 		setResizable(true);
 		pack();
 
@@ -202,7 +202,7 @@ public class InfoDialog extends JDialog {
 				logos.add(vcs_label, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
 
 				String wtf_label_text = config.getProject().getGlobal().getLanguage() == LanguageType.EN ?
-						"Berlin Senate of Business, Technology and Women" : "Senatsverwaltung für Wirtschaft, Technologie und Frauen, Berlin";
+						"Berlin Senate of Business, <br/>Technology and Women" : "Senatsverwaltung für Wirtschaft, <br/>Technologie und Frauen, Berlin";
 				
 				JLabel wtf_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/wtf_logo.png"))));
 				logos.add(wtf_logo, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.NONE,5,0,5,0));

@@ -39,7 +39,6 @@ import de.tub.citydb.config.project.system.System;
 		"path",
 		"gmlId",
 		"appearances",
-		"indexes",
 		"filter",
 		"xmlValidation",
 		"system"
@@ -49,7 +48,6 @@ public class Importer {
 	private Path path;
 	private ImportGmlId gmlId;
 	private ImportAppearance appearances;
-	private Index indexes;
 	private ImportFilterConfig filter;
 	private XMLValidation xmlValidation;
 	private System system;
@@ -59,7 +57,6 @@ public class Importer {
 		path = new Path();
 		gmlId = new ImportGmlId();
 		appearances = new ImportAppearance();
-		indexes = new Index();
 		filter = new ImportFilterConfig();
 		xmlValidation = new XMLValidation();
 		system = new System();
@@ -99,15 +96,6 @@ public class Importer {
 	public void setAppearances(ImportAppearance appearances) {
 		if (appearances != null)
 			this.appearances = appearances;
-	}
-
-	public Index getIndexes() {
-		return indexes;
-	}
-
-	public void setIndexes(Index indexes) {
-		if (indexes != null)
-			this.indexes = indexes;
 	}
 
 	public ImportFilterConfig getFilter() {
