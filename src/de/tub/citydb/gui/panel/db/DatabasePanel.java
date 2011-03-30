@@ -838,6 +838,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			connCombo.addItem(conn);
 
 		connCombo.setSelectedItem(dbConnection);
+		dbConnection.setInternalPassword(dbConnection.getPassword());
 
 		workspaceText.setText(databaseConfig.getWorkspaces().getOperationWorkspace().getName());
 		timestampText.setText(databaseConfig.getWorkspaces().getOperationWorkspace().getTimestamp());
@@ -896,7 +897,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		databaseText.setText(dbConnection.getSid());
 		userText.setText(dbConnection.getUser());
 		passwordCheck.setSelected(dbConnection.isSetSavePassword());
-
+		
 		if (passwordCheck.isSelected())
 			passwordText.setText(dbConnection.getPassword());
 		else
