@@ -35,7 +35,6 @@ import java.util.Set;
 import javax.xml.bind.JAXBContext;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
@@ -53,33 +52,30 @@ import de.tub.citydb.util.DBUtil;
 
 public class ImpExpCmd {
 	private final Logger LOG = Logger.getInstance();
+	private final DBConnectionPool dbPool;
 	private JAXBContext jaxbCityGMLContext;
 	private JAXBContext jaxbKmlContext;
 	private JAXBContext jaxbColladaContext;
-	private DBConnectionPool dbPool;
 	private Config config;
 
-	public ImpExpCmd(JAXBContext jaxbCityGMLContext,
-			DBConnectionPool dbPool,
-			Config config) {
+	public ImpExpCmd(JAXBContext jaxbCityGMLContext, Config config) {
 		this.jaxbCityGMLContext = jaxbCityGMLContext;
-		this.dbPool = dbPool;
 		this.config = config;
+		dbPool = DBConnectionPool.getInstance();
 	}
 
 	public ImpExpCmd(JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
-			DBConnectionPool dbPool,
 			Config config) {
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
-		this.dbPool = dbPool;
 		this.config = config;
+		dbPool = DBConnectionPool.getInstance();
 	}
 
 	public void doImport() {
 		initDBPool();
-		if (!config.getInternal().isConnected()) {
+		if (!dbPool.isConnected()) {
 			LOG.error("Aborting...");
 			return;
 		}
@@ -133,7 +129,7 @@ public class ImpExpCmd {
 
 	public void doExport() {
 		initDBPool();
-		if (!config.getInternal().isConnected()) {
+		if (!dbPool.isConnected()) {
 			LOG.error("Aborting...");
 			return;
 		}
@@ -154,7 +150,7 @@ public class ImpExpCmd {
 
 	public void doKmlExport() {
 		initDBPool();
-		if (!config.getInternal().isConnected()) {
+		if (!dbPool.isConnected()) {
 			LOG.error("Aborting...");
 			return;
 		}
@@ -185,7 +181,6 @@ public class ImpExpCmd {
 	private void initDBPool() {	
 		// check active connection
 		DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-		Internal intConfig = config.getInternal();
 		
 		if (conn == null) {
 			LOG.error("No valid database connection found in project settings.");
@@ -216,22 +211,20 @@ public class ImpExpCmd {
 			LOG.error("No password for database user configured in project settings.");
 			return;
 		} else
-			intConfig.setCurrentDbPassword(conn.getPassword());
+			conn.setInternalPassword(conn.getPassword());
 
 		LOG.info("Connecting to database profile '" + conn.getDescription() + "'.");
 
 		try {
-			dbPool.init();
+			dbPool.connect(conn);
 			
 			LOG.info("Database connection established.");
 			conn.getMetaData().toConsole(LogLevelType.INFO);
 			
 			// check whether user-defined SRSs are supported
 			try {
-				DBUtil dbUtil = DBUtil.getInstance(dbPool);
-				
 				for (ReferenceSystem refSys: config.getProject().getDatabase().getReferenceSystems()) {
-					boolean isSupported = dbUtil.isSrsSupported(refSys.getSrid());
+					boolean isSupported = DBUtil.isSrsSupported(refSys.getSrid());
 					refSys.setSupported(isSupported);
 					
 					if (isSupported)
@@ -245,7 +238,7 @@ public class ImpExpCmd {
 
 		} catch (SQLException e) {
 			LOG.error("Connection to database could not be established: " + e.getMessage());
-			intConfig.unsetOpenConnection();			
+			dbPool.forceDisconnect();			
 		}
 	}
 }

@@ -81,6 +81,7 @@ import org.citygml4j.model.gml.Polygon;
 import org.citygml4j.model.gml.PolygonProperty;
 
 import de.tub.citydb.config.Config;
+import de.tub.citydb.db.DBConnectionPool;
 
 public class DBSdoGeometry implements DBExporter {
 	private String gmlSrsName;
@@ -89,7 +90,7 @@ public class DBSdoGeometry implements DBExporter {
 		if (config.getInternal().isTransformCoordinates())
 			gmlSrsName = config.getInternal().getExportTargetSRS().getSrsName();
 		else
-			gmlSrsName = config.getInternal().getOpenConnection().getMetaData().getSrsName();
+			gmlSrsName = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrsName();
 	}
 
 	public PointProperty getPoint(JGeometry geom, boolean setSrsName) {

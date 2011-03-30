@@ -36,7 +36,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import oracle.jdbc.driver.OracleConnection;
+import oracle.jdbc.OracleConnection;
 
 import org.citygml4j.factory.CityGMLFactory;
 

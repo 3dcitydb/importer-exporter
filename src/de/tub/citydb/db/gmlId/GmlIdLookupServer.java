@@ -61,7 +61,7 @@ public class GmlIdLookupServer {
 			DBCacheModel model,
 			int capacity,
 			float drainFactor,
-			int concurrencyLevel) throws SQLException {
+			int concurrencyLevel) {
 		this.cacheModel = model;
 		this.capacity = capacity;
 		this.drainFactor = drainFactor;

@@ -145,12 +145,11 @@ public class DBSplitter {
 		BoundingVolume bbox = boundingBoxFilter.getFilterState();		
 		config.getInternal().setUseInternalBBoxFilter(false);
 		if (bbox != null) {
-			DBUtil dbUtil = DBUtil.getInstance(dbConnectionPool);
 
 			// check whether spatial indexes are active
-			if (dbUtil.isIndexed("CITYOBJECT", "ENVELOPE")) {			
+			if (DBUtil.isIndexed("CITYOBJECT", "ENVELOPE")) {			
 				TiledBoundingBox tiledBBox = expFilterConfig.getComplexFilter().getTiledBoundingBox();
-				int dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
+				int dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 
 				double minX = bbox.getLowerCorner().getX();
 				double minY = bbox.getLowerCorner().getY();

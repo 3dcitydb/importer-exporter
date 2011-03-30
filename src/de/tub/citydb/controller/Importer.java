@@ -117,7 +117,6 @@ public class Importer implements EventListener {
 	private long xmlValidationErrorCounter;
 	private DBGmlIdLookupServerManager lookupServerManager;
 	private CityGMLFactory cityGMLFactory;
-	private DBUtil dbUtil;
 
 	private int runState;
 	private final int PARSING = 1;
@@ -174,13 +173,12 @@ public class Importer implements EventListener {
 		}
 
 		// deactivate database indexes
-		dbUtil = DBUtil.getInstance(dbPool);		
 		if (shouldRun && (index.isSpatialIndexModeDeactivate() || index.isSpatialIndexModeDeactivateActivate() ||
 				index.isNormalIndexModeDeactivate() || index.isNormalIndexModeDeactivateActivate())) {
 			try {
 				if (shouldRun && (index.isSpatialIndexModeDeactivate() || index.isSpatialIndexModeDeactivateActivate())) {
 					LOG.info("Deactivating spatial indexes...");
-					String[] result = dbUtil.dropSpatialIndexes();
+					String[] result = DBUtil.dropSpatialIndexes();
 
 					if (result != null) {
 						for (String line : result) {
@@ -188,7 +186,7 @@ public class Importer implements EventListener {
 
 							if (!parts[4].equals("DROPPED")) {
 								LOG.error("FAILED: " + parts[0] + " auf " + parts[1] + "(" + parts[2] + ")");
-								String errMsg = dbUtil.errorMessage(parts[3]);
+								String errMsg = DBUtil.errorMessage(parts[3]);
 								LOG.error("Error cause: " + errMsg);
 							}
 						}
@@ -197,7 +195,7 @@ public class Importer implements EventListener {
 
 				if (shouldRun && (index.isNormalIndexModeDeactivate() || index.isNormalIndexModeDeactivateActivate())) {
 					LOG.info("Deactivating normal indexes...");
-					String[] result = dbUtil.dropNormalIndexes();
+					String[] result = DBUtil.dropNormalIndexes();
 
 					if (result != null) {
 						for (String line : result) {
@@ -205,7 +203,7 @@ public class Importer implements EventListener {
 
 							if (!parts[4].equals("DROPPED")) {
 								LOG.error("FAILED: " + parts[0] + " auf " + parts[1] + "(" + parts[2] + ")");
-								String errMsg = dbUtil.errorMessage(parts[3]);
+								String errMsg = DBUtil.errorMessage(parts[3]);
 								LOG.error("Error cause: " + errMsg);
 							}
 						}
@@ -240,7 +238,7 @@ public class Importer implements EventListener {
 		cityGMLFactory = new CityGMLFactory();
 
 		// import filter
-		ImportFilter importFilter = new ImportFilter(config, dbUtil);
+		ImportFilter importFilter = new ImportFilter(config);
 
 		// prepare XML validation 
 		XMLValidation xmlValidation = config.getProject().getImporter().getXMLValidation();
@@ -489,12 +487,6 @@ public class Importer implements EventListener {
 				}
 
 				try {
-					dbPool.refresh();
-				} catch (SQLException e) {
-					LOG.error("SQL error: " + e.getMessage());
-				}
-
-				try {
 					eventDispatcher.join();
 				} catch (InterruptedException e) {
 					// 
@@ -536,7 +528,7 @@ public class Importer implements EventListener {
 				try {
 					if (index.isSpatialIndexModeDeactivateActivate()) {
 						LOG.info("Activating spatial indexes. This can take long time...");
-						String[] result = dbUtil.createSpatialIndexes();
+						String[] result = DBUtil.createSpatialIndexes();
 
 						if (result != null) {
 							for (String line : result) {
@@ -544,7 +536,7 @@ public class Importer implements EventListener {
 
 								if (!parts[4].equals("VALID")) {
 									LOG.error("FAILED: " + parts[0] + " auf " + parts[1] + "(" + parts[2] + ")");
-									String errMsg = dbUtil.errorMessage(parts[3]);
+									String errMsg = DBUtil.errorMessage(parts[3]);
 									LOG.error("Error cause: " + errMsg);
 								}
 							}
@@ -553,7 +545,7 @@ public class Importer implements EventListener {
 
 					if (index.isNormalIndexModeDeactivateActivate()) {
 						LOG.info("Activating normal indexes. This can take long time...");
-						String[] result = dbUtil.createNormalIndexes();
+						String[] result = DBUtil.createNormalIndexes();
 
 						if (result != null) {
 							for (String line : result) {
@@ -561,7 +553,7 @@ public class Importer implements EventListener {
 
 								if (!parts[4].equals("VALID")) {
 									LOG.error("FAILED: " + parts[0] + " auf " + parts[1] + "(" + parts[2] + ")");
-									String errMsg = dbUtil.errorMessage(parts[3]);
+									String errMsg = DBUtil.errorMessage(parts[3]);
 									LOG.error("Error cause: " + errMsg);
 								}
 							}

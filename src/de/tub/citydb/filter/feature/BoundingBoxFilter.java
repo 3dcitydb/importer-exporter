@@ -43,6 +43,7 @@ import de.tub.citydb.config.project.filter.BoundingBox;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
+import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.filter.Filter;
 import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.util.DBUtil;
@@ -50,8 +51,6 @@ import de.tub.citydb.util.DBUtil;
 public class BoundingBoxFilter implements Filter<Envelope> {
 	private final AbstractFilterConfig filterConfig;
 	private final FilterMode mode;
-	private final DBUtil dbUtil;
-	private final Config config;
 
 	private boolean isActive;
 	private boolean useTiling;
@@ -67,10 +66,8 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	private int activeRow = 1;
 	private int activeColumn = 1;
 
-	public BoundingBoxFilter(Config config, FilterMode mode, DBUtil dbUtil) {
+	public BoundingBoxFilter(Config config, FilterMode mode) {
 		this.mode = mode;
-		this.dbUtil = dbUtil;
-		this.config = config;
 
 		if (mode == FilterMode.EXPORT)
 			filterConfig = config.getProject().getExporter().getFilter();
@@ -103,12 +100,12 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 				);
 
 				// check whether we have to transform coordinate values
-				int dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
+				int dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 				int bboxSrid = boundingBoxConfig.getSRS().getSrid();
 
 				if (boundingBoxConfig.getSRS().isSupported() && bboxSrid != dbSrid) {			
 					try {
-						boundingBox = dbUtil.transformBBox(boundingBox, bboxSrid, dbSrid);
+						boundingBox = DBUtil.transformBBox(boundingBox, bboxSrid, dbSrid);
 					} catch (SQLException sqlEx) {
 						//
 					}

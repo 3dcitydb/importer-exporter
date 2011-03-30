@@ -38,10 +38,11 @@ import javax.swing.JComboBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.ReferenceSystem;
+import de.tub.citydb.db.DBConnectionPool;
 
 public class SrsComboBoxManager {
 	private static SrsComboBoxManager instance = null;
-	private final ReferenceSystem dbRefSys = new ReferenceSystem(Internal.DEFAULT_DB_REF_SYS);
+	private final ReferenceSystem dbRefSys = new ReferenceSystem(ReferenceSystem.DEFAULT);
 	private final List<SrsComboBox> srsBoxes = new ArrayList<SrsComboBox>();
 	private final Config config;
 
@@ -100,12 +101,14 @@ public class SrsComboBoxManager {
 		}
 
 		public void updateContent() {
-			if (config.getInternal().isConnected()) {
-				dbRefSys.setSrid(config.getInternal().getOpenConnection().getMetaData().getSrid());
-				dbRefSys.setSrsName(config.getInternal().getOpenConnection().getMetaData().getSrsName());
+			DBConnectionPool dbPool = DBConnectionPool.getInstance();
+			
+			if (dbPool.isConnected()) {
+				dbRefSys.setSrid(dbPool.getActiveConnection().getMetaData().getSrid());
+				dbRefSys.setSrsName(dbPool.getActiveConnection().getMetaData().getSrsName());
 			} else {
-				dbRefSys.setSrid(Internal.DEFAULT_DB_REF_SYS.getSrid());
-				dbRefSys.setSrsName(Internal.DEFAULT_DB_REF_SYS.getSrsName());				
+				dbRefSys.setSrid(ReferenceSystem.DEFAULT.getSrid());
+				dbRefSys.setSrsName(ReferenceSystem.DEFAULT.getSrsName());				
 			}		
 			
 			ReferenceSystem selectedItem = getSelectedItem();

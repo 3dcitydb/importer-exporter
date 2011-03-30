@@ -46,7 +46,7 @@ public class DBGmlIdLookupServerManager {
 		DBCacheModel model,
 		int cacheSize,
 		float drainFactor,
-		int concurrencyLevel) throws SQLException {
+		int concurrencyLevel) {
 
 		serverMap.put(serverType, new GmlIdLookupServer(
 				model,

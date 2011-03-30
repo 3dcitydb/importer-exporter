@@ -176,9 +176,11 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	public void setSettings() {
 		config.getInternal().setExportFileName(browseText.getText());
 
-		if (workspaceText.getText().trim().length() == 0)
-			workspaceText.setText("LIVE");
-
+		String workspace = workspaceText.getText().trim();
+		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
+				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
+			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
+		
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText());
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(timestampText.getText());
 		config.getProject().getExporter().setTargetSRS(srsComboBox.getSelectedItem());

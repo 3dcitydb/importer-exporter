@@ -41,7 +41,9 @@ import de.tub.citydb.util.UUIDManager;
 		"srsName",
 		"description"
 		})
-public class ReferenceSystem implements Comparable<ReferenceSystem> {	
+public class ReferenceSystem implements Comparable<ReferenceSystem> {
+	public static final ReferenceSystem DEFAULT = new ReferenceSystem("", 0, "n/a", "", true);
+
 	@XmlAttribute
 	@XmlID
 	private String id;

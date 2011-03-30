@@ -59,8 +59,8 @@ import net.opengis.kml._2.MultiGeometryType;
 import net.opengis.kml._2.ObjectFactory;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.PolygonType;
+import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OracleResultSet;
-import oracle.jdbc.driver.OracleConnection;
 import oracle.ord.im.OrdImage;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
@@ -672,7 +672,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private Building createBuildingForCollada(OracleResultSet rs, String gmlId) throws SQLException {
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
-		if (!DBUtil.getInstance(dbConnectionPool).getAppearanceThemeList().contains(selectedTheme)) {
+		if (!DBUtil.getAppearanceThemeList().contains(selectedTheme)) {
 			Logger.getInstance().error("Database does not contain appearance theme " + selectedTheme);
 			return null;
 		}
@@ -1175,7 +1175,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					coords[index++] = point3d.y;
 					coords[index++] = point3d.z;
 				}
-				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, config.getInternal().getOpenConnection().getMetaData().getSrid());
+				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, dbConnectionPool.getActiveConnection().getMetaData().getSrid());
 				coords = convertToWGS84(jGeometry).getOrdinatesArray();
 				
 				Logger.getInstance().info("Getting zOffset from Google's elevation API for " + gmlId);
@@ -1244,7 +1244,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		double[] pointCoords = null; 
 		// createLinearLineString is a workaround for Oracle11g!
-		JGeometry jGeometry = JGeometry.createLinearLineString(coords, coords.length, config.getInternal().getOpenConnection().getMetaData().getSrid());
+		JGeometry jGeometry = JGeometry.createLinearLineString(coords, coords.length, dbConnectionPool.getActiveConnection().getMetaData().getSrid());
 		JGeometry convertedPointGeom = convertToWGS84(jGeometry);
 		if (convertedPointGeom != null) {
 			pointCoords = convertedPointGeom.getFirstPoint();

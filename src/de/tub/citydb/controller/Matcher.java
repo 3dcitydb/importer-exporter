@@ -111,10 +111,9 @@ public class Matcher implements EventListener {
 
 		// check whether spatial indexes are enabled
 		LOG.info("Checking for spatial indexes on geometry columns of involved tables...");
-		DBUtil dbUtil = DBUtil.getInstance(dbPool);
 		try {
-			if (!dbUtil.isIndexed("CITYOBJECT", "ENVELOPE") || 
-					!dbUtil.isIndexed("SURFACE_GEOMETRY", "GEOMETRY")) {
+			if (!DBUtil.isIndexed("CITYOBJECT", "ENVELOPE") || 
+					!DBUtil.isIndexed("SURFACE_GEOMETRY", "GEOMETRY")) {
 				LOG.error("Spatial indexes are not activated.");
 				LOG.error("Please use the preferences tab to activate the spatial indexes.");
 				return false;
@@ -340,12 +339,6 @@ public class Matcher implements EventListener {
 					//
 				}
 			}
-
-			try {
-				dbPool.refresh();
-			} catch (SQLException e) {
-				//
-			}
 		}
 	}
 
@@ -380,12 +373,6 @@ public class Matcher implements EventListener {
 				} catch (SQLException e) {
 					//
 				}
-			}
-
-			try {
-				dbPool.refresh();
-			} catch (SQLException e) {
-				//
 			}
 		}
 	}
@@ -644,12 +631,6 @@ public class Matcher implements EventListener {
 					//
 				}
 			}
-
-			try {
-				dbPool.refresh();
-			} catch (SQLException e) {
-				//
-			}
 		}
 	}
 
@@ -728,12 +709,6 @@ public class Matcher implements EventListener {
 				} catch (SQLException e) {
 					//
 				}
-			}
-
-			try {
-				dbPool.refresh();
-			} catch (SQLException e) {
-				//
 			}
 		}
 	}

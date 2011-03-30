@@ -59,7 +59,7 @@ public class Database {
 	private Workspaces workspaces;
 	private Index indexes;
 	private DBOperation operation;
-	
+
 	public Database() {
 		referenceSystems = new ReferenceSystems();
 		connections = new ArrayList<DBConnection>();
@@ -96,11 +96,15 @@ public class Database {
 	}
 
 	public DBConnection getActiveConnection() {
+		if (activeConnection == null && !connections.isEmpty())
+			activeConnection = connections.get(0);
+		
 		return activeConnection;
 	}
 
 	public void setActiveConnection(DBConnection activeConnection) {
-		this.activeConnection = activeConnection;
+		if (activeConnection != null)
+			this.activeConnection = activeConnection;
 	}
 
 	public UpdateBatching getUpdateBatching() {
@@ -120,7 +124,7 @@ public class Database {
 		if (workspaces != null)
 			this.workspaces = workspaces;
 	}
-	
+
 	public Index getIndexes() {
 		return indexes;
 	}
@@ -138,5 +142,5 @@ public class Database {
 		if (operation != null)
 			this.operation = operation;
 	}
-	
+
 }

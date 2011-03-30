@@ -35,7 +35,6 @@ import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.filter.feature.GmlIdFilter;
 import de.tub.citydb.filter.feature.GmlNameFilter;
 import de.tub.citydb.filter.statistic.FeatureCounterFilter;
-import de.tub.citydb.util.DBUtil;
 
 public class ExportFilter {
 	private FeatureClassFilter featureClassFilter;
@@ -44,20 +43,20 @@ public class ExportFilter {
 	private GmlNameFilter gmlNameFilter;
 	private BoundingBoxFilter boundingBoxFilter;
 	
-	public ExportFilter(Config config, DBUtil dbUtil) {
+	public ExportFilter(Config config) {
 		featureClassFilter = new FeatureClassFilter(config, FilterMode.EXPORT);
 		featureCounterFilter = new FeatureCounterFilter(config, FilterMode.EXPORT);
 		gmlIdFilter = new GmlIdFilter(config, FilterMode.EXPORT);
 		gmlNameFilter = new GmlNameFilter(config, FilterMode.EXPORT);
-		boundingBoxFilter = new BoundingBoxFilter(config, FilterMode.EXPORT, dbUtil);
+		boundingBoxFilter = new BoundingBoxFilter(config, FilterMode.EXPORT);
 	}
 
-	public ExportFilter(Config config, DBUtil dbUtil, FilterMode filterMode) {
+	public ExportFilter(Config config, FilterMode filterMode) {
 		featureClassFilter = new FeatureClassFilter(config, filterMode);
 		featureCounterFilter = new FeatureCounterFilter(config, filterMode);
 		gmlIdFilter = new GmlIdFilter(config, filterMode);
 		gmlNameFilter = new GmlNameFilter(config, filterMode);
-		boundingBoxFilter = new BoundingBoxFilter(config, filterMode, dbUtil);
+		boundingBoxFilter = new BoundingBoxFilter(config, filterMode);
 	}
 
 	public FeatureClassFilter getFeatureClassFilter() {

@@ -70,6 +70,7 @@ import org.citygml4j.util.CityGMLModules;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
+import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.BoundingBoxFilter;
 import de.tub.citydb.log.Logger;
@@ -114,7 +115,7 @@ public class DBCityObject implements DBExporter {
 
 	private void init() throws SQLException {
 		exportAppearance = config.getProject().getExporter().getAppearances().isSetExportAppearance();
-		gmlSrsName = config.getInternal().getOpenConnection().getMetaData().getSrsName();
+		gmlSrsName = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrsName();
 		useInternalBBoxFilter = config.getInternal().isUseInternalBBoxFilter();
 
 		tiling = config.getProject().getExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();

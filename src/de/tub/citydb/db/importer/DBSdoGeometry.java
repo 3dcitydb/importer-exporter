@@ -66,6 +66,7 @@ import org.citygml4j.model.gml.Polygon;
 import org.citygml4j.model.gml.PolygonProperty;
 
 import de.tub.citydb.config.Config;
+import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
@@ -74,7 +75,7 @@ public class DBSdoGeometry implements DBImporter {
 	private int dbSrid;
 
 	public DBSdoGeometry(Config config) {
-		dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
+		dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 	}
 
 	public JGeometry getPoint(PointProperty pointProperty) {

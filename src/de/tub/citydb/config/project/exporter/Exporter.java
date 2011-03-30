@@ -32,7 +32,6 @@ package de.tub.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.general.Path;
 import de.tub.citydb.config.project.system.System;
@@ -49,7 +48,7 @@ import de.tub.citydb.config.project.system.System;
 public class Exporter {
 	private Path path;
 	@XmlIDREF
-	private ReferenceSystem targetSRS = Internal.DEFAULT_DB_REF_SYS;
+	private ReferenceSystem targetSRS = ReferenceSystem.DEFAULT;
 	private ExportAppearance appearances;
 	private ExportFilterConfig filter;
 	private ModuleVersion moduleVersion;

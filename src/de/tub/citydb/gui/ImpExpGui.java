@@ -29,7 +29,6 @@
  */
 package de.tub.citydb.gui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -176,17 +175,16 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 			JAXBContext jaxbColladaContext,
 			JAXBContext jaxbProjectContext,
 			JAXBContext jaxbGuiContext,
-			DBConnectionPool dbPool,
 			Config config) {
 		this.jaxbCityGMLContext = jaxbCityGMLContext;
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.jaxbProjectContext = jaxbProjectContext;
 		this.jaxbGuiContext = jaxbGuiContext;
-		this.dbPool = dbPool;
 		this.config = config;
 
-		config.getInternal().addPropertyChangeListener(this);
+		dbPool = DBConnectionPool.getInstance();
+		dbPool.addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
 	}
 
 	public void invoke(List<String> errMsgs) {
@@ -649,10 +647,10 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 				}
 			}
 
-			if (!config.getInternal().isConnected()) {
+			if (!dbPool.isConnected()) {
 				databasePanel.connect();
 
-				if (!config.getInternal().isConnected())
+				if (!dbPool.isConnected())
 					return;
 			}
 
@@ -881,10 +879,10 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 				}
 			}
 
-			if (!config.getInternal().isConnected()) {
+			if (!dbPool.isConnected()) {
 				databasePanel.connect();
 
-				if (!config.getInternal().isConnected())
+				if (!dbPool.isConnected())
 					return;
 			}
 
@@ -965,7 +963,7 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 						Internal.I18N.getString("kmlExport.dialog.error.incompleteData.dataset"));
 				return;
 			}
-			
+
 			// workspace timestamp
 			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
 				errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
@@ -986,13 +984,13 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 			if (activeDisplayLevelAmount == 0) {
 				errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
 						Internal.I18N.getString("kmlExport.dialog.error.incorrectData.displayLevels"));
-	            return;
+				return;
 			}
 
-			if (!config.getInternal().isConnected()) {
+			if (!dbPool.isConnected()) {
 				databasePanel.connect();
 
-				if (!config.getInternal().isConnected())
+				if (!dbPool.isConnected())
 					return;
 			}
 
@@ -1080,9 +1078,13 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 			lock.unlock();
 		}
 	}
-	
+
 	public void connectToDatabase() {
 		databasePanel.connect();
+	}
+
+	public void disconnectFromDatabase() {
+		databasePanel.disconnect();
 	}
 
 	public boolean saveProjectSettings() {
@@ -1147,40 +1149,46 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 		return true;
 	}
 
-	public JLabel getStatusText() {
-		return statusText;
+	public void setStatusText(String message) {
+		statusText.setText(message);
 	}
 
-	public JTextArea getConsoleText() {
+	public void clearConsole() {
+		consoleText.setText("");
+	}
+
+	public JTextArea getConsole() {
 		return consoleText;
 	}
 
-	public DBConnectionPool getDBPool() {
-		return dbPool;
-	}
-
-	private void shutdown() {
-		config.getInternal().setShuttingDown(true);
+	private void shutdown() {		
 		System.setOut(out);
 		System.setErr(err);
+		boolean success = true;
 
 		consoleWindow.dispose();
+
+		if (dbPool.isConnected()) {
+			LOG.info("Terminating database connection");
+			try {
+				dbPool.disconnect();
+			} catch (SQLException e) {
+				LOG.error("Failed to terminate database connection: " + e.getMessage());
+				success = false;
+			}
+		}
 
 		LOG.info("Saving project settings");
 		setSettings();
 		saveProjectSettings();
 		saveGUISettings();
 
-		LOG.info("Terminating database connection");
-		try {
-			dbPool.close();
-		} catch (SQLException e) {
-			LOG.error("Failed to terminate database connection: " + e.getMessage());
+		if (success)
+			LOG.info("Application successfully terminated");
+		else {
 			LOG.info("Application did not terminate normally");
 			System.exit(1);
-		}	
-
-		LOG.info("Application successfully terminated");
+		}
 	}
 
 	private class JTextAreaOutputStream extends FilterOutputStream {
@@ -1229,7 +1237,7 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("database.isConnected")) {
+		if (evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
 			if (!(Boolean)evt.getNewValue())
 				connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
 			else

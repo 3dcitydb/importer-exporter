@@ -66,8 +66,4 @@ public class Config {
 		return internal;
 	}
 
-	public void setInternal(Internal internal) {
-		this.internal = internal;
-	}
-
 }

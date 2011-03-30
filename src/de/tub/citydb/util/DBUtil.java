@@ -37,12 +37,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
+import oracle.jdbc.OracleCallableStatement;
 import oracle.jdbc.OracleResultSet;
-import oracle.jdbc.driver.OracleCallableStatement;
-import oracle.jdbc.driver.OracleTypes;
+import oracle.jdbc.OracleTypes;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.ARRAY;
 import oracle.sql.STRUCT;
@@ -58,30 +57,14 @@ import de.tub.citydb.config.project.general.FeatureClassMode;
 import de.tub.citydb.db.DBConnectionPool;
 
 public class DBUtil {
-	private static HashMap<String, DBUtil> instanceMap = new HashMap<String, DBUtil>();
-
-	private final DBConnectionPool dbConnectionPool;
-	private volatile boolean cancelled = false;
+	private static final DBConnectionPool dbConnectionPool = DBConnectionPool.getInstance();
+	private static volatile boolean cancelled = false;
 
 	// use for interuptable operations
-	private OracleCallableStatement callableStmt;
-	private Statement stmt;
+	private static OracleCallableStatement callableStmt;
+	private static Statement stmt;
 
-	private DBUtil(DBConnectionPool dbConnectionPool) {
-		this.dbConnectionPool = dbConnectionPool;
-	}
-
-	public static synchronized DBUtil getInstance(DBConnectionPool dbPool) {
-		DBUtil instance = instanceMap.get(dbPool.getCacheName());
-		if (instance == null) {
-			instance = new DBUtil(dbPool);
-			instanceMap.put(dbPool.getCacheName(), instance);
-		}	
-
-		return instance;
-	}
-
-	public DBMetaData getDatabaseInfo() throws SQLException {
+	public static DBMetaData getDatabaseInfo() throws SQLException {
 		DBMetaData metaData = new DBMetaData();
 		Connection conn = null;
 
@@ -131,7 +114,7 @@ public class DBUtil {
 		}
 	}
 
-	public String[] databaseReport(Workspace workspace) throws SQLException {
+	public static String[] databaseReport(Workspace workspace) throws SQLException {
 		String[] report = null;
 		Connection conn = null;
 
@@ -176,7 +159,7 @@ public class DBUtil {
 		return report;
 	}
 
-	public BoundingVolume calcBoundingBox(Workspace workspace, FeatureClassMode featureClass) throws SQLException {
+	public static BoundingVolume calcBoundingBox(Workspace workspace, FeatureClassMode featureClass) throws SQLException {
 		BoundingVolume bbox = null;
 		Connection conn = null;
 		ResultSet rs = null;
@@ -318,7 +301,7 @@ public class DBUtil {
 		return bbox;
 	}
 
-	private String[] dropIndexes(DB_INDEX_TYPE type) throws SQLException {
+	private static String[] dropIndexes(DB_INDEX_TYPE type) throws SQLException {
 		String[] report = null;
 		Connection conn = null;
 
@@ -360,7 +343,7 @@ public class DBUtil {
 		return report;
 	}
 
-	private String[] createIndexes(DB_INDEX_TYPE type) throws SQLException {
+	private static String[] createIndexes(DB_INDEX_TYPE type) throws SQLException {
 		String[] report = null;
 		Connection conn = null;
 
@@ -402,7 +385,7 @@ public class DBUtil {
 		return report;
 	}
 
-	public boolean isIndexed(String tableName, String columnName) throws SQLException {
+	public static boolean isIndexed(String tableName, String columnName) throws SQLException {
 		Connection conn = null;
 		boolean isIndexed = false;
 
@@ -441,23 +424,23 @@ public class DBUtil {
 		return isIndexed;
 	}
 
-	public String[] dropSpatialIndexes() throws SQLException {
+	public static String[] dropSpatialIndexes() throws SQLException {
 		return dropIndexes(DB_INDEX_TYPE.SPATIAL);
 	}
 
-	public String[] dropNormalIndexes() throws SQLException {
+	public static String[] dropNormalIndexes() throws SQLException {
 		return dropIndexes(DB_INDEX_TYPE.NORMAL);
 	}
 
-	public String[] createSpatialIndexes() throws SQLException {
+	public static String[] createSpatialIndexes() throws SQLException {
 		return createIndexes(DB_INDEX_TYPE.SPATIAL);
 	}
 
-	public String[] createNormalIndexes() throws SQLException {
+	public static String[] createNormalIndexes() throws SQLException {
 		return createIndexes(DB_INDEX_TYPE.NORMAL);
 	}
 
-	public String errorMessage(String errorCode) throws SQLException {
+	public static String errorMessage(String errorCode) throws SQLException {
 		String errorMessage = null;
 		Connection conn = null;
 
@@ -495,7 +478,7 @@ public class DBUtil {
 		return errorMessage;
 	}
 
-	public void cancelOperation() {	
+	public static void cancelOperation() {	
 		cancelled = true;
 
 		try {
@@ -509,12 +492,12 @@ public class DBUtil {
 		}
 	}
 
-	public enum DB_INDEX_TYPE {
+	public static enum DB_INDEX_TYPE {
 		SPATIAL,
 		NORMAL
 	}
 
-	public BoundingVolume transformBBox(BoundingVolume bbox, int sourceSrid, int targetSrid) throws SQLException {
+	public static BoundingVolume transformBBox(BoundingVolume bbox, int sourceSrid, int targetSrid) throws SQLException {
 		BoundingVolume result = bbox.clone();
 		PreparedStatement psQuery = null;
 		OracleResultSet rs = null;
@@ -581,7 +564,7 @@ public class DBUtil {
 		return result;
 	}
 
-	public boolean isSrsSupported(int srid) throws SQLException {
+	public static boolean isSrsSupported(int srid) throws SQLException {
 		Connection conn = null;
 		PreparedStatement psQuery = null;
 		OracleResultSet rs = null;
@@ -635,7 +618,7 @@ public class DBUtil {
 		return isSupported;
 	}
 
-	public List<String> getAppearanceThemeList() throws SQLException {
+	public static List<String> getAppearanceThemeList() throws SQLException {
 		Connection conn = null;
 		PreparedStatement psQuery = null;
 		OracleResultSet rs = null;

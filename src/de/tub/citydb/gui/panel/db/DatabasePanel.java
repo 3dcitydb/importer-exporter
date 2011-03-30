@@ -88,6 +88,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final ImpExpGui topFrame;
+	private final DBConnectionPool dbPool;
 
 	private JComboBox connCombo;
 	private JTextField descriptionText;
@@ -129,13 +130,15 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 
 	private Config config;
 	private Database databaseConfig;
+	private boolean isSettingsLoaded;
 
 	public DatabasePanel(Config config, ImpExpGui topFrame) {
 		this.config = config;
 		this.topFrame = topFrame;
+		dbPool = DBConnectionPool.getInstance();
+
 		initGui();		
-		databaseConfig = config.getProject().getDatabase();
-		config.getInternal().addPropertyChangeListener(this);
+		dbPool.addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
 	}
 
 	private boolean isModified() {
@@ -143,7 +146,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		if (!descriptionText.getText().trim().equals(dbConnection.getDescription())) return true;
 		if (!serverText.getText().equals(dbConnection.getServer())) return true;
 		if (!userText.getText().equals(dbConnection.getUser())) return true;		
-		if (!String.valueOf(passwordText.getPassword()).equals(config.getInternal().getCurrentDbPassword())) return true;
+		if (!String.valueOf(passwordText.getPassword()).equals(dbConnection.getInternalPassword())) return true;
 		if (!databaseText.getText().equals(dbConnection.getSid())) return true;
 		if (passwordCheck.isSelected() != dbConnection.isSetSavePassword()) return true;		
 		if (portText.getValue() != null && ((Number)portText.getValue()).intValue() != dbConnection.getPort()) return true;
@@ -222,7 +225,10 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			public void actionPerformed(ActionEvent e) {
 				Thread thread = new Thread() {
 					public void run() {
-						connect();
+						if (!dbPool.isConnected())
+							connect();
+						else
+							disconnect();
 					}
 				};
 				thread.start();
@@ -231,8 +237,8 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 
 		infoButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				topFrame.getConsoleText().setText("");
-				DBConnection conn = config.getInternal().getOpenConnection();
+				topFrame.clearConsole();
+				DBConnection conn = dbPool.getActiveConnection();
 				LOG.info("Connected to database profile '" + conn.getDescription() + "'.");
 				conn.getMetaData().toConsole(LogLevelType.INFO);
 			}
@@ -410,13 +416,16 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		srsLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
 		srsComboBox.doTranslation();
 
-		if (!config.getInternal().isConnected())
+		if (!dbPool.isConnected())
 			connectButton.setText(Internal.I18N.getString("db.button.connect"));
 		else
 			connectButton.setText(Internal.I18N.getString("db.button.disconnect"));
 	}
 
 	private void selectConnection() {
+		if (isSettingsLoaded)
+			setDbConnection(databaseConfig.getActiveConnection());
+
 		DBConnection dbConnection = (DBConnection)connCombo.getSelectedItem();
 		databaseConfig.setActiveConnection(dbConnection);
 		getDbConnection(dbConnection);
@@ -475,12 +484,10 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		lock.lock();
 
 		try {
-			setSettings();
-			Internal intConfig = config.getInternal();
-			DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-			DBConnectionPool dbPool = topFrame.getDBPool();
-
-			if (!intConfig.isConnected()) {
+			if (!dbPool.isConnected()) {
+				setSettings();
+				DBConnection conn = config.getProject().getDatabase().getActiveConnection();
+				
 				// check for valid input
 				if (conn.getUser().trim().equals("")) {
 					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
@@ -488,7 +495,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 					return;
 				}
 
-				if (intConfig.getCurrentDbPassword().trim().equals("")) {
+				if (conn.getInternalPassword().trim().equals("")) {
 					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
 							Internal.I18N.getString("db.dialog.error.conn.pass"));
 					return;
@@ -512,34 +519,32 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 					return;
 				}			
 
-				topFrame.getStatusText().setText(Internal.I18N.getString("main.status.database.connect.label"));
+				topFrame.setStatusText(Internal.I18N.getString("main.status.database.connect.label"));
 				LOG.info("Connecting to database profile '" + conn.getDescription() + "'.");
 
 				try {
-					dbPool.init();
+					dbPool.connect(conn);
 				} catch (SQLException sqlEx) {
 					String text = Internal.I18N.getString("db.dialog.error.openConn");
 					Object[] args = new Object[]{ sqlEx.getMessage() };
 					String result = MessageFormat.format(text, args);					
 
 					topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
-					intConfig.unsetOpenConnection();
-					dbPool.forceClose();
+					dbPool.forceDisconnect();
 					LOG.error("Connection to database could not be established: " + sqlEx.getMessage().trim());
 				}
 
-				if (intConfig.isConnected()) {
+				if (dbPool.isConnected()) {
 					LOG.info("Database connection established.");
 					conn.getMetaData().toConsole(LogLevelType.INFO);
 
 					// check whether user-defined SRSs are supported
 					try {
 						boolean updateComboBoxes = false;					
-						DBUtil dbUtil = DBUtil.getInstance(dbPool);
 
 						for (ReferenceSystem refSys: config.getProject().getDatabase().getReferenceSystems()) {
 							boolean wasSupported = refSys.isSupported();
-							boolean isSupported = dbUtil.isSrsSupported(refSys.getSrid());
+							boolean isSupported = DBUtil.isSrsSupported(refSys.getSrid());
 							refSys.setSupported(isSupported);
 
 							if (!updateComboBoxes && wasSupported != isSupported)
@@ -558,17 +563,28 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 						LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
 					}
 				}
+				
+				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 			}
+		} finally {
+			lock.unlock();
+		}
+	}
+	
+	public void disconnect() {
+		final ReentrantLock lock = this.mainLock;
+		lock.lock();
 
-			else {
-				topFrame.getStatusText().setText(Internal.I18N.getString("main.status.database.disconnect.label"));
+		try {			
+			if (dbPool.isConnected()) {
+				topFrame.setStatusText(Internal.I18N.getString("main.status.database.disconnect.label"));
 
 				try {
-					dbPool.close();
+					dbPool.disconnect();
 				} catch (SQLException sqlEx) {
 					LOG.error("Connection error: " + sqlEx.getMessage().trim());
 					LOG.error("Terminating connection...");
-					dbPool.forceClose();
+					dbPool.forceDisconnect();
 
 					String text = Internal.I18N.getString("db.dialog.error.closeConn");
 					Object[] args = new Object[]{ sqlEx.getMessage() };
@@ -578,9 +594,8 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 				}
 
 				LOG.info("Disconnected from database.");
+				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 			}
-
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}
@@ -596,11 +611,10 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			if (!checkWorkspaceInput(workspace))
 				return;
 
-			topFrame.getConsoleText().setText("");
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.database.report.label"));
+			topFrame.clearConsole();
+			topFrame.setStatusText(Internal.I18N.getString("main.status.database.report.label"));
 
 			LOG.info("Generating database report...");			
-			final DBUtil geodbReportReader = DBUtil.getInstance(topFrame.getDBPool());
 
 			final StatusDialog reportDialog = new StatusDialog(topFrame, 
 					Internal.I18N.getString("db.dialog.report.window"), 
@@ -620,7 +634,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 				public void actionPerformed(ActionEvent e) {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
-							geodbReportReader.cancelOperation();
+							DBUtil.cancelOperation();
 						}
 					});
 				}
@@ -630,10 +644,8 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			String dbSqlEx = null;
 			try {
 				// checking workspace... this should be improved in future...
-				DBConnectionPool dbPool = topFrame.getDBPool();
-
-				if (changeWorkspace(workspace, dbPool)) {
-					report = geodbReportReader.databaseReport(workspace);
+				if (changeWorkspace(workspace)) {
+					report = DBUtil.databaseReport(workspace);
 
 					if (report != null) {
 						for(String line : report) {
@@ -664,7 +676,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 					}
 				});
 
-				topFrame.getStatusText().setText(Internal.I18N.getString("main.status.ready.label"));
+				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 			}
 
 		} finally {
@@ -683,11 +695,10 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			if (!checkWorkspaceInput(workspace))
 				return;
 
-			topFrame.getConsoleText().setText("");
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.database.bbox.label"));
+			topFrame.clearConsole();
+			topFrame.setStatusText(Internal.I18N.getString("main.status.database.bbox.label"));
 
 			LOG.info("Calculating bounding box...");			
-			final DBUtil geodbBBox = DBUtil.getInstance(topFrame.getDBPool());
 
 			final StatusDialog bboxDialog = new StatusDialog(topFrame, 
 					Internal.I18N.getString("db.dialog.bbox.window"), 
@@ -707,7 +718,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 				public void actionPerformed(ActionEvent e) {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
-							geodbBBox.cancelOperation();
+							DBUtil.cancelOperation();
 						}
 					});
 				}
@@ -716,17 +727,15 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			BoundingVolume bbox = null;
 			try {
 				// checking workspace... this should be improved in future...
-				DBConnectionPool dbPool = topFrame.getDBPool();
-
-				if (changeWorkspace(workspace, dbPool)) {
-					bbox = geodbBBox.calcBoundingBox(workspace, featureClass);
+				if (changeWorkspace(workspace)) {
+					bbox = DBUtil.calcBoundingBox(workspace, featureClass);
 					if (bbox != null) {
-						int dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
+						int dbSrid = dbPool.getActiveConnection().getMetaData().getSrid();
 						int bboxSrid = db.getOperation().getBoundingBoxSRS().getSrid();
-						
+
 						if (db.getOperation().getBoundingBoxSRS().isSupported() && bboxSrid != dbSrid) {
 							try {
-								bbox = geodbBBox.transformBBox(bbox, dbSrid, bboxSrid);
+								bbox = DBUtil.transformBBox(bbox, dbSrid, bboxSrid);
 							} catch (SQLException e) {
 								//
 							}					
@@ -766,7 +775,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 					}
 				});
 
-				topFrame.getStatusText().setText(Internal.I18N.getString("main.status.ready.label"));
+				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 			}
 
 		} finally {
@@ -774,7 +783,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		}
 	}
 
-	private boolean changeWorkspace(Workspace workspace, DBConnectionPool dbPool) {		
+	private boolean changeWorkspace(Workspace workspace) {		
 		if (!workspace.getName().toUpperCase().equals("LIVE")) {
 			boolean workspaceExists = dbPool.checkWorkspace(workspace);
 
@@ -804,7 +813,11 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 	}
 
 	public void loadSettings() {
+		if (dbPool.isConnected())
+			dbPool.forceDisconnect();
+
 		databaseConfig = config.getProject().getDatabase();
+		isSettingsLoaded = false;
 
 		connCombo.removeAllItems();
 		DBConnection dbConnection = databaseConfig.getActiveConnection();
@@ -825,7 +838,6 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			connCombo.addItem(conn);
 
 		connCombo.setSelectedItem(dbConnection);
-		getDbConnection(dbConnection);
 
 		workspaceText.setText(databaseConfig.getWorkspaces().getOperationWorkspace().getName());
 		timestampText.setText(databaseConfig.getWorkspaces().getOperationWorkspace().getTimestamp());
@@ -840,14 +852,17 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			dbBBox.setSelected(true);
 
 		setEnabledDBOperations(false);
+		isSettingsLoaded = true;
 	}
 
 	public void setSettings() {
 		DBConnection dbConnection = (DBConnection)connCombo.getSelectedItem();
 		setDbConnection(dbConnection);
 
-		if (workspaceText.getText().trim().length() == 0)
-			workspaceText.setText("LIVE");
+		String workspace = workspaceText.getText().trim();
+		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
+				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
+			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
 
 		databaseConfig.getWorkspaces().getOperationWorkspace().setName(workspaceText.getText());
 		databaseConfig.getWorkspaces().getOperationWorkspace().setTimestamp(timestampText.getText());
@@ -856,7 +871,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		databaseConfig.getOperation().setBoundingBoxSRS(srsComboBox.getSelectedItem());
 	}
 
-	public void setDbConnection(DBConnection dbConnection) {
+	private void setDbConnection(DBConnection dbConnection) {
 		if (!descriptionText.getText().trim().equals(""))
 			dbConnection.setDescription(descriptionText.getText());
 		else
@@ -866,7 +881,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		dbConnection.setPort(((Number)portText.getValue()).intValue());
 		dbConnection.setSid(databaseText.getText());
 		dbConnection.setUser(userText.getText());
-		config.getInternal().setCurrentDbPassword(new String(passwordText.getPassword()));
+		dbConnection.setInternalPassword(new String(passwordText.getPassword()));
 
 		dbConnection.setSavePassword(passwordCheck.isSelected());
 		if (passwordCheck.isSelected())
@@ -875,14 +890,17 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			dbConnection.setPassword("");
 	}
 
-	public void getDbConnection(DBConnection dbConnection) {
+	private void getDbConnection(DBConnection dbConnection) {
 		descriptionText.setText(dbConnection.getDescription());
 		serverText.setText(dbConnection.getServer());
 		databaseText.setText(dbConnection.getSid());
 		userText.setText(dbConnection.getUser());
 		passwordCheck.setSelected(dbConnection.isSetSavePassword());
-		passwordText.setText(dbConnection.getPassword());
-		config.getInternal().setCurrentDbPassword(dbConnection.getPassword());
+
+		if (passwordCheck.isSelected())
+			passwordText.setText(dbConnection.getPassword());
+		else
+			passwordText.setText(dbConnection.getInternalPassword());
 
 		Integer port = dbConnection.getPort();
 		if (port == null || port == 0) {
@@ -938,7 +956,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		return true;
 	}
 
-	public boolean requestDelete() {
+	private boolean requestDelete() {
 		DBConnection dbConnection = (DBConnection)connCombo.getSelectedItem();
 		String text = Internal.I18N.getString("db.dialog.delete.msg");
 		Object[] args = new Object[]{ dbConnection.getDescription() };
@@ -950,7 +968,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("database.isConnected")) {
+		if (evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
 			boolean isConnected = (Boolean)evt.getNewValue();
 
 			if (!isConnected)

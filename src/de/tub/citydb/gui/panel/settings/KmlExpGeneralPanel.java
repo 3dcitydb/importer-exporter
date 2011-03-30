@@ -47,14 +47,14 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JColorChooser;
 import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
@@ -66,6 +66,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
+import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.util.DBUtil;
@@ -140,7 +141,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		this.topFrame = topFrame;
 
 		initGui();
-		config.getInternal().addPropertyChangeListener(this);
+		DBConnectionPool.getInstance().addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
 	}
 
 	@Override
@@ -785,7 +786,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 										   formattedMsg,
 										   Internal.I18N.getString("pref.kmlexport.connectDialog.line3")};
 
-				if (!config.getInternal().isConnected() &&
+				if (!DBConnectionPool.getInstance().isConnected() &&
 					JOptionPane.showConfirmDialog(getTopLevelAncestor(),
 												  connectConfirm,
 												  Internal.I18N.getString("pref.kmlexport.connectDialog.title"),
@@ -793,10 +794,10 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 					topFrame.connectToDatabase();
 				}
 
-				if (config.getInternal().isConnected()) {
+				if (DBConnectionPool.getInstance().isConnected()) {
 					themeComboBox.removeAllItems();
 					try {
-						for (String theme: DBUtil.getInstance(topFrame.getDBPool()).getAppearanceThemeList()) {
+						for (String theme: DBUtil.getAppearanceThemeList()) {
 							themeComboBox.addItem(theme);
 						}
 						themeComboBox.setSelectedItem(config.getProject().getKmlExporter().getAppearanceTheme());
@@ -930,9 +931,9 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		geometryHighlightingCheckbox.setSelected(kmlExporter.isGeometryHighlighting());
 
 		themeComboBox.removeAllItems();
-		if (config.getInternal().isConnected()) {
+		if (DBConnectionPool.getInstance().isConnected()) {
 			try {
-				for (String theme: DBUtil.getInstance(topFrame.getDBPool()).getAppearanceThemeList()) {
+				for (String theme: DBUtil.getAppearanceThemeList()) {
 					themeComboBox.addItem(theme);
 				}
 				themeComboBox.setSelectedItem(kmlExporter.getAppearanceTheme());
@@ -1162,7 +1163,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("database.isConnected")) {
+		if (evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
 			boolean isConnected = (Boolean)evt.getNewValue();
 			themeComboBox.removeAllItems();
 			if (!isConnected) {

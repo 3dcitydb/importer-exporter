@@ -34,7 +34,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
 import javax.swing.JFileChooser;
@@ -139,17 +138,8 @@ public class MenuProject extends JMenu {
 						Internal.I18N.getString("menu.project.defaults.msg.title"), JOptionPane.YES_NO_OPTION);
 
 				if (res == JOptionPane.YES_OPTION) {
-					topFrame.getConsoleText().setText("");
-
-					if (config.getInternal().isConnected()) {
-						try {
-							topFrame.getDBPool().close();
-						} catch (SQLException e1) {
-							topFrame.getDBPool().forceClose();
-						}
-						
-						LOG.info("Disconnected from database.");
-					}
+					topFrame.clearConsole();
+					topFrame.disconnectFromDatabase();
 
 					config.setProject(new Project());
 					topFrame.loadSettings();

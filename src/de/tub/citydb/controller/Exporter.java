@@ -98,7 +98,6 @@ import de.tub.citydb.log.Logger;
 import de.tub.citydb.sax.SAXBuffer;
 import de.tub.citydb.sax.SAXWriter;
 import de.tub.citydb.sax.XMLHeaderWriter;
-import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
 
 public class Exporter implements EventListener {
@@ -272,7 +271,7 @@ public class Exporter implements EventListener {
 		// set target reference system for export
 		ReferenceSystem targetSRS = config.getProject().getExporter().getTargetSRS();
 		internalConfig.setTransformCoordinates(targetSRS.isSupported() && 
-				targetSRS.getSrid() != config.getInternal().getOpenConnection().getMetaData().getSrid());
+				targetSRS.getSrid() != dbPool.getActiveConnection().getMetaData().getSrid());
 		if (internalConfig.isTransformCoordinates()) {
 			internalConfig.setExportTargetSRS(targetSRS);
 			LOG.info("Transforming geometry representation to reference system '" + targetSRS.getDescription() + "' (SRID: " + targetSRS.getSrid() + ").");
@@ -280,7 +279,7 @@ public class Exporter implements EventListener {
 		}
 
 		// getting export filter
-		exportFilter = new ExportFilter(config, DBUtil.getInstance(dbPool));
+		exportFilter = new ExportFilter(config);
 
 		// bounding box config
 		Tiling tiling = config.getProject().getExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
@@ -563,12 +562,6 @@ public class Exporter implements EventListener {
 						lookupServerManager.shutdownAll();
 					} catch (SQLException e) {
 						LOG.error("SQL error: " + e.getMessage());
-					}
-
-					try {
-						dbPool.refresh();
-					} catch (SQLException e) {
-						//
 					}
 
 					// finally join eventDispatcher

@@ -35,7 +35,6 @@ import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.filter.feature.GmlIdFilter;
 import de.tub.citydb.filter.feature.GmlNameFilter;
 import de.tub.citydb.filter.statistic.FeatureCounterFilter;
-import de.tub.citydb.util.DBUtil;
 
 public class ImportFilter {
 	private FeatureClassFilter featureClassFilter;
@@ -44,12 +43,12 @@ public class ImportFilter {
 	private GmlNameFilter gmlNameFilter;
 	private BoundingBoxFilter boundingBoxFilter;
 	
-	public ImportFilter(Config config, DBUtil dbUtil) {
+	public ImportFilter(Config config) {
 		featureClassFilter = new FeatureClassFilter(config, FilterMode.IMPORT);
 		featureCounterFilter = new FeatureCounterFilter(config, FilterMode.IMPORT);
 		gmlIdFilter = new GmlIdFilter(config, FilterMode.IMPORT);
 		gmlNameFilter = new GmlNameFilter(config, FilterMode.IMPORT);
-		boundingBoxFilter = new BoundingBoxFilter(config, FilterMode.IMPORT, dbUtil);
+		boundingBoxFilter = new BoundingBoxFilter(config, FilterMode.IMPORT);
 	}
 
 	public FeatureClassFilter getFeatureClassFilter() {

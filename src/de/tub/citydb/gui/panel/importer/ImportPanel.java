@@ -91,15 +91,13 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 	}
 
 	private void initGui() {
-
-		//gui-elemente anlegen
 		fileList = new JList();		
-		browseButton = new JButton("");
-		removeButton = new JButton("");
+		browseButton = new JButton();
+		removeButton = new JButton();
 		filterPanel = new FilterPanel(config, FilterPanelType.IMPORT);
-		importButton = new JButton("");
-		validateButton = new JButton("");
-		workspaceText = new JTextField("");
+		importButton = new JButton();
+		validateButton = new JButton();
+		workspaceText = new JTextField();
 
 		fileListModel = new DefaultListModel();
 		fileList.setModel(fileListModel);
@@ -195,10 +193,12 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 		}
 
 		config.getInternal().setImportFileName(builder.toString());		
-		
-		if (workspaceText.getText().trim().length() == 0)
-			workspaceText.setText("LIVE");
-		
+
+		String workspace = workspaceText.getText().trim();
+		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
+				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
+			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
+
 		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText());
 		filterPanel.setSettings();
 	}
@@ -280,7 +280,7 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 						config.getProject().getImporter().getPath().setLastUsedPath(
 								new File(fileListModel.getElementAt(fileListModel.size() - 1).toString()).getAbsolutePath());
 					}
-					
+
 					dtde.getDropTargetContext().dropComplete(true);	
 				} catch (UnsupportedFlavorException e1) {
 					//

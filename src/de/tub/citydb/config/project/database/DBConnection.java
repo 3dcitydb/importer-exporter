@@ -60,6 +60,8 @@ public class DBConnection implements Comparable<DBConnection> {
 	private String password = "";
 	private Boolean savePassword = false;
 	@XmlTransient
+	private String internalPassword;
+	@XmlTransient
 	private DBMetaData metaData;
 		
 	public DBConnection() {
@@ -141,6 +143,14 @@ public class DBConnection implements Comparable<DBConnection> {
 		return description;
 	}
 	
+	public String getInternalPassword() {
+		return internalPassword;
+	}
+
+	public void setInternalPassword(String internalPassword) {
+		this.internalPassword = internalPassword;
+	}
+
 	public DBMetaData getMetaData() {
 		return metaData;
 	}

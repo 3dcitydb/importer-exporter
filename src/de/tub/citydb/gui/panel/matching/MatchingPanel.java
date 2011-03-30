@@ -56,6 +56,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.controller.Matcher;
+import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.event.Event;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.event.EventListener;
@@ -77,6 +78,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 	private final Logger LOG = Logger.getInstance();
 	private final Config config;
 	private final ImpExpGui topFrame;
+	private final DBConnectionPool dbPool;
 	
 	private JComboBox masterLODCombo;
 	private JComboBox candLODCombo;
@@ -128,6 +130,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 	public MatchingPanel(Config config, ImpExpGui topFrame) {
 		this.config = config;
 		this.topFrame = topFrame;
+		dbPool = DBConnectionPool.getInstance();
 
 		config.getProject().getMatching().getMergeConfig().addPropertyChangeListener(this);
 		initGui();
@@ -463,9 +466,11 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 	}
 
 	public void setSettings() {
-		if (workspaceText.getText().trim().length() == 0)
-			workspaceText.setText("LIVE");
-
+		String workspace = workspaceText.getText().trim();
+		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
+				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
+			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
+		
 		config.getProject().getDatabase().getWorkspaces().getMatchingWorkspace().setName(workspaceText.getText());
 		config.getProject().getDatabase().getWorkspaces().getMatchingWorkspace().setTimestamp(timestampText.getText());
 
@@ -489,7 +494,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		try {
 			setSettings();
 
-			topFrame.getConsoleText().setText("");
+			topFrame.clearConsole();
 			Database db = config.getProject().getDatabase();
 
 			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getMatchingWorkspace())) {
@@ -498,13 +503,13 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				return;
 			}
 
-			if (!config.getInternal().isConnected()) {
+			if (!dbPool.isConnected()) {
 				topFrame.connectToDatabase();
-				if (!config.getInternal().isConnected())
+				if (!dbPool.isConnected())
 					return;
 			}
 
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.match.label"));
+			topFrame.setStatusText(Internal.I18N.getString("main.status.match.label"));
 			LOG.info("Initializing matching process...");
 
 			// initialize event dispatcher
@@ -526,7 +531,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				}
 			});
 
-			Matcher matcher = new Matcher(topFrame.getDBPool(), config, eventDispatcher);
+			Matcher matcher = new Matcher(dbPool, config, eventDispatcher);
 
 			status.getButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -561,7 +566,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				LOG.warn("Matching process aborted.");
 			}
 
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.ready.label"));
+			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}
@@ -574,7 +579,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		try {
 			setSettings();
 
-			topFrame.getConsoleText().setText("");
+			topFrame.clearConsole();
 			Database db = config.getProject().getDatabase();
 
 			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getMatchingWorkspace())) {
@@ -583,13 +588,13 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				return;
 			}
 
-			if (!config.getInternal().isConnected()) {
+			if (!dbPool.isConnected()) {
 				topFrame.connectToDatabase();
-				if (!config.getInternal().isConnected())
+				if (!dbPool.isConnected())
 					return;
 			}
 
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.merge.label"));
+			topFrame.setStatusText(Internal.I18N.getString("main.status.merge.label"));
 			LOG.info("Initializing merging process...");
 
 			// initialize event dispatcher
@@ -609,7 +614,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				}
 			});
 
-			Matcher matcher = new Matcher(topFrame.getDBPool(), config, eventDispatcher);
+			Matcher matcher = new Matcher(dbPool, config, eventDispatcher);
 			boolean success = matcher.merge();
 
 			try {
@@ -631,7 +636,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			}
 
 			setEnabledButtons(false);
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.ready.label"));
+			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}
@@ -644,15 +649,15 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		try {
 			setSettings();
 
-			topFrame.getConsoleText().setText("");
+			topFrame.clearConsole();
 
-			if (!config.getInternal().isConnected()) {
+			if (!dbPool.isConnected()) {
 				topFrame.connectToDatabase();
-				if (!config.getInternal().isConnected())
+				if (!dbPool.isConnected())
 					return;
 			}
 
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.overlap.label"));
+			topFrame.setStatusText(Internal.I18N.getString("main.status.overlap.label"));
 			LOG.info("Initializing matching process...");
 
 			// initialize event dispatcher
@@ -674,7 +679,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				}
 			});
 
-			Matcher matcher = new Matcher(topFrame.getDBPool(), config, eventDispatcher);
+			Matcher matcher = new Matcher(dbPool, config, eventDispatcher);
 			boolean success = matcher.calcRelevantMatches();
 
 			try {
@@ -695,7 +700,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				LOG.warn("Matching process aborted abnormally.");
 			}
 
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.ready.label"));
+			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}
@@ -708,7 +713,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		try {
 			setSettings();
 			
-			topFrame.getConsoleText().setText("");
+			topFrame.clearConsole();
 			Database db = config.getProject().getDatabase();
 
 			// workspace timestamp
@@ -718,14 +723,14 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				return;
 			}
 
-			if (!config.getInternal().isConnected()) {
+			if (!dbPool.isConnected()) {
 				topFrame.connectToDatabase();
 
-				if (!config.getInternal().isConnected())
+				if (!dbPool.isConnected())
 					return;
 			}
 
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.delete.label"));
+			topFrame.setStatusText(Internal.I18N.getString("main.status.delete.label"));
 			LOG.info("Initializing deletion of buildings...");
 
 			String msg = Internal.I18N.getString("match.tools.dialog.msg");
@@ -749,7 +754,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				}
 			});
 
-			Matcher matcher = new Matcher(topFrame.getDBPool(), config, eventDispatcher);
+			Matcher matcher = new Matcher(dbPool, config, eventDispatcher);
 			boolean success = matcher.delete();
 
 			try {
@@ -770,7 +775,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				LOG.warn("Deletion of buildings aborted abnormally.");
 			}
 
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.ready.label"));
+			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}

@@ -58,7 +58,6 @@ import de.tub.citydb.config.project.Project;
 import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.config.project.global.Logging;
-import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.jaxb.JAXBContextRegistry;
 import de.tub.citydb.log.Logger;
@@ -91,7 +90,6 @@ public class ImpExp {
 
 	private final Logger LOG = Logger.getInstance();
 	private JAXBContext cityGMLContext, kmlContext, colladaContext, projectContext, guiContext;
-	private DBConnectionPool dbPool;
 	private Config config;
 	private List<String> errMsgs = new ArrayList<String>();
 
@@ -163,7 +161,6 @@ public class ImpExp {
 			colladaContext = JAXBContextRegistry.getInstance("org.collada._2005._11.colladaschema");
 			projectContext = JAXBContextRegistry.getInstance("de.tub.citydb.config.project");
 			guiContext = JAXBContextRegistry.getInstance("de.tub.citydb.config.gui");
-			dbPool = DBConnectionPool.getInstance("de.tub.citydb", config);
 		} catch (JAXBException e) {
 			LOG.error("Application environment could not be initialized");
 			LOG.error("Aborting...");
@@ -309,7 +306,6 @@ public class ImpExp {
 							colladaContext,
 							projectContext,
 							guiContext,
-							dbPool,
 							config).invoke(errMsgs);
 				}
 			});
@@ -330,9 +326,7 @@ public class ImpExp {
 
 			new Thread() {
 				public void run() {
-					new ImpExpCmd(cityGMLContext, 
-							dbPool, 
-							config).doValidate();
+					new ImpExpCmd(cityGMLContext, config).doValidate();
 				}
 			}.start();
 
@@ -352,9 +346,7 @@ public class ImpExp {
 
 			new Thread() {
 				public void run() {
-					new ImpExpCmd(cityGMLContext, 
-							dbPool, 
-							config).doImport();
+					new ImpExpCmd(cityGMLContext, config).doImport();
 				}
 			}.start();
 
@@ -366,9 +358,7 @@ public class ImpExp {
 
 			new Thread() {
 				public void run() {
-					new ImpExpCmd(cityGMLContext, 
-							dbPool, 
-							config).doExport();
+					new ImpExpCmd(cityGMLContext, config).doExport();
 				}
 			}.start();
 
@@ -382,7 +372,6 @@ public class ImpExp {
 				public void run() {
 					new ImpExpCmd(kmlContext,
 							colladaContext,
-							dbPool, 
 							config).doKmlExport();
 				}
 			}.start();

@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import oracle.sql.STRUCT;
 
+@SuppressWarnings("serial")
 public class SyncJGeometry extends JGeometry {
 	protected static final ReentrantLock mainLock = new ReentrantLock();
 

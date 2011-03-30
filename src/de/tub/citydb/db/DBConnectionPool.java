@@ -29,214 +29,203 @@
  */
 package de.tub.citydb.db;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
 
-import oracle.jdbc.pool.OracleConnectionCacheManager;
-import oracle.jdbc.pool.OracleDataSource;
-import de.tub.citydb.config.Config;
+import oracle.ucp.UniversalConnectionPoolAdapter;
+import oracle.ucp.UniversalConnectionPoolException;
+import oracle.ucp.UniversalConnectionPoolLifeCycleState;
+import oracle.ucp.admin.UniversalConnectionPoolManager;
+import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
+import oracle.ucp.jdbc.PoolDataSource;
+import oracle.ucp.jdbc.PoolDataSourceFactory;
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
-import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.util.DBUtil;
 
 public class DBConnectionPool {
-	private static HashMap<String, DBConnectionPool> managerMap = new HashMap<String, DBConnectionPool>();
-	private final Config config;
+	public static final String PROPERTY_DB_IS_CONNECTED = "isConnected";
+	private static DBConnectionPool instance = new DBConnectionPool();
 
-	private String cacheName;
-	private int minLimit  = 1;
-	private int initLimit = 5;
-	private int maxLimit  = -1;
+	private final String poolName = "oracle.pool";
+	private UniversalConnectionPoolManager poolManager;
+	private PoolDataSource poolDataSource;
+	private DBConnection activeConnection;
+	private PropertyChangeSupport changes;
 
-	private OracleConnectionCacheManager connMgr = null;
-	private OracleDataSource ods = null;
-
-	private DBConnectionPool(Config config) {
+	private DBConnectionPool() {
 		// just to thwart instantiation
-		this.config = config;
-	}
-
-	public static synchronized DBConnectionPool getInstance(String cacheName, Config config) {
-		DBConnectionPool manager = managerMap.get(cacheName);
-
-		if (manager == null) {
-			manager = new DBConnectionPool(config);
-			manager.cacheName = cacheName;
-			managerMap.put(cacheName, manager);
+		try {
+			poolManager = UniversalConnectionPoolManagerImpl.getUniversalConnectionPoolManager();
+		} catch (UniversalConnectionPoolException e) {
+			throw new IllegalStateException("Failed to initialize Oracle Universal Pool Manager.");
 		}
 
-		return manager;
+		changes = new PropertyChangeSupport(this);
 	}
 
-	public synchronized void init() throws SQLException {
-		if (ods == null) {
-			// connect to database
-			Database database = config.getProject().getDatabase();
-			DBConnection dbConnection = config.getProject().getDatabase().getActiveConnection();
-			if (dbConnection == null) {
-				List<DBConnection> dbConnectionList = database.getConnections();
-				if (dbConnectionList == null || dbConnectionList.isEmpty())
-					throw new SQLException("No database connection configured.");
+	public static DBConnectionPool getInstance() {
+		return instance;
+	}
 
-				dbConnection = dbConnectionList.get(0);
-				database.setActiveConnection(dbConnection);
-			}
+	public synchronized void connect(DBConnection conn) throws SQLException {
+		if (conn == null)
+			throw new SQLException("No database connection details configured.");
 
-			try {
-				ods = new OracleDataSource();
-				ods.setConnectionCachingEnabled(true);
-				ods.setConnectionCacheName(cacheName);
+		try {
+			if (isManagedConnectionPool(poolName))
+				disconnect();
 
-				ods.setDriverType("thin");
-				ods.setServerName(dbConnection.getServer());
-				ods.setServiceName(dbConnection.getSid());
-				ods.setPortNumber(dbConnection.getPort());
-				ods.setUser(dbConnection.getUser());
-				ods.setPassword(config.getInternal().getCurrentDbPassword());
+			poolDataSource = PoolDataSourceFactory.getPoolDataSource();
+			poolDataSource.setConnectionPoolName(poolName);
 
-				connMgr = OracleConnectionCacheManager.getConnectionCacheManagerInstance();
+			poolDataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
+			poolDataSource.setURL("jdbc:oracle:thin:@//" + conn.getServer() + ":" + conn.getPort()+ "/" + conn.getSid());
+			poolDataSource.setUser(conn.getUser());
+			poolDataSource.setPassword(conn.getInternalPassword());
 
-				Properties cacheProperties = new Properties();
-				cacheProperties.put("MinLimit", minLimit);
-				cacheProperties.put("InitialLimit", initLimit);
-				cacheProperties.put("MaxLimit", maxLimit);
-
-				connMgr.createCache(cacheName, ods, cacheProperties);
-			} catch (SQLException sqlEx) {
-				ods = null;
-				throw sqlEx;
-			}
-
-			// set internal connection info
-			DBUtil dbUtil = DBUtil.getInstance(this);
-			dbConnection.setMetaData(dbUtil.getDatabaseInfo());
-
-			// fire property change events
-			config.getInternal().setOpenConnection(dbConnection);
+			poolManager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);		
+			poolManager.startConnectionPool(poolName);	
+		} catch (UniversalConnectionPoolException e) {
+			poolDataSource = null;
+			throw new SQLException("Failed to connect to the database: " + e.getMessage());
 		}
-	}
 
-	public synchronized void init(int minLimit, int initLimit, int maxLimit, Config config) throws SQLException {
-		if (ods == null) {
-			this.minLimit = minLimit;
-			this.initLimit = initLimit;
-			this.maxLimit = maxLimit;
+		// set internal connection info
+		conn.setMetaData(DBUtil.getDatabaseInfo());
 
-			init();
-		}
-	}
-
-	public OracleDataSource getDataSource() throws SQLException {
-		if (ods == null)
-			throw new SQLException("OracleDataSource is null.");
-
-		return ods;
+		// fire property change events
+		activeConnection = conn;
+		changes.firePropertyChange(PROPERTY_DB_IS_CONNECTED, false, true);
 	}
 
 	public Connection getConnection() throws SQLException {
-		if (ods == null)
-			throw new SQLException("OracleDataSource is null.");
+		if (poolDataSource == null)
+			throw new SQLException("Failed to retrieve connection to database due to missing PoolDataSource.");
 
-		return ods.getConnection();
+		return poolDataSource.getConnection();
 	}
 
-	public int getNumActive() throws SQLException {
-		if (connMgr == null)
-			return 0;
-
-		return connMgr.getNumberOfActiveConnections(cacheName);
-	}
-
-	public int getNumIdle() throws SQLException {
-		if (connMgr == null)
-			return 0;
-
-		return connMgr.getNumberOfAvailableConnections(cacheName);
-	}
-
-	public int getCacheSize() throws SQLException {
-		if (connMgr == null)
-			return 0;
-
-		return getNumActive() + getNumIdle();
-	}
-
-	public int getCacheMinLimit() {
-		return minLimit;
-	}
-
-	public int getCacheInitLimit() {
-		return initLimit;
-	}
-
-	public int getCacheMaxLimit() {
-		return maxLimit;
-	}
-
-	public String getCacheName() {
-		return cacheName;
-	}
-
-	public void setCacheProperties(Properties properties) throws SQLException {
-		if (connMgr != null) {
-			connMgr.reinitializeCache(cacheName, properties);
-
-			String minLimit = properties.getProperty("MinLimit");
-			String initLimit = properties.getProperty("InitialLimit");
-			String maxLimit = properties.getProperty("MaxLimit");
-
-			if (minLimit != null && minLimit.trim().length() > 0)
-				this.minLimit = Integer.parseInt(minLimit);
-
-			if (initLimit != null && initLimit.trim().length() > 0)
-				this.initLimit = Integer.parseInt(initLimit);
-
-			if (maxLimit != null && maxLimit.trim().length() > 0)
-				this.maxLimit = Integer.parseInt(maxLimit);
-		}
-	}
-
-	public Properties getCacheProperties() throws SQLException {
-		if (ods == null)
-			return null;
-
-		return ods.getConnectionCacheProperties() ;
-	}
-
-	public synchronized void refresh() throws SQLException {
-		if (connMgr != null)
-			connMgr.refreshCache(cacheName, OracleConnectionCacheManager.REFRESH_ALL_CONNECTIONS);
-	}
-
-	public synchronized void close() throws SQLException {
-		if (ods != null) {
-			ods.close();
-			ods = null;
-
-			// fire property change events
-			config.getInternal().unsetOpenConnection();
-		}
-	}
-
-	public synchronized void forceClose() {
+	public UniversalConnectionPoolLifeCycleState getLifeCyleState() {
 		try {
-			close();
-		} catch (SQLException sqlEx) {
+			if (isManagedConnectionPool(poolName))
+				return poolManager.getConnectionPool(poolName).getLifeCycleState();
+		} catch (UniversalConnectionPoolException e) {
+			//
+		}
+		
+		return UniversalConnectionPoolLifeCycleState.LIFE_CYCLE_FAILED;
+	}
+
+	public boolean isConnected() {
+		return getLifeCyleState().equals(UniversalConnectionPoolLifeCycleState.LIFE_CYCLE_RUNNING);
+	}
+
+	public DBConnection getActiveConnection() {
+		return activeConnection;
+	}
+
+	public int getBorrowedConnectionsCount() throws SQLException {
+		return poolDataSource != null ? poolDataSource.getBorrowedConnectionsCount() : 0;
+	}
+	
+	public int getAvailableConnectionsCount() throws SQLException {
+		return poolDataSource != null ? poolDataSource.getAvailableConnectionsCount() : 0;
+	}
+	
+	public int getMinPoolSize() throws SQLException {
+		return poolDataSource != null ? poolDataSource.getMinPoolSize() : 0;
+	}
+	
+	public int getMaxPoolSize() throws SQLException {
+		return poolDataSource != null ? poolDataSource.getMaxPoolSize() : 0;
+	}
+	
+	public int getInitialPoolSize() throws SQLException {
+		return poolDataSource != null ? poolDataSource.getInitialPoolSize() : 0;
+	}
+
+	public void setMinPoolSize(int minPoolSize) throws SQLException {
+		if (poolDataSource != null)
+			poolDataSource.setMinPoolSize(minPoolSize);
+	}
+	
+	public void setMaxPoolSize(int maxPoolSize) throws SQLException {
+		if (poolDataSource != null)
+			poolDataSource.setMaxPoolSize(maxPoolSize);
+	}
+	
+	public void setInitialPoolSize(int initialPoolSize) throws SQLException {
+		if (poolDataSource != null)
+			poolDataSource.setInitialPoolSize(initialPoolSize);
+	}
+
+	public synchronized void refresh() throws UniversalConnectionPoolException {
+		if (isManagedConnectionPool(poolName))
+			poolManager.refreshConnectionPool(poolName);
+	}
+	
+	public synchronized void recylce() throws UniversalConnectionPoolException {
+		if (isManagedConnectionPool(poolName))
+			poolManager.recycleConnectionPool(poolName);
+	}
+	
+	public synchronized void purge() throws UniversalConnectionPoolException {
+		if (isManagedConnectionPool(poolName))
+			poolManager.purgeConnectionPool(poolName);
+	}
+	
+	public synchronized void stop() throws UniversalConnectionPoolException {
+		if (isManagedConnectionPool(poolName))
+			poolManager.stopConnectionPool(poolName);
+	}
+	
+	public synchronized void start() throws UniversalConnectionPoolException {
+		if (isManagedConnectionPool(poolName))
+			poolManager.startConnectionPool(poolName);
+	}
+
+	public synchronized void disconnect() throws SQLException {
+		boolean isConnected = isConnected();
+		
+		try {			
+			if (isManagedConnectionPool(poolName))
+				poolManager.destroyConnectionPool(poolName);
+		} catch (UniversalConnectionPoolException e) {
+			throw new SQLException(e.getMessage());
+		}
+
+		// fire property change events
+		activeConnection = null;
+		changes.firePropertyChange(PROPERTY_DB_IS_CONNECTED, isConnected, false);
+	}
+
+	public synchronized void forceDisconnect() {
+		boolean isConnected = isConnected();
+		
+		try {
+			disconnect();
+		} catch (SQLException e) {
 			//
 		}
 
-		ods = null;
+		// fire property change events
+		activeConnection = null;
+		changes.firePropertyChange(PROPERTY_DB_IS_CONNECTED, isConnected, false);
 	}
 
 	public boolean changeWorkspace(Connection conn, Workspace workspace) {
 		String name = workspace.getName().trim();
 		String timestamp = workspace.getTimestamp().trim();
 		CallableStatement stmt = null;
+
+		if (!name.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
+				(name.length() == 0 || name.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
+			name = Internal.ORACLE_DEFAULT_WORKSPACE;
 
 		try {
 			stmt = conn.prepareCall("{call dbms_wm.GotoWorkspace('" + name + "')}");
@@ -283,5 +272,22 @@ public class DBConnectionPool {
 				conn = null;
 			}
 		}
+	}
+
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener l) {
+		changes.addPropertyChangeListener(propertyName, l);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener l) {
+		changes.removePropertyChangeListener(l);
+	}
+
+	private boolean isManagedConnectionPool(String poolName) throws UniversalConnectionPoolException {
+		for (String managedPool : poolManager.getConnectionPoolNames()) {
+			if (managedPool.equals(poolName))
+				return true;
+		}
+
+		return false;
 	}
 }

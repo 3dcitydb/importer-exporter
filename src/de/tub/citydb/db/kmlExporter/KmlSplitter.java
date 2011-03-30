@@ -110,7 +110,7 @@ public class KmlSplitter {
 			try {
 				spatialQuery = connection.prepareStatement(TileQueries.QUERY_GET_GMLIDS);
 
-				int srid = config.getInternal().getOpenConnection().getMetaData().getSrid();
+				int srid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 
 				spatialQuery.setInt(1, srid);
 				// coordinates for inside

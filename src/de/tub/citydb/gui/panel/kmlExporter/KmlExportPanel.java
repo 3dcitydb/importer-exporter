@@ -619,7 +619,11 @@ public class KmlExportPanel extends JPanel {
 	}
 
 	public void setSettings() {
-
+		String workspace = workspaceText.getText().trim();
+		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
+				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
+			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
+		
 		config.getInternal().setExportFileName(browseText.getText().trim());
 		config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().setName(workspaceText.getText().trim());
 		config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().setTimestamp(timestampText.getText().trim());

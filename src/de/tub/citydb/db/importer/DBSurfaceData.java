@@ -55,6 +55,7 @@ import org.citygml4j.model.gml.Point;
 import org.citygml4j.model.gml.PointProperty;
 
 import de.tub.citydb.config.Config;
+import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.db.xlink.DBXlinkTextureFile;
 import de.tub.citydb.db.xlink.DBXlinkTextureFileEnum;
 import de.tub.citydb.db.xlink.DBXlinkTextureParam;
@@ -89,7 +90,7 @@ public class DBSurfaceData implements DBImporter {
 
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-		dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
+		dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 		importTextureImage = config.getProject().getImporter().getAppearances().isSetImportTextureFiles();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 

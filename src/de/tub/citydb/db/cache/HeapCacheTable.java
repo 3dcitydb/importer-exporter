@@ -33,7 +33,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.jdbc.driver.OracleConnection;
+import oracle.jdbc.OracleConnection;
 import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.db.cache.model.CacheTableBasic;
 import de.tub.citydb.db.cache.model.CacheTableDeprecatedMaterial;

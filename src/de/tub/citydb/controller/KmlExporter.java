@@ -208,7 +208,7 @@ public class KmlExporter implements EventListener {
 		}
 
 		// getting export filter
-		ExportFilter exportFilter = new ExportFilter(config, DBUtil.getInstance(dbPool), FilterMode.KML_EXPORT);
+		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
 
 		// bounding box config
 		Tiling tiling = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
@@ -463,13 +463,6 @@ public class KmlExporter implements EventListener {
 
 						eventDispatcher.triggerEvent(new StatusDialogMessage(" "));
 
-						// cleaning up...
-						try {
-							dbPool.refresh();
-						} catch (SQLException e) {
-							//
-						}
-
 						// finally join eventDispatcher
 						try {
 							eventDispatcher.join();
@@ -495,7 +488,6 @@ public class KmlExporter implements EventListener {
 	}
 
 	public int calculateRowsColumnsAndDelta() throws SQLException {
-		DBUtil dbUtil = DBUtil.getInstance(dbPool);
 		TiledBoundingBox bbox = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox();
 		TilingMode tilingMode = bbox.getTiling().getMode();
 		double autoTileSideLength = config.getProject().getKmlExporter().getAutoTileSideLength();
@@ -503,13 +495,13 @@ public class KmlExporter implements EventListener {
 		tileMatrix = new BoundingVolume(new Point(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(), 0),
 										new Point(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY(), 0));
 
-		int dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
+		int dbSrid = dbPool.getActiveConnection().getMetaData().getSrid();
 		if (bbox.getSRS().getSrid() != dbSrid) {
-			wgs84TileMatrix = dbUtil.transformBBox(tileMatrix, bbox.getSRS().getSrid(), WGS84_SRID);
-			tileMatrix = dbUtil.transformBBox(tileMatrix, bbox.getSRS().getSrid(), dbSrid);
+			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSRS().getSrid(), WGS84_SRID);
+			tileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSRS().getSrid(), dbSrid);
 		}
 		else {
-			wgs84TileMatrix = dbUtil.transformBBox(tileMatrix, dbSrid, WGS84_SRID);
+			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, dbSrid, WGS84_SRID);
 		}
 		
 		if (tilingMode.equals(TilingMode.NO_TILING)) {

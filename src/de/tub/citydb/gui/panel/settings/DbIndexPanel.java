@@ -50,6 +50,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Index;
 import de.tub.citydb.config.project.database.IndexMode;
+import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.util.GuiUtil;
@@ -84,7 +85,7 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 		this.topFrame = topFrame;
 		initGui();
 
-		config.getInternal().addPropertyChangeListener(this);
+		DBConnectionPool.getInstance().addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
 	}
 
 	@Override
@@ -265,11 +266,10 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 
 			String statusDetails = Internal.I18N.getString("pref.db.index.deactivate.detail");
 
-			topFrame.getConsoleText().setText("");
-			topFrame.getStatusText().setText(Internal.I18N.getString(statusTextKey));
+			topFrame.clearConsole();
+			topFrame.setStatusText(Internal.I18N.getString(statusTextKey));
 
 			LOG.info(logStartMsg);
-			final DBUtil dbUtil = DBUtil.getInstance(topFrame.getDBPool());
 
 			final StatusDialog reportDialog = new StatusDialog(topFrame, 
 					statusWindowTitle, 
@@ -289,9 +289,9 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 			String dbSqlEx = null;
 			try {
 				if (type == DB_INDEX_TYPE.SPATIAL)
-					report = dbUtil.dropSpatialIndexes();
+					report = DBUtil.dropSpatialIndexes();
 				else 
-					report = dbUtil.dropNormalIndexes();
+					report = DBUtil.dropNormalIndexes();
 
 				if (report != null) {
 
@@ -300,7 +300,7 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 
 						if (!parts[4].equals("DROPPED")) {
 							LOG.error("FAILED: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
-							String errMsg = dbUtil.errorMessage(parts[3]);
+							String errMsg = DBUtil.errorMessage(parts[3]);
 							LOG.error("Error cause: " + errMsg);
 						} else
 							LOG.info("SUCCESS: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
@@ -333,7 +333,7 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 				}
 			}
 
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.ready.label"));
+			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}
@@ -364,11 +364,10 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 
 			String statusDetails = Internal.I18N.getString("pref.db.index.activate.detail");
 
-			topFrame.getConsoleText().setText("");
-			topFrame.getStatusText().setText(Internal.I18N.getString(statusTextKey));
+			topFrame.clearConsole();
+			topFrame.setStatusText(Internal.I18N.getString(statusTextKey));
 
 			LOG.info(logStartMsg);
-			final DBUtil dbUtil = DBUtil.getInstance(topFrame.getDBPool());
 
 			final StatusDialog reportDialog = new StatusDialog(topFrame, 
 					statusWindowsTitle, 
@@ -388,9 +387,9 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 			String dbSqlEx = null;
 			try {
 				if (type == DB_INDEX_TYPE.SPATIAL)
-					report = dbUtil.createSpatialIndexes();
+					report = DBUtil.createSpatialIndexes();
 				else 
-					report = dbUtil.createNormalIndexes();
+					report = DBUtil.createNormalIndexes();
 
 				if (report != null) {				
 					for (String line : report) {				
@@ -398,7 +397,7 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 
 						if (!parts[4].equals("VALID")) {
 							LOG.error("FAILED: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
-							String errMsg = dbUtil.errorMessage(parts[3]);
+							String errMsg = DBUtil.errorMessage(parts[3]);
 							LOG.error("Error cause: " + errMsg);
 						} else
 							LOG.info("SUCCESS: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
@@ -431,7 +430,7 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 				}
 			}
 
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.ready.label"));
+			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}
@@ -477,7 +476,7 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("database.isConnected")) {
+		if (evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
 			boolean status = (Boolean)evt.getNewValue();
 
 			impSIActivate.setEnabled(status);

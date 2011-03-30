@@ -33,7 +33,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.jdbc.driver.OracleConnection;
+import oracle.jdbc.OracleConnection;
 import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;

@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.jdbc.driver.OraclePreparedStatement;
+import oracle.jdbc.OraclePreparedStatement;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 

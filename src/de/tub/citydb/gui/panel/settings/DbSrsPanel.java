@@ -71,6 +71,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.ReferenceSystems;
+import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.JTextFieldLimit;
 import de.tub.citydb.gui.components.SrsComboBoxManager;
@@ -84,6 +85,7 @@ import de.tub.citydb.util.DBUtil;
 public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener, DropTargetListener {
 	private static final int BORDER_THICKNESS = 5;
 	private final Logger LOG = Logger.getInstance();
+	private final DBConnectionPool dbPool;
 
 	private JLabel srsComboBoxLabel;
 	private JLabel sridLabel;
@@ -115,9 +117,10 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 	public DbSrsPanel(Config config, ImpExpGui topFrame) {
 		super(config);
 		this.topFrame = topFrame;
+		dbPool = DBConnectionPool.getInstance();
 
 		initGui();
-		config.getInternal().addPropertyChangeListener(this);
+		dbPool.addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
 	}
 
 	@Override
@@ -335,7 +338,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 				}			
 
 				try {
-					if (DBUtil.getInstance(topFrame.getDBPool()).isSrsSupported(srid))
+					if (DBUtil.isSrsSupported(srid))
 						LOG.info("SRID " + srid + " is supported.");
 					else
 						LOG.warn("SRID " + srid + " is NOT supported.");
@@ -405,13 +408,11 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		ReferenceSystem refSys = srsComboBox.getSelectedItem();
 		int srid = ((Number)sridText.getValue()).intValue();
 
-		if (!config.getInternal().isShuttingDown() && 
-				srid != refSys.getSrid() && 
-				config.getInternal().isConnected()) {
+		if (dbPool.isConnected() && srid != refSys.getSrid()) {
 			boolean isSupported = false;
 
 			try {
-				isSupported = DBUtil.getInstance(topFrame.getDBPool()).isSrsSupported(srid);
+				isSupported = DBUtil.isSrsSupported(srid);
 
 				if (isSupported)
 					LOG.debug("SRID " + srid + " is supported.");
@@ -430,10 +431,8 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		if (refSys.getDescription().length() == 0)
 			refSys.setDescription(getNewRefSysDescription());
 
-		if (!config.getInternal().isShuttingDown()) {
-			updateSrsComboBoxes(true);				
-			displaySelectedValues();
-		}
+		updateSrsComboBoxes(true);				
+		displaySelectedValues();
 	}
 
 	private void displaySelectedValues() {
@@ -495,8 +494,8 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 
 	private void importReferenceSystems(boolean replace) {
 		try {
-			topFrame.getConsoleText().setText("");
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.database.srs.import.label"));
+			topFrame.clearConsole();
+			topFrame.setStatusText(Internal.I18N.getString("main.status.database.srs.import.label"));
 
 			File file = new File(fileText.getText().trim());
 			String msg = "";
@@ -524,17 +523,17 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 				if (replace)
 					config.getProject().getDatabase().getReferenceSystems().clear();
 
-				if (config.getInternal().isConnected())
+				if (dbPool.isConnected())
 					LOG.info("Checking whether reference systems are supported by database profile.");
 
 				for (ReferenceSystem refSys : refSyss.getItems()) {
 					msg = "Adding reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ").";
 
-					if (config.getInternal().isConnected()) {
+					if (dbPool.isConnected()) {
 						boolean isSupported = false;
 
 						try {
-							isSupported = DBUtil.getInstance(topFrame.getDBPool()).isSrsSupported(refSys.getSrid());
+							isSupported = DBUtil.isSrsSupported(refSys.getSrid());
 							if (!isSupported)
 								msg += " (NOT supported)";
 							else
@@ -567,7 +566,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 			topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
 					MessageFormat.format(Internal.I18N.getString("common.dialog.file.read.error"), msg));
 		} finally {
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.ready.label"));
+			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 		}
 	}
 
@@ -578,8 +577,8 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 				return;
 			}
 
-			topFrame.getConsoleText().setText("");
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.database.srs.export.label"));
+			topFrame.clearConsole();
+			topFrame.setStatusText(Internal.I18N.getString("main.status.database.srs.export.label"));
 
 			String fileName = fileText.getText().trim();
 			if (fileName.length() == 0) {
@@ -616,13 +615,17 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 			topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
 					MessageFormat.format(Internal.I18N.getString("common.dialog.file.write.error"), msg));
 		} finally {
-			topFrame.getStatusText().setText(Internal.I18N.getString("main.status.ready.label"));
+			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 		}
 	}
 
 	private boolean requestChange() {
 		if (isModified()) {
-			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), Internal.I18N.getString("pref.db.srs.apply.msg"), 
+			String text = Internal.I18N.getString("pref.db.srs.apply.msg");
+			Object[] args = new Object[]{srsComboBox.getSelectedItem().getDescription()};
+			String formattedMsg = MessageFormat.format(text, args);
+			
+			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, 
 					Internal.I18N.getString("pref.db.srs.apply.title"), JOptionPane.YES_NO_CANCEL_OPTION);
 			if (res == JOptionPane.CANCEL_OPTION) 
 				return false;
@@ -657,7 +660,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("database.isConnected")) {
+		if (evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
 			boolean isConnected = (Boolean)evt.getNewValue();
 
 			if (!isConnected) {

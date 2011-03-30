@@ -201,9 +201,9 @@ public class SetLoggingPanel extends PrefPanelBase {
 		Logging logging = config.getProject().getGlobal().getLogging();
 
 		wrapTextConsole.setSelected(logging.getConsole().isWrapText());
-		topFrame.getConsoleText().setLineWrap(wrapTextConsole.isSelected());
-		topFrame.getConsoleText().setWrapStyleWord(wrapTextConsole.isSelected());
-		topFrame.getConsoleText().repaint();
+		topFrame.getConsole().setLineWrap(wrapTextConsole.isSelected());
+		topFrame.getConsole().setWrapStyleWord(wrapTextConsole.isSelected());
+		topFrame.getConsole().repaint();
 
 		useLogFile.setSelected(logging.getFile().isSet());
 		useLogPath.setSelected(logging.getFile().isSetUseAlternativeLogPath());
@@ -239,10 +239,10 @@ public class SetLoggingPanel extends PrefPanelBase {
 		LOG.setConsoleLogLevel(consoleLogLevel);
 
 		logging.getConsole().setWrapText(wrapTextConsole.isSelected());
-		topFrame.getConsoleText().setLineWrap(wrapTextConsole.isSelected());
-		topFrame.getConsoleText().setWrapStyleWord(wrapTextConsole.isSelected());
-		topFrame.getConsoleText().repaint();
-		
+		topFrame.getConsole().setLineWrap(wrapTextConsole.isSelected());
+		topFrame.getConsole().setWrapStyleWord(wrapTextConsole.isSelected());
+		topFrame.getConsole().repaint();
+
 		LogLevelType fileLogLevel = (LogLevelType)logLevelFileCombo.getSelectedItem();
 		logging.getFile().setLogLevel(fileLogLevel);
 		LOG.setFileLogLevel(fileLogLevel);
