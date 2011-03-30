@@ -37,23 +37,32 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBException;
-
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.geometry.Matrix;
-import org.citygml4j.impl.jaxb.gml._3_1_1.DirectPositionImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.PointImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.PointPropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.StringOrRefImpl;
+import org.citygml4j.impl.citygml.appearance.AppearanceImpl;
+import org.citygml4j.impl.citygml.appearance.AppearancePropertyImpl;
+import org.citygml4j.impl.citygml.appearance.ColorImpl;
+import org.citygml4j.impl.citygml.appearance.ColorPlusOpacityImpl;
+import org.citygml4j.impl.citygml.appearance.GeoreferencedTextureImpl;
+import org.citygml4j.impl.citygml.appearance.ParameterizedTextureImpl;
+import org.citygml4j.impl.citygml.appearance.SurfaceDataPropertyImpl;
+import org.citygml4j.impl.citygml.appearance.TexCoordGenImpl;
+import org.citygml4j.impl.citygml.appearance.TexCoordListImpl;
+import org.citygml4j.impl.citygml.appearance.TextureAssociationImpl;
+import org.citygml4j.impl.citygml.appearance.TextureCoordinatesImpl;
+import org.citygml4j.impl.citygml.appearance.WorldToTextureImpl;
+import org.citygml4j.impl.citygml.appearance.X3DMaterialImpl;
+import org.citygml4j.impl.citygml.core.TransformationMatrix2x2Impl;
+import org.citygml4j.impl.gml.base.StringOrRefImpl;
+import org.citygml4j.impl.gml.geometry.primitives.DirectPositionImpl;
+import org.citygml4j.impl.gml.geometry.primitives.PointImpl;
+import org.citygml4j.impl.gml.geometry.primitives.PointPropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.CityGMLModuleType;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.AbstractTexture;
 import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.appearance.AppearanceModule;
 import org.citygml4j.model.citygml.appearance.AppearanceProperty;
 import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.ColorPlusOpacity;
@@ -68,23 +77,22 @@ import org.citygml4j.model.citygml.appearance.TextureType;
 import org.citygml4j.model.citygml.appearance.WorldToTexture;
 import org.citygml4j.model.citygml.appearance.WrapMode;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
-import org.citygml4j.model.citygml.core.CityObject;
-import org.citygml4j.model.citygml.core.CoreModule;
-import org.citygml4j.model.gml.DirectPosition;
-import org.citygml4j.model.gml.Point;
-import org.citygml4j.model.gml.PointProperty;
-import org.citygml4j.model.gml.StringOrRef;
-import org.citygml4j.util.CityGMLModules;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
+import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
+import org.citygml4j.model.gml.geometry.primitives.Point;
+import org.citygml4j.model.gml.geometry.primitives.PointProperty;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.config.Config;
+import de.tub.citydb.db.DBTypeValueEnum;
 import de.tub.citydb.db.xlink.DBXlinkTextureFile;
 import de.tub.citydb.db.xlink.DBXlinkTextureFileEnum;
-import de.tub.citydb.util.UUIDManager;
 import de.tub.citydb.util.Util;
 
 public class DBAppearance implements DBExporter {
 	private final DBExporterManager dbExporterManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final Config config;
 	private final Connection connection;
 
@@ -94,15 +102,13 @@ public class DBAppearance implements DBExporter {
 	private DBTextureParam textureParamExporter;
 	private boolean exportTextureImage;
 	private String texturePath;
-	private AppearanceModule globalApp;
 	private boolean useXLink;
 	private boolean appendOldGmlId;
 	private boolean transformCoords;
 	private String gmlIdPrefix;
 
-	public DBAppearance(Connection connection, CityGMLFactory cityGMLFactory, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBAppearance(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
-		this.cityGMLFactory = cityGMLFactory;
 		this.config = config;
 		this.connection = connection;
 
@@ -112,7 +118,6 @@ public class DBAppearance implements DBExporter {
 	private void init() throws SQLException {
 		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
 		texturePath = config.getInternal().getExportTextureFilePath();
-		globalApp = config.getProject().getExporter().getModuleVersion().getAppearance().getModule();
 
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
 		if (!useXLink) {
@@ -161,11 +166,11 @@ public class DBAppearance implements DBExporter {
 		textureParamExporter = (DBTextureParam)dbExporterManager.getDBExporter(DBExporterEnum.TEXTUREPARAM);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, JAXBException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
 		ResultSet rs = null;
 
 		try {
-			Appearance appearance = cityGMLFactory.createAppearance(globalApp);
+			Appearance appearance = new AppearanceImpl();
 			AbstractSurfaceData surfaceData = null;
 
 			long appearanceId = splitter.getPrimaryKey();
@@ -210,7 +215,7 @@ public class DBAppearance implements DBExporter {
 				if (rs.wasNull())
 					continue;
 
-				String geometryTarget = dbExporterManager.getGmlId(surfaceGeometryId, CityGMLClass.GMLGEOMETRY);
+				String geometryTarget = dbExporterManager.getGmlId(surfaceGeometryId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 				if (geometryTarget == null)
 					continue;
 
@@ -230,12 +235,12 @@ public class DBAppearance implements DBExporter {
 					if (rs.wasNull() || surfaceDataType == null || surfaceDataType.length() == 0)
 						continue;
 
-					if (surfaceDataType.equals(CityGMLClass.X3DMATERIAL.toString().toUpperCase()))
-						surfaceData = cityGMLFactory.createX3DMaterial(globalApp);
-					else if (surfaceDataType.equals(CityGMLClass.PARAMETERIZEDTEXTURE.toString().toUpperCase()))
-						surfaceData = cityGMLFactory.createParameterizedTexture(globalApp);
-					else if (surfaceDataType.equals(CityGMLClass.GEOREFERENCEDTEXTURE.toString().toUpperCase()))
-						surfaceData = cityGMLFactory.createGeoreferencedTexture(globalApp);
+					if (surfaceDataType.equals(DBTypeValueEnum.X3D_MATERIAL.toString().toUpperCase()))
+						surfaceData = new X3DMaterialImpl();
+					else if (surfaceDataType.equals(DBTypeValueEnum.PARAMETERIZED_TEXTURE.toString().toUpperCase()))
+						surfaceData = new ParameterizedTextureImpl();
+					else if (surfaceDataType.equals(DBTypeValueEnum.GEOREFERENCED_TEXTURE.toString().toUpperCase()))
+						surfaceData = new GeoreferencedTextureImpl();
 
 					if (surfaceData == null)
 						continue;
@@ -243,15 +248,15 @@ public class DBAppearance implements DBExporter {
 					String gmlId = rs.getString("SD_GMLID");
 					if (gmlId != null) {
 						// process xlink
-						if (dbExporterManager.lookupAndPutGmlId(gmlId, surfaceDataId, CityGMLClass.ABSTRACTSURFACEDATA)) {
+						if (dbExporterManager.lookupAndPutGmlId(gmlId, surfaceDataId, CityGMLClass.ABSTRACT_SURFACE_DATA)) {
 							if (useXLink) {
-								SurfaceDataProperty surfaceDataProperty = cityGMLFactory.createSurfaceDataProperty(globalApp);
+								SurfaceDataProperty surfaceDataProperty = new SurfaceDataPropertyImpl();
 								surfaceDataProperty.setHref("#" + gmlId);
 
 								appearance.addSurfaceDataMember(surfaceDataProperty);
 								continue;
 							} else {
-								String newGmlId = UUIDManager.randomUUID(gmlIdPrefix);
+								String newGmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
 								if (appendOldGmlId)
 									newGmlId += '-' + gmlId;
 
@@ -278,7 +283,7 @@ public class DBAppearance implements DBExporter {
 					if (!rs.wasNull() && isFront == 0)
 						surfaceData.setIsFront(false);
 
-					if (surfaceData.getCityGMLClass() == CityGMLClass.X3DMATERIAL) {
+					if (surfaceData.getCityGMLClass() == CityGMLClass.X3D_MATERIAL) {
 						X3DMaterial material = (X3DMaterial)surfaceData;
 
 						double shininess = rs.getDouble("X3D_SHININESS");
@@ -313,7 +318,7 @@ public class DBAppearance implements DBExporter {
 								List<Double> colorList = Util.string2double(colorString, "\\s+");
 
 								if (colorList != null && colorList.size() >= 3) {
-									Color color = cityGMLFactory.createColor(colorList.get(0), colorList.get(1), colorList.get(2), globalApp);
+									Color color = new ColorImpl(colorList.get(0), colorList.get(1), colorList.get(2));
 
 									switch (i) {
 									case 0:
@@ -338,8 +343,8 @@ public class DBAppearance implements DBExporter {
 
 					}
 
-					else if (surfaceData.getCityGMLClass() == CityGMLClass.PARAMETERIZEDTEXTURE ||
-							surfaceData.getCityGMLClass() == CityGMLClass.GEOREFERENCEDTEXTURE) {
+					else if (surfaceData.getCityGMLClass() == CityGMLClass.PARAMETERIZED_TEXTURE ||
+							surfaceData.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE) {
 						AbstractTexture absTex = (AbstractTexture)surfaceData;
 
 						long dbImageSize = rs.getLong("DB_TEX_IMAGE_SIZE");
@@ -376,13 +381,13 @@ public class DBAppearance implements DBExporter {
 
 						String textureType = rs.getString("TEX_TEXTURE_TYPE");
 						if (textureType != null) {
-							TextureType type = cityGMLFactory.createTextureType(textureType, globalApp);
+							TextureType type = TextureType.fromValue(textureType);
 							absTex.setTextureType(type);
 						}
 
 						String wrapMode = rs.getString("TEX_WRAP_MODE");
 						if (wrapMode != null) {
-							WrapMode mode = cityGMLFactory.createWrapMode(wrapMode, globalApp);
+							WrapMode mode = WrapMode.fromValue(wrapMode);
 							absTex.setWrapMode(mode);
 						}
 
@@ -391,9 +396,8 @@ public class DBAppearance implements DBExporter {
 							List<Double> colorList = Util.string2double(borderColorString, "\\s+");
 
 							if (colorList != null && colorList.size() >= 4) {
-								ColorPlusOpacity borderColor = cityGMLFactory.createColorPlusOpacity(
-										colorList.get(0), colorList.get(1), colorList.get(2), colorList.get(3),
-										globalApp
+								ColorPlusOpacity borderColor = new ColorPlusOpacityImpl(
+										colorList.get(0), colorList.get(1), colorList.get(2), colorList.get(3)
 								);
 
 								absTex.setBorderColor(borderColor);
@@ -403,7 +407,7 @@ public class DBAppearance implements DBExporter {
 						}
 					}
 
-					if (surfaceData.getCityGMLClass() == CityGMLClass.GEOREFERENCEDTEXTURE) {
+					if (surfaceData.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE) {
 						GeoreferencedTexture geoTex = (GeoreferencedTexture)surfaceData;
 
 						int preferWorldFile = rs.getInt("GT_PREFER_WORLDFILE");
@@ -418,8 +422,7 @@ public class DBAppearance implements DBExporter {
 								Matrix matrix = new Matrix(2, 2);
 								matrix.setMatrix(m.subList(0, 4));
 
-								geoTex.setOrientation(cityGMLFactory.createTransformationMatrix2x2(matrix, 
-										(CoreModule)globalApp.getModuleDependencies().getModule(CityGMLModuleType.CORE)));
+								geoTex.setOrientation(new TransformationMatrix2x2Impl(matrix));
 							}
 						}
 
@@ -449,7 +452,7 @@ public class DBAppearance implements DBExporter {
 					}
 
 					// add surface data to appearance
-					SurfaceDataProperty surfaceDataProperty = cityGMLFactory.createSurfaceDataProperty(globalApp);
+					SurfaceDataProperty surfaceDataProperty = new SurfaceDataPropertyImpl();
 					surfaceDataProperty.setSurfaceData(surfaceData);
 					appearance.addSurfaceDataMember(surfaceDataProperty);
 				}
@@ -458,29 +461,29 @@ public class DBAppearance implements DBExporter {
 					continue;
 
 				// add targets to surface data
-				if (surfaceData.getCityGMLClass() == CityGMLClass.X3DMATERIAL) {
+				if (surfaceData.getCityGMLClass() == CityGMLClass.X3D_MATERIAL) {
 					X3DMaterial material = (X3DMaterial)surfaceData;
 					material.addTarget(geometryTarget);
 				}
 
-				else if (surfaceData.getCityGMLClass() == CityGMLClass.GEOREFERENCEDTEXTURE) {
+				else if (surfaceData.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE) {
 					GeoreferencedTexture geoTex = (GeoreferencedTexture)surfaceData;
 					geoTex.addTarget(geometryTarget);
 				}
 
-				else if (surfaceData.getCityGMLClass() == CityGMLClass.PARAMETERIZEDTEXTURE) {
+				else if (surfaceData.getCityGMLClass() == CityGMLClass.PARAMETERIZED_TEXTURE) {
 					ParameterizedTexture paraTex = (ParameterizedTexture) surfaceData;
 
 					String worldToTexture = rs.getString("WORLD_TO_TEXTURE");
 					String textureCoordinates = rs.getString("TEXTURE_COORDINATES");
 
 					if (textureCoordinates != null) {
-						TextureAssociation textureAssociation = cityGMLFactory.createTextureAssociation(globalApp);
+						TextureAssociation textureAssociation = new TextureAssociationImpl();
 						textureAssociation.setUri(geometryTarget);
 
 						String[] rings = textureCoordinates.trim().split("\\s*;\\s*");
 						if (rings != null && rings.length != 0) {
-							TexCoordList texCoordList = cityGMLFactory.createTexCoordList(globalApp);
+							TexCoordList texCoordList = new TexCoordListImpl();
 
 							for (int i = 0; i < rings.length; i++) {
 								String split = rings[i];
@@ -490,7 +493,7 @@ public class DBAppearance implements DBExporter {
 
 								List<Double> coordsList = Util.string2double(split, "\\s+");
 								if (coordsList != null && coordsList.size() != 0) {
-									TextureCoordinates texureCoordinates = cityGMLFactory.createTextureCoordinates(globalApp);
+									TextureCoordinates texureCoordinates = new TextureCoordinatesImpl();
 									texureCoordinates.setValue(coordsList);
 									texureCoordinates.setRing(geometryTarget + "_" + i);
 
@@ -506,7 +509,7 @@ public class DBAppearance implements DBExporter {
 					}
 
 					else if (worldToTexture != null) {
-						TextureAssociation textureAssociation = cityGMLFactory.createTextureAssociation(globalApp);
+						TextureAssociation textureAssociation = new TextureAssociationImpl();
 						textureAssociation.setUri(geometryTarget);
 
 						List<Double> m = Util.string2double(worldToTexture, "\\s+");
@@ -514,10 +517,10 @@ public class DBAppearance implements DBExporter {
 							Matrix matrix = new Matrix(3, 4);
 							matrix.setMatrix(m.subList(0, 12));
 
-							WorldToTexture worldToTextureMatrix = cityGMLFactory.createWorldToTexture(globalApp);
+							WorldToTexture worldToTextureMatrix = new WorldToTextureImpl();
 							worldToTextureMatrix.setMatrix(matrix);
 
-							TexCoordGen texCoordGen = cityGMLFactory.createTexCoordGen(globalApp);
+							TexCoordGen texCoordGen = new TexCoordGenImpl();
 							texCoordGen.setWorldToTexture(worldToTextureMatrix);
 
 							textureAssociation.setTextureParameterization(texCoordGen);
@@ -542,7 +545,7 @@ public class DBAppearance implements DBExporter {
 		}
 	}
 
-	public void read(CityObject cityObject, long cityObjectId) throws SQLException {
+	public void read(AbstractCityObject cityObject, long cityObjectId) throws SQLException {
 		final List<Long> appearanceIds = new ArrayList<Long>();
 		ResultSet rs = null;
 
@@ -553,9 +556,6 @@ public class DBAppearance implements DBExporter {
 			long currentAppearanceId = 0;
 			Appearance appearance = null;
 
-			CoreModule core = (CoreModule)cityObject.getCityGMLModule().getModuleDependencies().getModule(CityGMLModuleType.CORE);
-			AppearanceModule app = (AppearanceModule)CityGMLModules.getModuleByTypeAndVersion(CityGMLModuleType.APPEARANCE, core.getModuleVersion());
-
 			while (rs.next()) {
 				long appearanceId = rs.getLong("APP_ID");
 
@@ -564,7 +564,7 @@ public class DBAppearance implements DBExporter {
 
 					int index = appearanceIds.indexOf(appearanceId);
 					if (index == -1) {
-						appearance = cityGMLFactory.createAppearance(app);
+						appearance = new AppearanceImpl();
 
 						String gmlId = rs.getString("APP_GMLID");
 						if (gmlId != null)
@@ -587,7 +587,7 @@ public class DBAppearance implements DBExporter {
 							appearance.setTheme(theme);
 
 						// add appearance to cityobject
-						AppearanceProperty appearanceProperty = cityGMLFactory.createAppearanceProperty(app);
+						AppearanceProperty appearanceProperty = new AppearancePropertyImpl();
 						appearanceProperty.setAppearance(appearance);
 
 						cityObject.addAppearance(appearanceProperty);
@@ -609,12 +609,12 @@ public class DBAppearance implements DBExporter {
 				if (rs.wasNull() || surfaceDataType == null || surfaceDataType.length() == 0)
 					continue;
 
-				if (surfaceDataType.equals(CityGMLClass.X3DMATERIAL.toString().toUpperCase()))
-					surfaceData = cityGMLFactory.createX3DMaterial(app);
-				else if (surfaceDataType.equals(CityGMLClass.PARAMETERIZEDTEXTURE.toString().toUpperCase()))
-					surfaceData = cityGMLFactory.createParameterizedTexture(app);
-				else if (surfaceDataType.equals(CityGMLClass.GEOREFERENCEDTEXTURE.toString().toUpperCase()))
-					surfaceData = cityGMLFactory.createGeoreferencedTexture(app);
+				if (surfaceDataType.equals(DBTypeValueEnum.X3D_MATERIAL.toString().toUpperCase()))
+					surfaceData = new X3DMaterialImpl();
+				else if (surfaceDataType.equals(DBTypeValueEnum.PARAMETERIZED_TEXTURE.toString().toUpperCase()))
+					surfaceData = new ParameterizedTextureImpl();
+				else if (surfaceDataType.equals(DBTypeValueEnum.GEOREFERENCED_TEXTURE.toString().toUpperCase()))
+					surfaceData = new GeoreferencedTextureImpl();
 
 				if (surfaceData == null)
 					continue;
@@ -622,15 +622,15 @@ public class DBAppearance implements DBExporter {
 				String gmlId = rs.getString("SD_GMLID");
 				if (gmlId != null) {
 					// process xlink
-					if (dbExporterManager.lookupAndPutGmlId(gmlId, surfaceDataId, CityGMLClass.ABSTRACTSURFACEDATA)) {
+					if (dbExporterManager.lookupAndPutGmlId(gmlId, surfaceDataId, CityGMLClass.ABSTRACT_SURFACE_DATA)) {
 						if (useXLink) {
-							SurfaceDataProperty surfaceDataProperty = cityGMLFactory.createSurfaceDataProperty(app);
+							SurfaceDataProperty surfaceDataProperty = new SurfaceDataPropertyImpl();
 							surfaceDataProperty.setHref("#" + gmlId);
 
 							appearance.addSurfaceDataMember(surfaceDataProperty);
 							continue;
 						} else {
-							String newGmlId = UUIDManager.randomUUID(gmlIdPrefix);
+							String newGmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
 							if (appendOldGmlId)
 								newGmlId += '-' + gmlId;
 
@@ -657,7 +657,7 @@ public class DBAppearance implements DBExporter {
 				if (!rs.wasNull() && isFront == 0)
 					surfaceData.setIsFront(false);
 
-				if (surfaceData.getCityGMLClass() == CityGMLClass.X3DMATERIAL) {
+				if (surfaceData.getCityGMLClass() == CityGMLClass.X3D_MATERIAL) {
 					X3DMaterial material = (X3DMaterial)surfaceData;
 
 					double shininess = rs.getDouble("X3D_SHININESS");
@@ -692,7 +692,7 @@ public class DBAppearance implements DBExporter {
 							List<Double> colorList = Util.string2double(colorString, "\\s+");
 
 							if (colorList != null && colorList.size() >= 3) {
-								Color color = cityGMLFactory.createColor(colorList.get(0), colorList.get(1), colorList.get(2), app);
+								Color color = new ColorImpl(colorList.get(0), colorList.get(1), colorList.get(2));
 
 								switch (i) {
 								case 0:
@@ -716,8 +716,8 @@ public class DBAppearance implements DBExporter {
 						material.setIsSmooth(true);
 				}
 
-				else if (surfaceData.getCityGMLClass() == CityGMLClass.PARAMETERIZEDTEXTURE ||
-						surfaceData.getCityGMLClass() == CityGMLClass.GEOREFERENCEDTEXTURE) {
+				else if (surfaceData.getCityGMLClass() == CityGMLClass.PARAMETERIZED_TEXTURE ||
+						surfaceData.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE) {
 					AbstractTexture absTex = (AbstractTexture)surfaceData;
 
 					long dbImageSize = rs.getLong("DB_TEX_IMAGE_SIZE");
@@ -751,13 +751,13 @@ public class DBAppearance implements DBExporter {
 
 					String textureType = rs.getString("TEX_TEXTURE_TYPE");
 					if (textureType != null) {
-						TextureType type = cityGMLFactory.createTextureType(textureType, app);
+						TextureType type = TextureType.fromValue(textureType);
 						absTex.setTextureType(type);
 					}
 
 					String wrapMode = rs.getString("TEX_WRAP_MODE");
 					if (wrapMode != null) {
-						WrapMode mode = cityGMLFactory.createWrapMode(wrapMode, app);
+						WrapMode mode = WrapMode.fromValue(wrapMode);
 						absTex.setWrapMode(mode);
 					}
 
@@ -766,10 +766,8 @@ public class DBAppearance implements DBExporter {
 						List<Double> colorList = Util.string2double(borderColorString, "\\s+");
 
 						if (colorList != null && colorList.size() >= 4) {
-							ColorPlusOpacity borderColor = cityGMLFactory.createColorPlusOpacity(
-									colorList.get(0), colorList.get(1), colorList.get(2), colorList.get(3),
-									app
-							);
+							ColorPlusOpacity borderColor = new ColorPlusOpacityImpl(
+									colorList.get(0), colorList.get(1), colorList.get(2), colorList.get(3)							);
 
 							absTex.setBorderColor(borderColor);
 						} else {
@@ -778,7 +776,7 @@ public class DBAppearance implements DBExporter {
 					}
 				}
 
-				if (surfaceData.getCityGMLClass() == CityGMLClass.GEOREFERENCEDTEXTURE) {
+				if (surfaceData.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE) {
 					GeoreferencedTexture geoTex = (GeoreferencedTexture)surfaceData;
 
 					int preferWorldFile = rs.getInt("GT_PREFER_WORLDFILE");
@@ -793,8 +791,7 @@ public class DBAppearance implements DBExporter {
 							Matrix matrix = new Matrix(2, 2);
 							matrix.setMatrix(m.subList(0, 4));
 
-							geoTex.setOrientation(cityGMLFactory.createTransformationMatrix2x2(matrix, 
-									(CoreModule)app.getModuleDependencies().getModule(CityGMLModuleType.CORE)));
+							geoTex.setOrientation(new TransformationMatrix2x2Impl(matrix));
 						}
 					}
 
@@ -824,10 +821,10 @@ public class DBAppearance implements DBExporter {
 				}
 
 				// get targets for surface data
-				textureParamExporter.read(surfaceData, surfaceDataId, app);
+				textureParamExporter.read(surfaceData, surfaceDataId);
 
 				// finally add surface data to appearance
-				SurfaceDataProperty surfaceDataProperty = cityGMLFactory.createSurfaceDataProperty(app);
+				SurfaceDataProperty surfaceDataProperty = new SurfaceDataPropertyImpl();
 				surfaceDataProperty.setSurfaceData(surfaceData);
 				appearance.addSurfaceDataMember(surfaceDataProperty);
 			}

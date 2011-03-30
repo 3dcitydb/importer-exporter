@@ -73,10 +73,10 @@ public class StatusDialog extends JDialog implements EventListener {
 			EventDispatcher eventDispatcher) {
 		super(frame, windowTitle, true);
 		
-		eventDispatcher.addListener(EventType.StatusDialogProgressBar, this);
-		eventDispatcher.addListener(EventType.StatusDialogMessage, this);
-		eventDispatcher.addListener(EventType.StatusDialogTitle, this);
-		eventDispatcher.addListener(EventType.Interrupt, this);
+		eventDispatcher.addListener(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
+		eventDispatcher.addListener(EventType.STATUS_DIALOG_MESSAGE, this);
+		eventDispatcher.addListener(EventType.STATUS_DIALOG_TITLE, this);
+		eventDispatcher.addListener(EventType.INTERRUPT, this);
 		
 		initGUI(windowTitle, statusTitle, statusMessage, statusDetails, setButton);
 	}
@@ -169,13 +169,13 @@ public class StatusDialog extends JDialog implements EventListener {
 
 	@Override
 	public void handleEvent(Event e) throws Exception {
-		if (e.getEventType() == EventType.Interrupt) {
+		if (e.getEventType() == EventType.INTERRUPT) {
 			acceptStatusUpdate = false;
 			messageLabel.setText(Internal.I18N.getString("common.dialog.msg.abort"));
 			progressBar.setIndeterminate(true);
 		}
 
-		else if (e.getEventType() == EventType.StatusDialogProgressBar && acceptStatusUpdate) {		
+		else if (e.getEventType() == EventType.STATUS_DIALOG_PROGRESS_BAR && acceptStatusUpdate) {		
 			if (((StatusDialogProgressBar)e).isSetIntermediate()) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {		
@@ -203,11 +203,11 @@ public class StatusDialog extends JDialog implements EventListener {
 			progressBar.setValue(current);
 		}
 
-		else if (e.getEventType() == EventType.StatusDialogMessage && acceptStatusUpdate) {
+		else if (e.getEventType() == EventType.STATUS_DIALOG_MESSAGE && acceptStatusUpdate) {
 			messageLabel.setText(((StatusDialogMessage)e).getMessage());
 		}
 
-		else if (e.getEventType() == EventType.StatusDialogTitle && acceptStatusUpdate) {
+		else if (e.getEventType() == EventType.STATUS_DIALOG_TITLE && acceptStatusUpdate) {
 			titleLabel.setText(((StatusDialogTitle)e).getTitle());
 		}
 	}

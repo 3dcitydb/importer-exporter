@@ -35,7 +35,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.citygml4j.model.citygml.landuse.LandUse;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;

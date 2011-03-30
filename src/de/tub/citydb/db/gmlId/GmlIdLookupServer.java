@@ -132,7 +132,7 @@ public class GmlIdLookupServer {
 		while (iter.hasNext()) {
 			Map.Entry<String, GmlIdEntry> entry = iter.next();
 			if (entry.getValue().getId() == id)
-				if (entry.getValue().getType().childOrSelf(type))
+				if (type.isInstance(entry.getValue().getType()))
 					return entry.getKey();
 		}
 

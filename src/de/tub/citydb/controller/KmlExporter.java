@@ -51,6 +51,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.transform.stream.StreamResult;
 
 import net.opengis.kml._2.DocumentType;
 import net.opengis.kml._2.LineStringType;
@@ -65,9 +66,11 @@ import net.opengis.kml._2.StyleType;
 import oracle.ord.im.OrdImage;
 
 import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.geometry.BoundingVolume;
+import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.util.xml.SAXEventBuffer;
+import org.citygml4j.util.xml.SAXWriter;
 import org.xml.sax.SAXException;
 
 import de.tub.citydb.concurrent.IOWriterWorkerFactory;
@@ -82,10 +85,12 @@ import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.db.DBTypeValueEnum;
 import de.tub.citydb.db.kmlExporter.BalloonTemplateHandler;
 import de.tub.citydb.db.kmlExporter.ColladaBundle;
 import de.tub.citydb.db.kmlExporter.KmlSplitter;
 import de.tub.citydb.db.kmlExporter.KmlSplittingResult;
+import de.tub.citydb.db.kmlExporter.XMLHeaderWriter;
 import de.tub.citydb.event.Event;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.event.EventListener;
@@ -96,9 +101,6 @@ import de.tub.citydb.event.statistic.StatusDialogTitle;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.sax.SAXBuffer;
-import de.tub.citydb.sax.SAXWriter;
-import de.tub.citydb.sax.XMLHeaderWriter;
 import de.tub.citydb.util.DBUtil;
 
 public class KmlExporter implements EventListener {
@@ -111,7 +113,7 @@ public class KmlExporter implements EventListener {
 	private CityGMLFactory cityGMLFactory; 
 	private ObjectFactory kmlFactory; 
 	private WorkerPool<KmlSplittingResult> kmlWorkerPool;
-	private SingleWorkerPool<SAXBuffer> ioWriterPool;
+	private SingleWorkerPool<SAXEventBuffer> ioWriterPool;
 	private KmlSplitter kmlSplitter;
 
 	private volatile boolean shouldRun = true;
@@ -123,8 +125,8 @@ public class KmlExporter implements EventListener {
 
 	private final int WGS84_SRID = 4326;
 
-	private BoundingVolume tileMatrix;
-	private BoundingVolume wgs84TileMatrix;
+	private BoundingBox tileMatrix;
+	private BoundingBox wgs84TileMatrix;
 
 	private double wgs84DeltaLongitude;
 	private double wgs84DeltaLatitude;
@@ -158,7 +160,7 @@ public class KmlExporter implements EventListener {
 		int maxThreads = system.getThreadPool().getDefaultPool().getMaxThreads();
 
 		// adding listener
-		eventDispatcher.addListener(EventType.Interrupt, this);
+		eventDispatcher.addListener(EventType.INTERRUPT, this);
 
 		// checking workspace...
 		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
@@ -181,10 +183,10 @@ public class KmlExporter implements EventListener {
 		// define indent for xml output and namespace mappings
 		SAXWriter saxWriter = new SAXWriter();
 		saxWriter.setIndentString("  ");
-		saxWriter.forceNSDecl("http://www.opengis.net/kml/2.2", ""); // default namespace
-		saxWriter.forceNSDecl("http://www.google.com/kml/ext/2.2", "gx");
-		saxWriter.forceNSDecl("http://www.w3.org/2005/Atom", "atom");
-		saxWriter.forceNSDecl("urn:oasis:names:tc:ciq:xsdschema:xAL:2.0", "xal");
+		saxWriter.setDefaultNamespace("http://www.opengis.net/kml/2.2"); // default namespace
+		saxWriter.setPrefix("gx", "http://www.google.com/kml/ext/2.2");
+		saxWriter.setPrefix("atom", "http://www.w3.org/2005/Atom");
+		saxWriter.setPrefix("xal", "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0");
 
 		kmlFactory = new ObjectFactory();		
 		cityGMLFactory = new CityGMLFactory();		
@@ -276,18 +278,17 @@ public class KmlExporter implements EventListener {
 								Charset charset = Charset.forName(ENCODING);
 								fileWriter = new OutputStreamWriter(new FileOutputStream(file), charset);
 							}
+							
+							// set output for SAXWriter
+							saxWriter.setOutput(new StreamResult(fileWriter));	
 						} catch (IOException ioE) {
 							Logger.getInstance().error("Failed to open file '" + file.getName() + "' for writing: " + ioE.getMessage());
 							return false;
 						}
 
-						// reset SAXWriter
-						saxWriter.reset();
-						saxWriter.setWriter(fileWriter);				
-
 						// create worker pools
 						// here we have an open issue: queue sizes are fix...
-						ioWriterPool = new SingleWorkerPool<SAXBuffer>(
+						ioWriterPool = new SingleWorkerPool<SAXEventBuffer>(
 								new IOWriterWorkerFactory(saxWriter),
 								100,
 								true);
@@ -343,8 +344,8 @@ public class KmlExporter implements EventListener {
 						// flush writer to make sure header has been written
 						try {
 							saxWriter.flush();
-						} catch (IOException ioE) {
-							Logger.getInstance().error("I/O error: " + ioE.getMessage());
+						} catch (SAXException e) {
+							Logger.getInstance().error("I/O error: " + e.getMessage());
 							return false;
 						}
 
@@ -492,7 +493,7 @@ public class KmlExporter implements EventListener {
 		TilingMode tilingMode = bbox.getTiling().getMode();
 		double autoTileSideLength = config.getProject().getKmlExporter().getAutoTileSideLength();
 
-		tileMatrix = new BoundingVolume(new Point(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(), 0),
+		tileMatrix = new BoundingBox(new Point(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(), 0),
 										new Point(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY(), 0));
 
 		int dbSrid = dbPool.getActiveConnection().getMetaData().getSrid();
@@ -644,7 +645,7 @@ public class KmlExporter implements EventListener {
 	}
 	
 	public void addStyleAndBorder(DisplayLevel displayLevel, int i, int j) throws JAXBException {
-		SAXBuffer saxBuffer = new SAXBuffer();
+		SAXEventBuffer saxBuffer = new SAXEventBuffer();
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
@@ -718,7 +719,7 @@ public class KmlExporter implements EventListener {
 			PolyStyleType polyStyleGroundSurface = kmlFactory.createPolyStyleType();
 			polyStyleGroundSurface.setColor(hexStringToByteArray("ff00aa00"));
 			StyleType styleGroundSurface = kmlFactory.createStyleType();
-			styleGroundSurface.setId(CityGMLClass.GROUNDSURFACE.toString() + "Style");
+			styleGroundSurface.setId(DBTypeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString() + "Style");
 			styleGroundSurface.setPolyStyle(polyStyleGroundSurface);
 
 			indexOfDl = config.getProject().getKmlExporter().getDisplayLevels().indexOf(displayLevel);
@@ -747,7 +748,7 @@ public class KmlExporter implements EventListener {
 			PolyStyleType polyStyleWallNormal = kmlFactory.createPolyStyleType();
 			polyStyleWallNormal.setColor(hexStringToByteArray(wallFillColor));
 			StyleType styleWallNormal = kmlFactory.createStyleType();
-			styleWallNormal.setId(CityGMLClass.WALLSURFACE.toString() + "Normal");
+			styleWallNormal.setId(DBTypeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString() + "Normal");
 			styleWallNormal.setLineStyle(lineStyleWallNormal);
 			styleWallNormal.setPolyStyle(polyStyleWallNormal);
 
@@ -756,7 +757,7 @@ public class KmlExporter implements EventListener {
 			PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
 			polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
 			StyleType styleRoofNormal = kmlFactory.createStyleType();
-			styleRoofNormal.setId(CityGMLClass.ROOFSURFACE.toString() + "Normal");
+			styleRoofNormal.setId(DBTypeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() + "Normal");
 			styleRoofNormal.setLineStyle(lineStyleRoofNormal);
 			styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
 
@@ -878,7 +879,7 @@ public class KmlExporter implements EventListener {
 
 		if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter() &&
 			config.getProject().getKmlExporter().isShowTileBorders()) {
-			saxBuffer = new SAXBuffer();
+			saxBuffer = new SAXEventBuffer();
 			
 			// must be done like this to avoid non-matching tile limits
 			double wgs84TileSouthLimit = wgs84TileMatrix.getLowerCorner().getY() + (i * wgs84DeltaLatitude); 
@@ -924,7 +925,7 @@ public class KmlExporter implements EventListener {
 	@Override
 	public void handleEvent(Event e) throws Exception {
 
-		if (e.getEventType() == EventType.Interrupt) {
+		if (e.getEventType() == EventType.INTERRUPT) {
 			if (isInterrupted.compareAndSet(false, true)) {
 				shouldRun = false;
 

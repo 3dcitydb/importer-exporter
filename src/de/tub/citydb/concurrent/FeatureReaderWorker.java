@@ -29,94 +29,39 @@
  */
 package de.tub.citydb.concurrent;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.UnmarshallerHandler;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.model.citygml.core.CityGMLBase;
+import org.citygml4j.builder.jaxb.xml.io.reader.CityGMLChunk;
+import org.citygml4j.model.citygml.CityGML;
+import org.citygml4j.xml.io.reader.MissingADESchemaException;
 import org.xml.sax.SAXException;
 
 import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
-import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.importer.LocalXMLSchemaType;
-import de.tub.citydb.config.project.importer.XMLValidation;
-import de.tub.citydb.event.Event;
 import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.event.EventListener;
-import de.tub.citydb.event.EventType;
 import de.tub.citydb.event.concurrent.InterruptEnum;
 import de.tub.citydb.event.concurrent.InterruptEvent;
-import de.tub.citydb.event.validation.SchemaLocationEvent;
-import de.tub.citydb.jaxb.JAXBValidationEventHandler;
-import de.tub.citydb.log.LogLevelType;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.sax.SAXBuffer;
-import de.tub.citydb.sax.events.Locatable;
-import de.tub.citydb.sax.events.SAXEvent;
 
-public class FeatureReaderWorker implements Worker<SAXBuffer> {
+public class FeatureReaderWorker implements Worker<CityGMLChunk> {
 	private final Logger LOG = Logger.getInstance();
 
 	// instance members needed for WorkPool
 	private volatile boolean shouldRun = true;
 	private ReentrantLock runLock = new ReentrantLock();
-	private WorkQueue<SAXBuffer> workQueue = null;
-	private SAXBuffer firstWork;
+	private WorkQueue<CityGMLChunk> workQueue = null;
+	private CityGMLChunk firstWork;
 	private Thread workerThread = null;
 
 	// instance members needed to do work
-	private final JAXBContext jaxbContext;
-	private final WorkerPool<CityGMLBase> dbWorkerPool;
-	private final CityGMLFactory cityGMLFactory;
+	private final WorkerPool<CityGML> dbWorkerPool;
 	private final EventDispatcher eventDispatcher;
-	private final Config config;
 
-	// XML validation
-	private XMLValidation xmlValidation;
-	private FeatureReader featureReader;
-
-	public FeatureReaderWorker(JAXBContext jaxbContext, 
-			WorkerPool<CityGMLBase> dbWorkerPool, 
-			CityGMLFactory cityGMLFactory,
-			EventDispatcher eventDispatcher,
-			Config config) {
-		this.jaxbContext = jaxbContext;
+	public FeatureReaderWorker(WorkerPool<CityGML> dbWorkerPool, 
+			EventDispatcher eventDispatcher) {
 		this.dbWorkerPool = dbWorkerPool;
-		this.cityGMLFactory = cityGMLFactory;
 		this.eventDispatcher = eventDispatcher;
-		this.config = config;
-
-		init();
-	}
-
-	private void init() {
-		if (config.getInternal().isUseXMLValidation()) {
-			xmlValidation = config.getProject().getImporter().getXMLValidation();	
-
-			featureReader = new ValidatingFeatureReader();
-			ValidatingFeatureReader validatingFeatureReader = (ValidatingFeatureReader)featureReader;
-
-			// choose how to obtain schema documents
-			if (xmlValidation.getUseLocalSchemas().isSet())
-				validatingFeatureReader.handleLocalSchemaLocation();
-			else
-				eventDispatcher.addListener(EventType.SchemaLocation, validatingFeatureReader);
-		} else
-			featureReader = new NonValidatingFeatureReader();
 	}
 
 	@Override
@@ -145,7 +90,7 @@ public class FeatureReaderWorker implements Worker<SAXBuffer> {
 	}
 
 	@Override
-	public void setFirstWork(SAXBuffer firstWork) {
+	public void setFirstWork(CityGMLChunk firstWork) {
 		this.firstWork = firstWork;
 	}
 
@@ -155,7 +100,7 @@ public class FeatureReaderWorker implements Worker<SAXBuffer> {
 	}
 
 	@Override
-	public void setWorkQueue(WorkQueue<SAXBuffer> workQueue) {
+	public void setWorkQueue(WorkQueue<CityGMLChunk> workQueue) {
 		this.workQueue = workQueue;
 	}
 
@@ -168,7 +113,7 @@ public class FeatureReaderWorker implements Worker<SAXBuffer> {
 
 		while (shouldRun) {
 			try {
-				SAXBuffer work = workQueue.take();				
+				CityGMLChunk work = workQueue.take();				
 				doWork(work);
 			} catch (InterruptedException ie) {
 				// re-check state
@@ -176,177 +121,39 @@ public class FeatureReaderWorker implements Worker<SAXBuffer> {
 		}
 	}
 
-	private void doWork(SAXBuffer work) {
+	private void doWork(CityGMLChunk work) {
 		final ReentrantLock runLock = this.runLock;
 		runLock.lock();
 
-		try{
-			featureReader.read(work);
+		try {
+			try {
+				CityGML cityGML = work.unmarshal();
+				if (dbWorkerPool != null)
+					dbWorkerPool.addWork(cityGML);
+			} catch (JAXBException e) {
+				StringBuilder msg = new StringBuilder();				
+				msg.append("Failed to unmarshal XML chunk");
+
+				if (work.getFirstStartElement() != null && work.getFirstStartElement().getLocation() != null) {
+					msg.append(" at [")
+					.append(work.getFirstStartElement().getLocation().getLineNumber())
+					.append(", ")
+					.append(work.getFirstStartElement().getLocation().getColumnNumber())
+					.append("]");
+				}
+				
+				msg.append(": ");
+				msg.append(e.getMessage());
+				LOG.error(msg.toString());
+			} catch (SAXException e) {
+				//
+			} catch (MissingADESchemaException e) {
+				LOG.error(e.getMessage());				
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptEnum.ADE_SCHEMA_READ_ERROR));
+			}
 		} finally {
 			runLock.unlock();
 		}
 	}
 
-	private abstract class FeatureReader {
-		public abstract void read(SAXBuffer work);
-
-		protected void forwardResult(JAXBElement<?> featureElem) {
-			CityGMLBase cityObject = null;
-
-			if (featureElem.getValue() instanceof org.citygml4j.jaxb.citygml._0_4.AppearancePropertyType) {
-				org.citygml4j.jaxb.citygml._0_4.AppearancePropertyType appProp = (org.citygml4j.jaxb.citygml._0_4.AppearancePropertyType)featureElem.getValue();
-				if (appProp.isSetAppearance())
-					cityObject = new org.citygml4j.impl.jaxb.citygml.appearance._0_4.AppearanceImpl(appProp.getAppearance());
-			} else if (featureElem.getValue() instanceof org.citygml4j.jaxb.citygml.app._1.AppearancePropertyType) {
-				org.citygml4j.jaxb.citygml.app._1.AppearancePropertyType appProp = (org.citygml4j.jaxb.citygml.app._1.AppearancePropertyType)featureElem.getValue();
-				if (appProp.isSetAppearance())
-					cityObject = new org.citygml4j.impl.jaxb.citygml.appearance._1.AppearanceImpl(appProp.getAppearance());
-			} else			
-				cityObject = cityGMLFactory.jaxb2cityGML(featureElem);
-
-			if (cityObject != null)
-				dbWorkerPool.addWork(cityObject);
-		}
-	}
-
-	private final class ValidatingFeatureReader extends FeatureReader implements EventListener {
-		private Schema schema;
-		private JAXBValidationEventHandler validationEventHandler;
-		private boolean forwardResult;
-
-		private ValidatingFeatureReader() {
-			validationEventHandler = new JAXBValidationEventHandler(eventDispatcher, !xmlValidation.isSetReportOneErrorPerFeature());
-			forwardResult = (dbWorkerPool != null && cityGMLFactory != null);
-		}
-
-		@Override
-		public void read(SAXBuffer work) {
-			if (schema == null)
-				return;
-
-			try{
-				Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-				unmarshaller.setSchema(schema);
-
-				validationEventHandler.reset();
-				unmarshaller.setEventHandler(validationEventHandler);
-				UnmarshallerHandler unmarshallerHandler = unmarshaller.getUnmarshallerHandler();
-
-				SAXEvent event = work.getFirstEvent();
-				do {
-					if (event instanceof Locatable) {
-						validationEventHandler.setLineNumber(((Locatable)event).getLocation().getLineNumber());
-						validationEventHandler.setColumnNumber(((Locatable)event).getLocation().getColumnNumber());
-					}
-
-					event.send(unmarshallerHandler);
-					work.removeFirstEvent();
-				} while ((event = event.next()) != null);
-
-				JAXBElement<?> featureElem = (JAXBElement<?>)unmarshallerHandler.getResult();
-				unmarshallerHandler = null;
-
-				if (featureElem == null || featureElem.getValue() == null)
-					return;
-
-				if (forwardResult && !validationEventHandler.hasEvents())
-					forwardResult(featureElem);
-
-			} catch (JAXBException jaxbE) {
-				LOG.error(jaxbE.getMessage());
-			} catch (SAXException saxE) {
-				//
-			}
-		}
-
-		private void handleLocalSchemaLocation() {
-			Set<LocalXMLSchemaType> schemas = xmlValidation.getUseLocalSchemas().getSchemas();
-			List<String> schemaLocations = new ArrayList<String>();
-
-			for (LocalXMLSchemaType schema : schemas) {
-				if (schema != null) {
-					URL schemaURL = null;
-
-					switch (schema) {
-					case CityGML_v1_0_0:
-						schemaURL = FeatureReaderWorker.class.getResource("/resources/schemas/CityGML/1.0.0/baseProfile.xsd");
-						break;
-					case CityGML_v0_4_0:
-						schemaURL = FeatureReaderWorker.class.getResource("/resources/schemas/CityGML/0.4.0/CityGML.xsd");
-						break;
-					}
-
-					if (schemaURL != null)
-						schemaLocations.add(schemaURL.toString());
-				}
-			}
-
-			if (!schemaLocations.isEmpty()) {
-				Source[] sources =  new Source[schemaLocations.size()];
-				int i = 0;
-
-				for (String schemaLocation : schemaLocations)
-					sources[i++] = new StreamSource(schemaLocation);
-
-				initSchema(sources);
-			}	
-		}
-
-		@Override
-		public void handleEvent(Event e) throws Exception {
-			if (e.getEventType() == EventType.SchemaLocation) {
-				Set<URL> schemaLocationURLs = ((SchemaLocationEvent)e).getSchemaLocationURLs();
-
-				Source[] sources =  new Source[schemaLocationURLs.size()];
-				int i = 0;
-
-				for (URL schemaLocationURL : schemaLocationURLs)
-					sources[i++] = new StreamSource(schemaLocationURL.toString());
-
-				initSchema(sources);
-			}
-		}
-
-		private void initSchema(Source[] sources) {
-			try {
-				SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-				schema = schemaFactory.newSchema(sources);
-			} catch (SAXException saxE) {
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptEnum.READ_SCHEMA_ERROR, 
-						"XML error: " + saxE.getMessage(), 
-						LogLevelType.ERROR));
-			}	
-		}
-
-	}
-
-	private final class NonValidatingFeatureReader extends FeatureReader {
-
-		@Override
-		public void read(SAXBuffer work) {		
-			try{
-				Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-				UnmarshallerHandler unmarshallerHandler = unmarshaller.getUnmarshallerHandler();
-
-				SAXEvent event = work.getFirstEvent();
-				do {
-					event.send(unmarshallerHandler);
-					work.removeFirstEvent();
-				} while ((event = event.next()) != null);
-
-				JAXBElement<?> featureElem = (JAXBElement<?>)unmarshallerHandler.getResult();
-				unmarshallerHandler = null;
-
-				if (featureElem == null || featureElem.getValue() == null)
-					return;
-
-				forwardResult(featureElem);
-
-			} catch (JAXBException jaxbE) {
-				LOG.error(jaxbE.getMessage());
-			} catch (SAXException saxE) {
-				LOG.error("XML error: " + saxE.getMessage());
-			}
-		}		
-	}
 }

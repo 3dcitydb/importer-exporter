@@ -40,16 +40,18 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.factory.CityGMLFactory;
+import org.citygml4j.geometry.Matrix;
+import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
+import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.CityGMLModuleType;
 import org.citygml4j.model.citygml.appearance.AppearanceProperty;
-import org.citygml4j.model.citygml.core.CityObject;
-import org.citygml4j.model.citygml.core.CoreModule;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
 import org.citygml4j.model.citygml.core.GeneralizationRelation;
-import org.citygml4j.model.citygml.generics.GenericAttribute;
+import org.citygml4j.model.citygml.generics.AbstractGenericAttribute;
+import org.citygml4j.model.gml.geometry.primitives.Envelope;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -57,14 +59,12 @@ import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.UUIDManager;
 import de.tub.citydb.util.Util;
 
 public class DBCityObject implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 	
 	private final Connection batchConn;
-	private final CityGMLFactory cityGMLFactory;
 	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
@@ -81,11 +81,12 @@ public class DBCityObject implements DBImporter {
 	private boolean replaceGmlId;
 	private boolean rememberGmlId;
 	private boolean importAppearance;
+	private boolean affineTransformation;
+	private Matrix transformationMatrix;
 	private int batchCounter;
 
-	public DBCityObject(Connection batchConn, CityGMLFactory cityGMLFactory, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBCityObject(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.cityGMLFactory = cityGMLFactory;
 		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
@@ -95,6 +96,7 @@ public class DBCityObject implements DBImporter {
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		rememberGmlId = config.getProject().getImporter().getGmlId().isSetKeepGmlIdAsExternalReference();
+		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
@@ -102,6 +104,14 @@ public class DBCityObject implements DBImporter {
 		if (rememberGmlId)
 			importFileName = config.getInternal().getCurrentImportFileName();
 		
+		if (affineTransformation) {
+			transformationMatrix = config.getProject().getImporter().getAffineTransformation().getTransformationMatrix().toMatrix3x4();
+			if (transformationMatrix.eq(Matrix.identity(3, 4))) {
+				transformationMatrix = null;
+				affineTransformation = false;
+			}
+		}
+
 		reasonForUpdate = config.getProject().getImporter().getContinuation().getReasonForUpdate();
 		lineage = config.getProject().getImporter().getContinuation().getLineage();
 		if (config.getProject().getImporter().getContinuation().isUpdatingPersonModeDatabase())
@@ -137,7 +147,7 @@ public class DBCityObject implements DBImporter {
 		appearanceImporter = (DBAppearance)dbImporterManager.getDBImporter(DBImporterEnum.APPEARANCE);
 	}
 
-	public long insert(CityObject cityObject, long cityObjectId) throws SQLException {
+	public long insert(AbstractCityObject cityObject, long cityObjectId) throws SQLException {
 		// ID
 		psCityObject.setLong(1, cityObjectId);
 
@@ -148,19 +158,17 @@ public class DBCityObject implements DBImporter {
 		// gml:id
 		String origGmlId = cityObject.getId();
 		if (replaceGmlId) {
-			String gmlId = UUIDManager.randomUUID();
+			String gmlId = DefaultGMLIdManager.getInstance().generateUUID();
 
 			// mapping entry
 			if (cityObject.isSetId()) {
 				dbImporterManager.putGmlId(cityObject.getId(), cityObjectId, -1, false, gmlId, cityObject.getCityGMLClass());
 
 				if (rememberGmlId) {	
-					CoreModule core = (CoreModule)cityObject.getCityGMLModule().getModuleDependencies().getModule(CityGMLModuleType.CORE);
-
-					ExternalReference externalReference = cityGMLFactory.createExternalReference(core);
+					ExternalReference externalReference = new ExternalReferenceImpl();
 					externalReference.setInformationSystem(importFileName);
 
-					ExternalObject externalObject = cityGMLFactory.createExternalObject(core);
+					ExternalObject externalObject = new ExternalObjectImpl();
 					externalObject.setName(cityObject.getId());
 
 					externalReference.setExternalObject(externalObject);
@@ -174,18 +182,22 @@ public class DBCityObject implements DBImporter {
 			if (cityObject.isSetId())
 				dbImporterManager.putGmlId(cityObject.getId(), cityObjectId, cityObject.getCityGMLClass());
 			else
-				cityObject.setId(UUIDManager.randomUUID());
+				cityObject.setId(DefaultGMLIdManager.getInstance().generateUUID());
 		}
 
 		psCityObject.setString(3, cityObject.getId());
 
 		// gml:boundedBy
-		if (cityObject.isSetBoundedBy() && (!cityObject.getBoundedBy().isSetEnvelope() ||
-				!cityObject.getBoundedBy().getEnvelope().isSetLowerCorner() ||
-				!cityObject.getBoundedBy().getEnvelope().isSetUpperCorner()))
-			cityObject.getBoundedBy().convertEnvelope();
-		else 
-			cityObject.calcBoundedBy();
+		if (!cityObject.isSetBoundedBy() || !cityObject.getBoundedBy().isSetEnvelope())
+			cityObject.calcBoundedBy(true);
+		else if (!cityObject.getBoundedBy().getEnvelope().isSetLowerCorner() ||
+				!cityObject.getBoundedBy().getEnvelope().isSetUpperCorner()) {
+			Envelope envelope = cityObject.getBoundedBy().getEnvelope().convert3d();
+			if (envelope != null)
+				cityObject.getBoundedBy().setEnvelope(envelope);
+			else
+				cityObject.calcBoundedBy(true);
+		}
 
 		if (cityObject.isSetBoundedBy()) {
 			int[] elemInfo = { 1, 1003, 3 };
@@ -196,6 +208,9 @@ public class DBCityObject implements DBImporter {
 			points.addAll(cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue());
 			points.addAll(cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue());
 
+			if (affineTransformation)
+				applyAffineTransformation(points);
+			
 			double[] ordinates = new double[points.size()];
 			int i = 0;
 			for (Double point : points)
@@ -215,7 +230,7 @@ public class DBCityObject implements DBImporter {
 
 		// genericAttributes
 		if (cityObject.isSetGenericAttribute())
-			for (GenericAttribute genericAttribute : cityObject.getGenericAttribute())
+			for (AbstractGenericAttribute genericAttribute : cityObject.getGenericAttribute())
 				genericAttributeImporter.insert(genericAttribute, cityObjectId);
 
 		// externalReference
@@ -255,7 +270,7 @@ public class DBCityObject implements DBImporter {
 				for (AppearanceProperty appearanceProperty : cityObject.getAppearance()) {
 					if (appearanceProperty.isSetAppearance()) {
 						String gmlId = appearanceProperty.getAppearance().getId();
-						long id = appearanceImporter.insert(appearanceProperty.getAppearance(), CityGMLClass.CITYOBJECT, cityObjectId);
+						long id = appearanceImporter.insert(appearanceProperty.getAppearance(), CityGMLClass.ABSTRACT_CITY_OBJECT, cityObjectId);
 						
 						if (id == 0) {
 							StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
@@ -284,6 +299,18 @@ public class DBCityObject implements DBImporter {
 		return cityObjectId;
 	}
 
+	private void applyAffineTransformation(List<Double> points) {
+		for (int i = 0; i < points.size(); i += 3) {
+			double[] vals = new double[]{ points.get(i), points.get(i+1), points.get(i+2), 1};
+			Matrix v = new Matrix(vals, 1);
+			
+			double[] newVals = transformationMatrix.times(v.transpose()).toColumnPackedArray();
+			points.set(i, newVals[0]);
+			points.set(i+1, newVals[1]);
+			points.set(i+2, newVals[2]);
+		}
+	}
+	
 	@Override
 	public void executeBatch() throws SQLException {
 		psCityObject.executeBatch();

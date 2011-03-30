@@ -41,7 +41,7 @@ import de.tub.citydb.config.project.system.System;
 		"targetSRS",
 		"appearances",
 		"filter",
-		"moduleVersion",
+		"cityGMLVersion",
 		"xlink",
 		"system"
 })
@@ -51,7 +51,7 @@ public class Exporter {
 	private ReferenceSystem targetSRS = ReferenceSystem.DEFAULT;
 	private ExportAppearance appearances;
 	private ExportFilterConfig filter;
-	private ModuleVersion moduleVersion;
+	private CityGMLVersionType cityGMLVersion = CityGMLVersionType.v1_0_0;
 	private XLink xlink;
 	private System system;
 
@@ -59,7 +59,6 @@ public class Exporter {
 		path = new Path();
 		appearances = new ExportAppearance();
 		filter = new ExportFilterConfig();
-		moduleVersion = new ModuleVersion();
 		xlink = new XLink();
 		system = new System();
 	}
@@ -100,13 +99,12 @@ public class Exporter {
 			this.filter = filter;
 	}
 
-	public ModuleVersion getModuleVersion() {
-		return moduleVersion;
+	public CityGMLVersionType getCityGMLVersion() {
+		return cityGMLVersion;
 	}
 
-	public void setModuleVersion(ModuleVersion moduleVersion) {
-		if (moduleVersion != null)
-			this.moduleVersion = moduleVersion;
+	public void setCityGMLVersion(CityGMLVersionType cityGMLVersion) {
+		this.cityGMLVersion = cityGMLVersion;
 	}
 
 	public XLink getXlink() {

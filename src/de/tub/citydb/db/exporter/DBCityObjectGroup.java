@@ -34,18 +34,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import javax.xml.bind.JAXBException;
-
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.impl.jaxb.gml._3_1_1.GeometryPropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.StringOrRefImpl;
+import org.citygml4j.impl.citygml.cityobjectgroup.CityObjectGroupImpl;
+import org.citygml4j.impl.citygml.cityobjectgroup.CityObjectGroupMemberImpl;
+import org.citygml4j.impl.citygml.cityobjectgroup.CityObjectGroupParentImpl;
+import org.citygml4j.impl.gml.base.StringOrRefImpl;
+import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupMember;
-import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupModule;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupParent;
-import org.citygml4j.model.gml.GeometryProperty;
-import org.citygml4j.model.gml.StringOrRef;
+import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
@@ -55,7 +56,6 @@ public class DBCityObjectGroup implements DBExporter {
 	private final Logger LOG = Logger.getInstance();
 
 	private final DBExporterManager dbExporterManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final Config config;
 	private final Connection connection;
 
@@ -65,12 +65,10 @@ public class DBCityObjectGroup implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 
-	private CityObjectGroupModule grp;
 	private boolean transformCoords;
 
-	public DBCityObjectGroup(Connection connection, CityGMLFactory cityGMLFactory, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBCityObjectGroup(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
-		this.cityGMLFactory = cityGMLFactory;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
 
@@ -78,7 +76,6 @@ public class DBCityObjectGroup implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		grp = config.getProject().getExporter().getModuleVersion().getCityObjectGroup().getModule();
 		transformCoords = config.getInternal().isTransformCoordinates();
 
 		if (!transformCoords) {		
@@ -101,8 +98,8 @@ public class DBCityObjectGroup implements DBExporter {
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, JAXBException {
-		CityObjectGroup cityObjectGroup = cityGMLFactory.createCityObjectGroup(grp);
+	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+		CityObjectGroup cityObjectGroup = new CityObjectGroupImpl();
 		long cityObjectGroupId = splitter.getPrimaryKey();
 
 		// cityObject stuff
@@ -149,7 +146,7 @@ public class DBCityObjectGroup implements DBExporter {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodGeometryId);
 
 						if (geometry != null) {
-							GeometryProperty geometryProperty = new GeometryPropertyImpl();
+							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
 
 							if (geometry.getAbstractGeometry() != null)
 								geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -162,7 +159,7 @@ public class DBCityObjectGroup implements DBExporter {
 
 					long parentId = rs.getLong("PARENT_CITYOBJECT_ID");
 					if (!rs.wasNull() && parentId != 0) {
-						String gmlId = dbExporterManager.getGmlId(parentId, CityGMLClass.CITYOBJECT);
+						String gmlId = dbExporterManager.getGmlId(parentId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
 						// retrieve gml:id of parent cityobjectgroups directly from database and assign
 						// them. we traverse the group graph by groupMembers not by parents and thus
@@ -173,7 +170,7 @@ public class DBCityObjectGroup implements DBExporter {
 							gmlId = getParentGmlId(parentId);
 
 						if (gmlId != null) {
-							CityObjectGroupParent parent = cityGMLFactory.createCityObjectGroupParent(grp);
+							CityObjectGroupParent parent = new CityObjectGroupParentImpl();
 							parent.setHref("#" + gmlId);
 							cityObjectGroup.setParent(parent);
 						}
@@ -184,10 +181,10 @@ public class DBCityObjectGroup implements DBExporter {
 
 				long groupMemberId = rs.getLong("CITYOBJECT_ID");
 				if (!rs.wasNull() && groupMemberId != 0) {
-					String gmlId = dbExporterManager.getGmlId(groupMemberId, CityGMLClass.CITYOBJECT);
+					String gmlId = dbExporterManager.getGmlId(groupMemberId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
 					if (gmlId != null) {
-						CityObjectGroupMember groupMember = cityGMLFactory.createCityObjectGroupMember(grp);
+						CityObjectGroupMember groupMember = new CityObjectGroupMemberImpl();
 						groupMember.setHref("#" + gmlId);
 
 						String role = rs.getString("ROLE");

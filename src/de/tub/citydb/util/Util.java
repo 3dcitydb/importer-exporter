@@ -37,11 +37,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
-import org.citygml4j.impl.jaxb.gml._3_1_1.CodeImpl;
+import org.citygml4j.impl.gml.basicTypes.CodeImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.gml.AbstractFeature;
-import org.citygml4j.model.gml.Code;
 import org.citygml4j.model.gml.GMLClass;
+import org.citygml4j.model.gml.basicTypes.Code;
+import org.citygml4j.model.gml.feature.AbstractFeature;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Workspace;
@@ -55,76 +55,76 @@ public class Util {
 		case BUILDING:
 			classId = 26;
 			break;
-		case BUILDINGFURNITURE:
+		case BUILDING_FURNITURE:
 			classId = 40;
 			break;
-		case BUILDINGINSTALLATION:
+		case BUILDING_INSTALLATION:
 			classId = 27;
 			break;
-		case BUILDINGPART:
+		case BUILDING_PART:
 			classId = 25;
 			break;
-		case CEILINGSURFACE:
+		case CEILING_SURFACE:
 			classId = 30;
 			break;
-		case CLOSURESURFACE:
+		case CLOSURE_SURFACE:
 			classId = 36;
 			break;
 		case DOOR:
 			classId = 39;
 			break;
-		case FLOORSURFACE:
+		case FLOOR_SURFACE:
 			classId = 32;
 			break;
-		case GENERICCITYOBJECT:
+		case GENERIC_CITY_OBJECT:
 			classId = 5;
 			break;
-		case GROUNDSURFACE:
+		case GROUND_SURFACE:
 			classId = 35;
 			break;
-		case INTBUILDINGINSTALLATION:
+		case INT_BUILDING_INSTALLATION:
 			classId = 28;
 			break;
-		case INTERIORWALLSURFACE:
+		case INTERIOR_WALL_SURFACE:
 			classId = 31;
 			break;
-		case ROOFSURFACE:
+		case ROOF_SURFACE:
 			classId = 33;
 			break;
 		case ROOM:
 			classId = 41;
 			break;
-		case WALLSURFACE:
+		case WALL_SURFACE:
 			classId = 34;
 			break;
 		case WINDOW:
 			classId = 38;
 			break;
-		case CITYFURNITURE:
+		case CITY_FURNITURE:
 			classId = 21;
 			break;
-		case LANDUSE:
+		case LAND_USE:
 			classId = 4;
 			break;
-		case WATERBODY:
+		case WATER_BODY:
 			classId = 9;
 			break;
-		case WATERSURFACE:
+		case WATER_SURFACE:
 			classId = 11;
 			break;
-		case WATERGROUNDSURFACE:
+		case WATER_GROUND_SURFACE:
 			classId = 12;
 			break;
-		case WATERCLOSURESURFACE:
+		case WATER_CLOSURE_SURFACE:
 			classId = 13;
 			break;
-		case SOLITARYVEGETATIONOBJECT:
+		case SOLITARY_VEGETATION_OBJECT:
 			classId = 7;
 			break;
-		case PLANTCOVER:
+		case PLANT_COVER:
 			classId = 8;
 			break;
-		case TRANSPORTATIONCOMPLEX:
+		case TRANSPORTATION_COMPLEX:
 			classId = 42;
 			break;
 		case TRACK:
@@ -139,28 +139,28 @@ public class Util {
 		case SQUARE:
 			classId = 46;
 			break;
-		case TRAFFICAREA:
+		case TRAFFIC_AREA:
 			classId = 47;
 			break;
-		case AUXILIARYTRAFFICAREA:
+		case AUXILIARY_TRAFFIC_AREA:
 			classId = 48;
 			break;
-		case CITYOBJECTGROUP:
+		case CITY_OBJECT_GROUP:
 			classId = 23;
 			break;
-		case RELIEFFEATURE:
+		case RELIEF_FEATURE:
 			classId = 14;
 			break;
-		case TINRELIEF:
+		case TIN_RELIEF:
 			classId = 16;
 			break;
-		case MASSPOINTRELIEF:
+		case MASSPOINT_RELIEF:
 			classId = 17;
 			break;
-		case BREAKLINERELIEF:
+		case BREAKLINE_RELIEF:
 			classId = 18;
 			break;
-		case RASTERRELIEF:
+		case RASTER_RELIEF:
 			classId = 19;
 			break;
 		}
@@ -173,25 +173,25 @@ public class Util {
 
 		switch (classId) {
 		case 4:
-			cityObjectType = CityGMLClass.LANDUSE;
+			cityObjectType = CityGMLClass.LAND_USE;
 			break;
 		case 21:
-			cityObjectType = CityGMLClass.CITYFURNITURE;
+			cityObjectType = CityGMLClass.CITY_FURNITURE;
 			break;
 		case 26:
 			cityObjectType = CityGMLClass.BUILDING;
 			break;
 		case 9:
-			cityObjectType = CityGMLClass.WATERBODY;
+			cityObjectType = CityGMLClass.WATER_BODY;
 			break;
 		case 8:
-			cityObjectType = CityGMLClass.PLANTCOVER;
+			cityObjectType = CityGMLClass.PLANT_COVER;
 			break;
 		case 7:
-			cityObjectType = CityGMLClass.SOLITARYVEGETATIONOBJECT;
+			cityObjectType = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
 			break;
 		case 42:
-			cityObjectType = CityGMLClass.TRANSPORTATIONCOMPLEX;
+			cityObjectType = CityGMLClass.TRANSPORTATION_COMPLEX;
 			break;
 		case 43:
 			cityObjectType = CityGMLClass.TRACK;
@@ -206,25 +206,25 @@ public class Util {
 			cityObjectType = CityGMLClass.SQUARE;
 			break;
 		case 5:
-			cityObjectType = CityGMLClass.GENERICCITYOBJECT;
+			cityObjectType = CityGMLClass.GENERIC_CITY_OBJECT;
 			break;
 		case 23:
-			cityObjectType = CityGMLClass.CITYOBJECTGROUP;
+			cityObjectType = CityGMLClass.CITY_OBJECT_GROUP;
 			break;
 		case 14:
-			cityObjectType = CityGMLClass.RELIEFFEATURE;
+			cityObjectType = CityGMLClass.RELIEF_FEATURE;
 			break;
 		case 16:
-			cityObjectType = CityGMLClass.TINRELIEF;
+			cityObjectType = CityGMLClass.TIN_RELIEF;
 			break;
 		case 17:
-			cityObjectType = CityGMLClass.MASSPOINTRELIEF;
+			cityObjectType = CityGMLClass.MASSPOINT_RELIEF;
 			break;
 		case 18:
-			cityObjectType = CityGMLClass.BREAKLINERELIEF;
+			cityObjectType = CityGMLClass.BREAKLINE_RELIEF;
 			break;
 		case 19:
-			cityObjectType = CityGMLClass.RASTERRELIEF;
+			cityObjectType = CityGMLClass.RASTER_RELIEF;
 			break;
 		}
 

@@ -36,7 +36,7 @@ public class StatusDialogMessage extends Event {
 	private String message;
 	
 	public StatusDialogMessage(String message) {
-		super(EventType.StatusDialogMessage);
+		super(EventType.STATUS_DIALOG_MESSAGE);
 		this.message = message;
 	}
 

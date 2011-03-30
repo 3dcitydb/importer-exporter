@@ -39,9 +39,11 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
+import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.AbstractTexture;
+import org.citygml4j.model.citygml.appearance.AbstractTextureParameterization;
 import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.GeoreferencedTexture;
 import org.citygml4j.model.citygml.appearance.ParameterizedTexture;
@@ -49,19 +51,19 @@ import org.citygml4j.model.citygml.appearance.TexCoordGen;
 import org.citygml4j.model.citygml.appearance.TexCoordList;
 import org.citygml4j.model.citygml.appearance.TextureAssociation;
 import org.citygml4j.model.citygml.appearance.TextureCoordinates;
-import org.citygml4j.model.citygml.appearance.TextureParameterization;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
-import org.citygml4j.model.gml.Point;
-import org.citygml4j.model.gml.PointProperty;
+import org.citygml4j.model.gml.geometry.primitives.Point;
+import org.citygml4j.model.gml.geometry.primitives.PointProperty;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.db.DBTypeValueEnum;
 import de.tub.citydb.db.xlink.DBXlinkTextureFile;
 import de.tub.citydb.db.xlink.DBXlinkTextureFileEnum;
 import de.tub.citydb.db.xlink.DBXlinkTextureParam;
 import de.tub.citydb.db.xlink.DBXlinkTextureParamEnum;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.UUIDManager;
 import de.tub.citydb.util.Util;
 
 public class DBSurfaceData implements DBImporter {
@@ -79,6 +81,8 @@ public class DBSurfaceData implements DBImporter {
 	private int dbSrid;
 	private boolean replaceGmlId;
 	private boolean importTextureImage;
+	private boolean affineTransformation;
+	private Matrix transformationMatrix;
 
 	public DBSurfaceData(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -92,13 +96,22 @@ public class DBSurfaceData implements DBImporter {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 		importTextureImage = config.getProject().getImporter().getAppearances().isSetImportTextureFiles();
+		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 
 		if (gmlIdCodespace != null && gmlIdCodespace.length() != 0)
 			gmlIdCodespace = "'" + gmlIdCodespace + "'";
 		else
 			gmlIdCodespace = "null";
-		
+
+		if (affineTransformation) {
+			transformationMatrix = config.getProject().getImporter().getAffineTransformation().getTransformationMatrix().toMatrix3x4();
+			if (transformationMatrix.eq(Matrix.identity(3, 4))) {
+				transformationMatrix = null;
+				affineTransformation = false;
+			}
+		}
+
 		psX3DMaterial = batchConn.prepareStatement("insert into SURFACE_DATA (ID, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, TYPE, " +
 				"X3D_SHININESS, X3D_TRANSPARENCY, X3D_AMBIENT_INTENSITY, X3D_SPECULAR_COLOR, X3D_DIFFUSE_COLOR, X3D_EMISSIVE_COLOR, X3D_IS_SMOOTH) values " +
 				"(?, ?, " + gmlIdCodespace + ", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -123,13 +136,13 @@ public class DBSurfaceData implements DBImporter {
 		PreparedStatement psSurfaceData = null;
 
 		switch (abstractSurfData.getCityGMLClass()) {
-		case X3DMATERIAL:
+		case X3D_MATERIAL:
 			psSurfaceData = psX3DMaterial;
 			break;
-		case PARAMETERIZEDTEXTURE:
+		case PARAMETERIZED_TEXTURE:
 			psSurfaceData = psParaTex;
 			break;
-		case GEOREFERENCEDTEXTURE:
+		case GEOREFERENCED_TEXTURE:
 			psSurfaceData = psGeoTex;
 			break;
 		}
@@ -142,7 +155,7 @@ public class DBSurfaceData implements DBImporter {
 
 		// gml:id
 		if (replaceGmlId) {
-			String gmlId = UUIDManager.randomUUID();
+			String gmlId = DefaultGMLIdManager.getInstance().generateUUID();
 
 			// mapping entry
 			if (abstractSurfData.isSetId())
@@ -154,7 +167,7 @@ public class DBSurfaceData implements DBImporter {
 			if (abstractSurfData.isSetId())
 				dbImporterManager.putGmlId(abstractSurfData.getId(), surfaceDataId, abstractSurfData.getCityGMLClass());
 			else
-				abstractSurfData.setId(UUIDManager.randomUUID());
+				abstractSurfData.setId(DefaultGMLIdManager.getInstance().generateUUID());
 		}
 
 		psSurfaceData.setString(2, abstractSurfData.getId());
@@ -189,10 +202,10 @@ public class DBSurfaceData implements DBImporter {
 			psSurfaceData.setInt(6, 1);
 
 		// type
-		psSurfaceData.setString(7, abstractSurfData.getCityGMLClass().toString());
+		psSurfaceData.setString(7, DBTypeValueEnum.fromCityGMLClass(abstractSurfData.getCityGMLClass()).toString());
 
 		// fill other columns depending on the type
-		if (abstractSurfData.getCityGMLClass() == CityGMLClass.X3DMATERIAL) {
+		if (abstractSurfData.getCityGMLClass() == CityGMLClass.X3D_MATERIAL) {
 			X3DMaterial material = (X3DMaterial)abstractSurfData;
 
 			// shininess
@@ -257,11 +270,11 @@ public class DBSurfaceData implements DBImporter {
 			}
 		}
 
-		else if (abstractSurfData.getCityGMLClass() == CityGMLClass.PARAMETERIZEDTEXTURE ||
-				abstractSurfData.getCityGMLClass() == CityGMLClass.GEOREFERENCEDTEXTURE) {
+		else if (abstractSurfData.getCityGMLClass() == CityGMLClass.PARAMETERIZED_TEXTURE ||
+				abstractSurfData.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE) {
 			AbstractTexture absTex = (AbstractTexture)abstractSurfData;
 
-			if (absTex.isSetImageUri()) {
+			if (absTex.isSetImageURI()) {
 				String imageURI = absTex.getImageURI().trim();
 				psSurfaceData.setString(8, imageURI);
 
@@ -297,7 +310,7 @@ public class DBSurfaceData implements DBImporter {
 				psSurfaceData.setNull(12, Types.VARCHAR);
 		}
 
-		if (abstractSurfData.getCityGMLClass() == CityGMLClass.PARAMETERIZEDTEXTURE) {
+		if (abstractSurfData.getCityGMLClass() == CityGMLClass.PARAMETERIZED_TEXTURE) {
 			psSurfaceData.addBatch();
 
 			//xlink
@@ -309,11 +322,11 @@ public class DBSurfaceData implements DBImporter {
 					String targetURI = target.getUri();
 
 					if (target.isSetTextureParameterization()) {
-						TextureParameterization texPara = target.getTextureParameterization();
+						AbstractTextureParameterization texPara = target.getTextureParameterization();
 						String texParamGmlId = texPara.getId();
 
 						switch (texPara.getCityGMLClass()) {
-						case TEXCOORDGEN:
+						case TEX_COORD_GEN:
 							TexCoordGen texCoordGen = (TexCoordGen)texPara;
 
 							if (texCoordGen.isSetWorldToTexture()) {
@@ -332,7 +345,7 @@ public class DBSurfaceData implements DBImporter {
 							}
 
 							break;
-						case TEXCOORDLIST:
+						case TEX_COORD_LIST:
 							TexCoordList texCoordList = (TexCoordList)texPara;
 							targetId++;
 
@@ -379,7 +392,7 @@ public class DBSurfaceData implements DBImporter {
 			}
 		}
 
-		else if (abstractSurfData.getCityGMLClass() == CityGMLClass.GEOREFERENCEDTEXTURE) {
+		else if (abstractSurfData.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE) {
 			GeoreferencedTexture geoTex = (GeoreferencedTexture)abstractSurfData;
 
 			if (geoTex.isSetPreferWorldFile() && !geoTex.getPreferWorldFile())
@@ -387,9 +400,16 @@ public class DBSurfaceData implements DBImporter {
 			else
 				psSurfaceData.setInt(13, 1);
 
-			if (geoTex.isSetOrientation())
-				psSurfaceData.setString(14, Util.collection2string(geoTex.getOrientation().getMatrix().toRowPackedList(), " "));
-			else
+			if (geoTex.isSetOrientation()) {
+				Matrix orientation = geoTex.getOrientation().getMatrix();
+
+				if (affineTransformation) {
+					Matrix transform2x2 = transformationMatrix.getMatrix(2, 2);
+					orientation = transform2x2.times(orientation.transpose());
+				}
+
+				psSurfaceData.setString(14, Util.collection2string(orientation.toRowPackedList(), " "));
+			} else
 				psSurfaceData.setNull(14, Types.VARCHAR);
 
 			if (geoTex.isSetReferencePoint()) {
@@ -398,9 +418,12 @@ public class DBSurfaceData implements DBImporter {
 				// the CityGML spec states that referencePoint shall be 2d only
 				if (pointProp.isSetPoint()) {
 					Point point = pointProp.getPoint();
-					List<Double> points = point.toList();
+					List<Double> points = point.toList3d();
 
 					if (points != null && !points.isEmpty()) {
+						if (affineTransformation)
+							applyAffineTransformation(points);
+
 						JGeometry geom = new JGeometry(points.get(0), points.get(1), dbSrid);
 						STRUCT obj = SyncJGeometry.syncStore(geom, batchConn);
 
@@ -420,7 +443,7 @@ public class DBSurfaceData implements DBImporter {
 				psSurfaceData.setNull(15, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
 
 			// do we have a world file?!
-			if (geoTex.isSetImageUri() && !geoTex.isSetOrientation() && !geoTex.isSetReferencePoint()) {
+			if (geoTex.isSetImageURI() && !geoTex.isSetOrientation() && !geoTex.isSetReferencePoint()) {
 				DBXlinkTextureFile xlink = new DBXlinkTextureFile(
 						surfaceDataId,
 						geoTex.getImageURI(),
@@ -450,6 +473,18 @@ public class DBSurfaceData implements DBImporter {
 		dbAppearToSurfaceDataImporter.insert(surfaceDataId, parentId);
 
 		return surfaceDataId;
+	}
+
+	private void applyAffineTransformation(List<Double> points) {
+		for (int i = 0; i < points.size(); i += 3) {
+			double[] vals = new double[]{ points.get(i), points.get(i+1), points.get(i+2), 1};
+			Matrix v = new Matrix(vals, 1);
+
+			double[] newVals = transformationMatrix.times(v.transpose()).toColumnPackedArray();
+			points.set(i, newVals[0]);
+			points.set(i+1, newVals[1]);
+			points.set(i+2, newVals[2]);
+		}
 	}
 
 	@Override

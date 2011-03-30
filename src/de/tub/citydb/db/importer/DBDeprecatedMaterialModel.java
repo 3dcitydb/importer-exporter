@@ -30,15 +30,21 @@
 package de.tub.citydb.db.importer;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.impl.jaxb.gml._3_1_1.LinearRingImpl;
+import org.citygml4j.impl.citygml.appearance.AppearanceImpl;
+import org.citygml4j.impl.citygml.appearance.ColorImpl;
+import org.citygml4j.impl.citygml.appearance.ParameterizedTextureImpl;
+import org.citygml4j.impl.citygml.appearance.SurfaceDataPropertyImpl;
+import org.citygml4j.impl.citygml.appearance.TexCoordListImpl;
+import org.citygml4j.impl.citygml.appearance.TextureAssociationImpl;
+import org.citygml4j.impl.citygml.appearance.TextureCoordinatesImpl;
+import org.citygml4j.impl.citygml.appearance.X3DMaterialImpl;
+import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.CityGMLModuleType;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.appearance.AppearanceModule;
 import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.ColorPlusOpacity;
 import org.citygml4j.model.citygml.appearance.ParameterizedTexture;
@@ -46,23 +52,22 @@ import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
 import org.citygml4j.model.citygml.appearance.TexCoordList;
 import org.citygml4j.model.citygml.appearance.TextureAssociation;
 import org.citygml4j.model.citygml.appearance.TextureCoordinates;
+import org.citygml4j.model.citygml.appearance.TextureType;
+import org.citygml4j.model.citygml.appearance.WrapMode;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
-import org.citygml4j.model.citygml.core.CoreModule;
-import org.citygml4j.model.citygml.texturedsurface._Appearance;
+import org.citygml4j.model.citygml.texturedsurface._AbstractAppearance;
 import org.citygml4j.model.citygml.texturedsurface._Material;
 import org.citygml4j.model.citygml.texturedsurface._SimpleTexture;
-import org.citygml4j.model.gml.AbstractRingProperty;
-import org.citygml4j.model.gml.AbstractSurface;
 import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.LinearRing;
-import org.citygml4j.model.gml.Polygon;
-import org.citygml4j.util.CityGMLModules;
+import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
+import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
+import org.citygml4j.model.gml.geometry.primitives.LinearRing;
+import org.citygml4j.model.gml.geometry.primitives.Polygon;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.db.xlink.DBXlinkDeprecatedMaterial;
 
 public class DBDeprecatedMaterialModel implements DBImporter {
-	private final CityGMLFactory cityGMLFactory;
 	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
@@ -71,8 +76,7 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 	private DBAppearance appearanceImporter;
 	private String theme;
 
-	public DBDeprecatedMaterialModel(CityGMLFactory cityGMLFactory, Config config, DBImporterManager dbImporterManager) throws SQLException {
-		this.cityGMLFactory = cityGMLFactory;
+	public DBDeprecatedMaterialModel(Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
@@ -84,15 +88,12 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 		appearanceImporter = (DBAppearance)dbImporterManager.getDBImporter(DBImporterEnum.APPEARANCE);
 	}
 
-	public boolean insert(_Appearance _appearance, AbstractSurface abstractSurface, long parentId, boolean isFront, String target) throws SQLException {
-		CoreModule core = (CoreModule)_appearance.getCityGMLModule().getModuleDependencies().getModule(CityGMLModuleType.CORE);
-		AppearanceModule app = (AppearanceModule)CityGMLModules.getModuleByTypeAndVersion(CityGMLModuleType.APPEARANCE, core.getModuleVersion());
-
+	public boolean insert(_AbstractAppearance _appearance, AbstractSurface abstractSurface, long parentId, boolean isFront, String target) throws SQLException {
 		if (parentId != lastId) {
 			if (lastId != 0 && appearance != null)
-				appearanceImporter.insert(appearance, CityGMLClass.CITYOBJECT, lastId);
+				appearanceImporter.insert(appearance, CityGMLClass.ABSTRACT_CITY_OBJECT, lastId);
 
-			appearance = cityGMLFactory.createAppearance(app);
+			appearance = new AppearanceImpl();
 			appearance.setTheme(theme);
 			lastId = parentId;
 		}
@@ -102,10 +103,10 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 
 		switch (type) {
 		case _MATERIAL:
-			abstractSurfaceData = cityGMLFactory.createX3DMaterial(app);
+			abstractSurfaceData =new X3DMaterialImpl();
 			break;
-		case _SIMPLETEXTURE:
-			abstractSurfaceData = cityGMLFactory.createParameterizedTexture(app);
+		case _SIMPLE_TEXTURE:
+			abstractSurfaceData = new ParameterizedTextureImpl();
 			break;
 		default:
 			return false;
@@ -127,27 +128,24 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 				material.setAmbientIntensity(_material.getAmbientIntensity());
 
 			if (_material.isSetSpecularColor())
-				material.setSpecularColor(cityGMLFactory.createColor(
+				material.setSpecularColor(new ColorImpl(
 						_material.getSpecularColor().getRed(),
 						_material.getSpecularColor().getGreen(),
-						_material.getSpecularColor().getBlue(),
-						app
+						_material.getSpecularColor().getBlue()
 				));
 
 			if (_material.isSetDiffuseColor())
-				material.setDiffuseColor(cityGMLFactory.createColor(
+				material.setDiffuseColor(new ColorImpl(
 						_material.getDiffuseColor().getRed(),
 						_material.getDiffuseColor().getGreen(),
-						_material.getDiffuseColor().getBlue(),
-						app
+						_material.getDiffuseColor().getBlue()
 				));
 
 			if (_material.isSetEmissiveColor())
-				material.setEmissiveColor(cityGMLFactory.createColor(
+				material.setEmissiveColor(new ColorImpl(
 						_material.getEmissiveColor().getRed(),
 						_material.getEmissiveColor().getGreen(),
-						_material.getEmissiveColor().getBlue(),
-						app
+						_material.getEmissiveColor().getBlue()
 				));
 
 			// group material instances
@@ -166,7 +164,7 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 
 			material.addTarget(target);
 
-		} else if (type == CityGMLClass._SIMPLETEXTURE) {
+		} else if (type == CityGMLClass._SIMPLE_TEXTURE) {
 			ParameterizedTexture paraTex = (ParameterizedTexture)abstractSurfaceData;
 			_SimpleTexture _simpleTex = (_SimpleTexture)_appearance;
 
@@ -174,16 +172,16 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 				paraTex.setImageURI(_simpleTex.getTextureMap());
 
 			if (_simpleTex.isSetTextureType())
-				paraTex.setTextureType(cityGMLFactory.createTextureType(_simpleTex.getTextureType().getValue(), app));
+				paraTex.setTextureType(TextureType.fromValue(_simpleTex.getTextureType().getValue()));
 
 			if (_simpleTex.isSetRepeat() && _simpleTex.getRepeat())
-				paraTex.setWrapMode(cityGMLFactory.createWrapMode("wrap", app));
+				paraTex.setWrapMode(WrapMode.WRAP);
 
 			if (_simpleTex.isSetTextureCoordinates()) {
-				TextureAssociation texAss = cityGMLFactory.createTextureAssociation(app);
+				TextureAssociation texAss = new TextureAssociationImpl();
 				texAss.setUri(target);
 
-				TexCoordList texCoordList = cityGMLFactory.createTexCoordList(app);
+				TexCoordList texCoordList = new TexCoordListImpl();
 				List<Double> _texCoords = _simpleTex.getTextureCoordinates();
 
 				// interpret an inline polygon
@@ -194,16 +192,16 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 						LinearRing exteriorLinearRing = (LinearRing)polygon.getExterior().getRing();
 
 						if (exteriorLinearRing != null) {
-							List<Double> points = ((LinearRingImpl)exteriorLinearRing).toList();
+							List<Double> points = ((LinearRingImpl)exteriorLinearRing).toList3d();
 
 							if (points != null && points.size() != 0) {
 								// we need two texture coordinates per geometry point
 								int noTexPoints = points.size() * 2 / 3;
 								int index = _texCoords.size() >= noTexPoints ? noTexPoints : _texCoords.size();
-								List<Double> texCoord = _texCoords.subList(0, index);
+								List<Double> texCoord = new ArrayList<Double>(_texCoords.subList(0, index));
 
 								if (texCoord.size() > 0) {
-									TextureCoordinates texCoords = cityGMLFactory.createTextureCoordinates(app);
+									TextureCoordinates texCoords = new TextureCoordinatesImpl();
 									texCoords.setValue(texCoord);
 									texCoords.setRing(exteriorLinearRing.getId());
 									texCoordList.addTextureCoordinates(texCoords);
@@ -218,7 +216,7 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 						List<AbstractRingProperty> abstractRingPropertyList = polygon.getInterior();
 						for (AbstractRingProperty abstractRingProperty : abstractRingPropertyList) {
 							LinearRing interiorLinearRing = (LinearRing)abstractRingProperty.getRing();
-							List<Double> interiorPoints = ((LinearRingImpl)interiorLinearRing).toList();
+							List<Double> interiorPoints = ((LinearRingImpl)interiorLinearRing).toList3d();
 
 							if (interiorPoints == null || interiorPoints.size() == 0)
 								continue;
@@ -226,10 +224,10 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 							// we need two texture coordinates per geometry point
 							int noTexPoints = interiorPoints.size() * 2 / 3;
 							int index = _texCoords.size() >= noTexPoints ? noTexPoints : _texCoords.size();
-							List<Double> texCoord = _texCoords.subList(0, index);
+							List<Double> texCoord = new ArrayList<Double>(_texCoords.subList(0, index));
 
 							if (texCoord.size() > 0) {
-								TextureCoordinates texCoords = cityGMLFactory.createTextureCoordinates(app);
+								TextureCoordinates texCoords = new TextureCoordinatesImpl();
 								texCoords.setValue(texCoord);
 								texCoords.setRing(interiorLinearRing.getId());
 								texCoordList.addTextureCoordinates(texCoords);
@@ -264,18 +262,18 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 		if (_appearance.isSetId() && _appearance.getId().length() != 0)
 			abstractSurfaceData.setId(_appearance.getId());
 
-		SurfaceDataProperty surfaceDataProperty = cityGMLFactory.createSurfaceDataProperty(app);
+		SurfaceDataProperty surfaceDataProperty = new SurfaceDataPropertyImpl();
 		surfaceDataProperty.setSurfaceData(abstractSurfaceData);
 		appearance.addSurfaceDataMember(surfaceDataProperty);
 
 		return true;
 	}
 
-	public boolean insertXlink(String href, long surfaceGeometryId, long parentId, AppearanceModule appFactory) throws SQLException {
-		Appearance appearance = cityGMLFactory.createAppearance(appFactory);
+	public boolean insertXlink(String href, long surfaceGeometryId, long parentId) throws SQLException {
+		Appearance appearance = new AppearanceImpl();
 		appearance.setTheme(theme);
 
-		long appearanceId = appearanceImporter.insert(appearance, CityGMLClass.CITYOBJECT, parentId);
+		long appearanceId = appearanceImporter.insert(appearance, CityGMLClass.ABSTRACT_CITY_OBJECT, parentId);
 		if (appearanceId != 0) {
 			DBXlinkDeprecatedMaterial xlink = new DBXlinkDeprecatedMaterial(
 					appearanceId,
@@ -293,7 +291,7 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 	@Override
 	public void executeBatch() throws SQLException {
 		if (appearance != null && lastId != 0)
-			appearanceImporter.insert(appearance, CityGMLClass.CITYOBJECT, lastId);
+			appearanceImporter.insert(appearance, CityGMLClass.ABSTRACT_CITY_OBJECT, lastId);
 
 		appearance = null;
 		lastId = 0;

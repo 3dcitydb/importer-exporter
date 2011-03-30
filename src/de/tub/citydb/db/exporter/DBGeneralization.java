@@ -39,14 +39,13 @@ import java.util.HashSet;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.geometry.Point;
-import org.citygml4j.impl.jaxb.gml._3_1_1.EnvelopeImpl;
+import org.citygml4j.impl.citygml.core.GeneralizationRelationImpl;
+import org.citygml4j.impl.gml.geometry.primitives.EnvelopeImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.core.CityObject;
-import org.citygml4j.model.citygml.core.CoreModule;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.GeneralizationRelation;
-import org.citygml4j.model.gml.Envelope;
+import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.db.DBTableEnum;
@@ -58,7 +57,6 @@ import de.tub.citydb.filter.feature.GmlNameFilter;
 import de.tub.citydb.util.Util;
 
 public class DBGeneralization implements DBExporter {
-	private final CityGMLFactory cityGMLFactory;
 	private final ExportFilter exportFilter;
 	private final Config config;
 	private final Connection connection;
@@ -73,8 +71,7 @@ public class DBGeneralization implements DBExporter {
 
 	private boolean transformCoords;
 
-	public DBGeneralization(Connection connection, CityGMLFactory cityGMLFactory, ExportFilter exportFilter, Config config) throws SQLException {
-		this.cityGMLFactory = cityGMLFactory;
+	public DBGeneralization(Connection connection, ExportFilter exportFilter, Config config) throws SQLException {
 		this.exportFilter = exportFilter;
 		this.config = config;
 		this.connection = connection;
@@ -100,7 +97,7 @@ public class DBGeneralization implements DBExporter {
 		}
 	}
 
-	public void read(CityObject cityObject, long cityObjectId, CoreModule core, HashSet<Long> generalizesToSet) throws SQLException {		
+	public void read(AbstractCityObject cityObject, long cityObjectId, HashSet<Long> generalizesToSet) throws SQLException {		
 		for (Long generalizationId : generalizesToSet) {
 			ResultSet rs = null;
 
@@ -147,35 +144,35 @@ public class DBGeneralization implements DBExporter {
 						case BUILDING:
 							table = DBTableEnum.BUILDING;
 							break;
-						case CITYFURNITURE:
+						case CITY_FURNITURE:
 							table = DBTableEnum.CITY_FURNITURE;
 							break;
-						case LANDUSE:
+						case LAND_USE:
 							table = DBTableEnum.LAND_USE;
 							break;
-						case WATERBODY:
+						case WATER_BODY:
 							table = DBTableEnum.WATERBODY;
 							break;
-						case PLANTCOVER:
+						case PLANT_COVER:
 							table = DBTableEnum.SOLITARY_VEGETAT_OBJECT;
 							break;
-						case SOLITARYVEGETATIONOBJECT:
+						case SOLITARY_VEGETATION_OBJECT:
 							table = DBTableEnum.PLANT_COVER;
 							break;
-						case TRANSPORTATIONCOMPLEX:
+						case TRANSPORTATION_COMPLEX:
 						case ROAD:
 						case RAILWAY:
 						case TRACK:
 						case SQUARE:
 							table = DBTableEnum.TRANSPORTATION_COMPLEX;
 							break;
-						case RELIEFFEATURE:
+						case RELIEF_FEATURE:
 							table = DBTableEnum.RELIEF_FEATURE;
 							break;
-						case GENERICCITYOBJECT:
+						case GENERIC_CITY_OBJECT:
 							table = DBTableEnum.GENERIC_CITYOBJECT;
 							break;
-						case CITYOBJECTGROUP:
+						case CITY_OBJECT_GROUP:
 							table = DBTableEnum.CITYOBJECTGROUP;
 							break;
 						}
@@ -221,7 +218,7 @@ public class DBGeneralization implements DBExporter {
 						}
 					}
 
-					GeneralizationRelation generalizesTo = cityGMLFactory.createGeneralizationRelation(core);
+					GeneralizationRelation generalizesTo = new GeneralizationRelationImpl();
 					generalizesTo.setHref("#" + gmlId);
 					cityObject.addGeneralizesTo(generalizesTo);
 				}

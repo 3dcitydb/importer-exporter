@@ -41,8 +41,9 @@ import oracle.sql.STRUCT;
 import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
-import org.citygml4j.model.gml.GeometryProperty;
-import org.citygml4j.model.gml.MultiCurveProperty;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
@@ -144,7 +145,7 @@ public class DBCityFurniture implements DBImporter {
 
 		// Geometry
 		for (int lod = 1; lod < 5; lod++) {
-        	GeometryProperty geometryProperty = null;
+        	GeometryProperty<? extends AbstractGeometry> geometryProperty = null;
         	long geometryId = 0;
 
     		switch (lod) {

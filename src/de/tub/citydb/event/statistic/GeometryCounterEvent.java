@@ -40,7 +40,7 @@ public class GeometryCounterEvent extends Event {
 	private HashMap<GMLClass, Long> geometryCounterMap;
 
 	public GeometryCounterEvent(HashMap<GMLClass, Long> geometryCounterMap) {
-		super(EventType.GeometryCounter);
+		super(EventType.GEOMETRY_COUNTER);
 		this.geometryCounterMap = geometryCounterMap;
 	}
 

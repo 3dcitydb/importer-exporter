@@ -37,7 +37,8 @@ import java.sql.Types;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.BuildingInstallation;
 import org.citygml4j.model.citygml.building.IntBuildingInstallation;
-import org.citygml4j.model.gml.GeometryProperty;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
@@ -130,7 +131,7 @@ public class DBBuildingInstallation implements DBImporter {
 		// parentId
 		switch (parent) {
 		case BUILDING:
-		case BUILDINGPART:
+		case BUILDING_PART:
 			psBuildingInstallation.setLong(9, parentId);
 			psBuildingInstallation.setNull(10, 0);
 			break;
@@ -145,7 +146,7 @@ public class DBBuildingInstallation implements DBImporter {
 
 		// Geometry
 		for (int lod = 2; lod < 5; lod++) {
-			GeometryProperty geometryProperty = null;
+			GeometryProperty<? extends AbstractGeometry> geometryProperty = null;
 			long geometryId = 0;
 
 			switch (lod) {
@@ -272,7 +273,7 @@ public class DBBuildingInstallation implements DBImporter {
 		// parentId
 		switch (parent) {
 		case BUILDING:
-		case BUILDINGPART:
+		case BUILDING_PART:
 			psBuildingInstallation.setLong(9, parentId);
 			psBuildingInstallation.setNull(10, 0);
 			break;
@@ -291,7 +292,7 @@ public class DBBuildingInstallation implements DBImporter {
 
 		long geometryId = 0;
 		if (intBuildingInstallation.isSetLod4Geometry()) {
-			GeometryProperty geometryProperty = intBuildingInstallation.getLod4Geometry();
+			GeometryProperty<? extends AbstractGeometry> geometryProperty = intBuildingInstallation.getLod4Geometry();
 
 			if (geometryProperty.isSetGeometry()) {
 				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), buildingInstallationId);

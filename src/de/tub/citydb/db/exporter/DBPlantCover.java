@@ -36,33 +36,28 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.JAXBException;
-
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.impl.jaxb.gml._3_1_1.LengthImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.MultiSolidPropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.MultiSurfacePropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.StringOrRefImpl;
+import org.citygml4j.impl.citygml.vegetation.PlantCoverImpl;
+import org.citygml4j.impl.gml.base.StringOrRefImpl;
+import org.citygml4j.impl.gml.geometry.aggregates.MultiSolidPropertyImpl;
+import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfacePropertyImpl;
+import org.citygml4j.impl.gml.measures.LengthImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
-import org.citygml4j.model.citygml.vegetation.VegetationModule;
 import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.Length;
-import org.citygml4j.model.gml.MultiSolid;
-import org.citygml4j.model.gml.MultiSolidProperty;
-import org.citygml4j.model.gml.MultiSurface;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
-import org.citygml4j.model.gml.StringOrRef;
+import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+import org.citygml4j.model.gml.measures.Length;
+import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
 
 public class DBPlantCover implements DBExporter {
 	private final DBExporterManager dbExporterManager;
-	private final CityGMLFactory cityGMLFactory;
-	private final Config config;
 	private final Connection connection;
 
 	private PreparedStatement psPlantCover;
@@ -71,12 +66,9 @@ public class DBPlantCover implements DBExporter {
 	private DBCityObject cityObjectExporter;
 	private FeatureClassFilter featureClassFilter;
 
-	private VegetationModule veg;
 
-	public DBPlantCover(Connection connection, CityGMLFactory cityGMLFactory, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBPlantCover(Connection connection, ExportFilter exportFilter, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
-		this.cityGMLFactory = cityGMLFactory;
-		this.config = config;
 		this.dbExporterManager = dbExporterManager;
 		this.featureClassFilter = exportFilter.getFeatureClassFilter();
 
@@ -84,16 +76,14 @@ public class DBPlantCover implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		veg = config.getProject().getExporter().getModuleVersion().getVegetation().getModule();
-
 		psPlantCover = connection.prepareStatement("select * from PLANT_COVER where ID = ?");
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, JAXBException {
-		PlantCover plantCover = cityGMLFactory.createPlantCover(veg);
+	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+		PlantCover plantCover = new PlantCoverImpl();
 		long plantCoverId = splitter.getPrimaryKey();
 
 		// cityObject stuff
@@ -147,7 +137,7 @@ public class DBPlantCover implements DBExporter {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
 
 						if (geometry != null) {
-							if (geometry.getType() == GMLClass.MULTISURFACE) {
+							if (geometry.getType() == GMLClass.MULTI_SURFACE) {
 								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
 
 								if (geometry.getAbstractGeometry() != null)
@@ -171,7 +161,7 @@ public class DBPlantCover implements DBExporter {
 								}
 							}
 
-							else if (geometry.getType() == GMLClass.MULTISOLID) {
+							else if (geometry.getType() == GMLClass.MULTI_SOLID) {
 								MultiSolidProperty multiSolidProperty = new MultiSolidPropertyImpl();
 
 								if (geometry.getAbstractGeometry() != null)
@@ -196,7 +186,7 @@ public class DBPlantCover implements DBExporter {
 				}
 			}
 
-			if (plantCover.isSetId() && !featureClassFilter.filter(CityGMLClass.CITYOBJECTGROUP))
+			if (plantCover.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
 				dbExporterManager.putGmlId(plantCover.getId(), plantCoverId, plantCover.getCityGMLClass());
 			dbExporterManager.print(plantCover);
 			return true;

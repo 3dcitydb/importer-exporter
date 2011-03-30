@@ -63,7 +63,6 @@ public class Internal {
 	private String currentGmlIdCodespace = "";
 
 	// internal flags
-	private boolean useXMLValidation = false;
 	private boolean useInternalBBoxFilter = false;
 	private boolean transformCoordinates = false;
 
@@ -152,14 +151,6 @@ public class Internal {
 
 	public void setConfigPath(String configPath) {
 		this.configPath = configPath;
-	}
-
-	public boolean isUseXMLValidation() {
-		return useXMLValidation;
-	}
-
-	public void setUseXMLValidation(boolean useXMLValidation) {
-		this.useXMLValidation = useXMLValidation;
 	}
 
 	public boolean isUseInternalBBoxFilter() {

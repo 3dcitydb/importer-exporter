@@ -36,25 +36,24 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.impl.jaxb.gml._3_1_1.MultiSurfacePropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.SolidPropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.StringOrRefImpl;
+import org.citygml4j.impl.citygml.building.InteriorRoomPropertyImpl;
+import org.citygml4j.impl.citygml.building.RoomImpl;
+import org.citygml4j.impl.gml.base.StringOrRefImpl;
+import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfacePropertyImpl;
+import org.citygml4j.impl.gml.geometry.primitives.SolidPropertyImpl;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
-import org.citygml4j.model.citygml.building.BuildingModule;
 import org.citygml4j.model.citygml.building.InteriorRoomProperty;
 import org.citygml4j.model.citygml.building.Room;
-import org.citygml4j.model.gml.AbstractSolid;
-import org.citygml4j.model.gml.MultiSurface;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
-import org.citygml4j.model.gml.SolidProperty;
-import org.citygml4j.model.gml.StringOrRef;
+import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
+import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
 import de.tub.citydb.util.Util;
 
 public class DBRoom implements DBExporter {
 	private final DBExporterManager dbExporterManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final Connection connection;
 
 	private PreparedStatement psRoom;
@@ -65,9 +64,8 @@ public class DBRoom implements DBExporter {
 	private DBThematicSurface thematicSurfaceExporter;
 	private DBBuildingFurniture buildingFurnitureExporter;
 
-	public DBRoom(Connection connection, CityGMLFactory cityGMLFactory, DBExporterManager dbExporterManager) throws SQLException {
+	public DBRoom(Connection connection, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
-		this.cityGMLFactory = cityGMLFactory;
 		this.dbExporterManager = dbExporterManager;
 
 		init();
@@ -83,7 +81,7 @@ public class DBRoom implements DBExporter {
 		buildingFurnitureExporter = (DBBuildingFurniture)dbExporterManager.getDBExporter(DBExporterEnum.BUILDING_FURNITURE);
 	}
 
-	public void read(AbstractBuilding building, long parentId, BuildingModule bldg) throws SQLException {
+	public void read(AbstractBuilding building, long parentId) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -92,7 +90,7 @@ public class DBRoom implements DBExporter {
 
 			while (rs.next()) {
 				long roomId = rs.getLong("ID");
-				Room room = cityGMLFactory.createRoom(bldg);
+				Room room = new RoomImpl();
 
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
@@ -128,7 +126,7 @@ public class DBRoom implements DBExporter {
 				// boundarySurface
 				// geometry objects of _BoundarySurface elements have to be referenced by lod4Solid 
 				// So we first export all _BoundarySurfaces
-				thematicSurfaceExporter.read(room, roomId, bldg);
+				thematicSurfaceExporter.read(room, roomId);
 				
 				long lodGeometryId = rs.getLong("LOD4_GEOMETRY_ID");
 				if (!rs.wasNull() && lodGeometryId != 0) {
@@ -136,7 +134,7 @@ public class DBRoom implements DBExporter {
 
 					if (geometry != null) {
 						switch (geometry.getType()) {
-						case COMPOSITESOLID:
+						case COMPOSITE_SOLID:
 						case SOLID:
 							SolidProperty solidProperty = new SolidPropertyImpl();
 
@@ -147,7 +145,7 @@ public class DBRoom implements DBExporter {
 
 							room.setLod4Solid(solidProperty);
 							break;
-						case MULTISURFACE:
+						case MULTI_SURFACE:
 							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
 
 							if (geometry.getAbstractGeometry() != null)
@@ -165,12 +163,12 @@ public class DBRoom implements DBExporter {
 				cityObjectExporter.read(room, roomId);
 
 				// intBuildingInstallation
-				buildingInstallationExporter.read(room, roomId, bldg);
+				buildingInstallationExporter.read(room, roomId);
 
 				// buildingFurniture
-				buildingFurnitureExporter.read(room, roomId, bldg);
+				buildingFurnitureExporter.read(room, roomId);
 
-				InteriorRoomProperty roomProperty = cityGMLFactory.createInteriorRoomProperty(bldg);
+				InteriorRoomProperty roomProperty = new InteriorRoomPropertyImpl();
 				roomProperty.setObject(room);
 				building.addInteriorRoom(roomProperty);
 			}

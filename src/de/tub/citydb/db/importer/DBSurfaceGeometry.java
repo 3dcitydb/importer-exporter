@@ -40,43 +40,41 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.impl.jaxb.gml._3_1_1.LinearRingImpl;
+import org.citygml4j.geometry.Matrix;
+import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.CityGMLModuleType;
-import org.citygml4j.model.citygml.appearance.AppearanceModule;
-import org.citygml4j.model.citygml.core.CoreModule;
-import org.citygml4j.model.citygml.texturedsurface._Appearance;
+import org.citygml4j.model.citygml.texturedsurface._AbstractAppearance;
 import org.citygml4j.model.citygml.texturedsurface._AppearanceProperty;
 import org.citygml4j.model.citygml.texturedsurface._TexturedSurface;
-import org.citygml4j.model.gml.AbstractGeometry;
-import org.citygml4j.model.gml.AbstractRingProperty;
-import org.citygml4j.model.gml.AbstractSolid;
-import org.citygml4j.model.gml.AbstractSurface;
-import org.citygml4j.model.gml.AbstractSurfacePatch;
-import org.citygml4j.model.gml.CompositeSolid;
-import org.citygml4j.model.gml.CompositeSurface;
 import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.GeometricComplex;
-import org.citygml4j.model.gml.GeometricPrimitiveProperty;
-import org.citygml4j.model.gml.LinearRing;
-import org.citygml4j.model.gml.MultiPolygon;
-import org.citygml4j.model.gml.MultiSolid;
-import org.citygml4j.model.gml.MultiSurface;
-import org.citygml4j.model.gml.OrientableSurface;
-import org.citygml4j.model.gml.Polygon;
-import org.citygml4j.model.gml.PolygonProperty;
-import org.citygml4j.model.gml.Rectangle;
-import org.citygml4j.model.gml.Solid;
-import org.citygml4j.model.gml.SolidArrayProperty;
-import org.citygml4j.model.gml.SolidProperty;
-import org.citygml4j.model.gml.Surface;
-import org.citygml4j.model.gml.SurfaceArrayProperty;
-import org.citygml4j.model.gml.SurfacePatchArrayProperty;
-import org.citygml4j.model.gml.SurfaceProperty;
-import org.citygml4j.model.gml.Triangle;
-import org.citygml4j.model.gml.TrianglePatchArrayProperty;
-import org.citygml4j.model.gml.TriangulatedSurface;
-import org.citygml4j.util.CityGMLModules;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.aggregates.MultiPolygon;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
+import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
+import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
+import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
+import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
+import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
+import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
+import org.citygml4j.model.gml.geometry.primitives.AbstractSurfacePatch;
+import org.citygml4j.model.gml.geometry.primitives.GeometricPrimitiveProperty;
+import org.citygml4j.model.gml.geometry.primitives.LinearRing;
+import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
+import org.citygml4j.model.gml.geometry.primitives.Polygon;
+import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
+import org.citygml4j.model.gml.geometry.primitives.Rectangle;
+import org.citygml4j.model.gml.geometry.primitives.Solid;
+import org.citygml4j.model.gml.geometry.primitives.SolidArrayProperty;
+import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
+import org.citygml4j.model.gml.geometry.primitives.Surface;
+import org.citygml4j.model.gml.geometry.primitives.SurfaceArrayProperty;
+import org.citygml4j.model.gml.geometry.primitives.SurfacePatchArrayProperty;
+import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.Triangle;
+import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
+import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -84,7 +82,6 @@ import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.db.xlink.DBXlinkLinearRing;
 import de.tub.citydb.db.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.UUIDManager;
 import de.tub.citydb.util.Util;
 
 public class DBSurfaceGeometry implements DBImporter {
@@ -101,6 +98,8 @@ public class DBSurfaceGeometry implements DBImporter {
 	private int dbSrid;
 	private boolean replaceGmlId;
 	private boolean importAppearance;
+	private boolean affineTransformation;
+	private Matrix transformationMatrix;
 	private int parentBatchCounter;
 	private int memberBatchCounter;
 
@@ -116,12 +115,21 @@ public class DBSurfaceGeometry implements DBImporter {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
+		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 
 		if (gmlIdCodespace != null && gmlIdCodespace.length() != 0)
 			gmlIdCodespace = "'" + gmlIdCodespace + "'";
 		else
 			gmlIdCodespace = "null";
+
+		if (affineTransformation) {
+			transformationMatrix = config.getProject().getImporter().getAffineTransformation().getTransformationMatrix().toMatrix3x4();
+			if (transformationMatrix.eq(Matrix.identity(3, 4))) {
+				transformationMatrix = null;
+				affineTransformation = false;
+			}
+		}
 
 		psParentElem = batchConn.prepareStatement("insert into SURFACE_GEOMETRY (ID, GMLID, GMLID_CODESPACE, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY) values "
 				+ "(?, ?, " + gmlIdCodespace + ", ?, ?, ?, ?, ?, 0, ?, ?)");
@@ -154,23 +162,23 @@ public class DBSurfaceGeometry implements DBImporter {
 		origGmlId = gmlId = surfaceGeometry.getId();
 
 		if (gmlId == null || replaceGmlId) {
-			gmlId = UUIDManager.randomUUID();
+			gmlId = DefaultGMLIdManager.getInstance().generateUUID();
 			surfaceGeometry.setId(gmlId);
 		}
 
 		// ok, now we can have a look at different gml geometry objects
 		// firstly, handle simple surface geometries
 		// a single linearRing
-		if (surfaceGeometryType == GMLClass.LINEARRING) {
+		if (surfaceGeometryType == GMLClass.LINEAR_RING) {
 			LinearRing linearRing = (LinearRing)surfaceGeometry;
-			List<Double> points = ((LinearRingImpl)linearRing).toList(reverse);
+			List<Double> points = ((LinearRingImpl)linearRing).toList3d(reverse);
 
 			if (points != null && !points.isEmpty()) {
 				Double x = points.get(0);
 				Double y = points.get(1);
 				Double z = points.get(2);
 				int nrOfPoints = points.size();
-				
+
 				if (!x.equals(points.get(nrOfPoints - 3)) ||
 						!y.equals(points.get(nrOfPoints - 2)) ||
 						!z.equals(points.get(nrOfPoints - 1))) {
@@ -180,13 +188,13 @@ public class DBSurfaceGeometry implements DBImporter {
 							origGmlId));
 					msg.append(": Ring is not closed. Appending first coordinate to fix it.");
 					LOG.warn(msg.toString());
-					
+
 					points.add(x);
 					points.add(y);
 					points.add(z);
 					++nrOfPoints;
 				}
-				
+
 				if (nrOfPoints < 4) {
 					// invalid ring...
 					StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
@@ -196,7 +204,10 @@ public class DBSurfaceGeometry implements DBImporter {
 					LOG.error(msg.toString());
 					return;
 				}
-				
+
+				if (affineTransformation)
+					applyAffineTransformation(points);
+
 				double[] ordinates = new double[points.size()];
 
 				int i = 0;
@@ -219,7 +230,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 				if (parentId == 0 && rootId == surfaceGeometryId) {
 					if (origGmlId != null)
-						dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.GMLGEOMETRY);
+						dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 					psParentElem.setLong(1, surfaceGeometryId);
 					psParentElem.setString(2, gmlId);
@@ -235,7 +246,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 				} else {
 					if (origGmlId != null)
-						dbImporterManager.putGmlId(origGmlId, -1, rootId, reverse, gmlId, CityGMLClass.GMLGEOMETRY);
+						dbImporterManager.putGmlId(origGmlId, -1, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 					psMemberElem.setString(1, gmlId);
 					psMemberElem.setLong(2, parentId);
@@ -256,14 +267,14 @@ public class DBSurfaceGeometry implements DBImporter {
 				List<List<Double>> pointList = new ArrayList<List<Double>>();
 				LinearRing exteriorLinearRing = (LinearRing)polygon.getExterior().getRing();
 				if (exteriorLinearRing != null) {
-					List<Double> points = ((LinearRingImpl)exteriorLinearRing).toList(reverse);
+					List<Double> points = ((LinearRingImpl)exteriorLinearRing).toList3d(reverse);
 
 					if (points != null && !points.isEmpty()) {
 						Double x = points.get(0);
 						Double y = points.get(1);
 						Double z = points.get(2);
 						int nrOfPoints = points.size();
-						
+
 						if (!x.equals(points.get(nrOfPoints - 3)) ||
 								!y.equals(points.get(nrOfPoints - 2)) ||
 								!z.equals(points.get(nrOfPoints - 1))) {
@@ -273,13 +284,13 @@ public class DBSurfaceGeometry implements DBImporter {
 									origGmlId));
 							msg.append(": Exterior ring is not closed. Appending first coordinate to fix it.");
 							LOG.warn(msg.toString());
-							
+
 							points.add(x);
 							points.add(y);
 							points.add(z);
 							++nrOfPoints;
 						}					
-						
+
 						if (nrOfPoints < 4) {
 							// invalid ring...
 							StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
@@ -289,10 +300,13 @@ public class DBSurfaceGeometry implements DBImporter {
 							LOG.error(msg.toString());
 							return;
 						}
-						
+
+						if (affineTransformation)
+							applyAffineTransformation(points);
+
 						pointList.add(points);
 						int ringNo = 0;
-						dbImporterManager.updateGeometryCounter(GMLClass.LINEARRING);
+						dbImporterManager.updateGeometryCounter(GMLClass.LINEAR_RING);
 
 						// well, taking care about geometry is not enough... this ring could
 						// be referenced by a <textureCoordinates> element. since we cannot store
@@ -311,14 +325,14 @@ public class DBSurfaceGeometry implements DBImporter {
 						if (polygon.isSetInterior()) {
 							for (AbstractRingProperty abstractRingProperty : polygon.getInterior()) {
 								LinearRing interiorLinearRing = (LinearRing)abstractRingProperty.getRing();
-								List<Double> interiorPoints = ((LinearRingImpl)interiorLinearRing).toList(reverse);
+								List<Double> interiorPoints = ((LinearRingImpl)interiorLinearRing).toList3d(reverse);
 
 								if (interiorPoints != null && !interiorPoints.isEmpty()) {									
 									x = interiorPoints.get(0);
 									y = interiorPoints.get(1);
 									z = interiorPoints.get(2);
 									nrOfPoints = interiorPoints.size();
-									
+
 									if (!x.equals(interiorPoints.get(nrOfPoints - 3)) ||
 											!y.equals(interiorPoints.get(nrOfPoints - 2)) ||
 											!z.equals(interiorPoints.get(nrOfPoints - 1))) {
@@ -328,13 +342,13 @@ public class DBSurfaceGeometry implements DBImporter {
 												origGmlId));
 										msg.append(": Interior ring is not closed. Appending first coordinate to fix it.");
 										LOG.warn(msg.toString());
-										
+
 										interiorPoints.add(x);
 										interiorPoints.add(y);
 										interiorPoints.add(z);
 										++nrOfPoints;
 									}	
-									
+
 									if (nrOfPoints < 4) {
 										// invalid ring...
 										StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
@@ -344,11 +358,14 @@ public class DBSurfaceGeometry implements DBImporter {
 										LOG.error(msg.toString());
 										return;
 									}
-									
+
+									if (affineTransformation)
+										applyAffineTransformation(interiorPoints);
+
 									pointList.add(interiorPoints);
 
 									ringNo++;
-									dbImporterManager.updateGeometryCounter(GMLClass.LINEARRING);
+									dbImporterManager.updateGeometryCounter(GMLClass.LINEAR_RING);
 
 									// also remember the gml:id of interior rings in case it is
 									// referenced by a <textureCoordinates> element
@@ -388,7 +405,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 						if (parentId == 0 && rootId == surfaceGeometryId) {
 							if (origGmlId != null)
-								dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.GMLGEOMETRY);
+								dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 							psParentElem.setLong(1, surfaceGeometryId);
 							psParentElem.setString(2, gmlId);
@@ -404,7 +421,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 						} else {
 							if (origGmlId != null)
-								dbImporterManager.putGmlId(origGmlId, -1, rootId, reverse, gmlId, CityGMLClass.GMLGEOMETRY);
+								dbImporterManager.putGmlId(origGmlId, -1, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 							psMemberElem.setString(1, gmlId);
 							psMemberElem.setLong(2, parentId);
@@ -421,7 +438,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 		// ok, handle complexes, composites and aggregates
 		// orientableSurface
-		else if (surfaceGeometryType == GMLClass.ORIENTABLESURFACE) {
+		else if (surfaceGeometryType == GMLClass.ORIENTABLE_SURFACE) {
 			OrientableSurface orientableSurface = (OrientableSurface)surfaceGeometry;
 
 			boolean negativeOrientation = false;
@@ -437,20 +454,20 @@ public class DBSurfaceGeometry implements DBImporter {
 				if (surfaceProperty.isSetSurface()) {
 					AbstractSurface abstractSurface = surfaceProperty.getSurface();
 					if (!abstractSurface.isSetId())
-						abstractSurface.setId(UUIDManager.randomUUID());
+						abstractSurface.setId(DefaultGMLIdManager.getInstance().generateUUID());
 
 					// mapping target
 					mapping = abstractSurface.getId();
 
 					switch (abstractSurface.getGMLClass()) {
 					case POLYGON:
-					case _TEXTUREDSURFACE:
-					case ORIENTABLESURFACE:
+					case _TEXTURED_SURFACE:
+					case ORIENTABLE_SURFACE:
 						insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, cityObjectId);
 						break;
-					case COMPOSITESURFACE:
+					case COMPOSITE_SURFACE:
 					case SURFACE:
-					case TRIANGULATEDSURFACE:
+					case TRIANGULATED_SURFACE:
 					case TIN:
 						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
 						insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, cityObjectId);
@@ -478,13 +495,13 @@ public class DBSurfaceGeometry implements DBImporter {
 
 				// do mapping
 				if (origGmlId != null)
-					dbImporterManager.putGmlId(origGmlId, -1, -1, negativeOrientation, mapping, CityGMLClass.GMLGEOMETRY);
+					dbImporterManager.putGmlId(origGmlId, -1, -1, negativeOrientation, mapping, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 			}
 		}
 
 		// texturedSurface
 		// this is a CityGML class, not a GML class.
-		else if (surfaceGeometryType == GMLClass._TEXTUREDSURFACE) {
+		else if (surfaceGeometryType == GMLClass._TEXTURED_SURFACE) {
 			_TexturedSurface texturedSurface = (_TexturedSurface)surfaceGeometry;
 			AbstractSurface abstractSurface = null;
 
@@ -502,14 +519,14 @@ public class DBSurfaceGeometry implements DBImporter {
 					abstractSurface = surfaceProperty.getSurface();
 
 					if (!abstractSurface.isSetId())
-						abstractSurface.setId(UUIDManager.randomUUID());
+						abstractSurface.setId(DefaultGMLIdManager.getInstance().generateUUID());
 
 					// appearance and mapping target
 					targetURI = abstractSurface.getId();
 
 					// do mapping
 					if (origGmlId != null)
-						dbImporterManager.putGmlId(origGmlId, -1, -1, negativeOrientation, targetURI, CityGMLClass.GMLGEOMETRY);
+						dbImporterManager.putGmlId(origGmlId, -1, -1, negativeOrientation, targetURI, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 					switch (abstractSurface.getGMLClass()) {
 					case POLYGON:
@@ -528,16 +545,16 @@ public class DBSurfaceGeometry implements DBImporter {
 								LinearRing interiorRing = (LinearRing)abstractRingProperty.getRing();
 
 								if (!interiorRing.isSetId())
-									interiorRing.setId(UUIDManager.randomUUID());
+									interiorRing.setId(DefaultGMLIdManager.getInstance().generateUUID());
 							}
 						}
-					case _TEXTUREDSURFACE:
-					case ORIENTABLESURFACE:
+					case _TEXTURED_SURFACE:
+					case ORIENTABLE_SURFACE:
 						insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, cityObjectId);					
 						break;
-					case COMPOSITESURFACE:
+					case COMPOSITE_SURFACE:
 					case SURFACE:
-					case TRIANGULATEDSURFACE:
+					case TRIANGULATED_SURFACE:
 					case TIN:
 						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
 						insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, cityObjectId);
@@ -563,14 +580,14 @@ public class DBSurfaceGeometry implements DBImporter {
 
 						// do mapping
 						if (origGmlId != null)
-							dbImporterManager.putGmlId(origGmlId, -1, -1, negativeOrientation, targetURI, CityGMLClass.GMLGEOMETRY);
+							dbImporterManager.putGmlId(origGmlId, -1, -1, negativeOrientation, targetURI, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 						// well, regarding appearances we cannot work on remote geometries so far...				
 						StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
 								texturedSurface.getGMLClass(), 
 								origGmlId));
 						msg.append(": Texture information for referenced geometry objects are not supported.");
-						
+
 						LOG.error(msg.toString());
 					}
 
@@ -590,18 +607,18 @@ public class DBSurfaceGeometry implements DBImporter {
 			if (importAppearance && texturedSurface.isSetAppearance()) {
 				for (_AppearanceProperty appearanceProperty : texturedSurface.getAppearance()) {
 					if (appearanceProperty.isSetAppearance()) {
-						_Appearance appearance = appearanceProperty.getAppearance();
+						_AbstractAppearance appearance = appearanceProperty.getAppearance();
 
 						// how to map texture coordinates to a composite surface of
 						// arbitrary depth?
-						if (appearance.getCityGMLClass() == CityGMLClass._SIMPLETEXTURE &&
+						if (appearance.getCityGMLClass() == CityGMLClass._SIMPLE_TEXTURE &&
 								abstractSurface.getGMLClass() != GMLClass.POLYGON) {
 
 							StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
 									texturedSurface.getGMLClass(), 
 									origGmlId));
 							msg.append(": Texture coordinates are only supported for base surfaces of type gml:Polygon.");
-							
+
 							LOG.error(msg.toString());
 							continue;
 						}
@@ -615,11 +632,7 @@ public class DBSurfaceGeometry implements DBImporter {
 						String href = appearanceProperty.getHref();
 
 						if (href != null && href.length() != 0) {
-							CoreModule core = (CoreModule)appearanceProperty.getCityGMLModule().getModuleDependencies().getModule(CityGMLModuleType.CORE);
-							AppearanceModule app = (AppearanceModule)CityGMLModules.getModuleByTypeAndVersion(CityGMLModuleType.APPEARANCE, core.getModuleVersion());
-
-							boolean success = materialModelImporter.insertXlink(href, surfaceGeometryId, cityObjectId, app);
-
+							boolean success = materialModelImporter.insertXlink(href, surfaceGeometryId, cityObjectId);
 							if (!success) {
 								LOG.error("XLink reference '" + href + "' could not be resolved.");
 							}
@@ -630,11 +643,11 @@ public class DBSurfaceGeometry implements DBImporter {
 		}
 
 		// compositeSurface
-		else if (surfaceGeometryType == GMLClass.COMPOSITESURFACE) {
+		else if (surfaceGeometryType == GMLClass.COMPOSITE_SURFACE) {
 			CompositeSurface compositeSurface = (CompositeSurface)surfaceGeometry;
 
 			if (origGmlId != null)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.GMLGEOMETRY);
+				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psParentElem.setLong(1, surfaceGeometryId);
@@ -663,13 +676,13 @@ public class DBSurfaceGeometry implements DBImporter {
 
 						switch (abstractSurface.getGMLClass()) {
 						case POLYGON:
-						case _TEXTUREDSURFACE:
-						case ORIENTABLESURFACE:
+						case _TEXTURED_SURFACE:
+						case ORIENTABLE_SURFACE:
 							insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, cityObjectId);
 							break;
-						case COMPOSITESURFACE:
+						case COMPOSITE_SURFACE:
 						case SURFACE:
-						case TRIANGULATEDSURFACE:
+						case TRIANGULATED_SURFACE:
 						case TIN:
 							surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
 							insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, cityObjectId);
@@ -701,7 +714,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			Surface surface = (Surface)surfaceGeometry;
 
 			if (origGmlId != null)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.GMLGEOMETRY);
+				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psParentElem.setLong(1, surfaceGeometryId);
@@ -751,12 +764,12 @@ public class DBSurfaceGeometry implements DBImporter {
 		}
 
 		// TriangulatedSurface, TIN
-		else if (surfaceGeometryType == GMLClass.TRIANGULATEDSURFACE ||
+		else if (surfaceGeometryType == GMLClass.TRIANGULATED_SURFACE ||
 				surfaceGeometryType == GMLClass.TIN) {
 			TriangulatedSurface triangulatedSurface = (TriangulatedSurface)surfaceGeometry;
 
 			if (origGmlId != null)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.GMLGEOMETRY);
+				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psParentElem.setLong(1, surfaceGeometryId);
@@ -797,7 +810,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			Solid solid = (Solid)surfaceGeometry;
 
 			if (origGmlId != null)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.GMLGEOMETRY);
+				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psParentElem.setLong(1, surfaceGeometryId);
@@ -826,7 +839,7 @@ public class DBSurfaceGeometry implements DBImporter {
 					AbstractSurface abstractSurface = exteriorSurface.getSurface();
 
 					// we just allow CompositeSurfaces here!
-					if (abstractSurface.getGMLClass() == GMLClass.COMPOSITESURFACE) {
+					if (abstractSurface.getGMLClass() == GMLClass.COMPOSITE_SURFACE) {
 						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
 						insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, cityObjectId);
 					}
@@ -852,17 +865,17 @@ public class DBSurfaceGeometry implements DBImporter {
 						solid.getGMLClass(), 
 						origGmlId));
 				msg.append(": gml:interior is not supported.");
-				
+
 				LOG.error(msg.toString());
 			}
 		}
 
 		// CompositeSolid
-		else if (surfaceGeometryType ==GMLClass.COMPOSITESOLID) {
+		else if (surfaceGeometryType ==GMLClass.COMPOSITE_SOLID) {
 			CompositeSolid compositeSolid = (CompositeSolid)surfaceGeometry;
 
 			if (origGmlId != null)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.GMLGEOMETRY);
+				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psParentElem.setLong(1, surfaceGeometryId);
@@ -909,11 +922,11 @@ public class DBSurfaceGeometry implements DBImporter {
 		}
 
 		// MultiPolygon
-		else if (surfaceGeometryType == GMLClass.MULTIPOLYGON) {
+		else if (surfaceGeometryType == GMLClass.MULTI_POLYGON) {
 			MultiPolygon multiPolygon = (MultiPolygon)surfaceGeometry;
 
 			if (origGmlId != null)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.GMLGEOMETRY);
+				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psParentElem.setLong(1, surfaceGeometryId);
@@ -958,11 +971,11 @@ public class DBSurfaceGeometry implements DBImporter {
 		}
 
 		// MultiSurface
-		else if (surfaceGeometryType == GMLClass.MULTISURFACE) {
+		else if (surfaceGeometryType == GMLClass.MULTI_SURFACE) {
 			MultiSurface multiSurface = (MultiSurface)surfaceGeometry;
 
 			if (origGmlId != null)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.GMLGEOMETRY);
+				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psParentElem.setLong(1, surfaceGeometryId);
@@ -991,13 +1004,13 @@ public class DBSurfaceGeometry implements DBImporter {
 
 						switch (abstractSurface.getGMLClass()) {
 						case POLYGON:
-						case _TEXTUREDSURFACE:
-						case ORIENTABLESURFACE:
+						case _TEXTURED_SURFACE:
+						case ORIENTABLE_SURFACE:
 							insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, cityObjectId);
 							break;
-						case COMPOSITESURFACE:
+						case COMPOSITE_SURFACE:
 						case SURFACE:
-						case TRIANGULATEDSURFACE:
+						case TRIANGULATED_SURFACE:
 						case TIN:
 							surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
 							insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, cityObjectId);
@@ -1030,13 +1043,13 @@ public class DBSurfaceGeometry implements DBImporter {
 
 						switch (abstractSurface.getGMLClass()) {
 						case POLYGON:
-						case _TEXTUREDSURFACE:
-						case ORIENTABLESURFACE:
+						case _TEXTURED_SURFACE:
+						case ORIENTABLE_SURFACE:
 							insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, cityObjectId);
 							break;
-						case COMPOSITESURFACE:
+						case COMPOSITE_SURFACE:
 						case SURFACE:
-						case TRIANGULATEDSURFACE:
+						case TRIANGULATED_SURFACE:
 						case TIN:
 							surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
 							insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, cityObjectId);
@@ -1048,11 +1061,11 @@ public class DBSurfaceGeometry implements DBImporter {
 		}
 
 		// MultiSolid
-		else if (surfaceGeometryType == GMLClass.MULTISOLID) {
+		else if (surfaceGeometryType == GMLClass.MULTI_SOLID) {
 			MultiSolid multiSolid = (MultiSolid)surfaceGeometry;
 
 			if (origGmlId != null)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.GMLGEOMETRY);
+				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psParentElem.setLong(1, surfaceGeometryId);
@@ -1110,7 +1123,7 @@ public class DBSurfaceGeometry implements DBImporter {
 		}
 
 		// GeometricComplex
-		else if (surfaceGeometryType == GMLClass.GEOMETRICCOMPLEX) {
+		else if (surfaceGeometryType == GMLClass.GEOMETRIC_COMPLEX) {
 			GeometricComplex geometricComplex = (GeometricComplex)surfaceGeometry;
 
 			if (geometricComplex.isSetElement()) {
@@ -1133,6 +1146,18 @@ public class DBSurfaceGeometry implements DBImporter {
 					}
 				}
 			}
+		}
+	}
+
+	private void applyAffineTransformation(List<Double> points) {
+		for (int i = 0; i < points.size(); i += 3) {
+			double[] vals = new double[]{ points.get(i), points.get(i+1), points.get(i+2), 1};
+			Matrix v = new Matrix(vals, 1);
+
+			v = transformationMatrix.times(v.transpose());
+			points.set(i, v.get(0, 0));
+			points.set(i+1, v.get(1, 0));
+			points.set(i+2, v.get(2, 0));
 		}
 	}
 

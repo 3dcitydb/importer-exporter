@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.util.UUIDManager;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 @XmlType(name="ReferenceSystemType", propOrder={
 		"srid",
@@ -54,11 +54,11 @@ public class ReferenceSystem implements Comparable<ReferenceSystem> {
 	private boolean isSupported = true;
 
 	public ReferenceSystem() {
-		id = UUIDManager.randomUUID();
+		id = DefaultGMLIdManager.getInstance().generateUUID();
 	}
 
 	public ReferenceSystem(int srid, String srsName, String description, boolean isSupported) {
-		this(UUIDManager.randomUUID(), srid, srsName, description, isSupported);
+		this(DefaultGMLIdManager.getInstance().generateUUID(), srid, srsName, description, isSupported);
 	}
 	
 	public ReferenceSystem(ReferenceSystem other) {

@@ -34,6 +34,7 @@ import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import oracle.jdbc.OracleConnection;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.db.cache.model.CacheTableBasic;
 import de.tub.citydb.db.cache.model.CacheTableDeprecatedMaterial;
@@ -48,7 +49,6 @@ import de.tub.citydb.db.cache.model.CacheTableTextureAssociation;
 import de.tub.citydb.db.cache.model.CacheTableTextureFile;
 import de.tub.citydb.db.cache.model.CacheTableTextureParam;
 import de.tub.citydb.db.cache.model.CacheTableType;
-import de.tub.citydb.util.UUIDManager;
 
 public class TemporaryCacheTable implements CacheTable {	
 	private final CacheTableModel model;
@@ -313,7 +313,7 @@ public class TemporaryCacheTable implements CacheTable {
 	}
 
 	private String createTableName() {		
-		String tableName = "TMP_" + model.getType().value() + Math.abs(UUIDManager.randomUUID().hashCode());
+		String tableName = "TMP_" + model.getType().value() + Math.abs(DefaultGMLIdManager.getInstance().generateUUID().hashCode());
 		if (tableName.length() > 28)
 			tableName = tableName.substring(tableName.length() - 28, tableName.length());
 

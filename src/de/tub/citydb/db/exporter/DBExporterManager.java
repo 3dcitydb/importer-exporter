@@ -34,20 +34,28 @@ import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.impl.jaxb.ObjectFactory;
-import org.citygml4j.jaxb.gml._3_1_1.AbstractFeatureType;
-import org.citygml4j.jaxb.gml._3_1_1.FeaturePropertyType;
+import org.citygml4j.builder.jaxb.JAXBBuilder;
+import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
+import org.citygml4j.impl.citygml.appearance.AppearanceMemberImpl;
+import org.citygml4j.impl.citygml.core.CityObjectMemberImpl;
+import org.citygml4j.impl.gml.feature.FeatureMemberImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.core.CityGMLBase;
-import org.citygml4j.model.citygml.core.CoreModule;
+import org.citygml4j.model.citygml.appearance.AppearanceMember;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
+import org.citygml4j.model.citygml.core.CityObjectMember;
 import org.citygml4j.model.gml.GMLClass;
+import org.citygml4j.model.gml.feature.AbstractFeature;
+import org.citygml4j.model.gml.feature.FeatureMember;
+import org.citygml4j.model.gml.feature.FeatureProperty;
+import org.citygml4j.model.module.ModuleContext;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
+import org.citygml4j.util.xml.SAXEventBuffer;
+import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
@@ -57,39 +65,35 @@ import de.tub.citydb.db.xlink.DBXlink;
 import de.tub.citydb.event.Event;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.filter.ExportFilter;
-import de.tub.citydb.sax.SAXBuffer;
 
 public class DBExporterManager {
-	private final JAXBContext jaxbContext;
 	private final Connection connection;
-	private final WorkerPool<SAXBuffer> ioWriterPool;
+	private final JAXBBuilder jaxbBuilder;
+	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final ExportFilter exportFilter;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
+	private final JAXBMarshaller jaxbMarshaller;
 	private EnumMap<DBExporterEnum, DBExporter> dbExporterMap;
 	private HashMap<CityGMLClass, Long> featureCounterMap;
 	private HashMap<GMLClass, Long> geometryCounterMap;
-	private CoreModule coreFactory;
 
-	public DBExporterManager(JAXBContext jaxbContext,
-			Connection connection,
-			WorkerPool<SAXBuffer> ioWriterPool,
+	public DBExporterManager(Connection connection,
+			JAXBBuilder jaxbBuilder,
+			WorkerPool<SAXEventBuffer> ioWriterPool,
 			WorkerPool<DBXlink> xlinkExporterPool,
 			DBGmlIdLookupServerManager lookupServerManager,
-			CityGMLFactory cityGMLFactory,
 			ExportFilter exportFilter,
 			Config config,
 			EventDispatcher eventDispatcher) {
-		this.jaxbContext = jaxbContext;
 		this.connection = connection;
+		this.jaxbBuilder = jaxbBuilder;
 		this.ioWriterPool = ioWriterPool;
 		this.xlinkExporterPool = xlinkExporterPool;
 		this.lookupServerManager = lookupServerManager;
-		this.cityGMLFactory = cityGMLFactory;
 		this.exportFilter = exportFilter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -97,7 +101,10 @@ public class DBExporterManager {
 		dbExporterMap = new EnumMap<DBExporterEnum, DBExporter>(DBExporterEnum.class);
 		featureCounterMap = new HashMap<CityGMLClass, Long>();
 		geometryCounterMap = new HashMap<GMLClass, Long>();
-		coreFactory = config.getProject().getExporter().getModuleVersion().getCore().getModule();
+
+		CityGMLVersion version = config.getProject().getExporter().getCityGMLVersion().toCityGMLVersion();
+		ModuleContext moduleContext = new ModuleContext(version);
+		jaxbMarshaller = jaxbBuilder.createJAXBMarshaller(moduleContext);
 	}
 
 	public DBExporter getDBExporter(DBExporterEnum dbExporterType) throws SQLException {
@@ -109,61 +116,61 @@ public class DBExporterManager {
 				dbExporter = new DBSurfaceGeometry(connection, config, this);
 				break;
 			case IMPLICIT_GEOMETRY:
-				dbExporter = new DBImplicitGeometry(connection, cityGMLFactory, this);
+				dbExporter = new DBImplicitGeometry(connection, this);
 				break;
 			case CITYOBJECT:
-				dbExporter = new DBCityObject(connection, cityGMLFactory, exportFilter, config, this);
+				dbExporter = new DBCityObject(connection, exportFilter, config, this);
 				break;
 			case BUILDING:
-				dbExporter = new DBBuilding(connection, cityGMLFactory, exportFilter, config, this);
+				dbExporter = new DBBuilding(connection, exportFilter, config, this);
 				break;
 			case ROOM:
-				dbExporter = new DBRoom(connection, cityGMLFactory, this);
+				dbExporter = new DBRoom(connection, this);
 				break;
 			case BUILDING_FURNITURE:
-				dbExporter = new DBBuildingFurniture(connection, cityGMLFactory, config, this);
+				dbExporter = new DBBuildingFurniture(connection, config, this);
 				break;
 			case BUILDING_INSTALLATION:
-				dbExporter = new DBBuildingInstallation(connection, cityGMLFactory, this);
+				dbExporter = new DBBuildingInstallation(connection, this);
 				break;
 			case THEMATIC_SURFACE:
-				dbExporter = new DBThematicSurface(connection, cityGMLFactory, config, this);
+				dbExporter = new DBThematicSurface(connection, config, this);
 				break;
 			case CITY_FURNITURE:
-				dbExporter = new DBCityFurniture(connection, cityGMLFactory, exportFilter, config, this);
+				dbExporter = new DBCityFurniture(connection, exportFilter, config, this);
 				break;
 			case LAND_USE:
-				dbExporter = new DBLandUse(connection, cityGMLFactory, exportFilter, config, this);
+				dbExporter = new DBLandUse(connection, exportFilter, this);
 				break;
 			case WATERBODY:
-				dbExporter = new DBWaterBody(connection, cityGMLFactory, exportFilter, config, this);
+				dbExporter = new DBWaterBody(connection, exportFilter, config, this);
 				break;
 			case PLANT_COVER:
-				dbExporter = new DBPlantCover(connection, cityGMLFactory, exportFilter, config, this);
+				dbExporter = new DBPlantCover(connection, exportFilter, this);
 				break;
 			case SOLITARY_VEGETAT_OBJECT:
-				dbExporter = new DBSolitaryVegetatObject(connection, cityGMLFactory, exportFilter, config, this);
+				dbExporter = new DBSolitaryVegetatObject(connection, exportFilter, config, this);
 				break;
 			case TRANSPORTATION_COMPLEX:
-				dbExporter = new DBTransportationComplex(connection, cityGMLFactory, exportFilter, config, this);
+				dbExporter = new DBTransportationComplex(connection, exportFilter, config, this);
 				break;
 			case RELIEF_FEATURE:
-				dbExporter = new DBReliefFeature(connection, cityGMLFactory, exportFilter, config, this);
+				dbExporter = new DBReliefFeature(connection, exportFilter, config, this);
 				break;
 			case APPEARANCE:
-				dbExporter = new DBAppearance(connection, cityGMLFactory, config, this);
+				dbExporter = new DBAppearance(connection, config, this);
 				break;
 			case TEXTUREPARAM:
-				dbExporter = new DBTextureParam(connection, cityGMLFactory);
+				dbExporter = new DBTextureParam(connection);
 				break;
 			case GENERIC_CITYOBJECT:
-				dbExporter = new DBGenericCityObject(connection, cityGMLFactory, exportFilter, config, this);
+				dbExporter = new DBGenericCityObject(connection, exportFilter, config, this);
 				break;
 			case CITYOBJECTGROUP:
-				dbExporter = new DBCityObjectGroup(connection, cityGMLFactory, config, this);
+				dbExporter = new DBCityObjectGroup(connection, config, this);
 				break;
 			case GENERALIZATION:
-				dbExporter = new DBGeneralization(connection, cityGMLFactory, exportFilter, config);
+				dbExporter = new DBGeneralization(connection, exportFilter, config);
 				break;
 			case SDO_GEOMETRY:
 				dbExporter = new DBSdoGeometry(config);
@@ -242,50 +249,41 @@ public class DBExporterManager {
 		for (DBExporter exporter : dbExporterMap.values())
 			exporter.close();
 	}
-	
-	@SuppressWarnings("unchecked")
-	public void print(CityGMLBase cityObject) throws JAXBException {
-		Marshaller marshaller = jaxbContext.createMarshaller();
-		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
-		JAXBElement<?> featureProperty = null;
+	public void print(AbstractFeature abstractFeature) throws CityGMLWriteException {
+		FeatureProperty<? extends AbstractFeature> member = null;
 
-		if (cityObject.getCityGMLClass() == CityGMLClass.APPEARANCE) {
-			Appearance appearance = (Appearance)cityObject;
-			
-			switch (appearance.getCityGMLModule().getModuleVersion()) {
-			case v0_4_0:
-				org.citygml4j.jaxb.citygml._0_4.AppearancePropertyType property040 = new org.citygml4j.jaxb.citygml._0_4.AppearancePropertyType();
-				property040.setAppearance(((org.citygml4j.impl.jaxb.citygml.appearance._0_4.AppearanceImpl)appearance).getJAXBObject());
-				featureProperty = ObjectFactory.CITYGML_0_4.createAppearanceMember(property040);
-				break;
-			case v1_0_0:
-				org.citygml4j.jaxb.citygml.app._1.AppearancePropertyType property100 = new org.citygml4j.jaxb.citygml.app._1.AppearancePropertyType();
-				property100.setAppearance(((org.citygml4j.impl.jaxb.citygml.appearance._1.AppearanceImpl)appearance).getJAXBObject());
-				featureProperty = ObjectFactory.APP_1.createAppearanceMember(property100);
-				break;
-			}
-		} else if (cityObject.getCityGMLClass().childOrSelf(CityGMLClass.CITYOBJECT)) {
-			JAXBElement<?> jaxbElem = cityGMLFactory.cityGML2jaxb(cityObject);
-			
-			if (jaxbElem != null && jaxbElem.getValue() != null && jaxbElem.getValue() instanceof AbstractFeatureType) {
-				FeaturePropertyType featureProp = new FeaturePropertyType();
-				featureProp.set_Feature((JAXBElement<? extends AbstractFeatureType>)jaxbElem);
-				switch (coreFactory.getModuleVersion()) {
-				case v0_4_0:
-					featureProperty =  ObjectFactory.CITYGML_0_4.createCityObjectMember(featureProp);
-					break;
-				case v1_0_0:
-					featureProperty =  ObjectFactory.CORE_1.createCityObjectMember(featureProp);
-					break;
-				}
-			}
+		// wrap feature with a feature property element
+		if (abstractFeature instanceof AbstractCityObject) {
+			member = new CityObjectMemberImpl();
+			((CityObjectMember)member).setCityObject((AbstractCityObject)abstractFeature);
+		} 
+
+		else if (abstractFeature instanceof Appearance) {
+			member = new AppearanceMemberImpl();
+			((AppearanceMember)member).setAppearance((Appearance)abstractFeature);
+		} 
+
+		else {
+			member = new FeatureMemberImpl();
+			((FeatureMember)member).setFeature(abstractFeature);
 		}
-			
-		if (featureProperty != null) {
-			SAXBuffer buffer = new SAXBuffer();
-			marshaller.marshal(featureProperty, buffer);
-			ioWriterPool.addWork(buffer);
-		}
+
+		if (member != null) {
+			try {
+				SAXEventBuffer buffer = new SAXEventBuffer();
+				Marshaller marshaller = jaxbBuilder.getJAXBContext().createMarshaller();
+				marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+
+				JAXBElement<?> jaxbElement = jaxbMarshaller.marshalJAXBElement(member);
+				if (jaxbElement != null)
+					marshaller.marshal(jaxbElement, buffer);
+				
+				if (!buffer.isEmpty())
+					ioWriterPool.addWork(buffer);
+			} catch (JAXBException e) {
+				throw new CityGMLWriteException("Caused by: ", e);
+			}
+		}		
 	}
 }

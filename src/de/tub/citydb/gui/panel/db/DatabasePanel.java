@@ -62,7 +62,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
-import org.citygml4j.geometry.BoundingVolume;
+import org.citygml4j.geometry.BoundingBox;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -724,7 +724,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 				}
 			});
 
-			BoundingVolume bbox = null;
+			BoundingBox bbox = null;
 			try {
 				// checking workspace... this should be improved in future...
 				if (changeWorkspace(workspace)) {
@@ -976,6 +976,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			else
 				connectButton.setText(Internal.I18N.getString("db.button.disconnect"));
 
+			connectButton.repaint();
 			setEnabledDBOperations(isConnected);
 		}
 	}

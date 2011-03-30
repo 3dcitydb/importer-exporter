@@ -38,22 +38,23 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.impl.jaxb.gml._3_1_1.GeometricComplexImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.GeometricPrimitivePropertyImpl;
+import org.citygml4j.impl.gml.geometry.complexes.GeometricComplexImpl;
+import org.citygml4j.impl.gml.geometry.primitives.GeometricPrimitivePropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficArea;
 import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficAreaProperty;
 import org.citygml4j.model.citygml.transportation.TrafficArea;
 import org.citygml4j.model.citygml.transportation.TrafficAreaProperty;
 import org.citygml4j.model.citygml.transportation.TransportationComplex;
-import org.citygml4j.model.gml.AbstractGeometricPrimitive;
-import org.citygml4j.model.gml.GeometricComplex;
-import org.citygml4j.model.gml.GeometricComplexProperty;
-import org.citygml4j.model.gml.GeometricPrimitiveProperty;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
+import org.citygml4j.model.gml.geometry.complexes.GeometricComplexProperty;
+import org.citygml4j.model.gml.geometry.primitives.AbstractGeometricPrimitive;
+import org.citygml4j.model.gml.geometry.primitives.GeometricPrimitiveProperty;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
+import de.tub.citydb.db.DBTypeValueEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
@@ -153,7 +154,7 @@ public class DBTransportationComplex implements DBImporter {
 		}
 
 		// TYPE
-		psTransComplex.setString(7, transComplex.getCityGMLClass().toString());
+		psTransComplex.setString(7, DBTypeValueEnum.fromCityGMLClass(transComplex.getCityGMLClass()).toString());
 
 		// Geometry
         for (int lod = 1; lod < 5; lod++) {
@@ -248,13 +249,13 @@ public class DBTransportationComplex implements DBImporter {
             					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
 
         						switch (primitive.getGMLClass()) {
-        						case LINESTRING:
+        						case LINE_STRING:
         							aggregateComplex.addElement(primitiveProperty);
         							break;
-        						case COMPOSITECURVE:
+        						case COMPOSITE_CURVE:
         							aggregateComplex.addElement(primitiveProperty);
         							break;
-        						case ORIENTABLECURVE:
+        						case ORIENTABLE_CURVE:
         							aggregateComplex.addElement(primitiveProperty);
         							break;
         						default:
@@ -307,7 +308,7 @@ public class DBTransportationComplex implements DBImporter {
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.AUXILIARYTRAFFICAREA, 
+								CityGMLClass.AUXILIARY_TRAFFIC_AREA, 
 								gmlId));
 						
 						LOG.error(msg.toString());
@@ -338,7 +339,7 @@ public class DBTransportationComplex implements DBImporter {
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.TRAFFICAREA, 
+								CityGMLClass.TRAFFIC_AREA, 
 								gmlId));
 						
 						LOG.error(msg.toString());

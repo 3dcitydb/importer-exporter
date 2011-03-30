@@ -35,12 +35,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.citygml4j.model.citygml.generics.GenericAttribute;
-import org.citygml4j.model.citygml.generics.GenericDateAttribute;
-import org.citygml4j.model.citygml.generics.GenericDoubleAttribute;
-import org.citygml4j.model.citygml.generics.GenericIntAttribute;
-import org.citygml4j.model.citygml.generics.GenericStringAttribute;
-import org.citygml4j.model.citygml.generics.GenericUriAttribute;
+import org.citygml4j.model.citygml.generics.AbstractGenericAttribute;
+import org.citygml4j.model.citygml.generics.DateAttribute;
+import org.citygml4j.model.citygml.generics.DoubleAttribute;
+import org.citygml4j.model.citygml.generics.IntAttribute;
+import org.citygml4j.model.citygml.generics.StringAttribute;
+import org.citygml4j.model.citygml.generics.UriAttribute;
 
 import de.tub.citydb.config.internal.Internal;
 
@@ -63,7 +63,7 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 			"(CITYOBJECT_GENERICATT_SEQ.nextval, ?, ?, ?, ?, ?, ?, ?, null, null, ?, null)");
 	}
 
-	public void insert(GenericAttribute genericAttribute, long cityObjectId) throws SQLException {
+	public void insert(AbstractGenericAttribute genericAttribute, long cityObjectId) throws SQLException {
 		// attribute name may not be null
 		if (!genericAttribute.isSetName())
 			return;
@@ -71,10 +71,10 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 		psGenericAttribute.setString(1, genericAttribute.getName());
 
 		switch (genericAttribute.getCityGMLClass()) {
-		case STRINGATTRIBUTE:
+		case STRING_ATTRIBUTE:
 			psGenericAttribute.setInt(2, 1);
 
-			GenericStringAttribute stringAttribute = (GenericStringAttribute)genericAttribute;
+			StringAttribute stringAttribute = (StringAttribute)genericAttribute;
 			if (stringAttribute.isSetValue())
 				psGenericAttribute.setString(3, stringAttribute.getValue());
 			else
@@ -85,10 +85,10 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 			psGenericAttribute.setNull(6, Types.VARCHAR);
 			psGenericAttribute.setNull(7, Types.DATE);
 			break;
-		case INTATTRIBUTE:
+		case INT_ATTRIBUTE:
 			psGenericAttribute.setInt(2, 2);
 
-			GenericIntAttribute intAttribute = (GenericIntAttribute)genericAttribute;
+			IntAttribute intAttribute = (IntAttribute)genericAttribute;
 			if (intAttribute.isSetValue())
 				psGenericAttribute.setInt(4, intAttribute.getValue());
 			else
@@ -99,10 +99,10 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 			psGenericAttribute.setNull(6, Types.VARCHAR);
 			psGenericAttribute.setNull(7, Types.DATE);
 			break;
-		case DOUBLEATTRIBUTE:
+		case DOUBLE_ATTRIBUTE:
 			psGenericAttribute.setInt(2, 3);
 
-			GenericDoubleAttribute doubleAttribute = (GenericDoubleAttribute)genericAttribute;
+			DoubleAttribute doubleAttribute = (DoubleAttribute)genericAttribute;
 			if (doubleAttribute.isSetValue())
 				psGenericAttribute.setDouble(5, doubleAttribute.getValue());
 			else
@@ -113,10 +113,10 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 			psGenericAttribute.setNull(6, Types.VARCHAR);
 			psGenericAttribute.setNull(7, Types.DATE);
 			break;
-		case URIATTRIBUTE:
+		case URI_ATTRIBUTE:
 			psGenericAttribute.setInt(2, 4);
 
-			GenericUriAttribute uriAttribute = (GenericUriAttribute)genericAttribute;
+			UriAttribute uriAttribute = (UriAttribute)genericAttribute;
 			if (uriAttribute.isSetValue())
 				psGenericAttribute.setString(6, uriAttribute.getValue());
 			else
@@ -127,12 +127,12 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 			psGenericAttribute.setNull(5, 0);
 			psGenericAttribute.setNull(7, Types.DATE);
 			break;
-		case DATEATTRIBUTE:
+		case DATE_ATTRIBUTE:
 			psGenericAttribute.setInt(2, 5);
 
-			GenericDateAttribute dateAttribute = (GenericDateAttribute)genericAttribute;
+			DateAttribute dateAttribute = (DateAttribute)genericAttribute;
 			if (dateAttribute.isSetValue())
-				psGenericAttribute.setDate(7, new Date(dateAttribute.getValue().toGregorianCalendar().getTimeInMillis()));
+				psGenericAttribute.setDate(7, new Date(dateAttribute.getValue().getTimeInMillis()));
 			else
 				psGenericAttribute.setNull(7, Types.DATE);
 

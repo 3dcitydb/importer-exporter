@@ -49,15 +49,17 @@ import javax.xml.bind.Marshaller;
 import net.opengis.kml._2.ObjectFactory;
 import net.opengis.kml._2.PlacemarkType;
 import oracle.ord.im.OrdImage;
+
+import org.citygml4j.util.xml.SAXEventBuffer;
+
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.sax.SAXBuffer;
 
 public class KmlExporterManager {
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
-	private final WorkerPool<SAXBuffer> ioWriterPool;
+	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final ObjectFactory kmlFactory; 
 	private final ConcurrentLinkedQueue<ColladaBundle> buildingQueue;
 	private final Config config;
@@ -65,7 +67,7 @@ public class KmlExporterManager {
 	
 	public KmlExporterManager(JAXBContext jaxbKmlContext,
 							  JAXBContext jaxbColladaContext,
-							  WorkerPool<SAXBuffer> ioWriterPool,
+							  WorkerPool<SAXEventBuffer> ioWriterPool,
 							  ObjectFactory kmlFactory,
 							  ConcurrentLinkedQueue<ColladaBundle> buildingQueue,
 							  Config config,
@@ -81,7 +83,7 @@ public class KmlExporterManager {
 
 
 	public void print(List<PlacemarkType> placemarkList) throws JAXBException {
-		SAXBuffer buffer = new SAXBuffer();
+		SAXEventBuffer buffer = new SAXEventBuffer();
 		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
 		kmlMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
@@ -136,7 +138,7 @@ public class KmlExporterManager {
 														  FileNotFoundException,
 														  IOException,
 														  SQLException {
-		SAXBuffer buffer = new SAXBuffer();
+		SAXEventBuffer buffer = new SAXEventBuffer();
 		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
 		kmlMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 		Marshaller colladaMarshaller = jaxbColladaContext.createMarshaller();

@@ -30,12 +30,11 @@
 package de.tub.citydb.event;
 
 public enum EventType {
-	FeatureCounter,
-	GeometryCounter,
-	Counter,
-	Interrupt,
-	SchemaLocation,
-	StatusDialogProgressBar,
-	StatusDialogMessage,
-	StatusDialogTitle
+	FEATURE_COUNTER,
+	GEOMETRY_COUNTER,
+	COUNTER,
+	INTERRUPT,
+	STATUS_DIALOG_PROGRESS_BAR,
+	STATUS_DIALOG_MESSAGE,
+	STATUS_DIALOG_TITLE
 }

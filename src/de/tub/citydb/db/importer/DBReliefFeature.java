@@ -34,7 +34,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.citygml4j.model.citygml.relief.ReliefComponent;
+import org.citygml4j.model.citygml.relief.AbstractReliefComponent;
 import org.citygml4j.model.citygml.relief.ReliefComponentProperty;
 import org.citygml4j.model.citygml.relief.ReliefFeature;
 
@@ -129,7 +129,7 @@ public class DBReliefFeature implements DBImporter {
 		// relief component
 		if (reliefFeature.isSetReliefComponent()) {
 			for (ReliefComponentProperty property : reliefFeature.getReliefComponent()) {
-				ReliefComponent component = property.getObject();
+				AbstractReliefComponent component = property.getObject();
 				
 				if (component != null) {
 					String gmlId = component.getId();

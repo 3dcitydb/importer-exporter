@@ -100,7 +100,7 @@ public class Matcher implements EventListener {
 			return false;
 
 		Matching matching = config.getProject().getMatching();
-		eventDispatcher.addListener(EventType.Interrupt, this);
+		eventDispatcher.addListener(EventType.INTERRUPT, this);
 
 		int masterLODProjection = matching.getMasterBuildings().getLodProjection();
 		int candLODProjection = matching.getCandidateBuildings().getLodProjection();
@@ -715,7 +715,7 @@ public class Matcher implements EventListener {
 
 	@Override
 	public void handleEvent(Event e) throws Exception {
-		if (e.getEventType() == EventType.Interrupt) {
+		if (e.getEventType() == EventType.INTERRUPT) {
 			if (isInterrupted.compareAndSet(false, true)) {
 				shouldRun = false;
 

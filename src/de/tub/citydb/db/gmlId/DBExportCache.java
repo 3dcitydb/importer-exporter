@@ -201,7 +201,7 @@ public class DBExportCache implements DBCacheModel {
 
 					while (rs.next()) {
 						CityGMLClass dbType = CityGMLClass.fromInt(rs.getInt(2));
-						if (!dbType.childOrSelf(type))
+						if (!type.isInstance(dbType))
 							continue;
 
 						return rs.getString(1);

@@ -33,7 +33,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 
@@ -51,7 +50,6 @@ public class DBImporterManager {
 	private final Connection commitConn;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final EventDispatcher eventDipatcher;
 	private final Config config;
 
@@ -65,13 +63,11 @@ public class DBImporterManager {
 			Config config,
 			WorkerPool<DBXlink> tmpXlinkPool,
 			DBGmlIdLookupServerManager lookupServerManager,
-			CityGMLFactory cityGMLFactory,
 			EventDispatcher eventDipatcher) throws SQLException {
 		this.batchConn = batchConn;
 		this.commitConn = commitConn;
 		this.config = config;
 		this.lookupServerManager = lookupServerManager;
-		this.cityGMLFactory = cityGMLFactory;
 		this.tmpXlinkPool = tmpXlinkPool;
 		this.eventDipatcher = eventDipatcher;
 
@@ -94,7 +90,7 @@ public class DBImporterManager {
 				dbImporter = new DBImplicitGeometry(batchConn, commitConn, this);
 				break;
 			case CITYOBJECT:
-				dbImporter = new DBCityObject(batchConn, cityGMLFactory, config, this);
+				dbImporter = new DBCityObject(batchConn, config, this);
 				break;
 			case CITYOBJECT_GENERICATTRIB:
 				dbImporter = new DBCityObjectGenericAttrib(batchConn, this);
@@ -145,7 +141,7 @@ public class DBImporterManager {
 				dbImporter = new DBAppearToSurfaceData(batchConn, this);
 				break;
 			case DEPRECATED_MATERIAL_MODEL:
-				dbImporter = new DBDeprecatedMaterialModel(cityGMLFactory, config, this);
+				dbImporter = new DBDeprecatedMaterialModel(config, this);
 				break;
 			case WATERBODY:
 				dbImporter = new DBWaterBody(batchConn, this);
@@ -160,7 +156,7 @@ public class DBImporterManager {
 				dbImporter = new DBPlantCover(batchConn, this);
 				break;
 			case SOLITARY_VEGETAT_OBJECT:
-				dbImporter = new DBSolitaryVegetatObject(batchConn, this);
+				dbImporter = new DBSolitaryVegetatObject(batchConn, config, this);
 				break;
 			case TRANSPORTATION_COMPLEX:
 				dbImporter = new DBTransportationComplex(batchConn, this);

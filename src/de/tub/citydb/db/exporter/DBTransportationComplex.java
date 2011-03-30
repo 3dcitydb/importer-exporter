@@ -36,27 +36,33 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.JAXBException;
-
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.impl.jaxb.gml._3_1_1.MultiSurfacePropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.StringOrRefImpl;
+import org.citygml4j.impl.citygml.transportation.AuxiliaryTrafficAreaImpl;
+import org.citygml4j.impl.citygml.transportation.AuxiliaryTrafficAreaPropertyImpl;
+import org.citygml4j.impl.citygml.transportation.RailwayImpl;
+import org.citygml4j.impl.citygml.transportation.RoadImpl;
+import org.citygml4j.impl.citygml.transportation.SquareImpl;
+import org.citygml4j.impl.citygml.transportation.TrackImpl;
+import org.citygml4j.impl.citygml.transportation.TrafficAreaImpl;
+import org.citygml4j.impl.citygml.transportation.TrafficAreaPropertyImpl;
+import org.citygml4j.impl.citygml.transportation.TransportationComplexImpl;
+import org.citygml4j.impl.gml.base.StringOrRefImpl;
+import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfacePropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.transportation.AbstractTransportationObject;
 import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficArea;
 import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficAreaProperty;
 import org.citygml4j.model.citygml.transportation.TrafficArea;
 import org.citygml4j.model.citygml.transportation.TrafficAreaProperty;
 import org.citygml4j.model.citygml.transportation.TransportationComplex;
-import org.citygml4j.model.citygml.transportation.TransportationModule;
-import org.citygml4j.model.citygml.transportation.TransportationObject;
 import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.GeometricComplexProperty;
-import org.citygml4j.model.gml.MultiSurface;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
-import org.citygml4j.model.gml.StringOrRef;
+import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.complexes.GeometricComplexProperty;
+import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.filter.ExportFilter;
@@ -65,7 +71,6 @@ import de.tub.citydb.util.Util;
 
 public class DBTransportationComplex implements DBExporter {
 	private final DBExporterManager dbExporterManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final Config config;
 	private final Connection connection;
 
@@ -76,12 +81,10 @@ public class DBTransportationComplex implements DBExporter {
 	private DBSdoGeometry sdoGeometry;
 	private FeatureClassFilter featureClassFilter;
 
-	private TransportationModule tran;
 	private boolean transformCoords;
 
-	public DBTransportationComplex(Connection connection, CityGMLFactory cityGMLFactory, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBTransportationComplex(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
-		this.cityGMLFactory = cityGMLFactory;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
 		this.featureClassFilter = exportFilter.getFeatureClassFilter();
@@ -90,7 +93,6 @@ public class DBTransportationComplex implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		tran = config.getProject().getExporter().getModuleVersion().getTransportation().getModule();
 		transformCoords = config.getInternal().isTransformCoordinates();
 
 		if (!transformCoords) {		
@@ -117,25 +119,25 @@ public class DBTransportationComplex implements DBExporter {
 		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, JAXBException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
 		TransportationComplex transComplex = null;
 		long transComplexId = splitter.getPrimaryKey();
 
 		switch (splitter.getCityObjectType()) {
 		case ROAD:
-			transComplex = cityGMLFactory.createRoad(tran);
+			transComplex = new RoadImpl();
 			break;
 		case RAILWAY:
-			transComplex = cityGMLFactory.createRailway(tran);
+			transComplex = new RailwayImpl();
 			break;
 		case SQUARE:
-			transComplex = cityGMLFactory.createSquare(tran);
+			transComplex = new SquareImpl();
 			break;
 		case TRACK:
-			transComplex = cityGMLFactory.createTrack(tran);
+			transComplex = new TrackImpl();
 			break;
 		default:
-			transComplex = cityGMLFactory.createTransportationComplex(tran);
+			transComplex = new TransportationComplexImpl();
 		}
 
 		// cityObject stuff
@@ -185,7 +187,7 @@ public class DBTransportationComplex implements DBExporter {
 						if (!rs.wasNull() && multiSurfaceId != 0) {
 							DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(multiSurfaceId);
 
-							if (geometry != null && geometry.getType() == GMLClass.MULTISURFACE) {
+							if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
 								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
 
 								if (geometry.getAbstractGeometry() != null)
@@ -227,13 +229,13 @@ public class DBTransportationComplex implements DBExporter {
 				if (rs.wasNull())
 					continue;
 
-				TransportationObject transObject = null;
+				AbstractTransportationObject transObject = null;
 				boolean isAuxiliary = rs.getBoolean("IS_AUXILIARY");
 
 				if (isAuxiliary)
-					transObject = cityGMLFactory.createAuxiliaryTrafficArea(tran);
+					transObject = new AuxiliaryTrafficAreaImpl();
 				else
-					transObject = cityGMLFactory.createTrafficArea(tran);
+					transObject = new TrafficAreaImpl();
 
 				// cityobject stuff
 				cityObjectExporter.read(transObject, trafficAreaId);
@@ -282,7 +284,7 @@ public class DBTransportationComplex implements DBExporter {
 					if (!rs.wasNull() && multiSurfaceId != 0) {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(multiSurfaceId);
 
-						if (geometry != null && geometry.getType() == GMLClass.MULTISURFACE) {
+						if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
 							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
 
 							if (geometry.getAbstractGeometry() != null)
@@ -315,17 +317,17 @@ public class DBTransportationComplex implements DBExporter {
 				}
 
 				if (isAuxiliary) {
-					AuxiliaryTrafficAreaProperty auxProperty  = cityGMLFactory.createAuxiliaryTrafficAreaProperty(tran);
+					AuxiliaryTrafficAreaProperty auxProperty  = new AuxiliaryTrafficAreaPropertyImpl();
 					auxProperty.setObject((AuxiliaryTrafficArea)transObject);
 					transComplex.addAuxiliaryTrafficArea(auxProperty);
 				} else {
-					TrafficAreaProperty trafficProperty = cityGMLFactory.createTrafficAreaProperty(tran);
+					TrafficAreaProperty trafficProperty = new TrafficAreaPropertyImpl();
 					trafficProperty.setObject((TrafficArea)transObject);
 					transComplex.addTrafficArea(trafficProperty);
 				}
 			}
 
-			if (transComplex.isSetId() && !featureClassFilter.filter(CityGMLClass.CITYOBJECTGROUP))
+			if (transComplex.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
 				dbExporterManager.putGmlId(transComplex.getId(), transComplexId, transComplex.getCityGMLClass());
 			dbExporterManager.print(transComplex);
 			return true;

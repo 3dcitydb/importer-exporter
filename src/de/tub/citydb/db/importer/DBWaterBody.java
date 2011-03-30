@@ -39,12 +39,12 @@ import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.BoundedByWaterSurfaceProperty;
 import org.citygml4j.model.citygml.waterbody.WaterBody;
-import org.citygml4j.model.citygml.waterbody.WaterBoundarySurface;
-import org.citygml4j.model.gml.MultiCurveProperty;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
-import org.citygml4j.model.gml.SolidProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
@@ -317,9 +317,9 @@ public class DBWaterBody implements DBImporter {
 			dbImporterManager.executeBatch(DBImporterEnum.WATERBODY);
 
 		// boundary surfaces
-		if (waterBody.isSetBoundedBySurfaces()) {
-			for (BoundedByWaterSurfaceProperty waterSurfaceProperty : waterBody.getBoundedBySurfaces()) {
-				WaterBoundarySurface boundarySurface = waterSurfaceProperty.getObject();
+		if (waterBody.isSetBoundedBySurface()) {
+			for (BoundedByWaterSurfaceProperty waterSurfaceProperty : waterBody.getBoundedBySurface()) {
+				AbstractWaterBoundarySurface boundarySurface = waterSurfaceProperty.getObject();
 				
 				if (boundarySurface != null) {
 					String gmlId = boundarySurface.getId();
@@ -327,7 +327,7 @@ public class DBWaterBody implements DBImporter {
 					
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								CityGMLClass.WATERBODY, 
+								CityGMLClass.WATER_BODY, 
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(

@@ -60,7 +60,7 @@ public class XlinkBasic implements DBXlinkResolver {
 
 	public boolean insert(DBXlinkBasic xlink) throws SQLException {
 		CityGMLClass type = xlink.getToTable() == DBTableEnum.SURFACE_GEOMETRY ? 
-				CityGMLClass.GMLGEOMETRY : CityGMLClass.CITYOBJECT;
+				CityGMLClass.ABSTRACT_GML_GEOMETRY : CityGMLClass.ABSTRACT_CITY_OBJECT;
 
 		GmlIdEntry entry = resolverManager.getDBId(xlink.getGmlId(), type);
 		if (entry == null)

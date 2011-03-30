@@ -39,14 +39,14 @@ import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.relief.AbstractReliefComponent;
 import org.citygml4j.model.citygml.relief.BreaklineRelief;
 import org.citygml4j.model.citygml.relief.MassPointRelief;
-import org.citygml4j.model.citygml.relief.ReliefComponent;
 import org.citygml4j.model.citygml.relief.TINRelief;
 import org.citygml4j.model.citygml.relief.TinProperty;
 import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.Tin;
-import org.citygml4j.model.gml.TriangulatedSurface;
+import org.citygml4j.model.gml.geometry.primitives.Tin;
+import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
@@ -89,7 +89,7 @@ public class DBReliefComponent implements DBImporter {
 		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
 	}
 
-	public long insert(ReliefComponent reliefComponent, long parentId) throws SQLException {
+	public long insert(AbstractReliefComponent reliefComponent, long parentId) throws SQLException {
 		long reliefComponentId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
 		if (reliefComponentId == 0)
 			return 0;
@@ -141,7 +141,7 @@ public class DBReliefComponent implements DBImporter {
 		psReliefComponent.addBatch();
 
 		// fill sub-tables according to relief component type
-		if (reliefComponent.getCityGMLClass() == CityGMLClass.TINRELIEF) {
+		if (reliefComponent.getCityGMLClass() == CityGMLClass.TIN_RELIEF) {
 			TINRelief tinRelief = (TINRelief)reliefComponent;
 
 			// ID
@@ -226,7 +226,7 @@ public class DBReliefComponent implements DBImporter {
 			psTinRelief.addBatch();
 		}
 
-		else if (reliefComponent.getCityGMLClass() == CityGMLClass.MASSPOINTRELIEF) {
+		else if (reliefComponent.getCityGMLClass() == CityGMLClass.MASSPOINT_RELIEF) {
 			MassPointRelief massPointRelief = (MassPointRelief)reliefComponent;
 
 			// ID
@@ -246,7 +246,7 @@ public class DBReliefComponent implements DBImporter {
 			psMassPointRelief.addBatch();
 		}
 
-		else if (reliefComponent.getCityGMLClass() == CityGMLClass.BREAKLINERELIEF) {
+		else if (reliefComponent.getCityGMLClass() == CityGMLClass.BREAKLINE_RELIEF) {
 			BreaklineRelief breakLineRelief = (BreaklineRelief)reliefComponent;
 
 			// ID

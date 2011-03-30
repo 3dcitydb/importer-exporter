@@ -70,6 +70,7 @@ import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
+import org.citygml4j.util.xml.SAXEventBuffer;
 
 import com.sun.j3d.utils.geometry.GeometryInfo;
 import com.sun.j3d.utils.geometry.NormalGenerator;
@@ -79,6 +80,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.db.DBTypeValueEnum;
 import de.tub.citydb.db.kmlExporter.BalloonTemplateHandler;
 import de.tub.citydb.db.kmlExporter.Building;
 import de.tub.citydb.db.kmlExporter.ColladaBundle;
@@ -91,7 +93,6 @@ import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.event.statistic.CounterEvent;
 import de.tub.citydb.event.statistic.CounterType;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.sax.SAXBuffer;
 import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
 
@@ -111,7 +112,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
 	private final DBConnectionPool dbConnectionPool;
-	private final WorkerPool<SAXBuffer> ioWriterPool;
+	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final ObjectFactory kmlFactory; 
 	private final CityGMLFactory cityGMLFactory; 
 	private final ConcurrentLinkedQueue<ColladaBundle> buildingQueue;
@@ -136,7 +137,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	public KmlExportWorker(JAXBContext jaxbKmlContext,
 						   JAXBContext jaxbColladaContext,
 						   DBConnectionPool dbConnectionPool,
-						   WorkerPool<SAXBuffer> ioWriterPool,
+						   WorkerPool<SAXEventBuffer> ioWriterPool,
 						   ObjectFactory kmlFactory,
 						   CityGMLFactory cityGMLFactory,
 						   ConcurrentLinkedQueue<ColladaBundle> buildingQueue,
@@ -591,8 +592,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			double[] ordinatesArray = surface.getOrdinatesArray();
 
 			// results are ordered by surface type
-			if (!includeGroundSurface && CityGMLClass.GROUNDSURFACE.toString().equalsIgnoreCase(surfaceType)) {
-				lastSurfaceType = CityGMLClass.GROUNDSURFACE.toString();
+			if (!includeGroundSurface && DBTypeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) {
+				lastSurfaceType = DBTypeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString();
 				continue;
 			}
 
@@ -657,8 +658,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 			if (surfaceType == null) {
 				String likelySurfaceType = (probablyRoof && config.getProject().getKmlExporter().getLodToExportFrom() < 3) ?
-										   CityGMLClass.ROOFSURFACE.toString() :
-										   CityGMLClass.WALLSURFACE.toString();
+						DBTypeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() :
+							DBTypeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString();
 //				placemark.setName(gmlId + "_" + likelySurfaceType);
 				placemark.setName(gmlId);
 				placemark.setId(DisplayLevel.GEOMETRY_PLACEMARK_ID + placemark.getName() + "_" + likelySurfaceType);

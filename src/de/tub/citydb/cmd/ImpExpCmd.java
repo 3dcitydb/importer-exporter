@@ -30,7 +30,6 @@
 package de.tub.citydb.cmd;
 
 import java.sql.SQLException;
-import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 
@@ -38,8 +37,6 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
-import de.tub.citydb.config.project.importer.LocalXMLSchemaType;
-import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.controller.Exporter;
 import de.tub.citydb.controller.Importer;
 import de.tub.citydb.controller.KmlExporter;
@@ -101,14 +98,6 @@ public class ImpExpCmd {
 
 	public void doValidate() {
 		LOG.info("Initializing XML validation...");
-
-		XMLValidation xmlValidation = config.getProject().getImporter().getXMLValidation();
-		if (xmlValidation.getUseLocalSchemas().isSet()) {
-			Set<LocalXMLSchemaType> schemas = xmlValidation.getUseLocalSchemas().getSchemas();
-			if (schemas.isEmpty())
-				for (LocalXMLSchemaType schema : LocalXMLSchemaType.values())
-					schemas.add(schema);
-		}
 
 		EventDispatcher eventDispatcher = new EventDispatcher();
 		XMLValidator validator = new XMLValidator(jaxbCityGMLContext, config, eventDispatcher);

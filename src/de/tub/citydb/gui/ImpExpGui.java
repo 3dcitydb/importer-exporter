@@ -646,6 +646,16 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 					return;
 				}
 			}
+			
+			// affine transformation
+			if (config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation()) {
+				if (JOptionPane.showConfirmDialog(
+						this, 
+						Internal.I18N.getString("import.dialog.warning.affineTransformation"),
+						Internal.I18N.getString("common.dialog.warning.title"), 
+						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION)
+					return;				
+			}
 
 			if (!dbPool.isConnected()) {
 				databasePanel.connect();

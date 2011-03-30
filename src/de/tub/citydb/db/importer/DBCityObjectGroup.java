@@ -37,7 +37,8 @@ import java.sql.Types;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupMember;
-import org.citygml4j.model.gml.GeometryProperty;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
@@ -146,7 +147,7 @@ public class DBCityObjectGroup implements DBImporter {
 		long geometryId = 0;
 
 		if (cityObjectGroup.isSetGeometry()) {
-			GeometryProperty geometryProperty = cityObjectGroup.getGeometry();
+			GeometryProperty<? extends AbstractGeometry> geometryProperty = cityObjectGroup.getGeometry();
 
 			if (geometryProperty.isSetGeometry()) {
 				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), cityObjectGroupId);
@@ -181,17 +182,17 @@ public class DBCityObjectGroup implements DBImporter {
 			dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECTGROUP);		
 		
 		// group parent
-		if (cityObjectGroup.isSetParent()) {
-			if (cityObjectGroup.getParent().isSetObject()) {
+		if (cityObjectGroup.isSetGroupParent()) {
+			if (cityObjectGroup.getGroupParent().isSetCityObject()) {
 				StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-						CityGMLClass.CITYOBJECTGROUP, 
+						CityGMLClass.CITY_OBJECT_GROUP, 
 						origGmlId));
 				
 				msg.append(": XML read error while parsing parent element.");
 				LOG.error(msg.toString());
 			} else {			
 				// xlink
-				String href = cityObjectGroup.getParent().getHref();
+				String href = cityObjectGroup.getGroupParent().getHref();
 
 				if (href != null && href.length() != 0) {
 					dbImporterManager.propagateXlink(new DBXlinkGroupToCityObject(
@@ -207,7 +208,7 @@ public class DBCityObjectGroup implements DBImporter {
 			for (CityObjectGroupMember groupMember : cityObjectGroup.getGroupMember()) {
 				if (groupMember.isSetObject()) {
 					StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-							CityGMLClass.CITYOBJECTGROUP, 
+							CityGMLClass.CITY_OBJECT_GROUP, 
 							origGmlId));
 					
 					msg.append(": XML read error while parsing groupMember element.");

@@ -37,19 +37,19 @@ import javax.xml.bind.JAXBContext;
 import net.opengis.kml._2.ObjectFactory;
 
 import org.citygml4j.factory.CityGMLFactory;
+import org.citygml4j.util.xml.SAXEventBuffer;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.db.kmlExporter.ColladaBundle;
 import de.tub.citydb.db.kmlExporter.KmlSplittingResult;
 import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.sax.SAXBuffer;
 
 public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult> {
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
 	private final DBConnectionPool dbConnectionPool;
-	private final WorkerPool<SAXBuffer> ioWriterPool;
+	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final ObjectFactory kmlFactory;
 	private final CityGMLFactory cityGMLFactory;
 	private final ConcurrentLinkedQueue<ColladaBundle> buildingQueue;
@@ -60,7 +60,7 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 			JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
 			DBConnectionPool dbConnectionPool,
-			WorkerPool<SAXBuffer> ioWriterPool,
+			WorkerPool<SAXEventBuffer> ioWriterPool,
 			ObjectFactory kmlFactory,
 			CityGMLFactory cityGMLFactory,
 			ConcurrentLinkedQueue<ColladaBundle> buildingQueue,

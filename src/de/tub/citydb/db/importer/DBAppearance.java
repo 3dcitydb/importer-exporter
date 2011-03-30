@@ -37,13 +37,13 @@ import java.sql.Types;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.UUIDManager;
 import de.tub.citydb.util.Util;
 
 public class DBAppearance implements DBImporter {
@@ -102,7 +102,7 @@ public class DBAppearance implements DBImporter {
 		// gml:id
 		String origGmlId = appearance.getId();
 		if (replaceGmlId) {
-			String gmlId = UUIDManager.randomUUID();
+			String gmlId = DefaultGMLIdManager.getInstance().generateUUID();
 
 			// mapping entry
 			if (appearance.isSetId())
@@ -114,7 +114,7 @@ public class DBAppearance implements DBImporter {
 			if (appearance.isSetId())
 				dbImporterManager.putGmlId(appearance.getId(), appearanceId, appearance.getCityGMLClass());
 			else
-				appearance.setId(UUIDManager.randomUUID());
+				appearance.setId(DefaultGMLIdManager.getInstance().generateUUID());
 		}
 
 		psAppearance.setString(2, appearance.getId());
@@ -147,11 +147,11 @@ public class DBAppearance implements DBImporter {
 
 		// cityobject or citymodel id
 		switch (parent) {
-		case CITYMODEL:
+		case CITY_MODEL:
 			psAppearance.setNull(7, Types.INTEGER);
 			psAppearance.setNull(8, Types.INTEGER);
 			break;
-		case CITYOBJECT:
+		case ABSTRACT_CITY_OBJECT:
 			psAppearance.setNull(7, Types.INTEGER);
 			psAppearance.setLong(8, parentId);
 			break;

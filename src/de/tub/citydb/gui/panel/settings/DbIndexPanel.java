@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.gui.panel.settings;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -45,6 +46,8 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -239,6 +242,14 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 		block4.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.db.index.normal.border.manual")));
 		impNIDeactivate.setText(Internal.I18N.getString("pref.db.index.normal.button.deactivate"));
 		impNIActivate.setText(Internal.I18N.getString("pref.db.index.normal.button.activate"));
+		
+		if (!DBConnectionPool.getInstance().isConnected()) {
+			Color color = UIManager.getColor("Label.disabledForeground");
+			((TitledBorder)block2.getBorder()).setTitleColor(color);
+			block2.repaint();
+			((TitledBorder)block4.getBorder()).setTitleColor(color);
+			block4.repaint();
+		}
 	}
 
 	private void dropIndex(DB_INDEX_TYPE type) {
@@ -478,7 +489,14 @@ public class DbIndexPanel extends PrefPanelBase implements PropertyChangeListene
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
 			boolean status = (Boolean)evt.getNewValue();
+			Color color = status ? UIManager.getColor("TitledBorder.titleColor") : UIManager.getColor("Label.disabledForeground");
 
+			((TitledBorder)block2.getBorder()).setTitleColor(color);
+			block2.repaint();
+			
+			((TitledBorder)block4.getBorder()).setTitleColor(color);
+			block4.repaint();
+			
 			impSIActivate.setEnabled(status);
 			impSIDeactivate.setEnabled(status);
 			impNIActivate.setEnabled(status);

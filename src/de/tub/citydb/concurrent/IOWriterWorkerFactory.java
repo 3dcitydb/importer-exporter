@@ -29,10 +29,10 @@
  */
 package de.tub.citydb.concurrent;
 
-import de.tub.citydb.sax.SAXBuffer;
-import de.tub.citydb.sax.SAXWriter;
+import org.citygml4j.util.xml.SAXEventBuffer;
+import org.citygml4j.util.xml.SAXWriter;
 
-public class IOWriterWorkerFactory implements WorkerFactory<SAXBuffer> {
+public class IOWriterWorkerFactory implements WorkerFactory<SAXEventBuffer> {
 	private final SAXWriter saxWriter;
 
 	public IOWriterWorkerFactory(SAXWriter saxWriter) {
@@ -40,7 +40,7 @@ public class IOWriterWorkerFactory implements WorkerFactory<SAXBuffer> {
 	}
 
 	@Override
-	public Worker<SAXBuffer> getWorker() {
+	public Worker<SAXEventBuffer> getWorker() {
 		return new IOWriterWorker(saxWriter);
 	}
 }

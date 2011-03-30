@@ -38,8 +38,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Vector;
+import java.util.Map.Entry;
 import java.util.concurrent.locks.ReentrantLock;
 
 import oracle.spatial.geometry.JGeometry;
@@ -98,7 +98,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	}
 
 	public boolean insert(DBXlinkSurfaceGeometry xlink) throws SQLException {
-		GmlIdEntry rootGeometryEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.GMLGEOMETRY);
+		GmlIdEntry rootGeometryEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
 		if (rootGeometryEntry == null || rootGeometryEntry.getRootId() == -1)
 			return false;
 
@@ -300,7 +300,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		} else if (!geomNode.isTriangulated) {
 			if (!geomNode.isSolid && geomNode.isComposite) {
 				// compositeSurface...
-				geomNode.type = GMLClass.COMPOSITESURFACE;
+				geomNode.type = GMLClass.COMPOSITE_SURFACE;
 
 				for (GeometryNode childNode : geomNode.childNodes)
 					rebuildGeometry(childNode, reverse);
@@ -310,7 +310,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 
 			else if (geomNode.isSolid && geomNode.isComposite) {
 				// compositeSolid
-				geomNode.type = GMLClass.COMPOSITESOLID;
+				geomNode.type = GMLClass.COMPOSITE_SOLID;
 
 				for (GeometryNode childNode : geomNode.childNodes)
 					rebuildGeometry(childNode, reverse);
@@ -331,12 +331,12 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			else if (!geomNode.isSolid && !geomNode.isComposite) {
 				// differ between multiSurface and multiSolid
 				if (!geomNode.childNodes.isEmpty()) {
-					geomNode.type = GMLClass.MULTISOLID;
+					geomNode.type = GMLClass.MULTI_SOLID;
 
 					// we have a multiSolid, if all childNodes are solids!
 					for (GeometryNode childNode : geomNode.childNodes) {
-						if (!childNode.isSolid && geomNode.type != GMLClass.MULTISURFACE) 
-							geomNode.type = GMLClass.MULTISURFACE;
+						if (!childNode.isSolid && geomNode.type != GMLClass.MULTI_SURFACE) 
+							geomNode.type = GMLClass.MULTI_SURFACE;
 
 						rebuildGeometry(childNode, reverse);
 					}
@@ -350,7 +350,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			if (geomNode.childNodes == null || geomNode.childNodes.size() == 0)
 				return;
 
-			geomNode.type = GMLClass.TRIANGULATEDSURFACE;
+			geomNode.type = GMLClass.TRIANGULATED_SURFACE;
 
 			for (GeometryNode childNode : geomNode.childNodes)
 				rebuildGeometry(childNode, reverse);

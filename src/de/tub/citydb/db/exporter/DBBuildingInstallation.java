@@ -36,24 +36,26 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.impl.jaxb.gml._3_1_1.GeometryPropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.StringOrRefImpl;
+import org.citygml4j.impl.citygml.building.BuildingInstallationImpl;
+import org.citygml4j.impl.citygml.building.BuildingInstallationPropertyImpl;
+import org.citygml4j.impl.citygml.building.IntBuildingInstallationImpl;
+import org.citygml4j.impl.citygml.building.IntBuildingInstallationPropertyImpl;
+import org.citygml4j.impl.gml.base.StringOrRefImpl;
+import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.BuildingInstallation;
 import org.citygml4j.model.citygml.building.BuildingInstallationProperty;
-import org.citygml4j.model.citygml.building.BuildingModule;
 import org.citygml4j.model.citygml.building.IntBuildingInstallation;
 import org.citygml4j.model.citygml.building.IntBuildingInstallationProperty;
 import org.citygml4j.model.citygml.building.Room;
-import org.citygml4j.model.gml.GeometryProperty;
-import org.citygml4j.model.gml.StringOrRef;
+import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 import de.tub.citydb.util.Util;
 
 public class DBBuildingInstallation implements DBExporter {
 	private final DBExporterManager dbExporterManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final Connection connection;
 
 	private PreparedStatement psBuildingInstallation;
@@ -62,9 +64,8 @@ public class DBBuildingInstallation implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectReader;
 
-	public DBBuildingInstallation(Connection connection, CityGMLFactory cityGMLFactory, DBExporterManager dbExporterManager) throws SQLException {
+	public DBBuildingInstallation(Connection connection, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
-		this.cityGMLFactory = cityGMLFactory;
 		this.dbExporterManager = dbExporterManager;
 
 		init();
@@ -78,7 +79,7 @@ public class DBBuildingInstallation implements DBExporter {
 		cityObjectReader = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 	}
 
-	public void read(AbstractBuilding building, long parentId, BuildingModule bldg) throws SQLException {
+	public void read(AbstractBuilding building, long parentId) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -93,9 +94,9 @@ public class DBBuildingInstallation implements DBExporter {
 				IntBuildingInstallation intBuildingInstallation = null;
 
 				if (isExternal == 1)
-					buildingInstallation = cityGMLFactory.createBuildingInstallation(bldg);
+					buildingInstallation = new BuildingInstallationImpl();
 				else
-					intBuildingInstallation = cityGMLFactory.createIntBuildingInstallation(bldg);
+					intBuildingInstallation = new IntBuildingInstallationImpl();
 
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
@@ -153,7 +154,7 @@ public class DBBuildingInstallation implements DBExporter {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodSurfaceGeometryId);
 
 						if (geometry != null) {
-							GeometryProperty geometryProperty = new GeometryPropertyImpl();
+							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
 
 							if (geometry.getAbstractGeometry() != null)
 								geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -183,13 +184,13 @@ public class DBBuildingInstallation implements DBExporter {
 				if (buildingInstallation != null) {
 					cityObjectReader.read(buildingInstallation, installationId);
 
-					BuildingInstallationProperty buildInstProp = cityGMLFactory.createBuildingInstallationProperty(bldg);
+					BuildingInstallationProperty buildInstProp = new BuildingInstallationPropertyImpl();
 					buildInstProp.setObject(buildingInstallation);
 					building.addOuterBuildingInstallation(buildInstProp);
 				} else {
 					cityObjectReader.read(intBuildingInstallation, installationId);
 
-					IntBuildingInstallationProperty intInstProp = cityGMLFactory.createIntBuildingInstallationProperty(bldg);
+					IntBuildingInstallationProperty intInstProp = new IntBuildingInstallationPropertyImpl();
 					intInstProp.setObject(intBuildingInstallation);
 					building.addInteriorBuildingInstallation(intInstProp);
 				}
@@ -200,7 +201,7 @@ public class DBBuildingInstallation implements DBExporter {
 		}
 	}
 
-	public void read(Room room, long parentId, BuildingModule bldg) throws SQLException {
+	public void read(Room room, long parentId) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -209,7 +210,7 @@ public class DBBuildingInstallation implements DBExporter {
 
 			while (rs.next()) {
 				long installationId = rs.getLong("ID");
-				IntBuildingInstallation intBuildingInstallation = cityGMLFactory.createIntBuildingInstallation(bldg);
+				IntBuildingInstallation intBuildingInstallation = new IntBuildingInstallationImpl();
 
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
@@ -250,7 +251,7 @@ public class DBBuildingInstallation implements DBExporter {
 					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodSurfaceGeometryId);
 
 					if (geometry != null) {
-						GeometryProperty geometryProperty = new GeometryPropertyImpl();
+						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
 
 						if (geometry.getAbstractGeometry() != null)
 							geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -263,7 +264,7 @@ public class DBBuildingInstallation implements DBExporter {
 
 				cityObjectReader.read(intBuildingInstallation, installationId);
 
-				IntBuildingInstallationProperty intInstProp = cityGMLFactory.createIntBuildingInstallationProperty(bldg);
+				IntBuildingInstallationProperty intInstProp = new IntBuildingInstallationPropertyImpl();
 				intInstProp.setObject(intBuildingInstallation);
 				room.addRoomInstallation(intInstProp);
 			}

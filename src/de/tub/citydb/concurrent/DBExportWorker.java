@@ -33,12 +33,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-
 import oracle.jdbc.OracleConnection;
 
-import org.citygml4j.factory.CityGMLFactory;
+import org.citygml4j.builder.jaxb.JAXBBuilder;
+import org.citygml4j.util.xml.SAXEventBuffer;
+import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.config.Config;
@@ -67,7 +66,6 @@ import de.tub.citydb.event.statistic.FeatureCounterEvent;
 import de.tub.citydb.event.statistic.GeometryCounterEvent;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.sax.SAXBuffer;
 
 public class DBExportWorker implements Worker<DBSplittingResult> {
 	private final Logger LOG = Logger.getInstance();
@@ -80,12 +78,11 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 	private Thread workerThread = null;
 
 	// instance members needed to do work
-	private final JAXBContext jaxbContext;
 	private final DBConnectionPool dbConnectionPool;
-	private final WorkerPool<SAXBuffer> ioWriterPool;
+	private final JAXBBuilder jaxbBuilder;
+	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final ExportFilter exportFilter;
 	private final Config config;
 	private Connection connection;	
@@ -93,21 +90,19 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 	private final EventDispatcher eventDispatcher;
 	private int exportCounter = 0;
 
-	public DBExportWorker(JAXBContext jaxbContext,
-			DBConnectionPool dbConnectionPool,
-			WorkerPool<SAXBuffer> ioWriterPool,
+	public DBExportWorker(DBConnectionPool dbConnectionPool,
+			JAXBBuilder jaxbBuilder,
+			WorkerPool<SAXEventBuffer> ioWriterPool,
 			WorkerPool<DBXlink> xlinkExporterPool,
 			DBGmlIdLookupServerManager lookupServerManager,
-			CityGMLFactory cityGMLFactory,
 			ExportFilter exportFilter,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
-		this.jaxbContext = jaxbContext;
 		this.dbConnectionPool = dbConnectionPool;
+		this.jaxbBuilder = jaxbBuilder;
 		this.ioWriterPool = ioWriterPool;
 		this.xlinkExporterPool = xlinkExporterPool;
 		this.lookupServerManager = lookupServerManager;
-		this.cityGMLFactory = cityGMLFactory;
 		this.exportFilter = exportFilter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -125,13 +120,12 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 				connection, 
 				database.getWorkspaces().getExportWorkspace());
 
-		dbExporterManager = new DBExporterManager(
-				jaxbContext,
+		dbExporterManager = new DBExporterManager( 
 				connection,
+				jaxbBuilder,
 				ioWriterPool,
 				xlinkExporterPool,
 				lookupServerManager,
-				cityGMLFactory,
 				exportFilter,
 				config,
 				eventDispatcher);
@@ -234,32 +228,32 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 					if (dbBuilding != null)
 						success = dbBuilding.read(work);
 					break;
-				case CITYFURNITURE:
+				case CITY_FURNITURE:
 					DBCityFurniture dbCityFurniture = (DBCityFurniture)dbExporterManager.getDBExporter(DBExporterEnum.CITY_FURNITURE);
 					if (dbCityFurniture != null)
 						success = dbCityFurniture.read(work);
 					break;
-				case LANDUSE:
+				case LAND_USE:
 					DBLandUse dbLandUse = (DBLandUse)dbExporterManager.getDBExporter(DBExporterEnum.LAND_USE);
 					if (dbLandUse != null)
 						success = dbLandUse.read(work);
 					break;
-				case WATERBODY:
+				case WATER_BODY:
 					DBWaterBody dbWaterBody = (DBWaterBody)dbExporterManager.getDBExporter(DBExporterEnum.WATERBODY);
 					if (dbWaterBody != null)
 						success = dbWaterBody.read(work);
 					break;
-				case PLANTCOVER:
+				case PLANT_COVER:
 					DBPlantCover dbPlantCover = (DBPlantCover)dbExporterManager.getDBExporter(DBExporterEnum.PLANT_COVER);
 					if (dbPlantCover != null)
 						success = dbPlantCover.read(work);
 					break;
-				case SOLITARYVEGETATIONOBJECT:
+				case SOLITARY_VEGETATION_OBJECT:
 					DBSolitaryVegetatObject dbSolVegObject = (DBSolitaryVegetatObject)dbExporterManager.getDBExporter(DBExporterEnum.SOLITARY_VEGETAT_OBJECT);
 					if (dbSolVegObject != null)
 						success = dbSolVegObject.read(work);
 					break;
-				case TRANSPORTATIONCOMPLEX:
+				case TRANSPORTATION_COMPLEX:
 				case TRACK:
 				case RAILWAY:
 				case ROAD:
@@ -268,7 +262,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 					if (dbTransComplex != null)
 						success = dbTransComplex.read(work);
 					break;
-				case RELIEFFEATURE:
+				case RELIEF_FEATURE:
 					DBReliefFeature dbReliefFeature = (DBReliefFeature)dbExporterManager.getDBExporter(DBExporterEnum.RELIEF_FEATURE);
 					if (dbReliefFeature != null)
 						success = dbReliefFeature.read(work);
@@ -279,12 +273,12 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 					if (dbAppearance != null)
 						success = dbAppearance.read(work);
 					break;
-				case GENERICCITYOBJECT:
+				case GENERIC_CITY_OBJECT:
 					DBGenericCityObject dbGenericCityObject = (DBGenericCityObject)dbExporterManager.getDBExporter(DBExporterEnum.GENERIC_CITYOBJECT);
 					if (dbGenericCityObject != null)
 						success = dbGenericCityObject.read(work);
 					break;
-				case CITYOBJECTGROUP:
+				case CITY_OBJECT_GROUP:
 					DBCityObjectGroup dbCityObjectGroup = (DBCityObjectGroup)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECTGROUP);
 					if (dbCityObjectGroup != null)
 						success = dbCityObjectGroup.read(work);
@@ -297,7 +291,8 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 			} catch (SQLException sqlEx) {
 				LOG.error("SQL error while querying city object: " + sqlEx.getMessage());
 				return;
-			} catch (JAXBException jaxbEx) {
+			} catch (CityGMLWriteException e) {
+				LOG.error("Fatal error while writing CityGML document: " + e.getCause().getMessage());
 				return;
 			}
 

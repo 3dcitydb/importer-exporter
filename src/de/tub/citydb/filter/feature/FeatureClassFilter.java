@@ -78,26 +78,26 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 			switch (type) {
 			case BUILDING:
 				return featureClassFilter.isSetBuilding();
-			case CITYFURNITURE:
+			case CITY_FURNITURE:
 				return featureClassFilter.isSetCityFurniture();
-			case LANDUSE:
+			case LAND_USE:
 				return featureClassFilter.isSetLandUse();
-			case WATERBODY:
+			case WATER_BODY:
 				return featureClassFilter.isSetWaterBody();
-			case PLANTCOVER:
-			case SOLITARYVEGETATIONOBJECT:
+			case PLANT_COVER:
+			case SOLITARY_VEGETATION_OBJECT:
 				return featureClassFilter.isSetVegetation();
-			case TRANSPORTATIONCOMPLEX:
+			case TRANSPORTATION_COMPLEX:
 			case ROAD:
 			case RAILWAY:
 			case TRACK:
 			case SQUARE:
 				return featureClassFilter.isSetTransportation();
-			case RELIEFFEATURE:
+			case RELIEF_FEATURE:
 				return featureClassFilter.isSetReliefFeature();
-			case GENERICCITYOBJECT:
+			case GENERIC_CITY_OBJECT:
 				return featureClassFilter.isSetGenericCityObject();
-			case CITYOBJECTGROUP:
+			case CITY_OBJECT_GROUP:
 				return featureClassFilter.isSetCityObjectGroup();
 			default:
 				return false;
@@ -124,21 +124,21 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 				state.add(CityGMLClass.BUILDING);
 
 			if (inverse ^ featureClassFilter.isSetCityFurniture())
-				state.add(CityGMLClass.CITYFURNITURE);
+				state.add(CityGMLClass.CITY_FURNITURE);
 
 			if (inverse ^ featureClassFilter.isSetLandUse())
-				state.add(CityGMLClass.LANDUSE);
+				state.add(CityGMLClass.LAND_USE);
 
 			if (inverse ^ featureClassFilter.isSetWaterBody())
-				state.add(CityGMLClass.WATERBODY);
+				state.add(CityGMLClass.WATER_BODY);
 
 			if (inverse ^ featureClassFilter.isSetVegetation()) {
-				state.add(CityGMLClass.PLANTCOVER);
-				state.add(CityGMLClass.SOLITARYVEGETATIONOBJECT);
+				state.add(CityGMLClass.PLANT_COVER);
+				state.add(CityGMLClass.SOLITARY_VEGETATION_OBJECT);
 			}
 
 			if (inverse ^ featureClassFilter.isSetTransportation()) {
-				state.add(CityGMLClass.TRANSPORTATIONCOMPLEX);
+				state.add(CityGMLClass.TRANSPORTATION_COMPLEX);
 				state.add(CityGMLClass.ROAD);
 				state.add(CityGMLClass.RAILWAY);
 				state.add(CityGMLClass.TRACK);
@@ -146,30 +146,30 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 			}
 
 			if (inverse ^ featureClassFilter.isSetReliefFeature())
-				state.add(CityGMLClass.RELIEFFEATURE);
+				state.add(CityGMLClass.RELIEF_FEATURE);
 
 			if (inverse ^ featureClassFilter.isSetGenericCityObject())
-				state.add(CityGMLClass.GENERICCITYOBJECT);
+				state.add(CityGMLClass.GENERIC_CITY_OBJECT);
 
 			if (inverse ^ featureClassFilter.isSetCityObjectGroup())
-				state.add(CityGMLClass.CITYOBJECTGROUP);
+				state.add(CityGMLClass.CITY_OBJECT_GROUP);
 		}
 
 		else if (inverse) {
 			state.add(CityGMLClass.BUILDING);
-			state.add(CityGMLClass.CITYFURNITURE);
-			state.add(CityGMLClass.LANDUSE);
-			state.add(CityGMLClass.WATERBODY);
-			state.add(CityGMLClass.PLANTCOVER);
-			state.add(CityGMLClass.SOLITARYVEGETATIONOBJECT);
-			state.add(CityGMLClass.TRANSPORTATIONCOMPLEX);
+			state.add(CityGMLClass.CITY_FURNITURE);
+			state.add(CityGMLClass.LAND_USE);
+			state.add(CityGMLClass.WATER_BODY);
+			state.add(CityGMLClass.PLANT_COVER);
+			state.add(CityGMLClass.SOLITARY_VEGETATION_OBJECT);
+			state.add(CityGMLClass.TRANSPORTATION_COMPLEX);
 			state.add(CityGMLClass.ROAD);
 			state.add(CityGMLClass.RAILWAY);
 			state.add(CityGMLClass.TRACK);
 			state.add(CityGMLClass.SQUARE);
-			state.add(CityGMLClass.RELIEFFEATURE);
-			state.add(CityGMLClass.GENERICCITYOBJECT);
-			state.add(CityGMLClass.CITYOBJECTGROUP);
+			state.add(CityGMLClass.RELIEF_FEATURE);
+			state.add(CityGMLClass.GENERIC_CITY_OBJECT);
+			state.add(CityGMLClass.CITY_OBJECT_GROUP);
 		}
 
 		return state;

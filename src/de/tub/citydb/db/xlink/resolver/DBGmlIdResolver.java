@@ -88,7 +88,7 @@ public class DBGmlIdResolver {
 
 		if (entry == null || entry.getId() == -1) {
 			
-			if (type == CityGMLClass.GMLGEOMETRY) {
+			if (type == CityGMLClass.ABSTRACT_GML_GEOMETRY) {
 				if (entry == null)
 					return null;
 
@@ -119,7 +119,7 @@ public class DBGmlIdResolver {
 			if (rs.next()) {
 				id = rs.getLong(1);
 				
-				return new GmlIdEntry(id, entry.getRootId(), entry.isReverse(), entry.getMapping(), CityGMLClass.GMLGEOMETRY);
+				return new GmlIdEntry(id, entry.getRootId(), entry.isReverse(), entry.getMapping(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
 			}
 
 		} catch (SQLException sqlEx) {

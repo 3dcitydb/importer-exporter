@@ -36,7 +36,7 @@ import java.util.HashSet;
 
 import oracle.jdbc.OracleResultSet;
 
-import org.citygml4j.geometry.BoundingVolume;
+import org.citygml4j.geometry.BoundingBox;
 
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
@@ -104,7 +104,7 @@ public class KmlSplitter {
 		else if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter() &&
 				 config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().isSet()) {
 			
-			BoundingVolume tile = exportFilter.getBoundingBoxFilter().getFilterState();
+			BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
 			OracleResultSet rs = null;
 			PreparedStatement spatialQuery = null;
 			try {

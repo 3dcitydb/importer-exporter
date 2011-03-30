@@ -57,6 +57,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.log.Logger;
@@ -83,9 +84,10 @@ public class PrefPanel extends JPanel implements TreeSelectionListener {
 	private DefaultMutableTreeNode impIdHandling;
 	private DefaultMutableTreeNode impAppearance;
 	private DefaultMutableTreeNode impBoundingBox;
+	private DefaultMutableTreeNode impGeometry;
 	private DefaultMutableTreeNode impXMLValidation;
 	private DefaultMutableTreeNode impResources;
-	private DefaultMutableTreeNode expModule;
+	private DefaultMutableTreeNode expVersion;
 	private DefaultMutableTreeNode expAppearance;
 	private DefaultMutableTreeNode expBoundingBox;
 	private DefaultMutableTreeNode expXLink;
@@ -106,9 +108,10 @@ public class PrefPanel extends JPanel implements TreeSelectionListener {
 	private ImpIdHandlingPanel impIdHandlingPanel;
 	private ImpAppearancePanel impAppearancePanel;
 	private ImpBoundingBoxPanel impBoundingBoxPanel;
+	private GeometryPanel impGeometryPanel;
 	private ImpXMLValidationPanel impXMLValidationPanel;
 	private ImpResourcesPanel impResourcesPanel;
-	private ExpModulePanel expModulePanel;
+	private ExpVersionPanel expVersionPanel;
 	private ExpAppearancePanel expAppearancePanel;
 	private ExpBoundingBoxPanel expBoundingBoxPanel;
 	private ExpXLinkPanel expXLinkPanel;
@@ -184,9 +187,10 @@ public class PrefPanel extends JPanel implements TreeSelectionListener {
 		impIdHandling = new DefaultMutableTreeNode();
 		impAppearance = new DefaultMutableTreeNode();
 		impBoundingBox = new DefaultMutableTreeNode();
+		impGeometry = new DefaultMutableTreeNode();
 		impXMLValidation = new DefaultMutableTreeNode();
 		impResources = new DefaultMutableTreeNode();
-		expModule = new DefaultMutableTreeNode();
+		expVersion = new DefaultMutableTreeNode();
 		expAppearance = new DefaultMutableTreeNode();
 		expBoundingBox = new DefaultMutableTreeNode();
 		expXLink = new DefaultMutableTreeNode();
@@ -210,11 +214,12 @@ public class PrefPanel extends JPanel implements TreeSelectionListener {
 		pref.add(set);
 		imp.add(impContinuation);
 		imp.add(impIdHandling);
-		imp.add(impAppearance);
 		imp.add(impBoundingBox);
+		imp.add(impAppearance);
+		imp.add(impGeometry);
 		imp.add(impXMLValidation);
 		imp.add(impResources);
-		exp.add(expModule);
+		exp.add(expVersion);
 		exp.add(expAppearance);
 		exp.add(expBoundingBox);
 		exp.add(expXLink);
@@ -245,9 +250,10 @@ public class PrefPanel extends JPanel implements TreeSelectionListener {
 		impIdHandlingPanel = new ImpIdHandlingPanel(config);
 		impAppearancePanel = new ImpAppearancePanel(config);
 		impBoundingBoxPanel = new ImpBoundingBoxPanel(config);
+		impGeometryPanel = new GeometryPanel(FilterMode.IMPORT, config);
 		impXMLValidationPanel = new ImpXMLValidationPanel(config);
 		impResourcesPanel = new ImpResourcesPanel(config);
-		expModulePanel = new ExpModulePanel(config);
+		expVersionPanel = new ExpVersionPanel(config);
 		expAppearancePanel = new ExpAppearancePanel(config);
 		expBoundingBoxPanel = new ExpBoundingBoxPanel(config);
 		expXLinkPanel = new ExpXLinkPanel(config);
@@ -351,9 +357,10 @@ public class PrefPanel extends JPanel implements TreeSelectionListener {
 		impIdHandlingPanel.doTranslation();
 		impAppearancePanel.doTranslation();
 		impBoundingBoxPanel.doTranslation();
+		impGeometryPanel.doTranslation();
 		impXMLValidationPanel.doTranslation();
 		impResourcesPanel.doTranslation();
-		expModulePanel.doTranslation();
+		expVersionPanel.doTranslation();
 		expAppearancePanel.doTranslation();
 		expBoundingBoxPanel.doTranslation();
 		expXLinkPanel.doTranslation();
@@ -392,12 +399,14 @@ public class PrefPanel extends JPanel implements TreeSelectionListener {
 			activePanel = impAppearancePanel;
 		else if (node == impBoundingBox)
 			activePanel = impBoundingBoxPanel;
+		else if (node == impGeometry)
+			activePanel = impGeometryPanel;
 		else if (node == impXMLValidation)
 			activePanel = impXMLValidationPanel;
 		else if (node == impResources)
 			activePanel = impResourcesPanel;
-		else if (node == expModule)
-			activePanel = expModulePanel;
+		else if (node == expVersion)
+			activePanel = expVersionPanel;
 		else if (node == expAppearance)
 			activePanel = expAppearancePanel;
 		else if (node == expBoundingBox)
@@ -479,9 +488,10 @@ public class PrefPanel extends JPanel implements TreeSelectionListener {
 		impIdHandlingPanel.loadSettings();
 		impAppearancePanel.loadSettings();
 		impBoundingBoxPanel.loadSettings();
+		impGeometryPanel.loadSettings();
 		impXMLValidationPanel.loadSettings();
 		impResourcesPanel.loadSettings();
-		expModulePanel.loadSettings();
+		expVersionPanel.loadSettings();
 		expAppearancePanel.loadSettings();
 		expBoundingBoxPanel.loadSettings();
 		expXLinkPanel.loadSettings();
@@ -503,9 +513,10 @@ public class PrefPanel extends JPanel implements TreeSelectionListener {
 		impIdHandlingPanel.setSettings();
 		impAppearancePanel.setSettings();
 		impBoundingBoxPanel.setSettings();
+		impGeometryPanel.setSettings();
 		impXMLValidationPanel.setSettings();
 		impResourcesPanel.setSettings();
-		expModulePanel.setSettings();
+		expVersionPanel.setSettings();
 		expAppearancePanel.setSettings();
 		expBoundingBoxPanel.setSettings();
 		expXLinkPanel.setSettings();
@@ -544,9 +555,10 @@ public class PrefPanel extends JPanel implements TreeSelectionListener {
 		impIdHandling.setUserObject(Internal.I18N.getString("pref.tree.import.idHandling"));
 		impAppearance.setUserObject(Internal.I18N.getString("pref.tree.import.appearance"));
 		impBoundingBox.setUserObject(Internal.I18N.getString("pref.tree.import.boundingBox"));
+		impGeometry.setUserObject(Internal.I18N.getString("pref.tree.import.geometry"));
 		impXMLValidation.setUserObject(Internal.I18N.getString("pref.tree.import.xmlValidation"));		
 		impResources.setUserObject(Internal.I18N.getString("pref.tree.import.resources"));
-		expModule.setUserObject(Internal.I18N.getString("pref.tree.export.module"));
+		expVersion.setUserObject(Internal.I18N.getString("pref.tree.export.version"));
 		expAppearance.setUserObject(Internal.I18N.getString("pref.tree.export.appearance"));
 		expBoundingBox.setUserObject(Internal.I18N.getString("pref.tree.export.boundingBox"));
 		expXLink.setUserObject(Internal.I18N.getString("pref.tree.export.xlink"));

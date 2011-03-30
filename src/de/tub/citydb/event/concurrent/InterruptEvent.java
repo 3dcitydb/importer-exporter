@@ -39,7 +39,7 @@ public class InterruptEvent extends Event {
 	private LogLevelType logLevelType;
 	
 	public InterruptEvent(InterruptEnum interruptType) {
-		super(EventType.Interrupt);
+		super(EventType.INTERRUPT);
 		this.interruptType = interruptType;
 	}
 	

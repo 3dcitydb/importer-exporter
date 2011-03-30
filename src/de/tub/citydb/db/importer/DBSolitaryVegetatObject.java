@@ -38,11 +38,14 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
+import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
-import org.citygml4j.model.gml.GeometryProperty;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
 
+import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -50,6 +53,7 @@ import de.tub.citydb.util.Util;
 
 public class DBSolitaryVegetatObject implements DBImporter {
 	private final Connection batchConn;
+	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psSolitVegObject;
@@ -57,17 +61,30 @@ public class DBSolitaryVegetatObject implements DBImporter {
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
 	private DBSdoGeometry sdoGeometry;
+	private boolean affineTransformation;
+	private Matrix transformationMatrix;
 
 	private int batchCounter;
 
-	public DBSolitaryVegetatObject(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
+	public DBSolitaryVegetatObject(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
+		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
 	private void init() throws SQLException {
+		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
+
+		if (affineTransformation) {
+			transformationMatrix = config.getProject().getImporter().getAffineTransformation().getTransformationMatrix().toMatrix3x4();
+			if (transformationMatrix.eq(Matrix.identity(3, 4))) {
+				transformationMatrix = null;
+				affineTransformation = false;
+			}
+		}
+
 		psSolitVegObject = batchConn.prepareStatement("insert into SOLITARY_VEGETAT_OBJECT (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, SPECIES, FUNCTION, " +
 				"HEIGHT, TRUNC_DIAMETER, CROWN_DIAMETER, " +
 				"LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, " +
@@ -170,8 +187,8 @@ public class DBSolitaryVegetatObject implements DBImporter {
 
 		// Geometry
 		for (int lod = 1; lod < 5; lod++) {
-        	GeometryProperty geometryProperty = null;
-        	long geometryId = 0;
+			GeometryProperty<? extends AbstractGeometry> geometryProperty = null;
+			long geometryId = 0;
 
     		switch (lod) {
     		case 1:
@@ -267,9 +284,18 @@ public class DBSolitaryVegetatObject implements DBImporter {
 						pointGeom = sdoGeometry.getPoint(geometry.getReferencePoint());
 
 					// transformation matrix
-					if (geometry.isSetTransformationMatrix())
-						matrixString = Util.collection2string(geometry.getTransformationMatrix().getMatrix().toRowPackedList(), " ");
+					if (geometry.isSetTransformationMatrix()) {
+						Matrix matrix = geometry.getTransformationMatrix().getMatrix();
 
+						if (affineTransformation) {
+							Matrix tmp = Matrix.identity(4, 4);
+							tmp.setMatrix(0, 2, 0, 3, transformationMatrix);
+							matrix = tmp.times(matrix.transpose());
+						}
+						
+						matrixString = Util.collection2string(matrix.toRowPackedList(), " ");
+					}
+					
 					// reference to IMPLICIT_GEOMETRY
 					implicitId = implicitGeometryImporter.insert(geometry, solVegObjectId);
 				}

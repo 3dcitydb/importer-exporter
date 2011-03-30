@@ -29,25 +29,24 @@
  */
 package de.tub.citydb.concurrent;
 
-import java.io.IOException;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.citygml4j.util.xml.SAXEventBuffer;
+import org.citygml4j.util.xml.SAXWriter;
+import org.citygml4j.util.xml.saxevents.SAXEvent;
 import org.xml.sax.SAXException;
 
 import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.sax.SAXBuffer;
-import de.tub.citydb.sax.SAXWriter;
-import de.tub.citydb.sax.events.SAXEvent;
 
-public class IOWriterWorker implements Worker<SAXBuffer> {
+public class IOWriterWorker implements Worker<SAXEventBuffer> {
 	private final Logger LOG = Logger.getInstance();
 	
 	// instance members needed for WorkPool
 	private volatile boolean shouldRun = true;
 	private ReentrantLock runLock = new ReentrantLock();
-	private WorkQueue<SAXBuffer> workQueue = null;
-	private SAXBuffer firstWork;
+	private WorkQueue<SAXEventBuffer> workQueue = null;
+	private SAXEventBuffer firstWork;
 	private Thread workerThread = null;
 
 	// instance members needed to do work
@@ -83,7 +82,7 @@ public class IOWriterWorker implements Worker<SAXBuffer> {
 	}
 
 	@Override
-	public void setFirstWork(SAXBuffer firstWork) {
+	public void setFirstWork(SAXEventBuffer firstWork) {
 		this.firstWork = firstWork;
 	}
 
@@ -93,7 +92,7 @@ public class IOWriterWorker implements Worker<SAXBuffer> {
 	}
 
 	@Override
-	public void setWorkQueue(WorkQueue<SAXBuffer> workQueue) {
+	public void setWorkQueue(WorkQueue<SAXEventBuffer> workQueue) {
 		this.workQueue = workQueue;
 	}
 
@@ -106,7 +105,7 @@ public class IOWriterWorker implements Worker<SAXBuffer> {
 
     	while (shouldRun) {
 			try {
-				SAXBuffer work = workQueue.take();
+				SAXEventBuffer work = workQueue.take();
 				doWork(work);
 			} catch (InterruptedException ie) {
 				// re-check state
@@ -114,7 +113,7 @@ public class IOWriterWorker implements Worker<SAXBuffer> {
     	}
 	}
 
-	private void doWork(SAXBuffer work) {
+	private void doWork(SAXEventBuffer work) {
 		final ReentrantLock runLock = this.runLock;
         runLock.lock();
 
@@ -127,12 +126,8 @@ public class IOWriterWorker implements Worker<SAXBuffer> {
         	}
 
         	saxWriter.flush();
-        } catch (SAXException saxE) {
-        	LOG.error("XML error: " + saxE.getMessage());
-        	return;
-        } catch (IOException ioE) {
-        	LOG.error("I/O error: " + ioE.getMessage());
-        	return;
+        } catch (SAXException e) {
+        	LOG.error("XML error: " + e.getMessage());
         } finally {
         	runLock.unlock();
         }

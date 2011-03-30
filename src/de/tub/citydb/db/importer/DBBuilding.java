@@ -34,14 +34,16 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
-import org.citygml4j.model.citygml.building.BoundarySurface;
 import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
 import org.citygml4j.model.citygml.building.BuildingInstallation;
 import org.citygml4j.model.citygml.building.BuildingInstallationProperty;
@@ -53,10 +55,11 @@ import org.citygml4j.model.citygml.building.InteriorRoomProperty;
 import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
-import org.citygml4j.model.gml.MeasureOrNullList;
-import org.citygml4j.model.gml.MultiCurveProperty;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
-import org.citygml4j.model.gml.SolidProperty;
+import org.citygml4j.model.gml.basicTypes.DoubleOrNull;
+import org.citygml4j.model.gml.basicTypes.MeasureOrNullList;
+import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
@@ -186,14 +189,14 @@ public class DBBuilding implements DBImporter {
 
 		// citygml:yearOfConstruction
 		if (building.isSetYearOfConstruction()) {
-			psBuilding.setDate(8, new Date(building.getYearOfConstruction().toGregorianCalendar().getTime().getTime()));
+			psBuilding.setDate(8, new Date(building.getYearOfConstruction().getTime().getTime()));
 		} else {
 			psBuilding.setNull(8, Types.DATE);
 		}
 
 		// citygml:yearOfDemolition
 		if (building.isSetYearOfDemolition()) {
-			psBuilding.setDate(9, new Date(building.getYearOfDemolition().toGregorianCalendar().getTime().getTime()));
+			psBuilding.setDate(9, new Date(building.getYearOfDemolition().getTime().getTime()));
 		} else {
 			psBuilding.setNull(9, Types.DATE);
 		}
@@ -229,9 +232,17 @@ public class DBBuilding implements DBImporter {
 		// citygml:storeyHeightsAboveGround
 		if (building.isSetStoreyHeightsAboveGround()) {
 			MeasureOrNullList measureOrNullList = building.getStoreyHeightsAboveGround();
-			if (measureOrNullList.isSetValue())
-				psBuilding.setString(14, Util.collection2string(measureOrNullList.getValue(), " "));
-			else
+			if (measureOrNullList.isSetDoubleOrNull()) {
+				List<String> values = new ArrayList<String>();				
+				for (DoubleOrNull doubleOrNull : measureOrNullList.getDoubleOrNull()) {
+					if (doubleOrNull.isSetDouble())
+						values.add(String.valueOf(doubleOrNull.getDouble()));
+					else
+						doubleOrNull.getNull().getValue();			
+				}
+				
+				psBuilding.setString(14, Util.collection2string(values, " "));
+			} else
 				psBuilding.setNull(14, Types.VARCHAR);
 		} else {
 			psBuilding.setNull(14, Types.VARCHAR);
@@ -240,9 +251,17 @@ public class DBBuilding implements DBImporter {
 		// citygml:storeyHeightsBelowGround
 		if (building.isSetStoreyHeightsBelowGround()) {
 			MeasureOrNullList measureOrNullList = building.getStoreyHeightsBelowGround();
-			if (measureOrNullList.isSetValue())
-				psBuilding.setString(15, Util.collection2string(measureOrNullList.getValue(), " "));
-			else
+			if (measureOrNullList.isSetDoubleOrNull()) {
+				List<String> values = new ArrayList<String>();				
+				for (DoubleOrNull doubleOrNull : measureOrNullList.getDoubleOrNull()) {
+					if (doubleOrNull.isSetDouble())
+						values.add(String.valueOf(doubleOrNull.getDouble()));
+					else
+						doubleOrNull.getNull().getValue();			
+				}
+				
+				psBuilding.setString(15, Util.collection2string(values, " "));
+			} else
 				psBuilding.setNull(15, Types.VARCHAR);
 		} else {
 			psBuilding.setNull(15, Types.VARCHAR);
@@ -516,9 +535,9 @@ public class DBBuilding implements DBImporter {
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING);
 
 		// BoundarySurfaces
-		if (building.isSetBoundedBySurfaces()) {
-			for (BoundarySurfaceProperty boundarySurfaceProperty : building.getBoundedBySurfaces()) {
-				BoundarySurface boundarySurface = boundarySurfaceProperty.getObject();
+		if (building.isSetBoundedBySurface()) {
+			for (BoundarySurfaceProperty boundarySurfaceProperty : building.getBoundedBySurface()) {
+				AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getObject();
 
 				if (boundarySurface != null) {
 					String gmlId = boundarySurface.getId();
@@ -561,7 +580,7 @@ public class DBBuilding implements DBImporter {
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.BUILDINGINSTALLATION, 
+								CityGMLClass.BUILDING_INSTALLATION, 
 								gmlId));
 						
 						LOG.error(msg.toString());
@@ -592,7 +611,7 @@ public class DBBuilding implements DBImporter {
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.INTBUILDINGINSTALLATION, 
+								CityGMLClass.INT_BUILDING_INSTALLATION, 
 								gmlId));
 						
 						LOG.error(msg.toString());
@@ -655,7 +674,7 @@ public class DBBuilding implements DBImporter {
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.BUILDINGPART, 
+								CityGMLClass.BUILDING_PART, 
 								buildingPart.getId()));
 						
 						LOG.error(msg.toString());

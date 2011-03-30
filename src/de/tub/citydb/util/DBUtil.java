@@ -46,7 +46,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.sql.ARRAY;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.geometry.BoundingVolume;
+import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.CityGMLClass;
 
@@ -159,8 +159,8 @@ public class DBUtil {
 		return report;
 	}
 
-	public static BoundingVolume calcBoundingBox(Workspace workspace, FeatureClassMode featureClass) throws SQLException {
-		BoundingVolume bbox = null;
+	public static BoundingBox calcBoundingBox(Workspace workspace, FeatureClassMode featureClass) throws SQLException {
+		BoundingBox bbox = null;
 		Connection conn = null;
 		ResultSet rs = null;
 
@@ -177,49 +177,49 @@ public class DBUtil {
 				featureTypes.add(Util.cityObject2classId(CityGMLClass.BUILDING));
 				break;
 			case CITYFURNITURE:
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.CITYFURNITURE));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
 				break;
 			case CITYOBJECTGROUP:
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.CITYOBJECTGROUP));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP));
 				break;
 			case GENERICCITYOBJECT:
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.GENERICCITYOBJECT));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.GENERIC_CITY_OBJECT));
 				break;
 			case LANDUSE:
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.LANDUSE));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.LAND_USE));
 				break;
 			case RELIEFFEATURE:
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.RELIEFFEATURE));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.RELIEF_FEATURE));
 				break;
 			case TRANSPORTATION:
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATIONCOMPLEX));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATION_COMPLEX));
 				featureTypes.add(Util.cityObject2classId(CityGMLClass.ROAD));
 				featureTypes.add(Util.cityObject2classId(CityGMLClass.RAILWAY));
 				featureTypes.add(Util.cityObject2classId(CityGMLClass.TRACK));
 				featureTypes.add(Util.cityObject2classId(CityGMLClass.SQUARE));
 				break;
 			case VEGETATION:
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.PLANTCOVER));
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.SOLITARYVEGETATIONOBJECT));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.PLANT_COVER));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.SOLITARY_VEGETATION_OBJECT));
 				break;
 			case WATERBODY:
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.WATERBODY));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
 				break;
 			default:
 				featureTypes.add(Util.cityObject2classId(CityGMLClass.BUILDING));
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.CITYFURNITURE));
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.CITYOBJECTGROUP));
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.GENERICCITYOBJECT));
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.LANDUSE));
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.RELIEFFEATURE));
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATIONCOMPLEX));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.GENERIC_CITY_OBJECT));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.LAND_USE));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.RELIEF_FEATURE));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATION_COMPLEX));
 				featureTypes.add(Util.cityObject2classId(CityGMLClass.ROAD));
 				featureTypes.add(Util.cityObject2classId(CityGMLClass.RAILWAY));
 				featureTypes.add(Util.cityObject2classId(CityGMLClass.TRACK));
 				featureTypes.add(Util.cityObject2classId(CityGMLClass.SQUARE));
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.PLANTCOVER));
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.SOLITARYVEGETATIONOBJECT));
-				featureTypes.add(Util.cityObject2classId(CityGMLClass.WATERBODY));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.PLANT_COVER));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.SOLITARY_VEGETATION_OBJECT));
+				featureTypes.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
 			}
 
 			if (!featureTypes.isEmpty()) 
@@ -261,7 +261,7 @@ public class DBUtil {
 			}
 
 			if (!cancelled)
-				bbox = new BoundingVolume(lowerCorner, upperCorner);
+				bbox = new BoundingBox(lowerCorner, upperCorner);
 
 		} catch (SQLException sqlEx) {
 			if (!cancelled)
@@ -497,8 +497,8 @@ public class DBUtil {
 		NORMAL
 	}
 
-	public static BoundingVolume transformBBox(BoundingVolume bbox, int sourceSrid, int targetSrid) throws SQLException {
-		BoundingVolume result = bbox.clone();
+	public static BoundingBox transformBBox(BoundingBox bbox, int sourceSrid, int targetSrid) throws SQLException {
+		BoundingBox result = new BoundingBox(bbox);
 		PreparedStatement psQuery = null;
 		OracleResultSet rs = null;
 		Connection conn = null;

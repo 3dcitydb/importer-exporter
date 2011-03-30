@@ -36,24 +36,22 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.JAXBException;
-
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.impl.jaxb.gml._3_1_1.GeometryPropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.StringOrRefImpl;
+import org.citygml4j.impl.citygml.core.ImplicitRepresentationPropertyImpl;
+import org.citygml4j.impl.citygml.generics.GenericCityObjectImpl;
+import org.citygml4j.impl.gml.base.StringOrRefImpl;
+import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.CityGMLModuleType;
-import org.citygml4j.model.citygml.core.CoreModule;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.citygml.generics.GenericCityObject;
-import org.citygml4j.model.citygml.generics.GenericsModule;
-import org.citygml4j.model.gml.GeometryProperty;
-import org.citygml4j.model.gml.MultiCurveProperty;
-import org.citygml4j.model.gml.StringOrRef;
+import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
+import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.filter.ExportFilter;
@@ -62,7 +60,6 @@ import de.tub.citydb.util.Util;
 
 public class DBGenericCityObject implements DBExporter {
 	private final DBExporterManager dbExporterManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final Config config;
 	private final Connection connection;
 
@@ -74,13 +71,10 @@ public class DBGenericCityObject implements DBExporter {
 	private DBSdoGeometry sdoGeometry;
 	private FeatureClassFilter featureClassFilter;
 
-	private GenericsModule gen;
-	private CoreModule core;
 	private boolean transformCoords;
 
-	public DBGenericCityObject(Connection connection, CityGMLFactory cityGMLFactory, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBGenericCityObject(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
-		this.cityGMLFactory = cityGMLFactory;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
 		this.featureClassFilter = exportFilter.getFeatureClassFilter();
@@ -89,8 +83,6 @@ public class DBGenericCityObject implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		gen = config.getProject().getExporter().getModuleVersion().getGenerics().getModule();
-		core = (CoreModule)gen.getModuleDependencies().getModule(CityGMLModuleType.CORE);
 		transformCoords = config.getInternal().isTransformCoordinates();
 
 		if (!transformCoords) {
@@ -120,8 +112,8 @@ public class DBGenericCityObject implements DBExporter {
 		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, JAXBException {
-		GenericCityObject genericCityObject = cityGMLFactory.createGenericCityObject(gen);
+	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+		GenericCityObject genericCityObject = new GenericCityObjectImpl();
 		long genericCityObjectId = splitter.getPrimaryKey();
 
 		// cityObject stuff
@@ -174,7 +166,7 @@ public class DBGenericCityObject implements DBExporter {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
 
 						if (geometry != null) {
-							GeometryProperty geometryProperty = new GeometryPropertyImpl();
+							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
 
 							if (geometry.getAbstractGeometry() != null)
 								geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -215,9 +207,9 @@ public class DBGenericCityObject implements DBExporter {
 
 					String transformationMatrix = rs.getString("LOD" + lod + "_IMPLICIT_TRANSFORMATION");
 
-					ImplicitGeometry implicit = implicitGeometryExporter.read(implicitGeometryId, referencePoint, transformationMatrix, core);
+					ImplicitGeometry implicit = implicitGeometryExporter.read(implicitGeometryId, referencePoint, transformationMatrix);
 					if (implicit != null) {
-						ImplicitRepresentationProperty implicitProperty = cityGMLFactory.createImplicitRepresentationProperty(core);
+						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationPropertyImpl();
 						implicitProperty.setObject(implicit);
 
 						switch (lod) {
@@ -274,7 +266,7 @@ public class DBGenericCityObject implements DBExporter {
 				}
 			}
 
-			if (genericCityObject.isSetId() && !featureClassFilter.filter(CityGMLClass.CITYOBJECTGROUP))
+			if (genericCityObject.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
 				dbExporterManager.putGmlId(genericCityObject.getId(), genericCityObjectId, genericCityObject.getCityGMLClass());
 			dbExporterManager.print(genericCityObject);
 			return true;

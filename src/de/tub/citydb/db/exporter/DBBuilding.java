@@ -36,59 +36,60 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.impl.jaxb.gml._3_1_1.LengthImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.MeasureOrNullListImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.MultiSurfacePropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.SolidPropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.StringOrRefImpl;
-import org.citygml4j.impl.jaxb.xal._2.AddressDetailsImpl;
-import org.citygml4j.impl.jaxb.xal._2.CountryImpl;
-import org.citygml4j.impl.jaxb.xal._2.CountryNameImpl;
-import org.citygml4j.impl.jaxb.xal._2.LocalityImpl;
-import org.citygml4j.impl.jaxb.xal._2.LocalityNameImpl;
-import org.citygml4j.impl.jaxb.xal._2.PostBoxImpl;
-import org.citygml4j.impl.jaxb.xal._2.PostBoxNumberImpl;
-import org.citygml4j.impl.jaxb.xal._2.PostalCodeImpl;
-import org.citygml4j.impl.jaxb.xal._2.PostalCodeNumberImpl;
-import org.citygml4j.impl.jaxb.xal._2.ThoroughfareImpl;
-import org.citygml4j.impl.jaxb.xal._2.ThoroughfareNameImpl;
-import org.citygml4j.impl.jaxb.xal._2.ThoroughfareNumberImpl;
+import org.citygml4j.impl.citygml.building.BuildingImpl;
+import org.citygml4j.impl.citygml.building.BuildingPartImpl;
+import org.citygml4j.impl.citygml.building.BuildingPartPropertyImpl;
+import org.citygml4j.impl.citygml.core.AddressImpl;
+import org.citygml4j.impl.citygml.core.AddressPropertyImpl;
+import org.citygml4j.impl.citygml.core.XalAddressPropertyImpl;
+import org.citygml4j.impl.gml.base.StringOrRefImpl;
+import org.citygml4j.impl.gml.basicTypes.DoubleOrNullImpl;
+import org.citygml4j.impl.gml.basicTypes.MeasureOrNullListImpl;
+import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfacePropertyImpl;
+import org.citygml4j.impl.gml.geometry.primitives.SolidPropertyImpl;
+import org.citygml4j.impl.gml.measures.LengthImpl;
+import org.citygml4j.impl.xal.AddressDetailsImpl;
+import org.citygml4j.impl.xal.CountryImpl;
+import org.citygml4j.impl.xal.CountryNameImpl;
+import org.citygml4j.impl.xal.LocalityImpl;
+import org.citygml4j.impl.xal.LocalityNameImpl;
+import org.citygml4j.impl.xal.PostBoxImpl;
+import org.citygml4j.impl.xal.PostBoxNumberImpl;
+import org.citygml4j.impl.xal.PostalCodeImpl;
+import org.citygml4j.impl.xal.PostalCodeNumberImpl;
+import org.citygml4j.impl.xal.ThoroughfareImpl;
+import org.citygml4j.impl.xal.ThoroughfareNameImpl;
+import org.citygml4j.impl.xal.ThoroughfareNumberImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.CityGMLModuleType;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.Building;
-import org.citygml4j.model.citygml.building.BuildingModule;
 import org.citygml4j.model.citygml.building.BuildingPart;
 import org.citygml4j.model.citygml.building.BuildingPartProperty;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
-import org.citygml4j.model.citygml.core.CoreModule;
 import org.citygml4j.model.citygml.core.XalAddressProperty;
-import org.citygml4j.model.gml.AbstractSolid;
-import org.citygml4j.model.gml.Length;
-import org.citygml4j.model.gml.MeasureOrNullList;
-import org.citygml4j.model.gml.MultiCurveProperty;
-import org.citygml4j.model.gml.MultiPointProperty;
-import org.citygml4j.model.gml.MultiSurface;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
-import org.citygml4j.model.gml.SolidProperty;
-import org.citygml4j.model.gml.StringOrRef;
+import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.DoubleOrNull;
+import org.citygml4j.model.gml.basicTypes.MeasureOrNullList;
+import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
+import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
+import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.xal.AddressDetails;
 import org.citygml4j.model.xal.Country;
 import org.citygml4j.model.xal.CountryName;
@@ -101,6 +102,7 @@ import org.citygml4j.model.xal.PostalCodeNumber;
 import org.citygml4j.model.xal.Thoroughfare;
 import org.citygml4j.model.xal.ThoroughfareName;
 import org.citygml4j.model.xal.ThoroughfareNumber;
+import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.filter.ExportFilter;
@@ -112,7 +114,6 @@ public class DBBuilding implements DBExporter {
 	private final Logger LOG = Logger.getInstance();
 
 	private final DBExporterManager dbExporterManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final Config config;
 	private final Connection connection;
 
@@ -127,13 +128,10 @@ public class DBBuilding implements DBExporter {
 	private FeatureClassFilter featureClassFilter;
 	private DatatypeFactory datatypeFactory;
 
-	private BuildingModule bldg;
-	private CoreModule core;
 	private boolean transformCoords;
 
-	public DBBuilding(Connection connection, CityGMLFactory cityGMLFactory, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBBuilding(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
-		this.cityGMLFactory = cityGMLFactory;
 		this.config = config;
 		this.connection = connection;
 		this.featureClassFilter = exportFilter.getFeatureClassFilter();
@@ -142,8 +140,6 @@ public class DBBuilding implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		bldg = config.getProject().getExporter().getModuleVersion().getBuilding().getModule();
-		core = (CoreModule)bldg.getModuleDependencies().getModule(CityGMLModuleType.CORE);
 		transformCoords = config.getInternal().isTransformCoordinates();
 
 		if (!transformCoords) {
@@ -186,7 +182,7 @@ public class DBBuilding implements DBExporter {
 		}
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, JAXBException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
 		ResultSet rs = null;
 
 		try {
@@ -283,7 +279,6 @@ public class DBBuilding implements DBExporter {
 					String poBoxAttr = rs.getString("PO_BOX");
 					String zipCodeAttr = rs.getString("ZIP_CODE");
 					String cityAttr = rs.getString("CITY");
-					String stateAttr = rs.getString("STATE");
 					String countryAttr = rs.getString("COUNTRY");
 
 					if (streetAttr != null ||
@@ -349,10 +344,10 @@ public class DBBuilding implements DBExporter {
 						country.setLocality(locality);
 						addressDetails.setCountry(country);
 
-						XalAddressProperty xalAddressProperty = cityGMLFactory.createXalAddressProperty(core);
+						XalAddressProperty xalAddressProperty = new XalAddressPropertyImpl();
 						xalAddressProperty.setAddressDetails(addressDetails);
 
-						Address address = cityGMLFactory.createAddress(core);
+						Address address = new AddressImpl();
 						address.setXalAddress(xalAddressProperty);
 
 						// multiPointGeometry
@@ -366,7 +361,7 @@ public class DBBuilding implements DBExporter {
 							}
 						}					
 
-						addressProperty = cityGMLFactory.createAddressProperty(core);
+						addressProperty = new AddressPropertyImpl();
 						addressProperty.setObject(address);
 					}
 				}
@@ -400,9 +395,9 @@ public class DBBuilding implements DBExporter {
 
 		if (buildingNode.parentId != 0) {
 			// we are dealing with a buildingPart
-			abstractBuilding = cityGMLFactory.createBuildingPart(bldg);
+			abstractBuilding = new BuildingPartImpl();
 		} else {
-			abstractBuilding = cityGMLFactory.createBuilding(bldg);
+			abstractBuilding = new BuildingImpl();
 		}
 
 		// do cityObject stuff
@@ -442,11 +437,7 @@ public class DBBuilding implements DBExporter {
 			gregDate.setTime(buildingNode.yearOfConstruction);
 
 			if (datatypeFactory != null)
-				abstractBuilding.setYearOfConstruction(datatypeFactory.newXMLGregorianCalendarDate(
-						gregDate.get(Calendar.YEAR),
-						gregDate.get(Calendar.MONTH) + 1,
-						gregDate.get(Calendar.DAY_OF_MONTH),
-						DatatypeConstants.FIELD_UNDEFINED));
+				abstractBuilding.setYearOfConstruction(gregDate);
 			else
 				LOG.error(Util.getFeatureSignature(abstractBuilding.getCityGMLClass(), abstractBuilding.getId()) + 
 				": Failed to write attribute 'yearOfConstruction' due to an internal error.");
@@ -457,11 +448,7 @@ public class DBBuilding implements DBExporter {
 			gregDate.setTime(buildingNode.yearOfDemolition);
 
 			if (datatypeFactory != null)
-				abstractBuilding.setYearOfDemolition(datatypeFactory.newXMLGregorianCalendarDate(
-						gregDate.get(Calendar.YEAR),
-						gregDate.get(Calendar.MONTH) + 1,
-						gregDate.get(Calendar.DAY_OF_MONTH),
-						DatatypeConstants.FIELD_UNDEFINED));
+				abstractBuilding.setYearOfDemolition(gregDate);
 			else
 				LOG.error(Util.getFeatureSignature(abstractBuilding.getCityGMLClass(), abstractBuilding.getId()) + 
 				": Failed to write attribute 'yearOfDemolition' due to an internal error.");
@@ -487,39 +474,39 @@ public class DBBuilding implements DBExporter {
 		}
 
 		if (buildingNode.storeyHeightsAboveGround != null) {
-			List<Double> storeyHeightsAboveGroundList = new ArrayList<Double>();
+			List<DoubleOrNull> storeyHeightsAboveGroundList = new ArrayList<DoubleOrNull>();
 			MeasureOrNullList measureList = new MeasureOrNullListImpl();
 			Pattern p = Pattern.compile("\\s+");
 			String[] measureStrings = p.split(buildingNode.storeyHeightsAboveGround.trim());
 
 			for (String measureString : measureStrings) {
 				try {
-					storeyHeightsAboveGroundList.add(Double.parseDouble(measureString));
+					storeyHeightsAboveGroundList.add(new DoubleOrNullImpl(Double.parseDouble(measureString)));
 				} catch (NumberFormatException nfEx) {
 					//
 				}
 			}
 
-			measureList.setValue(storeyHeightsAboveGroundList);
+			measureList.setDoubleOrNull(storeyHeightsAboveGroundList);
 			measureList.setUom("urn:ogc:def:uom:UCUM::m");
 			abstractBuilding.setStoreyHeightsAboveGround(measureList);
 		}
 
 		if (buildingNode.storeyHeightsBelowGround != null) {
-			List<Double> storeyHeightsBelowGroundList = new ArrayList<Double>();
+			List<DoubleOrNull> storeyHeightsBelowGroundList = new ArrayList<DoubleOrNull>();
 			MeasureOrNullList measureList = new MeasureOrNullListImpl();
 			Pattern p = Pattern.compile("\\s+");
 			String[] measureStrings = p.split(buildingNode.storeyHeightsBelowGround.trim());
 
 			for (String measureString : measureStrings) {
 				try {
-					storeyHeightsBelowGroundList.add(Double.parseDouble(measureString));
+					storeyHeightsBelowGroundList.add(new DoubleOrNullImpl(Double.parseDouble(measureString)));
 				} catch (NumberFormatException nfEx) {
 					//
 				}
 			}
 
-			measureList.setValue(storeyHeightsBelowGroundList);
+			measureList.setDoubleOrNull(storeyHeightsBelowGroundList);
 			measureList.setUom("urn:ogc:def:uom:UCUM::m");
 			abstractBuilding.setStoreyHeightsBelowGround(measureList);
 		}
@@ -575,7 +562,7 @@ public class DBBuilding implements DBExporter {
 		// according to conformance requirement no. 3 of the Building version 1.0.0 module
 		// geometry objects of _BoundarySurface elements have to be referenced by lodXSolid and
 		// lodXMultiSurface properties. So we first export all _BoundarySurfaces
-		thematicSurfaceExporter.read(abstractBuilding, buildingNode.id, bldg);
+		thematicSurfaceExporter.read(abstractBuilding, buildingNode.id);
 
 		// surface geometry
 		for (int lod = 1; lod < 5 ; lod++) {
@@ -586,7 +573,7 @@ public class DBBuilding implements DBExporter {
 
 				if (geometry != null) {
 					switch (geometry.getType()) {
-					case COMPOSITESOLID:
+					case COMPOSITE_SOLID:
 					case SOLID:
 						SolidProperty solidProperty = new SolidPropertyImpl();
 
@@ -612,7 +599,7 @@ public class DBBuilding implements DBExporter {
 
 						break;
 
-					case MULTISURFACE:
+					case MULTI_SURFACE:
 						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
 
 						if (geometry.getAbstractGeometry() != null)
@@ -643,10 +630,10 @@ public class DBBuilding implements DBExporter {
 		}
 
 		// BuildingInstallation
-		buildingInstallationExporter.read(abstractBuilding, buildingNode.id, bldg);
+		buildingInstallationExporter.read(abstractBuilding, buildingNode.id);
 
 		// room
-		roomExporter.read(abstractBuilding, buildingNode.id, bldg);
+		roomExporter.read(abstractBuilding, buildingNode.id);
 
 		// address 
 		if (!buildingNode.addressProperty.isEmpty()) {
@@ -656,12 +643,12 @@ public class DBBuilding implements DBExporter {
 
 		for (BuildingNode childNode : buildingNode.childNodes) {
 			BuildingPart buildingPart = (BuildingPart)rebuildBuilding(childNode);
-			BuildingPartProperty buildingPartProperty = cityGMLFactory.createBuildingPartProperty(bldg);
+			BuildingPartProperty buildingPartProperty = new BuildingPartPropertyImpl();
 			buildingPartProperty.setObject(buildingPart);
 			abstractBuilding.addConsistsOfBuildingPart(buildingPartProperty);
 		}
 
-		if (abstractBuilding.isSetId() && !featureClassFilter.filter(CityGMLClass.CITYOBJECTGROUP))
+		if (abstractBuilding.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
 			dbExporterManager.putGmlId(abstractBuilding.getId(), buildingNode.id, abstractBuilding.getCityGMLClass());
 
 		return abstractBuilding;

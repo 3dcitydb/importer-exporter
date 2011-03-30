@@ -42,13 +42,15 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+import org.citygml4j.util.gmlid.GMLIdManager;
+
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.exporter.XLinkConfig;
 import de.tub.citydb.config.project.exporter.XLinkFeatureConfig;
 import de.tub.citydb.config.project.exporter.XLinkMode;
 import de.tub.citydb.gui.util.GuiUtil;
-import de.tub.citydb.util.UUIDManager;
 
 @SuppressWarnings("serial")
 public class ExpXLinkPanel extends PrefPanelBase {
@@ -69,8 +71,12 @@ public class ExpXLinkPanel extends PrefPanelBase {
 	private JTextField geometryIdPrefix;
 	private JCheckBox geometryAppendId;
 	
+	private GMLIdManager gmlIdManager;
+	
 	public ExpXLinkPanel(Config config) {
 		super(config);
+		gmlIdManager = DefaultGMLIdManager.getInstance();
+		
 		initGui();
 	}
 	
@@ -221,8 +227,8 @@ public class ExpXLinkPanel extends PrefPanelBase {
 		if (feature.getIdPrefix() != null && feature.getIdPrefix().trim().length() != 0)
 			featureIdPrefix.setText(feature.getIdPrefix());
 		else {
-			featureIdPrefix.setText(UUIDManager.UUIDPrefix);
-			feature.setIdPrefix(UUIDManager.UUIDPrefix);
+			featureIdPrefix.setText(gmlIdManager.getDefaultPrefix());
+			feature.setIdPrefix(gmlIdManager.getDefaultPrefix());
 		}
 			
 		if (feature.isModeXLink())
@@ -236,8 +242,8 @@ public class ExpXLinkPanel extends PrefPanelBase {
 		if (geometry.getIdPrefix() != null && geometry.getIdPrefix().trim().length() != 0)
 			geometryIdPrefix.setText(geometry.getIdPrefix());
 		else {
-			geometryIdPrefix.setText(UUIDManager.UUIDPrefix);
-			geometry.setIdPrefix(UUIDManager.UUIDPrefix);
+			geometryIdPrefix.setText(gmlIdManager.getDefaultPrefix());
+			geometry.setIdPrefix(gmlIdManager.getDefaultPrefix());
 		}
 		
 		if (geometry.isModeXLink())
@@ -259,8 +265,8 @@ public class ExpXLinkPanel extends PrefPanelBase {
 		if (featureIdPrefix.getText() != null && featureIdPrefix.getText().trim().length() != 0)
 			feature.setIdPrefix(featureIdPrefix.getText().trim());
 		else {
-			feature.setIdPrefix(UUIDManager.UUIDPrefix);
-			featureIdPrefix.setText(UUIDManager.UUIDPrefix);
+			feature.setIdPrefix(gmlIdManager.getDefaultPrefix());
+			featureIdPrefix.setText(gmlIdManager.getDefaultPrefix());
 		}
 		
 		if (xlinkToFeature.isSelected())
@@ -274,8 +280,8 @@ public class ExpXLinkPanel extends PrefPanelBase {
 		if (geometryIdPrefix.getText() != null && geometryIdPrefix.getText().trim().length() != 0)
 			geometry.setIdPrefix(geometryIdPrefix.getText().trim());
 		else {
-			geometry.setIdPrefix(UUIDManager.UUIDPrefix);
-			geometryIdPrefix.setText(UUIDManager.UUIDPrefix);
+			geometry.setIdPrefix(gmlIdManager.getDefaultPrefix());
+			geometryIdPrefix.setText(gmlIdManager.getDefaultPrefix());
 		}
 		
 		if (xlinkToGeometry.isSelected())

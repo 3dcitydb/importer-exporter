@@ -35,13 +35,14 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.building.BoundarySurface;
-import org.citygml4j.model.citygml.building.Opening;
+import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
+import org.citygml4j.model.citygml.building.AbstractOpening;
 import org.citygml4j.model.citygml.building.OpeningProperty;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
+import de.tub.citydb.db.DBTypeValueEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
@@ -75,7 +76,7 @@ public class DBThematicSurface implements DBImporter {
 		openingImporter = (DBOpening)dbImporterManager.getDBImporter(DBImporterEnum.OPENING);
 	}
 
-	public long insert(BoundarySurface boundarySurface, CityGMLClass parent, long parentId) throws SQLException {
+	public long insert(AbstractBoundarySurface boundarySurface, CityGMLClass parent, long parentId) throws SQLException {
 		long boundarySurfaceId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
     	if (boundarySurfaceId == 0)
     		return 0;
@@ -113,12 +114,12 @@ public class DBThematicSurface implements DBImporter {
 		}
 
 		// TYPE
-        psThematicSurface.setString(5, boundarySurface.getCityGMLClass().toString());
+        psThematicSurface.setString(5, DBTypeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString());
 
         // parentId
 		switch (parent) {
 		case BUILDING:
-		case BUILDINGPART:
+		case BUILDING_PART:
 			psThematicSurface.setLong(6, parentId);
 			psThematicSurface.setNull(7, 0);
 			break;
@@ -199,7 +200,7 @@ public class DBThematicSurface implements DBImporter {
         if (boundarySurface.isSetOpening()) {
         	for (OpeningProperty openingProperty : boundarySurface.getOpening()) {
         		if (openingProperty.isSetObject()) {
-        			Opening opening = openingProperty.getObject();
+        			AbstractOpening opening = openingProperty.getObject();
         			String gmlId = opening.getId();
         			long id = openingImporter.insert(opening, boundarySurfaceId);
         			

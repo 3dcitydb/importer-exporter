@@ -27,24 +27,25 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.sax;
+package de.tub.citydb.db.kmlExporter;
 
 import java.util.Properties;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
+import org.citygml4j.util.xml.SAXEventBuffer;
+import org.citygml4j.util.xml.SAXWriter;
+import org.citygml4j.util.xml.saxevents.EndElement;
+import org.citygml4j.util.xml.saxevents.SAXEvent;
+import org.citygml4j.util.xml.saxevents.StartElement;
 import org.xml.sax.SAXException;
-
-import de.tub.citydb.sax.events.EndElement;
-import de.tub.citydb.sax.events.SAXEvent;
-import de.tub.citydb.sax.events.StartElement;
-import de.tub.citydb.util.JAXBUtil;
 
 public class XMLHeaderWriter {
 	private final SAXWriter saxWriter;
-	private SAXBuffer saxBuffer;
+	private SAXEventBuffer saxBuffer;
 
 	public XMLHeaderWriter(SAXWriter saxWriter) {
 		this.saxWriter = saxWriter;
@@ -90,7 +91,13 @@ public class XMLHeaderWriter {
 	public void setRootElement(JAXBElement<?> jaxbRootElement,
 			JAXBContext jaxbContext,
 			Properties marshallerProps) throws JAXBException {
-		saxBuffer = JAXBUtil.jaxbElem2saxEvents(jaxbContext, jaxbRootElement, marshallerProps);
+		saxBuffer = new SAXEventBuffer();
+		
+		Marshaller marshaller = jaxbContext.createMarshaller();
+		for (Object key : marshallerProps.keySet())
+			marshaller.setProperty(key.toString(), marshallerProps.get(key));
+
+		marshaller.marshal(jaxbRootElement, saxBuffer);
 	}
 
 }

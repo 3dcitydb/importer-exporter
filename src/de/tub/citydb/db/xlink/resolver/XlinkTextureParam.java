@@ -60,7 +60,7 @@ public class XlinkTextureParam implements DBXlinkResolver {
 	}
 
 	public boolean insert(DBXlinkTextureParam xlink) throws SQLException {
-		GmlIdEntry surfaceGeometryEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.GMLGEOMETRY);
+		GmlIdEntry surfaceGeometryEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
 		if (surfaceGeometryEntry == null || surfaceGeometryEntry.getId() == -1)
 			return false;
 

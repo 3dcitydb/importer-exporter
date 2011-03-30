@@ -112,7 +112,7 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 					String texCoord = rs.getString("TEXTURE_COORDINATES");
 
 					if (worldToTexture != null) {
-						GmlIdEntry idEntry = resolverManager.getDBId(xlink.getTargetURI(), CityGMLClass.GMLGEOMETRY);
+						GmlIdEntry idEntry = resolverManager.getDBId(xlink.getTargetURI(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 						if (idEntry == null || idEntry.getId() == -1) {
 							LOG.error("Failed to resolve XLink reference '" + xlink.getTargetURI() + "'.");

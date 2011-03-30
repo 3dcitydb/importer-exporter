@@ -36,22 +36,22 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.impl.jaxb.gml._3_1_1.GeometryPropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.StringOrRefImpl;
+import org.citygml4j.impl.citygml.building.BuildingFurnitureImpl;
+import org.citygml4j.impl.citygml.building.InteriorFurniturePropertyImpl;
+import org.citygml4j.impl.gml.base.StringOrRefImpl;
+import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.model.citygml.building.BuildingFurniture;
-import org.citygml4j.model.citygml.building.BuildingModule;
 import org.citygml4j.model.citygml.building.InteriorFurnitureProperty;
 import org.citygml4j.model.citygml.building.Room;
-import org.citygml4j.model.gml.GeometryProperty;
-import org.citygml4j.model.gml.StringOrRef;
+import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.util.Util;
 
 public class DBBuildingFurniture implements DBExporter {
 	private final DBExporterManager dbExporterManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final Config config;
 	private final Connection connection;
 
@@ -62,9 +62,8 @@ public class DBBuildingFurniture implements DBExporter {
 
 	private boolean transformCoords;
 
-	public DBBuildingFurniture(Connection connection, CityGMLFactory cityGMLFactory, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBBuildingFurniture(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
-		this.cityGMLFactory = cityGMLFactory;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
 
@@ -89,7 +88,7 @@ public class DBBuildingFurniture implements DBExporter {
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 	}
 
-	public void read(Room room, long parentId, BuildingModule bldg) throws SQLException {
+	public void read(Room room, long parentId) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -98,7 +97,7 @@ public class DBBuildingFurniture implements DBExporter {
 
 			while (rs.next()) {
 				long buildingFurnitureId = rs.getLong("ID");
-				BuildingFurniture buildingFurniture = cityGMLFactory.createBuildingFurniture(bldg);
+				BuildingFurniture buildingFurniture = new BuildingFurnitureImpl();
 
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
@@ -136,7 +135,7 @@ public class DBBuildingFurniture implements DBExporter {
 					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodGeometryId);
 
 					if (geometry != null) {
-						GeometryProperty geometryProperty = new GeometryPropertyImpl();
+						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
 
 						if (geometry.getAbstractGeometry() != null)
 							geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -150,7 +149,7 @@ public class DBBuildingFurniture implements DBExporter {
 				// cityObject stuff
 				cityObjectExporter.read(buildingFurniture, buildingFurnitureId);
 
-				InteriorFurnitureProperty buildingFurnitureProp = cityGMLFactory.createInteriorFurnitureProperty(bldg);
+				InteriorFurnitureProperty buildingFurnitureProp = new InteriorFurniturePropertyImpl();
 				buildingFurnitureProp.setObject(buildingFurniture);
 				room.addInteriorFurniture(buildingFurnitureProp);
 			}

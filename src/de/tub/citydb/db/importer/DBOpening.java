@@ -35,13 +35,14 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.building.AbstractOpening;
 import org.citygml4j.model.citygml.building.Door;
-import org.citygml4j.model.citygml.building.Opening;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
 import de.tub.citydb.db.DBTableEnum;
+import de.tub.citydb.db.DBTypeValueEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
@@ -75,7 +76,7 @@ public class DBOpening implements DBImporter {
 		addressImporter = (DBAddress)dbImporterManager.getDBImporter(DBImporterEnum.ADDRESS);
 	}
 
-	public long insert(Opening opening, long parentId) throws SQLException {
+	public long insert(AbstractOpening opening, long parentId) throws SQLException {
 		long openingId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
 		if (openingId == 0)
 			return 0;
@@ -113,7 +114,7 @@ public class DBOpening implements DBImporter {
 		}
 
 		// TYPE
-		psOpening.setString(5, opening.getCityGMLClass().toString());
+		psOpening.setString(5, DBTypeValueEnum.fromCityGMLClass(opening.getCityGMLClass()).toString());
 
 		// citygml:address
 		if (opening.getCityGMLClass() == CityGMLClass.DOOR) {

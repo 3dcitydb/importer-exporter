@@ -35,15 +35,15 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.building.BoundarySurface;
+import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
 import org.citygml4j.model.citygml.building.BuildingFurniture;
 import org.citygml4j.model.citygml.building.IntBuildingInstallation;
 import org.citygml4j.model.citygml.building.IntBuildingInstallationProperty;
 import org.citygml4j.model.citygml.building.InteriorFurnitureProperty;
 import org.citygml4j.model.citygml.building.Room;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
-import org.citygml4j.model.gml.SolidProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
@@ -212,9 +212,9 @@ public class DBRoom implements DBImporter {
 			dbImporterManager.executeBatch(DBImporterEnum.ROOM);
 
 		// BoundarySurfaces
-		if (room.isSetBoundedBySurfaces()) {
-			for (BoundarySurfaceProperty boundarySurfaceProperty : room.getBoundedBySurfaces()) {
-				BoundarySurface boundarySurface = boundarySurfaceProperty.getObject();
+		if (room.isSetBoundedBySurface()) {
+			for (BoundarySurfaceProperty boundarySurfaceProperty : room.getBoundedBySurface()) {
+				AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getObject();
 				
 				if (boundarySurface != null) {
 					String gmlId = boundarySurface.getId();
@@ -257,7 +257,7 @@ public class DBRoom implements DBImporter {
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.INTBUILDINGINSTALLATION, 
+								CityGMLClass.INT_BUILDING_INSTALLATION, 
 								gmlId));
 						
 						LOG.error(msg.toString());
@@ -288,7 +288,7 @@ public class DBRoom implements DBImporter {
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.BUILDINGFURNITURE, 
+								CityGMLClass.BUILDING_FURNITURE, 
 								gmlId));
 						
 						LOG.error(msg.toString());

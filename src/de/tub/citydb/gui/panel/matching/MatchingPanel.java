@@ -514,7 +514,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = new EventDispatcher();
-			eventDispatcher.addListener(EventType.Counter, this);
+			eventDispatcher.addListener(EventType.COUNTER, this);
 			
 			final StatusDialog status = new StatusDialog(topFrame, 
 					Internal.I18N.getString("match.match.dialog.window"), 
@@ -662,7 +662,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = new EventDispatcher();
-			eventDispatcher.addListener(EventType.Counter, this);
+			eventDispatcher.addListener(EventType.COUNTER, this);
 			
 			final StatusDialog status = new StatusDialog(topFrame, 
 					Internal.I18N.getString("match.overlap.dialog.window"), 
@@ -783,7 +783,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 	@Override
 	public void handleEvent(Event e) throws Exception {
-		if (e.getEventType() == EventType.Counter &&
+		if (e.getEventType() == EventType.COUNTER &&
 				((CounterEvent)e).getType() == CounterType.RELEVANT_MATCHES) {
 			setEnabledButtons(((CounterEvent)e).getCounter() > 0);
 		}

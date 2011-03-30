@@ -38,8 +38,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
-import org.citygml4j.model.gml.AbstractGeometry;
-import org.citygml4j.model.gml.GeometryProperty;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
@@ -95,7 +95,7 @@ public class DBImplicitGeometry implements DBImporter {
 		String gmlId = null;
 
 		if (implicitGeometry.isSetRelativeGMLGeometry()) {
-			GeometryProperty property = implicitGeometry.getRelativeGMLGeometry();
+			GeometryProperty<? extends AbstractGeometry> property = implicitGeometry.getRelativeGMLGeometry();
 
 			if (property.isSetHref()) {
 				gmlId = property.getHref();
@@ -131,7 +131,7 @@ public class DBImplicitGeometry implements DBImporter {
 
 			// check relative geometry reference
 			else if (gmlId != null)
-				implicitGeometryId = dbImporterManager.getDBId(gmlId, CityGMLClass.CITYOBJECT);				
+				implicitGeometryId = dbImporterManager.getDBId(gmlId, CityGMLClass.ABSTRACT_CITY_OBJECT);				
 
 			if (implicitGeometryId == 0) {
 				implicitGeometryId = dbImporterManager.getDBId(DBSequencerEnum.IMPLICIT_GEOMETRY_SEQ);
@@ -140,9 +140,9 @@ public class DBImplicitGeometry implements DBImporter {
 				psImplicitGeometry.execute();
 
 				if (gmlId != null)
-					dbImporterManager.putGmlId(gmlId, implicitGeometryId, CityGMLClass.CITYOBJECT);
+					dbImporterManager.putGmlId(gmlId, implicitGeometryId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
-				dbImporterManager.updateFeatureCounter(CityGMLClass.IMPLICITGEOMETRY);
+				dbImporterManager.updateFeatureCounter(CityGMLClass.IMPLICIT_GEOMETRY);
 			}
 
 		} finally {

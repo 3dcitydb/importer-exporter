@@ -36,28 +36,23 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.JAXBException;
-
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.impl.jaxb.gml._3_1_1.MultiSurfacePropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.StringOrRefImpl;
+import org.citygml4j.impl.citygml.landuse.LandUseImpl;
+import org.citygml4j.impl.gml.base.StringOrRefImpl;
+import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfacePropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.landuse.LandUse;
-import org.citygml4j.model.citygml.landuse.LandUseModule;
 import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.MultiSurface;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
-import org.citygml4j.model.gml.StringOrRef;
+import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
 
 public class DBLandUse implements DBExporter {
 	private final DBExporterManager dbExporterManager;
-	private final CityGMLFactory cityGMLFactory;
-	private final Config config;
 	private final Connection connection;
 
 	private PreparedStatement psLandUse;
@@ -66,12 +61,9 @@ public class DBLandUse implements DBExporter {
 	private DBCityObject cityObjectExporter;
 	private FeatureClassFilter featureClassFilter;
 
-	private LandUseModule luse;
 
-	public DBLandUse(Connection connection, CityGMLFactory cityGMLFactory, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBLandUse(Connection connection, ExportFilter exportFilter, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
-		this.cityGMLFactory = cityGMLFactory;
-		this.config = config;
 		this.dbExporterManager = dbExporterManager;
 		this.featureClassFilter = exportFilter.getFeatureClassFilter();
 
@@ -79,16 +71,14 @@ public class DBLandUse implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		luse = config.getProject().getExporter().getModuleVersion().getLandUse().getModule();
-
 		psLandUse = connection.prepareStatement("select * from LAND_USE where ID = ?");
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, JAXBException {
-		LandUse landUse = cityGMLFactory.createLandUse(luse);
+	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+		LandUse landUse = new LandUseImpl();
 		long landUseId = splitter.getPrimaryKey();
 
 		// cityObject stuff
@@ -140,7 +130,7 @@ public class DBLandUse implements DBExporter {
 					if (!rs.wasNull() && multiSurfaceId != 0) {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(multiSurfaceId);
 
-						if (geometry != null && geometry.getType() == GMLClass.MULTISURFACE) {
+						if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
 							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
 
 							if (geometry.getAbstractGeometry() != null)
@@ -170,7 +160,7 @@ public class DBLandUse implements DBExporter {
 				}
 			}
 
-			if (landUse.isSetId() && !featureClassFilter.filter(CityGMLClass.CITYOBJECTGROUP))
+			if (landUse.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
 				dbExporterManager.putGmlId(landUse.getId(), landUseId, landUse.getCityGMLClass());
 			dbExporterManager.print(landUse);
 			return true;

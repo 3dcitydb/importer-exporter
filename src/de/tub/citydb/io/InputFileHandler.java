@@ -46,7 +46,7 @@ public class InputFileHandler implements EventListener {
 	private volatile boolean shouldRun = true;
 	
 	public InputFileHandler(EventDispatcher eventDispatcher) {
-		eventDispatcher.addListener(EventType.Interrupt, this);
+		eventDispatcher.addListener(EventType.INTERRUPT, this);
 	}
 	
 	public List<File> getFiles(String[] input) {
@@ -114,7 +114,7 @@ public class InputFileHandler implements EventListener {
 	
 	@Override
 	public void handleEvent(Event e) throws Exception {
-		if (e.getEventType() == EventType.Interrupt)
+		if (e.getEventType() == EventType.INTERRUPT)
 			shouldRun = false;
 	}
 

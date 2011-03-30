@@ -40,7 +40,7 @@ public class FeatureCounterEvent extends Event {
 	private HashMap<CityGMLClass, Long> featureCounterMap;
 
 	public FeatureCounterEvent(HashMap<CityGMLClass, Long> featureCounterMap) {
-		super(EventType.FeatureCounter);
+		super(EventType.FEATURE_COUNTER);
 		this.featureCounterMap = featureCounterMap;
 	}
 

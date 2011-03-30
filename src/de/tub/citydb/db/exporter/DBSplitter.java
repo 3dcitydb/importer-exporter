@@ -38,7 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.citygml4j.geometry.BoundingVolume;
+import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.concurrent.WorkerPool;
@@ -142,7 +142,7 @@ public class DBSplitter {
 			gmlNameFilter = gmlNameFilter.toUpperCase();
 
 		// bounding box filter
-		BoundingVolume bbox = boundingBoxFilter.getFilterState();		
+		BoundingBox bbox = boundingBoxFilter.getFilterState();		
 		config.getInternal().setUseInternalBBoxFilter(false);
 		if (bbox != null) {
 
@@ -188,7 +188,7 @@ public class DBSplitter {
 				//
 			}
 
-			if (!featureClassFilter.filter(CityGMLClass.CITYOBJECTGROUP)) {
+			if (!featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP)) {
 				queryCityObjectGroups();
 
 				if (shouldRun) {
@@ -232,22 +232,22 @@ public class DBSplitter {
 				case BUILDING:
 					tableName = DBTableEnum.BUILDING.toString();
 					break;
-				case CITYFURNITURE:
+				case CITY_FURNITURE:
 					tableName = DBTableEnum.CITY_FURNITURE.toString();
 					break;
-				case LANDUSE:
+				case LAND_USE:
 					tableName = DBTableEnum.LAND_USE.toString();
 					break;
-				case WATERBODY:
+				case WATER_BODY:
 					tableName = DBTableEnum.WATERBODY.toString();
 					break;
-				case PLANTCOVER:
+				case PLANT_COVER:
 					tableName = DBTableEnum.PLANT_COVER.toString();
 					break;
-				case SOLITARYVEGETATIONOBJECT:
+				case SOLITARY_VEGETATION_OBJECT:
 					tableName = DBTableEnum.SOLITARY_VEGETAT_OBJECT.toString();
 					break;
-				case TRANSPORTATIONCOMPLEX:
+				case TRANSPORTATION_COMPLEX:
 				case ROAD:
 				case RAILWAY:
 				case TRACK:
@@ -255,11 +255,11 @@ public class DBSplitter {
 					tableName = DBTableEnum.TRANSPORTATION_COMPLEX.toString();
 					additionalWhere = "co.CLASS_ID=" + Util.cityObject2classId(featureClass);
 					break;
-				case RELIEFFEATURE:
+				case RELIEF_FEATURE:
 					tableName = DBTableEnum.RELIEF_FEATURE.toString();
 					additionalWhere = "co.CLASS_ID=" + Util.cityObject2classId(featureClass);
 					break;
-				case GENERICCITYOBJECT:
+				case GENERIC_CITY_OBJECT:
 					tableName = DBTableEnum.GENERIC_CITYOBJECT.toString();
 					break;
 				default:
@@ -298,7 +298,7 @@ public class DBSplitter {
 				List<Integer> classIds = new ArrayList<Integer>();
 				List<CityGMLClass> allowedFeature = featureClassFilter.getNotFilterState();
 				for (CityGMLClass featureClass : allowedFeature) {
-					if (featureClass == CityGMLClass.CITYOBJECTGROUP)
+					if (featureClass == CityGMLClass.CITY_OBJECT_GROUP)
 						continue;
 
 					classIds.add(Util.cityObject2classId(featureClass));
@@ -401,7 +401,7 @@ public class DBSplitter {
 
 			List<CityGMLClass> allowedFeature = featureClassFilter.getNotFilterState();
 			for (CityGMLClass featureClass : allowedFeature) {
-				if (featureClass == CityGMLClass.CITYOBJECTGROUP)
+				if (featureClass == CityGMLClass.CITY_OBJECT_GROUP)
 					continue;
 
 				classIds.add(Util.cityObject2classId(featureClass));
@@ -562,7 +562,7 @@ public class DBSplitter {
 			}			
 
 			// finally export group itself
-			DBSplittingResult splitter = new DBSplittingResult(groupId, CityGMLClass.CITYOBJECTGROUP);
+			DBSplittingResult splitter = new DBSplittingResult(groupId, CityGMLClass.CITY_OBJECT_GROUP);
 			splitter.setCheckIfAlreadyExported(true);
 			dbWorkerPool.addWork(splitter);
 

@@ -44,7 +44,7 @@ import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import org.citygml4j.CityGMLContext;
+import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -59,8 +59,8 @@ import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.jaxb.JAXBContextRegistry;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.util.JAXBContextRegistry;
 
 public class ImpExp {
 
@@ -156,7 +156,7 @@ public class ImpExp {
 		config = new Config();
 		
 		try {
-			cityGMLContext = JAXBContextRegistry.registerInstance("org.citygml", new CityGMLContext().createJAXBContext());
+			cityGMLContext = JAXBContextRegistry.registerInstance("org.citygml", new JAXBBuilder().getJAXBContext());
 			kmlContext = JAXBContextRegistry.getInstance("net.opengis.kml._2");
 			colladaContext = JAXBContextRegistry.getInstance("org.collada._2005._11.colladaschema");
 			projectContext = JAXBContextRegistry.getInstance("de.tub.citydb.config.project");

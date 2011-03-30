@@ -33,14 +33,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.citygml4j.factory.CityGMLFactory;
+import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.building.Building;
 import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
-import org.citygml4j.model.citygml.core.CityGMLBase;
-import org.citygml4j.model.citygml.core.CityObject;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.generics.GenericCityObject;
 import org.citygml4j.model.citygml.landuse.LandUse;
 import org.citygml4j.model.citygml.relief.ReliefFeature;
@@ -48,8 +47,9 @@ import org.citygml4j.model.citygml.transportation.TransportationComplex;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
 import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
 import org.citygml4j.model.citygml.waterbody.WaterBody;
-import org.citygml4j.model.gml.AbstractFeature;
-import org.citygml4j.model.gml.Code;
+import org.citygml4j.model.gml.basicTypes.Code;
+import org.citygml4j.model.gml.feature.AbstractFeature;
+import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
 import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.config.Config;
@@ -83,14 +83,14 @@ import de.tub.citydb.filter.feature.GmlIdFilter;
 import de.tub.citydb.filter.feature.GmlNameFilter;
 import de.tub.citydb.log.Logger;
 
-public class DBImportWorker implements Worker<CityGMLBase> {
+public class DBImportWorker implements Worker<CityGML> {
 	private final Logger LOG = Logger.getInstance();
 
 	// instance members needed for WorkPool
 	private volatile boolean shouldRun = true;
 	private ReentrantLock runLock = new ReentrantLock();
-	private WorkQueue<CityGMLBase> workQueue = null;
-	private CityGMLBase firstWork;
+	private WorkQueue<CityGML> workQueue = null;
+	private CityGML firstWork;
 	private Thread workerThread = null;
 
 	// instance members needed to do work
@@ -99,7 +99,6 @@ public class DBImportWorker implements Worker<CityGMLBase> {
 	private final DBGmlIdLookupServerManager lookupServerManager;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
-	private final CityGMLFactory cityGMLFactory;
 	private final ImportFilter importFilter;
 	private Connection batchConn;
 	private Connection commitConn;
@@ -116,14 +115,12 @@ public class DBImportWorker implements Worker<CityGMLBase> {
 	public DBImportWorker(DBConnectionPool dbConnectionPool,
 			WorkerPool<DBXlink> tmpXlinkPool,
 			DBGmlIdLookupServerManager lookupServerManager,
-			CityGMLFactory cityGMLFactory,
 			ImportFilter importFilter,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.dbConnectionPool = dbConnectionPool;
 		this.tmpXlinkPool = tmpXlinkPool;
 		this.lookupServerManager = lookupServerManager;
-		this.cityGMLFactory = cityGMLFactory;
 		this.importFilter = importFilter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -156,7 +153,6 @@ public class DBImportWorker implements Worker<CityGMLBase> {
 				config,
 				tmpXlinkPool,
 				lookupServerManager,
-				cityGMLFactory,
 				eventDispatcher);
 
 		Integer commitAfterProp = database.getUpdateBatching().getFeatureBatchValue();
@@ -190,7 +186,7 @@ public class DBImportWorker implements Worker<CityGMLBase> {
 	}
 
 	@Override
-	public void setFirstWork(CityGMLBase firstWork) {
+	public void setFirstWork(CityGML firstWork) {
 		this.firstWork = firstWork;
 	}
 
@@ -200,7 +196,7 @@ public class DBImportWorker implements Worker<CityGMLBase> {
 	}
 
 	@Override
-	public void setWorkQueue(WorkQueue<CityGMLBase> workQueue) {
+	public void setWorkQueue(WorkQueue<CityGML> workQueue) {
 		this.workQueue = workQueue;
 	}
 
@@ -214,7 +210,7 @@ public class DBImportWorker implements Worker<CityGMLBase> {
 
 			while (shouldRun) {
 				try {
-					CityGMLBase work = workQueue.take();
+					CityGML work = workQueue.take();
 					doWork(work);
 				} catch (InterruptedException ie) {
 					// re-check state
@@ -229,13 +225,13 @@ public class DBImportWorker implements Worker<CityGMLBase> {
 			} catch (SQLException sqlEx) {
 				LOG.error("SQL error: " + sqlEx.getMessage());
 			}
-			
+
 			try {
 				dbImporterManager.close();
 			} catch (SQLException sqlEx) {
 				LOG.error("SQL error: " + sqlEx.getMessage());
 			}
-			
+
 			eventDispatcher.triggerEvent(new FeatureCounterEvent(dbImporterManager.getFeatureCounter()));
 			eventDispatcher.triggerEvent(new GeometryCounterEvent(dbImporterManager.getGeometryCounter()));
 		} finally {
@@ -261,7 +257,7 @@ public class DBImportWorker implements Worker<CityGMLBase> {
 		}
 	}
 
-	private void doWork(CityGMLBase work) {
+	private void doWork(CityGML work) {
 		final ReentrantLock runLock = this.runLock;
 		runLock.lock();
 
@@ -276,10 +272,10 @@ public class DBImportWorker implements Worker<CityGMLBase> {
 
 					DBAppearance dbAppearance = (DBAppearance)dbImporterManager.getDBImporter(DBImporterEnum.APPEARANCE);
 					if (dbAppearance != null)
-						id = dbAppearance.insert((Appearance)work, CityGMLClass.CITYMODEL, 0);
+						id = dbAppearance.insert((Appearance)work, CityGMLClass.CITY_MODEL, 0);
 
-				} else if (work.getCityGMLClass().childOrSelf(CityGMLClass.CITYOBJECT)){
-					CityObject cityObject = (CityObject)work;
+				} else if (CityGMLClass.ABSTRACT_CITY_OBJECT.isInstance(work.getCityGMLClass())) {
+					AbstractCityObject cityObject = (AbstractCityObject)work;
 
 					// gml:id filter
 					if (featureGmlIdFilter.isActive()) {
@@ -311,11 +307,16 @@ public class DBImportWorker implements Worker<CityGMLBase> {
 
 					// bounding box filter
 					// first of all compute bounding box for cityobject since we need it anyways
-					if (!cityObject.isSetBoundedBy())
-						cityObject.calcBoundedBy();
-					else
-						// re-work on this
-						cityObject.getBoundedBy().convertEnvelope();
+					if (!cityObject.isSetBoundedBy() || !cityObject.getBoundedBy().isSetEnvelope())
+						cityObject.calcBoundedBy(true);
+					else if (!cityObject.getBoundedBy().getEnvelope().isSetLowerCorner() ||
+							!cityObject.getBoundedBy().getEnvelope().isSetUpperCorner()){
+						Envelope envelope = cityObject.getBoundedBy().getEnvelope().convert3d();
+						if (envelope != null)
+							cityObject.getBoundedBy().setEnvelope(envelope);
+						else
+							cityObject.calcBoundedBy(true);
+					}
 
 					// filter
 					if (cityObject.isSetBoundedBy() && 
@@ -334,37 +335,37 @@ public class DBImportWorker implements Worker<CityGMLBase> {
 							id = dbBuilding.insert((Building)work);
 
 						break;
-					case CITYFURNITURE:
+					case CITY_FURNITURE:
 						DBCityFurniture dbCityFurniture = (DBCityFurniture)dbImporterManager.getDBImporter(DBImporterEnum.CITY_FURNITURE);
 						if (dbCityFurniture != null)
 							id = dbCityFurniture.insert((CityFurniture)work);
 
 						break;
-					case LANDUSE:
+					case LAND_USE:
 						DBLandUse dbLandUse = (DBLandUse)dbImporterManager.getDBImporter(DBImporterEnum.LAND_USE);
 						if (dbLandUse != null)
 							id = dbLandUse.insert( (LandUse)work);
 
 						break;
-					case WATERBODY:
+					case WATER_BODY:
 						DBWaterBody dbWaterBody = (DBWaterBody)dbImporterManager.getDBImporter(DBImporterEnum.WATERBODY);
 						if (dbWaterBody != null)
 							id = dbWaterBody.insert((WaterBody)work);
 
 						break;
-					case PLANTCOVER:
+					case PLANT_COVER:
 						DBPlantCover dbPlantCover = (DBPlantCover)dbImporterManager.getDBImporter(DBImporterEnum.PLANT_COVER);
 						if (dbPlantCover != null)
 							id = dbPlantCover.insert((PlantCover)work);
 
 						break;
-					case SOLITARYVEGETATIONOBJECT:
+					case SOLITARY_VEGETATION_OBJECT:
 						DBSolitaryVegetatObject dbSolVegObject = (DBSolitaryVegetatObject)dbImporterManager.getDBImporter(DBImporterEnum.SOLITARY_VEGETAT_OBJECT);
 						if (dbSolVegObject != null)
 							id = dbSolVegObject.insert((SolitaryVegetationObject)work);
 
 						break;
-					case TRANSPORTATIONCOMPLEX:
+					case TRANSPORTATION_COMPLEX:
 					case ROAD:
 					case RAILWAY:
 					case TRACK:
@@ -374,19 +375,19 @@ public class DBImportWorker implements Worker<CityGMLBase> {
 							id = dbTransComplex.insert((TransportationComplex)work);
 
 						break;
-					case RELIEFFEATURE:
+					case RELIEF_FEATURE:
 						DBReliefFeature dbReliefFeature = (DBReliefFeature)dbImporterManager.getDBImporter(DBImporterEnum.RELIEF_FEATURE);
 						if (dbReliefFeature != null)
 							id = dbReliefFeature.insert((ReliefFeature)work);
 
 						break;
-					case GENERICCITYOBJECT:
+					case GENERIC_CITY_OBJECT:
 						DBGenericCityObject dbGenericCityObject = (DBGenericCityObject)dbImporterManager.getDBImporter(DBImporterEnum.GENERIC_CITYOBJECT);
 						if (dbGenericCityObject != null)
 							id = dbGenericCityObject.insert((GenericCityObject)work);
 
 						break;
-					case CITYOBJECTGROUP:
+					case CITY_OBJECT_GROUP:
 						DBCityObjectGroup dbCityObjectGroup = (DBCityObjectGroup)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECTGROUP);
 						if (dbCityObjectGroup != null)
 							id = dbCityObjectGroup.insert((CityObjectGroup)work);

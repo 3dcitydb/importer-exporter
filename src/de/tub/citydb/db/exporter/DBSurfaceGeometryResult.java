@@ -29,8 +29,8 @@
  */
 package de.tub.citydb.db.exporter;
 
-import org.citygml4j.model.gml.AbstractGeometry;
 import org.citygml4j.model.gml.GMLClass;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
 
 public class DBSurfaceGeometryResult {
 	private AbstractGeometry abstractGeometry;

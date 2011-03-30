@@ -36,7 +36,7 @@ public class StatusDialogTitle extends Event {
 	private String title;
 	
 	public StatusDialogTitle(String title) {
-		super(EventType.StatusDialogTitle);
+		super(EventType.STATUS_DIALOG_TITLE);
 		this.title = title;
 	}
 

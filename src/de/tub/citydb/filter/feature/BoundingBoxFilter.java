@@ -32,10 +32,9 @@ package de.tub.citydb.filter.feature;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.citygml4j.geometry.BoundingVolume;
 import org.citygml4j.geometry.Point;
-import org.citygml4j.model.gml.DirectPosition;
-import org.citygml4j.model.gml.Envelope;
+import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
+import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
@@ -56,8 +55,8 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	private boolean useTiling;
 	private BoundingBox boundingBoxConfig;
 
-	private BoundingVolume boundingBox;
-	private BoundingVolume activeBoundingBox;
+	private org.citygml4j.geometry.BoundingBox boundingBox;
+	private org.citygml4j.geometry.BoundingBox activeBoundingBox;
 
 	private double rowHeight = 0;  
 	private double columnWidth = 0;
@@ -94,7 +93,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 			Double maxY = boundingBoxConfig.getUpperRightCorner().getY();
 
 			if (minX != null && minY != null && maxX != null && maxY != null) {
-				boundingBox = new BoundingVolume(
+				boundingBox = new org.citygml4j.geometry.BoundingBox (
 						new Point(minX, minY, 0),
 						new Point(maxX, maxY, 0)
 				);
@@ -195,7 +194,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 		return false;
 	}
 
-	public BoundingVolume getFilterState() {
+	public org.citygml4j.geometry.BoundingBox getFilterState() {
 		return activeBoundingBox;
 	}
 
@@ -213,7 +212,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 		double upperRightX = lowerLeftX + columnWidth;
 		double upperRightY = lowerLeftY + rowHeight;
 
-		activeBoundingBox = new BoundingVolume(
+		activeBoundingBox = new org.citygml4j.geometry.BoundingBox (
 				new Point(lowerLeftX, lowerLeftY, 0),
 				new Point(upperRightX, upperRightY, 0)
 		);

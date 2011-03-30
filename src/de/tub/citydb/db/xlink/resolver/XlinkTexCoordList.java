@@ -114,10 +114,10 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 
 			// step 2: check whether parent geometry exists... we need to do this
 			// since we require the database key for referencing
-			GmlIdEntry surfaceGeometryEntry = resolverManager.getDBId(parentGmlId, CityGMLClass.GMLGEOMETRY);
+			GmlIdEntry surfaceGeometryEntry = resolverManager.getDBId(parentGmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 			if (surfaceGeometryEntry == null || surfaceGeometryEntry.getId() == -1) {
 				StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
-						GMLClass.LINEARRING, 
+						GMLClass.LINEAR_RING, 
 						gmlId));
 				msg.append(": The element could not be assigned to an existing geometry object.");
 				

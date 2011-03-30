@@ -35,11 +35,12 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.waterbody.WaterBoundarySurface;
+import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.WaterSurface;
-import org.citygml4j.model.gml.SurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
 import de.tub.citydb.db.DBTableEnum;
+import de.tub.citydb.db.DBTypeValueEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
 
@@ -69,7 +70,7 @@ public class DBWaterBoundarySurface implements DBImporter {
 		bodyToSurfaceImporter = (DBWaterBodToWaterBndSrf)dbImporterManager.getDBImporter(DBImporterEnum.WATERBOD_TO_WATERBND_SRF);
 	}
 
-	public long insert(WaterBoundarySurface waterBoundarySurface, long parentId) throws SQLException {
+	public long insert(AbstractWaterBoundarySurface waterBoundarySurface, long parentId) throws SQLException {
 		long waterBoundarySurfaceId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
     	if (waterBoundarySurfaceId == 0)
     		return 0;
@@ -101,10 +102,10 @@ public class DBWaterBoundarySurface implements DBImporter {
 		}
 
 		// TYPE
-		psWaterBoundarySurface.setString(5, waterBoundarySurface.getCityGMLClass().toString());
+		psWaterBoundarySurface.setString(5, DBTypeValueEnum.fromCityGMLClass(waterBoundarySurface.getCityGMLClass()).toString());
 
 		// waterLevel
-		if (waterBoundarySurface.getCityGMLClass() == CityGMLClass.WATERSURFACE)
+		if (waterBoundarySurface.getCityGMLClass() == CityGMLClass.WATER_SURFACE)
 			psWaterBoundarySurface.setString(6, ((WaterSurface)waterBoundarySurface).getWaterLevel());
 		else
 			psWaterBoundarySurface.setNull(6, 0);

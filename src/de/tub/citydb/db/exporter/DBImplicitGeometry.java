@@ -38,21 +38,21 @@ import java.util.List;
 
 import oracle.spatial.geometry.JGeometry;
 
-import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.geometry.Matrix;
-import org.citygml4j.impl.jaxb.gml._3_1_1.GeometryPropertyImpl;
+import org.citygml4j.impl.citygml.core.ImplicitGeometryImpl;
+import org.citygml4j.impl.citygml.core.TransformationMatrix4x4Impl;
+import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.core.CoreModule;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
-import org.citygml4j.model.gml.GeometryProperty;
-import org.citygml4j.model.gml.PointProperty;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 
 import de.tub.citydb.db.xlink.DBXlinkLibraryObject;
 import de.tub.citydb.util.Util;
 
 public class DBImplicitGeometry implements DBExporter {
 	private final DBExporterManager dbExporterManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final Connection connection;
 
 	private PreparedStatement psImplicitGeometry;
@@ -60,9 +60,8 @@ public class DBImplicitGeometry implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBSdoGeometry sdoGeometry;
 
-	public DBImplicitGeometry(Connection connection, CityGMLFactory cityGMLFactory, DBExporterManager dbExporterManager) throws SQLException {
+	public DBImplicitGeometry(Connection connection, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
-		this.cityGMLFactory = cityGMLFactory;
 		this.dbExporterManager = dbExporterManager;
 
 		init();
@@ -74,7 +73,7 @@ public class DBImplicitGeometry implements DBExporter {
 		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);
 	}
 
-	public ImplicitGeometry read(long id, JGeometry referencePoint, String transformationMatrix, CoreModule core) throws SQLException {
+	public ImplicitGeometry read(long id, JGeometry referencePoint, String transformationMatrix) throws SQLException {
 		ResultSet rs = null;
 
 		try {		
@@ -82,7 +81,7 @@ public class DBImplicitGeometry implements DBExporter {
 			rs = psImplicitGeometry.executeQuery();
 
 			// ImplicitGeometry
-			ImplicitGeometry implicit = cityGMLFactory.createImplicitGeometry(core);
+			ImplicitGeometry implicit = new ImplicitGeometryImpl();
 			boolean isValid = false;
 
 			if (rs.next()) {
@@ -113,7 +112,7 @@ public class DBImplicitGeometry implements DBExporter {
 
 					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
 					if (geometry != null) {
-						GeometryProperty geometryProperty = new GeometryPropertyImpl();
+						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
 
 						if (geometry.getAbstractGeometry() != null)
 							geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -144,12 +143,12 @@ public class DBImplicitGeometry implements DBExporter {
 					Matrix matrix = new Matrix(4, 4);
 					matrix.setMatrix(m.subList(0, 16));
 
-					implicit.setTransformationMatrix(cityGMLFactory.createTransformationMatrix4x4(matrix, core));
+					implicit.setTransformationMatrix(new TransformationMatrix4x4Impl(matrix));
 				}
 			}
 
 			if (isValid) {
-				dbExporterManager.updateFeatureCounter(CityGMLClass.IMPLICITGEOMETRY);
+				dbExporterManager.updateFeatureCounter(CityGMLClass.IMPLICIT_GEOMETRY);
 				return implicit;
 			}
 

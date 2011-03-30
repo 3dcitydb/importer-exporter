@@ -72,7 +72,7 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 	public boolean insert(DBXlinkGroupToCityObject xlink) throws SQLException {
 		// for groupMembers, we do not only lookup gmlIds within the document, but also within
 		// the whole database!
-		GmlIdEntry cityObjectEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.CITYOBJECT, true);
+		GmlIdEntry cityObjectEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.ABSTRACT_CITY_OBJECT, true);
 		if (cityObjectEntry == null || cityObjectEntry.getId() == -1)
 			return false;
 
@@ -80,7 +80,7 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 			return true;
 
 		// be careful with cyclic groupings!
-		if (cityObjectEntry.getType() == CityGMLClass.CITYOBJECTGROUP) {
+		if (cityObjectEntry.getType() == CityGMLClass.CITY_OBJECT_GROUP) {
 			ResultSet rs = null;
 
 			try {

@@ -33,30 +33,31 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamResult;
 
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.geometry.BoundingVolume;
+import org.citygml4j.builder.jaxb.JAXBBuilder;
+import org.citygml4j.builder.jaxb.xml.io.writer.JAXBModelWriter;
+import org.citygml4j.builder.jaxb.xml.io.writer.JAXBOutputFactory;
+import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.CityGMLModule;
-import org.citygml4j.model.citygml.CityGMLModuleType;
-import org.citygml4j.model.citygml.appearance.AppearanceModule;
-import org.citygml4j.model.citygml.core.CityModel;
-import org.citygml4j.model.citygml.core.CoreModule;
-import org.citygml4j.model.citygml.generics.GenericsModule;
 import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.util.CityGMLModules;
+import org.citygml4j.model.module.Module;
+import org.citygml4j.model.module.ModuleContext;
+import org.citygml4j.model.module.citygml.AppearanceModule;
+import org.citygml4j.model.module.citygml.CityGMLModule;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
+import org.citygml4j.model.module.citygml.CoreModule;
+import org.citygml4j.util.xml.SAXEventBuffer;
+import org.citygml4j.util.xml.SAXWriter;
+import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.citygml4j.xml.io.writer.CityModelInfo;
 import org.xml.sax.SAXException;
 
 import de.tub.citydb.concurrent.DBExportWorkerFactory;
@@ -70,7 +71,6 @@ import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.exporter.ExportAppearance;
-import de.tub.citydb.config.project.exporter.ModuleVersion;
 import de.tub.citydb.config.project.filter.TileNameSuffixMode;
 import de.tub.citydb.config.project.filter.TileSuffixMode;
 import de.tub.citydb.config.project.filter.Tiling;
@@ -95,15 +95,12 @@ import de.tub.citydb.event.statistic.StatusDialogMessage;
 import de.tub.citydb.event.statistic.StatusDialogTitle;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.sax.SAXBuffer;
-import de.tub.citydb.sax.SAXWriter;
-import de.tub.citydb.sax.XMLHeaderWriter;
 import de.tub.citydb.util.Util;
 
 public class Exporter implements EventListener {
 	private final Logger LOG = Logger.getInstance();
 
-	private final JAXBContext jaxbContext;
+	private final JAXBBuilder jaxbBuilder;
 	private final DBConnectionPool dbPool;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -113,12 +110,11 @@ public class Exporter implements EventListener {
 	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
-	private SingleWorkerPool<SAXBuffer> ioWriterPool;
+	private SingleWorkerPool<SAXEventBuffer> ioWriterPool;
 	private WorkerPool<DBXlink> xlinkExporterPool;
 	private CacheManager cacheManager;
 	private DBGmlIdLookupServerManager lookupServerManager;
 	private ExportFilter exportFilter;
-	private CityGMLFactory cityGMLFactory;
 	private boolean useTiling;
 
 	private EnumMap<CityGMLClass, Long> totalFeatureCounterMap;
@@ -127,11 +123,11 @@ public class Exporter implements EventListener {
 	private EnumMap<GMLClass, Long> geometryCounterMap;
 
 	public Exporter(JAXBContext jaxbContext, DBConnectionPool dbPool, Config config, EventDispatcher eventDispatcher) {
-		this.jaxbContext = jaxbContext;
 		this.dbPool = dbPool;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
+		jaxbBuilder = new JAXBBuilder(jaxbContext);
 		featureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
 		geometryCounterMap = new EnumMap<GMLClass, Long>(GMLClass.class);
 		totalFeatureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
@@ -156,9 +152,9 @@ public class Exporter implements EventListener {
 		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdLookupServerBatchValue();		
 
 		// adding listeners
-		eventDispatcher.addListener(EventType.FeatureCounter, this);
-		eventDispatcher.addListener(EventType.GeometryCounter, this);
-		eventDispatcher.addListener(EventType.Interrupt, this);
+		eventDispatcher.addListener(EventType.FEATURE_COUNTER, this);
+		eventDispatcher.addListener(EventType.GEOMETRY_COUNTER, this);
+		eventDispatcher.addListener(EventType.INTERRUPT, this);
 
 		// checking workspace... this should be improved in future...
 		Workspace workspace = database.getWorkspaces().getExportWorkspace();
@@ -177,77 +173,29 @@ public class Exporter implements EventListener {
 				LOG.info("Switching to database workspace " + name + '.');
 		}
 
-		// create a saxWriter instance 
-		// define indent for xml output and namespace mappings
+		// set module context according to CityGML version and create SAX writer
+		CityGMLVersion version = config.getProject().getExporter().getCityGMLVersion().toCityGMLVersion();
+		ModuleContext moduleContext = new ModuleContext(version);
+		CityModelInfo cityModel = new CityModelInfo();
+
 		SAXWriter saxWriter = new SAXWriter();
+		saxWriter.setWriteEncoding(true);
 		saxWriter.setIndentString("  ");
-		saxWriter.forceNSDecl("http://www.opengis.net/gml", "gml");
-		saxWriter.forceNSDecl("http://www.w3.org/1999/xlink", "xlink");
-		saxWriter.forceNSDecl("http://www.w3.org/2001/SMIL20/", "smil20");
-		saxWriter.forceNSDecl("http://www.w3.org/2001/SMIL20/Language", "smil20lang");
-		saxWriter.forceNSDecl("urn:oasis:names:tc:ciq:xsdschema:xAL:2.0", "xAL");
-		saxWriter.forceNSDecl("http://www.w3.org/2001/XMLSchema-instance", "xsi");
+		saxWriter.setDefaultNamespace(moduleContext.getModule(CityGMLModuleType.CORE).getNamespaceURI());
 
-		for (CityGMLModule module : CityGMLModules.getModules())
-			saxWriter.suppressNSDecl(module.getNamespaceUri());
+		for (Module module : moduleContext.getModules()) {
+			if (module instanceof CoreModule)
+				continue;
 
-		// prepare namespace prefixes and schemaLocation attribute value...
-		ModuleVersion moduleVersion = config.getProject().getExporter().getModuleVersion();
-		List<CityGMLModule> moduleList = moduleVersion.getModules();
-		HashMap<String, String> schemaLocationMap = new HashMap<String, String>();
+			if (version != CityGMLVersion.v0_4_0 &&
+					!config.getProject().getExporter().getAppearances().isSetExportAppearance() &&
+					module instanceof AppearanceModule)
+				continue;
 
-		for (CityGMLModule module : moduleList) {
-			String namespaceUri = module.getNamespaceUri();
-			String schemaLocation = module.getSchemaLocation();
-
-			saxWriter.forceNSDecl(namespaceUri, module.getNamespacePrefix());
-			switch (module.getModuleType()) {
-			case BUILDING:
-			case CITYFURNITURE:
-			case CITYOBJECTGROUP:
-			case GENERICS:
-			case LANDUSE:
-			case RELIEF:
-			case TRANSPORTATION:
-			case VEGETATION:
-			case WATERBODY:
-				CoreModule core = (CoreModule)module.getModuleDependencies().getModule(CityGMLModuleType.CORE);
-				GenericsModule gen = (GenericsModule)CityGMLModules.getModuleByTypeAndVersion(CityGMLModuleType.GENERICS, core.getModuleVersion());
-
-				saxWriter.forceNSDecl(core.getNamespaceUri(), core.getNamespacePrefix());
-				saxWriter.forceNSDecl(gen.getNamespaceUri(), gen.getNamespacePrefix());
-
-				if (core.getSchemaLocation() != null)
-					schemaLocationMap.put(core.getNamespaceUri(), core.getNamespaceUri() + " " + core.getSchemaLocation());
-				if (gen.getSchemaLocation() != null)
-					schemaLocationMap.put(gen.getNamespaceUri(), gen.getNamespaceUri() + " " + gen.getSchemaLocation());
-
-				if (config.getProject().getExporter().getAppearances().isSetExportAppearance()) {
-					AppearanceModule app = (AppearanceModule)CityGMLModules.getModuleByTypeAndVersion(CityGMLModuleType.APPEARANCE, core.getModuleVersion());
-					saxWriter.forceNSDecl(app.getNamespaceUri(), app.getNamespacePrefix());
-
-					if (app.getSchemaLocation() != null)
-						schemaLocationMap.put(app.getNamespaceUri(), app.getNamespaceUri() + " " + app.getSchemaLocation());
-				}
-			}
-
-			if (schemaLocation != null)
-				schemaLocationMap.put(namespaceUri, namespaceUri + " " + module.getSchemaLocation());
+			saxWriter.setPrefix(module.getNamespacePrefix(), module.getNamespaceURI());
+			if (module instanceof CityGMLModule)
+				saxWriter.setSchemaLocation(module.getNamespaceURI(), module.getSchemaLocation());
 		}
-
-		if (moduleList.contains(CoreModule.v1_0_0))
-			saxWriter.forceNSDecl(CoreModule.v1_0_0.getNamespaceUri(), "");
-		else if (moduleList.contains(CoreModule.v0_4_0))
-			saxWriter.forceNSDecl(CoreModule.v0_4_0.getNamespaceUri(), "");
-
-		// create CityModel root element
-		cityGMLFactory = new CityGMLFactory();		
-		CityModel cm = cityGMLFactory.createCityModel(moduleVersion.getCore().getModule());
-		JAXBElement<?> cityModel = cityGMLFactory.cityGML2jaxb(cm);
-
-		Properties props = new Properties();
-		props.put(Marshaller.JAXB_FRAGMENT, new Boolean(true));
-		props.put(Marshaller.JAXB_SCHEMA_LOCATION, Util.collection2string(schemaLocationMap.values(), " "));
 
 		// checking file
 		Internal internalConfig = config.getInternal();
@@ -301,7 +249,7 @@ public class Exporter implements EventListener {
 						TileSuffixMode suffixMode = tiling.getTilePathSuffix();
 						String suffix = "";
 
-						BoundingVolume bbox = exportFilter.getBoundingBoxFilter().getFilterState();
+						BoundingBox bbox = exportFilter.getBoundingBoxFilter().getFilterState();
 						double minX = bbox.getLowerCorner().getX();
 						double minY = bbox.getLowerCorner().getY();
 						double maxX = bbox.getUpperCorner().getX();
@@ -398,18 +346,13 @@ public class Exporter implements EventListener {
 					}
 
 					// open file for writing
-					OutputStreamWriter fileWriter = null;
 					try {
-						Charset charset = Charset.forName("UTF-8");
-						fileWriter = new OutputStreamWriter(new FileOutputStream(file), charset);
+						OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+						saxWriter.setOutput(new StreamResult(fileWriter));
 					} catch (IOException ioE) {
 						LOG.error("Failed to open file '" + fileName + "' for writing: " + ioE.getMessage());
 						return false;
-					}
-
-					// reset SAXWriter
-					saxWriter.reset();
-					saxWriter.setWriter(fileWriter);				
+					}					
 
 					// create instance of temp table manager
 					cacheManager = new CacheManager(dbPool, maxThreads);
@@ -452,7 +395,7 @@ public class Exporter implements EventListener {
 							300,
 							false);
 
-					ioWriterPool = new SingleWorkerPool<SAXBuffer>(
+					ioWriterPool = new SingleWorkerPool<SAXEventBuffer>(
 							new IOWriterWorkerFactory(saxWriter),
 							100,
 							true);
@@ -461,12 +404,11 @@ public class Exporter implements EventListener {
 							minThreads,
 							maxThreads,
 							new DBExportWorkerFactory(
-									jaxbContext,
 									dbPool,
+									jaxbBuilder,
 									ioWriterPool,
 									xlinkExporterPool,
 									lookupServerManager,
-									cityGMLFactory,
 									exportFilter,
 									config,
 									eventDispatcher),
@@ -481,25 +423,25 @@ public class Exporter implements EventListener {
 					// ok, preparations done. inform user...
 					LOG.info("Exporting to file: " + file.getAbsolutePath());
 
-					// create file header
-					XMLHeaderWriter xmlHeader = new XMLHeaderWriter(saxWriter);
-
+					// write CityModel header element
+					JAXBModelWriter writer = null;
 					try {
-						xmlHeader.setRootElement(cityModel, jaxbContext, props);
-						xmlHeader.startRootElement();
-					} catch (JAXBException jaxBE) {
-						LOG.error("I/O error: " + jaxBE.getMessage());
-						return false;
-					} catch (SAXException saxE) {
-						LOG.error("I/O error: " + saxE.getMessage());
+						writer = new JAXBModelWriter(
+								saxWriter, 
+								(JAXBOutputFactory)jaxbBuilder.createCityGMLOutputFactory(moduleContext), 
+								moduleContext, 
+								cityModel);
+						writer.writeStartDocument();
+					} catch (CityGMLWriteException e) {
+						LOG.error("I/O error: " + e.getCause().getMessage());
 						return false;
 					}
 
 					// flush writer to make sure header has been written
 					try {
 						saxWriter.flush();
-					} catch (IOException ioE) {
-						LOG.error("I/O error: " + ioE.getMessage());
+					} catch (SAXException e) {
+						LOG.error("I/O error: " + e.getMessage());
 						return false;
 					}
 
@@ -532,18 +474,21 @@ public class Exporter implements EventListener {
 
 					// write footer element
 					try {
-						xmlHeader.endRootElement();
-					} catch (SAXException saxE) {
-						LOG.error("XML error: " + saxE.getMessage());
+						writer.writeEndDocument();
+					} catch (CityGMLWriteException e) {
+						LOG.error("I/O error: " + e.getCause().getMessage());
 						return false;
 					}
 
-					// flush sax writer and close file
+					// flush sax writer
 					try {
 						saxWriter.flush();
-						fileWriter.close();
-					} catch (IOException ioE) {
-						LOG.error("I/O error: " + ioE.getMessage());
+						saxWriter.getOutputWriter().close();
+					} catch (SAXException e) {
+						LOG.error("I/O error: " + e.getMessage());
+						return false;
+					} catch (IOException e) {
+						LOG.error("I/O error: " + e.getMessage());
 						return false;
 					}
 
@@ -598,7 +543,6 @@ public class Exporter implements EventListener {
 					geometryCounterMap.clear();
 
 				} finally {
-
 					if (cacheManager != null) {
 						try {
 							LOG.info("Cleaning temporary cache.");
@@ -632,7 +576,7 @@ public class Exporter implements EventListener {
 
 	@Override
 	public void handleEvent(Event e) throws Exception {
-		if (e.getEventType() == EventType.FeatureCounter) {
+		if (e.getEventType() == EventType.FEATURE_COUNTER) {
 			HashMap<CityGMLClass, Long> counterMap = ((FeatureCounterEvent)e).getCounter();
 
 			for (CityGMLClass type : counterMap.keySet()) {
@@ -655,7 +599,7 @@ public class Exporter implements EventListener {
 			}
 		}
 
-		else if (e.getEventType() == EventType.GeometryCounter) {
+		else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
 			HashMap<GMLClass, Long> counterMap = ((GeometryCounterEvent)e).getCounter();
 
 			for (GMLClass type : counterMap.keySet()) {
@@ -678,7 +622,7 @@ public class Exporter implements EventListener {
 			}
 		}
 
-		else if (e.getEventType() == EventType.Interrupt) {
+		else if (e.getEventType() == EventType.INTERRUPT) {
 			if (isInterrupted.compareAndSet(false, true)) {
 				shouldRun = false;
 

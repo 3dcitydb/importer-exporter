@@ -41,7 +41,8 @@ import oracle.sql.STRUCT;
 import org.citygml4j.model.citygml.building.BuildingFurniture;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
-import org.citygml4j.model.gml.GeometryProperty;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
@@ -139,7 +140,7 @@ public class DBBuildingFurniture implements DBImporter {
 		// Geometry		
 		long geometryId = 0;
 		if (buildingFurniture.isSetLod4Geometry()) {
-			GeometryProperty geometryProperty = buildingFurniture.getLod4Geometry();
+			GeometryProperty<? extends AbstractGeometry> geometryProperty = buildingFurniture.getLod4Geometry();
 			
 			if (geometryProperty.isSetGeometry()) {
 				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), buildingFurnitureId);
@@ -171,8 +172,8 @@ public class DBBuildingFurniture implements DBImporter {
 		String matrixString = null;
 		long implicitId = 0;
 
-		if (buildingFurniture.isSetLoD4ImplicitRepresentation()) {
-			ImplicitRepresentationProperty implicit = buildingFurniture.getLoD4ImplicitRepresentation();
+		if (buildingFurniture.isSetLod4ImplicitRepresentation()) {
+			ImplicitRepresentationProperty implicit = buildingFurniture.getLod4ImplicitRepresentation();
 
 			if (implicit.isSetObject()) {
 				ImplicitGeometry geometry = implicit.getObject();

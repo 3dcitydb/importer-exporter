@@ -30,9 +30,6 @@
 package de.tub.citydb.controller;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -40,16 +37,19 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.bind.ValidationEvent;
+import javax.xml.bind.ValidationEventHandler;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.citygml4j.factory.CityGMLFactory;
+import org.citygml4j.builder.jaxb.JAXBBuilder;
+import org.citygml4j.builder.jaxb.xml.io.reader.CityGMLChunk;
+import org.citygml4j.builder.jaxb.xml.io.reader.JAXBChunkReader;
+import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.core.CityGMLBase;
 import org.citygml4j.model.gml.GMLClass;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.citygml4j.xml.io.CityGMLInputFactory;
+import org.citygml4j.xml.io.reader.CityGMLReadException;
+import org.citygml4j.xml.io.reader.FeatureReadMode;
 
 import de.tub.citydb.concurrent.DBImportWorkerFactory;
 import de.tub.citydb.concurrent.DBImportXlinkResolverWorkerFactory;
@@ -62,7 +62,6 @@ import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Index;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.importer.ImportGmlId;
-import de.tub.citydb.config.project.importer.LocalXMLSchemaType;
 import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.db.cache.CacheManager;
@@ -84,39 +83,36 @@ import de.tub.citydb.event.statistic.GeometryCounterEvent;
 import de.tub.citydb.event.statistic.StatusDialogMessage;
 import de.tub.citydb.event.statistic.StatusDialogProgressBar;
 import de.tub.citydb.event.statistic.StatusDialogTitle;
+import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.filter.ImportFilter;
+import de.tub.citydb.filter.statistic.FeatureCounterFilter;
 import de.tub.citydb.io.InputFileHandler;
+import de.tub.citydb.log.LogLevelType;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.sax.SAXBuffer;
-import de.tub.citydb.sax.SAXErrorHandler;
-import de.tub.citydb.sax.SAXNamespaceMapper;
-import de.tub.citydb.sax.SAXSplitter;
 import de.tub.citydb.util.DBUtil;
 
 public class Importer implements EventListener {
 	private final Logger LOG = Logger.getInstance();
 
-	private final JAXBContext jaxbContext;
+	private final JAXBBuilder jaxbBuilder;
 	private final DBConnectionPool dbPool;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	private WorkerPool<CityGMLBase> dbWorkerPool;
-	private WorkerPool<SAXBuffer> featureWorkerPool;
+	private WorkerPool<CityGML> dbWorkerPool;
+	private WorkerPool<CityGMLChunk> featureWorkerPool;
 	private WorkerPool<DBXlink> tmpXlinkPool;
 	private WorkerPool<DBXlink> xlinkResolverPool;
 	private CacheManager cacheManager;
 	private DBXlinkSplitter tmpSplitter;
 	private SAXParserFactory factory;
 
-	private FileInputStream fileIn;
 	private volatile boolean shouldRun = true;
 	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private EnumMap<CityGMLClass, Long> featureCounterMap;
 	private EnumMap<GMLClass, Long> geometryCounterMap;
 	private long xmlValidationErrorCounter;
 	private DBGmlIdLookupServerManager lookupServerManager;
-	private CityGMLFactory cityGMLFactory;
 
 	private int runState;
 	private final int PARSING = 1;
@@ -126,11 +122,11 @@ public class Importer implements EventListener {
 			DBConnectionPool dbPool, 
 			Config config, 
 			EventDispatcher eventDispatcher) {
-		this.jaxbContext = jaxbContext;
 		this.dbPool = dbPool;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
+		jaxbBuilder = new JAXBBuilder(jaxbContext);
 		factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(true);
 
@@ -139,6 +135,11 @@ public class Importer implements EventListener {
 	}
 
 	public boolean doProcess() {
+		// adding listeners
+		eventDispatcher.addListener(EventType.FEATURE_COUNTER, this);
+		eventDispatcher.addListener(EventType.GEOMETRY_COUNTER, this);
+		eventDispatcher.addListener(EventType.INTERRUPT, this);
+
 		// get config shortcuts
 		de.tub.citydb.config.project.system.System system = config.getProject().getImporter().getSystem();
 		Database database = config.getProject().getDatabase();
@@ -153,11 +154,6 @@ public class Importer implements EventListener {
 
 		// gml:id lookup cache update
 		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdLookupServerBatchValue();
-
-		// adding listeners
-		eventDispatcher.addListener(EventType.FeatureCounter, this);
-		eventDispatcher.addListener(EventType.GeometryCounter, this);
-		eventDispatcher.addListener(EventType.Interrupt, this);
 
 		// checking workspace... this should be improved in future...
 		Workspace workspace = database.getWorkspaces().getImportWorkspace();
@@ -234,27 +230,39 @@ public class Importer implements EventListener {
 		LOG.info("List of import files successfully created.");
 		LOG.info(remainingFiles + " file(s) will be imported.");
 
-		// CityGML object factory
-		cityGMLFactory = new CityGMLFactory();
-
 		// import filter
 		ImportFilter importFilter = new ImportFilter(config);
 
+		// prepare CityGML input factory
+		CityGMLInputFactory in = null;
+		try {
+			in = jaxbBuilder.createCityGMLInputFactory();
+			in.setProperty(CityGMLInputFactory.FEATURE_READ_MODE, FeatureReadMode.SPLIT_PER_COLLECTION_MEMBER);
+			in.setProperty(CityGMLInputFactory.FAIL_ON_MISSING_ADE_SCHEMA, false);
+			in.setProperty(CityGMLInputFactory.PARSE_SCHEMA, false);
+		} catch (CityGMLReadException e) {
+			LOG.error("Failed to initialize CityGML parser. Aborting.");
+			return false;
+		}
+
 		// prepare XML validation 
 		XMLValidation xmlValidation = config.getProject().getImporter().getXMLValidation();
-		config.getInternal().setUseXMLValidation(xmlValidation.isSetUseXMLValidation());
-		if (shouldRun && xmlValidation.isSetUseXMLValidation()) {			
+		if (xmlValidation.isSetUseXMLValidation()) {			
 			LOG.info("Using XML validation during database import.");
-			eventDispatcher.addListener(EventType.Counter, this);
 
-			if (xmlValidation.getUseLocalSchemas().isSet()) {
-				LOG.info("Using local schema documents for XML validation.");
-				for (LocalXMLSchemaType schema : xmlValidation.getUseLocalSchemas().getSchemas())
-					if (schema != null)
-						LOG.info("Reading schema: " + schema.value());
-			} else
-				LOG.info("Using schema documents from xsi:schemaLocation attribute on root element.");
+			in.setProperty(CityGMLInputFactory.USE_VALIDATION, true);
+			in.setProperty(CityGMLInputFactory.PARSE_SCHEMA, true);
+
+			ValidationHandler validationHandler = new ValidationHandler();
+			validationHandler.allErrors = !xmlValidation.isSetReportOneErrorPerFeature();
+			in.setValidationEventHandler(validationHandler);
 		}
+
+		// prepare counter filter
+		FeatureCounterFilter counterFilter = new FeatureCounterFilter(config, FilterMode.IMPORT);
+		Long counterFirstElement = counterFilter.getFilterState().get(0);
+		Long counterLastElement = counterFilter.getFilterState().get(1);
+		long elementCounter = 0;
 
 		while (shouldRun && fileCounter < importFiles.size()) {
 			try {
@@ -321,13 +329,12 @@ public class Importer implements EventListener {
 						false);
 
 				// this pool basically works on the data import
-				dbWorkerPool = new WorkerPool<CityGMLBase>(
+				dbWorkerPool = new WorkerPool<CityGML>(
 						minThreads,
 						maxThreads,
 						new DBImportWorkerFactory(dbPool, 
 								tmpXlinkPool, 
 								lookupServerManager, 
-								cityGMLFactory, 
 								importFilter,
 								config, 
 								eventDispatcher),
@@ -335,50 +342,12 @@ public class Importer implements EventListener {
 								false);
 
 				// this worker pool parses the xml file and passes xml chunks to the dbworker pool
-				featureWorkerPool = new WorkerPool<SAXBuffer>(
+				featureWorkerPool = new WorkerPool<CityGMLChunk>(
 						minThreads,
 						maxThreads,
-						new FeatureReaderWorkerFactory(jaxbContext, dbWorkerPool, cityGMLFactory, eventDispatcher, config),
+						new FeatureReaderWorkerFactory(dbWorkerPool, eventDispatcher),
 						queueSize,
 						false);
-
-				// create a new XML parser
-				XMLReader reader = null;
-				try {
-					reader = factory.newSAXParser().getXMLReader();
-				} catch (SAXException saxE) {
-					LOG.error("I/O error: " + saxE.getMessage());
-					shouldRun = false;
-					continue;
-				} catch (ParserConfigurationException pcE) {
-					LOG.error("I/O error: " + pcE.getMessage());
-					shouldRun = false;
-					continue;
-				}
-
-				// prepare a xml splitter
-				SAXSplitter splitter = new SAXSplitter(featureWorkerPool, config, eventDispatcher);
-
-				// prepare an xml errorHandler
-				SAXErrorHandler errorHandler = new SAXErrorHandler();
-
-				// prepare namespaceFilter used for mapping xml namespaces
-				SAXNamespaceMapper nsMapper = new SAXNamespaceMapper(reader);
-				nsMapper.setNamespaceMapping("http://www.citygml.org/citygml/0/3/0", "http://www.citygml.org/citygml/1/0/0");
-				nsMapper.setNamespaceMapping("http://www.citygml.org/citygml/0/4/0", "http://www.citygml.org/citygml/1/0/0");
-
-				// connect both components
-				nsMapper.setContentHandler(splitter);
-				nsMapper.setErrorHandler(errorHandler);
-
-				// open stream on input file
-				try {
-					if (shouldRun)
-						fileIn = new FileInputStream(file);
-				} catch (FileNotFoundException e1) {
-					LOG.error("I/O error: " + e1.getMessage());
-					continue;
-				}
 
 				// prestart threads
 				tmpXlinkPool.prestartCoreWorkers();
@@ -386,35 +355,49 @@ public class Importer implements EventListener {
 				featureWorkerPool.prestartCoreWorkers();
 
 				// ok, preparation done. inform user and  start parsing the input file
+				JAXBChunkReader reader = null;
 				try {
-					if (shouldRun) {
-						LOG.info("Importing file: " + file.toString());						
-						nsMapper.parse(new InputSource(fileIn));
-					}
-				} catch (IOException ioE) {
-					// we catch "Read error" and "Bad file descriptor" because we produce these ones when interrupting the import
-					if (!(ioE.getMessage().equals("Read error") || ioE.getMessage().equals("Bad file descriptor"))) {
-						LOG.error("I/O error: " + ioE.getMessage());
-						xmlValidationErrorCounter++;
-					}						
-				} catch (SAXException saxE) {
-					xmlValidationErrorCounter++;
+					reader = (JAXBChunkReader)in.createCityGMLReader(file);	
+					LOG.info("Importing file: " + file.toString());						
+
+					while (shouldRun && reader.hasNextChunk()) {
+						CityGMLChunk chunk = reader.nextChunk();
+
+						if (counterFilter.isActive()) {
+							elementCounter++;
+							
+							if (counterFirstElement != null && elementCounter < counterFirstElement)
+								continue;
+
+							if (counterLastElement != null && elementCounter > counterLastElement)					
+								break;							
+						}
+
+						featureWorkerPool.addWork(chunk);
+					}					
+				} catch (CityGMLReadException e) {
+					LOG.error("Fatal CityGML parser error: " + e.getCause().getMessage());
+					return false;
 				}
 
 				// we are done with parsing. so shutdown the workers
 				// xlink pool is not shutdown because we need it afterwards
 				try {
 					featureWorkerPool.shutdownAndWait();
-					dbWorkerPool.shutdownAndWait();
-					tmpXlinkPool.join();
 				} catch (InterruptedException ie) {
 					//
 				}
 
 				try {
-					if (fileIn != null)
-						fileIn.close();
-				} catch (IOException e) {
+					reader.close();
+				} catch (CityGMLReadException e) {
+					//
+				}
+
+				try {
+					dbWorkerPool.shutdownAndWait();
+					tmpXlinkPool.join();
+				} catch (InterruptedException ie) {
 					//
 				}
 
@@ -598,7 +581,7 @@ public class Importer implements EventListener {
 	// react on events we are receiving via the eventDispatcher
 	@Override
 	public void handleEvent(Event e) throws Exception {
-		if (e.getEventType() == EventType.FeatureCounter) {
+		if (e.getEventType() == EventType.FEATURE_COUNTER) {
 			HashMap<CityGMLClass, Long> counterMap = ((FeatureCounterEvent)e).getCounter();
 
 			for (CityGMLClass type : counterMap.keySet()) {
@@ -612,7 +595,7 @@ public class Importer implements EventListener {
 			}
 		}
 
-		else if (e.getEventType() == EventType.GeometryCounter) {
+		else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
 			HashMap<GMLClass, Long> counterMap = ((GeometryCounterEvent)e).getCounter();
 
 			for (GMLClass type : counterMap.keySet()) {
@@ -626,11 +609,10 @@ public class Importer implements EventListener {
 			}
 		}
 
-		else if (e.getEventType() == EventType.Interrupt) {
+		else if (e.getEventType() == EventType.INTERRUPT) {
 			if (isInterrupted.compareAndSet(false, true)) {
 				switch (((InterruptEvent)e).getInterruptType()) {
-				case READ_SCHEMA_ERROR:
-					xmlValidationErrorCounter++;
+				case ADE_SCHEMA_READ_ERROR:
 				case USER_ABORT:
 					shouldRun = false;
 					break;
@@ -640,21 +622,53 @@ public class Importer implements EventListener {
 				if (log != null)
 					LOG.log(((InterruptEvent)e).getLogLevelType(), log);
 
-				if (runState == PARSING && fileIn != null)
-					try {
-						fileIn.close();
-					} catch (IOException ioE) {
-						//
-					}
-					else if (runState == XLINK_RESOLVING && tmpSplitter != null)
-						tmpSplitter.shutdown();
+				if (runState ==  XLINK_RESOLVING && tmpSplitter != null)
+					tmpSplitter.shutdown();
 			}
 		}
+	}
 
-		else if (e.getEventType() == EventType.Counter && 
-				((CounterEvent)e).getType() == CounterType.XML_VALIDATION_ERROR) {
-			xmlValidationErrorCounter += ((CounterEvent)e).getCounter();
+	private final class ValidationHandler implements ValidationEventHandler {
+		boolean allErrors = false;
+
+		@Override
+		public boolean handleEvent(ValidationEvent event) {
+			if (!event.getMessage().startsWith("cvc"))
+				return true;
+
+			StringBuilder msg = new StringBuilder();
+			LogLevelType type;
+
+			switch (event.getSeverity()) {
+			case ValidationEvent.FATAL_ERROR:
+			case ValidationEvent.ERROR:
+				msg.append("Invalid content");
+				type = LogLevelType.ERROR;
+				break;
+			case ValidationEvent.WARNING:
+				msg.append("Warning");
+				type = LogLevelType.WARN;
+				break;
+			default:
+				return allErrors;
+			}
+
+			if (event.getLocator() != null) {
+				msg.append(" at [")
+				.append(event.getLocator().getLineNumber())
+				.append(", ")
+				.append(event.getLocator().getColumnNumber())
+				.append("]");
+			}
+
+			msg.append(": ");
+			msg.append(event.getMessage());
+			LOG.log(type, msg.toString());
+
+			xmlValidationErrorCounter++;
+			return allErrors;
 		}
+
 	}
 
 }

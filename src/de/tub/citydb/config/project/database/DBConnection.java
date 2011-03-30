@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.util.UUIDManager;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 @XmlType(name="ConnectionType", propOrder={
 		"description",
@@ -65,7 +65,7 @@ public class DBConnection implements Comparable<DBConnection> {
 	private DBMetaData metaData;
 		
 	public DBConnection() {
-		id = UUIDManager.randomUUID();
+		id = DefaultGMLIdManager.getInstance().generateUUID();
 	}
 	
 	public String getId() {

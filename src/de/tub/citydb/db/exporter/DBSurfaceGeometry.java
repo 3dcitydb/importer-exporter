@@ -41,47 +41,47 @@ import java.util.Vector;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.impl.jaxb.gml._3_1_1.CompositeSolidImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.CompositeSurfaceImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.DirectPositionListImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.ExteriorImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.InteriorImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.LinearRingImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.MultiSolidImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.MultiSurfaceImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.OrientableSurfaceImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.PolygonImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.SolidImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.SolidPropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.SurfacePropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.TriangleImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.TrianglePatchArrayPropertyImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.TriangulatedSurfaceImpl;
+import org.citygml4j.impl.gml.geometry.aggregates.MultiSolidImpl;
+import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfaceImpl;
+import org.citygml4j.impl.gml.geometry.complexes.CompositeSolidImpl;
+import org.citygml4j.impl.gml.geometry.complexes.CompositeSurfaceImpl;
+import org.citygml4j.impl.gml.geometry.primitives.DirectPositionListImpl;
+import org.citygml4j.impl.gml.geometry.primitives.ExteriorImpl;
+import org.citygml4j.impl.gml.geometry.primitives.InteriorImpl;
+import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
+import org.citygml4j.impl.gml.geometry.primitives.OrientableSurfaceImpl;
+import org.citygml4j.impl.gml.geometry.primitives.PolygonImpl;
+import org.citygml4j.impl.gml.geometry.primitives.SolidImpl;
+import org.citygml4j.impl.gml.geometry.primitives.SolidPropertyImpl;
+import org.citygml4j.impl.gml.geometry.primitives.SurfacePropertyImpl;
+import org.citygml4j.impl.gml.geometry.primitives.TriangleImpl;
+import org.citygml4j.impl.gml.geometry.primitives.TrianglePatchArrayPropertyImpl;
+import org.citygml4j.impl.gml.geometry.primitives.TriangulatedSurfaceImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.gml.AbstractGeometry;
-import org.citygml4j.model.gml.AbstractSolid;
-import org.citygml4j.model.gml.AbstractSurface;
-import org.citygml4j.model.gml.CompositeSolid;
-import org.citygml4j.model.gml.CompositeSurface;
-import org.citygml4j.model.gml.DirectPositionList;
-import org.citygml4j.model.gml.Exterior;
 import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.Interior;
-import org.citygml4j.model.gml.LinearRing;
-import org.citygml4j.model.gml.MultiSolid;
-import org.citygml4j.model.gml.MultiSurface;
-import org.citygml4j.model.gml.OrientableSurface;
-import org.citygml4j.model.gml.Polygon;
-import org.citygml4j.model.gml.Solid;
-import org.citygml4j.model.gml.SolidProperty;
-import org.citygml4j.model.gml.SurfaceProperty;
-import org.citygml4j.model.gml.Triangle;
-import org.citygml4j.model.gml.TrianglePatchArrayProperty;
-import org.citygml4j.model.gml.TriangulatedSurface;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
+import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
+import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
+import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
+import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
+import org.citygml4j.model.gml.geometry.primitives.DirectPositionList;
+import org.citygml4j.model.gml.geometry.primitives.Exterior;
+import org.citygml4j.model.gml.geometry.primitives.Interior;
+import org.citygml4j.model.gml.geometry.primitives.LinearRing;
+import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
+import org.citygml4j.model.gml.geometry.primitives.Polygon;
+import org.citygml4j.model.gml.geometry.primitives.Solid;
+import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
+import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.Triangle;
+import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
+import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.UUIDManager;
 
 public class DBSurfaceGeometry implements DBExporter {
 	private final Logger LOG = Logger.getInstance();
@@ -193,11 +193,11 @@ public class DBSurfaceGeometry implements DBExporter {
 
 			if (!geomNode.isTriangulated) {
 				if (!geomNode.isSolid && geomNode.isComposite)
-					surfaceGeometryType = GMLClass.COMPOSITESURFACE;
+					surfaceGeometryType = GMLClass.COMPOSITE_SURFACE;
 				else if (geomNode.isSolid && !geomNode.isComposite)
 					surfaceGeometryType = GMLClass.SOLID;
 				else if (geomNode.isSolid && geomNode.isComposite)
-					surfaceGeometryType = GMLClass.COMPOSITESOLID;
+					surfaceGeometryType = GMLClass.COMPOSITE_SOLID;
 				else if (!geomNode.isSolid && !geomNode.isComposite) {
 					boolean isMultiSolid = true;
 					for (GeometryNode childNode : geomNode.childNodes) {
@@ -208,12 +208,12 @@ public class DBSurfaceGeometry implements DBExporter {
 					}
 
 					if (isMultiSolid) 
-						surfaceGeometryType = GMLClass.MULTISOLID;
+						surfaceGeometryType = GMLClass.MULTI_SOLID;
 					else
-						surfaceGeometryType = GMLClass.MULTISURFACE;
+						surfaceGeometryType = GMLClass.MULTI_SURFACE;
 				}
 			} else
-				surfaceGeometryType = GMLClass.TRIANGULATEDSURFACE;
+				surfaceGeometryType = GMLClass.TRIANGULATED_SURFACE;
 		}
 
 		// return if we cannot identify the geometry
@@ -225,7 +225,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		// check for xlinks
 		if (geomNode.gmlId != null) {
 			if (geomNode.isXlink) {
-				if (dbExporterManager.lookupAndPutGmlId(geomNode.gmlId, geomNode.id, CityGMLClass.GMLGEOMETRY)) {
+				if (dbExporterManager.lookupAndPutGmlId(geomNode.gmlId, geomNode.id, CityGMLClass.ABSTRACT_GML_GEOMETRY)) {
 
 					if (useXLink) {
 						// check whether we have to embrace the geometry with an orientableSurface
@@ -235,14 +235,14 @@ public class DBSurfaceGeometry implements DBExporter {
 							surfaceProperty.setHref("#" + geomNode.gmlId); 
 							orientableSurface.setBaseSurface(surfaceProperty);
 							orientableSurface.setOrientation("-");
-							dbExporterManager.updateGeometryCounter(GMLClass.ORIENTABLESURFACE);
+							dbExporterManager.updateGeometryCounter(GMLClass.ORIENTABLE_SURFACE);
 
 							return new DBSurfaceGeometryResult(orientableSurface);
 						} else
 							return new DBSurfaceGeometryResult("#" + geomNode.gmlId, surfaceGeometryType);
 					} else {
 						geomNode.isXlink = false;
-						String newGmlId = UUIDManager.randomUUID(gmlIdPrefix);
+						String newGmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
 						if (appendOldGmlId)
 							newGmlId += '-' + geomNode.gmlId;
 
@@ -251,9 +251,8 @@ public class DBSurfaceGeometry implements DBExporter {
 					}
 
 				}
-			} else if (exportAppearance) {
-				dbExporterManager.putGmlId(geomNode.gmlId, geomNode.id, CityGMLClass.GMLGEOMETRY);
-			}
+			} else if (exportAppearance)
+				dbExporterManager.putGmlId(geomNode.gmlId, geomNode.id, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 		}
 
 		// check whether we have to initialize an orientableSurface
@@ -324,7 +323,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					polygon.setExterior(exterior);
 
 					isExterior = false;
-					dbExporterManager.updateGeometryCounter(GMLClass.LINEARRING);
+					dbExporterManager.updateGeometryCounter(GMLClass.LINEAR_RING);
 				} else {
 					LinearRing linearRing = new LinearRingImpl();
 					DirectPositionList directPositionList = new DirectPositionListImpl();
@@ -340,7 +339,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					interior.setRing(linearRing);
 					polygon.addInterior(interior);
 
-					dbExporterManager.updateGeometryCounter(GMLClass.LINEARRING);
+					dbExporterManager.updateGeometryCounter(GMLClass.LINEAR_RING);
 				}
 
 				ringElem = ringLimit;
@@ -354,7 +353,7 @@ public class DBSurfaceGeometry implements DBExporter {
 				surfaceProperty.setSurface(polygon);
 				orientableSurface.setBaseSurface(surfaceProperty);
 				orientableSurface.setOrientation("-");
-				dbExporterManager.updateGeometryCounter(GMLClass.ORIENTABLESURFACE);
+				dbExporterManager.updateGeometryCounter(GMLClass.ORIENTABLE_SURFACE);
 
 				return new DBSurfaceGeometryResult(orientableSurface);
 			} else
@@ -362,7 +361,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		}
 
 		// compositeSurface
-		else if (surfaceGeometryType == GMLClass.COMPOSITESURFACE) {
+		else if (surfaceGeometryType == GMLClass.COMPOSITE_SURFACE) {
 			CompositeSurface compositeSurface = new CompositeSurfaceImpl();
 
 			if (geomNode.gmlId != null)
@@ -378,9 +377,9 @@ public class DBSurfaceGeometry implements DBExporter {
 					if (absGeom != null) {
 						switch (geomMember.getType()) {
 						case POLYGON:
-						case ORIENTABLESURFACE:
-						case COMPOSITESURFACE:
-						case TRIANGULATEDSURFACE:
+						case ORIENTABLE_SURFACE:
+						case COMPOSITE_SURFACE:
+						case TRIANGULATED_SURFACE:
 							surfaceMember.setSurface((AbstractSurface)absGeom);
 							break;						
 						default:
@@ -403,7 +402,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					surfaceProperty.setSurface(compositeSurface);
 					orientableSurface.setBaseSurface(surfaceProperty);
 					orientableSurface.setOrientation("-");
-					dbExporterManager.updateGeometryCounter(GMLClass.ORIENTABLESURFACE);
+					dbExporterManager.updateGeometryCounter(GMLClass.ORIENTABLE_SURFACE);
 
 					return new DBSurfaceGeometryResult(orientableSurface);
 				} else
@@ -414,7 +413,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		}
 
 		// compositeSolid
-		else if (surfaceGeometryType == GMLClass.COMPOSITESOLID) {
+		else if (surfaceGeometryType == GMLClass.COMPOSITE_SOLID) {
 			CompositeSolid compositeSolid = new CompositeSolidImpl();
 
 			if (geomNode.gmlId != null)
@@ -430,7 +429,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					if (absGeom != null) {					
 						switch (geomMember.getType()) {
 						case SOLID:
-						case COMPOSITESOLID:
+						case COMPOSITE_SOLID:
 							solidMember.setSolid((AbstractSolid)absGeom);
 							break;
 						default:
@@ -469,8 +468,8 @@ public class DBSurfaceGeometry implements DBExporter {
 
 					if (absGeom != null) {
 						switch (geomMember.getType()) {
-						case COMPOSITESURFACE:
-						case ORIENTABLESURFACE:
+						case COMPOSITE_SURFACE:
+						case ORIENTABLE_SURFACE:
 							surfaceProperty.setSurface((AbstractSurface)absGeom);
 							break;
 						default:
@@ -492,7 +491,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		}
 
 		// multiSolid
-		else if (surfaceGeometryType == GMLClass.MULTISOLID) {
+		else if (surfaceGeometryType == GMLClass.MULTI_SOLID) {
 			MultiSolid multiSolid = new MultiSolidImpl();
 
 			if (geomNode.gmlId != null)
@@ -508,7 +507,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					if (absGeom != null) {
 						switch (geomMember.getType()) {
 						case SOLID:
-						case COMPOSITESOLID:
+						case COMPOSITE_SOLID:
 							solidMember.setSolid((AbstractSolid)absGeom);
 							break;
 						default:
@@ -531,7 +530,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		}
 
 		// multiSurface
-		else if (surfaceGeometryType == GMLClass.MULTISURFACE){
+		else if (surfaceGeometryType == GMLClass.MULTI_SURFACE){
 			MultiSurface multiSurface = new MultiSurfaceImpl();
 
 			if (geomNode.gmlId != null)
@@ -547,9 +546,9 @@ public class DBSurfaceGeometry implements DBExporter {
 					if (absGeom != null) {
 						switch (geomMember.getType()) {
 						case POLYGON:
-						case ORIENTABLESURFACE:
-						case COMPOSITESURFACE:
-						case TRIANGULATEDSURFACE:
+						case ORIENTABLE_SURFACE:
+						case COMPOSITE_SURFACE:
+						case TRIANGULATED_SURFACE:
 							surfaceMember.setSurface((AbstractSurface)absGeom);
 							break;
 						default:
@@ -571,7 +570,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		}
 
 		// triangulatedSurface
-		else if (surfaceGeometryType == GMLClass.TRIANGULATEDSURFACE) {
+		else if (surfaceGeometryType == GMLClass.TRIANGULATED_SURFACE) {
 			TriangulatedSurface triangulatedSurface = new TriangulatedSurfaceImpl();
 
 			if (geomNode.gmlId != null)
@@ -614,7 +613,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					surfaceProperty.setSurface(triangulatedSurface);
 					orientableSurface.setBaseSurface(surfaceProperty);
 					orientableSurface.setOrientation("-");
-					dbExporterManager.updateGeometryCounter(GMLClass.ORIENTABLESURFACE);
+					dbExporterManager.updateGeometryCounter(GMLClass.ORIENTABLE_SURFACE);
 
 					return new DBSurfaceGeometryResult(orientableSurface);
 				} else

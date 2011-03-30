@@ -77,9 +77,9 @@ import de.tub.citydb.gui.components.JTextFieldLimit;
 import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
 import de.tub.citydb.gui.util.GuiUtil;
-import de.tub.citydb.jaxb.JAXBContextRegistry;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.DBUtil;
+import de.tub.citydb.util.JAXBContextRegistry;
 
 @SuppressWarnings("serial")
 public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener, DropTargetListener {

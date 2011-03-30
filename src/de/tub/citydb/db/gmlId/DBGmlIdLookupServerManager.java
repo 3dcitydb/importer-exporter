@@ -60,7 +60,7 @@ public class DBGmlIdLookupServerManager {
 		DBGmlIdLookupServerEnum lookupServer;
 
 		switch (type) {
-		case GMLGEOMETRY:
+		case ABSTRACT_GML_GEOMETRY:
 			lookupServer = DBGmlIdLookupServerEnum.GEOMETRY;
 			break;
 		default:

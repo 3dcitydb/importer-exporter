@@ -34,38 +34,38 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.geometry.BoundingVolume;
+import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.geometry.Point;
-import org.citygml4j.impl.jaxb.gml._3_1_1.BoundingShapeImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.EnvelopeImpl;
+import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
+import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
+import org.citygml4j.impl.citygml.generics.DateAttributeImpl;
+import org.citygml4j.impl.citygml.generics.DoubleAttributeImpl;
+import org.citygml4j.impl.citygml.generics.IntAttributeImpl;
+import org.citygml4j.impl.citygml.generics.StringAttributeImpl;
+import org.citygml4j.impl.citygml.generics.UriAttributeImpl;
+import org.citygml4j.impl.gml.feature.BoundingShapeImpl;
+import org.citygml4j.impl.gml.geometry.primitives.EnvelopeImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.CityGMLModuleType;
-import org.citygml4j.model.citygml.core.CityObject;
-import org.citygml4j.model.citygml.core.CoreModule;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
-import org.citygml4j.model.citygml.generics.GenericAttribute;
-import org.citygml4j.model.citygml.generics.GenericDateAttribute;
-import org.citygml4j.model.citygml.generics.GenericDoubleAttribute;
-import org.citygml4j.model.citygml.generics.GenericIntAttribute;
-import org.citygml4j.model.citygml.generics.GenericStringAttribute;
-import org.citygml4j.model.citygml.generics.GenericUriAttribute;
-import org.citygml4j.model.citygml.generics.GenericsModule;
-import org.citygml4j.model.gml.BoundingShape;
-import org.citygml4j.model.gml.Envelope;
-import org.citygml4j.util.CityGMLModules;
+import org.citygml4j.model.citygml.generics.AbstractGenericAttribute;
+import org.citygml4j.model.citygml.generics.DateAttribute;
+import org.citygml4j.model.citygml.generics.DoubleAttribute;
+import org.citygml4j.model.citygml.generics.IntAttribute;
+import org.citygml4j.model.citygml.generics.StringAttribute;
+import org.citygml4j.model.citygml.generics.UriAttribute;
+import org.citygml4j.model.gml.feature.BoundingShape;
+import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.Tiling;
@@ -80,7 +80,6 @@ public class DBCityObject implements DBExporter {
 	private final Logger LOG = Logger.getInstance();
 
 	private final DBExporterManager dbExporterManager;
-	private final CityGMLFactory cityGMLFactory;
 	private final Config config;
 	private final Connection connection;
 
@@ -95,7 +94,7 @@ public class DBCityObject implements DBExporter {
 	private boolean setTileInfoAsGenericAttribute;
 	private boolean transformCoords;
 	private BoundingBoxFilter boundingBoxFilter;
-	private BoundingVolume activeTile;
+	private BoundingBox activeTile;
 	private Tiling tiling;
 	private DatatypeFactory datatypeFactory;
 
@@ -103,9 +102,8 @@ public class DBCityObject implements DBExporter {
 	private HashSet<Long> externalReferenceSet;
 	private HashSet<Long> genericAttributeSet;
 
-	public DBCityObject(Connection connection, CityGMLFactory cityGMLFactory, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBCityObject(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
-		this.cityGMLFactory = cityGMLFactory;
 		this.config = config;
 		this.connection = connection;
 		this.boundingBoxFilter = exportFilter.getBoundingBoxFilter();
@@ -158,19 +156,16 @@ public class DBCityObject implements DBExporter {
 	}
 
 
-	public boolean read(CityObject cityObject, long parentId) throws SQLException {
+	public boolean read(AbstractCityObject cityObject, long parentId) throws SQLException {
 		return read(cityObject, parentId, false);
 	}
 
-	public boolean read(CityObject cityObject, long parentId, boolean isTopLevelObject) throws SQLException {
+	public boolean read(AbstractCityObject cityObject, long parentId, boolean isTopLevelObject) throws SQLException {
 		ResultSet rs = null;
 
 		try {
 			psCityObject.setLong(1, parentId);
 			rs = psCityObject.executeQuery();
-
-			CoreModule core = (CoreModule)cityObject.getCityGMLModule().getModuleDependencies().getModule(CityGMLModuleType.CORE);
-			GenericsModule gen = (GenericsModule)CityGMLModules.getModuleByTypeAndVersion(CityGMLModuleType.GENERICS, core.getModuleVersion());
 
 			if (rs.next()) {
 				generalizesToSet.clear();
@@ -227,11 +222,7 @@ public class DBCityObject implements DBExporter {
 					gregDate.setTime(creationDate);
 
 					if (datatypeFactory != null)
-						cityObject.setCreationDate(datatypeFactory.newXMLGregorianCalendarDate(
-								gregDate.get(Calendar.YEAR),
-								gregDate.get(Calendar.MONTH) + 1,
-								gregDate.get(Calendar.DAY_OF_MONTH),
-								DatatypeConstants.FIELD_UNDEFINED));
+						cityObject.setCreationDate(gregDate);
 					else
 						LOG.error(Util.getFeatureSignature(cityObject.getCityGMLClass(), cityObject.getId()) + 
 						": Failed to write attribute 'creationDate' due to an internal error.");
@@ -244,11 +235,7 @@ public class DBCityObject implements DBExporter {
 					gregDate.setTime(terminationDate);
 
 					if (datatypeFactory != null)
-						cityObject.setTerminationDate(datatypeFactory.newXMLGregorianCalendarDate(
-								gregDate.get(Calendar.YEAR),
-								gregDate.get(Calendar.MONTH) + 1,
-								gregDate.get(Calendar.DAY_OF_MONTH),
-								DatatypeConstants.FIELD_UNDEFINED));
+						cityObject.setTerminationDate(gregDate);
 					else
 						LOG.error(Util.getFeatureSignature(cityObject.getCityGMLClass(), cityObject.getId()) + 
 						": Failed to write attribute 'terminationDate' due to an internal error.");
@@ -265,8 +252,8 @@ public class DBCityObject implements DBExporter {
 					if (!rs.wasNull() && !externalReferenceSet.contains(externalReferenceId)) {
 						externalReferenceSet.add(externalReferenceId);
 
-						ExternalReference externalReference = cityGMLFactory.createExternalReference(core);
-						ExternalObject externalObject = cityGMLFactory.createExternalObject(core);
+						ExternalReference externalReference = new ExternalReferenceImpl();
+						ExternalObject externalObject = new ExternalObjectImpl();
 
 						String infoSys = rs.getString("INFOSYS");
 						if (infoSys != null)
@@ -294,7 +281,7 @@ public class DBCityObject implements DBExporter {
 					if (!rs.wasNull() && !genericAttributeSet.contains(genericAttribId)) {
 						genericAttributeSet.add(genericAttribId);
 
-						GenericAttribute genericAttrib = null;
+						AbstractGenericAttribute genericAttrib = null;
 						String attrName = rs.getString("ATTRNAME");
 						int dataType = rs.getInt("DATATYPE");
 
@@ -302,44 +289,40 @@ public class DBCityObject implements DBExporter {
 						case 1:
 							String strVal = rs.getString("STRVAL");
 							if (strVal != null) {
-								genericAttrib = cityGMLFactory.createGenericStringAttribute(gen);
-								((GenericStringAttribute)genericAttrib).setValue(strVal);
+								genericAttrib = new StringAttributeImpl();
+								((StringAttribute)genericAttrib).setValue(strVal);
 							}
 							break;
 						case 2:
 							Integer intVal = rs.getInt("INTVAL");
 							if (!rs.wasNull() && intVal != null) {
-								genericAttrib = cityGMLFactory.createGenericIntAttribute(gen);
-								((GenericIntAttribute)genericAttrib).setValue(intVal);
+								genericAttrib = new IntAttributeImpl();
+								((IntAttribute)genericAttrib).setValue(intVal);
 							}
 							break;
 						case 3:
 							Double realVal = rs.getDouble("REALVAL");
 							if (!rs.wasNull() && realVal != null) {
-								genericAttrib = cityGMLFactory.createGenericDoubleAttribute(gen);
-								((GenericDoubleAttribute)genericAttrib).setValue(realVal);
+								genericAttrib = new DoubleAttributeImpl();
+								((DoubleAttribute)genericAttrib).setValue(realVal);
 							}
 							break;
 						case 4:
 							String uriVal = rs.getString("URIVAL");
 							if (uriVal != null) {
-								genericAttrib = cityGMLFactory.createGenericUriAttribute(gen);
-								((GenericUriAttribute)genericAttrib).setValue(uriVal);
+								genericAttrib = new UriAttributeImpl();
+								((UriAttribute)genericAttrib).setValue(uriVal);
 							}
 							break;
 						case 5:
 							Date dateVal = rs.getDate("DATEVAL");
 							if (dateVal != null) {
-								genericAttrib = cityGMLFactory.createGenericDateAttribute(gen);
+								genericAttrib = new DateAttributeImpl();
 								GregorianCalendar gregDate = new GregorianCalendar();
 								gregDate.setTime(dateVal);
 
 								if (datatypeFactory != null)
-									((GenericDateAttribute)genericAttrib).setValue(datatypeFactory.newXMLGregorianCalendarDate(
-											gregDate.get(Calendar.YEAR),
-											gregDate.get(Calendar.MONTH) + 1,
-											gregDate.get(Calendar.DAY_OF_MONTH),
-											DatatypeConstants.FIELD_UNDEFINED));
+									((DateAttribute)genericAttrib).setValue(gregDate);
 								else
 									LOG.error(Util.getFeatureSignature(cityObject.getCityGMLClass(), cityObject.getId()) + 
 											": Failed to write generic dateAttribute '" + genericAttrib.getName() + "' due to an internal error.");
@@ -383,7 +366,7 @@ public class DBCityObject implements DBExporter {
 						value = String.valueOf(boundingBoxFilter.getTileRow()) + ' ' + String.valueOf(boundingBoxFilter.getTileColumn());
 					} 
 
-					GenericStringAttribute genericStringAttrib = cityGMLFactory.createGenericStringAttribute(gen);
+					StringAttribute genericStringAttrib = new StringAttributeImpl();
 					genericStringAttrib.setName("TILE");
 					genericStringAttrib.setValue(value);
 					cityObject.addGenericAttribute(genericStringAttrib);
@@ -391,13 +374,13 @@ public class DBCityObject implements DBExporter {
 
 				// generalizesTo relation
 				if (!generalizesToSet.isEmpty())
-					generalizesToExporter.read(cityObject, parentId, core, generalizesToSet);
+					generalizesToExporter.read(cityObject, parentId, generalizesToSet);
 
 				// get appearance information associated with the cityobject
 				if (exportAppearance)
 					appearanceExporter.read(cityObject, parentId);
 
-				if (cityObject.getCityGMLClass() != CityGMLClass.CITYOBJECTGROUP)
+				if (cityObject.getCityGMLClass() != CityGMLClass.CITY_OBJECT_GROUP)
 					dbExporterManager.updateFeatureCounter(cityObject.getCityGMLClass());
 			}
 

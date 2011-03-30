@@ -50,8 +50,6 @@ import de.tub.citydb.event.Event;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.event.EventListener;
 import de.tub.citydb.event.EventType;
-import de.tub.citydb.event.concurrent.InterruptEnum;
-import de.tub.citydb.event.concurrent.InterruptEvent;
 import de.tub.citydb.event.statistic.CounterEvent;
 import de.tub.citydb.event.statistic.CounterType;
 import de.tub.citydb.event.statistic.StatusDialogMessage;
@@ -84,11 +82,11 @@ public class ImportStatusDialog extends JDialog implements EventListener {
 			EventDispatcher eventDispatcher) {
 		super(frame, impExpTitle, true);
 
-		eventDispatcher.addListener(EventType.Counter, this);
-		eventDispatcher.addListener(EventType.StatusDialogProgressBar, this);
-		eventDispatcher.addListener(EventType.StatusDialogMessage, this);
-		eventDispatcher.addListener(EventType.StatusDialogTitle, this);
-		eventDispatcher.addListener(EventType.Interrupt, this);
+		eventDispatcher.addListener(EventType.COUNTER, this);
+		eventDispatcher.addListener(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
+		eventDispatcher.addListener(EventType.STATUS_DIALOG_MESSAGE, this);
+		eventDispatcher.addListener(EventType.STATUS_DIALOG_TITLE, this);
+		eventDispatcher.addListener(EventType.INTERRUPT, this);
 
 		initGUI(impExpTitle, impExpMessage);
 	}
@@ -153,27 +151,25 @@ public class ImportStatusDialog extends JDialog implements EventListener {
 	@Override
 	public void handleEvent(Event e) throws Exception {
 
-		if (e.getEventType() == EventType.Counter &&
+		if (e.getEventType() == EventType.COUNTER &&
 				((CounterEvent)e).getType() == CounterType.TOPLEVEL_FEATURE) {
 			featureCounter += ((CounterEvent)e).getCounter();
 			featureCounterLabel.setText(String.valueOf(featureCounter));
 		}
 
-		else if (e.getEventType() == EventType.Counter &&
+		else if (e.getEventType() == EventType.COUNTER &&
 				((CounterEvent)e).getType() == CounterType.TEXTURE_IMAGE) {
 			textureCounter += ((CounterEvent)e).getCounter();
 			textureCounterLabel.setText(String.valueOf(textureCounter));
 		}
 
-		else if (e.getEventType() == EventType.Interrupt) {
-			if (((InterruptEvent)e).getInterruptType() != InterruptEnum.OUT_OF_RANGE) {
-				acceptStatusUpdate = false;
-				mesageLabel.setText(Internal.I18N.getString("common.dialog.msg.abort"));
-				progressBar.setIndeterminate(true);
-			}
+		else if (e.getEventType() == EventType.INTERRUPT) {
+			acceptStatusUpdate = false;
+			mesageLabel.setText(Internal.I18N.getString("common.dialog.msg.abort"));
+			progressBar.setIndeterminate(true);
 		}
 
-		else if (e.getEventType() == EventType.StatusDialogProgressBar && acceptStatusUpdate) {		
+		else if (e.getEventType() == EventType.STATUS_DIALOG_PROGRESS_BAR && acceptStatusUpdate) {		
 			if (((StatusDialogProgressBar)e).isSetIntermediate()) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {		
@@ -201,15 +197,15 @@ public class ImportStatusDialog extends JDialog implements EventListener {
 			progressBar.setValue(current);
 		}
 
-		else if (e.getEventType() == EventType.StatusDialogMessage && acceptStatusUpdate) {
+		else if (e.getEventType() == EventType.STATUS_DIALOG_MESSAGE && acceptStatusUpdate) {
 			mesageLabel.setText(((StatusDialogMessage)e).getMessage());
 		}
 
-		else if (e.getEventType() == EventType.StatusDialogTitle && acceptStatusUpdate) {
+		else if (e.getEventType() == EventType.STATUS_DIALOG_TITLE && acceptStatusUpdate) {
 			fileName.setText(((StatusDialogTitle)e).getTitle());
 		}
 
-		else if (e.getEventType() == EventType.Counter &&
+		else if (e.getEventType() == EventType.COUNTER &&
 				((CounterEvent)e).getType() == CounterType.FILE) {
 			fileCounterLabel.setText(String.valueOf(((CounterEvent)e).getCounter()));
 		}
