@@ -53,6 +53,7 @@ import java.io.FilterOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
@@ -230,13 +231,12 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 		prefPanel = new PrefPanel(config, this);
 		matchingPanel = new MatchingPanel(config, this);
 
-		menu.add(importPanel, "");
-		menu.add(exportPanel, "");
-		// javier
-		menu.add(kmlExportPanel, "");
-		menu.add(matchingPanel, BorderLayout.NORTH);
-		menu.add(databasePanel, "");
-		menu.add(prefPanel, "");
+		menu.add(importPanel);
+		menu.add(exportPanel);
+		menu.add(kmlExportPanel);
+		menu.add(matchingPanel);
+		menu.add(databasePanel);
+		menu.add(prefPanel);
 
 		console = new JPanel();
 		consoleText = new JTextArea();
@@ -443,12 +443,20 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 	}
 
 	private void initConsole() {
+		Charset encoding;
+		
+		try {
+			encoding = Charset.forName("UTF-8");
+		} catch (Exception e) {
+			encoding = Charset.defaultCharset();
+		}
+		
 		// let standard out point to console
-		JTextAreaOutputStream jTextwriter = new JTextAreaOutputStream(consoleText, new ByteArrayOutputStream());
+		JTextAreaOutputStream jTextwriter = new JTextAreaOutputStream(consoleText, new ByteArrayOutputStream(), encoding);
 		PrintStream writer;
 
 		try {
-			writer = new PrintStream(jTextwriter, true, "UTF8");
+			writer = new PrintStream(jTextwriter, true, encoding.displayName());
 		} catch (UnsupportedEncodingException e) {
 			writer = new PrintStream(jTextwriter);
 		}
@@ -1176,18 +1184,20 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 	}
 
 	private class JTextAreaOutputStream extends FilterOutputStream {
-		private int MAX_DOC_LENGTH = 10000;
-		private JTextArea ta;
+		private final int MAX_DOC_LENGTH = 10000;
+		private final JTextArea ta;
+		private final Charset encoding;
 
-		public JTextAreaOutputStream (JTextArea ta, OutputStream stream) {
+		public JTextAreaOutputStream (JTextArea ta, OutputStream stream, Charset encoding) {
 			super(stream);
 			this.ta = ta;
+			this.encoding = encoding;
 		}
 
 		@Override
 		public void write(final byte[] b) {
 			try {
-				ta.append(new String(b));
+				ta.append(new String(b, encoding));
 			} catch (Error e) {
 				//
 			}
@@ -1198,10 +1208,10 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 		@Override
 		public void write(final byte b[], final int off, final int len) {
 			try {
-				ta.append(new String(b, off, len));
+				ta.append(new String(b, off, len, encoding));
 			} catch (Error e) {
 				//
-			}
+			} 
 
 			flush();
 		}
