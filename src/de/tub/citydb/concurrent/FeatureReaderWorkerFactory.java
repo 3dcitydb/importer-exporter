@@ -32,20 +32,24 @@ package de.tub.citydb.concurrent;
 import org.citygml4j.builder.jaxb.xml.io.reader.CityGMLChunk;
 import org.citygml4j.model.citygml.CityGML;
 
+import de.tub.citydb.config.Config;
 import de.tub.citydb.event.EventDispatcher;
 
 public class FeatureReaderWorkerFactory implements WorkerFactory<CityGMLChunk> {
 	private final WorkerPool<CityGML> dbWorkerPool;
+	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public FeatureReaderWorkerFactory(WorkerPool<CityGML> dbWorkerPool, 
+	public FeatureReaderWorkerFactory(WorkerPool<CityGML> dbWorkerPool,
+			Config config,
 			EventDispatcher eventDispatcher) {
 		this.dbWorkerPool = dbWorkerPool;
+		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
 
 	@Override
 	public Worker<CityGMLChunk> getWorker() {
-		return new FeatureReaderWorker(dbWorkerPool, eventDispatcher);
+		return new FeatureReaderWorker(dbWorkerPool, config, eventDispatcher);
 	}
 }

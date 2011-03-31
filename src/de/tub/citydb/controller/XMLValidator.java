@@ -144,7 +144,7 @@ public class XMLValidator implements EventListener {
 
 				// this worker pool parses the xml file and passes xml chunks to the dbworker pool
 				featureWorkerPool = new SingleWorkerPool<CityGMLChunk>(
-						new FeatureReaderWorkerFactory(null, eventDispatcher),
+						new FeatureReaderWorkerFactory(null, config, eventDispatcher),
 						queueSize,
 						false);
 

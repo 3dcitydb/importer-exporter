@@ -39,6 +39,7 @@ import org.citygml4j.xml.io.reader.MissingADESchemaException;
 import org.xml.sax.SAXException;
 
 import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
+import de.tub.citydb.config.Config;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.event.concurrent.InterruptEnum;
 import de.tub.citydb.event.concurrent.InterruptEvent;
@@ -57,11 +58,15 @@ public class FeatureReaderWorker implements Worker<CityGMLChunk> {
 	// instance members needed to do work
 	private final WorkerPool<CityGML> dbWorkerPool;
 	private final EventDispatcher eventDispatcher;
+	private final boolean useValidation;
 
-	public FeatureReaderWorker(WorkerPool<CityGML> dbWorkerPool, 
+	public FeatureReaderWorker(WorkerPool<CityGML> dbWorkerPool,
+			Config config,
 			EventDispatcher eventDispatcher) {
 		this.dbWorkerPool = dbWorkerPool;
 		this.eventDispatcher = eventDispatcher;
+
+		useValidation = config.getProject().getImporter().getXMLValidation().isSetUseXMLValidation();
 	}
 
 	@Override
@@ -128,7 +133,7 @@ public class FeatureReaderWorker implements Worker<CityGMLChunk> {
 		try {
 			try {
 				CityGML cityGML = work.unmarshal();
-				if (dbWorkerPool != null)
+				if (dbWorkerPool != null && (!useValidation || work.hasPassedXMLValidation()))
 					dbWorkerPool.addWork(cityGML);
 			} catch (JAXBException e) {
 				StringBuilder msg = new StringBuilder();				

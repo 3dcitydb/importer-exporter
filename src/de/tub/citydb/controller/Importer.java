@@ -345,7 +345,7 @@ public class Importer implements EventListener {
 				featureWorkerPool = new WorkerPool<CityGMLChunk>(
 						minThreads,
 						maxThreads,
-						new FeatureReaderWorkerFactory(dbWorkerPool, eventDispatcher),
+						new FeatureReaderWorkerFactory(dbWorkerPool, config, eventDispatcher),
 						queueSize,
 						false);
 
