@@ -116,7 +116,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 
 		// try and change workspace for both connections if needed
 		Database database = config.getProject().getDatabase();
-		dbConnectionPool.changeWorkspace(
+		dbConnectionPool.gotoWorkspace(
 				connection, 
 				database.getWorkspaces().getExportWorkspace());
 

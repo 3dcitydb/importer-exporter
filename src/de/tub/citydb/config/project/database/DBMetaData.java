@@ -35,10 +35,15 @@ import de.tub.citydb.log.Logger;
 public class DBMetaData {
 	private static final Logger LOG = Logger.getInstance();	
 	
-	private String productName;
-	private String productVersion;
-	private int majorVersion;
-	private int minorVersion;
+	// database related information
+	private String databaseProductName;
+	private String databaseProductString;
+	private int databaseMajorVersion;
+	private int databaseMinorVersion;
+	
+	// 3DCityDB related information
+	private String referenceSystemName;
+	private boolean isReferenceSystem3D;
 	private int srid;
 	private String srsName;
 	private Versioning versioning = Versioning.OFF;
@@ -47,47 +52,76 @@ public class DBMetaData {
 	}
 	
 	public void reset() {
-		productName = null;
-		productVersion = null;
-		majorVersion = 0;
-		minorVersion = 0;
+		databaseProductName = null;
+		databaseProductString = null;
+		databaseMajorVersion = 0;
+		databaseMinorVersion = 0;
+	
+		referenceSystemName = null;
+		isReferenceSystem3D = false;
+		srid = ReferenceSystem.DEFAULT.getSrid();
+		srsName = ReferenceSystem.DEFAULT.getSrsName();		
 		versioning = Versioning.OFF;
 	}
 
-	public String getProductName() {
-		return productName;
+	public String getDatabaseProductName() {
+		return databaseProductName;
 	}
 
-	public void setProductName(String productName) {
-		this.productName = productName;
+	public void setDatabaseProductName(String databaseProductName) {
+		this.databaseProductName = databaseProductName;
 	}
 
-	public String getProductVersion() {
-		return productVersion;
+	public String getDatabaseProductVersion() {
+		return databaseProductString;
 	}
 	
-	public String getShortProductVersion() {
-		return getProductVersion().replaceAll("\\n.*", "");
+	public String getShortDatabaseProductVersion() {
+		return getDatabaseProductVersion().replaceAll("\\n.*", "");
 	}
 
-	public void setProductVersion(String productVersion) {
-		this.productVersion = productVersion;
+	public void setDatabaseProductVersion(String databaseProductString) {
+		this.databaseProductString = databaseProductString;
 	}
 
-	public int getMajorVersion() {
-		return majorVersion;
+	public int getDatabaseMajorVersion() {
+		return databaseMajorVersion;
 	}
 
-	public void setMajorVersion(int majorVersion) {
-		this.majorVersion = majorVersion;
+	public void setDatabaseMajorVersion(int databaseMajorVersion) {
+		this.databaseMajorVersion = databaseMajorVersion;
 	}
 
-	public int getMinorVersion() {
-		return minorVersion;
+	public int getDatabaseMinorVersion() {
+		return databaseMinorVersion;
 	}
 
-	public void setMinorVersion(int minorVersion) {
-		this.minorVersion = minorVersion;
+	public void setDatabaseMinorVersion(int databaseMinorVersion) {
+		this.databaseMinorVersion = databaseMinorVersion;
+	}
+
+	public String getDatabaseProductString() {
+		return databaseProductString;
+	}
+
+	public void setDatabaseProductString(String databaseProductString) {
+		this.databaseProductString = databaseProductString;
+	}
+
+	public String getReferenceSystemName() {
+		return referenceSystemName;
+	}
+
+	public void setReferenceSystemName(String referenceSystemName) {
+		this.referenceSystemName = referenceSystemName;
+	}
+
+	public boolean isReferenceSystem3D() {
+		return isReferenceSystem3D;
+	}
+
+	public void setReferenceSystem3D(boolean isReferenceSystem3D) {
+		this.isReferenceSystem3D = isReferenceSystem3D;
 	}
 
 	public int getSrid() {
@@ -115,8 +149,8 @@ public class DBMetaData {
 	}
 
 	public void toConsole(LogLevelType level) {
-		LOG.log(level, getShortProductVersion());
-		LOG.log(level, "SRID: " + srid);
+		LOG.log(level, getShortDatabaseProductVersion());
+		LOG.log(level, "SRID: " + srid + " (" + referenceSystemName + ')');
 		LOG.log(level, "gml:srsName: " + srsName);
 		LOG.log(level, "Versioning: " + versioning);
 	}

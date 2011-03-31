@@ -83,7 +83,7 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 
 		// try and change workspace for the connection if needed
 		Database database = config.getProject().getDatabase();
-		dbConnectionPool.changeWorkspace(
+		dbConnectionPool.gotoWorkspace(
 				connection, 
 				database.getWorkspaces().getExportWorkspace());
 		

@@ -24,6 +24,8 @@ SELECT 'Deleting packages ''geodb_util'', ''geodb_idx'', ''geodb_stat'', ''geodb
 --// drop global types
 DROP TYPE STRARRAY;
 DROP TYPE INDEX_OBJ;
+DROP TYPE DB_INFO_TABLE;
+DROP TYPE DB_INFO_OBJ;
 
 --// drop packages
 DROP PACKAGE geodb_util;

@@ -785,7 +785,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 
 	private boolean changeWorkspace(Workspace workspace) {		
 		if (!workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.checkWorkspace(workspace);
+			boolean workspaceExists = dbPool.existsWorkspace(workspace);
 
 			String name = "'" + workspace.getName().trim() + "'";
 			String timestamp = workspace.getTimestamp();

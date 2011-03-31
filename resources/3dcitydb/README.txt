@@ -1,6 +1,6 @@
-3D City Database version 2.0.5
+3D City Database version 2.1-devel
 
-  The 3D City Database version 2.0.5 is free software and comes 
+  The 3D City Database version 2.1-devel is free software and comes 
   WITHOUT ANY WARRANTY. See the file LICENSE for more details. 
 
 
@@ -23,7 +23,7 @@
 1. Licence
 ----------
 
-The 3D City Database version 2.0.5 is free software under the GNU Lesser 
+The 3D City Database version 2.1-devel is free software under the GNU Lesser 
 General Public License Version 3.0. See the file LICENSE for more details. 
 For a copy of the GNU Lesser General Public License see the files 
 COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
@@ -101,14 +101,14 @@ distribution package.
 7. Documentation
 ----------------
 
-A comprehensive documentation on the 3D City Database version 2.0.5 can be found
+A comprehensive documentation on the 3D City Database version 2.1-devel can be found
 on the project's website at http://www.igg.tu-berlin.de/software/. 
 
 
 8. Cooperation partners and supporters  
 --------------------------------------
 
-The development of the 3D City Database version 2.0.5 has been 
+The development of the 3D City Database version 2.1-devel has been 
 financially supported by the following cooperation partners:
 
 * Business Location Center, Berlin 

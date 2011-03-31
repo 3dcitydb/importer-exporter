@@ -109,7 +109,7 @@ public class DBSplitter {
 
 		// try and change workspace for connection if needed
 		Database database = config.getProject().getDatabase();
-		dbConnectionPool.changeWorkspace(
+		dbConnectionPool.gotoWorkspace(
 				connection, 
 				database.getWorkspaces().getExportWorkspace());
 

@@ -67,30 +67,33 @@ public class DBUtil {
 	public static DBMetaData getDatabaseInfo() throws SQLException {
 		DBMetaData metaData = new DBMetaData();
 		Connection conn = null;
+		ResultSet rs = null;
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			
+
 			// get vendor specific meta data
 			DatabaseMetaData dbMetaData = conn.getMetaData();			
-			
-			// get 3dcitydb specific meta data
-			callableStmt = (OracleCallableStatement)conn.prepareCall("{call geodb_util.db_info(?, ?, ?)}");
-			callableStmt.registerOutParameter(1, Types.VARCHAR);
-			callableStmt.registerOutParameter(2, Types.VARCHAR);
-			callableStmt.registerOutParameter(3, Types.VARCHAR);
-			callableStmt.executeUpdate();
 
-			metaData.setSrid(callableStmt.getInt(1));
-			metaData.setSrsName(callableStmt.getString(2));
-			metaData.setVersioning(Versioning.valueOf(callableStmt.getString(3)));
-			metaData.setProductName(dbMetaData.getDatabaseProductName());
-			metaData.setProductVersion(dbMetaData.getDatabaseProductVersion());
-			metaData.setMajorVersion(dbMetaData.getDatabaseMajorVersion());
-			metaData.setMinorVersion(dbMetaData.getDatabaseMinorVersion());
-			
+			// get 3dcitydb specific meta data
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select * from table(geodb_util.db_info)");
+			if (rs.next()) {
+				metaData.setSrid(rs.getInt("SRID"));
+				metaData.setSrsName(rs.getString("GML_SRS_NAME"));
+				metaData.setReferenceSystemName(rs.getString("COORD_REF_SYS_NAME"));
+				metaData.setReferenceSystem3D(rs.getBoolean("IS_COORD_REF_SYS_3D"));
+				metaData.setVersioning(Versioning.valueOf(rs.getString("VERSIONING")));
+			} else
+				throw new SQLException("Failed to retrieve metadata information from database.");
+
+			metaData.setDatabaseProductName(dbMetaData.getDatabaseProductName());
+			metaData.setDatabaseProductVersion(dbMetaData.getDatabaseProductVersion());
+			metaData.setDatabaseMajorVersion(dbMetaData.getDatabaseMajorVersion());
+			metaData.setDatabaseMinorVersion(dbMetaData.getDatabaseMinorVersion());
+
 			return metaData;
-			
+
 		} catch (SQLException sqlEx) {
 			throw sqlEx;
 		} finally {
@@ -120,7 +123,7 @@ public class DBUtil {
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			dbConnectionPool.changeWorkspace(conn, workspace);		
+			dbConnectionPool.gotoWorkspace(conn, workspace);		
 
 			callableStmt = (OracleCallableStatement)conn.prepareCall("{? = call geodb_stat.table_contents}");
 			callableStmt.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
@@ -166,7 +169,7 @@ public class DBUtil {
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			dbConnectionPool.changeWorkspace(conn, workspace);	
+			dbConnectionPool.gotoWorkspace(conn, workspace);	
 			stmt = conn.createStatement();
 
 			List<Integer> featureTypes = new ArrayList<Integer>();
@@ -502,7 +505,7 @@ public class DBUtil {
 		PreparedStatement psQuery = null;
 		OracleResultSet rs = null;
 		Connection conn = null;
-		
+
 		try {
 			conn = dbConnectionPool.getConnection();
 			psQuery = conn.prepareStatement("select SDO_CS.TRANSFORM(MDSYS.SDO_GEOMETRY(2003, " + sourceSrid +
@@ -549,14 +552,14 @@ public class DBUtil {
 
 				psQuery = null;
 			}
-			
+
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException sqlEx) {
 					throw sqlEx;
 				}
-				
+
 				conn = null;
 			}
 		}
@@ -603,14 +606,14 @@ public class DBUtil {
 
 				psQuery = null;
 			}
-			
+
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException sqlEx) {
 					throw sqlEx;
 				}
-				
+
 				conn = null;
 			}
 		}
@@ -654,14 +657,14 @@ public class DBUtil {
 
 				psQuery = null;
 			}
-			
+
 			if (conn != null) {
 				try {
 					conn.close();
 				} catch (SQLException sqlEx) {
 					throw sqlEx;
 				}
-				
+
 				conn = null;
 			}
 		}

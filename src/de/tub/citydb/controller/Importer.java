@@ -158,7 +158,7 @@ public class Importer implements EventListener {
 		// checking workspace... this should be improved in future...
 		Workspace workspace = database.getWorkspaces().getImportWorkspace();
 		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.checkWorkspace(workspace);
+			boolean workspaceExists = dbPool.existsWorkspace(workspace);
 
 			if (!workspaceExists) {
 				LOG.error("Database workspace '" + workspace.getName().trim() + "' is not available.");

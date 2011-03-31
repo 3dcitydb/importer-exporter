@@ -29,7 +29,23 @@
 * global type for arrays of strings, e.g. used for log messages
 * and reports
 ******************************************************************/
+set term off;
+set serveroutput off;
+
 CREATE OR REPLACE TYPE STRARRAY IS TABLE OF VARCHAR2(32767);
+/
+
+DROP TYPE DB_INFO_TABLE;
+CREATE OR REPLACE TYPE DB_INFO_OBJ AS OBJECT(
+  SRID NUMBER,
+  GML_SRS_NAME VARCHAR2(1000),
+  COORD_REF_SYS_NAME VARCHAR2(80),
+  IS_COORD_REF_SYS_3D NUMBER,
+  VERSIONING VARCHAR2(100)
+);
+/
+
+CREATE OR REPLACE TYPE DB_INFO_TABLE IS TABLE OF DB_INFO_OBJ;
 /
 
 /*****************************************************************
@@ -41,11 +57,13 @@ CREATE OR REPLACE PACKAGE geodb_util
 AS
   FUNCTION versioning_table(table_name VARCHAR2) RETURN VARCHAR2;
   FUNCTION versioning_db RETURN VARCHAR2;
-  PROCEDURE db_info(srid OUT DATABASE_SRS.SRID%TYPE, srs OUT DATABASE_SRS.GML_SRS_NAME%TYPE, versioning OUT VARCHAR2);
+  FUNCTION db_info RETURN DB_INFO_TABLE;
   FUNCTION error_msg(err_code VARCHAR2) RETURN VARCHAR2;
   FUNCTION split(list VARCHAR2, delim VARCHAR2 := ',') RETURN STRARRAY;
   FUNCTION min(a number, b number) return number;
   FUNCTION transform_or_null(geom MDSYS.SDO_GEOMETRY, srid number) RETURN MDSYS.SDO_GEOMETRY;
+  FUNCTION is_coord_ref_sys_3d(srid NUMBER) RETURN NUMBER;
+  FUNCTION is_db_coord_ref_sys_3d RETURN NUMBER;
 END geodb_util;
 /
 
@@ -108,11 +126,23 @@ AS
   * @param srs database srs name
   * @param versioning database versioning
   ******************************************************************/
-  PROCEDURE db_info(srid OUT DATABASE_SRS.SRID%TYPE, srs OUT DATABASE_SRS.GML_SRS_NAME%TYPE, versioning OUT VARCHAR2) 
+  FUNCTION db_info RETURN DB_INFO_TABLE 
   IS
+    info_ret DB_INFO_TABLE;
+    info_tmp DB_INFO_OBJ;
   BEGIN
-    execute immediate 'SELECT SRID, GML_SRS_NAME from DATABASE_SRS' into srid, srs;
-    versioning := versioning_db;
+    info_ret := DB_INFO_TABLE();
+    info_ret.extend;
+  
+    info_tmp := DB_INFO_OBJ(0, NULL, NULL, 0, NULL);
+
+    execute immediate 'SELECT SRID, GML_SRS_NAME from DATABASE_SRS' into info_tmp.srid, info_tmp.gml_srs_name;   
+    execute immediate 'SELECT COORD_REF_SYS_NAME from SDO_COORD_REF_SYS where SRID=:1' into info_tmp.coord_ref_sys_name using info_tmp.srid;
+    info_tmp.is_coord_ref_sys_3d := is_coord_ref_sys_3d(info_tmp.srid);
+    info_tmp.versioning := versioning_db;     
+       
+    info_ret(info_ret.count) := info_tmp;
+    return info_ret;
   END;
   
   /*****************************************************************
@@ -190,6 +220,37 @@ AS
       RETURN NULL;
     END IF;
   END;  
+  
+  /*****************************************************************
+  * is_coord_ref_sys_3d
+  *
+  * @param srid the SRID of the coordinate system to be checked
+  * @return NUMBER the boolean result encoded as number: 0 = false, 1 = true                
+  ******************************************************************/
+  FUNCTION is_coord_ref_sys_3d(srid NUMBER) RETURN NUMBER
+  IS
+    is_3d number := 0;
+  BEGIN
+    execute immediate 'SELECT COUNT(*) from SDO_CRS_COMPOUND where SRID=:1' into is_3d using srid;
+    if is_3d = 0 then
+      execute immediate 'SELECT COUNT(*) from SDO_CRS_GEOGRAPHIC3D where SRID=:1' into is_3d using srid;
+    end if;
+    
+    return is_3d;
+  END;
+  
+  /*****************************************************************
+  * is_db_coord_ref_sys_3d
+  *
+  * @return NUMBER the boolean result encoded as number: 0 = false, 1 = true                
+  ******************************************************************/
+  FUNCTION is_db_coord_ref_sys_3d RETURN NUMBER
+  IS
+    srid number;
+  BEGIN
+    execute immediate 'SELECT srid from DATABASE_SRS' into srid;
+    return is_coord_ref_sys_3d(srid);
+  END;
   
 END geodb_util;
 /

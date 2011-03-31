@@ -161,7 +161,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		((OracleConnection)connection).setDefaultRowPrefetch(50);
 		// try and change workspace for both connections if needed
 		Database database = config.getProject().getDatabase();
-		dbConnectionPool.changeWorkspace(connection, 
+		dbConnectionPool.gotoWorkspace(connection, 
 										 database.getWorkspaces().getKmlExportWorkspace());
 
 		kmlExporterManager = new KmlExporterManager(jaxbKmlContext,

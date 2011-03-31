@@ -159,7 +159,7 @@ public class Exporter implements EventListener {
 		// checking workspace... this should be improved in future...
 		Workspace workspace = database.getWorkspaces().getExportWorkspace();
 		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.checkWorkspace(workspace);
+			boolean workspaceExists = dbPool.existsWorkspace(workspace);
 
 			String name = "'" + workspace.getName().trim() + "'";
 			String timestamp = workspace.getTimestamp().trim();

@@ -124,8 +124,8 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 
 		// try and change workspace for both connections if needed
 		Workspace workspace = database.getWorkspaces().getImportWorkspace();
-		dbPool.changeWorkspace(batchConn, workspace);
-		dbPool.changeWorkspace(commitConn, workspace);
+		dbPool.gotoWorkspace(batchConn, workspace);
+		dbPool.gotoWorkspace(commitConn, workspace);
 
 		Integer commitAfterProp = database.getUpdateBatching().getFeatureBatchValue();
 		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= Internal.ORACLE_MAX_BATCH_SIZE)

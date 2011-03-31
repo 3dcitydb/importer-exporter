@@ -138,8 +138,8 @@ public class DBImportWorker implements Worker<CityGML> {
 		// try and change workspace for both connections if needed
 		Database database = config.getProject().getDatabase();
 		Workspace workspace = database.getWorkspaces().getImportWorkspace();
-		dbConnectionPool.changeWorkspace(batchConn, workspace);
-		dbConnectionPool.changeWorkspace(commitConn, workspace);
+		dbConnectionPool.gotoWorkspace(batchConn, workspace);
+		dbConnectionPool.gotoWorkspace(commitConn, workspace);
 
 		// init filter 
 		featureClassFilter = importFilter.getFeatureClassFilter();

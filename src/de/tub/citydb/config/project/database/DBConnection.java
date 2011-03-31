@@ -158,6 +158,10 @@ public class DBConnection implements Comparable<DBConnection> {
 	public void setMetaData(DBMetaData metaData) {
 		this.metaData = metaData;
 	}
+	
+	public boolean isSetMetaData() {
+		return metaData != null;
+	}
 
 	@Override
 	public int compareTo(DBConnection o) {

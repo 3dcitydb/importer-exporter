@@ -165,7 +165,7 @@ public class KmlExporter implements EventListener {
 		// checking workspace...
 		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
 		if (!workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.checkWorkspace(workspace);
+			boolean workspaceExists = dbPool.existsWorkspace(workspace);
 
 			String name = "'" + workspace.getName().trim() + "'";
 			String timestamp = workspace.getTimestamp().trim();

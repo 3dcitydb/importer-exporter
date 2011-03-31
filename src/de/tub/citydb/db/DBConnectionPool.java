@@ -117,7 +117,7 @@ public class DBConnectionPool {
 		} catch (UniversalConnectionPoolException e) {
 			//
 		}
-		
+
 		return UniversalConnectionPoolLifeCycleState.LIFE_CYCLE_FAILED;
 	}
 
@@ -132,19 +132,19 @@ public class DBConnectionPool {
 	public int getBorrowedConnectionsCount() throws SQLException {
 		return poolDataSource != null ? poolDataSource.getBorrowedConnectionsCount() : 0;
 	}
-	
+
 	public int getAvailableConnectionsCount() throws SQLException {
 		return poolDataSource != null ? poolDataSource.getAvailableConnectionsCount() : 0;
 	}
-	
+
 	public int getMinPoolSize() throws SQLException {
 		return poolDataSource != null ? poolDataSource.getMinPoolSize() : 0;
 	}
-	
+
 	public int getMaxPoolSize() throws SQLException {
 		return poolDataSource != null ? poolDataSource.getMaxPoolSize() : 0;
 	}
-	
+
 	public int getInitialPoolSize() throws SQLException {
 		return poolDataSource != null ? poolDataSource.getInitialPoolSize() : 0;
 	}
@@ -153,12 +153,12 @@ public class DBConnectionPool {
 		if (poolDataSource != null)
 			poolDataSource.setMinPoolSize(minPoolSize);
 	}
-	
+
 	public void setMaxPoolSize(int maxPoolSize) throws SQLException {
 		if (poolDataSource != null)
 			poolDataSource.setMaxPoolSize(maxPoolSize);
 	}
-	
+
 	public void setInitialPoolSize(int initialPoolSize) throws SQLException {
 		if (poolDataSource != null)
 			poolDataSource.setInitialPoolSize(initialPoolSize);
@@ -168,22 +168,22 @@ public class DBConnectionPool {
 		if (isManagedConnectionPool(poolName))
 			poolManager.refreshConnectionPool(poolName);
 	}
-	
+
 	public synchronized void recylce() throws UniversalConnectionPoolException {
 		if (isManagedConnectionPool(poolName))
 			poolManager.recycleConnectionPool(poolName);
 	}
-	
+
 	public synchronized void purge() throws UniversalConnectionPoolException {
 		if (isManagedConnectionPool(poolName))
 			poolManager.purgeConnectionPool(poolName);
 	}
-	
+
 	public synchronized void stop() throws UniversalConnectionPoolException {
 		if (isManagedConnectionPool(poolName))
 			poolManager.stopConnectionPool(poolName);
 	}
-	
+
 	public synchronized void start() throws UniversalConnectionPoolException {
 		if (isManagedConnectionPool(poolName))
 			poolManager.startConnectionPool(poolName);
@@ -191,7 +191,7 @@ public class DBConnectionPool {
 
 	public synchronized void disconnect() throws SQLException {
 		boolean isConnected = isConnected();
-		
+
 		try {			
 			if (isManagedConnectionPool(poolName))
 				poolManager.destroyConnectionPool(poolName);
@@ -199,26 +199,34 @@ public class DBConnectionPool {
 			throw new SQLException(e.getMessage());
 		}
 
+		if (activeConnection != null) {
+			activeConnection.setMetaData(null);
+			activeConnection = null;
+		}
+
 		// fire property change events
-		activeConnection = null;
 		changes.firePropertyChange(PROPERTY_DB_IS_CONNECTED, isConnected, false);
 	}
 
 	public synchronized void forceDisconnect() {
 		boolean isConnected = isConnected();
-		
+
 		try {
 			disconnect();
 		} catch (SQLException e) {
 			//
 		}
 
+		if (activeConnection != null) {
+			activeConnection.setMetaData(null);
+			activeConnection = null;
+		}
+
 		// fire property change events
-		activeConnection = null;
 		changes.firePropertyChange(PROPERTY_DB_IS_CONNECTED, isConnected, false);
 	}
 
-	public boolean changeWorkspace(Connection conn, Workspace workspace) {
+	public boolean gotoWorkspace(Connection conn, Workspace workspace) {
 		String name = workspace.getName().trim();
 		String timestamp = workspace.getTimestamp().trim();
 		CallableStatement stmt = null;
@@ -253,12 +261,12 @@ public class DBConnectionPool {
 		}
 	}
 
-	public boolean checkWorkspace(Workspace workspace) {
+	public boolean existsWorkspace(Workspace workspace) {
 		Connection conn = null;
 
 		try {
 			conn = getConnection();
-			return changeWorkspace(conn, workspace);
+			return gotoWorkspace(conn, workspace);
 		} catch (SQLException sqlEx) {
 			return false;
 		} finally {

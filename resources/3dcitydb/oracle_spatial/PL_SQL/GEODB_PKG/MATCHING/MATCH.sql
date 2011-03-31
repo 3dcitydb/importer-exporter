@@ -115,12 +115,15 @@ AS
  
   function aggregate_mbr(table_name varchar2) return mdsys.sdo_geometry;
   function aggregate_geometry_by_id(id number, tolerance number := 0.001, aggregate_building number := 1) return mdsys.sdo_geometry;
-  function to_2d(geom mdsys.sdo_geometry) return mdsys.sdo_geometry;  
+  function to_2d(geom mdsys.sdo_geometry, srid number) return mdsys.sdo_geometry;  
 END geodb_match;
 /
 
 CREATE OR REPLACE PACKAGE BODY geodb_match
 AS
+  -- private procedures
+  function get_2d_srid return number;
+  
   -- private constants
   CAND_GEOMETRY_TABLE constant string(30) := 'MATCH_CAND_PROJECTED';
   MASTER_GEOMETRY_TABLE constant string(30) := 'MATCH_MASTER_PROJECTED';
@@ -212,18 +215,23 @@ AS
   procedure collect_geometry(lod number)
   is
     log varchar2(4000);
+    srid number;
   begin
     -- first, truncate tmp table
     execute immediate 'truncate table match_collect_geom';
     log := geodb_idx.drop_index(match_collect_id_idx, false);
     log := geodb_idx.drop_index(match_collect_root_id_idx, false); 
   
+    -- get srid for 2d geometries
+    srid := get_2d_srid;
+  
     -- second, retrieve exterior shell surfaces from building
     execute immediate 'insert all /*+ append nologging */ into match_collect_geom
-      select bl.id, bl.parent_id, bl.root_id, geodb_match.to_2d(s.geometry)
+      select bl.id, bl.parent_id, bl.root_id, geodb_match.to_2d(s.geometry, :1)
         from match_tmp_building bl, surface_geometry s
         where s.root_id = bl.geometry_id
-              and s.geometry is not null';
+              and s.geometry is not null'
+      using srid;
     
     -- for lod > 1 we also have to check surfaces from the tables
     -- building_installation and thematic surface
@@ -231,22 +239,24 @@ AS
       -- retrieve surfaces from building installations referencing the identified
       -- building tupels
       execute immediate 'insert all /*+ append nologging */ into match_collect_geom
-        select bl.id, bl.parent_id, bl.root_id, geodb_match.to_2d(s.geometry)
+        select bl.id, bl.parent_id, bl.root_id, geodb_match.to_2d(s.geometry, :1)
           from match_tmp_building bl, building_installation i, surface_geometry s
           where i.building_id = bl.id
                 and i.is_external = 1
                 and s.root_id = i.lod'||to_char(lod)||'_geometry_id
-                and s.geometry is not null';
+                and s.geometry is not null'
+        using srid;
     
       -- retrieve surfaces from thematic surfaces referencing the identified
       -- building tupels
       execute immediate 'insert all /*+ append nologging */ into match_collect_geom
-        select bl.id, bl.parent_id, bl.root_id, geodb_match.to_2d(s.geometry)
+        select bl.id, bl.parent_id, bl.root_id, geodb_match.to_2d(s.geometry, :1)
           from match_tmp_building bl, thematic_surface t, surface_geometry s
           where t.building_id = bl.id
                 and upper(t.type) not in (''INTERIORWALLSURFACE'', ''CEILINGSURFACE'', ''FLOORSURFACE'')
                 and s.root_id = t.lod'||to_char(lod)||'_multi_surface_id
-                and s.geometry is not null';
+                and s.geometry is not null'
+        using srid;
     end if;    
   exception
     when others then
@@ -322,8 +332,10 @@ AS
     
     -- create spatial index
     if match_cand_projected_spx.table_name = table_name then
+      match_cand_projected_spx.srid := get_2d_srid;
       log := geodb_idx.create_index(match_cand_projected_spx, false);
     else
+      match_master_projected_spx.srid := get_2d_srid;
       log := geodb_idx.create_index(match_master_projected_spx, false);
     end if;
   end;
@@ -360,7 +372,8 @@ AS
       execute immediate 'update match_overlap_all set area1_cov_by_area2 = geodb_util.min(intersection_area / area1, 1.0), 
                                                  area2_cov_by_area1 = geodb_util.min(intersection_area / area2, 1.0)'; 
       
-      -- create spatial index on intersection geometry                                           
+      -- create spatial index on intersection geometry 
+      match_overlap_all_spx.srid := get_2d_srid;
       log := geodb_idx.create_index(match_overlap_all_spx, false);
   end;
   
@@ -395,7 +408,8 @@ AS
       end if;
     end loop;
     
-    -- create spatial index on intersection geometry                                           
+    -- create spatial index on intersection geometry
+    match_result_spx.srid := get_2d_srid;
     log := geodb_idx.create_index(match_result_spx, false);
   exception
       when others then
@@ -422,8 +436,12 @@ AS
   return mdsys.sdo_geometry
   is
     aggr_mbr mdsys.sdo_geometry;
+    srid number;
   begin
+    execute immediate 'select srid from database_srs' into srid;
     execute immediate 'select sdo_aggr_mbr(geometry) from '||table_name||'' into aggr_mbr;
+    aggr_mbr.sdo_srid := srid;
+    
     return aggr_mbr;
   exception
     when others then 
@@ -475,7 +493,7 @@ AS
   /*
   * code taken from http://forums.oracle.com/forums/thread.jspa?messageID=960492&#960492
   */
-  function to_2d (geom mdsys.sdo_geometry)
+  function to_2d (geom mdsys.sdo_geometry, srid number)
   return mdsys.sdo_geometry
   is
     geom_2d mdsys.sdo_geometry;
@@ -509,7 +527,7 @@ AS
   
     -- Construct and prepare the output geometry
     geom_2d := mdsys.sdo_geometry (
-                2000+gtype, geom.sdo_srid, geom.sdo_point,
+                2000+gtype, srid, geom.sdo_point,
                 mdsys.sdo_elem_info_array (), mdsys.sdo_ordinate_array()
                 );
   
@@ -550,6 +568,23 @@ AS
     end if;
   
     return geom_2d;
+  exception
+    when others then
+      dbms_output.put_line('to_2d: ' || SQLERRM);
+      return null;
+  end;
+  
+  function get_2d_srid return number
+  is
+    srid number;
+  begin
+    if geodb_util.is_db_coord_ref_sys_3d = 1 then
+      srid := null;
+    else
+      execute immediate 'select srid from database_srs' into srid;
+    end if;
+    
+    return srid;
   end;
   
 END geodb_match;

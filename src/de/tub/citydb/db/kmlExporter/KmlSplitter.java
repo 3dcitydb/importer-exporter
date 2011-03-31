@@ -83,7 +83,7 @@ public class KmlSplitter {
 
 		// try and change workspace for connection if needed
 		Database database = config.getProject().getDatabase();
-		dbConnectionPool.changeWorkspace(connection, 
+		dbConnectionPool.gotoWorkspace(connection, 
 										 database.getWorkspaces().getKmlExportWorkspace());
 
 	}

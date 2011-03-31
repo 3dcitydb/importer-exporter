@@ -76,7 +76,7 @@ public class Matcher implements EventListener {
 
 	private boolean checkWorkspace(Workspace workspace) {
 		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.checkWorkspace(workspace);
+			boolean workspaceExists = dbPool.existsWorkspace(workspace);
 
 			String name = "'" + workspace.getName().trim() + "'";
 			String timestamp = workspace.getTimestamp().trim();
@@ -136,7 +136,7 @@ public class Matcher implements EventListener {
 
 		try {
 			conn = dbPool.getConnection();
-			dbPool.changeWorkspace(conn, workspace);
+			dbPool.gotoWorkspace(conn, workspace);
 			conn.setAutoCommit(true);
 
 			eventDispatcher.triggerEvent(new StatusDialogTitle(Internal.I18N.getString("match.match.dialog.process")));
@@ -500,7 +500,7 @@ public class Matcher implements EventListener {
 
 		try {
 			conn = dbPool.getConnection();
-			dbPool.changeWorkspace(conn, workspace);
+			dbPool.gotoWorkspace(conn, workspace);
 			conn.setAutoCommit(true);
 
 			eventDispatcher.triggerEvent(new StatusDialogTitle(Internal.I18N.getString("match.merge.dialog.process")));
@@ -651,7 +651,7 @@ public class Matcher implements EventListener {
 
 		try {
 			conn = dbPool.getConnection();
-			dbPool.changeWorkspace(conn, workspace);
+			dbPool.gotoWorkspace(conn, workspace);
 			conn.setAutoCommit(true);
 
 			stmt = conn.createStatement();
