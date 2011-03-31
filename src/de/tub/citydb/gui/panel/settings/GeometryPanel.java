@@ -6,15 +6,19 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
@@ -32,7 +36,7 @@ public class GeometryPanel extends PrefPanelBase {
 	private JPanel block2;
 	private JCheckBox useAffineTransformation;
 	private JLabel matrixDescr;
-	private JTextField[][] matrixField;
+	private JFormattedTextField[][] matrixField;
 	private JLabel[] matrixLabel;
 	private JButton identityMatrixButton;
 	private JButton swapXYMatrixButton;
@@ -57,17 +61,9 @@ public class GeometryPanel extends PrefPanelBase {
 		boolean isModified = false;
 		for (int i = 0; i < matrixField.length; i++) {
 			for (int j = 0; j < matrixField[i].length; j++) {
-				double value = 0.0;
-				
-				try {
-					value = Double.parseDouble(matrixField[i][j].getText());
-				} catch (NumberFormatException e) {
-					matrixField[i][j].setText("0.0");
-					isModified = true;
-				}
-				
+				try { matrixField[i][j].commitEdit(); } catch (ParseException e) { };
 				if (!isModified)
-					isModified = value != matrix.get(i, j);
+					isModified = ((Number)matrixField[i][j].getValue()).doubleValue() != matrix.get(i, j);
 			}
 		}
 		
@@ -77,7 +73,7 @@ public class GeometryPanel extends PrefPanelBase {
 	private void initGui() {
 		useAffineTransformation = new JCheckBox();
 		matrixDescr = new JLabel();
-		matrixField = new JTextField[3][4];
+		matrixField = new JFormattedTextField[3][4];
 		matrixLabel = new JLabel[3];
 		identityMatrixButton = new JButton();
 		swapXYMatrixButton = new JButton();
@@ -105,8 +101,13 @@ public class GeometryPanel extends PrefPanelBase {
 				block1.add(row2, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,0,0,5));
 				row2.setLayout(new GridBagLayout());
 				{
+					DecimalFormat format = new DecimalFormat("####################.#########################", DecimalFormatSymbols.getInstance(Locale.ENGLISH));	
+					format.setMaximumIntegerDigits(20);
+					format.setMinimumIntegerDigits(1);
+					format.setMaximumFractionDigits(25);
+					format.setMinimumFractionDigits(0);
+					
 					for (int i = 0; i < matrixField.length; i++) {
-
 						StringBuilder label = new StringBuilder("<html>(m");
 						for (int k = 0; k < matrixField[i].length; k++) {
 							label.append("<sub>").append(i+1).append(k+1).append("</sub>");
@@ -119,9 +120,9 @@ public class GeometryPanel extends PrefPanelBase {
 
 						matrixLabel[i] = new JLabel(label.toString());
 						row2.add(matrixLabel[i], GuiUtil.setConstraints(0,i,0.0,0.0,GridBagConstraints.NONE,0,5,5,0));
-
+						
 						for (int j = 0; j < matrixField[i].length; j++) {
-							matrixField[i][j] = new JTextField();							
+							matrixField[i][j] = new JFormattedTextField(format);							
 							row2.add(matrixField[i][j], GuiUtil.setConstraints(j+1,i,0.25,0.0,GridBagConstraints.BOTH,0,5,5,0));
 							matrixField[i][j].setPreferredSize(matrixField[i][j].getPreferredSize());
 						}
@@ -147,7 +148,7 @@ public class GeometryPanel extends PrefPanelBase {
 
 				for (int i = 0; i < values.length; i++) {
 					for (int j = 0; j < values[i].length; j++) {
-						matrixField[i][j].setText(String.valueOf(values[i][j]));
+						matrixField[i][j].setValue(values[i][j]);
 					}
 				}
 			}
@@ -163,7 +164,7 @@ public class GeometryPanel extends PrefPanelBase {
 				
 				for (int i = 0; i < values.length; i++) {
 					for (int j = 0; j < values[i].length; j++) {
-						matrixField[i][j].setText(String.valueOf(values[i][j]));
+						matrixField[i][j].setValue(values[i][j]);
 					}
 				}
 			}
@@ -226,11 +227,9 @@ public class GeometryPanel extends PrefPanelBase {
 		Matrix matrix = affineTransformation.getTransformationMatrix().toMatrix3x4();
 		double[][] values = matrix.getArray();
 
-		for (int i = 0; i < values.length; i++) {
-			for (int j = 0; j < values[i].length; j++) {
-				matrixField[i][j].setText(String.valueOf(values[i][j]));
-			}
-		}
+		for (int i = 0; i < values.length; i++)
+			for (int j = 0; j < values[i].length; j++)
+				matrixField[i][j].setValue(values[i][j]);
 
 		setEnabledTransformation();
 	}
@@ -244,19 +243,9 @@ public class GeometryPanel extends PrefPanelBase {
 		affineTransformation.setUseAffineTransformation(useAffineTransformation.isSelected());
 		
 		List<Double> values = new ArrayList<Double>();
-		for (int i = 0; i < matrixField.length; i++) {
-			for (int j = 0; j < matrixField[i].length; j++) {
-				double value = 0.0;
-				
-				try {
-					value = Double.parseDouble(matrixField[i][j].getText());
-				} catch (NumberFormatException e) {
-					//
-				}
-				
-				values.add(value);
-			}
-		}
+		for (int i = 0; i < matrixField.length; i++)
+			for (int j = 0; j < matrixField[i].length; j++)
+				values.add(((Number)matrixField[i][j].getValue()).doubleValue());
 		
 		affineTransformation.getTransformationMatrix().setValue(values);
 	}
