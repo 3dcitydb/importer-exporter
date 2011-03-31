@@ -29,7 +29,23 @@
 * global type for arrays of strings, e.g. used for log messages
 * and reports
 ******************************************************************/
+set term off;
+set serveroutput off;
+
 CREATE OR REPLACE TYPE STRARRAY IS TABLE OF VARCHAR2(32767);
+/
+
+DROP TYPE DB_INFO_TABLE;
+CREATE OR REPLACE TYPE DB_INFO_OBJ AS OBJECT(
+  SRID NUMBER,
+  GML_SRS_NAME VARCHAR2(1000),
+  COORD_REF_SYS_NAME VARCHAR2(80),
+  IS_COORD_REF_SYS_3D NUMBER,
+  VERSIONING VARCHAR2(100)
+);
+/
+
+CREATE OR REPLACE TYPE DB_INFO_TABLE IS TABLE OF DB_INFO_OBJ;
 /
 
 /*****************************************************************
@@ -46,6 +62,8 @@ AS
   FUNCTION split(list VARCHAR2, delim VARCHAR2 := ',') RETURN STRARRAY;
   FUNCTION min(a number, b number) return number;
   FUNCTION transform_or_null(geom MDSYS.SDO_GEOMETRY, srid number) RETURN MDSYS.SDO_GEOMETRY;
+  FUNCTION is_coord_ref_sys_3d(srid NUMBER) RETURN NUMBER;
+  FUNCTION is_db_coord_ref_sys_3d RETURN NUMBER;
 END geodb_util;
 /
 
@@ -190,6 +208,37 @@ AS
       RETURN NULL;
     END IF;
   END;  
+  
+  /*****************************************************************
+  * is_coord_ref_sys_3d
+  *
+  * @param srid the SRID of the coordinate system to be checked
+  * @return NUMBER the boolean result encoded as number: 0 = false, 1 = true                
+  ******************************************************************/
+  FUNCTION is_coord_ref_sys_3d(srid NUMBER) RETURN NUMBER
+  IS
+    is_3d number := 0;
+  BEGIN
+    execute immediate 'SELECT COUNT(*) from SDO_CRS_COMPOUND where SRID=:1' into is_3d using srid;
+    if is_3d = 0 then
+      execute immediate 'SELECT COUNT(*) from SDO_CRS_GEOGRAPHIC3D where SRID=:1' into is_3d using srid;
+    end if;
+    
+    return is_3d;
+  END;
+  
+  /*****************************************************************
+  * is_db_coord_ref_sys_3d
+  *
+  * @return NUMBER the boolean result encoded as number: 0 = false, 1 = true                
+  ******************************************************************/
+  FUNCTION is_db_coord_ref_sys_3d RETURN NUMBER
+  IS
+    srid number;
+  BEGIN
+    execute immediate 'SELECT srid from DATABASE_SRS' into srid;
+    return is_coord_ref_sys_3d(srid);
+  END;
   
 END geodb_util;
 /
