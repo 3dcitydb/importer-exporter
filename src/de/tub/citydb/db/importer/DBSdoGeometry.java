@@ -36,7 +36,6 @@ import java.util.List;
 
 import oracle.spatial.geometry.JGeometry;
 
-import org.citygml4j.geometry.Matrix;
 import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
@@ -73,21 +72,16 @@ import de.tub.citydb.util.Util;
 
 public class DBSdoGeometry implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
+	private final DBImporterManager dbImporterManager;
+	
 	private int dbSrid;
-	
 	private boolean affineTransformation;
-	private Matrix transformationMatrix;
 	
-	public DBSdoGeometry(Config config) {
+	public DBSdoGeometry(Config config, DBImporterManager dbImporterManager) {
+		this.dbImporterManager = dbImporterManager;
+		
 		dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
-		if (affineTransformation) {
-			transformationMatrix = config.getProject().getImporter().getAffineTransformation().getTransformationMatrix().toMatrix3x4();
-			if (transformationMatrix.eq(Matrix.identity(3, 4))) {
-				transformationMatrix = null;
-				affineTransformation = false;
-			}
-		}
 	}
 
 	public JGeometry getPoint(PointProperty pointProperty) {
@@ -99,7 +93,7 @@ public class DBSdoGeometry implements DBImporter {
 
 			if (values != null && !values.isEmpty()) {
 				if (affineTransformation)
-					applyAffineTransformation(values);
+					dbImporterManager.getAffineTransformer().transformCoordinates(values);
 				
 				double[] coords = new double[values.size()];
 				
@@ -137,7 +131,7 @@ public class DBSdoGeometry implements DBImporter {
 				int i = 0;
 				for (List<Double> coordsList : pointList) {
 					if (affineTransformation)
-						applyAffineTransformation(coordsList);
+						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
 					
 					double[] coords = new double[3];
 
@@ -186,7 +180,7 @@ public class DBSdoGeometry implements DBImporter {
 				int i = 0;
 				for (List<Double> coordsList : pointList) {
 					if (affineTransformation)
-						applyAffineTransformation(coordsList);
+						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
 					
 					double[] coords = new double[3];
 
@@ -231,7 +225,7 @@ public class DBSdoGeometry implements DBImporter {
 					int i = 0;
 					for (List<Double> coordsList : pointList) {
 						if (affineTransformation)
-							applyAffineTransformation(coordsList);
+							dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
 						
 						double[] coords = new double[coordsList.size()];
 
@@ -279,7 +273,7 @@ public class DBSdoGeometry implements DBImporter {
 				int i = 0;
 				for (List<Double> coordsList : pointList) {
 					if (affineTransformation)
-						applyAffineTransformation(coordsList);
+						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
 					
 					double[] coords = new double[coordsList.size()];
 
@@ -383,7 +377,7 @@ public class DBSdoGeometry implements DBImporter {
 				int i = 0;
 				for (List<Double> coordsList : pointList) {
 					if (affineTransformation)
-						applyAffineTransformation(coordsList);
+						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
 					
 					double[] coords = new double[coordsList.size()];
 
@@ -456,7 +450,7 @@ public class DBSdoGeometry implements DBImporter {
 						}
 						
 						if (affineTransformation)
-							applyAffineTransformation(points);
+							dbImporterManager.getAffineTransformer().transformCoordinates(points);
 						
 						pointList.add(points);
 
@@ -499,7 +493,7 @@ public class DBSdoGeometry implements DBImporter {
 									}
 									
 									if (affineTransformation)
-										applyAffineTransformation(interiorPoints);
+										dbImporterManager.getAffineTransformer().transformCoordinates(interiorPoints);
 									
 									pointList.add(interiorPoints);			
 								}
@@ -547,18 +541,6 @@ public class DBSdoGeometry implements DBImporter {
 		}
 
 		return polygonGeom;
-	}
-
-	private void applyAffineTransformation(List<Double> points) {
-		for (int i = 0; i < points.size(); i += 3) {
-			double[] vals = new double[]{ points.get(i), points.get(i+1), points.get(i+2), 1};
-			Matrix v = new Matrix(vals, 1);
-			
-			double[] newVals = transformationMatrix.times(v.transpose()).toColumnPackedArray();
-			points.set(i, newVals[0]);
-			points.set(i+1, newVals[1]);
-			points.set(i+2, newVals[2]);
-		}
 	}
 	
 	@Override

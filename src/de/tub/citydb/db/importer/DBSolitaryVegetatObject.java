@@ -61,9 +61,8 @@ public class DBSolitaryVegetatObject implements DBImporter {
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
 	private DBSdoGeometry sdoGeometry;
+	
 	private boolean affineTransformation;
-	private Matrix transformationMatrix;
-
 	private int batchCounter;
 
 	public DBSolitaryVegetatObject(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
@@ -76,14 +75,6 @@ public class DBSolitaryVegetatObject implements DBImporter {
 
 	private void init() throws SQLException {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
-
-		if (affineTransformation) {
-			transformationMatrix = config.getProject().getImporter().getAffineTransformation().getTransformationMatrix().toMatrix3x4();
-			if (transformationMatrix.eq(Matrix.identity(3, 4))) {
-				transformationMatrix = null;
-				affineTransformation = false;
-			}
-		}
 
 		psSolitVegObject = batchConn.prepareStatement("insert into SOLITARY_VEGETAT_OBJECT (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, SPECIES, FUNCTION, " +
 				"HEIGHT, TRUNC_DIAMETER, CROWN_DIAMETER, " +
@@ -286,12 +277,8 @@ public class DBSolitaryVegetatObject implements DBImporter {
 					// transformation matrix
 					if (geometry.isSetTransformationMatrix()) {
 						Matrix matrix = geometry.getTransformationMatrix().getMatrix();
-
-						if (affineTransformation) {
-							Matrix tmp = Matrix.identity(4, 4);
-							tmp.setMatrix(0, 2, 0, 3, transformationMatrix);
-							matrix = tmp.times(matrix.transpose());
-						}
+						if (affineTransformation)
+							matrix = dbImporterManager.getAffineTransformer().transformImplicitGeometryTransformationMatrix(matrix);
 						
 						matrixString = Util.collection2string(matrix.toRowPackedList(), " ");
 					}

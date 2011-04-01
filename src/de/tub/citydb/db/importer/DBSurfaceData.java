@@ -82,7 +82,6 @@ public class DBSurfaceData implements DBImporter {
 	private boolean replaceGmlId;
 	private boolean importTextureImage;
 	private boolean affineTransformation;
-	private Matrix transformationMatrix;
 
 	public DBSurfaceData(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -103,14 +102,6 @@ public class DBSurfaceData implements DBImporter {
 			gmlIdCodespace = "'" + gmlIdCodespace + "'";
 		else
 			gmlIdCodespace = "null";
-
-		if (affineTransformation) {
-			transformationMatrix = config.getProject().getImporter().getAffineTransformation().getTransformationMatrix().toMatrix3x4();
-			if (transformationMatrix.eq(Matrix.identity(3, 4))) {
-				transformationMatrix = null;
-				affineTransformation = false;
-			}
-		}
 
 		psX3DMaterial = batchConn.prepareStatement("insert into SURFACE_DATA (ID, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, TYPE, " +
 				"X3D_SHININESS, X3D_TRANSPARENCY, X3D_AMBIENT_INTENSITY, X3D_SPECULAR_COLOR, X3D_DIFFUSE_COLOR, X3D_EMISSIVE_COLOR, X3D_IS_SMOOTH) values " +
@@ -330,7 +321,11 @@ public class DBSurfaceData implements DBImporter {
 							TexCoordGen texCoordGen = (TexCoordGen)texPara;
 
 							if (texCoordGen.isSetWorldToTexture()) {
-								String worldToTexture = Util.collection2string(texCoordGen.getWorldToTexture().getMatrix().toRowPackedList(), " ");
+								Matrix worldToTexture = texCoordGen.getWorldToTexture().getMatrix();
+								if (affineTransformation)
+									worldToTexture = dbImporterManager.getAffineTransformer().transformWorldToTexture(worldToTexture);
+								
+								String worldToTextureString = Util.collection2string(worldToTexture.toRowPackedList(), " ");
 
 								DBXlinkTextureParam xlink = new DBXlinkTextureParam(
 										surfaceDataId,
@@ -339,7 +334,7 @@ public class DBSurfaceData implements DBImporter {
 
 								xlink.setTextureParameterization(true);
 								xlink.setTexParamGmlId(texParamGmlId);
-								xlink.setWorldToTexture(worldToTexture);
+								xlink.setWorldToTexture(worldToTextureString);
 
 								dbImporterManager.propagateXlink(xlink);
 							}
@@ -402,11 +397,8 @@ public class DBSurfaceData implements DBImporter {
 
 			if (geoTex.isSetOrientation()) {
 				Matrix orientation = geoTex.getOrientation().getMatrix();
-
-				if (affineTransformation) {
-					Matrix transform2x2 = transformationMatrix.getMatrix(2, 2);
-					orientation = transform2x2.times(orientation.transpose());
-				}
+				if (affineTransformation)
+					orientation = dbImporterManager.getAffineTransformer().transformGeoreferencedTextureOrientation(orientation);
 
 				psSurfaceData.setString(14, Util.collection2string(orientation.toRowPackedList(), " "));
 			} else
@@ -418,13 +410,13 @@ public class DBSurfaceData implements DBImporter {
 				// the CityGML spec states that referencePoint shall be 2d only
 				if (pointProp.isSetPoint()) {
 					Point point = pointProp.getPoint();
-					List<Double> points = point.toList3d();
+					List<Double> coords = point.toList3d();
 
-					if (points != null && !points.isEmpty()) {
+					if (coords != null && !coords.isEmpty()) {
 						if (affineTransformation)
-							applyAffineTransformation(points);
+							dbImporterManager.getAffineTransformer().transformCoordinates(coords);
 
-						JGeometry geom = new JGeometry(points.get(0), points.get(1), dbSrid);
+						JGeometry geom = new JGeometry(coords.get(0), coords.get(1), dbSrid);
 						STRUCT obj = SyncJGeometry.syncStore(geom, batchConn);
 
 						psSurfaceData.setObject(15, obj);
@@ -473,18 +465,6 @@ public class DBSurfaceData implements DBImporter {
 		dbAppearToSurfaceDataImporter.insert(surfaceDataId, parentId);
 
 		return surfaceDataId;
-	}
-
-	private void applyAffineTransformation(List<Double> points) {
-		for (int i = 0; i < points.size(); i += 3) {
-			double[] vals = new double[]{ points.get(i), points.get(i+1), points.get(i+2), 1};
-			Matrix v = new Matrix(vals, 1);
-
-			double[] newVals = transformationMatrix.times(v.transpose()).toColumnPackedArray();
-			points.set(i, newVals[0]);
-			points.set(i+1, newVals[1]);
-			points.set(i+2, newVals[2]);
-		}
 	}
 
 	@Override

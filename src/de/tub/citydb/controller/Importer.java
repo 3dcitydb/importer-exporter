@@ -61,6 +61,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Index;
 import de.tub.citydb.config.project.database.Workspace;
+import de.tub.citydb.config.project.general.AffineTransformation;
 import de.tub.citydb.config.project.importer.ImportGmlId;
 import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.db.DBConnectionPool;
@@ -69,6 +70,7 @@ import de.tub.citydb.db.cache.model.CacheTableModelEnum;
 import de.tub.citydb.db.gmlId.DBGmlIdLookupServerEnum;
 import de.tub.citydb.db.gmlId.DBGmlIdLookupServerManager;
 import de.tub.citydb.db.gmlId.DBImportCache;
+import de.tub.citydb.db.importer.AffineTransformer;
 import de.tub.citydb.db.xlink.DBXlink;
 import de.tub.citydb.db.xlink.resolver.DBXlinkSplitter;
 import de.tub.citydb.event.Event;
@@ -232,7 +234,7 @@ public class Importer implements EventListener {
 
 		// import filter
 		ImportFilter importFilter = new ImportFilter(config);
-
+		
 		// prepare CityGML input factory
 		CityGMLInputFactory in = null;
 		try {
@@ -256,6 +258,19 @@ public class Importer implements EventListener {
 			ValidationHandler validationHandler = new ValidationHandler();
 			validationHandler.allErrors = !xmlValidation.isSetReportOneErrorPerFeature();
 			in.setValidationEventHandler(validationHandler);
+		}
+		
+		// affine transformation
+		AffineTransformation affineTransformation = config.getProject().getImporter().getAffineTransformation();
+		if (affineTransformation.isSetUseAffineTransformation()) {
+			LOG.info("Applying affine coordinates transformation.");
+			
+			try {
+				intConfig.setAffineTransformer(new AffineTransformer(config));
+			} catch (Exception e) {
+				LOG.error("The homogeneous transformation matrix is singular.");
+				return false;
+			}
 		}
 
 		// prepare counter filter

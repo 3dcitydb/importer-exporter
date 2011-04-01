@@ -38,12 +38,14 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
+import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.building.BuildingFurniture;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
+import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -58,13 +60,15 @@ public class DBBuildingFurniture implements DBImporter {
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
 	private DBSdoGeometry sdoGeometry;
-
+	
+	private boolean affineTransformation;
 	private int batchCounter;
 
-	public DBBuildingFurniture(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
+	public DBBuildingFurniture(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
 		this.dbImporterManager = dbImporterManager;
 
+		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		init();
 	}
 
@@ -183,8 +187,13 @@ public class DBBuildingFurniture implements DBImporter {
 					pointGeom = sdoGeometry.getPoint(geometry.getReferencePoint());
 
 				// transformation matrix
-				if (geometry.isSetTransformationMatrix())
-					matrixString = Util.collection2string(geometry.getTransformationMatrix().getMatrix().toRowPackedList(), " ");
+				if (geometry.isSetTransformationMatrix()) {
+					Matrix matrix = geometry.getTransformationMatrix().getMatrix();
+					if (affineTransformation)
+						matrix = dbImporterManager.getAffineTransformer().transformImplicitGeometryTransformationMatrix(matrix);
+					
+					matrixString = Util.collection2string(matrix.toRowPackedList(), " ");
+				}
 				
 				// reference to IMPLICIT_GEOMETRY
 				implicitId = implicitGeometryImporter.insert(geometry, buildingFurnitureId);

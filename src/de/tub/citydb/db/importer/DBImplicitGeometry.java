@@ -41,6 +41,7 @@ import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
+import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -62,13 +63,15 @@ public class DBImplicitGeometry implements DBImporter {
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private ResultSet rs;
 
+	private boolean affineTransformation;
 	private int batchCounter;
 
-	public DBImplicitGeometry(Connection batchConn, Connection commitConn,DBImporterManager dbImporterManager) throws SQLException {
+	public DBImplicitGeometry(Connection batchConn, Connection commitConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
 		this.commitConn = commitConn;
 		this.dbImporterManager = dbImporterManager;
 
+		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		init();
 	}
 
@@ -179,11 +182,21 @@ public class DBImplicitGeometry implements DBImporter {
 				psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
 
 			if (relativeGeometry != null) {
+				// if affine transformation is activated we apply the user-defined affine
+				// transformation to the transformation matrix associated with the implicit geometry.
+				// thus, we do not need to apply it to the coordinate values
+				if (affineTransformation)
+					surfaceGeometryImporter.setApplyAffineTransformation(false);
+				
 				long surfaceGeometryId = surfaceGeometryImporter.insert(relativeGeometry, parentId);
 				if (surfaceGeometryId != 0)
 					psUpdateImplicitGeometry.setLong(2, surfaceGeometryId);
 				else
 					psUpdateImplicitGeometry.setNull(2, 0);
+				
+				// re-activate affine transformation on surface geometry writer if necessary
+				if (affineTransformation)
+					surfaceGeometryImporter.setApplyAffineTransformation(true);
 			} else
 				psUpdateImplicitGeometry.setNull(2, 0);
 

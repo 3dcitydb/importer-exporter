@@ -46,5 +46,17 @@ public class TransformationMatrix {
 
 		return matrix;
 	}
+	
+	public Matrix toMatrix4x4() {
+		Matrix matrix = new Matrix(4, 4);
+		matrix.setMatrix(0, 2, 0, 3, toMatrix3x4());
+		
+		matrix.set(3, 0, 0);
+		matrix.set(3, 1, 0);
+		matrix.set(3, 2, 0);
+		matrix.set(3, 3, 1);
+		
+		return matrix;
+	}
 
 }

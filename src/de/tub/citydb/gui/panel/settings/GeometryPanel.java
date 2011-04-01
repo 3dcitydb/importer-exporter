@@ -156,7 +156,7 @@ public class GeometryPanel extends PrefPanelBase {
 		
 		swapXYMatrixButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Matrix matrix = new Matrix(0.0, 3, 4);
+				Matrix matrix = new Matrix(3, 4, 0.0);
 				matrix.set(0, 1, 1.0);
 				matrix.set(1, 0, 1.0);
 				matrix.set(2, 2, 1.0);
@@ -248,6 +248,10 @@ public class GeometryPanel extends PrefPanelBase {
 				values.add(((Number)matrixField[i][j].getValue()).doubleValue());
 		
 		affineTransformation.getTransformationMatrix().setValue(values);
+		
+		// disable affine transformation if transformation matrix equals identity matrix
+		if (affineTransformation.getTransformationMatrix().toMatrix3x4().eq(Matrix.identity(3, 4)))
+			affineTransformation.setUseAffineTransformation(false);
 	}
 
 }

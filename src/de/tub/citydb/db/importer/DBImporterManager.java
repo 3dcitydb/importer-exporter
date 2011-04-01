@@ -53,10 +53,11 @@ public class DBImporterManager {
 	private final EventDispatcher eventDipatcher;
 	private final Config config;
 
-	private HashMap<DBImporterEnum, DBImporter> dbImporterMap;
-	private HashMap<CityGMLClass, Long> featureCounterMap;
-	private HashMap<GMLClass, Long> geometryCounterMap;
-	private DBSequencer dbSequencer;
+	private final HashMap<DBImporterEnum, DBImporter> dbImporterMap;
+	private final HashMap<CityGMLClass, Long> featureCounterMap;
+	private final HashMap<GMLClass, Long> geometryCounterMap;
+	private final DBSequencer dbSequencer;
+	private AffineTransformer affineTransformer;
 
 	public DBImporterManager(Connection batchConn,
 			Connection commitConn,
@@ -75,6 +76,9 @@ public class DBImporterManager {
 		featureCounterMap = new HashMap<CityGMLClass, Long>();
 		geometryCounterMap = new HashMap<GMLClass, Long>();
 		dbSequencer = new DBSequencer(batchConn);
+		
+		if (config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation())
+			affineTransformer = config.getInternal().getAffineTransformer();
 	}
 
 	public DBImporter getDBImporter(DBImporterEnum dbImporterType) throws SQLException {
@@ -87,7 +91,7 @@ public class DBImporterManager {
 				dbImporter = new DBSurfaceGeometry(batchConn, config, this);
 				break;
 			case IMPLICIT_GEOMETRY:
-				dbImporter = new DBImplicitGeometry(batchConn, commitConn, this);
+				dbImporter = new DBImplicitGeometry(batchConn, commitConn, config, this);
 				break;
 			case CITYOBJECT:
 				dbImporter = new DBCityObject(batchConn, config, this);
@@ -105,7 +109,7 @@ public class DBImporterManager {
 				dbImporter = new DBRoom(batchConn, this);
 				break;
 			case BUILDING_FURNITURE:
-				dbImporter = new DBBuildingFurniture(batchConn, this);
+				dbImporter = new DBBuildingFurniture(batchConn, config, this);
 				break;
 			case BUILDING_INSTALLATION:
 				dbImporter = new DBBuildingInstallation(batchConn, this);
@@ -126,7 +130,7 @@ public class DBImporterManager {
 				dbImporter = new DBAddressToBuilding(batchConn, this);
 				break;
 			case CITY_FURNITURE:
-				dbImporter = new DBCityFurniture(batchConn, this);
+				dbImporter = new DBCityFurniture(batchConn, config, this);
 				break;
 			case LAND_USE:
 				dbImporter = new DBLandUse(batchConn, this);
@@ -174,13 +178,13 @@ public class DBImporterManager {
 				dbImporter = new DBReliefFeatToRelComp(batchConn, this);
 				break;
 			case GENERIC_CITYOBJECT:
-				dbImporter = new DBGenericCityObject(batchConn, this);
+				dbImporter = new DBGenericCityObject(batchConn, config, this);
 				break;
 			case CITYOBJECTGROUP:
 				dbImporter = new DBCityObjectGroup(batchConn, this);
 				break;
 			case SDO_GEOMETRY:
-				dbImporter = new DBSdoGeometry(config);
+				dbImporter = new DBSdoGeometry(config, this);
 				break;
 			}
 
@@ -233,6 +237,10 @@ public class DBImporterManager {
 			featureCounterMap.put(featureType, counter + 1);
 	}
 
+	public AffineTransformer getAffineTransformer() {
+		return affineTransformer;
+	}
+	
 	public HashMap<CityGMLClass, Long> getFeatureCounter() {
 		return featureCounterMap;
 	}

@@ -40,7 +40,6 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.geometry.Matrix;
 import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
 import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -82,7 +81,6 @@ public class DBCityObject implements DBImporter {
 	private boolean rememberGmlId;
 	private boolean importAppearance;
 	private boolean affineTransformation;
-	private Matrix transformationMatrix;
 	private int batchCounter;
 
 	public DBCityObject(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
@@ -104,14 +102,6 @@ public class DBCityObject implements DBImporter {
 		if (rememberGmlId)
 			importFileName = config.getInternal().getCurrentImportFileName();
 		
-		if (affineTransformation) {
-			transformationMatrix = config.getProject().getImporter().getAffineTransformation().getTransformationMatrix().toMatrix3x4();
-			if (transformationMatrix.eq(Matrix.identity(3, 4))) {
-				transformationMatrix = null;
-				affineTransformation = false;
-			}
-		}
-
 		reasonForUpdate = config.getProject().getImporter().getContinuation().getReasonForUpdate();
 		lineage = config.getProject().getImporter().getContinuation().getLineage();
 		if (config.getProject().getImporter().getContinuation().isUpdatingPersonModeDatabase())
@@ -209,7 +199,7 @@ public class DBCityObject implements DBImporter {
 			points.addAll(cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue());
 
 			if (affineTransformation)
-				applyAffineTransformation(points);
+				dbImporterManager.getAffineTransformer().transformCoordinates(points);
 			
 			double[] ordinates = new double[points.size()];
 			int i = 0;
@@ -297,18 +287,6 @@ public class DBCityObject implements DBImporter {
 
 		dbImporterManager.updateFeatureCounter(cityObject.getCityGMLClass());
 		return cityObjectId;
-	}
-
-	private void applyAffineTransformation(List<Double> points) {
-		for (int i = 0; i < points.size(); i += 3) {
-			double[] vals = new double[]{ points.get(i), points.get(i+1), points.get(i+2), 1};
-			Matrix v = new Matrix(vals, 1);
-			
-			double[] newVals = transformationMatrix.times(v.transpose()).toColumnPackedArray();
-			points.set(i, newVals[0]);
-			points.set(i+1, newVals[1]);
-			points.set(i+2, newVals[2]);
-		}
 	}
 	
 	@Override

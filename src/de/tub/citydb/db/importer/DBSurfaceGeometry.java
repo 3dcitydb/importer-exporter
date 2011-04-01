@@ -40,7 +40,6 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.geometry.Matrix;
 import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.texturedsurface._AbstractAppearance;
@@ -99,7 +98,6 @@ public class DBSurfaceGeometry implements DBImporter {
 	private boolean replaceGmlId;
 	private boolean importAppearance;
 	private boolean affineTransformation;
-	private Matrix transformationMatrix;
 	private int parentBatchCounter;
 	private int memberBatchCounter;
 
@@ -123,14 +121,6 @@ public class DBSurfaceGeometry implements DBImporter {
 		else
 			gmlIdCodespace = "null";
 
-		if (affineTransformation) {
-			transformationMatrix = config.getProject().getImporter().getAffineTransformation().getTransformationMatrix().toMatrix3x4();
-			if (transformationMatrix.eq(Matrix.identity(3, 4))) {
-				transformationMatrix = null;
-				affineTransformation = false;
-			}
-		}
-
 		psParentElem = batchConn.prepareStatement("insert into SURFACE_GEOMETRY (ID, GMLID, GMLID_CODESPACE, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY) values "
 				+ "(?, ?, " + gmlIdCodespace + ", ?, ?, ?, ?, ?, 0, ?, ?)");
 		psMemberElem = batchConn.prepareStatement("insert into SURFACE_GEOMETRY (ID, GMLID, GMLID_CODESPACE, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY) values "
@@ -148,6 +138,10 @@ public class DBSurfaceGeometry implements DBImporter {
 		return surfaceGeometryId;
 	}
 
+	public void setApplyAffineTransformation(boolean affineTransformation) {
+		this.affineTransformation = affineTransformation;
+	}
+	
 	private void insert(AbstractGeometry surfaceGeometry,
 			long surfaceGeometryId,
 			long parentId,
@@ -206,7 +200,7 @@ public class DBSurfaceGeometry implements DBImporter {
 				}
 
 				if (affineTransformation)
-					applyAffineTransformation(points);
+					dbImporterManager.getAffineTransformer().transformCoordinates(points);
 
 				double[] ordinates = new double[points.size()];
 
@@ -302,7 +296,7 @@ public class DBSurfaceGeometry implements DBImporter {
 						}
 
 						if (affineTransformation)
-							applyAffineTransformation(points);
+							dbImporterManager.getAffineTransformer().transformCoordinates(points);
 
 						pointList.add(points);
 						int ringNo = 0;
@@ -360,7 +354,7 @@ public class DBSurfaceGeometry implements DBImporter {
 									}
 
 									if (affineTransformation)
-										applyAffineTransformation(interiorPoints);
+										dbImporterManager.getAffineTransformer().transformCoordinates(interiorPoints);
 
 									pointList.add(interiorPoints);
 
@@ -1146,18 +1140,6 @@ public class DBSurfaceGeometry implements DBImporter {
 					}
 				}
 			}
-		}
-	}
-
-	private void applyAffineTransformation(List<Double> points) {
-		for (int i = 0; i < points.size(); i += 3) {
-			double[] vals = new double[]{ points.get(i), points.get(i+1), points.get(i+2), 1};
-			Matrix v = new Matrix(vals, 1);
-
-			v = transformationMatrix.times(v.transpose());
-			points.set(i, v.get(0, 0));
-			points.set(i+1, v.get(1, 0));
-			points.set(i+2, v.get(2, 0));
 		}
 	}
 

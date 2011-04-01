@@ -33,6 +33,7 @@ import java.io.File;
 import java.util.ResourceBundle;
 
 import de.tub.citydb.config.project.database.ReferenceSystem;
+import de.tub.citydb.db.importer.AffineTransformer;
 
 public class Internal {
 	public static final int ORACLE_MAX_BATCH_SIZE = 65535;
@@ -61,6 +62,7 @@ public class Internal {
 
 	// internal variables
 	private String currentGmlIdCodespace = "";
+	private AffineTransformer affineTransformer;
 
 	// internal flags
 	private boolean useInternalBBoxFilter = false;
@@ -179,6 +181,14 @@ public class Internal {
 
 	public void setCurrentLogPath(String currentLogPath) {
 		this.currentLogPath = currentLogPath;
+	}
+
+	public AffineTransformer getAffineTransformer() {
+		return affineTransformer;
+	}
+
+	public void setAffineTransformer(AffineTransformer affineTransformer) {
+		this.affineTransformer = affineTransformer;
 	}
 
 }
