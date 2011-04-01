@@ -42,7 +42,7 @@ import de.tub.citydb.db.gmlId.GmlIdEntry;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
 
 public class XlinkBasic implements DBXlinkResolver {
-	private final ReentrantLock mainLock = new ReentrantLock();
+	private static final ReentrantLock mainLock = new ReentrantLock();
 	
 	private final Connection batchConn;
 	private final DBXlinkResolverManager resolverManager;
