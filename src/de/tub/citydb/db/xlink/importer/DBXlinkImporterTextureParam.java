@@ -33,12 +33,14 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.cache.TemporaryCacheTable;
 import de.tub.citydb.db.xlink.DBXlinkTextureParam;
 
 public class DBXlinkImporterTextureParam implements DBXlinkImporter {
 	private final TemporaryCacheTable tempTable;
 	private PreparedStatement psXlink;
+	private int batchCounter;
 
 	public DBXlinkImporterTextureParam(TemporaryCacheTable tempTable) throws SQLException {
 		this.tempTable = tempTable;
@@ -84,6 +86,8 @@ public class DBXlinkImporterTextureParam implements DBXlinkImporter {
 			psXlink.setNull(9, Types.VARCHAR);
 
 		psXlink.addBatch();
+		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			executeBatch();
 
 		return true;
 	}
@@ -91,6 +95,7 @@ public class DBXlinkImporterTextureParam implements DBXlinkImporter {
 	@Override
 	public void executeBatch() throws SQLException {
 		psXlink.executeBatch();
+		batchCounter = 0;
 	}
 
 	@Override

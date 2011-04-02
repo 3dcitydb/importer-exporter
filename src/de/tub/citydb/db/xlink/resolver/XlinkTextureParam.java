@@ -36,6 +36,7 @@ import java.sql.Types;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.gmlId.GmlIdEntry;
 import de.tub.citydb.db.xlink.DBXlinkTextureAssociation;
 import de.tub.citydb.db.xlink.DBXlinkTextureParam;
@@ -46,6 +47,7 @@ public class XlinkTextureParam implements DBXlinkResolver {
 	private final DBXlinkResolverManager resolverManager;
 
 	private PreparedStatement psTextureParam;
+	private int batchCounter;
 
 	public XlinkTextureParam(Connection batchConn, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -78,6 +80,8 @@ public class XlinkTextureParam implements DBXlinkResolver {
 			psTextureParam.setNull(3, Types.VARCHAR);
 
 		psTextureParam.addBatch();
+		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			executeBatch();
 
 		if (xlink.getType() == DBXlinkTextureParamEnum.TEXCOORDGEN && xlink.getTexParamGmlId() != null) {
 			// propagate xlink...
@@ -93,6 +97,7 @@ public class XlinkTextureParam implements DBXlinkResolver {
 	@Override
 	public void executeBatch() throws SQLException {
 		psTextureParam.executeBatch();
+		batchCounter = 0;
 	}
 
 	@Override

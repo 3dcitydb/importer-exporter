@@ -39,6 +39,7 @@ import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.WaterSurface;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.DBTypeValueEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
@@ -52,6 +53,8 @@ public class DBWaterBoundarySurface implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBWaterBodToWaterBndSrf bodyToSurfaceImporter;
+	
+	private int batchCounter;
 	
 	public DBWaterBoundarySurface(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -171,6 +174,8 @@ public class DBWaterBoundarySurface implements DBImporter {
         }
 
         psWaterBoundarySurface.addBatch();
+        if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			dbImporterManager.executeBatch(DBImporterEnum.WATERBOUNDARY_SURFACE);
 
         // boundary surface to waterBody
         bodyToSurfaceImporter.insert(waterBoundarySurfaceId, parentId);
@@ -181,6 +186,7 @@ public class DBWaterBoundarySurface implements DBImporter {
 	@Override
 	public void executeBatch() throws SQLException {
 		psWaterBoundarySurface.executeBatch();
+		batchCounter = 0;
 	}
 
 	@Override

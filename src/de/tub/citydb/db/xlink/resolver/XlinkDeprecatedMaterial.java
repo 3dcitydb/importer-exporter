@@ -35,6 +35,7 @@ import java.sql.SQLException;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.gmlId.GmlIdEntry;
 import de.tub.citydb.db.importer.DBSequencerEnum;
 import de.tub.citydb.db.xlink.DBXlinkDeprecatedMaterial;
@@ -45,6 +46,8 @@ public class XlinkDeprecatedMaterial implements DBXlinkResolver {
 
 	private PreparedStatement psSurfaceData;
 	private PreparedStatement psTextureParam;
+	
+	private int batchCounter;
 
 	public XlinkDeprecatedMaterial(Connection batchConn, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -77,6 +80,9 @@ public class XlinkDeprecatedMaterial implements DBXlinkResolver {
 		psTextureParam.setLong(2, newSurfaceDataId);
 		psTextureParam.setLong(3, surfaceDataEntry.getId());
 		psTextureParam.addBatch();
+		
+		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			executeBatch();
 
 		return true;
 	}
@@ -85,6 +91,7 @@ public class XlinkDeprecatedMaterial implements DBXlinkResolver {
 	public void executeBatch() throws SQLException {
 		psSurfaceData.executeBatch();
 		psTextureParam.executeBatch();
+		batchCounter = 0;
 	}
 
 	@Override

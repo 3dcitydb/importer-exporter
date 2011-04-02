@@ -36,6 +36,7 @@ import java.sql.SQLException;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.cache.HeapCacheTable;
 import de.tub.citydb.db.gmlId.GmlIdEntry;
 import de.tub.citydb.db.xlink.DBXlinkGroupToCityObject;
@@ -50,6 +51,9 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 	private PreparedStatement psSelectTmp;
 	private PreparedStatement psGroupMemberToCityObject;
 	private PreparedStatement psGroupParentToCityObject;
+	
+	private int parentBatchCounter;
+	private int memberBatchCounter;
 
 	private FeatureClassFilter featureClassFilter;
 
@@ -111,12 +115,20 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 			psGroupParentToCityObject.setLong(2, xlink.getGroupId());
 			
 			psGroupParentToCityObject.addBatch();
+			if (++parentBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+				psGroupParentToCityObject.executeBatch();
+				parentBatchCounter = 0;
+			}
 		} else {
 			psGroupMemberToCityObject.setLong(1, cityObjectEntry.getId());
 			psGroupMemberToCityObject.setLong(2, xlink.getGroupId());
 			psGroupMemberToCityObject.setString(3, xlink.getRole());
 
 			psGroupMemberToCityObject.addBatch();
+			if (++memberBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+				psGroupMemberToCityObject.executeBatch();
+				memberBatchCounter = 0;
+			}
 		}
 		
 		return true;
@@ -126,7 +138,9 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 	@Override
 	public void executeBatch() throws SQLException {
 		psGroupMemberToCityObject.executeBatch();
-		psGroupParentToCityObject.executeBatch();
+		psGroupParentToCityObject.executeBatch();		
+		parentBatchCounter = 0;
+		memberBatchCounter = 0;
 	}
 
 	@Override
