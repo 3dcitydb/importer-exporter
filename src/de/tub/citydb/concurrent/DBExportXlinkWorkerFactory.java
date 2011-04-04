@@ -31,9 +31,9 @@ package de.tub.citydb.concurrent;
 
 import java.sql.SQLException;
 
+import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.db.DBConnectionPool;
-import de.tub.citydb.db.xlink.DBXlink;
 import de.tub.citydb.event.EventDispatcher;
 
 public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {

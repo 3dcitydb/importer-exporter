@@ -34,19 +34,19 @@ import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import oracle.jdbc.OracleConnection;
+import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
+import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkEnum;
+import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkLibraryObject;
+import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureFile;
+import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureFileEnum;
+import de.tub.citydb.components.citygml.exporter.database.xlink.DBXlinkExporterEnum;
+import de.tub.citydb.components.citygml.exporter.database.xlink.DBXlinkExporterLibraryObject;
+import de.tub.citydb.components.citygml.exporter.database.xlink.DBXlinkExporterManager;
+import de.tub.citydb.components.citygml.exporter.database.xlink.DBXlinkExporterTextureImage;
 import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.db.DBConnectionPool;
-import de.tub.citydb.db.xlink.DBXlink;
-import de.tub.citydb.db.xlink.DBXlinkEnum;
-import de.tub.citydb.db.xlink.DBXlinkLibraryObject;
-import de.tub.citydb.db.xlink.DBXlinkTextureFile;
-import de.tub.citydb.db.xlink.DBXlinkTextureFileEnum;
-import de.tub.citydb.db.xlink.exporter.DBXlinkExporterEnum;
-import de.tub.citydb.db.xlink.exporter.DBXlinkExporterLibraryObject;
-import de.tub.citydb.db.xlink.exporter.DBXlinkExporterManager;
-import de.tub.citydb.db.xlink.exporter.DBXlinkExporterTextureImage;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.log.Logger;
 

@@ -268,6 +268,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		cityGMLExportPreferences.doTranslation();
 		kmlExportPreferences.doTranslation();
 		matchingPreferences.doTranslation();
+		databasePreferences.doTranslation();
 		generalPreferences.doTranslation();
 
 		prefLabel.setText(((PreferencesTreeNode)menuTree.getLastSelectedPathComponent()).toString());		
@@ -339,6 +340,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		cityGMLExportPreferences.loadSettings();
 		kmlExportPreferences.loadSettings();
 		matchingPreferences.loadSettings();
+		databasePreferences.loadSettings();
 		generalPreferences.loadSettings();
 	}
 
@@ -347,6 +349,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		cityGMLExportPreferences.setSettings();
 		kmlExportPreferences.setSettings();
 		matchingPreferences.setSettings();
+		databasePreferences.setSettings();
 		generalPreferences.setSettings();
 	}
 

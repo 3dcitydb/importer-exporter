@@ -34,11 +34,11 @@ import java.sql.SQLException;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
+import de.tub.citydb.components.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
+import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
+import de.tub.citydb.components.citygml.exporter.database.content.DBSplittingResult;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.db.DBConnectionPool;
-import de.tub.citydb.db.exporter.DBSplittingResult;
-import de.tub.citydb.db.gmlId.DBGmlIdLookupServerManager;
-import de.tub.citydb.db.xlink.DBXlink;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.filter.ExportFilter;
 
