@@ -33,8 +33,4 @@ public class JAXBContextRegistry {
 		
 		return value;
 	}
-
-	public Object clone() throws CloneNotSupportedException {
-		throw new CloneNotSupportedException();
-	}
 }

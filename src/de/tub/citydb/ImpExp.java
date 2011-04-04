@@ -32,10 +32,12 @@ package de.tub.citydb;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -60,6 +62,9 @@ import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.plugin.api.Plugin;
+import de.tub.citydb.plugin.service.PluginService;
+import de.tub.citydb.plugin.service.PluginServiceFactory;
 import de.tub.citydb.util.JAXBContextRegistry;
 
 public class ImpExp {
@@ -90,6 +95,7 @@ public class ImpExp {
 
 	private final Logger LOG = Logger.getInstance();
 	private JAXBContext cityGMLContext, kmlContext, colladaContext, projectContext, guiContext;
+	private PluginService pluginService;
 	private Config config;
 	private List<String> errMsgs = new ArrayList<String>();
 
@@ -154,7 +160,7 @@ public class ImpExp {
 		// initialize JAXB and database environment
 		LOG.info("Initializing application environment");
 		config = new Config();
-		
+
 		try {
 			cityGMLContext = JAXBContextRegistry.registerInstance("org.citygml", new JAXBBuilder().getJAXBContext());
 			kmlContext = JAXBContextRegistry.getInstance("net.opengis.kml._2");
@@ -169,7 +175,7 @@ public class ImpExp {
 
 		// initialize config
 		LOG.info("Loading project settings");
-		
+
 		String confPath = null;
 		String projectFileName = null;
 
@@ -284,15 +290,32 @@ public class ImpExp {
 
 			LOG.writeToFile(msg.toString());
 		}
-		
+
 		// init internationalized labels 
 		LanguageType lang = config.getProject().getGlobal().getLanguage();
 		if (lang == null) {
 			lang = LanguageType.fromValue(System.getProperty("user.language"));
 			config.getProject().getGlobal().setLanguage(lang);
 		}
-		
+
 		Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", new Locale(lang.value()));
+
+		// load plugins
+		LOG.info("Loading plugins");
+		try {
+			PluginServiceFactory.addPluginDirectory(new File(Internal.PLUGINS_PATH));
+			pluginService = PluginServiceFactory.createPluginService();
+			Iterator<Plugin> iter = pluginService.getPlugins();
+
+			while (iter.hasNext())
+				LOG.debug("Loaded plugin: " + iter.next().getClass().getName());
+			
+			// set managers
+			// init plugins
+		} catch (IOException e) {
+			LOG.error("Failed to load plugins: " + e.getLocalizedMessage());
+			System.exit(1);
+		}
 
 		// start application
 		if (!shell) {
@@ -306,6 +329,7 @@ public class ImpExp {
 							colladaContext,
 							projectContext,
 							guiContext,
+							pluginService,
 							config).invoke(errMsgs);
 				}
 			});
@@ -431,7 +455,7 @@ public class ImpExp {
 								!name.endsWith("CITYGML"))
 							continue;
 					}
-					
+
 					buffer.append(file.getAbsolutePath());
 					buffer.append("\n");
 					++i;
