@@ -286,18 +286,18 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		}
 
 		col2panel.removeAll();
-		col2panel.add(node.entry.getViewComponent() != null ? 
-				node.entry.getViewComponent() : noticePanel, BorderLayout.NORTH);
+		if (node.entry.getViewComponent() == null || node.entry.getViewComponent() == NullComponent.getInstance()) {
+			col2panel.add(noticePanel, BorderLayout.NORTH);
+			activeEntry = null;
+		} else {
+			col2panel.add(node.entry.getViewComponent(), BorderLayout.NORTH);
+			activeEntry = node.entry;
+		}
 
 		revalidate();
 
 		prefLabel.setText(node.toString());
 		activePanelPath = menuTree.getSelectionPath();
-		if (node.entry.getViewComponent() == null || node.entry.getViewComponent() == NullComponent.getInstance())
-			activeEntry = null;
-		else
-			activeEntry = node.entry;
-
 		setEnabledButtons();
 		repaint();
 	}

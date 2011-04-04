@@ -115,7 +115,7 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 	private final JAXBContext jaxbGuiContext;
 	private final PluginService pluginService;
 	private final DBConnectionPool dbPool;
-	
+
 	private JPanel main;
 	private JTextArea consoleText;
 	private JLabel statusText;
@@ -128,7 +128,7 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 	private ConsoleWindow consoleWindow;
 	private int tmpConsoleWidth;
 	private int activePosition;
-	
+
 	private List<View> views;
 	private CityGMLImportView cityGMLImportView;
 	private CityGMLExportView cityGMLExportView;
@@ -136,7 +136,7 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 	private MatchingView matchingView;
 	private DatabaseView databaseView;
 	private PreferencesView preferencesView;	
-	
+
 	private PrintStream out;
 	private PrintStream err;
 
@@ -205,30 +205,33 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 
 		menuBar = new MenuBar(config, jaxbProjectContext, this);
 		setJMenuBar(menuBar);
-		
+
 		cityGMLImportView = new CityGMLImportView(jaxbCityGMLContext, config, this);
 		cityGMLExportView = new CityGMLExportView(jaxbCityGMLContext, config, this);
 		kmlExportView = new KMLExportView(jaxbKmlContext, jaxbColladaContext, config, this);
 		matchingView = new MatchingView(config, this);
 		databaseView = new DatabaseView(config, this);
 		preferencesView = new PreferencesView(pluginService, config, this);
-		
+
 		views = new ArrayList<View>();
 		views.add(cityGMLImportView);
 		views.add(cityGMLExportView);
 		views.add(kmlExportView);
 		views.add(matchingView);
-		
+
 		Iterator<Plugin> iter = pluginService.getPlugins();
 		while (iter.hasNext()) {
 			Plugin plugin = iter.next();			
-			if (plugin instanceof ViewExtension)
-				views.add(((ViewExtension)plugin).getView());
+			if (plugin instanceof ViewExtension) {
+				ViewExtension extension = (ViewExtension)plugin;
+				if (extension.getView() != null)				
+					views.add(((ViewExtension)plugin).getView());
+			}
 		}
-		
+
 		views.add(databaseView);
 		views.add(preferencesView);
-		
+
 		menu = new JTabbedPane();
 		int index = 0;
 		for (View view : views)
@@ -392,13 +395,13 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 
 	private void initConsole() {
 		Charset encoding;
-		
+
 		try {
 			encoding = Charset.forName("UTF-8");
 		} catch (Exception e) {
 			encoding = Charset.defaultCharset();
 		}
-		
+
 		// let standard out point to console
 		JTextAreaOutputStream jTextwriter = new JTextAreaOutputStream(consoleText, new ByteArrayOutputStream(), encoding);
 		PrintStream writer;
@@ -454,18 +457,18 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 			currentLang = lang;
 
 			setTitle(Internal.I18N.getString("main.window.title"));
-			
+
 			int index = 0;
 			for (View view : views)
 				menu.setTitleAt(index++, view.getTitle());
 
 			statusText.setText(Internal.I18N.getString("main.status.ready.label"));
-			
+
 			if (dbPool.isConnected())
 				connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
 			else
 				connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
-			
+
 			menuBar.doTranslation();
 			cityGMLImportView.doTranslation();
 			cityGMLExportView.doTranslation();
