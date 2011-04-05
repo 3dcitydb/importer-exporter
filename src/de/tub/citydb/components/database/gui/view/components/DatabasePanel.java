@@ -80,11 +80,12 @@ import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.log.LogLevelType;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.plugin.api.controller.DatabaseController;
 import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
 
 @SuppressWarnings("serial")
-public class DatabasePanel extends JPanel implements PropertyChangeListener {
+public class DatabasePanel extends JPanel implements DatabaseController, PropertyChangeListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final ImpExpGui topFrame;
@@ -223,15 +224,10 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 
 		connectButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						if (!dbPool.isConnected())
-							connect();
-						else
-							disconnect();
-					}
-				};
-				thread.start();
+				if (!dbPool.isConnected())
+					connect();
+				else
+					disconnect();
 			}
 		});
 
@@ -479,7 +475,19 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			connCombo.setSelectedIndex(index < connCombo.getItemCount() ? index : index - 1);		
 	}
 
-	public void connect() {
+	@Override
+	public boolean connect() {
+		Thread thread = new Thread() {
+			public void run() {
+				doConnect();
+			}
+		};
+		thread.start();
+
+		return dbPool.isConnected();
+	}
+
+	private void doConnect() {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
@@ -487,7 +495,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			if (!dbPool.isConnected()) {
 				setSettings();
 				DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-				
+
 				// check for valid input
 				if (conn.getUser().trim().equals("")) {
 					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
@@ -532,6 +540,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 					topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
 					dbPool.forceDisconnect();
 					LOG.error("Connection to database could not be established: " + sqlEx.getMessage().trim());
+					return;
 				}
 
 				if (dbPool.isConnected()) {
@@ -563,15 +572,27 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 						LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
 					}
 				}
-				
-				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+
+				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
 			}
 		} finally {
 			lock.unlock();
 		}
 	}
-	
-	public void disconnect() {
+
+	@Override
+	public boolean disconnect() {
+		Thread thread = new Thread() {
+			public void run() {
+				doDisconnect();
+			}
+		};
+		thread.start();
+
+		return !dbPool.isConnected();
+	}
+
+	private void doDisconnect() {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
@@ -599,6 +620,11 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	@Override
+	public boolean isConnected() {
+		return dbPool.isConnected();
 	}
 
 	private void report() {
@@ -897,7 +923,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		databaseText.setText(dbConnection.getSid());
 		userText.setText(dbConnection.getUser());
 		passwordCheck.setSelected(dbConnection.isSetSavePassword());
-		
+
 		if (passwordCheck.isSelected())
 			passwordText.setText(dbConnection.getPassword());
 		else

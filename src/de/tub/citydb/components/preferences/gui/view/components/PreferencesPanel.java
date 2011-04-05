@@ -313,27 +313,8 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		return true;
 	}
 
-	public void loadSettings() {
-		//cityGMLImportPreferences.loadSettings();
-		//cityGMLExportPreferences.loadSettings();
-		//kmlExportPreferences.loadSettings();
-		//matchingPreferences.loadSettings();
-		//databasePreferences.loadSettings();
-		//generalPreferences.loadSettings();
-	}
-
-	public void setSettings() {
-		//cityGMLImportPreferences.setSettings();
-		//cityGMLExportPreferences.setSettings();
-		//kmlExportPreferences.setSettings();
-		//matchingPreferences.setSettings();
-		//databasePreferences.setSettings();
-		//generalPreferences.setSettings();
-	}
-
-	public void setLoggingSettings() {
-		// TODO
-		//generalPreferences.getLoggingPanel().setSettings();
+	public GeneralPreferences getGeneralPreferences() {
+		return generalPreferences;
 	}
 
 	private void setEnabledButtons() {

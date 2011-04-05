@@ -20,19 +20,17 @@ public class PreferencesPlugin implements InternalPlugin, ViewExtension, Prefere
 	
 	public PreferencesPlugin(PluginService pluginService, Config config, ImpExpGui mainView) {
 		view = new PreferencesView(pluginService, config, mainView);
-		preferences = new GeneralPreferences(mainView, config);
+		preferences = ((PreferencesPanel)view.getViewComponent()).getGeneralPreferences();
 	}
 		
 	@Override
 	public void init() {
-		view.loadSettings();
-		preferences.loadSettings();
+		loadSettings();
 	}
 
 	@Override
 	public void shutdown() {
-		view.setSettings();
-		preferences.setSettings();
+		setSettings();
 	}
 
 	@Override
@@ -51,8 +49,22 @@ public class PreferencesPlugin implements InternalPlugin, ViewExtension, Prefere
 		return view;
 	}
 	
+	@Override
+	public void loadSettings() {
+		preferences.loadSettings();
+	}
+
+	@Override
+	public void setSettings() {
+		preferences.setSettings();
+	}
+	
+	public void setLoggingSettings() {
+		preferences.setLogginSettings();
+	}
+	
 	public boolean requestChange() {
-		return ((PreferencesPanel)view.getViewComponent()).requestChange();
+		return view.requestChange();
 	}
 	
 }

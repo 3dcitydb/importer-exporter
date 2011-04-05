@@ -8,6 +8,7 @@ import de.tub.citydb.components.database.gui.preferences.DatabasePreferences;
 import de.tub.citydb.components.database.gui.view.DatabaseView;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.plugin.api.controller.DatabaseController;
 import de.tub.citydb.plugin.api.extension.preferences.Preferences;
 import de.tub.citydb.plugin.api.extension.preferences.PreferencesExtension;
 import de.tub.citydb.plugin.api.extension.view.View;
@@ -25,14 +26,12 @@ public class DatabasePlugin implements InternalPlugin, ViewExtension, Preference
 		
 	@Override
 	public void init() {
-		view.loadSettings();
-		preferences.loadSettings();
+		loadSettings();
 	}
 
 	@Override
 	public void shutdown() {
-		view.setSettings();
-		preferences.setSettings();
+		setSettings();
 	}
 
 	@Override
@@ -49,6 +48,22 @@ public class DatabasePlugin implements InternalPlugin, ViewExtension, Preference
 	@Override
 	public View getView() {
 		return view;
+	}
+	
+	@Override
+	public void loadSettings() {
+		view.loadSettings();
+		preferences.loadSettings();
+	}
+
+	@Override
+	public void setSettings() {
+		view.setSettings();
+		preferences.setSettings();
+	}
+	
+	public DatabaseController getDatabaseController() {
+		return (DatabaseController)view.getViewComponent();
 	}
 	
 }

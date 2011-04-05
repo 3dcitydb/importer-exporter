@@ -69,6 +69,7 @@ import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.plugin.api.Plugin;
+import de.tub.citydb.plugin.api.util.DatabaseAccess;
 import de.tub.citydb.plugin.api.util.LogAccess;
 import de.tub.citydb.plugin.api.util.ViewAccess;
 import de.tub.citydb.plugin.service.PluginService;
@@ -346,6 +347,8 @@ public class ImpExp {
 					((LogAccess)plugin).setLogController(Logger.getInstance());				
 				if (plugin instanceof ViewAccess)
 					((ViewAccess)plugin).setViewController(mainView);
+				if (plugin instanceof DatabaseAccess)
+					((DatabaseAccess)plugin).setDatabaseController(pluginService.getInternalPlugin(DatabasePlugin.class).getDatabaseController());
 				
 				// init plugin
 				plugin.init();

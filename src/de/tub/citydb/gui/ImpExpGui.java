@@ -101,6 +101,7 @@ import de.tub.citydb.plugin.api.Plugin;
 import de.tub.citydb.plugin.api.controller.ViewController;
 import de.tub.citydb.plugin.api.extension.view.View;
 import de.tub.citydb.plugin.api.extension.view.ViewExtension;
+import de.tub.citydb.plugin.internal.InternalPlugin;
 import de.tub.citydb.plugin.service.PluginService;
 
 @SuppressWarnings("serial")
@@ -127,6 +128,8 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 	private int activePosition;
 
 	private List<View> views;
+	private PreferencesPlugin preferencesPlugin;
+	
 	private PrintStream out;
 	private PrintStream err;
 
@@ -163,7 +166,6 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		// init GUI elements
 		initGui();
 		doTranslation();
-		loadSettings();
 		showWindow();
 
 		// initConsole;
@@ -214,7 +216,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		connectText.setOpaque(true);
 		
 		views = new ArrayList<View>();
-		final PreferencesPlugin preferencesPlugin = pluginService.getInternalPlugin(PreferencesPlugin.class);
+		preferencesPlugin = pluginService.getInternalPlugin(PreferencesPlugin.class);
 		views.add(pluginService.getInternalPlugin(CityGMLImportPlugin.class).getView());
 		views.add(pluginService.getInternalPlugin(CityGMLExportPlugin.class).getView());
 		views.add(pluginService.getInternalPlugin(KMLExportPlugin.class).getView());
@@ -405,25 +407,17 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 	}
 
 	public void loadSettings() {
-		//cityGMLImportView.loadSettings();
-		//cityGMLExportView.loadSettings();
-		//kmlExportView.loadSettings();
-		//databaseView.loadSettings();
-		//preferencesView.loadSettings();
-		//matchingView.loadSettings();
+		for (InternalPlugin plugin : pluginService.getInternalPlugins())
+			plugin.loadSettings();
 	}
 
 	public void setSettings() {
-		//cityGMLImportView.setSettings();
-		//cityGMLExportView.setSettings();
-		//kmlExportView.setSettings();
-		//databaseView.setSettings();
-		//preferencesView.setSettings();
-		//matchingView.setSettings();
+		for (InternalPlugin plugin : pluginService.getInternalPlugins())
+			plugin.setSettings();
 	}
 
 	public void setLoggingSettings() {
-		//preferencesView.setLoggingSettings();
+		preferencesPlugin.setLoggingSettings();
 	}
 
 	public void doTranslation () {
@@ -602,8 +596,14 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 			}
 		}
 
+		// shutdown plugins
+		if (pluginService.getExternalPlugins().isEmpty())
+			LOG.info("Shutting down plugins");
+		
+		for (Plugin plugin : pluginService.getPlugins())
+			plugin.shutdown();
+		
 		LOG.info("Saving project settings");
-		setSettings();
 		saveProjectSettings();
 		saveGUISettings();
 

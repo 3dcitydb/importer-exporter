@@ -38,20 +38,8 @@ public class PreferencesView implements View {
 		return null;
 	}
 	
-	public void loadSettings() {
-		component.loadSettings();
-	}
-	
-	public void setSettings() {
-		component.setSettings();
-	}
-	
 	public void doTranslation() {
 		component.doTranslation();
-	}
-	
-	public void setLoggingSettings() {
-		component.setLoggingSettings();
 	}
 	
 	public boolean requestChange() {

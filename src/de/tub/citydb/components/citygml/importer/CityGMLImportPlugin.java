@@ -25,15 +25,12 @@ public class CityGMLImportPlugin implements InternalPlugin, ViewExtension, Prefe
 		
 	@Override
 	public void init() {
-		
-		view.loadSettings();
-		preferences.loadSettings();
+		loadSettings();
 	}
 
 	@Override
 	public void shutdown() {
-		view.setSettings();
-		preferences.setSettings();
+		setSettings();
 	}
 
 	@Override
@@ -50,6 +47,18 @@ public class CityGMLImportPlugin implements InternalPlugin, ViewExtension, Prefe
 	@Override
 	public View getView() {
 		return view;
+	}
+	
+	@Override
+	public void loadSettings() {
+		view.loadSettings();
+		preferences.loadSettings();
+	}
+
+	@Override
+	public void setSettings() {
+		view.setSettings();
+		preferences.setSettings();
 	}
 	
 }

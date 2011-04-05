@@ -10,13 +10,19 @@ import de.tub.citydb.gui.preferences.AbstractPreferences;
 import de.tub.citydb.gui.preferences.DefaultPreferencesEntry;
 
 public class GeneralPreferences extends AbstractPreferences {
+	private final LoggingPanel loggingPanel;
 	
 	public GeneralPreferences(ImpExpGui mainView, Config config) {
 		super(new GeneralPreferencesEntry());
 		
-		entry.addChildEntry(new DefaultPreferencesEntry(new LoggingPanel(config, mainView)));
+		loggingPanel = new LoggingPanel(config, mainView);
+		entry.addChildEntry(new DefaultPreferencesEntry(loggingPanel));
 		entry.addChildEntry(new DefaultPreferencesEntry(new PathPanel(config)));
 		entry.addChildEntry(new DefaultPreferencesEntry(new LanguagePanel(config, mainView)));
+	}
+
+	public void setLogginSettings() {
+		loggingPanel.setSettings();
 	}
 
 }

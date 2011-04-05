@@ -37,7 +37,6 @@ import org.citygml4j.util.xml.saxevents.SAXEvent;
 import org.xml.sax.SAXException;
 
 import de.tub.citydb.concurrent.Worker;
-import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.log.Logger;
 
