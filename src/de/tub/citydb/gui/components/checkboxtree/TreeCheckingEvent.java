@@ -11,7 +11,7 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA
  */
-package de.tub.citydb.gui.util.checkboxtree;
+package de.tub.citydb.gui.components.checkboxtree;
 
 import java.util.EventObject;
 
@@ -22,6 +22,7 @@ import javax.swing.tree.TreePath;
  * 
  * @author boldrini
  */
+@SuppressWarnings("serial")
 public class TreeCheckingEvent extends EventObject {
     /** Paths this event represents. */
     protected TreePath leadingPath;

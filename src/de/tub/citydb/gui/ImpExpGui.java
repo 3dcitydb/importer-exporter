@@ -54,7 +54,6 @@ import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -79,12 +78,12 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import de.tub.citydb.components.citygml.exporter.gui.view.CityGMLExportView;
-import de.tub.citydb.components.citygml.importer.gui.view.CityGMLImportView;
-import de.tub.citydb.components.database.gui.view.DatabaseView;
-import de.tub.citydb.components.kml.gui.view.KMLExportView;
-import de.tub.citydb.components.matching.gui.view.MatchingView;
-import de.tub.citydb.components.preferences.gui.view.PreferencesView;
+import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;
+import de.tub.citydb.components.citygml.importer.CityGMLImportPlugin;
+import de.tub.citydb.components.database.DatabasePlugin;
+import de.tub.citydb.components.kml.KMLExportPlugin;
+import de.tub.citydb.components.matching.MatchingPlugin;
+import de.tub.citydb.components.preferences.PreferencesPlugin;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.ConfigUtil;
 import de.tub.citydb.config.gui.GuiConfigUtil;
@@ -99,9 +98,9 @@ import de.tub.citydb.gui.menubar.MenuBar;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.plugin.api.Plugin;
+import de.tub.citydb.plugin.api.controller.ViewController;
 import de.tub.citydb.plugin.api.extension.view.View;
 import de.tub.citydb.plugin.api.extension.view.ViewExtension;
-import de.tub.citydb.plugin.controller.ViewController;
 import de.tub.citydb.plugin.service.PluginService;
 
 @SuppressWarnings("serial")
@@ -109,9 +108,6 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 	private final Logger LOG = Logger.getInstance();
 
 	private final Config config;
-	private final JAXBContext jaxbCityGMLContext;
-	private final JAXBContext jaxbKmlContext;
-	private final JAXBContext jaxbColladaContext;
 	private final JAXBContext jaxbProjectContext;
 	private final JAXBContext jaxbGuiContext;
 	private final PluginService pluginService;
@@ -131,13 +127,6 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 	private int activePosition;
 
 	private List<View> views;
-	private CityGMLImportView cityGMLImportView;
-	private CityGMLExportView cityGMLExportView;
-	private KMLExportView kmlExportView;
-	private MatchingView matchingView;
-	private DatabaseView databaseView;
-	private PreferencesView preferencesView;	
-
 	private PrintStream out;
 	private PrintStream err;
 
@@ -154,16 +143,10 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		}
 	}
 
-	public ImpExpGui(JAXBContext jaxbCityGMLContext,
-			JAXBContext jaxbKmlContext,
-			JAXBContext jaxbColladaContext,
-			JAXBContext jaxbProjectContext,
+	public ImpExpGui(JAXBContext jaxbProjectContext,
 			JAXBContext jaxbGuiContext,
 			PluginService pluginService,
 			Config config) {
-		this.jaxbCityGMLContext = jaxbCityGMLContext;
-		this.jaxbKmlContext = jaxbKmlContext;
-		this.jaxbColladaContext = jaxbColladaContext;
 		this.jaxbProjectContext = jaxbProjectContext;
 		this.jaxbGuiContext = jaxbGuiContext;
 		this.pluginService = pluginService;
@@ -171,6 +154,9 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 
 		dbPool = DBConnectionPool.getInstance();
 		dbPool.addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
+		
+		// required for preferences plugin
+		consoleText = new JTextArea();
 	}
 
 	public void invoke(List<String> errMsgs) {
@@ -206,40 +192,8 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 
 		menuBar = new MenuBar(config, jaxbProjectContext, this);
 		setJMenuBar(menuBar);
-
-		cityGMLImportView = new CityGMLImportView(jaxbCityGMLContext, config, this);
-		cityGMLExportView = new CityGMLExportView(jaxbCityGMLContext, config, this);
-		kmlExportView = new KMLExportView(jaxbKmlContext, jaxbColladaContext, config, this);
-		matchingView = new MatchingView(config, this);
-		databaseView = new DatabaseView(config, this);
-		preferencesView = new PreferencesView(pluginService, config, this);
-
-		views = new ArrayList<View>();
-		views.add(cityGMLImportView);
-		views.add(cityGMLExportView);
-		views.add(kmlExportView);
-		views.add(matchingView);
-
-		Iterator<Plugin> iter = pluginService.getPlugins();
-		while (iter.hasNext()) {
-			Plugin plugin = iter.next();			
-			if (plugin instanceof ViewExtension) {
-				ViewExtension extension = (ViewExtension)plugin;
-				if (extension.getView() != null)				
-					views.add(((ViewExtension)plugin).getView());
-			}
-		}
-
-		views.add(databaseView);
-		views.add(preferencesView);
-
-		menu = new JTabbedPane();
-		int index = 0;
-		for (View view : views)
-			menu.insertTab(view.getTitle(), view.getIcon(), view.getViewComponent(), view.getToolTip(), index++);
-
+		
 		console = new JPanel();
-		consoleText = new JTextArea();
 		consoleLabel = new JLabel();
 		consoleText.setAutoscrolls(true);
 		consoleText.setFont(new Font(Font.MONOSPACED, 0, 11));
@@ -258,13 +212,37 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		connectText.setBorder(new CompoundBorder(border, margin));
 		connectText.setBackground(new Color(255,255,255));
 		connectText.setOpaque(true);
+		
+		views = new ArrayList<View>();
+		final PreferencesPlugin preferencesPlugin = pluginService.getInternalPlugin(PreferencesPlugin.class);
+		views.add(pluginService.getInternalPlugin(CityGMLImportPlugin.class).getView());
+		views.add(pluginService.getInternalPlugin(CityGMLExportPlugin.class).getView());
+		views.add(pluginService.getInternalPlugin(KMLExportPlugin.class).getView());
+		views.add(pluginService.getInternalPlugin(MatchingPlugin.class).getView());
+
+		for (Plugin plugin : pluginService.getExternalPlugins()) {
+			if (plugin instanceof ViewExtension) {
+				ViewExtension extension = (ViewExtension)plugin;
+				if (extension.getView() != null)				
+					views.add(((ViewExtension)plugin).getView());
+			}
+		}
+
+		views.add(pluginService.getInternalPlugin(DatabasePlugin.class).getView());
+		views.add(preferencesPlugin.getView());
+
+		menu = new JTabbedPane();
+		int index = 0;
+		for (View view : views)
+			menu.insertTab(view.getTitle(), view.getIcon(), view.getViewComponent(), view.getToolTip(), index++);
 
 		menu.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				if (menu.getSelectedIndex() == activePosition) return;
+				if (menu.getSelectedIndex() == activePosition) 
+					return;
 
-				if (menu.getComponentAt(activePosition) == preferencesView.getViewComponent()) {
-					if (!preferencesView.requestChange())
+				if (menu.getComponentAt(activePosition) == preferencesPlugin.getView().getViewComponent()) {
+					if (!preferencesPlugin.requestChange())
 						menu.setSelectedIndex(activePosition);
 				}
 
@@ -427,25 +405,25 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 	}
 
 	public void loadSettings() {
-		cityGMLImportView.loadSettings();
-		cityGMLExportView.loadSettings();
-		kmlExportView.loadSettings();
-		databaseView.loadSettings();
-		preferencesView.loadSettings();
-		matchingView.loadSettings();
+		//cityGMLImportView.loadSettings();
+		//cityGMLExportView.loadSettings();
+		//kmlExportView.loadSettings();
+		//databaseView.loadSettings();
+		//preferencesView.loadSettings();
+		//matchingView.loadSettings();
 	}
 
 	public void setSettings() {
-		cityGMLImportView.setSettings();
-		cityGMLExportView.setSettings();
-		kmlExportView.setSettings();
-		databaseView.setSettings();
-		preferencesView.setSettings();
-		matchingView.setSettings();
+		//cityGMLImportView.setSettings();
+		//cityGMLExportView.setSettings();
+		//kmlExportView.setSettings();
+		//databaseView.setSettings();
+		//preferencesView.setSettings();
+		//matchingView.setSettings();
 	}
 
 	public void setLoggingSettings() {
-		preferencesView.setLoggingSettings();
+		//preferencesView.setLoggingSettings();
 	}
 
 	public void doTranslation () {
@@ -454,7 +432,8 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 			if (lang == currentLang)
 				return;
 
-			Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", new Locale(lang.value()));
+			Locale locale = new Locale(lang.value());
+			Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", locale);
 			currentLang = lang;
 
 			setTitle(Internal.I18N.getString("main.window.title"));
@@ -471,13 +450,9 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 				connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
 
 			menuBar.doTranslation();
-			cityGMLImportView.doTranslation();
-			cityGMLExportView.doTranslation();
-			kmlExportView.doTranslation();
-			databaseView.doTranslation();
-			matchingView.doTranslation();
-			preferencesView.doTranslation();
-
+			for (Plugin plugin : pluginService.getPlugins())
+				plugin.switchLocale(locale);
+			
 			consoleLabel.setText(Internal.I18N.getString("main.label.console"));
 		}
 		catch (MissingResourceException e) {
@@ -527,11 +502,13 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 	}
 
 	public void connectToDatabase() {
-		databaseView.connect();
+		// TODO
+		//databaseView.connect();
 	}
 
 	public void disconnectFromDatabase() {
-		databaseView.disconnect();
+		// TODO
+		//databaseView.disconnect();
 	}
 
 	public boolean saveProjectSettings() {

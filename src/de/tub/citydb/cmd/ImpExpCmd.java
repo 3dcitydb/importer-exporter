@@ -33,6 +33,8 @@ import java.sql.SQLException;
 
 import javax.xml.bind.JAXBContext;
 
+import org.citygml4j.builder.jaxb.JAXBBuilder;
+
 import de.tub.citydb.components.citygml.exporter.controller.Exporter;
 import de.tub.citydb.components.citygml.importer.controller.Importer;
 import de.tub.citydb.components.citygml.importer.controller.XMLValidator;
@@ -50,13 +52,13 @@ import de.tub.citydb.util.DBUtil;
 public class ImpExpCmd {
 	private final Logger LOG = Logger.getInstance();
 	private final DBConnectionPool dbPool;
-	private JAXBContext jaxbCityGMLContext;
+	private JAXBBuilder cityGMLBuilder;
 	private JAXBContext jaxbKmlContext;
 	private JAXBContext jaxbColladaContext;
 	private Config config;
 
-	public ImpExpCmd(JAXBContext jaxbCityGMLContext, Config config) {
-		this.jaxbCityGMLContext = jaxbCityGMLContext;
+	public ImpExpCmd(JAXBBuilder cityGMLBuilder, Config config) {
+		this.cityGMLBuilder = cityGMLBuilder;
 		this.config = config;
 		dbPool = DBConnectionPool.getInstance();
 	}
@@ -80,7 +82,7 @@ public class ImpExpCmd {
 		LOG.info("Initializing database import...");
 
 		EventDispatcher eventDispatcher = new EventDispatcher();
-		Importer importer = new Importer(jaxbCityGMLContext, dbPool, config, eventDispatcher);
+		Importer importer = new Importer(cityGMLBuilder, dbPool, config, eventDispatcher);
 		boolean success = importer.doProcess();
 
 		try {
@@ -100,7 +102,7 @@ public class ImpExpCmd {
 		LOG.info("Initializing XML validation...");
 
 		EventDispatcher eventDispatcher = new EventDispatcher();
-		XMLValidator validator = new XMLValidator(jaxbCityGMLContext, config, eventDispatcher);
+		XMLValidator validator = new XMLValidator(cityGMLBuilder, config, eventDispatcher);
 		boolean success = validator.doProcess();
 
 		try {
@@ -126,7 +128,7 @@ public class ImpExpCmd {
 		LOG.info("Initializing database export...");
 
 		EventDispatcher eventDispatcher = new EventDispatcher();
-		Exporter exporter = new Exporter(jaxbCityGMLContext, dbPool, config, eventDispatcher);
+		Exporter exporter = new Exporter(cityGMLBuilder, dbPool, config, eventDispatcher);
 		boolean success = exporter.doProcess();
 		eventDispatcher.shutdown();
 

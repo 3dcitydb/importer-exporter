@@ -11,48 +11,35 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA
  */
-package de.tub.citydb.gui.util.checkboxtree;
+package de.tub.citydb.gui.components.checkboxtree;
 
 import javax.swing.tree.TreePath;
 
 /**
- * PropagateUpWhiteTreeCheckingMode define a TreeCheckingMode with down
- * recursion of the check when nodes are clicked and up only when uncheck. The
- * check is propagated, like the Propagate mode to descendants. If a user
- * unchecks a checkbox the uncheck will also be propagated to ancestors.
+ * SimpleTreeCheckingMode defines a TreeCheckingMode without recursion. In this
+ * simple mode the check state always changes only the current node: no
+ * recursion.
  * 
  * @author Boldrini
  */
-public class PropagateUpWhiteTreeCheckingMode extends TreeCheckingMode {
+public class SimpleTreeCheckingMode extends TreeCheckingMode {
 
-    PropagateUpWhiteTreeCheckingMode(DefaultTreeCheckingModel model) {
+    SimpleTreeCheckingMode(DefaultTreeCheckingModel model) {
 	super(model);
     }
 
     @Override
     public void checkPath(TreePath path) {
-	// check is propagated to children
-	this.model.checkSubTree(path);
-	// check all the ancestors with subtrees checked
-	TreePath[] parents = new TreePath[path.getPathCount()];
-	parents[0] = path;
-	TreePath parentPath = path;
-	// uncheck is propagated to parents, too
-	while ((parentPath = parentPath.getParentPath()) != null) {
-	    this.model.updatePathGreyness(parentPath);
-	}
+	this.model.addToCheckedPathsSet(path);
+	this.model.updatePathGreyness(path);
+	this.model.updateAncestorsGreyness(path);
     }
 
     @Override
     public void uncheckPath(TreePath path) {
-	// uncheck is propagated to children
-	this.model.uncheckSubTree(path);
-	TreePath parentPath = path;
-	// uncheck is propagated to parents, too
-	while ((parentPath = parentPath.getParentPath()) != null) {
-	    this.model.removeFromCheckedPathsSet(parentPath);
-	    this.model.updatePathGreyness(parentPath);
-	}
+	this.model.removeFromCheckedPathsSet(path);
+	this.model.updatePathGreyness(path);
+	this.model.updateAncestorsGreyness(path);
     }
 
     /*
@@ -62,11 +49,8 @@ public class PropagateUpWhiteTreeCheckingMode extends TreeCheckingMode {
          */
     @Override
     public void updateCheckAfterChildrenInserted(TreePath parent) {
-	if (this.model.isPathChecked(parent)) {
-	    checkPath(parent);
-	} else {
-	    uncheckPath(parent);
-	}
+	this.model.updatePathGreyness(parent);
+	this.model.updateAncestorsGreyness(parent);
     }
 
     /*
@@ -76,15 +60,6 @@ public class PropagateUpWhiteTreeCheckingMode extends TreeCheckingMode {
          */
     @Override
     public void updateCheckAfterChildrenRemoved(TreePath parent) {
-	if (!this.model.isPathChecked(parent)) {
-	    // System.out.println(parent +" was removed (not checked)");
-	    if (this.model.getChildrenPath(parent).length != 0) {
-		if (!this.model.pathHasChildrenWithValue(parent, false)) {
-		    // System.out.println("uncheking it");
-		    checkPath(parent);
-		}
-	    }
-	}
 	this.model.updatePathGreyness(parent);
 	this.model.updateAncestorsGreyness(parent);
     }
@@ -96,11 +71,8 @@ public class PropagateUpWhiteTreeCheckingMode extends TreeCheckingMode {
          */
     @Override
     public void updateCheckAfterStructureChanged(TreePath parent) {
-	if (this.model.isPathChecked(parent)) {
-	    checkPath(parent);
-	} else {
-	    uncheckPath(parent);
-	}
+	this.model.updatePathGreyness(parent);
+	this.model.updateAncestorsGreyness(parent);
     }
 
 }

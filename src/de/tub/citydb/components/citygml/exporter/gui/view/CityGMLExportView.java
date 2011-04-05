@@ -3,7 +3,8 @@ package de.tub.citydb.components.citygml.exporter.gui.view;
 import java.awt.Component;
 
 import javax.swing.Icon;
-import javax.xml.bind.JAXBContext;
+
+import org.citygml4j.builder.jaxb.JAXBBuilder;
 
 import de.tub.citydb.components.citygml.exporter.gui.view.components.ExportPanel;
 import de.tub.citydb.config.Config;
@@ -14,8 +15,8 @@ import de.tub.citydb.plugin.api.extension.view.View;
 public class CityGMLExportView implements View {
 	private final ExportPanel component;
 	
-	public CityGMLExportView(JAXBContext jaxbContext, Config config, ImpExpGui mainView) {
-		component = new ExportPanel(jaxbContext, config, mainView);
+	public CityGMLExportView(JAXBBuilder jaxbBuilder, Config config, ImpExpGui mainView) {
+		component = new ExportPanel(jaxbBuilder, config, mainView);
 	}
 	
 	@Override

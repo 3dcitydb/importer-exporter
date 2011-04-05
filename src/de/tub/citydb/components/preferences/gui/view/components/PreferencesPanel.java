@@ -35,7 +35,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Iterator;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -56,11 +55,11 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import de.tub.citydb.components.citygml.exporter.gui.preferences.CityGMLExportPreferences;
-import de.tub.citydb.components.citygml.importer.gui.preferences.CityGMLImportPreferences;
-import de.tub.citydb.components.database.gui.preferences.DatabasePreferences;
-import de.tub.citydb.components.kml.gui.preferences.KMLExportPreferences;
-import de.tub.citydb.components.matching.gui.preferences.MatchingPreferences;
+import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;
+import de.tub.citydb.components.citygml.importer.CityGMLImportPlugin;
+import de.tub.citydb.components.database.DatabasePlugin;
+import de.tub.citydb.components.kml.KMLExportPlugin;
+import de.tub.citydb.components.matching.MatchingPlugin;
 import de.tub.citydb.components.preferences.gui.preferences.GeneralPreferences;
 import de.tub.citydb.components.preferences.gui.preferences.entries.RootPreferencesEntry;
 import de.tub.citydb.config.Config;
@@ -100,11 +99,6 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 	private JButton applyButton;
 
 	private PreferencesTreeNode rootNode;
-	private CityGMLImportPreferences cityGMLImportPreferences;
-	private CityGMLExportPreferences cityGMLExportPreferences;
-	private KMLExportPreferences kmlExportPreferences;
-	private MatchingPreferences matchingPreferences;
-	private DatabasePreferences databasePreferences;
 	private GeneralPreferences generalPreferences;
 
 	public PreferencesPanel(PluginService pluginService, Config config, ImpExpGui mainView) {
@@ -145,22 +139,14 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		});
 
 		rootNode = new PreferencesTreeNode(new RootPreferencesEntry());
-
-		cityGMLImportPreferences = new CityGMLImportPreferences(config);
-		cityGMLExportPreferences = new CityGMLExportPreferences(config);
-		kmlExportPreferences = new KMLExportPreferences(mainView, config);
-		matchingPreferences = new MatchingPreferences(config);
-		databasePreferences = new DatabasePreferences(mainView, config);
 		generalPreferences = new GeneralPreferences(mainView, config);
 
-		PreferencesTreeNode initialNode = rootNode.add(cityGMLImportPreferences.getPreferencesEntry());
-		rootNode.add(cityGMLExportPreferences.getPreferencesEntry());
-		rootNode.add(kmlExportPreferences.getPreferencesEntry());
-		rootNode.add(matchingPreferences.getPreferencesEntry());
+		PreferencesTreeNode initialNode = rootNode.add(pluginService.getInternalPlugin(CityGMLImportPlugin.class).getPreferences().getPreferencesEntry());
+		rootNode.add(pluginService.getInternalPlugin(CityGMLExportPlugin.class).getPreferences().getPreferencesEntry());
+		rootNode.add(pluginService.getInternalPlugin(KMLExportPlugin.class).getPreferences().getPreferencesEntry());
+		rootNode.add(pluginService.getInternalPlugin(MatchingPlugin.class).getPreferences().getPreferencesEntry());
 
-		Iterator<Plugin> iter = pluginService.getPlugins();
-		while (iter.hasNext()) {
-			Plugin plugin = iter.next();
+		for (Plugin plugin : pluginService.getExternalPlugins()) {
 			if (plugin instanceof PreferencesExtension) {
 				PreferencesExtension extension = (PreferencesExtension)plugin;
 				if (extension.getPreferences() != null && extension.getPreferences().getPreferencesEntry() != null)
@@ -168,7 +154,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 			}
 		}
 
-		rootNode.add(databasePreferences.getPreferencesEntry());
+		rootNode.add(pluginService.getInternalPlugin(DatabasePlugin.class).getPreferences().getPreferencesEntry());
 		rootNode.add(generalPreferences.getPreferencesEntry());
 
 		menuTree = new JTree(rootNode);
@@ -263,14 +249,6 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 		resetPreferencesMenu();
 		menuTree.repaint();
-
-		cityGMLImportPreferences.doTranslation();
-		cityGMLExportPreferences.doTranslation();
-		kmlExportPreferences.doTranslation();
-		matchingPreferences.doTranslation();
-		databasePreferences.doTranslation();
-		generalPreferences.doTranslation();
-
 		prefLabel.setText(((PreferencesTreeNode)menuTree.getLastSelectedPathComponent()).toString());		
 	}
 
@@ -336,25 +314,26 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 	}
 
 	public void loadSettings() {
-		cityGMLImportPreferences.loadSettings();
-		cityGMLExportPreferences.loadSettings();
-		kmlExportPreferences.loadSettings();
-		matchingPreferences.loadSettings();
-		databasePreferences.loadSettings();
-		generalPreferences.loadSettings();
+		//cityGMLImportPreferences.loadSettings();
+		//cityGMLExportPreferences.loadSettings();
+		//kmlExportPreferences.loadSettings();
+		//matchingPreferences.loadSettings();
+		//databasePreferences.loadSettings();
+		//generalPreferences.loadSettings();
 	}
 
 	public void setSettings() {
-		cityGMLImportPreferences.setSettings();
-		cityGMLExportPreferences.setSettings();
-		kmlExportPreferences.setSettings();
-		matchingPreferences.setSettings();
-		databasePreferences.setSettings();
-		generalPreferences.setSettings();
+		//cityGMLImportPreferences.setSettings();
+		//cityGMLExportPreferences.setSettings();
+		//kmlExportPreferences.setSettings();
+		//matchingPreferences.setSettings();
+		//databasePreferences.setSettings();
+		//generalPreferences.setSettings();
 	}
 
 	public void setLoggingSettings() {
-		generalPreferences.getLoggingPanel().setSettings();
+		// TODO
+		//generalPreferences.getLoggingPanel().setSettings();
 	}
 
 	private void setEnabledButtons() {

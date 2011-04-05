@@ -11,7 +11,7 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA
  */
-package de.tub.citydb.gui.util.checkboxtree;
+package de.tub.citydb.gui.components.checkboxtree;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
@@ -89,6 +89,7 @@ import javax.swing.tree.TreeSelectionModel;
  * @author Lorenzo Bigagli
  */
 
+@SuppressWarnings("serial")
 public class CheckboxTree extends JTree {
 
     private TreeCheckingModel checkingModel;

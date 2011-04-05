@@ -80,12 +80,12 @@ import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.DBUtil;
-import de.tub.citydb.util.JAXBContextRegistry;
 
 @SuppressWarnings("serial")
 public class SrsPanel extends AbstractPreferencesComponent implements PropertyChangeListener, DropTargetListener {
 	private static final int BORDER_THICKNESS = 5;
 	private final Logger LOG = Logger.getInstance();
+	private final JAXBContext projectContext;
 	private final DBConnectionPool dbPool;
 
 	private JLabel srsComboBoxLabel;
@@ -115,8 +115,9 @@ public class SrsPanel extends AbstractPreferencesComponent implements PropertyCh
 
 	private final ImpExpGui topFrame;
 
-	public SrsPanel(Config config, ImpExpGui topFrame) {
+	public SrsPanel(JAXBContext projectContext, Config config, ImpExpGui topFrame) {
 		super(config);
+		this.projectContext = projectContext;
 		this.topFrame = topFrame;
 		dbPool = DBConnectionPool.getInstance();
 
@@ -520,8 +521,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements PropertyCh
 				return;
 			}
 
-			JAXBContext ctx = JAXBContextRegistry.getInstance("de.tub.citydb.config.project");
-			Unmarshaller um = ctx.createUnmarshaller();			
+			Unmarshaller um = projectContext.createUnmarshaller();			
 			Object object = um.unmarshal(file);
 
 			if (object instanceof ReferenceSystems) {
@@ -605,8 +605,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements PropertyCh
 				LOG.info("Writing reference system '" + tmp.getDescription() + "' (SRID: " + tmp.getSrid() + ").");
 			}
 
-			JAXBContext ctx = JAXBContextRegistry.getInstance("de.tub.citydb.config.project");
-			Marshaller m = ctx.createMarshaller();			
+			Marshaller m = projectContext.createMarshaller();			
 			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,Boolean.TRUE);
 			m.setProperty("com.sun.xml.bind.indentString", "  ");
 

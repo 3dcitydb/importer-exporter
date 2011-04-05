@@ -56,7 +56,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.bind.JAXBContext;
+
+import org.citygml4j.builder.jaxb.JAXBBuilder;
 
 import de.tub.citydb.components.citygml.common.gui.view.components.FilterPanel;
 import de.tub.citydb.components.citygml.common.gui.view.components.FilterPanel.FilterPanelType;
@@ -83,7 +84,7 @@ import de.tub.citydb.util.Util;
 public class ExportPanel extends JPanel implements DropTargetListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
-	private final JAXBContext jaxbContext;
+	private final JAXBBuilder jaxbBuilder;
 	private final Config config;
 	private final ImpExpGui mainView;
 	private final DBConnectionPool dbPool;
@@ -101,8 +102,8 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	private JLabel srsComboBoxLabel;
 	private SrsComboBox srsComboBox;
 
-	public ExportPanel(JAXBContext jaxbContext, Config config, ImpExpGui mainView) {
-		this.jaxbContext = jaxbContext;
+	public ExportPanel(JAXBBuilder jaxbBuilder, Config config, ImpExpGui mainView) {
+		this.jaxbBuilder = jaxbBuilder;
 		this.config = config;
 		this.mainView = mainView;
 		dbPool = DBConnectionPool.getInstance();
@@ -338,7 +339,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 				}
 			});
 
-			Exporter exporter = new Exporter(jaxbContext, dbPool, config, eventDispatcher);
+			Exporter exporter = new Exporter(jaxbBuilder, dbPool, config, eventDispatcher);
 
 			exportDialog.getCancelButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {

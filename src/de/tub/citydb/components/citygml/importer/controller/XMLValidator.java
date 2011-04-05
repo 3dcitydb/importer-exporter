@@ -33,7 +33,6 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 
@@ -78,10 +77,10 @@ public class XMLValidator implements EventListener {
 	private long xmlValidationErrorCounter;
 
 
-	public XMLValidator(JAXBContext jaxbContext, 
+	public XMLValidator(JAXBBuilder jaxbBuilder, 
 			Config config, 
 			EventDispatcher eventDispatcher) {
-		this.jaxbBuilder = new JAXBBuilder(jaxbContext);
+		this.jaxbBuilder = jaxbBuilder;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}

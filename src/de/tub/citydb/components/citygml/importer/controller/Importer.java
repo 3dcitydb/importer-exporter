@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.parsers.SAXParserFactory;
@@ -120,15 +119,15 @@ public class Importer implements EventListener {
 	private final int PARSING = 1;
 	private final int XLINK_RESOLVING = 2;
 
-	public Importer(JAXBContext jaxbContext, 
+	public Importer(JAXBBuilder jaxbBuilder, 
 			DBConnectionPool dbPool, 
 			Config config, 
 			EventDispatcher eventDispatcher) {
+		this.jaxbBuilder = jaxbBuilder;
 		this.dbPool = dbPool;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
-		jaxbBuilder = new JAXBBuilder(jaxbContext);
 		factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(true);
 

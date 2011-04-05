@@ -38,7 +38,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.transform.stream.StreamResult;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -122,12 +121,12 @@ public class Exporter implements EventListener {
 	private EnumMap<CityGMLClass, Long> featureCounterMap;
 	private EnumMap<GMLClass, Long> geometryCounterMap;
 
-	public Exporter(JAXBContext jaxbContext, DBConnectionPool dbPool, Config config, EventDispatcher eventDispatcher) {
+	public Exporter(JAXBBuilder jaxbBuilder, DBConnectionPool dbPool, Config config, EventDispatcher eventDispatcher) {
+		this.jaxbBuilder = jaxbBuilder;
 		this.dbPool = dbPool;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
-		jaxbBuilder = new JAXBBuilder(jaxbContext);
 		featureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
 		geometryCounterMap = new EnumMap<GMLClass, Long>(GMLClass.class);
 		totalFeatureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);

@@ -11,7 +11,7 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA
  */
-package de.tub.citydb.gui.util.checkboxtree;
+package de.tub.citydb.gui.components.checkboxtree;
 
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;

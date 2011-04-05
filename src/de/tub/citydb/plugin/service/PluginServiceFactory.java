@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ServiceConfigurationError;
 
 public class PluginServiceFactory {
 	private static ClassLoader loader;
@@ -18,7 +19,7 @@ public class PluginServiceFactory {
 					loader.addURL(file.toURI().toURL());
 	}
 
-	public static PluginService createPluginService() {
+	public static PluginService createPluginService() throws ServiceConfigurationError {
 		return DefaultPluginService.getInstance(loader);
 	}
 

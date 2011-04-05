@@ -64,7 +64,8 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.bind.JAXBContext;
+
+import org.citygml4j.builder.jaxb.JAXBBuilder;
 
 import de.tub.citydb.components.citygml.common.gui.view.components.FilterPanel;
 import de.tub.citydb.components.citygml.common.gui.view.components.FilterPanel.FilterPanelType;
@@ -88,7 +89,7 @@ import de.tub.citydb.log.Logger;
 public class ImportPanel extends JPanel implements DropTargetListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
-	private final JAXBContext jaxbContext;
+	private final JAXBBuilder jaxbBuilder;
 	private final Config config;
 	private final ImpExpGui mainView;
 	private final DBConnectionPool dbPool;
@@ -105,8 +106,8 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 	private JPanel row2;
 	private JLabel row2_1;
 
-	public ImportPanel(JAXBContext jaxbContext, Config config, ImpExpGui mainView) {
-		this.jaxbContext = jaxbContext;
+	public ImportPanel(JAXBBuilder jaxbBuilder, Config config, ImpExpGui mainView) {
+		this.jaxbBuilder = jaxbBuilder;
 		this.config = config;
 		this.mainView = mainView;
 		dbPool = DBConnectionPool.getInstance();
@@ -358,7 +359,7 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 				}
 			});
 
-			Importer importer = new Importer(jaxbContext, dbPool, config, eventDispatcher);
+			Importer importer = new Importer(jaxbBuilder, dbPool, config, eventDispatcher);
 
 			importDialog.getCancelButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -434,7 +435,7 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 				}
 			});
 
-			XMLValidator validator = new XMLValidator(jaxbContext, config, eventDispatcher);
+			XMLValidator validator = new XMLValidator(jaxbBuilder, config, eventDispatcher);
 
 			validatorDialog.getButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {

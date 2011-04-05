@@ -37,10 +37,10 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.ServiceConfigurationError;
 
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
@@ -52,6 +52,12 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 import de.tub.citydb.cmd.ImpExpCmd;
+import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;
+import de.tub.citydb.components.citygml.importer.CityGMLImportPlugin;
+import de.tub.citydb.components.database.DatabasePlugin;
+import de.tub.citydb.components.kml.KMLExportPlugin;
+import de.tub.citydb.components.matching.MatchingPlugin;
+import de.tub.citydb.components.preferences.PreferencesPlugin;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.gui.Gui;
 import de.tub.citydb.config.gui.GuiConfigUtil;
@@ -67,7 +73,6 @@ import de.tub.citydb.plugin.api.util.LogAccess;
 import de.tub.citydb.plugin.api.util.ViewAccess;
 import de.tub.citydb.plugin.service.PluginService;
 import de.tub.citydb.plugin.service.PluginServiceFactory;
-import de.tub.citydb.util.JAXBContextRegistry;
 
 public class ImpExp {
 
@@ -96,7 +101,8 @@ public class ImpExp {
 	private String kmlExportFile;
 
 	private final Logger LOG = Logger.getInstance();
-	private JAXBContext cityGMLContext, kmlContext, colladaContext, projectContext, guiContext;
+	private JAXBBuilder jaxbBuilder;
+	private JAXBContext kmlContext, colladaContext, projectContext, guiContext;
 	private PluginService pluginService;
 	private Config config;
 	private List<String> errMsgs = new ArrayList<String>();
@@ -164,11 +170,11 @@ public class ImpExp {
 		config = new Config();
 
 		try {
-			cityGMLContext = JAXBContextRegistry.registerInstance("org.citygml", new JAXBBuilder().getJAXBContext());
-			kmlContext = JAXBContextRegistry.getInstance("net.opengis.kml._2");
-			colladaContext = JAXBContextRegistry.getInstance("org.collada._2005._11.colladaschema");
-			projectContext = JAXBContextRegistry.getInstance("de.tub.citydb.config.project");
-			guiContext = JAXBContextRegistry.getInstance("de.tub.citydb.config.gui");
+			jaxbBuilder = new JAXBBuilder();
+			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", Thread.currentThread().getContextClassLoader());
+			colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", Thread.currentThread().getContextClassLoader());
+			projectContext = JAXBContext.newInstance("de.tub.citydb.config.project", Thread.currentThread().getContextClassLoader());
+			guiContext = JAXBContext.newInstance("de.tub.citydb.config.gui", Thread.currentThread().getContextClassLoader());
 		} catch (JAXBException e) {
 			LOG.error("Application environment could not be initialized");
 			LOG.error("Aborting...");
@@ -301,44 +307,49 @@ public class ImpExp {
 		}
 
 		Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", new Locale(lang.value()));
-
+		
 		// start application
 		if (!shell) {
-			// init plugin service
+			// load external plugins
+			LOG.info("Loading plugins");
 			try {
 				PluginServiceFactory.addPluginDirectory(new File(Internal.PLUGINS_PATH));
 				pluginService = PluginServiceFactory.createPluginService();
 			} catch (IOException e) {
 				LOG.error("Failed to initialize plugin support: " + e.getLocalizedMessage());
 				System.exit(1);
+			} catch (ServiceConfigurationError e) {
+				LOG.error("Failed to load plugin: " + e.getLocalizedMessage());
+				System.exit(1);				
 			}
 			
 			// create main view instance
-			final ImpExpGui mainView = new ImpExpGui(cityGMLContext,
-					kmlContext,
-					colladaContext,
-					projectContext,
+			final ImpExpGui mainView = new ImpExpGui(projectContext,
 					guiContext,
 					pluginService,
 					config);
 			
-			// load plugins
-			LOG.info("Loading plugins");
-			Iterator<Plugin> iter = pluginService.getPlugins();
-			while (iter.hasNext()) {
-				Plugin plugin = iter.next();
+			// register internal plugins
+			pluginService.registerInternalPlugin(new CityGMLImportPlugin(jaxbBuilder, config, mainView));		
+			pluginService.registerInternalPlugin(new CityGMLExportPlugin(jaxbBuilder, config, mainView));		
+			pluginService.registerInternalPlugin(new KMLExportPlugin(kmlContext, colladaContext, config, mainView));
+			pluginService.registerInternalPlugin(new MatchingPlugin(config, mainView));
+			pluginService.registerInternalPlugin(new DatabasePlugin(projectContext, config, mainView));
+			pluginService.registerInternalPlugin(new PreferencesPlugin(pluginService, config, mainView));
+			
+			// initializing plugins
+			for (Plugin plugin : pluginService.getPlugins()) {
 				LOG.debug("Loaded plugin: " + plugin.getClass().getName());
 
 				// set controllers
 				if (plugin instanceof LogAccess)
-					((LogAccess)plugin).setLogController(Logger.getInstance());
-				
+					((LogAccess)plugin).setLogController(Logger.getInstance());				
 				if (plugin instanceof ViewAccess)
 					((ViewAccess)plugin).setViewController(mainView);
 				
-				// initialize plugins
-				pluginService.initPlugins();
-			}
+				// init plugin
+				plugin.init();
+			}	
 			
 			// initialize gui
 			LOG.info("Starting graphical user interface");
@@ -365,7 +376,7 @@ public class ImpExp {
 
 			new Thread() {
 				public void run() {
-					new ImpExpCmd(cityGMLContext, config).doValidate();
+					new ImpExpCmd(jaxbBuilder, config).doValidate();
 				}
 			}.start();
 
@@ -385,7 +396,7 @@ public class ImpExp {
 
 			new Thread() {
 				public void run() {
-					new ImpExpCmd(cityGMLContext, config).doImport();
+					new ImpExpCmd(jaxbBuilder, config).doImport();
 				}
 			}.start();
 
@@ -397,7 +408,7 @@ public class ImpExp {
 
 			new Thread() {
 				public void run() {
-					new ImpExpCmd(cityGMLContext, config).doExport();
+					new ImpExpCmd(jaxbBuilder, config).doExport();
 				}
 			}.start();
 
