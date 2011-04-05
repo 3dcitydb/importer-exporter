@@ -11,31 +11,23 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA
  */
-package de.tub.citydb.gui.checkboxtree;
+package de.tub.citydb.gui.util.checkboxtree;
 
-import java.util.EventObject;
-
-import javax.swing.tree.TreePath;
+import java.util.EventListener;
 
 /**
- * An event that characterizes a change in the current checking.
+ * The listener that's notified when the checking in a TreeCheckingModel
+ * changes.
  * 
- * @author boldrini
+ * @see it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingModel
+ * @see it.cnr.imaa.essi.lablib.gui.checkboxtree.CheckboxTree
+ * @author Enrico Boldrini
  */
-public class TreeCheckingEvent extends EventObject {
-    /** Paths this event represents. */
-    protected TreePath leadingPath;
-
+public interface TreeCheckingListener extends EventListener {
     /**
-         * Returns the paths that have been added or removed from the selection.
+         * Called whenever the value of the checking changes.
+         * 
+         * @param e the event that characterizes the change.
          */
-    public TreePath getLeadingPath() {
-	return this.leadingPath;
-    }
-
-    public TreeCheckingEvent(TreePath path) {
-	super(path);
-	this.leadingPath = path;
-    }
-
+    void valueChanged(TreeCheckingEvent e);
 }

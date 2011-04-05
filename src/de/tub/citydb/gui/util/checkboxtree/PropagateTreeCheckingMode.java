@@ -11,33 +11,35 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA
  */
-package de.tub.citydb.gui.checkboxtree;
+package de.tub.citydb.gui.util.checkboxtree;
 
 import javax.swing.tree.TreePath;
 
 /**
- * SimpleTreeCheckingMode defines a TreeCheckingMode without recursion. In this
- * simple mode the check state always changes only the current node: no
- * recursion.
+ * PropagateTreeCheckingMode define a TreeCheckingMode with down recursion of
+ * the check when nodes are clicked. It toggles the just-clicked checkbox and
+ * propagates the change down. In other words, if the clicked checkbox is
+ * checked all the descendants will be checked; otherwise all the descendants
+ * will be unchecked.
  * 
  * @author Boldrini
  */
-public class SimpleTreeCheckingMode extends TreeCheckingMode {
+public class PropagateTreeCheckingMode extends TreeCheckingMode {
 
-    SimpleTreeCheckingMode(DefaultTreeCheckingModel model) {
+    PropagateTreeCheckingMode(DefaultTreeCheckingModel model) {
 	super(model);
     }
 
     @Override
     public void checkPath(TreePath path) {
-	this.model.addToCheckedPathsSet(path);
+	this.model.checkSubTree(path);
 	this.model.updatePathGreyness(path);
 	this.model.updateAncestorsGreyness(path);
     }
 
     @Override
     public void uncheckPath(TreePath path) {
-	this.model.removeFromCheckedPathsSet(path);
+	this.model.uncheckSubTree(path);
 	this.model.updatePathGreyness(path);
 	this.model.updateAncestorsGreyness(path);
     }
@@ -49,8 +51,11 @@ public class SimpleTreeCheckingMode extends TreeCheckingMode {
          */
     @Override
     public void updateCheckAfterChildrenInserted(TreePath parent) {
-	this.model.updatePathGreyness(parent);
-	this.model.updateAncestorsGreyness(parent);
+	if (this.model.isPathChecked(parent)) {
+	    this.model.checkSubTree(parent);
+	} else {
+	    this.model.uncheckSubTree(parent);
+	}
     }
 
     /*
@@ -71,8 +76,11 @@ public class SimpleTreeCheckingMode extends TreeCheckingMode {
          */
     @Override
     public void updateCheckAfterStructureChanged(TreePath parent) {
-	this.model.updatePathGreyness(parent);
-	this.model.updateAncestorsGreyness(parent);
+	if (this.model.isPathChecked(parent)) {
+	    this.model.checkSubTree(parent);
+	} else {
+	    this.model.uncheckSubTree(parent);
+	}
     }
 
 }

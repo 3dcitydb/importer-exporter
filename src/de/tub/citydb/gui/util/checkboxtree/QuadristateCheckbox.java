@@ -11,7 +11,7 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA
  */
-package de.tub.citydb.gui.checkboxtree;
+package de.tub.citydb.gui.util.checkboxtree;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -26,7 +26,7 @@ import javax.swing.JCheckBox;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.ActionMapUIResource;
 
-import de.tub.citydb.gui.checkboxtree.QuadristateButtonModel.State;
+import de.tub.citydb.gui.util.checkboxtree.QuadristateButtonModel.State;
 
 /**
  * Checkbox with four states. Available states are UNCHECKED, CHECKED,

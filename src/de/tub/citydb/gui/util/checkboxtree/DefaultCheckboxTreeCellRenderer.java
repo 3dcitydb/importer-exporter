@@ -11,7 +11,7 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA
  */
-package de.tub.citydb.gui.checkboxtree;
+package de.tub.citydb.gui.util.checkboxtree;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -27,7 +27,7 @@ import javax.swing.plaf.ColorUIResource;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 
-import de.tub.citydb.gui.checkboxtree.QuadristateButtonModel.State;
+import de.tub.citydb.gui.util.checkboxtree.QuadristateButtonModel.State;
 
 /**
  * A renderer for the CheckboxTree. This implementation decorates a

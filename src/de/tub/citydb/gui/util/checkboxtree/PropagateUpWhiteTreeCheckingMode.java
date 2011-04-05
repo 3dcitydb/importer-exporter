@@ -11,23 +11,21 @@
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA
  */
-package de.tub.citydb.gui.checkboxtree;
+package de.tub.citydb.gui.util.checkboxtree;
 
 import javax.swing.tree.TreePath;
 
 /**
- * PropagatePreservingCheckTreeCheckingMode define a TreeCheckingMode with down
- * and up recursion of the check when nodes are clicked. It propagates the change
- * not only to descendants but also to ancestors. With regard to descendants
- * this mode behaves exactly like the Propagate mode. With regard to ancestors
- * it checks/unchecks them as needed so that a node is checked if and only if
- * all of its children are checked.
+ * PropagateUpWhiteTreeCheckingMode define a TreeCheckingMode with down
+ * recursion of the check when nodes are clicked and up only when uncheck. The
+ * check is propagated, like the Propagate mode to descendants. If a user
+ * unchecks a checkbox the uncheck will also be propagated to ancestors.
  * 
  * @author Boldrini
  */
-public class PropagatePreservingCheckTreeCheckingMode extends TreeCheckingMode {
+public class PropagateUpWhiteTreeCheckingMode extends TreeCheckingMode {
 
-    PropagatePreservingCheckTreeCheckingMode(DefaultTreeCheckingModel model) {
+    PropagateUpWhiteTreeCheckingMode(DefaultTreeCheckingModel model) {
 	super(model);
     }
 
@@ -38,45 +36,10 @@ public class PropagatePreservingCheckTreeCheckingMode extends TreeCheckingMode {
 	// check all the ancestors with subtrees checked
 	TreePath[] parents = new TreePath[path.getPathCount()];
 	parents[0] = path;
-	boolean uncheckAll = false;
-	boolean greyAll = false;
-	for (int i = 1; i < parents.length; i++) {
-	    parents[i] = parents[i - 1].getParentPath();
-	    if (uncheckAll) {
-		this.model.removeFromCheckedPathsSet(parents[i]);
-		if (greyAll) {
-		    this.model.addToGreyedPathsSet(parents[i]);
-		} else {
-		    if (this.model.pathHasUncheckedChildren(parents[i])) {
-			this.model.addToGreyedPathsSet(parents[i]);
-			greyAll = true;
-		    } else {
-			this.model.removeFromGreyedPathsSet(parents[i]);
-		    }
-		}
-	    } else {
-		switch (this.model.getChildrenChecking(parents[i])) {
-		case HALF_CHECKED:
-		    this.model.removeFromCheckedPathsSet(parents[i]);
-		    this.model.addToGreyedPathsSet(parents[i]);
-		    uncheckAll = true;
-		    greyAll = true;
-		    break;
-		case ALL_UNCHECKED:
-		    this.model.removeFromCheckedPathsSet(parents[i]);
-		    this.model.removeFromGreyedPathsSet(parents[i]);
-		    uncheckAll = true;
-		    break;
-		case ALL_CHECKED:
-		    this.model.addToCheckedPathsSet(parents[i]);
-		    this.model.removeFromGreyedPathsSet(parents[i]);
-		    break;
-		default:
-		case NO_CHILDREN:
-		    System.err.println("This should not happen (PropagatePreservingCheckTreeCheckingMode)");
-		    break;
-		}
-	    }
+	TreePath parentPath = path;
+	// uncheck is propagated to parents, too
+	while ((parentPath = parentPath.getParentPath()) != null) {
+	    this.model.updatePathGreyness(parentPath);
 	}
     }
 
