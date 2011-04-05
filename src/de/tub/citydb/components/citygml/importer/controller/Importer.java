@@ -72,7 +72,7 @@ import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.AffineTransformation;
 import de.tub.citydb.config.project.importer.ImportGmlId;
 import de.tub.citydb.config.project.importer.XMLValidation;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.Event;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.event.EventListener;

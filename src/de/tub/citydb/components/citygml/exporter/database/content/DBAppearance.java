@@ -88,7 +88,7 @@ import org.citygml4j.xml.io.writer.CityGMLWriteException;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureFileEnum;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.db.DBTypeValueEnum;
+import de.tub.citydb.database.DBTypeValueEnum;
 import de.tub.citydb.util.Util;
 
 public class DBAppearance implements DBExporter {

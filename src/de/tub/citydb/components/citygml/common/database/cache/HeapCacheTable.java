@@ -49,7 +49,7 @@ import de.tub.citydb.components.citygml.common.database.cache.model.CacheTableTe
 import de.tub.citydb.components.citygml.common.database.cache.model.CacheTableTextureFile;
 import de.tub.citydb.components.citygml.common.database.cache.model.CacheTableTextureParam;
 import de.tub.citydb.components.citygml.common.database.cache.model.CacheTableType;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 
 public class HeapCacheTable implements CacheTable {
 	private final CacheTableModel model;

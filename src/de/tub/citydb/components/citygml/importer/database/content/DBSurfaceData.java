@@ -62,8 +62,8 @@ import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTexturePara
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureParamEnum;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.db.DBConnectionPool;
-import de.tub.citydb.db.DBTypeValueEnum;
+import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DBTypeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 

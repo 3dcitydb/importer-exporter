@@ -73,7 +73,7 @@ import de.tub.citydb.components.citygml.importer.controller.XMLValidator;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.ImportFilterConfig;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.event.concurrent.InterruptEnum;
 import de.tub.citydb.event.concurrent.InterruptEvent;

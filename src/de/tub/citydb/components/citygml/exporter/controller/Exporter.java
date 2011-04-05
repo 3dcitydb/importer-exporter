@@ -83,7 +83,7 @@ import de.tub.citydb.config.project.filter.TileNameSuffixMode;
 import de.tub.citydb.config.project.filter.TileSuffixMode;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.Event;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.event.EventListener;

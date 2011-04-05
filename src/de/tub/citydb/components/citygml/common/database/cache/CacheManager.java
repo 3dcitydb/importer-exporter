@@ -33,7 +33,7 @@ import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.tub.citydb.components.citygml.common.database.cache.model.CacheTableModelEnum;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 
 public class CacheManager {
 	private final DBConnectionPool dbPool;	

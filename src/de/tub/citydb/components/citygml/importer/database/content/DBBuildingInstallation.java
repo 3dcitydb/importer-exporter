@@ -42,7 +42,7 @@ import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.db.DBTableEnum;
+import de.tub.citydb.database.DBTableEnum;
 import de.tub.citydb.util.Util;
 
 public class DBBuildingInstallation implements DBImporter {

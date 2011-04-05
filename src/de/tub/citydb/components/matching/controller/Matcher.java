@@ -43,7 +43,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.matching.Matching;
 import de.tub.citydb.config.project.matching.MergeConfig;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.Event;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.event.EventListener;

@@ -45,7 +45,7 @@ import de.tub.citydb.concurrent.Worker;
 import de.tub.citydb.concurrent.WorkerFactory;
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.EventDispatcher;
 
 public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult> {

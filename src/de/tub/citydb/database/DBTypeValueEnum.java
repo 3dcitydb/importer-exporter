@@ -1,4 +1,4 @@
-package de.tub.citydb.db;
+package de.tub.citydb.database;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 

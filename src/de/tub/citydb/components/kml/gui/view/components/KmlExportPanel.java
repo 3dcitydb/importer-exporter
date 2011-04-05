@@ -68,7 +68,7 @@ import de.tub.citydb.config.project.filter.FilterMode;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.event.concurrent.InterruptEnum;
 import de.tub.citydb.event.concurrent.InterruptEvent;

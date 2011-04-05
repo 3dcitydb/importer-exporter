@@ -101,7 +101,7 @@ import org.citygml4j.model.xal.ThoroughfareNumber;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.db.DBTypeValueEnum;
+import de.tub.citydb.database.DBTypeValueEnum;
 import de.tub.citydb.util.Util;
 
 public class DBThematicSurface implements DBExporter {

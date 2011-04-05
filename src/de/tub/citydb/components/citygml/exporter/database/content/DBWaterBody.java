@@ -69,7 +69,7 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.db.DBTypeValueEnum;
+import de.tub.citydb.database.DBTypeValueEnum;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;

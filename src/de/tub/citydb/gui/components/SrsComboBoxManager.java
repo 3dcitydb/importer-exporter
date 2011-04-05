@@ -38,7 +38,7 @@ import javax.swing.JComboBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.ReferenceSystem;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 
 public class SrsComboBoxManager {
 	private static SrsComboBoxManager instance = null;

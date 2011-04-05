@@ -43,8 +43,8 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.db.DBTableEnum;
-import de.tub.citydb.db.DBTypeValueEnum;
+import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.DBTypeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 

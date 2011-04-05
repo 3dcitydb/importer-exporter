@@ -48,7 +48,7 @@ import org.citygml4j.model.citygml.core.GeneralizationRelation;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.db.DBTableEnum;
+import de.tub.citydb.database.DBTableEnum;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.BoundingBoxFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;

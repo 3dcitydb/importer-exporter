@@ -93,7 +93,7 @@ import de.tub.citydb.config.gui.window.WindowSize;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.LanguageType;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.console.ConsoleWindow;
 import de.tub.citydb.gui.menubar.MenuBar;
 import de.tub.citydb.gui.util.GuiUtil;

@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import de.tub.citydb.components.citygml.common.database.cache.model.CacheTableModelEnum;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 
 public class BranchTemporaryCacheTable implements CacheTable {
 	private final TemporaryCacheTable main;

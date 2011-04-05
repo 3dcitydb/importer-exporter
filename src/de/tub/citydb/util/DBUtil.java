@@ -54,7 +54,7 @@ import de.tub.citydb.config.project.database.DBMetaData;
 import de.tub.citydb.config.project.database.DBMetaData.Versioning;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 
 public class DBUtil {
 	private static final DBConnectionPool dbConnectionPool = DBConnectionPool.getInstance();

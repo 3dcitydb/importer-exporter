@@ -51,7 +51,7 @@ import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTexturePara
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureParamEnum;
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.db.DBTableEnum;
+import de.tub.citydb.database.DBTableEnum;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.event.statistic.StatusDialogMessage;
 import de.tub.citydb.event.statistic.StatusDialogProgressBar;

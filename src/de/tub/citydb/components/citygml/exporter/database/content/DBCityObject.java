@@ -70,7 +70,7 @@ import org.citygml4j.model.gml.geometry.primitives.Envelope;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.BoundingBoxFilter;
 import de.tub.citydb.log.Logger;

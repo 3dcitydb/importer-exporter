@@ -35,7 +35,7 @@ import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.concurrent.Worker;
 import de.tub.citydb.concurrent.WorkerFactory;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.EventDispatcher;
 
 public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {

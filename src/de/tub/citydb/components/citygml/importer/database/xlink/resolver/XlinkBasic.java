@@ -41,7 +41,7 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import de.tub.citydb.components.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.db.DBTableEnum;
+import de.tub.citydb.database.DBTableEnum;
 
 public class XlinkBasic implements DBXlinkResolver {
 	private static final ReentrantLock mainLock = new ReentrantLock();

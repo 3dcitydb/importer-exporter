@@ -29,7 +29,7 @@
  */
 package de.tub.citydb.components.citygml.common.database.xlink;
 
-import de.tub.citydb.db.DBTableEnum;
+import de.tub.citydb.database.DBTableEnum;
 
 public class DBXlinkBasic implements DBXlink {
 	private long id;

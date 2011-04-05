@@ -42,7 +42,7 @@ import de.tub.citydb.config.project.filter.BoundingBox;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.filter.Filter;
 import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.util.DBUtil;

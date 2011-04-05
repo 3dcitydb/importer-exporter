@@ -41,7 +41,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.log.LogLevelType;
 import de.tub.citydb.log.Logger;

@@ -41,7 +41,7 @@ import de.tub.citydb.concurrent.Worker;
 import de.tub.citydb.concurrent.WorkerFactory;
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.filter.ExportFilter;
 
