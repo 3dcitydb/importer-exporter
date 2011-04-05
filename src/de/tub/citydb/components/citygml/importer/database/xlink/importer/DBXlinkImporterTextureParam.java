@@ -33,9 +33,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import de.tub.citydb.components.citygml.common.database.cache.TemporaryCacheTable;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.db.cache.TemporaryCacheTable;
 
 public class DBXlinkImporterTextureParam implements DBXlinkImporter {
 	private final TemporaryCacheTable tempTable;

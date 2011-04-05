@@ -44,7 +44,7 @@ import org.citygml4j.xml.io.CityGMLInputFactory;
 import org.citygml4j.xml.io.reader.CityGMLReadException;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
 
-import de.tub.citydb.concurrent.FeatureReaderWorkerFactory;
+import de.tub.citydb.components.citygml.importer.concurrent.FeatureReaderWorkerFactory;
 import de.tub.citydb.concurrent.SingleWorkerPool;
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;

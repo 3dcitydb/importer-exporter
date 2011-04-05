@@ -35,6 +35,9 @@ import java.util.HashMap;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.components.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.components.citygml.common.database.cache.HeapCacheTable;
+import de.tub.citydb.components.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.components.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.components.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
@@ -42,9 +45,6 @@ import de.tub.citydb.components.citygml.importer.database.content.DBSequencer;
 import de.tub.citydb.components.citygml.importer.database.content.DBSequencerEnum;
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.db.cache.CacheManager;
-import de.tub.citydb.db.cache.HeapCacheTable;
-import de.tub.citydb.db.cache.model.CacheTableModelEnum;
 import de.tub.citydb.event.Event;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.filter.ImportFilter;

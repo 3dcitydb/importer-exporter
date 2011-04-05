@@ -44,13 +44,13 @@ import oracle.jdbc.OraclePreparedStatement;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.components.citygml.common.database.cache.BranchTemporaryCacheTable;
+import de.tub.citydb.components.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.components.citygml.common.database.cache.HeapCacheTable;
+import de.tub.citydb.components.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.components.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.components.citygml.common.database.gmlid.DBCacheModel;
 import de.tub.citydb.components.citygml.common.database.gmlid.GmlIdEntry;
-import de.tub.citydb.db.cache.BranchTemporaryCacheTable;
-import de.tub.citydb.db.cache.CacheManager;
-import de.tub.citydb.db.cache.HeapCacheTable;
-import de.tub.citydb.db.cache.TemporaryCacheTable;
-import de.tub.citydb.db.cache.model.CacheTableModelEnum;
 
 public class DBImportCache implements DBCacheModel {
 	private final int partitions;

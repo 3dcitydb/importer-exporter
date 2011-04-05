@@ -36,10 +36,10 @@ import java.sql.SQLException;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.components.citygml.common.database.cache.HeapCacheTable;
 import de.tub.citydb.components.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkGroupToCityObject;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.db.cache.HeapCacheTable;
 import de.tub.citydb.filter.ImportFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;
 

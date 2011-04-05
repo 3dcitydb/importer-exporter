@@ -34,6 +34,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 
+import de.tub.citydb.components.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.components.citygml.common.database.cache.CacheTable;
+import de.tub.citydb.components.citygml.common.database.cache.HeapCacheTable;
+import de.tub.citydb.components.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.components.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
@@ -47,11 +52,6 @@ import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTexturePara
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
-import de.tub.citydb.db.cache.CacheManager;
-import de.tub.citydb.db.cache.CacheTable;
-import de.tub.citydb.db.cache.HeapCacheTable;
-import de.tub.citydb.db.cache.TemporaryCacheTable;
-import de.tub.citydb.db.cache.model.CacheTableModelEnum;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.event.statistic.StatusDialogMessage;
 import de.tub.citydb.event.statistic.StatusDialogProgressBar;

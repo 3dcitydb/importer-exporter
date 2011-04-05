@@ -32,9 +32,9 @@ package de.tub.citydb.components.citygml.importer.database.xlink.importer;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import de.tub.citydb.components.citygml.common.database.cache.TemporaryCacheTable;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkLibraryObject;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.db.cache.TemporaryCacheTable;
 
 public class DBXlinkImporterLibraryObject implements DBXlinkImporter {
 	private final TemporaryCacheTable tempTable;

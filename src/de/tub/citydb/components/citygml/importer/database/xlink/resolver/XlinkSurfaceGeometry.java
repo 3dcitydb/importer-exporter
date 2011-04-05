@@ -49,12 +49,12 @@ import oracle.sql.STRUCT;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 
+import de.tub.citydb.components.citygml.common.database.cache.HeapCacheTable;
 import de.tub.citydb.components.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.components.citygml.importer.database.content.DBSequencerEnum;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.db.cache.HeapCacheTable;
 import de.tub.citydb.util.Util;
 
 public class XlinkSurfaceGeometry implements DBXlinkResolver {
