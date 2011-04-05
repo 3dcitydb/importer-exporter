@@ -101,10 +101,11 @@ import de.tub.citydb.log.Logger;
 import de.tub.citydb.plugin.api.Plugin;
 import de.tub.citydb.plugin.api.extension.view.View;
 import de.tub.citydb.plugin.api.extension.view.ViewExtension;
+import de.tub.citydb.plugin.controller.ViewController;
 import de.tub.citydb.plugin.service.PluginService;
 
 @SuppressWarnings("serial")
-public class ImpExpGui extends JFrame implements PropertyChangeListener {
+public class ImpExpGui extends JFrame implements ViewController, PropertyChangeListener {
 	private final Logger LOG = Logger.getInstance();
 
 	private final Config config;

@@ -36,7 +36,9 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 
-public class Logger {
+import de.tub.citydb.plugin.controller.LogController;
+
+public class Logger implements LogController {
 	private static Logger INSTANCE = new Logger();
 
 	private LogLevelType consoleLogLevel = LogLevelType.INFO;

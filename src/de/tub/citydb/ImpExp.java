@@ -63,6 +63,8 @@ import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.plugin.api.Plugin;
+import de.tub.citydb.plugin.api.util.LogAccess;
+import de.tub.citydb.plugin.api.util.ViewAccess;
 import de.tub.citydb.plugin.service.PluginService;
 import de.tub.citydb.plugin.service.PluginServiceFactory;
 import de.tub.citydb.util.JAXBContextRegistry;
@@ -300,37 +302,50 @@ public class ImpExp {
 
 		Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", new Locale(lang.value()));
 
-		// load plugins
-		LOG.info("Loading plugins");
-		try {
-			PluginServiceFactory.addPluginDirectory(new File(Internal.PLUGINS_PATH));
-			pluginService = PluginServiceFactory.createPluginService();
-			Iterator<Plugin> iter = pluginService.getPlugins();
-
-			while (iter.hasNext())
-				LOG.debug("Loaded plugin: " + iter.next().getClass().getName());
-			
-			// set managers
-			// init plugins
-		} catch (IOException e) {
-			LOG.error("Failed to load plugins: " + e.getLocalizedMessage());
-			System.exit(1);
-		}
-
 		// start application
 		if (!shell) {
+			// init plugin service
+			try {
+				PluginServiceFactory.addPluginDirectory(new File(Internal.PLUGINS_PATH));
+				pluginService = PluginServiceFactory.createPluginService();
+			} catch (IOException e) {
+				LOG.error("Failed to initialize plugin support: " + e.getLocalizedMessage());
+				System.exit(1);
+			}
+			
+			// create main view instance
+			final ImpExpGui mainView = new ImpExpGui(cityGMLContext,
+					kmlContext,
+					colladaContext,
+					projectContext,
+					guiContext,
+					pluginService,
+					config);
+			
+			// load plugins
+			LOG.info("Loading plugins");
+			Iterator<Plugin> iter = pluginService.getPlugins();
+			while (iter.hasNext()) {
+				Plugin plugin = iter.next();
+				LOG.debug("Loaded plugin: " + plugin.getClass().getName());
+
+				// set controllers
+				if (plugin instanceof LogAccess)
+					((LogAccess)plugin).setLogController(Logger.getInstance());
+				
+				if (plugin instanceof ViewAccess)
+					((ViewAccess)plugin).setViewController(mainView);
+				
+				// initialize plugins
+				pluginService.initPlugins();
+			}
+			
 			// initialize gui
 			LOG.info("Starting graphical user interface");
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					new ImpExpGui(cityGMLContext,
-							kmlContext,
-							colladaContext,
-							projectContext,
-							guiContext,
-							pluginService,
-							config).invoke(errMsgs);
+					mainView.invoke(errMsgs);
 				}
 			});
 
