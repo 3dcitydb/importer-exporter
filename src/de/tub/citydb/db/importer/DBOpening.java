@@ -41,6 +41,7 @@ import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.MultiSurfaceProperty;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
 import de.tub.citydb.log.Logger;
@@ -57,6 +58,8 @@ public class DBOpening implements DBImporter {
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBOpeningToThemSurface openingToThemSurfaceImporter;
 	private DBAddress addressImporter;
+	
+	private int batchCounter;
 	
 	public DBOpening(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -219,6 +222,9 @@ public class DBOpening implements DBImporter {
 		}
 
 		psOpening.addBatch();
+		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			dbImporterManager.executeBatch(DBImporterEnum.OPENING);
+		
 		openingToThemSurfaceImporter.insert(openingId, parentId);
 
 		return openingId;
@@ -227,6 +233,7 @@ public class DBOpening implements DBImporter {
 	@Override
 	public void executeBatch() throws SQLException {
 		psOpening.executeBatch();
+		batchCounter = 0;
 	}
 
 	@Override

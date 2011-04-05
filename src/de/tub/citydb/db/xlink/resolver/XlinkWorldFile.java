@@ -43,6 +43,7 @@ import java.util.List;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.xlink.DBXlinkTextureFile;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
@@ -56,6 +57,7 @@ public class XlinkWorldFile implements DBXlinkResolver {
     private PreparedStatement psUpdate;
     private String localPath;
     private int dbSrid;
+    private int batchCounter;
 
     public XlinkWorldFile(Connection batchConn, Config config) throws SQLException {
         this.batchConn = batchConn;
@@ -132,7 +134,10 @@ public class XlinkWorldFile implements DBXlinkResolver {
 						psUpdate.setString(1, orientation);
 						psUpdate.setObject(2, obj);
 						psUpdate.setLong(3, xlink.getId());
+						
 						psUpdate.addBatch();
+						if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+							executeBatch();
 
 						return true;
 
@@ -179,6 +184,7 @@ public class XlinkWorldFile implements DBXlinkResolver {
     @Override
     public void executeBatch() throws SQLException {
         psUpdate.executeBatch();
+        batchCounter = 0;
     }
 
     @Override

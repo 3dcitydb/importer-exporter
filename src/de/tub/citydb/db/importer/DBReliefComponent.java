@@ -48,6 +48,7 @@ import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.Tin;
 import org.citygml4j.model.gml.TriangulatedSurface;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
@@ -65,6 +66,8 @@ public class DBReliefComponent implements DBImporter {
 	private DBReliefFeatToRelComp reliefFeatToRelComp;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBSdoGeometry sdoGeometry;
+	
+	private int batchCounter;
 
 	public DBReliefComponent(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -139,6 +142,8 @@ public class DBReliefComponent implements DBImporter {
 			psReliefComponent.setNull(6, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
 
 		psReliefComponent.addBatch();
+		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			dbImporterManager.executeBatch(DBImporterEnum.RELIEF_COMPONENT);
 
 		// fill sub-tables according to relief component type
 		if (reliefComponent.getCityGMLClass() == CityGMLClass.TINRELIEF) {
@@ -287,7 +292,8 @@ public class DBReliefComponent implements DBImporter {
 		psReliefComponent.executeBatch();
 		psTinRelief.executeBatch();
 		psMassPointRelief.executeBatch();
-		psBreaklineRelief.executeBatch();
+		psBreaklineRelief.executeBatch();		
+		batchCounter = 0;
 	}
 
 	@Override

@@ -38,8 +38,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 import java.util.Map.Entry;
+import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
 
 import oracle.spatial.geometry.JGeometry;
@@ -50,6 +50,7 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.cache.HeapCacheTable;
 import de.tub.citydb.db.gmlId.GmlIdEntry;
 import de.tub.citydb.db.importer.DBSequencerEnum;
@@ -69,6 +70,10 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	private PreparedStatement psUpdateSurfGeom;
 	private PreparedStatement psParentElem;
 	private PreparedStatement psMemberElem;
+	
+	private int parentBatchCounter;
+	private int memberBatchCounter;
+	private int updateBatchCounter;
 
 	public XlinkSurfaceGeometry(Connection batchConn, HeapCacheTable heapTable, Config config, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -136,6 +141,9 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			insert(xlinkNode, xlink.getId(), xlink.getRootId());
 			psUpdateSurfGeom.setLong(1, xlinkNode.id);
 			psUpdateSurfGeom.addBatch();
+			if (++updateBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+				executeUpdateSurfGeomBatch();
+			
 			return true;
 
 		} finally {
@@ -169,7 +177,11 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			psMemberElem.setObject(5, obj);
 
 			psMemberElem.addBatch();
-
+			if (++memberBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+				psMemberElem.executeBatch();
+				memberBatchCounter = 0;
+			}
+			
 		} else if (node.type != GMLClass.POLYGON) {
 			// set root entry
 			long isSolid = node.isSolid ? 1 : 0;
@@ -189,6 +201,10 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			psParentElem.setNull(9, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
 
 			psParentElem.addBatch();
+			if (++parentBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+				psParentElem.executeBatch();
+				parentBatchCounter = 0;
+			}
 
 			parentId = surfaceGeometryId;
 
@@ -470,12 +486,21 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	@Override
 	public void executeBatch() throws SQLException {
 		psParentElem.executeBatch();
-		psMemberElem.executeBatch();
+		psMemberElem.executeBatch();		
+		parentBatchCounter = 0;
+		memberBatchCounter = 0;
 		
+		executeUpdateSurfGeomBatch();
+	}
+	
+	private void executeUpdateSurfGeomBatch() throws SQLException {
+		// we need to synchronize updates otherwise Oracle will run
+		// into deadlocks
 		final ReentrantLock lock = mainLock;
 		lock.lock();
 		try {
 			psUpdateSurfGeom.executeBatch();
+			updateBatchCounter = 0;
 		} finally {
 			lock.unlock();
 		}

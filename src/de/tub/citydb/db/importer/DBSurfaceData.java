@@ -55,6 +55,7 @@ import org.citygml4j.model.gml.Point;
 import org.citygml4j.model.gml.PointProperty;
 
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.xlink.DBXlinkTextureFile;
 import de.tub.citydb.db.xlink.DBXlinkTextureFileEnum;
 import de.tub.citydb.db.xlink.DBXlinkTextureParam;
@@ -78,6 +79,7 @@ public class DBSurfaceData implements DBImporter {
 	private int dbSrid;
 	private boolean replaceGmlId;
 	private boolean importTextureImage;
+	private int batchCounter;
 
 	public DBSurfaceData(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -242,6 +244,8 @@ public class DBSurfaceData implements DBImporter {
 				psSurfaceData.setInt(14, 0);
 
 			psSurfaceData.addBatch();
+			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+				dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
 			if (material.isSetTarget()) {
 				for (String target : material.getTarget()) {
@@ -298,6 +302,8 @@ public class DBSurfaceData implements DBImporter {
 
 		if (abstractSurfData.getCityGMLClass() == CityGMLClass.PARAMETERIZEDTEXTURE) {
 			psSurfaceData.addBatch();
+			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+				dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
 			//xlink
 			ParameterizedTexture paraTex = (ParameterizedTexture)abstractSurfData;
@@ -430,6 +436,8 @@ public class DBSurfaceData implements DBImporter {
 			}
 
 			psSurfaceData.addBatch();
+			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+				dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
 			if (geoTex.isSetTarget()) {
 				for (String target : geoTex.getTarget()) {
@@ -456,6 +464,7 @@ public class DBSurfaceData implements DBImporter {
 		psX3DMaterial.executeBatch();
 		psParaTex.executeBatch();
 		psGeoTex.executeBatch();
+		batchCounter = 0;
 	}
 
 	@Override

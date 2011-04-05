@@ -39,6 +39,7 @@ import java.util.List;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.cache.HeapCacheTable;
 import de.tub.citydb.db.gmlId.GmlIdEntry;
 import de.tub.citydb.db.xlink.DBXlinkTextureAssociation;
@@ -56,6 +57,8 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 	private PreparedStatement psTextureParam;
 	private PreparedStatement psSelectParts;
 	private PreparedStatement psSelectContent;
+	
+	private int batchCounter;
 
 	public XlinkTextureAssociation(Connection batchConn, HeapCacheTable heapTable, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -137,6 +140,8 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 					}
 
 					psTextureParam.addBatch();
+					if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+						executeBatch();
 
 				} else {
 					LOG.warn("Failed to completely resolve XLink reference '" + gmlId + "' to TextureAssociation.");
@@ -163,6 +168,7 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 	@Override
 	public void executeBatch() throws SQLException {
 		psTextureParam.executeBatch();
+		batchCounter = 0;
 	}
 
 	@Override

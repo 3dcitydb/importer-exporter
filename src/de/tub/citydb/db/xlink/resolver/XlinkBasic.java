@@ -33,28 +33,33 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.DBTableEnum;
 import de.tub.citydb.db.gmlId.GmlIdEntry;
 import de.tub.citydb.db.xlink.DBXlinkBasic;
 
 public class XlinkBasic implements DBXlinkResolver {
-	private final ReentrantLock mainLock = new ReentrantLock();
+	private static final ReentrantLock mainLock = new ReentrantLock();
 	
 	private final Connection batchConn;
 	private final DBXlinkResolverManager resolverManager;
 
 	private HashMap<String, PreparedStatement> psMap;
+	private HashMap<String, Integer> psBatchCounterMap;
 	private PreparedStatement psUpdateSurfGeom;
+	private int updateBatchCounter;
 
 	public XlinkBasic(Connection batchConn, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
 		this.resolverManager = resolverManager;
 
 		psMap = new HashMap<String, PreparedStatement>();
+		psBatchCounterMap = new HashMap<String, Integer>();
 		psUpdateSurfGeom = batchConn.prepareStatement("update SURFACE_GEOMETRY set IS_XLINK=1 where ID=? and IS_XLINK=0");
 	}
 
@@ -66,31 +71,39 @@ public class XlinkBasic implements DBXlinkResolver {
 		if (entry == null)
 			return false;
 
-		PreparedStatement ps = getPreparedStatement(xlink);
+		String key = getKey(xlink);
+		PreparedStatement ps = getPreparedStatement(xlink, key);
 		if (ps != null) {
 			ps.setLong(1, entry.getId());
 			ps.setLong(2, xlink.getId());
+	
 			ps.addBatch();
+			int counter = psBatchCounterMap.get(key);
+			if (++counter == Internal.ORACLE_MAX_BATCH_SIZE) {
+				ps.executeBatch();
+				psBatchCounterMap.put(key, 0);
+			} else
+				psBatchCounterMap.put(key, counter);
 		}
 		
 		if (xlink.getToTable() == DBTableEnum.SURFACE_GEOMETRY) {
 			psUpdateSurfGeom.setLong(1, entry.getId());
 			psUpdateSurfGeom.addBatch();
+			if (++updateBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+				executeUpdateSurfGeomBatch();
 		}
 
 		return true;
 	}
 
-	public PreparedStatement getPreparedStatement(DBXlinkBasic xlink) throws SQLException {
+	private PreparedStatement getPreparedStatement(DBXlinkBasic xlink, String key) throws SQLException {
 		DBTableEnum fromTable = xlink.getFromTable();
 		DBTableEnum toTable = xlink.getToTable();
 		String attrName = xlink.getAttrName();
-
-		String key = fromTable.ordinal() + "_" + toTable.ordinal() + "_" + xlink.getAttrName();
+		
 		PreparedStatement ps = psMap.get(key);
 
 		if (ps == null) {
-
 			if (fromTable == DBTableEnum.THEMATIC_SURFACE && toTable == DBTableEnum.OPENING) {
 				ps = batchConn.prepareStatement("insert into OPENING_TO_THEM_SURFACE (OPENING_ID, THEMATIC_SURFACE_ID) values " +
 				"(?, ?)");
@@ -124,12 +137,18 @@ public class XlinkBasic implements DBXlinkResolver {
 			else if (attrName != null){
 				ps = batchConn.prepareStatement("update " + fromTable + " set " + attrName + "=? where ID=?");
 			}
+			
+			if (ps != null) {
+				psMap.put(key, ps);
+				psBatchCounterMap.put(key, 0);
+			}
 		}
 
-		if (ps != null)
-			psMap.put(key, ps);
-
 		return ps;
+	}
+	
+	private String getKey(DBXlinkBasic xlink) {
+		return xlink.getFromTable().ordinal() + "_" + xlink.getToTable().ordinal() + "_" + xlink.getAttrName();
 	}
 
 	@Override
@@ -137,10 +156,20 @@ public class XlinkBasic implements DBXlinkResolver {
 		for (PreparedStatement ps : psMap.values())
 			ps.executeBatch();
 		
+		for (Entry<String, Integer> entry : psBatchCounterMap.entrySet())
+			entry.setValue(0);
+	
+		executeUpdateSurfGeomBatch();
+	}
+	
+	private void executeUpdateSurfGeomBatch() throws SQLException {
+		// we need to synchronize updates otherwise Oracle will run
+		// into deadlocks
 		final ReentrantLock lock = mainLock;
 		lock.lock();
 		try {
 			psUpdateSurfGeom.executeBatch();
+			updateBatchCounter = 0;
 		} finally {
 			lock.unlock();
 		}

@@ -40,6 +40,7 @@ import java.util.List;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.db.cache.HeapCacheTable;
 import de.tub.citydb.db.gmlId.GmlIdEntry;
 import de.tub.citydb.db.xlink.DBXlinkTextureAssociation;
@@ -59,6 +60,8 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 	private PreparedStatement psSelectLinearRing;
 	private PreparedStatement psSelectInteriorLinearRing;
 	private PreparedStatement psSelectTexCoord;
+	
+	private int batchCounter;
 
 	public XlinkTexCoordList(Connection batchConn, HeapCacheTable textureParamHeapTable, HeapCacheTable linearRingHeapTable, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -179,6 +182,8 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 			psTexCoordList.setLong(3, xlink.getId());
 
 			psTexCoordList.addBatch();
+			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+				executeBatch();
 
 			if (xlink.getTexParamGmlId() != null) {
 				// propagate xlink...
@@ -205,6 +210,7 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 	@Override
 	public void executeBatch() throws SQLException {
 		psTexCoordList.executeBatch();
+		batchCounter = 0;
 	}
 
 	@Override
