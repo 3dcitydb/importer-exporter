@@ -50,15 +50,20 @@ public class GuiUtil {
 		return constraint;
 	}
 	
-	public static void setMnemonic(JMenuItem item, String labelKey, String indexKey) {
+	public static void setMnemonic(JMenuItem item, String label, int index) {
 		try {
-			int index = Integer.valueOf(Internal.I18N.getString(indexKey));
-			char mnemonic = Internal.I18N.getString(labelKey).charAt(index);
+			char mnemonic = label.charAt(index);
 			item.setMnemonic(mnemonic);
 			item.setDisplayedMnemonicIndex(index);
-		} catch (NumberFormatException e) {
+		}  catch (IndexOutOfBoundsException e) {
 			//
-		} catch (IndexOutOfBoundsException e2) {
+		}
+	}
+	
+	public static void setMnemonic(JMenuItem item, String labelKey, String indexKey) {		
+		try {
+			setMnemonic(item, Internal.I18N.getString(labelKey), Integer.valueOf(Internal.I18N.getString(indexKey)));
+		} catch (NumberFormatException e) {
 			//
 		}
 	}

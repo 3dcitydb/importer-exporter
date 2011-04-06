@@ -192,7 +192,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		activePosition = 0;
 		main = new JPanel();
 
-		menuBar = new MenuBar(config, jaxbProjectContext, this);
+		menuBar = new MenuBar(pluginService, config, jaxbProjectContext, this);
 		setJMenuBar(menuBar);
 		
 		console = new JPanel();

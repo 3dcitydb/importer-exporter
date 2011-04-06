@@ -105,7 +105,7 @@ public class DBConnectionPool {
 
 	public Connection getConnection() throws SQLException {
 		if (poolDataSource == null)
-			throw new SQLException("Failed to retrieve connection to database due to missing PoolDataSource.");
+			throw new SQLException("Database is not connected.");
 
 		return poolDataSource.getConnection();
 	}

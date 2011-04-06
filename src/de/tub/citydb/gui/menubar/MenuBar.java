@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.gui.menubar;
 
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.xml.bind.JAXBContext;
 
@@ -36,9 +37,13 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.plugin.api.Plugin;
+import de.tub.citydb.plugin.api.extension.menu.MenuExtension;
+import de.tub.citydb.plugin.service.PluginService;
 
 @SuppressWarnings("serial")
 public class MenuBar extends JMenuBar {
+	private final PluginService pluginService;
 	private final Config config;
 	private final JAXBContext ctx;
 	private final ImpExpGui topFrame;
@@ -47,8 +52,11 @@ public class MenuBar extends JMenuBar {
 	private MenuProject project;
 	private MenuWindow window;
 	private MenuHelp help;
+
+	private JMenu extensions;
 	
-	public MenuBar(Config config, JAXBContext ctx, ImpExpGui topFrame) {
+	public MenuBar(PluginService pluginService, Config config, JAXBContext ctx, ImpExpGui topFrame) {
+		this.pluginService = pluginService;
 		this.config = config;
 		this.ctx = ctx;
 		this.topFrame = topFrame;
@@ -63,6 +71,26 @@ public class MenuBar extends JMenuBar {
 		
 		add(file);
 		add(project);
+				
+		for (Plugin plugin : pluginService.getExternalPlugins()) {
+			if (plugin instanceof MenuExtension) {
+				if (extensions == null)
+					extensions = new JMenu();
+				
+				MenuExtension extension = (MenuExtension)plugin;
+				if (extension.getMenu() != null && extension.getMenu().getMenuItem() != null) {
+					JMenu item = new JMenu(extension.getMenu().getTitle());
+					item.setIcon(extension.getMenu().getIcon());
+					GuiUtil.setMnemonic(item, item.getText(), extension.getMenu().getMnemonicIndex());
+					item.add(extension.getMenu().getMenuItem());
+					extensions.add(item);
+				}
+			}
+		}
+		
+		if (extensions != null)
+			add(extensions);
+		
 		add(window);
 		add(help);
 	}
@@ -70,11 +98,13 @@ public class MenuBar extends JMenuBar {
 	public void doTranslation() {
 		file.setText(Internal.I18N.getString("menu.file.label"));
 		project.setText(Internal.I18N.getString("menu.project.label"));
+		extensions.setText(Internal.I18N.getString("menu.extensions.label"));
 		window.setText(Internal.I18N.getString("menu.window.label"));
 		help.setText(Internal.I18N.getString("menu.help.label"));
 		
 		GuiUtil.setMnemonic(file, "menu.file.label", "menu.file.label.mnemonic");
 		GuiUtil.setMnemonic(project, "menu.project.label", "menu.project.label.mnemonic");
+		GuiUtil.setMnemonic(extensions, "menu.extensions.label", "menu.extensions.label.mnemonic");
 		GuiUtil.setMnemonic(window, "menu.window.label", "menu.window.label.mnemonic");
 		GuiUtil.setMnemonic(help, "menu.help.label", "menu.help.label.mnemonic");
 		
@@ -83,5 +113,5 @@ public class MenuBar extends JMenuBar {
 		window.doTranslation();
 		help.doTranslation();
 	}
-	
+
 }

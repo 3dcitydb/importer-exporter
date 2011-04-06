@@ -80,12 +80,11 @@ import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.log.LogLevelType;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.plugin.api.controller.DatabaseController;
 import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
 
 @SuppressWarnings("serial")
-public class DatabasePanel extends JPanel implements DatabaseController, PropertyChangeListener {
+public class DatabasePanel extends JPanel implements PropertyChangeListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final ImpExpGui topFrame;
@@ -480,7 +479,6 @@ public class DatabasePanel extends JPanel implements DatabaseController, Propert
 			connCombo.setSelectedIndex(index < connCombo.getItemCount() ? index : index - 1);		
 	}
 
-	@Override
 	public boolean connect() {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
@@ -576,7 +574,6 @@ public class DatabasePanel extends JPanel implements DatabaseController, Propert
 		return dbPool.isConnected();
 	}
 
-	@Override
 	public boolean disconnect() {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
@@ -607,11 +604,6 @@ public class DatabasePanel extends JPanel implements DatabaseController, Propert
 		}
 		
 		return !dbPool.isConnected();
-	}
-
-	@Override
-	public boolean isConnected() {
-		return dbPool.isConnected();
 	}
 
 	private void report() {

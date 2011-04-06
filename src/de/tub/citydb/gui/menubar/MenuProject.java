@@ -241,7 +241,7 @@ public class MenuProject extends JMenu {
 		lastUsed.removeAll();
 
 		for (final String fileName : config.getGui().getRecentlyUsedProjectFiles()) {
-			final JMenuItem item = new JMenuItem(fileName);
+			final JMenuItem item = new JMenuItem();
 
 			File tmp = new File(fileName);
 			String name = tmp.getName();

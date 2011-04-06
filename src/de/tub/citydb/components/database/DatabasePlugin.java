@@ -4,6 +4,7 @@ import java.util.Locale;
 
 import javax.xml.bind.JAXBContext;
 
+import de.tub.citydb.components.database.controller.Controller;
 import de.tub.citydb.components.database.gui.preferences.DatabasePreferences;
 import de.tub.citydb.components.database.gui.view.DatabaseView;
 import de.tub.citydb.config.Config;
@@ -18,10 +19,12 @@ import de.tub.citydb.plugin.internal.InternalPlugin;
 public class DatabasePlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
 	private DatabaseView view;
 	private DatabasePreferences preferences;
+	private DatabaseController controller;
 	
 	public DatabasePlugin(JAXBContext projectContext, Config config, ImpExpGui mainView) {
 		view = new DatabaseView(config, mainView);
 		preferences = new DatabasePreferences(projectContext, mainView, config);
+		controller = new Controller(this);
 	}
 		
 	@Override
@@ -63,7 +66,7 @@ public class DatabasePlugin implements InternalPlugin, ViewExtension, Preference
 	}
 	
 	public DatabaseController getDatabaseController() {
-		return (DatabaseController)view.getViewComponent();
+		return controller;
 	}
 	
 }
