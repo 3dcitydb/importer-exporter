@@ -1,7 +1,7 @@
-package de.tub.citydb.plugin.api.util;
+package de.tub.citydb.plugin.api.accessors;
 
 import de.tub.citydb.plugin.api.controller.ViewController;
 
-public interface ViewAccess {
+public interface ViewAccessor {
 	public void setViewController(ViewController controller);
 }

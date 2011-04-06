@@ -8,10 +8,10 @@ import de.tub.citydb.components.citygml.exporter.gui.preferences.CityGMLExportPr
 import de.tub.citydb.components.citygml.exporter.gui.view.CityGMLExportView;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.plugin.api.extension.preferences.Preferences;
-import de.tub.citydb.plugin.api.extension.preferences.PreferencesExtension;
-import de.tub.citydb.plugin.api.extension.view.View;
-import de.tub.citydb.plugin.api.extension.view.ViewExtension;
+import de.tub.citydb.plugin.api.extensions.preferences.Preferences;
+import de.tub.citydb.plugin.api.extensions.preferences.PreferencesExtension;
+import de.tub.citydb.plugin.api.extensions.view.View;
+import de.tub.citydb.plugin.api.extensions.view.ViewExtension;
 import de.tub.citydb.plugin.internal.InternalPlugin;
 
 public class CityGMLExportPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {

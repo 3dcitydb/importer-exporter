@@ -1,7 +1,7 @@
-package de.tub.citydb.plugin.api.util;
+package de.tub.citydb.plugin.api.accessors;
 
 import de.tub.citydb.plugin.api.controller.LogController;
 
-public interface LogAccess {
+public interface LogAccessor {
 	public void setLogController(LogController controller);
 }

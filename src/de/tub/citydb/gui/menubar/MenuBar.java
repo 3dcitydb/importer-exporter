@@ -38,7 +38,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.plugin.api.Plugin;
-import de.tub.citydb.plugin.api.extension.menu.MenuExtension;
+import de.tub.citydb.plugin.api.extensions.menu.MenuExtension;
 import de.tub.citydb.plugin.service.PluginService;
 
 @SuppressWarnings("serial")

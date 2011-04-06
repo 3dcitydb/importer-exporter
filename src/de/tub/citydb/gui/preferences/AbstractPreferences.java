@@ -1,7 +1,7 @@
 package de.tub.citydb.gui.preferences;
 
-import de.tub.citydb.plugin.api.extension.preferences.Preferences;
-import de.tub.citydb.plugin.api.extension.preferences.PreferencesEntry;
+import de.tub.citydb.plugin.api.extensions.preferences.Preferences;
+import de.tub.citydb.plugin.api.extensions.preferences.PreferencesEntry;
 
 public class AbstractPreferences implements Preferences {
 	protected DefaultPreferencesEntry entry;

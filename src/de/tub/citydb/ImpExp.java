@@ -69,9 +69,9 @@ import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.plugin.api.Plugin;
-import de.tub.citydb.plugin.api.util.DatabaseAccess;
-import de.tub.citydb.plugin.api.util.LogAccess;
-import de.tub.citydb.plugin.api.util.ViewAccess;
+import de.tub.citydb.plugin.api.accessors.DatabaseAccessor;
+import de.tub.citydb.plugin.api.accessors.LogAccessor;
+import de.tub.citydb.plugin.api.accessors.ViewAccessor;
 import de.tub.citydb.plugin.service.PluginService;
 import de.tub.citydb.plugin.service.PluginServiceFactory;
 
@@ -343,12 +343,12 @@ public class ImpExp {
 				LOG.debug("Loaded plugin: " + plugin.getClass().getName());
 
 				// set controllers
-				if (plugin instanceof LogAccess)
-					((LogAccess)plugin).setLogController(Logger.getInstance());				
-				if (plugin instanceof ViewAccess)
-					((ViewAccess)plugin).setViewController(mainView);
-				if (plugin instanceof DatabaseAccess)
-					((DatabaseAccess)plugin).setDatabaseController(pluginService.getInternalPlugin(DatabasePlugin.class).getDatabaseController());
+				if (plugin instanceof LogAccessor)
+					((LogAccessor)plugin).setLogController(Logger.getInstance());				
+				if (plugin instanceof ViewAccessor)
+					((ViewAccessor)plugin).setViewController(mainView);
+				if (plugin instanceof DatabaseAccessor)
+					((DatabaseAccessor)plugin).setDatabaseController(pluginService.getInternalPlugin(DatabasePlugin.class).getDatabaseController());
 				
 				// init plugin
 				plugin.init();
