@@ -11,4 +11,7 @@
 
     <str id="samples" txt="Sample CityGML datasets"/>
     <str id="samples.description" txt="Sample CityGML datasets taken from the official CityGML website at http://www.citygml.org/"/>
+
+    <str id="plugin-api" txt="Plugin development API"/>
+    <str id="plugin-api.description" txt="Java API for the development of own extensions"/>    
 </langpack>

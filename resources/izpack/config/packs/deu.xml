@@ -11,4 +11,7 @@
     
     <str id="samples" txt="CityGML Beispieldaten"/>
     <str id="samples.description" txt="CityGML Beispieldaten von der offiziellen CityGML-Homepage unter http://www.citygml.org/"/>
+    
+    <str id="plugin-api" txt="API für die Plugin-Entwicklung"/>
+    <str id="plugin-api.description" txt="Java-Programmierschnittstelle für die Entwicklung eigener Erweiterungen"/>
 </langpack>

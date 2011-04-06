@@ -6,10 +6,14 @@
 	<property name="app.version" value="1.4-beta1" />
 	<property name="app.jar" value="${app.name}.jar" />
 	<property name="app.title" value="3D City Database Importer/Exporter" />
-	<property name="app.homepage" value="http://www.gis.tu-berlin.de/software"/>
-	<property name="vendor.homepage" value="http://www.gis.tu-berlin.de/"/>
+	<property name="app.homepage" value="http://www.gis.tu-berlin.de/software" />
+	<property name="vendor.homepage" value="http://www.gis.tu-berlin.de/" />
 	<property name="app.vendor" value="IGG, Technical University Berlin, Germany, ${vendor.homepage}" />
 	<property name="app.class" value="de.tub.citydb.ImpExp" />
+
+	<property name="plugin-api.title" value="${app.title} Plugin API" />
+	<property name="plugin-api.name" value="${app.name}-plugin-api" />
+	<property name="plugin-api.jar" value="${plugin-api.name}.jar" />
 
 	<!-- 3DCityDB version -->
 	<property name="3dcitydb.version" value="2.0.5" />
@@ -25,6 +29,9 @@
 	<property name="lib" location="lib" />
 	<property name="samples" location="samples" />
 
+	<property name="src.plugin-api" location="${src}/de/tub/citydb/plugin/api" />
+	<property name="plugin-api.relative" value="plugin-api" />
+
 	<property name="resources" location="resources" />
 	<property name="resources.doc" location="${resources}/doc" />
 	<property name="resources.license" location="${resources}/license" />
@@ -39,10 +46,13 @@
 
 	<property name="build" location="build" />
 	<property name="build.classes" location="${build}/classes" />
+	<property name="build.plugin-api" location="${build}/plugin-api" />
 
 	<property name="dist" location="${app.name}-${app.version}" />
 	<property name="dist.lib" location="${dist}/lib" />
 	<property name="dist.license" location="${dist}/license" />
+	<property name="dist.plugin-api" location="${dist}/${plugin-api.relative}" />
+	<property name="dist.plugins" location="${dist}/plugins" />
 	<property name="inst" location="${dist}-setup" />
 
 	<!-- classpath -->
@@ -70,17 +80,47 @@
 		<delete dir="${inst}" />
 	</target>
 
-	<target name="compile" description="compile the source">
+	<target name="generate_plugin_api" depends="clean" description="generate the plugin API">
+		<!-- create the required directories -->
+		<mkdir dir="${build.plugin-api}" />
+		<mkdir dir="${dist.plugin-api}" />
+
+		<!-- compile the java code from ${src.plugin-api} into ${build.plugin-api} -->
+		<javac classpathref="classpath" srcdir="${src.plugin-api}" destdir="${build.plugin-api}" />
+
+		<!-- copy LICENSE template -->
+		<copy todir="${build.plugin-api}">
+			<fileset dir="${resources.license}" includes="**/*" />
+		</copy>
+
+		<!-- replace tokens in license files -->
+		<replace file="${build.plugin-api}/LICENSE.txt" token="!app.title!" value="${plugin-api.title}" />
+		<buildnumber file="build.num" />
+
+		<!-- put everything in ${build.plugin-api} into .jar file -->
+		<jar jarfile="${dist.plugin-api}/${plugin-api.jar}" basedir="${build.plugin-api}">
+			<fileset dir="${build.plugin-api}" includes="**/*" />
+			<manifest>
+				<attribute name="Built-Id" value="${user.name}-${plugin-api.name}-${app.version}" />
+				<attribute name="Built-Date" value="${TODAY}" />
+				<attribute name="Implementation-Title" value="${plugin-api.title}" />
+				<attribute name="Implementation-Version" value="${app.version}-b${build.number}" />
+				<attribute name="Implementation-Vendor" value="${app.vendor}" />
+			</manifest>
+		</jar>
+
+		<!-- clean up -->
+		<delete dir="${build}" />
+	</target>
+
+	<target name="dist" depends="clean, generate_plugin_api" description="generate the distribution">
 		<!-- create the build directory structure used by compile -->
 		<mkdir dir="${build.classes}" />
+		<mkdir dir="${dist}" />
+		<mkdir dir="${dist.plugins}" />
 
 		<!-- compile the java code from ${src} into ${build} -->
 		<javac classpathref="classpath" srcdir="${src}" destdir="${build.classes}" />
-	</target>
-
-	<target name="dist" depends="clean, compile" description="generate the distribution">
-		<!-- create the distribution directory -->
-		<mkdir dir="${dist}" />
 
 		<!-- copy resources -->
 		<copy todir="${build.classes}">
@@ -127,7 +167,7 @@
 		<buildnumber file="build.num" />
 
 		<!-- put everything in ${build} into .jar file -->
-		<jar jarfile="${dist.lib}/${app.jar}" basedir="${build}/classes">
+		<jar jarfile="${dist.lib}/${app.jar}" basedir="${build.classes}">
 			<fileset dir="${dist}" includes="README.txt" />
 			<fileset dir="${dist.license}" includes="**/*" />
 			<manifest>
@@ -167,6 +207,8 @@
 		<replace file="${resources.izpack}/izpack-install.xml" token="!izpack.setup.folder!" value="${izpack.setup.folder}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!resources.izpack.config!" value="${resources.izpack.config}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!dist!" value="${dist}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!plugin-api.relative!" value="${plugin-api.relative}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!dist.plugin-api!" value="${dist.plugin-api}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!resources.3dcitydb!" value="${resources.3dcitydb}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!resources.manual!" value="${resources.manual}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!samples!" value="${samples}" />

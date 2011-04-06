@@ -76,7 +76,7 @@
     <packs>
         <pack name="core" id="core" required="yes" preselected="yes">
             <description/>
-            <fileset dir="!dist!" targetdir="$INSTALL_PATH" excludes="*.bat *.sh" override="true"/>
+            <fileset dir="!dist!" targetdir="$INSTALL_PATH" excludes="!plugin-api.relative!/ *.bat *.sh" override="true"/>
             <file src="!dist!/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH" os="windows" override="true"/>
             <file src="!dist!/3DCityDB-Importer-Exporter.sh" targetdir="$INSTALL_PATH" os="unix" override="true"/>
             <file src="!dist!/3DCityDB-Importer-Exporter.sh" targetdir="$INSTALL_PATH" os="mac" override="true"/>
@@ -99,6 +99,10 @@
         <pack name="samples" id="samples" required="no" preselected="yes">
             <description/>
             <fileset dir="!samples!" targetdir="$INSTALL_PATH/samples" excludes=".svn" override="true"/>
+        </pack>
+        <pack name="plugin-api" id="plugin-api" required="no" preselected="no">
+            <description/>
+            <fileset dir="!dist.plugin-api!" targetdir="$INSTALL_PATH/!plugin-api.relative!" override="true"/>
         </pack>
     </packs>
 

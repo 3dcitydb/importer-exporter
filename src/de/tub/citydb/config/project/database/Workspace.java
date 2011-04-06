@@ -43,13 +43,23 @@ public class Workspace {
 
 	public Workspace() {
 	}
+	
+	public Workspace(String name) {
+		setName(name);
+	}
+	
+	public Workspace(String name, String timestamp) {
+		this(name);
+		setTimestamp(timestamp);
+	}
 
 	public String getName() {
 		return name;
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		if (name != null)
+			this.name = name;
 	}
 
 	public String getTimestamp() {
@@ -57,7 +67,8 @@ public class Workspace {
 	}
 
 	public void setTimestamp(String timestamp) {
-		this.timestamp = timestamp;
+		if (timestamp != null)
+			this.timestamp = timestamp;
 	}
 
 }
