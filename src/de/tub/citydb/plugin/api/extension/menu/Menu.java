@@ -1,4 +1,4 @@
-package de.tub.citydb.plugin.api.extensions.menu;
+package de.tub.citydb.plugin.api.extension.menu;
 
 import javax.swing.Icon;
 import javax.swing.JMenu;

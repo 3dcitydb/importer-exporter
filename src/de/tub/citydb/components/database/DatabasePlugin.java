@@ -10,10 +10,10 @@ import de.tub.citydb.components.database.gui.view.DatabaseView;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.plugin.api.controller.DatabaseController;
-import de.tub.citydb.plugin.api.extensions.preferences.Preferences;
-import de.tub.citydb.plugin.api.extensions.preferences.PreferencesExtension;
-import de.tub.citydb.plugin.api.extensions.view.View;
-import de.tub.citydb.plugin.api.extensions.view.ViewExtension;
+import de.tub.citydb.plugin.api.extension.preferences.Preferences;
+import de.tub.citydb.plugin.api.extension.preferences.PreferencesExtension;
+import de.tub.citydb.plugin.api.extension.view.View;
+import de.tub.citydb.plugin.api.extension.view.ViewExtension;
 import de.tub.citydb.plugin.internal.InternalPlugin;
 
 public class DatabasePlugin implements InternalPlugin, ViewExtension, PreferencesExtension {

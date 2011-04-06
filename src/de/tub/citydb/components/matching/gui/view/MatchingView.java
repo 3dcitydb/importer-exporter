@@ -8,7 +8,7 @@ import de.tub.citydb.components.matching.gui.view.components.MatchingPanel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.plugin.api.extensions.view.View;
+import de.tub.citydb.plugin.api.extension.view.View;
 
 public class MatchingView implements View {
 	private final MatchingPanel component;

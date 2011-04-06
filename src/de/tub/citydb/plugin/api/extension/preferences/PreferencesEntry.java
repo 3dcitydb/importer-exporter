@@ -1,4 +1,4 @@
-package de.tub.citydb.plugin.api.extensions.preferences;
+package de.tub.citydb.plugin.api.extension.preferences;
 
 import java.awt.Component;
 import java.util.ArrayList;

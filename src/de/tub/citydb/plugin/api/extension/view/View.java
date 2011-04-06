@@ -1,4 +1,4 @@
-package de.tub.citydb.plugin.api.extensions.view;
+package de.tub.citydb.plugin.api.extension.view;
 
 import java.awt.Component;
 

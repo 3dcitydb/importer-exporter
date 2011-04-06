@@ -8,7 +8,7 @@ import de.tub.citydb.components.preferences.gui.view.components.PreferencesPanel
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.plugin.api.extensions.view.View;
+import de.tub.citydb.plugin.api.extension.view.View;
 import de.tub.citydb.plugin.service.PluginService;
 
 public class PreferencesView implements View {
