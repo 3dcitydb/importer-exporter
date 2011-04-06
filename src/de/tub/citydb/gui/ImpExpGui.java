@@ -567,12 +567,19 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		return true;
 	}
 
+	@Override
 	public void setStatusText(String message) {
 		statusText.setText(message);
 	}
 
+	@Override
 	public void clearConsole() {
 		consoleText.setText("");
+	}
+
+	@Override
+	public JFrame getTopFrame() {
+		return this;
 	}
 
 	public JTextArea getConsole() {

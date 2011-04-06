@@ -224,10 +224,15 @@ public class DatabasePanel extends JPanel implements DatabaseController, Propert
 
 		connectButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (!dbPool.isConnected())
-					connect();
-				else
-					disconnect();
+				Thread thread = new Thread() {
+					public void run() {
+						if (!dbPool.isConnected())
+							connect();
+						else
+							disconnect();
+					}
+				};
+				thread.start();
 			}
 		});
 
@@ -477,17 +482,6 @@ public class DatabasePanel extends JPanel implements DatabaseController, Propert
 
 	@Override
 	public boolean connect() {
-		Thread thread = new Thread() {
-			public void run() {
-				doConnect();
-			}
-		};
-		thread.start();
-
-		return dbPool.isConnected();
-	}
-
-	private void doConnect() {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
@@ -500,31 +494,31 @@ public class DatabasePanel extends JPanel implements DatabaseController, Propert
 				if (conn.getUser().trim().equals("")) {
 					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
 							Internal.I18N.getString("db.dialog.error.conn.user"));
-					return;
+					return false;
 				}
 
 				if (conn.getInternalPassword().trim().equals("")) {
 					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
 							Internal.I18N.getString("db.dialog.error.conn.pass"));
-					return;
+					return false;
 				}
 
 				if (conn.getServer().trim().equals("")) {
 					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
 							Internal.I18N.getString("db.dialog.error.conn.server"));
-					return;
+					return false;
 				}
 
 				if (conn.getPort() == null) {
 					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
 							Internal.I18N.getString("db.dialog.error.conn.port"));
-					return;
+					return false;
 				}
 
 				if (conn.getSid().trim().equals("")) {
 					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
 							Internal.I18N.getString("db.dialog.error.conn.sid"));
-					return;
+					return false;
 				}			
 
 				topFrame.setStatusText(Internal.I18N.getString("main.status.database.connect.label"));
@@ -540,7 +534,7 @@ public class DatabasePanel extends JPanel implements DatabaseController, Propert
 					topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
 					dbPool.forceDisconnect();
 					LOG.error("Connection to database could not be established: " + sqlEx.getMessage().trim());
-					return;
+					return false;
 				}
 
 				if (dbPool.isConnected()) {
@@ -578,21 +572,12 @@ public class DatabasePanel extends JPanel implements DatabaseController, Propert
 		} finally {
 			lock.unlock();
 		}
+		
+		return dbPool.isConnected();
 	}
 
 	@Override
 	public boolean disconnect() {
-		Thread thread = new Thread() {
-			public void run() {
-				doDisconnect();
-			}
-		};
-		thread.start();
-
-		return !dbPool.isConnected();
-	}
-
-	private void doDisconnect() {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
@@ -620,6 +605,8 @@ public class DatabasePanel extends JPanel implements DatabaseController, Propert
 		} finally {
 			lock.unlock();
 		}
+		
+		return !dbPool.isConnected();
 	}
 
 	@Override
