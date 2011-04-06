@@ -37,6 +37,8 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
+import de.tub.citydb.plugin.api.data.database.DatabaseConnectionDetails;
+
 @XmlType(name="ConnectionType", propOrder={
 		"description",
 		"server",
@@ -170,6 +172,16 @@ public class DBConnection implements Comparable<DBConnection> {
 	
 	public String toConnectString() {
 		return user + "@" + server + ":" + port + "/" + sid;
+	}
+	
+	public DatabaseConnectionDetails toPluginObject() {
+		return new DatabaseConnectionDetails(
+				description, 
+				server, 
+				port, 
+				sid, 
+				user, 
+				metaData.toPluginObject());
 	}
 	
 }

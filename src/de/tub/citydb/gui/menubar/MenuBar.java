@@ -78,8 +78,8 @@ public class MenuBar extends JMenuBar {
 					extensions = new JMenu();
 
 				MenuExtension extension = (MenuExtension)plugin;
-				if (extension.getMenu() != null && extension.getMenu().getPluginMenu() != null) {
-					JMenu menu = extension.getMenu().getPluginMenu();
+				if (extension.getMenu() != null && extension.getMenu().getMenuComponent() != null) {
+					JMenu menu = extension.getMenu().getMenuComponent();
 					menu.setText(extension.getMenu().getTitle());
 					menu.setIcon(extension.getMenu().getIcon());
 					GuiUtil.setMnemonic(menu, menu.getText(), extension.getMenu().getMnemonicIndex());

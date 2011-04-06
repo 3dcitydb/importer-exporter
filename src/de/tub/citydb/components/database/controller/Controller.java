@@ -8,6 +8,7 @@ import de.tub.citydb.components.database.gui.view.components.DatabasePanel;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.plugin.api.controller.DatabaseController;
+import de.tub.citydb.plugin.api.data.database.DatabaseConnectionDetails;
 
 public class Controller implements DatabaseController {
 	private final DatabasePlugin plugin;
@@ -56,6 +57,9 @@ public class Controller implements DatabaseController {
 		return gotoWorkspace(conn, workspaceName, null);
 	}
 
-	
+	@Override
+	public DatabaseConnectionDetails getActiveConnectionDetails() {
+		return dbPool.getActiveConnection().toPluginObject();
+	}
 
 }

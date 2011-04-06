@@ -31,6 +31,7 @@ package de.tub.citydb.config.project.database;
 
 import de.tub.citydb.log.LogLevelType;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.plugin.api.data.database.DatabaseMetaData;
 
 public class DBMetaData {
 	private static final Logger LOG = Logger.getInstance();	
@@ -153,6 +154,19 @@ public class DBMetaData {
 		LOG.log(level, "SRID: " + srid + " (" + referenceSystemName + ')');
 		LOG.log(level, "gml:srsName: " + srsName);
 		LOG.log(level, "Versioning: " + versioning);
+	}
+	
+	public DatabaseMetaData toPluginObject() {
+		return new DatabaseMetaData(
+				databaseProductName, 
+				databaseProductString, 
+				databaseMajorVersion, 
+				databaseMinorVersion, 
+				referenceSystemName, 
+				isReferenceSystem3D, 
+				srid, 
+				srsName, 
+				versioning == Versioning.ON);
 	}
 	
 	public enum Versioning {
