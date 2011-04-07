@@ -88,16 +88,12 @@ public class DatabaseControllerImpl implements DatabaseController, PropertyChang
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (listeners != null && evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
+			boolean wasConnected = (Boolean)evt.getOldValue();
 			boolean isConnected = (Boolean)evt.getNewValue();
 					
-			for (DatabaseConnectionListener listener : listeners) {
-				if (isConnected)
-					listener.databaseConnected();
-				else
-					listener.databaseDisconnected();
-			}
-				
+			for (DatabaseConnectionListener listener : listeners)
+				listener.connectionStateChange(wasConnected, isConnected);				
 		}
 	}
-
+	
 }

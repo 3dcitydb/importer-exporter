@@ -81,6 +81,7 @@ import javax.xml.bind.JAXBException;
 import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.components.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.components.database.DatabasePlugin;
+import de.tub.citydb.components.database.gui.view.components.DatabasePanel;
 import de.tub.citydb.components.kml.KMLExportPlugin;
 import de.tub.citydb.components.matching.MatchingPlugin;
 import de.tub.citydb.components.preferences.PreferencesPlugin;
@@ -129,6 +130,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 
 	private List<View> views;
 	private PreferencesPlugin preferencesPlugin;
+	private DatabasePlugin databasePlugin;
 	
 	private PrintStream out;
 	private PrintStream err;
@@ -218,6 +220,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		menu = new JTabbedPane();
 		views = new ArrayList<View>();
 		preferencesPlugin = pluginService.getInternalPlugin(PreferencesPlugin.class);
+		databasePlugin = pluginService.getInternalPlugin(DatabasePlugin.class);
 		views.add(pluginService.getInternalPlugin(CityGMLImportPlugin.class).getView());
 		views.add(pluginService.getInternalPlugin(CityGMLExportPlugin.class).getView());
 		views.add(pluginService.getInternalPlugin(KMLExportPlugin.class).getView());
@@ -226,7 +229,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		for (ViewExtension viewExtension : pluginService.getExternalViewExtensions(true))
 			views.add(viewExtension.getView());
 
-		views.add(pluginService.getInternalPlugin(DatabasePlugin.class).getView());
+		views.add(databasePlugin.getView());
 		views.add(preferencesPlugin.getView());
 
 		int index = 0;
@@ -572,11 +575,11 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 	}
 
 	public void connectToDatabase() {
-		
+		((DatabasePanel)databasePlugin.getView().getViewComponent()).connect();
 	}
 	
 	public void disconnectFromDatabase() {
-		
+		((DatabasePanel)databasePlugin.getView().getViewComponent()).disconnect();
 	}
 	
 	private void shutdown() {		
