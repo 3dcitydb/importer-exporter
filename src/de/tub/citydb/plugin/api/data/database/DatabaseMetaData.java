@@ -1,5 +1,7 @@
 package de.tub.citydb.plugin.api.data.database;
 
+import de.tub.citydb.plugin.api.controller.LogController;
+
 
 public class DatabaseMetaData {
 	// database related information
@@ -38,6 +40,10 @@ public class DatabaseMetaData {
 	public String getDatabaseProductName() {
 		return databaseProductName;
 	}
+	
+	public String getShortDatabaseProductVersion() {
+		return getDatabaseProductVersion().replaceAll("\\n.*", "");
+	}
 
 	public String getDatabaseProductVersion() {
 		return databaseProductString;
@@ -73,6 +79,13 @@ public class DatabaseMetaData {
 
 	public boolean isVersionEnabled() {
 		return versionEnabled;
+	}
+	
+	public void printToConsole(LogController controller) {
+		controller.info(getShortDatabaseProductVersion());
+		controller.info("SRID: " + srid + " (" + referenceSystemName + ')');
+		controller.info("gml:srsName: " + srsName);
+		controller.info("Versioning: " + (isVersionEnabled() ? "ON" : "OFF"));
 	}
 	
 }

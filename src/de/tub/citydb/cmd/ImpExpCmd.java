@@ -47,6 +47,7 @@ import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.log.LogLevelType;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.plugin.api.exception.DatabaseConfigurationException;
 import de.tub.citydb.util.DBUtil;
 
 public class ImpExpCmd {
@@ -227,9 +228,12 @@ public class ImpExpCmd {
 				LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
 			}
 
+		} catch (DatabaseConfigurationException e) {
+			LOG.error("Connection to database could not be established: " + e.getMessage());
+			dbPool.forceDisconnect();
 		} catch (SQLException e) {
 			LOG.error("Connection to database could not be established: " + e.getMessage());
 			dbPool.forceDisconnect();			
-		}
+		} 
 	}
 }

@@ -80,6 +80,7 @@ import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.log.LogLevelType;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.plugin.api.exception.DatabaseConfigurationException;
 import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
 
@@ -488,50 +489,29 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 				setSettings();
 				DBConnection conn = config.getProject().getDatabase().getActiveConnection();
 
-				// check for valid input
-				if (conn.getUser().trim().equals("")) {
-					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
-							Internal.I18N.getString("db.dialog.error.conn.user"));
-					return false;
-				}
-
-				if (conn.getInternalPassword().trim().equals("")) {
-					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
-							Internal.I18N.getString("db.dialog.error.conn.pass"));
-					return false;
-				}
-
-				if (conn.getServer().trim().equals("")) {
-					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
-							Internal.I18N.getString("db.dialog.error.conn.server"));
-					return false;
-				}
-
-				if (conn.getPort() == null) {
-					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
-							Internal.I18N.getString("db.dialog.error.conn.port"));
-					return false;
-				}
-
-				if (conn.getSid().trim().equals("")) {
-					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"),
-							Internal.I18N.getString("db.dialog.error.conn.sid"));
-					return false;
-				}			
-
 				topFrame.setStatusText(Internal.I18N.getString("main.status.database.connect.label"));
 				LOG.info("Connecting to database profile '" + conn.getDescription() + "'.");
 
 				try {
 					dbPool.connect(conn);
+				} catch (DatabaseConfigurationException e) {
+					topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));					
+					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
+
+					dbPool.forceDisconnect();
+					return false;
 				} catch (SQLException sqlEx) {
 					String text = Internal.I18N.getString("db.dialog.error.openConn");
 					Object[] args = new Object[]{ sqlEx.getMessage() };
 					String result = MessageFormat.format(text, args);					
 
+					topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
 					topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
+									
+					LOG.error("Connection to database could not be established. Check the following stack trace for details:");
+					sqlEx.printStackTrace();
+
 					dbPool.forceDisconnect();
-					LOG.error("Connection to database could not be established: " + sqlEx.getMessage().trim());
 					return false;
 				}
 

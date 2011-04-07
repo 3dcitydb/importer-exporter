@@ -45,6 +45,7 @@ import oracle.ucp.jdbc.PoolDataSourceFactory;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Workspace;
+import de.tub.citydb.plugin.api.exception.DatabaseConfigurationException;
 import de.tub.citydb.util.DBUtil;
 
 public class DBConnectionPool {
@@ -72,10 +73,26 @@ public class DBConnectionPool {
 		return instance;
 	}
 
-	public synchronized void connect(DBConnection conn) throws SQLException {
+	public synchronized void connect(DBConnection conn) throws DatabaseConfigurationException, SQLException {
 		if (conn == null)
-			throw new SQLException("No database connection details configured.");
+			throw new DatabaseConfigurationException("No valid connection details found.");
 
+		// check valid connection details
+		if (conn.getUser() == null || conn.getUser().trim().length() == 0)
+			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.user"));
+		
+		if (conn.getInternalPassword() == null || conn.getInternalPassword().trim().length() == 0)
+			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.pass"));
+		
+		if (conn.getServer() == null || conn.getServer().trim().length() == 0)
+			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.server"));
+		
+		if (conn.getPort() == null)
+			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.port"));
+		
+		if (conn.getSid() == null || conn.getSid().trim().length() == 0)
+			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.sid"));
+		
 		try {
 			if (isManagedConnectionPool(poolName))
 				disconnect();
@@ -89,14 +106,17 @@ public class DBConnectionPool {
 			poolDataSource.setPassword(conn.getInternalPassword());
 
 			poolManager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);		
-			poolManager.startConnectionPool(poolName);	
+			poolManager.startConnectionPool(poolName);
+			
+			// set connection metadata
+			conn.setMetaData(DBUtil.getDatabaseInfo());			
 		} catch (UniversalConnectionPoolException e) {
 			poolDataSource = null;
-			throw new SQLException("Failed to connect to the database: " + e.getMessage());
+			throw new SQLException(Internal.I18N.getString("db.dialog.error.conn.sql"), e);
+		} catch (SQLException e) {
+			poolDataSource = null;
+			throw new SQLException(Internal.I18N.getString("db.dialog.error.conn.sql"), e);
 		}
-
-		// set internal connection info
-		conn.setMetaData(DBUtil.getDatabaseInfo());
 
 		// fire property change events
 		activeConnection = conn;

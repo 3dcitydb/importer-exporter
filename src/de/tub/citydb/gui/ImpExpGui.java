@@ -571,6 +571,14 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		return consoleText;
 	}
 
+	public void connectToDatabase() {
+		
+	}
+	
+	public void disconnectFromDatabase() {
+		
+	}
+	
 	private void shutdown() {		
 		System.setOut(out);
 		System.setErr(err);
