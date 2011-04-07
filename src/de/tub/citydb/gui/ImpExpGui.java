@@ -215,6 +215,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		connectText.setBackground(new Color(255,255,255));
 		connectText.setOpaque(true);
 		
+		menu = new JTabbedPane();
 		views = new ArrayList<View>();
 		preferencesPlugin = pluginService.getInternalPlugin(PreferencesPlugin.class);
 		views.add(pluginService.getInternalPlugin(CityGMLImportPlugin.class).getView());
@@ -222,21 +223,15 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		views.add(pluginService.getInternalPlugin(KMLExportPlugin.class).getView());
 		views.add(pluginService.getInternalPlugin(MatchingPlugin.class).getView());
 
-		for (Plugin plugin : pluginService.getExternalPlugins()) {
-			if (plugin instanceof ViewExtension) {
-				ViewExtension extension = (ViewExtension)plugin;
-				if (extension.getView() != null)				
-					views.add(((ViewExtension)plugin).getView());
-			}
-		}
+		for (ViewExtension viewExtension : pluginService.getExternalViewExtensions(true))
+			views.add(viewExtension.getView());
 
 		views.add(pluginService.getInternalPlugin(DatabasePlugin.class).getView());
 		views.add(preferencesPlugin.getView());
 
-		menu = new JTabbedPane();
 		int index = 0;
 		for (View view : views)
-			menu.insertTab(view.getTitle(), view.getIcon(), view.getViewComponent(), view.getToolTip(), index++);
+			menu.insertTab(null, view.getIcon(), view.getViewComponent(), view.getToolTip(), index++);
 
 		menu.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
@@ -494,17 +489,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 			splitPane.setDividerLocation(dividerLocation);
 		}
 	}
-
-	public void connectToDatabase() {
-		// TODO
-		//databaseView.connect();
-	}
-
-	public void disconnectFromDatabase() {
-		// TODO
-		//databaseView.disconnect();
-	}
-
+	
 	public boolean saveProjectSettings() {
 		String configPath = ConfigUtil.createConfigPath(config.getInternal().getConfigPath());
 
