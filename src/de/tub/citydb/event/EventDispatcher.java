@@ -37,43 +37,42 @@ import de.tub.citydb.concurrent.SingleWorkerPool;
 
 public class EventDispatcher {
 	private SingleWorkerPool<Event> eventDispatcherThread;
-	private ConcurrentHashMap<EventType, EventContainerList> listeners;
+	private ConcurrentHashMap<EventType, EventListenerContainerQueue> containerQueueMap;
 	private ReentrantLock mainLock;
 
-	public EventDispatcher() {
-		listeners = new ConcurrentHashMap<EventType, EventContainerList>();
+	public EventDispatcher(int eventQueueSize) {
+		containerQueueMap = new ConcurrentHashMap<EventType, EventListenerContainerQueue>();
 		eventDispatcherThread = new SingleWorkerPool<Event>(
 				new EventWorkerFactory(this),
-				100,
+				eventQueueSize,
 				false);
 
 		eventDispatcherThread.prestartCoreWorkers();
 		mainLock = new ReentrantLock();
 	}
+	
+	public EventDispatcher() {
+		this(100);
+	}
 
-	public int addListener(EventType type, EventListener listener, boolean autoRemove) {
-		listeners.putIfAbsent(type, new EventContainerList());
+	public void addListener(EventType type, EventListener listener, boolean autoRemove) {
+		containerQueueMap.putIfAbsent(type, new EventListenerContainerQueue());
 
-		EventContainerList list = listeners.get(type);
-		return list.addListener(listener, autoRemove);
+		EventListenerContainerQueue containerQueue = containerQueueMap.get(type);
+		containerQueue.addListener(listener, autoRemove);
 	}
 
 
-	public int addListener(EventType type, EventListener listener) {
-		return addListener(type, listener, false);
+	public void addListener(EventType type, EventListener listener) {
+		addListener(type, listener, false);
 	}
 
-	public EventListener removeListener(EventType type, EventListener listener) {
-		if (!listeners.containsKey(type))
-			return null;
+	public boolean removeListener(EventType type, EventListener listener) {
+		if (!containerQueueMap.containsKey(type))
+			return false;
 
-		EventContainerList list = listeners.get(type);
-		EventListenerContainer container = list.removeListener(listener);
-
-		if (container != null)
-			return container.getListener();
-
-		return null;
+		EventListenerContainerQueue containerQueue = containerQueueMap.get(type);
+		return containerQueue.removeListener(listener);
 	}
 
 	public void triggerEvent(Event e) {
@@ -96,9 +95,9 @@ public class EventDispatcher {
 		lock.lock();
 
 		try {
-			if (listeners.containsKey(e.getEventType())) {
-				EventContainerList list = listeners.get(e.getEventType());
-				list.propagate(e);
+			if (containerQueueMap.containsKey(e.getEventType())) {
+				EventListenerContainerQueue containerQueue = containerQueueMap.get(e.getEventType());
+				containerQueue.propagate(e);
 			}
 
 			return e;
@@ -108,15 +107,14 @@ public class EventDispatcher {
 	}
 
 	public EventType[] getRegisteredEventTypes() {
-		EventType[] types = listeners.keySet().toArray(new EventType[] {});
-
+		EventType[] types = containerQueueMap.keySet().toArray(new EventType[] {});
 		return types;
 	}
 
 	public void reset() {
-		for (Iterator<EventContainerList> iter = listeners.values().iterator(); iter.hasNext(); ) {
-			EventContainerList list = iter.next();
-			list.clear();
+		for (Iterator<EventListenerContainerQueue> iter = containerQueueMap.values().iterator(); iter.hasNext(); ) {
+			EventListenerContainerQueue containerQueue = iter.next();
+			containerQueue.clear();
 		}
 	}
 

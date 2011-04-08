@@ -29,13 +29,15 @@
  */
 package de.tub.citydb.event;
 
+import java.lang.ref.WeakReference;
+
 public class EventListenerContainer {
 
-	private EventListener listener = null;
+	private WeakReference<EventListener> listenerRef = null;
 	private boolean autoRemove = false;
 
 	public EventListenerContainer(EventListener listener) {
-		this.listener = listener;
+		this.listenerRef = new WeakReference<EventListener>(listener);
 	}
 
 	public EventListenerContainer(EventListener listener, boolean autoRemove) {
@@ -52,6 +54,6 @@ public class EventListenerContainer {
 	}
 
 	public EventListener getListener() {
-		return listener;
+		return listenerRef.get();
 	}
 }
