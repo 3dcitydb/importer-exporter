@@ -56,6 +56,7 @@ public class WorkerPool<T> {
 	private volatile int corePoolSize;
 	private volatile int maximumPoolSize;
 	private final int queueSize;
+	private final boolean daemon;
 	private int poolSize;
 
 	// WorkQueue
@@ -382,7 +383,8 @@ public class WorkerPool<T> {
 			int maximumPoolSize,
 			WorkerFactory<T> workerFactory,
 			int queueSize,
-			boolean fair) {
+			boolean fair,
+			boolean daemon) {
 		if (corePoolSize < 0 || maximumPoolSize <= 0 || maximumPoolSize < corePoolSize)
 			throw new IllegalArgumentException();
 
@@ -391,6 +393,7 @@ public class WorkerPool<T> {
 
 		this.corePoolSize = corePoolSize;
 		this.maximumPoolSize = maximumPoolSize;
+		this.daemon = daemon;
 		this.workerFactory = workerFactory;
 
 		// setting up work queue
@@ -401,6 +404,14 @@ public class WorkerPool<T> {
 		workers = new ConcurrentHashMap<Worker<T>, Object>(maximumPoolSize);
 	}
 
+	public WorkerPool(int corePoolSize,
+			int maximumPoolSize,
+			WorkerFactory<T> workerFactory,
+			int queueSize,
+			boolean fair) {
+		this(corePoolSize, maximumPoolSize, workerFactory, queueSize, fair, true);
+	}
+	
 	public WorkerPool(int corePoolSize,
 			int maximumPoolSize,
 			WorkerFactory<T> workerFactory,
@@ -418,6 +429,7 @@ public class WorkerPool<T> {
 
 				if (worker != null) {
 					Thread workerThread = new Thread(worker);
+					workerThread.setDaemon(daemon);
 
 					worker.setWorkQueue(workQueue);
 					worker.setThread(workerThread);

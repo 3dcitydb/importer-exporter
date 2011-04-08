@@ -397,7 +397,7 @@ public class Exporter implements EventListener {
 					ioWriterPool = new SingleWorkerPool<SAXEventBuffer>(
 							new IOWriterWorkerFactory(saxWriter),
 							100,
-							true);
+							false);
 
 					dbWorkerPool = new WorkerPool<DBSplittingResult>(
 							minThreads,

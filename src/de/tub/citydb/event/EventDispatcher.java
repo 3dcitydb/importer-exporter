@@ -37,15 +37,15 @@ import de.tub.citydb.concurrent.SingleWorkerPool;
 
 public class EventDispatcher {
 	private SingleWorkerPool<Event> eventDispatcherThread;
-	private ConcurrentHashMap<EventType, EventListenerContainerQueue> containerQueueMap;
+	private ConcurrentHashMap<Enum<?>, EventListenerContainerQueue> containerQueueMap;
 	private ReentrantLock mainLock;
 
 	public EventDispatcher(int eventQueueSize) {
-		containerQueueMap = new ConcurrentHashMap<EventType, EventListenerContainerQueue>();
+		containerQueueMap = new ConcurrentHashMap<Enum<?>, EventListenerContainerQueue>();
 		eventDispatcherThread = new SingleWorkerPool<Event>(
 				new EventWorkerFactory(this),
 				eventQueueSize,
-				false);
+				true);
 
 		eventDispatcherThread.prestartCoreWorkers();
 		mainLock = new ReentrantLock();
@@ -55,7 +55,7 @@ public class EventDispatcher {
 		this(100);
 	}
 
-	public void addListener(EventType type, EventListener listener, boolean autoRemove) {
+	public void addListener(Enum<?> type, EventListener listener, boolean autoRemove) {
 		containerQueueMap.putIfAbsent(type, new EventListenerContainerQueue());
 
 		EventListenerContainerQueue containerQueue = containerQueueMap.get(type);
@@ -63,7 +63,7 @@ public class EventDispatcher {
 	}
 
 
-	public void addListener(EventType type, EventListener listener) {
+	public void addListener(Enum<?> type, EventListener listener) {
 		addListener(type, listener, false);
 	}
 

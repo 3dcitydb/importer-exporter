@@ -32,13 +32,20 @@ package de.tub.citydb.concurrent;
 public class SingleWorkerPool<T> extends WorkerPool<T> {
 
 	public SingleWorkerPool(WorkerFactory<T> workerFactory,
-							int queueSize,
-							boolean fair) {
-		super(1, 1, workerFactory, queueSize, fair);
+			int queueSize,
+			boolean fair,
+			boolean daemon) {
+		super(1, 1, workerFactory, queueSize, fair, daemon);
 	}
 
 	public SingleWorkerPool(WorkerFactory<T> workerFactory,
-							int queueSize) {
+			int queueSize,
+			boolean fair) {
+		super(1, 1, workerFactory, queueSize, fair, true);
+	}
+
+	public SingleWorkerPool(WorkerFactory<T> workerFactory,
+			int queueSize) {
 		super(1, 1, workerFactory, queueSize, false);
 	}
 }

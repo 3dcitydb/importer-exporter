@@ -75,24 +75,24 @@ public class DBConnectionPool {
 
 	public synchronized void connect(DBConnection conn) throws DatabaseConfigurationException, SQLException {
 		if (conn == null)
-			throw new DatabaseConfigurationException("No valid connection details found.");
+			throw new DatabaseConfigurationException("No valid database connection details provided.");
 
 		// check valid connection details
 		if (conn.getUser() == null || conn.getUser().trim().length() == 0)
 			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.user"));
-		
+
 		if (conn.getInternalPassword() == null || conn.getInternalPassword().trim().length() == 0)
 			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.pass"));
-		
+
 		if (conn.getServer() == null || conn.getServer().trim().length() == 0)
 			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.server"));
-		
+
 		if (conn.getPort() == null)
 			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.port"));
-		
+
 		if (conn.getSid() == null || conn.getSid().trim().length() == 0)
 			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.sid"));
-		
+
 		try {
 			if (isManagedConnectionPool(poolName))
 				disconnect();
@@ -107,15 +107,20 @@ public class DBConnectionPool {
 
 			poolManager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);		
 			poolManager.startConnectionPool(poolName);
-			
-			// set connection metadata
-			conn.setMetaData(DBUtil.getDatabaseInfo());			
 		} catch (UniversalConnectionPoolException e) {
 			poolDataSource = null;
 			throw new SQLException(Internal.I18N.getString("db.dialog.error.conn.sql"), e);
 		} catch (SQLException e) {
 			poolDataSource = null;
 			throw new SQLException(Internal.I18N.getString("db.dialog.error.conn.sql"), e);
+		}
+
+		try {
+			// retrieve connection metadata
+			conn.setMetaData(DBUtil.getDatabaseInfo());	
+		} catch (SQLException e) {
+			poolDataSource = null;
+			throw e;			
 		}
 
 		// fire property change events

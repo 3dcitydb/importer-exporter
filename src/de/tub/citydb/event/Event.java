@@ -30,10 +30,10 @@
 package de.tub.citydb.event;
 
 public abstract class Event {
-	private EventType eventType;
+	private Enum<?> eventType;
 	private boolean cancelled;
 
-	public Event(EventType eventType) {
+	public Event(Enum<?> eventType) {
 		this.eventType = eventType;
 		cancelled = false;
 	}
@@ -46,7 +46,7 @@ public abstract class Event {
 		this.cancelled = cancelled;
 	}
 
-	public EventType getEventType() {
+	public Enum<?> getEventType() {
 		return eventType;
 	}
 }
