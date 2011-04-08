@@ -32,8 +32,8 @@ package de.tub.citydb.components.common.concurrent;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
 
-import de.tub.citydb.concurrent.Worker;
-import de.tub.citydb.concurrent.WorkerFactory;
+import de.tub.citydb.api.concurrent.Worker;
+import de.tub.citydb.api.concurrent.WorkerFactory;
 
 public class IOWriterWorkerFactory implements WorkerFactory<SAXEventBuffer> {
 	private final SAXWriter saxWriter;

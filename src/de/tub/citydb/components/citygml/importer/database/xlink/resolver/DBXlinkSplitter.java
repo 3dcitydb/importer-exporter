@@ -34,6 +34,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 
+import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.components.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.components.citygml.common.database.cache.HeapCacheTable;
@@ -49,13 +52,10 @@ import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureFile
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureFileEnum;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureParamEnum;
-import de.tub.citydb.concurrent.WorkerPool;
+import de.tub.citydb.components.common.event.StatusDialogMessage;
+import de.tub.citydb.components.common.event.StatusDialogProgressBar;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DBTableEnum;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.event.statistic.StatusDialogMessage;
-import de.tub.citydb.event.statistic.StatusDialogProgressBar;
-import de.tub.citydb.log.Logger;
 
 public class DBXlinkSplitter {
 	private final Logger LOG = Logger.getInstance();

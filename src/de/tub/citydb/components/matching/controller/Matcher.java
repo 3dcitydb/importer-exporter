@@ -38,23 +38,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.event.EventListener;
+import de.tub.citydb.api.event.EventType;
+import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.components.common.event.CounterEvent;
+import de.tub.citydb.components.common.event.CounterType;
+import de.tub.citydb.components.common.event.InterruptEvent;
+import de.tub.citydb.components.common.event.StatusDialogMessage;
+import de.tub.citydb.components.common.event.StatusDialogProgressBar;
+import de.tub.citydb.components.common.event.StatusDialogTitle;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.matching.Matching;
 import de.tub.citydb.config.project.matching.MergeConfig;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.event.Event;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.event.EventListener;
-import de.tub.citydb.event.EventType;
-import de.tub.citydb.event.concurrent.InterruptEvent;
-import de.tub.citydb.event.statistic.CounterEvent;
-import de.tub.citydb.event.statistic.CounterType;
-import de.tub.citydb.event.statistic.StatusDialogMessage;
-import de.tub.citydb.event.statistic.StatusDialogProgressBar;
-import de.tub.citydb.event.statistic.StatusDialogTitle;
-import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
 

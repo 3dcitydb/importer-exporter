@@ -55,6 +55,12 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.plugin.api.Plugin;
+import de.tub.citydb.api.plugin.api.extension.preferences.PreferencesEntry;
+import de.tub.citydb.api.plugin.api.extension.preferences.PreferencesEvent;
+import de.tub.citydb.api.plugin.api.extension.preferences.PreferencesExtension;
+import de.tub.citydb.api.plugin.service.PluginService;
 import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.components.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.components.database.DatabasePlugin;
@@ -67,12 +73,6 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.preferences.NullComponent;
 import de.tub.citydb.gui.util.GuiUtil;
-import de.tub.citydb.log.Logger;
-import de.tub.citydb.plugin.api.Plugin;
-import de.tub.citydb.plugin.api.extension.preferences.PreferencesEntry;
-import de.tub.citydb.plugin.api.extension.preferences.PreferencesEvent;
-import de.tub.citydb.plugin.api.extension.preferences.PreferencesExtension;
-import de.tub.citydb.plugin.service.PluginService;
 
 @SuppressWarnings("serial")
 public class PreferencesPanel extends JPanel implements TreeSelectionListener {

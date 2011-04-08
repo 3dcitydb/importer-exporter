@@ -40,12 +40,12 @@ import java.util.List;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 
+import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.citygml.common.database.cache.HeapCacheTable;
 import de.tub.citydb.components.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureAssociation;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
 public class XlinkTexCoordList implements DBXlinkResolver {

@@ -39,6 +39,11 @@ import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
+import de.tub.citydb.api.concurrent.Worker;
+import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.components.citygml.exporter.database.content.DBAppearance;
@@ -55,19 +60,14 @@ import de.tub.citydb.components.citygml.exporter.database.content.DBSolitaryVege
 import de.tub.citydb.components.citygml.exporter.database.content.DBSplittingResult;
 import de.tub.citydb.components.citygml.exporter.database.content.DBTransportationComplex;
 import de.tub.citydb.components.citygml.exporter.database.content.DBWaterBody;
-import de.tub.citydb.concurrent.Worker;
-import de.tub.citydb.concurrent.WorkerPool;
-import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
+import de.tub.citydb.components.common.event.CounterEvent;
+import de.tub.citydb.components.common.event.CounterType;
+import de.tub.citydb.components.common.event.FeatureCounterEvent;
+import de.tub.citydb.components.common.event.GeometryCounterEvent;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.event.statistic.CounterEvent;
-import de.tub.citydb.event.statistic.CounterType;
-import de.tub.citydb.event.statistic.FeatureCounterEvent;
-import de.tub.citydb.event.statistic.GeometryCounterEvent;
 import de.tub.citydb.filter.ExportFilter;
-import de.tub.citydb.log.Logger;
 
 public class DBExportWorker implements Worker<DBSplittingResult> {
 	private final Logger LOG = Logger.getInstance();

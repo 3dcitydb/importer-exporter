@@ -5,11 +5,11 @@ import java.awt.Component;
 import javax.swing.Icon;
 import javax.xml.bind.JAXBContext;
 
+import de.tub.citydb.api.plugin.api.extension.view.View;
 import de.tub.citydb.components.kml.gui.view.components.KmlExportPanel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.plugin.api.extension.view.View;
 
 public class KMLExportView implements View {
 	private final KmlExportPanel component;

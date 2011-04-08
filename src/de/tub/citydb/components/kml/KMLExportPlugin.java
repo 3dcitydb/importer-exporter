@@ -4,15 +4,15 @@ import java.util.Locale;
 
 import javax.xml.bind.JAXBContext;
 
+import de.tub.citydb.api.plugin.api.extension.preferences.Preferences;
+import de.tub.citydb.api.plugin.api.extension.preferences.PreferencesExtension;
+import de.tub.citydb.api.plugin.api.extension.view.View;
+import de.tub.citydb.api.plugin.api.extension.view.ViewExtension;
+import de.tub.citydb.api.plugin.internal.InternalPlugin;
 import de.tub.citydb.components.kml.gui.preferences.KMLExportPreferences;
 import de.tub.citydb.components.kml.gui.view.KMLExportView;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.plugin.api.extension.preferences.Preferences;
-import de.tub.citydb.plugin.api.extension.preferences.PreferencesExtension;
-import de.tub.citydb.plugin.api.extension.view.View;
-import de.tub.citydb.plugin.api.extension.view.ViewExtension;
-import de.tub.citydb.plugin.internal.InternalPlugin;
 
 public class KMLExportPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
 	private KMLExportView view;

@@ -45,16 +45,16 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.event.EventListener;
+import de.tub.citydb.api.event.EventType;
+import de.tub.citydb.components.common.event.CounterEvent;
+import de.tub.citydb.components.common.event.CounterType;
+import de.tub.citydb.components.common.event.StatusDialogMessage;
+import de.tub.citydb.components.common.event.StatusDialogProgressBar;
+import de.tub.citydb.components.common.event.StatusDialogTitle;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.event.Event;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.event.EventListener;
-import de.tub.citydb.event.EventType;
-import de.tub.citydb.event.statistic.CounterEvent;
-import de.tub.citydb.event.statistic.CounterType;
-import de.tub.citydb.event.statistic.StatusDialogMessage;
-import de.tub.citydb.event.statistic.StatusDialogProgressBar;
-import de.tub.citydb.event.statistic.StatusDialogTitle;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")

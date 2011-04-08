@@ -32,11 +32,11 @@ package de.tub.citydb.components.citygml.importer.database.xlink.importer;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.components.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.components.citygml.common.database.cache.TemporaryCacheTable;
 import de.tub.citydb.components.citygml.common.database.cache.model.CacheTableModelEnum;
-import de.tub.citydb.event.Event;
-import de.tub.citydb.event.EventDispatcher;
 
 public class DBXlinkImporterManager {
 	private final CacheManager dbTempTableManager;

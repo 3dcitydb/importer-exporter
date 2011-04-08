@@ -41,7 +41,10 @@ import java.util.Set;
 import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.concurrent.WorkerPool;
+import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.components.common.event.StatusDialogMessage;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
@@ -50,15 +53,12 @@ import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.database.DBTableEnum;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.event.statistic.StatusDialogMessage;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.feature.BoundingBoxFilter;
 import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.filter.feature.GmlIdFilter;
 import de.tub.citydb.filter.feature.GmlNameFilter;
 import de.tub.citydb.filter.statistic.FeatureCounterFilter;
-import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
 

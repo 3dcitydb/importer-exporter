@@ -64,6 +64,9 @@ import javax.swing.border.TitledBorder;
 
 import org.citygml4j.geometry.BoundingBox;
 
+import de.tub.citydb.api.log.LogLevelType;
+import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.plugin.api.exception.DatabaseConfigurationException;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
@@ -78,9 +81,6 @@ import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.util.GuiUtil;
-import de.tub.citydb.log.LogLevelType;
-import de.tub.citydb.log.Logger;
-import de.tub.citydb.plugin.api.exception.DatabaseConfigurationException;
 import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
 

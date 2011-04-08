@@ -49,6 +49,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
+import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Index;
@@ -58,7 +59,6 @@ import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.gui.util.GuiUtil;
-import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.DBUtil.DB_INDEX_TYPE;
 

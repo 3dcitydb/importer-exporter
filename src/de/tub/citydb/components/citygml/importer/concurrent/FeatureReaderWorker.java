@@ -38,14 +38,14 @@ import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.xml.io.reader.MissingADESchemaException;
 import org.xml.sax.SAXException;
 
-import de.tub.citydb.concurrent.Worker;
-import de.tub.citydb.concurrent.WorkerPool;
-import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
+import de.tub.citydb.api.concurrent.Worker;
+import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.components.common.event.InterruptEnum;
+import de.tub.citydb.components.common.event.InterruptEvent;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.event.concurrent.InterruptEnum;
-import de.tub.citydb.event.concurrent.InterruptEvent;
-import de.tub.citydb.log.Logger;
 
 public class FeatureReaderWorker implements Worker<CityGMLChunk> {
 	private final Logger LOG = Logger.getInstance();

@@ -32,11 +32,11 @@ package de.tub.citydb.components.citygml.importer.concurrent;
 import org.citygml4j.builder.jaxb.xml.io.reader.CityGMLChunk;
 import org.citygml4j.model.citygml.CityGML;
 
-import de.tub.citydb.concurrent.Worker;
-import de.tub.citydb.concurrent.WorkerFactory;
-import de.tub.citydb.concurrent.WorkerPool;
+import de.tub.citydb.api.concurrent.Worker;
+import de.tub.citydb.api.concurrent.WorkerFactory;
+import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.event.EventDispatcher;
 
 public class FeatureReaderWorkerFactory implements WorkerFactory<CityGMLChunk> {
 	private final WorkerPool<CityGML> dbWorkerPool;

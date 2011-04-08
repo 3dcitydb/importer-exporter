@@ -52,9 +52,9 @@ import oracle.ord.im.OrdImage;
 
 import org.citygml4j.util.xml.SAXEventBuffer;
 
-import de.tub.citydb.concurrent.WorkerPool;
+import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.event.EventDispatcher;
 
 public class KmlExporterManager {
 	private final JAXBContext jaxbKmlContext;

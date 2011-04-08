@@ -34,6 +34,11 @@ import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import oracle.jdbc.OracleConnection;
+import de.tub.citydb.api.concurrent.Worker;
+import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.components.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
@@ -59,17 +64,12 @@ import de.tub.citydb.components.citygml.importer.database.xlink.resolver.XlinkTe
 import de.tub.citydb.components.citygml.importer.database.xlink.resolver.XlinkTextureImage;
 import de.tub.citydb.components.citygml.importer.database.xlink.resolver.XlinkTextureParam;
 import de.tub.citydb.components.citygml.importer.database.xlink.resolver.XlinkWorldFile;
-import de.tub.citydb.concurrent.Worker;
-import de.tub.citydb.concurrent.WorkerPool;
-import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.filter.ImportFilter;
-import de.tub.citydb.log.Logger;
 
 public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 	private final Logger LOG = Logger.getInstance();

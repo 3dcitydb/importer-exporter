@@ -31,9 +31,9 @@ package de.tub.citydb.components.kml.database;
 
 import java.util.HashMap;
 
+import de.tub.citydb.api.log.LogLevelType;
+import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
-import de.tub.citydb.log.LogLevelType;
-import de.tub.citydb.log.Logger;
 
 public class TileQueries {
 

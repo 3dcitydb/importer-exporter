@@ -44,14 +44,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import de.tub.citydb.api.log.LogLevelType;
+import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.gui.util.GuiUtil;
-import de.tub.citydb.log.LogLevelType;
-import de.tub.citydb.log.Logger;
 
 @SuppressWarnings("serial")
 public class LoggingPanel extends AbstractPreferencesComponent {

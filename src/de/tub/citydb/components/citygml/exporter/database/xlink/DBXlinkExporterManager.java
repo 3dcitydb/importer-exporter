@@ -33,9 +33,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.event.Event;
-import de.tub.citydb.event.EventDispatcher;
 
 public class DBXlinkExporterManager {
 	private final Connection connection;

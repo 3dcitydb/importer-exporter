@@ -6,11 +6,11 @@ import javax.swing.Icon;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 
+import de.tub.citydb.api.plugin.api.extension.view.View;
 import de.tub.citydb.components.citygml.exporter.gui.view.components.ExportPanel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.plugin.api.extension.view.View;
 
 public class CityGMLExportView implements View {
 	private final ExportPanel component;

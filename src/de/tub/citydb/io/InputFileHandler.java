@@ -34,11 +34,11 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.tub.citydb.event.Event;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.event.EventListener;
-import de.tub.citydb.event.EventType;
-import de.tub.citydb.log.Logger;
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.event.EventListener;
+import de.tub.citydb.api.event.EventType;
+import de.tub.citydb.api.log.Logger;
 
 public class InputFileHandler implements EventListener {
 	private final Logger LOG = Logger.getInstance();

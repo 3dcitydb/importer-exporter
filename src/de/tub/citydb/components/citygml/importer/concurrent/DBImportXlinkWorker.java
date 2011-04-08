@@ -32,6 +32,10 @@ package de.tub.citydb.components.citygml.importer.concurrent;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
+import de.tub.citydb.api.concurrent.Worker;
+import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkBasic;
@@ -54,13 +58,9 @@ import de.tub.citydb.components.citygml.importer.database.xlink.importer.DBXlink
 import de.tub.citydb.components.citygml.importer.database.xlink.importer.DBXlinkImporterTextureAssociation;
 import de.tub.citydb.components.citygml.importer.database.xlink.importer.DBXlinkImporterTextureFile;
 import de.tub.citydb.components.citygml.importer.database.xlink.importer.DBXlinkImporterTextureParam;
-import de.tub.citydb.concurrent.Worker;
-import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.log.Logger;
 
 public class DBImportXlinkWorker implements Worker<DBXlink> {
 	private final Logger LOG = Logger.getInstance();

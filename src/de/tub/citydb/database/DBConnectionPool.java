@@ -42,10 +42,10 @@ import oracle.ucp.admin.UniversalConnectionPoolManager;
 import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
+import de.tub.citydb.api.plugin.api.exception.DatabaseConfigurationException;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Workspace;
-import de.tub.citydb.plugin.api.exception.DatabaseConfigurationException;
 import de.tub.citydb.util.DBUtil;
 
 public class DBConnectionPool {

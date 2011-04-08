@@ -104,8 +104,8 @@ import org.w3c.dom.Element;
 
 import com.sun.j3d.utils.geometry.GeometryInfo;
 
-import de.tub.citydb.log.LogLevelType;
-import de.tub.citydb.log.Logger;
+import de.tub.citydb.api.log.LogLevelType;
+import de.tub.citydb.api.log.Logger;
 
 public class Building {
 	

@@ -38,12 +38,12 @@ import oracle.jdbc.OracleResultSet;
 
 import org.citygml4j.geometry.BoundingBox;
 
-import de.tub.citydb.concurrent.WorkerPool;
+import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.filter.ExportFilter;
 
 public class KmlSplitter {

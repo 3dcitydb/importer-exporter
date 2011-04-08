@@ -39,11 +39,11 @@ import java.sql.SQLException;
 
 import oracle.jdbc.OracleResultSet;
 import oracle.ord.im.OrdImage;
+import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkTextureFile;
+import de.tub.citydb.components.common.event.CounterEvent;
+import de.tub.citydb.components.common.event.CounterType;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.event.statistic.CounterEvent;
-import de.tub.citydb.event.statistic.CounterType;
-import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
 public class DBXlinkExporterTextureImage implements DBXlinkExporter {

@@ -4,11 +4,11 @@ import java.awt.Component;
 
 import javax.swing.Icon;
 
+import de.tub.citydb.api.plugin.api.extension.view.View;
 import de.tub.citydb.components.database.gui.view.components.DatabasePanel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.plugin.api.extension.view.View;
 
 public class DatabaseView implements View {
 	private final DatabasePanel component;

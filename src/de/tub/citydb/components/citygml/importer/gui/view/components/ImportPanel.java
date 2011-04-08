@@ -67,23 +67,23 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.log.LogLevelType;
+import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.citygml.common.gui.view.components.FilterPanel;
 import de.tub.citydb.components.citygml.common.gui.view.components.FilterPanel.FilterPanelType;
 import de.tub.citydb.components.citygml.importer.controller.Importer;
 import de.tub.citydb.components.citygml.importer.controller.XMLValidator;
+import de.tub.citydb.components.common.event.InterruptEnum;
+import de.tub.citydb.components.common.event.InterruptEvent;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.ImportFilterConfig;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.event.concurrent.InterruptEnum;
-import de.tub.citydb.event.concurrent.InterruptEvent;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.ImportStatusDialog;
 import de.tub.citydb.gui.components.XMLValidationStatusDialog;
 import de.tub.citydb.gui.util.GuiUtil;
-import de.tub.citydb.log.LogLevelType;
-import de.tub.citydb.log.Logger;
 
 @SuppressWarnings("serial")
 public class ImportPanel extends JPanel implements DropTargetListener {

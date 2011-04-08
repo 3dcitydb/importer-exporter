@@ -36,14 +36,14 @@ import java.util.HashMap;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 
+import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.components.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.components.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.components.citygml.common.database.gmlid.GmlIdLookupServer;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
-import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.event.Event;
-import de.tub.citydb.event.EventDispatcher;
 
 public class DBImporterManager {
 	private final Connection batchConn;

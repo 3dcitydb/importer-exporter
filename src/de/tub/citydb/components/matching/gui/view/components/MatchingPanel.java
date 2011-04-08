@@ -52,24 +52,24 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.event.EventListener;
+import de.tub.citydb.api.event.EventType;
+import de.tub.citydb.api.log.LogLevelType;
+import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.components.common.event.CounterEvent;
+import de.tub.citydb.components.common.event.CounterType;
+import de.tub.citydb.components.common.event.InterruptEnum;
+import de.tub.citydb.components.common.event.InterruptEvent;
 import de.tub.citydb.components.matching.controller.Matcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.event.Event;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.event.EventListener;
-import de.tub.citydb.event.EventType;
-import de.tub.citydb.event.concurrent.InterruptEnum;
-import de.tub.citydb.event.concurrent.InterruptEvent;
-import de.tub.citydb.event.statistic.CounterEvent;
-import de.tub.citydb.event.statistic.CounterType;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.util.GuiUtil;
-import de.tub.citydb.log.LogLevelType;
-import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
 @SuppressWarnings("serial")
