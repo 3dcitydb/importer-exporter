@@ -246,6 +246,15 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 				setEnabledGenAttr();
 			}
 		};
+		
+		for (TileSuffixMode mode : TileSuffixMode.values())
+			tilePathSuffixComboBox.addItem(mode);
+		
+		for (TileNameSuffixMode mode : TileNameSuffixMode.values())
+			tileNameSuffixComboBox.addItem(mode);
+		
+		for (TileSuffixMode mode : TileSuffixMode.values())
+			genAttrValueComboBox.addItem(mode);
 
 		useTiling.addActionListener(tilingListener);
 		setGenAttr.addActionListener(genAttrListener);
@@ -324,28 +333,7 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 
 		tilePathInfo.setText(Internal.I18N.getString("pref.export.boundingBox.label.tile.pathInfo"));
 		tilePathSuffixLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.tile.pathSuffix"));
-		
-		Object selectedItem = tilePathSuffixComboBox.getSelectedItem();
-		tilePathSuffixComboBox.removeAllItems();
-		for (TileSuffixMode mode : TileSuffixMode.values())
-			tilePathSuffixComboBox.addItem(mode);
-
-		tilePathSuffixComboBox.setSelectedItem(selectedItem);
-
 		tileNameSuffixLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix"));
-		selectedItem = tileNameSuffixComboBox.getSelectedItem();
-		tileNameSuffixComboBox.removeAllItems();
-		for (TileNameSuffixMode mode : TileNameSuffixMode.values())
-			tileNameSuffixComboBox.addItem(mode);
-
-		tileNameSuffixComboBox.setSelectedItem(selectedItem);
-		
-		selectedItem = genAttrValueComboBox.getSelectedItem();
-		genAttrValueComboBox.removeAllItems();
-		for (TileSuffixMode mode : TileSuffixMode.values())
-			genAttrValueComboBox.addItem(mode);
-
-		genAttrValueComboBox.setSelectedItem(selectedItem);
 	}
 
 	@Override
