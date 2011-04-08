@@ -4,17 +4,17 @@ import java.util.Locale;
 
 import javax.xml.bind.JAXBContext;
 
-import de.tub.citydb.api.plugin.api.controller.DatabaseController;
-import de.tub.citydb.api.plugin.api.extension.preferences.Preferences;
-import de.tub.citydb.api.plugin.api.extension.preferences.PreferencesExtension;
-import de.tub.citydb.api.plugin.api.extension.view.View;
-import de.tub.citydb.api.plugin.api.extension.view.ViewExtension;
-import de.tub.citydb.api.plugin.internal.InternalPlugin;
+import de.tub.citydb.api.plugin.controller.DatabaseController;
+import de.tub.citydb.api.plugin.extension.preferences.Preferences;
+import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
+import de.tub.citydb.api.plugin.extension.view.View;
+import de.tub.citydb.api.plugin.extension.view.ViewExtension;
 import de.tub.citydb.components.database.controller.DatabaseControllerImpl;
 import de.tub.citydb.components.database.gui.preferences.DatabasePreferences;
 import de.tub.citydb.components.database.gui.view.DatabaseView;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.plugin.InternalPlugin;
 
 public class DatabasePlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
 	private DatabaseView view;

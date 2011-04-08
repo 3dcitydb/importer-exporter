@@ -4,12 +4,12 @@ import java.awt.Component;
 
 import javax.swing.Icon;
 
-import de.tub.citydb.api.plugin.api.extension.view.View;
-import de.tub.citydb.api.plugin.service.PluginService;
+import de.tub.citydb.api.plugin.extension.view.View;
 import de.tub.citydb.components.preferences.gui.view.components.PreferencesPanel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.plugin.PluginService;
 
 public class PreferencesView implements View {
 	private PreferencesPanel component;

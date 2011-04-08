@@ -79,12 +79,10 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import de.tub.citydb.api.log.Logger;
-import de.tub.citydb.api.plugin.api.Plugin;
-import de.tub.citydb.api.plugin.api.controller.ViewController;
-import de.tub.citydb.api.plugin.api.extension.view.View;
-import de.tub.citydb.api.plugin.api.extension.view.ViewExtension;
-import de.tub.citydb.api.plugin.internal.InternalPlugin;
-import de.tub.citydb.api.plugin.service.PluginService;
+import de.tub.citydb.api.plugin.Plugin;
+import de.tub.citydb.api.plugin.controller.ViewController;
+import de.tub.citydb.api.plugin.extension.view.View;
+import de.tub.citydb.api.plugin.extension.view.ViewExtension;
 import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.components.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.components.database.DatabasePlugin;
@@ -104,6 +102,8 @@ import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.console.ConsoleWindow;
 import de.tub.citydb.gui.menubar.MenuBar;
 import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.plugin.InternalPlugin;
+import de.tub.citydb.plugin.PluginService;
 
 @SuppressWarnings("serial")
 public class ImpExpGui extends JFrame implements ViewController, PropertyChangeListener {

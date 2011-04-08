@@ -4,15 +4,15 @@ import java.util.Locale;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 
-import de.tub.citydb.api.plugin.api.extension.preferences.Preferences;
-import de.tub.citydb.api.plugin.api.extension.preferences.PreferencesExtension;
-import de.tub.citydb.api.plugin.api.extension.view.View;
-import de.tub.citydb.api.plugin.api.extension.view.ViewExtension;
-import de.tub.citydb.api.plugin.internal.InternalPlugin;
+import de.tub.citydb.api.plugin.extension.preferences.Preferences;
+import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
+import de.tub.citydb.api.plugin.extension.view.View;
+import de.tub.citydb.api.plugin.extension.view.ViewExtension;
 import de.tub.citydb.components.citygml.exporter.gui.preferences.CityGMLExportPreferences;
 import de.tub.citydb.components.citygml.exporter.gui.view.CityGMLExportView;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.plugin.InternalPlugin;
 
 public class CityGMLExportPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
 	private CityGMLExportView view;

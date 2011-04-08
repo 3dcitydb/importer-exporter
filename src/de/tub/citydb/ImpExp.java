@@ -52,12 +52,10 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 import de.tub.citydb.api.log.Logger;
-import de.tub.citydb.api.plugin.api.Plugin;
-import de.tub.citydb.api.plugin.api.accessors.DatabaseAccessor;
-import de.tub.citydb.api.plugin.api.accessors.LogAccessor;
-import de.tub.citydb.api.plugin.api.accessors.ViewAccessor;
-import de.tub.citydb.api.plugin.service.PluginService;
-import de.tub.citydb.api.plugin.service.PluginServiceFactory;
+import de.tub.citydb.api.plugin.Plugin;
+import de.tub.citydb.api.plugin.accessors.DatabaseAccessor;
+import de.tub.citydb.api.plugin.accessors.LogAccessor;
+import de.tub.citydb.api.plugin.accessors.ViewAccessor;
 import de.tub.citydb.cmd.ImpExpCmd;
 import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.components.citygml.importer.CityGMLImportPlugin;
@@ -74,6 +72,8 @@ import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.plugin.PluginService;
+import de.tub.citydb.plugin.PluginServiceFactory;
 
 public class ImpExp {
 

@@ -1,7 +1,7 @@
 package de.tub.citydb.gui.preferences;
 
-import de.tub.citydb.api.plugin.api.extension.preferences.PreferencesEntry;
-import de.tub.citydb.api.plugin.api.extension.preferences.PreferencesEvent;
+import de.tub.citydb.api.plugin.extension.preferences.PreferencesEntry;
+import de.tub.citydb.api.plugin.extension.preferences.PreferencesEvent;
 
 public class DefaultPreferencesEntry extends PreferencesEntry {
 	public AbstractPreferencesComponent component;

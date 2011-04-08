@@ -2,15 +2,15 @@ package de.tub.citydb.components.matching;
 
 import java.util.Locale;
 
-import de.tub.citydb.api.plugin.api.extension.preferences.Preferences;
-import de.tub.citydb.api.plugin.api.extension.preferences.PreferencesExtension;
-import de.tub.citydb.api.plugin.api.extension.view.View;
-import de.tub.citydb.api.plugin.api.extension.view.ViewExtension;
-import de.tub.citydb.api.plugin.internal.InternalPlugin;
+import de.tub.citydb.api.plugin.extension.preferences.Preferences;
+import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
+import de.tub.citydb.api.plugin.extension.view.View;
+import de.tub.citydb.api.plugin.extension.view.ViewExtension;
 import de.tub.citydb.components.matching.gui.preferences.MatchingPreferences;
 import de.tub.citydb.components.matching.gui.view.MatchingView;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.plugin.InternalPlugin;
 
 public class MatchingPlugin implements InternalPlugin, ViewExtension, PreferencesExtension {
 	private MatchingView view;

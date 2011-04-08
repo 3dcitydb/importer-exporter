@@ -66,7 +66,7 @@ import org.citygml4j.geometry.BoundingBox;
 
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
-import de.tub.citydb.api.plugin.api.exception.DatabaseConfigurationException;
+import de.tub.citydb.api.plugin.exception.DatabaseConfigurationException;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;

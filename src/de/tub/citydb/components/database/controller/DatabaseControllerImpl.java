@@ -7,10 +7,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.tub.citydb.api.plugin.api.controller.DatabaseController;
-import de.tub.citydb.api.plugin.api.data.database.DatabaseConnectionDetails;
-import de.tub.citydb.api.plugin.api.exception.DatabaseConfigurationException;
-import de.tub.citydb.api.plugin.api.listener.DatabaseConnectionListener;
+import de.tub.citydb.api.plugin.controller.DatabaseController;
+import de.tub.citydb.api.plugin.data.database.DatabaseConnectionDetails;
+import de.tub.citydb.api.plugin.exception.DatabaseConfigurationException;
+import de.tub.citydb.api.plugin.listener.DatabaseConnectionListener;
 import de.tub.citydb.components.database.DatabasePlugin;
 import de.tub.citydb.components.database.gui.view.components.DatabasePanel;
 import de.tub.citydb.config.Config;

@@ -33,13 +33,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.xml.bind.JAXBContext;
 
-import de.tub.citydb.api.plugin.api.Plugin;
-import de.tub.citydb.api.plugin.api.extension.menu.MenuExtension;
-import de.tub.citydb.api.plugin.service.PluginService;
+import de.tub.citydb.api.plugin.Plugin;
+import de.tub.citydb.api.plugin.extension.menu.MenuExtension;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.plugin.PluginService;
 
 @SuppressWarnings("serial")
 public class MenuBar extends JMenuBar {

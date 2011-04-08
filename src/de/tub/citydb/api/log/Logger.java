@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 
-import de.tub.citydb.api.plugin.api.controller.LogController;
+import de.tub.citydb.api.plugin.controller.LogController;
 
 public class Logger implements LogController {
 	private static Logger INSTANCE = new Logger();
