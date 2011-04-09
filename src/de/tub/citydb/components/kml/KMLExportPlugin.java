@@ -24,7 +24,7 @@ public class KMLExportPlugin implements InternalPlugin, ViewExtension, Preferenc
 	}
 		
 	@Override
-	public void init() {
+	public void init(Locale locale) {
 		loadSettings();
 	}
 

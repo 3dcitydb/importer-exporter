@@ -18,7 +18,7 @@ public class DatabaseView implements View {
 	}
 	
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Internal.I18N.getString("main.tabbedPane.database");
 	}
 

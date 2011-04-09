@@ -1,14 +1,14 @@
 package de.tub.citydb.plugin;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import de.tub.citydb.api.plugin.Plugin;
+import de.tub.citydb.api.plugin.extension.menu.MenuExtension;
+import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
 import de.tub.citydb.api.plugin.extension.view.ViewExtension;
 
 public class DefaultPluginService implements PluginService {
@@ -21,8 +21,7 @@ public class DefaultPluginService implements PluginService {
 		externalPlugins = new ArrayList<Plugin>();
 
 		ServiceLoader<Plugin> pluginLoader = ServiceLoader.load(Plugin.class, loader);
-		Iterator<Plugin> iter = pluginLoader.iterator();
-		while (iter.hasNext())
+		for (Iterator<Plugin> iter = pluginLoader.iterator(); iter.hasNext(); )
 			externalPlugins.add(iter.next());
 	}
 
@@ -59,44 +58,56 @@ public class DefaultPluginService implements PluginService {
 	}
 
 	@Override
-	public List<ViewExtension> getExternalViewExtensions(boolean sortByTitle) {
+	public List<ViewExtension> getExternalViewExtensions() {
 		List<ViewExtension> viewExtensions = new ArrayList<ViewExtension>();
 		for (Plugin plugin : externalPlugins) {
 			if (plugin instanceof ViewExtension) {
 				ViewExtension viewExtension = (ViewExtension)plugin;
-				if (viewExtension.getView() != null && viewExtension.getView().getTitle() != null)
+				if (viewExtension.getView() != null && 
+						viewExtension.getView().getViewComponent() != null)
 					viewExtensions.add((ViewExtension)plugin);
 			}
 		}
-
-		if (sortByTitle)
-			Collections.sort(viewExtensions, new Comparator<ViewExtension>() {
-				public int compare(ViewExtension o1, ViewExtension o2) {
-					return o1.getView().getTitle().compareTo(o2.getView().getTitle());
-				}
-			});
 
 		return viewExtensions;
 	}
 
 	@Override
+	public List<PreferencesExtension> getExternalPreferencesExtensions() {
+		List<PreferencesExtension> preferencesExtensions = new ArrayList<PreferencesExtension>();
+		for (Plugin plugin : externalPlugins) {
+			if (plugin instanceof PreferencesExtension) {
+				PreferencesExtension preferencesExtension = (PreferencesExtension)plugin;
+				if (preferencesExtension.getPreferences() != null && 
+						preferencesExtension.getPreferences().getPreferencesEntry() != null)
+					preferencesExtensions.add((PreferencesExtension)plugin);
+			}
+		}
+
+		return preferencesExtensions;
+	}
+
+	@Override
+	public List<MenuExtension> getExternalMenuExtensions() {
+		List<MenuExtension> menuExtensions = new ArrayList<MenuExtension>();
+		for (Plugin plugin : externalPlugins) {
+			if (plugin instanceof MenuExtension) {
+				MenuExtension menuExtension = (MenuExtension)plugin;
+				if (menuExtension.getMenu() != null && 
+						menuExtension.getMenu().getMenuComponent() != null)
+					menuExtensions.add((MenuExtension)plugin);
+			}
+		}
+
+		return menuExtensions;
+	}
+
+	@Override
 	public List<Plugin> getPlugins() {
-		List<Plugin> plugins = new ArrayList<Plugin>(internalPlugins);
-		plugins.addAll(externalPlugins);
+		List<Plugin> plugins = new ArrayList<Plugin>(externalPlugins);
+		plugins.addAll(internalPlugins);
 
 		return plugins;
 	}
-
-	@Override
-	public void initPlugins() {
-		for (Plugin plugin : getPlugins())
-			plugin.init();
-	}
-
-	@Override
-	public void shutdownPlugins() {
-		for (Plugin plugin : getPlugins())
-			plugin.shutdown();
-	} 
 
 }

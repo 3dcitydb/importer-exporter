@@ -308,18 +308,20 @@ public class ImpExp {
 
 		Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", new Locale(lang.value()));
 
+		// initialize object registry
+		ObjectRegistry registry = ObjectRegistry.getInstance();
+		registry.setLogController(Logger.getInstance());
+		registry.setEventDispatcher(new EventDispatcher());
+		
 		// start application
 		if (!shell) {
 			// create main view instance
 			final ImpExpGui mainView = new ImpExpGui();
 			final DatabasePlugin databasePlugin = new DatabasePlugin(projectContext, config, mainView);
 
-			// initialize object registry
-			ObjectRegistry registry = ObjectRegistry.getInstance();
+			// add gui related objects to registry
 			registry.setViewController(mainView);
 			registry.setDatabaseController(databasePlugin.getDatabaseController());
-			registry.setLogController(Logger.getInstance());
-			registry.setEventDispatcher(new EventDispatcher());
 
 			// load external plugins
 			LOG.info("Loading plugins");
@@ -334,6 +336,12 @@ public class ImpExp {
 				System.exit(1);				
 			}
 
+			// initialize plugins
+			for (Plugin plugin : pluginService.getExternalPlugins()) {
+				LOG.debug("Loaded plugin: " + plugin.getClass().getName());
+				plugin.init(new Locale(lang.value()));
+			}	
+			
 			// register internal plugins
 			pluginService.registerInternalPlugin(new CityGMLImportPlugin(jaxbBuilder, config, mainView));		
 			pluginService.registerInternalPlugin(new CityGMLExportPlugin(jaxbBuilder, config, mainView));		
@@ -342,15 +350,10 @@ public class ImpExp {
 			pluginService.registerInternalPlugin(databasePlugin);
 			pluginService.registerInternalPlugin(new PreferencesPlugin(pluginService, config, mainView));
 
-
-			// initialize plugins
-			for (Plugin plugin : pluginService.getPlugins()) {
-				LOG.debug("Loaded plugin: " + plugin.getClass().getName());
-
-				// init plugin
-				plugin.init();
-			}	
-
+			// initialize internal plugins
+			for (Plugin plugin : pluginService.getInternalPlugins())
+				plugin.init(new Locale(lang.value()));
+			
 			// initialize gui
 			LOG.info("Starting graphical user interface");
 

@@ -11,7 +11,7 @@ public class CityGMLExportEntry extends DefaultPreferencesEntry {
 	}
 	
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return Internal.I18N.getString("pref.tree.export");
 	}
 

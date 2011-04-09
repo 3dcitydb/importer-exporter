@@ -28,7 +28,7 @@ public class DatabasePlugin implements InternalPlugin, ViewExtension, Preference
 	}
 		
 	@Override
-	public void init() {
+	public void init(Locale locale) {
 		loadSettings();
 	}
 

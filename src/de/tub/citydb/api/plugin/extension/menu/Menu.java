@@ -4,7 +4,7 @@ import javax.swing.Icon;
 import javax.swing.JMenu;
 
 public interface Menu {
-	public String getTitle();
+	public String getLocalizedTitle();
 	public JMenu getMenuComponent();
 	public Icon getIcon();
 	public int getMnemonicIndex();

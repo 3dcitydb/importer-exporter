@@ -219,6 +219,8 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		connectText.setOpaque(true);
 
 		menu = new JTabbedPane();
+
+		// retrieve all views
 		views = new ArrayList<View>();
 		preferencesPlugin = pluginService.getInternalPlugin(PreferencesPlugin.class);
 		databasePlugin = pluginService.getInternalPlugin(DatabasePlugin.class);
@@ -227,12 +229,13 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		views.add(pluginService.getInternalPlugin(KMLExportPlugin.class).getView());
 		views.add(pluginService.getInternalPlugin(MatchingPlugin.class).getView());
 
-		for (ViewExtension viewExtension : pluginService.getExternalViewExtensions(true))
+		for (ViewExtension viewExtension : pluginService.getExternalViewExtensions())
 			views.add(viewExtension.getView());
 
 		views.add(databasePlugin.getView());
 		views.add(preferencesPlugin.getView());
 
+		// attach views to gui
 		int index = 0;
 		for (View view : views)
 			menu.insertTab(null, view.getIcon(), view.getViewComponent(), view.getToolTip(), index++);
@@ -431,23 +434,23 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 
 			setTitle(Internal.I18N.getString("main.window.title"));
 			statusText.setText(Internal.I18N.getString("main.status.ready.label"));
+			consoleLabel.setText(Internal.I18N.getString("main.label.console"));
 
 			if (dbPool.isConnected())
 				connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
 			else
 				connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
 
-			menuBar.doTranslation();
+			// fire translation notification to plugins
 			for (Plugin plugin : pluginService.getPlugins())
 				plugin.switchLocale(locale);
 
 			int index = 0;
 			for (View view : views)
-				menu.setTitleAt(index++, view.getTitle());
-			
-			consoleLabel.setText(Internal.I18N.getString("main.label.console"));
-		}
-		catch (MissingResourceException e) {
+				menu.setTitleAt(index++, view.getLocalizedTitle());
+
+			menuBar.doTranslation();
+		} catch (MissingResourceException e) {
 			LOG.error("Missing resource: " + e.getKey());
 		}
 	}
@@ -600,12 +603,12 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		}
 
 		// shutdown plugins
-		if (!pluginService.getExternalPlugins().isEmpty()) {
+		if (!pluginService.getExternalPlugins().isEmpty())
 			LOG.info("Shutting down plugins");
-			for (Plugin plugin : pluginService.getPlugins())
-				plugin.shutdown();
-		}
 		
+		for (Plugin plugin : pluginService.getPlugins())
+			plugin.shutdown();
+
 		LOG.info("Saving project settings");
 		saveProjectSettings();
 		saveGUISettings();

@@ -24,7 +24,7 @@ public class PreferencesPlugin implements InternalPlugin, ViewExtension, Prefere
 	}
 		
 	@Override
-	public void init() {
+	public void init(Locale locale) {
 		loadSettings();
 	}
 

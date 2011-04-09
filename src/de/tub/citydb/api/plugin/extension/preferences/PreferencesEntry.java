@@ -9,7 +9,7 @@ public abstract class PreferencesEntry {
 	
 	public abstract boolean isModified();
 	public abstract boolean handleEvent(PreferencesEvent event);
-	public abstract String getTitle();
+	public abstract String getLocalizedTitle();
 	public abstract Component getViewComponent();
 
 	public void addChildEntry(PreferencesEntry child) {

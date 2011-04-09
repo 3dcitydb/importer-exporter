@@ -33,7 +33,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.xml.bind.JAXBContext;
 
-import de.tub.citydb.api.plugin.Plugin;
 import de.tub.citydb.api.plugin.extension.menu.MenuExtension;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -72,20 +71,15 @@ public class MenuBar extends JMenuBar {
 		add(file);
 		add(project);
 
-		for (Plugin plugin : pluginService.getExternalPlugins()) {
-			if (plugin instanceof MenuExtension) {
-				if (extensions == null)
-					extensions = new JMenu();
+		for (MenuExtension extension : pluginService.getExternalMenuExtensions()) {
+			if (extensions == null)
+				extensions = new JMenu();
 
-				MenuExtension extension = (MenuExtension)plugin;
-				if (extension.getMenu() != null && extension.getMenu().getMenuComponent() != null) {
-					JMenu menu = extension.getMenu().getMenuComponent();
-					menu.setText(extension.getMenu().getTitle());
-					menu.setIcon(extension.getMenu().getIcon());
-					GuiUtil.setMnemonic(menu, menu.getText(), extension.getMenu().getMnemonicIndex());
-					extensions.add(menu);
-				}
-			}
+			JMenu menu = extension.getMenu().getMenuComponent();
+			menu.setText(extension.getMenu().getLocalizedTitle());
+			menu.setIcon(extension.getMenu().getIcon());
+			GuiUtil.setMnemonic(menu, menu.getText(), extension.getMenu().getMnemonicIndex());
+			extensions.add(menu);
 		}
 
 		if (extensions != null)
@@ -109,6 +103,10 @@ public class MenuBar extends JMenuBar {
 		if (extensions != null) {
 			extensions.setText(Internal.I18N.getString("menu.extensions.label"));
 			GuiUtil.setMnemonic(extensions, "menu.extensions.label", "menu.extensions.label.mnemonic");
+			
+			int index = 0;
+			for (MenuExtension extension : pluginService.getExternalMenuExtensions())
+				((JMenu)extensions.getMenuComponent(index++)).setText(extension.getMenu().getLocalizedTitle());
 		}
 
 		file.doTranslation();

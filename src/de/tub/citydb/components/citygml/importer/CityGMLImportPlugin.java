@@ -24,7 +24,7 @@ public class CityGMLImportPlugin implements InternalPlugin, ViewExtension, Prefe
 	}
 		
 	@Override
-	public void init() {
+	public void init(Locale locale) {
 		loadSettings();
 	}
 

@@ -33,7 +33,7 @@ public class DefaultPreferencesEntry extends PreferencesEntry {
 	}
 
 	@Override
-	public String getTitle() {
+	public String getLocalizedTitle() {
 		return component.getTitle();
 	}
 

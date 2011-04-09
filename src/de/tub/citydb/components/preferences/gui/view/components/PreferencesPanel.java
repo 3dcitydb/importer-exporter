@@ -56,7 +56,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import de.tub.citydb.api.log.Logger;
-import de.tub.citydb.api.plugin.Plugin;
 import de.tub.citydb.api.plugin.extension.preferences.PreferencesEntry;
 import de.tub.citydb.api.plugin.extension.preferences.PreferencesEvent;
 import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
@@ -146,13 +145,8 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		rootNode.add(pluginService.getInternalPlugin(KMLExportPlugin.class).getPreferences().getPreferencesEntry());
 		rootNode.add(pluginService.getInternalPlugin(MatchingPlugin.class).getPreferences().getPreferencesEntry());
 
-		for (Plugin plugin : pluginService.getExternalPlugins()) {
-			if (plugin instanceof PreferencesExtension) {
-				PreferencesExtension extension = (PreferencesExtension)plugin;
-				if (extension.getPreferences() != null && extension.getPreferences().getPreferencesEntry() != null)
-					rootNode.add(extension.getPreferences().getPreferencesEntry());	
-			}
-		}
+		for (PreferencesExtension extension : pluginService.getExternalPreferencesExtensions())
+			rootNode.add(extension.getPreferences().getPreferencesEntry());	
 
 		rootNode.add(pluginService.getInternalPlugin(DatabasePlugin.class).getPreferences().getPreferencesEntry());
 		rootNode.add(generalPreferences.getPreferencesEntry());
@@ -360,7 +354,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		}
 
 		public String toString() {
-			return entry.getTitle();
+			return entry.getLocalizedTitle();
 		}
 	}
 

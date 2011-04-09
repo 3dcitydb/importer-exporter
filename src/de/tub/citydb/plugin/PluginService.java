@@ -3,6 +3,8 @@ package de.tub.citydb.plugin;
 import java.util.List;
 
 import de.tub.citydb.api.plugin.Plugin;
+import de.tub.citydb.api.plugin.extension.menu.MenuExtension;
+import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
 import de.tub.citydb.api.plugin.extension.view.ViewExtension;
 
 public interface PluginService {
@@ -11,9 +13,9 @@ public interface PluginService {
 	public <T extends InternalPlugin> T getInternalPlugin(Class<T> pluginClass);
 	
 	public List<Plugin> getExternalPlugins();
-	public List<ViewExtension> getExternalViewExtensions(boolean sortByTitle);
-	public List<Plugin> getPlugins();
+	public List<ViewExtension> getExternalViewExtensions();
+	public List<PreferencesExtension> getExternalPreferencesExtensions();
+	public List<MenuExtension> getExternalMenuExtensions();
 	
-	public void initPlugins();
-	public void shutdownPlugins();
+	public List<Plugin> getPlugins();
 }
