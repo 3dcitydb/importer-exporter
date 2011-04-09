@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
-import de.tub.citydb.api.plugin.data.database.DatabaseConnectionDetails;
+import de.tub.citydb.api.database.DatabaseConnectionDetails;
 
 @XmlType(name="ConnectionType", propOrder={
 		"description",

@@ -78,9 +78,9 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import de.tub.citydb.api.controller.ViewController;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.plugin.Plugin;
-import de.tub.citydb.api.plugin.controller.ViewController;
 import de.tub.citydb.api.plugin.extension.view.View;
 import de.tub.citydb.api.plugin.extension.view.ViewExtension;
 import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;

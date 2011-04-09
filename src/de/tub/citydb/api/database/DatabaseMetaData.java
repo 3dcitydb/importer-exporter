@@ -1,6 +1,6 @@
-package de.tub.citydb.api.plugin.data.database;
+package de.tub.citydb.api.database;
 
-import de.tub.citydb.api.plugin.controller.LogController;
+import de.tub.citydb.api.controller.LogController;
 
 
 public class DatabaseMetaData {

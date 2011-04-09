@@ -2,10 +2,10 @@ package de.tub.citydb.api.registry;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import de.tub.citydb.api.controller.DatabaseController;
+import de.tub.citydb.api.controller.LogController;
+import de.tub.citydb.api.controller.ViewController;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.plugin.controller.DatabaseController;
-import de.tub.citydb.api.plugin.controller.LogController;
-import de.tub.citydb.api.plugin.controller.ViewController;
 
 public class ObjectRegistry {
 	private static final ObjectRegistry instance = new ObjectRegistry();

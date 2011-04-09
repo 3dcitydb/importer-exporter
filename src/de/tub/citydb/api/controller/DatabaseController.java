@@ -1,11 +1,11 @@
-package de.tub.citydb.api.plugin.controller;
+package de.tub.citydb.api.controller;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import de.tub.citydb.api.plugin.data.database.DatabaseConnectionDetails;
-import de.tub.citydb.api.plugin.exception.DatabaseConfigurationException;
-import de.tub.citydb.api.plugin.listener.DatabaseConnectionListener;
+import de.tub.citydb.api.database.DatabaseConfigurationException;
+import de.tub.citydb.api.database.DatabaseConnectionDetails;
+import de.tub.citydb.api.database.DatabaseConnectionListener;
 
 public interface DatabaseController {
 	public void connect() throws DatabaseConfigurationException, SQLException;

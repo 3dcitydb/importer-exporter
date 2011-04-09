@@ -29,9 +29,9 @@
  */
 package de.tub.citydb.config.project.database;
 
+import de.tub.citydb.api.database.DatabaseMetaData;
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
-import de.tub.citydb.api.plugin.data.database.DatabaseMetaData;
 
 public class DBMetaData {
 	private static final Logger LOG = Logger.getInstance();	

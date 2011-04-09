@@ -1,4 +1,4 @@
-package de.tub.citydb.api.plugin.exception;
+package de.tub.citydb.api.database;
 
 @SuppressWarnings("serial")
 public class DatabaseConfigurationException extends Exception {

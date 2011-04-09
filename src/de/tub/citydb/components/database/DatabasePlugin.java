@@ -4,7 +4,7 @@ import java.util.Locale;
 
 import javax.xml.bind.JAXBContext;
 
-import de.tub.citydb.api.plugin.controller.DatabaseController;
+import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.plugin.extension.preferences.Preferences;
 import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
 import de.tub.citydb.api.plugin.extension.view.View;

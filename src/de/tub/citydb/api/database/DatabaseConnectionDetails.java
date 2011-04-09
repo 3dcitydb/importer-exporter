@@ -1,4 +1,4 @@
-package de.tub.citydb.api.plugin.data.database;
+package de.tub.citydb.api.database;
 
 public class DatabaseConnectionDetails {
 	private String description;

@@ -1,4 +1,4 @@
-package de.tub.citydb.api.plugin.controller;
+package de.tub.citydb.api.controller;
 
 public interface LogController {
 	public void debug(String message);
