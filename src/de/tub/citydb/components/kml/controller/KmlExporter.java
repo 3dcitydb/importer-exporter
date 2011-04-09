@@ -466,7 +466,7 @@ public class KmlExporter implements EventHandler {
 
 						// finally join eventDispatcher
 						try {
-							eventDispatcher.join();
+							eventDispatcher.flushEvents();
 						} catch (InterruptedException iE) {
 							Logger.getInstance().error("Internal error: " + iE.getMessage());
 							return false;

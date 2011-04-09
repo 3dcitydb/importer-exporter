@@ -83,7 +83,6 @@ import de.tub.citydb.api.plugin.Plugin;
 import de.tub.citydb.api.plugin.controller.ViewController;
 import de.tub.citydb.api.plugin.extension.view.View;
 import de.tub.citydb.api.plugin.extension.view.ViewExtension;
-import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.components.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.components.database.DatabasePlugin;
@@ -607,9 +606,6 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 				plugin.shutdown();
 		}
 		
-		// shutdown event dispatcher
-		ObjectRegistry.getInstance().getEventDispatcher().shutdown();
-
 		LOG.info("Saving project settings");
 		saveProjectSettings();
 		saveGUISettings();

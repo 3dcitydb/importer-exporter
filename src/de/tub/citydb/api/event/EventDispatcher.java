@@ -117,16 +117,8 @@ public class EventDispatcher {
 			containerQueue.clear();
 		}
 	}
-
-	public void shutdown() {
-		eventDispatcherThread.shutdown();
-	}
 	
-	public void shutdownAndWait() throws InterruptedException {
-		eventDispatcherThread.shutdownAndWait();
-	}
-	
-	public void join() throws InterruptedException {
+	public void flushEvents() throws InterruptedException {
 		eventDispatcherThread.join();
 	}
 }

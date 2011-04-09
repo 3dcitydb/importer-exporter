@@ -57,6 +57,7 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.components.common.event.CounterEvent;
 import de.tub.citydb.components.common.event.CounterType;
 import de.tub.citydb.components.common.event.EventType;
@@ -513,7 +514,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			LOG.info("Initializing matching process...");
 
 			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = new EventDispatcher();
+			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			eventDispatcher.addHandler(EventType.COUNTER, this);
 			
 			final StatusDialog status = new StatusDialog(topFrame, 
@@ -549,7 +550,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			boolean success = matcher.match();
 
 			try {
-				eventDispatcher.shutdownAndWait();
+				eventDispatcher.flushEvents();
 			} catch (InterruptedException e1) {
 				//
 			}
@@ -598,7 +599,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			LOG.info("Initializing merging process...");
 
 			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = new EventDispatcher();
+			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			final StatusDialog status = new StatusDialog(topFrame, 
 					Internal.I18N.getString("match.merge.dialog.window"), 
 					Internal.I18N.getString("match.merge.dialog.msg"),
@@ -618,7 +619,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			boolean success = matcher.merge();
 
 			try {
-				eventDispatcher.shutdownAndWait();
+				eventDispatcher.flushEvents();
 			} catch (InterruptedException e1) {
 				//
 			}
@@ -661,7 +662,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			LOG.info("Initializing matching process...");
 
 			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = new EventDispatcher();
+			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			eventDispatcher.addHandler(EventType.COUNTER, this);
 			
 			final StatusDialog status = new StatusDialog(topFrame, 
@@ -683,7 +684,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			boolean success = matcher.calcRelevantMatches();
 
 			try {
-				eventDispatcher.shutdownAndWait();
+				eventDispatcher.flushEvents();
 			} catch (InterruptedException e1) {
 				//
 			}
@@ -738,7 +739,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			String result = MessageFormat.format(msg, args);
 
 			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = new EventDispatcher();
+			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			final StatusDialog status = new StatusDialog(topFrame, 
 					Internal.I18N.getString("match.tools.dialog.title"), 
 					result,
@@ -758,7 +759,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			boolean success = matcher.delete();
 
 			try {
-				eventDispatcher.shutdownAndWait();
+				eventDispatcher.flushEvents();
 			} catch (InterruptedException e1) {
 				//
 			}

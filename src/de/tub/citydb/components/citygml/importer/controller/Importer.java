@@ -484,7 +484,7 @@ public class Importer implements EventHandler {
 				}
 
 				try {
-					eventDispatcher.join();
+					eventDispatcher.flushEvents();
 				} catch (InterruptedException e) {
 					// 
 				}

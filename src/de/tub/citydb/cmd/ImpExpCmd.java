@@ -39,6 +39,7 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.plugin.exception.DatabaseConfigurationException;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.components.citygml.exporter.controller.Exporter;
 import de.tub.citydb.components.citygml.importer.controller.Importer;
 import de.tub.citydb.components.citygml.importer.controller.XMLValidator;
@@ -82,12 +83,12 @@ public class ImpExpCmd {
 
 		LOG.info("Initializing database import...");
 
-		EventDispatcher eventDispatcher = new EventDispatcher();
+		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		Importer importer = new Importer(cityGMLBuilder, dbPool, config, eventDispatcher);
 		boolean success = importer.doProcess();
 
 		try {
-			eventDispatcher.shutdownAndWait();
+			eventDispatcher.flushEvents();
 		} catch (InterruptedException e) {
 			//
 		}
@@ -102,12 +103,12 @@ public class ImpExpCmd {
 	public void doValidate() {
 		LOG.info("Initializing XML validation...");
 
-		EventDispatcher eventDispatcher = new EventDispatcher();
+		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		XMLValidator validator = new XMLValidator(cityGMLBuilder, config, eventDispatcher);
 		boolean success = validator.doProcess();
 
 		try {
-			eventDispatcher.shutdownAndWait();
+			eventDispatcher.flushEvents();
 		} catch (InterruptedException e) {
 			//
 		}
@@ -128,10 +129,9 @@ public class ImpExpCmd {
 
 		LOG.info("Initializing database export...");
 
-		EventDispatcher eventDispatcher = new EventDispatcher();
+		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		Exporter exporter = new Exporter(cityGMLBuilder, dbPool, config, eventDispatcher);
 		boolean success = exporter.doProcess();
-		eventDispatcher.shutdown();
 
 		if (success) {
 			LOG.info("Database export successfully finished.");
@@ -149,7 +149,7 @@ public class ImpExpCmd {
 
 		LOG.info("Initializing database export...");
 
-		EventDispatcher eventDispatcher = new EventDispatcher();
+		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		KmlExporter kmlExporter = new KmlExporter(jaxbKmlContext, jaxbColladaContext, dbPool, config, eventDispatcher);
 		ExportFilterConfig filter = config.getProject().getKmlExporter().getFilter();
 		try {
@@ -161,7 +161,6 @@ public class ImpExpCmd {
 			return;
 		}
 		boolean success = kmlExporter.doProcess();
-		eventDispatcher.shutdown();
 
 		if (success) {
 			LOG.info("Database export successfully finished.");

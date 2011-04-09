@@ -63,6 +63,7 @@ import javax.xml.bind.JAXBContext;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.components.common.event.InterruptEnum;
 import de.tub.citydb.components.common.event.InterruptEvent;
 import de.tub.citydb.config.Config;
@@ -952,7 +953,7 @@ public class KmlExportPanel extends JPanel {
 			}
 
 			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = new EventDispatcher();
+			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			de.tub.citydb.components.kml.controller.KmlExporter kmlExporter = new de.tub.citydb.components.kml.controller.KmlExporter(jaxbKmlContext, jaxbColladaContext, dbPool, config, eventDispatcher);
 
 			int tileAmount = 1;
@@ -1013,7 +1014,7 @@ public class KmlExportPanel extends JPanel {
 			boolean success = kmlExporter.doProcess();
 
 			try {
-				eventDispatcher.shutdownAndWait();
+				eventDispatcher.flushEvents();
 			} catch (InterruptedException e1) {
 				//
 			}

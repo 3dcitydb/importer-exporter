@@ -171,7 +171,7 @@ public class XMLValidator implements EventHandler {
 				// we are done with parsing. so shutdown the workers
 				try {
 					featureWorkerPool.shutdownAndWait();
-					eventDispatcher.join();				
+					eventDispatcher.flushEvents();				
 				} catch (InterruptedException ie) {
 					//
 				}

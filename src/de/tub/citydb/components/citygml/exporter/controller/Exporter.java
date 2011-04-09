@@ -510,7 +510,7 @@ public class Exporter implements EventHandler {
 
 					// finally join eventDispatcher
 					try {
-						eventDispatcher.join();
+						eventDispatcher.flushEvents();
 					} catch (InterruptedException iE) {
 						LOG.error("Internal error: " + iE.getMessage());
 						return false;

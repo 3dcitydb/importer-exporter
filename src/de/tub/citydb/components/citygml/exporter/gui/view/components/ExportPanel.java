@@ -62,6 +62,7 @@ import org.citygml4j.builder.jaxb.JAXBBuilder;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.components.citygml.common.gui.view.components.FilterPanel;
 import de.tub.citydb.components.citygml.common.gui.view.components.FilterPanel.FilterPanelType;
 import de.tub.citydb.components.citygml.exporter.controller.Exporter;
@@ -325,7 +326,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			LOG.info("Initializing database export...");
 
 			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = new EventDispatcher();
+			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(mainView, 
 					Internal.I18N.getString("export.dialog.window"),
 					Internal.I18N.getString("export.dialog.msg"),
@@ -357,7 +358,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			boolean success = exporter.doProcess();
 
 			try {
-				eventDispatcher.shutdownAndWait();
+				eventDispatcher.flushEvents();
 			} catch (InterruptedException e1) {
 				//
 			}
