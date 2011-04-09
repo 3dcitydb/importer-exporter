@@ -65,11 +65,13 @@ public class WorkerPool<T> {
 		private final Condition notEmpty;
 		private final Condition notFull;
 		private final Condition empty;
+		private final Condition flushed;
 
 		private final E[] workItems;
 		private int putIndex;
 		private int takeIndex;
 		private int count;
+		private volatile boolean blockAndFlush;
 
 		public WorkQueue(int capacity) {
 			this(capacity, false);
@@ -81,6 +83,7 @@ public class WorkerPool<T> {
 			notEmpty = lock.newCondition();
 			notFull = lock.newCondition();
 			empty = lock.newCondition();
+			flushed = lock.newCondition();
 
 			if (capacity <= 0)
 				throw new IllegalArgumentException();
@@ -96,7 +99,7 @@ public class WorkerPool<T> {
 			workItems[putIndex] = work;
 			putIndex = inc(putIndex);
 			++count;
-			notEmpty.signal();
+			notEmpty.signalAll();
 		}
 
 		private E extract() {
@@ -105,7 +108,7 @@ public class WorkerPool<T> {
 			workItems[takeIndex] = null;
 			takeIndex = inc(takeIndex);
 			--count;
-			notFull.signal();
+			notFull.signalAll();
 			if (count == 0)
 				empty.signalAll();
 			return work;
@@ -131,7 +134,7 @@ public class WorkerPool<T> {
 			}
 
 			--count;
-			notFull.signal();
+			notFull.signalAll();
 			if (count == 0)
 				empty.signalAll();
 		}
@@ -143,6 +146,9 @@ public class WorkerPool<T> {
 			final ReentrantLock lock = this.lock;
 			lock.lock();
 			try {
+				if (blockAndFlush)
+					flushed.awaitUninterruptibly();
+				
 				if (count == workItems.length)
 					return false;
 				else {
@@ -162,6 +168,9 @@ public class WorkerPool<T> {
 			final ReentrantLock lock = this.lock;
 			lock.lockInterruptibly();
 			try {
+				if (blockAndFlush)
+					flushed.awaitUninterruptibly();
+				
 				for (;;) {
 					if (count != workItems.length) {
 						insert(work);
@@ -174,7 +183,7 @@ public class WorkerPool<T> {
 					try {
 						nanos = notFull.awaitNanos(nanos);
 					} catch (InterruptedException ie) {
-						notFull.signal();
+						notFull.signalAll();
 						throw ie;
 					}
 				}
@@ -191,6 +200,9 @@ public class WorkerPool<T> {
 			final ReentrantLock lock = this.lock;
 			lock.lock();
 			try {
+				if (blockAndFlush)
+					flushed.awaitUninterruptibly();
+				
 				while (count == workItems.length)
 					notFull.awaitUninterruptibly();
 
@@ -231,7 +243,7 @@ public class WorkerPool<T> {
 					try {
 						nanos = notEmpty.awaitNanos(nanos);
 					} catch (InterruptedException ie) {
-						notEmpty.signal();
+						notEmpty.signalAll();
 						throw ie;
 					}
 				}
@@ -248,7 +260,7 @@ public class WorkerPool<T> {
 					while (count == 0)
 						notEmpty.await();
 				} catch (InterruptedException ie) {
-					notEmpty.signal();
+					notEmpty.signalAll();
 					throw ie;
 				}
 
@@ -367,7 +379,7 @@ public class WorkerPool<T> {
 					count = 0;
 					putIndex = 0;
 					takeIndex = 0;
-					notFull.signal();
+					notFull.signalAll();
 					empty.signalAll();
 				}
 
@@ -638,8 +650,7 @@ public class WorkerPool<T> {
 		final ReentrantLock queueLock = workQueue.lock;
 		mainLock.lockInterruptibly();
 		try {
-			if (runState < SHUTDOWN)
-				runState = SHUTDOWN;
+			workQueue.blockAndFlush = true;
 
 			// make sure we really can join
 			if (poolSize == 0)
@@ -653,6 +664,9 @@ public class WorkerPool<T> {
 			} catch (InterruptedException ie) {
 				// re-try
 			}
+			
+			workQueue.blockAndFlush = false;
+			workQueue.flushed.signalAll();
 
 			interruptWorkersIfIdle();
 		} finally {
@@ -666,7 +680,6 @@ public class WorkerPool<T> {
 			//
 		} finally {
 			clearWorkers();
-			runState = RUNNING;
 			prestartCoreWorkers();
 		}
 	}
