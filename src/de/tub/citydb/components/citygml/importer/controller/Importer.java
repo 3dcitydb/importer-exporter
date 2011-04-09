@@ -53,7 +53,7 @@ import org.citygml4j.xml.io.reader.FeatureReadMode;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.event.EventListener;
+import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.citygml.common.database.cache.CacheManager;
@@ -92,7 +92,7 @@ import de.tub.citydb.filter.statistic.FeatureCounterFilter;
 import de.tub.citydb.io.InputFileHandler;
 import de.tub.citydb.util.DBUtil;
 
-public class Importer implements EventListener {
+public class Importer implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
 
 	private final JAXBBuilder jaxbBuilder;
@@ -137,9 +137,9 @@ public class Importer implements EventListener {
 
 	public boolean doProcess() {
 		// adding listeners
-		eventDispatcher.addListener(EventType.FEATURE_COUNTER, this);
-		eventDispatcher.addListener(EventType.GEOMETRY_COUNTER, this);
-		eventDispatcher.addListener(EventType.INTERRUPT, this);
+		eventDispatcher.addHandler(EventType.FEATURE_COUNTER, this);
+		eventDispatcher.addHandler(EventType.GEOMETRY_COUNTER, this);
+		eventDispatcher.addHandler(EventType.INTERRUPT, this);
 
 		// get config shortcuts
 		de.tub.citydb.config.project.system.System system = config.getProject().getImporter().getSystem();

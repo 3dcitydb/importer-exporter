@@ -45,7 +45,7 @@ import javax.swing.SwingUtilities;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.event.EventListener;
+import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.components.common.event.EventType;
 import de.tub.citydb.components.common.event.StatusDialogMessage;
 import de.tub.citydb.components.common.event.StatusDialogProgressBar;
@@ -54,7 +54,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
-public class StatusDialog extends JDialog implements EventListener {
+public class StatusDialog extends JDialog implements EventHandler {
 	private JLabel titleLabel;
 	private JLabel messageLabel;
 	private JProgressBar progressBar;
@@ -73,10 +73,10 @@ public class StatusDialog extends JDialog implements EventListener {
 			EventDispatcher eventDispatcher) {
 		super(frame, windowTitle, true);
 		
-		eventDispatcher.addListener(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
-		eventDispatcher.addListener(EventType.STATUS_DIALOG_MESSAGE, this);
-		eventDispatcher.addListener(EventType.STATUS_DIALOG_TITLE, this);
-		eventDispatcher.addListener(EventType.INTERRUPT, this);
+		eventDispatcher.addHandler(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
+		eventDispatcher.addHandler(EventType.STATUS_DIALOG_MESSAGE, this);
+		eventDispatcher.addHandler(EventType.STATUS_DIALOG_TITLE, this);
+		eventDispatcher.addHandler(EventType.INTERRUPT, this);
 		
 		initGUI(windowTitle, statusTitle, statusMessage, statusDetails, setButton);
 	}

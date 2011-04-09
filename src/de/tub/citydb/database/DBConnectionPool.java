@@ -119,6 +119,12 @@ public class DBConnectionPool {
 			// retrieve connection metadata
 			conn.setMetaData(DBUtil.getDatabaseInfo());	
 		} catch (SQLException e) {
+			try {
+				poolManager.destroyConnectionPool(poolName);
+			} catch (UniversalConnectionPoolException e1) {
+				//
+			}
+			
 			poolDataSource = null;
 			throw e;			
 		}

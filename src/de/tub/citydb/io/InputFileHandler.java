@@ -36,17 +36,17 @@ import java.util.List;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.event.EventListener;
+import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.common.event.EventType;
 
-public class InputFileHandler implements EventListener {
+public class InputFileHandler implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
 	
 	private volatile boolean shouldRun = true;
 	
 	public InputFileHandler(EventDispatcher eventDispatcher) {
-		eventDispatcher.addListener(EventType.INTERRUPT, this);
+		eventDispatcher.addHandler(EventType.INTERRUPT, this);
 	}
 	
 	public List<File> getFiles(String[] input) {

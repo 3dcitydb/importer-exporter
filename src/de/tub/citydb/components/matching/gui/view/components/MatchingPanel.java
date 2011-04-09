@@ -54,7 +54,7 @@ import javax.swing.SwingUtilities;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.event.EventListener;
+import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.common.event.CounterEvent;
@@ -73,7 +73,7 @@ import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.util.Util;
 
 @SuppressWarnings("serial")
-public class MatchingPanel extends JPanel implements PropertyChangeListener, EventListener {	
+public class MatchingPanel extends JPanel implements PropertyChangeListener, EventHandler {	
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final Config config;
@@ -514,7 +514,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = new EventDispatcher();
-			eventDispatcher.addListener(EventType.COUNTER, this);
+			eventDispatcher.addHandler(EventType.COUNTER, this);
 			
 			final StatusDialog status = new StatusDialog(topFrame, 
 					Internal.I18N.getString("match.match.dialog.window"), 
@@ -662,7 +662,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = new EventDispatcher();
-			eventDispatcher.addListener(EventType.COUNTER, this);
+			eventDispatcher.addHandler(EventType.COUNTER, this);
 			
 			final StatusDialog status = new StatusDialog(topFrame, 
 					Internal.I18N.getString("match.overlap.dialog.window"), 

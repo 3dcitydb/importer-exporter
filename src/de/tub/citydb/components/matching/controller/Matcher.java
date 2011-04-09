@@ -40,7 +40,7 @@ import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.event.EventListener;
+import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.common.event.CounterEvent;
 import de.tub.citydb.components.common.event.CounterType;
@@ -58,7 +58,7 @@ import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
 
-public class Matcher implements EventListener {
+public class Matcher implements EventHandler {
 	private final Logger LOG = Logger.getInstance();	
 
 	private final DBConnectionPool dbPool;	
@@ -100,7 +100,7 @@ public class Matcher implements EventListener {
 			return false;
 
 		Matching matching = config.getProject().getMatching();
-		eventDispatcher.addListener(EventType.INTERRUPT, this);
+		eventDispatcher.addHandler(EventType.INTERRUPT, this);
 
 		int masterLODProjection = matching.getMasterBuildings().getLodProjection();
 		int candLODProjection = matching.getCandidateBuildings().getLodProjection();

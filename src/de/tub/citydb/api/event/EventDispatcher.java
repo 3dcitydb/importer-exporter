@@ -37,11 +37,11 @@ import de.tub.citydb.api.concurrent.SingleWorkerPool;
 
 public class EventDispatcher {
 	private SingleWorkerPool<Event> eventDispatcherThread;
-	private ConcurrentHashMap<Enum<?>, EventListenerContainerQueue> containerQueueMap;
+	private ConcurrentHashMap<Enum<?>, EventHandlerContainerQueue> containerQueueMap;
 	private ReentrantLock mainLock;
 
 	public EventDispatcher(int eventQueueSize) {
-		containerQueueMap = new ConcurrentHashMap<Enum<?>, EventListenerContainerQueue>();
+		containerQueueMap = new ConcurrentHashMap<Enum<?>, EventHandlerContainerQueue>();
 		eventDispatcherThread = new SingleWorkerPool<Event>(
 				new EventWorkerFactory(this),
 				eventQueueSize,
@@ -55,24 +55,24 @@ public class EventDispatcher {
 		this(100);
 	}
 
-	public void addListener(Enum<?> type, EventListener listener, boolean autoRemove) {
-		containerQueueMap.putIfAbsent(type, new EventListenerContainerQueue());
+	public void addEventHandler(Enum<?> type, EventHandler handler, boolean autoRemove) {
+		containerQueueMap.putIfAbsent(type, new EventHandlerContainerQueue());
 
-		EventListenerContainerQueue containerQueue = containerQueueMap.get(type);
-		containerQueue.addListener(listener, autoRemove);
+		EventHandlerContainerQueue containerQueue = containerQueueMap.get(type);
+		containerQueue.addHandler(handler, autoRemove);
 	}
 
 
-	public void addListener(Enum<?> type, EventListener listener) {
-		addListener(type, listener, false);
+	public void addHandler(Enum<?> type, EventHandler handler) {
+		addEventHandler(type, handler, false);
 	}
 
-	public boolean removeListener(Enum<?> type, EventListener listener) {
+	public boolean removeHandler(Enum<?> type, EventHandler handler) {
 		if (!containerQueueMap.containsKey(type))
 			return false;
 
-		EventListenerContainerQueue containerQueue = containerQueueMap.get(type);
-		return containerQueue.removeListener(listener);
+		EventHandlerContainerQueue containerQueue = containerQueueMap.get(type);
+		return containerQueue.removeHandler(handler);
 	}
 
 	public void triggerEvent(Event e) {
@@ -96,7 +96,7 @@ public class EventDispatcher {
 
 		try {
 			if (containerQueueMap.containsKey(e.getEventType())) {
-				EventListenerContainerQueue containerQueue = containerQueueMap.get(e.getEventType());
+				EventHandlerContainerQueue containerQueue = containerQueueMap.get(e.getEventType());
 				containerQueue.propagate(e);
 			}
 
@@ -112,8 +112,8 @@ public class EventDispatcher {
 	}
 
 	public void reset() {
-		for (Iterator<EventListenerContainerQueue> iter = containerQueueMap.values().iterator(); iter.hasNext(); ) {
-			EventListenerContainerQueue containerQueue = iter.next();
+		for (Iterator<EventHandlerContainerQueue> iter = containerQueueMap.values().iterator(); iter.hasNext(); ) {
+			EventHandlerContainerQueue containerQueue = iter.next();
 			containerQueue.clear();
 		}
 	}

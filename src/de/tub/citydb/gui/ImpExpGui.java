@@ -83,6 +83,7 @@ import de.tub.citydb.api.plugin.Plugin;
 import de.tub.citydb.api.plugin.controller.ViewController;
 import de.tub.citydb.api.plugin.extension.view.View;
 import de.tub.citydb.api.plugin.extension.view.ViewExtension;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.components.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.components.database.DatabasePlugin;
@@ -109,11 +110,11 @@ import de.tub.citydb.plugin.PluginService;
 public class ImpExpGui extends JFrame implements ViewController, PropertyChangeListener {
 	private final Logger LOG = Logger.getInstance();
 
-	private final Config config;
-	private final JAXBContext jaxbProjectContext;
-	private final JAXBContext jaxbGuiContext;
-	private final PluginService pluginService;
-	private final DBConnectionPool dbPool;
+	private Config config;
+	private JAXBContext jaxbProjectContext;
+	private JAXBContext jaxbGuiContext;
+	private PluginService pluginService;
+	private DBConnectionPool dbPool;
 
 	private JPanel main;
 	private JTextArea consoleText;
@@ -131,7 +132,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 	private List<View> views;
 	private PreferencesPlugin preferencesPlugin;
 	private DatabasePlugin databasePlugin;
-	
+
 	private PrintStream out;
 	private PrintStream err;
 
@@ -148,23 +149,24 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		}
 	}
 
-	public ImpExpGui(JAXBContext jaxbProjectContext,
+	public ImpExpGui() {
+		dbPool = DBConnectionPool.getInstance();
+		dbPool.addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
+
+		// required for preferences plugin
+		consoleText = new JTextArea();
+	}
+
+	public void invoke(JAXBContext jaxbProjectContext,
 			JAXBContext jaxbGuiContext,
 			PluginService pluginService,
-			Config config) {
+			Config config,
+			List<String> errMsgs) {		
 		this.jaxbProjectContext = jaxbProjectContext;
 		this.jaxbGuiContext = jaxbGuiContext;
 		this.pluginService = pluginService;
 		this.config = config;
 
-		dbPool = DBConnectionPool.getInstance();
-		dbPool.addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
-		
-		// required for preferences plugin
-		consoleText = new JTextArea();
-	}
-
-	public void invoke(List<String> errMsgs) {
 		// init GUI elements
 		initGui();
 		doTranslation();
@@ -196,7 +198,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 
 		menuBar = new MenuBar(pluginService, config, jaxbProjectContext, this);
 		setJMenuBar(menuBar);
-		
+
 		console = new JPanel();
 		consoleLabel = new JLabel();
 		consoleText.setAutoscrolls(true);
@@ -216,7 +218,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		connectText.setBorder(new CompoundBorder(border, margin));
 		connectText.setBackground(new Color(255,255,255));
 		connectText.setOpaque(true);
-		
+
 		menu = new JTabbedPane();
 		views = new ArrayList<View>();
 		preferencesPlugin = pluginService.getInternalPlugin(PreferencesPlugin.class);
@@ -429,11 +431,6 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 			currentLang = lang;
 
 			setTitle(Internal.I18N.getString("main.window.title"));
-
-			int index = 0;
-			for (View view : views)
-				menu.setTitleAt(index++, view.getTitle());
-
 			statusText.setText(Internal.I18N.getString("main.status.ready.label"));
 
 			if (dbPool.isConnected())
@@ -444,6 +441,10 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 			menuBar.doTranslation();
 			for (Plugin plugin : pluginService.getPlugins())
 				plugin.switchLocale(locale);
+
+			int index = 0;
+			for (View view : views)
+				menu.setTitleAt(index++, view.getTitle());
 			
 			consoleLabel.setText(Internal.I18N.getString("main.label.console"));
 		}
@@ -492,7 +493,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 			splitPane.setDividerLocation(dividerLocation);
 		}
 	}
-	
+
 	public boolean saveProjectSettings() {
 		String configPath = ConfigUtil.createConfigPath(config.getInternal().getConfigPath());
 
@@ -577,11 +578,11 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 	public void connectToDatabase() {
 		((DatabasePanel)databasePlugin.getView().getViewComponent()).connect();
 	}
-	
+
 	public void disconnectFromDatabase() {
 		((DatabasePanel)databasePlugin.getView().getViewComponent()).disconnect();
 	}
-	
+
 	private void shutdown() {		
 		System.setOut(out);
 		System.setErr(err);
@@ -600,12 +601,15 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		}
 
 		// shutdown plugins
-		if (pluginService.getExternalPlugins().isEmpty())
+		if (!pluginService.getExternalPlugins().isEmpty()) {
 			LOG.info("Shutting down plugins");
+			for (Plugin plugin : pluginService.getPlugins())
+				plugin.shutdown();
+		}
 		
-		for (Plugin plugin : pluginService.getPlugins())
-			plugin.shutdown();
-		
+		// shutdown event dispatcher
+		ObjectRegistry.getInstance().getEventDispatcher().shutdown();
+
 		LOG.info("Saving project settings");
 		saveProjectSettings();
 		saveGUISettings();

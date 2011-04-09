@@ -47,7 +47,7 @@ import javax.swing.SwingUtilities;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.event.EventListener;
+import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.components.common.event.CounterEvent;
 import de.tub.citydb.components.common.event.CounterType;
 import de.tub.citydb.components.common.event.EventType;
@@ -58,7 +58,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
-public class ExportStatusDialog extends JDialog implements EventListener {
+public class ExportStatusDialog extends JDialog implements EventHandler {
 	private JLabel fileName;
 	private JLabel tileLabel;
 	private JLabel messageLabel;
@@ -85,11 +85,11 @@ public class ExportStatusDialog extends JDialog implements EventListener {
 			EventDispatcher eventDispatcher) {
 		super(frame, impExpTitle, true);
 
-		eventDispatcher.addListener(EventType.COUNTER, this);
-		eventDispatcher.addListener(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
-		eventDispatcher.addListener(EventType.STATUS_DIALOG_MESSAGE, this);
-		eventDispatcher.addListener(EventType.STATUS_DIALOG_TITLE, this);
-		eventDispatcher.addListener(EventType.INTERRUPT, this);
+		eventDispatcher.addHandler(EventType.COUNTER, this);
+		eventDispatcher.addHandler(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
+		eventDispatcher.addHandler(EventType.STATUS_DIALOG_MESSAGE, this);
+		eventDispatcher.addHandler(EventType.STATUS_DIALOG_TITLE, this);
+		eventDispatcher.addHandler(EventType.INTERRUPT, this);
 
 		this.totalTileAmount = totalTileAmount;
 		

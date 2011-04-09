@@ -33,28 +33,28 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class EventListenerContainerQueue {
-	private ConcurrentLinkedQueue<EventListenerContainer> containerQueue;
+public class EventHandlerContainerQueue {
+	private ConcurrentLinkedQueue<EventHandlerContainer> containerQueue;
 
-	public EventListenerContainerQueue() {
-		containerQueue = new ConcurrentLinkedQueue<EventListenerContainer>();
+	public EventHandlerContainerQueue() {
+		containerQueue = new ConcurrentLinkedQueue<EventHandlerContainer>();
 	}
 
-	public void addListener(EventListener listener, boolean autoRemove) {
-		EventListenerContainer container = new EventListenerContainer(listener, autoRemove);
+	public void addHandler(EventHandler handler, boolean autoRemove) {
+		EventHandlerContainer container = new EventHandlerContainer(handler, autoRemove);
 		containerQueue.add(container);
 	}
 
-	public void addListener(EventListener listener) {
-		addListener(listener, false);
+	public void addHandler(EventHandler handler) {
+		addHandler(handler, false);
 	}
 
-	public boolean removeListener(EventListener listener) {
-		if (listener != null) {
-			for (Iterator<EventListenerContainer> iter = containerQueue.iterator(); iter.hasNext(); ) {
-				EventListenerContainer container = iter.next();
+	public boolean removeHandler(EventHandler handler) {
+		if (handler != null) {
+			for (Iterator<EventHandlerContainer> iter = containerQueue.iterator(); iter.hasNext(); ) {
+				EventHandlerContainer container = iter.next();
 
-				if (listener.equals(container.getListener())) {
+				if (handler.equals(container.getHandler())) {
 					containerQueue.remove(container);
 					return true;
 				}
@@ -65,15 +65,15 @@ public class EventListenerContainerQueue {
 	}
 
 	protected Event propagate(Event e) throws Exception {
-		ArrayList<EventListenerContainer> removeList = new ArrayList<EventListenerContainer>();
+		ArrayList<EventHandlerContainer> removeList = new ArrayList<EventHandlerContainer>();
 
-		for (EventListenerContainer container : containerQueue) {
-			EventListener listener = container.getListener();
+		for (EventHandlerContainer container : containerQueue) {
+			EventHandler handler = container.getHandler();
 			
 			// since we deal with weak references, check whether
-			// listener is null and remove its container in this case
-			if (listener != null)
-				listener.handleEvent(e);
+			// handler is null and remove its container in this case
+			if (handler != null)
+				handler.handleEvent(e);
 			else
 				removeList.add(container);
 
@@ -92,7 +92,7 @@ public class EventListenerContainerQueue {
 		containerQueue.clear();
 	}
 
-	public Iterator<EventListenerContainer> iterator() {
+	public Iterator<EventHandlerContainer> iterator() {
 		return containerQueue.iterator();
 	}
 }

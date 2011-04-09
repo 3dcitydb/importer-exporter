@@ -77,7 +77,7 @@ import de.tub.citydb.api.concurrent.SingleWorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.event.EventListener;
+import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.common.concurrent.IOWriterWorkerFactory;
 import de.tub.citydb.components.common.event.EventType;
@@ -103,7 +103,7 @@ import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.util.DBUtil;
 
-public class KmlExporter implements EventListener {
+public class KmlExporter implements EventHandler {
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
 	private final DBConnectionPool dbPool;
@@ -160,7 +160,7 @@ public class KmlExporter implements EventListener {
 		int maxThreads = system.getThreadPool().getDefaultPool().getMaxThreads();
 
 		// adding listener
-		eventDispatcher.addListener(EventType.INTERRUPT, this);
+		eventDispatcher.addHandler(EventType.INTERRUPT, this);
 
 		// checking workspace...
 		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();

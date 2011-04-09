@@ -51,11 +51,10 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
+import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.plugin.Plugin;
-import de.tub.citydb.api.plugin.accessors.DatabaseAccessor;
-import de.tub.citydb.api.plugin.accessors.LogAccessor;
-import de.tub.citydb.api.plugin.accessors.ViewAccessor;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.cmd.ImpExpCmd;
 import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.components.citygml.importer.CityGMLImportPlugin;
@@ -308,9 +307,20 @@ public class ImpExp {
 		}
 
 		Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", new Locale(lang.value()));
-		
+
 		// start application
 		if (!shell) {
+			// create main view instance
+			final ImpExpGui mainView = new ImpExpGui();
+			final DatabasePlugin databasePlugin = new DatabasePlugin(projectContext, config, mainView);
+
+			// initialize object registry
+			ObjectRegistry registry = ObjectRegistry.getInstance();
+			registry.setViewController(mainView);
+			registry.setDatabaseController(databasePlugin.getDatabaseController());
+			registry.setLogController(Logger.getInstance());
+			registry.setEventDispatcher(new EventDispatcher());
+
 			// load external plugins
 			LOG.info("Loading plugins");
 			try {
@@ -323,43 +333,34 @@ public class ImpExp {
 				LOG.error("Failed to load plugin: " + e.getLocalizedMessage());
 				System.exit(1);				
 			}
-			
-			// create main view instance
-			final ImpExpGui mainView = new ImpExpGui(projectContext,
-					guiContext,
-					pluginService,
-					config);
-			
+
 			// register internal plugins
 			pluginService.registerInternalPlugin(new CityGMLImportPlugin(jaxbBuilder, config, mainView));		
 			pluginService.registerInternalPlugin(new CityGMLExportPlugin(jaxbBuilder, config, mainView));		
 			pluginService.registerInternalPlugin(new KMLExportPlugin(kmlContext, colladaContext, config, mainView));
 			pluginService.registerInternalPlugin(new MatchingPlugin(config, mainView));
-			pluginService.registerInternalPlugin(new DatabasePlugin(projectContext, config, mainView));
+			pluginService.registerInternalPlugin(databasePlugin);
 			pluginService.registerInternalPlugin(new PreferencesPlugin(pluginService, config, mainView));
-			
-			// initializing plugins
+
+
+			// initialize plugins
 			for (Plugin plugin : pluginService.getPlugins()) {
 				LOG.debug("Loaded plugin: " + plugin.getClass().getName());
 
-				// set controllers
-				if (plugin instanceof LogAccessor)
-					((LogAccessor)plugin).setLogController(Logger.getInstance());				
-				if (plugin instanceof ViewAccessor)
-					((ViewAccessor)plugin).setViewController(mainView);
-				if (plugin instanceof DatabaseAccessor)
-					((DatabaseAccessor)plugin).setDatabaseController(pluginService.getInternalPlugin(DatabasePlugin.class).getDatabaseController());
-				
 				// init plugin
 				plugin.init();
 			}	
-			
+
 			// initialize gui
 			LOG.info("Starting graphical user interface");
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					mainView.invoke(errMsgs);
+					mainView.invoke(projectContext,
+							guiContext,
+							pluginService,
+							config,
+							errMsgs);
 				}
 			});
 

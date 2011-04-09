@@ -29,6 +29,31 @@
  */
 package de.tub.citydb.api.event;
 
-public interface EventListener {
-	public void handleEvent(Event e) throws Exception;
+import java.lang.ref.WeakReference;
+
+public class EventHandlerContainer {
+
+	private WeakReference<EventHandler> handlerRef = null;
+	private boolean autoRemove = false;
+
+	public EventHandlerContainer(EventHandler handler) {
+		this.handlerRef = new WeakReference<EventHandler>(handler);
+	}
+
+	public EventHandlerContainer(EventHandler handler, boolean autoRemove) {
+		this(handler);
+		this.autoRemove = autoRemove;
+	}
+
+	public boolean isAutoRemove() {
+		return autoRemove;
+	}
+
+	public void setAutoRemove(boolean autoRemove) {
+		this.autoRemove = autoRemove;
+	}
+
+	public EventHandler getHandler() {
+		return handlerRef.get();
+	}
 }

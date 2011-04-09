@@ -47,7 +47,7 @@ import de.tub.citydb.api.concurrent.SingleWorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.event.EventListener;
+import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.components.citygml.importer.concurrent.FeatureReaderWorkerFactory;
@@ -63,7 +63,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.io.InputFileHandler;
 
-public class XMLValidator implements EventListener {
+public class XMLValidator implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
 
 	private final JAXBBuilder jaxbBuilder;
@@ -87,7 +87,7 @@ public class XMLValidator implements EventListener {
 
 	public boolean doProcess() {
 		// adding listeners
-		eventDispatcher.addListener(EventType.INTERRUPT, this);
+		eventDispatcher.addHandler(EventType.INTERRUPT, this);
 		
 		// worker pool settings 
 		de.tub.citydb.config.project.system.System system = config.getProject().getImporter().getSystem();
