@@ -29,7 +29,7 @@
 	<property name="lib" location="lib" />
 	<property name="samples" location="samples" />
 
-	<property name="src.plugin-api" location="${src}/de/tub/citydb/plugin/api" />
+	<property name="src.plugin-api" location="${src}/de/tub/citydb/api" />
 	<property name="plugin-api.relative" value="plugin-api" />
 
 	<property name="resources" location="resources" />

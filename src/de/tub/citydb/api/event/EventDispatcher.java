@@ -34,7 +34,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import de.tub.citydb.api.concurrent.SingleWorkerPool;
-import de.tub.citydb.components.common.event.EventType;
 
 public class EventDispatcher {
 	private SingleWorkerPool<Event> eventDispatcherThread;
@@ -68,7 +67,7 @@ public class EventDispatcher {
 		addListener(type, listener, false);
 	}
 
-	public boolean removeListener(EventType type, EventListener listener) {
+	public boolean removeListener(Enum<?> type, EventListener listener) {
 		if (!containerQueueMap.containsKey(type))
 			return false;
 
@@ -107,8 +106,8 @@ public class EventDispatcher {
 		}
 	}
 
-	public EventType[] getRegisteredEventTypes() {
-		EventType[] types = containerQueueMap.keySet().toArray(new EventType[] {});
+	public Enum<?>[] getRegisteredEventTypes() {
+		Enum<?>[] types = containerQueueMap.keySet().toArray(new Enum<?>[] {});
 		return types;
 	}
 
