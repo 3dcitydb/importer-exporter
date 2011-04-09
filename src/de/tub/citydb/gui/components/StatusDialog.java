@@ -46,7 +46,7 @@ import javax.swing.SwingUtilities;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventListener;
-import de.tub.citydb.api.event.EventType;
+import de.tub.citydb.components.common.event.EventType;
 import de.tub.citydb.components.common.event.StatusDialogMessage;
 import de.tub.citydb.components.common.event.StatusDialogProgressBar;
 import de.tub.citydb.components.common.event.StatusDialogTitle;

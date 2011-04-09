@@ -30,7 +30,6 @@
 package de.tub.citydb.components.common.event;
 
 import de.tub.citydb.api.event.Event;
-import de.tub.citydb.api.event.EventType;
 
 public class StatusDialogTitle extends Event {
 	private String title;

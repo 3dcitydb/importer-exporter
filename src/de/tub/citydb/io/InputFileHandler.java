@@ -37,8 +37,8 @@ import java.util.List;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventListener;
-import de.tub.citydb.api.event.EventType;
 import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.components.common.event.EventType;
 
 public class InputFileHandler implements EventListener {
 	private final Logger LOG = Logger.getInstance();

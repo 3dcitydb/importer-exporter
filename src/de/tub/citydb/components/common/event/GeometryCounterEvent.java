@@ -34,7 +34,6 @@ import java.util.HashMap;
 import org.citygml4j.model.gml.GMLClass;
 
 import de.tub.citydb.api.event.Event;
-import de.tub.citydb.api.event.EventType;
 
 public class GeometryCounterEvent extends Event {
 	private HashMap<GMLClass, Long> geometryCounterMap;

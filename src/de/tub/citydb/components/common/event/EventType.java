@@ -27,7 +27,7 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.api.event;
+package de.tub.citydb.components.common.event;
 
 public enum EventType {
 	FEATURE_COUNTER,

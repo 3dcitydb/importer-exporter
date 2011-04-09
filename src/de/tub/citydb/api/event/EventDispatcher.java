@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import de.tub.citydb.api.concurrent.SingleWorkerPool;
+import de.tub.citydb.components.common.event.EventType;
 
 public class EventDispatcher {
 	private SingleWorkerPool<Event> eventDispatcherThread;
