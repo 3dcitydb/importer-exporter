@@ -243,8 +243,9 @@ public class DBConnectionPool {
 		boolean isConnected = isConnected();
 
 		try {
-			disconnect();
-		} catch (SQLException e) {
+			if (isManagedConnectionPool(poolName))
+				poolManager.destroyConnectionPool(poolName);
+		} catch (UniversalConnectionPoolException e) {
 			//
 		}
 

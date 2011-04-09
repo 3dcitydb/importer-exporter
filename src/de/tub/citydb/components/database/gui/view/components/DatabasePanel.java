@@ -497,8 +497,6 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 				} catch (DatabaseConfigurationException e) {
 					topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));					
 					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
-
-					dbPool.forceDisconnect();
 					return false;
 				} catch (SQLException sqlEx) {
 					String text = Internal.I18N.getString("db.dialog.error.openConn");
@@ -508,10 +506,12 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 					topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
 					topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
 									
-					LOG.error("Connection to database could not be established. Check the following stack trace for details:");
-					sqlEx.printStackTrace();
+					LOG.error("Connection to database could not be established.");
+					if (config.getProject().getGlobal().getLogging().getConsole().getLogLevel() == LogLevelType.DEBUG) {
+						LOG.debug("Check the following stack trace for details:");
+						sqlEx.printStackTrace();
+					}
 
-					dbPool.forceDisconnect();
 					return false;
 				}
 
