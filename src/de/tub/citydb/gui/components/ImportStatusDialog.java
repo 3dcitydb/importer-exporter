@@ -82,11 +82,11 @@ public class ImportStatusDialog extends JDialog implements EventHandler {
 			EventDispatcher eventDispatcher) {
 		super(frame, impExpTitle, true);
 
-		eventDispatcher.addHandler(EventType.COUNTER, this);
-		eventDispatcher.addHandler(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
-		eventDispatcher.addHandler(EventType.STATUS_DIALOG_MESSAGE, this);
-		eventDispatcher.addHandler(EventType.STATUS_DIALOG_TITLE, this);
-		eventDispatcher.addHandler(EventType.INTERRUPT, this);
+		eventDispatcher.addEventHandler(EventType.COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
+		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_MESSAGE, this);
+		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_TITLE, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		initGUI(impExpTitle, impExpMessage);
 	}

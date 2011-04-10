@@ -50,7 +50,7 @@ public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 	}
 
 	@Override
-	public Worker<DBXlink> getWorker() {
+	public Worker<DBXlink> createWorker() {
 		DBExportXlinkWorker dbWorker = null;
 
 		try {

@@ -73,10 +73,10 @@ public class StatusDialog extends JDialog implements EventHandler {
 			EventDispatcher eventDispatcher) {
 		super(frame, windowTitle, true);
 		
-		eventDispatcher.addHandler(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
-		eventDispatcher.addHandler(EventType.STATUS_DIALOG_MESSAGE, this);
-		eventDispatcher.addHandler(EventType.STATUS_DIALOG_TITLE, this);
-		eventDispatcher.addHandler(EventType.INTERRUPT, this);
+		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
+		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_MESSAGE, this);
+		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_TITLE, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 		
 		initGUI(windowTitle, statusTitle, statusMessage, statusDetails, setButton);
 	}

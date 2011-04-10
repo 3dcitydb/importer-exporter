@@ -160,7 +160,7 @@ public class KmlExporter implements EventHandler {
 		int maxThreads = system.getThreadPool().getDefaultPool().getMaxThreads();
 
 		// adding listener
-		eventDispatcher.addHandler(EventType.INTERRUPT, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		// checking workspace...
 		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();

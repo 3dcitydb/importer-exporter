@@ -437,7 +437,7 @@ public class WorkerPool<T> {
 
 		try {
 			if (poolSize < maximumPoolSize && runState == RUNNING) {
-				Worker<T> worker = workerFactory.getWorker();
+				Worker<T> worker = workerFactory.createWorker();
 
 				if (worker != null) {
 					Thread workerThread = new Thread(worker);

@@ -87,7 +87,7 @@ public class XMLValidator implements EventHandler {
 
 	public boolean doProcess() {
 		// adding listeners
-		eventDispatcher.addHandler(EventType.INTERRUPT, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 		
 		// worker pool settings 
 		de.tub.citydb.config.project.system.System system = config.getProject().getImporter().getSystem();

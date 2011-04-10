@@ -33,11 +33,11 @@ import java.lang.ref.WeakReference;
 
 public class EventHandlerContainer {
 
-	private WeakReference<EventHandler> handlerRef = null;
+	private WeakReference<EventHandler> eventHandlerRef = null;
 	private boolean autoRemove = false;
 
 	public EventHandlerContainer(EventHandler handler) {
-		this.handlerRef = new WeakReference<EventHandler>(handler);
+		this.eventHandlerRef = new WeakReference<EventHandler>(handler);
 	}
 
 	public EventHandlerContainer(EventHandler handler, boolean autoRemove) {
@@ -53,7 +53,7 @@ public class EventHandlerContainer {
 		this.autoRemove = autoRemove;
 	}
 
-	public EventHandler getHandler() {
-		return handlerRef.get();
+	public EventHandler getEventHandler() {
+		return eventHandlerRef.get();
 	}
 }

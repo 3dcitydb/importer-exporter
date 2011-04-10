@@ -46,7 +46,7 @@ public class InputFileHandler implements EventHandler {
 	private volatile boolean shouldRun = true;
 	
 	public InputFileHandler(EventDispatcher eventDispatcher) {
-		eventDispatcher.addHandler(EventType.INTERRUPT, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 	
 	public List<File> getFiles(String[] input) {

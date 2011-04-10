@@ -30,5 +30,5 @@
 package de.tub.citydb.api.concurrent;
 
 public interface WorkerFactory<T> {
-	Worker<T> getWorker();
+	public Worker<T> createWorker();
 }

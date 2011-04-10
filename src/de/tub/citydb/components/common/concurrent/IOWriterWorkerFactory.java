@@ -43,7 +43,7 @@ public class IOWriterWorkerFactory implements WorkerFactory<SAXEventBuffer> {
 	}
 
 	@Override
-	public Worker<SAXEventBuffer> getWorker() {
+	public Worker<SAXEventBuffer> createWorker() {
 		return new IOWriterWorker(saxWriter);
 	}
 }

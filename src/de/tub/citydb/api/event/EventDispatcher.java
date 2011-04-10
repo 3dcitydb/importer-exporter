@@ -59,20 +59,20 @@ public class EventDispatcher {
 		containerQueueMap.putIfAbsent(type, new EventHandlerContainerQueue());
 
 		EventHandlerContainerQueue containerQueue = containerQueueMap.get(type);
-		containerQueue.addHandler(handler, autoRemove);
+		containerQueue.addEventHandler(handler, autoRemove);
 	}
 
 
-	public void addHandler(Enum<?> type, EventHandler handler) {
+	public void addEventHandler(Enum<?> type, EventHandler handler) {
 		addEventHandler(type, handler, false);
 	}
 
-	public boolean removeHandler(Enum<?> type, EventHandler handler) {
+	public boolean removeEventHandler(Enum<?> type, EventHandler handler) {
 		if (!containerQueueMap.containsKey(type))
 			return false;
 
 		EventHandlerContainerQueue containerQueue = containerQueueMap.get(type);
-		return containerQueue.removeHandler(handler);
+		return containerQueue.removeEventHandler(handler);
 	}
 
 	public void triggerEvent(Event e) {

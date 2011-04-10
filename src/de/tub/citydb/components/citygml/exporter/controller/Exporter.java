@@ -151,9 +151,9 @@ public class Exporter implements EventHandler {
 		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdLookupServerBatchValue();		
 
 		// adding listeners
-		eventDispatcher.addHandler(EventType.FEATURE_COUNTER, this);
-		eventDispatcher.addHandler(EventType.GEOMETRY_COUNTER, this);
-		eventDispatcher.addHandler(EventType.INTERRUPT, this);
+		eventDispatcher.addEventHandler(EventType.FEATURE_COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		// checking workspace... this should be improved in future...
 		Workspace workspace = database.getWorkspaces().getExportWorkspace();

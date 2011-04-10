@@ -100,7 +100,7 @@ public class Matcher implements EventHandler {
 			return false;
 
 		Matching matching = config.getProject().getMatching();
-		eventDispatcher.addHandler(EventType.INTERRUPT, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		int masterLODProjection = matching.getMasterBuildings().getLodProjection();
 		int candLODProjection = matching.getCandidateBuildings().getLodProjection();

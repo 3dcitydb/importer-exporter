@@ -75,7 +75,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	}
 
 	@Override
-	public Worker<DBSplittingResult> getWorker() {
+	public Worker<DBSplittingResult> createWorker() {
 		DBExportWorker dbWorker = null;
 
 		try {

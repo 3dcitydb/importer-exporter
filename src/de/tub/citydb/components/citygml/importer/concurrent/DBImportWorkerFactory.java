@@ -66,7 +66,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 	}
 
 	@Override
-	public Worker<CityGML> getWorker() {
+	public Worker<CityGML> createWorker() {
 		DBImportWorker dbWorker = null;
 
 		try {

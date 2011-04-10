@@ -515,7 +515,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-			eventDispatcher.addHandler(EventType.COUNTER, this);
+			eventDispatcher.addEventHandler(EventType.COUNTER, this);
 			
 			final StatusDialog status = new StatusDialog(topFrame, 
 					Internal.I18N.getString("match.match.dialog.window"), 
@@ -663,7 +663,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-			eventDispatcher.addHandler(EventType.COUNTER, this);
+			eventDispatcher.addEventHandler(EventType.COUNTER, this);
 			
 			final StatusDialog status = new StatusDialog(topFrame, 
 					Internal.I18N.getString("match.overlap.dialog.window"), 

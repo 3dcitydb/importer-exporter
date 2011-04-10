@@ -40,21 +40,21 @@ public class EventHandlerContainerQueue {
 		containerQueue = new ConcurrentLinkedQueue<EventHandlerContainer>();
 	}
 
-	public void addHandler(EventHandler handler, boolean autoRemove) {
+	public void addEventHandler(EventHandler handler, boolean autoRemove) {
 		EventHandlerContainer container = new EventHandlerContainer(handler, autoRemove);
 		containerQueue.add(container);
 	}
 
-	public void addHandler(EventHandler handler) {
-		addHandler(handler, false);
+	public void addEventHandler(EventHandler handler) {
+		addEventHandler(handler, false);
 	}
 
-	public boolean removeHandler(EventHandler handler) {
+	public boolean removeEventHandler(EventHandler handler) {
 		if (handler != null) {
 			for (Iterator<EventHandlerContainer> iter = containerQueue.iterator(); iter.hasNext(); ) {
 				EventHandlerContainer container = iter.next();
 
-				if (handler.equals(container.getHandler())) {
+				if (handler.equals(container.getEventHandler())) {
 					containerQueue.remove(container);
 					return true;
 				}
@@ -68,7 +68,7 @@ public class EventHandlerContainerQueue {
 		ArrayList<EventHandlerContainer> removeList = new ArrayList<EventHandlerContainer>();
 
 		for (EventHandlerContainer container : containerQueue) {
-			EventHandler handler = container.getHandler();
+			EventHandler handler = container.getEventHandler();
 			
 			// since we deal with weak references, check whether
 			// handler is null and remove its container in this case

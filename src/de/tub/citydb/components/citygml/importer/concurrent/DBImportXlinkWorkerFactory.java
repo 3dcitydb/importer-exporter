@@ -48,7 +48,7 @@ public class DBImportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 	}
 
 	@Override
-	public Worker<DBXlink> getWorker() {
+	public Worker<DBXlink> createWorker() {
 		return new DBImportXlinkWorker(cacheManager, config, eventDispatcher);
 	}
 }

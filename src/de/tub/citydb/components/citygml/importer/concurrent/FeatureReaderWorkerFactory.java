@@ -52,7 +52,7 @@ public class FeatureReaderWorkerFactory implements WorkerFactory<CityGMLChunk> {
 	}
 
 	@Override
-	public Worker<CityGMLChunk> getWorker() {
+	public Worker<CityGMLChunk> createWorker() {
 		return new FeatureReaderWorker(dbWorkerPool, config, eventDispatcher);
 	}
 }

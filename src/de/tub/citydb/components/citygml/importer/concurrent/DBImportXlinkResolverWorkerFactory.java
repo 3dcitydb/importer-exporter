@@ -68,7 +68,7 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 	}
 
 	@Override
-	public Worker<DBXlink> getWorker() {
+	public Worker<DBXlink> createWorker() {
 		DBImportXlinkResolverWorker dbWorker = null;
 
 		try {

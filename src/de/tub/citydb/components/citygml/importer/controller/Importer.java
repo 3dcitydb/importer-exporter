@@ -137,9 +137,9 @@ public class Importer implements EventHandler {
 
 	public boolean doProcess() {
 		// adding listeners
-		eventDispatcher.addHandler(EventType.FEATURE_COUNTER, this);
-		eventDispatcher.addHandler(EventType.GEOMETRY_COUNTER, this);
-		eventDispatcher.addHandler(EventType.INTERRUPT, this);
+		eventDispatcher.addEventHandler(EventType.FEATURE_COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		// get config shortcuts
 		de.tub.citydb.config.project.system.System system = config.getProject().getImporter().getSystem();

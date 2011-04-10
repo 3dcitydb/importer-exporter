@@ -81,7 +81,7 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 	}
 
 	@Override
-	public Worker<KmlSplittingResult> getWorker() {
+	public Worker<KmlSplittingResult> createWorker() {
 		KmlExportWorker kmlWorker = null;
 
 		try {

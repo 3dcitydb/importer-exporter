@@ -40,7 +40,7 @@ public class EventWorkerFactory implements WorkerFactory<Event> {
 	}
 
 	@Override
-	public Worker<Event> getWorker() {
+	public Worker<Event> createWorker() {
 		return new EventWorker(eventDispatcher);
 	}
 
