@@ -30,5 +30,5 @@
 package de.tub.citydb.api.event;
 
 public interface EventHandler {
-	public void handleEvent(Event e) throws Exception;
+	public void handleEvent(Event event) throws Exception;
 }

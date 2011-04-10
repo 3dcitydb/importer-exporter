@@ -75,32 +75,32 @@ public class EventDispatcher {
 		return containerQueue.removeEventHandler(handler);
 	}
 
-	public void triggerEvent(Event e) {
-		eventDispatcherThread.addWork(e);
+	public void triggerEvent(Event event) {
+		eventDispatcherThread.addWork(event);
 	}
 
-	public Event triggerSyncEvent(Event e) throws Exception {
+	public Event triggerSyncEvent(Event event) {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
 		try {
-			return propagate(e);
+			return propagate(event);
 		} finally {
 			lock.unlock();
 		}
 	}
 
-	protected Event propagate(Event e) throws Exception {
+	protected Event propagate(Event event) {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
 		try {
-			if (containerQueueMap.containsKey(e.getEventType())) {
-				EventHandlerContainerQueue containerQueue = containerQueueMap.get(e.getEventType());
-				containerQueue.propagate(e);
+			if (containerQueueMap.containsKey(event.getEventType())) {
+				EventHandlerContainerQueue containerQueue = containerQueueMap.get(event.getEventType());
+				containerQueue.propagate(event);
 			}
 
-			return e;
+			return event;
 		} finally {
 			lock.unlock();
 		}

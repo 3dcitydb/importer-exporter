@@ -64,7 +64,7 @@ public class EventHandlerContainerQueue {
 		return false;
 	}
 
-	protected Event propagate(Event e) throws Exception {
+	protected Event propagate(Event event) {
 		ArrayList<EventHandlerContainer> removeList = new ArrayList<EventHandlerContainer>();
 
 		for (EventHandlerContainer container : containerQueue) {
@@ -72,20 +72,24 @@ public class EventHandlerContainerQueue {
 			
 			// since we deal with weak references, check whether
 			// handler is null and remove its container in this case
-			if (handler != null)
-				handler.handleEvent(e);
-			else
+			if (handler != null) {
+				try {
+					handler.handleEvent(event);
+				} catch (Exception e) {
+					break;
+				}
+			} else
 				removeList.add(container);
 
 			if (container.isAutoRemove())
 				removeList.add(container);
 
-			if (e.isCancelled())
+			if (event.isCancelled())
 				break;
 		}
 
 		containerQueue.removeAll(removeList);
-		return e;
+		return event;
 	}
 
 	public void clear() {
