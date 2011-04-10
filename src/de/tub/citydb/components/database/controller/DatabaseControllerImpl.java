@@ -1,34 +1,27 @@
 package de.tub.citydb.components.database.controller;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
-import de.tub.citydb.api.database.DatabaseConnectionListener;
 import de.tub.citydb.components.database.DatabasePlugin;
 import de.tub.citydb.components.database.gui.view.components.DatabasePanel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DBConnectionPool;
 
-public class DatabaseControllerImpl implements DatabaseController, PropertyChangeListener {
+public class DatabaseControllerImpl implements DatabaseController {
 	private final DatabasePlugin plugin;
 	private final Config config;
 	private final DBConnectionPool dbPool;
-	private List<DatabaseConnectionListener> listeners;
 	
 	public DatabaseControllerImpl(Config config, DatabasePlugin plugin) {
 		this.plugin = plugin;
 		this.config = config;
 		
 		dbPool = DBConnectionPool.getInstance();
-		dbPool.addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
 	}	
 
 	@Override
@@ -69,31 +62,6 @@ public class DatabaseControllerImpl implements DatabaseController, PropertyChang
 	@Override
 	public DatabaseConnectionDetails getActiveConnectionDetails() {
 		return dbPool.getActiveConnection().toPluginObject();
-	}
-
-	@Override
-	public synchronized void addDatabaseConnectionListener(DatabaseConnectionListener listener) {
-		if (listeners == null)
-			listeners = new ArrayList<DatabaseConnectionListener>();
-		
-		listeners.add(listener);
-	}
-
-	@Override
-	public synchronized void removeDatabaseConnectionListener(DatabaseConnectionListener listener) {
-		if (listeners != null)
-			listeners.remove(listener);
-	}
-
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (listeners != null && evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
-			boolean wasConnected = (Boolean)evt.getOldValue();
-			boolean isConnected = (Boolean)evt.getNewValue();
-					
-			for (DatabaseConnectionListener listener : listeners)
-				listener.connectionStateChange(wasConnected, isConnected);				
-		}
 	}
 	
 }

@@ -37,8 +37,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -61,6 +59,11 @@ import javax.swing.SpinnerNumberModel;
 
 import org.citygml.textureAtlasAPI.TextureAtlasGenerator;
 
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.common.ApplicationEvent;
+import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
@@ -73,7 +76,7 @@ import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.util.DBUtil;
 
 @SuppressWarnings("serial")
-public class GeneralPanel extends AbstractPreferencesComponent implements PropertyChangeListener {
+public class GeneralPanel extends AbstractPreferencesComponent implements EventHandler {
 
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
@@ -142,7 +145,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		this.topFrame = topFrame;
 
 		initGui();
-		DBConnectionPool.getInstance().addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
 	}
 
 	@Override
@@ -170,36 +173,36 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 			int alphaValue = Integer.valueOf(((JSpinner.DefaultEditor)footprintAlphaSpinner.getEditor()).getTextField().getText().trim());
 			dl = kmlExporter.getDisplayLevels().get(indexOfDl);
 			Color footprintFillColor = new Color(footprintFillColorButton.getBackground().getRed(),
-												 footprintFillColorButton.getBackground().getGreen(),
-												 footprintFillColorButton.getBackground().getBlue(),
-												 alphaValue);
+					footprintFillColorButton.getBackground().getGreen(),
+					footprintFillColorButton.getBackground().getBlue(),
+					alphaValue);
 			if ((dl.isSetRgba0() && footprintFillColor.getRGB() != dl.getRgba0()) || 
-				(!dl.isSetRgba0() && footprintFillColor.getRGB() != DisplayLevel.DEFAULT_FILL_COLOR)) {
+					(!dl.isSetRgba0() && footprintFillColor.getRGB() != DisplayLevel.DEFAULT_FILL_COLOR)) {
 				return true;
 			}
 
 			Color footprintLineColor = new Color(footprintLineColorButton.getBackground().getRed(),
-												 footprintLineColorButton.getBackground().getGreen(),
-												 footprintLineColorButton.getBackground().getBlue(),
-												 alphaValue);
+					footprintLineColorButton.getBackground().getGreen(),
+					footprintLineColorButton.getBackground().getBlue(),
+					alphaValue);
 			if ((dl.isSetRgba1() && footprintLineColor.getRGB() != dl.getRgba1()) || 
-				(!dl.isSetRgba1() && footprintLineColor.getRGB() != DisplayLevel.DEFAULT_LINE_COLOR)) {
+					(!dl.isSetRgba1() && footprintLineColor.getRGB() != DisplayLevel.DEFAULT_LINE_COLOR)) {
 				return true;
 			}
 
 			Color footprintHLFillColor = new Color(footprintHLFillColorButton.getBackground().getRed(),
-												   footprintHLFillColorButton.getBackground().getGreen(),
-												   footprintHLFillColorButton.getBackground().getBlue(),
-												   alphaValue);
+					footprintHLFillColorButton.getBackground().getGreen(),
+					footprintHLFillColorButton.getBackground().getBlue(),
+					alphaValue);
 			if ((dl.isSetRgba4() && footprintHLFillColor.getRGB() != dl.getRgba4()) || 
 					(!dl.isSetRgba4() && footprintHLFillColor.getRGB() != DisplayLevel.DEFAULT_FILL_HIGHLIGHTED_COLOR)) {
 				return true;
 			}
 
 			Color footprintHLLineColor = new Color(footprintHLLineColorButton.getBackground().getRed(),
-												   footprintHLLineColorButton.getBackground().getGreen(),
-												   footprintHLLineColorButton.getBackground().getBlue(),
-												   alphaValue);
+					footprintHLLineColorButton.getBackground().getGreen(),
+					footprintHLLineColorButton.getBackground().getBlue(),
+					alphaValue);
 			if ((dl.isSetRgba5() && footprintHLLineColor.getRGB() != dl.getRgba5()) || 
 					(!dl.isSetRgba5() && footprintHLLineColor.getRGB() != DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR)) {
 				return true;
@@ -214,54 +217,54 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 			int alphaValue = Integer.valueOf(((JSpinner.DefaultEditor)geometryAlphaSpinner.getEditor()).getTextField().getText().trim());
 			dl = kmlExporter.getDisplayLevels().get(indexOfDl);
 			Color geometryWallFillColor = new Color(geometryWallFillColorButton.getBackground().getRed(),
-													geometryWallFillColorButton.getBackground().getGreen(),
-													geometryWallFillColorButton.getBackground().getBlue(),
-													alphaValue);
+					geometryWallFillColorButton.getBackground().getGreen(),
+					geometryWallFillColorButton.getBackground().getBlue(),
+					alphaValue);
 			if ((dl.isSetRgba0() && geometryWallFillColor.getRGB() != dl.getRgba0()) || 
-				(!dl.isSetRgba0() && geometryWallFillColor.getRGB() != DisplayLevel.DEFAULT_WALL_FILL_COLOR)) {
+					(!dl.isSetRgba0() && geometryWallFillColor.getRGB() != DisplayLevel.DEFAULT_WALL_FILL_COLOR)) {
 				return true;
 			}
 
 			Color geometryWallLineColor = new Color(geometryWallLineColorButton.getBackground().getRed(),
-													geometryWallLineColorButton.getBackground().getGreen(),
-													geometryWallLineColorButton.getBackground().getBlue(),
-													alphaValue);
+					geometryWallLineColorButton.getBackground().getGreen(),
+					geometryWallLineColorButton.getBackground().getBlue(),
+					alphaValue);
 			if ((dl.isSetRgba1() && geometryWallLineColor.getRGB() != dl.getRgba1()) || 
 					(!dl.isSetRgba1() && geometryWallLineColor.getRGB() != DisplayLevel.DEFAULT_WALL_LINE_COLOR)) {
 				return true;
 			}
 
 			Color geometryRoofFillColor = new Color(geometryRoofFillColorButton.getBackground().getRed(),
-													geometryRoofFillColorButton.getBackground().getGreen(),
-													geometryRoofFillColorButton.getBackground().getBlue(),
-													alphaValue);
+					geometryRoofFillColorButton.getBackground().getGreen(),
+					geometryRoofFillColorButton.getBackground().getBlue(),
+					alphaValue);
 			if ((dl.isSetRgba2() && geometryRoofFillColor.getRGB() != dl.getRgba2()) || 
-				(!dl.isSetRgba2() && geometryRoofFillColor.getRGB() != DisplayLevel.DEFAULT_ROOF_FILL_COLOR)) {
+					(!dl.isSetRgba2() && geometryRoofFillColor.getRGB() != DisplayLevel.DEFAULT_ROOF_FILL_COLOR)) {
 				return true;
 			}
 
 			Color geometryRoofLineColor = new Color(geometryRoofLineColorButton.getBackground().getRed(),
-												    geometryRoofLineColorButton.getBackground().getGreen(),
-												    geometryRoofLineColorButton.getBackground().getBlue(),
-												    alphaValue);
+					geometryRoofLineColorButton.getBackground().getGreen(),
+					geometryRoofLineColorButton.getBackground().getBlue(),
+					alphaValue);
 			if ((dl.isSetRgba3() && geometryRoofLineColor.getRGB() != dl.getRgba3()) || 
 					(!dl.isSetRgba3() && geometryRoofLineColor.getRGB() != DisplayLevel.DEFAULT_ROOF_LINE_COLOR)) {
 				return true;
 			}
 
 			Color geometryHLFillColor = new Color(geometryHLFillColorButton.getBackground().getRed(),
-												  geometryHLFillColorButton.getBackground().getGreen(),
-												  geometryHLFillColorButton.getBackground().getBlue(),
-												  DisplayLevel.DEFAULT_ALPHA_VALUE);
+					geometryHLFillColorButton.getBackground().getGreen(),
+					geometryHLFillColorButton.getBackground().getBlue(),
+					DisplayLevel.DEFAULT_ALPHA_VALUE);
 			if ((dl.isSetRgba4() && geometryHLFillColor.getRGB() != dl.getRgba4()) || 
 					(!dl.isSetRgba4() && geometryHLFillColor.getRGB() != DisplayLevel.DEFAULT_FILL_HIGHLIGHTED_COLOR)) {
 				return true;
 			}
 
 			Color geometryHLLineColor = new Color(geometryHLLineColorButton.getBackground().getRed(),
-												  geometryHLLineColorButton.getBackground().getGreen(),
-												  geometryHLLineColorButton.getBackground().getBlue(),
-												  DisplayLevel.DEFAULT_ALPHA_VALUE);
+					geometryHLLineColorButton.getBackground().getGreen(),
+					geometryHLLineColorButton.getBackground().getBlue(),
+					DisplayLevel.DEFAULT_ALPHA_VALUE);
 			if ((dl.isSetRgba5() && geometryHLLineColor.getRGB() != dl.getRgba5()) || 
 					(!dl.isSetRgba5() && geometryHLLineColor.getRGB() != DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR)) {
 				return true;
@@ -294,10 +297,10 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		}
 
 		if (themeComboBox.getItemCount() > 0 &&
-			!themeComboBox.getSelectedItem().toString().equalsIgnoreCase(kmlExporter.getAppearanceTheme())) return true;
+				!themeComboBox.getSelectedItem().toString().equalsIgnoreCase(kmlExporter.getAppearanceTheme())) return true;
 		if (textureAtlasCheckbox.isSelected() != kmlExporter.isGenerateTextureAtlases()) return true;
 		if (packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue() != kmlExporter.getPackingAlgorithm()) return true;
-		
+
 		int groupSize = 1;
 		try {
 			groupSize = Integer.parseInt(groupSizeText.getText().trim());
@@ -306,9 +309,9 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 			}
 		}
 		catch (NumberFormatException nfe) {return true;}
-//		groupSizeText.setText(String.valueOf(groupSize));
+		//		groupSizeText.setText(String.valueOf(groupSize));
 		if (groupBuildingsRButton.isSelected() != kmlExporter.isGroupBuildings() ||
-			groupSize != kmlExporter.getGroupSize()) return true;
+				groupSize != kmlExporter.getGroupSize()) return true;
 
 		double imageScaleFactor = 1;
 		try {
@@ -318,10 +321,10 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 			}
 		}
 		catch (NumberFormatException nfe) {return true;}
-//		scaleFactorText.setText(String.valueOf(imageScaleFactor));
+		//		scaleFactorText.setText(String.valueOf(imageScaleFactor));
 		if (scaleTexImagesCheckbox.isSelected() != kmlExporter.isScaleImages() ||
-			imageScaleFactor != kmlExporter.getImageScaleFactor()) return true;
-			
+				imageScaleFactor != kmlExporter.getImageScaleFactor()) return true;
+
 		double geometryHighlightingDistance = 1.0;
 		try {
 			geometryHighlightingDistance = Double.parseDouble(geometryHLSurfaceDistanceText.getText().trim());
@@ -330,9 +333,9 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 			}
 		}
 		catch (NumberFormatException nfe) {return true;}
-//		geometryHLSurfaceDistanceText.setText(String.valueOf(geometryHighlightingDistance));
+		//		geometryHLSurfaceDistanceText.setText(String.valueOf(geometryHighlightingDistance));
 		if (geometryHighlightingCheckbox.isSelected() != kmlExporter.isGeometryHighlighting() ||
-			geometryHighlightingDistance != kmlExporter.getGeometryHighlightingDistance()) return true;
+				geometryHighlightingDistance != kmlExporter.getGeometryHighlightingDistance()) return true;
 
 		double colladaHighlightingDistance = 1.0;
 		try {
@@ -342,9 +345,9 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 			}
 		}
 		catch (NumberFormatException nfe) {return true;}
-//		colladaHLSurfaceDistanceText.setText(String.valueOf(colladaHighlightingDistance));
+		//		colladaHLSurfaceDistanceText.setText(String.valueOf(colladaHighlightingDistance));
 		if (colladaHighlightingRButton.isSelected() != kmlExporter.isColladaHighlighting() ||
-			colladaHighlightingDistance != kmlExporter.getColladaHighlightingDistance()) return true;
+				colladaHighlightingDistance != kmlExporter.getColladaHighlightingDistance()) return true;
 
 		return false;
 	}
@@ -377,11 +380,11 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		footprintPanel.setBorder(BorderFactory.createTitledBorder(""));
 
 		SpinnerModel falphaValueModel = new SpinnerNumberModel(200, 0, 255, 1);
-        footprintAlphaSpinner = new JSpinner(falphaValueModel);
-        footprintAlphaSpinner.setMinimumSize(new Dimension(footprintAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-        footprintAlphaSpinner.setMaximumSize(new Dimension(footprintAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
+		footprintAlphaSpinner = new JSpinner(falphaValueModel);
+		footprintAlphaSpinner.setMinimumSize(new Dimension(footprintAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
+		footprintAlphaSpinner.setMaximumSize(new Dimension(footprintAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
 
-        GridBagConstraints fal = GuiUtil.setConstraints(0,0,0.25,0.25,GridBagConstraints.NONE,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints fal = GuiUtil.setConstraints(0,0,0.25,0.25,GridBagConstraints.NONE,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
 		fal.anchor = GridBagConstraints.EAST;
 		footprintPanel.add(footprintAlphaLabel, fal);
 		footprintPanel.add(footprintAlphaSpinner, GuiUtil.setConstraints(1,0,0.25,0.25,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0));
@@ -395,7 +398,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		footprintFillColorButton.setContentAreaFilled(false);
 		footprintFillColorButton.setOpaque(true);
 		footprintPanel.add(footprintFillColorButton, GuiUtil.setConstraints(1,1,0.25,0.25,GridBagConstraints.NONE,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
-		
+
 		GridBagConstraints flcl = GuiUtil.setConstraints(2,1,0.25,0.25,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		flcl.anchor = GridBagConstraints.EAST;
 		footprintPanel.add(footprintLineColorLabel, flcl);
@@ -425,7 +428,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		GridBagConstraints fhllcl = GuiUtil.setConstraints(2,3,0.25,0.25,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		fhllcl.anchor = GridBagConstraints.EAST;
 		footprintPanel.add(footprintHLLineColorLabel, fhllcl);
-		
+
 		footprintHLLineColorButton.setPreferredSize(footprintAlphaSpinner.getPreferredSize());
 		footprintHLLineColorButton.setBackground(new Color(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		footprintHLLineColorButton.setContentAreaFilled(false);
@@ -441,12 +444,12 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		geometryPanel.setBorder(BorderFactory.createTitledBorder(""));
 
 		SpinnerModel galphaValueModel = new SpinnerNumberModel(200, 0, 255, 1);
-        geometryAlphaSpinner = new JSpinner(galphaValueModel);
-        geometryAlphaSpinner.setMinimumSize(new Dimension(geometryAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-        geometryAlphaSpinner.setMaximumSize(new Dimension(geometryAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
+		geometryAlphaSpinner = new JSpinner(galphaValueModel);
+		geometryAlphaSpinner.setMinimumSize(new Dimension(geometryAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
+		geometryAlphaSpinner.setMaximumSize(new Dimension(geometryAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
 
-        GridBagConstraints gal = GuiUtil.setConstraints(0,0,0.25,0.20,GridBagConstraints.NONE,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
-        gal.anchor = GridBagConstraints.EAST;
+		GridBagConstraints gal = GuiUtil.setConstraints(0,0,0.25,0.20,GridBagConstraints.NONE,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
+		gal.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryAlphaLabel, gal);
 		geometryPanel.add(geometryAlphaSpinner, GuiUtil.setConstraints(1,0,0.25,0.20,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0));
 
@@ -459,7 +462,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		geometryWallFillColorButton.setContentAreaFilled(false);
 		geometryWallFillColorButton.setOpaque(true);
 		geometryPanel.add(geometryWallFillColorButton, GuiUtil.setConstraints(1,1,0.25,0.20,GridBagConstraints.NONE,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
-		
+
 		GridBagConstraints grcl = GuiUtil.setConstraints(2,1,0.25,0.25,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		grcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryWallLineColorLabel, grcl);
@@ -483,7 +486,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		GridBagConstraints ghlrcl = GuiUtil.setConstraints(2,2,0.25,0.20,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghlrcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryRoofLineColorLabel, ghlrcl);
-		
+
 		geometryRoofLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryRoofLineColorButton.setBackground(new Color(DisplayLevel.DEFAULT_ROOF_LINE_COLOR, true));
 		geometryRoofLineColorButton.setContentAreaFilled(false);
@@ -516,7 +519,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		GridBagConstraints ghllcl = GuiUtil.setConstraints(2,4,0.25,0.20,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghllcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryHLLineColorLabel, ghllcl);
-		
+
 		geometryHLLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		geometryHLLineColorButton.setBackground(new Color(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		geometryHLLineColorButton.setContentAreaFilled(false);
@@ -558,17 +561,17 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		packingAlgorithms.put("TPIM", TextureAtlasGenerator.TPIM);
 		packingAlgorithms.put("TPIM_WO_R", TextureAtlasGenerator.TPIM_WITHOUT_ROTATION);
 
-        for (String algorithm: packingAlgorithms.keySet()) {
-        	packingAlgorithmsComboBox.addItem(algorithm);
-        }
+		for (String algorithm: packingAlgorithms.keySet()) {
+			packingAlgorithmsComboBox.addItem(algorithm);
+		}
 
 		Box textureAtlasPanel1 = Box.createHorizontalBox();
 		textureAtlasPanel1.setAlignmentX(Component.LEFT_ALIGNMENT);
 		textureAtlasCheckbox.setIconTextGap(10);
 		textureAtlasPanel1.add(textureAtlasCheckbox);
 		textureAtlasPanel1.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-//		packingAlgorithmsComboBox.setMinimumSize(new Dimension(packingAlgorithmsComboBox.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-//		packingAlgorithmsComboBox.setMaximumSize(new Dimension(packingAlgorithmsComboBox.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
+		//		packingAlgorithmsComboBox.setMinimumSize(new Dimension(packingAlgorithmsComboBox.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
+		//		packingAlgorithmsComboBox.setMaximumSize(new Dimension(packingAlgorithmsComboBox.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
 
 		JPanel textureAtlasPanel = new JPanel();
 		textureAtlasPanel.setLayout(new BorderLayout());
@@ -609,7 +612,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		gbp.anchor = GridBagConstraints.WEST;
 		gbp.gridwidth = 3;
 		colladaPanel.add(groupBuildingsPanel, gbp);
-		
+
 		colladaHighlightingRButton.setIconTextGap(10);
 		GridBagConstraints chrb = GuiUtil.setConstraints(0,4,0.5,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		chrb.anchor = GridBagConstraints.WEST;
@@ -636,13 +639,13 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		GridBagConstraints chllcl = GuiUtil.setConstraints(2,5,0.25,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		chllcl.anchor = GridBagConstraints.EAST;
 		colladaPanel.add(colladaHLLineColorLabel, chllcl);
-		
+
 		colladaHLLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
 		colladaHLLineColorButton.setBackground(new Color(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		colladaHLLineColorButton.setContentAreaFilled(false);
 		colladaHLLineColorButton.setOpaque(true);
 		colladaPanel.add(colladaHLLineColorButton, GuiUtil.setConstraints(3,5,0.25,0.166,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
-		
+
 		contentsPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
 		colladaPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(colladaPanel);
@@ -669,22 +672,22 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 
 		footprintFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Color fillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseFillColor"),
-			                                  footprintFillColorButton.getBackground());
-			    if (fillColor != null)
-			    	footprintFillColorButton.setBackground(fillColor);
+				Color fillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseFillColor"),
+						footprintFillColorButton.getBackground());
+				if (fillColor != null)
+					footprintFillColorButton.setBackground(fillColor);
 			}
 		});
 
 		footprintLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Color lineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseLineColor"),
-			    							  footprintLineColorButton.getBackground());
-			    if (lineColor != null)
-			    	footprintLineColorButton.setBackground(lineColor);
+				Color lineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseLineColor"),
+						footprintLineColorButton.getBackground());
+				if (lineColor != null)
+					footprintLineColorButton.setBackground(lineColor);
 			}
 		});
-		
+
 		footprintHighlightingCheckbox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setEnabledHighlighting();
@@ -693,55 +696,55 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 
 		footprintHLFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Color hlFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
-			    								footprintHLFillColorButton.getBackground());
-			    if (hlFillColor != null)
-			    	footprintHLFillColorButton.setBackground(hlFillColor);
+				Color hlFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
+						footprintHLFillColorButton.getBackground());
+				if (hlFillColor != null)
+					footprintHLFillColorButton.setBackground(hlFillColor);
 			}
 		});
 
 		footprintHLLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Color hlLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
-			    								footprintHLLineColorButton.getBackground());
-			    if (hlLineColor != null)
-			    	footprintHLLineColorButton.setBackground(hlLineColor);
+				Color hlLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
+						footprintHLLineColorButton.getBackground());
+				if (hlLineColor != null)
+					footprintHLLineColorButton.setBackground(hlLineColor);
 			}
 		});
 
 		geometryWallFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Color wallFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseWallFillColor"),
-			    								  geometryWallFillColorButton.getBackground());
-			    if (wallFillColor != null)
-			    	geometryWallFillColorButton.setBackground(wallFillColor);
+				Color wallFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseWallFillColor"),
+						geometryWallFillColorButton.getBackground());
+				if (wallFillColor != null)
+					geometryWallFillColorButton.setBackground(wallFillColor);
 			}
 		});
 
 		geometryWallLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Color wallLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseWallLineColor"),
-			    								  geometryWallLineColorButton.getBackground());
-			    if (wallLineColor != null)
-			    	geometryWallLineColorButton.setBackground(wallLineColor);
+				Color wallLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseWallLineColor"),
+						geometryWallLineColorButton.getBackground());
+				if (wallLineColor != null)
+					geometryWallLineColorButton.setBackground(wallLineColor);
 			}
 		});
 
 		geometryRoofFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Color roofFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseRoofFillColor"),
-			    							  	  geometryRoofFillColorButton.getBackground());
-			    if (roofFillColor != null)
-			    	geometryRoofFillColorButton.setBackground(roofFillColor);
+				Color roofFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseRoofFillColor"),
+						geometryRoofFillColorButton.getBackground());
+				if (roofFillColor != null)
+					geometryRoofFillColorButton.setBackground(roofFillColor);
 			}
 		});
 
 		geometryRoofLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Color roofLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseRoofLineColor"),
-			    								  geometryRoofLineColorButton.getBackground());
-			    if (roofLineColor != null)
-			    	geometryRoofLineColorButton.setBackground(roofLineColor);
+				Color roofLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseRoofLineColor"),
+						geometryRoofLineColorButton.getBackground());
+				if (roofLineColor != null)
+					geometryRoofLineColorButton.setBackground(roofLineColor);
 			}
 		});
 
@@ -753,19 +756,19 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 
 		geometryHLFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Color hlFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
-			    								geometryHLFillColorButton.getBackground());
-			    if (hlFillColor != null)
-			    	geometryHLFillColorButton.setBackground(hlFillColor);
+				Color hlFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
+						geometryHLFillColorButton.getBackground());
+				if (hlFillColor != null)
+					geometryHLFillColorButton.setBackground(hlFillColor);
 			}
 		});
 
 		geometryHLLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Color hlLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
-			    								geometryHLLineColorButton.getBackground());
-			    if (hlLineColor != null)
-			    	geometryHLLineColorButton.setBackground(hlLineColor);
+				Color hlLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
+						geometryHLLineColorButton.getBackground());
+				if (hlLineColor != null)
+					geometryHLLineColorButton.setBackground(hlLineColor);
 			}
 		});
 
@@ -784,14 +787,14 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 				Object[] args = new Object[]{conn.getDescription(), conn.toConnectString()};
 				String formattedMsg = MessageFormat.format(text, args);
 				String[] connectConfirm = {Internal.I18N.getString("pref.kmlexport.connectDialog.line1"),
-										   formattedMsg,
-										   Internal.I18N.getString("pref.kmlexport.connectDialog.line3")};
+						formattedMsg,
+						Internal.I18N.getString("pref.kmlexport.connectDialog.line3")};
 
 				if (!DBConnectionPool.getInstance().isConnected() &&
-					JOptionPane.showConfirmDialog(getTopLevelAncestor(),
-												  connectConfirm,
-												  Internal.I18N.getString("pref.kmlexport.connectDialog.title"),
-												  JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+						JOptionPane.showConfirmDialog(getTopLevelAncestor(),
+								connectConfirm,
+								Internal.I18N.getString("pref.kmlexport.connectDialog.title"),
+								JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 					topFrame.connectToDatabase();
 				}
 
@@ -818,28 +821,28 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 
 		colladaHLFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Color hlFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
-			    								colladaHLFillColorButton.getBackground());
-			    if (hlFillColor != null)
-			    	colladaHLFillColorButton.setBackground(hlFillColor);
+				Color hlFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
+						colladaHLFillColorButton.getBackground());
+				if (hlFillColor != null)
+					colladaHLFillColorButton.setBackground(hlFillColor);
 			}
 		});
 
 		colladaHLLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Color hlLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
-			    								colladaHLLineColorButton.getBackground());
-			    if (hlLineColor != null)
-			    	colladaHLLineColorButton.setBackground(hlLineColor);
+				Color hlLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
+						colladaHLLineColorButton.getBackground());
+				if (hlLineColor != null)
+					colladaHLLineColorButton.setBackground(hlLineColor);
 			}
 		});
 
 	}
 
 	private Color chooseColor(String title, Color initialColor){
-	    return JColorChooser.showDialog(getTopLevelAncestor(), title, initialColor);
+		return JColorChooser.showDialog(getTopLevelAncestor(), title, initialColor);
 	}
-	
+
 
 	@Override
 	public void doTranslation() {
@@ -854,7 +857,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		footprintHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
 		footprintHLFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
 		footprintHLLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
-		
+
 		geometryPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.kmlexport.border.geometry")));
 		geometryAlphaLabel.setText(Internal.I18N.getString("pref.kmlexport.label.alpha"));
 		geometryWallFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.wallFillColor"));
@@ -927,7 +930,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 				break;
 			}
 		}
-		
+
 		footprintHighlightingCheckbox.setSelected(kmlExporter.isFootprintHighlighting());
 		geometryHighlightingCheckbox.setSelected(kmlExporter.isGeometryHighlighting());
 
@@ -949,7 +952,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 			themeComboBox.setEnabled(false);
 			fetchThemesButton.setEnabled(true);
 		}
-		
+
 		textureAtlasCheckbox.setSelected(kmlExporter.isGenerateTextureAtlases());
 		for (String key: packingAlgorithms.keySet()) {
 			if (packingAlgorithms.get(key).intValue() == kmlExporter.getPackingAlgorithm()) {
@@ -1014,24 +1017,24 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 			if (indexOfDl != -1) {
 				dl = kmlExporter.getDisplayLevels().get(indexOfDl);
 				Color rgba0 = new Color(footprintFillColorButton.getBackground().getRed(),
-										footprintFillColorButton.getBackground().getGreen(),
-										footprintFillColorButton.getBackground().getBlue(),
-										((Integer)footprintAlphaSpinner.getValue()).intValue());
+						footprintFillColorButton.getBackground().getGreen(),
+						footprintFillColorButton.getBackground().getBlue(),
+						((Integer)footprintAlphaSpinner.getValue()).intValue());
 				dl.setRgba0(rgba0.getRGB());
 				Color rgba1 = new Color(footprintLineColorButton.getBackground().getRed(),
-										footprintLineColorButton.getBackground().getGreen(),
-										footprintLineColorButton.getBackground().getBlue(),
-										((Integer)footprintAlphaSpinner.getValue()).intValue());
+						footprintLineColorButton.getBackground().getGreen(),
+						footprintLineColorButton.getBackground().getBlue(),
+						((Integer)footprintAlphaSpinner.getValue()).intValue());
 				dl.setRgba1(rgba1.getRGB());
 				Color rgba4 = new Color(footprintHLFillColorButton.getBackground().getRed(),
-										footprintHLFillColorButton.getBackground().getGreen(),
-										footprintHLFillColorButton.getBackground().getBlue(),
-										((Integer)footprintAlphaSpinner.getValue()).intValue());
+						footprintHLFillColorButton.getBackground().getGreen(),
+						footprintHLFillColorButton.getBackground().getBlue(),
+						((Integer)footprintAlphaSpinner.getValue()).intValue());
 				dl.setRgba4(rgba4.getRGB());
 				Color rgba5 = new Color(footprintHLLineColorButton.getBackground().getRed(),
-										footprintHLLineColorButton.getBackground().getGreen(),
-										footprintHLLineColorButton.getBackground().getBlue(),
-										((Integer)footprintAlphaSpinner.getValue()).intValue());
+						footprintHLLineColorButton.getBackground().getGreen(),
+						footprintHLLineColorButton.getBackground().getBlue(),
+						((Integer)footprintAlphaSpinner.getValue()).intValue());
 				dl.setRgba5(rgba5.getRGB());
 			}
 		}
@@ -1041,34 +1044,34 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		if (indexOfDl != -1) {
 			dl = kmlExporter.getDisplayLevels().get(indexOfDl);
 			Color rgba0 = new Color(geometryWallFillColorButton.getBackground().getRed(),
-									geometryWallFillColorButton.getBackground().getGreen(),
-									geometryWallFillColorButton.getBackground().getBlue(),
-									((Integer)geometryAlphaSpinner.getValue()).intValue());
+					geometryWallFillColorButton.getBackground().getGreen(),
+					geometryWallFillColorButton.getBackground().getBlue(),
+					((Integer)geometryAlphaSpinner.getValue()).intValue());
 			dl.setRgba0(rgba0.getRGB());
 			Color rgba1 = new Color(geometryWallLineColorButton.getBackground().getRed(),
-									geometryWallLineColorButton.getBackground().getGreen(),
-									geometryWallLineColorButton.getBackground().getBlue(),
-									((Integer)geometryAlphaSpinner.getValue()).intValue());
+					geometryWallLineColorButton.getBackground().getGreen(),
+					geometryWallLineColorButton.getBackground().getBlue(),
+					((Integer)geometryAlphaSpinner.getValue()).intValue());
 			dl.setRgba1(rgba1.getRGB());
 			Color rgba2 = new Color(geometryRoofFillColorButton.getBackground().getRed(),
-									geometryRoofFillColorButton.getBackground().getGreen(),
-									geometryRoofFillColorButton.getBackground().getBlue(),
-									((Integer)geometryAlphaSpinner.getValue()).intValue());
+					geometryRoofFillColorButton.getBackground().getGreen(),
+					geometryRoofFillColorButton.getBackground().getBlue(),
+					((Integer)geometryAlphaSpinner.getValue()).intValue());
 			dl.setRgba2(rgba2.getRGB());
 			Color rgba3 = new Color(geometryRoofLineColorButton.getBackground().getRed(),
-									geometryRoofLineColorButton.getBackground().getGreen(),
-									geometryRoofLineColorButton.getBackground().getBlue(),
-									((Integer)geometryAlphaSpinner.getValue()).intValue());
+					geometryRoofLineColorButton.getBackground().getGreen(),
+					geometryRoofLineColorButton.getBackground().getBlue(),
+					((Integer)geometryAlphaSpinner.getValue()).intValue());
 			dl.setRgba3(rgba3.getRGB());
 			Color rgba4 = new Color(geometryHLFillColorButton.getBackground().getRed(),
-									geometryHLFillColorButton.getBackground().getGreen(),
-									geometryHLFillColorButton.getBackground().getBlue(),
-									DisplayLevel.DEFAULT_ALPHA_VALUE);
+					geometryHLFillColorButton.getBackground().getGreen(),
+					geometryHLFillColorButton.getBackground().getBlue(),
+					DisplayLevel.DEFAULT_ALPHA_VALUE);
 			dl.setRgba4(rgba4.getRGB());
 			Color rgba5 = new Color(geometryHLLineColorButton.getBackground().getRed(),
-									geometryHLLineColorButton.getBackground().getGreen(),
-									geometryHLLineColorButton.getBackground().getBlue(),
-									DisplayLevel.DEFAULT_ALPHA_VALUE);
+					geometryHLLineColorButton.getBackground().getGreen(),
+					geometryHLLineColorButton.getBackground().getBlue(),
+					DisplayLevel.DEFAULT_ALPHA_VALUE);
 			dl.setRgba5(rgba5.getRGB());
 		}
 
@@ -1106,7 +1109,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 			}
 		}
 		catch (NumberFormatException nfe) {}
-		
+
 		kmlExporter.setGroupBuildings(groupBuildingsRButton.isSelected());
 		try {
 			kmlExporter.setGroupSize(Integer.parseInt(groupSizeText.getText().trim()));
@@ -1124,7 +1127,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 			}
 		}
 		catch (NumberFormatException nfe) {}
-		
+
 		kmlExporter.setColladaHighlighting(colladaHighlightingRButton.isSelected());
 		try {
 			kmlExporter.setColladaHighlightingDistance(Double.parseDouble(colladaHLSurfaceDistanceText.getText().trim()));
@@ -1133,14 +1136,14 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 			}
 		}
 		catch (NumberFormatException nfe) {}
-		
+
 	}
-	
+
 	@Override
 	public String getTitle() {
 		return Internal.I18N.getString("pref.tree.kmlExport.general");
 	}
-	
+
 	private void setEnabledHighlighting() {
 		footprintHLFillColorLabel.setEnabled(footprintHighlightingCheckbox.isSelected());
 		footprintHLFillColorButton.setEnabled(footprintHighlightingCheckbox.isSelected());
@@ -1151,7 +1154,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 		geometryHLFillColorButton.setEnabled(geometryHighlightingCheckbox.isSelected());
 		geometryHLLineColorLabel.setEnabled(geometryHighlightingCheckbox.isSelected());
 		geometryHLLineColorButton.setEnabled(geometryHighlightingCheckbox.isSelected());
-		
+
 		geometryHLSurfaceDistanceLabel.setEnabled(geometryHighlightingCheckbox.isSelected());
 		geometryHLSurfaceDistanceText.setEnabled(geometryHighlightingCheckbox.isSelected());
 
@@ -1168,16 +1171,15 @@ public class GeneralPanel extends AbstractPreferencesComponent implements Proper
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
-			boolean isConnected = (Boolean)evt.getNewValue();
-			themeComboBox.removeAllItems();
-			if (!isConnected) {
-				themeComboBox.addItem(config.getProject().getKmlExporter().getAppearanceTheme()); // default: visual
-				themeComboBox.setSelectedItem(config.getProject().getKmlExporter().getAppearanceTheme());
-				themeComboBox.setEnabled(false);
-				fetchThemesButton.setEnabled(true);
-			}
+	public void handleEvent(Event event) throws Exception {
+		boolean isConnected = ((DatabaseConnectionStateEvent)event).isConnected();
+		
+		themeComboBox.removeAllItems();
+		if (!isConnected) {
+			themeComboBox.addItem(config.getProject().getKmlExporter().getAppearanceTheme()); // default: visual
+			themeComboBox.setSelectedItem(config.getProject().getKmlExporter().getAppearanceTheme());
+			themeComboBox.setEnabled(false);
+			fetchThemesButton.setEnabled(true);
 		}
 	}
 

@@ -42,8 +42,6 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilterOutputStream;
@@ -79,10 +77,15 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import de.tub.citydb.api.controller.ViewController;
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.common.ApplicationEvent;
+import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.plugin.Plugin;
 import de.tub.citydb.api.plugin.extension.view.View;
 import de.tub.citydb.api.plugin.extension.view.ViewExtension;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.components.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.components.database.DatabasePlugin;
@@ -106,7 +109,7 @@ import de.tub.citydb.plugin.InternalPlugin;
 import de.tub.citydb.plugin.PluginService;
 
 @SuppressWarnings("serial")
-public class ImpExpGui extends JFrame implements ViewController, PropertyChangeListener {
+public class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	private final Logger LOG = Logger.getInstance();
 
 	private Config config;
@@ -150,7 +153,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 
 	public ImpExpGui() {
 		dbPool = DBConnectionPool.getInstance();
-		dbPool.addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
 
 		// required for preferences plugin
 		consoleText = new JTextArea();
@@ -605,7 +608,7 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 		// shutdown plugins
 		if (!pluginService.getExternalPlugins().isEmpty())
 			LOG.info("Shutting down plugins");
-		
+
 		for (Plugin plugin : pluginService.getPlugins())
 			plugin.shutdown();
 
@@ -666,12 +669,10 @@ public class ImpExpGui extends JFrame implements ViewController, PropertyChangeL
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
-			if (!(Boolean)evt.getNewValue())
-				connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
-			else
-				connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
-		}
+	public void handleEvent(Event event) throws Exception {
+		if (!((DatabaseConnectionStateEvent)event).isConnected())
+			connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
+		else
+			connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
 	}
 }

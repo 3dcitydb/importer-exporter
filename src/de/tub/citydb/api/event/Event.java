@@ -29,11 +29,20 @@
  */
 package de.tub.citydb.api.event;
 
+import de.tub.citydb.api.event.common.ApplicationEvent;
+import de.tub.citydb.database.DatabaseConnectionStateEventImpl;
+
 public abstract class Event {
-	private Enum<?> eventType;
+	private final Enum<?> eventType;
 	private boolean cancelled;
 
 	public Event(Enum<?> eventType) {
+		if (eventType == null)
+			throw new IllegalArgumentException("The type of an event may not be null.");
+		
+		if (eventType == ApplicationEvent.DATABASE_CONNECTION_STATE && !(this instanceof DatabaseConnectionStateEventImpl))
+			throw new IllegalArgumentException("Events of type " + ApplicationEvent.DATABASE_CONNECTION_STATE + " may not be created by plugins.");
+		
 		this.eventType = eventType;
 		cancelled = false;
 	}

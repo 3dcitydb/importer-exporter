@@ -29,8 +29,6 @@
  */
 package de.tub.citydb.database;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -43,20 +41,21 @@ import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.util.DBUtil;
 
 public class DBConnectionPool {
-	public static final String PROPERTY_DB_IS_CONNECTED = "isConnected";
 	private static DBConnectionPool instance = new DBConnectionPool();
 
 	private final String poolName = "oracle.pool";
+	private final EventDispatcher eventDispatcher;
 	private UniversalConnectionPoolManager poolManager;
 	private PoolDataSource poolDataSource;
 	private DBConnection activeConnection;
-	private PropertyChangeSupport changes;
 
 	private DBConnectionPool() {
 		// just to thwart instantiation
@@ -66,7 +65,7 @@ public class DBConnectionPool {
 			throw new IllegalStateException("Failed to initialize Oracle Universal Pool Manager.");
 		}
 
-		changes = new PropertyChangeSupport(this);
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 	}
 
 	public static DBConnectionPool getInstance() {
@@ -131,7 +130,7 @@ public class DBConnectionPool {
 
 		// fire property change events
 		activeConnection = conn;
-		changes.firePropertyChange(PROPERTY_DB_IS_CONNECTED, false, true);
+		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(false, true));
 	}
 
 	public Connection getConnection() throws SQLException {
@@ -221,7 +220,7 @@ public class DBConnectionPool {
 	}
 
 	public synchronized void disconnect() throws SQLException {
-		boolean isConnected = isConnected();
+		boolean wasConnected = isConnected();
 
 		try {			
 			if (isManagedConnectionPool(poolName))
@@ -236,11 +235,11 @@ public class DBConnectionPool {
 		}
 
 		// fire property change events
-		changes.firePropertyChange(PROPERTY_DB_IS_CONNECTED, isConnected, false);
+		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(wasConnected, false));
 	}
 
 	public synchronized void forceDisconnect() {
-		boolean isConnected = isConnected();
+		boolean wasConnected = isConnected();
 
 		try {
 			if (isManagedConnectionPool(poolName))
@@ -255,7 +254,7 @@ public class DBConnectionPool {
 		}
 
 		// fire property change events
-		changes.firePropertyChange(PROPERTY_DB_IS_CONNECTED, isConnected, false);
+		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(wasConnected, false));
 	}
 
 	public boolean gotoWorkspace(Connection conn, Workspace workspace) {
@@ -312,14 +311,6 @@ public class DBConnectionPool {
 				conn = null;
 			}
 		}
-	}
-
-	public void addPropertyChangeListener(String propertyName, PropertyChangeListener l) {
-		changes.addPropertyChangeListener(propertyName, l);
-	}
-
-	public void removePropertyChangeListener(PropertyChangeListener l) {
-		changes.removePropertyChangeListener(l);
 	}
 
 	private boolean isManagedConnectionPool(String poolName) throws UniversalConnectionPoolException {

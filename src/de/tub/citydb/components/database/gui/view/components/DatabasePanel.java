@@ -65,8 +65,13 @@ import javax.swing.border.TitledBorder;
 import org.citygml4j.geometry.BoundingBox;
 
 import de.tub.citydb.api.database.DatabaseConfigurationException;
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.common.ApplicationEvent;
+import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
@@ -85,7 +90,7 @@ import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
 
 @SuppressWarnings("serial")
-public class DatabasePanel extends JPanel implements PropertyChangeListener {
+public class DatabasePanel extends JPanel implements EventHandler {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final ImpExpGui topFrame;
@@ -139,7 +144,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		dbPool = DBConnectionPool.getInstance();
 
 		initGui();		
-		dbPool.addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
 	}
 
 	private boolean isModified() {
@@ -505,7 +510,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 
 					topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
 					topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
-									
+
 					LOG.error("Connection to database could not be established.");
 					if (config.getProject().getGlobal().getLogging().getConsole().getLogLevel() == LogLevelType.DEBUG) {
 						LOG.debug("Check the following stack trace for details:");
@@ -550,7 +555,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		} finally {
 			lock.unlock();
 		}
-		
+
 		return dbPool.isConnected();
 	}
 
@@ -582,7 +587,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		} finally {
 			lock.unlock();
 		}
-		
+
 		return !dbPool.isConnected();
 	}
 
@@ -953,18 +958,16 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
-			boolean isConnected = (Boolean)evt.getNewValue();
+	public void handleEvent(Event event) throws Exception {
+		boolean isConnected = ((DatabaseConnectionStateEvent)event).isConnected();
 
-			if (!isConnected)
-				connectButton.setText(Internal.I18N.getString("db.button.connect"));
-			else
-				connectButton.setText(Internal.I18N.getString("db.button.disconnect"));
+		if (!isConnected)
+			connectButton.setText(Internal.I18N.getString("db.button.connect"));
+		else
+			connectButton.setText(Internal.I18N.getString("db.button.disconnect"));
 
-			connectButton.repaint();
-			setEnabledDBOperations(isConnected);
-		}
+		connectButton.repaint();
+		setEnabledDBOperations(isConnected);
 	}
 
 	private void setEnabledDBOperations(boolean enable) {

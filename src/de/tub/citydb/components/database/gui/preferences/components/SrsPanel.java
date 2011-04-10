@@ -67,7 +67,12 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.common.ApplicationEvent;
+import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.ReferenceSystem;
@@ -82,7 +87,7 @@ import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.util.DBUtil;
 
 @SuppressWarnings("serial")
-public class SrsPanel extends AbstractPreferencesComponent implements PropertyChangeListener, DropTargetListener {
+public class SrsPanel extends AbstractPreferencesComponent implements EventHandler, DropTargetListener {
 	private static final int BORDER_THICKNESS = 5;
 	private final Logger LOG = Logger.getInstance();
 	private final JAXBContext projectContext;
@@ -122,7 +127,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements PropertyCh
 		dbPool = DBConnectionPool.getInstance();
 
 		initGui();
-		dbPool.addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
 	}
 
 	@Override
@@ -436,7 +441,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements PropertyCh
 		updateSrsComboBoxes(true);				
 		displaySelectedValues();
 	}
-	
+
 	@Override
 	public String getTitle() {
 		return Internal.I18N.getString("pref.tree.db.srs");
@@ -629,7 +634,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements PropertyCh
 			String text = Internal.I18N.getString("pref.db.srs.apply.msg");
 			Object[] args = new Object[]{srsComboBox.getSelectedItem().getDescription()};
 			String formattedMsg = MessageFormat.format(text, args);
-			
+
 			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, 
 					Internal.I18N.getString("pref.db.srs.apply.title"), JOptionPane.YES_NO_CANCEL_OPTION);
 			if (res == JOptionPane.CANCEL_OPTION) 
@@ -664,20 +669,18 @@ public class SrsPanel extends AbstractPreferencesComponent implements PropertyCh
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
-			boolean isConnected = (Boolean)evt.getNewValue();
+	public void handleEvent(Event event) throws Exception {
+		boolean isConnected = ((DatabaseConnectionStateEvent)event).isConnected();
 
-			if (!isConnected) {
-				for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems())
-					refSys.setSupported(true);
-			}
-
-			checkButton.setEnabled(isConnected);
-			updateSrsComboBoxes(false);			
-			if (srsComboBox.isDBReferenceSystemSelected())
-				displaySelectedValues();
+		if (!isConnected) {
+			for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems())
+				refSys.setSupported(true);
 		}
+
+		checkButton.setEnabled(isConnected);
+		updateSrsComboBoxes(false);			
+		if (srsComboBox.isDBReferenceSystemSelected())
+			displaySelectedValues();
 	}
 
 	@Override

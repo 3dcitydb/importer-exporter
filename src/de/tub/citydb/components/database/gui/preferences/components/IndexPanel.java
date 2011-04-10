@@ -34,8 +34,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.concurrent.locks.ReentrantLock;
@@ -49,7 +47,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.common.ApplicationEvent;
+import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Index;
@@ -63,7 +66,7 @@ import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.DBUtil.DB_INDEX_TYPE;
 
 @SuppressWarnings("serial")
-public class IndexPanel extends AbstractPreferencesComponent implements PropertyChangeListener {	
+public class IndexPanel extends AbstractPreferencesComponent implements EventHandler {	
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 
@@ -87,9 +90,9 @@ public class IndexPanel extends AbstractPreferencesComponent implements Property
 	public IndexPanel(Config config, ImpExpGui topFrame) {
 		super(config);
 		this.topFrame = topFrame;
-		initGui();
 
-		DBConnectionPool.getInstance().addPropertyChangeListener(DBConnectionPool.PROPERTY_DB_IS_CONNECTED, this);
+		initGui();
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
 	}
 
 	@Override
@@ -243,7 +246,7 @@ public class IndexPanel extends AbstractPreferencesComponent implements Property
 		block4.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.db.index.normal.border.manual")));
 		impNIDeactivate.setText(Internal.I18N.getString("pref.db.index.normal.button.deactivate"));
 		impNIActivate.setText(Internal.I18N.getString("pref.db.index.normal.button.activate"));
-		
+
 		if (!DBConnectionPool.getInstance().isConnected()) {
 			Color color = UIManager.getColor("Label.disabledForeground");
 			((TitledBorder)block2.getBorder()).setTitleColor(color);
@@ -289,7 +292,7 @@ public class IndexPanel extends AbstractPreferencesComponent implements Property
 					null, 
 					statusDetails, 
 					false);
-			
+
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					reportDialog.setLocationRelativeTo(getTopLevelAncestor());
@@ -387,7 +390,7 @@ public class IndexPanel extends AbstractPreferencesComponent implements Property
 					null, 
 					statusDetails, 
 					false);			
-			
+
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					reportDialog.setLocationRelativeTo(getTopLevelAncestor());
@@ -485,28 +488,26 @@ public class IndexPanel extends AbstractPreferencesComponent implements Property
 		else
 			index.setNormal(IndexMode.DEACTIVATE);
 	}
-	
+
 	@Override
 	public String getTitle() {
 		return Internal.I18N.getString("pref.tree.import.index");
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals(DBConnectionPool.PROPERTY_DB_IS_CONNECTED)) {
-			boolean status = (Boolean)evt.getNewValue();
-			Color color = status ? UIManager.getColor("TitledBorder.titleColor") : UIManager.getColor("Label.disabledForeground");
+	public void handleEvent(Event event) throws Exception {
+		boolean isConnected = ((DatabaseConnectionStateEvent)event).isConnected();
+		Color color = isConnected ? UIManager.getColor("TitledBorder.titleColor") : UIManager.getColor("Label.disabledForeground");
 
-			((TitledBorder)block2.getBorder()).setTitleColor(color);
-			block2.repaint();
-			
-			((TitledBorder)block4.getBorder()).setTitleColor(color);
-			block4.repaint();
-			
-			impSIActivate.setEnabled(status);
-			impSIDeactivate.setEnabled(status);
-			impNIActivate.setEnabled(status);
-			impNIDeactivate.setEnabled(status);
-		}
+		((TitledBorder)block2.getBorder()).setTitleColor(color);
+		block2.repaint();
+
+		((TitledBorder)block4.getBorder()).setTitleColor(color);
+		block4.repaint();
+
+		impSIActivate.setEnabled(isConnected);
+		impSIDeactivate.setEnabled(isConnected);
+		impNIActivate.setEnabled(isConnected);
+		impNIDeactivate.setEnabled(isConnected);
 	}
 }
