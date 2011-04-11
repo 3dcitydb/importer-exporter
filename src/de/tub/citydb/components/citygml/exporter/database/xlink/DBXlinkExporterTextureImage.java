@@ -74,7 +74,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 		texturePathIsLocal = config.getProject().getExporter().getAppearances().isTexturePathRealtive();
 		texturePath = config.getInternal().getExportTextureFilePath();
 		overwriteTextureImage = config.getProject().getExporter().getAppearances().isSetOverwriteTextureFiles();
-		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1);
+		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
 
 		psTextureImage = connection.prepareStatement("select TEX_IMAGE from SURFACE_DATA where ID=?");
 	}

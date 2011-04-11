@@ -8,8 +8,8 @@ public final class DatabaseConnectionStateEventImpl extends Event implements Dat
 	private final boolean wasConnected;
 	private final boolean isConnected;
 	
-	protected DatabaseConnectionStateEventImpl(boolean wasConnected, boolean isConnected) {
-		super(ApplicationEvent.DATABASE_CONNECTION_STATE);
+	protected DatabaseConnectionStateEventImpl(boolean wasConnected, boolean isConnected, Object source) {
+		super(ApplicationEvent.DATABASE_CONNECTION_STATE, source);
 		this.wasConnected = wasConnected;
 		this.isConnected = isConnected;
 	}

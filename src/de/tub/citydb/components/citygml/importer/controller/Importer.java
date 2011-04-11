@@ -286,10 +286,10 @@ public class Importer implements EventHandler {
 				intConfig.setImportPath(file.getParent());
 				intConfig.setCurrentImportFileName(file.getAbsolutePath());
 
-				eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName()));
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.cityObj.msg")));
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles));
+				eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.cityObj.msg"), this));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
 
 				// set gml:id codespace
 				if (gmlId.isSetRelativeCodeSpaceMode())
@@ -466,8 +466,8 @@ public class Importer implements EventHandler {
 					}
 				}
 
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.finish.msg")));
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.finish.msg"), this));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 
 				// finally clean up and join eventDispatcher
 				try {

@@ -261,7 +261,7 @@ public class KmlExporter implements EventHandler {
 							file = new File(path + File.separator + filename + "_" + displayLevel.getName() + fileExtension);
 						}
 
-						eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName()));
+						eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
 
 						// open file for writing
 						OutputStreamWriter fileWriter = null;
@@ -385,7 +385,7 @@ public class KmlExporter implements EventHandler {
 							return false;
 						}
 
-						eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.writingToFile")));
+						eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.writingToFile"), this));
 
 						// flush sax writer and close file
 						try {
@@ -462,7 +462,7 @@ public class KmlExporter implements EventHandler {
 							return false;
 						}
 
-						eventDispatcher.triggerEvent(new StatusDialogMessage(" "));
+						eventDispatcher.triggerEvent(new StatusDialogMessage(" ", this));
 
 						// finally join eventDispatcher
 						try {
@@ -483,7 +483,7 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.finish.msg")));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.finish.msg"), this));
 
 		return shouldRun;
 	}

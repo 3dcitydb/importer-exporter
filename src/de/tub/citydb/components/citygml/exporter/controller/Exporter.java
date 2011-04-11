@@ -294,8 +294,8 @@ public class Exporter implements EventHandler {
 					File path = new File(file.getAbsolutePath());
 					internalConfig.setExportPath(path.getParent());
 
-					eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.cityObj.msg")));
-					eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName()));
+					eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.cityObj.msg"), this));
+					eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
 
 					// checking export path for texture images
 					ExportAppearance appearances = config.getProject().getExporter().getAppearances();
@@ -468,7 +468,7 @@ public class Exporter implements EventHandler {
 						ioWriterPool.shutdownAndWait();
 						xlinkExporterPool.shutdownAndWait();
 					} catch (InterruptedException e) {
-						System.out.println(e.getMessage());
+						LOG.error("Internal error: " + e.getMessage());
 					}
 
 					// write footer element
@@ -491,7 +491,7 @@ public class Exporter implements EventHandler {
 						return false;
 					}
 
-					eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.finish.msg")));
+					eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.finish.msg"), this));
 
 					// cleaning up...
 					try {

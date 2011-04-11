@@ -369,7 +369,8 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 							eventDispatcher.triggerEvent(new InterruptEvent(
 									InterruptEnum.USER_ABORT, 
 									"User abort of database import.", 
-									LogLevelType.INFO));
+									LogLevelType.INFO, 
+									this));
 						}
 					});
 				}
@@ -445,7 +446,8 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 							eventDispatcher.triggerEvent(new InterruptEvent(
 									InterruptEnum.USER_ABORT, 
 									"User abort of XML validation.", 
-									LogLevelType.INFO));
+									LogLevelType.INFO, 
+									this));
 						}
 					});
 				}

@@ -379,7 +379,7 @@ public class DBSplitter {
 			return;
 
 		LOG.info("Processing CityObjectGroup features.");
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.group.msg")));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.group.msg"), this));
 
 		Statement stmt = null;
 		ResultSet rs = null;
@@ -611,7 +611,7 @@ public class DBSplitter {
 		// be slow if we have a big cache size but only a small number of global appearances
 
 		LOG.info("Processing global appearance features.");
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.globalApp.msg")));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.globalApp.msg"), this));
 
 		Statement stmt = null;
 		ResultSet rs = null;

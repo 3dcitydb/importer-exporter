@@ -334,7 +334,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				}
 			}
 			else { // result not empty
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1));
+				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
 
 				switch (work.getDisplayLevel().getLevel()) {
 				case DisplayLevel.FOOTPRINT:
@@ -736,7 +736,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	
 							texImageCounter++;
 							if (texImageCounter > 20) {
-								eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter));
+								eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
 								texImageCounter = 0;
 							}
 	

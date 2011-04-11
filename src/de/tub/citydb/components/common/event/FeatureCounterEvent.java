@@ -38,8 +38,8 @@ import de.tub.citydb.api.event.Event;
 public class FeatureCounterEvent extends Event {
 	private HashMap<CityGMLClass, Long> featureCounterMap;
 
-	public FeatureCounterEvent(HashMap<CityGMLClass, Long> featureCounterMap) {
-		super(EventType.FEATURE_COUNTER);
+	public FeatureCounterEvent(HashMap<CityGMLClass, Long> featureCounterMap, Object source) {
+		super(EventType.FEATURE_COUNTER, source);
 		this.featureCounterMap = featureCounterMap;
 	}
 

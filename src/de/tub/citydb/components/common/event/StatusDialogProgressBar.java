@@ -36,14 +36,14 @@ public class StatusDialogProgressBar extends Event {
 	private int maxValue;
 	private boolean setIntermediate = false;
 	
-	public StatusDialogProgressBar(int currentValue, int maxValue) {
-		super(EventType.STATUS_DIALOG_PROGRESS_BAR);
+	public StatusDialogProgressBar(int currentValue, int maxValue, Object source) {
+		super(EventType.STATUS_DIALOG_PROGRESS_BAR, source);
 		this.currentValue = currentValue;
 		this.maxValue = maxValue;
 	}
 	
-	public StatusDialogProgressBar(boolean setIntermediate) {
-		super(EventType.STATUS_DIALOG_PROGRESS_BAR);
+	public StatusDialogProgressBar(boolean setIntermediate, Object source) {
+		super(EventType.STATUS_DIALOG_PROGRESS_BAR, source);
 		this.setIntermediate = setIntermediate;
 	}
 	

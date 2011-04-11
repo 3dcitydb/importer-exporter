@@ -34,8 +34,8 @@ import de.tub.citydb.api.event.Event;
 public class StatusDialogMessage extends Event {
 	private String message;
 	
-	public StatusDialogMessage(String message) {
-		super(EventType.STATUS_DIALOG_MESSAGE);
+	public StatusDialogMessage(String message, Object source) {
+		super(EventType.STATUS_DIALOG_MESSAGE, source);
 		this.message = message;
 	}
 

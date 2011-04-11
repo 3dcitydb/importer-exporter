@@ -223,7 +223,7 @@ public class DBImportWorker implements Worker<CityGML> {
 				dbImporterManager.executeBatch();
 				batchConn.commit();
 
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter));
+				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter, this));
 			} catch (SQLException sqlEx) {
 				LOG.error("SQL error: " + sqlEx.getMessage());
 			}
@@ -234,8 +234,8 @@ public class DBImportWorker implements Worker<CityGML> {
 				LOG.error("SQL error: " + sqlEx.getMessage());
 			}
 
-			eventDispatcher.triggerEvent(new FeatureCounterEvent(dbImporterManager.getFeatureCounter()));
-			eventDispatcher.triggerEvent(new GeometryCounterEvent(dbImporterManager.getGeometryCounter()));
+			eventDispatcher.triggerEvent(new FeatureCounterEvent(dbImporterManager.getFeatureCounter(), this));
+			eventDispatcher.triggerEvent(new GeometryCounterEvent(dbImporterManager.getGeometryCounter(), this));
 		} finally {
 			if (batchConn != null) {
 				try {
@@ -417,7 +417,7 @@ public class DBImportWorker implements Worker<CityGML> {
 					dbImporterManager.executeBatch();
 					batchConn.commit();
 
-					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter));
+					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter, this));
 					updateCounter = 0;
 				}
 			} catch (SQLException sqlEx) {

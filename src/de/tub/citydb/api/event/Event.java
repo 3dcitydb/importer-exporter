@@ -29,21 +29,22 @@
  */
 package de.tub.citydb.api.event;
 
-import de.tub.citydb.api.event.common.ApplicationEvent;
-import de.tub.citydb.database.DatabaseConnectionStateEventImpl;
+import java.lang.ref.WeakReference;
 
 public abstract class Event {
 	private final Enum<?> eventType;
+	private final WeakReference<Object> source;
 	private boolean cancelled;
 
-	public Event(Enum<?> eventType) {
+	public Event(Enum<?> eventType, Object source) {
 		if (eventType == null)
 			throw new IllegalArgumentException("The type of an event may not be null.");
-		
-		if (eventType == ApplicationEvent.DATABASE_CONNECTION_STATE && !(this instanceof DatabaseConnectionStateEventImpl))
-			throw new IllegalArgumentException("Events of type " + ApplicationEvent.DATABASE_CONNECTION_STATE + " may not be created by plugins.");
+			
+		if (source == null)
+			throw new IllegalArgumentException("The source of an event may not be null.");
 		
 		this.eventType = eventType;
+		this.source = new WeakReference<Object>(source);
 		cancelled = false;
 	}
 
@@ -58,4 +59,9 @@ public abstract class Event {
 	public Enum<?> getEventType() {
 		return eventType;
 	}
+
+	public Object getSource() {
+		return source.get();
+	}
+	
 }

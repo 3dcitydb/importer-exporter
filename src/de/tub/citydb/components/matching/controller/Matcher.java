@@ -139,12 +139,12 @@ public class Matcher implements EventHandler {
 			dbPool.gotoWorkspace(conn, workspace);
 			conn.setAutoCommit(true);
 
-			eventDispatcher.triggerEvent(new StatusDialogTitle(Internal.I18N.getString("match.match.dialog.process")));
+			eventDispatcher.triggerEvent(new StatusDialogTitle(Internal.I18N.getString("match.match.dialog.process"), this));
 			stmt = conn.createStatement();				
 
 			if (shouldRun) {
 				LOG.info("Identifying candidate buildings.");				
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.identifyCand")));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.identifyCand"), this));
 
 				cstmt = conn.prepareCall("{CALL geodb_match.collect_cand_building(?, ?)}");
 				cstmt.setInt(1, candLODProjection); //LOD candidate
@@ -161,23 +161,23 @@ public class Matcher implements EventHandler {
 					return false;
 				}
 
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(1, 9));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(1, 9, this));
 			}
 
 			if (shouldRun) {
 				LOG.info("Fetching LOD " + candLODProjection + " geometries of candidate buildings.");
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.collectGeomCand")));		
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.collectGeomCand"), this));		
 
 				cstmt = conn.prepareCall("{CALL geodb_match.collect_geometry(?)}");
 				cstmt.setInt(1, candLODProjection); //Cand LOD
 				cstmt.executeUpdate();
 
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(2, 9));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(2, 9, this));
 			}
 
 			if (shouldRun) {
 				LOG.info("Rectifying geometries of candidate buildings.");
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.rectGeomCand")));		
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.rectGeomCand"), this));		
 
 				cstmt = conn.prepareCall("{CALL geodb_match.rectify_geometry(?)}");
 				cstmt.setDouble(1, tolerance); //tolerance
@@ -193,12 +193,12 @@ public class Matcher implements EventHandler {
 					return false;
 				}
 
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(3, 9));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(3, 9, this));
 			}
 
 			if (shouldRun) {
 				LOG.info("Computing 2D projection of candidate buildings.");
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.unionCand")));		
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.unionCand"), this));		
 
 				cstmt = conn.prepareCall("{CALL geodb_match.aggregate_geometry(?, ?, ?)}");
 				cstmt.setString(1, "MATCH_CAND_PROJECTED");
@@ -206,19 +206,19 @@ public class Matcher implements EventHandler {
 				cstmt.setInt(3, 1); //aggregate building
 				cstmt.executeUpdate();
 
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(4, 9));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(4, 9, this));
 			}
 
 			if (shouldRun) {
 				LOG.info("Identifying master buildings.");
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.identifyMaster")));				
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.identifyMaster"), this));				
 
 				cstmt = conn.prepareCall("{CALL geodb_match.collect_master_building(?, ?)}");
 				cstmt.setInt(1, masterLODProjection); //Master LOD
 				cstmt.setString(2, lineage); //lineage
 				cstmt.executeUpdate();
 
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(5, 9));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(5, 9, this));
 
 				int master = 0;
 				result = stmt.executeQuery("select count(*) from match_tmp_building");
@@ -233,18 +233,18 @@ public class Matcher implements EventHandler {
 
 			if (shouldRun) {
 				LOG.info("Fetching LOD " + masterLODProjection + " geometries of master buildings.");
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.collectGeomMaster")));				
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.collectGeomMaster"), this));				
 
 				cstmt = conn.prepareCall("{CALL geodb_match.collect_geometry(?)}");
 				cstmt.setInt(1, masterLODProjection); //Master LOD
 				cstmt.executeUpdate();
 
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(6, 9));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(6, 9, this));
 			}
 
 			if (shouldRun) {
 				LOG.info("Rectifying geometries of master buildings.");
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.rectGeomMaster")));				
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.rectGeomMaster"), this));				
 
 				cstmt = conn.prepareCall("{CALL geodb_match.rectify_geometry(?)}");
 				cstmt.setDouble(1, tolerance); //tolerance
@@ -260,12 +260,12 @@ public class Matcher implements EventHandler {
 					return false;
 				}
 
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(7, 9));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(7, 9, this));
 			}
 
 			if (shouldRun) {
 				LOG.info("Computing 2D projection of master buildings.");
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.unionMaster")));				
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.unionMaster"), this));				
 
 				cstmt = conn.prepareCall("{CALL geodb_match.aggregate_geometry(?, ?, ?)}");
 				cstmt.setString(1, "MATCH_MASTER_PROJECTED"); 
@@ -273,12 +273,12 @@ public class Matcher implements EventHandler {
 				cstmt.setInt(3, 1); //aggregate buildings
 				cstmt.executeUpdate();
 
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(8, 10));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(8, 10, this));
 			}
 
 			if (shouldRun) {
 				LOG.info("Computing overlaps between candidate and master buildings.");
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.overlap")));				
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.match.dialog.overlap"), this));				
 
 				cstmt = conn.prepareCall("{CALL geodb_match.join_cand_master(?, ?, ?, ?)}"); 
 				cstmt.setInt(1, candLODProjection); //LOD candidate
@@ -287,7 +287,7 @@ public class Matcher implements EventHandler {
 				cstmt.setDouble(4, tolerance); //tolerance
 				cstmt.executeUpdate();
 
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(9, 10));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(9, 10, this));
 
 				relevantOverlaps = calcRelevantMatches(candOverlap, masterOverlap, conn);
 				if (relevantOverlaps < 0)
@@ -299,8 +299,8 @@ public class Matcher implements EventHandler {
 			LOG.error("SQL error while processing matching: " + sqlEx.getMessage());
 			return false;
 		} finally {
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(10, 10));
-			eventDispatcher.triggerEvent(new CounterEvent(CounterType.RELEVANT_MATCHES, relevantOverlaps));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(10, 10, this));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.RELEVANT_MATCHES, relevantOverlaps, this));
 
 			if (cstmt != null) {
 				try {
@@ -355,8 +355,8 @@ public class Matcher implements EventHandler {
 			conn = dbPool.getConnection();
 			conn.setAutoCommit(true);
 			
-			eventDispatcher.triggerEvent(new StatusDialogTitle(Internal.I18N.getString("match.overlap.dialog.process")));
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(1, 2));
+			eventDispatcher.triggerEvent(new StatusDialogTitle(Internal.I18N.getString("match.overlap.dialog.process"), this));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(1, 2, this));
 
 			relevantOverlaps = calcRelevantMatches(candOverlap, masterOverlap, conn);
 			return relevantOverlaps > 0;
@@ -364,8 +364,8 @@ public class Matcher implements EventHandler {
 			LOG.error("SQL error while processing relevant matches: " + e.getMessage());
 			return false;
 		} finally {
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(2, 2));
-			eventDispatcher.triggerEvent(new CounterEvent(CounterType.RELEVANT_MATCHES, relevantOverlaps));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(2, 2, this));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.RELEVANT_MATCHES, relevantOverlaps, this));
 
 			if (conn != null) {
 				try {
@@ -412,7 +412,7 @@ public class Matcher implements EventHandler {
 			LOG.info("Overlap of master buildings: min=" + minMasterOverlap + "%, max=" + maxMasterOverlap + "%");
 
 			LOG.info("Searching for 1:1 matches within the specified overlap thresholds.");
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.overlap.dialog.identifyMatch")));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.overlap.dialog.identifyMatch"), this));
 
 			cstmt = conn.prepareCall("{CALL geodb_match.create_relevant_matches(?, ?)}");
 			cstmt.setDouble(1, candOverlap); //delta1
@@ -503,7 +503,7 @@ public class Matcher implements EventHandler {
 			dbPool.gotoWorkspace(conn, workspace);
 			conn.setAutoCommit(true);
 
-			eventDispatcher.triggerEvent(new StatusDialogTitle(Internal.I18N.getString("match.merge.dialog.process")));
+			eventDispatcher.triggerEvent(new StatusDialogTitle(Internal.I18N.getString("match.merge.dialog.process"), this));
 
 			stmt = conn.createStatement();
 			int candidates = 0;
@@ -517,7 +517,7 @@ public class Matcher implements EventHandler {
 			}
 
 			LOG.info("Fetching LOD " + candLODGeometry + " geometries of the matched candidate buildings.");
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.collectGeomCand")));				
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.collectGeomCand"), this));				
 
 			cstmt = conn.prepareCall("{CALL geodb_merge.collect_all_geometry(?)}");
 			cstmt.setInt(1, candLODGeometry); //candidate LOD
@@ -527,9 +527,9 @@ public class Matcher implements EventHandler {
 			cstmt.setInt(1, candLODGeometry); //candidate LOD
 			cstmt.executeUpdate();
 
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(1, 6));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(1, 6, this));
 			LOG.info("Moving appearances to master buildings.");
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.moveApp")));				
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.moveApp"), this));				
 
 			cstmt = conn.prepareCall("{CALL geodb_merge.create_and_put_container(?, ?, ?)}");
 			cstmt.setInt(1, masterLODGeometry); //master LOD
@@ -540,38 +540,38 @@ public class Matcher implements EventHandler {
 			cstmt = conn.prepareCall("{CALL geodb_merge.move_appearance()}");
 			cstmt.executeUpdate();
 
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(2, 6));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(2, 6, this));
 			LOG.info("Moving geometries to LOD " + masterLODGeometry + " of master buildings.");
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.moveGeom")));				
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.moveGeom"), this));				
 
 			cstmt = conn.prepareCall("{CALL geodb_merge.move_geometry()}");
 			cstmt.executeUpdate();
 
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(3, 6));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(3, 6, this));
 			LOG.info("Removing geometries from candidate buildings.");
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.delGeom")));				
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.delGeom"), this));				
 
 			cstmt = conn.prepareCall("{CALL geodb_merge.delete_head_of_merge_geometry()}");
 			cstmt.executeUpdate();
 
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(4, 6));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(4, 6, this));
 
 			if (deleteModeInt == 1) {
 				LOG.info("Deleting matched candidate buildings.");
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.delCand")));				
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.delCand"), this));				
 
 				cstmt = conn.prepareCall("{CALL geodb_merge.delete_relevant_candidates()}");
 				cstmt.executeUpdate();
 			} else if (deleteModeInt == 2) {
 				LOG.info("Changing lineage of matched candidate buildings.");
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.changeCandLineage")));				
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.changeCandLineage"), this));				
 
 				cstmt = conn.prepareCall("{CALL geodb_merge.update_lineage(?)}");
 				cstmt.setString(1, lineage); //lineage for renaming
 				cstmt.executeUpdate();
 			}
 
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(5, 6));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(5, 6, this));
 
 			int cityObjects = 0;
 			result = stmt.executeQuery("select count(*) from merge_collect_geom");			
@@ -580,7 +580,7 @@ public class Matcher implements EventHandler {
 
 			if (cityObjects > 0) {
 				LOG.info("Cleaning matching results.");
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.clear")));				
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("match.merge.dialog.clear"), this));				
 
 				cstmt = conn.prepareCall("{CALL geodb_match.clear_matching_tables()}");
 				cstmt.executeUpdate();				
@@ -592,7 +592,7 @@ public class Matcher implements EventHandler {
 			LOG.error("SQL error while processing merging: " + sqlEx.getMessage());
 			return false;
 		} finally {
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(6, 6));			
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(6, 6, this));			
 
 			if (cstmt != null) {
 				try {

@@ -136,10 +136,10 @@ public class XMLValidator implements EventHandler {
 				File file = importFiles.get(fileCounter++);
 				intConfig.setImportPath(file.getParent());
 
-				eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName()));
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("validate.dialog.validate.msg")));
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles));
+				eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("validate.dialog.validate.msg"), this));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
 
 				// this worker pool parses the xml file and passes xml chunks to the dbworker pool
 				featureWorkerPool = new SingleWorkerPool<CityGMLChunk>(
@@ -165,8 +165,8 @@ public class XMLValidator implements EventHandler {
 					return false;
 				}
 
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("validate.dialog.finish.msg")));
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("validate.dialog.finish.msg"), this));
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 
 				// we are done with parsing. so shutdown the workers
 				try {

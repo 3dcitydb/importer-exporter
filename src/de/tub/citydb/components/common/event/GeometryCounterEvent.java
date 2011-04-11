@@ -38,8 +38,8 @@ import de.tub.citydb.api.event.Event;
 public class GeometryCounterEvent extends Event {
 	private HashMap<GMLClass, Long> geometryCounterMap;
 
-	public GeometryCounterEvent(HashMap<GMLClass, Long> geometryCounterMap) {
-		super(EventType.GEOMETRY_COUNTER);
+	public GeometryCounterEvent(HashMap<GMLClass, Long> geometryCounterMap, Object source) {
+		super(EventType.GEOMETRY_COUNTER, source);
 		this.geometryCounterMap = geometryCounterMap;
 	}
 

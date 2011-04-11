@@ -34,8 +34,8 @@ import de.tub.citydb.api.event.Event;
 public class StatusDialogTitle extends Event {
 	private String title;
 	
-	public StatusDialogTitle(String title) {
-		super(EventType.STATUS_DIALOG_TITLE);
+	public StatusDialogTitle(String title, Object source) {
+		super(EventType.STATUS_DIALOG_TITLE, source);
 		this.title = title;
 	}
 

@@ -37,13 +37,13 @@ public class InterruptEvent extends Event {
 	private String logMessage;
 	private LogLevelType logLevelType;
 	
-	public InterruptEvent(InterruptEnum interruptType) {
-		super(EventType.INTERRUPT);
+	public InterruptEvent(InterruptEnum interruptType, Object source) {
+		super(EventType.INTERRUPT, source);
 		this.interruptType = interruptType;
 	}
 	
-	public InterruptEvent(InterruptEnum interruptType, String logMessage, LogLevelType logLevelType) {
-		this(interruptType);
+	public InterruptEvent(InterruptEnum interruptType, String logMessage, LogLevelType logLevelType, Object source) {
+		this(interruptType, source);
 		this.logMessage = logMessage;
 		this.logLevelType = logLevelType;
 	}

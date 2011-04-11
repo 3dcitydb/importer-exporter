@@ -541,7 +541,8 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 							eventDispatcher.triggerEvent(new InterruptEvent(
 									InterruptEnum.USER_ABORT, 
 									"User abort of matching process.", 
-									LogLevelType.INFO));
+									LogLevelType.INFO, 
+									this));
 						}
 					});
 				}

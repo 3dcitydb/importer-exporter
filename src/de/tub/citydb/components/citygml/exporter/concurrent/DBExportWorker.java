@@ -196,9 +196,9 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 				//
 			}
 			
-			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter));
-			eventDispatcher.triggerEvent(new FeatureCounterEvent(dbExporterManager.getFeatureCounter()));
-			eventDispatcher.triggerEvent(new GeometryCounterEvent(dbExporterManager.getGeometryCounter()));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
+			eventDispatcher.triggerEvent(new FeatureCounterEvent(dbExporterManager.getFeatureCounter(), this));
+			eventDispatcher.triggerEvent(new GeometryCounterEvent(dbExporterManager.getGeometryCounter(), this));
 		} finally {
 			if (connection != null) {
 				try {
@@ -299,7 +299,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 			}
 
 			if (exportCounter == 20) {
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter));
+				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
 				exportCounter = 0;
 			}
 

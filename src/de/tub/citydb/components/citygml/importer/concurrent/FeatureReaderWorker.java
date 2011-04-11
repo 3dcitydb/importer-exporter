@@ -156,7 +156,7 @@ public class FeatureReaderWorker implements Worker<CityGMLChunk> {
 				//
 			} catch (MissingADESchemaException e) {
 				LOG.error(e.getMessage());				
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptEnum.ADE_SCHEMA_READ_ERROR));
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptEnum.ADE_SCHEMA_READ_ERROR, this));
 			}
 		} finally {
 			runLock.unlock();

@@ -310,9 +310,10 @@ public class ImpExp {
 
 		// initialize object registry
 		ObjectRegistry registry = ObjectRegistry.getInstance();
+		EventDispatcher eventDispatcher = new EventDispatcher();		
 		registry.setLogController(Logger.getInstance());
-		registry.setEventDispatcher(new EventDispatcher());
-		
+		registry.setEventDispatcher(eventDispatcher);
+			
 		// start application
 		if (!shell) {
 			// create main view instance

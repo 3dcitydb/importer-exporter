@@ -33,7 +33,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import de.tub.citydb.api.log.Logger;
+
 public class EventHandlerContainerQueue {
+	private final Logger LOG = Logger.getInstance();
 	private ConcurrentLinkedQueue<EventHandlerContainer> containerQueue;
 
 	public EventHandlerContainerQueue() {
@@ -76,6 +79,8 @@ public class EventHandlerContainerQueue {
 				try {
 					handler.handleEvent(event);
 				} catch (Exception e) {
+					LOG.error("The following error occurred while processing an event:");
+					e.printStackTrace();
 					break;
 				}
 			} else
