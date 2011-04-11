@@ -105,9 +105,9 @@ public class InputFileHandler implements EventListener {
 		public boolean accept(File pathname) {
 			String fileName = pathname.getName().toUpperCase();
 			return (pathname.isDirectory() || 
-					fileName.endsWith("GML") ||
-					fileName.endsWith("XML") ||
-					fileName.endsWith("CITYGML"));
+					fileName.endsWith(".GML") ||
+					fileName.endsWith(".XML") ||
+					fileName.endsWith(".CITYGML"));
 		}
 
 	}
