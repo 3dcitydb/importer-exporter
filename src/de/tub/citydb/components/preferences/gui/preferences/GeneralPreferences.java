@@ -16,9 +16,9 @@ public class GeneralPreferences extends AbstractPreferences {
 		super(new GeneralPreferencesEntry());
 		
 		loggingPanel = new LoggingPanel(config, mainView);
-		entry.addChildEntry(new DefaultPreferencesEntry(loggingPanel));
-		entry.addChildEntry(new DefaultPreferencesEntry(new PathPanel(config)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new LanguagePanel(config, mainView)));
+		root.addChildEntry(new DefaultPreferencesEntry(loggingPanel));
+		root.addChildEntry(new DefaultPreferencesEntry(new PathPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new LanguagePanel(config, mainView)));
 	}
 
 	public void setLogginSettings() {

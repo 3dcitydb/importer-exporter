@@ -4,35 +4,35 @@ import de.tub.citydb.api.plugin.extension.preferences.Preferences;
 import de.tub.citydb.api.plugin.extension.preferences.PreferencesEntry;
 
 public class AbstractPreferences implements Preferences {
-	protected DefaultPreferencesEntry entry;
+	protected DefaultPreferencesEntry root;
 	
 	protected AbstractPreferences(DefaultPreferencesEntry entry) {
-		this.entry = entry;
+		this.root = entry;
 	}
 	
 	@Override
 	public final DefaultPreferencesEntry getPreferencesEntry() {
-		return entry;
+		return root;
 	}
 	
 	public final void doTranslation() {
-		entry.doTranslation();
+		root.doTranslation();
 		
-		for (PreferencesEntry childEntry : entry.getChildEntries())
+		for (PreferencesEntry childEntry : root.getChildEntries())
 			((DefaultPreferencesEntry)childEntry).doTranslation();
 	}
 	
 	public final void loadSettings() {
-		entry.getViewComponent().loadSettings();
+		root.getViewComponent().loadSettings();
 		
-		for (PreferencesEntry childEntry : entry.getChildEntries())
+		for (PreferencesEntry childEntry : root.getChildEntries())
 			((DefaultPreferencesEntry)childEntry).getViewComponent().loadSettings();
 	}
 	
 	public final void setSettings() {
-		entry.getViewComponent().setSettings();
+		root.getViewComponent().setSettings();
 		
-		for (PreferencesEntry childEntry : entry.getChildEntries())
+		for (PreferencesEntry childEntry : root.getChildEntries())
 			((DefaultPreferencesEntry)childEntry).getViewComponent().setSettings();
 	}
 

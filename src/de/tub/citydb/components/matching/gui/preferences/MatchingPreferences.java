@@ -12,8 +12,8 @@ public class MatchingPreferences extends AbstractPreferences {
 	public MatchingPreferences(Config config) {
 		super(new MatchingEntry());
 		
-		entry.addChildEntry(new DefaultPreferencesEntry(new MasterPanel(config)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new CandidatePanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new MasterPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new CandidatePanel(config)));
 	}
 
 }

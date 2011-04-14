@@ -41,17 +41,14 @@ import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
-import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.common.ApplicationEvent;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.util.DBUtil;
 
-public class DBConnectionPool implements EventHandler {
+public class DBConnectionPool {
 	private static DBConnectionPool instance = new DBConnectionPool();
 
 	private final String poolName = "oracle.pool";
@@ -69,7 +66,6 @@ public class DBConnectionPool implements EventHandler {
 		}
 
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		eventDispatcher.addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
 	}
 
 	public static DBConnectionPool getInstance() {
@@ -324,15 +320,6 @@ public class DBConnectionPool implements EventHandler {
 		}
 
 		return false;
-	}
-
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		// make sure that events notifying about a database connection state change
-		// are not fired by plugins. DBConnectionPool must be the first consumer for this
-		// event type.
-		if (event.getEventType() == ApplicationEvent.DATABASE_CONNECTION_STATE && event.getSource() != this)
-			throw new IllegalArgumentException("Events of type " + ApplicationEvent.DATABASE_CONNECTION_STATE + " may not be triggered by plugins.");
 	}
 	
 }

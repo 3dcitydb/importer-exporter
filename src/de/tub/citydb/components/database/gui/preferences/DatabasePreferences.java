@@ -15,8 +15,8 @@ public class DatabasePreferences extends AbstractPreferences {
 	public DatabasePreferences(JAXBContext projectContext, ImpExpGui mainView, Config config) {
 		super(new DatabaseEntry());
 		
-		entry.addChildEntry(new DefaultPreferencesEntry(new IndexPanel(config, mainView)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new SrsPanel(projectContext, config, mainView)));
+		root.addChildEntry(new DefaultPreferencesEntry(new IndexPanel(config, mainView)));
+		root.addChildEntry(new DefaultPreferencesEntry(new SrsPanel(projectContext, config, mainView)));
 	}
 
 }

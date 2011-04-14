@@ -18,13 +18,13 @@ public class CityGMLImportPreferences extends AbstractPreferences {
 	public CityGMLImportPreferences(Config config) {
 		super(new CityGMLImportEntry());
 		
-		entry.addChildEntry(new DefaultPreferencesEntry(new ContinuationPanel(config)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new IdHandlingPanel(config)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new BoundingBoxPanel(config)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(FilterMode.IMPORT, config)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new XMLValidationPanel(config)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new ContinuationPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new IdHandlingPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new BoundingBoxPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(FilterMode.IMPORT, config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new XMLValidationPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
 	}
 
 }

@@ -15,11 +15,11 @@ public class CityGMLExportPreferences extends AbstractPreferences {
 	public CityGMLExportPreferences(Config config) {
 		super(new CityGMLExportEntry());
 		
-		entry.addChildEntry(new DefaultPreferencesEntry(new VersionPanel(config)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new BoundingBoxPanel(config)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new XLinkPanel(config)));
-		entry.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new VersionPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new BoundingBoxPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new AppearancePanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new XLinkPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
 	}
 
 }

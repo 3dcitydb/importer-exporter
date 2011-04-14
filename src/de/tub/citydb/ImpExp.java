@@ -52,6 +52,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.event.common.ApplicationEvent;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.plugin.Plugin;
 import de.tub.citydb.api.registry.ObjectRegistry;
@@ -71,6 +72,7 @@ import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.plugin.IllegalPluginEventChecker;
 import de.tub.citydb.plugin.PluginService;
 import de.tub.citydb.plugin.PluginServiceFactory;
 
@@ -314,6 +316,10 @@ public class ImpExp {
 		registry.setLogController(Logger.getInstance());
 		registry.setEventDispatcher(eventDispatcher);
 			
+		// register illegal plugin event checker with event dispatcher
+		IllegalPluginEventChecker checker = IllegalPluginEventChecker.getInstance();
+		eventDispatcher.addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, checker);
+		
 		// start application
 		if (!shell) {
 			// create main view instance
