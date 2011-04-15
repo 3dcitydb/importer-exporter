@@ -5,7 +5,6 @@ import java.awt.Component;
 import javax.swing.Icon;
 
 import de.tub.citydb.api.plugin.extension.view.View;
-import de.tub.citydb.components.database.gui.view.components.DatabasePanel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;

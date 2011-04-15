@@ -1,8 +1,5 @@
 package de.tub.citydb.components.matching.gui.preferences;
 
-import de.tub.citydb.components.matching.gui.preferences.components.CandidatePanel;
-import de.tub.citydb.components.matching.gui.preferences.components.MasterPanel;
-import de.tub.citydb.components.matching.gui.preferences.entries.MatchingEntry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.gui.preferences.AbstractPreferences;
 import de.tub.citydb.gui.preferences.DefaultPreferencesEntry;

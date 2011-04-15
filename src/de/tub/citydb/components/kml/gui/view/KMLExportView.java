@@ -6,7 +6,6 @@ import javax.swing.Icon;
 import javax.xml.bind.JAXBContext;
 
 import de.tub.citydb.api.plugin.extension.view.View;
-import de.tub.citydb.components.kml.gui.view.components.KmlExportPanel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;

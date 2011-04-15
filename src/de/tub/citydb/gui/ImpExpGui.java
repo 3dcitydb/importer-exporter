@@ -89,7 +89,7 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.components.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.components.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.components.database.DatabasePlugin;
-import de.tub.citydb.components.database.gui.view.components.DatabasePanel;
+import de.tub.citydb.components.database.gui.view.DatabasePanel;
 import de.tub.citydb.components.kml.KMLExportPlugin;
 import de.tub.citydb.components.matching.MatchingPlugin;
 import de.tub.citydb.components.preferences.PreferencesPlugin;

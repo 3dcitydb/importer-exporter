@@ -7,7 +7,7 @@ import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
 import de.tub.citydb.components.database.DatabasePlugin;
-import de.tub.citydb.components.database.gui.view.components.DatabasePanel;
+import de.tub.citydb.components.database.gui.view.DatabasePanel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DBConnectionPool;

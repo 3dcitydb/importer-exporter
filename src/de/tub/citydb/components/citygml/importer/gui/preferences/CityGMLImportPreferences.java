@@ -1,13 +1,5 @@
 package de.tub.citydb.components.citygml.importer.gui.preferences;
 
-import de.tub.citydb.components.citygml.importer.gui.preferences.components.AppearancePanel;
-import de.tub.citydb.components.citygml.importer.gui.preferences.components.BoundingBoxPanel;
-import de.tub.citydb.components.citygml.importer.gui.preferences.components.ContinuationPanel;
-import de.tub.citydb.components.citygml.importer.gui.preferences.components.GeometryPanel;
-import de.tub.citydb.components.citygml.importer.gui.preferences.components.IdHandlingPanel;
-import de.tub.citydb.components.citygml.importer.gui.preferences.components.ResourcesPanel;
-import de.tub.citydb.components.citygml.importer.gui.preferences.components.XMLValidationPanel;
-import de.tub.citydb.components.citygml.importer.gui.preferences.entries.CityGMLImportEntry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.gui.preferences.AbstractPreferences;

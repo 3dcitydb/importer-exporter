@@ -1,9 +1,5 @@
 package de.tub.citydb.components.preferences.gui.preferences;
 
-import de.tub.citydb.components.preferences.gui.preferences.components.LanguagePanel;
-import de.tub.citydb.components.preferences.gui.preferences.components.LoggingPanel;
-import de.tub.citydb.components.preferences.gui.preferences.components.PathPanel;
-import de.tub.citydb.components.preferences.gui.preferences.entries.GeneralPreferencesEntry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.preferences.AbstractPreferences;
