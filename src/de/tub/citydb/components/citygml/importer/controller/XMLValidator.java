@@ -50,6 +50,7 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.components.citygml.common.io.InputFileHandler;
 import de.tub.citydb.components.citygml.importer.concurrent.FeatureReaderWorkerFactory;
 import de.tub.citydb.components.common.event.CounterEvent;
 import de.tub.citydb.components.common.event.CounterType;
@@ -61,7 +62,6 @@ import de.tub.citydb.components.common.event.StatusDialogTitle;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.XMLValidation;
-import de.tub.citydb.io.InputFileHandler;
 
 public class XMLValidator implements EventHandler {
 	private final Logger LOG = Logger.getInstance();

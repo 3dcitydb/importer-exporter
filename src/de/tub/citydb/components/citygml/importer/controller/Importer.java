@@ -61,6 +61,7 @@ import de.tub.citydb.components.citygml.common.database.cache.model.CacheTableMo
 import de.tub.citydb.components.citygml.common.database.gmlid.DBGmlIdLookupServerEnum;
 import de.tub.citydb.components.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
+import de.tub.citydb.components.citygml.common.io.InputFileHandler;
 import de.tub.citydb.components.citygml.importer.concurrent.DBImportWorkerFactory;
 import de.tub.citydb.components.citygml.importer.concurrent.DBImportXlinkResolverWorkerFactory;
 import de.tub.citydb.components.citygml.importer.concurrent.DBImportXlinkWorkerFactory;
@@ -89,7 +90,6 @@ import de.tub.citydb.config.project.general.AffineTransformation;
 import de.tub.citydb.config.project.importer.ImportGmlId;
 import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.io.InputFileHandler;
 import de.tub.citydb.util.DBUtil;
 
 public class Importer implements EventHandler {
