@@ -32,8 +32,8 @@ package de.tub.citydb.config.internal;
 import java.io.File;
 import java.util.ResourceBundle;
 
-import de.tub.citydb.components.citygml.importer.database.content.AffineTransformer;
 import de.tub.citydb.config.project.database.ReferenceSystem;
+import de.tub.citydb.modules.citygml.importer.database.content.AffineTransformer;
 
 public class Internal {
 	public static final int ORACLE_MAX_BATCH_SIZE = 65535;

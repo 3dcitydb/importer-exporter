@@ -40,15 +40,15 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.registry.ObjectRegistry;
-import de.tub.citydb.components.citygml.exporter.controller.Exporter;
-import de.tub.citydb.components.citygml.importer.controller.Importer;
-import de.tub.citydb.components.citygml.importer.controller.XMLValidator;
-import de.tub.citydb.components.kml.controller.KmlExporter;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.modules.citygml.exporter.controller.Exporter;
+import de.tub.citydb.modules.citygml.importer.controller.Importer;
+import de.tub.citydb.modules.citygml.importer.controller.XMLValidator;
+import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.util.DBUtil;
 
 public class ImpExpCmd {
