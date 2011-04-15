@@ -70,7 +70,7 @@ import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.StatusDialog;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.util.GuiUtil;
 import de.tub.citydb.util.Util;
 
 @SuppressWarnings("serial")

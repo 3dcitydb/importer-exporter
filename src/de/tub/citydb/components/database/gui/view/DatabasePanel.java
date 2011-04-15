@@ -85,8 +85,8 @@ import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
 import de.tub.citydb.gui.components.StatusDialog;
-import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.util.DBUtil;
+import de.tub.citydb.util.GuiUtil;
 import de.tub.citydb.util.Util;
 
 @SuppressWarnings("serial")

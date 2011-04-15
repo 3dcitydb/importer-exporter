@@ -72,8 +72,8 @@ import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.util.DBUtil;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class GeneralPanel extends AbstractPreferencesComponent implements EventHandler {

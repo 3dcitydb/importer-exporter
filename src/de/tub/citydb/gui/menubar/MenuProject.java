@@ -51,7 +51,7 @@ import de.tub.citydb.config.project.Project;
 import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class MenuProject extends JMenu {

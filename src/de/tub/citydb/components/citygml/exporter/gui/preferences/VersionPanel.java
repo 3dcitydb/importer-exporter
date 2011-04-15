@@ -14,7 +14,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.exporter.CityGMLVersionType;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class VersionPanel extends AbstractPreferencesComponent {

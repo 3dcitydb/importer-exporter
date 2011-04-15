@@ -84,7 +84,7 @@ import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.ImportStatusDialog;
 import de.tub.citydb.gui.components.XMLValidationStatusDialog;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class ImportPanel extends JPanel implements DropTargetListener {

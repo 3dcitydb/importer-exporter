@@ -37,8 +37,8 @@ import de.tub.citydb.api.plugin.extension.menu.MenuExtension;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.plugin.PluginService;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class MenuBar extends JMenuBar {

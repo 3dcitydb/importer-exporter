@@ -29,7 +29,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.general.AffineTransformation;
 import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class GeometryPanel extends AbstractPreferencesComponent {	

@@ -83,8 +83,8 @@ import de.tub.citydb.gui.components.JTextFieldLimit;
 import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.util.DBUtil;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class SrsPanel extends AbstractPreferencesComponent implements EventHandler, DropTargetListener {

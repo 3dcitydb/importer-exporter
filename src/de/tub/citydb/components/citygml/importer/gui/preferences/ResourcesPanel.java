@@ -47,7 +47,7 @@ import de.tub.citydb.config.project.database.UpdateBatching;
 import de.tub.citydb.config.project.system.GmlIdLookupServerConfig;
 import de.tub.citydb.config.project.system.ThreadPoolConfig;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class ResourcesPanel extends AbstractPreferencesComponent{

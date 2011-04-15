@@ -46,7 +46,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.Continuation;
 import de.tub.citydb.config.project.importer.UpdatingPersonMode;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class ContinuationPanel extends AbstractPreferencesComponent {

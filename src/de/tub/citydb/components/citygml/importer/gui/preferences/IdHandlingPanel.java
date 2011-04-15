@@ -47,7 +47,7 @@ import de.tub.citydb.config.project.importer.CodeSpaceMode;
 import de.tub.citydb.config.project.importer.ImportGmlId;
 import de.tub.citydb.config.project.importer.UUIDMode;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class IdHandlingPanel extends AbstractPreferencesComponent {

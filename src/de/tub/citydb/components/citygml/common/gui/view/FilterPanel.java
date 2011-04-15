@@ -68,7 +68,7 @@ import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
 import de.tub.citydb.gui.components.checkboxtree.CheckboxTree;
 import de.tub.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import de.tub.citydb.gui.components.checkboxtree.DefaultTreeCheckingModel;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.util.GuiUtil;
 import de.tub.citydb.util.Util;
 
 @SuppressWarnings("serial")

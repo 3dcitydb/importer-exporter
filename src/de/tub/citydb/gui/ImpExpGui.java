@@ -104,9 +104,9 @@ import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.console.ConsoleWindow;
 import de.tub.citydb.gui.menubar.MenuBar;
-import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.plugin.InternalPlugin;
 import de.tub.citydb.plugin.PluginService;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class ImpExpGui extends JFrame implements ViewController, EventHandler {

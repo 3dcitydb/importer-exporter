@@ -55,7 +55,7 @@ import de.tub.citydb.components.common.event.StatusDialogMessage;
 import de.tub.citydb.components.common.event.StatusDialogProgressBar;
 import de.tub.citydb.components.common.event.StatusDialogTitle;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class ImportStatusDialog extends JDialog implements EventHandler {

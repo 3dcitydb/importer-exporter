@@ -48,7 +48,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.general.Path;
 import de.tub.citydb.config.project.general.PathMode;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class PathPanel extends AbstractPreferencesComponent {

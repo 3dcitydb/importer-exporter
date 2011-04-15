@@ -70,8 +70,8 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.preferences.NullComponent;
-import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.plugin.PluginService;
+import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class PreferencesPanel extends JPanel implements TreeSelectionListener {
