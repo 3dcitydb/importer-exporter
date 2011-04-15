@@ -27,27 +27,26 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.filter.feature;
+package de.tub.citydb.components.common.filter.statistic;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import de.tub.citydb.components.common.filter.Filter;
+import de.tub.citydb.components.common.filter.FilterMode;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
-import de.tub.citydb.config.project.filter.GmlId;
-import de.tub.citydb.filter.Filter;
-import de.tub.citydb.filter.FilterMode;
+import de.tub.citydb.config.project.filter.FeatureCount;
 
-public class GmlIdFilter implements Filter<String> {
+public class FeatureCounterFilter implements Filter<Long> {
 	private final AbstractFilterConfig filterConfig;
 
 	private boolean isActive;
-	private GmlId gmlIdFilter;
+	private FeatureCount featureCountFilter;
 
-	public GmlIdFilter(Config config, FilterMode mode) {
+	public FeatureCounterFilter(Config config, FilterMode mode) {
 		if (mode == FilterMode.EXPORT)
 			filterConfig = config.getProject().getExporter().getFilter();
-		else if (mode == FilterMode.KML_EXPORT)
-			filterConfig = config.getProject().getKmlExporter().getFilter();
 		else
 			filterConfig = config.getProject().getImporter().getFilter();
 
@@ -55,9 +54,11 @@ public class GmlIdFilter implements Filter<String> {
 	}
 
 	private void init() {
-		isActive = filterConfig.isSetSimpleFilter();
+		isActive = filterConfig.isSetComplexFilter() &&
+			filterConfig.getComplexFilter().getFeatureCount().isSet();
+
 		if (isActive)
-			gmlIdFilter = filterConfig.getSimpleFilter().getGmlIdFilter();			
+			featureCountFilter = filterConfig.getComplexFilter().getFeatureCount();			
 	}
 
 	@Override
@@ -69,37 +70,50 @@ public class GmlIdFilter implements Filter<String> {
 		init();
 	}
 
-	public boolean filter(String gmlId) {
-		if (isActive) {
-			List<String> gmlIdList = gmlIdFilter.getGmlIds();
-			if (gmlIdList != null) {
-				for (String item : gmlIdList)
-					if (gmlId.equals(item))
-						return false;
-			}
+	public boolean filter(Long number) {
+		if (isActive) {			
+			Long firstElement = featureCountFilter.getFrom();
+			Long lastElement = featureCountFilter.getTo();
 
-			return true;
+			if (firstElement != null && number < firstElement)
+				return true;
+
+			if (lastElement != null && number > lastElement)
+				return true;
 		}
 
 		return false;
 	}
 
-	public List<String> getFilterState() {
+	public List<Long> getFilterState() {
 		return getInternalState(false);
 	}
 
-	public List<String> getNotFilterState() {
+	public List<Long> getNotFilterState() {
 		return getInternalState(true);
 	}
 
-	private List<String> getInternalState(boolean inverse) {
-		if (isActive) {
-			if (!inverse)
-				return gmlIdFilter.getGmlIds();
-			else
-				return null;			
-		} 
+	private List<Long> getInternalState(boolean inverse) {
+		List<Long> state = new ArrayList<Long>();
 
-		return null;
+		if (isActive) {						
+			Long firstElement = featureCountFilter.getFrom();
+			Long lastElement = featureCountFilter.getTo();
+
+			if (!inverse)
+				state.add(firstElement);
+			else 
+				state.add(lastElement);
+
+			if (!inverse)
+				state.add(lastElement);
+			else 
+				state.add(firstElement);
+		} else {
+			state.add(null);
+			state.add(null);
+		}		
+
+		return state;
 	}
 }

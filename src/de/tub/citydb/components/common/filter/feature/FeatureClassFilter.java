@@ -27,18 +27,18 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.filter.feature;
+package de.tub.citydb.components.common.filter.feature;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.components.common.filter.Filter;
+import de.tub.citydb.components.common.filter.FilterMode;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
 import de.tub.citydb.config.project.filter.FeatureClass;
-import de.tub.citydb.filter.Filter;
-import de.tub.citydb.filter.FilterMode;
 
 public class FeatureClassFilter implements Filter<CityGMLClass> {
 	private final AbstractFilterConfig filterConfig;

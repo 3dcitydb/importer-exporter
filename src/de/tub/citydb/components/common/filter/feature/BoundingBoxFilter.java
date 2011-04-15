@@ -27,7 +27,7 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.filter.feature;
+package de.tub.citydb.components.common.filter.feature;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -36,6 +36,8 @@ import org.citygml4j.geometry.Point;
 import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
+import de.tub.citydb.components.common.filter.Filter;
+import de.tub.citydb.components.common.filter.FilterMode;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
 import de.tub.citydb.config.project.filter.BoundingBox;
@@ -43,8 +45,6 @@ import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.filter.Filter;
-import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.util.DBUtil;
 
 public class BoundingBoxFilter implements Filter<Envelope> {

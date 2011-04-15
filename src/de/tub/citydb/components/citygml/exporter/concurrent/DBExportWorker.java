@@ -64,10 +64,10 @@ import de.tub.citydb.components.common.event.CounterEvent;
 import de.tub.citydb.components.common.event.CounterType;
 import de.tub.citydb.components.common.event.FeatureCounterEvent;
 import de.tub.citydb.components.common.event.GeometryCounterEvent;
+import de.tub.citydb.components.common.filter.ExportFilter;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.filter.ExportFilter;
 
 public class DBExportWorker implements Worker<DBSplittingResult> {
 	private final Logger LOG = Logger.getInstance();

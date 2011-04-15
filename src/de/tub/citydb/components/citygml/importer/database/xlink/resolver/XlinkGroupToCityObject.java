@@ -39,9 +39,9 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import de.tub.citydb.components.citygml.common.database.cache.HeapCacheTable;
 import de.tub.citydb.components.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlinkGroupToCityObject;
+import de.tub.citydb.components.common.filter.ImportFilter;
+import de.tub.citydb.components.common.filter.feature.FeatureClassFilter;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.filter.ImportFilter;
-import de.tub.citydb.filter.feature.FeatureClassFilter;
 
 public class XlinkGroupToCityObject implements DBXlinkResolver {
 	private final Connection batchConn;

@@ -41,9 +41,9 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.components.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.components.citygml.exporter.database.content.DBSplittingResult;
+import de.tub.citydb.components.common.filter.ExportFilter;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.filter.ExportFilter;
 
 public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	private final DBConnectionPool dbConnectionPool;

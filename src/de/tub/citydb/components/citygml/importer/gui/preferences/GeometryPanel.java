@@ -24,10 +24,10 @@ import javax.swing.border.TitledBorder;
 
 import org.citygml4j.geometry.Matrix;
 
+import de.tub.citydb.components.common.filter.FilterMode;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.general.AffineTransformation;
-import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.GuiUtil;
 

@@ -82,6 +82,7 @@ import de.tub.citydb.components.common.event.GeometryCounterEvent;
 import de.tub.citydb.components.common.event.InterruptEvent;
 import de.tub.citydb.components.common.event.StatusDialogMessage;
 import de.tub.citydb.components.common.event.StatusDialogTitle;
+import de.tub.citydb.components.common.filter.ExportFilter;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
@@ -93,7 +94,6 @@ import de.tub.citydb.config.project.filter.TileSuffixMode;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.util.Util;
 
 public class Exporter implements EventHandler {

@@ -27,26 +27,25 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.filter.statistic;
+package de.tub.citydb.components.common.filter.feature;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import de.tub.citydb.components.common.filter.Filter;
+import de.tub.citydb.components.common.filter.FilterMode;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
-import de.tub.citydb.config.project.filter.FeatureCount;
-import de.tub.citydb.filter.Filter;
-import de.tub.citydb.filter.FilterMode;
+import de.tub.citydb.config.project.filter.GmlName;
 
-public class FeatureCounterFilter implements Filter<Long> {
+public class GmlNameFilter implements Filter<String> {
 	private final AbstractFilterConfig filterConfig;
 
 	private boolean isActive;
-	private FeatureCount featureCountFilter;
+	private GmlName gmlNameFilter;
 
-	public FeatureCounterFilter(Config config, FilterMode mode) {
+	public GmlNameFilter(Config config, FilterMode mode) {
 		if (mode == FilterMode.EXPORT)
 			filterConfig = config.getProject().getExporter().getFilter();
+		else if (mode == FilterMode.KML_EXPORT)
+			filterConfig = config.getProject().getKmlExporter().getFilter();
 		else
 			filterConfig = config.getProject().getImporter().getFilter();
 
@@ -55,10 +54,10 @@ public class FeatureCounterFilter implements Filter<Long> {
 
 	private void init() {
 		isActive = filterConfig.isSetComplexFilter() &&
-			filterConfig.getComplexFilter().getFeatureCount().isSet();
+			filterConfig.getComplexFilter().getGmlName().isSet();
 
 		if (isActive)
-			featureCountFilter = filterConfig.getComplexFilter().getFeatureCount();			
+			gmlNameFilter = filterConfig.getComplexFilter().getGmlName();			
 	}
 
 	@Override
@@ -70,50 +69,34 @@ public class FeatureCounterFilter implements Filter<Long> {
 		init();
 	}
 
-	public boolean filter(Long number) {
-		if (isActive) {			
-			Long firstElement = featureCountFilter.getFrom();
-			Long lastElement = featureCountFilter.getTo();
-
-			if (firstElement != null && number < firstElement)
-				return true;
-
-			if (lastElement != null && number > lastElement)
-				return true;
+	public boolean filter(String gmlName) {
+		if (isActive) {
+			if (gmlNameFilter.getValue() != null && gmlNameFilter.getValue().length() > 0) {
+				String adaptedValue = gmlNameFilter.getValue().trim().toUpperCase();				
+				if (!gmlName.trim().toUpperCase().equals(adaptedValue))
+					return true;
+			}
 		}
 
 		return false;
 	}
 
-	public List<Long> getFilterState() {
+	public String getFilterState() {
 		return getInternalState(false);
 	}
 
-	public List<Long> getNotFilterState() {
+	public String getNotFilterState() {
 		return getInternalState(true);
 	}
 
-	private List<Long> getInternalState(boolean inverse) {
-		List<Long> state = new ArrayList<Long>();
+	private String getInternalState(boolean inverse) {
+		if (isActive) {
+			if (!inverse && gmlNameFilter.getValue() != null && gmlNameFilter.getValue().length() > 0)
+				return gmlNameFilter.getValue();
+			else
+				return null;			
+		} 
 
-		if (isActive) {						
-			Long firstElement = featureCountFilter.getFrom();
-			Long lastElement = featureCountFilter.getTo();
-
-			if (!inverse)
-				state.add(firstElement);
-			else 
-				state.add(lastElement);
-
-			if (!inverse)
-				state.add(lastElement);
-			else 
-				state.add(firstElement);
-		} else {
-			state.add(null);
-			state.add(null);
-		}		
-
-		return state;
+		return null;
 	}
 }

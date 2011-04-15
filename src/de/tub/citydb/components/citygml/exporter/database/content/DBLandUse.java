@@ -47,8 +47,8 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
-import de.tub.citydb.filter.ExportFilter;
-import de.tub.citydb.filter.feature.FeatureClassFilter;
+import de.tub.citydb.components.common.filter.ExportFilter;
+import de.tub.citydb.components.common.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
 
 public class DBLandUse implements DBExporter {

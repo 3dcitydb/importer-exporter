@@ -53,9 +53,9 @@ import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
+import de.tub.citydb.components.common.filter.ExportFilter;
+import de.tub.citydb.components.common.filter.feature.FeatureClassFilter;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.filter.ExportFilter;
-import de.tub.citydb.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
 
 public class DBCityFurniture implements DBExporter {

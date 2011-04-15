@@ -84,6 +84,8 @@ import de.tub.citydb.components.common.event.EventType;
 import de.tub.citydb.components.common.event.InterruptEvent;
 import de.tub.citydb.components.common.event.StatusDialogMessage;
 import de.tub.citydb.components.common.event.StatusDialogTitle;
+import de.tub.citydb.components.common.filter.ExportFilter;
+import de.tub.citydb.components.common.filter.FilterMode;
 import de.tub.citydb.components.kml.concurrent.KmlExportWorkerFactory;
 import de.tub.citydb.components.kml.database.BalloonTemplateHandler;
 import de.tub.citydb.components.kml.database.ColladaBundle;
@@ -99,8 +101,6 @@ import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.database.DBTypeValueEnum;
-import de.tub.citydb.filter.ExportFilter;
-import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.util.DBUtil;
 
 public class KmlExporter implements EventHandler {

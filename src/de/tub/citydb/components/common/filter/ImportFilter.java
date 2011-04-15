@@ -27,14 +27,14 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.filter;
+package de.tub.citydb.components.common.filter;
 
+import de.tub.citydb.components.common.filter.feature.BoundingBoxFilter;
+import de.tub.citydb.components.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.components.common.filter.feature.GmlIdFilter;
+import de.tub.citydb.components.common.filter.feature.GmlNameFilter;
+import de.tub.citydb.components.common.filter.statistic.FeatureCounterFilter;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.filter.feature.BoundingBoxFilter;
-import de.tub.citydb.filter.feature.FeatureClassFilter;
-import de.tub.citydb.filter.feature.GmlIdFilter;
-import de.tub.citydb.filter.feature.GmlNameFilter;
-import de.tub.citydb.filter.statistic.FeatureCounterFilter;
 
 public class ImportFilter {
 	private FeatureClassFilter featureClassFilter;

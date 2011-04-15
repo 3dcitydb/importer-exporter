@@ -47,13 +47,13 @@ import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.GeneralizationRelation;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
+import de.tub.citydb.components.common.filter.ExportFilter;
+import de.tub.citydb.components.common.filter.feature.BoundingBoxFilter;
+import de.tub.citydb.components.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.components.common.filter.feature.GmlIdFilter;
+import de.tub.citydb.components.common.filter.feature.GmlNameFilter;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DBTableEnum;
-import de.tub.citydb.filter.ExportFilter;
-import de.tub.citydb.filter.feature.BoundingBoxFilter;
-import de.tub.citydb.filter.feature.FeatureClassFilter;
-import de.tub.citydb.filter.feature.GmlIdFilter;
-import de.tub.citydb.filter.feature.GmlNameFilter;
 import de.tub.citydb.util.Util;
 
 public class DBGeneralization implements DBExporter {

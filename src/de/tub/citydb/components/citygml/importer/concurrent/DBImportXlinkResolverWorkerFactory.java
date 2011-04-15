@@ -38,9 +38,9 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.components.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.components.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
+import de.tub.citydb.components.common.filter.ImportFilter;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.filter.ImportFilter;
 
 public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink> {
 	private final DBConnectionPool dbPool;

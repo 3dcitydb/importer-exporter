@@ -27,9 +27,10 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.filter;
+package de.tub.citydb.components.common.filter;
 
-public interface Filter<T> {
-	public boolean isActive();
-	public boolean filter(T element);
+public enum FilterMode {
+	IMPORT,
+	EXPORT,
+	KML_EXPORT
 }

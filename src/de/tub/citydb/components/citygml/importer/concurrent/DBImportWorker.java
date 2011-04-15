@@ -75,15 +75,15 @@ import de.tub.citydb.components.common.event.CounterEvent;
 import de.tub.citydb.components.common.event.CounterType;
 import de.tub.citydb.components.common.event.FeatureCounterEvent;
 import de.tub.citydb.components.common.event.GeometryCounterEvent;
+import de.tub.citydb.components.common.filter.ImportFilter;
+import de.tub.citydb.components.common.filter.feature.BoundingBoxFilter;
+import de.tub.citydb.components.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.components.common.filter.feature.GmlIdFilter;
+import de.tub.citydb.components.common.filter.feature.GmlNameFilter;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.filter.ImportFilter;
-import de.tub.citydb.filter.feature.BoundingBoxFilter;
-import de.tub.citydb.filter.feature.FeatureClassFilter;
-import de.tub.citydb.filter.feature.GmlIdFilter;
-import de.tub.citydb.filter.feature.GmlNameFilter;
 
 public class DBImportWorker implements Worker<CityGML> {
 	private final Logger LOG = Logger.getInstance();

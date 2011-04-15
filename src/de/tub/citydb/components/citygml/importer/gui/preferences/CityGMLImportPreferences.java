@@ -1,7 +1,7 @@
 package de.tub.citydb.components.citygml.importer.gui.preferences;
 
+import de.tub.citydb.components.common.filter.FilterMode;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.gui.preferences.AbstractPreferences;
 import de.tub.citydb.gui.preferences.DefaultPreferencesEntry;
 

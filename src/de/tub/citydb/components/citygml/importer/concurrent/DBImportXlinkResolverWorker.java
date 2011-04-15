@@ -64,12 +64,12 @@ import de.tub.citydb.components.citygml.importer.database.xlink.resolver.XlinkTe
 import de.tub.citydb.components.citygml.importer.database.xlink.resolver.XlinkTextureImage;
 import de.tub.citydb.components.citygml.importer.database.xlink.resolver.XlinkTextureParam;
 import de.tub.citydb.components.citygml.importer.database.xlink.resolver.XlinkWorldFile;
+import de.tub.citydb.components.common.filter.ImportFilter;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.filter.ImportFilter;
 
 public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 	private final Logger LOG = Logger.getInstance();

@@ -46,8 +46,8 @@ import de.tub.citydb.components.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.components.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.components.citygml.importer.database.content.DBSequencer;
 import de.tub.citydb.components.citygml.importer.database.content.DBSequencerEnum;
+import de.tub.citydb.components.common.filter.ImportFilter;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.filter.ImportFilter;
 
 public class DBXlinkResolverManager {
 	private final Connection batchConn;
