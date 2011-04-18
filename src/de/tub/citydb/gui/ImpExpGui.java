@@ -77,6 +77,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import de.tub.citydb.api.controller.ViewController;
+import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.common.ApplicationEvent;
@@ -100,7 +101,6 @@ import de.tub.citydb.gui.menubar.MenuBar;
 import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.modules.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.modules.database.DatabasePlugin;
-import de.tub.citydb.modules.database.gui.view.DatabasePanel;
 import de.tub.citydb.modules.kml.KMLExportPlugin;
 import de.tub.citydb.modules.matching.MatchingPlugin;
 import de.tub.citydb.modules.preferences.PreferencesPlugin;
@@ -576,11 +576,21 @@ public class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	}
 
 	public void connectToDatabase() {
-		((DatabasePanel)databasePlugin.getView().getViewComponent()).connect();
+		try {
+			databasePlugin.getDatabaseController().connect(true);
+		} catch (DatabaseConfigurationException e) {
+			//
+		} catch (SQLException e) {
+			//
+		}
 	}
 
 	public void disconnectFromDatabase() {
-		((DatabasePanel)databasePlugin.getView().getViewComponent()).disconnect();
+		try {
+			databasePlugin.getDatabaseController().disconnect(true);
+		} catch (SQLException e) {
+			//
+		}
 	}
 
 	private void shutdown() {		

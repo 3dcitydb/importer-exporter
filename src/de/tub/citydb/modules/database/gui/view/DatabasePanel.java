@@ -231,10 +231,21 @@ public class DatabasePanel extends JPanel implements EventHandler {
 			public void actionPerformed(ActionEvent e) {
 				Thread thread = new Thread() {
 					public void run() {
-						if (!dbPool.isConnected())
-							connect();
-						else
-							disconnect();
+						if (!dbPool.isConnected()) {
+							try {
+								connect(true);
+							} catch (DatabaseConfigurationException e) {
+								//
+							} catch (SQLException e) {
+								//
+							}
+						} else {
+							try {
+								disconnect(true);
+							} catch (SQLException e) {
+								//
+							}
+						}
 					}
 				};
 				thread.start();
@@ -485,7 +496,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 			connCombo.setSelectedIndex(index < connCombo.getItemCount() ? index : index - 1);		
 	}
 
-	public boolean connect() {
+	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
@@ -499,25 +510,30 @@ public class DatabasePanel extends JPanel implements EventHandler {
 
 				try {
 					dbPool.connect(conn);
-				} catch (DatabaseConfigurationException e) {
-					topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));					
-					topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
-					return false;
-				} catch (SQLException sqlEx) {
-					String text = Internal.I18N.getString("db.dialog.error.openConn");
-					Object[] args = new Object[]{ sqlEx.getMessage() };
-					String result = MessageFormat.format(text, args);					
+				} catch (DatabaseConfigurationException e) {					
+					if (showErrorDialog)
+						topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
 
-					topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
-					topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
+					LOG.error("Connection to database could not be established.");
+					topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+					throw e;
+				} catch (SQLException e) {
+					if (showErrorDialog) {
+						String text = Internal.I18N.getString("db.dialog.error.openConn");
+						Object[] args = new Object[]{ e.getMessage() };
+						String result = MessageFormat.format(text, args);					
+
+						topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
+						topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
+					}
 
 					LOG.error("Connection to database could not be established.");
 					if (config.getProject().getGlobal().getLogging().getConsole().getLogLevel() == LogLevelType.DEBUG) {
 						LOG.debug("Check the following stack trace for details:");
-						sqlEx.printStackTrace();
+						e.printStackTrace();
 					}
 
-					return false;
+					throw e;
 				}
 
 				if (dbPool.isConnected()) {
@@ -545,8 +561,9 @@ public class DatabasePanel extends JPanel implements EventHandler {
 						if (updateComboBoxes)
 							SrsComboBoxManager.getInstance(config).updateAll(false);
 
-					} catch (SQLException sqlEx) {
-						LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
+					} catch (SQLException e) {
+						LOG.error("Error while checking user-defined SRSs: " + e.getMessage().trim());
+						throw e;
 					}
 				}
 
@@ -555,11 +572,9 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		} finally {
 			lock.unlock();
 		}
-
-		return dbPool.isConnected();
 	}
 
-	public boolean disconnect() {
+	public void disconnect(boolean showErrorDialog) throws SQLException {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
@@ -569,16 +584,20 @@ public class DatabasePanel extends JPanel implements EventHandler {
 
 				try {
 					dbPool.disconnect();
-				} catch (SQLException sqlEx) {
-					LOG.error("Connection error: " + sqlEx.getMessage().trim());
+				} catch (SQLException e) {
+					LOG.error("Connection error: " + e.getMessage().trim());
 					LOG.error("Terminating connection...");
 					dbPool.forceDisconnect();
 
-					String text = Internal.I18N.getString("db.dialog.error.closeConn");
-					Object[] args = new Object[]{ sqlEx.getMessage() };
-					String result = MessageFormat.format(text, args);
+					if (showErrorDialog) {
+						String text = Internal.I18N.getString("db.dialog.error.closeConn");
+						Object[] args = new Object[]{ e.getMessage() };
+						String result = MessageFormat.format(text, args);
 
-					topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
+						topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
+					}
+					
+					throw e;
 				}
 
 				LOG.info("Disconnected from database.");
@@ -587,8 +606,6 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		} finally {
 			lock.unlock();
 		}
-
-		return !dbPool.isConnected();
 	}
 
 	private void report() {

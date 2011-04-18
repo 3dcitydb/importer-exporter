@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.modules.database.DatabasePlugin;
@@ -14,25 +13,21 @@ import de.tub.citydb.modules.database.gui.view.DatabasePanel;
 
 public class DatabaseControllerImpl implements DatabaseController {
 	private final DatabasePlugin plugin;
-	private final Config config;
 	private final DBConnectionPool dbPool;
 	
-	public DatabaseControllerImpl(Config config, DatabasePlugin plugin) {
-		this.plugin = plugin;
-		this.config = config;
-		
+	public DatabaseControllerImpl(DatabasePlugin plugin) {
+		this.plugin = plugin;		
 		dbPool = DBConnectionPool.getInstance();
 	}	
 
 	@Override
-	public void connect() throws DatabaseConfigurationException, SQLException {
-		((DatabasePanel)plugin.getView().getViewComponent()).setSettings();
-		dbPool.connect(config.getProject().getDatabase().getActiveConnection());
+	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException {
+		((DatabasePanel)plugin.getView().getViewComponent()).connect(showErrorDialog);
 	}
 
 	@Override
-	public void disconnect() throws SQLException {
-		dbPool.disconnect();
+	public void disconnect(boolean showErrorDialog) throws SQLException {
+		((DatabasePanel)plugin.getView().getViewComponent()).disconnect(showErrorDialog);
 	}
 
 	public boolean isConnected() {

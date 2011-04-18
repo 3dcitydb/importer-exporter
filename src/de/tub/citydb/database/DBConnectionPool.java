@@ -258,16 +258,26 @@ public class DBConnectionPool {
 	}
 
 	public boolean gotoWorkspace(Connection conn, Workspace workspace) {
-		String name = workspace.getName().trim();
-		String timestamp = workspace.getTimestamp().trim();
+		return gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
+	}
+	
+	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) {
+		if (workspaceName == null)
+			throw new IllegalArgumentException("Workspace name may not be null");
+		
+		if (timestamp == null)
+			throw new IllegalArgumentException("Workspace timestamp name may not be null");
+		
+		workspaceName = workspaceName.trim();
+		timestamp = timestamp.trim();
 		CallableStatement stmt = null;
 
-		if (!name.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
-				(name.length() == 0 || name.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
-			name = Internal.ORACLE_DEFAULT_WORKSPACE;
+		if (!workspaceName.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
+				(workspaceName.length() == 0 || workspaceName.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
+			workspaceName = Internal.ORACLE_DEFAULT_WORKSPACE;
 
 		try {
-			stmt = conn.prepareCall("{call dbms_wm.GotoWorkspace('" + name + "')}");
+			stmt = conn.prepareCall("{call dbms_wm.GotoWorkspace('" + workspaceName + "')}");
 			stmt.executeQuery();
 
 			if (timestamp.length() > 0) {

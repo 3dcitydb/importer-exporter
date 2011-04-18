@@ -7,11 +7,12 @@ import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
 
 public interface DatabaseController {
-	public void connect() throws DatabaseConfigurationException, SQLException;
-	public void disconnect() throws SQLException;
+	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException;
+	public void disconnect(boolean showErrorDialog) throws SQLException;
 	public boolean isConnected();
 
 	public DatabaseConnectionDetails getActiveConnectionDetails();
+	
 	public Connection getConnection() throws SQLException;
 	public boolean existsWorkspace(String workspaceName);
 	public boolean gotoWorkspace(Connection conn, String workspaceName) throws SQLException;

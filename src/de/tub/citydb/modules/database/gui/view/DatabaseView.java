@@ -47,13 +47,5 @@ public class DatabaseView implements View {
 	public void doTranslation() {
 		component.doTranslation();
 	}
-	
-	public void connect() {
-		component.connect();
-	}
-	
-	public void disconnect() {
-		component.disconnect();
-	}
 
 }

@@ -24,7 +24,7 @@ public class DatabasePlugin implements InternalPlugin, ViewExtension, Preference
 	public DatabasePlugin(JAXBContext projectContext, Config config, ImpExpGui mainView) {
 		view = new DatabaseView(config, mainView);
 		preferences = new DatabasePreferences(projectContext, mainView, config);
-		controller = new DatabaseControllerImpl(config, this);
+		controller = new DatabaseControllerImpl(this);
 	}
 		
 	@Override
