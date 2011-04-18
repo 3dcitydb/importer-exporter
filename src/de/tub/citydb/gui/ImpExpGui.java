@@ -141,16 +141,6 @@ public class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	// internal state
 	private LanguageType currentLang = null;
 
-	// set look & feel
-	{
-		try {
-			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	public ImpExpGui() {
 		dbPool = DBConnectionPool.getInstance();
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
@@ -569,6 +559,11 @@ public class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	@Override
 	public void clearConsole() {
 		consoleText.setText("");
+	}
+	
+	@Override
+	public void setDefaultStatus() {
+		statusText.setText(Internal.I18N.getString("main.status.ready.label"));
 	}
 
 	@Override

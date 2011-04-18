@@ -29,6 +29,7 @@
  */
 package de.tub.citydb;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
@@ -66,6 +67,7 @@ import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.gui.components.SplashScreen;
 import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.modules.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.modules.database.DatabasePlugin;
@@ -77,6 +79,16 @@ import de.tub.citydb.plugin.PluginService;
 import de.tub.citydb.plugin.PluginServiceFactory;
 
 public class ImpExp {
+
+	// set look & feel
+	static {
+		try {
+			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	@Option(name="-config", usage="config file containing project settings", metaVar="fileName")
 	private File configFile;
@@ -102,11 +114,18 @@ public class ImpExp {
 	@Option(name="-kmlExport", usage="export KML/COLLADA data to this file\n(shell version only)", metaVar="fileName")
 	private String kmlExportFile;
 
+	@Option(name="-noSplash")
+	private boolean noSplash;
+
 	private final Logger LOG = Logger.getInstance();
 	private JAXBBuilder jaxbBuilder;
 	private JAXBContext kmlContext, colladaContext, projectContext, guiContext;
 	private PluginService pluginService;
 	private Config config;
+
+	private SplashScreen splashScreen;
+	private boolean useSplashScreen;	
+
 	private List<String> errMsgs = new ArrayList<String>();
 
 	public static void main(String[] args) {
@@ -163,12 +182,29 @@ public class ImpExp {
 			}
 		}
 
+		// initialize splash screen
+		useSplashScreen = !shell && !noSplash;
+		if (useSplashScreen) {
+			splashScreen = new SplashScreen(4, 2, 40, Color.BLACK);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					splashScreen.setVisible(true);
+				}
+			});
+			
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				//
+			}
+		}
+
 		LOG.info("Starting " +
 				this.getClass().getPackage().getImplementationTitle() + ", version \"" +
 				this.getClass().getPackage().getImplementationVersion() + "\"");
 
 		// initialize JAXB and database environment
-		LOG.info("Initializing application environment");
+		printInfoMessage("Initializing application environment");
 		config = new Config();
 
 		try {
@@ -184,8 +220,7 @@ public class ImpExp {
 		}
 
 		// initialize config
-		LOG.info("Loading project settings");
-
+		printInfoMessage("Loading project settings");		
 		String confPath = null;
 		String projectFileName = null;
 
@@ -315,11 +350,11 @@ public class ImpExp {
 		EventDispatcher eventDispatcher = new EventDispatcher();		
 		registry.setLogController(Logger.getInstance());
 		registry.setEventDispatcher(eventDispatcher);
-			
+
 		// register illegal plugin event checker with event dispatcher
 		IllegalPluginEventChecker checker = IllegalPluginEventChecker.getInstance();
 		eventDispatcher.addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, checker);
-		
+
 		// start application
 		if (!shell) {
 			// create main view instance
@@ -331,7 +366,8 @@ public class ImpExp {
 			registry.setDatabaseController(databasePlugin.getDatabaseController());
 
 			// load external plugins
-			LOG.info("Loading plugins");
+			printInfoMessage("Loading plugins");
+
 			try {
 				PluginServiceFactory.addPluginDirectory(new File(Internal.PLUGINS_PATH));
 				pluginService = PluginServiceFactory.createPluginService();
@@ -345,10 +381,13 @@ public class ImpExp {
 
 			// initialize plugins
 			for (Plugin plugin : pluginService.getExternalPlugins()) {
-				LOG.debug("Loaded plugin: " + plugin.getClass().getName());
+				LOG.debug("Loaded plugin " + plugin.getClass().getName());
+				if (useSplashScreen)
+					splashScreen.setMessage("Loaded plugin " + plugin.getClass().getName());
+
 				plugin.init(new Locale(lang.value()));
 			}	
-			
+
 			// register internal plugins
 			pluginService.registerInternalPlugin(new CityGMLImportPlugin(jaxbBuilder, config, mainView));		
 			pluginService.registerInternalPlugin(new CityGMLExportPlugin(jaxbBuilder, config, mainView));		
@@ -360,9 +399,9 @@ public class ImpExp {
 			// initialize internal plugins
 			for (Plugin plugin : pluginService.getInternalPlugins())
 				plugin.init(new Locale(lang.value()));
-			
+
 			// initialize gui
-			LOG.info("Starting graphical user interface");
+			printInfoMessage("Starting graphical user interface");
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -374,6 +413,15 @@ public class ImpExp {
 				}
 			});
 
+			try {
+				Thread.sleep(700);
+			} catch (InterruptedException e) {
+				//
+			}
+
+			if (useSplashScreen)
+				splashScreen.close();
+			
 			return;
 		}	
 
@@ -441,6 +489,14 @@ public class ImpExp {
 			}.start();
 
 			return;
+		}
+	}
+
+	private void printInfoMessage(String message) {
+		LOG.info(message);
+		if (useSplashScreen) {
+			splashScreen.setMessage(message);
+			splashScreen.nextStep();
 		}
 	}
 
