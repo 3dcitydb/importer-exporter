@@ -117,7 +117,7 @@ public class DBTextureParam implements DBExporter {
 								if (coordsList != null && coordsList.size() != 0) {
 									TextureCoordinates texureCoordinates = cityGMLFactory.createTextureCoordinates(app);
 									texureCoordinates.setValue(coordsList);
-									texureCoordinates.setRing(target + "_" + i);
+									texureCoordinates.setRing(target + '_' + i + '_');
 
 									texCoordList.addTextureCoordinates(texureCoordinates);
 								} else {
