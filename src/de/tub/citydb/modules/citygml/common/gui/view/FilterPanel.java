@@ -480,7 +480,6 @@ public class FilterPanel extends JPanel {
 		boundingBoxFilter.setText(Internal.I18N.getString("filter.border.boundingBox"));
 		featureClassFilter.setText(Internal.I18N.getString("filter.border.featureClass"));
 		srsLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
-		srsComboBox.doTranslation();
 	}
 
 	public void loadSettings() {
@@ -505,7 +504,6 @@ public class FilterPanel extends JPanel {
 		gmlNameText.setText(gmlName.getValue());		
 		gmlIdText.setText(Util.collection2string(filterConfig.getSimpleFilter().getGmlIdFilter().getGmlIds(), ","));
 
-		srsComboBox.updateContent();
 		srsComboBox.setSelectedItem(bbox.getSRS());
 
 		coStartText.setValue(featureCount.getFrom());

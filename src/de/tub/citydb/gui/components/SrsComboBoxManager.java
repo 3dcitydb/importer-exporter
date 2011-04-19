@@ -33,8 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.JComboBox;
-
+import de.tub.citydb.api.gui.DatabaseSrsComboBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.ReferenceSystem;
@@ -62,7 +61,9 @@ public class SrsComboBoxManager {
 
 	public SrsComboBox getSrsComboBox(boolean onlyShowSupported) {
 		SrsComboBox srsBox = new SrsComboBox(onlyShowSupported);
+		srsBox.init();
 		srsBoxes.add(srsBox);
+		
 		return srsBox;
 	}
 
@@ -75,9 +76,14 @@ public class SrsComboBoxManager {
 			srsBox.repaint();
 		}
 	}
+	
+	public void translateAll() {
+		for (SrsComboBox srsBox : srsBoxes)
+			srsBox.doTranslation();
+	}
 
 	@SuppressWarnings("serial")
-	public class SrsComboBox extends JComboBox {
+	public class SrsComboBox extends DatabaseSrsComboBox {
 		private final boolean onlyShowSupported;
 
 		private SrsComboBox(boolean onlyShowSupported) {
@@ -99,8 +105,17 @@ public class SrsComboBoxManager {
 		public boolean isDBReferenceSystemSelected() {
 			return getSelectedItem() == dbRefSys;
 		}
+		
+		private void init() {
+			addItem(dbRefSys);
 
-		public void updateContent() {
+			// user-defined reference systems
+			for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems())
+				if (!onlyShowSupported || refSys.isSupported())
+					addItem(refSys);
+		}
+
+		private void updateContent() {
 			DBConnectionPool dbPool = DBConnectionPool.getInstance();
 			
 			if (dbPool.isConnected()) {
@@ -116,8 +131,6 @@ public class SrsComboBoxManager {
 				selectedItem = dbRefSys;
 
 			removeAllItems();
-
-			// default reference systems
 			addItem(dbRefSys);
 
 			// user-defined reference systems
@@ -128,9 +141,9 @@ public class SrsComboBoxManager {
 			setSelectedItem(selectedItem);
 		}
 
-		public void doTranslation() {
+		private void doTranslation() {
 			dbRefSys.setDescription(Internal.I18N.getString("common.label.boundingBox.crs.sameAsInDB"));
-			updateContent();
+			init();
 			repaint();
 			fireActionEvent();
 		}

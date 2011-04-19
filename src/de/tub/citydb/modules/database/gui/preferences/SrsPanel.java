@@ -401,12 +401,12 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		replaceWithFileButton.setText(Internal.I18N.getString("pref.db.srs.button.replaceWithFile"));
 		saveFileButton.setText(Internal.I18N.getString("pref.db.srs.button.saveFile"));
 
-		srsComboBox.doTranslation();
+		srsComboBoxManager.translateAll();
 	}
 
 	@Override
 	public void loadSettings() {
-		srsComboBox.updateContent();
+		updateSrsComboBoxes(false);
 		displaySelectedValues();
 	}
 

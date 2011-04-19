@@ -193,10 +193,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		timestampLabel.setText(Internal.I18N.getString("common.label.timestamp"));
 		browseButton.setText(Internal.I18N.getString("common.button.browse"));
 		exportButton.setText(Internal.I18N.getString("export.button.export"));
-
 		srsComboBoxLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
-		srsComboBox.doTranslation();
-
 		filterPanel.doTranslation();
 	}
 
@@ -205,7 +202,6 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getName());
 		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
 		
-		srsComboBox.updateContent();
 		srsComboBox.setSelectedItem(config.getProject().getExporter().getTargetSRS());
 		
 		filterPanel.loadSettings();

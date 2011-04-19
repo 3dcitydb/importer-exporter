@@ -477,7 +477,6 @@ public class KmlExportPanel extends JPanel {
 		boundingBoxRadioButton.setText(Internal.I18N.getString("filter.border.boundingBox"));
 
 		srsLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
-		srsComboBox.doTranslation();
 
 		bbXMinLabel.setText(Internal.I18N.getString("filter.label.boundingBox.xMin"));
 		bbXMaxLabel.setText(Internal.I18N.getString("filter.label.boundingBox.xMax"));
@@ -547,7 +546,6 @@ public class KmlExportPanel extends JPanel {
 	public void loadSettings() {
 		clearGui();
 		
-		srsComboBox.updateContent();
 		srsComboBox.setSelectedIndex(0);
 		
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().getName());

@@ -431,7 +431,6 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		executeButton.setText(Internal.I18N.getString("db.button.execute"));
 
 		srsLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
-		srsComboBox.doTranslation();
 
 		if (!dbPool.isConnected())
 			connectButton.setText(Internal.I18N.getString("db.button.connect"));
@@ -540,8 +539,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 					LOG.info("Database connection established.");
 					conn.getMetaData().printToConsole(LogLevelType.INFO);
 					
-					// check whether user-defined SRSs are supported
-					SrsComboBoxManager.getInstance(config).updateAll(false);
+					// log whether user-defined SRSs are supported
 					for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) {
 						if (refSys.isSupported())
 							LOG.debug("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") supported.");
@@ -803,8 +801,13 @@ public class DatabasePanel extends JPanel implements EventHandler {
 	}
 
 	public void loadSettings() {
-		if (dbPool.isConnected())
-			dbPool.forceDisconnect();
+		if (dbPool.isConnected()) {
+			try {
+				disconnect(true);
+			} catch (SQLException e) {
+				dbPool.forceDisconnect();
+			}
+		}
 
 		databaseConfig = config.getProject().getDatabase();
 		isSettingsLoaded = false;
@@ -834,7 +837,6 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		timestampText.setText(databaseConfig.getWorkspaces().getOperationWorkspace().getTimestamp());
 		bboxComboBox.setSelectedItem(databaseConfig.getOperation().getBoundingBoxFeatureClass());
 
-		srsComboBox.updateContent();
 		srsComboBox.setSelectedItem(databaseConfig.getOperation().getBoundingBoxSRS());
 
 		if (databaseConfig.getOperation().getExecute() == DBOperationMode.REPORT)
