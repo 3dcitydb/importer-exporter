@@ -59,10 +59,10 @@ import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.Index;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.AffineTransformation;
 import de.tub.citydb.config.project.importer.ImportGmlId;
+import de.tub.citydb.config.project.importer.Index;
 import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
@@ -142,11 +142,13 @@ public class Importer implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		// get config shortcuts
-		de.tub.citydb.config.project.system.System system = config.getProject().getImporter().getSystem();
+		de.tub.citydb.config.project.importer.Importer importer = config.getProject().getImporter();
 		Database database = config.getProject().getDatabase();
-		Index index = database.getIndexes();
-		Internal intConfig = config.getInternal();
-		ImportGmlId gmlId = config.getProject().getImporter().getGmlId();
+		Internal intConfig = config.getInternal();		
+		de.tub.citydb.config.project.system.System system = importer.getSystem();
+		
+		Index index = importer.getIndexes();
+		ImportGmlId gmlId = importer.getGmlId();
 
 		// worker pool settings 
 		int minThreads = system.getThreadPool().getDefaultPool().getMinThreads();
@@ -247,7 +249,7 @@ public class Importer implements EventHandler {
 		}
 
 		// prepare XML validation 
-		XMLValidation xmlValidation = config.getProject().getImporter().getXMLValidation();
+		XMLValidation xmlValidation = importer.getXMLValidation();
 		if (xmlValidation.isSetUseXMLValidation()) {			
 			LOG.info("Using XML validation during database import.");
 
@@ -260,7 +262,7 @@ public class Importer implements EventHandler {
 		}
 		
 		// affine transformation
-		AffineTransformation affineTransformation = config.getProject().getImporter().getAffineTransformation();
+		AffineTransformation affineTransformation = importer.getAffineTransformation();
 		if (affineTransformation.isSetUseAffineTransformation()) {
 			LOG.info("Applying affine coordinates transformation.");
 			

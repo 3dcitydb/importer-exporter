@@ -33,7 +33,7 @@ import de.tub.citydb.api.database.DatabaseMetaData;
 import de.tub.citydb.api.log.LogLevelType;
 import de.tub.citydb.api.log.Logger;
 
-public class DBMetaData {
+public class DBMetaData implements DatabaseMetaData {
 	private static final Logger LOG = Logger.getInstance();	
 	
 	// database related information
@@ -65,6 +65,7 @@ public class DBMetaData {
 		versioning = Versioning.OFF;
 	}
 
+	@Override
 	public String getDatabaseProductName() {
 		return databaseProductName;
 	}
@@ -73,10 +74,12 @@ public class DBMetaData {
 		this.databaseProductName = databaseProductName;
 	}
 
+	@Override
 	public String getDatabaseProductVersion() {
 		return databaseProductString;
 	}
 	
+	@Override
 	public String getShortDatabaseProductVersion() {
 		return getDatabaseProductVersion().replaceAll("\\n.*", "");
 	}
@@ -85,6 +88,7 @@ public class DBMetaData {
 		this.databaseProductString = databaseProductString;
 	}
 
+	@Override
 	public int getDatabaseMajorVersion() {
 		return databaseMajorVersion;
 	}
@@ -93,6 +97,7 @@ public class DBMetaData {
 		this.databaseMajorVersion = databaseMajorVersion;
 	}
 
+	@Override
 	public int getDatabaseMinorVersion() {
 		return databaseMinorVersion;
 	}
@@ -101,6 +106,7 @@ public class DBMetaData {
 		this.databaseMinorVersion = databaseMinorVersion;
 	}
 
+	@Override
 	public String getDatabaseProductString() {
 		return databaseProductString;
 	}
@@ -109,6 +115,7 @@ public class DBMetaData {
 		this.databaseProductString = databaseProductString;
 	}
 
+	@Override
 	public String getReferenceSystemName() {
 		return referenceSystemName;
 	}
@@ -117,6 +124,7 @@ public class DBMetaData {
 		this.referenceSystemName = referenceSystemName;
 	}
 
+	@Override
 	public boolean isReferenceSystem3D() {
 		return isReferenceSystem3D;
 	}
@@ -125,6 +133,7 @@ public class DBMetaData {
 		this.isReferenceSystem3D = isReferenceSystem3D;
 	}
 
+	@Override
 	public int getSrid() {
 		return srid;
 	}
@@ -133,12 +142,18 @@ public class DBMetaData {
 		this.srid = srid;
 	}
 
+	@Override
 	public String getSrsName() {
 		return srsName;
 	}
 
 	public void setSrsName(String srsName) {
 		this.srsName = srsName;
+	}
+
+	@Override
+	public boolean isVersionEnabled() {
+		return versioning == Versioning.ON;
 	}
 
 	public Versioning getVersioning() {
@@ -149,24 +164,12 @@ public class DBMetaData {
 		this.versioning = versioning;
 	}
 
-	public void toConsole(LogLevelType level) {
+	@Override
+	public void printToConsole(LogLevelType level) {
 		LOG.log(level, getShortDatabaseProductVersion());
 		LOG.log(level, "SRID: " + srid + " (" + referenceSystemName + ')');
 		LOG.log(level, "gml:srsName: " + srsName);
 		LOG.log(level, "Versioning: " + versioning);
-	}
-	
-	public DatabaseMetaData toPluginObject() {
-		return new DatabaseMetaData(
-				databaseProductName, 
-				databaseProductString, 
-				databaseMajorVersion, 
-				databaseMinorVersion, 
-				referenceSystemName, 
-				isReferenceSystem3D, 
-				srid, 
-				srsName, 
-				versioning == Versioning.ON);
 	}
 	
 	public enum Versioning {

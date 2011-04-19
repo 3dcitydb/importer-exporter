@@ -36,12 +36,14 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
+import de.tub.citydb.api.database.DatabaseSrs;
+
 @XmlType(name="ReferenceSystemType", propOrder={
 		"srid",
 		"srsName",
 		"description"
 		})
-public class ReferenceSystem implements Comparable<ReferenceSystem> {
+public class ReferenceSystem implements DatabaseSrs, Comparable<ReferenceSystem> {
 	public static final ReferenceSystem DEFAULT = new ReferenceSystem("", 0, "n/a", "", true);
 
 	@XmlAttribute
@@ -85,6 +87,7 @@ public class ReferenceSystem implements Comparable<ReferenceSystem> {
 		this.srid = srid;
 	}
 
+	@Override
 	public int getSrid() {
 		return srid;
 	}
@@ -93,6 +96,7 @@ public class ReferenceSystem implements Comparable<ReferenceSystem> {
 		this.srsName = srsName;
 	}
 
+	@Override
 	public String getSrsName() {
 		return srsName;
 	}
@@ -101,6 +105,7 @@ public class ReferenceSystem implements Comparable<ReferenceSystem> {
 		this.description = description;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}
@@ -109,6 +114,7 @@ public class ReferenceSystem implements Comparable<ReferenceSystem> {
 		return getDescription();
 	}
 
+	@Override
 	public boolean isSupported() {
 		return isSupported;
 	}

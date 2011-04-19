@@ -39,10 +39,8 @@ import java.text.MessageFormat;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
@@ -55,8 +53,6 @@ import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.database.Index;
-import de.tub.citydb.config.project.database.IndexMode;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.StatusDialog;
@@ -70,16 +66,8 @@ public class IndexPanel extends AbstractPreferencesComponent implements EventHan
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 
-	private JRadioButton impSIRadioDeacAc;
-	private JRadioButton impSIRadioDeac;
-	private JRadioButton impSIRadioNoDeac;
-	private JRadioButton impNIRadioDeacAc;
-	private JRadioButton impNIRadioDeac;
-	private JRadioButton impNIRadioNoDeac;
 	private JPanel block1;
 	private JPanel block2;
-	private JPanel block3;
-	private JPanel block4;
 	private JButton impSIDeactivate;
 	private JButton impSIActivate;
 	private JButton impNIDeactivate;
@@ -97,41 +85,17 @@ public class IndexPanel extends AbstractPreferencesComponent implements EventHan
 
 	@Override
 	public boolean isModified() {
-		Index index = config.getProject().getDatabase().getIndexes();
-
-		if (impSIRadioNoDeac.isSelected() != index.isSpatialIndexModeUnchanged()) return true;
-		if (impSIRadioDeacAc.isSelected() != index.isSpatialIndexModeDeactivateActivate()) return true;
-		if (impSIRadioDeac.isSelected() != index.isSpatialIndexModeDeactivate()) return true;
-
-		if (impNIRadioNoDeac.isSelected() != index.isNormalIndexModeUnchanged()) return true;
-		if (impNIRadioDeacAc.isSelected() != index.isNormalIndexModeDeactivateActivate()) return true;
-		if (impNIRadioDeac.isSelected() != index.isNormalIndexModeDeactivate()) return true;
-
 		return false;
 	}
 
 	private void initGui() {
-		impSIRadioDeacAc = new JRadioButton("");
-		impSIRadioDeac = new JRadioButton("");
-		impSIRadioNoDeac = new JRadioButton("");
-		ButtonGroup impSIRadio = new ButtonGroup();
-		impSIRadio.add(impSIRadioNoDeac);
-		impSIRadio.add(impSIRadioDeacAc);
-		impSIRadio.add(impSIRadioDeac);
-		impSIDeactivate = new JButton("");
-		impSIActivate = new JButton("");
+		impSIDeactivate = new JButton();
+		impSIActivate = new JButton();
 		impSIDeactivate.setEnabled(false);
 		impSIActivate.setEnabled(false);
 
-		impNIRadioDeacAc = new JRadioButton("");
-		impNIRadioDeac = new JRadioButton("");
-		impNIRadioNoDeac = new JRadioButton("");
-		ButtonGroup impNIRadio = new ButtonGroup();
-		impNIRadio.add(impNIRadioNoDeac);
-		impNIRadio.add(impNIRadioDeacAc);
-		impNIRadio.add(impNIRadioDeac);
-		impNIDeactivate = new JButton("");
-		impNIActivate = new JButton("");
+		impNIDeactivate = new JButton();
+		impNIActivate = new JButton();
 		impNIDeactivate.setEnabled(false);
 		impNIActivate.setEnabled(false);		
 
@@ -141,13 +105,9 @@ public class IndexPanel extends AbstractPreferencesComponent implements EventHan
 			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block1.setBorder(BorderFactory.createTitledBorder(""));
 			block1.setLayout(new GridBagLayout());
-			impSIRadioNoDeac.setIconTextGap(10);
-			impSIRadioDeacAc.setIconTextGap(10);
-			impSIRadioDeac.setIconTextGap(10);
 			{
-				block1.add(impSIRadioNoDeac, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(impSIRadioDeacAc, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(impSIRadioDeac, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block1.add(impSIDeactivate, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+				block1.add(impSIActivate, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 			}
 
 			block2 = new JPanel();
@@ -155,30 +115,8 @@ public class IndexPanel extends AbstractPreferencesComponent implements EventHan
 			block2.setBorder(BorderFactory.createTitledBorder(""));
 			block2.setLayout(new GridBagLayout());
 			{
-				block2.add(impSIDeactivate, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
-				block2.add(impSIActivate, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
-			}
-
-			block3 = new JPanel();
-			add(block3, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block3.setBorder(BorderFactory.createTitledBorder(""));
-			block3.setLayout(new GridBagLayout());
-			impNIRadioNoDeac.setIconTextGap(10);
-			impNIRadioDeacAc.setIconTextGap(10);
-			impNIRadioDeac.setIconTextGap(10);
-			{
-				block3.add(impNIRadioNoDeac, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block3.add(impNIRadioDeacAc, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block3.add(impNIRadioDeac, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-			}
-
-			block4 = new JPanel();
-			add(block4, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
-			block4.setBorder(BorderFactory.createTitledBorder(""));
-			block4.setLayout(new GridBagLayout());
-			{
-				block4.add(impNIDeactivate, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
-				block4.add(impNIActivate, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+				block2.add(impNIDeactivate, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+				block2.add(impNIActivate, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 			}
 		}	
 
@@ -229,30 +167,20 @@ public class IndexPanel extends AbstractPreferencesComponent implements EventHan
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.db.index.spatial.border.handling")));
-		impSIRadioDeacAc.setText(Internal.I18N.getString("pref.db.index.spatial.label.autoActivate"));
-		impSIRadioDeac.setText(Internal.I18N.getString("pref.db.index.spatial.label.manuActivate"));
-		impSIRadioNoDeac.setText(Internal.I18N.getString("pref.db.index.spatial.label.keepState"));
-
-		block2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.db.index.spatial.border.manual")));
+		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.db.index.spatial.border.manual")));
 		impSIDeactivate.setText(Internal.I18N.getString("pref.db.index.spatial.button.deactivate"));
 		impSIActivate.setText(Internal.I18N.getString("pref.db.index.spatial.button.activate"));
 
-		block3.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.db.index.normal.border.handling")));
-		impNIRadioDeacAc.setText(Internal.I18N.getString("pref.db.index.normal.label.autoActivate"));
-		impNIRadioDeac.setText(Internal.I18N.getString("pref.db.index.normal.label.manuActivate"));
-		impNIRadioNoDeac.setText(Internal.I18N.getString("pref.db.index.normal.label.keepState"));
-
-		block4.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.db.index.normal.border.manual")));
+		block2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.db.index.normal.border.manual")));
 		impNIDeactivate.setText(Internal.I18N.getString("pref.db.index.normal.button.deactivate"));
 		impNIActivate.setText(Internal.I18N.getString("pref.db.index.normal.button.activate"));
 
 		if (!DBConnectionPool.getInstance().isConnected()) {
 			Color color = UIManager.getColor("Label.disabledForeground");
+			((TitledBorder)block1.getBorder()).setTitleColor(color);
+			block1.repaint();
 			((TitledBorder)block2.getBorder()).setTitleColor(color);
 			block2.repaint();
-			((TitledBorder)block4.getBorder()).setTitleColor(color);
-			block4.repaint();
 		}
 	}
 
@@ -453,45 +381,17 @@ public class IndexPanel extends AbstractPreferencesComponent implements EventHan
 
 	@Override
 	public void loadSettings() {
-		Index index = config.getProject().getDatabase().getIndexes();
-
-		if (index.isSpatialIndexModeUnchanged())
-			impSIRadioNoDeac.setSelected(true);
-		else if (index.isSpatialIndexModeDeactivateActivate())
-			impSIRadioDeacAc.setSelected(true);
-		else
-			impSIRadioDeac.setSelected(true);
-
-		if (index.isNormalIndexModeUnchanged())
-			impNIRadioNoDeac.setSelected(true);
-		else if (index.isNormalIndexModeDeactivateActivate())
-			impNIRadioDeacAc.setSelected(true);
-		else
-			impNIRadioDeac.setSelected(true);
+		// nothing to do here
 	}
 
 	@Override
 	public void setSettings() {
-		Index index = config.getProject().getDatabase().getIndexes();
-
-		if (impSIRadioNoDeac.isSelected())
-			index.setSpatial(IndexMode.UNCHANGED);
-		else if (impSIRadioDeacAc.isSelected())
-			index.setSpatial(IndexMode.DEACTIVATE_ACTIVATE);
-		else
-			index.setSpatial(IndexMode.DEACTIVATE);
-
-		if (impNIRadioNoDeac.isSelected())
-			index.setNormal(IndexMode.UNCHANGED);
-		else if (impNIRadioDeacAc.isSelected())
-			index.setNormal(IndexMode.DEACTIVATE_ACTIVATE);
-		else
-			index.setNormal(IndexMode.DEACTIVATE);
+		// nothing to do here
 	}
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.import.index");
+		return Internal.I18N.getString("pref.tree.db.index");
 	}
 
 	@Override
@@ -499,11 +399,11 @@ public class IndexPanel extends AbstractPreferencesComponent implements EventHan
 		boolean isConnected = ((DatabaseConnectionStateEvent)event).isConnected();
 		Color color = isConnected ? UIManager.getColor("TitledBorder.titleColor") : UIManager.getColor("Label.disabledForeground");
 
+		((TitledBorder)block1.getBorder()).setTitleColor(color);
+		block1.repaint();
+
 		((TitledBorder)block2.getBorder()).setTitleColor(color);
 		block2.repaint();
-
-		((TitledBorder)block4.getBorder()).setTitleColor(color);
-		block4.repaint();
 
 		impSIActivate.setEnabled(isConnected);
 		impSIDeactivate.setEnabled(isConnected);

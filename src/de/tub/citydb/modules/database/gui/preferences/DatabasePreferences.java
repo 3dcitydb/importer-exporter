@@ -9,7 +9,7 @@ import de.tub.citydb.gui.preferences.DefaultPreferencesEntry;
 
 public class DatabasePreferences extends AbstractPreferences {
 	
-	public DatabasePreferences(JAXBContext projectContext, ImpExpGui mainView, Config config) {
+	public DatabasePreferences(JAXBContext projectContext, Config config, ImpExpGui mainView) {
 		super(new DatabaseEntry());
 		
 		root.addChildEntry(new DefaultPreferencesEntry(new IndexPanel(config, mainView)));

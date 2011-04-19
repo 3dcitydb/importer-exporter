@@ -42,6 +42,7 @@ import de.tub.citydb.config.project.system.System;
 		"appearances",
 		"filter",
 		"affineTransformation",
+		"indexes",
 		"xmlValidation",
 		"system"
 })
@@ -52,6 +53,7 @@ public class Importer {
 	private ImportAppearance appearances;
 	private ImportFilterConfig filter;
 	private AffineTransformation affineTransformation;
+	private Index indexes;
 	private XMLValidation xmlValidation;
 	private System system;
 
@@ -62,6 +64,7 @@ public class Importer {
 		appearances = new ImportAppearance();
 		filter = new ImportFilterConfig();
 		affineTransformation = new AffineTransformation();
+		indexes = new Index();
 		xmlValidation = new XMLValidation();
 		system = new System();
 	}
@@ -109,6 +112,15 @@ public class Importer {
 	public void setFilter(ImportFilterConfig filter) {
 		if (filter != null)
 			this.filter = filter;
+	}
+	
+	public Index getIndexes() {
+		return indexes;
+	}
+
+	public void setIndexes(Index indexes) {
+		if (indexes != null)
+			this.indexes = indexes;
 	}
 
 	public XMLValidation getXMLValidation() {

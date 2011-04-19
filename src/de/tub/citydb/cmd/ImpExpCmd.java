@@ -49,7 +49,6 @@ import de.tub.citydb.modules.citygml.exporter.controller.Exporter;
 import de.tub.citydb.modules.citygml.importer.controller.Importer;
 import de.tub.citydb.modules.citygml.importer.controller.XMLValidator;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
-import de.tub.citydb.util.DBUtil;
 
 public class ImpExpCmd {
 	private final Logger LOG = Logger.getInstance();
@@ -172,59 +171,26 @@ public class ImpExpCmd {
 	private void initDBPool() {	
 		// check active connection
 		DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-		
+
 		if (conn == null) {
 			LOG.error("No valid database connection found in project settings.");
 			return;
 		}
 
-		if (conn.getServer() == null || conn.getServer().trim().equals("")) {
-			LOG.error("No database server configured in project settings.");
-			return;
-		}
-
-		if (conn.getPort() == null || conn.getPort() == 0) {
-			LOG.error("No valid database connection port configured in project settings.");
-			return;
-		}
-
-		if (conn.getSid() == null || conn.getSid().trim().equals("")) {
-			LOG.error("No valid database sid configured in project settings.");
-			return;
-		}
-
-		if (conn.getUser() == null || conn.getUser().trim().equals("")) {
-			LOG.error("No database user configured in project settings.");
-			return;
-		}
-
-		if (conn.getPassword() == null || conn.getPassword().trim().equals("")) {
-			LOG.error("No password for database user configured in project settings.");
-			return;
-		} else
-			conn.setInternalPassword(conn.getPassword());
-
 		LOG.info("Connecting to database profile '" + conn.getDescription() + "'.");
+		conn.setInternalPassword(conn.getPassword());
 
 		try {
-			dbPool.connect(conn);
-			
+			dbPool.connect(config);
 			LOG.info("Database connection established.");
-			conn.getMetaData().toConsole(LogLevelType.INFO);
-			
-			// check whether user-defined SRSs are supported
-			try {
-				for (ReferenceSystem refSys: config.getProject().getDatabase().getReferenceSystems()) {
-					boolean isSupported = DBUtil.isSrsSupported(refSys.getSrid());
-					refSys.setSupported(isSupported);
-					
-					if (isSupported)
-						LOG.debug("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") supported.");
-					else
-						LOG.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") NOT supported.");
-				}
-			} catch (SQLException sqlEx) {
-				LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
+			conn.getMetaData().printToConsole(LogLevelType.INFO);
+
+			// log whether user-defined SRSs are supported
+			for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) {
+				if (refSys.isSupported())
+					LOG.debug("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") supported.");
+				else
+					LOG.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") NOT supported.");
 			}
 
 		} catch (DatabaseConfigurationException e) {

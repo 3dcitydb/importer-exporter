@@ -2,10 +2,13 @@ package de.tub.citydb.modules.database.controller;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
+import de.tub.citydb.api.database.DatabaseSrs;
+import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.modules.database.DatabasePlugin;
@@ -13,10 +16,13 @@ import de.tub.citydb.modules.database.gui.view.DatabasePanel;
 
 public class DatabaseControllerImpl implements DatabaseController {
 	private final DatabasePlugin plugin;
+	private final Config config;
 	private final DBConnectionPool dbPool;
 	
-	public DatabaseControllerImpl(DatabasePlugin plugin) {
-		this.plugin = plugin;		
+	public DatabaseControllerImpl(Config config, DatabasePlugin plugin) {
+		this.plugin = plugin;
+		this.config = config;
+		
 		dbPool = DBConnectionPool.getInstance();
 	}	
 
@@ -56,7 +62,12 @@ public class DatabaseControllerImpl implements DatabaseController {
 
 	@Override
 	public DatabaseConnectionDetails getActiveConnectionDetails() {
-		return dbPool.getActiveConnection().toPluginObject();
+		return dbPool.getActiveConnection();
+	}
+
+	@Override
+	public List<? extends DatabaseSrs> getDatabaseSrs() {
+		return config.getProject().getDatabase().getReferenceSystems();
 	}
 	
 }

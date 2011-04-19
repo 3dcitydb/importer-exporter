@@ -257,7 +257,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 				topFrame.clearConsole();
 				DBConnection conn = dbPool.getActiveConnection();
 				LOG.info("Connected to database profile '" + conn.getDescription() + "'.");
-				conn.getMetaData().toConsole(LogLevelType.INFO);
+				conn.getMetaData().printToConsole(LogLevelType.INFO);
 			}
 		});
 
@@ -503,13 +503,13 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		try {
 			if (!dbPool.isConnected()) {
 				setSettings();
-				DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-
+				
+				DBConnection conn = config.getProject().getDatabase().getActiveConnection();			
 				topFrame.setStatusText(Internal.I18N.getString("main.status.database.connect.label"));
 				LOG.info("Connecting to database profile '" + conn.getDescription() + "'.");
 
 				try {
-					dbPool.connect(conn);
+					dbPool.connect(config);
 				} catch (DatabaseConfigurationException e) {					
 					if (showErrorDialog)
 						topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
@@ -538,33 +538,16 @@ public class DatabasePanel extends JPanel implements EventHandler {
 
 				if (dbPool.isConnected()) {
 					LOG.info("Database connection established.");
-					conn.getMetaData().toConsole(LogLevelType.INFO);
-
+					conn.getMetaData().printToConsole(LogLevelType.INFO);
+					
 					// check whether user-defined SRSs are supported
-					try {
-						boolean updateComboBoxes = false;					
-
-						for (ReferenceSystem refSys: config.getProject().getDatabase().getReferenceSystems()) {
-							boolean wasSupported = refSys.isSupported();
-							boolean isSupported = DBUtil.isSrsSupported(refSys.getSrid());
-							refSys.setSupported(isSupported);
-
-							if (!updateComboBoxes && wasSupported != isSupported)
-								updateComboBoxes = true;
-
-							if (isSupported)
-								LOG.debug("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") supported.");
-							else
-								LOG.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") NOT supported.");
-						}
-
-						if (updateComboBoxes)
-							SrsComboBoxManager.getInstance(config).updateAll(false);
-
-					} catch (SQLException e) {
-						LOG.error("Error while checking user-defined SRSs: " + e.getMessage().trim());
-						throw e;
-					}
+					SrsComboBoxManager.getInstance(config).updateAll(false);
+					for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) {
+						if (refSys.isSupported())
+							LOG.debug("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") supported.");
+						else
+							LOG.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") NOT supported.");
+					}					
 				}
 
 				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	

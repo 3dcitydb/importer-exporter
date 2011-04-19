@@ -2,9 +2,11 @@ package de.tub.citydb.api.controller;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
+import de.tub.citydb.api.database.DatabaseSrs;
 
 public interface DatabaseController {
 	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException;
@@ -12,6 +14,7 @@ public interface DatabaseController {
 	public boolean isConnected();
 
 	public DatabaseConnectionDetails getActiveConnectionDetails();
+	public List<? extends DatabaseSrs> getDatabaseSrs();
 	
 	public Connection getConnection() throws SQLException;
 	public boolean existsWorkspace(String workspaceName);

@@ -43,8 +43,10 @@ import oracle.ucp.jdbc.PoolDataSourceFactory;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.registry.ObjectRegistry;
+import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
+import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.util.DBUtil;
 
@@ -72,7 +74,9 @@ public class DBConnectionPool {
 		return instance;
 	}
 
-	public synchronized void connect(DBConnection conn) throws DatabaseConfigurationException, SQLException {
+	public synchronized void connect(Config config) throws DatabaseConfigurationException, SQLException {
+		DBConnection conn = config.getProject().getDatabase().getActiveConnection();
+		
 		if (conn == null)
 			throw new DatabaseConfigurationException("No valid database connection details provided.");
 
@@ -116,7 +120,14 @@ public class DBConnectionPool {
 
 		try {
 			// retrieve connection metadata
-			conn.setMetaData(DBUtil.getDatabaseInfo());	
+			conn.setMetaData(DBUtil.getDatabaseInfo());
+			
+			// check user-defined reference systems are supported
+			for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) { 
+				boolean isSupported = DBUtil.isSrsSupported(refSys.getSrid());
+				refSys.setSupported(isSupported);
+			}
+			
 		} catch (SQLException e) {
 			try {
 				poolManager.destroyConnectionPool(poolName);

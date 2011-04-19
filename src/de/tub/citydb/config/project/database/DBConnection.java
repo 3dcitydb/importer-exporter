@@ -48,7 +48,7 @@ import de.tub.citydb.api.database.DatabaseConnectionDetails;
 		"password",
 		"savePassword"
 		})
-public class DBConnection implements Comparable<DBConnection> {
+public class DBConnection implements DatabaseConnectionDetails, Comparable<DBConnection> {
 	@XmlAttribute(required=true)
 	@XmlID
 	private String id;
@@ -78,6 +78,7 @@ public class DBConnection implements Comparable<DBConnection> {
 		this.id = id;
 	}
 	
+	@Override
 	public String getDescription() {
 		return description;
 	}
@@ -86,6 +87,7 @@ public class DBConnection implements Comparable<DBConnection> {
 		this.description = description;
 	}
 
+	@Override
 	public String getServer() {
 		return server;
 	}
@@ -94,6 +96,7 @@ public class DBConnection implements Comparable<DBConnection> {
 		this.server = server;
 	}
 
+	@Override
 	public Integer getPort() {
 		return port;
 	}
@@ -102,6 +105,7 @@ public class DBConnection implements Comparable<DBConnection> {
 		this.port = port;
 	}
 
+	@Override
 	public String getSid() {
 		return sid;
 	}
@@ -110,6 +114,7 @@ public class DBConnection implements Comparable<DBConnection> {
 		this.sid = sid;
 	}
 
+	@Override
 	public String getUser() {
 		return user;
 	}
@@ -153,6 +158,7 @@ public class DBConnection implements Comparable<DBConnection> {
 		this.internalPassword = internalPassword;
 	}
 
+	@Override
 	public DBMetaData getMetaData() {
 		return metaData;
 	}
@@ -172,16 +178,6 @@ public class DBConnection implements Comparable<DBConnection> {
 	
 	public String toConnectString() {
 		return user + "@" + server + ":" + port + "/" + sid;
-	}
-	
-	public DatabaseConnectionDetails toPluginObject() {
-		return new DatabaseConnectionDetails(
-				description, 
-				server, 
-				port, 
-				sid, 
-				user, 
-				metaData.toPluginObject());
 	}
 	
 }

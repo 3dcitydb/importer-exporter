@@ -27,7 +27,7 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.database;
+package de.tub.citydb.config.project.importer;
 
 import javax.xml.bind.annotation.XmlType;
 
