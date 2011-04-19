@@ -312,7 +312,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					DirectPositionList directPositionList = new DirectPositionListImpl();
 
 					if (forceRingIds)
-						linearRing.setId(polygon.getId() + "_" + ringNo);
+						linearRing.setId(polygon.getId() + '_' + ringNo + '_');
 
 					directPositionList.setValue(values);
 					directPositionList.setSrsDimension(3);
@@ -329,7 +329,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					DirectPositionList directPositionList = new DirectPositionListImpl();
 
 					if (forceRingIds)
-						linearRing.setId(polygon.getId() + "_" + ringNo);
+						linearRing.setId(polygon.getId() + '_' + ringNo + '_');
 
 					directPositionList.setValue(values);
 					directPositionList.setSrsDimension(3);

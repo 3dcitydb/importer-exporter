@@ -118,7 +118,7 @@ public class DBTextureParam implements DBExporter {
 								if (coordsList != null && coordsList.size() != 0) {
 									TextureCoordinates texureCoordinates = new TextureCoordinatesImpl();
 									texureCoordinates.setValue(coordsList);
-									texureCoordinates.setRing(target + "_" + i);
+									texureCoordinates.setRing(target + '_' + i);
 
 									texCoordList.addTextureCoordinates(texureCoordinates);
 								} else {
