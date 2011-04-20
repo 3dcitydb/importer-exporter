@@ -359,6 +359,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				case DisplayLevel.COLLADA:
 					Building currentBuilding = createBuildingForCollada(rs, work.getGmlId());
 					if (currentBuilding == null) return;
+					currentBuilding.setIgnoreSurfaceOrientation(config.getProject().getKmlExporter().isIgnoreSurfaceOrientation());
 					try {
 						if (config.getProject().getKmlExporter().isColladaHighlighting()) {
 							kmlExporterManager.print(createPlacemarksForHighlighting(work.getGmlId(),

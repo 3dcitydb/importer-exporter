@@ -52,6 +52,7 @@ import de.tub.citydb.config.project.system.System;
 		"geometryHighlighting",
 		"geometryHighlightingDistance",
 		"appearanceTheme",
+		"ignoreSurfaceOrientation",
 		"colladaHighlighting",
 		"colladaHighlightingDistance",
 		"generateTextureAtlases",
@@ -85,6 +86,7 @@ public class KmlExporter {
 	private boolean geometryHighlighting;
 	private double geometryHighlightingDistance;
 	private String appearanceTheme;
+	private boolean ignoreSurfaceOrientation;
 	private boolean colladaHighlighting;
 	private double colladaHighlightingDistance;
 	private boolean generateTextureAtlases;
@@ -116,6 +118,7 @@ public class KmlExporter {
 		geometryHighlighting = false;
 		setGeometryHighlightingDistance(0.75);
 		setAppearanceTheme("visual");
+		setIgnoreSurfaceOrientation(false);
 		colladaHighlighting = true;
 		setColladaHighlightingDistance(0.75);
 		generateTextureAtlases = true;
@@ -281,6 +284,14 @@ public class KmlExporter {
 
 	public String getAppearanceTheme() {
 		return appearanceTheme;
+	}
+
+	public void setIgnoreSurfaceOrientation(boolean ignoreSurfaceOrientation) {
+		this.ignoreSurfaceOrientation = ignoreSurfaceOrientation;
+	}
+
+	public boolean isIgnoreSurfaceOrientation() {
+		return ignoreSurfaceOrientation;
 	}
 
 	public void setColladaHighlighting(boolean colladaHighlighting) {

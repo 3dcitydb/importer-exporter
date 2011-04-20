@@ -985,7 +985,7 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 			int activeDisplayLevelAmount = config.getProject().getKmlExporter().getActiveDisplayLevelAmount(); 
 			if (activeDisplayLevelAmount == 0) {
 				errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("kmlExport.dialog.error.incorrectData.displayLevels"));
+						Internal.I18N.getString("kmlExport.dialog.error.incorrectData.displayForms"));
 	            return;
 			}
 

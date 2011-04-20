@@ -181,6 +181,6 @@
 	</target>
 
 	<target name="run" depends="dist" description="run importer/exporter application">
-		<java jar="${dist}/${app.jar}" fork="true" dir="${dist}" />
+		<java jar="${dist.lib}/${app.jar}" fork="true" dir="${dist}" />
 	</target>
 </project>
