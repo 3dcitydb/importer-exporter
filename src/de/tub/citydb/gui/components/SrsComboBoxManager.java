@@ -29,8 +29,10 @@
  */
 package de.tub.citydb.gui.components;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import de.tub.citydb.api.gui.DatabaseSrsComboBox;
@@ -42,7 +44,7 @@ import de.tub.citydb.database.DBConnectionPool;
 public class SrsComboBoxManager {
 	private static SrsComboBoxManager instance = null;
 	private final ReferenceSystem dbRefSys = new ReferenceSystem(ReferenceSystem.DEFAULT);
-	private final List<SrsComboBox> srsBoxes = new ArrayList<SrsComboBox>();
+	private final List<WeakReference<SrsComboBox>> srsBoxes = new ArrayList<WeakReference<SrsComboBox>>();
 	private final Config config;
 
 	private SrsComboBoxManager(Config config) {
@@ -62,7 +64,9 @@ public class SrsComboBoxManager {
 	public SrsComboBox getSrsComboBox(boolean onlyShowSupported) {
 		SrsComboBox srsBox = new SrsComboBox(onlyShowSupported);
 		srsBox.init();
-		srsBoxes.add(srsBox);
+		
+		WeakReference<SrsComboBox> ref = new WeakReference<SrsComboBox>(srsBox);
+		srsBoxes.add(ref);
 		
 		return srsBox;
 	}
@@ -71,15 +75,34 @@ public class SrsComboBoxManager {
 		if (sort)
 			Collections.sort(config.getProject().getDatabase().getReferenceSystems());
 
-		for (SrsComboBox srsBox : srsBoxes) {
+		Iterator<WeakReference<SrsComboBox>> iter = srsBoxes.iterator();
+		while (iter.hasNext()) {
+			WeakReference<SrsComboBox> ref = iter.next();
+			SrsComboBox srsBox = ref.get();
+			
+			if (srsBox == null) {
+				iter.remove();
+				continue;
+			}
+			
 			srsBox.updateContent();
 			srsBox.repaint();
 		}
 	}
 	
 	public void translateAll() {
-		for (SrsComboBox srsBox : srsBoxes)
+		Iterator<WeakReference<SrsComboBox>> iter = srsBoxes.iterator();
+		while (iter.hasNext()) {
+			WeakReference<SrsComboBox> ref = iter.next();
+			SrsComboBox srsBox = ref.get();
+			
+			if (srsBox == null) {
+				iter.remove();
+				continue;
+			}
+			
 			srsBox.doTranslation();
+		}
 	}
 
 	@SuppressWarnings("serial")

@@ -939,7 +939,7 @@ public class KmlExportPanel extends JPanel {
 			int activeDisplayLevelAmount = config.getProject().getKmlExporter().getActiveDisplayLevelAmount(); 
 			if (activeDisplayLevelAmount == 0) {
 				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("kmlExport.dialog.error.incorrectData.displayLevels"));
+						Internal.I18N.getString("kmlExport.dialog.error.incorrectData.displayForms"));
 				return;
 			}
 

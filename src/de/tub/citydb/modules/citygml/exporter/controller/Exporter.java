@@ -164,7 +164,7 @@ public class Exporter implements EventHandler {
 			String timestamp = workspace.getTimestamp().trim();
 			if (timestamp.trim().length() > 0)
 				name += " at timestamp " + timestamp;
-			
+
 			if (!workspaceExists) {
 				LOG.error("Database workspace " + name + " is not available.");
 				return false;
@@ -180,6 +180,9 @@ public class Exporter implements EventHandler {
 		SAXWriter saxWriter = new SAXWriter();
 		saxWriter.setWriteEncoding(true);
 		saxWriter.setIndentString("  ");
+		saxWriter.setHeaderComment("Written by " + this.getClass().getPackage().getImplementationTitle() + ", version \"" +
+				this.getClass().getPackage().getImplementationVersion() + '"', 
+				this.getClass().getPackage().getImplementationVendor());
 		saxWriter.setDefaultNamespace(moduleContext.getModule(CityGMLModuleType.CORE).getNamespaceURI());
 
 		for (Module module : moduleContext.getModules()) {
@@ -214,7 +217,7 @@ public class Exporter implements EventHandler {
 			LOG.error("Failed to create folder '" + folderName + "'.");
 			return false;
 		}
-		
+
 		// set target reference system for export
 		ReferenceSystem targetSRS = config.getProject().getExporter().getTargetSRS();
 		internalConfig.setTransformCoordinates(targetSRS.isSupported() && 
