@@ -865,7 +865,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		switch (config.getProject().getKmlExporter().getAltitudeMode()) {
 		case ABSOLUTE:
 			model.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
-			location.setAltitude(Building.reducePrecisionForZ(originInWGS84[2] + building.getZOffset()));
 			break;
 		case RELATIVE:
 			model.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
@@ -874,6 +873,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		
 		location.setLatitude(building.getLocationY());
 		location.setLongitude(building.getLocationX());
+		location.setAltitude(Building.reducePrecisionForZ(originInWGS84[2] + building.getZOffset()));
 		model.setLocation(location);
 
 		LinkType link = kmlFactory.createLinkType();
