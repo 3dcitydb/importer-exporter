@@ -64,10 +64,10 @@ public class SrsComboBoxManager {
 	public SrsComboBox getSrsComboBox(boolean onlyShowSupported) {
 		SrsComboBox srsBox = new SrsComboBox(onlyShowSupported);
 		srsBox.init();
-		
+
 		WeakReference<SrsComboBox> ref = new WeakReference<SrsComboBox>(srsBox);
 		srsBoxes.add(ref);
-		
+
 		return srsBox;
 	}
 
@@ -79,28 +79,28 @@ public class SrsComboBoxManager {
 		while (iter.hasNext()) {
 			WeakReference<SrsComboBox> ref = iter.next();
 			SrsComboBox srsBox = ref.get();
-			
+
 			if (srsBox == null) {
 				iter.remove();
 				continue;
 			}
-			
+
 			srsBox.updateContent();
 			srsBox.repaint();
 		}
 	}
-	
+
 	public void translateAll() {
 		Iterator<WeakReference<SrsComboBox>> iter = srsBoxes.iterator();
 		while (iter.hasNext()) {
 			WeakReference<SrsComboBox> ref = iter.next();
 			SrsComboBox srsBox = ref.get();
-			
+
 			if (srsBox == null) {
 				iter.remove();
 				continue;
 			}
-			
+
 			srsBox.doTranslation();
 		}
 	}
@@ -124,11 +124,11 @@ public class SrsComboBoxManager {
 			if (anObject instanceof ReferenceSystem)
 				super.addItem(anObject);
 		}
-		
+
 		public boolean isDBReferenceSystemSelected() {
 			return getSelectedItem() == dbRefSys;
 		}
-		
+
 		private void init() {
 			addItem(dbRefSys);
 
@@ -140,7 +140,7 @@ public class SrsComboBoxManager {
 
 		private void updateContent() {
 			DBConnectionPool dbPool = DBConnectionPool.getInstance();
-			
+
 			if (dbPool.isConnected()) {
 				dbRefSys.setSrid(dbPool.getActiveConnection().getMetaData().getSrid());
 				dbRefSys.setSrsName(dbPool.getActiveConnection().getMetaData().getSrsName());
@@ -148,7 +148,7 @@ public class SrsComboBoxManager {
 				dbRefSys.setSrid(ReferenceSystem.DEFAULT.getSrid());
 				dbRefSys.setSrsName(ReferenceSystem.DEFAULT.getSrsName());				
 			}		
-			
+
 			ReferenceSystem selectedItem = getSelectedItem();
 			if (selectedItem == null)
 				selectedItem = dbRefSys;
@@ -166,7 +166,16 @@ public class SrsComboBoxManager {
 
 		private void doTranslation() {
 			dbRefSys.setDescription(Internal.I18N.getString("common.label.boundingBox.crs.sameAsInDB"));
-			init();
+			ReferenceSystem selectedItem = getSelectedItem();
+			if (selectedItem == null)
+				selectedItem = dbRefSys;
+
+			removeItemAt(0);
+			insertItemAt(dbRefSys, 0);
+
+			if (selectedItem == dbRefSys)
+				setSelectedItem(selectedItem);
+
 			repaint();
 			fireActionEvent();
 		}
