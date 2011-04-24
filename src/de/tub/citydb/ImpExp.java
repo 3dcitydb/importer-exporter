@@ -211,8 +211,8 @@ public class ImpExp {
 			jaxbBuilder = new JAXBBuilder();
 			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", Thread.currentThread().getContextClassLoader());
 			colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", Thread.currentThread().getContextClassLoader());
-			projectContext = JAXBContext.newInstance("de.tub.citydb.config.project", Thread.currentThread().getContextClassLoader());
-			guiContext = JAXBContext.newInstance("de.tub.citydb.config.gui", Thread.currentThread().getContextClassLoader());
+			projectContext = JAXBContext.newInstance(Project.class);
+			guiContext = JAXBContext.newInstance(Gui.class);
 		} catch (JAXBException e) {
 			LOG.error("Application environment could not be initialized");
 			LOG.error("Aborting...");

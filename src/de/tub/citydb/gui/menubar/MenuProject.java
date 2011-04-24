@@ -87,7 +87,7 @@ public class MenuProject extends JMenu {
 
 		openProject.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File file = loadFileDialog(Internal.I18N.getString("menu.project.open.label"));
+				File file = loadDialog(Internal.I18N.getString("menu.project.open.label"));
 
 				if (file != null) {
 					openProject(file);
@@ -112,7 +112,7 @@ public class MenuProject extends JMenu {
 
 		saveProjectAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File file = saveFileDialog(Internal.I18N.getString("menu.project.saveAs.label"), true);
+				File file = saveDialog(Internal.I18N.getString("menu.project.saveAs.label"), true);
 
 				if (file != null) {
 					LOG.info("Saving project settings as file '" + file.toString() + "'.");
@@ -151,14 +151,12 @@ public class MenuProject extends JMenu {
 
 		xsdProject.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File file = saveFileDialog(Internal.I18N.getString("menu.project.saveXSDas.label"), false);
+				File path = saveDialog(Internal.I18N.getString("menu.project.saveXSDas.label"), false);
 
-				if (file != null) {
-					LOG.info("Saving project XSD as file '" + file.toString() + "'.");
+				if (path != null) {
+					LOG.info("Saving project XSD at location '" + path.toString() + "'.");
 					try {
-						ProjectConfigUtil.generateSchema(ctx, file);
-					} catch (FileNotFoundException e1) {
-						LOG.error("Failed to find project settings file '" + file.toString() + "'.");
+						ProjectConfigUtil.generateSchema(ctx, path);
 					} catch (IOException e1) {
 						LOG.error("Failed to save project settings: " + e1.getMessage());
 					}
@@ -283,36 +281,29 @@ public class MenuProject extends JMenu {
 		}
 	}
 
-	private File saveFileDialog(String title, boolean isXml) {
+	private File saveDialog(String title, boolean isXml) {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(title);
-		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		FileNameExtensionFilter filter;
+		
+		if (isXml) {
+			FileNameExtensionFilter filter = new FileNameExtensionFilter("Project Files (*.xml)", "xml");
+			chooser.addChoosableFileFilter(filter);
+			chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
+			chooser.setFileFilter(filter);
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);			
+		} else 
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-		if (isXml)
-			filter = new FileNameExtensionFilter("Project Files (*.xml)", "xml");
-		else 
-			filter = new FileNameExtensionFilter("Project XSD Files (*.xsd)", "xsd");
-
-		chooser.addChoosableFileFilter(filter);
-		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
-		chooser.setFileFilter(filter);
-
-		if (exportPath != null) {
+		if (exportPath != null)
 			chooser.setCurrentDirectory(new File(exportPath));
-		} 
 
 		int result = chooser.showSaveDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 
 			return null;
 
 		File file = chooser.getSelectedFile();		
-		if ((!file.getName().contains("."))) {
-			if (isXml)
-				file = new File(file + ".xml");
-			else
-				file = new File(file + ".xsd");
-		}
+		if (isXml && (!file.getName().contains(".")))
+			file = new File(file + ".xml");
 
 		exportPath = chooser.getCurrentDirectory().getAbsolutePath();
 		if (importPath == null)
@@ -321,7 +312,7 @@ public class MenuProject extends JMenu {
 		return file;
 	}
 
-	private File loadFileDialog(String title) {
+	private File loadDialog(String title) {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(title);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
