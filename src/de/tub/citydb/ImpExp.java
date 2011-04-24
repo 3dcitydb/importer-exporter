@@ -359,7 +359,7 @@ public class ImpExp {
 		if (!shell) {
 			// create main view instance
 			final ImpExpGui mainView = new ImpExpGui();
-			final DatabasePlugin databasePlugin = new DatabasePlugin(projectContext, config, mainView);
+			final DatabasePlugin databasePlugin = new DatabasePlugin(config, mainView);
 
 			// add gui related objects to registry
 			registry.setViewController(mainView);

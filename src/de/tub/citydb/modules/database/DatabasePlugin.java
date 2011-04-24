@@ -2,8 +2,6 @@ package de.tub.citydb.modules.database;
 
 import java.util.Locale;
 
-import javax.xml.bind.JAXBContext;
-
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.plugin.extension.preferences.Preferences;
 import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
@@ -21,9 +19,9 @@ public class DatabasePlugin implements InternalPlugin, ViewExtension, Preference
 	private DatabasePreferences preferences;
 	private DatabaseController controller;
 	
-	public DatabasePlugin(JAXBContext projectContext, Config config, ImpExpGui mainView) {
+	public DatabasePlugin(Config config, ImpExpGui mainView) {
 		view = new DatabaseView(config, mainView);
-		preferences = new DatabasePreferences(projectContext, config, mainView);
+		preferences = new DatabasePreferences(config, mainView);
 		controller = new DatabaseControllerImpl(config, this);
 	}
 		

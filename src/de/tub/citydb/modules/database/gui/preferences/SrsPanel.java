@@ -90,8 +90,8 @@ import de.tub.citydb.util.GuiUtil;
 public class SrsPanel extends AbstractPreferencesComponent implements EventHandler, DropTargetListener {
 	private static final int BORDER_THICKNESS = 5;
 	private final Logger LOG = Logger.getInstance();
-	private final JAXBContext projectContext;
 	private final DBConnectionPool dbPool;
+	private final ImpExpGui topFrame;
 
 	private JLabel srsComboBoxLabel;
 	private JLabel sridLabel;
@@ -118,11 +118,10 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	private JButton replaceWithFileButton;
 	private JButton saveFileButton;
 
-	private final ImpExpGui topFrame;
+	private JAXBContext projectContext;
 
-	public SrsPanel(JAXBContext projectContext, Config config, ImpExpGui topFrame) {
+	public SrsPanel(Config config, ImpExpGui topFrame) {
 		super(config);
-		this.projectContext = projectContext;
 		this.topFrame = topFrame;
 		dbPool = DBConnectionPool.getInstance();
 
@@ -156,12 +155,12 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		srsNameText = new JTextField();
 		descriptionLabel = new JLabel();
 		descriptionText = new JTextField();
-		newButton = new JButton("");
-		applyButton = new JButton("");
-		deleteButton = new JButton("");
-		checkButton = new JButton("");
+		newButton = new JButton();
+		applyButton = new JButton();
+		deleteButton = new JButton();
+		checkButton = new JButton();
 		checkButton.setEnabled(false);
-		copyButton = new JButton("");
+		copyButton = new JButton();
 
 		fileLabel = new JLabel();
 		fileText = new JTextField();
@@ -526,7 +525,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				return;
 			}
 
-			Unmarshaller um = projectContext.createUnmarshaller();			
+			Unmarshaller um = getJAXBContext().createUnmarshaller();			
 			Object object = um.unmarshal(file);
 
 			if (object instanceof ReferenceSystems) {
@@ -598,6 +597,11 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				return;
 			}
 
+			if ((!fileName.contains("."))) {
+				fileName += ".xml";
+				fileText.setText(fileName);
+			}
+			
 			File file = new File(fileName);
 			LOG.info("Writing reference systems to file '" + file.getAbsolutePath() + "'.");
 
@@ -610,7 +614,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				LOG.info("Writing reference system '" + tmp.getDescription() + "' (SRID: " + tmp.getSrid() + ").");
 			}
 
-			Marshaller m = projectContext.createMarshaller();			
+			Marshaller m = getJAXBContext().createMarshaller();			
 			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,Boolean.TRUE);
 			m.setProperty("com.sun.xml.bind.indentString", "  ");
 
@@ -646,6 +650,13 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		}
 
 		return true;
+	}
+	
+	private JAXBContext getJAXBContext() throws JAXBException {
+		if (projectContext == null)
+			projectContext = JAXBContext.newInstance(ReferenceSystems.class);
+
+		return projectContext;
 	}
 
 	private void browseImpExpFile(String title) {
