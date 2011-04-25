@@ -7,6 +7,8 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import de.tub.citydb.api.plugin.Plugin;
+import de.tub.citydb.api.plugin.extension.config.ConfigExtension;
+import de.tub.citydb.api.plugin.extension.config.PluginConfig;
 import de.tub.citydb.api.plugin.extension.menu.MenuExtension;
 import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
 import de.tub.citydb.api.plugin.extension.view.ViewExtension;
@@ -100,6 +102,20 @@ public class DefaultPluginService implements PluginService {
 		}
 
 		return menuExtensions;
+	}
+	
+	@Override
+	public List<ConfigExtension<? extends PluginConfig>> getExternalConfigExtensions() {
+		List<ConfigExtension<? extends PluginConfig>> configExtensions = new ArrayList<ConfigExtension<? extends PluginConfig>>();
+		for (Plugin plugin : externalPlugins) {
+			if (plugin instanceof ConfigExtension<?>) {
+				ConfigExtension<? extends PluginConfig> configExtension = (ConfigExtension<?>)plugin;
+				if (configExtension.getConfigClass() != null)
+					configExtensions.add(configExtension);
+			}
+		}		
+		
+		return configExtensions;
 	}
 
 	@Override

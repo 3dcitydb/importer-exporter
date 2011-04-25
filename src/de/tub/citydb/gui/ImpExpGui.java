@@ -106,7 +106,6 @@ import de.tub.citydb.modules.database.DatabasePlugin;
 import de.tub.citydb.modules.kml.KMLExportPlugin;
 import de.tub.citydb.modules.matching.MatchingPlugin;
 import de.tub.citydb.modules.preferences.PreferencesPlugin;
-import de.tub.citydb.plugin.InternalPlugin;
 import de.tub.citydb.plugin.PluginService;
 import de.tub.citydb.util.GuiUtil;
 
@@ -401,20 +400,6 @@ public class ImpExpGui extends JFrame implements ViewController, EventHandler {
 			enableConsoleWindow(true, false);
 			requestFocus();
 		}
-	}
-
-	public void loadSettings() {
-		for (InternalPlugin plugin : pluginService.getInternalPlugins())
-			plugin.loadSettings();
-	}
-
-	public void setSettings() {
-		for (InternalPlugin plugin : pluginService.getInternalPlugins())
-			plugin.setSettings();
-	}
-
-	public void setLoggingSettings() {
-		preferencesPlugin.setLoggingSettings();
 	}
 
 	public void doTranslation () {

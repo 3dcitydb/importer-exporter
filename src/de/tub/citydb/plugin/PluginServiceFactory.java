@@ -19,7 +19,7 @@ public class PluginServiceFactory {
 					loader.addURL(file.toURI().toURL());
 	}
 
-	public static PluginService createPluginService() throws ServiceConfigurationError {
+	public static PluginService getPluginService() throws ServiceConfigurationError {
 		return DefaultPluginService.getInstance(loader);
 	}
 

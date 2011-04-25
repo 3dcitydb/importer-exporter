@@ -29,15 +29,19 @@
  */
 package de.tub.citydb.config.project;
 
+import java.util.HashMap;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import de.tub.citydb.api.plugin.extension.config.PluginConfig;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.exporter.Exporter;
-import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.config.project.global.Global;
 import de.tub.citydb.config.project.importer.Importer;
+import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.config.project.matching.Matching;
 
 @XmlRootElement
@@ -47,8 +51,9 @@ import de.tub.citydb.config.project.matching.Matching;
 		"exporter",
 		"kmlExporter",
 		"matching",
-		"global"
-		})
+		"global",
+		"extensions"
+})
 public class Project {
 	@XmlElement(required=true)
 	private Database database;
@@ -61,7 +66,9 @@ public class Project {
 	@XmlElement(required=true)
 	private Matching matching;
 	private Global global;
-	
+	@XmlJavaTypeAdapter(de.tub.citydb.config.project.plugin.PluginConfigListAdapter.class)
+	private HashMap<Class<? extends PluginConfig>, PluginConfig> extensions;
+
 	public Project() {
 		database = new Database();
 		importer = new Importer();
@@ -69,6 +76,7 @@ public class Project {
 		kmlExporter = new KmlExporter();
 		matching = new Matching();
 		global = new Global();
+		extensions = new HashMap<Class<? extends PluginConfig>, PluginConfig>();
 	}
 
 	public Database getDatabase() {
@@ -97,7 +105,7 @@ public class Project {
 		if (exporter != null)
 			this.exporter = exporter;
 	}
-	
+
 	public Matching getMatching() {
 		return matching;
 	}
@@ -124,4 +132,13 @@ public class Project {
 	public KmlExporter getKmlExporter() {
 		return kmlExporter;
 	}
+
+	public PluginConfig getExtension(Class<? extends PluginConfig> pluginConfigClass) {
+		return extensions.get(pluginConfigClass);
+	}
+	
+	public PluginConfig registerExtension(PluginConfig pluginConfig) {
+		return extensions.put(pluginConfig.getClass(), pluginConfig);
+	}
+	
 }

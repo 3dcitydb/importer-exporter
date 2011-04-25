@@ -64,7 +64,7 @@ public class MenuBar extends JMenuBar {
 
 	private void init() {
 		file = new MenuFile();
-		project = new MenuProject(config, ctx, topFrame);
+		project = new MenuProject(pluginService, config, ctx, topFrame);
 		window = new MenuWindow(config, topFrame);
 		help = new MenuHelp(config, topFrame);
 

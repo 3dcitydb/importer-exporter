@@ -45,21 +45,30 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.plugin.extension.config.ConfigExtension;
+import de.tub.citydb.api.plugin.extension.config.PluginConfig;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.controller.PluginConfigControllerImpl;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.Project;
 import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.modules.preferences.PreferencesPlugin;
+import de.tub.citydb.plugin.InternalPlugin;
+import de.tub.citydb.plugin.PluginService;
 import de.tub.citydb.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class MenuProject extends JMenu {
 	private final Logger LOG = Logger.getInstance();
+	private final PluginService pluginService;
 	private final Config config;
 	private final JAXBContext ctx;
-	private final ImpExpGui topFrame;
-
+	private final ImpExpGui mainView;
+	private final PluginConfigControllerImpl pluginConfigController;
+	
 	private JMenuItem openProject;
 	private JMenuItem saveProject;
 	private JMenuItem saveProjectAs;
@@ -70,10 +79,13 @@ public class MenuProject extends JMenu {
 	private String exportPath;
 	private String importPath;
 
-	public MenuProject(Config config, JAXBContext ctx, ImpExpGui topFrame) {
+	public MenuProject(PluginService pluginService, Config config, JAXBContext ctx, ImpExpGui mainView) {
+		this.pluginService = pluginService;
 		this.config = config;
 		this.ctx = ctx;
-		this.topFrame = topFrame;		
+		this.mainView = mainView;
+		
+		pluginConfigController = (PluginConfigControllerImpl)ObjectRegistry.getInstance().getPluginConfigController();
 		init();
 	}
 
@@ -102,8 +114,11 @@ public class MenuProject extends JMenu {
 
 		saveProject.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				topFrame.setSettings();
-				if (topFrame.saveProjectSettings())
+				// set settings on internal plugins
+				for (InternalPlugin plugin : pluginService.getInternalPlugins())
+					plugin.setSettings();
+				
+				if (mainView.saveProjectSettings())
 					LOG.info("Settings successfully saved to config file '" + 
 							new File(config.getInternal().getConfigPath()).getAbsolutePath() + File.separator + config.getInternal().getConfigProject() + "'.");
 
@@ -117,7 +132,10 @@ public class MenuProject extends JMenu {
 				if (file != null) {
 					LOG.info("Saving project settings as file '" + file.toString() + "'.");
 					try {
-						topFrame.setSettings();
+						// set settings on internal plugins
+						for (InternalPlugin plugin : pluginService.getInternalPlugins())
+							plugin.setSettings();
+						
 						ProjectConfigUtil.marshal(config.getProject(), file.toString(), ctx);
 
 						addLastUsedProject(file.getAbsolutePath());
@@ -138,12 +156,20 @@ public class MenuProject extends JMenu {
 						Internal.I18N.getString("menu.project.defaults.msg.title"), JOptionPane.YES_NO_OPTION);
 
 				if (res == JOptionPane.YES_OPTION) {
-					topFrame.clearConsole();
-					topFrame.disconnectFromDatabase();
+					mainView.clearConsole();
+					mainView.disconnectFromDatabase();
 
 					config.setProject(new Project());
-					topFrame.loadSettings();
-					topFrame.doTranslation();
+
+					// reset defaults on internal plugins
+					for (InternalPlugin plugin : pluginService.getInternalPlugins())
+						plugin.loadSettings();
+					
+					// update plugin configs
+					for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+						plugin.resetConfigDefaults();
+					
+					mainView.doTranslation();
 					LOG.info("Project settings are reset to default values.");
 				}
 			}
@@ -206,13 +232,21 @@ public class MenuProject extends JMenu {
 
 			if (project != null) {
 				config.setProject(project);
-				topFrame.doTranslation();
-				topFrame.loadSettings();	
+				mainView.doTranslation();
 
+				// load settings for internal plugins
+				for (InternalPlugin plugin : pluginService.getInternalPlugins())
+					plugin.loadSettings();
+
+				// update plugin configs
+				for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+					pluginConfigController.setOrCreatePluginConfig((ConfigExtension<?>)plugin);
+				
 				// adapt logging subsystem
 				project.getGlobal().setLogging(logging);
-				topFrame.setLoggingSettings();
-
+				
+				// reset logging settings
+				pluginService.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();
 				success = true;
 			} else
 				LOG.error("Failed to read project settings.");

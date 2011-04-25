@@ -56,9 +56,12 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.common.ApplicationEvent;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.plugin.Plugin;
+import de.tub.citydb.api.plugin.extension.config.ConfigExtension;
+import de.tub.citydb.api.plugin.extension.config.PluginConfig;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.cmd.ImpExpCmd;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.controller.PluginConfigControllerImpl;
 import de.tub.citydb.config.gui.Gui;
 import de.tub.citydb.config.gui.GuiConfigUtil;
 import de.tub.citydb.config.internal.Internal;
@@ -186,12 +189,14 @@ public class ImpExp {
 		useSplashScreen = !shell && !noSplash;
 		if (useSplashScreen) {
 			splashScreen = new SplashScreen(4, 2, 40, Color.BLACK);
+			splashScreen.setMessage("Version \"" + this.getClass().getPackage().getImplementationVersion() + "\"");
+			
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					splashScreen.setVisible(true);
 				}
-			});
-			
+			});		
+
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -203,7 +208,27 @@ public class ImpExp {
 				this.getClass().getPackage().getImplementationTitle() + ", version \"" +
 				this.getClass().getPackage().getImplementationVersion() + "\"");
 
-		// initialize JAXB and database environment
+		// load external plugins
+		printInfoMessage("Loading plugins");
+
+		try {
+			PluginServiceFactory.addPluginDirectory(new File(Internal.PLUGINS_PATH));
+			pluginService = PluginServiceFactory.getPluginService();
+		} catch (IOException e) {
+			LOG.error("Failed to initialize plugin support: " + e.getLocalizedMessage());
+			System.exit(1);
+		} catch (ServiceConfigurationError e) {
+			LOG.error("Failed to load plugin: " + e.getLocalizedMessage());
+			System.exit(1);				
+		}
+
+		// get plugin config classes
+		List<Class<?>> projectConfigClasses = new ArrayList<Class<?>>();
+		projectConfigClasses.add(Project.class);
+		for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+			projectConfigClasses.add(((ConfigExtension<?>)plugin).getConfigClass());
+
+		// initialize application environment
 		printInfoMessage("Initializing application environment");
 		config = new Config();
 
@@ -211,11 +236,12 @@ public class ImpExp {
 			jaxbBuilder = new JAXBBuilder();
 			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", Thread.currentThread().getContextClassLoader());
 			colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", Thread.currentThread().getContextClassLoader());
-			projectContext = JAXBContext.newInstance(Project.class);
+			projectContext = JAXBContext.newInstance(projectConfigClasses.toArray(new Class<?>[]{}));
 			guiContext = JAXBContext.newInstance(Gui.class);
 		} catch (JAXBException e) {
-			LOG.error("Application environment could not be initialized");
+			LOG.error("Application environment could not be initialized. Please check the following stack trace.");
 			LOG.error("Aborting...");
+			e.printStackTrace();
 			System.exit(1);
 		}
 
@@ -348,8 +374,10 @@ public class ImpExp {
 		// initialize object registry
 		ObjectRegistry registry = ObjectRegistry.getInstance();
 		EventDispatcher eventDispatcher = new EventDispatcher();		
+		PluginConfigControllerImpl pluginConfigController = new PluginConfigControllerImpl(config);
 		registry.setLogController(Logger.getInstance());
 		registry.setEventDispatcher(eventDispatcher);
+		registry.setPluginConfigController(pluginConfigController);
 
 		// register illegal plugin event checker with event dispatcher
 		IllegalPluginEventChecker checker = IllegalPluginEventChecker.getInstance();
@@ -365,28 +393,17 @@ public class ImpExp {
 			registry.setViewController(mainView);
 			registry.setDatabaseController(databasePlugin.getDatabaseController());
 
-			// load external plugins
-			printInfoMessage("Loading plugins");
-
-			try {
-				PluginServiceFactory.addPluginDirectory(new File(Internal.PLUGINS_PATH));
-				pluginService = PluginServiceFactory.createPluginService();
-			} catch (IOException e) {
-				LOG.error("Failed to initialize plugin support: " + e.getLocalizedMessage());
-				System.exit(1);
-			} catch (ServiceConfigurationError e) {
-				LOG.error("Failed to load plugin: " + e.getLocalizedMessage());
-				System.exit(1);				
-			}
-
 			// initialize plugins
 			for (Plugin plugin : pluginService.getExternalPlugins()) {
-				LOG.debug("Loaded plugin " + plugin.getClass().getName());
+				LOG.info("Initializing plugin " + plugin.getClass().getName());
 				if (useSplashScreen)
-					splashScreen.setMessage("Loaded plugin " + plugin.getClass().getName());
-
+					splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
+				
 				plugin.init(new Locale(lang.value()));
-			}	
+				
+				if (plugin instanceof ConfigExtension)
+					pluginConfigController.setOrCreatePluginConfig((ConfigExtension<?>)plugin);
+			}
 
 			// register internal plugins
 			pluginService.registerInternalPlugin(new CityGMLImportPlugin(jaxbBuilder, config, mainView));		
@@ -421,7 +438,7 @@ public class ImpExp {
 
 			if (useSplashScreen)
 				splashScreen.close();
-			
+
 			return;
 		}	
 
