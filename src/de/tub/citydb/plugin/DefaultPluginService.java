@@ -110,7 +110,7 @@ public class DefaultPluginService implements PluginService {
 		for (Plugin plugin : externalPlugins) {
 			if (plugin instanceof ConfigExtension<?>) {
 				ConfigExtension<? extends PluginConfig> configExtension = (ConfigExtension<?>)plugin;
-				if (configExtension.getConfigClass() != null)
+				if ( configExtension.getConfigClass() != null)
 					configExtensions.add(configExtension);
 			}
 		}		

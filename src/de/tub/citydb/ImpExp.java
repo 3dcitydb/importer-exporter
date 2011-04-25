@@ -226,7 +226,7 @@ public class ImpExp {
 		List<Class<?>> projectConfigClasses = new ArrayList<Class<?>>();
 		projectConfigClasses.add(Project.class);
 		for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
-			projectConfigClasses.add(((ConfigExtension<?>)plugin).getConfigClass());
+			projectConfigClasses.add(plugin.getConfigClass());
 
 		// initialize application environment
 		printInfoMessage("Initializing application environment");
@@ -400,11 +400,12 @@ public class ImpExp {
 					splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
 				
 				plugin.init(new Locale(lang.value()));
-				
-				if (plugin instanceof ConfigExtension)
-					pluginConfigController.setOrCreatePluginConfig((ConfigExtension<?>)plugin);
 			}
-
+			
+			// propogate config to plugins
+			for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+				pluginConfigController.setOrCreatePluginConfig(plugin);
+			
 			// register internal plugins
 			pluginService.registerInternalPlugin(new CityGMLImportPlugin(jaxbBuilder, config, mainView));		
 			pluginService.registerInternalPlugin(new CityGMLExportPlugin(jaxbBuilder, config, mainView));		

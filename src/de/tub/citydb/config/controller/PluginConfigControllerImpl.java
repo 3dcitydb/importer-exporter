@@ -32,7 +32,7 @@ public class PluginConfigControllerImpl implements PluginConfigController {
 			}
 		}
 		
-		plugin.configLoaded(pluginConfig);
+		plugin.getConfig().configLoaded(pluginConfig);
 	}
 	
 	@SuppressWarnings("unchecked")
