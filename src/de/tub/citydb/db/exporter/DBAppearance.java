@@ -79,10 +79,12 @@ import org.citygml4j.util.CityGMLModules;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.db.xlink.DBXlinkTextureFile;
 import de.tub.citydb.db.xlink.DBXlinkTextureFileEnum;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.UUIDManager;
 import de.tub.citydb.util.Util;
 
 public class DBAppearance implements DBExporter {
+	private final Logger LOG = Logger.getInstance();
 	private final DBExporterManager dbExporterManager;
 	private final CityGMLFactory cityGMLFactory;
 	private final Config config;
@@ -138,7 +140,7 @@ public class DBAppearance implements DBExporter {
 			"from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID inner join TEXTUREPARAM tp on tp.SURFACE_DATA_ID=sd.ID where app.ID=? order by sd.ID");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			
+
 			psAppearanceCityObject = connection.prepareStatement("select app.ID as APP_ID, app.GMLID as APP_GMLID, app.NAME as APP_NAME, app.NAME_CODESPACE as APP_NAME_CODESPACE, app.DESCRIPTION as APP_DESCRIPTION, app.THEME, " +
 					"sd.ID as SD_ID, sd.GMLID as SD_GMLID, sd.NAME as SD_NAME, sd.NAME_CODESPACE as SD_NAME_CODESPACE, sd.DESCRIPTION as SD_DESCRIPTION, sd.IS_FRONT, upper(sd.TYPE) as TYPE, " +
 					"sd.X3D_SHININESS, sd.X3D_TRANSPARENCY, sd.X3D_AMBIENT_INTENSITY, sd.X3D_SPECULAR_COLOR, sd.X3D_DIFFUSE_COLOR, sd.X3D_EMISSIVE_COLOR, sd.X3D_IS_SMOOTH, " +
@@ -345,24 +347,32 @@ public class DBAppearance implements DBExporter {
 						long dbImageSize = rs.getLong("DB_TEX_IMAGE_SIZE");
 						String imageURI = rs.getString("TEX_IMAGE_URI");
 						if (imageURI != null) {
-							// export texture image from database
-							if (dbImageSize > 0) {
-								File file = new File(imageURI);
-								String fileName = file.getName();
-								if (texturePath != null)
-									fileName = texturePath + File.separator + fileName;
+							File file = new File(imageURI);
+							String fileName = file.getName();
+							if (texturePath != null)
+								fileName = texturePath + File.separator + fileName;
 
-								absTex.setImageURI(fileName);
+							absTex.setImageURI(fileName);
 
-								if (exportTextureImage) {
+							if (exportTextureImage) {
+								// export texture image from database
+								if (dbImageSize > 0) {
 									DBXlinkTextureFile xlink = new DBXlinkTextureFile(
 											surfaceDataId,
 											file.getName(),
 											DBXlinkTextureFileEnum.TEXTURE_IMAGE);
 									dbExporterManager.propagateXlink(xlink);
+								} else {
+									StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+											absTex.getCityGMLClass(), 
+											absTex.getId()));
+									msg.append(": Skipping 0 byte texture file ' ");
+									msg.append(imageURI);
+									msg.append("'.");
+									
+									LOG.warn(msg.toString());
 								}
-							} else
-								absTex.setImageURI(imageURI);
+							}
 						}
 
 						String dbImageMimeType = rs.getString("DB_TEX_IMAGE_MIME_TYPE");
@@ -397,8 +407,6 @@ public class DBAppearance implements DBExporter {
 								);
 
 								absTex.setBorderColor(borderColor);
-							} else {
-								// database entry incorrect
 							}
 						}
 					}
@@ -731,12 +739,23 @@ public class DBAppearance implements DBExporter {
 						absTex.setImageURI(fileName);
 
 						// export texture image from database
-						if (dbImageSize > 0 && exportTextureImage) {
-							DBXlinkTextureFile xlink = new DBXlinkTextureFile(
-									surfaceDataId,
-									file.getName(),
-									DBXlinkTextureFileEnum.TEXTURE_IMAGE);
-							dbExporterManager.propagateXlink(xlink);
+						if (exportTextureImage) {
+							if (dbImageSize > 0) {
+								DBXlinkTextureFile xlink = new DBXlinkTextureFile(
+										surfaceDataId,
+										file.getName(),
+										DBXlinkTextureFileEnum.TEXTURE_IMAGE);
+								dbExporterManager.propagateXlink(xlink);
+							} else {
+								StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+										absTex.getCityGMLClass(), 
+										absTex.getId()));
+								msg.append(": Skipping 0 byte texture file ' ");
+								msg.append(imageURI);
+								msg.append("'.");
+								
+								LOG.warn(msg.toString());
+							}
 						}
 					}
 
