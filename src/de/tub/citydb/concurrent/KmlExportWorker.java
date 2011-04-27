@@ -57,6 +57,7 @@ import net.opengis.kml._2.LocationType;
 import net.opengis.kml._2.ModelType;
 import net.opengis.kml._2.MultiGeometryType;
 import net.opengis.kml._2.ObjectFactory;
+import net.opengis.kml._2.OrientationType;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.PolygonType;
 import oracle.jdbc.OracleResultSet;
@@ -872,6 +873,23 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		location.setLongitude(building.getLocationX());
 		location.setAltitude(Building.reducePrecisionForZ(originInWGS84[2] + building.getZOffset()));
 		model.setLocation(location);
+
+		// correct heading value
+		double lat1 = originInWGS84[1];
+		double[] dummy = convertPointCoordinatesToWGS84(new double[] {building.getOriginX(), building.getOriginY() - 100, building.getOriginZ()});
+		double lat2 = dummy[1];
+		double dLon = dummy[0] - originInWGS84[0];
+		double y = Math.sin(dLon) * Math.cos(lat2);
+		double x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
+		double bearing = Math.toDegrees(Math.atan2(y, x));
+		bearing = (bearing + 180) % 360;
+		if (originInWGS84[0] > 0) { // East
+			bearing = -bearing;
+		}
+		
+		OrientationType orientation = kmlFactory.createOrientationType();
+		orientation.setHeading(Building.reducePrecisionForZ(bearing));
+		model.setOrientation(orientation);
 
 		LinkType link = kmlFactory.createLinkType();
 		// File.separator would be wrong here, it MUST be "/"
