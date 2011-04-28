@@ -1211,7 +1211,11 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				insertQuery.setString(3, gmlId);
 				rs = (OracleResultSet)insertQuery.executeQuery();
 			}
-			catch (Exception e) {}
+			catch (Exception e) {
+				if (e.getMessage().startsWith("ORA-01427")) { // single-row subquery returns more than one row 
+					Logger.getInstance().warn("gml:id value " + gmlId + " is used for more than one object in the 3DCityDB; zOffset was not stored.");
+				}
+			}
 			finally {
 				try {
 					if (rs != null) rs.close();
