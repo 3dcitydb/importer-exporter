@@ -552,10 +552,9 @@ public class TileQueries {
     }
 
     public static final String QUERY_GET_GMLIDS =
-		"SELECT co.gmlid " +
+		"SELECT co.gmlid, co.class_id " +
 		"FROM CITYOBJECT co " +
 		"WHERE " +
-		  "CLASS_ID = 26 AND " + // for the moment building only
 		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
 					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside') ='TRUE' " +
 		  "OR SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +

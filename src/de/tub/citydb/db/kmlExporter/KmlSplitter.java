@@ -37,6 +37,7 @@ import java.util.HashSet;
 import oracle.jdbc.OracleResultSet;
 
 import org.citygml4j.geometry.BoundingVolume;
+import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
@@ -46,9 +47,12 @@ import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.util.Util;
 
 public class KmlSplitter {
 
+	private final static int BUILDING = Util.cityObject2classId(CityGMLClass.BUILDING);
+	
 	private final DBConnectionPool dbConnectionPool;
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
 	private final DisplayLevel displayLevel;
@@ -146,15 +150,16 @@ public class KmlSplitter {
 
 				while (rs.next() && shouldRun) {
 					String gmlId = rs.getString("gmlId");
-					if (alreadyExported.contains(gmlId)) continue;
+					int classId = rs.getInt("class_id");
+					if (classId != BUILDING || alreadyExported.contains(gmlId)) continue;
 					KmlSplittingResult splitter = new KmlSplittingResult(gmlId, displayLevel);
 					dbWorkerPool.addWork(splitter);
 					alreadyExported.add(gmlId);
 					objectCount++;
 				}
 
-				Logger.getInstance().debug("Tile_" + exportFilter.getBoundingBoxFilter().getTileColumn()
-						   					 + "_" + exportFilter.getBoundingBoxFilter().getTileRow()
+				Logger.getInstance().debug("Tile_" + exportFilter.getBoundingBoxFilter().getTileRow()
+						   					 + "_" + exportFilter.getBoundingBoxFilter().getTileColumn()
 						   					 + " contained " + objectCount + " objects.");
 			}
 			catch (SQLException sqlEx) {
