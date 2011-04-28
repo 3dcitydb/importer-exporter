@@ -45,6 +45,7 @@ import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.event.EventDispatcher;
 import de.tub.citydb.filter.ExportFilter;
+import de.tub.citydb.log.Logger;
 
 public class KmlSplitter {
 
@@ -90,7 +91,7 @@ public class KmlSplitter {
 
 	private void queryObjects() throws SQLException {
 
-		long startTime = System.currentTimeMillis();
+//		long startTime = System.currentTimeMillis();
 
 		if (config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
 			for (String gmlId: config.getProject().getKmlExporter().getFilter().getSimpleFilter().getGmlIdFilter().getGmlIds()) {
@@ -134,21 +135,27 @@ public class KmlSplitter {
 				String filename = absolutePath.substring(absolutePath.lastIndexOf(File.separator) + 1,
 														 absolutePath.lastIndexOf("."));
 				String tileName = filename + "_Tile_" 
-										   + filter.getComplexFilter().getTiledBoundingBox().getTileColumn()
+										   + exportFilter.getBoundingBoxFilter().getTileColumn()
 										   + "_" 
-										   + filter.getComplexFilter().getTiledBoundingBox().getTileRow();
+										   + exportFilter.getBoundingBoxFilter().getTileRow();
 
 				Logger.getInstance().info("Spatial query for " + tileName + " resolved in " +
 										  (System.currentTimeMillis() - startTime) + " millis.");
 */
+				int objectCount = 0;
+
 				while (rs.next() && shouldRun) {
 					String gmlId = rs.getString("gmlId");
 					if (alreadyExported.contains(gmlId)) continue;
 					KmlSplittingResult splitter = new KmlSplittingResult(gmlId, displayLevel);
 					dbWorkerPool.addWork(splitter);
 					alreadyExported.add(gmlId);
+					objectCount++;
 				}
 
+				Logger.getInstance().debug("Tile_" + exportFilter.getBoundingBoxFilter().getTileColumn()
+						   					 + "_" + exportFilter.getBoundingBoxFilter().getTileRow()
+						   					 + " contained " + objectCount + " objects.");
 			}
 			catch (SQLException sqlEx) {
 				throw sqlEx;
