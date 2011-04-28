@@ -84,15 +84,36 @@ public class XlinkTextureImage implements DBXlinkResolver {
 		URL imageURL = null;
 		
 		try {
-			// first step: prepare ORDIMAGE
+			// first step: check whether we deal with a local or remote texture file
+			try {
+				imageURL = new URL(imageFileName);
+				imageFileName = imageURL.toString();
+
+			} catch (MalformedURLException malURL) {
+				isRemote = false;
+				imageFileName = localPath + File.separator + new File(imageFileName).getPath();
+				
+				// check minimum requirements for local texture files
+				File imageFile = new File(imageFileName);				
+
+				if (!imageFile.exists() || !imageFile.isFile() || !imageFile.canRead()) {
+					LOG.error("Failed to read texture file '" + imageFileName + "'.");
+					return false;
+				} else if (imageFile.length() == 0) {
+					LOG.error("Skipping 0 byte texture file '" + imageFileName + "'.");
+					return false;
+				}
+			}
+			
+			// second step: prepare ORDIMAGE
 			psPrepare.setLong(1, xlink.getId());
 			psPrepare.executeUpdate();
 
-			// second step: get prepared ORDIMAGE to fill it with contents
+			// thirs step: get prepared ORDIMAGE to fill it with contents
 			psSelect.setLong(1, xlink.getId());
 			OracleResultSet rs = (OracleResultSet)psSelect.executeQuery();
 			if (!rs.next()) {
-				LOG.error("Database error while importing texture file.");
+				LOG.error("Database error while importing texture file '" + imageFileName + "'.");
 
 				rs.close();
 				externalFileConn.rollback();
@@ -102,17 +123,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 			OrdImage imgProxy = (OrdImage)rs.getORAData(1, OrdImage.getORADataFactory());
 			rs.close();
 			
-			// third step: try and upload image data
-			try {
-				imageURL = new URL(imageFileName);
-				imageFileName = imageURL.toString();
-
-			} catch (MalformedURLException malURL) {
-				isRemote = false;
-				File imageFile = new File(imageFileName);
-				imageFileName = localPath + File.separator + imageFile.getPath();
-			}
-
+			// fourth step: try and upload image data
 			LOG.debug("Importing texture file: " + imageFileName);
 			resolverManager.propagateEvent(counter);
 			

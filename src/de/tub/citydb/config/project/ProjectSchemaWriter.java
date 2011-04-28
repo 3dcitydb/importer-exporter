@@ -38,7 +38,6 @@ import javax.xml.transform.stream.StreamResult;
 
 public class ProjectSchemaWriter extends SchemaOutputResolver {
 	private String path;
-	private int count;
 
 	public ProjectSchemaWriter(File path) {
 		this.path = path.getAbsolutePath();
@@ -51,7 +50,7 @@ public class ProjectSchemaWriter extends SchemaOutputResolver {
 		if (namespaceUri.equals("http://www.gis.tu-berlin.de/3dcitydb-impexp/config/core"))
 			file = new File(path + File.separator + "config.xsd");
 		else
-			file = new File(path + File.separator + "plugin_" + ++count + ".xsd");
+			file = new File(path + File.separator + "plugin_" + suggestedFileName);
 
 		StreamResult res = new StreamResult(file);
 		res.setSystemId(file.toURI().toString());
