@@ -215,18 +215,29 @@ public class ImpExp {
 			PluginServiceFactory.addPluginDirectory(new File(Internal.PLUGINS_PATH));
 			pluginService = PluginServiceFactory.getPluginService();
 		} catch (IOException e) {
-			LOG.error("Failed to initialize plugin support: " + e.getLocalizedMessage());
+			LOG.error("Failed to initialize plugin support: " + e.getMessage());
 			System.exit(1);
 		} catch (ServiceConfigurationError e) {
-			LOG.error("Failed to load plugin: " + e.getLocalizedMessage());
+			LOG.error("Failed to load plugin: " + e.getMessage());
 			System.exit(1);				
 		}
 
 		// get plugin config classes
 		List<Class<?>> projectConfigClasses = new ArrayList<Class<?>>();
 		projectConfigClasses.add(Project.class);
-		for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
-			projectConfigClasses.add(plugin.getConfigClass());
+		for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions()) {
+			try {
+				projectConfigClasses.add(plugin.getClass().getMethod("getConfig", new Class<?>[]{}).getReturnType());
+			} catch (SecurityException e) {
+				LOG.error("Failed to instantiate config for plugin '" + plugin.getClass().getCanonicalName() + "'.");
+				LOG.error("Please check the following error message: " + e.getMessage());
+				System.exit(1);
+			} catch (NoSuchMethodException e) {
+				LOG.error("Failed to instantiate config for plugin '" + plugin.getClass().getCanonicalName() + "'.");
+				LOG.error("Please check the following error message: " + e.getMessage());
+				System.exit(1);
+			}
+		}			
 
 		// initialize application environment
 		printInfoMessage("Initializing application environment");
@@ -393,6 +404,10 @@ public class ImpExp {
 			registry.setViewController(mainView);
 			registry.setDatabaseController(databasePlugin.getDatabaseController());
 
+			// propogate config to plugins
+			for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+				pluginConfigController.setOrCreatePluginConfig(plugin);
+			
 			// initialize plugins
 			for (Plugin plugin : pluginService.getExternalPlugins()) {
 				LOG.info("Initializing plugin " + plugin.getClass().getName());
@@ -401,10 +416,6 @@ public class ImpExp {
 				
 				plugin.init(new Locale(lang.value()));
 			}
-			
-			// propogate config to plugins
-			for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
-				pluginConfigController.setOrCreatePluginConfig(plugin);
 			
 			// register internal plugins
 			pluginService.registerInternalPlugin(new CityGMLImportPlugin(jaxbBuilder, config, mainView));		

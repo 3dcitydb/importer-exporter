@@ -104,16 +104,13 @@ public class DefaultPluginService implements PluginService {
 		return menuExtensions;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<ConfigExtension<? extends PluginConfig>> getExternalConfigExtensions() {
 		List<ConfigExtension<? extends PluginConfig>> configExtensions = new ArrayList<ConfigExtension<? extends PluginConfig>>();
-		for (Plugin plugin : externalPlugins) {
-			if (plugin instanceof ConfigExtension<?>) {
-				ConfigExtension<? extends PluginConfig> configExtension = (ConfigExtension<?>)plugin;
-				if ( configExtension.getConfigClass() != null)
-					configExtensions.add(configExtension);
-			}
-		}		
+		for (Plugin plugin : externalPlugins)
+			if (plugin instanceof ConfigExtension<?>)
+				configExtensions.add((ConfigExtension<? extends PluginConfig>)plugin);
 		
 		return configExtensions;
 	}

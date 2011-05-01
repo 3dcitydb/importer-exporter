@@ -45,9 +45,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import de.tub.citydb.api.log.Logger;
-import de.tub.citydb.api.plugin.extension.config.ConfigEvent;
 import de.tub.citydb.api.plugin.extension.config.ConfigExtension;
 import de.tub.citydb.api.plugin.extension.config.PluginConfig;
+import de.tub.citydb.api.plugin.extension.config.PluginConfigEvent;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.controller.PluginConfigControllerImpl;
@@ -121,7 +121,7 @@ public class MenuProject extends JMenu {
 				
 				// fire event to external plugins
 				for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
-					plugin.getConfig().handleEvent(ConfigEvent.PRE_SAVE_CONFIG);
+					plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 				
 				if (mainView.saveProjectSettings())
 					LOG.info("Settings successfully saved to config file '" + 
@@ -143,7 +143,7 @@ public class MenuProject extends JMenu {
 						
 						// fire event to external plugins
 						for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
-							plugin.getConfig().handleEvent(ConfigEvent.PRE_SAVE_CONFIG);
+							plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
 						
 						ProjectConfigUtil.marshal(config.getProject(), file.toString(), ctx);
 
@@ -176,7 +176,7 @@ public class MenuProject extends JMenu {
 					
 					// update plugin configs
 					for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
-						plugin.getConfig().handleEvent(ConfigEvent.RESET_DEFAULT_CONFIG);
+						plugin.handleEvent(PluginConfigEvent.RESET_DEFAULT_CONFIG);
 					
 					mainView.doTranslation();
 					LOG.info("Project settings are reset to default values.");
