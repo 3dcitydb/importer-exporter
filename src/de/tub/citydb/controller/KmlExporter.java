@@ -504,7 +504,7 @@ public class KmlExporter implements EventListener {
 										new Point(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY(), 0));
 
 		int dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
-		if (bbox.getSRS().getSrid() != dbSrid) {
+		if (bbox.getSRS().getSrid() != 0 && bbox.getSRS().getSrid() != dbSrid) {
 			wgs84TileMatrix = dbUtil.transformBBox(tileMatrix, bbox.getSRS().getSrid(), WGS84_SRID);
 			tileMatrix = dbUtil.transformBBox(tileMatrix, bbox.getSRS().getSrid(), dbSrid);
 		}
