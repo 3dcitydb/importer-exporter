@@ -876,7 +876,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		// correct heading value
 		double lat1 = originInWGS84[1];
-		double[] dummy = convertPointCoordinatesToWGS84(new double[] {building.getOriginX(), building.getOriginY() - 100, building.getOriginZ()});
+		double[] dummy = convertPointCoordinatesToWGS84(new double[] {building.getOriginX(), building.getOriginY() - 20, building.getOriginZ()});
 		double lat2 = dummy[1];
 		double dLon = dummy[0] - originInWGS84[0];
 		double y = Math.sin(dLon) * Math.cos(lat2);
