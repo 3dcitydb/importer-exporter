@@ -13,6 +13,7 @@ import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.modules.database.DatabasePlugin;
 import de.tub.citydb.modules.database.gui.view.DatabasePanel;
+import de.tub.citydb.util.DBUtil;
 
 public class DatabaseControllerImpl implements DatabaseController {
 	private final DatabasePlugin plugin;
@@ -43,6 +44,11 @@ public class DatabaseControllerImpl implements DatabaseController {
 	@Override
 	public Connection getConnection() throws SQLException {
 		return dbPool.getConnection();
+	}
+
+	@Override
+	public boolean isIndexEnabled(String tableName, String columnName) throws SQLException {
+		return DBUtil.isIndexed(tableName, columnName);
 	}
 
 	@Override
