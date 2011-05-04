@@ -85,7 +85,7 @@ public class TileQueries {
 		"ORDER BY ts.building_id";
 
 	private static final String QUERY_GEOMETRY_LOD4_GET_BUILDING_DATA_ALT =
-		"SELECT sg.geometry, ts.type " +
+		"SELECT sg.geometry, ts.type, sg.id " +
 		"FROM BUILDING b, SURFACE_GEOMETRY sg, CITYOBJECT co " +
 			"LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = co.id " +
 		"WHERE " +
@@ -96,7 +96,7 @@ public class TileQueries {
 		"ORDER BY b.id, ts.type";
 
 	private static final String QUERY_GEOMETRY_LOD4_GET_BUILDING_DATA =
-		"SELECT sg.geometry, ts.type " +
+		"SELECT sg.geometry, ts.type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co, BUILDING b " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -170,7 +170,7 @@ public class TileQueries {
 		"ORDER BY ts.building_id";
 
 	private static final String QUERY_GEOMETRY_LOD3_GET_BUILDING_DATA =
-		"SELECT sg.geometry, ts.type " +
+		"SELECT sg.geometry, ts.type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co, BUILDING b " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -181,7 +181,7 @@ public class TileQueries {
 		"ORDER BY ts.building_id, ts.type";
 
 	private static final String QUERY_GEOMETRY_LOD3_GET_BUILDING_DATA_ALT =
-		"SELECT sg.geometry, ts.type " +
+		"SELECT sg.geometry, ts.type, sg.id " +
 		"FROM BUILDING b, SURFACE_GEOMETRY sg, CITYOBJECT co " +
 			"LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = co.id " +
 		"WHERE " +
@@ -239,7 +239,7 @@ public class TileQueries {
 		"ORDER BY sg.parent_id DESC"; // own root surfaces first
 
 	private static final String QUERY_GEOMETRY_LOD2_GET_BUILDING_DATA =
-		"SELECT sg.geometry, ts.type " +
+		"SELECT sg.geometry, ts.type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co, BUILDING b " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -250,7 +250,7 @@ public class TileQueries {
 		"ORDER BY ts.building_id, ts.type";
 
 	private static final String QUERY_GEOMETRY_LOD2_GET_BUILDING_DATA_ALT =
-		"SELECT sg.geometry, ts.type " +
+		"SELECT sg.geometry, ts.type, sg.id " +
 		"FROM BUILDING b, SURFACE_GEOMETRY sg, CITYOBJECT co " +
 			"LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = co.id " +
 		"WHERE " +
@@ -308,7 +308,7 @@ public class TileQueries {
 		"ORDER BY ts.building_id";
 
 	private static final String QUERY_GEOMETRY_LOD1_GET_BUILDING_DATA =
-		"SELECT sg.geometry, ts.type " +
+		"SELECT sg.geometry, ts.type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg, CITYOBJECT co, BUILDING b " +
 			"LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " +
 		"WHERE " +
@@ -341,7 +341,7 @@ public class TileQueries {
 			"AND sg.geometry IS NOT NULL ";
 
 	private static final String QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD1_GET_BUILDING_DATA =
-		"SELECT sg.geometry " +
+		"SELECT sg.geometry, sg.id " +
 		"FROM SURFACE_GEOMETRY sg, BUILDING b, CITYOBJECT co " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -350,7 +350,7 @@ public class TileQueries {
 			"AND sg.geometry IS NOT NULL ";
 
 	private static final String QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD2_GET_BUILDING_DATA =
-		"SELECT sg.geometry " +
+		"SELECT sg.geometry, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE " +
 			"sg.geometry IS NOT NULL " +
@@ -370,7 +370,7 @@ public class TileQueries {
 					"AND ts.lod2_multi_surface_id IS NOT NULL)";
 
 	private static final String QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD3_GET_BUILDING_DATA =
-		"SELECT sg.geometry " +
+		"SELECT sg.geometry, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE " +
 			"sg.geometry IS NOT NULL " +
@@ -390,7 +390,7 @@ public class TileQueries {
 					"AND ts.lod3_multi_surface_id IS NOT NULL)";
 
 	private static final String QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD4_GET_BUILDING_DATA =
-		"SELECT sg.geometry " +
+		"SELECT sg.geometry, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE " +
 			"sg.geometry IS NOT NULL " +
