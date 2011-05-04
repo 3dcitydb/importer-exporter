@@ -48,11 +48,13 @@ import java.util.zip.ZipOutputStream;
 
 import javax.imageio.ImageIO;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 
 import net.opengis.kml._2.DocumentType;
+import net.opengis.kml._2.KmlType;
 import net.opengis.kml._2.LineStringType;
 import net.opengis.kml._2.LineStyleType;
 import net.opengis.kml._2.ObjectFactory;
@@ -98,7 +100,7 @@ import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.sax.SAXBuffer;
 import de.tub.citydb.sax.SAXWriter;
-import de.tub.citydb.sax.XMLHeaderWriter;
+import de.tub.citydb.sax.KMLHeaderWriter;
 import de.tub.citydb.util.DBUtil;
 
 public class KmlExporter implements EventListener {
@@ -316,9 +318,12 @@ public class KmlExporter implements EventListener {
 						Logger.getInstance().info("Exporting to file: " + file.getAbsolutePath());
 
 						// create file header
-						XMLHeaderWriter xmlHeader = new XMLHeaderWriter(saxWriter);
+						KMLHeaderWriter xmlHeader = new KMLHeaderWriter(saxWriter);
 
 						// create kml root element
+						KmlType kmlType = kmlFactory.createKmlType();
+						JAXBElement<KmlType> kml = kmlFactory.createKml(kmlType);
+
 						DocumentType document = kmlFactory.createDocumentType();
 						if (useTiling) {
 							document.setName(filename + "_Tile_" + i + "_" + j + "_" + displayLevel.getName());
@@ -327,9 +332,10 @@ public class KmlExporter implements EventListener {
 							document.setName(filename + "_" + displayLevel.getName());
 						}
 						document.setOpen(true);
+						kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
 
 						try {
-							xmlHeader.setRootElement(kmlFactory.createDocument(document), jaxbKmlContext, props);
+							xmlHeader.setRootElement(kml, jaxbKmlContext, props);
 							xmlHeader.startRootElement();
 							addStyleAndBorder(displayLevel, i, j);
 						} catch (JAXBException jaxBE) {

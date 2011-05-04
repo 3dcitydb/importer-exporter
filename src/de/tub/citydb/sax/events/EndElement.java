@@ -54,4 +54,7 @@ public final class EndElement extends SAXEvent implements Locatable {
 		return location;
 	}
 
+	public String getLocalName() {
+		return localName;
+	}
 }
