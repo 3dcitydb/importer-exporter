@@ -593,7 +593,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		while (rs.next()) {
 			String surfaceType = rs.getString("type");
-			if (!surfaceType.endsWith("Surface")) {
+			if (surfaceType != null && !surfaceType.endsWith("Surface")) {
 				surfaceType = surfaceType + "Surface";
 			}
 			// results are ordered by surface type
@@ -983,10 +983,28 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					}
 					stripCountArray[currentContour-1] = (startOfNextRing -3 - startOfCurrentRing)/3;
 				}
+/*				
+				// calculate normals from original surface
+				int numberOfPointsUsed = 4;
+				GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
+				double[] giOrdinatesArray = new double[numberOfPointsUsed * 3];
+				int contourCount = 1;
+				int[] stripCountArray = new int[contourCount];
+				int[] countourCountArray = {contourCount};
+
+				int pointCounter = 1;
+				while (pointCounter < giOrdinatesArray.length) {
+					giOrdinatesArray[pointCounter-1] = Building.reducePrecisionForXorY(ordinatesArray[pointCounter-1]);
+					giOrdinatesArray[pointCounter] = Building.reducePrecisionForXorY(ordinatesArray[pointCounter]);
+					giOrdinatesArray[pointCounter+1] = Building.reducePrecisionForZ(ordinatesArray[pointCounter+1]);
+					pointCounter = pointCounter + 3;
+				}
+				stripCountArray[0] = pointCounter/3;
+*/
 				gi.setCoordinates(giOrdinatesArray);
 				gi.setContourCounts(countourCountArray);
 				gi.setStripCounts(stripCountArray);
-				
+
 				// calculate normal
 				ng.generateNormals(gi);
 				double nx = gi.getNormals()[0].x;
@@ -1491,10 +1509,28 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						giOrdinatesArray[(j-(currentContour-1)*3)] = Building.reducePrecisionForXorY(originalOrdinatesArray[j]);
 						giOrdinatesArray[(j-(currentContour-1)*3)+1] = Building.reducePrecisionForXorY(originalOrdinatesArray[j+1]);
 						giOrdinatesArray[(j-(currentContour-1)*3)+2] = Building.reducePrecisionForZ(originalOrdinatesArray[j+2]);
-
 					}
+
 					stripCountArray[currentContour-1] = (startOfNextRing -3 - startOfCurrentRing)/3;
 				}
+/*
+				// calculate normals from original surface
+				int numberOfPointsUsed = 4;
+				GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
+				double[] giOrdinatesArray = new double[numberOfPointsUsed * 3];
+				int contourCount = 1;
+				int[] stripCountArray = new int[contourCount];
+				int[] countourCountArray = {contourCount};
+
+				int pointCounter = 1;
+				while (pointCounter < giOrdinatesArray.length) {
+					giOrdinatesArray[pointCounter-1] = Building.reducePrecisionForXorY(originalOrdinatesArray[pointCounter-1]);
+					giOrdinatesArray[pointCounter] = Building.reducePrecisionForXorY(originalOrdinatesArray[pointCounter]);
+					giOrdinatesArray[pointCounter+1] = Building.reducePrecisionForZ(originalOrdinatesArray[pointCounter+1]);
+					pointCounter = pointCounter + 3;
+				}
+				stripCountArray[0] = pointCounter/3;
+*/
 				gi.setCoordinates(giOrdinatesArray);
 				gi.setContourCounts(countourCountArray);
 				gi.setStripCounts(stripCountArray);
