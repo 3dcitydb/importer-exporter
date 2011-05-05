@@ -73,7 +73,6 @@ import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 
 import com.sun.j3d.utils.geometry.GeometryInfo;
-import com.sun.j3d.utils.geometry.NormalGenerator;
 
 import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.config.Config;
@@ -130,7 +129,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private ElevationServiceHandler elevationServiceHandler;
 	private long elevationServicePause;
     private SimpleDateFormat dateFormatter;
-	private NormalGenerator ng;
 	private double hlDistance = 0.75; 
 	private X3DMaterial defaultX3dMaterial;
 	
@@ -192,7 +190,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		// pause interval: 100 * maxThreads must be enough, but experience says it isn't!
 		elevationServicePause = 250 * config.getProject().getKmlExporter().getSystem().getThreadPool().getDefaultPool().getMaxThreads();
 		dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-		ng = new NormalGenerator();
 
 		defaultX3dMaterial = cityGMLFactory.createX3DMaterial();
 		defaultX3dMaterial.setAmbientIntensity(0.2d);
