@@ -956,60 +956,38 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				STRUCT unconverted = (STRUCT)rs.getObject(1);
 				JGeometry unconvertedSurface = JGeometry.load(unconverted);
 				double[] ordinatesArray = unconvertedSurface.getOrdinatesArray();
-
 				if (ordinatesArray == null) {
 					continue;
 				}
 
-				GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
 				int contourCount = unconvertedSurface.getElemInfo().length/3;
+				// remove normal-irrelevant points
+				int startContour1 = unconvertedSurface.getElemInfo()[0] - 1;
+				int endContour1 = (contourCount == 1) ? 
+								  ordinatesArray.length: // last
+								  unconvertedSurface.getElemInfo()[3] - 1; // holes are irrelevant for normal calculation
 				// last point of polygons in gml is identical to first and useless for GeometryInfo
-				double[] giOrdinatesArray = new double[ordinatesArray.length - (contourCount*3)];
+				endContour1 = endContour1 - 3;
 
-				int[] stripCountArray = new int[contourCount];
-				int[] countourCountArray = {contourCount};
+				double nx = 0;
+				double ny = 0;
+				double nz = 0;
 
-				for (int currentContour = 1; currentContour <= contourCount; currentContour++) {
-					int startOfCurrentRing = unconvertedSurface.getElemInfo()[(currentContour-1)*3] - 1;
-					int startOfNextRing = (currentContour == contourCount) ? 
-										  ordinatesArray.length: // last
-										  unconvertedSurface.getElemInfo()[currentContour*3] - 1; // still holes to come
-
-					for (int j = startOfCurrentRing; j < startOfNextRing - 3; j = j+3) {
-						giOrdinatesArray[(j-(currentContour-1)*3)] = Building.reducePrecisionForXorY(ordinatesArray[j]);
-						giOrdinatesArray[(j-(currentContour-1)*3)+1] = Building.reducePrecisionForXorY(ordinatesArray[j+1]);
-						giOrdinatesArray[(j-(currentContour-1)*3)+2] = Building.reducePrecisionForZ(ordinatesArray[j+2]);
-
-					}
-					stripCountArray[currentContour-1] = (startOfNextRing -3 - startOfCurrentRing)/3;
+				for (int current = startContour1; current < endContour1; current = current+3) {
+					int next = current+3;
+					if (next >= endContour1) next = 0;
+					nx = nx + ((ordinatesArray[current+1] - ordinatesArray[next+1]) * (ordinatesArray[current+2] + ordinatesArray[next+2])); 
+					ny = ny + ((ordinatesArray[current+2] - ordinatesArray[next+2]) * (ordinatesArray[current] + ordinatesArray[next])); 
+					nz = nz + ((ordinatesArray[current] - ordinatesArray[next]) * (ordinatesArray[current+1] + ordinatesArray[next+1])); 
 				}
-/*				
-				// calculate normals from original surface
-				int numberOfPointsUsed = 4;
-				GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
-				double[] giOrdinatesArray = new double[numberOfPointsUsed * 3];
-				int contourCount = 1;
-				int[] stripCountArray = new int[contourCount];
-				int[] countourCountArray = {contourCount};
 
-				int pointCounter = 1;
-				while (pointCounter < giOrdinatesArray.length) {
-					giOrdinatesArray[pointCounter-1] = Building.reducePrecisionForXorY(ordinatesArray[pointCounter-1]);
-					giOrdinatesArray[pointCounter] = Building.reducePrecisionForXorY(ordinatesArray[pointCounter]);
-					giOrdinatesArray[pointCounter+1] = Building.reducePrecisionForZ(ordinatesArray[pointCounter+1]);
-					pointCounter = pointCounter + 3;
+				double value = Math.sqrt(nx * nx + ny * ny + nz * nz);
+				if (value == 0) { // not a surface, but a line
+					continue;
 				}
-				stripCountArray[0] = pointCounter/3;
-*/
-				gi.setCoordinates(giOrdinatesArray);
-				gi.setContourCounts(countourCountArray);
-				gi.setStripCounts(stripCountArray);
-
-				// calculate normal
-				ng.generateNormals(gi);
-				double nx = gi.getNormals()[0].x;
-				double ny = gi.getNormals()[0].y;
-				double nz = gi.getNormals()[0].z;
+				nx = nx / value;
+				ny = ny / value;
+				nz = nz / value;
 
 				for (int i = 0; i < ordinatesArray.length; i = i + 3) {
 					// coordinates = coordinates + hlDistance * (dot product of normal vector and unity vector)
@@ -1485,68 +1463,47 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				long surfaceId = rs.getLong("id");
 
 				JGeometry originalSurface = JGeometry.load(buildingGeometryObj);
-				double[] originalOrdinatesArray = originalSurface.getOrdinatesArray();
-				if (originalOrdinatesArray == null) {
+				double[] ordinatesArray = originalSurface.getOrdinatesArray();
+				if (ordinatesArray == null) {
 					continue;
 				}
-
-				// calculate normals from original surface
-				GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
+				
 				int contourCount = originalSurface.getElemInfo().length/3;
+				// remove normal-irrelevant points
+				int startContour1 = originalSurface.getElemInfo()[0] - 1;
+				int endContour1 = (contourCount == 1) ? 
+							ordinatesArray.length: // last
+							originalSurface.getElemInfo()[3] - 1; // holes are irrelevant for normal calculation
 				// last point of polygons in gml is identical to first and useless for GeometryInfo
-				double[] giOrdinatesArray = new double[originalOrdinatesArray.length - (contourCount*3)];
+				endContour1 = endContour1 - 3;
 
-				int[] stripCountArray = new int[contourCount];
-				int[] countourCountArray = {contourCount};
+				double nx = 0;
+				double ny = 0;
+				double nz = 0;
 
-				for (int currentContour = 1; currentContour <= contourCount; currentContour++) {
-					int startOfCurrentRing = originalSurface.getElemInfo()[(currentContour-1)*3] - 1;
-					int startOfNextRing = (currentContour == contourCount) ? 
-							originalOrdinatesArray.length: // last
-							originalSurface.getElemInfo()[currentContour*3] - 1; // still holes to come
-
-					for (int j = startOfCurrentRing; j < startOfNextRing - 3; j = j+3) {
-						giOrdinatesArray[(j-(currentContour-1)*3)] = Building.reducePrecisionForXorY(originalOrdinatesArray[j]);
-						giOrdinatesArray[(j-(currentContour-1)*3)+1] = Building.reducePrecisionForXorY(originalOrdinatesArray[j+1]);
-						giOrdinatesArray[(j-(currentContour-1)*3)+2] = Building.reducePrecisionForZ(originalOrdinatesArray[j+2]);
-					}
-
-					stripCountArray[currentContour-1] = (startOfNextRing -3 - startOfCurrentRing)/3;
+				for (int current = startContour1; current < endContour1; current = current+3) {
+					int next = current+3;
+					if (next >= endContour1) next = 0;
+					nx = nx + ((ordinatesArray[current+1] - ordinatesArray[next+1]) * (ordinatesArray[current+2] + ordinatesArray[next+2])); 
+					ny = ny + ((ordinatesArray[current+2] - ordinatesArray[next+2]) * (ordinatesArray[current] + ordinatesArray[next])); 
+					nz = nz + ((ordinatesArray[current] - ordinatesArray[next]) * (ordinatesArray[current+1] + ordinatesArray[next+1])); 
 				}
-/*
-				// calculate normals from original surface
-				int numberOfPointsUsed = 4;
-				GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
-				double[] giOrdinatesArray = new double[numberOfPointsUsed * 3];
-				int contourCount = 1;
-				int[] stripCountArray = new int[contourCount];
-				int[] countourCountArray = {contourCount};
 
-				int pointCounter = 1;
-				while (pointCounter < giOrdinatesArray.length) {
-					giOrdinatesArray[pointCounter-1] = Building.reducePrecisionForXorY(originalOrdinatesArray[pointCounter-1]);
-					giOrdinatesArray[pointCounter] = Building.reducePrecisionForXorY(originalOrdinatesArray[pointCounter]);
-					giOrdinatesArray[pointCounter+1] = Building.reducePrecisionForZ(originalOrdinatesArray[pointCounter+1]);
-					pointCounter = pointCounter + 3;
+				double value = Math.sqrt(nx * nx + ny * ny + nz * nz);
+				if (value == 0) { // not a surface, but a line
+					continue;
 				}
-				stripCountArray[0] = pointCounter/3;
-*/
-				gi.setCoordinates(giOrdinatesArray);
-				gi.setContourCounts(countourCountArray);
-				gi.setStripCounts(stripCountArray);
-
-				ng.generateNormals(gi);
-				double nx = gi.getNormals()[0].x;
-				double ny = gi.getNormals()[0].y;
-				double nz = gi.getNormals()[0].z;
+				nx = nx / value;
+				ny = ny / value;
+				nz = nz / value;
 
 				double factor = 1.5; // 0.5 inside Global Highlighting; 1.5 outside Global Highlighting;
 
-				for (int i = 0; i < originalOrdinatesArray.length; i = i + 3) {
+				for (int i = 0; i < ordinatesArray.length; i = i + 3) {
 					// coordinates = coordinates + hlDistance * (dot product of normal vector and unity vector)
-					originalOrdinatesArray[i] = originalOrdinatesArray[i] + hlDistance * factor * nx;
-					originalOrdinatesArray[i+1] = originalOrdinatesArray[i+1] + hlDistance * factor * ny;
-					originalOrdinatesArray[i+2] = originalOrdinatesArray[i+2] + hlDistance * factor * nz;
+					ordinatesArray[i] = ordinatesArray[i] + hlDistance * factor * nx;
+					ordinatesArray[i+1] = ordinatesArray[i+1] + hlDistance * factor * ny;
+					ordinatesArray[i+2] = ordinatesArray[i+2] + hlDistance * factor * nz;
 				}
 
 				// now convert highlighting to WGS84
