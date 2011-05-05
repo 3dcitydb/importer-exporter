@@ -437,9 +437,9 @@ public class ImpExp {
 				for (File file : list) {
 					if (file.isFile()) {
 						String name = file.getName().toUpperCase();
-						if (!name.endsWith("GML") && 
-								!name.endsWith("XML") &&
-								!name.endsWith("CITYGML"))
+						if (!name.endsWith(".GML") && 
+								!name.endsWith(".XML") &&
+								!name.endsWith(".CITYGML"))
 							continue;
 					}
 					

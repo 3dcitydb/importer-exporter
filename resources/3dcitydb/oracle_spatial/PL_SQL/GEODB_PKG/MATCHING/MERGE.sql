@@ -1,7 +1,7 @@
 -- MERGE.sql
 --
--- Authors:     Alexandra Stadler <stadler@igg.tu-berlin.de>
---              Claus Nagel <claus.nagel@tu-berlin.de>
+-- Authors:     Claus Nagel <claus.nagel@tu-berlin.de>
+--              Alexandra Stadler <stadler@igg.tu-berlin.de>
 --
 -- Copyright:   (c) 2007-2011  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
@@ -345,7 +345,7 @@ AS
       
       -- delete old geometry
       if old_geometry > 0 then
-        geodb_delete.delete_building(old_geometry);
+        geodb_delete.delete_surface_geometry(old_geometry);
       end if;    
     end loop;
     
@@ -360,134 +360,151 @@ AS
   is
     geom_hierachies number;  
     app_id number;
-    app_is_global number;
     seq_val number;
     building_id number;
+    not_version_enabled boolean;
         
     cursor building_cur is
       select building_id, count(geometry_id) as cnt_hierarchies from merge_collect_geom 
         group by building_id;   
   begin
+    not_version_enabled := geodb_util.versioning_table('APPEAR_TO_SURFACE_DATA') <> 'ON';
+  
     -- iterate through all building matches
     for building_rec in building_cur loop
       declare
         cursor app_cur is
-          select a.id, a.theme, a.description, a.cityobject_id, sd.id as sd_id, tp.surface_geometry_id as geometry_id, cg.geometry_id as hierarchy_id
-            from merge_collect_geom cg, surface_geometry sg, textureparam tp, surface_data sd, appear_to_surface_data asd, appearance a 
-            where cg.building_id=building_rec.building_id
-            and sg.root_id=cg.geometry_id
-            and tp.surface_geometry_id=sg.id
-            and sd.id=tp.surface_data_id            
-            and asd.surface_data_id=sd.id  
-            and a.id=asd.appearance_id
+          select distinct a.id, a.theme, a.description, sd.id as sd_id
+            from merge_collect_geom cg, surface_data sd, appear_to_surface_data asd, appearance a 
+            where a.cityobject_id=building_rec.building_id
+            and asd.appearance_id=a.id 
+            and sd.id=asd.surface_data_id
+            and (select count(*) from textureparam t where t.surface_data_id=sd.id) > 0
             order by a.id;
+            
+        cursor geom_cur is
+          select distinct tp.surface_geometry_id as geometry_id, tp.surface_data_id as sd_id, cg.geometry_id as hierarchy_id
+            from merge_collect_geom cg, textureparam tp 
+            where cg.building_id=building_rec.building_id
+            and tp.surface_geometry_id=cg.geometry_id;
       begin
         app_id := -1;
-        app_is_global := 0;
-        
-        -- iterate through appearances which reference a geometry which will be merged 
+       
+        -- step 1: iterate through local appearances referencing a geometry that will be merged 
         -- into the newly created gml:MultiSurface of the reference building
         for app_rec in app_cur loop
           if app_rec.id != app_id then
             app_id := app_rec.id;
             
-            -- if the appearance is local we create a new appearance element for the
-            -- reference building into which we transfer the surface data
-            if app_rec.cityobject_id is not null then
-              execute immediate 'select appearance_seq.nextval from dual' into seq_val;
-              execute immediate 'select id2 from match_overlap_relevant where id1=:1' into building_id using building_rec.building_id;
-              
-              -- create new appearance for reference building
-              execute immediate 'insert into appearance (id, name, name_codespace, description, theme, citymodel_id, cityobject_id)
-                values (:1, null, null, :2, :3, null, :4)'
-                using seq_val, app_rec.description, app_rec.theme, building_id;
-            else
-              app_is_global := 1;
-            end if;
+            -- create a new appearance element for the reference building
+            -- into which we are going to transfer the surface data
+            execute immediate 'select appearance_seq.nextval from dual' into seq_val;
+            execute immediate 'select id2 from match_overlap_relevant where id1=:1' into building_id using building_rec.building_id;
+            
+            execute immediate 'insert into appearance (id, name, name_codespace, description, theme, citymodel_id, cityobject_id)
+              values (:1, null, null, :2, :3, null, :4)'
+              using seq_val, app_rec.description, app_rec.theme, building_id;
           end if;
           
-          if app_is_global = 0 then
-            -- move existing surface data to newly created appearance
+          -- move existing surface data into the newly created appearance            
+          if not_version_enabled then
+            -- if appear_to_surface_data is not version-enabled
+            -- a simple update does the job
             execute immediate 'update appear_to_surface_data
               set appearance_id=:1
               where appearance_id=:2 and surface_data_id=:3'
               using seq_val, app_rec.id, app_rec.sd_id;
+          else
+            -- if appear_to_surface_data is version-enabled
+            -- updating is not possible since we are not allowed to change
+            -- primary keys. so remove existing entry... 
+            execute immediate 'delete from appear_to_surface_data
+              where appearance_id=:1 and surface_data_id=:2'
+              using app_rec.id, app_rec.sd_id;
+              
+            -- ...and re-create it
+            execute immediate 'insert into appear_to_surface_data 
+              (appearance_id, surface_data_id) values (:1, :2)'
+              using seq_val, app_rec.sd_id;
           end if;
-            
-          -- if any surface data of the appearance references the root element of the merge geometry
-          -- we need to apply further checks
-          if app_rec.geometry_id = app_rec.hierarchy_id then
-          
-            -- if just one geometry hierarchy has to be merged we simply let the
-            -- textureparam point to the new root geometry element created for the reference building
-            if building_rec.cnt_hierarchies = 1 then
-              -- let textureparam point to newly created root element
-              execute immediate 'update textureparam t
-                set t.surface_geometry_id=(select container_id from merge_container_ids where building_id=:1)
-                where t.surface_geometry_id=:2'
-                using building_rec.building_id, app_rec.hierarchy_id;
-              
-              -- copy gml:id to newly created root element - this is required
-              -- for referencing the geometry from within the appearance
-              execute immediate 'update surface_geometry s
-                set (s.gmlid, s.gmlid_codespace)=(select gmlid, gmlid_codespace from surface_geometry where id=:1)
-                where s.id=(select container_id from merge_container_ids where building_id=:2)'
-                using app_rec.hierarchy_id, building_rec.building_id;
-            
-            -- if more than one geometry hierarchy is merged into a single geometry hierarchy
-            -- for the reference building, things are a bit more complicated
-            else
-              declare
-                counter number;
-                gmlid surface_geometry.gmlid%type;
-                gmlid_codespace surface_geometry.gmlid_codespace%type;
+        end loop;
                 
-                cursor textureparam_cur is
-                  select * from textureparam where surface_data_id=app_rec.sd_id;
-                cursor surface_geometry_cur is
-                  select * from surface_geometry where parent_id=app_rec.hierarchy_id;
+        -- step 2: if any surface data of the appearance references the root element of the geometry
+        -- to be merged we need to apply further checks
+        for geom_rec in geom_cur loop          
+          -- if just one geometry hierarchy has to be merged we simply let the
+          -- textureparam point to the new root geometry element created for the reference building
+          if building_rec.cnt_hierarchies = 1 then
+            -- let textureparam point to newly created root element
+            execute immediate 'update textureparam t
+              set t.surface_geometry_id=(select container_id from merge_container_ids where building_id=:1)
+              where t.surface_geometry_id=:2'
+              using building_rec.building_id, geom_rec.hierarchy_id;
+            
+            -- copy gml:id to newly created root element - this is required
+            -- for referencing the geometry from within the appearance
+            execute immediate 'update surface_geometry s
+              set (s.gmlid, s.gmlid_codespace)=(select gmlid, gmlid_codespace from surface_geometry where id=:1)
+              where s.id=(select container_id from merge_container_ids where building_id=:2)'
+              using geom_rec.hierarchy_id, building_rec.building_id;
+          
+          -- if more than one geometry hierarchy is merged into a single geometry hierarchy
+          -- for the reference building, things are a bit more complicated
+          else
+            declare
+              counter number;
+              gmlid surface_geometry.gmlid%type;
+              gmlid_codespace surface_geometry.gmlid_codespace%type;
+              
+              cursor textureparam_cur is
+                select * from textureparam 
+                  where surface_data_id=geom_rec.sd_id
+                  and surface_geometry_id=geom_rec.hierarchy_id;
+              cursor surface_geometry_cur is
+                select * from surface_geometry where parent_id=geom_rec.hierarchy_id;
+            begin
               begin
-                begin
-                  execute immediate 'select gmlid, gmlid_codespace from surface_geometry where id=:1'
-                    into gmlid, gmlid_codespace
-                    using app_rec.hierarchy_id;
-                exception
-                  when others then
-                    gmlid := 'ID_';
-                    gmlid_codespace := '';
-                end;
-              
-                -- first we need to iterate over all textureparam which point to the root of the geometry hierachy to be merged.
-                -- second we identify all direct childs of this root element. for each of these childs we create a copy 
-                -- of the original textureparam and let it point to the child.           
-                for textureparam_rec in textureparam_cur loop
-                  counter := 0;                
-                  for surface_geometry_rec in surface_geometry_cur loop
-                    counter := counter + 1;
-                  
-                    -- create a new textureparam and let it point to the child instead of the root
-                    execute immediate 'insert into textureparam (surface_geometry_id, surface_data_id, is_texture_parametrization, world_to_texture, texture_coordinates)
-                      values (:1, :2, :3, :4, :5)'
-                      using surface_geometry_rec.id, 
-                        app_rec.sd_id, 
-                        textureparam_rec.is_texture_parametrization, 
-                        textureparam_rec.world_to_texture,
-                        textureparam_rec.texture_coordinates;
-              
-                    -- make sure the child geometry referenced by the textureparam has a gml:id value
+                execute immediate 'select gmlid, gmlid_codespace from surface_geometry where id=:1'
+                  into gmlid, gmlid_codespace
+                  using geom_rec.hierarchy_id;
+              exception
+                when others then
+                  gmlid := 'ID';
+                  gmlid_codespace := '';
+              end;
+            
+              -- first we need to iterate over all textureparam which point to the root of the geometry hierachy to be merged.
+              -- second we identify all direct childs of this root element. for each of these childs we create a copy 
+              -- of the original textureparam and let it point to the child.           
+              for textureparam_rec in textureparam_cur loop
+                counter := 0;                
+                for surface_geometry_rec in surface_geometry_cur loop
+                  counter := counter + 1;
+                
+                  -- create a new textureparam and let it point to the child instead of the root
+                  execute immediate 'insert into textureparam (surface_geometry_id, surface_data_id, is_texture_parametrization, world_to_texture, texture_coordinates)
+                    values (:1, :2, :3, :4, :5)'
+                    using surface_geometry_rec.id, 
+                      geom_rec.sd_id, 
+                      textureparam_rec.is_texture_parametrization, 
+                      textureparam_rec.world_to_texture,
+                      textureparam_rec.texture_coordinates;
+            
+                  -- make sure the child geometry referenced by the textureparam has a gml:id value
+                  if surface_geometry_rec.gmlid is null then
                     execute immediate 'update surface_geometry
                       set gmlid=concat(:1, :2),
                         gmlid_codespace=:3
                       where id=:4 and gmlid is null'
-                      using gmlid, '_' || to_char(counter), gmlid_codespace, surface_geometry_rec.id;                                      
-                  end loop;
+                      using gmlid, '_' || to_char(counter), gmlid_codespace, surface_geometry_rec.id;
+                  end if;
                 end loop;
-              end;
-            end if;
+              end loop;
+            end;
           end if;
         end loop;
       end;
-    end loop;
+    end loop;      
   exception
       when others then
         dbms_output.put_line('move_appearance: ' || SQLERRM);
@@ -619,8 +636,10 @@ AS
   begin
     -- cleanly delete root of merged geometry hierarchy
     for geometry_rec in geometry_cur loop
-      geodb_delete.delete_surface_geometry(geometry_rec.geometry_id);
+      geodb_delete.delete_surface_geometry(geometry_rec.geometry_id, 0);
     end loop;
+    
+    geodb_delete.cleanup_appearances(0);
   end;
   
   procedure delete_relevant_candidates

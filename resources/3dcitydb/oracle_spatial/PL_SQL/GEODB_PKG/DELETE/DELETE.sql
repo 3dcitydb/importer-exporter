@@ -25,7 +25,7 @@
 
 CREATE OR REPLACE PACKAGE geodb_delete
 AS
-  procedure delete_surface_geometry(pid number);
+  procedure delete_surface_geometry(pid number, clean_apps int := 0);
   procedure delete_implicit_geometry(pid number);
   procedure delete_external_reference(pid number);
   procedure delete_citymodel(pid number);
@@ -39,6 +39,7 @@ AS
   procedure delete_room(pid number);
   procedure delete_building_furniture(pid number);
   procedure delete_building(pid number);
+  procedure cleanup_appearances(only_global int :=1);
 END geodb_delete;
 /
 
@@ -59,7 +60,6 @@ AS
   procedure delete_building_furniture(building_furniture_rec building_furniture%rowtype);
   procedure delete_building(building_rec building%rowtype);
 
-  procedure cleanup_appearances(only_global int :=1);
   procedure post_delete_implicit_geom(implicit_geometry_rec implicit_geometry%rowtype);
   procedure pre_delete_cityobject(pid number);
   procedure pre_delete_citymodel(citymodel_rec citymodel%rowtype);
@@ -455,12 +455,9 @@ AS
     type id_type is table of surface_geometry.id%type;
     ids id_type;
   begin
-    execute immediate 'select id from surface_geometry where root_id=:1 and id!=:1 order by parent_id desc'
+    execute immediate 'select id from surface_geometry start with id=:1 connect by prior id=parent_id order by level desc'
       bulk collect into ids 
-      using pid, pid;
-      
-    ids.extend;
-    ids(ids.last) := pid;  
+      using pid;
     
     forall i in ids.first .. ids.last
       execute immediate 'delete from textureparam where surface_geometry_id=:1' using ids(i);
@@ -646,11 +643,14 @@ AS
   --  
   -- public API procedures
   --
-  procedure delete_surface_geometry(pid number)
+  procedure delete_surface_geometry(pid number, clean_apps int := 0)
   is
   begin
     intern_delete_surface_geometry(pid);
-    cleanup_appearances(0);
+    
+    if clean_apps <> 0 then
+      cleanup_appearances(0);
+    end if;
   exception
     when no_data_found then
       return;
