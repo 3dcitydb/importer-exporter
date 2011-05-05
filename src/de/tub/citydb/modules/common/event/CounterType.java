@@ -32,6 +32,5 @@ package de.tub.citydb.modules.common.event;
 public enum CounterType {
 	TEXTURE_IMAGE,
 	TOPLEVEL_FEATURE,
-	FILE,
-	RELEVANT_MATCHES
+	FILE
 }

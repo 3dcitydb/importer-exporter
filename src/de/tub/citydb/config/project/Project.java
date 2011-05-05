@@ -42,7 +42,6 @@ import de.tub.citydb.config.project.exporter.Exporter;
 import de.tub.citydb.config.project.global.Global;
 import de.tub.citydb.config.project.importer.Importer;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
-import de.tub.citydb.config.project.matching.Matching;
 
 @XmlRootElement
 @XmlType(name="ProjectType", propOrder={
@@ -50,7 +49,6 @@ import de.tub.citydb.config.project.matching.Matching;
 		"importer",
 		"exporter",
 		"kmlExporter",
-		"matching",
 		"global",
 		"extensions"
 })
@@ -63,8 +61,6 @@ public class Project {
 	private Exporter exporter;
 	@XmlElement(name="kmlExport", required=true)
 	private KmlExporter kmlExporter;
-	@XmlElement(required=true)
-	private Matching matching;
 	private Global global;
 	@XmlJavaTypeAdapter(de.tub.citydb.config.project.plugin.PluginConfigListAdapter.class)
 	private HashMap<Class<? extends PluginConfig>, PluginConfig> extensions;
@@ -74,7 +70,6 @@ public class Project {
 		importer = new Importer();
 		exporter = new Exporter();
 		kmlExporter = new KmlExporter();
-		matching = new Matching();
 		global = new Global();
 		extensions = new HashMap<Class<? extends PluginConfig>, PluginConfig>();
 	}
@@ -104,15 +99,6 @@ public class Project {
 	public void setExporter(Exporter exporter) {
 		if (exporter != null)
 			this.exporter = exporter;
-	}
-
-	public Matching getMatching() {
-		return matching;
-	}
-
-	public void setMatching(Matching matching) {
-		if (matching != null)
-			this.matching = matching;
 	}
 
 	public Global getGlobal() {

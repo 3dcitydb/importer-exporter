@@ -104,7 +104,6 @@ import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.modules.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.modules.database.DatabasePlugin;
 import de.tub.citydb.modules.kml.KMLExportPlugin;
-import de.tub.citydb.modules.matching.MatchingPlugin;
 import de.tub.citydb.modules.preferences.PreferencesPlugin;
 import de.tub.citydb.plugin.PluginService;
 import de.tub.citydb.util.GuiUtil;
@@ -221,7 +220,6 @@ public class ImpExpGui extends JFrame implements ViewController, EventHandler {
 		views.add(pluginService.getInternalPlugin(CityGMLImportPlugin.class).getView());
 		views.add(pluginService.getInternalPlugin(CityGMLExportPlugin.class).getView());
 		views.add(pluginService.getInternalPlugin(KMLExportPlugin.class).getView());
-		views.add(pluginService.getInternalPlugin(MatchingPlugin.class).getView());
 
 		for (ViewExtension viewExtension : pluginService.getExternalViewExtensions())
 			views.add(viewExtension.getView());
@@ -464,9 +462,8 @@ public class ImpExpGui extends JFrame implements ViewController, EventHandler {
 			if (width == 0)
 				width = consoleWindow.getWidth();
 
-			if (resizeMain) {		
+			if (resizeMain)	
 				setSize(getWidth() + width, getHeight());
-			}
 
 			width = main.getWidth();
 			int dividerLocation = splitPane.getDividerLocation();

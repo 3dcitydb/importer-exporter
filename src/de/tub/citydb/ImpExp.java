@@ -75,7 +75,6 @@ import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.modules.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.modules.database.DatabasePlugin;
 import de.tub.citydb.modules.kml.KMLExportPlugin;
-import de.tub.citydb.modules.matching.MatchingPlugin;
 import de.tub.citydb.modules.preferences.PreferencesPlugin;
 import de.tub.citydb.plugin.IllegalPluginEventChecker;
 import de.tub.citydb.plugin.PluginService;
@@ -421,7 +420,6 @@ public class ImpExp {
 			pluginService.registerInternalPlugin(new CityGMLImportPlugin(jaxbBuilder, config, mainView));		
 			pluginService.registerInternalPlugin(new CityGMLExportPlugin(jaxbBuilder, config, mainView));		
 			pluginService.registerInternalPlugin(new KMLExportPlugin(kmlContext, colladaContext, config, mainView));
-			pluginService.registerInternalPlugin(new MatchingPlugin(config, mainView));
 			pluginService.registerInternalPlugin(databasePlugin);
 			pluginService.registerInternalPlugin(new PreferencesPlugin(pluginService, config, mainView));
 

@@ -74,6 +74,11 @@ public class EventDispatcher {
 		EventHandlerContainerQueue containerQueue = containerQueueMap.get(type);
 		return containerQueue.removeEventHandler(handler);
 	}
+	
+	public void removeEventHandler(EventHandler handler) {
+		for (EventHandlerContainerQueue containerQueue : containerQueueMap.values())
+			containerQueue.removeEventHandler(handler);	
+	}
 
 	public void triggerEvent(Event event) {
 		eventDispatcherThread.addWork(event);
