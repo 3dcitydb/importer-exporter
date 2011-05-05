@@ -77,6 +77,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
 
 	private JCheckBox kmzCheckbox = new JCheckBox();
+	private JCheckBox showBoundingBoxCheckbox = new JCheckBox();
 	private JCheckBox showTileBordersCheckbox = new JCheckBox();
 	private JLabel autoTileSideLengthLabel = new JLabel();
 	private JTextField autoTileSideLengthText = new JTextField("", 4);
@@ -149,6 +150,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		KmlExporter kmlExporter = config.getProject().getKmlExporter();
 
 		if (kmzCheckbox.isSelected() != kmlExporter.isExportAsKmz()) return true;
+		if (showBoundingBoxCheckbox.isSelected() != kmlExporter.isShowBoundingBox()) return true;
 		if (showTileBordersCheckbox.isSelected() != kmlExporter.isShowTileBorders()) return true;
 
 		double autoTileSideLength = 125.0;
@@ -357,6 +359,10 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		kmzCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
 		kmzCheckbox.setIconTextGap(10);
 		contentsPanel.add(kmzCheckbox);
+
+		showBoundingBoxCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
+		showBoundingBoxCheckbox.setIconTextGap(10);
+		contentsPanel.add(showBoundingBoxCheckbox);
 
 		showTileBordersCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
 		showTileBordersCheckbox.setIconTextGap(10);
@@ -850,6 +856,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 	@Override
 	public void doTranslation() {
 		kmzCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.exportAsKmz"));
+		showBoundingBoxCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.showBoundingBox"));
 		showTileBordersCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.showTileBorders"));
 		autoTileSideLengthLabel.setText(Internal.I18N.getString("pref.kmlexport.label.autoTileSideLength"));
 
@@ -890,6 +897,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		KmlExporter kmlExporter = config.getProject().getKmlExporter();
 
 		kmzCheckbox.setSelected(kmlExporter.isExportAsKmz());
+		showBoundingBoxCheckbox.setSelected(kmlExporter.isShowBoundingBox());
 		showTileBordersCheckbox.setSelected(kmlExporter.isShowTileBorders());
 		autoTileSideLengthText.setText(String.valueOf(kmlExporter.getAutoTileSideLength()));
 
@@ -1006,6 +1014,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		KmlExporter kmlExporter = config.getProject().getKmlExporter();
 
 		kmlExporter.setExportAsKmz(kmzCheckbox.isSelected());
+		kmlExporter.setShowBoundingBox(showBoundingBoxCheckbox.isEnabled() && showBoundingBoxCheckbox.isSelected());
 		kmlExporter.setShowTileBorders(showTileBordersCheckbox.isEnabled() && showTileBordersCheckbox.isSelected());
 
 		try {

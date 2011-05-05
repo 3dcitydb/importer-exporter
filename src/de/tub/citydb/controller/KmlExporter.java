@@ -223,7 +223,7 @@ public class KmlExporter implements EventListener {
 				Logger.getInstance().info(String.valueOf(rows * columns * activeDisplayLevelAmount) +
 					 	" (" + rows + "x" + columns + "x" + activeDisplayLevelAmount +
 					 	") tiles will be generated."); 
-				generateBasisFile();
+				generateMasterFile();
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
@@ -542,7 +542,7 @@ public class KmlExporter implements EventListener {
 	}
 
 
-	public void generateBasisFile() throws FileNotFoundException,
+	private void generateMasterFile() throws FileNotFoundException,
 											  SQLException,
 											  DatatypeConfigurationException { 
 
@@ -569,26 +569,30 @@ public class KmlExporter implements EventListener {
 			kmlTree.append("\t\t\t<range>970.0</range>\n");
 			kmlTree.append("\t\t</LookAt>\n");
 
-			kmlTree.append("\t\t<Style id=\"frameStyle\">\n");
-			kmlTree.append("\t\t\t<LineStyle>\n");
-			kmlTree.append("\t\t\t\t<width>4</width>\n");
-			kmlTree.append("\t\t\t</LineStyle>\n");
-			kmlTree.append("\t\t</Style>\n");
+			if (config.getProject().getKmlExporter().isShowBoundingBox()) {
 
-			kmlTree.append("\t\t<Placemark>\n");
-			kmlTree.append("\t\t\t<name>Bounding box border</name>\n");
-			kmlTree.append("\t\t\t<styleUrl>#frameStyle</styleUrl>\n");
-			kmlTree.append("\t\t\t<LineString>\n");
-			kmlTree.append("\t\t\t\t<tessellate>1</tessellate>\n");
-			kmlTree.append("\t\t\t\t<coordinates>");
-			kmlTree.append((wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5) + " ");
-			kmlTree.append((wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getUpperCorner().getY() + BORDER_GAP * .5) + " ");
-			kmlTree.append((wgs84TileMatrix.getUpperCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getUpperCorner().getY() + BORDER_GAP * .5) + " ");
-			kmlTree.append((wgs84TileMatrix.getUpperCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5) + " ");
-			kmlTree.append((wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5));
-			kmlTree.append("\t\t\t\t</coordinates>\n");
-			kmlTree.append("\t\t\t</LineString>\n");
-			kmlTree.append("\t\t</Placemark>\n");
+				kmlTree.append("\t\t<Style id=\"frameStyle\">\n");
+				kmlTree.append("\t\t\t<LineStyle>\n");
+				kmlTree.append("\t\t\t\t<width>4</width>\n");
+				kmlTree.append("\t\t\t</LineStyle>\n");
+				kmlTree.append("\t\t</Style>\n");
+
+				kmlTree.append("\t\t<Placemark>\n");
+				kmlTree.append("\t\t\t<name>Bounding box border</name>\n");
+				kmlTree.append("\t\t\t<styleUrl>#frameStyle</styleUrl>\n");
+				kmlTree.append("\t\t\t<LineString>\n");
+				kmlTree.append("\t\t\t\t<tessellate>1</tessellate>\n");
+				kmlTree.append("\t\t\t\t<coordinates>");
+				kmlTree.append((wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5) + " ");
+				kmlTree.append((wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getUpperCorner().getY() + BORDER_GAP * .5) + " ");
+				kmlTree.append((wgs84TileMatrix.getUpperCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getUpperCorner().getY() + BORDER_GAP * .5) + " ");
+				kmlTree.append((wgs84TileMatrix.getUpperCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5) + " ");
+				kmlTree.append((wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5));
+				kmlTree.append("\t\t\t\t</coordinates>\n");
+				kmlTree.append("\t\t\t</LineString>\n");
+				kmlTree.append("\t\t</Placemark>\n");
+
+			}
 
 			outputStream.write(kmlTree.toString().getBytes());
 
