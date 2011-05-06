@@ -101,6 +101,7 @@ public class DBAppearance implements DBExporter {
 	private boolean appendOldGmlId;
 	private boolean transformCoords;
 	private String gmlIdPrefix;
+	private String pathSeparator;
 
 	public DBAppearance(Connection connection, CityGMLFactory cityGMLFactory, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
@@ -115,7 +116,9 @@ public class DBAppearance implements DBExporter {
 		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
 		texturePath = config.getInternal().getExportTextureFilePath();
 		globalApp = config.getProject().getExporter().getModuleVersion().getAppearance().getModule();
-
+		pathSeparator = config.getProject().getExporter().getAppearances().isTexturePathAbsolute() ?
+				File.separator : "/";
+		
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
 		if (!useXLink) {
 			appendOldGmlId = config.getProject().getExporter().getXlink().getFeature().isSetAppendId();
@@ -350,7 +353,7 @@ public class DBAppearance implements DBExporter {
 							File file = new File(imageURI);
 							String fileName = file.getName();
 							if (texturePath != null)
-								fileName = texturePath + File.separator + fileName;
+								fileName = texturePath + pathSeparator + fileName;
 
 							absTex.setImageURI(fileName);
 
@@ -734,7 +737,7 @@ public class DBAppearance implements DBExporter {
 						File file = new File(imageURI);
 						String fileName = file.getName();
 						if (texturePath != null)
-							fileName = texturePath + File.separator + fileName;
+							fileName = texturePath + pathSeparator + fileName;
 
 						absTex.setImageURI(fileName);
 

@@ -60,6 +60,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 	private OraclePreparedStatement psInsert;
 	private String localPath;
 	private CounterEvent counter;
+	private boolean replacePathSeparator;
 
 	public XlinkTextureImage(Connection externalFileConn, Config config, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.externalFileConn = externalFileConn;
@@ -72,6 +73,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 	private void init() throws SQLException {
 		localPath = config.getInternal().getImportPath();
 		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1);
+		replacePathSeparator = File.separator.equals('/');
 		
 		psPrepare = externalFileConn.prepareStatement("update SURFACE_DATA set TEX_IMAGE=ordimage.init() where ID=?");
 		psSelect = externalFileConn.prepareStatement("select TEX_IMAGE from SURFACE_DATA where ID=? for update");
@@ -91,11 +93,17 @@ public class XlinkTextureImage implements DBXlinkResolver {
 
 			} catch (MalformedURLException malURL) {
 				isRemote = false;
-				imageFileName = localPath + File.separator + new File(imageFileName).getPath();
+				
+				if (replacePathSeparator)
+					imageFileName = imageFileName.replace("\\", "/");
+				
+				File imageFile = new File(imageFileName);
+				if (!imageFile.isAbsolute()) {
+					imageFileName = localPath + File.separator + imageFile.getPath();
+					imageFile = new File(imageFileName);
+				}
 				
 				// check minimum requirements for local texture files
-				File imageFile = new File(imageFileName);				
-
 				if (!imageFile.exists() || !imageFile.isFile() || !imageFile.canRead()) {
 					LOG.error("Failed to read texture file '" + imageFileName + "'.");
 					return false;
