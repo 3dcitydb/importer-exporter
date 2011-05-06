@@ -500,7 +500,7 @@ public class DBAppearance implements DBExporter {
 								if (coordsList != null && coordsList.size() != 0) {
 									TextureCoordinates texureCoordinates = cityGMLFactory.createTextureCoordinates(globalApp);
 									texureCoordinates.setValue(coordsList);
-									texureCoordinates.setRing(geometryTarget + "_" + i);
+									texureCoordinates.setRing(geometryTarget + '_' + i + '_');
 
 									texCoordList.addTextureCoordinates(texureCoordinates);
 								} else {
