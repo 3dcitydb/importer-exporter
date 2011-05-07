@@ -114,7 +114,6 @@ public class DBCityObject implements DBExporter {
 
 	private void init() throws SQLException {
 		exportAppearance = config.getProject().getExporter().getAppearances().isSetExportAppearance();
-		gmlSrsName = config.getInternal().getOpenConnection().getMetaData().getSrsName();
 		useInternalBBoxFilter = config.getInternal().isUseInternalBBoxFilter();
 
 		tiling = config.getProject().getExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
@@ -129,6 +128,8 @@ public class DBCityObject implements DBExporter {
 
 		transformCoords = config.getInternal().isTransformCoordinates();
 		if (!transformCoords) {		
+			gmlSrsName = config.getInternal().getOpenConnection().getMetaData().getSrsName();
+
 			psCityObject = connection.prepareStatement("select co.GMLID, co.ENVELOPE, co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
 					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
 					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
@@ -136,6 +137,7 @@ public class DBCityObject implements DBExporter {
 			"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
+			gmlSrsName = config.getInternal().getExportTargetSRS().getSrsName();
 			
 			psCityObject = connection.prepareStatement("select co.GMLID, " +
 					"geodb_util.transform_or_null(co.ENVELOPE, " + srid + ") AS ENVELOPE, " +
