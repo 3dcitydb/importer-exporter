@@ -73,7 +73,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 	private void init() throws SQLException {
 		localPath = config.getInternal().getImportPath();
 		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1);
-		replacePathSeparator = File.separator.equals('/');
+		replacePathSeparator = File.separatorChar == '/';
 		
 		psPrepare = externalFileConn.prepareStatement("update SURFACE_DATA set TEX_IMAGE=ordimage.init() where ID=?");
 		psSelect = externalFileConn.prepareStatement("select TEX_IMAGE from SURFACE_DATA where ID=? for update");
