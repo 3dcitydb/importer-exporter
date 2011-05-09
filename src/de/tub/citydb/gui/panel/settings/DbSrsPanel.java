@@ -72,7 +72,6 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.ReferenceSystems;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.gui.components.JTextFieldLimit;
 import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
 import de.tub.citydb.gui.util.GuiUtil;
@@ -146,12 +145,12 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		srsNameText = new JTextField();
 		descriptionLabel = new JLabel();
 		descriptionText = new JTextField();
-		newButton = new JButton("");
-		applyButton = new JButton("");
-		deleteButton = new JButton("");
-		checkButton = new JButton("");
+		newButton = new JButton();
+		applyButton = new JButton();
+		deleteButton = new JButton();
+		checkButton = new JButton();
 		checkButton.setEnabled(false);
-		copyButton = new JButton("");
+		copyButton = new JButton();
 
 		fileLabel = new JLabel();
 		fileText = new JTextField();
@@ -188,7 +187,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 
 			srsNameText.setPreferredSize(srsNameText.getPreferredSize());
 			descriptionText.setPreferredSize(srsNameText.getPreferredSize());
-			descriptionText.setDocument(new JTextFieldLimit(40, false));
+			srsComboBox.setPreferredSize(srsNameText.getPreferredSize());
 
 			srsPanel.add(sridLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 			srsPanel.add(sridText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
@@ -446,6 +445,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		sridText.setValue(refSys.getSrid());
 		srsNameText.setText(refSys.getSrsName());
 		descriptionText.setText(refSys.toString());
+		srsComboBox.setToolTipText(refSys.getDescription());
 
 		boolean enabled = !srsComboBox.isDBReferenceSystemSelected();
 		sridText.setEnabled(enabled);
@@ -657,7 +657,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		String exportString = chooser.getSelectedFile().toString();
 		if (!exportString.contains("."))
 			exportString += ".xml";
-		
+
 		fileText.setText(exportString);
 	}
 
