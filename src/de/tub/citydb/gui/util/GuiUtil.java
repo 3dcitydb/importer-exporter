@@ -37,7 +37,6 @@ import java.util.Locale;
 
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
-import javax.swing.JSpinner;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.components.StandardEditingPopupMenu;
