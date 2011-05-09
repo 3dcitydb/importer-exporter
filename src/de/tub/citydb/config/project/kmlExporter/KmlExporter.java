@@ -46,6 +46,7 @@ import de.tub.citydb.config.project.system.System;
 		"lodToExportFrom",
 		"displayLevels",
 		"exportAsKmz",
+		"showBoundingBox",
 		"showTileBorders",
 		"autoTileSideLength",
 		"footprintHighlighting",
@@ -80,6 +81,7 @@ public class KmlExporter {
 	@XmlElementWrapper(name="displayLevels")	
 	private List<DisplayLevel> displayLevels;
 	private boolean exportAsKmz;
+	private boolean showBoundingBox;
 	private boolean showTileBorders;
 	private double autoTileSideLength;
 	private boolean footprintHighlighting;
@@ -112,6 +114,7 @@ public class KmlExporter {
 		lodToExportFrom = 2;
 		displayLevels = new ArrayList<DisplayLevel>();
 		exportAsKmz = true;
+		showBoundingBox = true;
 		showTileBorders = true;
 		autoTileSideLength = 125.0;
 		footprintHighlighting = false;
@@ -220,6 +223,14 @@ public class KmlExporter {
 
 	public int getGroupSize() {
 		return groupSize;
+	}
+
+	public void setShowBoundingBox(boolean showBoundingBox) {
+		this.showBoundingBox = showBoundingBox;
+	}
+
+	public boolean isShowBoundingBox() {
+		return showBoundingBox;
 	}
 
 	public void setShowTileBorders(boolean showTileBorders) {

@@ -43,11 +43,11 @@ import org.citygml4j.util.xml.saxevents.SAXEvent;
 import org.citygml4j.util.xml.saxevents.StartElement;
 import org.xml.sax.SAXException;
 
-public class XMLHeaderWriter {
+public class KMLHeaderWriter {
 	private final SAXWriter saxWriter;
 	private SAXEventBuffer saxBuffer;
 
-	public XMLHeaderWriter(SAXWriter saxWriter) {
+	public KMLHeaderWriter(SAXWriter saxWriter) {
 		this.saxWriter = saxWriter;
 	}
 
@@ -65,6 +65,10 @@ public class XMLHeaderWriter {
 				if (event instanceof EndElement) {
 					--depth;
 					if (depth <= 0)
+						break;
+
+					EndElement endElement = (EndElement) event;
+					if ("Document".equals(endElement.getLocalName()))
 						break;
 				}
 
@@ -92,12 +96,11 @@ public class XMLHeaderWriter {
 			JAXBContext jaxbContext,
 			Properties marshallerProps) throws JAXBException {
 		saxBuffer = new SAXEventBuffer();
-		
+
 		Marshaller marshaller = jaxbContext.createMarshaller();
 		for (Object key : marshallerProps.keySet())
 			marshaller.setProperty(key.toString(), marshallerProps.get(key));
 
-		marshaller.marshal(jaxbRootElement, saxBuffer);
-	}
+		marshaller.marshal(jaxbRootElement, saxBuffer);	}
 
 }

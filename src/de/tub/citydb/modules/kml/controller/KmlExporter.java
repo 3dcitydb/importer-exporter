@@ -48,12 +48,14 @@ import java.util.zip.ZipOutputStream;
 
 import javax.imageio.ImageIO;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.transform.stream.StreamResult;
 
 import net.opengis.kml._2.DocumentType;
+import net.opengis.kml._2.KmlType;
 import net.opengis.kml._2.LineStringType;
 import net.opengis.kml._2.LineStyleType;
 import net.opengis.kml._2.ObjectFactory;
@@ -100,7 +102,7 @@ import de.tub.citydb.modules.kml.database.BalloonTemplateHandler;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
-import de.tub.citydb.modules.kml.util.XMLHeaderWriter;
+import de.tub.citydb.modules.kml.util.KMLHeaderWriter;
 import de.tub.citydb.util.database.DBUtil;
 
 public class KmlExporter implements EventHandler {
@@ -223,7 +225,7 @@ public class KmlExporter implements EventHandler {
 				Logger.getInstance().info(String.valueOf(rows * columns * activeDisplayLevelAmount) +
 					 	" (" + rows + "x" + columns + "x" + activeDisplayLevelAmount +
 					 	") tiles will be generated."); 
-				generateBasisFile();
+				generateMasterFile();
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
@@ -317,9 +319,12 @@ public class KmlExporter implements EventHandler {
 						Logger.getInstance().info("Exporting to file: " + file.getAbsolutePath());
 
 						// create file header
-						XMLHeaderWriter xmlHeader = new XMLHeaderWriter(saxWriter);
+						KMLHeaderWriter xmlHeader = new KMLHeaderWriter(saxWriter);
 
 						// create kml root element
+						KmlType kmlType = kmlFactory.createKmlType();
+						JAXBElement<KmlType> kml = kmlFactory.createKml(kmlType);
+
 						DocumentType document = kmlFactory.createDocumentType();
 						if (useTiling) {
 							document.setName(filename + "_Tile_" + i + "_" + j + "_" + displayLevel.getName());
@@ -328,9 +333,10 @@ public class KmlExporter implements EventHandler {
 							document.setName(filename + "_" + displayLevel.getName());
 						}
 						document.setOpen(true);
+						kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
 
 						try {
-							xmlHeader.setRootElement(kmlFactory.createDocument(document), jaxbKmlContext, props);
+							xmlHeader.setRootElement(kml, jaxbKmlContext, props);
 							xmlHeader.startRootElement();
 							addStyleAndBorder(displayLevel, i, j);
 						} catch (JAXBException jaxBE) {
@@ -358,7 +364,6 @@ public class KmlExporter implements EventHandler {
 									exportFilter,
 									displayLevel,
 									alreadyExported,
-									eventDispatcher,
 									config);
 
 							if (shouldRun)
@@ -497,7 +502,7 @@ public class KmlExporter implements EventHandler {
 										new Point(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY(), 0));
 
 		int dbSrid = dbPool.getActiveConnection().getMetaData().getSrid();
-		if (bbox.getSRS().getSrid() != dbSrid) {
+		if (bbox.getSRS().getSrid() != 0 && bbox.getSRS().getSrid() != dbSrid) {
 			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSRS().getSrid(), WGS84_SRID);
 			tileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSRS().getSrid(), dbSrid);
 		}
@@ -529,7 +534,7 @@ public class KmlExporter implements EventHandler {
 	}
 
 
-	public void generateBasisFile() throws FileNotFoundException,
+	private void generateMasterFile() throws FileNotFoundException,
 											  SQLException,
 											  DatatypeConfigurationException { 
 
@@ -556,26 +561,30 @@ public class KmlExporter implements EventHandler {
 			kmlTree.append("\t\t\t<range>970.0</range>\n");
 			kmlTree.append("\t\t</LookAt>\n");
 
-			kmlTree.append("\t\t<Style id=\"frameStyle\">\n");
-			kmlTree.append("\t\t\t<LineStyle>\n");
-			kmlTree.append("\t\t\t\t<width>4</width>\n");
-			kmlTree.append("\t\t\t</LineStyle>\n");
-			kmlTree.append("\t\t</Style>\n");
+			if (config.getProject().getKmlExporter().isShowBoundingBox()) {
 
-			kmlTree.append("\t\t<Placemark>\n");
-			kmlTree.append("\t\t\t<name>Bounding box border</name>\n");
-			kmlTree.append("\t\t\t<styleUrl>#frameStyle</styleUrl>\n");
-			kmlTree.append("\t\t\t<LineString>\n");
-			kmlTree.append("\t\t\t\t<tessellate>1</tessellate>\n");
-			kmlTree.append("\t\t\t\t<coordinates>");
-			kmlTree.append((wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5) + " ");
-			kmlTree.append((wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getUpperCorner().getY() + BORDER_GAP * .5) + " ");
-			kmlTree.append((wgs84TileMatrix.getUpperCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getUpperCorner().getY() + BORDER_GAP * .5) + " ");
-			kmlTree.append((wgs84TileMatrix.getUpperCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5) + " ");
-			kmlTree.append((wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5));
-			kmlTree.append("\t\t\t\t</coordinates>\n");
-			kmlTree.append("\t\t\t</LineString>\n");
-			kmlTree.append("\t\t</Placemark>\n");
+				kmlTree.append("\t\t<Style id=\"frameStyle\">\n");
+				kmlTree.append("\t\t\t<LineStyle>\n");
+				kmlTree.append("\t\t\t\t<width>4</width>\n");
+				kmlTree.append("\t\t\t</LineStyle>\n");
+				kmlTree.append("\t\t</Style>\n");
+
+				kmlTree.append("\t\t<Placemark>\n");
+				kmlTree.append("\t\t\t<name>Bounding box border</name>\n");
+				kmlTree.append("\t\t\t<styleUrl>#frameStyle</styleUrl>\n");
+				kmlTree.append("\t\t\t<LineString>\n");
+				kmlTree.append("\t\t\t\t<tessellate>1</tessellate>\n");
+				kmlTree.append("\t\t\t\t<coordinates>");
+				kmlTree.append((wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5) + " ");
+				kmlTree.append((wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getUpperCorner().getY() + BORDER_GAP * .5) + " ");
+				kmlTree.append((wgs84TileMatrix.getUpperCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getUpperCorner().getY() + BORDER_GAP * .5) + " ");
+				kmlTree.append((wgs84TileMatrix.getUpperCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5) + " ");
+				kmlTree.append((wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5));
+				kmlTree.append("\t\t\t\t</coordinates>\n");
+				kmlTree.append("\t\t\t</LineString>\n");
+				kmlTree.append("\t\t</Placemark>\n");
+
+			}
 
 			outputStream.write(kmlTree.toString().getBytes());
 

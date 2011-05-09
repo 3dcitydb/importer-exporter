@@ -37,24 +37,27 @@ import java.util.HashSet;
 import oracle.jdbc.OracleResultSet;
 
 import org.citygml4j.geometry.BoundingBox;
+import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
-import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.modules.common.filter.ExportFilter;
+import de.tub.citydb.util.Util;
 
 public class KmlSplitter {
 
+	private final static int BUILDING = Util.cityObject2classId(CityGMLClass.BUILDING);
+	
 	private final DBConnectionPool dbConnectionPool;
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
 	private final DisplayLevel displayLevel;
 	private final ExportFilter exportFilter;
 	private final HashSet<String> alreadyExported;
 	private final Config config;
-	private final EventDispatcher eventDispatcher;
 	private volatile boolean shouldRun = true;
 
 	private Connection connection;
@@ -64,14 +67,12 @@ public class KmlSplitter {
 					   ExportFilter exportFilter, 
 					   DisplayLevel displayLevel,
 					   HashSet<String> alreadyExported,
-					   EventDispatcher eventDispatcher, 
 					   Config config) throws SQLException {
 		this.dbConnectionPool = dbConnectionPool;
 		this.dbWorkerPool = dbWorkerPool;
 		this.exportFilter = exportFilter;
 		this.displayLevel = displayLevel;
 		this.alreadyExported = alreadyExported;
-		this.eventDispatcher = eventDispatcher;
 		this.config = config;
 
 		init();
@@ -90,7 +91,7 @@ public class KmlSplitter {
 
 	private void queryObjects() throws SQLException {
 
-		long startTime = System.currentTimeMillis();
+//		long startTime = System.currentTimeMillis();
 
 		if (config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
 			for (String gmlId: config.getProject().getKmlExporter().getFilter().getSimpleFilter().getGmlIdFilter().getGmlIds()) {
@@ -134,21 +135,28 @@ public class KmlSplitter {
 				String filename = absolutePath.substring(absolutePath.lastIndexOf(File.separator) + 1,
 														 absolutePath.lastIndexOf("."));
 				String tileName = filename + "_Tile_" 
-										   + filter.getComplexFilter().getTiledBoundingBox().getTileColumn()
+										   + exportFilter.getBoundingBoxFilter().getTileColumn()
 										   + "_" 
-										   + filter.getComplexFilter().getTiledBoundingBox().getTileRow();
+										   + exportFilter.getBoundingBoxFilter().getTileRow();
 
 				Logger.getInstance().info("Spatial query for " + tileName + " resolved in " +
 										  (System.currentTimeMillis() - startTime) + " millis.");
 */
+				int objectCount = 0;
+
 				while (rs.next() && shouldRun) {
 					String gmlId = rs.getString("gmlId");
-					if (alreadyExported.contains(gmlId)) continue;
+					int classId = rs.getInt("class_id");
+					if (classId != BUILDING || alreadyExported.contains(gmlId)) continue;
 					KmlSplittingResult splitter = new KmlSplittingResult(gmlId, displayLevel);
 					dbWorkerPool.addWork(splitter);
 					alreadyExported.add(gmlId);
+					objectCount++;
 				}
 
+				Logger.getInstance().debug("Tile_" + exportFilter.getBoundingBoxFilter().getTileRow()
+						   					 + "_" + exportFilter.getBoundingBoxFilter().getTileColumn()
+						   					 + " contained " + objectCount + " objects.");
 			}
 			catch (SQLException sqlEx) {
 				throw sqlEx;
