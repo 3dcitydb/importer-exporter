@@ -79,7 +79,6 @@ import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.ReferenceSystems;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.gui.components.JTextFieldLimit;
 import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
@@ -173,7 +172,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		srsComboBox = srsComboBoxManager.getSrsComboBox(false);
 
 		GuiUtil.addStandardEditingPopupMenu(sridText, srsNameText, descriptionText, fileText);
-		
+
 		sridText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (sridText.getValue() != null) {
@@ -197,7 +196,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 			srsNameText.setPreferredSize(srsNameText.getPreferredSize());
 			descriptionText.setPreferredSize(srsNameText.getPreferredSize());
-			descriptionText.setDocument(new JTextFieldLimit(40, false));
+			srsComboBox.setPreferredSize(srsNameText.getPreferredSize());
 
 			srsPanel.add(sridLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 			srsPanel.add(sridText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
@@ -456,6 +455,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		sridText.setValue(refSys.getSrid());
 		srsNameText.setText(refSys.getSrsName());
 		descriptionText.setText(refSys.toString());
+		srsComboBox.setToolTipText(refSys.getDescription());
 
 		boolean enabled = !srsComboBox.isDBReferenceSystemSelected();
 		sridText.setEnabled(enabled);
@@ -672,17 +672,13 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		chooser.setFileFilter(filter);
 
 		if (!fileText.getText().trim().isEmpty())
-			chooser.setCurrentDirectory(new File(fileText.getText()).getParentFile());
+			chooser.setCurrentDirectory(new File(fileText.getText()));
 
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 
 			return;
 
-		String exportString = chooser.getSelectedFile().toString();
-		if (!exportString.contains("."))
-			exportString += ".xml";
-		
-		fileText.setText(exportString);
+		fileText.setText(chooser.getSelectedFile().toString());
 	}
 
 	@Override
