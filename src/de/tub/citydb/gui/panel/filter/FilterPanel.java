@@ -175,6 +175,9 @@ public class FilterPanel extends JPanel {
 		srsLabel = new JLabel();
 		srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true);
 
+		GuiUtil.addStandardEditingPopupMenu(gmlNameText, gmlIdText, 
+				coStartText, coEndText, bbXMinText, bbYMinText,  bbXMaxText, bbYMaxText);
+		
 		featureClassFilter = new JCheckBox();		
 
 		cityObject = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECT);

@@ -94,24 +94,26 @@ public class ExpXLinkPanel extends PrefPanelBase {
 	}
 	
 	private void initGui() {
-		xlinkToFeature = new JRadioButton("");
-		copyFeature = new JRadioButton("");
+		xlinkToFeature = new JRadioButton();
+		copyFeature = new JRadioButton();
 		ButtonGroup featureHandling = new ButtonGroup();
 		featureHandling.add(xlinkToFeature);
 		featureHandling.add(copyFeature);
-		featureIdPrefixLabel = new JLabel("");
-		featureIdPrefix = new JTextField("");
-		featureAppendId = new JCheckBox("");
-		featureKeepExtRef = new JCheckBox("");
+		featureIdPrefixLabel = new JLabel();
+		featureIdPrefix = new JTextField();
+		featureAppendId = new JCheckBox();
+		featureKeepExtRef = new JCheckBox();
 	
-		xlinkToGeometry = new JRadioButton("");
-		copyGeometry = new JRadioButton("");
+		xlinkToGeometry = new JRadioButton();
+		copyGeometry = new JRadioButton();
 		ButtonGroup geometryHandling = new ButtonGroup();
 		geometryHandling.add(xlinkToGeometry);
 		geometryHandling.add(copyGeometry);
-		geometryIdPrefixLabel = new JLabel("");
-		geometryIdPrefix = new JTextField("");
-		geometryAppendId = new JCheckBox("");
+		geometryIdPrefixLabel = new JLabel();
+		geometryIdPrefix = new JTextField();
+		geometryAppendId = new JCheckBox();
+		
+		GuiUtil.addStandardEditingPopupMenu(featureIdPrefix, geometryIdPrefix);
 		
 		setLayout(new GridBagLayout());
 		{

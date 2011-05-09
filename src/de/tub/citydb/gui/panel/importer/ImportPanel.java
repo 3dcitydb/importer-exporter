@@ -32,6 +32,8 @@ package de.tub.citydb.gui.panel.importer;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
@@ -41,17 +43,21 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -60,6 +66,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.TransferHandler;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.tub.citydb.config.Config;
@@ -67,9 +74,11 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.panel.filter.FilterPanel;
 import de.tub.citydb.gui.panel.filter.FilterPanel.FilterPanelType;
 import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.log.Logger;
 
 @SuppressWarnings("serial")
-public class ImportPanel extends JPanel implements DropTargetListener {
+public class ImportPanel extends JPanel {
+	private final Logger LOG = Logger.getInstance();
 
 	private JList fileList;
 	private DefaultListModel fileListModel;
@@ -91,35 +100,54 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 	}
 
 	private void initGui() {
-
-		//gui-elemente anlegen
 		fileList = new JList();		
-		browseButton = new JButton("");
-		removeButton = new JButton("");
+		browseButton = new JButton();
+		removeButton = new JButton();
 		filterPanel = new FilterPanel(config, FilterPanelType.IMPORT);
-		importButton = new JButton("");
-		validateButton = new JButton("");
-		workspaceText = new JTextField("");
+		importButton = new JButton();
+		validateButton = new JButton();
+		workspaceText = new JTextField();
 
+		DropCutCopyPasteHandler handler = new DropCutCopyPasteHandler();
+		
 		fileListModel = new DefaultListModel();
 		fileList.setModel(fileListModel);
 		fileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		fileList.setTransferHandler(handler);
 
-		DropTarget dropTarget = new DropTarget(fileList, this);
+		DropTarget dropTarget = new DropTarget(fileList, handler);
 		fileList.setDropTarget(dropTarget);
 		setDropTarget(dropTarget);
 
+		ActionMap actionMap = fileList.getActionMap();
+		actionMap.put(TransferHandler.getCutAction().getValue(Action.NAME), TransferHandler.getCutAction());
+		actionMap.put(TransferHandler.getCopyAction().getValue(Action.NAME), TransferHandler.getCopyAction());
+		actionMap.put(TransferHandler.getPasteAction().getValue(Action.NAME), TransferHandler.getPasteAction());
+
+		InputMap inputMap = fileList.getInputMap();
+		inputMap.put(KeyStroke.getKeyStroke('X', InputEvent.CTRL_MASK), TransferHandler.getCutAction().getValue(Action.NAME));
+		inputMap.put(KeyStroke.getKeyStroke('C', InputEvent.CTRL_MASK), TransferHandler.getCopyAction().getValue(Action.NAME));
+		inputMap.put(KeyStroke.getKeyStroke('V', InputEvent.CTRL_MASK), TransferHandler.getPasteAction().getValue(Action.NAME));
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
+
+		GuiUtil.addStandardEditingPopupMenu(fileList, workspaceText);
+		
 		browseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				loadFile(Internal.I18N.getString("main.tabbedPane.import"));
 			}
 		});
 
-		Action remove = new RemoveAction();
-		fileList.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "remove");
-		fileList.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "remove");
-		fileList.getActionMap().put("remove", remove);
-		removeButton.addActionListener(remove);
+		removeButton.setActionCommand((String)TransferHandler.getCutAction().getValue(Action.NAME));
+		removeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String action = (String)e.getActionCommand();
+				Action a = fileList.getActionMap().get(action);
+				if (a != null)
+					a.actionPerformed(new ActionEvent(fileList, ActionEvent.ACTION_PERFORMED, null));
+			}
+		});
 
 		//layout
 		setLayout(new GridBagLayout());
@@ -195,10 +223,10 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 		}
 
 		config.getInternal().setImportFileName(builder.toString());		
-		
+
 		if (workspaceText.getText().trim().length() == 0)
 			workspaceText.setText("LIVE");
-		
+
 		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText());
 		filterPanel.setSettings();
 	}
@@ -242,74 +270,139 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 		config.getProject().getImporter().getPath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
 	}
 
-	@Override
-	public void dragEnter(DropTargetDragEvent dtde) {
-		dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
-	}
+	// JList handler for drop, cut, copy, and paste support
+	private final class DropCutCopyPasteHandler extends TransferHandler implements DropTargetListener {
 
-	@Override
-	public void dragExit(DropTargetEvent dte) {
-		// nothing to do here
-	}
+		@Override
+		public boolean importData(TransferHandler.TransferSupport info) {	    	
+			if (!info.isDataFlavorSupported(DataFlavor.stringFlavor))
+				return false;
 
-	@Override
-	public void dragOver(DropTargetDragEvent dtde) {
-		// nothing to do here
-	}
+			if (info.isDrop())
+				return false;
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public void drop(DropTargetDropEvent dtde) {
-		for (DataFlavor dataFlover : dtde.getCurrentDataFlavors()) {
-			if (dataFlover.isFlavorJavaFileListType()) {
-				try {
-					dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+			List<String> fileNames = new ArrayList<String>();
+			try {
+				String value = (String)info.getTransferable().getTransferData(DataFlavor.stringFlavor);
+				StringTokenizer t = new StringTokenizer(value, System.getProperty("line.separator"));
 
-					List<String> fileNames = new ArrayList<String>();
-					for (File file : (List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor))
-						if (file.canRead())
-							fileNames.add(file.getCanonicalPath());
+				while (t.hasMoreTokens()) {
+					File file = new File(t.nextToken());
+					if (file.exists())
+						fileNames.add(file.getCanonicalPath());
+					else
+						LOG.warn("Failed to paste from clipboard: '" + file.getAbsolutePath() + "' is not a file.");
+				}
 
-					if (!fileNames.isEmpty()) {
-						if (dtde.getDropAction() != DnDConstants.ACTION_COPY)
-							fileListModel.clear();
+				if (!fileNames.isEmpty()) {
+					addFileNames(fileNames);
+					return true;
+				}
+			} catch (UnsupportedFlavorException ufe) {
+				//
+			} catch (IOException ioe) {
+				//
+			}
 
-						for (String fileName : fileNames)
-							fileListModel.addElement(fileName); 
+			return false;
+		}
 
-						config.getProject().getImporter().getPath().setLastUsedPath(
-								new File(fileListModel.getElementAt(fileListModel.size() - 1).toString()).getAbsolutePath());
+		@Override
+		protected Transferable createTransferable(JComponent c) {
+			int[] indices = fileList.getSelectedIndices();
+			String newLine = System.getProperty("line.separator");
+
+			StringBuilder builder = new StringBuilder();
+			for (int i = 0; i < indices.length; i++) {
+				builder.append((String)fileList.getModel().getElementAt(indices[i]));
+				if (i < indices.length - 1)
+					builder.append(newLine);
+			}
+
+			return new StringSelection(builder.toString());
+		}
+
+		@Override
+		public int getSourceActions(JComponent c) {
+			return COPY_OR_MOVE;
+		}
+
+		@Override
+		protected void exportDone(JComponent c, Transferable data, int action) {
+			if (action != MOVE)
+				return;
+
+			int[] indices = fileList.getSelectedIndices();
+			int first = indices[0];		
+
+			for (int i = indices.length - 1; i >= 0; i--)
+				fileListModel.remove(indices[i]);
+
+			if (first > fileListModel.size() - 1)
+				first = fileListModel.size() - 1;
+
+			fileList.setSelectedIndex(first);
+		}
+		
+		@Override
+		public void dragEnter(DropTargetDragEvent dtde) {
+			dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void drop(DropTargetDropEvent dtde) {
+			for (DataFlavor dataFlover : dtde.getCurrentDataFlavors()) {
+				if (dataFlover.isFlavorJavaFileListType()) {
+					try {
+						dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+
+						List<String> fileNames = new ArrayList<String>();
+						for (File file : (List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor))
+							if (file.exists())
+								fileNames.add(file.getCanonicalPath());
+							else
+								LOG.warn("Failed to drop from clipboard: '" + file.getAbsolutePath() + "' is not a file.");
+
+						if (!fileNames.isEmpty()) {
+							if (dtde.getDropAction() != DnDConstants.ACTION_COPY)
+								fileListModel.clear();
+
+							addFileNames(fileNames);
+						}
+
+						dtde.getDropTargetContext().dropComplete(true);	
+					} catch (UnsupportedFlavorException e1) {
+						//
+					} catch (IOException e2) {
+						//
 					}
-					
-					dtde.getDropTargetContext().dropComplete(true);	
-				} catch (UnsupportedFlavorException e1) {
-					//
-				} catch (IOException e2) {
-					//
 				}
 			}
 		}
-	}
 
-	@Override
-	public void dropActionChanged(DropTargetDragEvent dtde) {
-		// nothing to do here
-	}
+		private void addFileNames(List<String> fileNames) {
+			int index = fileList.getSelectedIndex() + 1;
+			for (String fileName : fileNames)
+				fileListModel.add(index++, fileName);
 
-	private final class RemoveAction extends AbstractAction {
-		public void actionPerformed(ActionEvent e) {
-			if (fileList.getSelectedIndices().length > 0) {
-				int[] selectedIndices = fileList.getSelectedIndices();
-				int firstSelected = selectedIndices[0];		
+			config.getProject().getImporter().getPath().setLastUsedPath(
+					new File(fileListModel.getElementAt(0).toString()).getAbsolutePath());
+		}
+		
+		@Override
+		public void dropActionChanged(DropTargetDragEvent dtde) {
+			// nothing to do here
+		}
+		
+		@Override
+		public void dragExit(DropTargetEvent dte) {
+			// nothing to do here
+		}
 
-				for (int i = selectedIndices.length - 1; i >= 0; --i) 
-					fileListModel.removeElementAt(selectedIndices[i]);
-
-				if (firstSelected > fileListModel.size() - 1)
-					firstSelected = fileListModel.size() - 1;
-
-				fileList.setSelectedIndex(firstSelected);
-			}
-		}		
+		@Override
+		public void dragOver(DropTargetDragEvent dtde) {
+			// nothing to do here
+		}
 	}
 }

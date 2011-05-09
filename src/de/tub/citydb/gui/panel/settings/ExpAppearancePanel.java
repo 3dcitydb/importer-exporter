@@ -89,23 +89,25 @@ public class ExpAppearancePanel extends PrefPanelBase {
 	}
 
 	private void initGui() {
-		expAppOverwriteCheck = new JCheckBox("");
-		expAppRadioNoExp = new JRadioButton("");
-		expAppRadioAppExp = new JRadioButton("");
-		expAppRadioExp = new JRadioButton("");
+		expAppOverwriteCheck = new JCheckBox();
+		expAppRadioNoExp = new JRadioButton();
+		expAppRadioAppExp = new JRadioButton();
+		expAppRadioExp = new JRadioButton();
 		ButtonGroup expAppRadio = new ButtonGroup();
 		expAppRadio.add(expAppRadioNoExp);
 		expAppRadio.add(expAppRadioAppExp);
 		expAppRadio.add(expAppRadioExp);
-		expAppRadioPathAbs = new JRadioButton("");
-		expAppRadioPathRel = new JRadioButton("");
+		expAppRadioPathAbs = new JRadioButton();
+		expAppRadioPathRel = new JRadioButton();
 		ButtonGroup expAppRadioPath = new ButtonGroup();
 		expAppRadioPath.add(expAppRadioPathAbs);
 		expAppRadioPath.add(expAppRadioPathRel);
-		expAppPathAbsText = new JTextField("");
-		expAppPathAbsButton = new JButton("");
-		expAppPathRelText = new JTextField("");
+		expAppPathAbsText = new JTextField();
+		expAppPathAbsButton = new JButton();
+		expAppPathRelText = new JTextField();
 
+		GuiUtil.addStandardEditingPopupMenu(expAppPathAbsText);
+		
 		expAppPathAbsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String sImp = browseFile(Internal.I18N.getString("pref.export.appearance.label.absPath"), expAppPathAbsText.getText());

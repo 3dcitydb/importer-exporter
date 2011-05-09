@@ -164,6 +164,9 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		workspaceLabel = new JLabel();
 		timestampLabel = new JLabel();
 
+		GuiUtil.addStandardEditingPopupMenu(matchLineageText, candOverlapText, masterOverlapText, matchToleranceText,
+				mergeLineageText, deleteLinageText, workspaceText, timestampText);
+		
 		for (int lod = 1; lod < 5; lod++) {
 			masterLODCombo.addItem("LOD " + lod);
 			candLODCombo.addItem("LOD " + lod);

@@ -82,24 +82,26 @@ public class SetPathPanel extends PrefPanelBase {
 	}
 
 	private void initGui() {
-		importPathRadioLast = new JRadioButton("");
-		importPathRadioDef = new JRadioButton("");
+		importPathRadioLast = new JRadioButton();
+		importPathRadioDef = new JRadioButton();
 		ButtonGroup importPathRadio = new ButtonGroup();
 		importPathRadio.add(importPathRadioLast);
 		importPathRadio.add(importPathRadioDef);
 		
-		importPathText = new JTextField("");
-		importPathButton = new JButton("");
+		importPathText = new JTextField();
+		importPathButton = new JButton();
 		
-		exportPathRadioLast = new JRadioButton("");
-		exportPathRadioDef = new JRadioButton("");
+		exportPathRadioLast = new JRadioButton();
+		exportPathRadioDef = new JRadioButton();
 		ButtonGroup exportPathRadio = new ButtonGroup();
 		exportPathRadio.add(exportPathRadioLast);
 		exportPathRadio.add(exportPathRadioDef);
 		
-		exportPathText = new JTextField("");
-		exportPathButton = new JButton("");
+		exportPathText = new JTextField();
+		exportPathButton = new JButton();
 
+		GuiUtil.addStandardEditingPopupMenu(importPathText, exportPathText);
+		
 		importPathButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String sImp = browseFile(Internal.I18N.getString("pref.general.path.label.importDefaultPath"), importPathText.getText());

@@ -163,6 +163,8 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		srsComboBoxManager = SrsComboBoxManager.getInstance(config);
 		srsComboBox = srsComboBoxManager.getSrsComboBox(false);
 
+		GuiUtil.addStandardEditingPopupMenu(sridText, srsNameText, descriptionText, fileText);
+		
 		sridText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (sridText.getValue() != null) {

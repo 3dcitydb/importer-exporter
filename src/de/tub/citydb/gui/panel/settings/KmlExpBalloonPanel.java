@@ -53,6 +53,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.general.PathMode;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
+import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class KmlExpBalloonPanel extends PrefPanelBase {
@@ -158,6 +159,8 @@ public class KmlExpBalloonPanel extends PrefPanelBase {
 		warningBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(warningBox);
 
+		GuiUtil.addStandardEditingPopupMenu(browseText);
+		
 		add(contentsPanel, BorderLayout.NORTH);
 
 		includeDescription.addActionListener(new ActionListener() {

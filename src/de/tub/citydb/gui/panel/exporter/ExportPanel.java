@@ -102,6 +102,8 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 				saveFile(Internal.I18N.getString("main.tabbedPane.export"));
 			}
 		});
+		
+		GuiUtil.addStandardEditingPopupMenu(workspaceText, timestampText, browseText);
 
 		setLayout(new GridBagLayout());
 		{

@@ -102,16 +102,18 @@ public class SetLoggingPanel extends PrefPanelBase {
 	}
 
 	private void initGui() {
-		logLevelConsoleLabel = new JLabel("");
+		logLevelConsoleLabel = new JLabel();
 		logLevelConsoleCombo = new JComboBox();
-		wrapTextConsole = new JCheckBox("");
-		useLogFile = new JCheckBox("");
-		logLevelFileLabel = new JLabel("");
+		wrapTextConsole = new JCheckBox();
+		useLogFile = new JCheckBox();
+		logLevelFileLabel = new JLabel();
 		logLevelFileCombo = new JComboBox();
-		useLogPath = new JCheckBox("");
-		logPathText = new JTextField("");
-		logPathButton = new JButton("");
+		useLogPath = new JCheckBox();
+		logPathText = new JTextField();
+		logPathButton = new JButton();
 
+		GuiUtil.addStandardEditingPopupMenu(logPathText);
+		
 		logPathButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String sExp = browseFile(Internal.I18N.getString("pref.general.logging.label.useLogPath"), logPathText.getText());

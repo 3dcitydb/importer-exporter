@@ -188,6 +188,10 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		srsComboBoxManager = SrsComboBoxManager.getInstance(config);
 		srsComboBox = srsComboBoxManager.getSrsComboBox(true);
 
+		GuiUtil.addStandardEditingPopupMenu(
+				descriptionText, serverText, portText, databaseText, userText, passwordText, 
+				workspaceText, timestampText);
+		
 		portText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (portText.getValue() != null) {
@@ -380,8 +384,6 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 
 		dbReport.addActionListener(featureClassListener);
 		dbBBox.addActionListener(featureClassListener);
-
-		this.setEnabled(false);
 	}
 
 	public void doTranslation() {

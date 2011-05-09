@@ -148,10 +148,12 @@ public class ExpBoundingBoxPanel extends PrefPanelBase {
 		
 		setGenAttr = new JCheckBox();
 		genAttrNameLabel = new JLabel();
-		genAttrNameText = new JTextField("TILE");
+		genAttrNameText = new JTextField();
 		genAttrNameText.setEditable(false);
 		genAttrValueLabel = new JLabel();
 		genAttrValueComboBox = new JComboBox();
+		
+		GuiUtil.addStandardEditingPopupMenu(rowsText, columnsText, tilePathName, genAttrNameText);
 		
 		rowsText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {

@@ -47,14 +47,14 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JColorChooser;
 import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
@@ -659,6 +659,9 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		colladaPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(colladaPanel);
 
+		GuiUtil.addStandardEditingPopupMenu(autoTileSideLengthText, geometryHLSurfaceDistanceText, scaleFactorText, 
+				groupSizeText, colladaHLSurfaceDistanceText);
+		
 		add(contentsPanel, BorderLayout.NORTH);
 
 		scaleTexImagesCheckbox.addActionListener(new ActionListener() {

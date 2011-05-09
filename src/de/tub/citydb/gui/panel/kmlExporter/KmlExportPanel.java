@@ -435,6 +435,9 @@ public class KmlExportPanel extends JPanel {
 		this.add(jPanelInput, BorderLayout.NORTH);
 		this.add(exportButtonPanel, BorderLayout.SOUTH);
 		
+		GuiUtil.addStandardEditingPopupMenu(browseText, workspaceText, timestampText, 
+				gmlIdText, bbXMinText, bbXMaxText, bbYMinText, bbYMaxText, rowsText, columnsText,
+				footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText);		
 	}
 
 	// localized Labels und Strings
