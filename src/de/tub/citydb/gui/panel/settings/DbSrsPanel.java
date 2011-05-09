@@ -589,6 +589,11 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 				topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), Internal.I18N.getString("pref.db.srs.error.write.msg"));
 				return;
 			}
+			
+			if ((!fileName.contains("."))) {
+				fileName += ".xml";
+				fileText.setText(fileName);
+			}
 
 			File file = new File(fileName);
 			LOG.info("Writing reference systems to file '" + file.getAbsolutePath() + "'.");
@@ -648,17 +653,13 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		chooser.setFileFilter(filter);
 
 		if (!fileText.getText().trim().isEmpty())
-			chooser.setCurrentDirectory(new File(fileText.getText()).getParentFile());
+			chooser.setCurrentDirectory(new File(fileText.getText()));
 
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 
 			return;
 
-		String exportString = chooser.getSelectedFile().toString();
-		if (!exportString.contains("."))
-			exportString += ".xml";
-
-		fileText.setText(exportString);
+		fileText.setText(chooser.getSelectedFile().toString());
 	}
 
 	@Override
