@@ -74,6 +74,11 @@ public class SrsComboBoxManager {
 			srsBox.repaint();
 		}
 	}
+	
+	public void translateAll() {
+		for (SrsComboBox srsBox : srsBoxes)
+			srsBox.doTranslation();
+	}
 
 	@SuppressWarnings("serial")
 	public class SrsComboBox extends JComboBox {
@@ -125,7 +130,7 @@ public class SrsComboBoxManager {
 			setSelectedItem(selectedItem);
 		}
 
-		public void doTranslation() {
+		private void doTranslation() {
 			dbRefSys.setDescription(Internal.I18N.getString("common.label.boundingBox.crs.sameAsInDB"));
 			updateContent();
 			repaint();

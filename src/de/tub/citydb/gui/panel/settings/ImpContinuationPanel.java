@@ -45,6 +45,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.Continuation;
 import de.tub.citydb.config.project.importer.UpdatingPersonMode;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -91,7 +92,7 @@ public class ImpContinuationPanel extends PrefPanelBase {
 		updatingPerson.add(updatingPersonUser);
 		updatingPersonText = new JTextField();
 		
-		GuiUtil.addStandardEditingPopupMenu(lineageText, reasonForUpdateText, updatingPersonText);
+		StandardEditingPopupMenuDecorator.decorate(lineageText, reasonForUpdateText, updatingPersonText);
 		
 		setLayout(new GridBagLayout());
 		{

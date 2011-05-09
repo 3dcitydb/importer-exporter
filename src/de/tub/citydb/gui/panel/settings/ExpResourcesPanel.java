@@ -45,6 +45,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.system.GmlIdLookupServerConfig;
 import de.tub.citydb.config.project.system.ThreadPoolConfig;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -132,7 +133,7 @@ public class ExpResourcesPanel extends PrefPanelBase{
 		expResGeomCacheText = new JFormattedTextField(cacheEntryFormat);
 		expResFeatCacheText = new JFormattedTextField(cacheEntryFormat);
 		
-		GuiUtil.addStandardEditingPopupMenu(expResMinThreadsText, expResMaxThreadsText, expResGeomDrainText, 
+		StandardEditingPopupMenuDecorator.decorate(expResMinThreadsText, expResMaxThreadsText, expResGeomDrainText, 
 				expResFeatDrainText, expResGeomPartText, expResFeatPartText, expResGeomCacheText, expResFeatCacheText);
 		
 		expResMinThreadsText.addPropertyChangeListener(new PropertyChangeListener() {

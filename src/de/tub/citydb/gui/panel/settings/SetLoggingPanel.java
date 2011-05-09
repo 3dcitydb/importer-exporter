@@ -48,6 +48,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.log.LogLevelType;
 import de.tub.citydb.log.Logger;
@@ -112,7 +113,7 @@ public class SetLoggingPanel extends PrefPanelBase {
 		logPathText = new JTextField();
 		logPathButton = new JButton();
 
-		GuiUtil.addStandardEditingPopupMenu(logPathText);
+		StandardEditingPopupMenuDecorator.decorate(logPathText);
 		
 		logPathButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

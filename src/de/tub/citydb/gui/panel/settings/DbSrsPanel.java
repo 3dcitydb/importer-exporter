@@ -74,6 +74,7 @@ import de.tub.citydb.config.project.database.ReferenceSystems;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.jaxb.JAXBContextRegistry;
 import de.tub.citydb.log.Logger;
@@ -162,7 +163,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		srsComboBoxManager = SrsComboBoxManager.getInstance(config);
 		srsComboBox = srsComboBoxManager.getSrsComboBox(false);
 
-		GuiUtil.addStandardEditingPopupMenu(sridText, srsNameText, descriptionText, fileText);
+		StandardEditingPopupMenuDecorator.decorate(sridText, srsNameText, descriptionText, fileText);
 
 		sridText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -391,8 +392,8 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		addFileButton.setText(Internal.I18N.getString("pref.db.srs.button.addFile"));
 		replaceWithFileButton.setText(Internal.I18N.getString("pref.db.srs.button.replaceWithFile"));
 		saveFileButton.setText(Internal.I18N.getString("pref.db.srs.button.saveFile"));
-
-		srsComboBox.doTranslation();
+		
+		srsComboBoxManager.translateAll();
 	}
 
 	@Override

@@ -59,6 +59,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.panel.filter.FilterPanel;
 import de.tub.citydb.gui.panel.filter.FilterPanel.FilterPanelType;
 import de.tub.citydb.gui.util.GuiUtil;
@@ -103,7 +104,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			}
 		});
 		
-		GuiUtil.addStandardEditingPopupMenu(workspaceText, timestampText, browseText);
+		StandardEditingPopupMenuDecorator.decorate(workspaceText, timestampText, browseText);
 
 		setLayout(new GridBagLayout());
 		{
@@ -159,8 +160,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		exportButton.setText(Internal.I18N.getString("export.button.export"));
 
 		srsComboBoxLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
-		srsComboBox.doTranslation();
-
+		
 		filterPanel.doTranslation();
 	}
 

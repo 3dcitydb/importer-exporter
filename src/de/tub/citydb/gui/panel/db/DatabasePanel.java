@@ -76,6 +76,7 @@ import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.log.LogLevelType;
@@ -188,7 +189,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		srsComboBoxManager = SrsComboBoxManager.getInstance(config);
 		srsComboBox = srsComboBoxManager.getSrsComboBox(true);
 
-		GuiUtil.addStandardEditingPopupMenu(
+		StandardEditingPopupMenuDecorator.decorate(
 				descriptionText, serverText, portText, databaseText, userText, passwordText, 
 				workspaceText, timestampText);
 		
@@ -410,7 +411,6 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		executeButton.setText(Internal.I18N.getString("db.button.execute"));
 
 		srsLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
-		srsComboBox.doTranslation();
 
 		if (!config.getInternal().isConnected())
 			connectButton.setText(Internal.I18N.getString("db.button.connect"));

@@ -48,6 +48,7 @@ import javax.swing.border.TitledBorder;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.ImportAppearance;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -87,7 +88,7 @@ public class ImpAppearancePanel extends PrefPanelBase {
 		impAppOldLabel = new JLabel();
 		impAppOldText = new JTextField();
 
-		GuiUtil.addStandardEditingPopupMenu(impAppOldText);
+		StandardEditingPopupMenuDecorator.decorate(impAppOldText);
 		
 		setLayout(new GridBagLayout());
 		{

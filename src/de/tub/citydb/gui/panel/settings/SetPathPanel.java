@@ -47,6 +47,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.general.Path;
 import de.tub.citydb.config.project.general.PathMode;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -100,7 +101,7 @@ public class SetPathPanel extends PrefPanelBase {
 		exportPathText = new JTextField();
 		exportPathButton = new JButton();
 
-		GuiUtil.addStandardEditingPopupMenu(importPathText, exportPathText);
+		StandardEditingPopupMenuDecorator.decorate(importPathText, exportPathText);
 		
 		importPathButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

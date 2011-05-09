@@ -46,6 +46,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.UpdateBatching;
 import de.tub.citydb.config.project.system.GmlIdLookupServerConfig;
 import de.tub.citydb.config.project.system.ThreadPoolConfig;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -160,7 +161,7 @@ public class ImpResourcesPanel extends PrefPanelBase{
 		impResGeomCacheText = new JFormattedTextField(cacheEntryFormat);
 		impResFeatCacheText = new JFormattedTextField(cacheEntryFormat);		
 
-		GuiUtil.addStandardEditingPopupMenu(impResMinThreadsText, impResMaxThreadsText,
+		StandardEditingPopupMenuDecorator.decorate(impResMinThreadsText, impResMaxThreadsText,
 				impResGeomDrainText, impResFeatDrainText, impResGeomPartText, impResFeatPartText,
 				impResTransaktFeatureText, impResTransaktCacheText, impResTransaktTempText,
 				impResGeomCacheText, impResFeatCacheText);

@@ -103,6 +103,7 @@ import de.tub.citydb.event.concurrent.InterruptEnum;
 import de.tub.citydb.event.concurrent.InterruptEvent;
 import de.tub.citydb.gui.components.ExportStatusDialog;
 import de.tub.citydb.gui.components.ImportStatusDialog;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.components.XMLValidationStatusDialog;
 import de.tub.citydb.gui.menubar.MenuBar;
 import de.tub.citydb.gui.panel.console.ConsoleWindow;
@@ -513,7 +514,8 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 			databasePanel.doTranslation();
 			matchingPanel.doTranslation();
 			prefPanel.doTranslation();
-
+			StandardEditingPopupMenuDecorator.translateAll();
+			
 			consoleLabel.setText(Internal.I18N.getString("main.label.console"));
 		}
 		catch (MissingResourceException e) {

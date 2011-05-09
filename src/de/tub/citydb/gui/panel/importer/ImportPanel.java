@@ -71,6 +71,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.panel.filter.FilterPanel;
 import de.tub.citydb.gui.panel.filter.FilterPanel.FilterPanelType;
 import de.tub.citydb.gui.util.GuiUtil;
@@ -131,7 +132,7 @@ public class ImportPanel extends JPanel {
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
 
-		GuiUtil.addStandardEditingPopupMenu(fileList, workspaceText);
+		StandardEditingPopupMenuDecorator.decorate(fileList, workspaceText);
 		
 		browseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

@@ -64,6 +64,7 @@ import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -435,7 +436,7 @@ public class KmlExportPanel extends JPanel {
 		this.add(jPanelInput, BorderLayout.NORTH);
 		this.add(exportButtonPanel, BorderLayout.SOUTH);
 		
-		GuiUtil.addStandardEditingPopupMenu(browseText, workspaceText, timestampText, 
+		StandardEditingPopupMenuDecorator.decorate(browseText, workspaceText, timestampText, 
 				gmlIdText, bbXMinText, bbXMaxText, bbYMinText, bbYMaxText, rowsText, columnsText,
 				footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText);		
 	}
@@ -455,7 +456,6 @@ public class KmlExportPanel extends JPanel {
 		boundingBoxRadioButton.setText(Internal.I18N.getString("filter.border.boundingBox"));
 
 		srsLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
-		srsComboBox.doTranslation();
 
 		bbXMinLabel.setText(Internal.I18N.getString("filter.label.boundingBox.xMin"));
 		bbXMaxLabel.setText(Internal.I18N.getString("filter.label.boundingBox.xMax"));

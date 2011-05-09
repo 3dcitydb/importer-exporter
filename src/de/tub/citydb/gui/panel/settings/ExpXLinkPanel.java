@@ -47,6 +47,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.exporter.XLinkConfig;
 import de.tub.citydb.config.project.exporter.XLinkFeatureConfig;
 import de.tub.citydb.config.project.exporter.XLinkMode;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.util.UUIDManager;
 
@@ -113,7 +114,7 @@ public class ExpXLinkPanel extends PrefPanelBase {
 		geometryIdPrefix = new JTextField();
 		geometryAppendId = new JCheckBox();
 		
-		GuiUtil.addStandardEditingPopupMenu(featureIdPrefix, geometryIdPrefix);
+		StandardEditingPopupMenuDecorator.decorate(featureIdPrefix, geometryIdPrefix);
 		
 		setLayout(new GridBagLayout());
 		{

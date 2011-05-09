@@ -29,9 +29,11 @@
  */
 package de.tub.citydb.gui.menubar;
 
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -188,9 +190,9 @@ public class MenuProject extends JMenu {
 		addSeparator();
 		add(lastUsed);
 
-		openProject.setAccelerator(KeyStroke.getKeyStroke('O', InputEvent.CTRL_MASK));
-		saveProject.setAccelerator(KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK));
-		saveProjectAs.setAccelerator(KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
+		openProject.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+		saveProject.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+		saveProjectAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
 		
 		if (!config.getGui().getRecentlyUsedProjectFiles().isEmpty())
 			setLastUsedList();			

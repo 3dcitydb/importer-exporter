@@ -68,6 +68,7 @@ import de.tub.citydb.gui.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import de.tub.citydb.gui.checkboxtree.DefaultTreeCheckingModel;
 import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.util.Util;
 
@@ -175,7 +176,7 @@ public class FilterPanel extends JPanel {
 		srsLabel = new JLabel();
 		srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true);
 
-		GuiUtil.addStandardEditingPopupMenu(gmlNameText, gmlIdText, 
+		StandardEditingPopupMenuDecorator.decorate(gmlNameText, gmlIdText, 
 				coStartText, coEndText, bbXMinText, bbYMinText,  bbXMaxText, bbYMaxText);
 		
 		featureClassFilter = new JCheckBox();		
@@ -483,7 +484,6 @@ public class FilterPanel extends JPanel {
 		boundingBoxFilter.setText(Internal.I18N.getString("filter.border.boundingBox"));
 		featureClassFilter.setText(Internal.I18N.getString("filter.border.featureClass"));
 		srsLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
-		srsComboBox.doTranslation();
 	}
 
 	public void loadSettings() {

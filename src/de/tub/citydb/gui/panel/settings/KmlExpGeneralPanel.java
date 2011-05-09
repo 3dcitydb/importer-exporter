@@ -67,6 +67,7 @@ import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.util.DBUtil;
 
@@ -659,7 +660,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		colladaPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(colladaPanel);
 
-		GuiUtil.addStandardEditingPopupMenu(autoTileSideLengthText, geometryHLSurfaceDistanceText, scaleFactorText, 
+		StandardEditingPopupMenuDecorator.decorate(autoTileSideLengthText, geometryHLSurfaceDistanceText, scaleFactorText, 
 				groupSizeText, colladaHLSurfaceDistanceText);
 		
 		add(contentsPanel, BorderLayout.NORTH);

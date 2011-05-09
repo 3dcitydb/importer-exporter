@@ -65,6 +65,7 @@ import de.tub.citydb.event.concurrent.InterruptEvent;
 import de.tub.citydb.event.statistic.CounterEvent;
 import de.tub.citydb.event.statistic.CounterType;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.util.GuiUtil;
 import de.tub.citydb.log.LogLevelType;
@@ -164,7 +165,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		workspaceLabel = new JLabel();
 		timestampLabel = new JLabel();
 
-		GuiUtil.addStandardEditingPopupMenu(matchLineageText, candOverlapText, masterOverlapText, matchToleranceText,
+		StandardEditingPopupMenuDecorator.decorate(matchLineageText, candOverlapText, masterOverlapText, matchToleranceText,
 				mergeLineageText, deleteLinageText, workspaceText, timestampText);
 		
 		for (int lod = 1; lod < 5; lod++) {

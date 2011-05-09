@@ -62,6 +62,7 @@ import de.tub.citydb.config.project.filter.TileSuffixMode;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -153,7 +154,7 @@ public class ExpBoundingBoxPanel extends PrefPanelBase {
 		genAttrValueLabel = new JLabel();
 		genAttrValueComboBox = new JComboBox();
 		
-		GuiUtil.addStandardEditingPopupMenu(rowsText, columnsText, tilePathName, genAttrNameText);
+		StandardEditingPopupMenuDecorator.decorate(rowsText, columnsText, tilePathName, genAttrNameText);
 		
 		rowsText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
