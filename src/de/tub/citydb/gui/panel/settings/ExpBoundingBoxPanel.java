@@ -148,7 +148,7 @@ public class ExpBoundingBoxPanel extends PrefPanelBase {
 		
 		setGenAttr = new JCheckBox();
 		genAttrNameLabel = new JLabel();
-		genAttrNameText = new JTextField();
+		genAttrNameText = new JTextField("TILE");
 		genAttrNameText.setEditable(false);
 		genAttrValueLabel = new JLabel();
 		genAttrValueComboBox = new JComboBox();

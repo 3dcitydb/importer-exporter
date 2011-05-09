@@ -37,6 +37,7 @@ import java.util.Locale;
 
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
+import javax.swing.JTextField;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.components.StandardEditingPopupMenu;
@@ -77,6 +78,10 @@ public class GuiUtil {
 				private void processMouseEvent(MouseEvent e) {
 					if (e.isPopupTrigger()) {
 						if (!e.getComponent().isEnabled())
+							return;
+						
+						if (e.getComponent() instanceof JTextField &&
+								!((JTextField)e.getComponent()).isEditable())
 							return;
 						
 						if (Internal.I18N.getLocale() != locale) {
