@@ -161,6 +161,11 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		impResGeomCacheText = new JFormattedTextField(cacheEntryFormat);
 		impResFeatCacheText = new JFormattedTextField(cacheEntryFormat);		
 
+		GuiUtil.addStandardEditingPopupMenu(impResMinThreadsText, impResMaxThreadsText,
+				impResGeomDrainText, impResFeatDrainText, impResGeomPartText, impResFeatPartText,
+				impResTransaktFeatureText, impResTransaktCacheText, impResTransaktTempText,
+				impResGeomCacheText, impResFeatCacheText);
+		
 		impResMinThreadsText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				checkNonNegative(impResMinThreadsText, 1);

@@ -130,6 +130,8 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			}
 		});
 		
+		GuiUtil.addStandardEditingPopupMenu(workspaceText, timestampText, browseText);
+		
 		exportButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Thread thread = new Thread() {

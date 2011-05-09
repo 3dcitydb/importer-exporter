@@ -664,6 +664,9 @@ public class GeneralPanel extends AbstractPreferencesComponent implements EventH
 		colladaPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(colladaPanel);
 
+		GuiUtil.addStandardEditingPopupMenu(autoTileSideLengthText, geometryHLSurfaceDistanceText, scaleFactorText, 
+				groupSizeText, colladaHLSurfaceDistanceText);
+		
 		add(contentsPanel, BorderLayout.NORTH);
 
 		scaleTexImagesCheckbox.addActionListener(new ActionListener() {

@@ -172,6 +172,8 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		srsComboBoxManager = SrsComboBoxManager.getInstance(config);
 		srsComboBox = srsComboBoxManager.getSrsComboBox(false);
 
+		GuiUtil.addStandardEditingPopupMenu(sridText, srsNameText, descriptionText, fileText);
+		
 		sridText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (sridText.getValue() != null) {
@@ -670,13 +672,17 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		chooser.setFileFilter(filter);
 
 		if (!fileText.getText().trim().isEmpty())
-			chooser.setCurrentDirectory(new File(fileText.getText()));
+			chooser.setCurrentDirectory(new File(fileText.getText()).getParentFile());
 
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 
 			return;
 
-		fileText.setText(chooser.getSelectedFile().toString());
+		String exportString = chooser.getSelectedFile().toString();
+		if (!exportString.contains("."))
+			exportString += ".xml";
+		
+		fileText.setText(exportString);
 	}
 
 	@Override

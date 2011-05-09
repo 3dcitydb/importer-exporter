@@ -154,6 +154,8 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 		genAttrValueLabel = new JLabel();
 		genAttrValueComboBox = new JComboBox();
 		
+		GuiUtil.addStandardEditingPopupMenu(rowsText, columnsText, tilePathName, genAttrNameText);
+		
 		rowsText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				checkNonNegative(rowsText);

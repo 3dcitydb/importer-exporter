@@ -54,6 +54,7 @@ import de.tub.citydb.config.project.general.PathMode;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class BalloonPanel extends AbstractPreferencesComponent {
@@ -159,6 +160,8 @@ public class BalloonPanel extends AbstractPreferencesComponent {
 		warningBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(warningBox);
 
+		GuiUtil.addStandardEditingPopupMenu(browseText);
+		
 		add(contentsPanel, BorderLayout.NORTH);
 
 		includeDescription.addActionListener(new ActionListener() {
