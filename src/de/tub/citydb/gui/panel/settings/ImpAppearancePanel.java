@@ -77,16 +77,18 @@ public class ImpAppearancePanel extends PrefPanelBase {
 	}
 
 	private void initGui() {
-		impAppRadioNoImp = new JRadioButton("");
-		impAppRadioAppImp = new JRadioButton("");
-		impAppRadioImp = new JRadioButton("");
+		impAppRadioNoImp = new JRadioButton();
+		impAppRadioAppImp = new JRadioButton();
+		impAppRadioImp = new JRadioButton();
 		ButtonGroup impAppRadio = new ButtonGroup();
 		impAppRadio.add(impAppRadioNoImp);
 		impAppRadio.add(impAppRadioImp);
 		impAppRadio.add(impAppRadioAppImp);
-		impAppOldLabel = new JLabel("");
-		impAppOldText = new JTextField("");
+		impAppOldLabel = new JLabel();
+		impAppOldText = new JTextField();
 
+		GuiUtil.addStandardEditingPopupMenu(impAppOldText);
+		
 		setLayout(new GridBagLayout());
 		{
 			block1 = new JPanel();

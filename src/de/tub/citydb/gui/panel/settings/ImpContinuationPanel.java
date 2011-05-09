@@ -79,17 +79,19 @@ public class ImpContinuationPanel extends PrefPanelBase {
 	}
 	
 	private void initGui() {
-		lineageText = new JTextField("");
-		lineageLabel = new JLabel("");
-		reasonForUpdateText = new JTextField("");
-		reasonForUpdateLabel = new JLabel("");
+		lineageText = new JTextField();
+		lineageLabel = new JLabel();
+		reasonForUpdateText = new JTextField();
+		reasonForUpdateLabel = new JLabel();
 		
-		updatingPersonDBAccount = new JRadioButton("");
-		updatingPersonUser = new JRadioButton("");
+		updatingPersonDBAccount = new JRadioButton();
+		updatingPersonUser = new JRadioButton();
 		ButtonGroup updatingPerson = new ButtonGroup();
 		updatingPerson.add(updatingPersonDBAccount);
 		updatingPerson.add(updatingPersonUser);
-		updatingPersonText = new JTextField("");
+		updatingPersonText = new JTextField();
+		
+		GuiUtil.addStandardEditingPopupMenu(lineageText, reasonForUpdateText, updatingPersonText);
 		
 		setLayout(new GridBagLayout());
 		{

@@ -81,21 +81,23 @@ public class ImpIdHandlingPanel extends PrefPanelBase {
 	}
 
 	private void initGui(){
-		impIdRadioAdd = new JRadioButton("");
-		impIdRadioExchange = new JRadioButton("");
+		impIdRadioAdd = new JRadioButton();
+		impIdRadioExchange = new JRadioButton();
 		ButtonGroup impIdRadio = new ButtonGroup();
 		impIdRadio.add(impIdRadioAdd);
 		impIdRadio.add(impIdRadioExchange);
-		impIdCheckExtRef = new JCheckBox("");
-		impIdCSRadioFile = new JRadioButton("");
-		impIdCSRadioFilePath = new JRadioButton("");
-		impIdCSRadioUser = new JRadioButton("");
+		impIdCheckExtRef = new JCheckBox();
+		impIdCSRadioFile = new JRadioButton();
+		impIdCSRadioFilePath = new JRadioButton();
+		impIdCSRadioUser = new JRadioButton();
 		ButtonGroup impIdCSRadio = new ButtonGroup();
 		impIdCSRadio.add(impIdCSRadioFile);
 		impIdCSRadio.add(impIdCSRadioFilePath);
 		impIdCSRadio.add(impIdCSRadioUser);
-		impIdCSUserText = new JTextField("");
+		impIdCSUserText = new JTextField();
 
+		GuiUtil.addStandardEditingPopupMenu(impIdCSUserText);
+		
 		setLayout(new GridBagLayout());
 		{
 			block1 = new JPanel();
