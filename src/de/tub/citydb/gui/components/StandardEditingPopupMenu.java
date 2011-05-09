@@ -17,10 +17,14 @@ import javax.swing.KeyStroke;
 import javax.swing.TransferHandler;
 import javax.swing.text.JTextComponent;
 
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.common.ApplicationEvent;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.internal.Internal;
 
 @SuppressWarnings("serial")
-public class StandardEditingPopupMenu extends JPopupMenu {
+public class StandardEditingPopupMenu extends JPopupMenu implements EventHandler {
 	private static HashMap<Class<? extends Component>, StandardEditingPopupMenu> popupMenus = new HashMap<Class<? extends Component>, StandardEditingPopupMenu>();
 
 	private JMenuItem cut;
@@ -30,6 +34,7 @@ public class StandardEditingPopupMenu extends JPopupMenu {
 
 	private StandardEditingPopupMenu() {
 		// just to thwart instantiation
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.SWITCH_LOCALE, this);
 	}
 
 	public static synchronized StandardEditingPopupMenu getInstance(JComponent component) {
@@ -123,6 +128,11 @@ public class StandardEditingPopupMenu extends JPopupMenu {
 					a.actionPerformed(new ActionEvent(invoker, ActionEvent.ACTION_PERFORMED, null));
 			}
 		}
+	}
+
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		doTranslation();
 	}
 	
 }

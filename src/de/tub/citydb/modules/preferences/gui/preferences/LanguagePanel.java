@@ -50,11 +50,11 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 	private JRadioButton importLanguageRadioDe;
 	private JRadioButton importLanguageRadioEn;
 	private JPanel language;
-	private ImpExpGui impExpGui;
+	private ImpExpGui mainView;
 	
-	public LanguagePanel(Config config, ImpExpGui inpImpExpGui) {
+	public LanguagePanel(Config config, ImpExpGui mainView) {
 		super(config);
-		impExpGui = inpImpExpGui;
+		this.mainView = mainView;
 		initGui();
 	}
 	
@@ -119,7 +119,7 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 			global.setLanguage(LanguageType.EN);
 		}
 		
-		impExpGui.doTranslation();
+		mainView.doTranslation();
 	}
 	
 	@Override

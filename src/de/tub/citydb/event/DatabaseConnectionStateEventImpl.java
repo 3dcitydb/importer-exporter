@@ -1,4 +1,4 @@
-package de.tub.citydb.database;
+package de.tub.citydb.event;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.common.ApplicationEvent;
@@ -8,7 +8,7 @@ public final class DatabaseConnectionStateEventImpl extends Event implements Dat
 	private final boolean wasConnected;
 	private final boolean isConnected;
 	
-	protected DatabaseConnectionStateEventImpl(boolean wasConnected, boolean isConnected, Object source) {
+	public DatabaseConnectionStateEventImpl(boolean wasConnected, boolean isConnected, Object source) {
 		super(ApplicationEvent.DATABASE_CONNECTION_STATE, source);
 		this.wasConnected = wasConnected;
 		this.isConnected = isConnected;

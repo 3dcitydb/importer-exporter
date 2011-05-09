@@ -33,7 +33,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Locale;
 
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -43,7 +42,6 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.components.StandardEditingPopupMenu;
 
 public class GuiUtil {
-	private static Locale locale;
 
 	public static GridBagConstraints setConstraints(int gridx, int gridy, double weightx, double weighty, int fill,
 			                                 int insetTop, int insetLeft, int insetBottom, int insetRight) {
@@ -88,11 +86,6 @@ public class GuiUtil {
 						if (e.getComponent() instanceof JTextField &&
 								!((JTextField)e.getComponent()).isEditable())
 							return;
-						
-						if (Internal.I18N.getLocale() != locale) {
-							locale = Internal.I18N.getLocale();							
-							popupMenu.doTranslation();
-						}
 
 						popupMenu.show(e.getComponent(), e.getX(), e.getY());
 						popupMenu.setInvoker(e.getComponent());

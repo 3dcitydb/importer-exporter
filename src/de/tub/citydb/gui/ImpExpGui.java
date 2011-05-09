@@ -79,6 +79,7 @@ import javax.xml.bind.JAXBException;
 import de.tub.citydb.api.controller.ViewController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.common.ApplicationEvent;
 import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
@@ -97,6 +98,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.event.SwitchLocaleEventImpl;
 import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.console.ConsoleWindow;
 import de.tub.citydb.gui.menubar.MenuBar;
@@ -109,9 +111,10 @@ import de.tub.citydb.plugin.PluginService;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class ImpExpGui extends JFrame implements ViewController, EventHandler {
+public final class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	private final Logger LOG = Logger.getInstance();
-
+	private final EventDispatcher eventDispatcher; 
+	
 	private Config config;
 	private JAXBContext jaxbProjectContext;
 	private JAXBContext jaxbGuiContext;
@@ -143,7 +146,9 @@ public class ImpExpGui extends JFrame implements ViewController, EventHandler {
 
 	public ImpExpGui() {
 		dbPool = DBConnectionPool.getInstance();
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
+		
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		eventDispatcher.addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
 
 		// required for preferences plugin
 		consoleText = new JTextArea();
@@ -428,6 +433,8 @@ public class ImpExpGui extends JFrame implements ViewController, EventHandler {
 				menu.setTitleAt(index++, view.getLocalizedTitle());
 
 			menuBar.doTranslation();
+			
+			eventDispatcher.triggerSyncEvent(new SwitchLocaleEventImpl(locale, this));
 		} catch (MissingResourceException e) {
 			LOG.error("Missing resource: " + e.getKey());
 		}
