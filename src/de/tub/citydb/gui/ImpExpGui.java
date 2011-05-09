@@ -160,16 +160,6 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 	// internal state
 	private LanguageType currentLang = null;
 
-	// set look & feel
-	{
-		try {
-			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	public ImpExpGui(JAXBContext jaxbCityGMLContext,
 			JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,

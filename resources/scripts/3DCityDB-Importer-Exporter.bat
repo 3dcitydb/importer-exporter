@@ -25,4 +25,4 @@ REM jar file.
 REM %JAVA% -jar -Xms128m -Xmx768m lib/!app.jar! %*
 
 REM The following command executes the GUI version 
-%JAVA% -jar -Xms128m -Xmx768m lib/!app.jar!
+start /min cmd /c "%JAVA% -jar -Xms128m -Xmx768m lib/!app.jar!"

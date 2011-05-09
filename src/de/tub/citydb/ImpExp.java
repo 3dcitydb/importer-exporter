@@ -29,6 +29,7 @@
  */
 package de.tub.citydb;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
@@ -60,10 +61,21 @@ import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.gui.components.SplashScreen;
 import de.tub.citydb.jaxb.JAXBContextRegistry;
 import de.tub.citydb.log.Logger;
 
 public class ImpExp {
+	
+	// set look & feel
+	static {
+		try {
+			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	@Option(name="-config", usage="config file containing project settings", metaVar="fileName")
 	private File configFile;
@@ -88,12 +100,18 @@ public class ImpExp {
 
 	@Option(name="-kmlExport", usage="export KML/COLLADA data to this file\n(shell version only)", metaVar="fileName")
 	private String kmlExportFile;
+	
+	@Option(name="-noSplash")
+	private boolean noSplash;
 
 	private final Logger LOG = Logger.getInstance();
 	private JAXBContext cityGMLContext, kmlContext, colladaContext, projectContext, guiContext;
 	private DBConnectionPool dbPool;
 	private Config config;
 	private List<String> errMsgs = new ArrayList<String>();
+	
+	private SplashScreen splashScreen;
+	private boolean useSplashScreen;
 
 	public static void main(String[] args) {
 		new ImpExp().doMain(args);
@@ -148,13 +166,32 @@ public class ImpExp {
 				System.exit(1);
 			}
 		}
+		
+		// initialize splash screen
+		useSplashScreen = !shell && !noSplash;
+		if (useSplashScreen) {
+			splashScreen = new SplashScreen(4, 2, 40, Color.BLACK);
+			splashScreen.setMessage("Version \"" + this.getClass().getPackage().getImplementationVersion() + "\"");
+			
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					splashScreen.setVisible(true);
+				}
+			});		
+
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				//
+			}
+		}
 
 		LOG.info("Starting " +
 				this.getClass().getPackage().getImplementationTitle() + ", version \"" +
 				this.getClass().getPackage().getImplementationVersion() + "\"");
 
 		// initialize JAXB and database environment
-		LOG.info("Initializing application environment");
+		printInfoMessage("Initializing application environment");
 		config = new Config();
 		
 		try {
@@ -171,7 +208,7 @@ public class ImpExp {
 		}
 
 		// initialize config
-		LOG.info("Loading project settings");
+		printInfoMessage("Loading project settings");
 		
 		String confPath = null;
 		String projectFileName = null;
@@ -300,7 +337,7 @@ public class ImpExp {
 		// start application
 		if (!shell) {
 			// initialize gui
-			LOG.info("Starting graphical user interface");
+			printInfoMessage("Starting graphical user interface");
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -313,6 +350,15 @@ public class ImpExp {
 							config).invoke(errMsgs);
 				}
 			});
+
+			try {
+				Thread.sleep(700);
+			} catch (InterruptedException e) {
+				//
+			}
+
+			if (useSplashScreen)
+				splashScreen.close();
 
 			return;
 		}	
@@ -388,6 +434,14 @@ public class ImpExp {
 			}.start();
 
 			return;
+		}
+	}
+	
+	private void printInfoMessage(String message) {
+		LOG.info(message);
+		if (useSplashScreen) {
+			splashScreen.setMessage(message);
+			splashScreen.nextStep();
 		}
 	}
 
