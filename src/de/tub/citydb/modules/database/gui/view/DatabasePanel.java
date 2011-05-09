@@ -870,7 +870,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		else
 			descriptionText.setText(dbConnection.getDescription());
 
-		dbConnection.setServer(serverText.getText());	
+		dbConnection.setServer(serverText.getText().trim());	
 		dbConnection.setPort(((Number)portText.getValue()).intValue());
 		dbConnection.setSid(databaseText.getText());
 		dbConnection.setUser(userText.getText());
