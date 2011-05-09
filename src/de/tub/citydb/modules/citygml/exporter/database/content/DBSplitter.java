@@ -59,8 +59,8 @@ import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
 import de.tub.citydb.modules.common.filter.feature.GmlIdFilter;
 import de.tub.citydb.modules.common.filter.feature.GmlNameFilter;
 import de.tub.citydb.modules.common.filter.statistic.FeatureCounterFilter;
-import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
+import de.tub.citydb.util.database.DBUtil;
 
 public class DBSplitter {
 	private final Logger LOG = Logger.getInstance();

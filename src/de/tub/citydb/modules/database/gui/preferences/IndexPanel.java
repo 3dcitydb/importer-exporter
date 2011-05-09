@@ -57,9 +57,9 @@ import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.util.DBUtil;
-import de.tub.citydb.util.DBUtil.DB_INDEX_TYPE;
-import de.tub.citydb.util.GuiUtil;
+import de.tub.citydb.util.database.DBUtil;
+import de.tub.citydb.util.database.DBUtil.DB_INDEX_TYPE;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class IndexPanel extends AbstractPreferencesComponent implements EventHandler {	

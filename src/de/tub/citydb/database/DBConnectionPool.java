@@ -48,7 +48,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.Workspace;
-import de.tub.citydb.util.DBUtil;
+import de.tub.citydb.util.database.DBUtil;
 
 public class DBConnectionPool {
 	private static DBConnectionPool instance = new DBConnectionPool();

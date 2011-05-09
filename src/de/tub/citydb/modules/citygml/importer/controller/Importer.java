@@ -77,7 +77,6 @@ import de.tub.citydb.modules.citygml.importer.concurrent.FeatureReaderWorkerFact
 import de.tub.citydb.modules.citygml.importer.database.content.AffineTransformer;
 import de.tub.citydb.modules.citygml.importer.database.gmlid.DBImportCache;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.DBXlinkSplitter;
-import de.tub.citydb.modules.citygml.importer.io.InputFileHandler;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.EventType;
@@ -90,7 +89,9 @@ import de.tub.citydb.modules.common.event.StatusDialogTitle;
 import de.tub.citydb.modules.common.filter.FilterMode;
 import de.tub.citydb.modules.common.filter.ImportFilter;
 import de.tub.citydb.modules.common.filter.statistic.FeatureCounterFilter;
-import de.tub.citydb.util.DBUtil;
+import de.tub.citydb.util.database.DBUtil;
+import de.tub.citydb.util.io.DirectoryScanner;
+import de.tub.citydb.util.io.DirectoryScanner.CityGMLFilenameFilter;
 
 public class Importer implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
@@ -112,12 +113,14 @@ public class Importer implements EventHandler {
 	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private EnumMap<CityGMLClass, Long> featureCounterMap;
 	private EnumMap<GMLClass, Long> geometryCounterMap;
-	private long xmlValidationErrorCounter;
 	private DBGmlIdLookupServerManager lookupServerManager;
+	private DirectoryScanner directoryScanner;
+	private long xmlValidationErrorCounter;
 
 	private int runState;
-	private final int PARSING = 1;
-	private final int XLINK_RESOLVING = 2;
+	private final int PREPARING = 1;
+	private final int PARSING = 2;
+	private final int XLINK_RESOLVING = 3;
 
 	public Importer(JAXBBuilder jaxbBuilder, 
 			DBConnectionPool dbPool, 
@@ -136,6 +139,8 @@ public class Importer implements EventHandler {
 	}
 
 	public boolean doProcess() {
+		runState = PREPARING;
+
 		// adding listeners
 		eventDispatcher.addEventHandler(EventType.FEATURE_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
@@ -157,7 +162,7 @@ public class Importer implements EventHandler {
 
 		// gml:id lookup cache update
 		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdLookupServerBatchValue();
-
+		
 		// checking workspace... this should be improved in future...
 		Workspace workspace = database.getWorkspaces().getImportWorkspace();
 		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
@@ -217,8 +222,9 @@ public class Importer implements EventHandler {
 
 		// build list of import files
 		LOG.info("Creating list of CityGML files to be imported...");	
-		InputFileHandler fileHandler = new InputFileHandler(eventDispatcher);
-		List<File> importFiles = fileHandler.getFiles(intConfig.getImportFileName().trim().split("\n"));
+		directoryScanner = new DirectoryScanner(true);
+		directoryScanner.addFilenameFilter(new CityGMLFilenameFilter());		
+		List<File> importFiles = directoryScanner.getFiles(intConfig.getImportFiles());
 
 		if (!shouldRun)
 			return true;
@@ -280,13 +286,13 @@ public class Importer implements EventHandler {
 		Long counterLastElement = counterFilter.getFilterState().get(1);
 		long elementCounter = 0;
 
+		runState = PARSING;
+
 		while (shouldRun && fileCounter < importFiles.size()) {
 			try {
-				runState = PARSING;
-
 				File file = importFiles.get(fileCounter++);
 				intConfig.setImportPath(file.getParent());
-				intConfig.setCurrentImportFileName(file.getAbsolutePath());
+				intConfig.setCurrentImportFile(file);
 
 				eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.cityObj.msg"), this));
@@ -393,7 +399,7 @@ public class Importer implements EventHandler {
 					}					
 				} catch (CityGMLReadException e) {
 					LOG.error("Fatal CityGML parser error: " + e.getCause().getMessage());
-					return false;
+					continue;
 				}
 
 				// we are done with parsing. so shutdown the workers
@@ -638,7 +644,10 @@ public class Importer implements EventHandler {
 				if (log != null)
 					LOG.log(((InterruptEvent)e).getLogLevelType(), log);
 
-				if (runState ==  XLINK_RESOLVING && tmpSplitter != null)
+				if (runState == PREPARING && directoryScanner != null)
+					directoryScanner.stopScanning();
+				
+				if (runState == XLINK_RESOLVING && tmpSplitter != null)
 					tmpSplitter.shutdown();
 			}
 		}

@@ -43,7 +43,7 @@ import de.tub.citydb.config.project.global.Global;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.util.GuiUtil;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class LanguagePanel extends AbstractPreferencesComponent {

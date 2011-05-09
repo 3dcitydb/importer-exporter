@@ -27,7 +27,7 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.util;
+package de.tub.citydb.util.database;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -55,6 +55,7 @@ import de.tub.citydb.config.project.database.DBMetaData.Versioning;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
 import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.util.Util;
 
 public class DBUtil {
 	private static final DBConnectionPool dbConnectionPool = DBConnectionPool.getInstance();

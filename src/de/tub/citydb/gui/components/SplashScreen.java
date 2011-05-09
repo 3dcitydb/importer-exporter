@@ -18,7 +18,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JWindow;
 import javax.swing.OverlayLayout;
 
-import de.tub.citydb.util.GuiUtil;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class SplashScreen extends JWindow {

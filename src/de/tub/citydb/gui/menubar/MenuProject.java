@@ -59,7 +59,7 @@ import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.modules.preferences.PreferencesPlugin;
 import de.tub.citydb.plugin.InternalPlugin;
 import de.tub.citydb.plugin.PluginService;
-import de.tub.citydb.util.GuiUtil;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class MenuProject extends JMenu {

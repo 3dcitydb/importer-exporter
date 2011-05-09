@@ -79,6 +79,7 @@ import de.tub.citydb.modules.preferences.PreferencesPlugin;
 import de.tub.citydb.plugin.IllegalPluginEventChecker;
 import de.tub.citydb.plugin.PluginService;
 import de.tub.citydb.plugin.PluginServiceFactory;
+import de.tub.citydb.util.io.DirectoryScanner;
 
 public class ImpExp {
 
@@ -210,8 +211,17 @@ public class ImpExp {
 		// load external plugins
 		printInfoMessage("Loading plugins");
 
-		try {
-			PluginServiceFactory.addPluginDirectory(new File(Internal.PLUGINS_PATH));
+		try {			
+			DirectoryScanner directoryScanner = new DirectoryScanner(true);
+			directoryScanner.addFilenameFilter(new FilenameFilter() {
+				public boolean accept(File dir, String name) {
+					return name.toUpperCase().endsWith(".JAR");
+				}
+			});
+			
+			for (File file : directoryScanner.getFiles(new File(Internal.PLUGINS_PATH)))
+				PluginServiceFactory.addPluginDirectory(file.getParentFile());
+			
 			pluginService = PluginServiceFactory.getPluginService();
 		} catch (IOException e) {
 			LOG.error("Failed to initialize plugin support: " + e.getMessage());
@@ -453,19 +463,9 @@ public class ImpExp {
 		}	
 
 		if (validateFile != null) {
-			String fileList = buildFileList(validateFile);			
-			if (fileList == null || fileList.length() == 0) {
-				LOG.error("Invalid list of files to be validated");
-				LOG.error("Aborting...");
-				return;
-			}
-
-			// set import file names...
-			config.getInternal().setImportFileName(fileList);
-
 			new Thread() {
 				public void run() {
-					new ImpExpCmd(jaxbBuilder, config).doValidate();
+					new ImpExpCmd(jaxbBuilder, config).doValidate(validateFile);
 				}
 			}.start();
 
@@ -473,19 +473,9 @@ public class ImpExp {
 		}
 
 		if (importFile != null) {
-			String fileList = buildFileList(importFile);			
-			if (fileList == null || fileList.length() == 0) {
-				LOG.error("Invalid list of files to be imported");
-				LOG.error("Aborting...");
-				return;
-			}
-
-			// set import file names...
-			config.getInternal().setImportFileName(fileList);
-
 			new Thread() {
 				public void run() {
-					new ImpExpCmd(jaxbBuilder, config).doImport();
+					new ImpExpCmd(jaxbBuilder, config).doImport(importFile);
 				}
 			}.start();
 
@@ -538,76 +528,4 @@ public class ImpExp {
 		out.println();
 	}
 
-	private String buildFileList(String userString) {
-		StringBuilder buffer = new StringBuilder();
-
-		for (String part : userString.split(";")) {
-			if (part == null || part.trim().isEmpty())
-				continue;
-
-			File input = new File(part.trim());
-
-			if (input.isDirectory()) {
-				buffer.append(input.getAbsolutePath());
-				buffer.append("\n");
-				continue;
-			}
-
-			final String path = new File(input.getAbsolutePath()).getParent();
-			final String fileName = replaceWildcards(input.getName().toLowerCase());
-
-			input = new File(path);
-			if (!input.exists()) {
-				LOG.error("'" + input.toString() + "' does not exist");
-				continue;
-			}
-
-			File[] list = input.listFiles(new FilenameFilter() {
-				public boolean accept(File dir, String name) {
-					return (name.toLowerCase().matches(fileName));
-				}
-			});
-
-			if (list != null && list.length != 0) {
-				int i = 0;
-				for (File file : list) {
-					if (file.isFile()) {
-						String name = file.getName().toUpperCase();
-						if (!name.endsWith(".GML") && 
-								!name.endsWith(".XML") &&
-								!name.endsWith(".CITYGML"))
-							continue;
-					}
-
-					buffer.append(file.getAbsolutePath());
-					buffer.append("\n");
-					++i;
-				}
-
-				if (i == 0)
-					LOG.warn("No import files found at '" + part + "'");
-			} else
-				LOG.warn("No import files found at '" + part + "'");
-		}
-
-		return buffer.toString();
-	}
-
-	private String replaceWildcards(String input) {
-		StringBuilder buffer = new StringBuilder();
-		char [] chars = input.toCharArray();
-
-		for (int i = 0; i < chars.length; ++i) {
-			if (chars[i] == '*')
-				buffer.append(".*");
-			else if (chars[i] == '?')
-				buffer.append(".");
-			else if ("+()^$.{}[]|\\".indexOf(chars[i]) != -1)
-				buffer.append('\\').append(chars[i]);
-			else
-				buffer.append(chars[i]);
-		}
-
-		return buffer.toString();
-	}
 }

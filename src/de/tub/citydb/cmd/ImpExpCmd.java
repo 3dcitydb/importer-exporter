@@ -29,7 +29,12 @@
  */
 package de.tub.citydb.cmd;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 
@@ -73,7 +78,15 @@ public class ImpExpCmd {
 		dbPool = DBConnectionPool.getInstance();
 	}
 
-	public void doImport() {
+	public void doImport(String importFiles) {
+		// prepare list of files to be validated
+		List<File> files = getFiles(importFiles, ";");
+		if (files.size() == 0) {
+			LOG.error("Invalid list of files to be imported");
+			LOG.error("Aborting...");
+			return;
+		}
+		
 		initDBPool();
 		if (!dbPool.isConnected()) {
 			LOG.error("Aborting...");
@@ -82,6 +95,7 @@ public class ImpExpCmd {
 
 		LOG.info("Initializing database import...");
 
+		config.getInternal().setImportFiles(files.toArray(new File[0]));
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		Importer importer = new Importer(cityGMLBuilder, dbPool, config, eventDispatcher);
 		boolean success = importer.doProcess();
@@ -99,9 +113,18 @@ public class ImpExpCmd {
 		}
 	}
 
-	public void doValidate() {
+	public void doValidate(String validateFiles) {
+		// prepare list of files to be validated
+		List<File> files = getFiles(validateFiles, ";");
+		if (files.size() == 0) {
+			LOG.error("Invalid list of files to be validated");
+			LOG.error("Aborting...");
+			return;
+		}
+		
 		LOG.info("Initializing XML validation...");
 
+		config.getInternal().setImportFiles(files.toArray(new File[0]));
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		XMLValidator validator = new XMLValidator(cityGMLBuilder, config, eventDispatcher);
 		boolean success = validator.doProcess();
@@ -200,5 +223,40 @@ public class ImpExpCmd {
 			LOG.error("Connection to database could not be established: " + e.getMessage());
 			dbPool.forceDisconnect();			
 		} 
+	}
+	
+	private List<File> getFiles(String fileNames, String delim) {
+		List<File> files = new ArrayList<File>();
+		
+		for (String part : fileNames.split(delim)) {
+			if (part == null || part.trim().isEmpty())
+				continue;
+
+			File file = new File(part.trim());
+			if (file.isDirectory()) {
+				files.add(file);
+				continue;
+			}
+
+			final String pathName = new File(file.getAbsolutePath()).getParent();
+			final String fileName = file.getName().replace("?", ".?").replace("*", ".*?");
+
+			file = new File(pathName);
+			if (!file.exists()) {
+				LOG.error("'" + file.toString() + "' does not exist");
+				continue;
+			}
+
+			File[] wildcardList = file.listFiles(new FilenameFilter() {
+				public boolean accept(File dir, String name) {
+					return (name.matches(fileName));
+				}
+			});
+
+			if (wildcardList != null && wildcardList.length != 0)
+				files.addAll(Arrays.asList(wildcardList));
+		}
+
+		return files;
 	}
 }

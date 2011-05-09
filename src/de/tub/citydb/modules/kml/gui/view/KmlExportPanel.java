@@ -79,8 +79,8 @@ import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
 import de.tub.citydb.modules.common.event.InterruptEnum;
 import de.tub.citydb.modules.common.event.InterruptEvent;
-import de.tub.citydb.util.GuiUtil;
 import de.tub.citydb.util.Util;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class KmlExportPanel extends JPanel {

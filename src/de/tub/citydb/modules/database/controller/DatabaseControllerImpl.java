@@ -13,7 +13,7 @@ import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.modules.database.DatabasePlugin;
 import de.tub.citydb.modules.database.gui.view.DatabasePanel;
-import de.tub.citydb.util.DBUtil;
+import de.tub.citydb.util.database.DBUtil;
 
 public class DatabaseControllerImpl implements DatabaseController {
 	private final DatabasePlugin plugin;

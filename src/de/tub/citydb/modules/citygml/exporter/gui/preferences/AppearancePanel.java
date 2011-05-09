@@ -51,7 +51,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.exporter.ExportAppearance;
 import de.tub.citydb.config.project.exporter.TexturePathMode;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.util.GuiUtil;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class AppearancePanel extends AbstractPreferencesComponent {

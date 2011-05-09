@@ -78,8 +78,8 @@ import de.tub.citydb.modules.citygml.common.gui.view.FilterPanel.FilterPanelType
 import de.tub.citydb.modules.citygml.exporter.controller.Exporter;
 import de.tub.citydb.modules.common.event.InterruptEnum;
 import de.tub.citydb.modules.common.event.InterruptEvent;
-import de.tub.citydb.util.GuiUtil;
 import de.tub.citydb.util.Util;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class ExportPanel extends JPanel implements DropTargetListener {

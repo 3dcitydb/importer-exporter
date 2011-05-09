@@ -51,7 +51,7 @@ import de.tub.citydb.config.project.exporter.XLinkConfig;
 import de.tub.citydb.config.project.exporter.XLinkFeatureConfig;
 import de.tub.citydb.config.project.exporter.XLinkMode;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.util.GuiUtil;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class XLinkPanel extends AbstractPreferencesComponent {

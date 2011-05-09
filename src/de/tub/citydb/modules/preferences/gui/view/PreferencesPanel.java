@@ -70,7 +70,7 @@ import de.tub.citydb.modules.kml.KMLExportPlugin;
 import de.tub.citydb.modules.preferences.gui.preferences.GeneralPreferences;
 import de.tub.citydb.modules.preferences.gui.preferences.RootPreferencesEntry;
 import de.tub.citydb.plugin.PluginService;
-import de.tub.citydb.util.GuiUtil;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class PreferencesPanel extends JPanel implements TreeSelectionListener {

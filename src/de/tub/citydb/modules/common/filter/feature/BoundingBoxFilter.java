@@ -45,7 +45,7 @@ import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.modules.common.filter.Filter;
 import de.tub.citydb.modules.common.filter.FilterMode;
-import de.tub.citydb.util.DBUtil;
+import de.tub.citydb.util.database.DBUtil;
 
 public class BoundingBoxFilter implements Filter<Envelope> {
 	private final AbstractFilterConfig filterConfig;

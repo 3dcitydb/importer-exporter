@@ -101,7 +101,7 @@ import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
 import de.tub.citydb.modules.kml.util.XMLHeaderWriter;
-import de.tub.citydb.util.DBUtil;
+import de.tub.citydb.util.database.DBUtil;
 
 public class KmlExporter implements EventHandler {
 	private final JAXBContext jaxbKmlContext;

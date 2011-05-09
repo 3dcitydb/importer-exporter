@@ -43,7 +43,7 @@ import de.tub.citydb.config.project.filter.BoundingBox;
 import de.tub.citydb.config.project.filter.BoundingBoxMode;
 import de.tub.citydb.config.project.importer.ImportFilterConfig;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.util.GuiUtil;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class BoundingBoxPanel extends AbstractPreferencesComponent {

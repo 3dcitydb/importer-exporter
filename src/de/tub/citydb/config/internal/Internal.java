@@ -52,8 +52,8 @@ public class Internal {
 	private String configProject = "project.xml";
 	private String configGui = "gui.xml";
 	private String importPath = "";
-	private String importFileName = "";
-	private String currentImportFileName = "";
+	private File[] importFiles;
+	private File currentImportFile;
 	private String exportPath = "";
 	private String exportFileName = "";
 	private String exportTextureFilePath = "";
@@ -112,20 +112,20 @@ public class Internal {
 		this.exportFileName = exportFileName;
 	}
 
-	public String getImportFileName() {
-		return importFileName;
+	public File[] getImportFiles() {
+		return importFiles;
 	}
 
-	public void setImportFileName(String importFileName) {
-		this.importFileName = importFileName;
+	public void setImportFiles(File[] importFiles) {
+		this.importFiles = importFiles;
 	}
 
-	public String getCurrentImportFileName() {
-		return currentImportFileName;
+	public File getCurrentImportFile() {
+		return currentImportFile;
 	}
 
-	public void setCurrentImportFileName(String currentImportFileName) {
-		this.currentImportFileName = currentImportFileName;
+	public void setCurrentImportFile(File currentImportFile) {
+		this.currentImportFile = currentImportFile;
 	}
 
 	public String getExportTextureFilePath() {

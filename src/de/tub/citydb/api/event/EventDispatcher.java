@@ -112,7 +112,7 @@ public class EventDispatcher {
 	}
 
 	public Enum<?>[] getRegisteredEventTypes() {
-		Enum<?>[] types = containerQueueMap.keySet().toArray(new Enum<?>[] {});
+		Enum<?>[] types = containerQueueMap.keySet().toArray(new Enum<?>[0]);
 		return types;
 	}
 

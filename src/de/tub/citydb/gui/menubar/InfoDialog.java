@@ -59,7 +59,7 @@ import javax.swing.text.html.HTMLDocument;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.global.LanguageType;
-import de.tub.citydb.util.GuiUtil;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class InfoDialog extends JDialog {

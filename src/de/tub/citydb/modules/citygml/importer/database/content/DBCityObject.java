@@ -100,7 +100,7 @@ public class DBCityObject implements DBImporter {
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 
 		if (rememberGmlId)
-			importFileName = config.getInternal().getCurrentImportFileName();
+			importFileName = config.getInternal().getCurrentImportFile().getAbsolutePath();
 		
 		reasonForUpdate = config.getProject().getImporter().getContinuation().getReasonForUpdate();
 		lineage = config.getProject().getImporter().getContinuation().getLineage();

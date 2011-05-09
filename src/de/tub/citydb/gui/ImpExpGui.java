@@ -106,7 +106,7 @@ import de.tub.citydb.modules.database.DatabasePlugin;
 import de.tub.citydb.modules.kml.KMLExportPlugin;
 import de.tub.citydb.modules.preferences.PreferencesPlugin;
 import de.tub.citydb.plugin.PluginService;
-import de.tub.citydb.util.GuiUtil;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class ImpExpGui extends JFrame implements ViewController, EventHandler {

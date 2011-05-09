@@ -96,8 +96,8 @@ import de.tub.citydb.modules.kml.database.KmlExporterManager;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
 import de.tub.citydb.modules.kml.database.TexCoords;
 import de.tub.citydb.modules.kml.database.TileQueries;
-import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
+import de.tub.citydb.util.database.DBUtil;
 
 public class KmlExportWorker implements Worker<KmlSplittingResult> {
 

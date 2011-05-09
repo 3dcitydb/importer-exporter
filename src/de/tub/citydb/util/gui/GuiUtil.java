@@ -27,7 +27,7 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.util;
+package de.tub.citydb.util.gui;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;

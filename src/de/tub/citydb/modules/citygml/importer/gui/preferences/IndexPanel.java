@@ -42,7 +42,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.Index;
 import de.tub.citydb.config.project.importer.IndexMode;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.util.GuiUtil;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class IndexPanel extends AbstractPreferencesComponent {

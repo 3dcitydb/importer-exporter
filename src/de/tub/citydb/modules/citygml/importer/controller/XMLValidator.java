@@ -54,7 +54,6 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.modules.citygml.importer.concurrent.FeatureReaderWorkerFactory;
-import de.tub.citydb.modules.citygml.importer.io.InputFileHandler;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.EventType;
@@ -62,6 +61,8 @@ import de.tub.citydb.modules.common.event.InterruptEvent;
 import de.tub.citydb.modules.common.event.StatusDialogMessage;
 import de.tub.citydb.modules.common.event.StatusDialogProgressBar;
 import de.tub.citydb.modules.common.event.StatusDialogTitle;
+import de.tub.citydb.util.io.DirectoryScanner;
+import de.tub.citydb.util.io.DirectoryScanner.CityGMLFilenameFilter;
 
 public class XMLValidator implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
@@ -74,8 +75,12 @@ public class XMLValidator implements EventHandler {
 
 	private volatile boolean shouldRun = true;
 	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
+	private DirectoryScanner directoryScanner;
 	private long xmlValidationErrorCounter;
-
+	
+	private int runState;
+	private final int PREPARING = 1;
+	private final int VALIDATING = 2;
 
 	public XMLValidator(JAXBBuilder jaxbBuilder, 
 			Config config, 
@@ -86,6 +91,8 @@ public class XMLValidator implements EventHandler {
 	}
 
 	public boolean doProcess() {
+		runState = PREPARING;
+		
 		// adding listeners
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 		
@@ -98,8 +105,9 @@ public class XMLValidator implements EventHandler {
 
 		// build list of files to be validated
 		LOG.info("Creating list of CityGML files to be validated...");
-		InputFileHandler fileHandler = new InputFileHandler(eventDispatcher);
-		List<File> importFiles = fileHandler.getFiles(intConfig.getImportFileName().trim().split("\n"));
+		directoryScanner = new DirectoryScanner(true);
+		directoryScanner.addFilenameFilter(new CityGMLFilenameFilter());
+		List<File> importFiles = directoryScanner.getFiles(intConfig.getImportFiles());
 
 		if (!shouldRun)
 			return true;
@@ -130,6 +138,8 @@ public class XMLValidator implements EventHandler {
 			LOG.error("Failed to initialize CityGML parser. Aborting.");
 			return false;
 		}
+		
+		runState = VALIDATING;
 		
 		while (shouldRun && fileCounter < importFiles.size()) {
 			try {
@@ -162,7 +172,7 @@ public class XMLValidator implements EventHandler {
 					}						
 				} catch (CityGMLReadException e) {
 					LOG.error("Fatal CityGML parser error: " + e.getCause().getMessage());
-					return false;
+					continue;
 				}
 
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("validate.dialog.finish.msg"), this));
@@ -217,6 +227,9 @@ public class XMLValidator implements EventHandler {
 				String log = ((InterruptEvent)e).getLogMessage();
 				if (log != null)
 					LOG.log(((InterruptEvent)e).getLogLevelType(), log);
+				
+				if (runState == PREPARING && directoryScanner != null)
+					directoryScanner.stopScanning();
 			}
 		}
 	}

@@ -84,7 +84,7 @@ import de.tub.citydb.modules.citygml.importer.controller.Importer;
 import de.tub.citydb.modules.citygml.importer.controller.XMLValidator;
 import de.tub.citydb.modules.common.event.InterruptEnum;
 import de.tub.citydb.modules.common.event.InterruptEvent;
-import de.tub.citydb.util.GuiUtil;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class ImportPanel extends JPanel implements DropTargetListener {
@@ -234,13 +234,11 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 	}
 
 	public void setSettings() {
-		StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < fileListModel.size(); ++i) {
-			builder.append(fileListModel.get(i).toString());
-			builder.append("\n");
-		}
+		File[] importFiles = new File[fileListModel.size()]; 
+		for (int i = 0; i < fileListModel.size(); ++i)
+			importFiles[i] = new File(fileListModel.get(i).toString());
 
-		config.getInternal().setImportFileName(builder.toString());		
+		config.getInternal().setImportFiles(importFiles);		
 
 		String workspace = workspaceText.getText().trim();
 		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
@@ -262,7 +260,7 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 			ImportFilterConfig filter = config.getProject().getImporter().getFilter();
 
 			// check all input values...
-			if (config.getInternal().getImportFileName().trim().equals("")) {
+			if (config.getInternal().getImportFiles() == null || config.getInternal().getImportFiles().length == 0) {
 				mainView.errorMessage(Internal.I18N.getString("import.dialog.error.incompleteData"), 
 						Internal.I18N.getString("import.dialog.error.incompleteData.dataset"));
 				return;
@@ -411,7 +409,7 @@ public class ImportPanel extends JPanel implements DropTargetListener {
 			setSettings();
 
 			// check for input files...
-			if (config.getInternal().getImportFileName().trim().equals("")) {
+			if (config.getInternal().getImportFiles() == null || config.getInternal().getImportFiles().length == 0) {
 				mainView.errorMessage(Internal.I18N.getString("validate.dialog.error.incompleteData"),
 						Internal.I18N.getString("validate.dialog.error.incompleteData.dataset"));
 				return;
