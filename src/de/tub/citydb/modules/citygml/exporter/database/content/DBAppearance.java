@@ -108,6 +108,7 @@ public class DBAppearance implements DBExporter {
 	private boolean appendOldGmlId;
 	private boolean transformCoords;
 	private String gmlIdPrefix;
+	private String pathSeparator;
 
 	public DBAppearance(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
@@ -120,6 +121,8 @@ public class DBAppearance implements DBExporter {
 	private void init() throws SQLException {
 		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
 		texturePath = config.getInternal().getExportTextureFilePath();
+		pathSeparator = config.getProject().getExporter().getAppearances().isTexturePathAbsolute() ?
+				File.separator : "/";
 
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
 		if (!useXLink) {
@@ -355,7 +358,7 @@ public class DBAppearance implements DBExporter {
 							File file = new File(imageURI);
 							String fileName = file.getName();
 							if (texturePath != null)
-								fileName = texturePath + File.separator + fileName;
+								fileName = texturePath + pathSeparator + fileName;
 
 							absTex.setImageURI(fileName);
 
@@ -505,7 +508,7 @@ public class DBAppearance implements DBExporter {
 								if (coordsList != null && coordsList.size() != 0) {
 									TextureCoordinates texureCoordinates = new TextureCoordinatesImpl();
 									texureCoordinates.setValue(coordsList);
-									texureCoordinates.setRing(geometryTarget + "_" + i);
+									texureCoordinates.setRing(geometryTarget + '_' + i + '_');
 
 									texCoordList.addTextureCoordinates(texureCoordinates);
 								} else {
@@ -736,7 +739,7 @@ public class DBAppearance implements DBExporter {
 						File file = new File(imageURI);
 						String fileName = file.getName();
 						if (texturePath != null)
-							fileName = texturePath + File.separator + fileName;
+							fileName = texturePath + pathSeparator + fileName;
 
 						absTex.setImageURI(fileName);
 
