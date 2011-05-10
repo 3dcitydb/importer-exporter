@@ -564,9 +564,9 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		isoc.gridwidth = 4;
 		colladaPanel.add(ignoreSurfaceOrientationCheckbox, isoc);
 
-		packingAlgorithms.put("NAIVE", -1);
-		packingAlgorithms.put("FFDH", TextureAtlasGenerator.FFDH);
-		packingAlgorithms.put("NFDH", TextureAtlasGenerator.NFDH);
+		packingAlgorithms.put("BASIC", -1);
+//		packingAlgorithms.put("FFDH", TextureAtlasGenerator.FFDH);
+//		packingAlgorithms.put("NFDH", TextureAtlasGenerator.NFDH);
 		packingAlgorithms.put("SLEA", TextureAtlasGenerator.SLEA);
 		packingAlgorithms.put("TPIM", TextureAtlasGenerator.TPIM);
 		packingAlgorithms.put("TPIM_WO_R", TextureAtlasGenerator.TPIM_WITHOUT_ROTATION);
