@@ -50,6 +50,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.exporter.ExportAppearance;
 import de.tub.citydb.config.project.exporter.TexturePathMode;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -107,7 +108,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		expAppPathAbsButton = new JButton();
 		expAppPathRelText = new JTextField();
 
-		GuiUtil.addStandardEditingPopupMenu(expAppPathAbsText);
+		PopupMenuDecorator.getInstance().decorate(expAppPathAbsText);
 		
 		expAppPathAbsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

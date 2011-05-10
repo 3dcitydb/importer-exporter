@@ -27,6 +27,7 @@ import org.citygml4j.geometry.Matrix;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.general.AffineTransformation;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.modules.common.filter.FilterMode;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -127,10 +128,12 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 							row2.add(matrixField[i][j], GuiUtil.setConstraints(j+1,i,0.25,0.0,GridBagConstraints.BOTH,0,5,5,0));
 							matrixField[i][j].setPreferredSize(matrixField[i][j].getPreferredSize());
 						}
+						
+						PopupMenuDecorator.getInstance().decorate(matrixField[i]);
 					}
 				}
 			}
-			
+						
 			block2 = new JPanel();
 			block2.setBorder(BorderFactory.createTitledBorder(""));
 			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));

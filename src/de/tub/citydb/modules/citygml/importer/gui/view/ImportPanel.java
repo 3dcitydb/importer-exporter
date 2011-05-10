@@ -85,6 +85,7 @@ import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.ImportStatusDialog;
 import de.tub.citydb.gui.components.XMLValidationStatusDialog;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.modules.citygml.common.gui.view.FilterPanel;
 import de.tub.citydb.modules.citygml.common.gui.view.FilterPanel.FilterPanelType;
 import de.tub.citydb.modules.citygml.importer.controller.Importer;
@@ -155,7 +156,7 @@ public class ImportPanel extends JPanel {
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
 
-		GuiUtil.addStandardEditingPopupMenu(fileList, workspaceText);
+		PopupMenuDecorator.getInstance().decorate(fileList, workspaceText);
 		
 		browseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

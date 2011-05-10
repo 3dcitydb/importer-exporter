@@ -82,9 +82,10 @@ import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.gui.components.SrsComboBoxManager;
-import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
 import de.tub.citydb.gui.components.StatusDialog;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import de.tub.citydb.util.Util;
 import de.tub.citydb.util.database.DBUtil;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -116,7 +117,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 	private JRadioButton dbReport;
 	private JRadioButton dbBBox;
 	private SrsComboBox srsComboBox;
-	private SrsComboBoxManager srsComboBoxManager;
+	private SrsComboBoxFactory srsComboBoxFactory;
 
 	private JPanel row2;
 	private JPanel row2_buttons;
@@ -194,10 +195,10 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		for (FeatureClassMode type : FeatureClassMode.values())
 			bboxComboBox.addItem(type);
 
-		srsComboBoxManager = SrsComboBoxManager.getInstance(config);
-		srsComboBox = srsComboBoxManager.getSrsComboBox(true);
+		srsComboBoxFactory = SrsComboBoxFactory.getInstance(config);
+		srsComboBox = srsComboBoxFactory.createSrsComboBox(true);
 
-		GuiUtil.addStandardEditingPopupMenu(
+		PopupMenuDecorator.getInstance().decorate(
 				descriptionText, serverText, portText, databaseText, userText, passwordText, 
 				workspaceText, timestampText);
 		

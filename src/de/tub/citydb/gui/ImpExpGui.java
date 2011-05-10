@@ -83,7 +83,7 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.common.ApplicationEvent;
 import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
-import de.tub.citydb.api.gui.DatabaseSrsComboBox;
+import de.tub.citydb.api.gui.ComponentFactory;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.plugin.Plugin;
 import de.tub.citydb.api.plugin.extension.view.View;
@@ -99,8 +99,8 @@ import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.SwitchLocaleEventImpl;
-import de.tub.citydb.gui.components.SrsComboBoxManager;
 import de.tub.citydb.gui.console.ConsoleWindow;
+import de.tub.citydb.gui.factory.DefaultComponentFactory;
 import de.tub.citydb.gui.menubar.MenuBar;
 import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.modules.citygml.importer.CityGMLImportPlugin;
@@ -563,8 +563,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	@Override
-	public DatabaseSrsComboBox getDatabaseSrsComboBox() {
-		return SrsComboBoxManager.getInstance(config).getSrsComboBox(true);
+	public ComponentFactory getComponentFactory() {
+		return DefaultComponentFactory.getInstance(config);
 	}
 
 	public JTextArea getConsole() {

@@ -47,6 +47,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.general.Path;
 import de.tub.citydb.config.project.general.PathMode;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -101,7 +102,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 		exportPathText = new JTextField();
 		exportPathButton = new JButton();
 
-		GuiUtil.addStandardEditingPopupMenu(importPathText, exportPathText);
+		PopupMenuDecorator.getInstance().decorate(importPathText, exportPathText);
 		
 		importPathButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

@@ -45,6 +45,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.Continuation;
 import de.tub.citydb.config.project.importer.UpdatingPersonMode;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -92,7 +93,7 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 		updatingPerson.add(updatingPersonUser);
 		updatingPersonText = new JTextField();
 		
-		GuiUtil.addStandardEditingPopupMenu(lineageText, reasonForUpdateText, updatingPersonText);
+		PopupMenuDecorator.getInstance().decorate(lineageText, reasonForUpdateText, updatingPersonText);
 		
 		setLayout(new GridBagLayout());
 		{

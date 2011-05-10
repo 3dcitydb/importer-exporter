@@ -50,6 +50,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -113,7 +114,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 		logPathText = new JTextField();
 		logPathButton = new JButton();
 
-		GuiUtil.addStandardEditingPopupMenu(logPathText);
+		PopupMenuDecorator.getInstance().decorate(logPathText);
 		
 		logPathButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

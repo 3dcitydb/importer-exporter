@@ -27,41 +27,49 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.gui.components;
+package de.tub.citydb.gui.factory;
 
+import java.awt.Component;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.common.ApplicationEvent;
 import de.tub.citydb.api.gui.DatabaseSrsComboBox;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.database.DBConnectionPool;
 
-public class SrsComboBoxManager {
-	private static SrsComboBoxManager instance = null;
+public class SrsComboBoxFactory {
+	private static SrsComboBoxFactory instance = null;
 	private final ReferenceSystem dbRefSys = new ReferenceSystem(ReferenceSystem.DEFAULT);
 	private final List<WeakReference<SrsComboBox>> srsBoxes = new ArrayList<WeakReference<SrsComboBox>>();
 	private final Config config;
 
-	private SrsComboBoxManager(Config config) {
+	private SrsComboBoxFactory(Config config) {
 		// just to thwart instantiation
 		this.config = config;
 	}
 
-	public static synchronized SrsComboBoxManager getInstance(Config config) {
+	public static synchronized SrsComboBoxFactory getInstance(Config config) {
 		if (instance == null) {
-			instance = new SrsComboBoxManager(config);
+			instance = new SrsComboBoxFactory(config);
 			Collections.sort(config.getProject().getDatabase().getReferenceSystems());
 		}
 
 		return instance;
 	}
 
-	public SrsComboBox getSrsComboBox(boolean onlyShowSupported) {
+	public SrsComboBox createSrsComboBox(boolean onlyShowSupported) {
 		SrsComboBox srsBox = new SrsComboBox(onlyShowSupported);
 		srsBox.init();
 
@@ -90,27 +98,15 @@ public class SrsComboBoxManager {
 		}
 	}
 
-	public void translateAll() {
-		Iterator<WeakReference<SrsComboBox>> iter = srsBoxes.iterator();
-		while (iter.hasNext()) {
-			WeakReference<SrsComboBox> ref = iter.next();
-			SrsComboBox srsBox = ref.get();
-
-			if (srsBox == null) {
-				iter.remove();
-				continue;
-			}
-
-			srsBox.doTranslation();
-		}
-	}
-
 	@SuppressWarnings("serial")
-	public class SrsComboBox extends DatabaseSrsComboBox {
+	public class SrsComboBox extends DatabaseSrsComboBox implements EventHandler {
 		private final boolean onlyShowSupported;
 
 		private SrsComboBox(boolean onlyShowSupported) {
 			this.onlyShowSupported = onlyShowSupported;
+			setRenderer(new SrsComboBoxRenderer(this));
+			
+			ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.SWITCH_LOCALE, this);
 		}
 
 		@Override
@@ -178,6 +174,31 @@ public class SrsComboBoxManager {
 
 			repaint();
 			fireActionEvent();
+		}
+		
+		@Override
+		public void handleEvent(Event event) throws Exception {
+			doTranslation();
+		}
+	}
+	
+	@SuppressWarnings("serial")
+	private class SrsComboBoxRenderer extends DefaultListCellRenderer {
+		final SrsComboBox box;
+		
+		public SrsComboBoxRenderer(SrsComboBox box) {
+			this.box = box;
+		}
+
+		@Override
+		public Component getListCellRendererComponent(JList list, 
+				Object value, 
+				int index, 
+				boolean isSelected, 
+				boolean cellHasFocus) {
+			Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			box.setToolTipText(value.toString());
+			return component;
 		}
 	}
 }

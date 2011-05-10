@@ -71,6 +71,7 @@ import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.database.DBUtil;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -568,9 +569,9 @@ public class GeneralPanel extends AbstractPreferencesComponent implements EventH
 		isoc.gridwidth = 4;
 		colladaPanel.add(ignoreSurfaceOrientationCheckbox, isoc);
 
-		packingAlgorithms.put("NAIVE", -1);
-		packingAlgorithms.put("FFDH", TextureAtlasGenerator.FFDH);
-		packingAlgorithms.put("NFDH", TextureAtlasGenerator.NFDH);
+		packingAlgorithms.put("BASIC", -1);
+//		packingAlgorithms.put("FFDH", TextureAtlasGenerator.FFDH);
+//		packingAlgorithms.put("NFDH", TextureAtlasGenerator.NFDH);
 		packingAlgorithms.put("SLEA", TextureAtlasGenerator.SLEA);
 		packingAlgorithms.put("TPIM", TextureAtlasGenerator.TPIM);
 		packingAlgorithms.put("TPIM_WO_R", TextureAtlasGenerator.TPIM_WITHOUT_ROTATION);
@@ -664,7 +665,7 @@ public class GeneralPanel extends AbstractPreferencesComponent implements EventH
 		colladaPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		contentsPanel.add(colladaPanel);
 
-		GuiUtil.addStandardEditingPopupMenu(autoTileSideLengthText, geometryHLSurfaceDistanceText, scaleFactorText, 
+		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, geometryHLSurfaceDistanceText, scaleFactorText, 
 				groupSizeText, colladaHLSurfaceDistanceText);
 		
 		add(contentsPanel, BorderLayout.NORTH);

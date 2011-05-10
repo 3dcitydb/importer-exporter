@@ -50,6 +50,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.exporter.XLinkConfig;
 import de.tub.citydb.config.project.exporter.XLinkFeatureConfig;
 import de.tub.citydb.config.project.exporter.XLinkMode;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -120,7 +121,7 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 		geometryIdPrefix = new JTextField();
 		geometryAppendId = new JCheckBox();
 		
-		GuiUtil.addStandardEditingPopupMenu(featureIdPrefix, geometryIdPrefix);
+		PopupMenuDecorator.getInstance().decorate(featureIdPrefix, geometryIdPrefix);
 		
 		setLayout(new GridBagLayout());
 		{

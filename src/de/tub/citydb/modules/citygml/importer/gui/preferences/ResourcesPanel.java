@@ -46,6 +46,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.UpdateBatching;
 import de.tub.citydb.config.project.system.GmlIdLookupServerConfig;
 import de.tub.citydb.config.project.system.ThreadPoolConfig;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -161,7 +162,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		impResGeomCacheText = new JFormattedTextField(cacheEntryFormat);
 		impResFeatCacheText = new JFormattedTextField(cacheEntryFormat);		
 
-		GuiUtil.addStandardEditingPopupMenu(impResMinThreadsText, impResMaxThreadsText,
+		PopupMenuDecorator.getInstance().decorate(impResMinThreadsText, impResMaxThreadsText,
 				impResGeomDrainText, impResFeatDrainText, impResGeomPartText, impResFeatPartText,
 				impResTransaktFeatureText, impResTransaktCacheText, impResTransaktTempText,
 				impResGeomCacheText, impResFeatCacheText);

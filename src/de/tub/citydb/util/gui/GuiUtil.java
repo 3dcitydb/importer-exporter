@@ -31,15 +31,10 @@ package de.tub.citydb.util.gui;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
-import javax.swing.JComponent;
 import javax.swing.JMenuItem;
-import javax.swing.JTextField;
 
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.gui.components.StandardEditingPopupMenu;
 
 public class GuiUtil {
 
@@ -70,39 +65,6 @@ public class GuiUtil {
 			setMnemonic(item, Internal.I18N.getString(labelKey), Integer.valueOf(Internal.I18N.getString(indexKey)));
 		} catch (NumberFormatException e) {
 			//
-		}
-	}
-	
-	public static void addStandardEditingPopupMenu(final JComponent... components) {
-		for (final JComponent component : components) {
-			final StandardEditingPopupMenu popupMenu = StandardEditingPopupMenu.getInstance(component);
-			
-			component.addMouseListener(new MouseAdapter() {
-				private void processMouseEvent(MouseEvent e) {
-					if (e.isPopupTrigger()) {
-						if (!e.getComponent().isEnabled())
-							return;
-						
-						if (e.getComponent() instanceof JTextField &&
-								!((JTextField)e.getComponent()).isEditable())
-							return;
-
-						popupMenu.show(e.getComponent(), e.getX(), e.getY());
-						popupMenu.setInvoker(e.getComponent());
-					}
-				}
-
-				@Override
-				public void mouseReleased(MouseEvent e) {
-					processMouseEvent(e);
-				}
-
-				@Override
-				public void mousePressed(MouseEvent e) {
-					processMouseEvent(e);
-				}
-
-			});
 		}
 	}
 

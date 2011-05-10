@@ -48,6 +48,7 @@ import javax.swing.border.TitledBorder;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.ImportAppearance;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -89,7 +90,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		impAppOldLabel = new JLabel();
 		impAppOldText = new JTextField();
 
-		GuiUtil.addStandardEditingPopupMenu(impAppOldText);
+		PopupMenuDecorator.getInstance().decorate(impAppOldText);
 		
 		setLayout(new GridBagLayout());
 		{

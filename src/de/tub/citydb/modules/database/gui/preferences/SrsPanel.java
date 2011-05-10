@@ -79,8 +79,9 @@ import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.ReferenceSystems;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.gui.components.SrsComboBoxManager;
-import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.database.DBUtil;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -105,7 +106,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	private JButton checkButton;
 	private JButton copyButton;
 
-	private SrsComboBoxManager srsComboBoxManager;
+	private SrsComboBoxFactory srsComboBoxFactory;
 	private SrsComboBox srsComboBox;
 	private ActionListener srsComboBoxListener;
 	private JPanel contentsPanel;
@@ -168,10 +169,10 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		replaceWithFileButton = new JButton();
 		saveFileButton = new JButton();
 
-		srsComboBoxManager = SrsComboBoxManager.getInstance(config);
-		srsComboBox = srsComboBoxManager.getSrsComboBox(false);
+		srsComboBoxFactory = SrsComboBoxFactory.getInstance(config);
+		srsComboBox = srsComboBoxFactory.createSrsComboBox(false);
 
-		GuiUtil.addStandardEditingPopupMenu(sridText, srsNameText, descriptionText, fileText);
+		PopupMenuDecorator.getInstance().decorate(sridText, srsNameText, descriptionText, fileText);
 
 		sridText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -400,8 +401,6 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		addFileButton.setText(Internal.I18N.getString("pref.db.srs.button.addFile"));
 		replaceWithFileButton.setText(Internal.I18N.getString("pref.db.srs.button.replaceWithFile"));
 		saveFileButton.setText(Internal.I18N.getString("pref.db.srs.button.saveFile"));
-
-		srsComboBoxManager.translateAll();
 	}
 
 	@Override
@@ -501,7 +500,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	private void updateSrsComboBoxes(boolean sort) {
 		srsComboBox.removeActionListener(srsComboBoxListener);
-		srsComboBoxManager.updateAll(sort);
+		srsComboBoxFactory.updateAll(sort);
 		srsComboBox.addActionListener(srsComboBoxListener);
 	}
 

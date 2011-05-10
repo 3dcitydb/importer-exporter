@@ -75,8 +75,9 @@ import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.ExportStatusDialog;
-import de.tub.citydb.gui.components.SrsComboBoxManager;
-import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import de.tub.citydb.modules.common.event.InterruptEnum;
 import de.tub.citydb.modules.common.event.InterruptEvent;
 import de.tub.citydb.util.Util;
@@ -237,7 +238,7 @@ public class KmlExportPanel extends JPanel {
 		boundingBoxRadioPanel.add(boundingBoxRadioButton, BorderLayout.WEST);
 		
 		Box srsPanel = Box.createHorizontalBox();
-	    srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true);;
+	    srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);;
 		srsComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, MAX_TEXTFIELD_HEIGHT));
 		srsPanel.add(srsLabel);
 		srsPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 2, 0)));
@@ -460,7 +461,7 @@ public class KmlExportPanel extends JPanel {
 		this.add(jPanelInput, BorderLayout.NORTH);
 		this.add(exportButtonPanel, BorderLayout.SOUTH);
 		
-		GuiUtil.addStandardEditingPopupMenu(browseText, workspaceText, timestampText, 
+		PopupMenuDecorator.getInstance().decorate(browseText, workspaceText, timestampText, 
 				gmlIdText, bbXMinText, bbXMaxText, bbYMinText, bbYMaxText, rowsText, columnsText,
 				footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText);		
 	}

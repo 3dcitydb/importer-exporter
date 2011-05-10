@@ -63,11 +63,12 @@ import de.tub.citydb.config.project.filter.FeatureCount;
 import de.tub.citydb.config.project.filter.FilterMode;
 import de.tub.citydb.config.project.filter.GmlName;
 import de.tub.citydb.config.project.general.FeatureClassMode;
-import de.tub.citydb.gui.components.SrsComboBoxManager;
-import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
 import de.tub.citydb.gui.components.checkboxtree.CheckboxTree;
 import de.tub.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import de.tub.citydb.gui.components.checkboxtree.DefaultTreeCheckingModel;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import de.tub.citydb.util.Util;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -173,9 +174,9 @@ public class FilterPanel extends JPanel {
 		bbYMaxText.setFocusLostBehavior(JFormattedTextField.COMMIT);
 
 		srsLabel = new JLabel();
-		srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true);
+		srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
 
-		GuiUtil.addStandardEditingPopupMenu(gmlNameText, gmlIdText, 
+		PopupMenuDecorator.getInstance().decorate(gmlNameText, gmlIdText, 
 				coStartText, coEndText, bbXMinText, bbYMinText,  bbXMaxText, bbYMaxText);
 		
 		featureClassFilter = new JCheckBox();		

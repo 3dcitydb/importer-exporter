@@ -71,8 +71,9 @@ import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.ExportStatusDialog;
-import de.tub.citydb.gui.components.SrsComboBoxManager;
-import de.tub.citydb.gui.components.SrsComboBoxManager.SrsComboBox;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import de.tub.citydb.modules.citygml.common.gui.view.FilterPanel;
 import de.tub.citydb.modules.citygml.common.gui.view.FilterPanel.FilterPanelType;
 import de.tub.citydb.modules.citygml.exporter.controller.Exporter;
@@ -130,7 +131,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			}
 		});
 		
-		GuiUtil.addStandardEditingPopupMenu(workspaceText, timestampText, browseText);
+		PopupMenuDecorator.getInstance().decorate(workspaceText, timestampText, browseText);
 		
 		exportButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -161,7 +162,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			workspaceLabel = new JLabel();
 			timestampLabel = new JLabel();
 			srsComboBoxLabel = new JLabel();
-			srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true);
+			srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
 			{
 				row2.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 				row2.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));

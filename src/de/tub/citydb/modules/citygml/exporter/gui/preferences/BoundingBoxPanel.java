@@ -62,6 +62,7 @@ import de.tub.citydb.config.project.filter.TileSuffixMode;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -154,7 +155,7 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 		genAttrValueLabel = new JLabel();
 		genAttrValueComboBox = new JComboBox();
 		
-		GuiUtil.addStandardEditingPopupMenu(rowsText, columnsText, tilePathName, genAttrNameText);
+		PopupMenuDecorator.getInstance().decorate(rowsText, columnsText, tilePathName, genAttrNameText);
 		
 		rowsText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {

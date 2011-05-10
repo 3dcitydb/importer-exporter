@@ -46,6 +46,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.CodeSpaceMode;
 import de.tub.citydb.config.project.importer.ImportGmlId;
 import de.tub.citydb.config.project.importer.UUIDMode;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -97,7 +98,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent {
 		impIdCSRadio.add(impIdCSRadioUser);
 		impIdCSUserText = new JTextField();
 
-		GuiUtil.addStandardEditingPopupMenu(impIdCSUserText);
+		PopupMenuDecorator.getInstance().decorate(impIdCSUserText);
 		
 		setLayout(new GridBagLayout());
 		{
