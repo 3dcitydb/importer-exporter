@@ -170,7 +170,7 @@ public class ImpExp {
 		// initialize splash screen
 		useSplashScreen = !shell && !noSplash;
 		if (useSplashScreen) {
-			splashScreen = new SplashScreen(4, 2, 40, Color.BLACK);
+			splashScreen = new SplashScreen(4, 3, 50, Color.BLACK);
 			splashScreen.setMessage("Version \"" + this.getClass().getPackage().getImplementationVersion() + "\"");
 			
 			SwingUtilities.invokeLater(new Runnable() {
