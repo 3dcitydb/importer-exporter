@@ -213,7 +213,7 @@ public class KmlExportPanel extends JPanel {
 		boundingBoxRadioPanel.add(boundingBoxRadioButton, BorderLayout.WEST);
 		
 		Box srsPanel = Box.createHorizontalBox();
-	    srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true);;
+	    srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true, 50);
 		srsComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, MAX_TEXTFIELD_HEIGHT));
 		srsPanel.add(srsLabel);
 		srsPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 2, 0)));

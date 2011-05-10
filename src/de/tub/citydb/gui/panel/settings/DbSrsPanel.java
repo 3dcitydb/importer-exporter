@@ -446,7 +446,6 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		sridText.setValue(refSys.getSrid());
 		srsNameText.setText(refSys.getSrsName());
 		descriptionText.setText(refSys.toString());
-		srsComboBox.setToolTipText(refSys.getDescription());
 
 		boolean enabled = !srsComboBox.isDBReferenceSystemSelected();
 		sridText.setEnabled(enabled);

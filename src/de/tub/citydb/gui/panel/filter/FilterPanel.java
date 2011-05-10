@@ -174,7 +174,7 @@ public class FilterPanel extends JPanel {
 		bbYMaxText.setFocusLostBehavior(JFormattedTextField.COMMIT);
 
 		srsLabel = new JLabel();
-		srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true);
+		srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true, 50);
 
 		StandardEditingPopupMenuDecorator.decorate(gmlNameText, gmlIdText, 
 				coStartText, coEndText, bbXMinText, bbYMinText,  bbXMaxText, bbYMaxText);
