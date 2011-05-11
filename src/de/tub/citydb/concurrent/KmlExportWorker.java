@@ -174,16 +174,11 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			buildingGroupSize = config.getProject().getKmlExporter().getGroupSize();
 		}
 
-		try {
+		if (config.getProject().getKmlExporter().isIncludeDescription()) {
 			String balloonTemplateFilename = config.getProject().getKmlExporter().getBalloonContentTemplateFile();
 			if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
 				balloonTemplateHandler = new BalloonTemplateHandler(new File(balloonTemplateFilename), connection);
 			}
-		}
-		catch (Exception e) {
-			Logger.getInstance().warn("Exception when trying to access file: " + 
-					config.getProject().getKmlExporter().getBalloonContentTemplateFile());
-			e.printStackTrace();
 		}
 		
 		elevationServiceHandler = new ElevationServiceHandler();

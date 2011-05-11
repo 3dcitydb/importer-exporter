@@ -225,6 +225,9 @@ public class KmlExporter implements EventListener {
 					 	") tiles will be generated."); 
 				generateMasterFile();
 			}
+			catch (FileNotFoundException fnfe) {
+				return false;
+			}
 			catch (Exception ex) {
 				ex.printStackTrace();
 				return false;
@@ -654,6 +657,10 @@ public class KmlExporter implements EventListener {
 			kmlTree.append("</kml>\n");
 			outputStream.write(kmlTree.toString().getBytes());
 			outputStream.close();
+		}
+		catch (FileNotFoundException fnfe) {
+			Logger.getInstance().error("Path \"" + path + "\" not found.");
+			throw fnfe;
 		}
 		catch (IOException ioe) {
 			ioe.printStackTrace();
