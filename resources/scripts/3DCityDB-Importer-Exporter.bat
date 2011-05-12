@@ -4,8 +4,10 @@ REM The tool can be started using a graphical user interface (default) or
 REM as a shell version (using -shell switch, e.g., for batch processing)
 REM Use '!app.jar! -help' to get a list of available options
 
-REM Try and identify JVM executable
+REM cd to path of the starter script
 cd /d %~dp0
+
+REM Try and identify JVM executable
 if not "%JAVA_HOME%" == "" goto USE_JAVA_HOME
 goto NO_JAVA_HOME
 

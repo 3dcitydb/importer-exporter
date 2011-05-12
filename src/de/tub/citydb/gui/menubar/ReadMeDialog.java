@@ -51,6 +51,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -99,6 +100,7 @@ public class ReadMeDialog extends JDialog {
 				}
 
 				readMe.setCaretPosition(0);
+				StandardEditingPopupMenuDecorator.decorate(readMe);
 
 				JScrollPane scroll = new JScrollPane(readMe);
 				scroll.setAutoscrolls(true);

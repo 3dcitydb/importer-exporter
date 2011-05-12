@@ -59,6 +59,7 @@ import javax.swing.text.html.HTMLDocument;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.global.LanguageType;
+import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -162,6 +163,8 @@ public class InfoDialog extends JDialog {
 					"This program is free software under the GNU Lesser General\n" +
 			"Public License Version 3.0. For a copy of the GNU LGPL see\n<http://www.gnu.org/licenses/>.");				
 			general.add(copy, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,2,5,5,5));				
+		
+			StandardEditingPopupMenuDecorator.decorate(authors, copy);
 		}
 
 		return general;
@@ -212,8 +215,9 @@ public class InfoDialog extends JDialog {
 				logos.add(wtf_label, GuiUtil.setConstraints(1,2,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
 
 				logos.add(new JLabel(), GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,5,5,0,5));
+			
+				StandardEditingPopupMenuDecorator.decorate(blc_label, vcs_label, wtf_label);
 			}		
-
 		}
 
 		return partner;

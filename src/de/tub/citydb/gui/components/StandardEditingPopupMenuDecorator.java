@@ -44,8 +44,7 @@ public class StandardEditingPopupMenuDecorator {
 								!((JTextComponent)e.getComponent()).isEditable()) {
 							popupMenu.cut.setEnabled(false);
 							popupMenu.paste.setEnabled(false);
-						}
-							
+						}							
 
 						popupMenu.show(e.getComponent(), e.getX(), e.getY());
 						popupMenu.setInvoker(e.getComponent());
