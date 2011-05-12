@@ -16,7 +16,6 @@ import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPasswordField;
 import javax.swing.JPopupMenu;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.TransferHandler;
 import javax.swing.text.JTextComponent;
@@ -54,9 +53,11 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 						if (!e.getComponent().isEnabled())
 							return;
 
-						if (e.getComponent() instanceof JTextField &&
-								!((JTextField)e.getComponent()).isEditable())
-							return;
+						if (e.getComponent() instanceof JTextComponent &&
+								!((JTextComponent)e.getComponent()).isEditable()) {
+							popupMenu.cut.setEnabled(false);
+							popupMenu.paste.setEnabled(false);
+						}
 
 						popupMenu.show(e.getComponent(), e.getX(), e.getY());
 						popupMenu.setInvoker(e.getComponent());

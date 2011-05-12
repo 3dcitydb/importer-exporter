@@ -101,6 +101,7 @@ import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.SwitchLocaleEventImpl;
 import de.tub.citydb.gui.console.ConsoleWindow;
 import de.tub.citydb.gui.factory.DefaultComponentFactory;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.menubar.MenuBar;
 import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.modules.citygml.importer.CityGMLImportPlugin;
@@ -203,6 +204,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consoleText.setEditable(false);
 		consoleWindow = new ConsoleWindow(console, config, this);
 
+		PopupMenuDecorator.getInstance().decorate(consoleText);
+		
 		statusText = new JLabel();
 		connectText = new JLabel();
 
