@@ -381,7 +381,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		srsNameLabel.setText(Internal.I18N.getString("pref.db.srs.label.srsName"));
 		descriptionLabel.setText(Internal.I18N.getString("pref.db.srs.label.description"));
 		newButton.setText(Internal.I18N.getString("pref.db.srs.button.new"));
-		applyButton.setText(Internal.I18N.getString("pref.db.srs.button.apply"));
+		applyButton.setText(Internal.I18N.getString("common.button.apply"));
 		deleteButton.setText(Internal.I18N.getString("pref.db.srs.button.delete"));
 		copyButton.setText(Internal.I18N.getString("pref.db.srs.button.copy"));		
 		checkButton.setText(Internal.I18N.getString("pref.db.srs.button.check"));

@@ -37,7 +37,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
@@ -100,6 +99,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 	private JFormattedTextField timestampText;
 	private JPasswordField passwordText;
 	private JCheckBox passwordCheck;
+	private JButton applyButton;
 	private JButton newButton;
 	private JButton copyButton;
 	private JButton deleteButton;
@@ -169,6 +169,8 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		timestampText.setColumns(10);
 		passwordText = new JPasswordField();
 		passwordCheck = new JCheckBox();
+		
+		applyButton = new JButton();
 		newButton = new JButton();
 		copyButton = new JButton();
 		deleteButton = new JButton();
@@ -199,6 +201,12 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 					if (((Number)portText.getValue()).intValue() < 0)
 						portText.setValue(1521);
 				}
+			}
+		});
+		
+		applyButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				apply();
 			}
 		});
 
@@ -312,10 +320,11 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 				c.gridheight = 6;
 				row2.add(row2_buttons,c);
 				row2_buttons.setLayout(new GridBagLayout());
-				row2_buttons.add(newButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
-				row2_buttons.add(copyButton, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
+				row2_buttons.add(applyButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
+				row2_buttons.add(newButton, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
+				row2_buttons.add(copyButton, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
 
-				c = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.HORIZONTAL,5,0,0,0);
+				c = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.HORIZONTAL,5,0,0,0);
 				c.anchor = GridBagConstraints.NORTH;				
 				row2_buttons.add(deleteButton, c);
 
@@ -397,6 +406,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		portLabel.setText(Internal.I18N.getString("db.label.port"));
 		databaseLabel.setText(Internal.I18N.getString("db.label.sid"));
 		passwordCheck.setText(Internal.I18N.getString("db.label.passwordCheck"));
+		applyButton.setText(Internal.I18N.getString("common.button.apply"));
 		newButton.setText(Internal.I18N.getString("db.button.new"));
 		copyButton.setText(Internal.I18N.getString("db.button.copy"));
 		deleteButton.setText(Internal.I18N.getString("db.button.delete"));
@@ -436,9 +446,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 			connCombo.addItem(conn);
 
 		connCombo.setSelectedItem(dbConnection);
-		if (topFrame.saveProjectSettings()) 
-			LOG.info("Settings successfully saved in config file '" + 
-					config.getInternal().getConfigPath() + File.separator + config.getInternal().getConfigProject() + "'.");
+		LOG.info("Settings successfully applied.");
 	}
 
 	private void copy() {
