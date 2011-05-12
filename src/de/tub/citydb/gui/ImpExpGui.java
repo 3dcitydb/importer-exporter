@@ -355,6 +355,8 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 			console.add(scroll, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
 		}
 
+		StandardEditingPopupMenuDecorator.decorate(consoleText);
+		
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setContinuousLayout(true);
 		splitPane.setBorder(BorderFactory.createEmptyBorder());
