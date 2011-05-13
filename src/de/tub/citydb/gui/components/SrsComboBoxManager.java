@@ -36,7 +36,6 @@ import java.util.List;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JList;
 
 import de.tub.citydb.config.Config;
@@ -169,12 +168,15 @@ public class SrsComboBoxManager {
 				int index, 
 				boolean isSelected, 
 				boolean cellHasFocus) {
-			Component component =  super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-			if (value != null && value.toString().length() > box.maxLimit && component instanceof JLabel)
-				((JLabel)component).setText(value.toString().substring(0, box.maxLimit) + "...");
+			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			
-			box.setToolTipText(value.toString());
-			return component;
+			if (value != null) {
+				box.setToolTipText(value.toString());
+				if (value.toString().length() > box.maxLimit)
+					setText(value.toString().substring(0, box.maxLimit) + "...");
+			}
+			
+			return this;
 		}
 	}
 }
