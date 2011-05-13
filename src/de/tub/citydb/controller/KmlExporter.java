@@ -178,6 +178,22 @@ public class KmlExporter implements EventListener {
 			} else 
 				Logger.getInstance().info("Switching to database workspace " + name + '.');
 		}
+		
+		// check whether spatial indexes are enabled
+		Logger.getInstance().info("Checking for spatial indexes on geometry columns of involved tables...");
+		DBUtil dbUtil = DBUtil.getInstance(dbPool);
+		try {
+			if (!dbUtil.isIndexed("CITYOBJECT", "ENVELOPE") || 
+					!dbUtil.isIndexed("SURFACE_GEOMETRY", "GEOMETRY")) {
+				Logger.getInstance().error("Spatial indexes are not activated.");
+				Logger.getInstance().error("Please use the preferences tab to activate the spatial indexes.");
+				return false;
+			}
+
+		} catch (SQLException e) {
+			Logger.getInstance().error("Failed to retrieve status of spatial indexes: " + e.getMessage());
+			return false;
+		}
 
 		// create a saxWriter instance 
 		// define indent for xml output and namespace mappings
