@@ -222,46 +222,21 @@ public class KmlExportPanel extends JPanel {
 		
 		boundingBoxRadioPanel.add(srsPanel, BorderLayout.EAST);
 
-		Box boundingBoxPanel = Box.createHorizontalBox();
-		Box minLabelPanel = Box.createVerticalBox();
-		Box minTextPanel = Box.createVerticalBox();
-		Box maxLabelPanel = Box.createVerticalBox();
-		Box maxTextPanel = Box.createVerticalBox();
+		JPanel boundingBoxPanel = new JPanel();
+		boundingBoxPanel.setLayout(new GridBagLayout());
 
-		bbXMinLabel.setMaximumSize(new Dimension(MAX_LABEL_WIDTH, MAX_TEXTFIELD_HEIGHT));
-		minLabelPanel.add(bbXMinLabel);
-		minLabelPanel.add(Box.createRigidArea(new Dimension(0, 2)));
-		bbYMinLabel.setMaximumSize(new Dimension(MAX_LABEL_WIDTH, MAX_TEXTFIELD_HEIGHT));
-		minLabelPanel.add(bbYMinLabel);
-
-		bbXMinText.setMaximumSize(new Dimension(Integer.MAX_VALUE, MAX_TEXTFIELD_HEIGHT));
-		minTextPanel.add(bbXMinText);
-		minTextPanel.add(Box.createRigidArea(new Dimension(0, 2)));
-		bbYMinText.setMaximumSize(new Dimension(Integer.MAX_VALUE, MAX_TEXTFIELD_HEIGHT));
-		minTextPanel.add(bbYMinText);
-
-		bbXMaxLabel.setMaximumSize(new Dimension(MAX_LABEL_WIDTH, MAX_TEXTFIELD_HEIGHT));
-		maxLabelPanel.add(bbXMaxLabel);
-		maxLabelPanel.add(Box.createRigidArea(new Dimension(0, 2)));
-		bbYMaxLabel.setMaximumSize(new Dimension(MAX_LABEL_WIDTH, MAX_TEXTFIELD_HEIGHT));
-		maxLabelPanel.add(bbYMaxLabel);
-
-		bbXMaxText.setMaximumSize(new Dimension(Integer.MAX_VALUE, MAX_TEXTFIELD_HEIGHT));
-		maxTextPanel.add(bbXMaxText);
-		maxTextPanel.add(Box.createRigidArea(new Dimension(0, 2)));
-		bbYMaxText.setMaximumSize(new Dimension(Integer.MAX_VALUE, MAX_TEXTFIELD_HEIGHT));
-		maxTextPanel.add(bbYMaxText);
-		
-		boundingBoxPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 4, 0)));
-		boundingBoxPanel.add(minLabelPanel);
-		boundingBoxPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 2, 0)));
-		boundingBoxPanel.add(minTextPanel);
-		boundingBoxPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 4, 0)));
-		boundingBoxPanel.add(maxLabelPanel);
-		boundingBoxPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 2, 0)));
-		boundingBoxPanel.add(maxTextPanel);
-		boundingBoxPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-
+		bbXMinText.setPreferredSize(bbXMaxText.getPreferredSize());
+		bbXMaxText.setPreferredSize(bbXMinText.getPreferredSize());
+		bbYMinText.setPreferredSize(bbYMaxText.getPreferredSize());
+		bbYMaxText.setPreferredSize(bbYMinText.getPreferredSize());
+		boundingBoxPanel.add(bbXMinLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,1,BORDER_THICKNESS * 4,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(bbXMinText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,1,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(bbXMaxLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,1,BORDER_THICKNESS * 2 ,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(bbXMaxText, GuiUtil.setConstraints(3,0,1.0,0.0,GridBagConstraints.HORIZONTAL,1,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(bbYMinLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 4,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(bbYMinText, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(bbYMaxLabel, GuiUtil.setConstraints(2,1,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(bbYMaxText, GuiUtil.setConstraints(3,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		tilingButtonGroup.add(noTilingRadioButton);
 		tilingButtonGroup.add(automaticTilingRadioButton);
