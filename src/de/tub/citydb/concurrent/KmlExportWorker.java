@@ -120,6 +120,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 	private Connection connection;
 	private KmlExporterManager kmlExporterManager;
+	private int currentLod;
 	private Building buildingGroup = null;
 	private int buildingGroupCounter = 0;
 	private int buildingGroupSize = 1;
@@ -292,20 +293,15 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		OracleResultSet rs = null;
 
 		try {
-			psQuery = connection.prepareStatement(
-					TileQueries.getSingleBuildingQuery(config.getProject().getKmlExporter().getLodToExportFrom(), work.getDisplayLevel()),
-					// work-around for JDBC problem with rs.getDouble() and ResultSet.TYPE_SCROLL_INSENSITIVE
-					work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED ? ResultSet.TYPE_FORWARD_ONLY: ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY);
+			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
+			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
+			int minLod = lodToExportFrom == 5 ? 0: lodToExportFrom;
 
-			for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-				psQuery.setString(i, work.getGmlId());
-			}
-			rs = (OracleResultSet)psQuery.executeQuery();
-
-			if (!rs.isBeforeFirst()) { // result empty, try alternative query
+			while (currentLod >= minLod) {
+				if(!work.getDisplayLevel().isAchievableFromLoD(currentLod)) break;
+				
 				psQuery = connection.prepareStatement(
-						TileQueries.getSingleBuildingQueryAlt(config.getProject().getKmlExporter().getLodToExportFrom(), work.getDisplayLevel()),
+						TileQueries.getSingleBuildingQuery(currentLod, work.getDisplayLevel()),
 						// work-around for JDBC problem with rs.getDouble() and ResultSet.TYPE_SCROLL_INSENSITIVE
 						work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED ? ResultSet.TYPE_FORWARD_ONLY: ResultSet.TYPE_SCROLL_INSENSITIVE,
 						ResultSet.CONCUR_READ_ONLY);
@@ -314,9 +310,24 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					psQuery.setString(i, work.getGmlId());
 				}
 				rs = (OracleResultSet)psQuery.executeQuery();
+				if (rs.isBeforeFirst()) break; // result set not empty
+
+				// try alternative query
+				psQuery = connection.prepareStatement(
+						TileQueries.getSingleBuildingQueryAlt(currentLod, work.getDisplayLevel()),
+						// work-around for JDBC problem with rs.getDouble() and ResultSet.TYPE_SCROLL_INSENSITIVE
+						work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED ? ResultSet.TYPE_FORWARD_ONLY: ResultSet.TYPE_SCROLL_INSENSITIVE,
+						ResultSet.CONCUR_READ_ONLY);
+
+				for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
+					psQuery.setString(i, work.getGmlId());
+				}
+				rs = (OracleResultSet)psQuery.executeQuery();
+				if (rs.isBeforeFirst()) break; // result set not empty
+				currentLod--;
 			}
 			
-			if (!rs.isBeforeFirst()) { // result empty, give up
+			if (rs == null || !rs.isBeforeFirst()) { // result empty, give up
 				if (config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
 					// only for single building exports, tiles would fill the whole textarea
 					Logger.getInstance().info("No info found for object " + work.getGmlId() 
@@ -534,7 +545,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 							groundSurface.getElemInfo()[i+3] - 1: // still more geometries
 								ordinatesArray.length; // default
 /*
-							if (config.getProject().getKmlExporter().getLodToExportFrom() == 1) {
+							if (currentLod == 1) {
 								for (int j = groundSurface.getElemInfo()[i] - 1; j < startNextGeometry; j = j+3) {
 									linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," 
 											+ ordinatesArray[j+1] + ","
@@ -658,7 +669,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 
 			if (surfaceType == null) {
-				String likelySurfaceType = (probablyRoof && config.getProject().getKmlExporter().getLodToExportFrom() < 3) ?
+				String likelySurfaceType = (probablyRoof && currentLod < 3) ?
 										   CityGMLClass.ROOFSURFACE.toString() :
 										   CityGMLClass.WALLSURFACE.toString();
 //				placemark.setName(gmlId + "_" + likelySurfaceType);
@@ -928,7 +939,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		}
 
 		try {
-			getGeometriesStmt = connection.prepareStatement(TileQueries.getSingleBuildingHighlightingQuery(config.getProject().getKmlExporter().getLodToExportFrom()),
+			getGeometriesStmt = connection.prepareStatement(TileQueries.getSingleBuildingHighlightingQuery(currentLod),
 															ResultSet.TYPE_SCROLL_INSENSITIVE,
 															ResultSet.CONCUR_READ_ONLY);
 
@@ -1068,23 +1079,22 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	}
 
 	private void addBalloonContents(PlacemarkType placemark, String gmlId) {
-		int lod = config.getProject().getKmlExporter().getLodToExportFrom();
 		switch (config.getProject().getKmlExporter().getBalloonContentMode()) {
 		case GEN_ATTRIB:
 			String balloonTemplate = getBalloonContentGenericAttribute(gmlId);
 			if (balloonTemplate != null) {
-				placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, lod));
+				placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, currentLod));
 			}
 			break;
 		case GEN_ATTRIB_AND_FILE:
 			balloonTemplate = getBalloonContentGenericAttribute(gmlId);
 			if (balloonTemplate != null) {
-				placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, lod));
+				placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, currentLod));
 				break;
 			}
 		case FILE :
 			if (balloonTemplateHandler != null) {
-				placemark.setDescription(balloonTemplateHandler.getBalloonContent(gmlId, lod));
+				placemark.setDescription(balloonTemplateHandler.getBalloonContent(gmlId, currentLod));
 			}
 			break;
 		}
@@ -1145,7 +1155,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			case GENERIC_ATTRIBUTE:
 				PreparedStatement selectQuery = null;
 				OracleResultSet rs = null;
-				String genericAttribName = "GE_LoD" + config.getProject().getKmlExporter().getLodToExportFrom() + "_zOffset";
+				String genericAttribName = "GE_LoD" + currentLod + "_zOffset";
 				try {
 					// first look for the value in the DB
 					selectQuery = connection.prepareStatement(TileQueries.QUERY_GET_STRVAL_GENERICATTRIB_FROM_GML_ID);
@@ -1199,7 +1209,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				Thread.currentThread().sleep(elevationServicePause);
 
 				// save result in DB for next time
-				String genericAttribName = "GE_LoD" + config.getProject().getKmlExporter().getLodToExportFrom() + "_zOffset";
+				String genericAttribName = "GE_LoD" + currentLod + "_zOffset";
 				insertQuery = connection.prepareStatement(TileQueries.QUERY_INSERT_GE_ZOFFSET);
 				insertQuery.setString(1, genericAttribName);
 				String strVal = "Auto|" + zOffset + "|" + dateFormatter.format(new Date(System.currentTimeMillis()));
@@ -1396,7 +1406,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				}
 
 				if (surfaceType == null) {
-					String likelySurfaceType = (probablyRoof && config.getProject().getKmlExporter().getLodToExportFrom() < 3) ?
+					String likelySurfaceType = (probablyRoof && currentLod < 3) ?
 						CityGMLClass.ROOFSURFACE.toString() :
 						CityGMLClass.WALLSURFACE.toString();
 					placemark.setStyleUrl("#" + likelySurfaceType + "Normal");
@@ -1425,7 +1435,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		}
 
 		try {
-			getGeometriesStmt = connection.prepareStatement(TileQueries.getSingleBuildingHighlightingQuery(config.getProject().getKmlExporter().getLodToExportFrom()),
+			getGeometriesStmt = connection.prepareStatement(TileQueries.getSingleBuildingHighlightingQuery(currentLod),
 															ResultSet.TYPE_SCROLL_INSENSITIVE,
 															ResultSet.CONCUR_READ_ONLY);
 

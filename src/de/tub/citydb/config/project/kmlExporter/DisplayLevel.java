@@ -96,6 +96,24 @@ public class DisplayLevel {
 		this.setVisibleUpTo(visibleUpTo);
 	}
 
+	public static boolean isAchievableFromLoD (int displayLevel, int lod) {
+		boolean achievable = true; // FOOTPRINT always achievable
+		switch (displayLevel) {
+		case EXTRUDED:
+		case GEOMETRY:
+			achievable = (lod > 0);
+			break;
+		case COLLADA:
+			achievable = (lod > 1);
+			break;
+		}
+		return achievable;
+	}
+
+	public boolean isAchievableFromLoD (int lod) {
+		return isAchievableFromLoD(level, lod);
+	}
+
 	public String getName() {
 		String levelOfDetailByName = "unknown";
 		switch (level) {

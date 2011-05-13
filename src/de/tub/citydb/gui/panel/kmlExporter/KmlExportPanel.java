@@ -124,8 +124,6 @@ public class KmlExportPanel extends JPanel {
 	
 	private JPanel exportFromLODPanel;
     private JComboBox lodComboBox = new JComboBox();
-	private JCheckBox whenDataMissingCheckBox = new JCheckBox();
-    private JComboBox alternativeLodComboBox = new JComboBox();
 
 	private JPanel displayAsPanel;
 	private JCheckBox footprintCheckbox = new JCheckBox();
@@ -296,21 +294,12 @@ public class KmlExportPanel extends JPanel {
 			lodComboBox.insertItemAt("LoD" + index, index);
 		}
 		lodComboBox.setSelectedIndex(2);
-
-		alternativeLodComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, MAX_TEXTFIELD_HEIGHT));
-		fillAlternativeLodComboBox();
-		Box alternativeLODPanel = Box.createHorizontalBox();
-//		alternativeLODPanel.add(whenDataMissingCheckBox);
-		alternativeLODPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-//		alternativeLODPanel.add(alternativeLodComboBox);
-		alternativeLODPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
 		
 		Box exportFromLODContentPanel = Box.createVerticalBox();
 		exportFromLODContentPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS
 																	+ footprintCheckbox.getPreferredSize().height)));
 		exportFromLODContentPanel.add(mainLODPanel);
 		exportFromLODContentPanel.add(Box.createRigidArea(new Dimension(0, footprintCheckbox.getPreferredSize().height)));
-		exportFromLODContentPanel.add(alternativeLODPanel);
 
 		exportFromLODPanel = new JPanel();
 		exportFromLODPanel.setLayout(new BorderLayout());
@@ -445,8 +434,14 @@ public class KmlExportPanel extends JPanel {
 		columnsLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.columns"));
 		
 		exportFromLODPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("kmlExport.label.fromLOD")));
-		whenDataMissingCheckBox.setText("when data missing use");
-		
+/*
+		int selectedLod = lodComboBox.getSelectedIndex();
+		if (lodComboBox.getItemCount()>5) {
+			lodComboBox.removeItemAt(5);
+		}
+		lodComboBox.insertItemAt(Internal.I18N.getString("kmlExport.label.highestLODAvailable"), 5);
+		lodComboBox.setSelectedIndex(selectedLod);
+*/
 		displayAsPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("kmlExport.label.displayAs")));
 		footprintCheckbox.setText(Internal.I18N.getString("kmlExport.label.footprint"));
 		extrudedCheckbox.setText(Internal.I18N.getString("kmlExport.label.extruded"));
@@ -483,8 +478,6 @@ public class KmlExportPanel extends JPanel {
 		rowsText.setText("");
 		columnsText.setText("");
 		
-		whenDataMissingCheckBox.setSelected(false);
-
 		footprintCheckbox.setSelected(false);
 		extrudedCheckbox.setSelected(false);
 		geometryCheckbox.setSelected(false);
@@ -561,7 +554,9 @@ public class KmlExportPanel extends JPanel {
 			}
 		}
 		
-		lodComboBox.setSelectedIndex(kmlExporter.getLodToExportFrom());
+		int lod = kmlExporter.getLodToExportFrom();
+		lod = lod >= lodComboBox.getItemCount() ? lodComboBox.getItemCount() - 1: lod; 
+		lodComboBox.setSelectedIndex(lod);
 
 		for (DisplayLevel displayLevel : kmlExporter.getDisplayLevels()) {
 			switch (displayLevel.getLevel()) {
@@ -805,18 +800,7 @@ public class KmlExportPanel extends JPanel {
 
 		lodComboBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int lod = lodComboBox.getSelectedIndex();
-				extrudedCheckbox.setEnabled(lod>0);
-				geometryCheckbox.setEnabled(lod>0);
-				colladaCheckbox.setEnabled(lod>1);
 				setVisibilityEnabledValues();
-				fillAlternativeLodComboBox();
-			}
-		});
-
-		whenDataMissingCheckBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				alternativeLodComboBox.setEnabled(whenDataMissingCheckBox.isSelected());
 			}
 		});
 
@@ -874,34 +858,15 @@ public class KmlExportPanel extends JPanel {
 		columnsLabel.setEnabled(manualTilingRadioButton.isEnabled()&& manualTilingRadioButton.isSelected());
 		columnsText.setEnabled(manualTilingRadioButton.isEnabled()&& manualTilingRadioButton.isSelected());
 
-		alternativeLodComboBox.setEnabled(whenDataMissingCheckBox.isSelected());
-
-		extrudedCheckbox.setEnabled(lodComboBox.getSelectedIndex()>0);
-		geometryCheckbox.setEnabled(lodComboBox.getSelectedIndex()>0);
-		colladaCheckbox.setEnabled(lodComboBox.getSelectedIndex()>1);
-/*
-		lodComboBox.setEnabled(boundingBoxRadioButton.isSelected());
-		whenDataMissingCheckBox.setEnabled(boundingBoxRadioButton.isSelected());
-		((TitledBorder) exportFromLODPanel.getBorder()).setTitleColor(boundingBoxRadioButton.isSelected() ? 
-				  											  		  UIManager.getColor("Label.foreground"):
-				  											  		  UIManager.getColor("Label.disabledForeground"));
-		exportFromLODPanel.repaint();
-
-		footprintCheckbox.setEnabled(boundingBoxRadioButton.isSelected());
-		extrudedCheckbox.setEnabled(boundingBoxRadioButton.isSelected() && lodComboBox.getSelectedIndex()>0);
-		geometryCheckbox.setEnabled(boundingBoxRadioButton.isSelected() && lodComboBox.getSelectedIndex()>1);
-		colladaCheckbox.setEnabled(boundingBoxRadioButton.isSelected() && lodComboBox.getSelectedIndex()>1);
-		colladaHiResCheckbox.setEnabled(boundingBoxRadioButton.isSelected() && lodComboBox.getSelectedIndex()>2);
-		((TitledBorder) displayAsPanel.getBorder()).setTitleColor(boundingBoxRadioButton.isSelected() ? 
-															  	  UIManager.getColor("Label.foreground"):
-															  	  UIManager.getColor("Label.disabledForeground"));
-		displayAsPanel.repaint();
-*/
 		setVisibilityEnabledValues();
 		
 	}
 
 	private void setVisibilityEnabledValues() {
+
+		extrudedCheckbox.setEnabled(DisplayLevel.isAchievableFromLoD(DisplayLevel.EXTRUDED, lodComboBox.getSelectedIndex()));
+		geometryCheckbox.setEnabled(DisplayLevel.isAchievableFromLoD(DisplayLevel.GEOMETRY, lodComboBox.getSelectedIndex()));
+		colladaCheckbox.setEnabled(DisplayLevel.isAchievableFromLoD(DisplayLevel.COLLADA, lodComboBox.getSelectedIndex()));
 
 		visibleFromFootprintLabel.setEnabled(boundingBoxRadioButton.isSelected() && footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());
 		footprintVisibleFromText.setEnabled(boundingBoxRadioButton.isSelected() && footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());
@@ -919,18 +884,6 @@ public class KmlExportPanel extends JPanel {
 		colladaVisibleFromText.setEnabled(boundingBoxRadioButton.isSelected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 		pixelsColladaLabel.setEnabled(boundingBoxRadioButton.isSelected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
-	}
-	
-	private void fillAlternativeLodComboBox() {
-		int selectedLodIndex = lodComboBox.getSelectedIndex();
-		alternativeLodComboBox.removeAllItems();
-		if (selectedLodIndex > 0) {
-			alternativeLodComboBox.addItem(lodComboBox.getItemAt(selectedLodIndex - 1));
-		}
-		if (selectedLodIndex < (lodComboBox.getItemCount()-1)) {
-			alternativeLodComboBox.addItem(lodComboBox.getItemAt(selectedLodIndex + 1));
-		}
-		alternativeLodComboBox.setSelectedIndex(0);
 	}
 	
 	public static void centerOnScreen(Component component) {
