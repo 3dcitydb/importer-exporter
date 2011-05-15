@@ -274,7 +274,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 		newButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (requestChange()) {
-					ReferenceSystem refSys = new ReferenceSystem(0, "", getNewRefSysDescription(), false);
+					ReferenceSystem refSys = new ReferenceSystem(0, "", getNewRefSysDescription(), !config.getInternal().isConnected());
 
 					config.getProject().getDatabase().addReferenceSystem(refSys);
 					updateSrsComboBoxes(false);
