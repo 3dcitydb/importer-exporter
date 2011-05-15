@@ -55,7 +55,6 @@ import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
-import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class BalloonPanel extends AbstractPreferencesComponent {

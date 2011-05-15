@@ -402,6 +402,7 @@ public class ImpExp {
 		// register illegal plugin event checker with event dispatcher
 		IllegalPluginEventChecker checker = IllegalPluginEventChecker.getInstance();
 		eventDispatcher.addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, checker);
+		eventDispatcher.addEventHandler(ApplicationEvent.SWITCH_LOCALE, checker);
 
 		// start application
 		if (!shell) {

@@ -638,6 +638,7 @@ public class Building {
 	}
 
 	public void addX3dMaterial(long surfaceId, X3DMaterial x3dMaterial){
+		if (x3dMaterial == null) return;
 		if (x3dMaterial.isSetAmbientIntensity()
 			|| x3dMaterial.isSetShininess()
 			|| x3dMaterial.isSetTransparency()
@@ -852,15 +853,12 @@ public class Building {
 	
 	public void appendBuilding (Building buildingToAppend) {
 		
-		double relativeOffsetX = buildingToAppend.getOriginX() - this.getOriginX();
-		double relativeOffsetY = buildingToAppend.getOriginY() - this.getOriginY();
-
 		VertexInfo vertexInfoIterator = buildingToAppend.firstVertexInfo;
 		while (vertexInfoIterator != null) {
 			if (vertexInfoIterator.getAllTexCoords() == null) {
 				this.setVertexInfoForXYZ(-1, // dummy
-						 				 vertexInfoIterator.getX() + relativeOffsetX,
-						 				 vertexInfoIterator.getY() + relativeOffsetY,
+						 				 vertexInfoIterator.getX(),
+						 				 vertexInfoIterator.getY(),
 						 				 vertexInfoIterator.getZ(),
 						 				 null);
 			}
@@ -870,8 +868,8 @@ public class Building {
 				while (iterator.hasNext()) {
 					Long surfaceId = iterator.next();
 					this.setVertexInfoForXYZ(surfaceId,
-											 vertexInfoIterator.getX() + relativeOffsetX,
-											 vertexInfoIterator.getY() + relativeOffsetY,
+											 vertexInfoIterator.getX(),
+											 vertexInfoIterator.getY(),
 											 vertexInfoIterator.getZ(),
 											 vertexInfoIterator.getTexCoords(surfaceId));
 				}
@@ -883,19 +881,11 @@ public class Building {
 		Iterator<Long> iterator = keySet.iterator();
 		while (iterator.hasNext()) {
 			Long surfaceId = iterator.next();
+			this.addX3dMaterial(surfaceId, buildingToAppend.getX3dMaterial(surfaceId));
 			String imageUri = buildingToAppend.texImageUris.get(surfaceId);
 			this.addTexImageUri(surfaceId, imageUri);
 			this.addTexImage(imageUri, buildingToAppend.getTexImage(imageUri));
 			this.addTexOrdImage(imageUri, buildingToAppend.getTexOrdImage(imageUri));
-			GeometryArray gArray = buildingToAppend.geometryInfos.get(surfaceId).getGeometryArray();
-			Point3d  coordPoint = new Point3d();
-			for(int i = 0; i < gArray.getVertexCount(); i++){
-				gArray.getCoordinate(i, coordPoint);
-				coordPoint.x = coordPoint.x + relativeOffsetX; 
-				coordPoint.y = coordPoint.y + relativeOffsetY; 
-				gArray.setCoordinate(i, coordPoint);
-			}
-			
 			this.addGeometryInfo(surfaceId, buildingToAppend.geometryInfos.get(surfaceId));
 		}
 		

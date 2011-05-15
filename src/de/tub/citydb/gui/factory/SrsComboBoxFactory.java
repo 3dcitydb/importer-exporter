@@ -105,7 +105,7 @@ public class SrsComboBoxFactory {
 		private SrsComboBox(boolean onlyShowSupported) {
 			this.onlyShowSupported = onlyShowSupported;
 			setRenderer(new SrsComboBoxRenderer(this));
-			
+
 			ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.SWITCH_LOCALE, this);
 		}
 
@@ -175,17 +175,17 @@ public class SrsComboBoxFactory {
 			repaint();
 			fireActionEvent();
 		}
-		
+
 		@Override
 		public void handleEvent(Event event) throws Exception {
 			doTranslation();
 		}
 	}
-	
+
 	@SuppressWarnings("serial")
 	private class SrsComboBoxRenderer extends DefaultListCellRenderer {
 		final SrsComboBox box;
-		
+
 		public SrsComboBoxRenderer(SrsComboBox box) {
 			this.box = box;
 		}
@@ -196,9 +196,12 @@ public class SrsComboBoxFactory {
 				int index, 
 				boolean isSelected, 
 				boolean cellHasFocus) {
-			Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-			box.setToolTipText(value.toString());
-			return component;
+			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+			if (value != null)
+				box.setToolTipText(value.toString());
+
+			return this;
 		}
 	}
 }

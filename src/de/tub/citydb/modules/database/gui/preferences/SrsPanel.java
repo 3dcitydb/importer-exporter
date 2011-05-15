@@ -283,7 +283,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		newButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (requestChange()) {
-					ReferenceSystem refSys = new ReferenceSystem(0, "", getNewRefSysDescription(), false);
+					ReferenceSystem refSys = new ReferenceSystem(0, "", getNewRefSysDescription(), !dbPool.isConnected());
 
 					config.getProject().getDatabase().addReferenceSystem(refSys);
 					updateSrsComboBoxes(false);
