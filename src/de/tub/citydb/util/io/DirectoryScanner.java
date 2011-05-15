@@ -66,12 +66,14 @@ public class DirectoryScanner {
 	}
 
 	public List<File> getFiles(File input) {
-		shouldRun = isScanning = true;
-
 		List<File> files = new ArrayList<File>();
-		buildFileList(input, files, true);
 
-		isScanning = false;
+		if (input != null && input.exists()) {
+			shouldRun = isScanning = true;
+			buildFileList(input, files, true);
+			isScanning = false;
+		}
+
 		return files;
 	}
 
@@ -83,7 +85,7 @@ public class DirectoryScanner {
 			if (!shouldRun)
 				break;
 
-			if (file == null)
+			if (file == null || !file.exists())
 				continue;
 
 			buildFileList(file, files, true);
