@@ -290,10 +290,10 @@ public class KmlExportPanel extends JPanel {
 		mainLODPanel.add(lodComboBox);
 		mainLODPanel.add(Box.createRigidArea(new Dimension(10 * BORDER_THICKNESS, 0)));
 		lodComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, MAX_TEXTFIELD_HEIGHT));
-		for (int index = 0; index < 5; index++) {
-			lodComboBox.insertItemAt("LoD" + index, index);
+		for (int index = 1; index < 5; index++) { // exclude LoD0 for the time being
+			lodComboBox.insertItemAt("LoD" + index, index - 1);
 		}
-		lodComboBox.setSelectedIndex(2);
+		lodComboBox.setSelectedIndex(1);
 		
 		Box exportFromLODContentPanel = Box.createVerticalBox();
 		exportFromLODContentPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS
@@ -435,12 +435,12 @@ public class KmlExportPanel extends JPanel {
 		
 		exportFromLODPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("kmlExport.label.fromLOD")));
 /*
-		int selectedLod = lodComboBox.getSelectedIndex();
-		if (lodComboBox.getItemCount()>5) {
-			lodComboBox.removeItemAt(5);
+		int selectedIndex = lodComboBox.getSelectedIndex();
+		if (!lodComboBox.getItemAt(lodComboBox.getItemCount() - 1).toString().endsWith("4")) {
+			lodComboBox.removeItemAt(lodComboBox.getItemCount() - 1);
 		}
-		lodComboBox.insertItemAt(Internal.I18N.getString("kmlExport.label.highestLODAvailable"), 5);
-		lodComboBox.setSelectedIndex(selectedLod);
+		lodComboBox.insertItemAt(Internal.I18N.getString("kmlExport.label.highestLODAvailable"), lodComboBox.getItemCount());
+		lodComboBox.setSelectedIndex(selectedIndex);
 */
 		displayAsPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("kmlExport.label.displayAs")));
 		footprintCheckbox.setText(Internal.I18N.getString("kmlExport.label.footprint"));
@@ -554,7 +554,7 @@ public class KmlExportPanel extends JPanel {
 			}
 		}
 		
-		int lod = kmlExporter.getLodToExportFrom();
+		int lod = kmlExporter.getLodToExportFrom() - 1; // exclude LoD0 for the time being
 		lod = lod >= lodComboBox.getItemCount() ? lodComboBox.getItemCount() - 1: lod; 
 		lodComboBox.setSelectedIndex(lod);
 
@@ -674,7 +674,7 @@ public class KmlExportPanel extends JPanel {
 			}
 		}
 		
-		kmlExporter.setLodToExportFrom(lodComboBox.getSelectedIndex());
+		kmlExporter.setLodToExportFrom(lodComboBox.getSelectedIndex() + 1); // exclude LoD0 for the time being
 
 		int previousLevelVisibility = -1;
 
@@ -864,9 +864,9 @@ public class KmlExportPanel extends JPanel {
 
 	private void setVisibilityEnabledValues() {
 
-		extrudedCheckbox.setEnabled(DisplayLevel.isAchievableFromLoD(DisplayLevel.EXTRUDED, lodComboBox.getSelectedIndex()));
-		geometryCheckbox.setEnabled(DisplayLevel.isAchievableFromLoD(DisplayLevel.GEOMETRY, lodComboBox.getSelectedIndex()));
-		colladaCheckbox.setEnabled(DisplayLevel.isAchievableFromLoD(DisplayLevel.COLLADA, lodComboBox.getSelectedIndex()));
+		extrudedCheckbox.setEnabled(DisplayLevel.isAchievableFromLoD(DisplayLevel.EXTRUDED, lodComboBox.getSelectedIndex() + 1));
+		geometryCheckbox.setEnabled(DisplayLevel.isAchievableFromLoD(DisplayLevel.GEOMETRY, lodComboBox.getSelectedIndex() + 1));
+		colladaCheckbox.setEnabled(DisplayLevel.isAchievableFromLoD(DisplayLevel.COLLADA, lodComboBox.getSelectedIndex() + 1));
 
 		visibleFromFootprintLabel.setEnabled(boundingBoxRadioButton.isSelected() && footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());
 		footprintVisibleFromText.setEnabled(boundingBoxRadioButton.isSelected() && footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());
