@@ -1,13 +1,13 @@
 !app.title! v!app.version!
 
-  This program is free software and comes WITHOUT ANY WARRANTY. 
-  See the file LICENSE for more details. 
+  This program is free software and comes WITHOUT ANY WARRANTY.
+  See the DISCLAIMER at the end of this document for more details.  
 
 
 0. Index
 --------
 
-1. Licence
+1. License
 2. Copyright
 3. About
 4. System requirements
@@ -17,9 +17,10 @@
 8. Developers
 9. Contact
 10. Websites
+11. Disclaimer
 
 
-1. Licence
+1. License
 ----------
 
 The !app.title! is free software under
@@ -181,7 +182,7 @@ javier.herreruela@tu-berlin.de
 
 
 10. Websites
------------
+------------
 
 Official !app.title! website: 
 !app.homepage!
@@ -191,3 +192,22 @@ Related websites:
 http://www.citygml.org/
 http://www.citygmlwiki.org/
 http://www.opengeospatial.org/standards/citygml
+
+
+11. Disclaimer
+--------------
+
+THIS SOFTWARE IS PROVIDED BY IGG "AS IS" AND "WITH ALL FAULTS." 
+IGG MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY KIND CONCERNING THE 
+QUALITY, SAFETY OR SUITABILITY OF THE SOFTWARE, EITHER EXPRESSED OR 
+IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED WARRANTIES OF 
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+
+IGG MAKES NO REPRESENTATIONS OR WARRANTIES AS TO THE TRUTH, ACCURACY OR 
+COMPLETENESS OF ANY STATEMENTS, INFORMATION OR MATERIALS CONCERNING THE 
+SOFTWARE THAT IS CONTAINED ON AND WITHIN ANY OF THE WEBSITES OWNED AND 
+OPERATED BY IGG.
+
+IN NO EVENT WILL IGG BE LIABLE FOR ANY INDIRECT, PUNITIVE, SPECIAL, 
+INCIDENTAL OR CONSEQUENTIAL DAMAGES HOWEVER THEY MAY ARISE AND EVEN IF 
+IGG HAVE BEEN PREVIOUSLY ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
