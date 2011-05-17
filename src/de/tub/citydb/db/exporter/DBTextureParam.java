@@ -33,6 +33,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.citygml4j.factory.CityGMLFactory;
@@ -49,9 +50,11 @@ import org.citygml4j.model.citygml.appearance.TextureCoordinates;
 import org.citygml4j.model.citygml.appearance.WorldToTexture;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
 public class DBTextureParam implements DBExporter {
+	private final Logger LOG = Logger.getInstance();
 	private final CityGMLFactory cityGMLFactory;
 	private final Connection connection;
 
@@ -66,7 +69,7 @@ public class DBTextureParam implements DBExporter {
 
 	private void init() throws SQLException {
 		psTextureParam = connection.prepareStatement("select tp.WORLD_TO_TEXTURE, tp.TEXTURE_COORDINATES, " +
-		"sg.GMLID from TEXTUREPARAM tp inner join SURFACE_GEOMETRY sg on sg.ID=tp.SURFACE_GEOMETRY_ID where tp.SURFACE_DATA_ID=?");
+		"sg.GMLID, sg.IS_REVERSE from TEXTUREPARAM tp inner join SURFACE_GEOMETRY sg on sg.ID=tp.SURFACE_GEOMETRY_ID where tp.SURFACE_DATA_ID=?");
 	}
 
 	public void read(AbstractSurfaceData surfaceData, long surfaceDataId, AppearanceModule app) throws SQLException {
@@ -80,6 +83,7 @@ public class DBTextureParam implements DBExporter {
 				String worldToTexture = rs.getString("WORLD_TO_TEXTURE");
 				String textureCoordinates = rs.getString("TEXTURE_COORDINATES");
 				String target = rs.getString("GMLID");
+				boolean isReverse = rs.getBoolean("IS_REVERSE");
 
 				if (target == null || target.length() == 0)
 					continue;
@@ -115,6 +119,31 @@ public class DBTextureParam implements DBExporter {
 
 								List<Double> coordsList = Util.string2double(splitter, "\\s+");
 								if (coordsList != null && coordsList.size() != 0) {
+									
+									// reverse order of texture coordinates if necessary
+									if (isReverse) {
+										
+										// check for even number of texture coordinates
+										if ((coordsList.size() & 1) == 1) {
+											coordsList.add(0.0);
+											
+											StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+													surfaceData.getCityGMLClass(), 
+													surfaceData.getId()));
+											
+											msg.append(": Odd number of texture coordinates found. Adding 0.0 to fix this.");
+											LOG.error(msg.toString());
+										}
+										
+										List<Double> reverseList = new ArrayList<Double>(coordsList.size());
+										for (int j = coordsList.size() - 2; j >= 0; j -= 2) {
+											reverseList.add(coordsList.get(j));
+											reverseList.add(coordsList.get(j + 1));
+										}
+										
+										coordsList = reverseList;
+									}
+									
 									TextureCoordinates texureCoordinates = cityGMLFactory.createTextureCoordinates(app);
 									texureCoordinates.setValue(coordsList);
 									texureCoordinates.setRing(target + '_' + i + '_');

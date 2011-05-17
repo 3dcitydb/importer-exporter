@@ -346,6 +346,19 @@ public class DBSurfaceData implements DBImporter {
 									String ring = texCoord.getRing();
 
 									if (ring != null && ring.length() != 0 && texCoord.isSetValue()) {
+										
+										// check for even number of texture coordinates
+										if ((texCoord.getValue().size() & 1) == 1) {
+											texCoord.addValue(0.0);
+											
+											StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+													abstractSurfData.getCityGMLClass(), 
+													abstractSurfData.getId()));
+											
+											msg.append(": Odd number of texture coordinates found. Adding 0.0 to fix this.");
+											LOG.error(msg.toString());
+										}
+										
 										String coords = Util.collection2string(texCoord.getValue(), " ");
 
 										DBXlinkTextureParam xlink = new DBXlinkTextureParam(
