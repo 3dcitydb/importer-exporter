@@ -1,13 +1,14 @@
 3D City Database version 2.0.5
 
   The 3D City Database version 2.0.5 is free software and comes 
-  WITHOUT ANY WARRANTY. See the file LICENSE for more details. 
+  WITHOUT ANY WARRANTY. See the DISCLAIMER at the end of this document
+  for more details. 
 
 
 0. Index
 --------
 
-1. Licence
+1. License
 2. Copyright
 3. About
 4. System requirements
@@ -18,9 +19,10 @@
 9. Developers
 10. Contact
 11. Websites
+12. Disclaimer
 
 
-1. Licence
+1. License
 ----------
 
 The 3D City Database version 2.0.5 is free software under the GNU Lesser 
@@ -32,10 +34,10 @@ COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
 2. Copyright
 ------------
 
-(c) 2007 - 2010
+(c) 2007 - 2011
 Institute for Geodesy and Geoinformation Science (IGG)
 Technische Universitaet Berlin, Germany
-http://www.igg.tu-berlin.de/
+http://www.gis.tu-berlin.de/
 
 
 3. About
@@ -72,10 +74,14 @@ The development is continuing the work of the Institute for Cartography and
 Geoinformation (IKG), University of Bonn. Please find the previous version of the
 database at http://www.3dcitydb.org/.
 
+
 4. System requirements
 ----------------------
 
-* Oracle 10G R2 Spatial and above
+* Oracle Spatial 10G R2
+* Oracle Spatial 11G R1
+* Oracle Spatial 11G R2 
+
 
 5. Database setup
 -----------------
@@ -86,9 +92,10 @@ distribution package. This script will start the setup procedure and invoke
 further scripts in the background.
 
 The setup procedure requires three mandatory user inputs:
-1) Spatial Reference Identifier for newly created geometry objects (SRID),
-2) corresponding GML SRSName, and
+1) Oracle Spatial Reference Identifier for newly created geometry objects (SRID),
+2) corresponding GML conformant URN encoding for gml:srsName attributes, and
 3) decision whether the database instance should be versioning enabled.
+
 
 6. Database deletion
 --------------------
@@ -123,9 +130,9 @@ financially supported by the following cooperation partners:
 -------------
 
 Claus Nagel <claus.nagel@tu-berlin.de>
+Javier Herreruela <javier.herreruela@tu-berlin.de>
 Alexandra Lorenz <alexandra.lorenz@tu-berlin.de>
 Gerhard Koenig <gerhard.koenig@tu-berlin.de>
-Javier Herreruela <javier.herreruela@tu-berlin.de>
 Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>
 
 
@@ -133,9 +140,9 @@ Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>
 ----------
 
 claus.nagel@tu-berlin.de
-lorenz@tu-berlin.de
-gerhard.koenig@tu-berlin.de
 javier.herreruela@tu-berlin.de
+alexandralorenz@tu-berlin.de
+gerhard.koenig@tu-berlin.de
 thomas.kolbe@tu-berlin.de
 
 
@@ -143,10 +150,29 @@ thomas.kolbe@tu-berlin.de
 ------------
 
 Official 3D City Database website: 
-http://www.igg.tu-berlin.de/software
+http://www.gis.tu-berlin.de/software
 
 Related websites:
-http://www.igg.tu-berlin.de/
+http://www.gis.tu-berlin.de/
 http://www.citygml.org/
 http://www.citygmlwiki.org/
 http://www.opengeospatial.org/standards/citygml
+
+
+12. Disclaimer
+--------------
+
+THIS SOFTWARE IS PROVIDED BY IGG "AS IS" AND "WITH ALL FAULTS." 
+IGG MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY KIND CONCERNING THE 
+QUALITY, SAFETY OR SUITABILITY OF THE SOFTWARE, EITHER EXPRESSED OR 
+IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED WARRANTIES OF 
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+
+IGG MAKES NO REPRESENTATIONS OR WARRANTIES AS TO THE TRUTH, ACCURACY OR 
+COMPLETENESS OF ANY STATEMENTS, INFORMATION OR MATERIALS CONCERNING THE 
+SOFTWARE THAT IS CONTAINED ON AND WITHIN ANY OF THE WEBSITES OWNED AND 
+OPERATED BY IGG.
+
+IN NO EVENT WILL IGG BE LIABLE FOR ANY INDIRECT, PUNITIVE, SPECIAL, 
+INCIDENTAL OR CONSEQUENTIAL DAMAGES HOWEVER THEY MAY ARISE AND EVEN IF 
+IGG HAVE BEEN PREVIOUSLY ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
