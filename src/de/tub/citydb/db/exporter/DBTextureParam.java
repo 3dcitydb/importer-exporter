@@ -33,7 +33,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.citygml4j.factory.CityGMLFactory;
@@ -135,13 +134,16 @@ public class DBTextureParam implements DBExporter {
 											LOG.error(msg.toString());
 										}
 										
-										List<Double> reverseList = new ArrayList<Double>(coordsList.size());
-										for (int j = coordsList.size() - 2; j >= 0; j -= 2) {
-											reverseList.add(coordsList.get(j));
-											reverseList.add(coordsList.get(j + 1));
+										for (int lower = 0, upper = coordsList.size() - 2; lower < upper; lower += 2, upper -= 2) {
+											Double x = coordsList.get(lower);
+											Double y = coordsList.get(lower + 1);
+
+											coordsList.set(lower, coordsList.get(upper));
+											coordsList.set(lower + 1, coordsList.get(upper + 1));
+											
+											coordsList.set(upper, x);
+											coordsList.set(upper + 1, y);
 										}
-										
-										coordsList = reverseList;
 									}
 									
 									TextureCoordinates texureCoordinates = cityGMLFactory.createTextureCoordinates(app);

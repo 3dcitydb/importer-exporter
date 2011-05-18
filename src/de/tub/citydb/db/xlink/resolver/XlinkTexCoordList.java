@@ -154,17 +154,8 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 			String textureCoordinates = xlink.getTextureCoord();
 			
 			// reverse order of texture coordinates if necessary
-			if (surfaceGeometryEntry.isReverse()) {				
-				String[] orig = textureCoordinates.split("\\s+");
-				String[] reversed = new String[orig.length];
-				
-				for (int i = 0, j = orig.length - 2; j >= 0; j -= 2, i += 2) {
-					reversed[i] = orig[j];
-					reversed[i + 1] = orig[j + 1];
-				}
-				
-				textureCoordinates = Util.collection2string(Arrays.asList(reversed), " ");
-			}
+			if (surfaceGeometryEntry.isReverse())
+				textureCoordinates = reverseTextureCoordinates(textureCoordinates);
 			
 			texCoordList.add(0, textureCoordinates);
 			for (int i = 0; i < maxRingNo; i++)
@@ -182,17 +173,8 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 					continue;
 				
 				// reverse order of texture coordinates if necessary
-				if (surfaceGeometryEntry.isReverse()) {				
-					String[] orig = textureCoordinates.split("\\s+");
-					String[] reversed = new String[orig.length];
-					
-					for (int i = 0, j = orig.length - 2; j >= 0; j -= 2, i += 2) {
-						reversed[i] = orig[j];
-						reversed[i + 1] = orig[j + 1];
-					}
-					
-					textureCoordinates = Util.collection2string(Arrays.asList(reversed), " ");
-				}
+				if (surfaceGeometryEntry.isReverse())					
+					textureCoordinates = reverseTextureCoordinates(textureCoordinates);
 
 				// replace leading #
 				innerGmlId = innerGmlId.replaceAll("^#", "");
@@ -233,6 +215,23 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 				rs = null;
 			}
 		}
+	}
+	
+	private String reverseTextureCoordinates(String textureCoordinates) {
+		String[] coords = textureCoordinates.split("\\s+");
+		
+		for (int lower = 0, upper = coords.length - 2; lower < upper; lower += 2, upper -= 2) {
+			String x = coords[lower];
+			String y = coords[lower + 1];
+
+			coords[lower] = coords[upper];
+			coords[lower + 1] = coords[upper + 1];
+			
+			coords[upper] = x;
+			coords[upper + 1] = y;
+		}
+		
+		return Util.collection2string(Arrays.asList(coords), " ");
 	}
 
 	@Override
