@@ -29,9 +29,7 @@
  */
 package de.tub.citydb.gui.panel.settings;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -40,7 +38,6 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -360,12 +357,12 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
         footprintAlphaSpinner.setMinimumSize(new Dimension(footprintAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
         footprintAlphaSpinner.setMaximumSize(new Dimension(footprintAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
 
-        GridBagConstraints fal = GuiUtil.setConstraints(0,0,0.25,0.25,GridBagConstraints.NONE,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
+        GridBagConstraints fal = GuiUtil.setConstraints(0,0,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
 		fal.anchor = GridBagConstraints.EAST;
 		footprintPanel.add(footprintAlphaLabel, fal);
-		footprintPanel.add(footprintAlphaSpinner, GuiUtil.setConstraints(1,0,0.25,0.25,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0));
+		footprintPanel.add(footprintAlphaSpinner, GuiUtil.setConstraints(1,0,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0));
 
-		GridBagConstraints ffcl = GuiUtil.setConstraints(0,1,0.25,0.25,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints ffcl = GuiUtil.setConstraints(0,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ffcl.anchor = GridBagConstraints.EAST;
 		footprintPanel.add(footprintFillColorLabel, ffcl);
 
@@ -373,9 +370,9 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		footprintFillColorButton.setBackground(new Color(DisplayLevel.DEFAULT_FILL_COLOR, true));
 		footprintFillColorButton.setContentAreaFilled(false);
 		footprintFillColorButton.setOpaque(true);
-		footprintPanel.add(footprintFillColorButton, GuiUtil.setConstraints(1,1,0.25,0.25,GridBagConstraints.NONE,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
+		footprintPanel.add(footprintFillColorButton, GuiUtil.setConstraints(1,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
 		
-		GridBagConstraints flcl = GuiUtil.setConstraints(2,1,0.25,0.25,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints flcl = GuiUtil.setConstraints(2,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		flcl.anchor = GridBagConstraints.EAST;
 		footprintPanel.add(footprintLineColorLabel, flcl);
 
@@ -383,15 +380,15 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		footprintLineColorButton.setBackground(new Color(DisplayLevel.DEFAULT_LINE_COLOR, true));
 		footprintLineColorButton.setContentAreaFilled(false);
 		footprintLineColorButton.setOpaque(true);
-		footprintPanel.add(footprintLineColorButton, GuiUtil.setConstraints(3,1,0.25,0.25,GridBagConstraints.NONE,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		footprintPanel.add(footprintLineColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
-		GridBagConstraints fhlcb = GuiUtil.setConstraints(0,2,0.5,0.25,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
+		GridBagConstraints fhlcb = GuiUtil.setConstraints(0,2,0.5,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		fhlcb.anchor = GridBagConstraints.WEST;
 		fhlcb.gridwidth = 2;
 		footprintHighlightingCheckbox.setIconTextGap(10);
 		footprintPanel.add(footprintHighlightingCheckbox, fhlcb);
 
-		GridBagConstraints fhlfcl = GuiUtil.setConstraints(0,3,0.25,0.25,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints fhlfcl = GuiUtil.setConstraints(0,3,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		fhlfcl.anchor = GridBagConstraints.EAST;
 		footprintPanel.add(footprintHLFillColorLabel, fhlfcl);
 
@@ -399,9 +396,9 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		footprintHLFillColorButton.setBackground(new Color(DisplayLevel.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		footprintHLFillColorButton.setContentAreaFilled(false);
 		footprintHLFillColorButton.setOpaque(true);
-		footprintPanel.add(footprintHLFillColorButton, GuiUtil.setConstraints(1,3,0.25,0.25,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0));
+		footprintPanel.add(footprintHLFillColorButton, GuiUtil.setConstraints(1,3,0.25,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0));
 
-		GridBagConstraints fhllcl = GuiUtil.setConstraints(2,3,0.25,0.25,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints fhllcl = GuiUtil.setConstraints(2,3,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		fhllcl.anchor = GridBagConstraints.EAST;
 		footprintPanel.add(footprintHLLineColorLabel, fhllcl);
 		
@@ -409,7 +406,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		footprintHLLineColorButton.setBackground(new Color(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		footprintHLLineColorButton.setContentAreaFilled(false);
 		footprintHLLineColorButton.setOpaque(true);
-		footprintPanel.add(footprintHLLineColorButton, GuiUtil.setConstraints(3,3,0.25,0.25,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		footprintPanel.add(footprintHLLineColorButton, GuiUtil.setConstraints(3,3,0.25,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
 		geometryPanel = new JPanel();
 		add(geometryPanel, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
@@ -421,12 +418,12 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
         geometryAlphaSpinner.setMinimumSize(new Dimension(geometryAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
         geometryAlphaSpinner.setMaximumSize(new Dimension(geometryAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
 
-        GridBagConstraints gal = GuiUtil.setConstraints(0,0,0.25,0.20,GridBagConstraints.NONE,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
+        GridBagConstraints gal = GuiUtil.setConstraints(0,0,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
         gal.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryAlphaLabel, gal);
-		geometryPanel.add(geometryAlphaSpinner, GuiUtil.setConstraints(1,0,0.25,0.20,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0));
+		geometryPanel.add(geometryAlphaSpinner, GuiUtil.setConstraints(1,0,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0));
 
-		GridBagConstraints gwcl = GuiUtil.setConstraints(0,1,0.25,0.20,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints gwcl = GuiUtil.setConstraints(0,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		gwcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryWallFillColorLabel, gwcl);
 
@@ -434,9 +431,9 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		geometryWallFillColorButton.setBackground(new Color(DisplayLevel.DEFAULT_WALL_FILL_COLOR, true));
 		geometryWallFillColorButton.setContentAreaFilled(false);
 		geometryWallFillColorButton.setOpaque(true);
-		geometryPanel.add(geometryWallFillColorButton, GuiUtil.setConstraints(1,1,0.25,0.20,GridBagConstraints.NONE,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
+		geometryPanel.add(geometryWallFillColorButton, GuiUtil.setConstraints(1,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
 		
-		GridBagConstraints grcl = GuiUtil.setConstraints(2,1,0.25,0.25,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints grcl = GuiUtil.setConstraints(2,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		grcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryWallLineColorLabel, grcl);
 
@@ -444,9 +441,9 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		geometryWallLineColorButton.setBackground(new Color(DisplayLevel.DEFAULT_WALL_LINE_COLOR, true));
 		geometryWallLineColorButton.setContentAreaFilled(false);
 		geometryWallLineColorButton.setOpaque(true);
-		geometryPanel.add(geometryWallLineColorButton, GuiUtil.setConstraints(3,1,0.25,0.20,GridBagConstraints.NONE,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		geometryPanel.add(geometryWallLineColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
-		GridBagConstraints ghlwcl = GuiUtil.setConstraints(0,2,0.25,0.20,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints ghlwcl = GuiUtil.setConstraints(0,2,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghlwcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryRoofFillColorLabel, ghlwcl);
 
@@ -454,9 +451,9 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		geometryRoofFillColorButton.setBackground(new Color(DisplayLevel.DEFAULT_ROOF_FILL_COLOR, true));
 		geometryRoofFillColorButton.setContentAreaFilled(false);
 		geometryRoofFillColorButton.setOpaque(true);
-		geometryPanel.add(geometryRoofFillColorButton, GuiUtil.setConstraints(1,2,0.25,0.20,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0));
+		geometryPanel.add(geometryRoofFillColorButton, GuiUtil.setConstraints(1,2,0.25,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0));
 
-		GridBagConstraints ghlrcl = GuiUtil.setConstraints(2,2,0.25,0.20,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints ghlrcl = GuiUtil.setConstraints(2,2,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghlrcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryRoofLineColorLabel, ghlrcl);
 		
@@ -464,22 +461,22 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		geometryRoofLineColorButton.setBackground(new Color(DisplayLevel.DEFAULT_ROOF_LINE_COLOR, true));
 		geometryRoofLineColorButton.setContentAreaFilled(false);
 		geometryRoofLineColorButton.setOpaque(true);
-		geometryPanel.add(geometryRoofLineColorButton, GuiUtil.setConstraints(3,2,0.25,0.20,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		geometryPanel.add(geometryRoofLineColorButton, GuiUtil.setConstraints(3,2,0.25,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
+		
 		geometryHighlightingCheckbox.setIconTextGap(10);
-		GridBagConstraints ghcb = GuiUtil.setConstraints(0,3,0.5,0.20,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
-		ghcb.anchor = GridBagConstraints.WEST;
+		GridBagConstraints ghcb = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		ghcb.gridwidth = 2;
 		geometryPanel.add(geometryHighlightingCheckbox, ghcb);
 
-		GridBagConstraints ghdl = GuiUtil.setConstraints(2,3,0.25,0.20,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints ghdl = GuiUtil.setConstraints(2,3,0.0,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghdl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryHLSurfaceDistanceLabel, ghdl);
 
-		GridBagConstraints ghdt = GuiUtil.setConstraints(3,3,0.25,0.20,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
+		GridBagConstraints ghdt = GuiUtil.setConstraints(3,3,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		geometryPanel.add(geometryHLSurfaceDistanceText, ghdt);
-
-		GridBagConstraints ghlfcl = GuiUtil.setConstraints(0,4,0.25,0.20,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		
+		GridBagConstraints ghlfcl = GuiUtil.setConstraints(0,4,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghlfcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryHLFillColorLabel, ghlfcl);
 
@@ -487,9 +484,9 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		geometryHLFillColorButton.setBackground(new Color(DisplayLevel.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		geometryHLFillColorButton.setContentAreaFilled(false);
 		geometryHLFillColorButton.setOpaque(true);
-		geometryPanel.add(geometryHLFillColorButton, GuiUtil.setConstraints(1,4,0.25,0.20,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0));
+		geometryPanel.add(geometryHLFillColorButton, GuiUtil.setConstraints(1,4,0.25,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0));
 
-		GridBagConstraints ghllcl = GuiUtil.setConstraints(2,4,0.25,0.20,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints ghllcl = GuiUtil.setConstraints(2,4,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghllcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryHLLineColorLabel, ghllcl);
 		
@@ -497,7 +494,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		geometryHLLineColorButton.setBackground(new Color(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		geometryHLLineColorButton.setContentAreaFilled(false);
 		geometryHLLineColorButton.setOpaque(true);
-		geometryPanel.add(geometryHLLineColorButton, GuiUtil.setConstraints(3,4,0.25,0.20,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		geometryPanel.add(geometryHLLineColorButton, GuiUtil.setConstraints(3,4,0.25,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
 		colladaPanel = new JPanel();
 		add(colladaPanel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
@@ -505,8 +502,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		colladaPanel.setBorder(BorderFactory.createTitledBorder(""));
 
 		ignoreSurfaceOrientationCheckbox.setIconTextGap(10);
-		GridBagConstraints isoc = GuiUtil.setConstraints(0,0,1,0.166,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,0);
-		isoc.anchor = GridBagConstraints.WEST;
+		GridBagConstraints isoc = GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0);
 		isoc.gridwidth = 4;
 		colladaPanel.add(ignoreSurfaceOrientationCheckbox, isoc);
 
@@ -521,68 +517,47 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
         	packingAlgorithmsComboBox.addItem(algorithm);
         }
 
-		Box textureAtlasPanel1 = Box.createHorizontalBox();
-		textureAtlasPanel1.setAlignmentX(Component.LEFT_ALIGNMENT);
 		textureAtlasCheckbox.setIconTextGap(10);
-		textureAtlasPanel1.add(textureAtlasCheckbox);
-		textureAtlasPanel1.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-//		packingAlgorithmsComboBox.setMinimumSize(new Dimension(packingAlgorithmsComboBox.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-//		packingAlgorithmsComboBox.setMaximumSize(new Dimension(packingAlgorithmsComboBox.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-
-		JPanel textureAtlasPanel = new JPanel();
-		textureAtlasPanel.setLayout(new BorderLayout());
-		textureAtlasPanel.add(textureAtlasPanel1, BorderLayout.WEST);
-		textureAtlasPanel.add(packingAlgorithmsComboBox, BorderLayout.CENTER);
-
-		GridBagConstraints tap = GuiUtil.setConstraints(0,1,1,0.166,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
-		tap.anchor = GridBagConstraints.WEST;
-		tap.gridwidth = 4;
-		colladaPanel.add(textureAtlasPanel, tap);
-
-		Box scaleTexImagesPanel = Box.createHorizontalBox();
-		scaleTexImagesPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		GridBagConstraints tac = GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
+		tac.gridwidth = 2;
+		colladaPanel.add(textureAtlasCheckbox, tac);
+		GridBagConstraints pacb = GuiUtil.setConstraints(2,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
+		pacb.gridwidth = 2;
+		colladaPanel.add(packingAlgorithmsComboBox, pacb);
+				
 		scaleTexImagesCheckbox.setIconTextGap(10);
-		scaleTexImagesPanel.add(scaleTexImagesCheckbox);
-		scaleTexImagesPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		scaleFactorText.setMinimumSize(new Dimension(scaleFactorText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		scaleFactorText.setMaximumSize(new Dimension(scaleFactorText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		scaleTexImagesPanel.add(scaleFactorText);
-		GridBagConstraints stip = GuiUtil.setConstraints(0,2,1,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
-		stip.anchor = GridBagConstraints.WEST;
-		stip.gridwidth = 3;
-		colladaPanel.add(scaleTexImagesPanel, stip);
+		GridBagConstraints stic = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
+		stic.gridwidth = 2;
+		colladaPanel.add(scaleTexImagesCheckbox, stic);
+		GridBagConstraints sft = GuiUtil.setConstraints(2,2,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
+		sft.gridwidth = 2;
+		colladaPanel.add(scaleFactorText, sft);
 
 		ButtonGroup colladaRadioGroup = new ButtonGroup();
 		colladaRadioGroup.add(groupBuildingsRButton);
 		colladaRadioGroup.add(colladaHighlightingRButton);
 
-		Box groupBuildingsPanel = Box.createHorizontalBox();
-		groupBuildingsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		groupBuildingsRButton.setIconTextGap(10);
-		groupBuildingsPanel.add(groupBuildingsRButton);
-		groupBuildingsPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		groupSizeText.setMinimumSize(new Dimension(groupSizeText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		groupSizeText.setMaximumSize(new Dimension(groupSizeText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		groupBuildingsPanel.add(groupSizeText);
-		GridBagConstraints gbp = GuiUtil.setConstraints(0,3,1,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
-		gbp.anchor = GridBagConstraints.WEST;
-		gbp.gridwidth = 3;
-		colladaPanel.add(groupBuildingsPanel, gbp);
-		
+		GridBagConstraints gbr = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
+		gbr.gridwidth = 2;
+		colladaPanel.add(groupBuildingsRButton, gbr);
+		GridBagConstraints gst = GuiUtil.setConstraints(2,3,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
+		gst.gridwidth = 2;
+		colladaPanel.add(groupSizeText, gst);
+
 		colladaHighlightingRButton.setIconTextGap(10);
-		GridBagConstraints chrb = GuiUtil.setConstraints(0,4,0.5,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
-		chrb.anchor = GridBagConstraints.WEST;
+		GridBagConstraints chrb = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		chrb.gridwidth = 2;
 		colladaPanel.add(colladaHighlightingRButton, chrb);
 
-		GridBagConstraints chldl = GuiUtil.setConstraints(2,4,0.25,0.166,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints chldl = GuiUtil.setConstraints(2,4,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		chldl.anchor = GridBagConstraints.EAST;
 		colladaPanel.add(colladaHLSurfaceDistanceLabel, chldl);
 
-		GridBagConstraints chldt = GuiUtil.setConstraints(3,4,0.25,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
+		GridBagConstraints chldt = GuiUtil.setConstraints(3,4,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		colladaPanel.add(colladaHLSurfaceDistanceText, chldt);
 
-		GridBagConstraints chlfcl = GuiUtil.setConstraints(0,5,0.25,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints chlfcl = GuiUtil.setConstraints(0,5,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		chlfcl.anchor = GridBagConstraints.EAST;
 		colladaPanel.add(colladaHLFillColorLabel, chlfcl);
 
@@ -590,9 +565,9 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		colladaHLFillColorButton.setBackground(new Color(DisplayLevel.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		colladaHLFillColorButton.setContentAreaFilled(false);
 		colladaHLFillColorButton.setOpaque(true);
-		colladaPanel.add(colladaHLFillColorButton, GuiUtil.setConstraints(1,5,0.25,0.166,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0));
+		colladaPanel.add(colladaHLFillColorButton, GuiUtil.setConstraints(1,5,0.25,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0));
 
-		GridBagConstraints chllcl = GuiUtil.setConstraints(2,5,0.25,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints chllcl = GuiUtil.setConstraints(2,5,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		chllcl.anchor = GridBagConstraints.EAST;
 		colladaPanel.add(colladaHLLineColorLabel, chllcl);
 		
@@ -600,7 +575,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase {
 		colladaHLLineColorButton.setBackground(new Color(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		colladaHLLineColorButton.setContentAreaFilled(false);
 		colladaHLLineColorButton.setOpaque(true);
-		colladaPanel.add(colladaHLLineColorButton, GuiUtil.setConstraints(3,5,0.25,0.166,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		colladaPanel.add(colladaHLLineColorButton, GuiUtil.setConstraints(3,5,0.25,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 		
 
 		StandardEditingPopupMenuDecorator.decorate(autoTileSideLengthText, geometryHLSurfaceDistanceText, scaleFactorText, 
