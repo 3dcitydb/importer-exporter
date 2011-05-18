@@ -74,7 +74,7 @@ providing appropriate Java support. It has been tested on the
 following platforms:
   - Microsoft Windows XP, Vista, Windows 7
   - Apple Mac OS X 10.6
-  - Ubuntu 9, 10
+  - Ubuntu 9, 10, 11
 
 
 5. (Un)Installation
