@@ -23,6 +23,7 @@
         <variable name="3DCITYDB_NAME" value="3D City Database"/>
         <variable name="3DCITYDB_SHORTNAME" value="3DCityDB"/>
         <variable name="3DCITYDB_VER" value="v!3dcitydb.version!"/>
+        <variable name="ApplicationShortcutPath" value="shortcuts" />
     </variables>
 
     <guiprefs width="650" height="500" resizable="no">

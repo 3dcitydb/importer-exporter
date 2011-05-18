@@ -10,7 +10,7 @@
 
     <shortcut name="${3DCITYDB_SHORTNAME} Uninstaller" target="java" commandLine="-jar &quot;$INSTALL_PATH/uninstaller/uninstaller.jar&quot;" workingDirectory=""
         description="${APP_SHORTCUT_NAME} entfernen" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no"
-        iconFile="$INSTALL_PATH\uninstaller\uninstaller.png" iconIndex="0" type="Application" encoding="UTF-8" terminal="true" KdeSubstUID="false" createForAll="yes">
+        iconFile="$INSTALL_PATH\uninstaller\uninstaller.png" iconIndex="0" type="Application" encoding="UTF-8" terminal="false" KdeSubstUID="false" createForAll="yes">
         <createForPack name="core"/>
     </shortcut>
 

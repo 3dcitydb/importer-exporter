@@ -5,8 +5,7 @@
 # Use '!app.jar! -help' to get a list of available options
 
 # cd to path of the starter script
-SCRIPT_PATH="$( cd "$( dirname "$0" )" && pwd )"
-cd $SCRIPT_PATH > /dev/null
+cd "$( cd "$( dirname "$0" )" && pwd )" > /dev/null
 
 # Make sure JAVA_HOME is set
 if [ -n "$JAVA_HOME" ]
