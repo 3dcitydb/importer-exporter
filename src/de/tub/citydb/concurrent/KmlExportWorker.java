@@ -92,7 +92,6 @@ import de.tub.citydb.event.statistic.CounterEvent;
 import de.tub.citydb.event.statistic.CounterType;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.sax.SAXBuffer;
-import de.tub.citydb.util.DBUtil;
 import de.tub.citydb.util.Util;
 
 public class KmlExportWorker implements Worker<KmlSplittingResult> {
@@ -685,10 +684,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private Building createBuildingForCollada(OracleResultSet rs, String gmlId) throws SQLException {
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
-		if (!DBUtil.getInstance(dbConnectionPool).getAppearanceThemeList().contains(selectedTheme)) {
-			Logger.getInstance().error("Database does not contain appearance theme " + selectedTheme);
-			return null;
-		}
 
 		Building currentBuilding = new Building();
 		currentBuilding.setId(gmlId);

@@ -56,6 +56,7 @@ import de.tub.citydb.config.project.database.DBMetaData.Versioning;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
 import de.tub.citydb.db.DBConnectionPool;
+import de.tub.citydb.log.Logger;
 
 public class DBUtil {
 	private static HashMap<String, DBUtil> instanceMap = new HashMap<String, DBUtil>();
@@ -635,13 +636,28 @@ public class DBUtil {
 		return isSupported;
 	}
 
-	public List<String> getAppearanceThemeList() throws SQLException {
+	public List<String> getAppearanceThemeList(Workspace workspace) throws SQLException {
 		Connection conn = null;
 		PreparedStatement psQuery = null;
 		OracleResultSet rs = null;
 		ArrayList<String> appearanceThemes = new ArrayList<String>();
 
 		try {
+			if (!workspace.getName().toUpperCase().equals("LIVE")) {
+				boolean workspaceExists = dbConnectionPool.checkWorkspace(workspace);
+
+				String name = "'" + workspace.getName().trim() + "'";
+				String timestamp = workspace.getTimestamp().trim();
+				if (timestamp.trim().length() > 0)
+					name += " at timestamp " + timestamp;
+				
+				if (!workspaceExists) {
+					Logger.getInstance().error("Database workspace " + name + " is not available.");
+				} 
+//				else 
+//					Logger.getInstance().info("Switching to database workspace " + name + '.');
+			}
+			
 			conn = dbConnectionPool.getConnection();
 			psQuery = conn.prepareStatement("select distinct theme from appearance order by theme");
 			rs = (OracleResultSet)psQuery.executeQuery();

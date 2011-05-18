@@ -252,7 +252,7 @@ public class PrefPanel extends JPanel implements TreeSelectionListener {
 		expBoundingBoxPanel = new ExpBoundingBoxPanel(config);
 		expXLinkPanel = new ExpXLinkPanel(config);
 		expResourcesPanel = new ExpResourcesPanel(config);
-		kmlExpGeneralPanel = new KmlExpGeneralPanel(config, parentFrame);
+		kmlExpGeneralPanel = new KmlExpGeneralPanel(config);
 		kmlExpAltitudePanel = new KmlExpAltitudePanel(config);
 		kmlExpBalloonPanel = new KmlExpBalloonPanel(config);
 		matchMasterPanel = new MatchMasterPanel(config);

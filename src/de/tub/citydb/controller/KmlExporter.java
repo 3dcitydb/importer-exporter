@@ -189,11 +189,39 @@ public class KmlExporter implements EventListener {
 				Logger.getInstance().error("Please use the preferences tab to activate the spatial indexes.");
 				return false;
 			}
-
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			Logger.getInstance().error("Failed to retrieve status of spatial indexes: " + e.getMessage());
 			return false;
 		}
+
+		try {
+			for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
+				if (displayLevel.getLevel() == DisplayLevel.COLLADA && displayLevel.isActive()) {
+					String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
+					if (!DBUtil.getInstance(dbPool).getAppearanceThemeList(workspace).contains(selectedTheme)) {
+						Logger.getInstance().error("Database does not contain appearance theme \"" + selectedTheme + "\"");
+						return false;
+					}
+				}
+			}
+		}
+		catch (SQLException e) {
+			Logger.getInstance().error("Generic DB error: " + e.getMessage());
+			return false;
+		}
+		
+		if (config.getProject().getKmlExporter().isIncludeDescription()) {
+			String balloonTemplateFilename = config.getProject().getKmlExporter().getBalloonContentTemplateFile();
+			if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
+				File ballonTemplateFile = new File(balloonTemplateFilename);
+				if (!ballonTemplateFile.exists()) {
+					Logger.getInstance().error("Balloon template file \"" + balloonTemplateFilename + "\" not found.");
+					return false;
+				}
+			}
+		}
+
 
 		// create a saxWriter instance 
 		// define indent for xml output and namespace mappings

@@ -216,7 +216,7 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 		menu = new JTabbedPane();
 		importPanel = new ImportPanel(config);
 		exportPanel = new ExportPanel(config);
-		kmlExportPanel = new KmlExportPanel(config);
+		kmlExportPanel = new KmlExportPanel(config, this);
 		databasePanel = new DatabasePanel(config, this);
 		prefPanel = new PrefPanel(config, this);
 		matchingPanel = new MatchingPanel(config, this);

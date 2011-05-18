@@ -37,10 +37,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.HashMap;
 
 import javax.swing.BorderFactory;
@@ -51,7 +47,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
@@ -63,16 +58,13 @@ import org.citygml.textureAtlasAPI.TextureAtlasGenerator;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
-import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.util.GuiUtil;
-import de.tub.citydb.util.DBUtil;
 
 @SuppressWarnings("serial")
-public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeListener {
+public class KmlExpGeneralPanel extends PrefPanelBase {
 
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
@@ -116,9 +108,6 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 	private JButton geometryHLLineColorButton = new JButton(" ");
 
 	private JPanel colladaPanel;
-	private JLabel themeLabel = new JLabel();
-	private JComboBox themeComboBox = new JComboBox();
-	private JButton fetchThemesButton = new JButton(" ");
 	private JCheckBox ignoreSurfaceOrientationCheckbox = new JCheckBox();
 	private JCheckBox textureAtlasCheckbox = new JCheckBox();
 	private JCheckBox scaleTexImagesCheckbox = new JCheckBox();
@@ -136,14 +125,9 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 	private HashMap<String, Integer> packingAlgorithms = new HashMap<String, Integer>();  
 	private JComboBox packingAlgorithmsComboBox = new JComboBox();
 
-	private final ImpExpGui topFrame;
-
-	public KmlExpGeneralPanel(Config config, ImpExpGui topFrame) {
+	public KmlExpGeneralPanel(Config config) {
 		super(config);
-		this.topFrame = topFrame;
-
 		initGui();
-		config.getInternal().addPropertyChangeListener(this);
 	}
 
 	@Override
@@ -295,8 +279,6 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 			}
 		}
 
-		if (themeComboBox.getItemCount() > 0 &&
-			!themeComboBox.getSelectedItem().toString().equalsIgnoreCase(kmlExporter.getAppearanceTheme())) return true;
 		if (ignoreSurfaceOrientationCheckbox.isSelected() != kmlExporter.isIgnoreSurfaceOrientation()) return true;
 		if (textureAtlasCheckbox.isSelected() != kmlExporter.isGenerateTextureAtlases()) return true;
 		if (packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue() != kmlExporter.getPackingAlgorithm()) return true;
@@ -353,33 +335,23 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 	}
 
 	private void initGui() {
-		setLayout(new BorderLayout());
+		setLayout(new GridBagLayout());
 
-		Box contentsPanel = Box.createVerticalBox();
-
-		kmzCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
+		JPanel generalPanel = new JPanel();
+		add(generalPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
+		generalPanel.setLayout(new GridBagLayout());
 		kmzCheckbox.setIconTextGap(10);
-		contentsPanel.add(kmzCheckbox);
-
-		showBoundingBoxCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
 		showBoundingBoxCheckbox.setIconTextGap(10);
-		contentsPanel.add(showBoundingBoxCheckbox);
-
-		showTileBordersCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
 		showTileBordersCheckbox.setIconTextGap(10);
-		contentsPanel.add(showTileBordersCheckbox);
 
-		Box autoTileSideLengthPanel = Box.createHorizontalBox();
-		autoTileSideLengthPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		autoTileSideLengthPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		autoTileSideLengthPanel.add(autoTileSideLengthLabel);
-		autoTileSideLengthPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		autoTileSideLengthText.setMinimumSize(new Dimension(autoTileSideLengthText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		autoTileSideLengthText.setMaximumSize(new Dimension(autoTileSideLengthText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		autoTileSideLengthPanel.add(autoTileSideLengthText);
-		contentsPanel.add(autoTileSideLengthPanel);
+		generalPanel.add(kmzCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
+		generalPanel.add(showBoundingBoxCheckbox, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
+		generalPanel.add(showTileBordersCheckbox, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
+		generalPanel.add(autoTileSideLengthLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
+		generalPanel.add(autoTileSideLengthText, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		footprintPanel = new JPanel();
+		add(footprintPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 		footprintPanel.setLayout(new GridBagLayout());
 		footprintPanel.setBorder(BorderFactory.createTitledBorder(""));
 
@@ -439,11 +411,8 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		footprintHLLineColorButton.setOpaque(true);
 		footprintPanel.add(footprintHLLineColorButton, GuiUtil.setConstraints(3,3,0.25,0.25,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
-		contentsPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
-		footprintPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		contentsPanel.add(footprintPanel);
-
 		geometryPanel = new JPanel();
+		add(geometryPanel, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 		geometryPanel.setLayout(new GridBagLayout());
 		geometryPanel.setBorder(BorderFactory.createTitledBorder(""));
 
@@ -530,36 +499,13 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		geometryHLLineColorButton.setOpaque(true);
 		geometryPanel.add(geometryHLLineColorButton, GuiUtil.setConstraints(3,4,0.25,0.20,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
-		contentsPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
-		geometryPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		contentsPanel.add(geometryPanel);
-
 		colladaPanel = new JPanel();
+		add(colladaPanel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 		colladaPanel.setLayout(new GridBagLayout());
 		colladaPanel.setBorder(BorderFactory.createTitledBorder(""));
 
-		Box themePanel1 = Box.createHorizontalBox();
-		themePanel1.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		themePanel1.add(themeLabel);
-		themePanel1.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-
-		Box themePanel2 = Box.createHorizontalBox();
-		themePanel2.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		themePanel2.add(fetchThemesButton);
-
-		JPanel themePanel = new JPanel();
-		themePanel.setLayout(new BorderLayout());
-		themePanel.add(themePanel1, BorderLayout.WEST);
-		themePanel.add(themePanel2, BorderLayout.EAST);
-		themePanel.add(themeComboBox, BorderLayout.CENTER);
-
-		GridBagConstraints tp = GuiUtil.setConstraints(0,0,1,0.143,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
-		tp.anchor = GridBagConstraints.WEST;
-		tp.gridwidth = 4;
-		colladaPanel.add(themePanel, tp);
-
 		ignoreSurfaceOrientationCheckbox.setIconTextGap(10);
-		GridBagConstraints isoc = GuiUtil.setConstraints(0,1,1,0.143,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,0);
+		GridBagConstraints isoc = GuiUtil.setConstraints(0,0,1,0.166,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,0);
 		isoc.anchor = GridBagConstraints.WEST;
 		isoc.gridwidth = 4;
 		colladaPanel.add(ignoreSurfaceOrientationCheckbox, isoc);
@@ -588,7 +534,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		textureAtlasPanel.add(textureAtlasPanel1, BorderLayout.WEST);
 		textureAtlasPanel.add(packingAlgorithmsComboBox, BorderLayout.CENTER);
 
-		GridBagConstraints tap = GuiUtil.setConstraints(0,2,1,0.143,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
+		GridBagConstraints tap = GuiUtil.setConstraints(0,1,1,0.166,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
 		tap.anchor = GridBagConstraints.WEST;
 		tap.gridwidth = 4;
 		colladaPanel.add(textureAtlasPanel, tap);
@@ -601,7 +547,7 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		scaleFactorText.setMinimumSize(new Dimension(scaleFactorText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
 		scaleFactorText.setMaximumSize(new Dimension(scaleFactorText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
 		scaleTexImagesPanel.add(scaleFactorText);
-		GridBagConstraints stip = GuiUtil.setConstraints(0,3,1,0.143,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		GridBagConstraints stip = GuiUtil.setConstraints(0,2,1,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		stip.anchor = GridBagConstraints.WEST;
 		stip.gridwidth = 3;
 		colladaPanel.add(scaleTexImagesPanel, stip);
@@ -618,25 +564,25 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		groupSizeText.setMinimumSize(new Dimension(groupSizeText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
 		groupSizeText.setMaximumSize(new Dimension(groupSizeText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
 		groupBuildingsPanel.add(groupSizeText);
-		GridBagConstraints gbp = GuiUtil.setConstraints(0,4,1,0.143,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		GridBagConstraints gbp = GuiUtil.setConstraints(0,3,1,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		gbp.anchor = GridBagConstraints.WEST;
 		gbp.gridwidth = 3;
 		colladaPanel.add(groupBuildingsPanel, gbp);
 		
 		colladaHighlightingRButton.setIconTextGap(10);
-		GridBagConstraints chrb = GuiUtil.setConstraints(0,5,0.5,0.143,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
+		GridBagConstraints chrb = GuiUtil.setConstraints(0,4,0.5,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		chrb.anchor = GridBagConstraints.WEST;
 		chrb.gridwidth = 2;
 		colladaPanel.add(colladaHighlightingRButton, chrb);
 
-		GridBagConstraints chldl = GuiUtil.setConstraints(2,5,0.25,0.143,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints chldl = GuiUtil.setConstraints(2,4,0.25,0.166,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		chldl.anchor = GridBagConstraints.EAST;
 		colladaPanel.add(colladaHLSurfaceDistanceLabel, chldl);
 
-		GridBagConstraints chldt = GuiUtil.setConstraints(3,5,0.25,0.143,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
+		GridBagConstraints chldt = GuiUtil.setConstraints(3,4,0.25,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		colladaPanel.add(colladaHLSurfaceDistanceText, chldt);
 
-		GridBagConstraints chlfcl = GuiUtil.setConstraints(0,6,0.25,0.143,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints chlfcl = GuiUtil.setConstraints(0,5,0.25,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		chlfcl.anchor = GridBagConstraints.EAST;
 		colladaPanel.add(colladaHLFillColorLabel, chlfcl);
 
@@ -644,9 +590,9 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		colladaHLFillColorButton.setBackground(new Color(DisplayLevel.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		colladaHLFillColorButton.setContentAreaFilled(false);
 		colladaHLFillColorButton.setOpaque(true);
-		colladaPanel.add(colladaHLFillColorButton, GuiUtil.setConstraints(1,6,0.25,0.143,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0));
+		colladaPanel.add(colladaHLFillColorButton, GuiUtil.setConstraints(1,5,0.25,0.166,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0));
 
-		GridBagConstraints chllcl = GuiUtil.setConstraints(2,6,0.25,0.143,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints chllcl = GuiUtil.setConstraints(2,5,0.25,0.166,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		chllcl.anchor = GridBagConstraints.EAST;
 		colladaPanel.add(colladaHLLineColorLabel, chllcl);
 		
@@ -654,17 +600,12 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		colladaHLLineColorButton.setBackground(new Color(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		colladaHLLineColorButton.setContentAreaFilled(false);
 		colladaHLLineColorButton.setOpaque(true);
-		colladaPanel.add(colladaHLLineColorButton, GuiUtil.setConstraints(3,6,0.25,0.143,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		colladaPanel.add(colladaHLLineColorButton, GuiUtil.setConstraints(3,5,0.25,0.166,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 		
-		contentsPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
-		colladaPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		contentsPanel.add(colladaPanel);
 
 		StandardEditingPopupMenuDecorator.decorate(autoTileSideLengthText, geometryHLSurfaceDistanceText, scaleFactorText, 
 				groupSizeText, colladaHLSurfaceDistanceText);
 		
-		add(contentsPanel, BorderLayout.NORTH);
-
 		scaleTexImagesCheckbox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				scaleFactorText.setEnabled(scaleTexImagesCheckbox.isSelected());
@@ -791,41 +732,6 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 			}
 		});
 
-
-		fetchThemesButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// dialog preparation
-				String text = Internal.I18N.getString("pref.kmlexport.connectDialog.line2");
-				DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-				Object[] args = new Object[]{conn.getDescription(), conn.toConnectString()};
-				String formattedMsg = MessageFormat.format(text, args);
-				String[] connectConfirm = {Internal.I18N.getString("pref.kmlexport.connectDialog.line1"),
-										   formattedMsg,
-										   Internal.I18N.getString("pref.kmlexport.connectDialog.line3")};
-
-				if (!config.getInternal().isConnected() &&
-					JOptionPane.showConfirmDialog(getTopLevelAncestor(),
-												  connectConfirm,
-												  Internal.I18N.getString("pref.kmlexport.connectDialog.title"),
-												  JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-					topFrame.connectToDatabase();
-				}
-
-				if (config.getInternal().isConnected()) {
-					themeComboBox.removeAllItems();
-					try {
-						for (String theme: DBUtil.getInstance(topFrame.getDBPool()).getAppearanceThemeList()) {
-							themeComboBox.addItem(theme);
-						}
-						themeComboBox.setSelectedItem(config.getProject().getKmlExporter().getAppearanceTheme());
-						themeComboBox.setEnabled(true);
-						fetchThemesButton.setEnabled(false);
-					}
-					catch (SQLException sqlEx) { }
-				}
-			}
-		});
-
 		colladaHighlightingRButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setEnabledHighlighting();
@@ -884,8 +790,6 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		geometryHLLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 
 		colladaPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.kmlexport.border.collada")));
-		themeLabel.setText(Internal.I18N.getString("pref.kmlexport.label.theme"));
-		fetchThemesButton.setText(Internal.I18N.getString("pref.kmlexport.label.fetchTheme"));
 		ignoreSurfaceOrientationCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.ignoreSurfaceOrientation"));
 		textureAtlasCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.generateTextureAtlases"));
 		scaleTexImagesCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.scaleTexImages"));
@@ -950,25 +854,6 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		footprintHighlightingCheckbox.setSelected(kmlExporter.isFootprintHighlighting());
 		geometryHighlightingCheckbox.setSelected(kmlExporter.isGeometryHighlighting());
 
-		themeComboBox.removeAllItems();
-		if (config.getInternal().isConnected()) {
-			try {
-				for (String theme: DBUtil.getInstance(topFrame.getDBPool()).getAppearanceThemeList()) {
-					themeComboBox.addItem(theme);
-				}
-				themeComboBox.setSelectedItem(kmlExporter.getAppearanceTheme());
-				themeComboBox.setEnabled(true);
-				fetchThemesButton.setEnabled(false);
-			}
-			catch (SQLException sqlEx) { }
-		}
-		else {
-			themeComboBox.addItem(kmlExporter.getAppearanceTheme());
-			themeComboBox.setSelectedItem(kmlExporter.getAppearanceTheme());
-			themeComboBox.setEnabled(false);
-			fetchThemesButton.setEnabled(true);
-		}
-		
 		ignoreSurfaceOrientationCheckbox.setSelected(kmlExporter.isIgnoreSurfaceOrientation());
 		textureAtlasCheckbox.setSelected(kmlExporter.isGenerateTextureAtlases());
 		for (String key: packingAlgorithms.keySet()) {
@@ -1113,9 +998,6 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 		kmlExporter.setFootprintHighlighting(footprintHighlightingCheckbox.isSelected());
 		kmlExporter.setGeometryHighlighting(geometryHighlightingCheckbox.isSelected());
 
-		if (themeComboBox.getItemCount() > 0) {
-			kmlExporter.setAppearanceTheme(themeComboBox.getSelectedItem().toString());
-		}
 		kmlExporter.setIgnoreSurfaceOrientation(ignoreSurfaceOrientationCheckbox.isSelected());
 		kmlExporter.setGenerateTextureAtlases(textureAtlasCheckbox.isSelected());
 		kmlExporter.setPackingAlgorithm(packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue()); 
@@ -1182,20 +1064,6 @@ public class KmlExpGeneralPanel extends PrefPanelBase implements PropertyChangeL
 
 		colladaHLSurfaceDistanceLabel.setEnabled(colladaHighlightingRButton.isSelected());
 		colladaHLSurfaceDistanceText.setEnabled(colladaHighlightingRButton.isSelected());
-	}
-
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("database.isConnected")) {
-			boolean isConnected = (Boolean)evt.getNewValue();
-			themeComboBox.removeAllItems();
-			if (!isConnected) {
-				themeComboBox.addItem(config.getProject().getKmlExporter().getAppearanceTheme()); // default: visual
-				themeComboBox.setSelectedItem(config.getProject().getKmlExporter().getAppearanceTheme());
-				themeComboBox.setEnabled(false);
-				fetchThemesButton.setEnabled(true);
-			}
-		}
 	}
 
 }
