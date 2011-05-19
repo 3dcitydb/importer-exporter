@@ -814,6 +814,17 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 	}
 
 	public void loadSettings() {
+		if (config.getInternal().isConnected()) {
+			DBConnectionPool dbPool = topFrame.getDBPool();
+			try {
+				dbPool.close();
+			} catch (SQLException e) {
+				dbPool.forceClose();
+			}
+			
+			LOG.info("Disconnected from database.");
+		}
+		
 		databaseConfig = config.getProject().getDatabase();
 
 		connCombo.removeAllItems();
