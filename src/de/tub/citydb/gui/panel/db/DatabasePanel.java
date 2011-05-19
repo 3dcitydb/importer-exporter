@@ -544,16 +544,11 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 
 					// check whether user-defined SRSs are supported
 					try {
-						boolean updateComboBoxes = false;					
 						DBUtil dbUtil = DBUtil.getInstance(dbPool);
 
 						for (ReferenceSystem refSys: config.getProject().getDatabase().getReferenceSystems()) {
-							boolean wasSupported = refSys.isSupported();
 							boolean isSupported = dbUtil.isSrsSupported(refSys.getSrid());
 							refSys.setSupported(isSupported);
-
-							if (!updateComboBoxes && wasSupported != isSupported)
-								updateComboBoxes = true;
 
 							if (isSupported)
 								LOG.debug("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") supported.");
@@ -561,8 +556,7 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 								LOG.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") NOT supported.");
 						}
 
-						if (updateComboBoxes)
-							SrsComboBoxManager.getInstance(config).updateAll(false);
+						SrsComboBoxManager.getInstance(config).updateAll(false);
 
 					} catch (SQLException sqlEx) {
 						LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
