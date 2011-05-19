@@ -294,7 +294,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				int ringElem = 0;
 				int arrayIndex = 0;
 				for (Integer ringLimit : ringLimits) {
-					double[] coords = new double[ringLimit];
+					double[] coords = new double[ringLimit - ringElem];
 
 					for (int i = 0, j = ringLimit - 3; j >= ringElem; j -= 3, i += 3) {
 						coords[i] = ordinatesArray[j];
