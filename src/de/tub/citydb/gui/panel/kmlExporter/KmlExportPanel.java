@@ -609,6 +609,8 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 		}
 
 		themeComboBox.removeAllItems();
+		themeComboBox.addItem(KmlExporter.THEME_NONE);
+		themeComboBox.setSelectedItem(KmlExporter.THEME_NONE);
 		isConnected = config.getInternal().isConnected();
 		if (isConnected) {
 			try {
@@ -616,17 +618,18 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 				workspace.setName(workspaceText.getText().trim());
 				workspace.setTimestamp(timestampText.getText().trim());
 				for (String theme: DBUtil.getInstance(topFrame.getDBPool()).getAppearanceThemeList(workspace)) {
+					if (theme == null) continue; 
 					themeComboBox.addItem(theme);
+					if (theme.equals(kmlExporter.getAppearanceTheme())) {
+						themeComboBox.setSelectedItem(theme);
+					}
 				}
-				themeComboBox.setSelectedItem(kmlExporter.getAppearanceTheme());
 				themeComboBox.setEnabled(true);
 				fetchThemesButton.setEnabled(false);
 			}
 			catch (SQLException sqlEx) { }
 		}
 		else {
-			themeComboBox.addItem(kmlExporter.getAppearanceTheme());
-			themeComboBox.setSelectedItem(kmlExporter.getAppearanceTheme());
 			themeComboBox.setEnabled(false);
 			fetchThemesButton.setEnabled(true);
 		}
@@ -812,9 +815,9 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 			dl.setActive(false);
 		}
 
-		if (themeComboBox.getItemCount() > 0) {
+//		if (themeComboBox.getItemCount() > 0) {
 			kmlExporter.setAppearanceTheme(themeComboBox.getSelectedItem().toString());
-		}
+//		}
 
 		config.getProject().setKmlExporter(kmlExporter);
 	}
@@ -897,14 +900,19 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 
 				if (isConnected) {
 					themeComboBox.removeAllItems();
+					themeComboBox.addItem(KmlExporter.THEME_NONE);
+					themeComboBox.setSelectedItem(KmlExporter.THEME_NONE);
 					try {
 						Workspace workspace = new Workspace();
 						workspace.setName(workspaceText.getText().trim());
 						workspace.setTimestamp(timestampText.getText().trim());
 						for (String theme: DBUtil.getInstance(topFrame.getDBPool()).getAppearanceThemeList(workspace)) {
+							if (theme == null) continue; 
 							themeComboBox.addItem(theme);
+							if (theme.equals(config.getProject().getKmlExporter().getAppearanceTheme())) {
+								themeComboBox.setSelectedItem(theme);
+							}
 						}
-						themeComboBox.setSelectedItem(config.getProject().getKmlExporter().getAppearanceTheme());
 						themeComboBox.setEnabled(true);
 						fetchThemesButton.setEnabled(false);
 					}
@@ -970,7 +978,7 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 		colladaVisibleFromText.setEnabled(boundingBoxRadioButton.isSelected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 		pixelsColladaLabel.setEnabled(boundingBoxRadioButton.isSelected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
-		themeLabel.setEnabled(boundingBoxRadioButton.isSelected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
+		themeLabel.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 		themeComboBox.setEnabled(themeLabel.isEnabled() && isConnected);
 		fetchThemesButton.setEnabled(!themeComboBox.isEnabled() && themeLabel.isEnabled());
 
@@ -1024,9 +1032,9 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 		if (evt.getPropertyName().equals("database.isConnected")) {
 			isConnected = (Boolean)evt.getNewValue();
 			themeComboBox.removeAllItems();
+			themeComboBox.addItem(KmlExporter.THEME_NONE);
+			themeComboBox.setSelectedItem(KmlExporter.THEME_NONE);
 			if (!isConnected) {
-				themeComboBox.addItem(config.getProject().getKmlExporter().getAppearanceTheme()); // default: visual
-				themeComboBox.setSelectedItem(config.getProject().getKmlExporter().getAppearanceTheme());
 				themeComboBox.setEnabled(false);
 				fetchThemesButton.setEnabled(true);
 			}

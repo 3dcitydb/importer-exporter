@@ -195,20 +195,22 @@ public class KmlExporter implements EventListener {
 			return false;
 		}
 
-		try {
-			for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
-				if (displayLevel.getLevel() == DisplayLevel.COLLADA && displayLevel.isActive()) {
-					String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
-					if (!DBUtil.getInstance(dbPool).getAppearanceThemeList(workspace).contains(selectedTheme)) {
-						Logger.getInstance().error("Database does not contain appearance theme \"" + selectedTheme + "\"");
-						return false;
+		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
+		if (!selectedTheme.equals(de.tub.citydb.config.project.kmlExporter.KmlExporter.THEME_NONE)) {
+			try {
+				for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
+					if (displayLevel.getLevel() == DisplayLevel.COLLADA && displayLevel.isActive()) {
+						if (!DBUtil.getInstance(dbPool).getAppearanceThemeList(workspace).contains(selectedTheme)) {
+							Logger.getInstance().error("Database does not contain appearance theme \"" + selectedTheme + "\"");
+							return false;
+						}
 					}
 				}
 			}
-		}
-		catch (SQLException e) {
-			Logger.getInstance().error("Generic DB error: " + e.getMessage());
-			return false;
+			catch (SQLException e) {
+				Logger.getInstance().error("Generic DB error: " + e.getMessage());
+				return false;
+			}
 		}
 		
 		if (config.getProject().getKmlExporter().isIncludeDescription()) {

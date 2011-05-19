@@ -84,27 +84,53 @@ public class TileQueries {
 			"AND sg.geometry IS NOT NULL " +
 		"ORDER BY ts.building_id";
 
-	private static final String QUERY_GEOMETRY_LOD4_GET_BUILDING_DATA_ALT =
-		"SELECT sg.geometry, ts.type, sg.id " +
-		"FROM BUILDING b, SURFACE_GEOMETRY sg, CITYOBJECT co " +
-			"LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = co.id " +
-		"WHERE " +
-			"co.gmlid = ? " +
-		"AND b.building_root_id = co.id " +
-		"AND sg.root_id = b.lod4_geometry_id " +
-		"AND sg.geometry IS NOT NULL " +
-		"ORDER BY b.id, ts.type";
-
 	private static final String QUERY_GEOMETRY_LOD4_GET_BUILDING_DATA =
 		"SELECT sg.geometry, ts.type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co, BUILDING b " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod4_multi_surface_id = sg.root_id " +
 		"WHERE " +
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
-			"AND ts.building_id = b.id " +
-			"AND sg.root_id = ts.lod4_multi_surface_id " +
-			"AND sg.geometry IS NOT NULL " +
-		"ORDER BY ts.building_id, ts.type";
+			"sg.geometry IS NOT NULL " +
+			"AND sg.root_id IN (" +
+				"SELECT b.lod4_geometry_id " + 
+				"FROM CITYOBJECT co, BUILDING b " + 
+				"WHERE " +  
+					"co.gmlid = ? " +
+					"AND b.building_root_id = co.id " +
+					"AND b.lod4_geometry_id IS NOT NULL " +
+				"UNION " + 
+				"SELECT ts.lod4_multi_surface_id " + 
+				"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " + 
+				"WHERE " +  
+					"co.gmlid = ? " +
+		  			"AND b.building_root_id = co.id " +
+					"AND ts.building_id = b.id " +
+					"AND ts.lod4_multi_surface_id IS NOT NULL " +
+				"UNION " + 
+				"SELECT r.lod4_geometry_id " + 
+					"FROM CITYOBJECT co, BUILDING b, ROOM r " + 
+					"WHERE " +  
+						"co.gmlid = ? " +
+			  			"AND b.building_root_id = co.id " +
+						"AND r.building_id = b.id " +
+						"AND r.lod4_geometry_id IS NOT NULL " +
+				"UNION " + 
+				"SELECT bf.lod4_geometry_id " + 
+					"FROM CITYOBJECT co, BUILDING b, ROOM r, BUILDING_FURNITURE bf " + 
+					"WHERE " +  
+						"co.gmlid = ? " +
+			  			"AND b.building_root_id = co.id " +
+						"AND r.building_id = b.id " +
+						"AND bf.room_id = r.id " +
+						"AND bf.lod4_geometry_id IS NOT NULL " +
+				"UNION " + 
+				"SELECT bi.lod4_geometry_id " + 
+					"FROM CITYOBJECT co, BUILDING b, ROOM r, BUILDING_INSTALLATION bi " + 
+					"WHERE " +  
+						"co.gmlid = ? " +
+			  			"AND b.building_root_id = co.id " +
+						"AND r.building_id = b.id " +
+						"AND bi.room_id = r.id " +
+						"AND bi.lod4_geometry_id IS NOT NULL)";
 
 	private static final String QUERY_COLLADA_LOD4_GET_BUILDING_ROOT_SURFACES =
 		"SELECT b.lod4_geometry_id " + 
@@ -120,7 +146,34 @@ public class TileQueries {
 			"co.gmlid = ? " +
 			"AND b.building_root_id = co.id " +
 			"AND ts.building_id = b.id " +
-			"AND ts.lod4_multi_surface_id IS NOT NULL";
+			"AND ts.lod4_multi_surface_id IS NOT NULL " +
+		"UNION " + 
+		"SELECT r.lod4_geometry_id " + 
+		"FROM CITYOBJECT co, BUILDING b, ROOM r " + 
+		"WHERE " +  
+			"co.gmlid = ? " +
+  			"AND b.building_root_id = co.id " +
+			"AND r.building_id = b.id " +
+			"AND r.lod4_geometry_id IS NOT NULL " +
+		"UNION " + 
+		"SELECT bf.lod4_geometry_id " + 
+		"FROM CITYOBJECT co, BUILDING b, ROOM r, BUILDING_FURNITURE bf " + 
+		"WHERE " +  
+			"co.gmlid = ? " +
+			"AND b.building_root_id = co.id " +
+			"AND r.building_id = b.id " +
+			"AND bf.room_id = r.id " +
+			"AND bf.lod4_geometry_id IS NOT NULL " +
+		"UNION " + 
+		"SELECT bi.lod4_geometry_id " + 
+		"FROM CITYOBJECT co, BUILDING b, ROOM r, BUILDING_INSTALLATION bi " + 
+		"WHERE " +  
+			"co.gmlid = ? " +
+			"AND b.building_root_id = co.id " +
+			"AND r.building_id = b.id " +
+			"AND bi.room_id = r.id " +
+			"AND bi.lod4_geometry_id IS NOT NULL";
+			
 	
 	private static final String QUERY_FOOTPRINT_LOD3_GET_BUILDING_DATA_ALT =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
@@ -171,25 +224,33 @@ public class TileQueries {
 
 	private static final String QUERY_GEOMETRY_LOD3_GET_BUILDING_DATA =
 		"SELECT sg.geometry, ts.type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co, BUILDING b " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod3_multi_surface_id = sg.root_id " +
 		"WHERE " +
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
-			"AND ts.building_id = b.id " +
-			"AND sg.root_id = ts.lod3_multi_surface_id " +
-			"AND sg.geometry IS NOT NULL " +
-		"ORDER BY ts.building_id, ts.type";
-
-	private static final String QUERY_GEOMETRY_LOD3_GET_BUILDING_DATA_ALT =
-		"SELECT sg.geometry, ts.type, sg.id " +
-		"FROM BUILDING b, SURFACE_GEOMETRY sg, CITYOBJECT co " +
-			"LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = co.id " +
-		"WHERE " +
-			"co.gmlid = ? " +
-		"AND b.building_root_id = co.id " +
-		"AND sg.root_id = b.lod3_geometry_id " +
-		"AND sg.geometry IS NOT NULL " +
-		"ORDER BY b.id, ts.type";
+			"sg.geometry IS NOT NULL " +
+			"AND sg.root_id IN (" +
+				"SELECT b.lod3_geometry_id " + 
+				"FROM CITYOBJECT co, BUILDING b " + 
+				"WHERE " +  
+					"co.gmlid = ? " +
+					"AND b.building_root_id = co.id " +
+					"AND b.lod3_geometry_id IS NOT NULL " +
+				"UNION " + 
+				"SELECT ts.lod3_multi_surface_id " + 
+				"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " + 
+				"WHERE " +  
+					"co.gmlid = ? " +
+		  			"AND b.building_root_id = co.id " +
+					"AND ts.building_id = b.id " +
+					"AND ts.lod3_multi_surface_id IS NOT NULL " +
+				"UNION " + 
+				"SELECT bi.lod3_geometry_id " + 
+				"FROM CITYOBJECT co, BUILDING b, BUILDING_INSTALLATION bi " + 
+				"WHERE " +  
+					"co.gmlid = ? " +
+					"AND b.building_root_id = co.id " +
+					"AND bi.building_id = b.id " +
+					"AND bi.lod3_geometry_id IS NOT NULL)";
 
 	private static final String QUERY_COLLADA_LOD3_GET_BUILDING_ROOT_SURFACES =
 		"SELECT b.lod3_geometry_id " + 
@@ -205,7 +266,15 @@ public class TileQueries {
 			"co.gmlid = ? " +
 			"AND b.building_root_id = co.id " +
 			"AND ts.building_id = b.id " +
-			"AND ts.lod3_multi_surface_id IS NOT NULL";
+			"AND ts.lod3_multi_surface_id IS NOT NULL " +
+		"UNION " + 
+		"SELECT bi.lod3_geometry_id " + 
+		"FROM CITYOBJECT co, BUILDING b, BUILDING_INSTALLATION bi " + 
+		"WHERE " +  
+			"co.gmlid = ? " +
+  			"AND b.building_root_id = co.id " +
+			"AND bi.building_id = b.id " +
+			"AND bi.lod3_geometry_id IS NOT NULL";
 
 	private static final String QUERY_COLLADA_LOD2_GET_BUILDING_ROOT_SURFACES =
 		"SELECT b.lod2_geometry_id " + 
@@ -221,7 +290,16 @@ public class TileQueries {
 			"co.gmlid = ? " +
 			"AND b.building_root_id = co.id " +
 			"AND ts.building_id = b.id " +
-			"AND ts.lod2_multi_surface_id IS NOT NULL";
+			"AND ts.lod2_multi_surface_id IS NOT NULL " +
+		"UNION " + 
+		"SELECT bi.lod2_geometry_id " + 
+		"FROM CITYOBJECT co, BUILDING b, BUILDING_INSTALLATION bi " + 
+		"WHERE " +  
+			"co.gmlid = ? " +
+  			"AND b.building_root_id = co.id " +
+			"AND bi.building_id = b.id " +
+			"AND bi.lod2_geometry_id IS NOT NULL";
+
 
 	public static final String QUERY_COLLADA_GET_BUILDING_DATA =
 		// geometry will not be transformed: cartesian coordinates needed for collada
@@ -240,25 +318,33 @@ public class TileQueries {
 
 	private static final String QUERY_GEOMETRY_LOD2_GET_BUILDING_DATA =
 		"SELECT sg.geometry, ts.type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co, BUILDING b " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod2_multi_surface_id = sg.root_id " +
 		"WHERE " +
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
-			"AND ts.building_id = b.id " +
-			"AND sg.root_id = ts.lod2_multi_surface_id " +
-			"AND sg.geometry IS NOT NULL " +
-		"ORDER BY ts.building_id, ts.type";
-
-	private static final String QUERY_GEOMETRY_LOD2_GET_BUILDING_DATA_ALT =
-		"SELECT sg.geometry, ts.type, sg.id " +
-		"FROM BUILDING b, SURFACE_GEOMETRY sg, CITYOBJECT co " +
-			"LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = co.id " +
-		"WHERE " +
-			"co.gmlid = ? " +
-		"AND b.building_root_id = co.id " +
-		"AND sg.root_id = b.lod2_geometry_id " +
-		"AND sg.geometry IS NOT NULL " +
-		"ORDER BY b.id, ts.type";
+			"sg.geometry IS NOT NULL " +
+			"AND sg.root_id IN (" +
+				"SELECT b.lod2_geometry_id " + 
+				"FROM CITYOBJECT co, BUILDING b " + 
+				"WHERE " +  
+					"co.gmlid = ? " +
+					"AND b.building_root_id = co.id " +
+					"AND b.lod2_geometry_id IS NOT NULL " +
+				"UNION " + 
+				"SELECT ts.lod2_multi_surface_id " + 
+				"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " + 
+				"WHERE " +  
+					"co.gmlid = ? " +
+		  			"AND b.building_root_id = co.id " +
+					"AND ts.building_id = b.id " +
+					"AND ts.lod2_multi_surface_id IS NOT NULL " +
+				"UNION " + 
+				"SELECT bi.lod2_geometry_id " + 
+				"FROM CITYOBJECT co, BUILDING b, BUILDING_INSTALLATION bi " + 
+				"WHERE " +  
+					"co.gmlid = ? " +
+					"AND b.building_root_id = co.id " +
+					"AND bi.building_id = b.id " +
+					"AND bi.lod2_geometry_id IS NOT NULL)";
 
 	private static final String QUERY_EXTRUDED_LOD2_GET_BUILDING_DATA_ALT =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
@@ -363,10 +449,11 @@ public class TileQueries {
 					"AND b.lod2_geometry_id IS NOT NULL " +
 				"UNION " + 
 				"SELECT ts.lod2_multi_surface_id " + 
-				"FROM CITYOBJECT co, THEMATIC_SURFACE ts " + 
+				"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " + 
 				"WHERE " +  
 					"co.gmlid = ? " +
-					"AND ts.building_id = co.id " +
+					"AND b.building_root_id = co.id " +
+					"AND ts.building_id = b.id " +
 					"AND ts.lod2_multi_surface_id IS NOT NULL)";
 
 	private static final String QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD3_GET_BUILDING_DATA =
@@ -383,12 +470,14 @@ public class TileQueries {
 					"AND b.lod3_geometry_id IS NOT NULL " +
 				"UNION " + 
 				"SELECT ts.lod3_multi_surface_id " + 
-				"FROM CITYOBJECT co, THEMATIC_SURFACE ts " + 
+				"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " + 
 				"WHERE " +  
 					"co.gmlid = ? " +
-					"AND ts.building_id = co.id " +
+					"AND b.building_root_id = co.id " +
+					"AND ts.building_id = b.id " +
 					"AND ts.lod3_multi_surface_id IS NOT NULL)";
-
+	
+	
 	private static final String QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD4_GET_BUILDING_DATA =
 		"SELECT sg.geometry, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
@@ -403,10 +492,11 @@ public class TileQueries {
 					"AND b.lod4_geometry_id IS NOT NULL " +
 				"UNION " + 
 				"SELECT ts.lod4_multi_surface_id " + 
-				"FROM CITYOBJECT co, THEMATIC_SURFACE ts " + 
+				"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " + 
 				"WHERE " +  
 					"co.gmlid = ? " +
-					"AND ts.building_id = co.id " +
+					"AND b.building_root_id = co.id " +
+					"AND ts.building_id = b.id " +
 					"AND ts.lod4_multi_surface_id IS NOT NULL)";
 
 	public static final String QUERY_GET_STRVAL_GENERICATTRIB_FROM_GML_ID =
@@ -427,9 +517,8 @@ public class TileQueries {
     static {
     	singleBuildingQueriesLod4Alt.put(DisplayLevel.FOOTPRINT, QUERY_FOOTPRINT_LOD4_GET_BUILDING_DATA_ALT);
     	singleBuildingQueriesLod4Alt.put(DisplayLevel.EXTRUDED, QUERY_EXTRUDED_LOD4_GET_BUILDING_DATA_ALT);
-    	singleBuildingQueriesLod4Alt.put(DisplayLevel.GEOMETRY, QUERY_GEOMETRY_LOD4_GET_BUILDING_DATA_ALT);
-// dummy, currently there is no alternative query for collada
-    	singleBuildingQueriesLod4Alt.put(DisplayLevel.COLLADA, QUERY_COLLADA_LOD4_GET_BUILDING_ROOT_SURFACES);
+    	singleBuildingQueriesLod4Alt.put(DisplayLevel.GEOMETRY, QUERY_GEOMETRY_LOD4_GET_BUILDING_DATA); // dummy
+    	singleBuildingQueriesLod4Alt.put(DisplayLevel.COLLADA, QUERY_COLLADA_LOD4_GET_BUILDING_ROOT_SURFACES); // dummy
     }
 
     private static final HashMap<Integer, String> singleBuildingQueriesLod4 = new HashMap<Integer, String>();
@@ -444,9 +533,8 @@ public class TileQueries {
     static {
     	singleBuildingQueriesLod3Alt.put(DisplayLevel.FOOTPRINT, QUERY_FOOTPRINT_LOD3_GET_BUILDING_DATA_ALT);
     	singleBuildingQueriesLod3Alt.put(DisplayLevel.EXTRUDED, QUERY_EXTRUDED_LOD3_GET_BUILDING_DATA_ALT);
-    	singleBuildingQueriesLod3Alt.put(DisplayLevel.GEOMETRY, QUERY_GEOMETRY_LOD3_GET_BUILDING_DATA_ALT);
-// dummy, currently there is no alternative query for collada
-    	singleBuildingQueriesLod3Alt.put(DisplayLevel.COLLADA, QUERY_COLLADA_LOD3_GET_BUILDING_ROOT_SURFACES);
+    	singleBuildingQueriesLod3Alt.put(DisplayLevel.GEOMETRY, QUERY_GEOMETRY_LOD3_GET_BUILDING_DATA); // dummy
+    	singleBuildingQueriesLod3Alt.put(DisplayLevel.COLLADA, QUERY_COLLADA_LOD3_GET_BUILDING_ROOT_SURFACES); // dummy
     }
 
     private static final HashMap<Integer, String> singleBuildingQueriesLod3 = new HashMap<Integer, String>();
@@ -461,9 +549,8 @@ public class TileQueries {
     static {
     	singleBuildingQueriesLod2Alt.put(DisplayLevel.FOOTPRINT, QUERY_FOOTPRINT_LOD2_GET_BUILDING_DATA_ALT);
     	singleBuildingQueriesLod2Alt.put(DisplayLevel.EXTRUDED, QUERY_EXTRUDED_LOD2_GET_BUILDING_DATA_ALT);
-    	singleBuildingQueriesLod2Alt.put(DisplayLevel.GEOMETRY, QUERY_GEOMETRY_LOD2_GET_BUILDING_DATA_ALT);
-// dummy, currently there is no alternative query for collada
-    	singleBuildingQueriesLod2Alt.put(DisplayLevel.COLLADA, QUERY_COLLADA_LOD2_GET_BUILDING_ROOT_SURFACES);
+    	singleBuildingQueriesLod2Alt.put(DisplayLevel.GEOMETRY, QUERY_GEOMETRY_LOD2_GET_BUILDING_DATA); // dummy
+    	singleBuildingQueriesLod2Alt.put(DisplayLevel.COLLADA, QUERY_COLLADA_LOD2_GET_BUILDING_ROOT_SURFACES); // dummy
     }
 
     private static final HashMap<Integer, String> singleBuildingQueriesLod2 = new HashMap<Integer, String>();
@@ -556,7 +643,7 @@ public class TileQueries {
 		"FROM CITYOBJECT co " +
 		"WHERE " +
 		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside') ='TRUE' " +
+					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+equal') ='TRUE' " +
 		  "OR SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
 					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
 		"ORDER BY co.gmlid";

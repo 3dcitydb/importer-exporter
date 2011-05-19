@@ -78,6 +78,7 @@ import de.tub.citydb.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
+import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.db.kmlExporter.BalloonTemplateHandler;
 import de.tub.citydb.db.kmlExporter.Building;
@@ -724,13 +725,15 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					String texImageUri = null;
 					OrdImage texImage = null;
 					StringTokenizer texCoordsTokenized = null;
-					if (!selectedTheme.equalsIgnoreCase(theme) && // no surface data for this surface and theme
-							currentBuilding.getX3dMaterial(parentId) != null) { // material for parent surface known
+
+					if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
+						currentBuilding.addX3dMaterial(surfaceId, defaultX3dMaterial);
+					}
+					else if	(!selectedTheme.equalsIgnoreCase(theme) && // no surface data for this surface and theme
+							  currentBuilding.getX3dMaterial(parentId) != null) {// material for parent surface known
 						currentBuilding.addX3dMaterial(surfaceId, currentBuilding.getX3dMaterial(parentId));
 					}
 					else {
-						// x3dMaterial will only added if not all x3dMaterial members are null
-//						currentBuilding.addX3dMaterial(surfaceId, x3dMaterial);
 						texImageUri = rs2.getString("tex_image_uri");
 						texImage = (OrdImage)rs2.getORAData("tex_image", OrdImage.getORADataFactory());
 						String texCoords = rs2.getString("texture_coordinates");
@@ -1328,7 +1331,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		while (rs.next()) {
 			String surfaceType = rs.getString("type");
-			if (!surfaceType.endsWith("Surface")) {
+			if (surfaceType != null && !surfaceType.endsWith("Surface")) {
 				surfaceType = surfaceType + "Surface";
 			}
 

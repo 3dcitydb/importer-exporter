@@ -108,6 +108,8 @@ public class KmlExporter {
 	private int groupSize;
 	private System system;
 
+	public static final String THEME_NONE = "none";
+
 	public KmlExporter() {
 		path = new Path();
 		filter = new ExportFilterConfig();
@@ -120,7 +122,7 @@ public class KmlExporter {
 		footprintHighlighting = false;
 		geometryHighlighting = false;
 		setGeometryHighlightingDistance(0.75);
-		setAppearanceTheme("visual");
+		setAppearanceTheme(THEME_NONE);
 		setIgnoreSurfaceOrientation(false);
 		colladaHighlighting = true;
 		setColladaHighlightingDistance(0.75);
