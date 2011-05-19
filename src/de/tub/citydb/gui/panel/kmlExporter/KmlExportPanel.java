@@ -515,7 +515,6 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 	public void loadSettings() {
 		clearGui();
 		
-		srsComboBox.updateContent();
 		srsComboBox.setSelectedIndex(0);
 		
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().getName());

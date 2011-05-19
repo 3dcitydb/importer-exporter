@@ -398,7 +398,7 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 
 	@Override
 	public void loadSettings() {
-		srsComboBox.updateContent();
+		updateSrsComboBoxes(false);
 		displaySelectedValues();
 	}
 
@@ -673,7 +673,6 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 			}
 
 			checkButton.setEnabled(isConnected);
-			updateSrsComboBoxes(false);			
 			if (srsComboBox.isDBReferenceSystemSelected())
 				displaySelectedValues();
 		}

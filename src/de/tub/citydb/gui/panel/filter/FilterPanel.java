@@ -508,7 +508,6 @@ public class FilterPanel extends JPanel {
 		gmlNameText.setText(gmlName.getValue());		
 		gmlIdText.setText(Util.collection2string(filterConfig.getSimpleFilter().getGmlIdFilter().getGmlIds(), ","));
 
-		srsComboBox.updateContent();
 		srsComboBox.setSelectedItem(bbox.getSRS());
 
 		coStartText.setValue(featureCount.getFrom());

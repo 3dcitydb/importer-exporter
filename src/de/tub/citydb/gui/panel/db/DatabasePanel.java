@@ -852,7 +852,6 @@ public class DatabasePanel extends JPanel implements PropertyChangeListener {
 		timestampText.setText(databaseConfig.getWorkspaces().getOperationWorkspace().getTimestamp());
 		bboxComboBox.setSelectedItem(databaseConfig.getOperation().getBoundingBoxFeatureClass());
 
-		srsComboBox.updateContent();
 		srsComboBox.setSelectedItem(databaseConfig.getOperation().getBoundingBoxSRS());
 
 		if (databaseConfig.getOperation().getExecute() == DBOperationMode.REPORT)
