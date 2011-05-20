@@ -60,6 +60,7 @@ import de.tub.citydb.config.project.Project;
 import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory;
 import de.tub.citydb.modules.preferences.PreferencesPlugin;
 import de.tub.citydb.plugin.InternalPlugin;
 import de.tub.citydb.plugin.PluginService;
@@ -251,6 +252,9 @@ public class MenuProject extends JMenu {
 				config.setProject(project);
 				mainView.doTranslation();
 
+				// update contents of srs combo boxes
+				SrsComboBoxFactory.getInstance(config).updateAll(true);
+				
 				// load settings for internal plugins
 				for (InternalPlugin plugin : pluginService.getInternalPlugins())
 					plugin.loadSettings();

@@ -404,8 +404,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	}
 
 	@Override
-	public void loadSettings() {
-		updateSrsComboBoxes(false);
+	public void loadSettings() {		
 		displaySelectedValues();
 	}
 

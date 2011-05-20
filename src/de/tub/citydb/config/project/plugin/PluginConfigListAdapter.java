@@ -13,9 +13,12 @@ public class PluginConfigListAdapter extends XmlAdapter<PluginConfigList, HashMa
 	@Override
 	public HashMap<Class<? extends PluginConfig>, PluginConfig> unmarshal(PluginConfigList v) throws Exception {
 		HashMap<Class<? extends PluginConfig>, PluginConfig> map = new HashMap<Class<? extends PluginConfig>, PluginConfig>();
-		for (PluginConfigItem item : v.getItems())
-			if (item.getConfig() != null && !item.getConfig().getClass().equals(PluginConfig.class))
-				map.put((Class<? extends PluginConfig>)item.getConfig().getClass(), item.getConfig());
+
+		if (v != null) {
+			for (PluginConfigItem item : v.getItems())
+				if (item.getConfig() != null && !item.getConfig().getClass().equals(PluginConfig.class))
+					map.put((Class<? extends PluginConfig>)item.getConfig().getClass(), item.getConfig());
+		}
 
 		return map;
 	}
@@ -24,12 +27,14 @@ public class PluginConfigListAdapter extends XmlAdapter<PluginConfigList, HashMa
 	public PluginConfigList marshal(HashMap<Class<? extends PluginConfig>, PluginConfig> v) throws Exception {
 		PluginConfigList map = new PluginConfigList();
 
-		Iterator<Entry<Class<? extends PluginConfig>, PluginConfig>> iter = v.entrySet().iterator();
-		while (iter.hasNext()) {
-			Entry<Class<? extends PluginConfig>, PluginConfig> entry = iter.next();
-			PluginConfigItem item = new PluginConfigItem();
-			item.setConfig(entry.getValue());
-			map.addItem(item);
+		if (v != null) {
+			Iterator<Entry<Class<? extends PluginConfig>, PluginConfig>> iter = v.entrySet().iterator();
+			while (iter.hasNext()) {
+				Entry<Class<? extends PluginConfig>, PluginConfig> entry = iter.next();
+				PluginConfigItem item = new PluginConfigItem();
+				item.setConfig(entry.getValue());
+				map.addItem(item);
+			}
 		}
 
 		return map;
