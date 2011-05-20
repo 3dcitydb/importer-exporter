@@ -207,19 +207,11 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 		singleBuildingPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
 
 		JPanel boundingBoxRadioPanel = new JPanel();
-		boundingBoxRadioPanel.setLayout(new BorderLayout());
-		boundingBoxRadioPanel.add(boundingBoxRadioButton, BorderLayout.WEST);
-		
-		Box srsPanel = Box.createHorizontalBox();
-	    srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true, 50);
-//		srsComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, (int)srsComboBox.getPreferredSize().getHeight()));
-		srsComboBox.setMinimumSize(new Dimension((int)srsComboBox.getPreferredSize().getWidth(), (int)srsComboBox.getPreferredSize().getHeight()));
-		srsPanel.add(srsLabel);
-		srsPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 2, 0)));
-		srsPanel.add(srsComboBox);
-		srsPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		
-		boundingBoxRadioPanel.add(srsPanel, BorderLayout.EAST);
+		boundingBoxRadioPanel.setLayout(new GridBagLayout());
+		boundingBoxRadioPanel.add(boundingBoxRadioButton, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,BORDER_THICKNESS));
+		boundingBoxRadioPanel.add(srsLabel, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
+	    srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true);
+	    boundingBoxRadioPanel.add(srsComboBox, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		JPanel boundingBoxPanel = new JPanel();
 		boundingBoxPanel.setLayout(new GridBagLayout());
@@ -932,8 +924,8 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 		pixelsColladaLabel.setEnabled(boundingBoxRadioButton.isSelected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
 		themeLabel.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
-		themeComboBox.setEnabled(themeLabel.isEnabled() && isConnected);
-		fetchThemesButton.setEnabled(!themeComboBox.isEnabled() && themeLabel.isEnabled());
+		themeComboBox.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
+		fetchThemesButton.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
 	}
 	
