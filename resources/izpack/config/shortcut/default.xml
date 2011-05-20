@@ -29,7 +29,7 @@
     </shortcut>
 
     <shortcut name="Templates" target="$INSTALL_PATH\templates" commandLine="" workingDirectory="$INSTALL_PATH\templates"
-        description="Templates for the ${3DCITYDB_NAME}" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
+        description="Templates for the ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
         <createForPack name="samples"/>
     </shortcut>
 </shortcuts>
