@@ -18,7 +18,7 @@
         <createForPack name="3dcitydb"/>
     </shortcut>
     
-    <shortcut name="${3DCITYDB_SHORTNAME} Dokumentation" target="$INSTALL_PATH\manual\3DCityDB-Documentation-v2_0.pdf" commandLine="" workingDirectory="$INSTALL_PATH\manual"
+    <shortcut name="Dokumentation" target="$INSTALL_PATH\manual" commandLine="" workingDirectory="$INSTALL_PATH\manual"
         description="Die Dokumentation der ${3DCITYDB_NAME} und des ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
         <createForPack name="manual"/>
     </shortcut>
@@ -28,5 +28,8 @@
         <createForPack name="samples"/>
     </shortcut>
     
-    
+    <shortcut name="Vorlagen" target="$INSTALL_PATH\templates" commandLine="" workingDirectory="$INSTALL_PATH\templates"
+        description="Vorlagen für den ${3DCITYDB_NAME}" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
+        <createForPack name="samples"/>
+    </shortcut>
 </shortcuts>

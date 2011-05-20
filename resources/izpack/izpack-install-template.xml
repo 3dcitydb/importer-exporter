@@ -7,7 +7,7 @@
         <authors>
             <author name="Claus Nagel" email="claus.nagel@tu-berlin.de"/>
             <author name="Javier Herreruela" email="javier.herreruela@tu-berlin.de"/>
-            <author name="Alexandra Lorenz" email="lorenz@tu-berlin.de"/>
+            <author name="Alexandra Lorenz" email="alexandra.lorenz@tu-berlin.de"/>
             <author name="Gerhard Koenig" email="gerhard.koenig@tu-berlin.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tu-berlin.de"/>
         </authors>
@@ -85,7 +85,6 @@
             <file src="!resources.izpack.config!/img/uninstaller.ico" targetdir="$INSTALL_PATH/uninstaller" os="windows" override="true"/>
             <file src="!resources.izpack.config!/img/impexp.png" targetdir="$INSTALL_PATH" os="unix" override="true"/>
             <file src="!resources.izpack.config!/img/uninstaller.png" targetdir="$INSTALL_PATH/uninstaller" os="unix" override="true"/>
-            <fileset dir="!resources.templates!" targetdir="$INSTALL_PATH/templates" excludes=".svn" override="true"/>
             <executable targetfile="$INSTALL_PATH/3DCityDB-Importer-Exporter.sh" stage="never">
                 <os family="unix|mac"/>
             </executable>
@@ -101,6 +100,10 @@
         <pack name="samples" id="samples" required="no" preselected="yes">
             <description/>
             <fileset dir="!samples!" targetdir="$INSTALL_PATH/samples" excludes=".svn" override="true"/>
+        </pack>
+        <pack name="templates" id="templates" required="no" preselected="yes" hidden="true">
+            <description/>
+            <fileset dir="!resources.templates!" targetdir="$INSTALL_PATH/templates" excludes=".svn" override="true"/>
         </pack>
     </packs>
 
