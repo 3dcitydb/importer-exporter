@@ -150,7 +150,7 @@ public class DBSplitter {
 			// check whether spatial indexes are active
 			if (dbUtil.isIndexed("CITYOBJECT", "ENVELOPE")) {			
 				TiledBoundingBox tiledBBox = expFilterConfig.getComplexFilter().getTiledBoundingBox();
-				int dbSrid = config.getInternal().getOpenConnection().getMetaData().getSrid();
+				int bboxSrid = boundingBoxFilter.getSrid();
 
 				double minX = bbox.getLowerCorner().getX();
 				double minY = bbox.getLowerCorner().getY();
@@ -161,7 +161,7 @@ public class DBSplitter {
 						"INSIDE+CONTAINS+EQUAL+COVERS+COVEREDBY+OVERLAPBDYINTERSECT" :
 							"INSIDE+CONTAINS+EQUAL";
 
-				bboxFilter = "SDO_RELATE(co.ENVELOPE, MDSYS.SDO_GEOMETRY(2003, " + dbSrid + ", NULL, " +
+				bboxFilter = "SDO_RELATE(co.ENVELOPE, MDSYS.SDO_GEOMETRY(2003, " + bboxSrid + ", NULL, " +
 				"MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 3), " +
 				"MDSYS.SDO_ORDINATE_ARRAY(" + minX + ", " + minY + ", " + maxX + ", " + maxY + ")), " +
 				"'querytype=WINDOW mask=" + mask + "') = 'TRUE'";
