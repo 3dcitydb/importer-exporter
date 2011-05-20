@@ -120,7 +120,7 @@ public class SrsComboBoxManager {
 			return getSelectedItem() == dbRefSys;
 		}
 
-		private void updateContent() {
+		public void updateContent() {
 			if (config.getInternal().isConnected()) {
 				dbRefSys.setSrid(config.getInternal().getOpenConnection().getMetaData().getSrid());
 				dbRefSys.setSrsName(config.getInternal().getOpenConnection().getMetaData().getSrsName());

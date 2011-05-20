@@ -169,6 +169,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getName());
 		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
 		
+		srsComboBox.updateContent();
 		srsComboBox.setSelectedItem(config.getProject().getExporter().getTargetSRS());
 		
 		filterPanel.loadSettings();
