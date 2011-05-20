@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<referenceSystems>
+  <referenceSystem>
+    <srid>25832</srid>
+    <srsName>urn:ogc:def:crs:EPSG:7.7:25832</srsName>
+    <description>ETRS89 / UTM zone 32N</description>
+  </referenceSystem>
+</referenceSystems>

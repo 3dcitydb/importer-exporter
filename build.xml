@@ -32,6 +32,7 @@
 	<property name="resources.scripts" location="${resources}/scripts" />
 	<property name="resources.3dcitydb" location="${resources}/3dcitydb" />
 	<property name="resources.manual" location="${resources}/manual" />
+	<property name="resources.templates" location="${resources}/templates" />
 
 	<property name="resources.izpack" location="${resources}/izpack" />
 	<property name="resources.izpack.lib" location="${resources.izpack}/lib" />
@@ -169,6 +170,7 @@
 		<replace file="${resources.izpack}/izpack-install.xml" token="!dist!" value="${dist}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!resources.3dcitydb!" value="${resources.3dcitydb}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!resources.manual!" value="${resources.manual}" />
+		<replace file="${resources.izpack}/izpack-install.xml" token="!resources.templates!" value="${resources.templates}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!samples!" value="${samples}" />
 		<replace file="${resources.izpack}/izpack-install.xml" token="!3dcitydb.version!" value="${3dcitydb.version}" />
 

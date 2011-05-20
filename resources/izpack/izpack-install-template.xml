@@ -85,6 +85,7 @@
             <file src="!resources.izpack.config!/img/uninstaller.ico" targetdir="$INSTALL_PATH/uninstaller" os="windows" override="true"/>
             <file src="!resources.izpack.config!/img/impexp.png" targetdir="$INSTALL_PATH" os="unix" override="true"/>
             <file src="!resources.izpack.config!/img/uninstaller.png" targetdir="$INSTALL_PATH/uninstaller" os="unix" override="true"/>
+            <fileset dir="!resources.templates!" targetdir="$INSTALL_PATH/templates" excludes=".svn" override="true"/>
             <executable targetfile="$INSTALL_PATH/3DCityDB-Importer-Exporter.sh" stage="never">
                 <os family="unix|mac"/>
             </executable>

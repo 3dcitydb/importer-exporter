@@ -575,6 +575,8 @@ public class DbSrsPanel extends PrefPanelBase implements PropertyChangeListener,
 
 	private void exportReferenceSystems() {		
 		try {
+			setSettings();
+			
 			if (config.getProject().getDatabase().getReferenceSystems().isEmpty()) {
 				LOG.error("There are no user-defined reference systems to be exported.");
 				return;
