@@ -190,7 +190,9 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 		
 		Box filterContentPanel = Box.createVerticalBox();
 		filterButtonGroup.add(singleBuildingRadioButton);
+		singleBuildingRadioButton.setIconTextGap(10);
 		filterButtonGroup.add(boundingBoxRadioButton);
+		boundingBoxRadioButton.setIconTextGap(10);
 		boundingBoxRadioButton.setSelected(true);
 
 		JPanel singleBuildingRadioPanel = new JPanel();
@@ -198,7 +200,7 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 		singleBuildingRadioPanel.add(singleBuildingRadioButton, BorderLayout.WEST);
 
 		Box singleBuildingPanel = Box.createHorizontalBox();
-		singleBuildingPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 4, 0)));
+		singleBuildingPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 6, 0)));
 		singleBuildingPanel.add(gmlIdLabel);
 		singleBuildingPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 2, 0)));
 		singleBuildingPanel.add(gmlIdText);
@@ -226,43 +228,34 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 		bbXMaxText.setPreferredSize(bbXMinText.getPreferredSize());
 		bbYMinText.setPreferredSize(bbYMaxText.getPreferredSize());
 		bbYMaxText.setPreferredSize(bbYMinText.getPreferredSize());
-		boundingBoxPanel.add(bbXMinLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 4,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(bbXMinLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 6,0,BORDER_THICKNESS));
 		boundingBoxPanel.add(bbXMinText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		boundingBoxPanel.add(bbXMaxLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 2 ,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(bbXMaxLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 4 ,0,BORDER_THICKNESS));
 		boundingBoxPanel.add(bbXMaxText, GuiUtil.setConstraints(3,0,1.0,0.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		boundingBoxPanel.add(bbYMinLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 4,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(bbYMinLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 6,0,BORDER_THICKNESS));
 		boundingBoxPanel.add(bbYMinText, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		boundingBoxPanel.add(bbYMaxLabel, GuiUtil.setConstraints(2,1,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(bbYMaxLabel, GuiUtil.setConstraints(2,1,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 4,0,BORDER_THICKNESS));
 		boundingBoxPanel.add(bbYMaxText, GuiUtil.setConstraints(3,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		tilingButtonGroup.add(noTilingRadioButton);
+		noTilingRadioButton.setIconTextGap(10);
 		tilingButtonGroup.add(automaticTilingRadioButton);
+		automaticTilingRadioButton.setIconTextGap(10);
 		tilingButtonGroup.add(manualTilingRadioButton);
+		manualTilingRadioButton.setIconTextGap(10);
 		automaticTilingRadioButton.setSelected(true);
-		
-		rowsText.setMaximumSize(new Dimension(Integer.MAX_VALUE, MAX_TEXTFIELD_HEIGHT));
-		columnsText.setMaximumSize(new Dimension(Integer.MAX_VALUE, MAX_TEXTFIELD_HEIGHT));
-		Box tilingContentPanel = Box.createHorizontalBox();
-		tilingContentPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 2, 0)));
-		tilingContentPanel.add(noTilingRadioButton);
-		tilingContentPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 6, 0)));
-		tilingContentPanel.add(automaticTilingRadioButton);
-		tilingContentPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 6, 0)));
-		tilingContentPanel.add(manualTilingRadioButton);
-		tilingContentPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 6, 0)));
-		tilingContentPanel.add(rowsLabel);
-		tilingContentPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		tilingContentPanel.add(rowsText);
-		tilingContentPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		tilingContentPanel.add(columnsLabel);
-		tilingContentPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		tilingContentPanel.add(columnsText);
-		tilingContentPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, BORDER_THICKNESS * 6)));
-		
+
 		tilingPanel = new JPanel();
-		tilingPanel.setLayout(new BorderLayout());
+		tilingPanel.setLayout(new GridBagLayout());
 		tilingPanel.setBorder(BorderFactory.createTitledBorder(""));
-		tilingPanel.add(tilingContentPanel, BorderLayout.CENTER);
+
+		tilingPanel.add(noTilingRadioButton, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
+		tilingPanel.add(automaticTilingRadioButton, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,BORDER_THICKNESS,0));
+		tilingPanel.add(manualTilingRadioButton, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,BORDER_THICKNESS,0));
+		tilingPanel.add(rowsLabel, GuiUtil.setConstraints(3,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,BORDER_THICKNESS,0));
+		tilingPanel.add(rowsText, GuiUtil.setConstraints(4,0,0.5,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+		tilingPanel.add(columnsLabel, GuiUtil.setConstraints(5,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 3,BORDER_THICKNESS,0));
+		tilingPanel.add(columnsText, GuiUtil.setConstraints(6,0,0.5,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS * 2));
 
 		Box tilingParentPanel = Box.createHorizontalBox();
 		tilingParentPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
@@ -306,94 +299,53 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 		exportFromLODPanel.setBorder(BorderFactory.createTitledBorder(""));
 		exportFromLODPanel.add(exportFromLODContentPanel, BorderLayout.CENTER);
 
-
-		JPanel displayAsFootprintPanel = new JPanel();
-		displayAsFootprintPanel.setLayout(new BorderLayout());
-		Box footprintVisibilityPanel = Box.createHorizontalBox();
-		footprintVisibilityPanel.add(visibleFromFootprintLabel);
-		footprintVisibilityPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		footprintVisibleFromText.setMinimumSize(new Dimension(footprintVisibleFromText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		footprintVisibleFromText.setMaximumSize(new Dimension(footprintVisibleFromText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		footprintVisibilityPanel.add(footprintVisibleFromText);
-		footprintVisibilityPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		footprintVisibilityPanel.add(pixelsFootprintLabel);
-		footprintVisibilityPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		displayAsFootprintPanel.add(footprintCheckbox, BorderLayout.WEST);
-		displayAsFootprintPanel.add(footprintVisibilityPanel, BorderLayout.EAST);
-
-		JPanel displayAsExtrudedPanel = new JPanel();
-		displayAsExtrudedPanel.setLayout(new BorderLayout());
-		Box extrudedVisibilityPanel = Box.createHorizontalBox();
-		extrudedVisibilityPanel.add(visibleFromExtrudedLabel);
-		extrudedVisibilityPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		extrudedVisibleFromText.setMinimumSize(new Dimension(extrudedVisibleFromText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		extrudedVisibleFromText.setMaximumSize(new Dimension(extrudedVisibleFromText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		extrudedVisibilityPanel.add(extrudedVisibleFromText);
-		extrudedVisibilityPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		extrudedVisibilityPanel.add(pixelsExtrudedLabel);
-		extrudedVisibilityPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		displayAsExtrudedPanel.add(extrudedCheckbox, BorderLayout.WEST);
-		displayAsExtrudedPanel.add(extrudedVisibilityPanel, BorderLayout.EAST);
-
-		JPanel displayAsGeometryPanel = new JPanel();
-		displayAsGeometryPanel.setLayout(new BorderLayout());
-		Box geometryVisibilityPanel = Box.createHorizontalBox();
-		geometryVisibilityPanel.add(visibleFromGeometryLabel);
-		geometryVisibilityPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		geometryVisibleFromText.setMinimumSize(new Dimension(geometryVisibleFromText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		geometryVisibleFromText.setMaximumSize(new Dimension(geometryVisibleFromText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		geometryVisibilityPanel.add(geometryVisibleFromText);
-		geometryVisibilityPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		geometryVisibilityPanel.add(pixelsGeometryLabel);
-		geometryVisibilityPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		displayAsGeometryPanel.add(geometryCheckbox, BorderLayout.WEST);
-		displayAsGeometryPanel.add(geometryVisibilityPanel, BorderLayout.EAST);
-
-		JPanel displayAsColladaPanel = new JPanel();
-		displayAsColladaPanel.setLayout(new BorderLayout());
-		Box colladaVisibilityPanel = Box.createHorizontalBox();
-		colladaVisibilityPanel.add(visibleFromColladaLabel);
-		colladaVisibilityPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		colladaVisibleFromText.setMinimumSize(new Dimension(colladaVisibleFromText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		colladaVisibleFromText.setMaximumSize(new Dimension(colladaVisibleFromText.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
-		colladaVisibilityPanel.add(colladaVisibleFromText);
-		colladaVisibilityPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		colladaVisibilityPanel.add(pixelsColladaLabel);
-		colladaVisibilityPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		displayAsColladaPanel.add(colladaCheckbox, BorderLayout.WEST);
-		displayAsColladaPanel.add(colladaVisibilityPanel, BorderLayout.EAST);
-
-		Box themePanel1 = Box.createHorizontalBox();
-		themePanel1.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 4, 0)));
-		themePanel1.add(themeLabel);
-		themePanel1.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-
-		Box themePanel2 = Box.createHorizontalBox();
-		themePanel2.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-		themePanel2.add(fetchThemesButton);
-		themePanel2.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
-
-		JPanel themePanel = new JPanel();
-		themePanel.setLayout(new BorderLayout());
-		themePanel.add(themePanel1, BorderLayout.WEST);
-		themePanel.add(themePanel2, BorderLayout.EAST);
-		themeComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, (int)themeComboBox.getPreferredSize().getHeight()));
-		themePanel.add(themeComboBox, BorderLayout.CENTER);
-
-		Box displayAsContentPanel = Box.createVerticalBox();
-		displayAsContentPanel.add(displayAsFootprintPanel);
-		displayAsContentPanel.add(displayAsExtrudedPanel);
-		displayAsContentPanel.add(displayAsGeometryPanel);
-		displayAsContentPanel.add(displayAsColladaPanel);
-		displayAsContentPanel.add(Box.createRigidArea(new Dimension(0,BORDER_THICKNESS)));
-		displayAsContentPanel.add(themePanel);
-		displayAsContentPanel.add(Box.createRigidArea(new Dimension(0,BORDER_THICKNESS)));
-
 		displayAsPanel = new JPanel();
-		displayAsPanel.setLayout(new BorderLayout());
+		displayAsPanel.setLayout(new GridBagLayout());
 		displayAsPanel.setBorder(BorderFactory.createTitledBorder(""));
-		displayAsPanel.add(displayAsContentPanel, BorderLayout.CENTER);
 
+		footprintCheckbox.setIconTextGap(10);
+		displayAsPanel.add(footprintCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
+		GridBagConstraints vffl = GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0);
+		vffl.anchor = GridBagConstraints.EAST;
+		displayAsPanel.add(visibleFromFootprintLabel, vffl);
+		displayAsPanel.add(footprintVisibleFromText, GuiUtil.setConstraints(3,0,0.25,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(pixelsFootprintLabel, GuiUtil.setConstraints(4,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
+
+		extrudedCheckbox.setIconTextGap(10);
+		displayAsPanel.add(extrudedCheckbox, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
+		GridBagConstraints vfel = GuiUtil.setConstraints(2,1,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0);
+		vfel.anchor = GridBagConstraints.EAST;
+		displayAsPanel.add(visibleFromExtrudedLabel, vfel);
+		displayAsPanel.add(extrudedVisibleFromText, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(pixelsExtrudedLabel, GuiUtil.setConstraints(4,1,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
+
+		geometryCheckbox.setIconTextGap(10);
+		displayAsPanel.add(geometryCheckbox, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
+		GridBagConstraints vfgl = GuiUtil.setConstraints(2,2,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0);
+		vfgl.anchor = GridBagConstraints.EAST;
+		displayAsPanel.add(visibleFromGeometryLabel, vfgl);
+		displayAsPanel.add(geometryVisibleFromText, GuiUtil.setConstraints(3,2,0.25,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(pixelsGeometryLabel, GuiUtil.setConstraints(4,2,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
+
+		colladaCheckbox.setIconTextGap(10);
+		displayAsPanel.add(colladaCheckbox, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
+		GridBagConstraints vfcl = GuiUtil.setConstraints(2,3,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,0);
+		vfcl.anchor = GridBagConstraints.EAST;
+		displayAsPanel.add(visibleFromColladaLabel, vfcl);
+		displayAsPanel.add(colladaVisibleFromText, GuiUtil.setConstraints(3,3,0.25,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,0));
+		displayAsPanel.add(pixelsColladaLabel, GuiUtil.setConstraints(4,3,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
+
+		displayAsPanel.add(themeLabel, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,32,BORDER_THICKNESS,0));
+		themeComboBox.setMinimumSize(new Dimension(80, (int)themeComboBox.getPreferredSize().getHeight()));
+		GridBagConstraints tcb = GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,0);
+		tcb.gridwidth = 1;
+		displayAsPanel.add(themeComboBox, tcb);
+		GridBagConstraints fb = GuiUtil.setConstraints(2,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
+		fb.gridwidth = 3;
+		displayAsPanel.add(fetchThemesButton, fb);
+
+
+		
 		JPanel exportAndDisplayPanel = new JPanel();
 		exportAndDisplayPanel.setLayout(new GridBagLayout());
 		exportAndDisplayPanel.add(exportFromLODPanel, GuiUtil.setConstraints(0,0,0.3,0,GridBagConstraints.BOTH,0,0,0,0));
@@ -1013,7 +965,8 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 		if (result == JFileChooser.CANCEL_OPTION) return;
 		try {
 			String exportString = fileChooser.getSelectedFile().toString();
-			if (exportString.lastIndexOf('.') != -1) {
+			if (exportString.lastIndexOf('.') != -1	&&
+				exportString.lastIndexOf('.') > exportString.lastIndexOf(File.separator)) {
 				exportString = exportString.substring(0, exportString.lastIndexOf('.'));
 			}
 			exportString = config.getProject().getKmlExporter().isExportAsKmz() ?

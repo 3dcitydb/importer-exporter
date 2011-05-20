@@ -29,15 +29,13 @@
  */
 package de.tub.citydb.gui.panel.settings;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -54,6 +52,7 @@ import de.tub.citydb.config.project.general.PathMode;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
+import de.tub.citydb.gui.util.GuiUtil;
 
 @SuppressWarnings("serial")
 public class KmlExpBalloonPanel extends PrefPanelBase {
@@ -103,65 +102,42 @@ public class KmlExpBalloonPanel extends PrefPanelBase {
 	}
 
 	private void initGui() {
-		setLayout(new BorderLayout());
-		Box contentsPanel = Box.createVerticalBox();
+		setLayout(new GridBagLayout());
 
-		includeDescription.setAlignmentX(Component.LEFT_ALIGNMENT);
-		includeDescription.setIconTextGap(10);
-		contentsPanel.add(includeDescription);
-		
 		ButtonGroup contentSourceRadioGroup = new ButtonGroup();
 		contentSourceRadioGroup.add(genAttribRadioButton);
 		contentSourceRadioGroup.add(fileRadioButton);
 		contentSourceRadioGroup.add(genAttribAndFileRadioButton);
 
-		Box contentSourceBox = Box.createVerticalBox();
-
-		genAttribRadioButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-		genAttribRadioButton.setIconTextGap(10);
-		contentSourceBox.add(genAttribRadioButton);
-		fileRadioButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-		fileRadioButton.setIconTextGap(10);
-		contentSourceBox.add(fileRadioButton);
-		
-		Box filenameBox = Box.createHorizontalBox();
-		browseText.setMaximumSize(new Dimension(Integer.MAX_VALUE, MAX_TEXTFIELD_HEIGHT));
-		browseText.setPreferredSize(browseText.getSize());
-		filenameBox.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 5, 0)));
-		filenameBox.add(browseText);
-		filenameBox.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 2, 0)));
-		filenameBox.add(browseButton);
-		filenameBox.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, BORDER_THICKNESS * 6)));
-		filenameBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-		contentSourceBox.add(filenameBox);
-		
-		genAttribAndFileRadioButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-		genAttribAndFileRadioButton.setIconTextGap(10);
-		contentSourceBox.add(genAttribAndFileRadioButton);
+		includeDescription.setIconTextGap(10);
+		add(includeDescription, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 
 		contentSourcePanel = new JPanel();
-		contentSourcePanel.setLayout(new BorderLayout());
+		contentSourcePanel.setLayout(new GridBagLayout());
 		contentSourcePanel.setBorder(BorderFactory.createTitledBorder(""));
-		contentSourcePanel.add(contentSourceBox, BorderLayout.CENTER);
-		contentSourcePanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)), BorderLayout.SOUTH);
-		contentSourcePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		add(contentSourcePanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 
-		contentsPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS*2)));
-		contentsPanel.add(contentSourcePanel);
+		genAttribRadioButton.setIconTextGap(10);
+		fileRadioButton.setIconTextGap(10);
+		genAttribAndFileRadioButton.setIconTextGap(10);
 
-		contentInSeparateFile.setAlignmentX(Component.LEFT_ALIGNMENT);
+		GridBagConstraints garb = GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		garb.gridwidth = 2;
+		contentSourcePanel.add(genAttribRadioButton, garb);
+		GridBagConstraints frb = GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		frb.gridwidth = 2;
+		contentSourcePanel.add(fileRadioButton, frb);
+		contentSourcePanel.add(browseText, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,0,0));
+		contentSourcePanel.add(browseButton, GuiUtil.setConstraints(1,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
+		GridBagConstraints gaafrb = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		gaafrb.gridwidth = 2;
+		contentSourcePanel.add(genAttribAndFileRadioButton, gaafrb);
+
 		contentInSeparateFile.setIconTextGap(10);
-		contentsPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS*2)));
-		contentsPanel.add(contentInSeparateFile);
-		Box warningBox = Box.createHorizontalBox();
-		warningBox.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 6, 0)));
-		warningBox.add(warningLabel);
-		warningBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-		contentsPanel.add(warningBox);
+		add(contentInSeparateFile, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,0,0));
+		add(warningLabel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,0,0));
 
 		StandardEditingPopupMenuDecorator.decorate(browseText);
-		
-		add(contentsPanel, BorderLayout.NORTH);
 
 		includeDescription.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
