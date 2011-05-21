@@ -98,9 +98,9 @@ import de.tub.citydb.event.statistic.StatusDialogTitle;
 import de.tub.citydb.filter.ExportFilter;
 import de.tub.citydb.filter.FilterMode;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.sax.KMLHeaderWriter;
 import de.tub.citydb.sax.SAXBuffer;
 import de.tub.citydb.sax.SAXWriter;
-import de.tub.citydb.sax.KMLHeaderWriter;
 import de.tub.citydb.util.DBUtil;
 
 public class KmlExporter implements EventListener {
@@ -386,18 +386,16 @@ public class KmlExporter implements EventListener {
 						try {
 							xmlHeader.setRootElement(kml, jaxbKmlContext, props);
 							xmlHeader.startRootElement();
+							saxWriter.flush();
+							
 							addStyleAndBorder(displayLevel, i, j);
+							saxWriter.flush();
 						} catch (JAXBException jaxBE) {
 							Logger.getInstance().error("I/O error: " + jaxBE.getMessage());
 							return false;
 						} catch (SAXException saxE) {
 							Logger.getInstance().error("I/O error: " + saxE.getMessage());
 							return false;
-						}
-
-						// flush writer to make sure header has been written
-						try {
-							saxWriter.flush();
 						} catch (IOException ioE) {
 							Logger.getInstance().error("I/O error: " + ioE.getMessage());
 							return false;
