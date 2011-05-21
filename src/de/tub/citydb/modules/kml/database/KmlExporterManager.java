@@ -53,7 +53,6 @@ import oracle.ord.im.OrdImage;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
-import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 
 public class KmlExporterManager {
@@ -63,22 +62,19 @@ public class KmlExporterManager {
 	private final ObjectFactory kmlFactory; 
 	private final ConcurrentLinkedQueue<ColladaBundle> buildingQueue;
 	private final Config config;
-	private final EventDispatcher eventDispatcher;
 	
 	public KmlExporterManager(JAXBContext jaxbKmlContext,
 							  JAXBContext jaxbColladaContext,
 							  WorkerPool<SAXEventBuffer> ioWriterPool,
 							  ObjectFactory kmlFactory,
 							  ConcurrentLinkedQueue<ColladaBundle> buildingQueue,
-							  Config config,
-							  EventDispatcher eventDispatcher) {
+							  Config config) {
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.ioWriterPool = ioWriterPool;
 		this.kmlFactory = kmlFactory;
 		this.buildingQueue = buildingQueue;
 		this.config = config;
-		this.eventDispatcher = eventDispatcher;
 	}
 
 

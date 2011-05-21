@@ -350,6 +350,9 @@ IS
   paCountException EXCEPTION;
   paStatusException EXCEPTION;
 
+  cursor versioned_tables_cur is
+    select table_name from user_wm_versioned_tables;
+
 BEGIN
   -- Abfragen der Existenz und des Status der Planung
   checkPlanningAlternative(planningAlternativeId, paCount, paStatus);
@@ -364,115 +367,12 @@ BEGIN
 	    -- Differenzen zu LIVE auswerten lassen
 	    dbms_wm.SetDiffVersions('LIVE', ws);
 
-	    -- Differenzen zählen    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM SURFACE_GEOMETRY_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM CITYOBJECT_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM EXTERNAL_REFERENCE_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM CITYOBJECT_GENERICATTRIB_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM CITYOBJECTGROUP_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM GROUP_TO_CITYOBJECT_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM BREAKLINE_RELIEF_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM APPEARANCE_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM TIN_RELIEF_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM APPEAR_TO_SURFACE_DATA_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM MASSPOINT_RELIEF_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM GENERALIZATION_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM IMPLICIT_GEOMETRY_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM CITYMODEL_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM GENERIC_CITYOBJECT_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM BUILDING_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM CITY_FURNITURE_DIFF;
-	    diff := diff + c;	    
-
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM ADDRESS_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM THEMATIC_SURFACE_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM BUILDING_FURNITURE_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM OPENING_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM BUILDING_INSTALLATION_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM ADDRESS_TO_BUILDING_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM CITYOBJECT_MEMBER_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM LAND_USE_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM OPENING_TO_THEM_SURFACE_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM ROOM_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM SURFACE_DATA_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM TEXTUREPARAM_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM PLANT_COVER_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM SOLITARY_VEGETAT_OBJECT_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM TRAFFIC_AREA_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM TRANSPORTATION_COMPLEX_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM WATERBODY_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM WATERBOUNDARY_SURFACE_DIFF;
-	    diff := diff + c;
-	    
-	    SELECT (COUNT(WM_CODE) / 3) into c FROM WATERBOD_TO_WATERBND_SRF_DIFF;
-	    diff := diff + c;
-	    
+      -- Differenzen zählen 
+      for versioned_tables_rec in versioned_tables_cur loop
+        execute immediate 'SELECT (COUNT(WM_CODE) / 3) FROM ' || versioned_tables_rec.table_name || '_DIFF' into c;
+        diff := diff + c;
+      end loop;
+    
 	    setOutParameter(1, TO_CHAR(diff), outStatus, outMessage);
 
     ELSE   -- Planungsalternative bereits beendet
@@ -591,6 +491,9 @@ IS
   paStatus NUMBER;
   paCountException EXCEPTION;
   paStatusException EXCEPTION;
+  
+  cursor versioned_tables_cur is
+    select table_name from user_wm_versioned_tables;
 
 BEGIN
   -- Abragen der Existenz und des Status der Planung
@@ -607,115 +510,12 @@ BEGIN
       -- Differenzen zu LIVE auswerten lassen
       dbms_wm.SetConflictWorkspace(ws);
 
-      -- Differenzen zählen
-      SELECT (COUNT(WM_DELETED) / 3) into c FROM SURFACE_GEOMETRY_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM CITYOBJECT_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM EXTERNAL_REFERENCE_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM CITYOBJECT_GENERICATTRIB_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM CITYOBJECTGROUP_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM GROUP_TO_CITYOBJECT_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM BREAKLINE_RELIEF_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM APPEARANCE_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM TIN_RELIEF_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM APPEAR_TO_SURFACE_DATA_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM MASSPOINT_RELIEF_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM GENERALIZATION_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM IMPLICIT_GEOMETRY_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM CITYMODEL_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM GENERIC_CITYOBJECT_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM BUILDING_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM CITY_FURNITURE_CONF;
-      	    conf := conf + c;	    
-      
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM ADDRESS_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM THEMATIC_SURFACE_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM BUILDING_FURNITURE_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM OPENING_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM BUILDING_INSTALLATION_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM ADDRESS_TO_BUILDING_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM CITYOBJECT_MEMBER_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM LAND_USE_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM OPENING_TO_THEM_SURFACE_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM ROOM_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM SURFACE_DATA_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM TEXTUREPARAM_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM PLANT_COVER_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM SOLITARY_VEGETAT_OBJECT_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM TRAFFIC_AREA_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM TRANSPORTATION_COMPLEX_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM WATERBODY_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM WATERBOUNDARY_SURFACE_CONF;
-      	    conf := conf + c;
-      	    
-      	    SELECT (COUNT(WM_DELETED) / 3) into c FROM WATERBOD_TO_WATERBND_SRF_CONF;
-	    conf := conf + c;
-	    
+      -- Differenzen zählen 
+      for versioned_tables_rec in versioned_tables_cur loop
+        execute immediate 'SELECT (COUNT(WM_DELETED) / 3) FROM ' || versioned_tables_rec.table_name || '_DIFF' into c;
+        conf := conf + c;
+      end loop;
+    
 	    setOutParameter(1, TO_CHAR(conf), outStatus, outMessage);
 
     ELSE   -- Planungsalternative bereits beendet

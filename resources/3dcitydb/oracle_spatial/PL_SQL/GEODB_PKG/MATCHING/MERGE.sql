@@ -4,7 +4,7 @@
 --              Alexandra Stadler <stadler@igg.tu-berlin.de>
 --
 -- Copyright:   (c) 2007-2011  Institute for Geodesy and Geoinformation Science,
---                             Technische Universit√§t Berlin, Germany
+--                             Technische Universit‰t Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -141,7 +141,7 @@ AS
                 and b.building_root_id = m.id1
                 and r.lod4_geometry_id is not null';
   
-      -- building furniture (in rooms) --bei lod r in f ge√§ndert
+      -- building furniture (in rooms) --bei lod r in f ge‰ndert
       execute immediate 'insert all /*+ append nologging */ into merge_collect_geom
         select b.building_root_id, f.lod4_geometry_id, f.id
           from match_overlap_relevant m, room r, building b, building_furniture f
@@ -236,7 +236,7 @@ AS
         (select b.id from match_overlap_relevant m, building b
         where b.building_root_id = m.id1)';
   
-      -- building furniture (in rooms) --bei lod r in f ge√§ndert
+      -- building furniture (in rooms) --bei lod r in f ge‰ndert
       execute immediate 'update building_furniture f
       set f.lod4_geometry_id = null
       where f.room_id in
@@ -578,7 +578,7 @@ AS
           and b.building_root_id = m.id1)'
       using lineage;
   
-      -- building furniture (in rooms) --bei lod r in f ge√§ndert
+      -- building furniture (in rooms) --bei lod r in f ge‰ndert
       execute immediate 'update cityobject c
       set c.lineage = :1
       where c.id in (select f.id from building_furniture f, match_overlap_relevant m, room r, building b

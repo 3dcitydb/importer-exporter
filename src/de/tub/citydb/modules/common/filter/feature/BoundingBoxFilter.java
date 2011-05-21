@@ -37,6 +37,7 @@ import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
 import de.tub.citydb.config.project.filter.BoundingBox;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
@@ -50,6 +51,7 @@ import de.tub.citydb.util.database.DBUtil;
 public class BoundingBoxFilter implements Filter<Envelope> {
 	private final AbstractFilterConfig filterConfig;
 	private final FilterMode mode;
+	private final Config config;
 
 	private boolean isActive;
 	private boolean useTiling;
@@ -64,9 +66,11 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	private int columns = 1;
 	private int activeRow = 1;
 	private int activeColumn = 1;
+	private int srid;
 
 	public BoundingBoxFilter(Config config, FilterMode mode) {
 		this.mode = mode;
+		this.config = config;
 
 		if (mode == FilterMode.EXPORT)
 			filterConfig = config.getProject().getExporter().getFilter();
@@ -98,13 +102,21 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 						new Point(maxX, maxY, 0)
 				);
 
-				// check whether we have to transform coordinate values
-				int dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
+				// check whether we have to transform coordinate values of bounding box
 				int bboxSrid = boundingBoxConfig.getSRS().getSrid();
+				srid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 
-				if (boundingBoxConfig.getSRS().isSupported() && bboxSrid != dbSrid) {			
+				// target db srid differs if another coordinate transformation is
+				// applied to the CityGML export
+				if (mode == FilterMode.EXPORT) {
+					ReferenceSystem targetSRS = config.getProject().getExporter().getTargetSRS();
+					if (targetSRS.isSupported() && targetSRS.getSrid() != srid)
+						srid = targetSRS.getSrid();
+				}
+				
+				if (boundingBoxConfig.getSRS().isSupported() && bboxSrid != srid) {			
 					try {
-						boundingBox = DBUtil.transformBBox(boundingBox, bboxSrid, dbSrid);
+						boundingBox = DBUtil.transformBBox(boundingBox, bboxSrid, srid);
 					} catch (SQLException sqlEx) {
 						//
 					}
@@ -198,6 +210,10 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 		return activeBoundingBox;
 	}
 
+	public int getSrid() {
+		return srid;
+	}
+	
 	public void setActiveTile(int activeRow, int activeColumn) {
 		if (!useTiling || 
 				activeRow < 0 || activeRow > rows ||

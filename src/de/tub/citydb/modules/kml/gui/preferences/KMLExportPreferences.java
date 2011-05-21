@@ -10,7 +10,7 @@ public class KMLExportPreferences extends AbstractPreferences {
 	public KMLExportPreferences(ImpExpGui mainView, Config config) {
 		super(new KMLExportEntry());
 		
-		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config, mainView)));
+		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new BalloonPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new AltitudePanel(config)));
 	}

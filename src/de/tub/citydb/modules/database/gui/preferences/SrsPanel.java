@@ -582,6 +582,8 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	private void exportReferenceSystems() {		
 		try {
+			setSettings();
+			
 			if (config.getProject().getDatabase().getReferenceSystems().isEmpty()) {
 				LOG.error("There are no user-defined reference systems to be exported.");
 				return;

@@ -354,7 +354,6 @@ public class DBThematicSurface implements DBExporter {
 					}
 				}
 
-				long addressId = rs.getLong("OPADDR");
 				if (!rs.wasNull() && opening.getCityGMLClass() == CityGMLClass.DOOR) {
 					HashMap<String, Object> properties = new HashMap<String, Object>();
 					properties.put("street", rs.getString("STREET"));
@@ -569,7 +568,6 @@ public class DBThematicSurface implements DBExporter {
 					}
 				}
 
-				long addressId = rs.getLong("OPADDR");
 				if (!rs.wasNull() && opening.getCityGMLClass() == CityGMLClass.DOOR) {
 					HashMap<String, Object> properties = new HashMap<String, Object>();
 					properties.put("street", rs.getString("STREET"));

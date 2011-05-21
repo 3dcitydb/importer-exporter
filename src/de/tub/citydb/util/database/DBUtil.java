@@ -50,6 +50,7 @@ import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.project.database.DBMetaData;
 import de.tub.citydb.config.project.database.DBMetaData.Versioning;
 import de.tub.citydb.config.project.database.Workspace;
@@ -622,13 +623,28 @@ public class DBUtil {
 		return isSupported;
 	}
 
-	public static List<String> getAppearanceThemeList() throws SQLException {
+	public static List<String> getAppearanceThemeList(Workspace workspace) throws SQLException {
 		Connection conn = null;
 		PreparedStatement psQuery = null;
 		OracleResultSet rs = null;
 		ArrayList<String> appearanceThemes = new ArrayList<String>();
 
 		try {
+			if (!workspace.getName().toUpperCase().equals("LIVE")) {
+				boolean workspaceExists = dbConnectionPool.existsWorkspace(workspace);
+
+				String name = "'" + workspace.getName().trim() + "'";
+				String timestamp = workspace.getTimestamp().trim();
+				if (timestamp.trim().length() > 0)
+					name += " at timestamp " + timestamp;
+				
+				if (!workspaceExists) {
+					Logger.getInstance().error("Database workspace " + name + " is not available.");
+				} 
+//				else 
+//					Logger.getInstance().info("Switching to database workspace " + name + '.');
+			}
+			
 			conn = dbConnectionPool.getConnection();
 			psQuery = conn.prepareStatement("select distinct theme from appearance order by theme");
 			rs = (OracleResultSet)psQuery.executeQuery();

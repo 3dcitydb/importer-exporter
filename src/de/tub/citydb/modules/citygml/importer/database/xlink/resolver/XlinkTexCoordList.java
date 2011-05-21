@@ -34,6 +34,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -83,9 +84,8 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 		psSelectInteriorLinearRing = linearRingConn.prepareStatement("select GMLID, RING_NO from " + linearRingTableName +
 				" where PARENT_GMLID=? and RING_NO<>0");
 		psSelectTexCoord = textureParamHeapTable.getConnection().prepareStatement("select GMLID, TEXTURE_COORDINATES from " + textureParamHeapTable.getTableName() +
-					" where TEXCOORDLIST_ID=? and not GMLID=?");
+				" where TEXCOORDLIST_ID=? and not GMLID=?");
 	}
-
 
 	public boolean insert(DBXlinkTextureParam xlink) throws SQLException {
 		String gmlId = xlink.getGmlId();
@@ -150,7 +150,13 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 
 			// step 4: find corresponding texture coordinates
 			List<String> texCoordList = new ArrayList<String>();
-			texCoordList.add(0, xlink.getTextureCoord());
+			String textureCoordinates = xlink.getTextureCoord();
+			
+			// reverse order of texture coordinates if necessary
+			if (surfaceGeometryEntry.isReverse())
+				textureCoordinates = reverseTextureCoordinates(textureCoordinates);
+			
+			texCoordList.add(0, textureCoordinates);
 			for (int i = 0; i < maxRingNo; i++)
 				texCoordList.add("");
 
@@ -160,10 +166,14 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 
 			while (rs.next()) {
 				String innerGmlId = rs.getString("GMLID");
-				String textureCoordinates = rs.getString("TEXTURE_COORDINATES");
+				textureCoordinates = rs.getString("TEXTURE_COORDINATES");
 
 				if (Util.isRemoteXlink(innerGmlId))
 					continue;
+				
+				// reverse order of texture coordinates if necessary
+				if (surfaceGeometryEntry.isReverse())					
+					textureCoordinates = reverseTextureCoordinates(textureCoordinates);
 
 				// replace leading #
 				innerGmlId = innerGmlId.replaceAll("^#", "");
@@ -173,9 +183,8 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 
 			// step 5: sanity check
 			String texCoord = Util.collection2string(texCoordList, ";");
-			if (texCoord.contains(";;") || texCoord.endsWith(";")) {
+			if (texCoord.contains(";;") || texCoord.endsWith(";"))
 				LOG.warn("Missing texture coordinates for target geometry object '" + parentGmlId + "'.");
-			}
 
 			psTexCoordList.setLong(1, surfaceGeometryEntry.getId());
 			psTexCoordList.setString(2, texCoord);
@@ -205,6 +214,23 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 				rs = null;
 			}
 		}
+	}
+	
+	private String reverseTextureCoordinates(String textureCoordinates) {
+		String[] coords = textureCoordinates.split("\\s+");
+		
+		for (int lower = 0, upper = coords.length - 2; lower < upper; lower += 2, upper -= 2) {
+			String x = coords[lower];
+			String y = coords[lower + 1];
+
+			coords[lower] = coords[upper];
+			coords[lower + 1] = coords[upper + 1];
+			
+			coords[upper] = x;
+			coords[upper + 1] = y;
+		}
+		
+		return Util.collection2string(Arrays.asList(coords), " ");
 	}
 
 	@Override

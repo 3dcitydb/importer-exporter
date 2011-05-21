@@ -190,16 +190,49 @@ public class KmlExporter implements EventHandler {
 				Logger.getInstance().error("Please use the preferences tab to activate the spatial indexes.");
 				return false;
 			}
-
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			Logger.getInstance().error("Failed to retrieve status of spatial indexes: " + e.getMessage());
 			return false;
 		}
+
+		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
+		if (!selectedTheme.equals(de.tub.citydb.config.project.kmlExporter.KmlExporter.THEME_NONE)) {
+			try {
+				for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
+					if (displayLevel.getLevel() == DisplayLevel.COLLADA && displayLevel.isActive()) {
+						if (!DBUtil.getAppearanceThemeList(workspace).contains(selectedTheme)) {
+							Logger.getInstance().error("Database does not contain appearance theme \"" + selectedTheme + "\"");
+							return false;
+						}
+					}
+				}
+			}
+			catch (SQLException e) {
+				Logger.getInstance().error("Generic DB error: " + e.getMessage());
+				return false;
+			}
+		}
+		
+		if (config.getProject().getKmlExporter().isIncludeDescription()) {
+			String balloonTemplateFilename = config.getProject().getKmlExporter().getBalloonContentTemplateFile();
+			if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
+				File ballonTemplateFile = new File(balloonTemplateFilename);
+				if (!ballonTemplateFile.exists()) {
+					Logger.getInstance().error("Balloon template file \"" + balloonTemplateFilename + "\" not found.");
+					return false;
+				}
+			}
+		}
+
 
 		// create a saxWriter instance 
 		// define indent for xml output and namespace mappings
 		SAXWriter saxWriter = new SAXWriter();
 		saxWriter.setIndentString("  ");
+		saxWriter.setHeaderComment("Written by " + this.getClass().getPackage().getImplementationTitle() + ", version \"" +
+				this.getClass().getPackage().getImplementationVersion() + '"', 
+				this.getClass().getPackage().getImplementationVendor());
 		saxWriter.setDefaultNamespace("http://www.opengis.net/kml/2.2"); // default namespace
 		saxWriter.setPrefix("gx", "http://www.google.com/kml/ext/2.2");
 		saxWriter.setPrefix("atom", "http://www.w3.org/2005/Atom");

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
 <langpack>
-    <str id="installer.appname" txt="kjhkjhkjh"/>
     <str id="installer.reversetitle" txt="Installation - ${APP_NAME} ${APP_VER}"/>
 
     <str id="HelloPanel.headline" txt="${APP_NAME} ${APP_VER}"/>
