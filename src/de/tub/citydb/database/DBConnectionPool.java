@@ -77,7 +77,7 @@ public class DBConnectionPool {
 
 	public synchronized void connect(Config config) throws DatabaseConfigurationException, SQLException {
 		DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-		
+
 		if (conn == null)
 			throw new DatabaseConfigurationException("No valid database connection details provided.");
 
@@ -122,22 +122,28 @@ public class DBConnectionPool {
 		try {
 			// retrieve connection metadata
 			conn.setMetaData(DBUtil.getDatabaseInfo());
-			
+
 			// check user-defined reference systems are supported
 			for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) { 
 				boolean isSupported = DBUtil.isSrsSupported(refSys.getSrid());
 				refSys.setSupported(isSupported);
 			}
-			
+
 		} catch (SQLException e) {
 			try {
 				poolManager.destroyConnectionPool(poolName);
 			} catch (UniversalConnectionPoolException e1) {
 				//
 			}
-			
+
 			poolDataSource = null;
-			throw e;			
+
+			// try and get some meaningful error message
+			Throwable cause = e.getCause();
+			while (cause instanceof UniversalConnectionPoolException)
+				cause = cause.getCause();
+			
+			throw (cause != null) ? new SQLException(cause.getMessage()) : e;
 		}
 
 		// fire property change events
@@ -272,14 +278,14 @@ public class DBConnectionPool {
 	public boolean gotoWorkspace(Connection conn, Workspace workspace) {
 		return gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
 	}
-	
+
 	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) {
 		if (workspaceName == null)
 			throw new IllegalArgumentException("Workspace name may not be null");
-		
+
 		if (timestamp == null)
 			throw new IllegalArgumentException("Workspace timestamp name may not be null");
-		
+
 		workspaceName = workspaceName.trim();
 		timestamp = timestamp.trim();
 		CallableStatement stmt = null;
@@ -343,5 +349,5 @@ public class DBConnectionPool {
 
 		return false;
 	}
-	
+
 }

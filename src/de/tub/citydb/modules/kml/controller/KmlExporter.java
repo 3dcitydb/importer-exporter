@@ -389,20 +389,16 @@ public class KmlExporter implements EventHandler {
 						try {
 							xmlHeader.setRootElement(kml, jaxbKmlContext, props);
 							xmlHeader.startRootElement();
+							
+							// make sure header has been written
+							saxWriter.flush();
+							
 							addStyleAndBorder(displayLevel, i, j);
 						} catch (JAXBException jaxBE) {
 							Logger.getInstance().error("I/O error: " + jaxBE.getMessage());
 							return false;
 						} catch (SAXException saxE) {
 							Logger.getInstance().error("I/O error: " + saxE.getMessage());
-							return false;
-						}
-
-						// flush writer to make sure header has been written
-						try {
-							saxWriter.flush();
-						} catch (SAXException e) {
-							Logger.getInstance().error("I/O error: " + e.getMessage());
 							return false;
 						}
 
