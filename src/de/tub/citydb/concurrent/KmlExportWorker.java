@@ -39,7 +39,10 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantLock;
@@ -572,17 +575,17 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 
 	private List<PlacemarkType> createPlacemarksForGeometry(OracleResultSet rs, String gmlId) throws SQLException{
-		return createPlacemarksForGeometry(rs, gmlId, false);
+		return createPlacemarksForGeometry(rs, gmlId, false, false);
 	}
 
 	private List<PlacemarkType> createPlacemarksForGeometry(OracleResultSet rs,
 														   	String gmlId,
-														   	boolean includeGroundSurface) throws SQLException {
+														   	boolean includeGroundSurface,
+														   	boolean includeClosureSurface) throws SQLException {
 
-		PlacemarkType placemark = null; 
+		HashMap<String, MultiGeometryType> multiGeometries = new HashMap<String, MultiGeometryType>();
 		MultiGeometryType multiGeometry = null;
-		String lastSurfaceType = "dummy";
-		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
+		PolygonType polygon = null;
 
 		double zOffset = getZOffsetFromConfigOrDB(gmlId);
 		List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(rs, (zOffset == Double.MAX_VALUE));
@@ -595,13 +598,15 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 																				lowestPointCandidates.get(0).z}) [2];
 
 		while (rs.next()) {
+//			Long surfaceId = rs.getLong("id");
+			
 			String surfaceType = rs.getString("type");
 			if (surfaceType != null && !surfaceType.endsWith("Surface")) {
 				surfaceType = surfaceType + "Surface";
 			}
-			// results are ordered by surface type
-			if (!includeGroundSurface && CityGMLClass.GROUNDSURFACE.toString().equalsIgnoreCase(surfaceType)) {
-				lastSurfaceType = CityGMLClass.GROUNDSURFACE.toString();
+
+			if ((!includeGroundSurface && CityGMLClass.GROUNDSURFACE.toString().equalsIgnoreCase(surfaceType)) ||
+				(!includeClosureSurface && CityGMLClass.CLOSURESURFACE.toString().equalsIgnoreCase(surfaceType)))	{
 				continue;
 			}
 
@@ -609,27 +614,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			JGeometry surface = convertToWGS84(JGeometry.load(buildingGeometryObj));
 			double[] ordinatesArray = surface.getOrdinatesArray();
 
-			if (!lastSurfaceType.equals(surfaceType)) {
-				// avoid creating Placemark and MultiGeometry for every Polygon
-				placemark = kmlFactory.createPlacemarkType();
-//				placemark.setName(gmlId + "_" + surfaceType);
-				placemark.setName(gmlId);
-				placemark.setId(DisplayLevel.GEOMETRY_PLACEMARK_ID + placemark.getName() + "_" + surfaceType);
-				placemark.setStyleUrl("#" + surfaceType + "Normal");
-				if (config.getProject().getKmlExporter().isIncludeDescription() &&
-					!config.getProject().getKmlExporter().isGeometryHighlighting()) { // avoid double description
-					addBalloonContents(placemark, gmlId);
-				}
-				placemarkList.add(placemark);
-
-				multiGeometry = kmlFactory.createMultiGeometryType();
-				placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
-				if (surfaceType != null) { 
-					lastSurfaceType = surfaceType;
-				} // else remain "dummy"
-			}
-			
-			PolygonType polygon = kmlFactory.createPolygonType();
+			polygon = kmlFactory.createPolygonType();
 			switch (config.getProject().getKmlExporter().getAltitudeMode()) {
 				case ABSOLUTE:
 					polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
@@ -638,8 +623,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
 					break;
 			}
-			multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 
+			// just in case surfaceType == null
 			boolean probablyRoof = true;
 
 			for (int i = 0; i < surface.getElemInfo().length; i = i+3) {
@@ -669,16 +654,37 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 
 			if (surfaceType == null) {
-				String likelySurfaceType = (probablyRoof && currentLod < 3) ?
-										   CityGMLClass.ROOFSURFACE.toString() :
-										   CityGMLClass.WALLSURFACE.toString();
-//				placemark.setName(gmlId + "_" + likelySurfaceType);
-				placemark.setName(gmlId);
-				placemark.setId(DisplayLevel.GEOMETRY_PLACEMARK_ID + placemark.getName() + "_" + likelySurfaceType);
-				placemark.setStyleUrl("#" + likelySurfaceType + "Normal");
+				surfaceType = (probablyRoof && currentLod < 3) ?
+							   CityGMLClass.ROOFSURFACE.toString() :
+							   CityGMLClass.WALLSURFACE.toString();
 			}
+
+			multiGeometry = multiGeometries.get(surfaceType);
+			if (multiGeometry == null) {
+				multiGeometry = kmlFactory.createMultiGeometryType();
+				multiGeometries.put(surfaceType, multiGeometry);
+			}
+			multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+
 		}
 
+		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
+		Set<String> keySet = multiGeometries.keySet();
+		Iterator<String> iterator = keySet.iterator();
+		while (iterator.hasNext()) {
+			String surfaceType = iterator.next();
+			PlacemarkType placemark = kmlFactory.createPlacemarkType();
+			placemark.setName(gmlId + "_" + surfaceType);
+			placemark.setId(DisplayLevel.GEOMETRY_PLACEMARK_ID + placemark.getName());
+			placemark.setStyleUrl("#" + surfaceType + "Normal");
+			if (config.getProject().getKmlExporter().isIncludeDescription() &&
+				!config.getProject().getKmlExporter().isGeometryHighlighting()) { // avoid double description
+				addBalloonContents(placemark, gmlId);
+			}
+			multiGeometry = multiGeometries.get(surfaceType);
+			placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
+			placemarkList.add(placemark);
+		}
 		return placemarkList;
 	}
 

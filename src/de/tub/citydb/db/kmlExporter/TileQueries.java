@@ -106,13 +106,23 @@ public class TileQueries {
 					"AND ts.building_id = b.id " +
 					"AND ts.lod4_multi_surface_id IS NOT NULL " +
 				"UNION " + 
+/*
 				"SELECT r.lod4_geometry_id " + 
-					"FROM CITYOBJECT co, BUILDING b, ROOM r " + 
-					"WHERE " +  
-						"co.gmlid = ? " +
-			  			"AND b.building_root_id = co.id " +
-						"AND r.building_id = b.id " +
-						"AND r.lod4_geometry_id IS NOT NULL " +
+				"FROM CITYOBJECT co, BUILDING b, ROOM r " + 
+				"WHERE " +  
+					"co.gmlid = ? " +
+		  			"AND b.building_root_id = co.id " +
+					"AND r.building_id = b.id " +
+					"AND r.lod4_geometry_id IS NOT NULL " +
+*/
+				"SELECT ts.lod4_multi_surface_id " + 
+				"FROM CITYOBJECT co, BUILDING b, ROOM r, THEMATIC_SURFACE ts " + 
+				"WHERE " +  
+					"co.gmlid = ? " +
+		  			"AND b.building_root_id = co.id " +
+					"AND r.building_id = b.id " +
+					"AND ts.room_id = r.id " +
+					"AND ts.lod4_multi_surface_id IS NOT NULL " +
 				"UNION " + 
 				"SELECT bf.lod4_geometry_id " + 
 					"FROM CITYOBJECT co, BUILDING b, ROOM r, BUILDING_FURNITURE bf " + 
@@ -148,6 +158,7 @@ public class TileQueries {
 			"AND ts.building_id = b.id " +
 			"AND ts.lod4_multi_surface_id IS NOT NULL " +
 		"UNION " + 
+/*
 		"SELECT r.lod4_geometry_id " + 
 		"FROM CITYOBJECT co, BUILDING b, ROOM r " + 
 		"WHERE " +  
@@ -155,6 +166,15 @@ public class TileQueries {
   			"AND b.building_root_id = co.id " +
 			"AND r.building_id = b.id " +
 			"AND r.lod4_geometry_id IS NOT NULL " +
+*/
+		"SELECT ts.lod4_multi_surface_id " + 
+		"FROM CITYOBJECT co, BUILDING b, ROOM r, THEMATIC_SURFACE ts " + 
+		"WHERE " +  
+			"co.gmlid = ? " +
+  			"AND b.building_root_id = co.id " +
+			"AND r.building_id = b.id " +
+			"AND ts.room_id = r.id " +
+			"AND ts.lod4_multi_surface_id IS NOT NULL " +
 		"UNION " + 
 		"SELECT bf.lod4_geometry_id " + 
 		"FROM CITYOBJECT co, BUILDING b, ROOM r, BUILDING_FURNITURE bf " + 

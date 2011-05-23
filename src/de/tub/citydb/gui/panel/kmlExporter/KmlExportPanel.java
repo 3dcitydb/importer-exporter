@@ -921,7 +921,7 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 		pixelsColladaLabel.setEnabled(boundingBoxRadioButton.isSelected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
 		themeLabel.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
-		themeComboBox.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
+		themeComboBox.setEnabled(isConnected && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 		fetchThemesButton.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
 	}
