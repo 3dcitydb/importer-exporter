@@ -440,29 +440,31 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private List<PlacemarkType> createPlacemarksForFootprint(OracleResultSet rs, String gmlId) throws SQLException {
 
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
+		PlacemarkType placemark = kmlFactory.createPlacemarkType();
+		placemark.setName(gmlId);
+		placemark.setId(DisplayLevel.FOOTPRINT_PLACEMARK_ID + placemark.getName());
+
+		if (config.getProject().getKmlExporter().isFootprintHighlighting()) {
+			placemark.setStyleUrl("#" + DisplayLevel.FOOTPRINT_STR + "Style");
+		}
+		else {
+			placemark.setStyleUrl("#" + DisplayLevel.FOOTPRINT_STR + "Normal");
+		}
+
+		if (config.getProject().getKmlExporter().isIncludeDescription()) {
+			addBalloonContents(placemark, gmlId);
+		}
+		MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
+		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
+
+		PolygonType polygon = null; 
 		while (rs.next()) {
 			// ColumnName is SDO_CS.TRANSFORM(sg.geometry, 4326)
 			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
-				PlacemarkType placemark = kmlFactory.createPlacemarkType();
-				placemark.setName(gmlId);
-				placemark.setId(DisplayLevel.FOOTPRINT_PLACEMARK_ID + placemark.getName());
 
-				if (config.getProject().getKmlExporter().isFootprintHighlighting()) {
-					placemark.setStyleUrl("#" + DisplayLevel.FOOTPRINT_STR + "Style");
-				}
-				else {
-					placemark.setStyleUrl("#" + DisplayLevel.FOOTPRINT_STR + "Normal");
-				}
-
-				if (config.getProject().getKmlExporter().isIncludeDescription()) {
-					addBalloonContents(placemark, gmlId);
-				}
-
-				placemarkList.add(placemark);
-
-				PolygonType polygon = kmlFactory.createPolygonType();
+				polygon = kmlFactory.createPolygonType();
 				polygon.setTessellate(true);
 				polygon.setExtrude(false);
 				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
@@ -493,8 +495,11 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
 							}
 				}
-				placemark.setAbstractGeometryGroup(kmlFactory.createPolygon(polygon));
+				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 			}
+		}
+		if (polygon != null) { // if there is at least some content
+			placemarkList.add(placemark);
 		}
 		return placemarkList;
 	}
@@ -502,27 +507,30 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private List<PlacemarkType> createPlacemarksForExtruded(OracleResultSet rs, String gmlId) throws SQLException {
 
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
+		PlacemarkType placemark = kmlFactory.createPlacemarkType();
+		placemark.setName(gmlId);
+		placemark.setId(DisplayLevel.EXTRUDED_PLACEMARK_ID + placemark.getName());
+		if (config.getProject().getKmlExporter().isFootprintHighlighting()) {
+			placemark.setStyleUrl("#" + DisplayLevel.EXTRUDED_STR + "Style");
+		}
+		else {
+			placemark.setStyleUrl("#" + DisplayLevel.EXTRUDED_STR + "Normal");
+		}
+		if (config.getProject().getKmlExporter().isIncludeDescription()) {
+			addBalloonContents(placemark, gmlId);
+		}
+		MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
+		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
+
+		PolygonType polygon = null; 
 		while (rs.next()) {
 			// ColumnName is SDO_CS.TRANSFORM(sg.geometry, 4326)
 			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 			double measuredHeight = rs.getDouble("measured_height");
 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
-				PlacemarkType placemark = kmlFactory.createPlacemarkType();
-				placemark.setName(gmlId);
-				placemark.setId(DisplayLevel.EXTRUDED_PLACEMARK_ID + placemark.getName());
-				if (config.getProject().getKmlExporter().isFootprintHighlighting()) {
-					placemark.setStyleUrl("#" + DisplayLevel.EXTRUDED_STR + "Style");
-				}
-				else {
-					placemark.setStyleUrl("#" + DisplayLevel.EXTRUDED_STR + "Normal");
-				}
-				if (config.getProject().getKmlExporter().isIncludeDescription()) {
-					addBalloonContents(placemark, gmlId);
-				}
-				placemarkList.add(placemark);
 
-				PolygonType polygon = kmlFactory.createPolygonType();
+				polygon = kmlFactory.createPolygonType();
 				polygon.setTessellate(true);
 				polygon.setExtrude(true);
 				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
@@ -567,8 +575,11 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 							}
 */
 				}
-				placemark.setAbstractGeometryGroup(kmlFactory.createPolygon(polygon));
+				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 			}
+		}
+		if (polygon != null) { // if there is at least some content
+			placemarkList.add(placemark);
 		}
 		return placemarkList;
 	}
