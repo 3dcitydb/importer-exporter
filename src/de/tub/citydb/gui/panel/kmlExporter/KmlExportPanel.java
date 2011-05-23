@@ -570,13 +570,11 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 					}
 				}
 				themeComboBox.setEnabled(true);
-				fetchThemesButton.setEnabled(false);
 			}
 			catch (SQLException sqlEx) { }
 		}
 		else {
 			themeComboBox.setEnabled(false);
-			fetchThemesButton.setEnabled(true);
 		}
 		
 		setFilterEnabledValues();
@@ -859,7 +857,6 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 							}
 						}
 						themeComboBox.setEnabled(true);
-						fetchThemesButton.setEnabled(false);
 					}
 					catch (SQLException sqlEx) { }
 				}
@@ -982,7 +979,6 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 			themeComboBox.setSelectedItem(KmlExporter.THEME_NONE);
 			if (!isConnected) {
 				themeComboBox.setEnabled(false);
-				fetchThemesButton.setEnabled(true);
 			}
 		}
 	}

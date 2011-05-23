@@ -643,7 +643,7 @@ public class DBUtil {
 		ArrayList<String> appearanceThemes = new ArrayList<String>();
 
 		try {
-			if (!workspace.getName().toUpperCase().equals("LIVE")) {
+//			if (!workspace.getName().toUpperCase().equals("LIVE")) {
 				boolean workspaceExists = dbConnectionPool.checkWorkspace(workspace);
 
 				String name = "'" + workspace.getName().trim() + "'";
@@ -656,7 +656,7 @@ public class DBUtil {
 				} 
 //				else 
 //					Logger.getInstance().info("Switching to database workspace " + name + '.');
-			}
+//			}
 			
 			conn = dbConnectionPool.getConnection();
 			psQuery = conn.prepareStatement("select distinct theme from appearance order by theme");
