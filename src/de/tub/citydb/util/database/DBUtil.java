@@ -99,14 +99,14 @@ public class DBUtil {
 		} catch (SQLException sqlEx) {
 			throw sqlEx;
 		} finally {
-			if (callableStmt != null) {
+			if (stmt != null) {
 				try {
-					callableStmt.close();
+					stmt.close();
 				} catch (SQLException sqlEx) {
 					throw sqlEx;
 				}
 
-				callableStmt = null;
+				stmt = null;
 			}
 
 			if (conn != null) {
