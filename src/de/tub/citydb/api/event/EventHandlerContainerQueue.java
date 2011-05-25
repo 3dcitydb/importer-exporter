@@ -57,7 +57,7 @@ public class EventHandlerContainerQueue {
 			for (Iterator<EventHandlerContainer> iter = containerQueue.iterator(); iter.hasNext(); ) {
 				EventHandlerContainer container = iter.next();
 
-				if (handler.equals(container.getEventHandler())) {
+				if (handler == container.getEventHandler()) {
 					containerQueue.remove(container);
 					return true;
 				}
