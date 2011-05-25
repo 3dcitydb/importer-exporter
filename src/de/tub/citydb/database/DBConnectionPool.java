@@ -32,7 +32,9 @@ package de.tub.citydb.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Properties;
 
+import oracle.jdbc.OracleConnection;
 import oracle.ucp.UniversalConnectionPoolAdapter;
 import oracle.ucp.UniversalConnectionPoolException;
 import oracle.ucp.UniversalConnectionPoolLifeCycleState;
@@ -109,6 +111,13 @@ public class DBConnectionPool {
 			poolDataSource.setUser(conn.getUser());
 			poolDataSource.setPassword(conn.getInternalPassword());
 
+			// set connection properties
+			Properties props = new Properties();
+			
+			// let statement data buffers be cached on a per thread basis
+			props.put(OracleConnection.CONNECTION_PROPERTY_USE_THREADLOCAL_BUFFER_CACHE, "true");
+			poolDataSource.setConnectionProperties(props);
+			
 			poolManager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);		
 			poolManager.startConnectionPool(poolName);
 		} catch (UniversalConnectionPoolException e) {
@@ -281,10 +290,10 @@ public class DBConnectionPool {
 
 	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) {
 		if (workspaceName == null)
-			throw new IllegalArgumentException("Workspace name may not be null");
+			throw new IllegalArgumentException("Workspace name may not be null.");
 
 		if (timestamp == null)
-			throw new IllegalArgumentException("Workspace timestamp name may not be null");
+			throw new IllegalArgumentException("Workspace timestamp name may not be null.");
 
 		workspaceName = workspaceName.trim();
 		timestamp = timestamp.trim();

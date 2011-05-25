@@ -33,8 +33,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.jdbc.OracleConnection;
-
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
@@ -114,7 +112,6 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 	private void init() throws SQLException {
 		connection = dbConnectionPool.getConnection();
 		connection.setAutoCommit(false);
-		((OracleConnection)connection).setDefaultRowPrefetch(50);
 
 		// try and change workspace for both connections if needed
 		Database database = config.getProject().getDatabase();

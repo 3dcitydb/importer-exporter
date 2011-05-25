@@ -60,7 +60,6 @@ import net.opengis.kml._2.ObjectFactory;
 import net.opengis.kml._2.OrientationType;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.PolygonType;
-import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OracleResultSet;
 import oracle.ord.im.OrdImage;
 import oracle.spatial.geometry.JGeometry;
@@ -160,7 +159,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private void init() throws SQLException {
 		connection = dbConnectionPool.getConnection();
 		connection.setAutoCommit(false);
-		((OracleConnection)connection).setDefaultRowPrefetch(50);
+
 		// try and change workspace for both connections if needed
 		Database database = config.getProject().getDatabase();
 		dbConnectionPool.gotoWorkspace(connection, 

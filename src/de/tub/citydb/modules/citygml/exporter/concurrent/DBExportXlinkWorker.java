@@ -33,7 +33,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.jdbc.OracleConnection;
 import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.api.event.EventDispatcher;
@@ -80,7 +79,6 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 	private void init() throws SQLException {
 		connection = dbConnectionPool.getConnection();
 		connection.setAutoCommit(false);
-		((OracleConnection)connection).setDefaultRowPrefetch(50);
 
 		// try and change workspace for the connection if needed
 		Database database = config.getProject().getDatabase();
