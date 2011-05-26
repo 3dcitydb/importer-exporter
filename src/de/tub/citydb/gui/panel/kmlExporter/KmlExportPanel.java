@@ -210,7 +210,7 @@ public class KmlExportPanel extends JPanel implements PropertyChangeListener {
 		boundingBoxRadioPanel.setLayout(new GridBagLayout());
 		boundingBoxRadioPanel.add(boundingBoxRadioButton, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,BORDER_THICKNESS));
 		boundingBoxRadioPanel.add(srsLabel, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
-	    srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true);
+	    srsComboBox = SrsComboBoxManager.getInstance(config).getSrsComboBox(true, 50);
 	    boundingBoxRadioPanel.add(srsComboBox, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		JPanel boundingBoxPanel = new JPanel();

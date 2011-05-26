@@ -46,7 +46,7 @@ public class ExportAppearance {
 	@XmlElement(required=true, defaultValue="true")
 	private Boolean exportTextureFiles = true;
 	@XmlElement(defaultValue="false")
-	private Boolean overwriteTextureFiles = false;
+	private Boolean overwriteTextureFiles = true;
 	private TexturePathMode texturePathMode = TexturePathMode.RELATIVE;
 	private String relativeTexturePath = "appearance";
 	private String absoluteTexturePath = "";

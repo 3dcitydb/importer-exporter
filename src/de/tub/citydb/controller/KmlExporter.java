@@ -386,10 +386,11 @@ public class KmlExporter implements EventListener {
 						try {
 							xmlHeader.setRootElement(kml, jaxbKmlContext, props);
 							xmlHeader.startRootElement();
+
+							// make sure header has been written
 							saxWriter.flush();
 							
 							addStyleAndBorder(displayLevel, i, j);
-							saxWriter.flush();
 						} catch (JAXBException jaxBE) {
 							Logger.getInstance().error("I/O error: " + jaxBE.getMessage());
 							return false;

@@ -25,7 +25,7 @@
 --
 
 SET SERVEROUTPUT ON;
-SET FEEDBACK ON
+-- SET FEEDBACK ON
 
 prompt
 prompt
@@ -208,11 +208,12 @@ BEGIN
   EXECUTE IMMEDIATE 'create or replace synonym ' || v_readOnlyName || '.MATCH_MASTER_AGGR_GEOM for ' || v_schemaOwnerName || '.MATCH_MASTER_AGGR_GEOM';
 
 -- synonyms for PL/SQL packages
-  EXECUTE IMMEDIATE 'create or replace synonym ' || v_readOnlyName || '.GEODB_STAT for ' || v_schemaOwnerName || '.GEODB_STAT';
+  EXECUTE IMMEDIATE 'create or replace synonym ' || v_readOnlyName || '.GEODB_DELETE for ' || v_schemaOwnerName || '.GEODB_DELETE';
   EXECUTE IMMEDIATE 'create or replace synonym ' || v_readOnlyName || '.GEODB_DELETE_BY_LINEAGE for ' || v_schemaOwnerName || '.GEODB_DELETE_BY_LINEAGE';
   EXECUTE IMMEDIATE 'create or replace synonym ' || v_readOnlyName || '.GEODB_IDX for ' || v_schemaOwnerName || '.GEODB_IDX';
-  EXECUTE IMMEDIATE 'create or replace synonym ' || v_readOnlyName || '.GEODB_PROCESS_MATCHES for ' || v_schemaOwnerName || '.GEODB_PROCESS_MATCHES';
   EXECUTE IMMEDIATE 'create or replace synonym ' || v_readOnlyName || '.GEODB_MATCH for ' || v_schemaOwnerName || '.GEODB_MATCH';
+  EXECUTE IMMEDIATE 'create or replace synonym ' || v_readOnlyName || '.GEODB_MERGE for ' || v_schemaOwnerName || '.GEODB_MERGE';
+  EXECUTE IMMEDIATE 'create or replace synonym ' || v_readOnlyName || '.GEODB_STAT for ' || v_schemaOwnerName || '.GEODB_STAT';
   EXECUTE IMMEDIATE 'create or replace synonym ' || v_readOnlyName || '.GEODB_UTIL for ' || v_schemaOwnerName || '.GEODB_UTIL';
 
 -- synonyms for user defined object types
@@ -220,13 +221,16 @@ BEGIN
   EXECUTE IMMEDIATE 'create or replace synonym ' || v_readOnlyName || '.STRARRAY for ' || v_schemaOwnerName || '.STRARRAY';
 
   COMMIT;
+  dbms_output.put_line(' ');
   dbms_output.put_line('create_ro_user.sql finished successfully');
 
 EXCEPTION
   WHEN RO_USER_ALREADY_EXISTS THEN
+    dbms_output.put_line(' ');
     dbms_output.put_line('User ' || '&RO_USERNAME' || ' already exists!');
     dbms_output.put_line('create_ro_user.sql finished with errors');
   WHEN OTHERS THEN
+    dbms_output.put_line(' ');
     dbms_output.put_line('create_ro_user.sql finished with errors');
 END;
 /
