@@ -414,15 +414,14 @@ public class TileQueries {
 		"ORDER BY ts.building_id";
 
 	private static final String QUERY_GEOMETRY_LOD1_GET_BUILDING_DATA =
-		"SELECT sg.geometry, ts.type, sg.id " +
+		"SELECT sg.geometry, NULL as type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg, CITYOBJECT co, BUILDING b " +
-			"LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " +
 		"WHERE " +
 			"co.gmlid = ? " +
 			"AND b.building_root_id = co.id " +
 			"AND sg.root_id = b.lod1_geometry_id " +
 			"AND sg.geometry IS NOT NULL " +
-		"ORDER BY b.id, ts.type";
+		"ORDER BY b.id";
 
 	private static final String QUERY_EXTRUDED_LOD1_GET_BUILDING_DATA =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
