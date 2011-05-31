@@ -665,7 +665,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 
 			if (surfaceType == null) {
-				surfaceType = (probablyRoof && currentLod < 3) ?
+				surfaceType = (probablyRoof && currentLod == 2) ?
 							   CityGMLClass.ROOFSURFACE.toString() :
 							   CityGMLClass.WALLSURFACE.toString();
 			}
@@ -685,7 +685,12 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		while (iterator.hasNext()) {
 			String surfaceType = iterator.next();
 			PlacemarkType placemark = kmlFactory.createPlacemarkType();
-			placemark.setName(gmlId + "_" + surfaceType);
+			if (currentLod == 1) {
+				placemark.setName(gmlId);
+			}
+			else {
+				placemark.setName(gmlId + "_" + surfaceType);
+			}
 			placemark.setId(DisplayLevel.GEOMETRY_PLACEMARK_ID + placemark.getName());
 			placemark.setStyleUrl("#" + surfaceType + "Normal");
 			if (config.getProject().getKmlExporter().isIncludeDescription() &&
