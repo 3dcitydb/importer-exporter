@@ -296,7 +296,7 @@ public class DBTransportationComplex implements DBImporter {
         // AuxiliaryTrafficArea
         if (transComplex.isSetAuxiliaryTrafficArea()) {
         	for (AuxiliaryTrafficAreaProperty auxTrafficAreaProperty : transComplex.getAuxiliaryTrafficArea()) {
-        		AuxiliaryTrafficArea auxArea = auxTrafficAreaProperty.getObject();
+        		AuxiliaryTrafficArea auxArea = auxTrafficAreaProperty.getAuxiliaryTrafficArea();
         		
         		if (auxArea != null) {
         			String gmlId = auxArea.getId();
@@ -313,6 +313,9 @@ public class DBTransportationComplex implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+        			
+        			// free memory of nested feature
+        			auxTrafficAreaProperty.unsetAuxiliaryTrafficArea();
         		} else {
         			// xlink
 					String href = auxTrafficAreaProperty.getHref();
@@ -327,7 +330,7 @@ public class DBTransportationComplex implements DBImporter {
         // TrafficArea
         if (transComplex.isSetTrafficArea()) {
         	for (TrafficAreaProperty trafficAreaProperty : transComplex.getTrafficArea()) {
-        		TrafficArea area = trafficAreaProperty.getObject();
+        		TrafficArea area = trafficAreaProperty.getTrafficArea();
         		
         		if (area != null) {
         			String gmlId = area.getId();
@@ -344,6 +347,9 @@ public class DBTransportationComplex implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+        			
+        			// free memory of nested feature
+        			trafficAreaProperty.unsetTrafficArea();
         		} else {
         			// xlink
 					String href = trafficAreaProperty.getHref();

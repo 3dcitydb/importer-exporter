@@ -31,7 +31,6 @@ package de.tub.citydb;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -61,12 +60,11 @@ import de.tub.citydb.api.plugin.extension.config.PluginConfig;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.cmd.ImpExpCmd;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.ConfigUtil;
 import de.tub.citydb.config.controller.PluginConfigControllerImpl;
 import de.tub.citydb.config.gui.Gui;
-import de.tub.citydb.config.gui.GuiConfigUtil;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.Project;
-import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
@@ -135,6 +133,17 @@ public class ImpExp {
 		new ImpExp().doMain(args);
 	}
 
+	@SuppressWarnings("unused")
+	private void doMain(String[] args, Plugin[] plugins) {
+		if (plugins != null) {
+			PluginService pluginService = PluginServiceFactory.getPluginService();
+			for (Plugin plugin : plugins)
+				pluginService.registerExternalPlugin(plugin);
+		}
+
+		doMain(args);
+	}
+
 	private void doMain(String[] args) {
 		CmdLineParser parser = new CmdLineParser(this);
 		parser.setUsageWidth(80);
@@ -190,7 +199,7 @@ public class ImpExp {
 		if (useSplashScreen) {
 			splashScreen = new SplashScreen(4, 3, 50, Color.BLACK);
 			splashScreen.setMessage("Version \"" + this.getClass().getPackage().getImplementationVersion() + "\"");
-			
+
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					splashScreen.setVisible(true);
@@ -218,11 +227,12 @@ public class ImpExp {
 					return name.toUpperCase().endsWith(".JAR");
 				}
 			});
-			
+
 			for (File file : directoryScanner.getFiles(new File(Internal.PLUGINS_PATH)))
 				PluginServiceFactory.addPluginDirectory(file.getParentFile());
-			
+
 			pluginService = PluginServiceFactory.getPluginService();
+			pluginService.loadPlugins();
 		} catch (IOException e) {
 			LOG.error("Failed to initialize plugin support: " + e.getMessage());
 			System.exit(1);
@@ -292,14 +302,26 @@ public class ImpExp {
 
 		config.getInternal().setConfigPath(confPath);
 		config.getInternal().setConfigProject(projectFileName);
-		String projectFile = confPath + File.separator + projectFileName;
+		File projectFile = new File(confPath + File.separator + projectFileName);
 
 		try {
 			Project configProject = null;
-			configProject = ProjectConfigUtil.unmarshal(projectFile, projectContext);
+			Object object = ConfigUtil.unmarshal(projectFile, projectContext);
+
+			if (!(object instanceof Project)) {
+				String errMsg = "Failed to read project settings file '" + projectFile + '\'';
+				if (shell) {
+					LOG.error(errMsg);
+					LOG.error("Aborting...");
+					System.exit(1);
+				} else
+					errMsgs.add(errMsg);
+			} else
+				configProject = (Project)object;
+
 			config.setProject(configProject);
-		} catch (FileNotFoundException fne) {
-			String errMsg = "Failed to find project settings file '" + projectFile + '\'';
+		} catch (IOException fne) {
+			String errMsg = "Failed to read project settings file '" + projectFile + '\'';
 			if (shell) {
 				LOG.error(errMsg);
 				LOG.error("Aborting...");
@@ -317,15 +339,19 @@ public class ImpExp {
 		} 
 
 		if (!shell) {
-			Gui configGui = null;
-			String guiFile = confPath + File.separator + config.getInternal().getConfigGui();
+			File guiFile = new File(confPath + File.separator + config.getInternal().getConfigGui());
 
 			try {
-				configGui = GuiConfigUtil.unmarshal(guiFile, guiContext);
+				Gui configGui = null;
+				Object object = ConfigUtil.unmarshal(guiFile, guiContext);
+
+				if (object instanceof Gui)
+					configGui = (Gui)object;
+
 				config.setGui(configGui);
 			} catch (JAXBException jaxbE) {
 				//
-			} catch (FileNotFoundException fne) {
+			} catch (IOException ioE) {
 				//
 			}
 		}
@@ -417,16 +443,16 @@ public class ImpExp {
 			// propogate config to plugins
 			for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
 				pluginConfigController.setOrCreatePluginConfig(plugin);
-			
+
 			// initialize plugins
 			for (Plugin plugin : pluginService.getExternalPlugins()) {
 				LOG.info("Initializing plugin " + plugin.getClass().getName());
 				if (useSplashScreen)
 					splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
-				
+
 				plugin.init(new Locale(lang.value()));
 			}
-			
+
 			// register internal plugins
 			pluginService.registerInternalPlugin(new CityGMLImportPlugin(jaxbBuilder, config, mainView));		
 			pluginService.registerInternalPlugin(new CityGMLExportPlugin(jaxbBuilder, config, mainView));		

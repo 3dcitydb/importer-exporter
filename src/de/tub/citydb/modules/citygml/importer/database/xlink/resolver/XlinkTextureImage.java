@@ -134,7 +134,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 			// fourth step: try and upload image data
 			LOG.debug("Importing texture file: " + imageFileName);
 			resolverManager.propagateEvent(counter);
-			
+						
 			boolean letDBdetermineProperties = true;
 
 			if (isRemote) {
@@ -159,12 +159,13 @@ public class XlinkTextureImage implements DBXlinkResolver {
 			}
 
 			if (letDBdetermineProperties)
-				imgProxy.setProperties();
-
+				imgProxy.setProperties();			
+			
 			psInsert.setORAData(1, imgProxy);
 			psInsert.setLong(2, xlink.getId());
 			psInsert.execute();
 
+			imgProxy.close();
 			externalFileConn.commit();
 			return true;
 			

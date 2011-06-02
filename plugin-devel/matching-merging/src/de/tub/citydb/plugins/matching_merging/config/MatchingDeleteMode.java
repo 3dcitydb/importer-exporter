@@ -27,35 +27,39 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project;
+package de.tub.citydb.plugins.matching_merging.config;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+@XmlType(name="MatchingDeleteModeType")
+@XmlEnum
+public enum MatchingDeleteMode {
+	@XmlEnumValue("merge")
+    MERGE("merge"),
+    @XmlEnumValue("delall")
+    DELALL("delall"),
+    @XmlEnumValue("rename")
+    RENAME("rename");
 
-public class ProjectConfigUtil {
+    private final String value;
 
-	public static void marshal(Project project, String fileName, JAXBContext ctx) throws JAXBException {
-		Marshaller m = ctx.createMarshaller();
-		
-		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,Boolean.TRUE);
-		m.setProperty("com.sun.xml.bind.indentString", "  ");
+    MatchingDeleteMode(String v) {
+        value = v;
+    }
 
-		m.marshal(project, new File(fileName));
-	}
-	
-	public static Project unmarshal(String fileName, JAXBContext ctx) throws JAXBException, FileNotFoundException {
-		Unmarshaller um = ctx.createUnmarshaller();
-		return (Project)um.unmarshal(new FileInputStream(fileName));
-	}
-	
-	public static void generateSchema(JAXBContext ctx, File file) throws IOException {
-		ctx.generateSchema(new ProjectSchemaWriter(file));
-	}
+    public String value() {
+        return value;
+    }
+
+    public static MatchingDeleteMode fromValue(String v) {
+        for (MatchingDeleteMode c: MatchingDeleteMode.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+
+        return MERGE;
+    }
 }

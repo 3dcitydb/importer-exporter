@@ -132,6 +132,10 @@ public class Exporter implements EventHandler {
 		totalFeatureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
 		totalGeometryCounterMap = new EnumMap<GMLClass, Long>(GMLClass.class);
 	}
+	
+	public void cleanup() {
+		eventDispatcher.removeEventHandler(this);
+	}
 
 	public boolean doProcess() {
 		// get config shortcuts
@@ -465,11 +469,12 @@ public class Exporter implements EventHandler {
 					}
 
 					try {
-						if (shouldRun)
+						if (shouldRun) {
 							dbWorkerPool.shutdownAndWait();
-
+							xlinkExporterPool.shutdownAndWait();
+						}
+						
 						ioWriterPool.shutdownAndWait();
-						xlinkExporterPool.shutdownAndWait();
 					} catch (InterruptedException e) {
 						LOG.error("Internal error: " + e.getMessage());
 					}
@@ -634,7 +639,10 @@ public class Exporter implements EventHandler {
 
 				if (dbSplitter != null)
 					dbSplitter.shutdown();
-
+				
+				if (xlinkExporterPool != null)
+					xlinkExporterPool.shutdownNow();
+				
 				if (dbWorkerPool != null)
 					dbWorkerPool.shutdownNow();
 			}

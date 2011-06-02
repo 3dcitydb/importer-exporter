@@ -64,8 +64,6 @@ import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
@@ -74,6 +72,7 @@ import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.ConfigUtil;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.ReferenceSystems;
@@ -524,10 +523,8 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 						MessageFormat.format(Internal.I18N.getString("common.dialog.file.read.error"), Internal.I18N.getString("pref.db.srs.error.read.msg")));
 				return;
 			}
-
-			Unmarshaller um = getJAXBContext().createUnmarshaller();			
-			Object object = um.unmarshal(file);
-
+			
+			Object object = ConfigUtil.unmarshal(file, getJAXBContext());
 			if (object instanceof ReferenceSystems) {
 				ReferenceSystems refSyss = (ReferenceSystems)object;				
 				if (replace)
@@ -575,6 +572,11 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			LOG.error("Failed to parse file: " + msg);
 			topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
 					MessageFormat.format(Internal.I18N.getString("common.dialog.file.read.error"), msg));
+		} catch (IOException e) {
+			String msg = e.getMessage();
+			LOG.error("Failed to access file: " + msg);
+			topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
+					MessageFormat.format(Internal.I18N.getString("common.dialog.file.read.error"), msg));			
 		} finally {
 			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 		}
@@ -583,7 +585,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	private void exportReferenceSystems() {		
 		try {
 			setSettings();
-			
+
 			if (config.getProject().getDatabase().getReferenceSystems().isEmpty()) {
 				LOG.error("There are no user-defined reference systems to be exported.");
 				return;
@@ -603,7 +605,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				fileName += ".xml";
 				fileText.setText(fileName);
 			}
-			
+
 			File file = new File(fileName);
 			LOG.info("Writing reference systems to file '" + file.getAbsolutePath() + "'.");
 
@@ -616,11 +618,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				LOG.info("Writing reference system '" + tmp.getDescription() + "' (SRID: " + tmp.getSrid() + ").");
 			}
 
-			Marshaller m = getJAXBContext().createMarshaller();			
-			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,Boolean.TRUE);
-			m.setProperty("com.sun.xml.bind.indentString", "  ");
-
-			m.marshal(refSys, file);			
+			ConfigUtil.marshal(refSys, file, getJAXBContext());			
 			LOG.info("Reference systems successfully written to file '" + file.getAbsolutePath() + "'.");
 		} catch (JAXBException jaxb) {
 			String msg = jaxb.getMessage();
@@ -653,7 +651,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		return true;
 	}
-	
+
 	private JAXBContext getJAXBContext() throws JAXBException {
 		if (projectContext == null)
 			projectContext = JAXBContext.newInstance(ReferenceSystems.class);

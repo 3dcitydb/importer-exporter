@@ -537,7 +537,7 @@ public class DBBuilding implements DBImporter {
 		// BoundarySurfaces
 		if (building.isSetBoundedBySurface()) {
 			for (BoundarySurfaceProperty boundarySurfaceProperty : building.getBoundedBySurface()) {
-				AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getObject();
+				AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
 
 				if (boundarySurface != null) {
 					String gmlId = boundarySurface.getId();
@@ -554,6 +554,9 @@ public class DBBuilding implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+					
+					// free memory of nested feature
+					boundarySurfaceProperty.unsetBoundarySurface();
 				} else {
 					// xlink
 					String href = boundarySurfaceProperty.getHref();
@@ -568,7 +571,7 @@ public class DBBuilding implements DBImporter {
 		// BuildingInstallation
 		if (building.isSetOuterBuildingInstallation()) {
 			for (BuildingInstallationProperty buildingInstProperty : building.getOuterBuildingInstallation()) {
-				BuildingInstallation buildingInst = buildingInstProperty.getObject();
+				BuildingInstallation buildingInst = buildingInstProperty.getBuildingInstallation();
 				
 				if (buildingInst != null) {
 					String gmlId = buildingInst.getId();
@@ -585,6 +588,9 @@ public class DBBuilding implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+					
+					// free memory of nested feature
+					buildingInstProperty.unsetBuildingInstallation();
 				} else {
 					// xlink
 					String href = buildingInstProperty.getHref();
@@ -599,7 +605,7 @@ public class DBBuilding implements DBImporter {
 		// IntBuildingInstallation
 		if (building.isSetInteriorBuildingInstallation()) {
 			for (IntBuildingInstallationProperty intBuildingInstProperty : building.getInteriorBuildingInstallation()) {
-				IntBuildingInstallation intBuildingInst = intBuildingInstProperty.getObject();
+				IntBuildingInstallation intBuildingInst = intBuildingInstProperty.getIntBuildingInstallation();
 				
 				if (intBuildingInst != null) {
 					String gmlId = intBuildingInst.getId();
@@ -616,6 +622,9 @@ public class DBBuilding implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+					
+					// free memory of nested feature
+					intBuildingInstProperty.unsetIntBuildingInstallation();
 				} else {
 					// xlink
 					String href = intBuildingInstProperty.getHref();
@@ -630,7 +639,7 @@ public class DBBuilding implements DBImporter {
 		// Room
 		if (building.isSetInteriorRoom()) {
 			for (InteriorRoomProperty roomProperty : building.getInteriorRoom()) {
-				Room room = roomProperty.getObject();
+				Room room = roomProperty.getRoom();
 				
 				if (room != null) {
 					String gmlId = room.getId();
@@ -647,6 +656,9 @@ public class DBBuilding implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+					
+					// free memory of nested feature
+					roomProperty.unsetRoom();
 				} else {
 					// xlink
 					String href = roomProperty.getHref();
@@ -661,7 +673,7 @@ public class DBBuilding implements DBImporter {
 		// BuildingPart
 		if (building.isSetConsistsOfBuildingPart()) {
 			for (BuildingPartProperty buildingPartProperty : building.getConsistsOfBuildingPart()) {
-				BuildingPart buildingPart = buildingPartProperty.getObject();
+				BuildingPart buildingPart = buildingPartProperty.getBuildingPart();
 				
 				if (buildingPart != null) {
 					long id = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
@@ -679,6 +691,9 @@ public class DBBuilding implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+					
+					// free memory of nested feature
+					buildingPartProperty.unsetBuildingPart();
 				} else {
 					// xlink
 					String href = buildingPartProperty.getHref();
@@ -693,7 +708,7 @@ public class DBBuilding implements DBImporter {
 		// Address
 		if (building.isSetAddress()) {
 			for (AddressProperty addressProperty : building.getAddress()) {
-				Address address = addressProperty.getObject();
+				Address address = addressProperty.getAddress();
 				
 				if (address != null) {
 					String gmlId = address.getId();
@@ -710,6 +725,9 @@ public class DBBuilding implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+					
+					// free memory of nested feature
+					addressProperty.unsetAddress();
 				} else {
 					// xlink
 					String href = addressProperty.getHref();

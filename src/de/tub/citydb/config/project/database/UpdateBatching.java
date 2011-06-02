@@ -44,12 +44,12 @@ public class UpdateBatching {
 	@XmlElement(required=true, defaultValue="20")
 	@XmlSchemaType(name="positiveInteger")
 	private Integer featureBatchValue = 20;
-	@XmlElement(required=true, defaultValue="10000")
+	@XmlElement(required=true, defaultValue="1000")
 	@XmlSchemaType(name="positiveInteger")
-	private Integer gmlIdLookupServerBatchValue = 10000;
-	@XmlElement(required=true, defaultValue="10000")
+	private Integer gmlIdLookupServerBatchValue = 1000;
+	@XmlElement(required=true, defaultValue="1000")
 	@XmlSchemaType(name="positiveInteger")
-	private Integer tempBatchValue = 10000;
+	private Integer tempBatchValue = 1000;
 	
 	public UpdateBatching() {
 	}

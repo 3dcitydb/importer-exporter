@@ -981,8 +981,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(mainView, 
 					Internal.I18N.getString("kmlExport.dialog.window"),
 					Internal.I18N.getString("export.dialog.msg"),
-					tileAmount,
-					eventDispatcher);
+					tileAmount);
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -1018,6 +1017,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					exportDialog.dispose();
 				}
 			});
+			
+			// cleanup
+			kmlExporter.cleanup();
 
 			if (success) {
 				Logger.getInstance().info("Database export successfully finished.");

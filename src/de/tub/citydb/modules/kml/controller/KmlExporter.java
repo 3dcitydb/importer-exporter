@@ -152,6 +152,10 @@ public class KmlExporter implements EventHandler {
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
+	
+	public void cleanup() {
+		eventDispatcher.removeEventHandler(this);
+	}
 
 	public boolean doProcess() {
 		// get config shortcuts

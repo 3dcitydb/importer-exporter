@@ -377,8 +377,7 @@ public class ImportPanel extends JPanel {
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			final ImportStatusDialog importDialog = new ImportStatusDialog(mainView, 
 					Internal.I18N.getString("import.dialog.window"), 
-					Internal.I18N.getString("import.dialog.msg"), 
-					eventDispatcher);
+					Internal.I18N.getString("import.dialog.msg"));
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -416,6 +415,9 @@ public class ImportPanel extends JPanel {
 					importDialog.dispose();
 				}
 			});
+			
+			// cleanup
+			importer.cleanup();
 
 			if (success) {
 				LOG.info("Database import successfully finished.");
@@ -493,6 +495,9 @@ public class ImportPanel extends JPanel {
 					validatorDialog.dispose();
 				}
 			});
+			
+			// cleanup
+			validator.cleanup();
 
 			if (success) {
 				LOG.info("XML validation finished.");

@@ -17,6 +17,7 @@ public interface DatabaseController {
 	public List<? extends DatabaseSrs> getDatabaseSrs();
 	
 	public Connection getConnection() throws SQLException;
+	public Connection getNonPooledConnection() throws SQLException;
 	public boolean isIndexEnabled(String tableName, String columnName) throws SQLException;
 	
 	public boolean existsWorkspace(String workspaceName);

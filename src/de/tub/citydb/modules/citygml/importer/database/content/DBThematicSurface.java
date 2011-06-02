@@ -199,8 +199,8 @@ public class DBThematicSurface implements DBImporter {
         // Openings
         if (boundarySurface.isSetOpening()) {
         	for (OpeningProperty openingProperty : boundarySurface.getOpening()) {
-        		if (openingProperty.isSetObject()) {
-        			AbstractOpening opening = openingProperty.getObject();
+        		if (openingProperty.isSetOpening()) {
+        			AbstractOpening opening = openingProperty.getOpening();
         			String gmlId = opening.getId();
         			long id = openingImporter.insert(opening, boundarySurfaceId);
         			
@@ -215,6 +215,9 @@ public class DBThematicSurface implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+        			
+        			// free memory of nested feature
+        			openingProperty.unsetOpening();
         		} else {
         			// xlink
         			String href = openingProperty.getHref();

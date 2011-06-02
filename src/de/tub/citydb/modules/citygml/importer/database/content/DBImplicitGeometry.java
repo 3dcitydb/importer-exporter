@@ -61,7 +61,6 @@ public class DBImplicitGeometry implements DBImporter {
 	private PreparedStatement psUpdateImplicitGeometry;
 	private PreparedStatement psSelectLibraryObject;
 	private DBSurfaceGeometry surfaceGeometryImporter;
-	private ResultSet rs;
 
 	private boolean affineTransformation;
 	private int batchCounter;
@@ -121,6 +120,7 @@ public class DBImplicitGeometry implements DBImporter {
 		final ReentrantLock lock = mainLock;
 		lock.lock();
 
+		ResultSet rs = null;
 		try {
 			if (libraryURI != null) {
 				// check if we have the same library object in database

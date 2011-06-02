@@ -274,6 +274,8 @@ public class DBImporterManager {
 	}
 	
 	public void close() throws SQLException {
+		dbSequencer.close();
+
 		for (DBImporter importer : dbImporterMap.values())
 			importer.close();
 	}

@@ -91,11 +91,9 @@ import de.tub.citydb.api.plugin.extension.view.ViewExtension;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.ConfigUtil;
-import de.tub.citydb.config.gui.GuiConfigUtil;
 import de.tub.citydb.config.gui.window.MainWindow;
 import de.tub.citydb.config.gui.window.WindowSize;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.event.SwitchLocaleEventImpl;
@@ -495,10 +493,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			return false;
 		}
 
-		String projectConf = configPath + File.separator + config.getInternal().getConfigProject();
+		File projectFile = new File(configPath + File.separator + config.getInternal().getConfigProject());
 
 		try {
-			ProjectConfigUtil.marshal(config.getProject(), projectConf, jaxbProjectContext);
+			ConfigUtil.marshal(config.getProject(), projectFile, jaxbProjectContext);
 		} catch (JAXBException jaxbE) {
 			errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
 					Internal.I18N.getString("common.dialog.error.io.general"));
@@ -520,7 +518,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			return false;
 		}
 
-		String guiConf = configPath + File.separator + config.getInternal().getConfigGui();
+		File guiFile = new File(configPath + File.separator + config.getInternal().getConfigGui());
 
 		// set window size
 		Rectangle rect = getBounds();
@@ -535,7 +533,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consoleWindow.setSettings();
 
 		try {
-			GuiConfigUtil.marshal(config.getGui(), guiConf, jaxbGuiContext);
+			ConfigUtil.marshal(config.getGui(), guiFile, jaxbGuiContext);
 		} catch (JAXBException jaxbE) {
 			errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
 					Internal.I18N.getString("common.dialog.error.io.general"));

@@ -47,6 +47,11 @@ public class DatabaseControllerImpl implements DatabaseController {
 	}
 
 	@Override
+	public Connection getNonPooledConnection() throws SQLException {
+		return dbPool.getNonPooledConnection();
+	}
+
+	@Override
 	public boolean isIndexEnabled(String tableName, String columnName) throws SQLException {
 		return DBUtil.isIndexed(tableName, columnName);
 	}

@@ -134,20 +134,37 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 
 		int size = blob.getBufferSize();
 		byte[] buffer = new byte[size];
+		InputStream in = null;
+		FileOutputStream out = null;
 
 		try {
-			InputStream in = blob.getBinaryStream(1L);
-			FileOutputStream out = new FileOutputStream(fileURI);
+			in = blob.getBinaryStream(1L);
+			out = new FileOutputStream(fileURI);
 
 			int length = -1;
 			while ((length = in.read(buffer)) != -1)
 				out.write(buffer, 0, length);
-
-			in.close();
-			out.close();
 		} catch (IOException ioEx) {
 			LOG.error("Failed to write library object file " + fileName + ": " + ioEx.getMessage());
 			return false;
+		} finally {
+			blob.close();
+
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException e) {
+					//
+				}
+			}
+
+			if (out != null) {
+				try {
+					out.close();
+				} catch (IOException e) {
+					//
+				}
+			}
 		}
 
 		return true;

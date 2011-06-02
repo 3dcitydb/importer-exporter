@@ -34,6 +34,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -48,6 +50,7 @@ import javax.swing.SwingUtilities;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -59,6 +62,8 @@ import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class ImportStatusDialog extends JDialog implements EventHandler {
+	private final EventDispatcher eventDispatcher;
+
 	private JLabel fileName;
 	private JLabel mesageLabel;
 	private JLabel details;
@@ -78,10 +83,10 @@ public class ImportStatusDialog extends JDialog implements EventHandler {
 
 	public ImportStatusDialog(JFrame frame, 
 			String impExpTitle,
-			String impExpMessage,
-			EventDispatcher eventDispatcher) {
+			String impExpMessage) {
 		super(frame, impExpTitle, true);
 
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		eventDispatcher.addEventHandler(EventType.COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_MESSAGE, this);
@@ -142,6 +147,18 @@ public class ImportStatusDialog extends JDialog implements EventHandler {
 
 		pack();
 		progressBar.setIndeterminate(true);
+
+		addWindowListener(new WindowListener() {
+			public void windowClosed(WindowEvent e) {
+				eventDispatcher.removeEventHandler(ImportStatusDialog.this);
+			}
+			public void windowActivated(WindowEvent e) {}
+			public void windowClosing(WindowEvent e) {}
+			public void windowDeactivated(WindowEvent e) {}
+			public void windowDeiconified(WindowEvent e) {}
+			public void windowIconified(WindowEvent e) {}
+			public void windowOpened(WindowEvent e) {}
+		});
 	}
 
 	public JButton getCancelButton() {

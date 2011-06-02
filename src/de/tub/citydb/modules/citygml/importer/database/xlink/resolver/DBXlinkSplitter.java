@@ -86,6 +86,9 @@ public class DBXlinkSplitter {
 		appearanceXlinks();
 		libraryObjectXLinks();
 
+		if (!shouldRun)
+			return;
+		
 		// restart xlink worker pools
 		// just to make sure all appearance xlinks have been handled
 		// before starting to work on geometry xlinks

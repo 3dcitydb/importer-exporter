@@ -33,7 +33,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.jdbc.OracleConnection;
 import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
@@ -91,7 +90,7 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 	private final EventDispatcher eventDispatcher;
 
 	private Connection batchConn;
-	private Connection commitConn;
+	private Connection externalFileConn;
 	private DBXlinkResolverManager xlinkResolverManager;
 	private int updateCounter = 0;
 	private int commitAfter = 20;
@@ -117,17 +116,16 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 	private void init() throws SQLException {
 		batchConn = dbPool.getConnection();
 		batchConn.setAutoCommit(false);
-		((OracleConnection)batchConn).setImplicitCachingEnabled(true);
 
-		commitConn = dbPool.getConnection();
-		commitConn.setAutoCommit(false);
-
+		externalFileConn = dbPool.getNonPooledConnection();
+		externalFileConn.setAutoCommit(false);
+		
 		Database database = config.getProject().getDatabase();
 
 		// try and change workspace for both connections if needed
 		Workspace workspace = database.getWorkspaces().getImportWorkspace();
 		dbPool.gotoWorkspace(batchConn, workspace);
-		dbPool.gotoWorkspace(commitConn, workspace);
+		dbPool.gotoWorkspace(externalFileConn, workspace);
 
 		Integer commitAfterProp = database.getUpdateBatching().getFeatureBatchValue();
 		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= Internal.ORACLE_MAX_BATCH_SIZE)
@@ -135,7 +133,7 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 
 		xlinkResolverManager = new DBXlinkResolverManager(
 				batchConn,
-				commitConn,
+				externalFileConn,
 				tmpXlinkPool,
 				lookupServerManager,
 				cacheManager,
@@ -225,14 +223,14 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 				batchConn = null;
 			}
 
-			if (commitConn != null) {
+			if (externalFileConn != null) {
 				try {
-					commitConn.close();
+					externalFileConn.close();
 				} catch (SQLException e) {
 					//
 				}
 
-				commitConn = null;
+				externalFileConn = null;
 			}
 		}
 	}

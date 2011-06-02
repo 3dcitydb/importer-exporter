@@ -32,9 +32,11 @@ package de.tub.citydb.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.Properties;
 
 import oracle.jdbc.OracleConnection;
+import oracle.jdbc.pool.OracleDataSource;
 import oracle.ucp.UniversalConnectionPoolAdapter;
 import oracle.ucp.UniversalConnectionPoolException;
 import oracle.ucp.UniversalConnectionPoolLifeCycleState;
@@ -61,6 +63,7 @@ public class DBConnectionPool {
 	private UniversalConnectionPoolManager poolManager;
 	private PoolDataSource poolDataSource;
 	private DBConnection activeConnection;
+	private OracleDataSource nonPooledDataSource;
 
 	private DBConnectionPool() {
 		// just to thwart instantiation
@@ -118,6 +121,12 @@ public class DBConnectionPool {
 			props.put(OracleConnection.CONNECTION_PROPERTY_USE_THREADLOCAL_BUFFER_CACHE, "true");
 			poolDataSource.setConnectionProperties(props);
 			
+			// create a data source for non-pooled connections
+			nonPooledDataSource = new OracleDataSource();
+			nonPooledDataSource.setURL(poolDataSource.getURL());
+			nonPooledDataSource.setUser(poolDataSource.getUser());
+			nonPooledDataSource.setPassword(poolDataSource.getPassword());
+			
 			poolManager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);		
 			poolManager.startConnectionPool(poolName);
 		} catch (UniversalConnectionPoolException e) {
@@ -148,10 +157,11 @@ public class DBConnectionPool {
 			poolDataSource = null;
 
 			// try and get some meaningful error message
-			Throwable cause = e.getCause();
-			while (cause instanceof UniversalConnectionPoolException)
-				cause = cause.getCause();
-			
+			Throwable cause = null;
+			Iterator<Throwable> iter = e.iterator();
+			while (iter.hasNext())
+				cause = iter.next();
+
 			throw (cause != null) ? new SQLException(cause.getMessage()) : e;
 		}
 
@@ -165,6 +175,13 @@ public class DBConnectionPool {
 			throw new SQLException("Database is not connected.");
 
 		return poolDataSource.getConnection();
+	}
+	
+	public Connection getNonPooledConnection() throws SQLException {
+		if (poolDataSource == null)
+			throw new SQLException("Database is not connected.");
+
+		return nonPooledDataSource.getConnection();
 	}
 
 	public UniversalConnectionPoolLifeCycleState getLifeCyleState() {

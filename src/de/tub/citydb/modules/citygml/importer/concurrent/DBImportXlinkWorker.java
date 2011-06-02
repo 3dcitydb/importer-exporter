@@ -76,7 +76,7 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 	private final Config config;
 	private DBXlinkImporterManager dbXlinkManager;
 	private int updateCounter = 0;
-	private int commitAfter = 10000;
+	private int commitAfter = 1000;
 
 	public DBImportXlinkWorker(CacheManager cacheManager, Config config, EventDispatcher eventDispatcher) {
 		this.config = config;

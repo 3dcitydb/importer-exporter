@@ -214,7 +214,7 @@ public class DBRoom implements DBImporter {
 		// BoundarySurfaces
 		if (room.isSetBoundedBySurface()) {
 			for (BoundarySurfaceProperty boundarySurfaceProperty : room.getBoundedBySurface()) {
-				AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getObject();
+				AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
 				
 				if (boundarySurface != null) {
 					String gmlId = boundarySurface.getId();
@@ -231,6 +231,9 @@ public class DBRoom implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+					
+					// free memory of nested feature
+					boundarySurfaceProperty.unsetBoundarySurface();
 				} else {
 					// xlink
 					String href = boundarySurfaceProperty.getHref();
@@ -262,6 +265,9 @@ public class DBRoom implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+					
+					// free memory of nested feature
+					intBuildingInstProperty.unsetIntBuildingInstallation();
 				} else {
 					// xlink
 					String href = intBuildingInstProperty.getHref();
@@ -293,6 +299,9 @@ public class DBRoom implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+					
+					// free memory of nested feature
+					intFurnitureProperty.unsetBuildingFurniture();
 				} else {
 					// xlink
 					String href = intFurnitureProperty.getHref();

@@ -14,17 +14,15 @@ import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
 import de.tub.citydb.api.plugin.extension.view.ViewExtension;
 
 public class DefaultPluginService implements PluginService {
-	private static DefaultPluginService pluginService;	
-	private List<InternalPlugin> internalPlugins;
-	private List<Plugin> externalPlugins;
+	private static DefaultPluginService pluginService;
+	private final ClassLoader loader;
+	private final List<InternalPlugin> internalPlugins;
+	private final List<Plugin> externalPlugins;
 
 	private DefaultPluginService(ClassLoader loader) throws ServiceConfigurationError {
+		this.loader = loader;
 		internalPlugins = new ArrayList<InternalPlugin>();
 		externalPlugins = new ArrayList<Plugin>();
-
-		ServiceLoader<Plugin> pluginLoader = ServiceLoader.load(Plugin.class, loader);
-		for (Iterator<Plugin> iter = pluginLoader.iterator(); iter.hasNext(); )
-			externalPlugins.add(iter.next());
 	}
 
 	public static synchronized DefaultPluginService getInstance(ClassLoader loader) throws ServiceConfigurationError {
@@ -35,8 +33,20 @@ public class DefaultPluginService implements PluginService {
 	}
 
 	@Override
+	public void loadPlugins() {
+		ServiceLoader<Plugin> pluginLoader = ServiceLoader.load(Plugin.class, loader);
+		for (Iterator<Plugin> iter = pluginLoader.iterator(); iter.hasNext(); )
+			registerExternalPlugin(iter.next());
+	}
+
+	@Override
 	public void registerInternalPlugin(InternalPlugin plugin) {
 		internalPlugins.add(plugin);
+	}
+
+	@Override
+	public void registerExternalPlugin(Plugin plugin) {
+		externalPlugins.add(plugin);
 	}
 
 	@Override

@@ -33,7 +33,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.jdbc.OracleConnection;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.database.DBConnectionPool;
@@ -120,7 +119,6 @@ public class HeapCacheTable implements CacheTable {
 			if (!isCreated) {				
 				conn = dbPool.getConnection();
 				conn.setAutoCommit(false);
-				((OracleConnection)conn).setImplicitCachingEnabled(true);
 
 				model.create(conn, tableName, CacheTableType.HEAP_TABLE);
 				isCreated = true;

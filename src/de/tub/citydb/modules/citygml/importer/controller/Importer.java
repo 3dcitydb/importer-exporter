@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -45,6 +46,7 @@ import org.citygml4j.builder.jaxb.xml.io.reader.CityGMLChunk;
 import org.citygml4j.builder.jaxb.xml.io.reader.JAXBChunkReader;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.xml.io.CityGMLInputFactory;
 import org.citygml4j.xml.io.reader.CityGMLReadException;
@@ -136,6 +138,10 @@ public class Importer implements EventHandler {
 
 		featureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
 		geometryCounterMap = new EnumMap<GMLClass, Long>(GMLClass.class);
+	}
+	
+	public void cleanup() {
+		eventDispatcher.removeEventHandler(this);
 	}
 
 	public boolean doProcess() {
@@ -249,6 +255,8 @@ public class Importer implements EventHandler {
 			in.setProperty(CityGMLInputFactory.FEATURE_READ_MODE, FeatureReadMode.SPLIT_PER_COLLECTION_MEMBER);
 			in.setProperty(CityGMLInputFactory.FAIL_ON_MISSING_ADE_SCHEMA, false);
 			in.setProperty(CityGMLInputFactory.PARSE_SCHEMA, false);
+			in.setProperty(CityGMLInputFactory.SPLIT_AT_FEATURE_PROPERTY, new QName("generalizesTo"));
+			in.setProperty(CityGMLInputFactory.EXCLUDE_FROM_SPLITTING, CityModel.class);
 		} catch (CityGMLReadException e) {
 			LOG.error("Failed to initialize CityGML parser. Aborting.");
 			return false;
@@ -285,10 +293,14 @@ public class Importer implements EventHandler {
 		Long counterFirstElement = counterFilter.getFilterState().get(0);
 		Long counterLastElement = counterFilter.getFilterState().get(1);
 		long elementCounter = 0;
-
+		
 		runState = PARSING;
 
 		while (shouldRun && fileCounter < importFiles.size()) {
+			// check whether we reached the counter limit
+			if (counterLastElement != null && elementCounter > counterLastElement)
+				break;
+			
 			try {
 				File file = importFiles.get(fileCounter++);
 				intConfig.setImportPath(file.getParent());
@@ -363,7 +375,7 @@ public class Importer implements EventHandler {
 								queueSize,
 								false);
 
-				// this worker pool parses the xml file and passes xml chunks to the dbworker pool
+				// this worker pool unmarshals the input file and passes xml chunks to the dbworker pool
 				featureWorkerPool = new WorkerPool<CityGMLChunk>(
 						minThreads,
 						maxThreads,
@@ -376,7 +388,7 @@ public class Importer implements EventHandler {
 				dbWorkerPool.prestartCoreWorkers();
 				featureWorkerPool.prestartCoreWorkers();
 
-				// ok, preparation done. inform user and  start parsing the input file
+				// ok, preparation done. inform user and start parsing the input file
 				JAXBChunkReader reader = null;
 				try {
 					reader = (JAXBChunkReader)in.createCityGMLReader(file);	
@@ -391,8 +403,8 @@ public class Importer implements EventHandler {
 							if (counterFirstElement != null && elementCounter < counterFirstElement)
 								continue;
 
-							if (counterLastElement != null && elementCounter > counterLastElement)					
-								break;							
+							if (counterLastElement != null && elementCounter > counterLastElement)				
+								break;
 						}
 
 						featureWorkerPool.addWork(chunk);

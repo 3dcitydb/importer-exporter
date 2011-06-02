@@ -13,8 +13,8 @@
     <str id="TargetPanel.headline" txt="Installationspfad wählen"/>
     <str id="TargetPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Wählen Sie den Ort für die Installation des ${APP_NAME}.&lt;/body&gt;&lt;/html&gt;"/>
 
-    <str id="PacksPanel.headline" txt="Installationspakete wählen"/>
-    <str id="PacksPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Wählen Sie die zu installierenden Programmfunktionen aus.&lt;/body&gt;&lt;/html&gt;"/>
+    <str id="TreePacksPanel.headline" txt="Installationspakete wählen"/>
+    <str id="TreePacksPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Wählen Sie die zu installierenden Programmfunktionen aus.&lt;/body&gt;&lt;/html&gt;"/>
 
     <str id="SummaryPanel.headline" txt="Bereit zur Installation"/>
     <str id="SummaryPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Das ${APP_NAME} kann nun installiert werden.&lt;/body&gt;&lt;/html&gt;"/>

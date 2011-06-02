@@ -13,8 +13,8 @@
     <str id="TargetPanel.headline" txt="Select Destination Location"/>
     <str id="TargetPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Select where you would like the $APP_NAME installed.&lt;/body&gt;&lt;/html&gt;"/>
 
-    <str id="PacksPanel.headline" txt="Select Installation Packages"/>
-    <str id="PacksPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Select which application components you want to install.&lt;/body&gt;&lt;/html&gt;"/>
+    <str id="TreePacksPanel.headline" txt="Select Installation Packages"/>
+    <str id="TreePacksPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Select which application components you want to install.&lt;/body&gt;&lt;/html&gt;"/>
 
     <str id="SummaryPanel.headline" txt="Ready to Install"/>
     <str id="SummaryPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Setup is ready to install the ${APP_NAME}.&lt;/body&gt;&lt;/html&gt;"/>

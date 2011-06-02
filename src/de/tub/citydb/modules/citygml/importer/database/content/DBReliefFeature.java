@@ -129,7 +129,7 @@ public class DBReliefFeature implements DBImporter {
 		// relief component
 		if (reliefFeature.isSetReliefComponent()) {
 			for (ReliefComponentProperty property : reliefFeature.getReliefComponent()) {
-				AbstractReliefComponent component = property.getObject();
+				AbstractReliefComponent component = property.getReliefComponent();
 				
 				if (component != null) {
 					String gmlId = component.getId();
@@ -146,6 +146,9 @@ public class DBReliefFeature implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+					
+					// free memory of nested feature
+					property.unsetReliefComponent();
 				} else {
 					// xlink
         			String href = property.getHref();

@@ -170,6 +170,7 @@ public class DBXlinkResolverManager {
 
 	public void close() throws SQLException {
 		dbGmlIdResolver.close();
+		dbSequencer.close();
 		
 		for (DBXlinkResolver dbResolver : dbWriterMap.values())
 			dbResolver.close();

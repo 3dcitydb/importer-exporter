@@ -34,6 +34,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -48,6 +50,7 @@ import javax.swing.SwingUtilities;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -59,6 +62,8 @@ import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class ExportStatusDialog extends JDialog implements EventHandler {
+	private final EventDispatcher eventDispatcher;
+
 	private JLabel fileName;
 	private JLabel tileLabel;
 	private JLabel messageLabel;
@@ -75,16 +80,16 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 	private long featureCounter;
 	private long textureCounter;
 	private volatile boolean acceptStatusUpdate = true;
-	
+
 	private int totalTileAmount;
 
 	public ExportStatusDialog(JFrame frame, 
 			String impExpTitle,
 			String impExpMessage,
-			int totalTileAmount,
-			EventDispatcher eventDispatcher) {
+			int totalTileAmount) {
 		super(frame, impExpTitle, true);
 
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		eventDispatcher.addEventHandler(EventType.COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_MESSAGE, this);
@@ -92,7 +97,7 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		this.totalTileAmount = totalTileAmount;
-		
+
 		initGUI(impExpTitle, impExpMessage);
 	}
 
@@ -104,14 +109,14 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 		cancelButton = new JButton(Internal.I18N.getString("common.button.cancel"));
 		featureLabel = new JLabel(Internal.I18N.getString("common.status.dialog.featureCounter"));
 		textureLabel = new JLabel(Internal.I18N.getString("common.status.dialog.textureCounter"));
-		
+
 		featureCounterLabel = new JLabel("0", SwingConstants.TRAILING);
 		textureCounterLabel = new JLabel("0", SwingConstants.TRAILING);
 		featureCounterLabel.setPreferredSize(new Dimension(100, featureLabel.getPreferredSize().height));
 		textureCounterLabel.setPreferredSize(new Dimension(100, textureLabel.getPreferredSize().height));
 
 		progressBar = new JProgressBar();
-		
+
 		setLayout(new GridBagLayout()); 
 		{			
 			main = new JPanel();
@@ -119,7 +124,7 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 			main.setLayout(new GridBagLayout());
 			{
 				int gridY = 0;
-				
+
 				main.add(fileName, GuiUtil.setConstraints(0,gridY++,0.0,0,GridBagConstraints.HORIZONTAL,5,5,5,5));
 				main.add(messageLabel, GuiUtil.setConstraints(0,gridY++,0.0,0,GridBagConstraints.HORIZONTAL,5,5,0,5));
 				main.add(progressBar, GuiUtil.setConstraints(0,gridY++,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
@@ -137,12 +142,12 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 					row.add(featureCounterLabel, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,1,5));
 					row.add(textureLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
 					row.add(textureCounterLabel, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
-					
+
 					if (totalTileAmount > 0) {
 						tileLabel = new JLabel(Internal.I18N.getString("common.status.dialog.tileCounter"));
 						tileCounterLabel = new JLabel("0", SwingConstants.TRAILING);
 						tileCounterLabel.setPreferredSize(new Dimension(100, tileCounterLabel.getPreferredSize().height));
-						
+
 						row.add(tileLabel, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
 						row.add(tileCounterLabel, GuiUtil.setConstraints(1,2,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
 					}
@@ -154,6 +159,18 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 
 		pack();
 		progressBar.setIndeterminate(true);
+
+		addWindowListener(new WindowListener() {
+			public void windowClosed(WindowEvent e) {
+				eventDispatcher.removeEventHandler(ExportStatusDialog.this);
+			}
+			public void windowActivated(WindowEvent e) {}
+			public void windowClosing(WindowEvent e) {}
+			public void windowDeactivated(WindowEvent e) {}
+			public void windowDeiconified(WindowEvent e) {}
+			public void windowIconified(WindowEvent e) {}
+			public void windowOpened(WindowEvent e) {}
+		});
 	}
 
 	public JButton getCancelButton() {

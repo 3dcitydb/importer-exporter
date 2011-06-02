@@ -319,7 +319,7 @@ public class DBWaterBody implements DBImporter {
 		// boundary surfaces
 		if (waterBody.isSetBoundedBySurface()) {
 			for (BoundedByWaterSurfaceProperty waterSurfaceProperty : waterBody.getBoundedBySurface()) {
-				AbstractWaterBoundarySurface boundarySurface = waterSurfaceProperty.getObject();
+				AbstractWaterBoundarySurface boundarySurface = waterSurfaceProperty.getWaterBoundarySurface();
 				
 				if (boundarySurface != null) {
 					String gmlId = boundarySurface.getId();
@@ -336,6 +336,9 @@ public class DBWaterBody implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
+					
+					// free memory of nested feature
+					waterSurfaceProperty.unsetWaterBoundarySurface();
 				} else {
 					// xlink
 					String href = waterSurfaceProperty.getHref();

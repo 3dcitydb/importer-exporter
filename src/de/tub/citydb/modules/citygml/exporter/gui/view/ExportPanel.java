@@ -329,8 +329,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(mainView, 
 					Internal.I18N.getString("export.dialog.window"),
 					Internal.I18N.getString("export.dialog.msg"),
-					tileAmount,
-					eventDispatcher);
+					tileAmount);
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -368,6 +367,9 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 					exportDialog.dispose();
 				}
 			});
+			
+			// cleanup
+			exporter.cleanup();
 
 			if (success) {
 				LOG.info("Database export successfully finished.");

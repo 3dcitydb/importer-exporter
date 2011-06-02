@@ -11,6 +11,9 @@ import de.tub.citydb.api.plugin.extension.view.ViewExtension;
 
 public interface PluginService {
 	public void registerInternalPlugin(InternalPlugin plugin);
+	public void registerExternalPlugin(Plugin plugin);
+	public void loadPlugins();
+	
 	public List<InternalPlugin> getInternalPlugins();
 	public <T extends InternalPlugin> T getInternalPlugin(Class<T> pluginClass);
 	

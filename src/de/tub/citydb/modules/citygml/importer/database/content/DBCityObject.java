@@ -231,7 +231,7 @@ public class DBCityObject implements DBImporter {
 		// generalizesTo
 		if (cityObject.isSetGeneralizesTo()) {
 			for (GeneralizationRelation generalizesTo : cityObject.getGeneralizesTo()) {
-				if (generalizesTo.isSetObject()) {
+				if (generalizesTo.isSetCityObject()) {
 					StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 							cityObject.getCityGMLClass(), 
 							origGmlId));
@@ -273,6 +273,9 @@ public class DBCityObject implements DBImporter {
 							
 							LOG.error(msg.toString());
 						}
+						
+						// free memory of nested feature
+						appearanceProperty.unsetAppearance();
 					} else {
 						// xlink
 						String href = appearanceProperty.getHref();

@@ -89,6 +89,10 @@ public class XMLValidator implements EventHandler {
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
+	
+	public void cleanup() {
+		eventDispatcher.removeEventHandler(this);
+	}
 
 	public boolean doProcess() {
 		runState = PREPARING;

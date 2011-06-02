@@ -178,7 +178,9 @@ public class DBAppearance implements DBImporter {
 						
 						LOG.error(msg.toString());
 					}
-
+					
+					// free memory of nested feature
+					surfaceDataProp.unsetSurfaceData();
 				} else {
 					// xlink
 					String href = surfaceDataProp.getHref();					

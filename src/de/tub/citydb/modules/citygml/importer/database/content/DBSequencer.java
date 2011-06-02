@@ -79,4 +79,9 @@ public class DBSequencer {
 
 		return id;
 	}
+	
+	public void close() throws SQLException {
+		for (PreparedStatement stmt : psIdMap.values())
+			stmt.close();
+	}
 }

@@ -7,12 +7,9 @@ import java.net.URLClassLoader;
 import java.util.ServiceConfigurationError;
 
 public class PluginServiceFactory {
-	private static ClassLoader loader;
+	private static ClassLoader loader = new ClassLoader();
 	
 	public static void addPluginDirectory(File directory) throws IOException {
-		if (loader == null)
-			loader = new ClassLoader();
-		
 		if (directory.exists())
 			for (File file : directory.listFiles())
 				if (file.getName().toLowerCase().endsWith(".jar"))

@@ -151,6 +151,8 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 		} catch (IOException ioEx) {
 			LOG.error("Failed to write texture file " + fileName + ": " + ioEx.getMessage());
 			return false;
+		} finally {
+			imgProxy.close();
 		}
 
 		return true;

@@ -182,10 +182,12 @@ public class DBSplitter {
 			initFilter();
 			queryCityObject();
 
-			try {
-				dbWorkerPool.join();
-			} catch (InterruptedException e) {
-				//
+			if (shouldRun) {
+				try {
+					dbWorkerPool.join();
+				} catch (InterruptedException e) {
+					//
+				}
 			}
 
 			if (!featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP)) {
@@ -217,6 +219,9 @@ public class DBSplitter {
 	}
 
 	private void queryCityObject() throws SQLException {
+		if (!shouldRun)
+			return;
+
 		Statement stmt = null;
 		ResultSet rs = null;
 
@@ -326,7 +331,7 @@ public class DBSplitter {
 		try {
 
 			for (String query : queryList) {
-				stmt = connection.createStatement();
+				stmt = connection.createStatement();				
 				rs = stmt.executeQuery(query);
 
 				while (rs.next() && shouldRun) {
@@ -348,6 +353,7 @@ public class DBSplitter {
 				}
 
 				rs.close();
+				stmt.close();
 			}
 		} catch (SQLException sqlEx) {
 			throw sqlEx;
@@ -475,8 +481,8 @@ public class DBSplitter {
 
 			// first: check nested groups being group members
 			String innerGroupQuery = "select co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co " +
-					"where co.ID=gtc.CITYOBJECT_ID " +
-					"and gtc.CITYOBJECTGROUP_ID=" + groupId + " and co.CLASS_ID=23 ";
+			"where co.ID=gtc.CITYOBJECT_ID " +
+			"and gtc.CITYOBJECTGROUP_ID=" + groupId + " and co.CLASS_ID=23 ";
 
 			if (bboxFilter != null)
 				innerGroupQuery += "and " + bboxFilter;
@@ -490,6 +496,7 @@ public class DBSplitter {
 			}
 
 			rs.close();
+			stmt.close();
 
 			for (Long innerGroupId : groupIds) {
 				if (visited.contains(innerGroupId))
@@ -506,8 +513,8 @@ public class DBSplitter {
 
 			// second: work on groupMembers which are not groups
 			String groupMemberQuery = "select co.ID, co.CLASS_ID from CITYOBJECT co, GROUP_TO_CITYOBJECT gtc " +
-					"where gtc.CITYOBJECT_ID=co.ID " +
-					"and gtc.CITYOBJECTGROUP_ID=" + groupId;
+			"where gtc.CITYOBJECT_ID=co.ID " +
+			"and gtc.CITYOBJECTGROUP_ID=" + groupId;
 
 			if (bboxFilter != null)
 				groupMemberQuery += " and " + bboxFilter;
@@ -528,11 +535,12 @@ public class DBSplitter {
 			} 
 
 			rs.close();
+			stmt.close();
 
 			// third: work on parents which are not groups
 			String parentQuery = "select grp.PARENT_CITYOBJECT_ID, co.CLASS_ID from CITYOBJECTGROUP grp, CITYOBJECT co " +
-					"where co.ID=grp.PARENT_CITYOBJECT_ID " +
-					"and grp.ID=" + groupId + " AND not grp.PARENT_CITYOBJECT_ID is NULL";
+			"where co.ID=grp.PARENT_CITYOBJECT_ID " +
+			"and grp.ID=" + groupId + " AND not grp.PARENT_CITYOBJECT_ID is NULL";
 
 			if (bboxFilter != null)
 				parentQuery += " and " + bboxFilter;
@@ -553,6 +561,7 @@ public class DBSplitter {
 			}
 
 			rs.close();
+			stmt.close();
 
 			// wait for jobs to be done...
 			try {

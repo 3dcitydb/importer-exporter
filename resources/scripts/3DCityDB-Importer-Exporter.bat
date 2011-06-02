@@ -1,8 +1,8 @@
 @ECHO OFF
-REM Example shell script to execute the !app.title!
+REM Example shell script to execute the !impexp.name!
 REM The tool can be started using a graphical user interface (default) or
 REM as a shell version (using -shell switch, e.g., for batch processing)
-REM Use '!app.jar! -help' to get a list of available options
+REM Use '!impexp.jar.filename! -help' to get a list of available options
 
 REM cd to path of the starter script
 cd /d %~dp0
@@ -24,7 +24,7 @@ goto LAUNCH
 REM Uncomment the following line to use this script as execution wrapper, 
 REM e.g., from external programs. Command line arguments are passed to the 
 REM jar file.
-REM %JAVA% -jar -Xms128m -Xmx768m lib/!app.jar! %*
+REM %JAVA% -jar -Xms128m -Xmx768m lib/!impexp.jar.filename! %*
 
 REM The following command executes the GUI version 
-start /min cmd /c "%JAVA% -jar -Xms128m -Xmx768m lib/!app.jar!"
+start /min cmd /c "%JAVA% -jar -Xms128m -Xmx768m lib/!impexp.jar.filename!"

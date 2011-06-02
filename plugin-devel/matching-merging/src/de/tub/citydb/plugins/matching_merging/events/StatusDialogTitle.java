@@ -27,30 +27,20 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.gui;
+package de.tub.citydb.plugins.matching_merging.events;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import de.tub.citydb.api.event.Event;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+public class StatusDialogTitle extends Event {
+	private String title;
+	
+	public StatusDialogTitle(String title, Object source) {
+		super(EventType.STATUS_DIALOG_TITLE, source);
+		this.title = title;
+	}
 
-public class GuiConfigUtil {
-
-	public static void marshal(Gui gui, String fileName, JAXBContext ctx) throws JAXBException {
-		Marshaller m = ctx.createMarshaller();
-		
-		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,Boolean.TRUE);
-		m.setProperty("com.sun.xml.bind.indentString", "  ");
-
-		m.marshal(gui, new File(fileName));
+	public String getTitle() {
+		return title;
 	}
 	
-	public static Gui unmarshal(String fileName, JAXBContext ctx) throws JAXBException, FileNotFoundException {
-		Unmarshaller um = ctx.createUnmarshaller();
-		return (Gui)um.unmarshal(new FileInputStream(fileName));
-	}
 }

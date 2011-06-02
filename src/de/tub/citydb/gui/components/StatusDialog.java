@@ -33,6 +33,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -54,7 +56,9 @@ import de.tub.citydb.modules.common.event.StatusDialogTitle;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class StatusDialog extends JDialog implements EventHandler {
+public class StatusDialog extends JDialog implements EventHandler {	
+	private EventDispatcher eventDispatcher;
+
 	private JLabel titleLabel;
 	private JLabel messageLabel;
 	private JProgressBar progressBar;
@@ -64,6 +68,7 @@ public class StatusDialog extends JDialog implements EventHandler {
 	private JButton button;
 	private volatile boolean acceptStatusUpdate = true;
 
+
 	public StatusDialog(JFrame frame, 
 			String windowTitle, 
 			String statusTitle,
@@ -72,15 +77,16 @@ public class StatusDialog extends JDialog implements EventHandler {
 			boolean setButton,
 			EventDispatcher eventDispatcher) {
 		super(frame, windowTitle, true);
-		
+
+		this.eventDispatcher = eventDispatcher;
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_MESSAGE, this);
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_TITLE, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-		
+
 		initGUI(windowTitle, statusTitle, statusMessage, statusDetails, setButton);
 	}
-	
+
 	public StatusDialog(JFrame frame, 
 			String windowTitle, 
 			String statusTitle,
@@ -88,7 +94,7 @@ public class StatusDialog extends JDialog implements EventHandler {
 			String statusDetails, 
 			boolean setButton) {
 		super(frame, windowTitle, true);
-		
+
 		initGUI(windowTitle, statusTitle, statusMessage, statusDetails, setButton);
 	}
 
@@ -97,17 +103,17 @@ public class StatusDialog extends JDialog implements EventHandler {
 			String statusMessage, 
 			String statusDetails, 
 			boolean setButton) {
-		
+
 		if (statusTitle == null)
 			statusTitle = "";
-		
+
 		if (statusMessage == null)
 			statusMessage = "";
-		
+
 		String[] details = null;
 		if (statusDetails != null)
 			details = statusDetails.split("<br\\s*/*>");
-		
+
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		titleLabel = new JLabel(statusTitle);
 		titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
@@ -148,6 +154,19 @@ public class StatusDialog extends JDialog implements EventHandler {
 
 			pack();
 			progressBar.setIndeterminate(true);
+
+			addWindowListener(new WindowListener() {
+				public void windowClosed(WindowEvent e) {
+					if (eventDispatcher != null)
+						eventDispatcher.removeEventHandler(StatusDialog.this);
+				}
+				public void windowActivated(WindowEvent e) {}
+				public void windowClosing(WindowEvent e) {}
+				public void windowDeactivated(WindowEvent e) {}
+				public void windowDeiconified(WindowEvent e) {}
+				public void windowIconified(WindowEvent e) {}
+				public void windowOpened(WindowEvent e) {}
+			});
 		}
 	}
 
@@ -158,7 +177,7 @@ public class StatusDialog extends JDialog implements EventHandler {
 	public JLabel getStatusMessageLabel() {
 		return messageLabel;
 	}
-	
+
 	public JButton getButton() {
 		return button;
 	}
@@ -211,5 +230,5 @@ public class StatusDialog extends JDialog implements EventHandler {
 			titleLabel.setText(((StatusDialogTitle)e).getTitle());
 		}
 	}
-	
+
 }

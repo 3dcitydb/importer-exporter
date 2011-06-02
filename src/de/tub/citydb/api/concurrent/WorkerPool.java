@@ -46,7 +46,7 @@ public class WorkerPool<T> {
 	private final ConcurrentHashMap<Worker<T>, Object> workers;
 	private final WorkerFactory<T> workerFactory;
 	private static final Object DUMMY = new Object();
-	
+
 	private volatile int runState;
 	private static final int RUNNING    = 0;
 	private static final int SHUTDOWN   = 1;
@@ -148,7 +148,7 @@ public class WorkerPool<T> {
 			try {
 				if (blockAndFlush)
 					flushed.awaitUninterruptibly();
-				
+
 				if (count == workItems.length)
 					return false;
 				else {
@@ -170,7 +170,7 @@ public class WorkerPool<T> {
 			try {
 				if (blockAndFlush)
 					flushed.awaitUninterruptibly();
-				
+
 				for (;;) {
 					if (count != workItems.length) {
 						insert(work);
@@ -202,7 +202,7 @@ public class WorkerPool<T> {
 			try {
 				if (blockAndFlush)
 					flushed.awaitUninterruptibly();
-				
+
 				while (count == workItems.length)
 					notFull.awaitUninterruptibly();
 
@@ -423,7 +423,7 @@ public class WorkerPool<T> {
 			boolean fair) {
 		this(corePoolSize, maximumPoolSize, workerFactory, queueSize, fair, true);
 	}
-	
+
 	public WorkerPool(int corePoolSize,
 			int maximumPoolSize,
 			WorkerFactory<T> workerFactory,
@@ -551,7 +551,7 @@ public class WorkerPool<T> {
 	public void shutdown() {		
 		if (runState >= SHUTDOWN)
 			return;
-		
+
 		final ReentrantLock mainLock = this.mainLock;
 		final ReentrantLock queueLock = workQueue.lock;
 		mainLock.lock();
@@ -583,7 +583,7 @@ public class WorkerPool<T> {
 	public void shutdownAndWait() throws InterruptedException {
 		if (runState >= SHUTDOWN)
 			return;
-		
+
 		final ReentrantLock mainLock = this.mainLock;
 		final ReentrantLock queueLock = workQueue.lock;
 		mainLock.lock();
@@ -622,16 +622,17 @@ public class WorkerPool<T> {
 	public List<T> shutdownNow() {
 		if (runState >= SHUTDOWN)
 			return null;
-		
-		final ReentrantLock mainLock = this.mainLock;
+
+		List<T> workList = drainQueue();
+
+		final ReentrantLock mainLock = this.mainLock;	
 		mainLock.lock();
 		try {
-			if (runState < STOP)
-				runState = STOP;
-
+			if (runState < SHUTDOWN)
+				runState = SHUTDOWN;
+			
 			interruptWorkers();
-
-			List<T> workList = drainQueue();
+			
 			runState = TERMINATED;
 			clearWorkers();
 			return workList;
@@ -645,7 +646,7 @@ public class WorkerPool<T> {
 		// restarting threads...
 		if (runState >= SHUTDOWN)
 			return;
-		
+
 		final ReentrantLock mainLock = this.mainLock;
 		final ReentrantLock queueLock = workQueue.lock;
 		mainLock.lockInterruptibly();
@@ -664,7 +665,7 @@ public class WorkerPool<T> {
 			} catch (InterruptedException ie) {
 				// re-try
 			}
-			
+
 			workQueue.blockAndFlush = false;
 			workQueue.flushed.signalAll();
 
@@ -719,7 +720,7 @@ public class WorkerPool<T> {
 			mainLock.unlock();
 		}
 	}
-	
+
 	private void interruptWorkersIfIdle() {
 		final ReentrantLock mainLock = this.mainLock;
 		mainLock.lock();
