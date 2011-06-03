@@ -164,13 +164,15 @@ public class ImpExpCmd {
 		EventDispatcher eventDispatcher = new EventDispatcher();
 		KmlExporter kmlExporter = new KmlExporter(jaxbKmlContext, jaxbColladaContext, dbPool, config, eventDispatcher);
 		ExportFilterConfig filter = config.getProject().getKmlExporter().getFilter();
-		try {
-			kmlExporter.calculateRowsColumnsAndDelta();
-		}
-		catch (SQLException sqle) {
-			String srsDescription = filter.getComplexFilter().getBoundingBox().getSRS().getDescription();
-			LOG.error(srsDescription + " " + sqle.getMessage());
-			return;
+		if (filter.isSetComplexFilter()) {
+			try {
+				kmlExporter.calculateRowsColumnsAndDelta();
+			}
+			catch (SQLException sqle) {
+				String srsDescription = filter.getComplexFilter().getBoundingBox().getSRS().getDescription();
+				LOG.error(srsDescription + " " + sqle.getMessage());
+				return;
+			}
 		}
 		boolean success = kmlExporter.doProcess();
 		eventDispatcher.shutdown();
