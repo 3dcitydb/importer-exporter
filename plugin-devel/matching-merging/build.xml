@@ -48,7 +48,7 @@
 		</copy>
 
 		<!-- copy LICENSE templates -->
-		<copy todir="${plugin.match.dir.dest}">
+		<copy todir="${plugin.match.dir.dest.license}">
 			<fileset dir="${dir.resources.license}" includes="**/*" />
 		</copy>
 
@@ -58,7 +58,7 @@
 		</copy>
 
 		<!-- replace tokens in template files -->
-		<replace file="${plugin.match.dir.dest}/LICENSE.txt" token="!software.name!" value="${plugin.match.name}" />
+		<replace file="${plugin.match.dir.dest.license}/LICENSE.txt" token="!software.name!" value="${plugin.match.name}" />
 		<replace file="${plugin.match.dir.dest}/README.txt" token="!impexp.name!" value="${impexp.name}" />
 		<replace file="${plugin.match.dir.dest}/README.txt" token="!impexp.version!" value="${impexp.version}" />
 		<replace file="${plugin.match.dir.dest}/README.txt" token="!plugin.match.name!" value="${plugin.match.name}" />
@@ -70,6 +70,7 @@
 		<replace file="${plugin.match.dir.dest}/README.txt" token="!vendor.organisation!" value="${vendor.organisation}" />
 		<replace file="${plugin.match.dir.dest}/README.txt" token="!vendor.copyright.year!" value="${vendor.copyright.year}" />
 		<replace file="${plugin.match.dir.dest}/README.txt" token="!vendor.homepage!" value="${vendor.homepage}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!vendor.country!" value="${vendor.country}" />
 		<replace file="${plugin.match.dir.dest}/README.txt" token="!dir.dest.plugins.relative!" value="${dir.dest.plugins.relative}" />
 		<replace file="${plugin.match.dir.dest}/README.txt" token="!plugin.match.dir.dest.relative!" value="${plugin.match.dir.dest.relative}" />
 

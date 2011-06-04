@@ -32,7 +32,7 @@ the files COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
 
 (c) !vendor.copyright.year!
 !vendor.name!
-!vendor.organisation!
+!vendor.organisation!, !vendor.country!
 !vendor.homepage!
 
 

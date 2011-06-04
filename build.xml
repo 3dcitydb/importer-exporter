@@ -40,12 +40,31 @@
 		<!-- create the required directories -->
 		<mkdir dir="${dir.build.plugin.api}" />
 		<mkdir dir="${dir.dest.plugin.api}" />
+		<mkdir dir="${dir.dest.plugin.api.javadoc}" />
+
+		<!-- copy overview.html and replace token -->
+		<copy file="${dir.resources.plugin-api.javadoc}/overview.html" tofile="${dir.resources.plugin-api.javadoc}/overview_adapted.html" />
+		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!impexp.plugin.api.name!" value="${impexp.plugin.api.name}" />
+		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!impexp.plugin.api.version!" value="${impexp.plugin.api.version}" />
+		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!vendor.copyright.year!" value="${vendor.copyright.year}" />
+		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!vendor.name!" value="${vendor.name}" />
+		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!vendor.organisation!" value="${vendor.organisation}" />
+		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!vendor.country!" value="${vendor.country}" />
+		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!vendor.homepage!" value="${vendor.homepage}" />
+		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!impexp.name!" value="${impexp.name}" />
+		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!impexp.homepage!" value="${impexp.homepage}" />
+
+		<!-- create javadoc from source files -->
+		<javadoc access="public" author="true" classpathref="classpath" destdir="${dir.dest.plugin.api.javadoc}" doctitle="${impexp.plugin.api.name} - ${impexp.plugin.api.version}" maxmemory="256m" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" overview="${dir.resources.plugin-api.javadoc}/overview_adapted.html" packagenames="de.tub.citydb.api.*" source="1.6" sourcepath="${dir.src}" splitindex="true" use="true" version="true" />
+
+		<!-- clean up -->
+		<delete file="${dir.resources.plugin-api.doc}/overview_adapted.html" />
 
 		<!-- compile the java code from ${dir.src.plugin.api} into ${dir.build.plugin.api} -->
 		<javac classpathref="classpath" srcdir="${dir.src.plugin.api}" destdir="${dir.build.plugin.api}" />
 
 		<!-- copy LICENSE templates -->
-		<copy todir="${dir.dest.plugin.api}">
+		<copy todir="${dir.dest.plugin.api.license}">
 			<fileset dir="${dir.resources.license}" includes="**/*" />
 		</copy>
 
@@ -55,7 +74,7 @@
 		</copy>
 
 		<!-- replace tokens in template files -->
-		<replace file="${dir.dest.plugin.api}/LICENSE.txt" token="!software.name!" value="${impexp.plugin.api.name}" />
+		<replace file="${dir.dest.plugin.api.license}/LICENSE.txt" token="!software.name!" value="${impexp.plugin.api.name}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.name!" value="${impexp.name}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.version!" value="${impexp.version}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.name!" value="${impexp.plugin.api.name}" />
@@ -67,6 +86,7 @@
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.organisation!" value="${vendor.organisation}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.copyright.year!" value="${vendor.copyright.year}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.homepage!" value="${vendor.homepage}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.country!" value="${vendor.country}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!dir.dest.plugins.relative!" value="${dir.dest.plugins.relative}" />
 
 		<!-- put everything in ${dir.build.plugin.api} into .jar file -->
@@ -83,6 +103,7 @@
 
 		<!-- clean up -->
 		<delete dir="${dir.build}" />
+		<delete file="${dir.resources.plugin-api.doc}/overview_adapted.html" />
 	</target>
 
 	<target name="generate_plugins" description="generate plugins">
@@ -141,6 +162,7 @@
 		<replace file="${dir.dest}/README.txt" token="!vendor.organisation!" value="${vendor.organisation}" />
 		<replace file="${dir.dest}/README.txt" token="!vendor.copyright.year!" value="${vendor.copyright.year}" />
 		<replace file="${dir.dest}/README.txt" token="!vendor.homepage!" value="${vendor.homepage}" />
+		<replace file="${dir.dest}/README.txt" token="!vendor.country!" value="${vendor.country}" />
 
 		<!-- set package variables -->
 		<pathconvert property="manifest.classpath" dirsep="/" pathsep=" " refid="classpath">
