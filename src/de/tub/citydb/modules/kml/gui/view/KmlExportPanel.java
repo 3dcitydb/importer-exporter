@@ -589,13 +589,11 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					}
 				}
 				themeComboBox.setEnabled(true);
-				fetchThemesButton.setEnabled(false);
 			}
 			catch (SQLException sqlEx) { }
 		}
 		else {
 			themeComboBox.setEnabled(false);
-			fetchThemesButton.setEnabled(true);
 		}
 
 		setFilterEnabledValues();
@@ -888,7 +886,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 							}
 						}
 						themeComboBox.setEnabled(true);
-						fetchThemesButton.setEnabled(false);
 					}
 					catch (SQLException sqlEx) { }
 				}
@@ -1088,7 +1085,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		pixelsColladaLabel.setEnabled(boundingBoxRadioButton.isSelected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
 		themeLabel.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
-		themeComboBox.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
+		themeComboBox.setEnabled(dbPool.isConnected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 		fetchThemesButton.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
 	}
@@ -1146,7 +1143,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		themeComboBox.setSelectedItem(KmlExporter.THEME_NONE);
 		if (!isConnected) {
 			themeComboBox.setEnabled(false);
-			fetchThemesButton.setEnabled(true);
 		}
 	}
 

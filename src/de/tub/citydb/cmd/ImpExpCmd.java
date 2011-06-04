@@ -155,6 +155,12 @@ public class ImpExpCmd {
 		Exporter exporter = new Exporter(cityGMLBuilder, dbPool, config, eventDispatcher);
 		boolean success = exporter.doProcess();
 
+		try {
+			eventDispatcher.flushEvents();
+		} catch (InterruptedException e) {
+			//
+		}
+		
 		if (success) {
 			LOG.info("Database export successfully finished.");
 		} else {
@@ -174,16 +180,24 @@ public class ImpExpCmd {
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		KmlExporter kmlExporter = new KmlExporter(jaxbKmlContext, jaxbColladaContext, dbPool, config, eventDispatcher);
 		ExportFilterConfig filter = config.getProject().getKmlExporter().getFilter();
-		try {
-			kmlExporter.calculateRowsColumnsAndDelta();
-		}
-		catch (SQLException sqle) {
-			String srsDescription = filter.getComplexFilter().getBoundingBox().getSRS().getDescription();
-			LOG.error(srsDescription + " " + sqle.getMessage());
-			return;
+		if (filter.isSetComplexFilter()) {
+			try {
+				kmlExporter.calculateRowsColumnsAndDelta();
+			}
+			catch (SQLException sqle) {
+				String srsDescription = filter.getComplexFilter().getBoundingBox().getSRS().getDescription();
+				LOG.error(srsDescription + " " + sqle.getMessage());
+				return;
+			}
 		}
 		boolean success = kmlExporter.doProcess();
 
+		try {
+			eventDispatcher.flushEvents();
+		} catch (InterruptedException e) {
+			//
+		}
+		
 		if (success) {
 			LOG.info("Database export successfully finished.");
 		} else {

@@ -630,21 +630,17 @@ public class DBUtil {
 		ArrayList<String> appearanceThemes = new ArrayList<String>();
 
 		try {
-			if (!workspace.getName().toUpperCase().equals("LIVE")) {
-				boolean workspaceExists = dbConnectionPool.existsWorkspace(workspace);
+			boolean workspaceExists = dbConnectionPool.existsWorkspace(workspace);
 
-				String name = "'" + workspace.getName().trim() + "'";
-				String timestamp = workspace.getTimestamp().trim();
-				if (timestamp.trim().length() > 0)
-					name += " at timestamp " + timestamp;
-				
-				if (!workspaceExists) {
-					Logger.getInstance().error("Database workspace " + name + " is not available.");
-				} 
-//				else 
-//					Logger.getInstance().info("Switching to database workspace " + name + '.');
-			}
-			
+			String name = "'" + workspace.getName().trim() + "'";
+			String timestamp = workspace.getTimestamp().trim();
+			if (timestamp.trim().length() > 0)
+				name += " at timestamp " + timestamp;
+
+			if (!workspaceExists) {
+				Logger.getInstance().error("Database workspace " + name + " is not available.");
+			} 
+
 			conn = dbConnectionPool.getConnection();
 			psQuery = conn.prepareStatement("select distinct theme from appearance order by theme");
 			rs = (OracleResultSet)psQuery.executeQuery();

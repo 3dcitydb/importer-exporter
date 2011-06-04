@@ -135,6 +135,7 @@ public class BalloonTemplateHandler {
 		BUILDING_COLUMNS.add("LOD1_GEOMETRY_ID");
 		BUILDING_COLUMNS.add("LOD2_GEOMETRY_ID");
 		BUILDING_COLUMNS.add("LOD3_GEOMETRY_ID");
+		BUILDING_COLUMNS.add("LOD4_GEOMETRY_ID");
 	}
 
 	private static final String BUILDING_INSTALLATION_TABLE = "BUILDING_INSTALLATION";
@@ -260,6 +261,14 @@ public class BalloonTemplateHandler {
 		GROUP_TO_CITYOBJECT_COLUMNS.add("CITYOBJECT_ID");
 		GROUP_TO_CITYOBJECT_COLUMNS.add("CITYOBJECTGROUP_ID");
 		GROUP_TO_CITYOBJECT_COLUMNS.add("ROLE");
+	}
+
+	private static final String OBJECTCLASS_TABLE = "OBJECTCLASS";
+	private static final Set<String> OBJECTCLASS_COLUMNS = new HashSet<String>();
+	static {
+		OBJECTCLASS_COLUMNS.add("ID");
+		OBJECTCLASS_COLUMNS.add("CLASSNAME");
+		OBJECTCLASS_COLUMNS.add("SUPERCLASS_ID");
 	}
 
 	private static final String OPENING_TABLE = "OPENING";
@@ -982,6 +991,13 @@ public class BalloonTemplateHandler {
 							   " FROM CITYOBJECT co, GROUP_TO_CITYOBJECT " + tableShortId +
 							   " WHERE co.gmlid = ?" +
 							   " AND g2co.cityobject_id = co.id";
+			}
+			else if (OBJECTCLASS_TABLE.equalsIgnoreCase(table)) {
+				tableShortId = "oc";
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(tableShortId, columns, OBJECTCLASS_COLUMNS) + aggregateClosingString +
+							   " FROM CITYOBJECT co, OBJECTCLASS " + tableShortId +
+							   " WHERE co.gmlid = ?" +
+							   " AND oc.id = co.class_id";
 			}
 			else if (OPENING_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "o";

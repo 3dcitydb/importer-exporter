@@ -683,6 +683,7 @@ public class KmlExporter implements EventHandler {
 						kmlTree.append("\t\t\t\t<Link>\n");
 						kmlTree.append("\t\t\t\t\t<href>" + tilenameForDisplayLevel + "</href>\n");
 						kmlTree.append("\t\t\t\t\t<viewRefreshMode>onRequest</viewRefreshMode>\n");
+						kmlTree.append("\t\t\t\t\t<viewFormat/>\n");
 						kmlTree.append("\t\t\t\t</Link>\n");
 
 						kmlTree.append("\t\t\t</NetworkLink>\n");

@@ -39,7 +39,10 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantLock;
@@ -131,19 +134,19 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 	private ElevationServiceHandler elevationServiceHandler;
 	private long elevationServicePause;
-    private SimpleDateFormat dateFormatter;
+	private SimpleDateFormat dateFormatter;
 	private double hlDistance = 0.75; 
 	private X3DMaterial defaultX3dMaterial;
-	
+
 	public KmlExportWorker(JAXBContext jaxbKmlContext,
-						   JAXBContext jaxbColladaContext,
-						   DBConnectionPool dbConnectionPool,
-						   WorkerPool<SAXEventBuffer> ioWriterPool,
-						   ObjectFactory kmlFactory,
-						   CityGMLFactory cityGMLFactory,
-						   ConcurrentLinkedQueue<ColladaBundle> buildingQueue,
-						   Config config,
-						   EventDispatcher eventDispatcher) throws SQLException {
+			JAXBContext jaxbColladaContext,
+			DBConnectionPool dbConnectionPool,
+			WorkerPool<SAXEventBuffer> ioWriterPool,
+			ObjectFactory kmlFactory,
+			CityGMLFactory cityGMLFactory,
+			ConcurrentLinkedQueue<ColladaBundle> buildingQueue,
+			Config config,
+			EventDispatcher eventDispatcher) throws SQLException {
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.dbConnectionPool = dbConnectionPool;
@@ -163,14 +166,14 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		// try and change workspace for both connections if needed
 		Database database = config.getProject().getDatabase();
 		dbConnectionPool.gotoWorkspace(connection, 
-										 database.getWorkspaces().getKmlExportWorkspace());
+				database.getWorkspaces().getKmlExportWorkspace());
 
 		kmlExporterManager = new KmlExporterManager(jaxbKmlContext,
-													jaxbColladaContext,
-													ioWriterPool,
-													kmlFactory,
-													buildingQueue,
-													config);
+				jaxbColladaContext,
+				ioWriterPool,
+				kmlFactory,
+				buildingQueue,
+				config);
 
 		if (config.getProject().getKmlExporter().isGroupBuildings()) {
 			buildingGroupSize = config.getProject().getKmlExporter().getGroupSize();
@@ -182,7 +185,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				balloonTemplateHandler = new BalloonTemplateHandler(new File(balloonTemplateFilename), connection);
 			}
 		}
-		
+
 		elevationServiceHandler = new ElevationServiceHandler();
 		// pause interval: 100 * maxThreads must be enough, but experience says it isn't!
 		elevationServicePause = 250 * config.getProject().getKmlExporter().getSystem().getThreadPool().getDefaultPool().getMaxThreads();
@@ -300,12 +303,12 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 			while (currentLod >= minLod) {
 				if(!work.getDisplayLevel().isAchievableFromLoD(currentLod)) break;
-				
+
 				psQuery = connection.prepareStatement(
 						TileQueries.getSingleBuildingQuery(currentLod, work.getDisplayLevel()),
 						// work-around for JDBC problem with rs.getDouble() and ResultSet.TYPE_SCROLL_INSENSITIVE
 						work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED ? ResultSet.TYPE_FORWARD_ONLY: ResultSet.TYPE_SCROLL_INSENSITIVE,
-						ResultSet.CONCUR_READ_ONLY);
+								ResultSet.CONCUR_READ_ONLY);
 
 				for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 					psQuery.setString(i, work.getGmlId());
@@ -318,7 +321,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						TileQueries.getSingleBuildingQueryAlt(currentLod, work.getDisplayLevel()),
 						// work-around for JDBC problem with rs.getDouble() and ResultSet.TYPE_SCROLL_INSENSITIVE
 						work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED ? ResultSet.TYPE_FORWARD_ONLY: ResultSet.TYPE_SCROLL_INSENSITIVE,
-						ResultSet.CONCUR_READ_ONLY);
+								ResultSet.CONCUR_READ_ONLY);
 
 				for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 					psQuery.setString(i, work.getGmlId());
@@ -327,12 +330,12 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				if (rs.isBeforeFirst()) break; // result set not empty
 				currentLod--;
 			}
-			
+
 			if (rs == null || !rs.isBeforeFirst()) { // result empty, give up
 				if (config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
 					// only for single building exports, tiles would fill the whole textarea
 					Logger.getInstance().info("No info found for object " + work.getGmlId() 
-											  + " to display as " + work.getDisplayLevel().getName() + ".");
+							+ " to display as " + work.getDisplayLevel().getName() + ".");
 				}
 			}
 			else { // result not empty
@@ -349,18 +352,18 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter()) { // region
 						if (config.getProject().getKmlExporter().isGeometryHighlighting()) {
 							kmlExporterManager.print(createPlacemarksForHighlighting(work.getGmlId(),
-																					 work.getDisplayLevel()));
+									work.getDisplayLevel()));
 						}
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work.getGmlId()));
 					}
 					else { // reverse order for single buildings
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work.getGmlId()));
-//						kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
+						//						kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
 						if (config.getProject().getKmlExporter().isGeometryHighlighting()) {
-//							kmlExporterManager.print(createHighlingtingPlacemarkForEachSurfaceGeometry(work.getGmlId(),
-//																									   work.getDisplayLevel()));
+							//							kmlExporterManager.print(createHighlingtingPlacemarkForEachSurfaceGeometry(work.getGmlId(),
+							//																									   work.getDisplayLevel()));
 							kmlExporterManager.print(createPlacemarksForHighlighting(work.getGmlId(),
-																					 work.getDisplayLevel()));
+									work.getDisplayLevel()));
 						}
 					}
 					break;
@@ -370,13 +373,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					currentBuilding.setIgnoreSurfaceOrientation(config.getProject().getKmlExporter().isIgnoreSurfaceOrientation());
 					try {
 						if (config.getProject().getKmlExporter().isColladaHighlighting()) {
-//							kmlExporterManager.print(createHighlingtingPlacemarkForEachSurfaceGeometry(work.getGmlId(),
-//									   																   work.getDisplayLevel()));
+							//							kmlExporterManager.print(createHighlingtingPlacemarkForEachSurfaceGeometry(work.getGmlId(),
+							//									   																   work.getDisplayLevel()));
 							kmlExporterManager.print(createPlacemarksForHighlighting(work.getGmlId(),
-																					 work.getDisplayLevel()));
+									work.getDisplayLevel()));
 						}
 						if (config.getProject().getKmlExporter().isGenerateTextureAtlases()) {
-//							eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.creatingAtlases")));
+							//							eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.creatingAtlases")));
 							currentBuilding.createTextureAtlas(config.getProject().getKmlExporter().getPackingAlgorithm());
 						}
 						if (config.getProject().getKmlExporter().isScaleImages()) {
@@ -389,14 +392,14 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					catch (IOException ioe) {
 						ioe.printStackTrace();
 					}
-					
+
 					if (buildingGroup == null) {
 						buildingGroup = currentBuilding; 
 					}
 					else {
 						buildingGroup.appendBuilding(currentBuilding);
 					}
-					
+
 					buildingGroupCounter++;
 					if (buildingGroupCounter == buildingGroupSize) {
 						try {
@@ -428,39 +431,41 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		finally {
 			if (rs != null)
 				try { rs.close(); } catch (SQLException e) {}
-			if (psQuery != null)
-				try { psQuery.close(); } catch (SQLException e) {}
+				if (psQuery != null)
+					try { psQuery.close(); } catch (SQLException e) {}
 
-			runLock.unlock();
+					runLock.unlock();
 		}
 	}
-	
+
 	private List<PlacemarkType> createPlacemarksForFootprint(OracleResultSet rs, String gmlId) throws SQLException {
 
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
+		PlacemarkType placemark = kmlFactory.createPlacemarkType();
+		placemark.setName(gmlId);
+		placemark.setId(DisplayLevel.FOOTPRINT_PLACEMARK_ID + placemark.getName());
+
+		if (config.getProject().getKmlExporter().isFootprintHighlighting()) {
+			placemark.setStyleUrl("#" + DisplayLevel.FOOTPRINT_STR + "Style");
+		}
+		else {
+			placemark.setStyleUrl("#" + DisplayLevel.FOOTPRINT_STR + "Normal");
+		}
+
+		if (config.getProject().getKmlExporter().isIncludeDescription()) {
+			addBalloonContents(placemark, gmlId);
+		}
+		MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
+		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
+
+		PolygonType polygon = null; 
 		while (rs.next()) {
 			// ColumnName is SDO_CS.TRANSFORM(sg.geometry, 4326)
 			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
-				PlacemarkType placemark = kmlFactory.createPlacemarkType();
-				placemark.setName(gmlId);
-				placemark.setId(DisplayLevel.FOOTPRINT_PLACEMARK_ID + placemark.getName());
 
-				if (config.getProject().getKmlExporter().isFootprintHighlighting()) {
-					placemark.setStyleUrl("#" + DisplayLevel.FOOTPRINT_STR + "Style");
-				}
-				else {
-					placemark.setStyleUrl("#" + DisplayLevel.FOOTPRINT_STR + "Normal");
-				}
-
-				if (config.getProject().getKmlExporter().isIncludeDescription()) {
-					addBalloonContents(placemark, gmlId);
-				}
-
-				placemarkList.add(placemark);
-
-				PolygonType polygon = kmlFactory.createPolygonType();
+				polygon = kmlFactory.createPolygonType();
 				polygon.setTessellate(true);
 				polygon.setExtrude(false);
 				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
@@ -491,8 +496,11 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
 							}
 				}
-				placemark.setAbstractGeometryGroup(kmlFactory.createPolygon(polygon));
+				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 			}
+		}
+		if (polygon != null) { // if there is at least some content
+			placemarkList.add(placemark);
 		}
 		return placemarkList;
 	}
@@ -500,27 +508,30 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private List<PlacemarkType> createPlacemarksForExtruded(OracleResultSet rs, String gmlId) throws SQLException {
 
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
+		PlacemarkType placemark = kmlFactory.createPlacemarkType();
+		placemark.setName(gmlId);
+		placemark.setId(DisplayLevel.EXTRUDED_PLACEMARK_ID + placemark.getName());
+		if (config.getProject().getKmlExporter().isFootprintHighlighting()) {
+			placemark.setStyleUrl("#" + DisplayLevel.EXTRUDED_STR + "Style");
+		}
+		else {
+			placemark.setStyleUrl("#" + DisplayLevel.EXTRUDED_STR + "Normal");
+		}
+		if (config.getProject().getKmlExporter().isIncludeDescription()) {
+			addBalloonContents(placemark, gmlId);
+		}
+		MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
+		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
+
+		PolygonType polygon = null; 
 		while (rs.next()) {
 			// ColumnName is SDO_CS.TRANSFORM(sg.geometry, 4326)
 			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 			double measuredHeight = rs.getDouble("measured_height");
 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
-				PlacemarkType placemark = kmlFactory.createPlacemarkType();
-				placemark.setName(gmlId);
-				placemark.setId(DisplayLevel.EXTRUDED_PLACEMARK_ID + placemark.getName());
-				if (config.getProject().getKmlExporter().isFootprintHighlighting()) {
-					placemark.setStyleUrl("#" + DisplayLevel.EXTRUDED_STR + "Style");
-				}
-				else {
-					placemark.setStyleUrl("#" + DisplayLevel.EXTRUDED_STR + "Normal");
-				}
-				if (config.getProject().getKmlExporter().isIncludeDescription()) {
-					addBalloonContents(placemark, gmlId);
-				}
-				placemarkList.add(placemark);
 
-				PolygonType polygon = kmlFactory.createPolygonType();
+				polygon = kmlFactory.createPolygonType();
 				polygon.setTessellate(true);
 				polygon.setExtrude(true);
 				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
@@ -545,7 +556,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					int startNextGeometry = ((i+3) < groundSurface.getElemInfo().length) ? 
 							groundSurface.getElemInfo()[i+3] - 1: // still more geometries
 								ordinatesArray.length; // default
-/*
+							/*
 							if (currentLod == 1) {
 								for (int j = groundSurface.getElemInfo()[i] - 1; j < startNextGeometry; j = j+3) {
 									linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," 
@@ -554,36 +565,39 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 								}
 							}
 							else {
-*/
-								// order points counter-clockwise
-								for (int j = startNextGeometry - 3; j >= groundSurface.getElemInfo()[i] - 1; j = j-3) {
-									linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," 
-											+ ordinatesArray[j+1] + ","
-											+ measuredHeight));
-								}
-/*
+							 */
+							// order points counter-clockwise
+							for (int j = startNextGeometry - 3; j >= groundSurface.getElemInfo()[i] - 1; j = j-3) {
+								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," 
+										+ ordinatesArray[j+1] + ","
+										+ measuredHeight));
 							}
-*/
+							/*
+							}
+							 */
 				}
-				placemark.setAbstractGeometryGroup(kmlFactory.createPolygon(polygon));
+				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 			}
+		}
+		if (polygon != null) { // if there is at least some content
+			placemarkList.add(placemark);
 		}
 		return placemarkList;
 	}
 
 
 	private List<PlacemarkType> createPlacemarksForGeometry(OracleResultSet rs, String gmlId) throws SQLException{
-		return createPlacemarksForGeometry(rs, gmlId, false);
+		return createPlacemarksForGeometry(rs, gmlId, false, false);
 	}
 
 	private List<PlacemarkType> createPlacemarksForGeometry(OracleResultSet rs,
-														   	String gmlId,
-														   	boolean includeGroundSurface) throws SQLException {
+			String gmlId,
+			boolean includeGroundSurface,
+			boolean includeClosureSurface) throws SQLException {
 
-		PlacemarkType placemark = null; 
+		HashMap<String, MultiGeometryType> multiGeometries = new HashMap<String, MultiGeometryType>();
 		MultiGeometryType multiGeometry = null;
-		String lastSurfaceType = "dummy";
-		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
+		PolygonType polygon = null;
 
 		double zOffset = getZOffsetFromConfigOrDB(gmlId);
 		List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(rs, (zOffset == Double.MAX_VALUE));
@@ -592,17 +606,19 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			zOffset = getZOffsetFromGEService(gmlId, lowestPointCandidates);
 		}
 		double lowestZCoordinate = convertPointCoordinatesToWGS84(new double[] {lowestPointCandidates.get(0).x,
-																				lowestPointCandidates.get(0).y,	
-																				lowestPointCandidates.get(0).z}) [2];
+				lowestPointCandidates.get(0).y,	
+				lowestPointCandidates.get(0).z}) [2];
 
 		while (rs.next()) {
+			//			Long surfaceId = rs.getLong("id");
+
 			String surfaceType = rs.getString("type");
 			if (surfaceType != null && !surfaceType.endsWith("Surface")) {
 				surfaceType = surfaceType + "Surface";
 			}
-			// results are ordered by surface type
-			if (!includeGroundSurface && DBTypeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) {
-				lastSurfaceType = DBTypeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString();
+
+			if ((!includeGroundSurface && DBTypeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) ||
+					(!includeClosureSurface && DBTypeValueEnum.fromCityGMLClass(CityGMLClass.CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType)))	{
 				continue;
 			}
 
@@ -610,37 +626,17 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			JGeometry surface = convertToWGS84(JGeometry.load(buildingGeometryObj));
 			double[] ordinatesArray = surface.getOrdinatesArray();
 
-			if (!lastSurfaceType.equals(surfaceType)) {
-				// avoid creating Placemark and MultiGeometry for every Polygon
-				placemark = kmlFactory.createPlacemarkType();
-//				placemark.setName(gmlId + "_" + surfaceType);
-				placemark.setName(gmlId);
-				placemark.setId(DisplayLevel.GEOMETRY_PLACEMARK_ID + placemark.getName() + "_" + surfaceType);
-				placemark.setStyleUrl("#" + surfaceType + "Normal");
-				if (config.getProject().getKmlExporter().isIncludeDescription() &&
-					!config.getProject().getKmlExporter().isGeometryHighlighting()) { // avoid double description
-					addBalloonContents(placemark, gmlId);
-				}
-				placemarkList.add(placemark);
-
-				multiGeometry = kmlFactory.createMultiGeometryType();
-				placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
-				if (surfaceType != null) { 
-					lastSurfaceType = surfaceType;
-				} // else remain "dummy"
-			}
-			
-			PolygonType polygon = kmlFactory.createPolygonType();
+			polygon = kmlFactory.createPolygonType();
 			switch (config.getProject().getKmlExporter().getAltitudeMode()) {
-				case ABSOLUTE:
-					polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
-					break;
-				case RELATIVE:
-					polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
-					break;
+			case ABSOLUTE:
+				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
+				break;
+			case RELATIVE:
+				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+				break;
 			}
-			multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 
+			// just in case surfaceType == null
 			boolean probablyRoof = true;
 
 			for (int i = 0; i < surface.getElemInfo().length; i = i+3) {
@@ -658,28 +654,49 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						surface.getElemInfo()[i+3] - 1: // still holes to come
 							ordinatesArray.length; // default
 
-				// order points clockwise
-				for (int j = surface.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
-					linearRing.getCoordinates().add(String.valueOf(Building.reducePrecisionForXorY(ordinatesArray[j]) + "," 
-													+ Building.reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-													+ Building.reducePrecisionForZ(ordinatesArray[j+2] + zOffset)));
+						// order points clockwise
+						for (int j = surface.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
+							linearRing.getCoordinates().add(String.valueOf(Building.reducePrecisionForXorY(ordinatesArray[j]) + "," 
+									+ Building.reducePrecisionForXorY(ordinatesArray[j+1]) + ","
+									+ Building.reducePrecisionForZ(ordinatesArray[j+2] + zOffset)));
 
-					probablyRoof = probablyRoof && (Building.reducePrecisionForZ(ordinatesArray[j+2] - lowestZCoordinate) > 0);
-					// not touching the ground
-				}
+							probablyRoof = probablyRoof && (Building.reducePrecisionForZ(ordinatesArray[j+2] - lowestZCoordinate) > 0);
+							// not touching the ground
+						}
 			}
 
 			if (surfaceType == null) {
-				String likelySurfaceType = (probablyRoof && currentLod < 3) ?
+				surfaceType = (probablyRoof && currentLod < 3) ?
 						DBTypeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() :
 							DBTypeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString();
-//				placemark.setName(gmlId + "_" + likelySurfaceType);
-				placemark.setName(gmlId);
-				placemark.setId(DisplayLevel.GEOMETRY_PLACEMARK_ID + placemark.getName() + "_" + likelySurfaceType);
-				placemark.setStyleUrl("#" + likelySurfaceType + "Normal");
 			}
+
+			multiGeometry = multiGeometries.get(surfaceType);
+			if (multiGeometry == null) {
+				multiGeometry = kmlFactory.createMultiGeometryType();
+				multiGeometries.put(surfaceType, multiGeometry);
+			}
+			multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+
 		}
 
+		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
+		Set<String> keySet = multiGeometries.keySet();
+		Iterator<String> iterator = keySet.iterator();
+		while (iterator.hasNext()) {
+			String surfaceType = iterator.next();
+			PlacemarkType placemark = kmlFactory.createPlacemarkType();
+			placemark.setName(gmlId + "_" + surfaceType);
+			placemark.setId(DisplayLevel.GEOMETRY_PLACEMARK_ID + placemark.getName());
+			placemark.setStyleUrl("#" + surfaceType + "Normal");
+			if (config.getProject().getKmlExporter().isIncludeDescription() &&
+					!config.getProject().getKmlExporter().isGeometryHighlighting()) { // avoid double description
+				addBalloonContents(placemark, gmlId);
+			}
+			multiGeometry = multiGeometries.get(surfaceType);
+			placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
+			placemarkList.add(placemark);
+		}
 		return placemarkList;
 	}
 
@@ -691,7 +708,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		currentBuilding.setId(gmlId);
 		int texImageCounter = 0;
 		STRUCT buildingGeometryObj = null;
-		
+
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
 			PreparedStatement psQuery = null;
@@ -699,12 +716,12 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			try {
 				psQuery = connection.prepareStatement(TileQueries.QUERY_COLLADA_GET_BUILDING_DATA);
 				psQuery.setLong(1, surfaceRootId);
-//				psQuery.setString(2, selectedTheme);
+				//				psQuery.setString(2, selectedTheme);
 				rs2 = (OracleResultSet)psQuery.executeQuery();
-				
+
 				while (rs2.next()) {
 					String theme = rs2.getString("theme");
-					
+
 					buildingGeometryObj = (STRUCT)rs2.getObject(1); 
 					// surfaceId is the key to all Hashmaps in building
 					long surfaceId = rs2.getLong("id");
@@ -731,27 +748,27 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						currentBuilding.addX3dMaterial(surfaceId, defaultX3dMaterial);
 					}
 					else if	(!selectedTheme.equalsIgnoreCase(theme) && // no surface data for this surface and theme
-							  currentBuilding.getX3dMaterial(parentId) != null) {// material for parent surface known
+							currentBuilding.getX3dMaterial(parentId) != null) {// material for parent surface known
 						currentBuilding.addX3dMaterial(surfaceId, currentBuilding.getX3dMaterial(parentId));
 					}
 					else {
 						texImageUri = rs2.getString("tex_image_uri");
 						texImage = (OrdImage)rs2.getORAData("tex_image", OrdImage.getORADataFactory());
 						String texCoords = rs2.getString("texture_coordinates");
-	
+
 						if (texImageUri != null && texImageUri.trim().length() != 0
 								&&  texCoords != null && texCoords.trim().length() != 0
 								&&	texImage != null) {
-	
+
 							texImageCounter++;
 							if (texImageCounter > 20) {
 								eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
 								texImageCounter = 0;
 							}
-	
+
 							int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
 							texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
-	
+
 							currentBuilding.addTexImageUri(surfaceId, texImageUri);
 							if (currentBuilding.getTexOrdImage(texImageUri) == null) { // not already marked as wrapping texture
 								BufferedImage bufferedImage = null;
@@ -766,7 +783,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 									currentBuilding.addTexOrdImage(texImageUri, texImage);
 								}
 							}
-	
+
 							texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
 							texCoordsTokenized = new StringTokenizer(texCoords, " ");
 						}
@@ -836,8 +853,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			finally {
 				if (rs2 != null)
 					try { rs2.close(); } catch (SQLException e) {}
-				if (psQuery != null)
-					try { psQuery.close(); } catch (SQLException e) {}
+					if (psQuery != null)
+						try { psQuery.close(); } catch (SQLException e) {}
 			}
 		}
 
@@ -857,9 +874,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		placemark.setId(DisplayLevel.COLLADA_PLACEMARK_ID + placemark.getName());
 
 		if (config.getProject().getKmlExporter().isIncludeDescription() &&
-			!config.getProject().getKmlExporter().isColladaHighlighting() && // avoid double description
-			(!config.getProject().getKmlExporter().isGroupBuildings() ||
-			 config.getProject().getKmlExporter().getGroupSize() == 1)) {
+				!config.getProject().getKmlExporter().isColladaHighlighting() && // avoid double description
+				(!config.getProject().getKmlExporter().isGroupBuildings() ||
+						config.getProject().getKmlExporter().getGroupSize() == 1)) {
 			addBalloonContents(placemark, building.getId());
 		}
 
@@ -878,7 +895,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			model.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
 			break;
 		}
-		
+
 		location.setLatitude(building.getLocationY());
 		location.setLongitude(building.getLocationX());
 		location.setAltitude(Building.reducePrecisionForZ(originInWGS84[2] + building.getZOffset()));
@@ -896,7 +913,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		if (originInWGS84[0] > 0) { // East
 			bearing = -bearing;
 		}
-		
+
 		OrientationType orientation = kmlFactory.createOrientationType();
 		orientation.setHeading(Building.reducePrecisionForZ(bearing));
 		model.setOrientation(orientation);
@@ -912,7 +929,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 
 	private List<PlacemarkType> createPlacemarksForHighlighting(String gmlId,
-															    DisplayLevel displayLevel) throws SQLException {
+			DisplayLevel displayLevel) throws SQLException {
 
 		List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
 
@@ -925,7 +942,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		if (config.getProject().getKmlExporter().isIncludeDescription()) {
 			addBalloonContents(placemark, gmlId);
 		}
-		
+
 		MultiGeometryType multiGeometry =  kmlFactory.createMultiGeometryType();
 		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
@@ -939,8 +956,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		try {
 			getGeometriesStmt = connection.prepareStatement(TileQueries.getSingleBuildingHighlightingQuery(currentLod),
-															ResultSet.TYPE_SCROLL_INSENSITIVE,
-															ResultSet.CONCUR_READ_ONLY);
+					ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
 
 			for (int i = 1; i <= getGeometriesStmt.getParameterMetaData().getParameterCount(); i++) {
 				getGeometriesStmt.setString(i, gmlId);
@@ -953,7 +970,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				rs.beforeFirst(); // return cursor to beginning
 				zOffset = getZOffsetFromGEService(gmlId, lowestPointCandidates);
 			}
-			
+
 			while (rs.next()) {
 				STRUCT unconverted = (STRUCT)rs.getObject(1);
 				JGeometry unconvertedSurface = JGeometry.load(unconverted);
@@ -966,8 +983,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				// remove normal-irrelevant points
 				int startContour1 = unconvertedSurface.getElemInfo()[0] - 1;
 				int endContour1 = (contourCount == 1) ? 
-								  ordinatesArray.length: // last
-								  unconvertedSurface.getElemInfo()[3] - 1; // holes are irrelevant for normal calculation
+						ordinatesArray.length: // last
+							unconvertedSurface.getElemInfo()[3] - 1; // holes are irrelevant for normal calculation
 				// last point of polygons in gml is identical to first and useless for GeometryInfo
 				endContour1 = endContour1 - 3;
 
@@ -1028,12 +1045,12 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 							surface.getElemInfo()[i+3] - 1: // still holes to come
 								ordinatesArray.length; // default
 
-					// order points clockwise
-					for (int j = surface.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
-						linearRing.getCoordinates().add(String.valueOf(Building.reducePrecisionForXorY(ordinatesArray[j]) + "," 
-							+ Building.reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-							+ Building.reducePrecisionForZ(ordinatesArray[j+2])));
-					}
+							// order points clockwise
+							for (int j = surface.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
+								linearRing.getCoordinates().add(String.valueOf(Building.reducePrecisionForXorY(ordinatesArray[j]) + "," 
+										+ Building.reducePrecisionForXorY(ordinatesArray[j+1]) + ","
+										+ Building.reducePrecisionForZ(ordinatesArray[j+2])));
+							}
 				}
 			}
 		}
@@ -1127,7 +1144,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		}
 		x3dMaterial.setIsSmooth(rs.getInt("x3d_is_smooth") == 1);
 	}
-	
+
 	private Color getX3dColorFromString(String colorString) {
 		Color color = null;
 		if (colorString != null) {
@@ -1143,41 +1160,41 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private double getZOffsetFromConfigOrDB (String gmlId) {
 
 		double zOffset = Double.MAX_VALUE;;
-		
+
 		switch (config.getProject().getKmlExporter().getAltitudeOffsetMode()) {
-			case NO_OFFSET:
-				zOffset = 0;
-				break;
-			case CONSTANT:
-				zOffset = config.getProject().getKmlExporter().getAltitudeOffsetValue();
-				break;
-			case GENERIC_ATTRIBUTE:
-				PreparedStatement selectQuery = null;
-				OracleResultSet rs = null;
-				String genericAttribName = "GE_LoD" + currentLod + "_zOffset";
+		case NO_OFFSET:
+			zOffset = 0;
+			break;
+		case CONSTANT:
+			zOffset = config.getProject().getKmlExporter().getAltitudeOffsetValue();
+			break;
+		case GENERIC_ATTRIBUTE:
+			PreparedStatement selectQuery = null;
+			OracleResultSet rs = null;
+			String genericAttribName = "GE_LoD" + currentLod + "_zOffset";
+			try {
+				// first look for the value in the DB
+				selectQuery = connection.prepareStatement(TileQueries.QUERY_GET_STRVAL_GENERICATTRIB_FROM_GML_ID);
+				selectQuery.setString(1, genericAttribName);
+				selectQuery.setString(2, gmlId);
+				rs = (OracleResultSet)selectQuery.executeQuery();
+				if (rs.next()) {
+					String strVal = rs.getString(1);
+					if (strVal != null) { // use value in DB 
+						StringTokenizer attributeTokenized = new StringTokenizer(strVal, "|");
+						attributeTokenized.nextToken(); // skip mode
+						zOffset = Double.parseDouble(attributeTokenized.nextToken());
+					}
+				}
+			}
+			catch (Exception e) {}
+			finally {
 				try {
-					// first look for the value in the DB
-					selectQuery = connection.prepareStatement(TileQueries.QUERY_GET_STRVAL_GENERICATTRIB_FROM_GML_ID);
-					selectQuery.setString(1, genericAttribName);
-					selectQuery.setString(2, gmlId);
-					rs = (OracleResultSet)selectQuery.executeQuery();
-					if (rs.next()) {
-						String strVal = rs.getString(1);
-						if (strVal != null) { // use value in DB 
-							StringTokenizer attributeTokenized = new StringTokenizer(strVal, "|");
-							attributeTokenized.nextToken(); // skip mode
-							zOffset = Double.parseDouble(attributeTokenized.nextToken());
-						}
-					}
+					if (rs != null) rs.close();
+					if (selectQuery != null) selectQuery.close();
 				}
-				catch (Exception e) {}
-				finally {
-					try {
-						if (rs != null) rs.close();
-						if (selectQuery != null) selectQuery.close();
-					}
-					catch (Exception e2) {}
-				}
+				catch (Exception e2) {}
+			}
 		}
 
 		return zOffset;
@@ -1186,7 +1203,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private double getZOffsetFromGEService (String gmlId, List<Point3d> candidates) {
 
 		double zOffset = 0;
-		
+
 		if (config.getProject().getKmlExporter().isCallGElevationService()) { // allowed to query
 			PreparedStatement insertQuery = null;
 			OracleResultSet rs = null;
@@ -1201,7 +1218,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				}
 				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, dbConnectionPool.getActiveConnection().getMetaData().getSrid());
 				coords = convertToWGS84(jGeometry).getOrdinatesArray();
-				
+
 				Logger.getInstance().info("Getting zOffset from Google's elevation API for " + gmlId);
 				zOffset = elevationServiceHandler.getZOffset(coords);
 				// avoid "OVER_QUERY_LIMIT" from elevation service
@@ -1308,14 +1325,14 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 			catch (Exception e2) {}
 		}
-		
+
 		return convertedPointGeom;
 	}
 
-	
+
 	private List<PlacemarkType> createPlacemarkForEachSurfaceGeometry(OracleResultSet rs,
-																	  String gmlId,
-																	  boolean includeGroundSurface) throws SQLException {
+			String gmlId,
+			boolean includeGroundSurface) throws SQLException {
 
 		PlacemarkType placemark = null; 
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
@@ -1359,10 +1376,10 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			placemark.setId(DisplayLevel.GEOMETRY_PLACEMARK_ID + placemark.getName());
 			placemark.setStyleUrl("#" + surfaceType + "Normal");
 
-//			if (config.getProject().getKmlExporter().isIncludeDescription() &&
-//					!config.getProject().getKmlExporter().isGeometryHighlighting()) { // avoid double description
-//				addBalloonContents(placemark, gmlId);
-//			}
+			//			if (config.getProject().getKmlExporter().isIncludeDescription() &&
+			//					!config.getProject().getKmlExporter().isGeometryHighlighting()) { // avoid double description
+			//				addBalloonContents(placemark, gmlId);
+			//			}
 
 			placemarkList.add(placemark);
 
@@ -1391,25 +1408,25 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				}
 
 				int startNextRing = ((i+3) < originalSurfaceWGS84.getElemInfo().length) ? 
-					originalSurfaceWGS84.getElemInfo()[i+3] - 1: // still holes to come
-					originalOrdinatesArrayWGS84.length; // default
+						originalSurfaceWGS84.getElemInfo()[i+3] - 1: // still holes to come
+							originalOrdinatesArrayWGS84.length; // default
 
-				// order points clockwise
-				for (int j = originalSurfaceWGS84.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
-					linearRing.getCoordinates().add(String.valueOf(Building.reducePrecisionForXorY(originalOrdinatesArrayWGS84[j]) + "," 
-						+ Building.reducePrecisionForXorY(originalOrdinatesArrayWGS84[j+1]) + ","
-						+ Building.reducePrecisionForZ(originalOrdinatesArrayWGS84[j+2] + zOffset)));
+						// order points clockwise
+						for (int j = originalSurfaceWGS84.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
+							linearRing.getCoordinates().add(String.valueOf(Building.reducePrecisionForXorY(originalOrdinatesArrayWGS84[j]) + "," 
+									+ Building.reducePrecisionForXorY(originalOrdinatesArrayWGS84[j+1]) + ","
+									+ Building.reducePrecisionForZ(originalOrdinatesArrayWGS84[j+2] + zOffset)));
 
-					probablyRoof = probablyRoof && (Building.reducePrecisionForZ(originalOrdinatesArrayWGS84[j+2] - lowestZCoordinate) > 0);
+							probablyRoof = probablyRoof && (Building.reducePrecisionForZ(originalOrdinatesArrayWGS84[j+2] - lowestZCoordinate) > 0);
 							// not touching the ground
-				}
+						}
 
-				if (surfaceType == null) {
-					String likelySurfaceType = (probablyRoof && currentLod < 3) ?
-							DBTypeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString().toString() :
-								DBTypeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString();
-					placemark.setStyleUrl("#" + likelySurfaceType + "Normal");
-				}
+						if (surfaceType == null) {
+							String likelySurfaceType = (probablyRoof && currentLod < 3) ?
+									DBTypeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString().toString() :
+										DBTypeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString();
+									placemark.setStyleUrl("#" + likelySurfaceType + "Normal");
+						}
 
 			}
 
@@ -1420,7 +1437,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 
 	private List<PlacemarkType> createHighlingtingPlacemarkForEachSurfaceGeometry(String gmlId,
-																				  DisplayLevel displayLevel) throws SQLException {
+			DisplayLevel displayLevel) throws SQLException {
 
 		PlacemarkType highlightingPlacemark = null; 
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
@@ -1435,8 +1452,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		try {
 			getGeometriesStmt = connection.prepareStatement(TileQueries.getSingleBuildingHighlightingQuery(currentLod),
-															ResultSet.TYPE_SCROLL_INSENSITIVE,
-															ResultSet.CONCUR_READ_ONLY);
+					ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
 
 			for (int i = 1; i <= getGeometriesStmt.getParameterMetaData().getParameterCount(); i++) {
 				getGeometriesStmt.setString(i, gmlId);
@@ -1451,14 +1468,14 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 
 			while (rs.next()) {
-//				String surfaceType = rs.getString("type");
-//				if (!surfaceType.endsWith("Surface")) {
-//					surfaceType = surfaceType + "Surface";
-//				}
+				//				String surfaceType = rs.getString("type");
+				//				if (!surfaceType.endsWith("Surface")) {
+				//					surfaceType = surfaceType + "Surface";
+				//				}
 				// results are ordered by surface type
-//				if (!includeGroundSurface && CityGMLClass.GROUNDSURFACE.toString().equalsIgnoreCase(surfaceType)) {
-//					continue;
-//				}
+				//				if (!includeGroundSurface && CityGMLClass.GROUNDSURFACE.toString().equalsIgnoreCase(surfaceType)) {
+				//					continue;
+				//				}
 
 				STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 				long surfaceId = rs.getLong("id");
@@ -1468,12 +1485,12 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				if (ordinatesArray == null) {
 					continue;
 				}
-				
+
 				int contourCount = originalSurface.getElemInfo().length/3;
 				// remove normal-irrelevant points
 				int startContour1 = originalSurface.getElemInfo()[0] - 1;
 				int endContour1 = (contourCount == 1) ? 
-							ordinatesArray.length: // last
+						ordinatesArray.length: // last
 							originalSurface.getElemInfo()[3] - 1; // holes are irrelevant for normal calculation
 				// last point of polygons in gml is identical to first and useless for GeometryInfo
 				endContour1 = endContour1 - 3;
@@ -1517,10 +1534,10 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				highlightingPlacemark.setId(DisplayLevel.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID + highlightingPlacemark.getName());
 				highlightingPlacemark.setStyleUrl("#" + displayLevel.getName() + "Style");
 
-//				if (config.getProject().getKmlExporter().isIncludeDescription() &&
-//						!config.getProject().getKmlExporter().isGeometryHighlighting()) { // avoid double description
-//					addBalloonContents(placemark, gmlId);
-//				}
+				//				if (config.getProject().getKmlExporter().isIncludeDescription() &&
+				//						!config.getProject().getKmlExporter().isGeometryHighlighting()) { // avoid double description
+				//					addBalloonContents(placemark, gmlId);
+				//				}
 
 				placemarkList.add(highlightingPlacemark);
 
@@ -1547,15 +1564,15 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					}
 
 					int startNextRing = ((i+3) < highlightingSurfaceWGS84.getElemInfo().length) ? 
-						highlightingSurfaceWGS84.getElemInfo()[i+3] - 1: // still holes to come
-						highlightingOrdinatesArrayWGS84.length; // default
+							highlightingSurfaceWGS84.getElemInfo()[i+3] - 1: // still holes to come
+								highlightingOrdinatesArrayWGS84.length; // default
 
-					// order points clockwise
-					for (int j = highlightingSurfaceWGS84.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
-						highlightingLinearRing.getCoordinates().add(String.valueOf(Building.reducePrecisionForXorY(highlightingOrdinatesArrayWGS84[j]) + "," 
-							+ Building.reducePrecisionForXorY(highlightingOrdinatesArrayWGS84[j+1]) + ","
-							+ Building.reducePrecisionForZ(highlightingOrdinatesArrayWGS84[j+2] + zOffset)));
-					}
+							// order points clockwise
+							for (int j = highlightingSurfaceWGS84.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
+								highlightingLinearRing.getCoordinates().add(String.valueOf(Building.reducePrecisionForXorY(highlightingOrdinatesArrayWGS84[j]) + "," 
+										+ Building.reducePrecisionForXorY(highlightingOrdinatesArrayWGS84[j+1]) + ","
+										+ Building.reducePrecisionForZ(highlightingOrdinatesArrayWGS84[j+2] + zOffset)));
+							}
 
 				}
 			}
