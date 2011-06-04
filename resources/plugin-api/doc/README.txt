@@ -1,4 +1,4 @@
-!impexp.plugins.api.name! v!impexp.plugins.api.version!
+!impexp.plugin.api.name! v!impexp.plugin.api.version!
 
   This library is free software and comes WITHOUT ANY WARRANTY.
   See the DISCLAIMER at the end of this document for more details.  
@@ -21,7 +21,7 @@
 1. License
 ----------
 
-The !impexp.plugins.api.name! is free software under
+The !impexp.plugin.api.name! is free software under
 the GNU Lesser General Public License Version 3.0. See the file LICENSE 
 for more details. For a copy of the GNU Lesser General Public License see 
 the files COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
@@ -39,7 +39,7 @@ the files COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
 3. About
 --------
 
-The !impexp.plugins.api.name! is a Java class library
+The !impexp.plugin.api.name! is a Java class library
 and API facilitating the development of own extensions for the
 !impexp.name! program.
 
@@ -58,15 +58,15 @@ the !impexp.name!. Please always check the changelog.
 -------------
 
 a) Make sure you are using a Java JDK >= 1.6.0_05.
-b) Put the "!impexp.plugins.api.jar.filename!" in your classpath.
-c) Implement the "!impexp.plugins.api.maininterface!" interface.
+b) Put the "!impexp.plugin.api.jar.filename!" in your classpath.
+c) Implement the "!impexp.plugin.api.maininterface!" interface.
 d) Implement further extension interfaces required by your plugin.
 e) Compile your plugin sources and create a JAR package.
-f) Create a "META-INF/services/!impexp.plugins.api.maininterface!" file
+f) Create a "META-INF/services/!impexp.plugin.api.maininterface!" file
    within the JAR (the file must be UTF-8 encoded).
 g) On separate lines within the file, list the fully qualified binary 
    names of your concrete implementation(s) of the
-   "!impexp.plugins.api.maininterface!" interface.
+   "!impexp.plugin.api.maininterface!" interface.
 h) Put the JAR into the "!dir.dest.plugins.relative!" subfolder within the installation
    folder of the !impexp.name!.
 
@@ -96,8 +96,8 @@ claus.nagel@tu-berlin.de
 8. Websites
 -----------
 
-Official !impexp.plugins.api.name! website: 
-!impexp.plugins.api.homepage!
+Official !impexp.plugin.api.name! website: 
+!impexp.plugin.api.homepage!
 
 Related websites:
 !vendor.homepage!

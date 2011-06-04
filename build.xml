@@ -6,7 +6,7 @@
 
 	<!-- internal properties -->
 	<property name="dir.build.base" location="${dir.build}/base" />
-	<property name="dir.build.plugins.api" location="${dir.build}/plugin-api" />
+	<property name="dir.build.plugin.api" location="${dir.build}/plugin-api" />
 
 	<!-- classpath -->
 	<path id="classpath">
@@ -38,44 +38,44 @@
 
 	<target name="generate_plugin_api" depends="clean" description="generate the plugin API">
 		<!-- create the required directories -->
-		<mkdir dir="${dir.build.plugins.api}" />
-		<mkdir dir="${dir.dest.plugins.api}" />
+		<mkdir dir="${dir.build.plugin.api}" />
+		<mkdir dir="${dir.dest.plugin.api}" />
 
-		<!-- compile the java code from ${dir.src.plugins.api} into ${dir.build.plugins.api} -->
-		<javac classpathref="classpath" srcdir="${dir.src.plugins.api}" destdir="${dir.build.plugins.api}" />
+		<!-- compile the java code from ${dir.src.plugin.api} into ${dir.build.plugin.api} -->
+		<javac classpathref="classpath" srcdir="${dir.src.plugin.api}" destdir="${dir.build.plugin.api}" />
 
 		<!-- copy LICENSE templates -->
-		<copy todir="${dir.dest.plugins.api}">
+		<copy todir="${dir.dest.plugin.api}">
 			<fileset dir="${dir.resources.license}" includes="**/*" />
 		</copy>
 
 		<!-- copy README template -->
-		<copy toDir="${dir.dest.plugins.api}">
-			<fileset dir="${dir.resources.plugin-api}" includes="**/*" />
+		<copy toDir="${dir.dest.plugin.api}">
+			<fileset dir="${dir.resources.plugin-api.doc}" includes="**/*" />
 		</copy>
 
 		<!-- replace tokens in template files -->
-		<replace file="${dir.dest.plugins.api}/LICENSE.txt" token="!software.name!" value="${impexp.plugins.api.name}" />
-		<replace file="${dir.dest.plugins.api}/README.txt" token="!impexp.name!" value="${impexp.name}" />
-		<replace file="${dir.dest.plugins.api}/README.txt" token="!impexp.version!" value="${impexp.version}" />
-		<replace file="${dir.dest.plugins.api}/README.txt" token="!impexp.plugins.api.name!" value="${impexp.plugins.api.name}" />
-		<replace file="${dir.dest.plugins.api}/README.txt" token="!impexp.plugins.api.jar.filename!" value="${impexp.plugins.api.jar.filename}" />
-		<replace file="${dir.dest.plugins.api}/README.txt" token="!impexp.plugins.api.version!" value="${impexp.plugins.api.version}" />
-		<replace file="${dir.dest.plugins.api}/README.txt" token="!impexp.plugins.api.homepage!" value="${impexp.plugins.api.homepage}" />
-		<replace file="${dir.dest.plugins.api}/README.txt" token="!impexp.plugins.api.maininterface!" value="${impexp.plugins.api.maininterface}" />
-		<replace file="${dir.dest.plugins.api}/README.txt" token="!vendor.name!" value="${vendor.name}" />
-		<replace file="${dir.dest.plugins.api}/README.txt" token="!vendor.organisation!" value="${vendor.organisation}" />
-		<replace file="${dir.dest.plugins.api}/README.txt" token="!vendor.copyright.year!" value="${vendor.copyright.year}" />
-		<replace file="${dir.dest.plugins.api}/README.txt" token="!vendor.homepage!" value="${vendor.homepage}" />
-		<replace file="${dir.dest.plugins.api}/README.txt" token="!dir.dest.plugins.relative!" value="${dir.dest.plugins.relative}" />
+		<replace file="${dir.dest.plugin.api}/LICENSE.txt" token="!software.name!" value="${impexp.plugin.api.name}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.name!" value="${impexp.name}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.version!" value="${impexp.version}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.name!" value="${impexp.plugin.api.name}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.jar.filename!" value="${impexp.plugin.api.jar.filename}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.version!" value="${impexp.plugin.api.version}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.homepage!" value="${impexp.plugin.api.homepage}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.maininterface!" value="${impexp.plugin.api.maininterface}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.name!" value="${vendor.name}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.organisation!" value="${vendor.organisation}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.copyright.year!" value="${vendor.copyright.year}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.homepage!" value="${vendor.homepage}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!dir.dest.plugins.relative!" value="${dir.dest.plugins.relative}" />
 
-		<!-- put everything in ${dir.build.plugins.api} into .jar file -->
-		<jar jarfile="${dir.dest.plugins.api}/${impexp.plugins.api.jar.filename}" basedir="${dir.build.plugins.api}">
-			<fileset dir="${dir.dest.plugins.api}" includes="**/*" />
+		<!-- put everything in ${dir.build.plugin.api} into .jar file -->
+		<jar jarfile="${dir.dest.plugin.api}/${impexp.plugin.api.jar.filename}" basedir="${dir.build.plugin.api}">
+			<fileset dir="${dir.dest.plugin.api}" includes="**/*" />
 			<manifest>
-				<attribute name="Built-Id" value="${user.name}-${impexp.plugins.api.name.short}-${impexp.version}" />
+				<attribute name="Built-Id" value="${user.name}-${impexp.plugin.api.name.short}-${impexp.version}" />
 				<attribute name="Built-Date" value="${TODAY}" />
-				<attribute name="Implementation-Title" value="${impexp.plugins.api.name}" />
+				<attribute name="Implementation-Title" value="${impexp.plugin.api.name}" />
 				<attribute name="Implementation-Version" value="${impexp.version}-b${build.number}" />
 				<attribute name="Implementation-Vendor" value="${vendor.shortinfo}" />
 			</manifest>
@@ -88,7 +88,7 @@
 	<target name="generate_plugins" description="generate plugins">
 		<subant target="dist">
 			<property name="build.number" value="${build.number}" />
-			<fileset dir="${dir.plugins.devel}" includes="**/build.xml" />
+			<fileset dir="${dir.plugin.devel}" includes="**/build.xml" />
 		</subant>
 	</target>
 
@@ -188,8 +188,8 @@
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!izpack.installation.folder!" value="${izpack.installation.folder}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.izpack.config!" value="${dir.resources.izpack.config}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest!" value="${dir.dest}" />
-		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugins.api.relative!" value="${dir.dest.plugins.api.relative}" />
-		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugins.api!" value="${dir.dest.plugins.api}" />
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugin.api.relative!" value="${dir.dest.plugin.api.relative}" />
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugin.api!" value="${dir.dest.plugin.api}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.3dcitydb!" value="${dir.resources.3dcitydb}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.manual!" value="${dir.resources.manual}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.templates!" value="${dir.resources.templates}" />

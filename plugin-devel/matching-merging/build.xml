@@ -5,7 +5,7 @@
 	<!-- load external property sets -->
 	<property file="default.properties" />
 
-	<property name="dir.local" location="${dir.plugins.devel}/${plugin.match.name.short}" />
+	<property name="dir.local" location="${dir.plugin.devel}/${plugin.match.name.short}" />
 	<property name="dir.local.src" location="${dir.local}/src" />
 	<property name="dir.local.meta-inf" location="${dir.local}/${plugin.match.dir.resources.meta-inf}" />
 	<property name="dir.local.build" location="${dir.local}/build" />
@@ -36,7 +36,7 @@
 		<!-- compile the plugin code from ${dir.local.src} into ${dir.local.build} -->
 		<javac classpathref="classpath" destdir="${dir.local.build.base}">
 			<src path="${dir.local.src}" />
-			<src path="${dir.src.plugins.api}" />
+			<src path="${dir.src.plugin.api}" />
 		</javac>
 
 		<!-- remove plugin api classes -->

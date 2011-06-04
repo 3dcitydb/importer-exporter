@@ -15,8 +15,8 @@
     <str id="plugins" txt="Plugins"/>
     <str id="plugins.description" txt="Optional extensions for the ${APP_NAME}"/>
     
-    <str id="plugins.match" txt="Matching/Merging Plugin"/>
-    <str id="plugins.match.description" txt="This plugins facilitates the merging of buildings in the ${3DCITYDB_NAME}"/>
+    <str id="plugin.match" txt="Matching/Merging Plugin"/>
+    <str id="plugin.match.description" txt="This plugins facilitates the merging of buildings in the ${3DCITYDB_NAME}"/>
     
     <str id="plugin-api" txt="Plugin development API"/>
     <str id="plugin-api.description" txt="Java API for the development of own extensions"/>    

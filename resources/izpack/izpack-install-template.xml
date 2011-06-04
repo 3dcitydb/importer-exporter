@@ -77,7 +77,7 @@
     <packs>
         <pack name="core" id="core" required="yes" preselected="yes">
             <description/>
-            <fileset dir="!dir.dest!" targetdir="$INSTALL_PATH" excludes="!dir.dest.plugins.api.relative!/ !dir.dest.plugins.relative!/ *.bat *.sh" override="true"/>
+            <fileset dir="!dir.dest!" targetdir="$INSTALL_PATH" excludes="!dir.dest.plugin.api.relative!/ !dir.dest.plugins.relative!/ *.bat *.sh" override="true"/>
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH" os="windows" override="true"/>
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.sh" targetdir="$INSTALL_PATH" os="unix" override="true"/>
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.sh" targetdir="$INSTALL_PATH" os="mac" override="true"/>
@@ -107,13 +107,13 @@
         <pack name="plugins" id="plugins" required="no" preselected="no">
             <description/>            
         </pack>
-        <pack name="plugins.match" id="plugins.match" parent="plugins" required="no" preselected="no">
+        <pack name="plugin.match" id="plugin.match" parent="plugins" required="no" preselected="no">
             <description/>
             <fileset dir="!dir.dest.plugins!/!plugin.match.dir.dest.relative!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!/!plugin.match.dir.dest.relative!" override="true"/>
         </pack>
         <pack name="plugin-api" id="plugin-api" parent="plugins" required="no" preselected="no">
             <description/>
-            <fileset dir="!dir.dest.plugins.api!" targetdir="$INSTALL_PATH/!dir.dest.plugins.api.relative!" override="true"/>
+            <fileset dir="!dir.dest.plugin.api!" targetdir="$INSTALL_PATH/!dir.dest.plugin.api.relative!" override="true"/>
         </pack>
     </packs>
 
