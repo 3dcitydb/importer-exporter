@@ -103,7 +103,7 @@
 
 		<!-- clean up -->
 		<delete dir="${dir.build}" />
-		<delete file="${dir.resources.plugin-api.doc}/overview_adapted.html" />
+		<delete file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" />
 	</target>
 
 	<target name="generate_plugins" description="generate plugins">
