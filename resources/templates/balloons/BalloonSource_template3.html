@@ -9,11 +9,9 @@
     // start publishing and from "Get a link to the published data" select 'RSS' and copy the link.
     // link should look like:
     // https://spreadsheets.google.com/feeds/list/0Asa_MCO7dfITdC12R21JbG11VDZNN25ma0tKZFZjeWc/od6/public/basic?authkey=CNKKvO8L&hl=en_US&alt=rss
-    // use the part between "list/" and "/public"
-    var sheetlink='0Asa_MCO7dfITdC12R21JbG11VDZNN25ma0tKZFZjeWc/od6';
-    //
-    // please do also update the key and authkey values of the edit link at the bottom of this template accordingly
-    //
+    var sheetlink='https://spreadsheets.google.com/feeds/list/0Asa_MCO7dfITdC12R21JbG11VDZNN25ma0tKZFZjeWc/od6/public/basic?authkey=CNKKvO8L&hl=en_US&alt=rss';
+	  var sheetId = sheetlink.substring(sheetlink.indexOf('list/')+5, sheetlink.indexOf('/public'));
+	  var authKey = sheetlink.substring(sheetlink.indexOf('authkey=')+8, sheetlink.indexOf('&'));
 		var Building_ID="<3DCityDB>CITYOBJECT/GMLID</3DCityDB>";
 		var kvp= new Array();	
 		var bgmlid="";
@@ -21,10 +19,12 @@
 		function initialize(){
 			
 			var initializeScript = document.createElement('script');
-			  initializeScript.setAttribute('src', 'https://spreadsheets.google.com/feeds/list/'+sheetlink+'/public/values'+'?sq=id%3D'+Building_ID+'&alt=json-in-script&callback=initializeCallback');
+			  initializeScript.setAttribute('src', 'https://spreadsheets.google.com/feeds/list/'+sheetId+'/public/values'+'?sq=id%3D'+Building_ID+'&alt=json-in-script&callback=initializeCallback');
 			  initializeScript.setAttribute('id', 'initializeScript');
 			  initializeScript.setAttribute('type', 'text/javascript');
 			  document.documentElement.firstChild.appendChild(initializeScript);;	
+        document.getElementById("editLink").href = 'https://spreadsheets.google.com/ccc?key=' + sheetId.substring(0, sheetId.indexOf('/')) 
+                                                 + "&hl=en&authkey=" + authKey;	
 		}
 		
 		function initializeCallback(json) {
@@ -113,7 +113,7 @@
     <hr style="border:solid #55759b 1px; background-color:#55759b; height:6px;">
     <div id="data" style="width:200px;text-align:center;"></div>
     <hr style="border:solid #55759b 1px; background-color:#55759b; height:6px;">
-	 	<p align=right>Click <a href="https://spreadsheets.google.com/ccc?key=0Asa_MCO7dfITdC12R21JbG11VDZNN25ma0tKZFZjeWc&hl=en&authkey=CNKKvO8L" target="_blank">here</a> to open the spreadsheet with all object entries.</p>
+	 	<p align=right>Click <a id="editLink" href="http://www.3dcitydb.net/" target="_blank">here</a> to open the spreadsheet with all object entries.</p>
 	</body>
 </html>
 	
