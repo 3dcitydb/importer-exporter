@@ -50,12 +50,12 @@ Main characteristics:
 * Export of KML/COLLADA models
 * Generic KML information balloons
 * Reading/writing CityGML instance documents of arbitrary file size
-* Multithreaded programming facilitating high-performance CityGML 
-  processing
 * Resolving of forward and backwards XLinks
-* XML validation of CityGML instance documents
 * User-defined Coordinate Reference System
 * Coordinate transformations for CityGML exports
+* XML validation of CityGML instance documents
+* Multithreaded programming facilitating high-performance CityGML 
+  processing
 * Matching/merging of building features within the database
 
 The !app.title! is shipped with both a Graphical
