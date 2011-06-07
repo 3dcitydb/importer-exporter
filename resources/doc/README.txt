@@ -67,7 +67,6 @@ programs.
 
 * Java JRE or JDK >= 1.6.0_05
 * 3D City Database version 2.0.5 on an Oracle Spatial DBMS >= 10G R2
-  (version 2.0.5 is mandatory for matching/merging functionality)
   
 The !app.title! can be run on any platform 
 providing appropriate Java support. It has been tested on the 
