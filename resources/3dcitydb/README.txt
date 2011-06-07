@@ -150,10 +150,11 @@ thomas.kolbe@tu-berlin.de
 ------------
 
 Official 3D City Database website: 
-http://www.gis.tu-berlin.de/software
+http://www.3dcitydb.net/
 
 Related websites:
-http://www.gis.tu-berlin.de/
+http://www.igg.tu-berlin.de/
+http://www.gis.tu-berlin.de/software
 http://www.citygml.org/
 http://www.citygmlwiki.org/
 http://www.opengeospatial.org/standards/citygml
