@@ -73,7 +73,6 @@
 			  
 			  table.appendChild(tbody);
 			  var data=document.getElementById('data');
-			  data.setAttribute('width', '500px');
 			  data.appendChild(table);
 		}
 		
@@ -99,12 +98,14 @@
 		}
 		</script>
 		<style type="text/css">
-		  body{ min-width: 200px; font-family:Tahoma,Arial;}
-  	  table.content{width:100%;border-collapse:separate;}
-		  td{width:50%;border-width:1px;border-style:hidden; padding:4px 4px;}
-  		td.key {color:#ffffff;font-weight:bold;font-size:medium;text-align:right;background-color:#55759b;}
+		  body{ min-width:500px; min-height:400px; font-family:Tahoma,Arial;}
+  	  table.content{width:500px;border-collapse:separate;}
+		  td{border-width:1px;border-style:hidden; padding:4px 4px;}
+  		td.key {width:40%;color:#ffffff;font-weight:bold;font-size:medium;text-align:right;background-color:#55759b;}
   		td.value {color:#000000;font-weight:normal;font-size:medium;text-align:left;}
 		</style>
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="cache-control" content="no-cache">
 	</head>
 	<body onload="initialize();">
     <table width=100%>
@@ -113,7 +114,7 @@
     <hr style="border:solid #55759b 1px; background-color:#55759b; height:6px;">
     <div id="data" style="width:200px;text-align:center;"></div>
     <hr style="border:solid #55759b 1px; background-color:#55759b; height:6px;">
-	 	<p align=right>Click <a id="editLink" href="http://www.3dcitydb.net/" target="_blank">here</a> to open the spreadsheet with all object entries.</p>
+	 	<p align=right><a id="editLink" href="http://www.3dcitydb.net/" target="_blank">Edit contents</a></p>
 	</body>
 </html>
 	
