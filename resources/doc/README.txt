@@ -47,12 +47,15 @@ importing and exporting spatial data for a virtual 3D city model.
 
 Main characteristics:
 * Full support for CityGML version 1.0.0 and 0.4.0
+* Exports of KML/COLLADA models
+* Generic KML information balloons
 * Reading/writing CityGML instance documents of arbitrary file size
 * Multithreaded programming facilitating high-performance CityGML 
   processing
-* Support for CityGML appearances such as textures
-* Resolving of XLinks
+* Resolving of forward and backwards XLinks
 * XML validation of CityGML instance documents
+* User-defined Coordinate Reference System
+* Coordinate transformations for CityGML exports
 * Matching/merging of building features within the database
 
 The !app.title! is shipped with both a Graphical

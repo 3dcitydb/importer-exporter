@@ -9,6 +9,6 @@
     <str id="manual" txt="Documentation"/>
     <str id="manual.description" txt="The documentation of the ${3DCITYDB_NAME} and the ${APP_NAME}"/>
 
-    <str id="samples" txt="Sample CityGML datasets"/>
-    <str id="samples.description" txt="Sample CityGML datasets taken from the official CityGML website at http://www.citygml.org/"/>
+    <str id="samples" txt="Sample CityGML and KML/COLLADA datasets"/>
+    <str id="samples.description" txt="Sample CityGML and KML/COLLADA datasets for testing the ${APP_NAME}"/>
 </langpack>

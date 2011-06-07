@@ -9,6 +9,6 @@
     <str id="manual" txt="Dokumentation"/>
     <str id="manual.description" txt="Die Dokumentation der ${3DCITYDB_NAME} und des ${APP_NAME}"/>
     
-    <str id="samples" txt="CityGML Beispieldaten"/>
-    <str id="samples.description" txt="CityGML Beispieldaten von der offiziellen CityGML-Homepage unter http://www.citygml.org/"/>
+    <str id="samples" txt="CityGML und KML/COLLADA Beispieldaten"/>
+    <str id="samples.description" txt="CityGML und KML/COLLADA Beispieldaten zum Testen des ${APP_NAME}"/>
 </langpack>
