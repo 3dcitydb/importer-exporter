@@ -23,8 +23,8 @@
         <createForPack name="manual"/>
     </shortcut>
     
-    <shortcut name="CityGML Beispieldaten" target="$INSTALL_PATH\samples" commandLine="" workingDirectory="$INSTALL_PATH\samples"
-        description="CityGML Beispieldaten" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
+    <shortcut name="Beispieldaten" target="$INSTALL_PATH\samples" commandLine="" workingDirectory="$INSTALL_PATH\samples"
+        description="CityGML und KML/COLLADA Beispieldaten" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
         <createForPack name="samples"/>
     </shortcut>
     

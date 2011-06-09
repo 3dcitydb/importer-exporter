@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=windows-1250">
+    <style type="text/css">
+      body {color:#000000;
+         font-family: Tahoma,Arial;
+      }
+      table.eig_kl_pv0 {
+      	border-width: 2px;
+      	border-spacing: 0px;
+      	border-style: solid;
+      	border-color: #C6C6C6;
+      	border-collapse: collapse;
+      	background-color: #C6C6C6;
+      }
+      table.eig_kl_pv0 td {
+      	border-width: 0px;
+      	padding: 10px;
+      	border-style: none;
+      	background-color: #C6C6C6;
+      	vertical-align:bottom
+      }
+      hr.eig_kl_pv0 {
+        border:solid #C6C6C6 1px; background-color:#C6C6C6; height:12px;
+      }
+      table.eig_kl_pv1 {
+      	border-width: 2px;
+      	border-spacing: 0px;
+      	border-style: solid;
+      	border-color: #FFEDA0;
+      	border-collapse: collapse;
+      	background-color: #FFEDA0;
+      }
+      table.eig_kl_pv1 td {
+      	border-width: 0px;
+      	padding: 10px;
+      	border-style: none;
+      	background-color: #FFEDA0;
+      	vertical-align:bottom
+      }
+      hr.eig_kl_pv1 {
+        border:solid #FFEDA0 1px; background-color:#FFEDA0; height:12px;
+      }
+      table.eig_kl_pv2 {
+      	border-width: 2px;
+      	border-spacing: 0px;
+      	border-style: solid;
+      	border-color: #FEB24C;
+      	border-collapse: collapse;
+      	background-color: #FEB24C;
+      }
+      table.eig_kl_pv2 td {
+      	border-width: 0px;
+      	padding: 10px;
+      	border-style: none;
+      	background-color: #FEB24C;
+      	vertical-align:bottom
+      }
+      hr.eig_kl_pv2 {
+        border:solid #FEB24C 1px; background-color:#FEB24C; height:12px;
+      }
+      table.eig_kl_pv3 {
+      	border-width: 2px;
+      	border-spacing: 0px;
+      	border-style: solid;
+      	border-color: #D64E36;
+      	border-collapse: collapse;
+      	background-color: #D64E36;
+      }
+      table.eig_kl_pv3 td {
+      	border-width: 0px;
+      	padding: 10px;
+      	border-style: none;
+      	background-color: #D64E36;
+      	vertical-align:bottom
+      }
+      hr.eig_kl_pv3 {
+        border:solid #D64E36 1px; background-color:#D64E36; height:12px;
+      }
+
+      .header{
+          font-family: Tahoma,Arial;
+	        color:#FFFFFF;
+	        font-weight:bold;
+      }
+      .header_num{ font-size:30px;
+          font-family: Tahoma,Arial;
+	        color:#FFFFFF;
+	        font-weight:bold;
+      }
+    </style>
+    <script type="text/javascript">
+      function format_invest(invest_amount_as_string)
+      {
+        var start = 0;
+        var end = invest_amount_as_string.length % 3;
+        if (end == 0) {end = 3};
+        document.write(invest_amount_as_string.substring(start,end));
+	      while (end < invest_amount_as_string.length) {
+          document.write(".");
+          start = end;
+          end = end + 3;
+          document.write(invest_amount_as_string.substring(start,end));
+	      }
+      }
+
+      function format_realval(realval)
+      {
+        var realvalstr = '' + realval.toFixed(2); 
+        document.write(realvalstr.replace(".", ","));
+      }
+    </script>
+    <title><3DCityDB>CITYOBJECT/GMLID</3DCityDB></title>
+  </head>
+  <body>
+    <table width=400 class="eig_kl_pv<3DCityDB>CITYOBJECT_GENERICATTRIB/INTVAL[ATTRNAME = 'EIG_KL_PV']</3DCityDB>">
+        <tr><td><span class="header">Photovoltaic suitability</span></td>
+            <td align=right><span class="header_num"><3DCityDB>CITYOBJECT_GENERICATTRIB/INTVAL[ATTRNAME = 'EIG_KL_PV']</3DCityDB></span></td>
+        </tr>
+    </table>
+    <br>
+    <table width=392>
+    <tr><td><b>Address:</b></td>
+        <td rowspan=3 align=right><img src="http://www.gis.tu-berlin.de/fileadmin/fg227/Bilder/Projekte/3DCityDB/3dcitydb_logo.png"></td>
+    </tr>
+    <tr><td><3DCityDB>ADDRESS/[FIRST]STREET</3DCityDB> <3DCityDB>ADDRESS/[FIRST]HOUSE_NUMBER</3DCityDB></td></tr>
+    <tr><td valign=top><3DCityDB>ADDRESS/[FIRST]CITY</3DCityDB></td></tr>
+    </table>
+    <hr style="color:#000000;">
+    <table width=392>
+    <tr><td><b>Available area for photovoltaic installations:</b> <script type="text/javascript">
+                                                                    format_realval(<3DCityDB>CITYOBJECT_GENERICATTRIB/REALVAL[ATTRNAME = 'AREA_KOR']</3DCityDB>);
+                                                                  </script> m<sup>2</sup></td></tr>
+    <tr><td><b>Average solar radiation in a year:</b> <script type="text/javascript">
+                                                        format_realval(<3DCityDB>CITYOBJECT_GENERICATTRIB/REALVAL[ATTRNAME = 'STRMIT_KOR']</3DCityDB>);
+                                                      </script> kWh/m<sup>2</sup></td></tr>
+    <tr><td><b>Solar electricity yield:</b> <script type="text/javascript">
+                                              format_realval(<3DCityDB>CITYOBJECT_GENERICATTRIB/REALVAL[ATTRNAME = 'STR_ERTR']</3DCityDB>);
+                                            </script> MWh/a</td></tr>
+    <tr><td><b>Maximal installable power:</b> <script type="text/javascript">
+                                                format_realval(<3DCityDB>CITYOBJECT_GENERICATTRIB/REALVAL[ATTRNAME = 'ILEIST']</3DCityDB>);
+                                              </script> kW/m<sup>2</sup></td></tr>
+    </table>
+    <hr style="color:#000000;">
+    <table width=392>
+    <tr><td><b>CO<sub>2</sub> Savings:</b> <script type="text/javascript">
+                                              format_realval(<3DCityDB>CITYOBJECT_GENERICATTRIB/REALVAL[ATTRNAME = 'CO2_EINSP']</3DCityDB>);
+                                           </script> t per year</td></tr>
+    <tr><td><b>Investment volume:</b> <script type="text/javascript">
+                                        format_invest("<3DCityDB>CITYOBJECT_GENERICATTRIB/REALVAL[ATTRNAME = 'INVEST']</3DCityDB>");
+                                      </script> &euro;</td></tr>
+    </table>
+    <hr class="eig_kl_pv<3DCityDB>CITYOBJECT_GENERICATTRIB/INTVAL[ATTRNAME = 'EIG_KL_PV']</3DCityDB>">
+  </body>
+</html>

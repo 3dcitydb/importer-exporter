@@ -47,12 +47,15 @@ importing and exporting spatial data for a virtual 3D city model.
 
 Main characteristics:
 * Full support for CityGML version 1.0.0 and 0.4.0
+* Export of KML/COLLADA models
+* Generic KML information balloons
 * Reading/writing CityGML instance documents of arbitrary file size
+* Resolving of forward and backwards XLinks
+* User-defined Coordinate Reference System
+* Coordinate transformations for CityGML exports
+* XML validation of CityGML instance documents
 * Multithreaded programming facilitating high-performance CityGML 
   processing
-* Support for CityGML appearances such as textures
-* Resolving of XLinks
-* XML validation of CityGML instance documents
 * Matching/merging of building features within the database
 
 The !impexp.name! is shipped with both a Graphical
@@ -67,7 +70,6 @@ programs.
 
 * Java JRE or JDK >= 1.6.0_05
 * 3D City Database version 2.0.5 on an Oracle Spatial DBMS >= 10G R2
-  (version 2.0.5 is mandatory for matching/merging functionality)
   
 The !impexp.name! can be run on any platform 
 providing appropriate Java support. It has been tested on the 
@@ -189,6 +191,7 @@ Official !impexp.name! website:
 
 Related websites:
 !vendor.homepage!
+http://www.gis.tu-berlin.de/software
 http://www.citygml.org/
 http://www.citygmlwiki.org/
 http://www.opengeospatial.org/standards/citygml

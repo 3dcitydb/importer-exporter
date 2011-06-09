@@ -1,0 +1,13 @@
+de.tub.citydb.api.concurrent
+de.tub.citydb.api.controller
+de.tub.citydb.api.database
+de.tub.citydb.api.event
+de.tub.citydb.api.event.common
+de.tub.citydb.api.gui
+de.tub.citydb.api.log
+de.tub.citydb.api.plugin
+de.tub.citydb.api.plugin.extension.config
+de.tub.citydb.api.plugin.extension.menu
+de.tub.citydb.api.plugin.extension.preferences
+de.tub.citydb.api.plugin.extension.view
+de.tub.citydb.api.registry
