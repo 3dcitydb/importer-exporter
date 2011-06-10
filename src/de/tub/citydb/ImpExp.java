@@ -31,8 +31,8 @@ package de.tub.citydb;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -40,33 +40,47 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.ServiceConfigurationError;
 
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import org.citygml4j.CityGMLContext;
+import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.event.common.ApplicationEvent;
+import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.plugin.Plugin;
+import de.tub.citydb.api.plugin.extension.config.ConfigExtension;
+import de.tub.citydb.api.plugin.extension.config.PluginConfig;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.cmd.ImpExpCmd;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.ConfigUtil;
+import de.tub.citydb.config.controller.PluginConfigControllerImpl;
 import de.tub.citydb.config.gui.Gui;
-import de.tub.citydb.config.gui.GuiConfigUtil;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.Project;
-import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.config.project.global.Logging;
-import de.tub.citydb.db.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.SplashScreen;
-import de.tub.citydb.jaxb.JAXBContextRegistry;
-import de.tub.citydb.log.Logger;
+import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
+import de.tub.citydb.modules.citygml.importer.CityGMLImportPlugin;
+import de.tub.citydb.modules.database.DatabasePlugin;
+import de.tub.citydb.modules.kml.KMLExportPlugin;
+import de.tub.citydb.modules.preferences.PreferencesPlugin;
+import de.tub.citydb.plugin.IllegalPluginEventChecker;
+import de.tub.citydb.plugin.PluginService;
+import de.tub.citydb.plugin.PluginServiceFactory;
+import de.tub.citydb.util.io.DirectoryScanner;
 
 public class ImpExp {
-	
+
 	// set look & feel
 	static {
 		try {
@@ -100,21 +114,34 @@ public class ImpExp {
 
 	@Option(name="-kmlExport", usage="export KML/COLLADA data to this file\n(shell version only)", metaVar="fileName")
 	private String kmlExportFile;
-	
+
 	@Option(name="-noSplash")
 	private boolean noSplash;
 
 	private final Logger LOG = Logger.getInstance();
-	private JAXBContext cityGMLContext, kmlContext, colladaContext, projectContext, guiContext;
-	private DBConnectionPool dbPool;
+	private JAXBBuilder jaxbBuilder;
+	private JAXBContext kmlContext, colladaContext, projectContext, guiContext;
+	private PluginService pluginService;
 	private Config config;
-	private List<String> errMsgs = new ArrayList<String>();
-	
+
 	private SplashScreen splashScreen;
-	private boolean useSplashScreen;
+	private boolean useSplashScreen;	
+
+	private List<String> errMsgs = new ArrayList<String>();
 
 	public static void main(String[] args) {
 		new ImpExp().doMain(args);
+	}
+
+	@SuppressWarnings("unused")
+	private void doMain(String[] args, Plugin[] plugins) {
+		if (plugins != null) {
+			PluginService pluginService = PluginServiceFactory.getPluginService();
+			for (Plugin plugin : plugins)
+				pluginService.registerExternalPlugin(plugin);
+		}
+
+		doMain(args);
 	}
 
 	private void doMain(String[] args) {
@@ -166,13 +193,13 @@ public class ImpExp {
 				System.exit(1);
 			}
 		}
-		
+
 		// initialize splash screen
 		useSplashScreen = !shell && !noSplash;
 		if (useSplashScreen) {
 			splashScreen = new SplashScreen(4, 3, 50, Color.BLACK);
 			splashScreen.setMessage("Version \"" + this.getClass().getPackage().getImplementationVersion() + "\"");
-			
+
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					splashScreen.setVisible(true);
@@ -190,26 +217,66 @@ public class ImpExp {
 				this.getClass().getPackage().getImplementationTitle() + ", version \"" +
 				this.getClass().getPackage().getImplementationVersion() + "\"");
 
-		// initialize JAXB and database environment
+		// load external plugins
+		printInfoMessage("Loading plugins");
+
+		try {			
+			DirectoryScanner directoryScanner = new DirectoryScanner(true);
+			directoryScanner.addFilenameFilter(new FilenameFilter() {
+				public boolean accept(File dir, String name) {
+					return name.toUpperCase().endsWith(".JAR");
+				}
+			});
+
+			for (File file : directoryScanner.getFiles(new File(Internal.PLUGINS_PATH)))
+				PluginServiceFactory.addPluginDirectory(file.getParentFile());
+
+			pluginService = PluginServiceFactory.getPluginService();
+			pluginService.loadPlugins();
+		} catch (IOException e) {
+			LOG.error("Failed to initialize plugin support: " + e.getMessage());
+			System.exit(1);
+		} catch (ServiceConfigurationError e) {
+			LOG.error("Failed to load plugin: " + e.getMessage());
+			System.exit(1);				
+		}
+
+		// get plugin config classes
+		List<Class<?>> projectConfigClasses = new ArrayList<Class<?>>();
+		projectConfigClasses.add(Project.class);
+		for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions()) {
+			try {
+				projectConfigClasses.add(plugin.getClass().getMethod("getConfig", new Class<?>[]{}).getReturnType());
+			} catch (SecurityException e) {
+				LOG.error("Failed to instantiate config for plugin '" + plugin.getClass().getCanonicalName() + "'.");
+				LOG.error("Please check the following error message: " + e.getMessage());
+				System.exit(1);
+			} catch (NoSuchMethodException e) {
+				LOG.error("Failed to instantiate config for plugin '" + plugin.getClass().getCanonicalName() + "'.");
+				LOG.error("Please check the following error message: " + e.getMessage());
+				System.exit(1);
+			}
+		}			
+
+		// initialize application environment
 		printInfoMessage("Initializing application environment");
 		config = new Config();
-		
+
 		try {
-			cityGMLContext = JAXBContextRegistry.registerInstance("org.citygml", new CityGMLContext().createJAXBContext());
-			kmlContext = JAXBContextRegistry.getInstance("net.opengis.kml._2");
-			colladaContext = JAXBContextRegistry.getInstance("org.collada._2005._11.colladaschema");
-			projectContext = JAXBContextRegistry.getInstance("de.tub.citydb.config.project");
-			guiContext = JAXBContextRegistry.getInstance("de.tub.citydb.config.gui");
-			dbPool = DBConnectionPool.getInstance("de.tub.citydb", config);
+			jaxbBuilder = new JAXBBuilder();
+			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", Thread.currentThread().getContextClassLoader());
+			colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", Thread.currentThread().getContextClassLoader());
+			projectContext = JAXBContext.newInstance(projectConfigClasses.toArray(new Class<?>[]{}));
+			guiContext = JAXBContext.newInstance(Gui.class);
 		} catch (JAXBException e) {
-			LOG.error("Application environment could not be initialized");
+			LOG.error("Application environment could not be initialized. Please check the following stack trace.");
 			LOG.error("Aborting...");
+			e.printStackTrace();
 			System.exit(1);
 		}
 
 		// initialize config
-		printInfoMessage("Loading project settings");
-		
+		printInfoMessage("Loading project settings");		
 		String confPath = null;
 		String projectFileName = null;
 
@@ -235,14 +302,26 @@ public class ImpExp {
 
 		config.getInternal().setConfigPath(confPath);
 		config.getInternal().setConfigProject(projectFileName);
-		String projectFile = confPath + File.separator + projectFileName;
+		File projectFile = new File(confPath + File.separator + projectFileName);
 
 		try {
 			Project configProject = null;
-			configProject = ProjectConfigUtil.unmarshal(projectFile, projectContext);
+			Object object = ConfigUtil.unmarshal(projectFile, projectContext);
+
+			if (!(object instanceof Project)) {
+				String errMsg = "Failed to read project settings file '" + projectFile + '\'';
+				if (shell) {
+					LOG.error(errMsg);
+					LOG.error("Aborting...");
+					System.exit(1);
+				} else
+					errMsgs.add(errMsg);
+			} else
+				configProject = (Project)object;
+
 			config.setProject(configProject);
-		} catch (FileNotFoundException fne) {
-			String errMsg = "Failed to find project settings file '" + projectFile + '\'';
+		} catch (IOException fne) {
+			String errMsg = "Failed to read project settings file '" + projectFile + '\'';
 			if (shell) {
 				LOG.error(errMsg);
 				LOG.error("Aborting...");
@@ -260,15 +339,19 @@ public class ImpExp {
 		} 
 
 		if (!shell) {
-			Gui configGui = null;
-			String guiFile = confPath + File.separator + config.getInternal().getConfigGui();
+			File guiFile = new File(confPath + File.separator + config.getInternal().getConfigGui());
 
 			try {
-				configGui = GuiConfigUtil.unmarshal(guiFile, guiContext);
+				Gui configGui = null;
+				Object object = ConfigUtil.unmarshal(guiFile, guiContext);
+
+				if (object instanceof Gui)
+					configGui = (Gui)object;
+
 				config.setGui(configGui);
 			} catch (JAXBException jaxbE) {
 				//
-			} catch (FileNotFoundException fne) {
+			} catch (IOException ioE) {
 				//
 			}
 		}
@@ -324,30 +407,73 @@ public class ImpExp {
 
 			LOG.writeToFile(msg.toString());
 		}
-		
+
 		// init internationalized labels 
 		LanguageType lang = config.getProject().getGlobal().getLanguage();
 		if (lang == null) {
 			lang = LanguageType.fromValue(System.getProperty("user.language"));
 			config.getProject().getGlobal().setLanguage(lang);
 		}
-		
+
 		Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", new Locale(lang.value()));
+
+		// initialize object registry
+		ObjectRegistry registry = ObjectRegistry.getInstance();
+		EventDispatcher eventDispatcher = new EventDispatcher();		
+		PluginConfigControllerImpl pluginConfigController = new PluginConfigControllerImpl(config);
+		registry.setLogController(Logger.getInstance());
+		registry.setEventDispatcher(eventDispatcher);
+		registry.setPluginConfigController(pluginConfigController);
+
+		// register illegal plugin event checker with event dispatcher
+		IllegalPluginEventChecker checker = IllegalPluginEventChecker.getInstance();
+		eventDispatcher.addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, checker);
+		eventDispatcher.addEventHandler(ApplicationEvent.SWITCH_LOCALE, checker);
 
 		// start application
 		if (!shell) {
+			// create main view instance
+			final ImpExpGui mainView = new ImpExpGui();
+			final DatabasePlugin databasePlugin = new DatabasePlugin(config, mainView);
+
+			// add gui related objects to registry
+			registry.setViewController(mainView);
+			registry.setDatabaseController(databasePlugin.getDatabaseController());
+
+			// propogate config to plugins
+			for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+				pluginConfigController.setOrCreatePluginConfig(plugin);
+
+			// initialize plugins
+			for (Plugin plugin : pluginService.getExternalPlugins()) {
+				LOG.info("Initializing plugin " + plugin.getClass().getName());
+				if (useSplashScreen)
+					splashScreen.setMessage("Initializing plugin " + plugin.getClass().getName());
+
+				plugin.init(new Locale(lang.value()));
+			}
+
+			// register internal plugins
+			pluginService.registerInternalPlugin(new CityGMLImportPlugin(jaxbBuilder, config, mainView));		
+			pluginService.registerInternalPlugin(new CityGMLExportPlugin(jaxbBuilder, config, mainView));		
+			pluginService.registerInternalPlugin(new KMLExportPlugin(kmlContext, colladaContext, config, mainView));
+			pluginService.registerInternalPlugin(databasePlugin);
+			pluginService.registerInternalPlugin(new PreferencesPlugin(pluginService, config, mainView));
+
+			// initialize internal plugins
+			for (Plugin plugin : pluginService.getInternalPlugins())
+				plugin.init(new Locale(lang.value()));
+
 			// initialize gui
 			printInfoMessage("Starting graphical user interface");
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					new ImpExpGui(cityGMLContext,
-							kmlContext,
-							colladaContext,
-							projectContext,
+					mainView.invoke(projectContext,
 							guiContext,
-							dbPool,
-							config).invoke(errMsgs);
+							pluginService,
+							config,
+							errMsgs);
 				}
 			});
 
@@ -364,21 +490,9 @@ public class ImpExp {
 		}	
 
 		if (validateFile != null) {
-			String fileList = buildFileList(validateFile);			
-			if (fileList == null || fileList.length() == 0) {
-				LOG.error("Invalid list of files to be validated");
-				LOG.error("Aborting...");
-				return;
-			}
-
-			// set import file names...
-			config.getInternal().setImportFileName(fileList);
-
 			new Thread() {
 				public void run() {
-					new ImpExpCmd(cityGMLContext, 
-							dbPool, 
-							config).doValidate();
+					new ImpExpCmd(jaxbBuilder, config).doValidate(validateFile);
 				}
 			}.start();
 
@@ -386,21 +500,9 @@ public class ImpExp {
 		}
 
 		if (importFile != null) {
-			String fileList = buildFileList(importFile);			
-			if (fileList == null || fileList.length() == 0) {
-				LOG.error("Invalid list of files to be imported");
-				LOG.error("Aborting...");
-				return;
-			}
-
-			// set import file names...
-			config.getInternal().setImportFileName(fileList);
-
 			new Thread() {
 				public void run() {
-					new ImpExpCmd(cityGMLContext, 
-							dbPool, 
-							config).doImport();
+					new ImpExpCmd(jaxbBuilder, config).doImport(importFile);
 				}
 			}.start();
 
@@ -412,9 +514,7 @@ public class ImpExp {
 
 			new Thread() {
 				public void run() {
-					new ImpExpCmd(cityGMLContext, 
-							dbPool, 
-							config).doExport();
+					new ImpExpCmd(jaxbBuilder, config).doExport();
 				}
 			}.start();
 
@@ -428,7 +528,6 @@ public class ImpExp {
 				public void run() {
 					new ImpExpCmd(kmlContext,
 							colladaContext,
-							dbPool, 
 							config).doKmlExport();
 				}
 			}.start();
@@ -436,7 +535,7 @@ public class ImpExp {
 			return;
 		}
 	}
-	
+
 	private void printInfoMessage(String message) {
 		LOG.info(message);
 		if (useSplashScreen) {
@@ -456,76 +555,4 @@ public class ImpExp {
 		out.println();
 	}
 
-	private String buildFileList(String userString) {
-		StringBuilder buffer = new StringBuilder();
-
-		for (String part : userString.split(";")) {
-			if (part == null || part.trim().isEmpty())
-				continue;
-
-			File input = new File(part.trim());
-
-			if (input.isDirectory()) {
-				buffer.append(input.getAbsolutePath());
-				buffer.append("\n");
-				continue;
-			}
-
-			final String path = new File(input.getAbsolutePath()).getParent();
-			final String fileName = replaceWildcards(input.getName().toLowerCase());
-
-			input = new File(path);
-			if (!input.exists()) {
-				LOG.error("'" + input.toString() + "' does not exist");
-				continue;
-			}
-
-			File[] list = input.listFiles(new FilenameFilter() {
-				public boolean accept(File dir, String name) {
-					return (name.toLowerCase().matches(fileName));
-				}
-			});
-
-			if (list != null && list.length != 0) {
-				int i = 0;
-				for (File file : list) {
-					if (file.isFile()) {
-						String name = file.getName().toUpperCase();
-						if (!name.endsWith(".GML") && 
-								!name.endsWith(".XML") &&
-								!name.endsWith(".CITYGML"))
-							continue;
-					}
-					
-					buffer.append(file.getAbsolutePath());
-					buffer.append("\n");
-					++i;
-				}
-
-				if (i == 0)
-					LOG.warn("No import files found at '" + part + "'");
-			} else
-				LOG.warn("No import files found at '" + part + "'");
-		}
-
-		return buffer.toString();
-	}
-
-	private String replaceWildcards(String input) {
-		StringBuilder buffer = new StringBuilder();
-		char [] chars = input.toCharArray();
-
-		for (int i = 0; i < chars.length; ++i) {
-			if (chars[i] == '*')
-				buffer.append(".*");
-			else if (chars[i] == '?')
-				buffer.append(".");
-			else if ("+()^$.{}[]|\\".indexOf(chars[i]) != -1)
-				buffer.append('\\').append(chars[i]);
-			else
-				buffer.append(chars[i]);
-		}
-
-		return buffer.toString();
-	}
 }

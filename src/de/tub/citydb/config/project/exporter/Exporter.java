@@ -32,7 +32,6 @@ package de.tub.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.general.Path;
 import de.tub.citydb.config.project.system.System;
@@ -42,17 +41,17 @@ import de.tub.citydb.config.project.system.System;
 		"targetSRS",
 		"appearances",
 		"filter",
-		"moduleVersion",
+		"cityGMLVersion",
 		"xlink",
 		"system"
 })
 public class Exporter {
 	private Path path;
 	@XmlIDREF
-	private ReferenceSystem targetSRS = Internal.DEFAULT_DB_REF_SYS;
+	private ReferenceSystem targetSRS = ReferenceSystem.DEFAULT;
 	private ExportAppearance appearances;
 	private ExportFilterConfig filter;
-	private ModuleVersion moduleVersion;
+	private CityGMLVersionType cityGMLVersion = CityGMLVersionType.v1_0_0;
 	private XLink xlink;
 	private System system;
 
@@ -60,7 +59,6 @@ public class Exporter {
 		path = new Path();
 		appearances = new ExportAppearance();
 		filter = new ExportFilterConfig();
-		moduleVersion = new ModuleVersion();
 		xlink = new XLink();
 		system = new System();
 	}
@@ -101,13 +99,12 @@ public class Exporter {
 			this.filter = filter;
 	}
 
-	public ModuleVersion getModuleVersion() {
-		return moduleVersion;
+	public CityGMLVersionType getCityGMLVersion() {
+		return cityGMLVersion;
 	}
 
-	public void setModuleVersion(ModuleVersion moduleVersion) {
-		if (moduleVersion != null)
-			this.moduleVersion = moduleVersion;
+	public void setCityGMLVersion(CityGMLVersionType cityGMLVersion) {
+		this.cityGMLVersion = cityGMLVersion;
 	}
 
 	public XLink getXlink() {

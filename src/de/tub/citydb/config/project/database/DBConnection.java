@@ -35,7 +35,9 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.util.UUIDManager;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+
+import de.tub.citydb.api.database.DatabaseConnectionDetails;
 
 @XmlType(name="ConnectionType", propOrder={
 		"description",
@@ -46,7 +48,7 @@ import de.tub.citydb.util.UUIDManager;
 		"password",
 		"savePassword"
 		})
-public class DBConnection implements Comparable<DBConnection> {
+public class DBConnection implements DatabaseConnectionDetails, Comparable<DBConnection> {
 	@XmlAttribute(required=true)
 	@XmlID
 	private String id;
@@ -60,10 +62,12 @@ public class DBConnection implements Comparable<DBConnection> {
 	private String password = "";
 	private Boolean savePassword = false;
 	@XmlTransient
+	private String internalPassword;
+	@XmlTransient
 	private DBMetaData metaData;
 		
 	public DBConnection() {
-		id = UUIDManager.randomUUID();
+		id = DefaultGMLIdManager.getInstance().generateUUID();
 	}
 	
 	public String getId() {
@@ -74,6 +78,7 @@ public class DBConnection implements Comparable<DBConnection> {
 		this.id = id;
 	}
 	
+	@Override
 	public String getDescription() {
 		return description;
 	}
@@ -82,6 +87,7 @@ public class DBConnection implements Comparable<DBConnection> {
 		this.description = description;
 	}
 
+	@Override
 	public String getServer() {
 		return server;
 	}
@@ -90,6 +96,7 @@ public class DBConnection implements Comparable<DBConnection> {
 		this.server = server;
 	}
 
+	@Override
 	public Integer getPort() {
 		return port;
 	}
@@ -98,6 +105,7 @@ public class DBConnection implements Comparable<DBConnection> {
 		this.port = port;
 	}
 
+	@Override
 	public String getSid() {
 		return sid;
 	}
@@ -106,6 +114,7 @@ public class DBConnection implements Comparable<DBConnection> {
 		this.sid = sid;
 	}
 
+	@Override
 	public String getUser() {
 		return user;
 	}
@@ -141,12 +150,25 @@ public class DBConnection implements Comparable<DBConnection> {
 		return description;
 	}
 	
+	public String getInternalPassword() {
+		return internalPassword;
+	}
+
+	public void setInternalPassword(String internalPassword) {
+		this.internalPassword = internalPassword;
+	}
+
+	@Override
 	public DBMetaData getMetaData() {
 		return metaData;
 	}
 
 	public void setMetaData(DBMetaData metaData) {
 		this.metaData = metaData;
+	}
+	
+	public boolean isSetMetaData() {
+		return metaData != null;
 	}
 
 	@Override

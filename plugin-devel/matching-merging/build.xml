@@ -1,0 +1,98 @@
+<?xml version="1.0" standalone="yes"?>
+<!-- be careful to set the basedir correctly -->
+<project basedir="../.." default="dist">
+
+	<!-- load external property sets -->
+	<property file="default.properties" />
+
+	<property name="dir.local" location="${dir.plugin.devel}/${plugin.match.name.short}" />
+	<property name="dir.local.src" location="${dir.local}/src" />
+	<property name="dir.local.meta-inf" location="${dir.local}/${plugin.match.dir.resources.meta-inf}" />
+	<property name="dir.local.build" location="${dir.local}/build" />
+	<property name="dir.local.build.base" location="${dir.local.build}/base" />
+
+	<!-- classpath -->
+	<path id="classpath">
+		<fileset dir="${dir.lib}" includes="*.jar" />
+	</path>
+
+	<!-- build number -->
+	<buildnumber file="build.num" />
+
+	<tstamp>
+		<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+	</tstamp>
+
+	<target name="clean">
+		<delete dir="${dir.local.build}" />
+		<delete dir="${dir.dest.plugins}" />
+	</target>
+
+	<target name="dist" depends="clean">
+		<!-- create the required directories -->
+		<mkdir dir="${dir.local.build.base}" />
+		<mkdir dir="${plugin.match.dir.dest}" />
+
+		<!-- compile the plugin code from ${dir.local.src} into ${dir.local.build} -->
+		<javac classpathref="classpath" destdir="${dir.local.build.base}">
+			<src path="${dir.local.src}" />
+			<src path="${dir.src.plugin.api}" />
+		</javac>
+
+		<!-- remove plugin api classes -->
+		<delete dir="${dir.local.build.base}/${plugin.api.src.package.folder}" />
+
+		<!-- copy resources -->
+		<copy todir="${dir.local.build.base}">
+			<fileset dir="${dir.local.src}" includes="**/*.properties" />
+		</copy>
+
+		<!-- copy LICENSE templates -->
+		<copy todir="${plugin.match.dir.dest.license}">
+			<fileset dir="${dir.resources.license}" includes="**/*" />
+		</copy>
+
+		<!-- copy README template -->
+		<copy toDir="${plugin.match.dir.dest}">
+			<fileset dir="${dir.local}/${plugin.match.dir.resources.doc}" includes="**/*" />
+		</copy>
+
+		<!-- replace tokens in template files -->
+		<replace file="${plugin.match.dir.dest.license}/LICENSE.txt" token="!software.name!" value="${plugin.match.name}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!impexp.name!" value="${impexp.name}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!impexp.version!" value="${impexp.version}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!plugin.match.name!" value="${plugin.match.name}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!plugin.match.name.full!" value="${plugin.match.name.full}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!plugin.match.jar.filename!" value="${plugin.match.jar.filename}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!plugin.match.version!" value="${plugin.match.version}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!plugin.match.homepage!" value="${plugin.match.homepage}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!vendor.name!" value="${vendor.name}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!vendor.organisation!" value="${vendor.organisation}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!vendor.copyright.year!" value="${vendor.copyright.year}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!vendor.homepage!" value="${vendor.homepage}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!vendor.country!" value="${vendor.country}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!dir.dest.plugins.relative!" value="${dir.dest.plugins.relative}" />
+		<replace file="${plugin.match.dir.dest}/README.txt" token="!plugin.match.dir.dest.relative!" value="${plugin.match.dir.dest.relative}" />
+
+		<!-- copy service information -->
+		<copy todir="${dir.local.build.base}/META-INF">
+			<fileset dir="${dir.local.meta-inf}" includes="**/*" />
+		</copy>
+
+		<!-- put everything in ${dir.local.build.base} into .jar file -->
+		<jar jarfile="${plugin.match.dir.dest}/${plugin.match.jar.filename}" basedir="${dir.local.build.base}">
+			<fileset dir="${plugin.match.dir.dest}" includes="**/*" />
+			<manifest>
+				<attribute name="Built-Id" value="${user.name}-${plugin.match.name.short}-${plugin.match.version}" />
+				<attribute name="Built-Date" value="${TODAY}" />
+				<attribute name="Implementation-Title" value="${plugin.match.name}" />
+				<attribute name="Implementation-Version" value="${plugin.match.version}-b${build.number}" />
+				<attribute name="Implementation-Vendor" value="${vendor.shortinfo}" />
+			</manifest>
+		</jar>
+
+		<!-- clean up -->
+		<delete dir="${dir.local.build}" />
+	</target>
+
+</project>

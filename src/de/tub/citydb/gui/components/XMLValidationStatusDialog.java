@@ -44,20 +44,20 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.event.Event;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.event.EventListener;
-import de.tub.citydb.event.EventType;
-import de.tub.citydb.event.statistic.CounterEvent;
-import de.tub.citydb.event.statistic.CounterType;
-import de.tub.citydb.event.statistic.StatusDialogMessage;
-import de.tub.citydb.event.statistic.StatusDialogProgressBar;
-import de.tub.citydb.event.statistic.StatusDialogTitle;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.modules.common.event.CounterEvent;
+import de.tub.citydb.modules.common.event.CounterType;
+import de.tub.citydb.modules.common.event.EventType;
+import de.tub.citydb.modules.common.event.StatusDialogMessage;
+import de.tub.citydb.modules.common.event.StatusDialogProgressBar;
+import de.tub.citydb.modules.common.event.StatusDialogTitle;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class XMLValidationStatusDialog extends JDialog implements EventListener {
+public class XMLValidationStatusDialog extends JDialog implements EventHandler {
 	private JLabel titleLabel;
 	private JLabel messageLabel;
 	private JProgressBar progressBar;
@@ -78,11 +78,11 @@ public class XMLValidationStatusDialog extends JDialog implements EventListener 
 			EventDispatcher eventDispatcher) {
 		super(frame, windowTitle, true);
 		
-		eventDispatcher.addListener(EventType.Counter, this);
-		eventDispatcher.addListener(EventType.StatusDialogProgressBar, this);
-		eventDispatcher.addListener(EventType.StatusDialogMessage, this);
-		eventDispatcher.addListener(EventType.StatusDialogTitle, this);
-		eventDispatcher.addListener(EventType.Interrupt, this);
+		eventDispatcher.addEventHandler(EventType.COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
+		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_MESSAGE, this);
+		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_TITLE, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 		
 		initGUI(windowTitle, statusTitle, statusMessage, statusDetails, setButton);
 	}
@@ -179,13 +179,13 @@ public class XMLValidationStatusDialog extends JDialog implements EventListener 
 
 	@Override
 	public void handleEvent(Event e) throws Exception {
-		if (e.getEventType() == EventType.Interrupt) {
+		if (e.getEventType() == EventType.INTERRUPT) {
 			acceptStatusUpdate = false;
 			messageLabel.setText(Internal.I18N.getString("common.dialog.msg.abort"));
 			progressBar.setIndeterminate(true);
 		}
 
-		else if (e.getEventType() == EventType.StatusDialogProgressBar && acceptStatusUpdate) {		
+		else if (e.getEventType() == EventType.STATUS_DIALOG_PROGRESS_BAR && acceptStatusUpdate) {		
 			if (((StatusDialogProgressBar)e).isSetIntermediate()) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {		
@@ -213,15 +213,15 @@ public class XMLValidationStatusDialog extends JDialog implements EventListener 
 			progressBar.setValue(current);
 		}
 
-		else if (e.getEventType() == EventType.StatusDialogMessage && acceptStatusUpdate) {
+		else if (e.getEventType() == EventType.STATUS_DIALOG_MESSAGE && acceptStatusUpdate) {
 			messageLabel.setText(((StatusDialogMessage)e).getMessage());
 		}
 
-		else if (e.getEventType() == EventType.StatusDialogTitle && acceptStatusUpdate) {
+		else if (e.getEventType() == EventType.STATUS_DIALOG_TITLE && acceptStatusUpdate) {
 			titleLabel.setText(((StatusDialogTitle)e).getTitle());
 		}
 		
-		else if (e.getEventType() == EventType.Counter &&
+		else if (e.getEventType() == EventType.COUNTER &&
 				((CounterEvent)e).getType() == CounterType.FILE) {
 			fileCounterLabel.setText(String.valueOf(((CounterEvent)e).getCounter()));
 		}

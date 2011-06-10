@@ -32,7 +32,7 @@ package de.tub.citydb.config.project.global;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.log.LogLevelType;
+import de.tub.citydb.api.log.LogLevelType;
 
 @XmlType(name="LogFileType", propOrder={
 		"logLevel",

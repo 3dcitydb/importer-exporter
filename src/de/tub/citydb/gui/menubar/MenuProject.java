@@ -35,9 +35,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
 import javax.swing.JFileChooser;
@@ -49,21 +47,32 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.plugin.extension.config.ConfigExtension;
+import de.tub.citydb.api.plugin.extension.config.PluginConfig;
+import de.tub.citydb.api.plugin.extension.config.PluginConfigEvent;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.ConfigUtil;
+import de.tub.citydb.config.controller.PluginConfigControllerImpl;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.Project;
-import de.tub.citydb.config.project.ProjectConfigUtil;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.gui.util.GuiUtil;
-import de.tub.citydb.log.Logger;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory;
+import de.tub.citydb.modules.preferences.PreferencesPlugin;
+import de.tub.citydb.plugin.InternalPlugin;
+import de.tub.citydb.plugin.PluginService;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class MenuProject extends JMenu {
 	private final Logger LOG = Logger.getInstance();
+	private final PluginService pluginService;
 	private final Config config;
 	private final JAXBContext ctx;
-	private final ImpExpGui topFrame;
+	private final ImpExpGui mainView;
+	private final PluginConfigControllerImpl pluginConfigController;
 
 	private JMenuItem openProject;
 	private JMenuItem saveProject;
@@ -75,10 +84,13 @@ public class MenuProject extends JMenu {
 	private String exportPath;
 	private String importPath;
 
-	public MenuProject(Config config, JAXBContext ctx, ImpExpGui topFrame) {
+	public MenuProject(PluginService pluginService, Config config, JAXBContext ctx, ImpExpGui mainView) {
+		this.pluginService = pluginService;
 		this.config = config;
 		this.ctx = ctx;
-		this.topFrame = topFrame;		
+		this.mainView = mainView;
+
+		pluginConfigController = (PluginConfigControllerImpl)ObjectRegistry.getInstance().getPluginConfigController();
 		init();
 	}
 
@@ -92,7 +104,7 @@ public class MenuProject extends JMenu {
 
 		openProject.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File file = loadFileDialog(Internal.I18N.getString("menu.project.open.label"));
+				File file = loadDialog(Internal.I18N.getString("menu.project.open.label"));
 
 				if (file != null) {
 					openProject(file);
@@ -107,8 +119,15 @@ public class MenuProject extends JMenu {
 
 		saveProject.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				topFrame.setSettings();
-				if (topFrame.saveProjectSettings())
+				// set settings on internal plugins
+				for (InternalPlugin plugin : pluginService.getInternalPlugins())
+					plugin.setSettings();
+
+				// fire event to external plugins
+				for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+					plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
+
+				if (mainView.saveProjectSettings())
 					LOG.info("Settings successfully saved to config file '" + 
 							new File(config.getInternal().getConfigPath()).getAbsolutePath() + File.separator + config.getInternal().getConfigProject() + "'.");
 
@@ -117,13 +136,20 @@ public class MenuProject extends JMenu {
 
 		saveProjectAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File file = saveFileDialog(Internal.I18N.getString("menu.project.saveAs.label"), true);
+				File file = saveDialog(Internal.I18N.getString("menu.project.saveAs.label"), true);
 
 				if (file != null) {
 					LOG.info("Saving project settings as file '" + file.toString() + "'.");
 					try {
-						topFrame.setSettings();
-						ProjectConfigUtil.marshal(config.getProject(), file.toString(), ctx);
+						// set settings on internal plugins
+						for (InternalPlugin plugin : pluginService.getInternalPlugins())
+							plugin.setSettings();
+
+						// fire event to external plugins
+						for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+							plugin.handleEvent(PluginConfigEvent.PRE_SAVE_CONFIG);
+
+						ConfigUtil.marshal(config.getProject(), file, ctx);
 
 						addLastUsedProject(file.getAbsolutePath());
 						lastUsed.setEnabled(true);
@@ -143,21 +169,20 @@ public class MenuProject extends JMenu {
 						Internal.I18N.getString("menu.project.defaults.msg.title"), JOptionPane.YES_NO_OPTION);
 
 				if (res == JOptionPane.YES_OPTION) {
-					topFrame.getConsoleText().setText("");
-
-					if (config.getInternal().isConnected()) {
-						try {
-							topFrame.getDBPool().close();
-						} catch (SQLException e1) {
-							topFrame.getDBPool().forceClose();
-						}
-						
-						LOG.info("Disconnected from database.");
-					}
+					mainView.clearConsole();
+					mainView.disconnectFromDatabase();
 
 					config.setProject(new Project());
-					topFrame.loadSettings();
-					topFrame.doTranslation();
+
+					// reset defaults on internal plugins
+					for (InternalPlugin plugin : pluginService.getInternalPlugins())
+						plugin.loadSettings();
+
+					// update plugin configs
+					for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+						plugin.handleEvent(PluginConfigEvent.RESET_DEFAULT_CONFIG);
+
+					mainView.doTranslation();
 					LOG.info("Project settings are reset to default values.");
 				}
 			}
@@ -165,14 +190,12 @@ public class MenuProject extends JMenu {
 
 		xsdProject.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File file = saveFileDialog(Internal.I18N.getString("menu.project.saveXSDas.label"), false);
+				File path = saveDialog(Internal.I18N.getString("menu.project.saveXSDas.label"), false);
 
-				if (file != null) {
-					LOG.info("Saving project XSD as file '" + file.toString() + "'.");
+				if (path != null) {
+					LOG.info("Saving project XSD at location '" + path.toString() + "'.");
 					try {
-						ProjectConfigUtil.generateSchema(ctx, file);
-					} catch (FileNotFoundException e1) {
-						LOG.error("Failed to find project settings file '" + file.toString() + "'.");
+						ConfigUtil.generateSchema(ctx, path);
 					} catch (IOException e1) {
 						LOG.error("Failed to save project settings: " + e1.getMessage());
 					}
@@ -193,7 +216,7 @@ public class MenuProject extends JMenu {
 		openProject.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		saveProject.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		saveProjectAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
-		
+
 		if (!config.getGui().getRecentlyUsedProjectFiles().isEmpty())
 			setLastUsedList();			
 		else
@@ -222,22 +245,35 @@ public class MenuProject extends JMenu {
 
 		try {
 			Logging logging = config.getProject().getGlobal().getLogging();
-			Project project = ProjectConfigUtil.unmarshal(file.toString(), ctx);
-
-			if (project != null) {
-				config.setProject(project);
-				topFrame.doTranslation();
-				topFrame.loadSettings();	
-
-				// adapt logging subsystem
-				project.getGlobal().setLogging(logging);
-				topFrame.setLoggingSettings();
-
-				success = true;
-			} else
+			Object object = ConfigUtil.unmarshal(file, ctx);
+			if (!(object instanceof Project)) {
 				LOG.error("Failed to read project settings.");
-		} catch (FileNotFoundException e1) {
-			LOG.error("Failed to find project settings file '" + file.toString() + "'.");
+				return false;
+			}
+
+			Project project = (Project)object;
+			config.setProject(project);
+			mainView.doTranslation();
+
+			// update contents of srs combo boxes
+			SrsComboBoxFactory.getInstance(config).updateAll(true);
+
+			// load settings for internal plugins
+			for (InternalPlugin plugin : pluginService.getInternalPlugins())
+				plugin.loadSettings();
+
+			// update plugin configs
+			for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
+				pluginConfigController.setOrCreatePluginConfig(plugin);
+
+			// adapt logging subsystem
+			project.getGlobal().setLogging(logging);
+
+			// reset logging settings
+			pluginService.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();
+			success = true;
+		} catch (IOException e1) {
+			LOG.error("Failed to read project settings file '" + file.toString() + "'.");
 		} catch (JAXBException e1) {
 			LOG.error("Failed to read project settings: " + e1.getMessage());
 		}					
@@ -259,7 +295,7 @@ public class MenuProject extends JMenu {
 		lastUsed.removeAll();
 
 		for (final String fileName : config.getGui().getRecentlyUsedProjectFiles()) {
-			final JMenuItem item = new JMenuItem(fileName);
+			final JMenuItem item = new JMenuItem();
 
 			File tmp = new File(fileName);
 			String name = tmp.getName();
@@ -294,43 +330,36 @@ public class MenuProject extends JMenu {
 						addLastUsedProject(fileName);
 						setLastUsedList();
 					}
-					
+
 					lastUsed.repaint();
 				}
 			});
 		}
 	}
 
-	private File saveFileDialog(String title, boolean isXml) {
+	private File saveDialog(String title, boolean isXml) {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(title);
-		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		FileNameExtensionFilter filter;
 
-		if (isXml)
-			filter = new FileNameExtensionFilter("Project Files (*.xml)", "xml");
-		else 
-			filter = new FileNameExtensionFilter("Project XSD Files (*.xsd)", "xsd");
+		if (isXml) {
+			FileNameExtensionFilter filter = new FileNameExtensionFilter("Project Files (*.xml)", "xml");
+			chooser.addChoosableFileFilter(filter);
+			chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
+			chooser.setFileFilter(filter);
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);			
+		} else 
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-		chooser.addChoosableFileFilter(filter);
-		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
-		chooser.setFileFilter(filter);
-
-		if (exportPath != null) {
+		if (exportPath != null)
 			chooser.setCurrentDirectory(new File(exportPath));
-		} 
 
 		int result = chooser.showSaveDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 
 			return null;
 
 		File file = chooser.getSelectedFile();		
-		if ((!file.getName().contains("."))) {
-			if (isXml)
-				file = new File(file + ".xml");
-			else
-				file = new File(file + ".xsd");
-		}
+		if (isXml && (!file.getName().contains(".")))
+			file = new File(file + ".xml");
 
 		exportPath = chooser.getCurrentDirectory().getAbsolutePath();
 		if (importPath == null)
@@ -339,7 +368,7 @@ public class MenuProject extends JMenu {
 		return file;
 	}
 
-	private File loadFileDialog(String title) {
+	private File loadDialog(String title) {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(title);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);

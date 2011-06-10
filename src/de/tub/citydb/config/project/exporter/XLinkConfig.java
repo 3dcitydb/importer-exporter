@@ -32,7 +32,7 @@ package de.tub.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.util.UUIDManager;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 @XmlType(name="XLinkConfigType", propOrder={
 		"mode",
@@ -43,7 +43,7 @@ public class XLinkConfig {
 	@XmlElement(name="multipleRepresentationMode", required=true)
 	private XLinkMode mode = XLinkMode.XLINK;
 	@XmlElement(defaultValue="UUID_")
-	private String idPrefix = UUIDManager.UUIDPrefix;
+	private String idPrefix = DefaultGMLIdManager.getInstance().getDefaultPrefix();
 	@XmlElement(defaultValue="false")
 	private Boolean appendId = false;
 	

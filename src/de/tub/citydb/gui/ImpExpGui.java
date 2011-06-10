@@ -40,12 +40,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilterOutputStream;
@@ -55,11 +51,11 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -71,7 +67,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
@@ -81,55 +76,49 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import de.tub.citydb.api.controller.ViewController;
+import de.tub.citydb.api.database.DatabaseConfigurationException;
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.common.ApplicationEvent;
+import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.gui.ComponentFactory;
+import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.plugin.Plugin;
+import de.tub.citydb.api.plugin.extension.view.View;
+import de.tub.citydb.api.plugin.extension.view.ViewExtension;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.ConfigUtil;
-import de.tub.citydb.config.gui.GuiConfigUtil;
 import de.tub.citydb.config.gui.window.MainWindow;
 import de.tub.citydb.config.gui.window.WindowSize;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.ProjectConfigUtil;
-import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.exporter.ExportFilterConfig;
-import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.config.project.global.LanguageType;
-import de.tub.citydb.config.project.importer.ImportFilterConfig;
-import de.tub.citydb.controller.Exporter;
-import de.tub.citydb.controller.Importer;
-import de.tub.citydb.controller.KmlExporter;
-import de.tub.citydb.controller.XMLValidator;
-import de.tub.citydb.db.DBConnectionPool;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.event.concurrent.InterruptEnum;
-import de.tub.citydb.event.concurrent.InterruptEvent;
-import de.tub.citydb.gui.components.ExportStatusDialog;
-import de.tub.citydb.gui.components.ImportStatusDialog;
-import de.tub.citydb.gui.components.StandardEditingPopupMenuDecorator;
-import de.tub.citydb.gui.components.XMLValidationStatusDialog;
+import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.event.SwitchLocaleEventImpl;
+import de.tub.citydb.gui.console.ConsoleWindow;
+import de.tub.citydb.gui.factory.DefaultComponentFactory;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.menubar.MenuBar;
-import de.tub.citydb.gui.panel.console.ConsoleWindow;
-import de.tub.citydb.gui.panel.db.DatabasePanel;
-import de.tub.citydb.gui.panel.exporter.ExportPanel;
-import de.tub.citydb.gui.panel.importer.ImportPanel;
-import de.tub.citydb.gui.panel.kmlExporter.KmlExportPanel;
-import de.tub.citydb.gui.panel.matching.MatchingPanel;
-import de.tub.citydb.gui.panel.settings.PrefPanel;
-import de.tub.citydb.gui.util.GuiUtil;
-import de.tub.citydb.log.LogLevelType;
-import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.Util;
+import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
+import de.tub.citydb.modules.citygml.importer.CityGMLImportPlugin;
+import de.tub.citydb.modules.database.DatabasePlugin;
+import de.tub.citydb.modules.kml.KMLExportPlugin;
+import de.tub.citydb.modules.preferences.PreferencesPlugin;
+import de.tub.citydb.plugin.PluginService;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class ImpExpGui extends JFrame implements PropertyChangeListener {
+public final class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	private final Logger LOG = Logger.getInstance();
-
-	private final ReentrantLock mainLock = new ReentrantLock();
-	private final Config config;
-	private final JAXBContext jaxbCityGMLContext;
-	private final JAXBContext jaxbKmlContext;
-	private final JAXBContext jaxbColladaContext;
-	private final JAXBContext jaxbProjectContext;
-	private final JAXBContext jaxbGuiContext;
-	private final DBConnectionPool dbPool;
+	private final EventDispatcher eventDispatcher; 
+	
+	private Config config;
+	private JAXBContext jaxbProjectContext;
+	private JAXBContext jaxbGuiContext;
+	private PluginService pluginService;
+	private DBConnectionPool dbPool;
 
 	private JPanel main;
 	private JTextArea consoleText;
@@ -138,22 +127,15 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 	private MenuBar menuBar;
 	private JTabbedPane menu;
 	private JSplitPane splitPane;
-	private ImportPanel importPanel;
-	private ExportPanel exportPanel;
-	private KmlExportPanel kmlExportPanel;
-	private DatabasePanel databasePanel;
-	private PrefPanel prefPanel;
-	private MatchingPanel matchingPanel;
 	private JPanel console;
 	private JLabel consoleLabel;
 	private ConsoleWindow consoleWindow;
 	private int tmpConsoleWidth;
 	private int activePosition;
 
-	private Importer importer;
-	private Exporter exporter;
-	private KmlExporter kmlExporter;
-	private XMLValidator validator;
+	private List<View> views;
+	private PreferencesPlugin preferencesPlugin;
+	private DatabasePlugin databasePlugin;
 
 	private PrintStream out;
 	private PrintStream err;
@@ -161,29 +143,29 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 	// internal state
 	private LanguageType currentLang = null;
 
-	public ImpExpGui(JAXBContext jaxbCityGMLContext,
-			JAXBContext jaxbKmlContext,
-			JAXBContext jaxbColladaContext,
-			JAXBContext jaxbProjectContext,
-			JAXBContext jaxbGuiContext,
-			DBConnectionPool dbPool,
-			Config config) {
-		this.jaxbCityGMLContext = jaxbCityGMLContext;
-		this.jaxbKmlContext = jaxbKmlContext;
-		this.jaxbColladaContext = jaxbColladaContext;
-		this.jaxbProjectContext = jaxbProjectContext;
-		this.jaxbGuiContext = jaxbGuiContext;
-		this.dbPool = dbPool;
-		this.config = config;
+	public ImpExpGui() {
+		dbPool = DBConnectionPool.getInstance();
+		
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		eventDispatcher.addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
 
-		config.getInternal().addPropertyChangeListener(this);
+		// required for preferences plugin
+		consoleText = new JTextArea();
 	}
 
-	public void invoke(List<String> errMsgs) {
+	public void invoke(JAXBContext jaxbProjectContext,
+			JAXBContext jaxbGuiContext,
+			PluginService pluginService,
+			Config config,
+			List<String> errMsgs) {		
+		this.jaxbProjectContext = jaxbProjectContext;
+		this.jaxbGuiContext = jaxbGuiContext;
+		this.pluginService = pluginService;
+		this.config = config;
+
 		// init GUI elements
 		initGui();
 		doTranslation();
-		loadSettings();
 		showWindow();
 
 		// initConsole;
@@ -210,32 +192,18 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 		activePosition = 0;
 		main = new JPanel();
 
-		menuBar = new MenuBar(config, jaxbProjectContext, this);
+		menuBar = new MenuBar(pluginService, config, jaxbProjectContext, this);
 		setJMenuBar(menuBar);
 
-		menu = new JTabbedPane();
-		importPanel = new ImportPanel(config);
-		exportPanel = new ExportPanel(config);
-		kmlExportPanel = new KmlExportPanel(config, this);
-		databasePanel = new DatabasePanel(config, this);
-		prefPanel = new PrefPanel(config, this);
-		matchingPanel = new MatchingPanel(config, this);
-
-		menu.add(importPanel);
-		menu.add(exportPanel);
-		menu.add(kmlExportPanel);
-		menu.add(matchingPanel);
-		menu.add(databasePanel);
-		menu.add(prefPanel);
-
 		console = new JPanel();
-		consoleText = new JTextArea();
 		consoleLabel = new JLabel();
 		consoleText.setAutoscrolls(true);
 		consoleText.setFont(new Font(Font.MONOSPACED, 0, 11));
 		consoleText.setEditable(false);
 		consoleWindow = new ConsoleWindow(console, config, this);
 
+		PopupMenuDecorator.getInstance().decorate(consoleText);
+		
 		statusText = new JLabel();
 		connectText = new JLabel();
 
@@ -249,64 +217,38 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 		connectText.setBackground(new Color(255,255,255));
 		connectText.setOpaque(true);
 
+		menu = new JTabbedPane();
+
+		// retrieve all views
+		views = new ArrayList<View>();
+		preferencesPlugin = pluginService.getInternalPlugin(PreferencesPlugin.class);
+		databasePlugin = pluginService.getInternalPlugin(DatabasePlugin.class);
+		views.add(pluginService.getInternalPlugin(CityGMLImportPlugin.class).getView());
+		views.add(pluginService.getInternalPlugin(CityGMLExportPlugin.class).getView());
+		views.add(pluginService.getInternalPlugin(KMLExportPlugin.class).getView());
+
+		for (ViewExtension viewExtension : pluginService.getExternalViewExtensions())
+			views.add(viewExtension.getView());
+
+		views.add(databasePlugin.getView());
+		views.add(preferencesPlugin.getView());
+
+		// attach views to gui
+		int index = 0;
+		for (View view : views)
+			menu.insertTab(null, view.getIcon(), view.getViewComponent(), view.getToolTip(), index++);
+
 		menu.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				if (menu.getSelectedIndex() == activePosition) return;
+				if (menu.getSelectedIndex() == activePosition) 
+					return;
 
-				if (menu.getComponentAt(activePosition) == prefPanel) {
-					if (!prefPanel.requestChange())
+				if (menu.getComponentAt(activePosition) == preferencesPlugin.getView().getViewComponent()) {
+					if (!preferencesPlugin.requestChange())
 						menu.setSelectedIndex(activePosition);
 				}
 
 				activePosition = menu.getSelectedIndex();
-			}
-		});
-
-		importPanel.getImportButton().addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				final SwingWorker<Object, Void> worker = new SwingWorker<Object, Void>() {
-					public Object doInBackground() {
-						importButtonPressed();
-						return null;
-					}
-				};
-				worker.execute();
-			}
-		});
-
-		importPanel.getValidateButton().addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				final SwingWorker<Object, Void> worker = new SwingWorker<Object, Void>() {
-					public Object doInBackground() {
-						validateButtonPressed();
-						return null;
-					}
-				};
-				worker.execute();
-			}
-		});
-
-		exportPanel.getExportButton().addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				final SwingWorker<Object, Void> worker = new SwingWorker<Object, Void>() {
-					public Object doInBackground() {
-						exportButtonPressed();
-						return null;
-					}
-				};
-				worker.execute();
-			}
-		});
-
-		kmlExportPanel.getExportButton().addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				final SwingWorker<Object, Void> worker = new SwingWorker<Object, Void>() {
-					public Object doInBackground() {
-						kmlExportButtonPressed();
-						return null;
-					}
-				};
-				worker.execute();
 			}
 		});
 
@@ -355,8 +297,6 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 			console.add(scroll, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
 		}
 
-		StandardEditingPopupMenuDecorator.decorate(consoleText);
-		
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setContinuousLayout(true);
 		splitPane.setBorder(BorderFactory.createEmptyBorder());
@@ -436,13 +376,13 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 
 	private void initConsole() {
 		Charset encoding;
-		
+
 		try {
 			encoding = Charset.forName("UTF-8");
 		} catch (Exception e) {
 			encoding = Charset.defaultCharset();
 		}
-		
+
 		// let standard out point to console
 		JTextAreaOutputStream jTextwriter = new JTextAreaOutputStream(consoleText, new ByteArrayOutputStream(), encoding);
 		PrintStream writer;
@@ -466,61 +406,37 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 		}
 	}
 
-	public void loadSettings() {
-		importPanel.loadSettings();
-		exportPanel.loadSettings();
-		kmlExportPanel.loadSettings();
-		databasePanel.loadSettings();
-		prefPanel.loadSettings();
-		matchingPanel.loadSettings();
-	}
-
-	public void setSettings() {
-		importPanel.setSettings();
-		exportPanel.setSettings();
-		kmlExportPanel.setSettings();
-		databasePanel.setSettings();
-		prefPanel.setSettings();
-		matchingPanel.setSettings();
-	}
-
-	public void setLoggingSettings() {
-		prefPanel.setLoggingSettings();
-	}
-
 	public void doTranslation () {
 		try {
 			LanguageType lang = config.getProject().getGlobal().getLanguage();
 			if (lang == currentLang)
 				return;
 
-			Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", new Locale(lang.value()));
+			Locale locale = new Locale(lang.value());
+			Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", locale);
 			currentLang = lang;
 
 			setTitle(Internal.I18N.getString("main.window.title"));
-			menu.setTitleAt(0, Internal.I18N.getString("main.tabbedPane.import"));
-			menu.setTitleAt(1, Internal.I18N.getString("main.tabbedPane.export"));
-			// javier
-			menu.setTitleAt(2, Internal.I18N.getString("main.tabbedPane.kmlExport"));
-			menu.setTitleAt(3, Internal.I18N.getString("main.tabbedPane.matchingTool"));
-			menu.setTitleAt(4, Internal.I18N.getString("main.tabbedPane.database"));
-			menu.setTitleAt(5, Internal.I18N.getString("main.tabbedPane.preferences"));
-
 			statusText.setText(Internal.I18N.getString("main.status.ready.label"));
-			connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
+			consoleLabel.setText(Internal.I18N.getString("main.label.console"));
+
+			if (dbPool.isConnected())
+				connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
+			else
+				connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
+
+			// fire translation notification to plugins
+			for (Plugin plugin : pluginService.getPlugins())
+				plugin.switchLocale(locale);
+
+			int index = 0;
+			for (View view : views)
+				menu.setTitleAt(index++, view.getLocalizedTitle());
 
 			menuBar.doTranslation();
-			importPanel.doTranslation();
-			exportPanel.doTranslation();
-			kmlExportPanel.doTranslation();
-			databasePanel.doTranslation();
-			matchingPanel.doTranslation();
-			prefPanel.doTranslation();
-			StandardEditingPopupMenuDecorator.translateAll();
 			
-			consoleLabel.setText(Internal.I18N.getString("main.label.console"));
-		}
-		catch (MissingResourceException e) {
+			eventDispatcher.triggerSyncEvent(new SwitchLocaleEventImpl(locale, this));
+		} catch (MissingResourceException e) {
 			LOG.error("Missing resource: " + e.getKey());
 		}
 	}
@@ -554,9 +470,8 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 			if (width == 0)
 				width = consoleWindow.getWidth();
 
-			if (resizeMain) {		
+			if (resizeMain)	
 				setSize(getWidth() + width, getHeight());
-			}
 
 			width = main.getWidth();
 			int dividerLocation = splitPane.getDividerLocation();
@@ -564,518 +479,6 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 			main.setPreferredSize(new Dimension(width, 1));
 			splitPane.setDividerLocation(dividerLocation);
 		}
-	}
-
-	private void importButtonPressed() {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
-
-		try {
-			// set configs
-			consoleText.setText("");
-			importPanel.setSettings();
-
-			ImportFilterConfig filter = config.getProject().getImporter().getFilter();
-
-			// check all input values...
-			if (config.getInternal().getImportFileName().trim().equals("")) {
-				errorMessage(Internal.I18N.getString("import.dialog.error.incompleteData"), 
-						Internal.I18N.getString("import.dialog.error.incompleteData.dataset"));
-				return;
-			}
-
-			// gmlId
-			if (filter.isSetSimpleFilter() &&
-					filter.getSimpleFilter().getGmlIdFilter().getGmlIds().isEmpty()) {
-				errorMessage(Internal.I18N.getString("import.dialog.error.incorrectData"), 
-						Internal.I18N.getString("common.dialog.error.incorrectData.gmlId"));
-				return;
-			}
-
-			// cityObject
-			if (filter.isSetComplexFilter() &&
-					filter.getComplexFilter().getFeatureCount().isSet()) {
-				Long coStart = filter.getComplexFilter().getFeatureCount().getFrom();
-				Long coEnd = filter.getComplexFilter().getFeatureCount().getTo();
-				String coEndValue = String.valueOf(filter.getComplexFilter().getFeatureCount().getTo());
-
-				if (coStart == null || (!coEndValue.trim().equals("") && coEnd == null)) {
-					errorMessage(Internal.I18N.getString("import.dialog.error.incorrectData"), 
-							Internal.I18N.getString("import.dialog.error.incorrectData.range"));
-					return;
-				}
-
-				if ((coStart != null && coStart <= 0) || (coEnd != null && coEnd <= 0)) {
-					errorMessage(Internal.I18N.getString("import.dialog.error.incorrectData"),
-							Internal.I18N.getString("import.dialog.error.incorrectData.range"));
-					return;
-				}
-
-				if (coEnd != null && coEnd < coStart) {
-					errorMessage(Internal.I18N.getString("import.dialog.error.incorrectData"),
-							Internal.I18N.getString("import.dialog.error.incorrectData.range"));
-					return;
-				}
-			}
-
-			// gmlName
-			if (filter.isSetComplexFilter() &&
-					filter.getComplexFilter().getGmlName().isSet() &&
-					filter.getComplexFilter().getGmlName().getValue().trim().equals("")) {
-				errorMessage(Internal.I18N.getString("import.dialog.error.incorrectData"),
-						Internal.I18N.getString("common.dialog.error.incorrectData.gmlName"));
-				return;
-			}
-
-			// BoundingBox
-			if (filter.isSetComplexFilter() &&
-					filter.getComplexFilter().getBoundingBox().isSet()) {
-				Double xMin = filter.getComplexFilter().getBoundingBox().getLowerLeftCorner().getX();
-				Double yMin = filter.getComplexFilter().getBoundingBox().getLowerLeftCorner().getY();
-				Double xMax = filter.getComplexFilter().getBoundingBox().getUpperRightCorner().getX();
-				Double yMax = filter.getComplexFilter().getBoundingBox().getUpperRightCorner().getY();
-
-				if (xMin == null || yMin == null || xMax == null || yMax == null) {
-					errorMessage(Internal.I18N.getString("import.dialog.error.incorrectData"),
-							Internal.I18N.getString("common.dialog.error.incorrectData.bbox"));
-					return;
-				}
-			}
-
-			if (!config.getInternal().isConnected()) {
-				databasePanel.connect();
-
-				if (!config.getInternal().isConnected())
-					return;
-			}
-
-			statusText.setText(Internal.I18N.getString("main.status.import.label"));
-			LOG.info("Initializing database import...");
-
-			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = new EventDispatcher();
-			final ImportStatusDialog importDialog = new ImportStatusDialog(this, 
-					Internal.I18N.getString("import.dialog.window"), 
-					Internal.I18N.getString("import.dialog.msg"), 
-					eventDispatcher);
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					importDialog.setLocationRelativeTo(importPanel.getTopLevelAncestor());
-					importDialog.setVisible(true);
-				}
-			});
-
-			importer = new Importer(jaxbCityGMLContext, dbPool, config, eventDispatcher);
-
-			importDialog.getCancelButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							eventDispatcher.triggerEvent(new InterruptEvent(
-									InterruptEnum.USER_ABORT, 
-									"User abort of database import.", 
-									LogLevelType.INFO));
-						}
-					});
-				}
-			});
-
-			boolean success = importer.doProcess();
-
-			try {
-				eventDispatcher.shutdownAndWait();
-			} catch (InterruptedException e1) {
-				//
-			}
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					importDialog.dispose();
-				}
-			});
-
-			if (success) {
-				LOG.info("Database import successfully finished.");
-			} else {
-				LOG.warn("Database import aborted.");
-			}
-
-			statusText.setText(Internal.I18N.getString("main.status.ready.label"));
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	private void validateButtonPressed() {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
-
-		try {
-			consoleText.setText("");
-			importPanel.setSettings();
-
-			// check for input files...
-			if (config.getInternal().getImportFileName().trim().equals("")) {
-				errorMessage(Internal.I18N.getString("validate.dialog.error.incompleteData"),
-						Internal.I18N.getString("validate.dialog.error.incompleteData.dataset"));
-				return;
-			}
-
-			statusText.setText(Internal.I18N.getString("main.status.validate.label"));
-			LOG.info("Initializing XML validation...");
-
-			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = new EventDispatcher();
-			final XMLValidationStatusDialog validatorDialog = new XMLValidationStatusDialog(this, 
-					Internal.I18N.getString("validate.dialog.window"), 
-					Internal.I18N.getString("validate.dialog.title"), 
-					" ", 
-					Internal.I18N.getString("validate.dialog.details") , 
-					true, 
-					eventDispatcher);
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					validatorDialog.setLocationRelativeTo(importPanel.getTopLevelAncestor());
-					validatorDialog.setVisible(true);
-				}
-			});
-
-			validator = new XMLValidator(jaxbCityGMLContext, config, eventDispatcher);
-
-			validatorDialog.getButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							eventDispatcher.triggerEvent(new InterruptEvent(
-									InterruptEnum.USER_ABORT, 
-									"User abort of XML validation.", 
-									LogLevelType.INFO));
-						}
-					});
-				}
-			});
-
-			boolean success = validator.doProcess();
-
-			try {
-				eventDispatcher.shutdownAndWait();
-			} catch (InterruptedException e1) {
-				//
-			}
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					validatorDialog.dispose();
-				}
-			});
-
-			if (success) {
-				LOG.info("XML validation finished.");
-			} else {
-				LOG.warn("XML validation aborted.");
-			}
-
-			statusText.setText(Internal.I18N.getString("main.status.ready.label"));
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	private void exportButtonPressed() {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
-
-		try {
-			// set configs
-			consoleText.setText("");
-			exportPanel.setSettings();
-
-			ExportFilterConfig filter = config.getProject().getExporter().getFilter();
-			Database db = config.getProject().getDatabase();
-
-			// check all input values...
-			if (config.getInternal().getExportFileName().trim().equals("")) {
-				errorMessage(Internal.I18N.getString("export.dialog.error.incompleteData"), 
-						Internal.I18N.getString("export.dialog.error.incompleteData.dataset"));
-				return;
-			}
-
-			// workspace timestamp
-			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
-				errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("common.dialog.error.incorrectData.date"));
-				return;
-			}
-
-			// gmlId
-			if (filter.isSetSimpleFilter() &&
-					filter.getSimpleFilter().getGmlIdFilter().getGmlIds().isEmpty()) {
-				errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("common.dialog.error.incorrectData.gmlId"));
-				return;
-			}
-
-			// cityObject
-			if (filter.isSetComplexFilter() &&
-					filter.getComplexFilter().getFeatureCount().isSet()) {
-				Long coStart = filter.getComplexFilter().getFeatureCount().getFrom();
-				Long coEnd = filter.getComplexFilter().getFeatureCount().getTo();
-				String coEndValue = String.valueOf(filter.getComplexFilter().getFeatureCount().getTo());
-
-				if (coStart == null || (!coEndValue.trim().equals("") && coEnd == null)) {
-					errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-							Internal.I18N.getString("export.dialog.error.incorrectData.range"));
-					return;
-				}
-
-				if ((coStart != null && coStart <= 0) || (coEnd != null && coEnd <= 0)) {
-					errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-							Internal.I18N.getString("export.dialog.error.incorrectData.range"));
-					return;
-				}
-
-				if (coEnd != null && coEnd < coStart) {
-					errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-							Internal.I18N.getString("export.dialog.error.incorrectData.range"));
-					return;
-				}
-			}
-
-			// gmlName
-			if (filter.isSetComplexFilter() &&
-					filter.getComplexFilter().getGmlName().isSet() &&
-					filter.getComplexFilter().getGmlName().getValue().trim().equals("")) {
-				errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"),
-						Internal.I18N.getString("common.dialog.error.incorrectData.gmlName"));
-				return;
-			}
-
-			// tiled bounding box
-			int tileAmount = 0;
-			if (filter.isSetComplexFilter() &&
-					filter.getComplexFilter().getTiledBoundingBox().isSet()) {
-				Double xMin = filter.getComplexFilter().getTiledBoundingBox().getLowerLeftCorner().getX();
-				Double yMin = filter.getComplexFilter().getTiledBoundingBox().getLowerLeftCorner().getY();
-				Double xMax = filter.getComplexFilter().getTiledBoundingBox().getUpperRightCorner().getX();
-				Double yMax = filter.getComplexFilter().getTiledBoundingBox().getUpperRightCorner().getY();
-
-				if (xMin == null || yMin == null || xMax == null || yMax == null) {
-					errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"),
-							Internal.I18N.getString("common.dialog.error.incorrectData.bbox"));
-					return;
-				}
-
-				if (filter.getComplexFilter().getTiledBoundingBox().getTiling().getMode() != TilingMode.NO_TILING) {
-					int rows = filter.getComplexFilter().getTiledBoundingBox().getTiling().getRows();
-					int columns = filter.getComplexFilter().getTiledBoundingBox().getTiling().getColumns(); 
-					tileAmount = rows * columns;
-				}
-			}
-
-			if (!config.getInternal().isConnected()) {
-				databasePanel.connect();
-
-				if (!config.getInternal().isConnected())
-					return;
-			}
-
-			statusText.setText(Internal.I18N.getString("main.status.export.label"));
-			LOG.info("Initializing database export...");
-
-			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = new EventDispatcher();
-			final ExportStatusDialog exportDialog = new ExportStatusDialog(this, 
-					Internal.I18N.getString("export.dialog.window"),
-					Internal.I18N.getString("export.dialog.msg"),
-					tileAmount,
-					eventDispatcher);
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					exportDialog.setLocationRelativeTo(exportPanel.getTopLevelAncestor());
-					exportDialog.setVisible(true);
-				}
-			});
-
-			exporter = new Exporter(jaxbCityGMLContext, dbPool, config, eventDispatcher);
-
-			exportDialog.getCancelButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							eventDispatcher.triggerEvent(new InterruptEvent(
-									InterruptEnum.USER_ABORT, 
-									"User abort of database export.", 
-									LogLevelType.INFO));
-						}
-					});
-				}
-			});
-
-			boolean success = exporter.doProcess();
-
-			try {
-				eventDispatcher.shutdownAndWait();
-			} catch (InterruptedException e1) {
-				//
-			}
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					exportDialog.dispose();
-				}
-			});
-
-			if (success) {
-				LOG.info("Database export successfully finished.");
-			} else {
-				LOG.warn("Database export aborted.");
-			}
-
-			statusText.setText(Internal.I18N.getString("main.status.ready.label"));
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	private void kmlExportButtonPressed() {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
-
-		try {
-			// set configs
-			consoleText.setText("");
-			kmlExportPanel.setSettings();
-
-			ExportFilterConfig filter = config.getProject().getKmlExporter().getFilter();
-			Database db = config.getProject().getDatabase();
-
-			// check all input values...
-			if (config.getInternal().getExportFileName().trim().equals("")) {
-				errorMessage(Internal.I18N.getString("kmlExport.dialog.error.incompleteData"), 
-						Internal.I18N.getString("kmlExport.dialog.error.incompleteData.dataset"));
-				return;
-			}
-			
-			// workspace timestamp
-			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
-				errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("export.dialog.error.incorrectData.date"));
-				return;
-			}
-
-			// gmlId
-			if (filter.isSetSimpleFilter() &&
-					filter.getSimpleFilter().getGmlIdFilter().getGmlIds().isEmpty()) {
-				errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("common.dialog.error.incorrectData.gmlId"));
-				return;
-			}
-
-			// DisplayLevels
-			int activeDisplayLevelAmount = config.getProject().getKmlExporter().getActiveDisplayLevelAmount(); 
-			if (activeDisplayLevelAmount == 0) {
-				errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("kmlExport.dialog.error.incorrectData.displayForms"));
-	            return;
-			}
-
-			if (!config.getInternal().isConnected()) {
-				databasePanel.connect();
-
-				if (!config.getInternal().isConnected())
-					return;
-			}
-
-			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = new EventDispatcher();
-			kmlExporter = new KmlExporter(jaxbKmlContext, jaxbColladaContext, dbPool, config, eventDispatcher);
-
-			int tileAmount = 1;
-			// BoundingBox
-			if (filter.isSetComplexFilter() &&
-					filter.getComplexFilter().getTiledBoundingBox().isSet()) {
-				Double xMin = filter.getComplexFilter().getTiledBoundingBox().getLowerLeftCorner().getX();
-				Double yMin = filter.getComplexFilter().getTiledBoundingBox().getLowerLeftCorner().getY();
-				Double xMax = filter.getComplexFilter().getTiledBoundingBox().getUpperRightCorner().getX();
-				Double yMax = filter.getComplexFilter().getTiledBoundingBox().getUpperRightCorner().getY();
-
-				if (xMin == null || yMin == null || xMax == null || yMax == null) {
-					errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"),
-							Internal.I18N.getString("common.dialog.error.incorrectData.bbox"));
-					return;
-				}
-
-				try {
-					tileAmount = kmlExporter.calculateRowsColumnsAndDelta();
-				}
-				catch (SQLException sqle) {
-					String srsDescription = filter.getComplexFilter().getBoundingBox().getSRS().getDescription();
-					Logger.getInstance().error(srsDescription + " " + sqle.getMessage());
-					return;
-				}
-			}
-			tileAmount = tileAmount * activeDisplayLevelAmount;
-
-			statusText.setText(Internal.I18N.getString("main.status.kmlExport.label"));
-			LOG.info("Initializing database export...");
-
-			final ExportStatusDialog exportDialog = new ExportStatusDialog(this, 
-					Internal.I18N.getString("kmlExport.dialog.window"),
-					Internal.I18N.getString("export.dialog.msg"),
-					tileAmount,
-					eventDispatcher);
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					exportDialog.setLocationRelativeTo(exportPanel.getTopLevelAncestor());
-					exportDialog.setVisible(true);
-				}
-			});
-
-			exportDialog.getCancelButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							eventDispatcher.triggerEvent(new InterruptEvent(
-									InterruptEnum.USER_ABORT, 
-									"User abort of database export.", 
-									LogLevelType.INFO));
-						}
-					});
-				}
-			});
-
-			boolean success = kmlExporter.doProcess();
-
-			try {
-				eventDispatcher.shutdownAndWait();
-			} catch (InterruptedException e1) {
-				//
-			}
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					exportDialog.dispose();
-				}
-			});
-
-			if (success) {
-				LOG.info("Database export successfully finished.");
-			} else {
-				LOG.warn("Database export aborted.");
-			}
-
-			statusText.setText(Internal.I18N.getString("main.status.ready.label"));
-		} finally {
-			lock.unlock();
-		}
-	}
-	
-	public void connectToDatabase() {
-		databasePanel.connect();
 	}
 
 	public boolean saveProjectSettings() {
@@ -1090,10 +493,10 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 			return false;
 		}
 
-		String projectConf = configPath + File.separator + config.getInternal().getConfigProject();
+		File projectFile = new File(configPath + File.separator + config.getInternal().getConfigProject());
 
 		try {
-			ProjectConfigUtil.marshal(config.getProject(), projectConf, jaxbProjectContext);
+			ConfigUtil.marshal(config.getProject(), projectFile, jaxbProjectContext);
 		} catch (JAXBException jaxbE) {
 			errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
 					Internal.I18N.getString("common.dialog.error.io.general"));
@@ -1115,7 +518,7 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 			return false;
 		}
 
-		String guiConf = configPath + File.separator + config.getInternal().getConfigGui();
+		File guiFile = new File(configPath + File.separator + config.getInternal().getConfigGui());
 
 		// set window size
 		Rectangle rect = getBounds();
@@ -1130,7 +533,7 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 		consoleWindow.setSettings();
 
 		try {
-			GuiConfigUtil.marshal(config.getGui(), guiConf, jaxbGuiContext);
+			ConfigUtil.marshal(config.getGui(), guiFile, jaxbGuiContext);
 		} catch (JAXBException jaxbE) {
 			errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
 					Internal.I18N.getString("common.dialog.error.io.general"));
@@ -1140,40 +543,87 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 		return true;
 	}
 
-	public JLabel getStatusText() {
-		return statusText;
+	@Override
+	public void setStatusText(String message) {
+		statusText.setText(message);
 	}
 
-	public JTextArea getConsoleText() {
+	@Override
+	public void clearConsole() {
+		consoleText.setText("");
+	}
+	
+	@Override
+	public void setDefaultStatus() {
+		statusText.setText(Internal.I18N.getString("main.status.ready.label"));
+	}
+
+	@Override
+	public JFrame getTopFrame() {
+		return this;
+	}
+
+	@Override
+	public ComponentFactory getComponentFactory() {
+		return DefaultComponentFactory.getInstance(config);
+	}
+
+	public JTextArea getConsole() {
 		return consoleText;
 	}
 
-	public DBConnectionPool getDBPool() {
-		return dbPool;
+	public void connectToDatabase() {
+		try {
+			databasePlugin.getDatabaseController().connect(true);
+		} catch (DatabaseConfigurationException e) {
+			//
+		} catch (SQLException e) {
+			//
+		}
 	}
 
-	private void shutdown() {
-		config.getInternal().setShuttingDown(true);
+	public void disconnectFromDatabase() {
+		try {
+			databasePlugin.getDatabaseController().disconnect(true);
+		} catch (SQLException e) {
+			//
+		}
+	}
+
+	private void shutdown() {		
 		System.setOut(out);
 		System.setErr(err);
+		boolean success = true;
 
 		consoleWindow.dispose();
 
+		if (dbPool.isConnected()) {
+			LOG.info("Terminating database connection");
+			try {
+				dbPool.disconnect();
+			} catch (SQLException e) {
+				LOG.error("Failed to terminate database connection: " + e.getMessage());
+				success = false;
+			}
+		}
+
+		// shutdown plugins
+		if (!pluginService.getExternalPlugins().isEmpty())
+			LOG.info("Shutting down plugins");
+
+		for (Plugin plugin : pluginService.getPlugins())
+			plugin.shutdown();
+
 		LOG.info("Saving project settings");
-		setSettings();
 		saveProjectSettings();
 		saveGUISettings();
 
-		LOG.info("Terminating database connection");
-		try {
-			dbPool.close();
-		} catch (SQLException e) {
-			LOG.error("Failed to terminate database connection: " + e.getMessage());
+		if (success)
+			LOG.info("Application successfully terminated");
+		else {
 			LOG.info("Application did not terminate normally");
 			System.exit(1);
-		}	
-
-		LOG.info("Application successfully terminated");
+		}
 	}
 
 	private class JTextAreaOutputStream extends FilterOutputStream {
@@ -1221,12 +671,10 @@ public class ImpExpGui extends JFrame implements PropertyChangeListener {
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("database.isConnected")) {
-			if (!(Boolean)evt.getNewValue())
-				connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
-			else
-				connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
-		}
+	public void handleEvent(Event event) throws Exception {
+		if (!((DatabaseConnectionStateEvent)event).isConnected())
+			connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
+		else
+			connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
 	}
 }

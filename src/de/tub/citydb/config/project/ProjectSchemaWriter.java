@@ -37,16 +37,23 @@ import javax.xml.transform.Result;
 import javax.xml.transform.stream.StreamResult;
 
 public class ProjectSchemaWriter extends SchemaOutputResolver {
-	private File file;
-	
-	public ProjectSchemaWriter(File file) {
-		this.file = file;
+	private String path;
+
+	public ProjectSchemaWriter(File path) {
+		this.path = path.getAbsolutePath();
 	}
-	
+
 	@Override
 	public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
+		File file;
+
+		if (namespaceUri.equals("http://www.gis.tu-berlin.de/3dcitydb-impexp/config/core"))
+			file = new File(path + File.separator + "config.xsd");
+		else
+			file = new File(path + File.separator + "plugin_" + suggestedFileName);
+
 		StreamResult res = new StreamResult(file);
-		res.setSystemId(file.toString());
+		res.setSystemId(file.toURI().toString());
 		return res;
 	}
 

@@ -29,59 +29,90 @@
  */
 package de.tub.citydb.gui.menubar;
 
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.xml.bind.JAXBContext;
 
+import de.tub.citydb.api.plugin.extension.menu.MenuExtension;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.plugin.PluginService;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class MenuBar extends JMenuBar {
+	private final PluginService pluginService;
 	private final Config config;
 	private final JAXBContext ctx;
 	private final ImpExpGui topFrame;
-	
+
 	private MenuFile file;
 	private MenuProject project;
 	private MenuWindow window;
 	private MenuHelp help;
-	
-	public MenuBar(Config config, JAXBContext ctx, ImpExpGui topFrame) {
+
+	private JMenu extensions;
+
+	public MenuBar(PluginService pluginService, Config config, JAXBContext ctx, ImpExpGui topFrame) {
+		this.pluginService = pluginService;
 		this.config = config;
 		this.ctx = ctx;
 		this.topFrame = topFrame;
 		init();
 	}
-	
+
 	private void init() {
 		file = new MenuFile();
-		project = new MenuProject(config, ctx, topFrame);
+		project = new MenuProject(pluginService, config, ctx, topFrame);
 		window = new MenuWindow(config, topFrame);
 		help = new MenuHelp(config, topFrame);
-		
+
 		add(file);
 		add(project);
+
+		for (MenuExtension extension : pluginService.getExternalMenuExtensions()) {
+			if (extensions == null)
+				extensions = new JMenu();
+
+			JMenu menu = extension.getMenu().getMenuComponent();
+			menu.setText(extension.getMenu().getLocalizedTitle());
+			menu.setIcon(extension.getMenu().getIcon());
+			GuiUtil.setMnemonic(menu, menu.getText(), extension.getMenu().getMnemonicIndex());
+			extensions.add(menu);
+		}
+
+		if (extensions != null)
+			add(extensions);
+
 		add(window);
 		add(help);
 	}
-	
+
 	public void doTranslation() {
 		file.setText(Internal.I18N.getString("menu.file.label"));
 		project.setText(Internal.I18N.getString("menu.project.label"));
 		window.setText(Internal.I18N.getString("menu.window.label"));
 		help.setText(Internal.I18N.getString("menu.help.label"));
-		
+
 		GuiUtil.setMnemonic(file, "menu.file.label", "menu.file.label.mnemonic");
 		GuiUtil.setMnemonic(project, "menu.project.label", "menu.project.label.mnemonic");
 		GuiUtil.setMnemonic(window, "menu.window.label", "menu.window.label.mnemonic");
 		GuiUtil.setMnemonic(help, "menu.help.label", "menu.help.label.mnemonic");
-		
+
+		if (extensions != null) {
+			extensions.setText(Internal.I18N.getString("menu.extensions.label"));
+			GuiUtil.setMnemonic(extensions, "menu.extensions.label", "menu.extensions.label.mnemonic");
+			
+			int index = 0;
+			for (MenuExtension extension : pluginService.getExternalMenuExtensions())
+				((JMenu)extensions.getMenuComponent(index++)).setText(extension.getMenu().getLocalizedTitle());
+		}
+
 		file.doTranslation();
 		project.doTranslation();
 		window.doTranslation();
 		help.doTranslation();
 	}
-	
+
 }

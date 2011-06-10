@@ -57,7 +57,7 @@ CREATE OR REPLACE PACKAGE geodb_util
 AS
   FUNCTION versioning_table(table_name VARCHAR2) RETURN VARCHAR2;
   FUNCTION versioning_db RETURN VARCHAR2;
-  PROCEDURE db_info(srid OUT DATABASE_SRS.SRID%TYPE, srs OUT DATABASE_SRS.GML_SRS_NAME%TYPE, versioning OUT VARCHAR2);
+  FUNCTION db_info RETURN DB_INFO_TABLE;
   FUNCTION error_msg(err_code VARCHAR2) RETURN VARCHAR2;
   FUNCTION split(list VARCHAR2, delim VARCHAR2 := ',') RETURN STRARRAY;
   FUNCTION min(a number, b number) return number;
@@ -126,11 +126,23 @@ AS
   * @param srs database srs name
   * @param versioning database versioning
   ******************************************************************/
-  PROCEDURE db_info(srid OUT DATABASE_SRS.SRID%TYPE, srs OUT DATABASE_SRS.GML_SRS_NAME%TYPE, versioning OUT VARCHAR2) 
+  FUNCTION db_info RETURN DB_INFO_TABLE 
   IS
+    info_ret DB_INFO_TABLE;
+    info_tmp DB_INFO_OBJ;
   BEGIN
-    execute immediate 'SELECT SRID, GML_SRS_NAME from DATABASE_SRS' into srid, srs;
-    versioning := versioning_db;
+    info_ret := DB_INFO_TABLE();
+    info_ret.extend;
+  
+    info_tmp := DB_INFO_OBJ(0, NULL, NULL, 0, NULL);
+
+    execute immediate 'SELECT SRID, GML_SRS_NAME from DATABASE_SRS' into info_tmp.srid, info_tmp.gml_srs_name;   
+    execute immediate 'SELECT COORD_REF_SYS_NAME from SDO_COORD_REF_SYS where SRID=:1' into info_tmp.coord_ref_sys_name using info_tmp.srid;
+    info_tmp.is_coord_ref_sys_3d := is_coord_ref_sys_3d(info_tmp.srid);
+    info_tmp.versioning := versioning_db;     
+       
+    info_ret(info_ret.count) := info_tmp;
+    return info_ret;
   END;
   
   /*****************************************************************

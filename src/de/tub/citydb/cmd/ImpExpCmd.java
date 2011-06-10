@@ -29,69 +29,79 @@
  */
 package de.tub.citydb.cmd;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.sql.SQLException;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 
+import org.citygml4j.builder.jaxb.JAXBBuilder;
+
+import de.tub.citydb.api.database.DatabaseConfigurationException;
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.log.LogLevelType;
+import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
-import de.tub.citydb.config.project.importer.LocalXMLSchemaType;
-import de.tub.citydb.config.project.importer.XMLValidation;
-import de.tub.citydb.controller.Exporter;
-import de.tub.citydb.controller.Importer;
-import de.tub.citydb.controller.KmlExporter;
-import de.tub.citydb.controller.XMLValidator;
-import de.tub.citydb.db.DBConnectionPool;
-import de.tub.citydb.event.EventDispatcher;
-import de.tub.citydb.log.LogLevelType;
-import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.DBUtil;
+import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.modules.citygml.exporter.controller.Exporter;
+import de.tub.citydb.modules.citygml.importer.controller.Importer;
+import de.tub.citydb.modules.citygml.importer.controller.XMLValidator;
+import de.tub.citydb.modules.kml.controller.KmlExporter;
 
 public class ImpExpCmd {
 	private final Logger LOG = Logger.getInstance();
-	private JAXBContext jaxbCityGMLContext;
+	private final DBConnectionPool dbPool;
+	private JAXBBuilder cityGMLBuilder;
 	private JAXBContext jaxbKmlContext;
 	private JAXBContext jaxbColladaContext;
-	private DBConnectionPool dbPool;
 	private Config config;
 
-	public ImpExpCmd(JAXBContext jaxbCityGMLContext,
-			DBConnectionPool dbPool,
-			Config config) {
-		this.jaxbCityGMLContext = jaxbCityGMLContext;
-		this.dbPool = dbPool;
+	public ImpExpCmd(JAXBBuilder cityGMLBuilder, Config config) {
+		this.cityGMLBuilder = cityGMLBuilder;
 		this.config = config;
+		dbPool = DBConnectionPool.getInstance();
 	}
 
 	public ImpExpCmd(JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
-			DBConnectionPool dbPool,
 			Config config) {
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
-		this.dbPool = dbPool;
 		this.config = config;
+		dbPool = DBConnectionPool.getInstance();
 	}
 
-	public void doImport() {
+	public void doImport(String importFiles) {
+		// prepare list of files to be validated
+		List<File> files = getFiles(importFiles, ";");
+		if (files.size() == 0) {
+			LOG.error("Invalid list of files to be imported");
+			LOG.error("Aborting...");
+			return;
+		}
+		
 		initDBPool();
-		if (!config.getInternal().isConnected()) {
+		if (!dbPool.isConnected()) {
 			LOG.error("Aborting...");
 			return;
 		}
 
 		LOG.info("Initializing database import...");
 
-		EventDispatcher eventDispatcher = new EventDispatcher();
-		Importer importer = new Importer(jaxbCityGMLContext, dbPool, config, eventDispatcher);
+		config.getInternal().setImportFiles(files.toArray(new File[0]));
+		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		Importer importer = new Importer(cityGMLBuilder, dbPool, config, eventDispatcher);
 		boolean success = importer.doProcess();
 
 		try {
-			eventDispatcher.shutdownAndWait();
+			eventDispatcher.flushEvents();
 		} catch (InterruptedException e) {
 			//
 		}
@@ -103,23 +113,24 @@ public class ImpExpCmd {
 		}
 	}
 
-	public void doValidate() {
+	public void doValidate(String validateFiles) {
+		// prepare list of files to be validated
+		List<File> files = getFiles(validateFiles, ";");
+		if (files.size() == 0) {
+			LOG.error("Invalid list of files to be validated");
+			LOG.error("Aborting...");
+			return;
+		}
+		
 		LOG.info("Initializing XML validation...");
 
-		XMLValidation xmlValidation = config.getProject().getImporter().getXMLValidation();
-		if (xmlValidation.getUseLocalSchemas().isSet()) {
-			Set<LocalXMLSchemaType> schemas = xmlValidation.getUseLocalSchemas().getSchemas();
-			if (schemas.isEmpty())
-				for (LocalXMLSchemaType schema : LocalXMLSchemaType.values())
-					schemas.add(schema);
-		}
-
-		EventDispatcher eventDispatcher = new EventDispatcher();
-		XMLValidator validator = new XMLValidator(jaxbCityGMLContext, config, eventDispatcher);
+		config.getInternal().setImportFiles(files.toArray(new File[0]));
+		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		XMLValidator validator = new XMLValidator(cityGMLBuilder, config, eventDispatcher);
 		boolean success = validator.doProcess();
 
 		try {
-			eventDispatcher.shutdownAndWait();
+			eventDispatcher.flushEvents();
 		} catch (InterruptedException e) {
 			//
 		}
@@ -133,18 +144,23 @@ public class ImpExpCmd {
 
 	public void doExport() {
 		initDBPool();
-		if (!config.getInternal().isConnected()) {
+		if (!dbPool.isConnected()) {
 			LOG.error("Aborting...");
 			return;
 		}
 
 		LOG.info("Initializing database export...");
 
-		EventDispatcher eventDispatcher = new EventDispatcher();
-		Exporter exporter = new Exporter(jaxbCityGMLContext, dbPool, config, eventDispatcher);
+		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		Exporter exporter = new Exporter(cityGMLBuilder, dbPool, config, eventDispatcher);
 		boolean success = exporter.doProcess();
-		eventDispatcher.shutdown();
 
+		try {
+			eventDispatcher.flushEvents();
+		} catch (InterruptedException e) {
+			//
+		}
+		
 		if (success) {
 			LOG.info("Database export successfully finished.");
 		} else {
@@ -154,14 +170,14 @@ public class ImpExpCmd {
 
 	public void doKmlExport() {
 		initDBPool();
-		if (!config.getInternal().isConnected()) {
+		if (!dbPool.isConnected()) {
 			LOG.error("Aborting...");
 			return;
 		}
 
 		LOG.info("Initializing database export...");
 
-		EventDispatcher eventDispatcher = new EventDispatcher();
+		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		KmlExporter kmlExporter = new KmlExporter(jaxbKmlContext, jaxbColladaContext, dbPool, config, eventDispatcher);
 		ExportFilterConfig filter = config.getProject().getKmlExporter().getFilter();
 		if (filter.isSetComplexFilter()) {
@@ -175,8 +191,13 @@ public class ImpExpCmd {
 			}
 		}
 		boolean success = kmlExporter.doProcess();
-		eventDispatcher.shutdown();
 
+		try {
+			eventDispatcher.flushEvents();
+		} catch (InterruptedException e) {
+			//
+		}
+		
 		if (success) {
 			LOG.info("Database export successfully finished.");
 		} else {
@@ -187,67 +208,69 @@ public class ImpExpCmd {
 	private void initDBPool() {	
 		// check active connection
 		DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-		Internal intConfig = config.getInternal();
-		
+
 		if (conn == null) {
 			LOG.error("No valid database connection found in project settings.");
 			return;
 		}
 
-		if (conn.getServer() == null || conn.getServer().trim().equals("")) {
-			LOG.error("No database server configured in project settings.");
-			return;
-		}
-
-		if (conn.getPort() == null || conn.getPort() == 0) {
-			LOG.error("No valid database connection port configured in project settings.");
-			return;
-		}
-
-		if (conn.getSid() == null || conn.getSid().trim().equals("")) {
-			LOG.error("No valid database sid configured in project settings.");
-			return;
-		}
-
-		if (conn.getUser() == null || conn.getUser().trim().equals("")) {
-			LOG.error("No database user configured in project settings.");
-			return;
-		}
-
-		if (conn.getPassword() == null || conn.getPassword().trim().equals("")) {
-			LOG.error("No password for database user configured in project settings.");
-			return;
-		} else
-			intConfig.setCurrentDbPassword(conn.getPassword());
-
 		LOG.info("Connecting to database profile '" + conn.getDescription() + "'.");
+		conn.setInternalPassword(conn.getPassword());
 
 		try {
-			dbPool.init();
-			
+			dbPool.connect(config);
 			LOG.info("Database connection established.");
-			conn.getMetaData().toConsole(LogLevelType.INFO);
-			
-			// check whether user-defined SRSs are supported
-			try {
-				DBUtil dbUtil = DBUtil.getInstance(dbPool);
-				
-				for (ReferenceSystem refSys: config.getProject().getDatabase().getReferenceSystems()) {
-					boolean isSupported = dbUtil.isSrsSupported(refSys.getSrid());
-					refSys.setSupported(isSupported);
-					
-					if (isSupported)
-						LOG.debug("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") supported.");
-					else
-						LOG.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") NOT supported.");
-				}
-			} catch (SQLException sqlEx) {
-				LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
+			conn.getMetaData().printToConsole(LogLevelType.INFO);
+
+			// log whether user-defined SRSs are supported
+			for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) {
+				if (refSys.isSupported())
+					LOG.debug("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") supported.");
+				else
+					LOG.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") NOT supported.");
 			}
 
+		} catch (DatabaseConfigurationException e) {
+			LOG.error("Connection to database could not be established: " + e.getMessage());
+			dbPool.forceDisconnect();
 		} catch (SQLException e) {
 			LOG.error("Connection to database could not be established: " + e.getMessage());
-			intConfig.unsetOpenConnection();			
+			dbPool.forceDisconnect();			
+		} 
+	}
+	
+	private List<File> getFiles(String fileNames, String delim) {
+		List<File> files = new ArrayList<File>();
+		
+		for (String part : fileNames.split(delim)) {
+			if (part == null || part.trim().isEmpty())
+				continue;
+
+			File file = new File(part.trim());
+			if (file.isDirectory()) {
+				files.add(file);
+				continue;
+			}
+
+			final String pathName = new File(file.getAbsolutePath()).getParent();
+			final String fileName = file.getName().replace("?", ".?").replace("*", ".*?");
+
+			file = new File(pathName);
+			if (!file.exists()) {
+				LOG.error("'" + file.toString() + "' does not exist");
+				continue;
+			}
+
+			File[] wildcardList = file.listFiles(new FilenameFilter() {
+				public boolean accept(File dir, String name) {
+					return (name.matches(fileName));
+				}
+			});
+
+			if (wildcardList != null && wildcardList.length != 0)
+				files.addAll(Arrays.asList(wildcardList));
 		}
+
+		return files;
 	}
 }

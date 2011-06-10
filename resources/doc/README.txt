@@ -1,4 +1,4 @@
-!app.title! v!app.version!
+!impexp.name! v!impexp.version!
 
   This program is free software and comes WITHOUT ANY WARRANTY.
   See the DISCLAIMER at the end of this document for more details.  
@@ -23,7 +23,7 @@
 1. License
 ----------
 
-The !app.title! is free software under
+The !impexp.name! is free software under
 the GNU Lesser General Public License Version 3.0. See the file LICENSE 
 for more details. For a copy of the GNU Lesser General Public License see 
 the files COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
@@ -32,16 +32,16 @@ the files COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
 2. Copyright
 ------------
 
-(c) 2007 - 2011
-Institute for Geodesy and Geoinformation Science (IGG)
-Technische Universitaet Berlin, Germany
+(c) !vendor.copyright.year!
+!vendor.name!
+!vendor.organisation!, !vendor.country!
 !vendor.homepage!
 
 
 3. About
 --------
 
-The !app.title! is a Java based front-end for 
+The !impexp.name! is a Java based front-end for 
 the 3D City Database version 2.0. It allows for high-performance 
 importing and exporting spatial data for a virtual 3D city model.
 
@@ -58,7 +58,7 @@ Main characteristics:
   processing
 * Matching/merging of building features within the database
 
-The !app.title! is shipped with both a Graphical
+The !impexp.name! is shipped with both a Graphical
 User Interface (GUI) for end-user interaction and a Command Line 
 Interface (CLI). The latter one allows for employing the tool in batch 
 processing workflows or embedding its functionality into third party
@@ -71,7 +71,7 @@ programs.
 * Java JRE or JDK >= 1.6.0_05
 * 3D City Database version 2.0.5 on an Oracle Spatial DBMS >= 10G R2
   
-The !app.title! can be run on any platform 
+The !impexp.name! can be run on any platform 
 providing appropriate Java support. It has been tested on the 
 following platforms:
   - Microsoft Windows XP, Vista, Windows 7
@@ -83,15 +83,15 @@ following platforms:
 -------------------
 
 It is recommended to use the universal installer to unpack the 
-!app.title! application files to your local 
+!impexp.name! application files to your local 
 computer. The universal installer will guide you through the steps of the
 installation process. Afterwards, you can immediately run the application 
 (see next section).
 
-When you successfully install the !app.title!,
+When you successfully install the !impexp.name!,
 an uninstaller is automatically generated in the 'uninstaller' subfolder
 of the installation folder. Please use this uninstaller in order to remove 
-the !app.title! application files from your
+the !impexp.name! application files from your
 computer. Alternatively, you can simply delete the entire installation
 folder.
 
@@ -99,7 +99,7 @@ folder.
 6. Running the application
 --------------------------
 
-For running the !app.title! use one of the 
+For running the !impexp.name! use one of the 
 following options:
 
 a) Recommended:
@@ -134,13 +134,13 @@ a) Recommended:
    
        ./3DCityDB-Importer-Exporter.sh
    
-b) Alternatively, you can directly run the !app.jar!
+b) Alternatively, you can directly run the !impexp.jar.filename!
    from within a shell environment without using the starter scripts. The
    runnable JAR archive can be found in the 'lib' subfolder of the
    installation folder. 
 
    Open a shell and type the following: 
-       java -jar !app.jar! [-options]
+       java -jar !impexp.jar.filename! [-options]
    
    Make sure to define the memory limits for the Java heap space. 
    Otherwise you might quickly run into heap space memory lacks due
@@ -148,14 +148,14 @@ b) Alternatively, you can directly run the !app.jar!
    
    This is the recommended way to use the CLI version of the program. 
    See the provided starter scripts for further examples. 
-   Type 'java -jar !app.jar! -help' to get a list of supported 
+   Type 'java -jar !impexp.jar.filename! -help' to get a list of supported 
    command line parameters.
   
   
 7. Cooperation partners and supporters  
 --------------------------------------
 
-The development of the !app.title! has been 
+The development of the !impexp.name! has been 
 financially supported by the following cooperation partners:
 
 * Business Location Center, Berlin 
@@ -186,8 +186,8 @@ javier.herreruela@tu-berlin.de
 10. Websites
 ------------
 
-Official !app.title! website: 
-!app.homepage!
+Official !impexp.name! website: 
+!impexp.homepage!
 
 Related websites:
 !vendor.homepage!

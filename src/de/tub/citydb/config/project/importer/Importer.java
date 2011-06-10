@@ -31,6 +31,7 @@ package de.tub.citydb.config.project.importer;
 
 import javax.xml.bind.annotation.XmlType;
 
+import de.tub.citydb.config.project.general.AffineTransformation;
 import de.tub.citydb.config.project.general.Path;
 import de.tub.citydb.config.project.system.System;
 
@@ -40,6 +41,8 @@ import de.tub.citydb.config.project.system.System;
 		"gmlId",
 		"appearances",
 		"filter",
+		"affineTransformation",
+		"indexes",
 		"xmlValidation",
 		"system"
 })
@@ -49,6 +52,8 @@ public class Importer {
 	private ImportGmlId gmlId;
 	private ImportAppearance appearances;
 	private ImportFilterConfig filter;
+	private AffineTransformation affineTransformation;
+	private Index indexes;
 	private XMLValidation xmlValidation;
 	private System system;
 
@@ -58,6 +63,8 @@ public class Importer {
 		gmlId = new ImportGmlId();
 		appearances = new ImportAppearance();
 		filter = new ImportFilterConfig();
+		affineTransformation = new AffineTransformation();
+		indexes = new Index();
 		xmlValidation = new XMLValidation();
 		system = new System();
 	}
@@ -106,6 +113,15 @@ public class Importer {
 		if (filter != null)
 			this.filter = filter;
 	}
+	
+	public Index getIndexes() {
+		return indexes;
+	}
+
+	public void setIndexes(Index indexes) {
+		if (indexes != null)
+			this.indexes = indexes;
+	}
 
 	public XMLValidation getXMLValidation() {
 		return xmlValidation;
@@ -114,6 +130,18 @@ public class Importer {
 	public void setXMLValidation(XMLValidation xmlValidation) {
 		if (xmlValidation != null)
 			this.xmlValidation = xmlValidation;
+	}
+
+	public AffineTransformation getAffineTransformation() {
+		return affineTransformation;
+	}
+	
+	public boolean isSetAffineTransformation() {
+		return false;
+	}
+
+	public void AffineTransformation(AffineTransformation affineTransformation) {
+		this.affineTransformation = affineTransformation;
 	}
 
 	public System getSystem() {

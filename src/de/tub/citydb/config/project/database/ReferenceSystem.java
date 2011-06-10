@@ -34,14 +34,18 @@ import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.util.UUIDManager;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+
+import de.tub.citydb.api.database.DatabaseSrs;
 
 @XmlType(name="ReferenceSystemType", propOrder={
 		"srid",
 		"srsName",
 		"description"
 		})
-public class ReferenceSystem implements Comparable<ReferenceSystem> {	
+public class ReferenceSystem implements DatabaseSrs, Comparable<ReferenceSystem> {
+	public static final ReferenceSystem DEFAULT = new ReferenceSystem("", 0, "n/a", "", true);
+
 	@XmlAttribute
 	@XmlID
 	private String id;
@@ -52,11 +56,11 @@ public class ReferenceSystem implements Comparable<ReferenceSystem> {
 	private boolean isSupported = true;
 
 	public ReferenceSystem() {
-		id = UUIDManager.randomUUID();
+		id = DefaultGMLIdManager.getInstance().generateUUID();
 	}
 
 	public ReferenceSystem(int srid, String srsName, String description, boolean isSupported) {
-		this(UUIDManager.randomUUID(), srid, srsName, description, isSupported);
+		this(DefaultGMLIdManager.getInstance().generateUUID(), srid, srsName, description, isSupported);
 	}
 	
 	public ReferenceSystem(ReferenceSystem other) {
@@ -83,6 +87,7 @@ public class ReferenceSystem implements Comparable<ReferenceSystem> {
 		this.srid = srid;
 	}
 
+	@Override
 	public int getSrid() {
 		return srid;
 	}
@@ -91,6 +96,7 @@ public class ReferenceSystem implements Comparable<ReferenceSystem> {
 		this.srsName = srsName;
 	}
 
+	@Override
 	public String getSrsName() {
 		return srsName;
 	}
@@ -99,6 +105,7 @@ public class ReferenceSystem implements Comparable<ReferenceSystem> {
 		this.description = description;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}
@@ -107,6 +114,7 @@ public class ReferenceSystem implements Comparable<ReferenceSystem> {
 		return getDescription();
 	}
 
+	@Override
 	public boolean isSupported() {
 		return isSupported;
 	}

@@ -41,7 +41,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.gui.Gui;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.gui.util.GuiUtil;
+import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class MenuWindow extends JMenu {

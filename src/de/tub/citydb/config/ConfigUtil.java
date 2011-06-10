@@ -30,21 +30,104 @@
 package de.tub.citydb.config;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.UnmarshallerHandler;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLFilterImpl;
+
+import de.tub.citydb.config.project.ProjectSchemaWriter;
 
 public class ConfigUtil {
 
 	public static String createConfigPath(String configPath) {
 		File createPath = new File(configPath);
 		boolean success = true;
-	
-		if (!createPath.exists()) {
+
+		if (!createPath.exists())
 			success = createPath.mkdirs();
-		} 
-		
-		if (success)
-			return createPath.getAbsolutePath();
-		else
-			return null;
+
+		return success ? createPath.getAbsolutePath() : null;
 	}
-	
+
+	public static void marshal(Object object, File file, JAXBContext ctx) throws JAXBException {		
+		Marshaller m = ctx.createMarshaller();	
+		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,Boolean.TRUE);
+		m.setProperty("com.sun.xml.bind.indentString", "  ");
+
+		m.marshal(object, file);
+	}
+
+	public static Object unmarshal(File file, JAXBContext ctx) throws JAXBException, IOException {
+		Unmarshaller um = ctx.createUnmarshaller();
+		UnmarshallerHandler handler = um.getUnmarshallerHandler();
+
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(true);
+
+		XMLReader reader = null;
+
+		try {
+			reader = factory.newSAXParser().getXMLReader();
+
+			// the namespace mapper ensures that we can also
+			// read project files not declaring proper namespaces
+			Mapper mapper = new Mapper(reader);
+			mapper.setContentHandler(handler);
+			mapper.parse(new InputSource(new FileInputStream(file)));			
+		} catch (SAXException e) {
+			throw new JAXBException(e.getMessage());
+		} catch (ParserConfigurationException e) {
+			throw new IOException(e.getMessage());
+		}
+
+		return handler.getResult();
+	}
+
+	public static void generateSchema(JAXBContext ctx, File file) throws IOException {
+		ctx.generateSchema(new ProjectSchemaWriter(file));
+	}
+
+	private static class Mapper extends XMLFilterImpl {
+
+		Mapper(XMLReader reader) {
+			super(reader);
+		}
+
+		@Override
+		public void startPrefixMapping(String prefix, String uri) throws SAXException {
+			if (uri == null || uri.length() == 0)
+				uri = "http://www.gis.tu-berlin.de/3dcitydb-impexp/config";
+
+			super.startPrefixMapping(prefix, uri);
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+			if (uri == null || uri.length() == 0)
+				uri = "http://www.gis.tu-berlin.de/3dcitydb-impexp/config";
+
+			super.startElement(uri, localName, qName, atts);
+		}
+
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+			if (uri == null || uri.length() == 0)
+				uri = "http://www.gis.tu-berlin.de/3dcitydb-impexp/config";
+
+			super.endElement(uri, localName, qName);
+		}	
+	}
+
 }
