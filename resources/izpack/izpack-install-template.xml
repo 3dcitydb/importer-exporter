@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<installation version="1.0">
+    <info>
+        <appname>!impexp.name!</appname>
+        <appversion>v!impexp.version!</appversion>
+        <appsubpath>!izpack.installation.folder!</appsubpath>
+        <authors>
+            <author name="Claus Nagel" email="claus.nagel@tu-berlin.de"/>
+            <author name="Javier Herreruela" email="javier.herreruela@tu-berlin.de"/>
+            <author name="Alexandra Lorenz" email="lorenz@tu-berlin.de"/>
+            <author name="Gerhard Koenig" email="gerhard.koenig@tu-berlin.de"/>
+            <author name="Thomas H. Kolbe" email="thomas.kolbe@tu-berlin.de"/>
+        </authors>
+        <url>!impexp.homepage!</url>
+        <uninstaller write="yes" path="$INSTALL_PATH/uninstaller"/>
+        <javaversion>1.6</javaversion>
+        <writeinstallationinformation>no</writeinstallationinformation>
+    </info>
+
+    <variables>
+        <variable name="DesktopShortcutCheckboxEnabled" value="true"/>
+        <variable name="APP_SHORTCUT_NAME" value="!izpack.shortcut.impexp.name!"/>
+        <variable name="3DCITYDB_NAME" value="3D City Database"/>
+        <variable name="3DCITYDB_SHORTNAME" value="3DCityDB"/>
+        <variable name="3DCITYDB_VER" value="v!3dcitydb.version!"/>
+        <variable name="ApplicationShortcutPath" value="shortcuts" />
+    </variables>
+
+    <guiprefs width="650" height="500" resizable="no">
+        <modifier key="useHeadingPanel" value="yes"/>
+        <modifier key="useButtonIcons" value="yes"/>
+        <modifier key="useLabelIcons" value="yes"/>
+        <modifier key="labelGap" value="2"/>
+        <modifier key="paragraphYGap" value="10"/>
+        <modifier key="headingPanelCounter" value="text"/>
+        <modifier key="headingLineCount" value="3"/>
+        <modifier key="layoutAnchor" value="NORTH"/>
+        <modifier key="headingFontSize" value="1.2"/>
+        <modifier key="headingBackgroundColor" value="0x00ffffff"/>
+        <modifier key="headingPanelCounter" value="text"/>
+        <modifier key="headingPanelCounterPos" value="inHeading"/>
+        <modifier key="langDisplayType" value="native"/>
+    </guiprefs>
+
+    <locale>
+        <langpack iso3="eng"/>
+        <langpack iso3="deu"/>
+    </locale>
+
+    <resources>
+        <res id="LicencePanel.licence" src="!dir.resources.izpack.config!/license/license"/>
+        <res id="InfoPanel.info" src="!dir.dest!/README.txt"/>
+        <res id="Heading.image" src="!dir.resources.izpack.config!/img/header.png"/>
+        <res id="installer.langsel.img" src="!dir.resources.izpack.config!/img/splash.png"/>
+        <res id="CustomLangpack.xml_eng" src="!dir.resources.izpack.config!/panel/eng.xml"/>
+        <res id="CustomLangpack.xml_deu" src="!dir.resources.izpack.config!/panel/deu.xml"/>
+        <res id="packsLang.xml_eng" src="!dir.resources.izpack.config!/packs/eng.xml"/>
+        <res id="packsLang.xml_deu" src="!dir.resources.izpack.config!/packs/deu.xml"/>
+        <res id="shortcutSpec.xml" src="!dir.resources.izpack.config!/shortcut/default.xml"/>
+        <res id="shortcutSpec.xml_deu" src="!dir.resources.izpack.config!/shortcut/default_deu.xml"/>
+        <res id="Unix_shortcutSpec.xml" src="!dir.resources.izpack.config!/shortcut/unix.xml"/>
+        <res id="Unix_shortcutSpec.xml_deu" src="!dir.resources.izpack.config!/shortcut/unix_deu.xml"/>
+    </resources>
+
+    <panels>
+        <panel classname="HelloPanel"/>
+        <panel classname="InfoPanel"/>
+        <panel classname="LicencePanel"/>
+        <panel classname="TargetPanel"/>
+        <panel classname="TreePacksPanel"/>
+        <panel classname="SummaryPanel"/>
+        <panel classname="InstallPanel"/>
+        <panel classname="ShortcutPanel"/>
+        <panel classname="SimpleFinishPanel"/>
+    </panels>
+
+    <packs>
+        <pack name="core" id="core" required="yes" preselected="yes">
+            <description/>
+            <fileset dir="!dir.dest!" targetdir="$INSTALL_PATH" excludes="!dir.dest.plugin.api.relative!/ !dir.dest.plugins.relative!/ *.bat *.sh" override="true"/>
+            <file src="!dir.dest!/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH" os="windows" override="true"/>
+            <file src="!dir.dest!/3DCityDB-Importer-Exporter.sh" targetdir="$INSTALL_PATH" os="unix" override="true"/>
+            <file src="!dir.dest!/3DCityDB-Importer-Exporter.sh" targetdir="$INSTALL_PATH" os="mac" override="true"/>
+            <file src="!dir.resources.izpack.config!/img/impexp.ico" targetdir="$INSTALL_PATH" os="windows" override="true"/>
+            <file src="!dir.resources.izpack.config!/img/uninstaller.ico" targetdir="$INSTALL_PATH/uninstaller" os="windows" override="true"/>
+            <file src="!dir.resources.izpack.config!/img/impexp.png" targetdir="$INSTALL_PATH" os="unix" override="true"/>
+            <file src="!dir.resources.izpack.config!/img/uninstaller.png" targetdir="$INSTALL_PATH/uninstaller" os="unix" override="true"/>
+            <!-- the following fileset is just to create an empty plugins folder -->
+            <fileset dir="!dir.dest.plugins!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!" excludes="**/*"/>
+            <fileset dir="!dir.resources.templates!" targetdir="$INSTALL_PATH/templates" excludes=".svn" override="true"/>
+            <executable targetfile="$INSTALL_PATH/3DCityDB-Importer-Exporter.sh" stage="never">
+                <os family="unix|mac"/>
+            </executable>
+        </pack>
+        <pack name="3dcitydb" id="3dcitydb" required="no" preselected="yes">
+            <description/>
+            <fileset dir="!dir.resources.3dcitydb!" targetdir="$INSTALL_PATH/3dcitydb" excludes=".svn" override="true"/>
+        </pack>
+        <pack name="manual" id="manual" required="no" preselected="yes">
+            <description/>
+            <fileset dir="!dir.resources.manual!" targetdir="$INSTALL_PATH/manual" excludes=".svn" override="true"/>
+        </pack>
+        <pack name="samples" id="samples" required="no" preselected="yes">
+            <description/>
+            <fileset dir="!dir.samples!" targetdir="$INSTALL_PATH/samples" excludes=".svn" override="true"/>
+        </pack>
+        <pack name="plugins" id="plugins" required="no" preselected="no">
+            <description/>            
+        </pack>
+        <pack name="plugin.match" id="plugin.match" parent="plugins" required="no" preselected="no">
+            <description/>
+            <fileset dir="!dir.dest.plugins!/!plugin.match.dir.dest.relative!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!/!plugin.match.dir.dest.relative!" override="true"/>
+        </pack>
+        <pack name="plugin-api" id="plugin-api" parent="plugins" required="no" preselected="no">
+            <description/>
+            <fileset dir="!dir.dest.plugin.api!" targetdir="$INSTALL_PATH/!dir.dest.plugin.api.relative!" override="true"/>
+        </pack>
+    </packs>
+
+    <native type="izpack" name="ShellLink.dll"/>
+    <native type="izpack" name="ShellLink_x64.dll"/>
+</installation>

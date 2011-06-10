@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=windows-1250">
+    <style type="text/css">
+      body {color:#000000;
+         font-family: Tahoma,Arial;
+      }
+    </style>
+    <script type="text/javascript">
+      function print_lod_if_string_not_empty(token_for_lod1, token_for_lod2, token_for_lod3, token_for_lod4)
+      {
+        var isFirst=true; 
+        if (token_for_lod1.length > 0) {
+          document.write("LoD1");
+          isFirst=false;
+        }
+        if (token_for_lod2.length > 0) {
+          if (!isFirst) {
+            document.write(", ");
+          }
+          document.write("LoD2");
+          isFirst=false;
+        }
+        if (token_for_lod3.length > 0) {
+          if (!isFirst) {
+            document.write(", ");
+          }
+          document.write("LoD3");
+          isFirst=false;
+        }
+        if (token_for_lod4.length > 0) {
+          if (!isFirst) {
+            document.write(", ");
+          }
+          document.write("LoD4");
+        }
+      }
+
+      function ga_value_as_tooltip(counter, attrname, datatype, strval, intval, realval)
+      {
+        document.write("<span title=\"");
+        switch (datatype) {
+          case 1: document.write(strval);
+                  break;
+          case 2: document.write(intval);
+                  break;
+          case 3: document.write(realval);
+                  break;
+          default: document.write("unknown");
+        };
+        document.write("\">" + attrname + "</span>");
+      
+        if (counter < <3DCityDB>CITYOBJECT_GENERICATTRIB/[COUNT]ATTRNAME</3DCityDB>) {
+          document.write(", ");
+        }
+      }
+    </script>
+    <title><3DCityDB>CITYOBJECT/GMLID</3DCityDB></title>
+  </head>
+  <body>
+    <hr style="border:solid #55759b 1px; background-color:#55759b; height:6px;">
+    <table width=392>
+    <tr><td><b>Address:</b></td>
+        <td rowspan=3 align=right><img src="http://www.gis.tu-berlin.de/fileadmin/fg227/Bilder/Projekte/3DCityDB/3dcitydb_logo.png"></td>
+    </tr>
+    <tr><td><3DCityDB>ADDRESS/[FIRST]STREET</3DCityDB> <3DCityDB>ADDRESS/[FIRST]HOUSE_NUMBER</3DCityDB></td></tr>
+    <tr><td valign=top><3DCityDB>ADDRESS/[FIRST]CITY</3DCityDB></td></tr>
+    </table>
+    <hr style="color:#000000;">
+    <table width=400>
+    <tr><td><b>Available in:</b> 
+    <script type="text/javascript">
+      print_lod_if_string_not_empty("<3DCityDB>BUILDING/LOD1_GEOMETRY_ID</3DCityDB>",
+                                    "<3DCityDB>BUILDING/LOD2_GEOMETRY_ID</3DCityDB><3DCityDB>THEMATIC_SURFACE/[FIRST]LOD2_MULTI_SURFACE_ID</3DCityDB>",
+                                    "<3DCityDB>BUILDING/LOD3_GEOMETRY_ID</3DCityDB><3DCityDB>THEMATIC_SURFACE/[FIRST]LOD3_MULTI_SURFACE_ID</3DCityDB>", 
+                                    "<3DCityDB>BUILDING/LOD4_GEOMETRY_ID</3DCityDB><3DCityDB>THEMATIC_SURFACE/[FIRST]LOD4_MULTI_SURFACE_ID</3DCityDB>");
+    </script>
+    </td></tr>
+    
+    </table>
+    <hr style="color:#000000;">
+    <table width=392>
+    <tr><td><b>Appearances:</b> <3DCityDB>APPEARANCE/[COUNT]ID</3DCityDB></td></tr>
+    <tr><td><b>Measured height:</b> <3DCityDB>BUILDING/MEASURED_HEIGHT</3DCityDB> m</td></tr>
+    <tr><td><b>Existing generic attributes (mouseOver for values):</b> 
+    <script type="text/javascript">
+      <3DCityDB>FOREACH CITYOBJECT_GENERICATTRIB/ATTRNAME,DATATYPE,STRVAL,INTVAL,REALVAL</3DCityDB>
+        ga_value_as_tooltip(%0, "%1", %2, "%3", "%4", "%5");
+      <3DCityDB>END FOREACH</3DCityDB>
+    </script>
+    </td></tr>
+    <tr><td><b>External reference name:</b> <3DCityDB>EXTERNAL_REFERENCE/NAME</3DCityDB></td></tr>
+    </table>
+    <hr style="border:solid #55759b 1px; background-color:#55759b; height:6px;">
+  </body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<script type="text/javascript">
+		// Replace this value with the part of the link returned by Google Docs.
+    // Follow this steps:  
+    // share the spreadsheet (share/sharing settings) with permissions: "Anyone with the link" and "allow anyone to edit"
+    // publish the spreadsheet (share/publish as a web page).
+    // start publishing and from "Get a link to the published data" select 'RSS' and copy the link.
+    // link should look like:
+    // https://spreadsheets.google.com/feeds/list/0Asa_MCO7dfITdC12R21JbG11VDZNN25ma0tKZFZjeWc/od6/public/basic?authkey=CNKKvO8L&hl=en_US&alt=rss
+    var sheetlink='https://spreadsheets.google.com/feeds/list/0Asa_MCO7dfITdC12R21JbG11VDZNN25ma0tKZFZjeWc/od6/public/basic?authkey=CNKKvO8L&hl=en_US&alt=rss';
+	  var sheetId = sheetlink.substring(sheetlink.indexOf('list/')+5, sheetlink.indexOf('/public'));
+	  var authKey = sheetlink.substring(sheetlink.indexOf('authkey=')+8, sheetlink.indexOf('&'));
+		var Building_ID="<3DCityDB>CITYOBJECT/GMLID</3DCityDB>";
+		var kvp= new Array();	
+		var bgmlid="";
+		// load list of sheets
+		function initialize(){
+			
+			var initializeScript = document.createElement('script');
+			  initializeScript.setAttribute('src', 'https://spreadsheets.google.com/feeds/list/'+sheetId+'/public/values'+'?sq=id%3D'+Building_ID+'&alt=json-in-script&callback=initializeCallback');
+			  initializeScript.setAttribute('id', 'initializeScript');
+			  initializeScript.setAttribute('type', 'text/javascript');
+			  document.documentElement.firstChild.appendChild(initializeScript);;	
+        document.getElementById("editLink").href = 'https://spreadsheets.google.com/ccc?key=' + sheetId.substring(0, sheetId.indexOf('/')) 
+                                                 + "&hl=en&authkey=" + authKey;	
+		}
+		
+		function initializeCallback(json) {
+			if (!json.feed.entry) return;
+			var entry = json.feed.entry[0];
+			var content =json.feed.entry[0].content.$t;
+			bgmlid= json.feed.entry[0].title.$t;
+			res= content.split(", ");
+			var counter=0;
+			if (res){
+				for (var i=0;i<res.length;i++){
+					tmp = res[i].split(": ");
+					if (tmp && tmp[1] && tmp[1]){
+						kvp[counter]={key:tmp[0],value:tmp[1]};
+						counter=counter+1;
+					}
+				}
+		
+			}
+			removeOldJSONScriptNodes('initializeScript');
+			newLoad();
+		  }
+		
+		function newLoad(){
+			removeOldResults();
+			var table = document.createElement('table');
+			table.setAttribute('class', 'content');
+			var tbody = document.createElement('tbody');
+			var tr;
+			// add gmlid
+			
+			  for (var i=0;i<kvp.length;i++){
+				tr = document.createElement('tr');
+				var td = document.createElement('td');
+				td.setAttribute('class', 'key');
+				td.appendChild(document.createTextNode(kvp[i].key));
+				tr.appendChild(td);
+				
+				td = document.createElement('td');
+				td.setAttribute('class', 'value');
+				td.appendChild(document.createTextNode(kvp[i].value));
+				tr.appendChild(td);
+				
+				tbody.appendChild(tr);
+			  }
+			  
+			  table.appendChild(tbody);
+			  var data=document.getElementById('data');
+			  data.appendChild(table);
+		}
+		
+		
+		/**
+		 * Removes the script element from the previous result.
+		 */
+		function removeOldJSONScriptNodes(id) {
+		  var jsonScript = document.getElementById(id);
+		  if (jsonScript) {
+			jsonScript.parentNode.removeChild(jsonScript);
+		  }
+		}
+
+		/**
+		 * Removes the output generated from the previous result.
+		 */
+		function removeOldResults() {
+		  var div = document.getElementById('data');
+		  if (div.firstChild) {
+			div.removeChild(div.firstChild);
+		  }
+		}
+		</script>
+		<style type="text/css">
+		  body{ min-width:500px; min-height:400px; font-family:Tahoma,Arial;}
+  	  table.content{width:500px;border-collapse:separate;}
+		  td{border-width:1px;border-style:hidden; padding:4px 4px;}
+  		td.key {width:40%;color:#ffffff;font-weight:bold;font-size:medium;text-align:right;background-color:#55759b;}
+  		td.value {color:#000000;font-weight:normal;font-size:medium;text-align:left;}
+		</style>
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="cache-control" content="no-cache">
+	</head>
+	<body onload="initialize();">
+    <table width=100%>
+      <tr><td align=right valign=bottom><img src="http://www.gis.tu-berlin.de/fileadmin/fg227/Bilder/Projekte/3DCityDB/3dcitydb_logo.png"></td></tr>
+    </table>
+    <hr style="border:solid #55759b 1px; background-color:#55759b; height:6px;">
+    <div id="data" style="width:200px;text-align:center;"></div>
+    <hr style="border:solid #55759b 1px; background-color:#55759b; height:6px;">
+	 	<p align=right><a id="editLink" href="http://www.3dcitydb.net/" target="_blank">Edit contents</a></p>
+	</body>
+</html>
+	

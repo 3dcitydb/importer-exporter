@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<langpack> 
+    <str id="core" txt="Anwendungsdaten"/>
+    <str id="core.description" txt="Die erforderlichen Anwendungsdaten des ${APP_NAME}"/>
+            
+    <str id="3dcitydb" txt="3D City Database"/>
+    <str id="3dcitydb.description" txt="SQL Skripte der ${3DCITYDB_NAME} ${3DCITYDB_VER} für Oracle Spatial 10G und 11G"/>
+    
+    <str id="manual" txt="Dokumentation"/>
+    <str id="manual.description" txt="Die Dokumentation der ${3DCITYDB_NAME} und des ${APP_NAME}"/>
+    
+    <str id="samples" txt="CityGML und KML/COLLADA Beispieldaten"/>
+    <str id="samples.description" txt="CityGML und KML/COLLADA Beispieldaten zum Testen des ${APP_NAME}"/>
+    
+    <str id="plugins" txt="Plugins"/>
+    <str id="plugins.description" txt="Optionale Erweiterungen für den ${APP_NAME}"/>
+    
+    <str id="plugin.match" txt="Matching/Merging Plugin"/>
+    <str id="plugin.match.description" txt="Dieses Plugin ermöglicht das Zusammenführen von Gebäuden in der ${3DCITYDB_NAME}"/>
+    
+    <str id="plugin-api" txt="API für die Plugin-Entwicklung"/>
+    <str id="plugin-api.description" txt="Java-Programmierschnittstelle für die Entwicklung eigener Erweiterungen"/>
+</langpack>

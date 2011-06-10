@@ -1,0 +1,17 @@
+<shortcuts>
+    <skipIfNotSupported/>
+    <programGroup defaultName="${3DCITYDB_NAME}" location="applications"/>
+    <shortcut name="${APP_SHORTCUT_NAME}" target="$INSTALL_PATH/3DCityDB-Importer-Exporter.sh" commandLine="" workingDirectory="$INSTALL_PATH"
+        description="Start ${APP_SHORTCUT_NAME}" initialState="minimized" programGroup="yes" desktop="yes" applications="no" startMenu="no" startup="no"
+        type="Application" encoding="UTF-8" terminal="true" KdeSubstUID="false" createForAll="yes"
+        iconFile="$INSTALL_PATH\impexp.png" iconIndex="0">
+        <createForPack name="core"/>
+    </shortcut>
+
+    <shortcut name="${3DCITYDB_SHORTNAME} Uninstaller" target="java" commandLine="-jar &quot;$INSTALL_PATH/uninstaller/uninstaller.jar&quot;" workingDirectory=""
+        description="Remove ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no"
+        iconFile="$INSTALL_PATH\uninstaller\uninstaller.png" iconIndex="0" type="Application" encoding="UTF-8" terminal="false" KdeSubstUID="false" createForAll="yes">
+        <createForPack name="core"/>
+    </shortcut>
+
+</shortcuts>

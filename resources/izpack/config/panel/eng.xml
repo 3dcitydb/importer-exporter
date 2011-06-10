@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<langpack>
+    <str id="installer.reversetitle" txt="Setup - ${APP_NAME} ${APP_VER}"/>
+
+    <str id="HelloPanel.headline" txt="${APP_NAME} ${APP_VER}"/>
+    
+    <str id="InfoPanel.headline" txt="Information"/>
+    <str id="InfoPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Please read the following software information carefully.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="LicencePanel.headline" txt="License Agreement"/>
+    <str id="LicencePanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;You must accept the license agreement before installing the software.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="TargetPanel.headline" txt="Select Destination Location"/>
+    <str id="TargetPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Select where you would like the $APP_NAME installed.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="TreePacksPanel.headline" txt="Select Installation Packages"/>
+    <str id="TreePacksPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Select which application components you want to install.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="SummaryPanel.headline" txt="Ready to Install"/>
+    <str id="SummaryPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Setup is ready to install the ${APP_NAME}.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="InstallPanel.headline" txt="Installing"/>
+    <str id="InstallPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Please wait while setup installs the ${APP_NAME}.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="ShortcutPanel.headline" txt="Create shortcuts"/>
+    <str id="ShortcutPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Create shortcuts for ${APP_NAME}.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="SimpleFinishPanel.headline" txt="Installation Completed"/>
+    <str id="SimpleFinishPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;The ${APP_NAME} has been sucessfully installed.&lt;/body&gt;&lt;/html&gt;"/>
+   
+    <str id="installer.quit.reversemessage"
+        txt="&lt;html&gt;&lt;body&gt;Setup is not complete. If you exit now, the program will not be installed.&lt;br/&gt;&lt;br/&gt;You may run Setup again at another time to complete the installation.&lt;br/&gt;&lt;br/&gt;Exit setup?&lt;br/&gt;&lt;/body&gt;&lt;/html&gt;"/>
+    <str id="installer.quit.reversetitle" txt="Exit Setup"/>
+</langpack>

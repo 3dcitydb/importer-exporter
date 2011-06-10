@@ -1,0 +1,35 @@
+<shortcuts>
+    <skipIfNotSupported/>
+    <programGroup defaultName="${3DCITYDB_NAME}" location="applications"/>
+    <shortcut name="${APP_SHORTCUT_NAME}" target="$INSTALL_PATH\3DCityDB-Importer-Exporter.bat" commandLine="" workingDirectory="$INSTALL_PATH"
+        description="${APP_SHORTCUT_NAME} starten" initialState="minimized" programGroup="yes" desktop="yes" applications="no" startMenu="no" startup="no"
+        iconFile="$INSTALL_PATH\impexp.ico" iconIndex="0">
+        <createForPack name="core"/>
+    </shortcut>
+    
+    <shortcut name="${3DCITYDB_SHORTNAME} Uninstaller" target="$INSTALL_PATH\uninstaller\uninstaller.jar" commandLine="" workingDirectory=""
+        description="${APP_SHORTCUT_NAME} entfernen" programGroup="yes" desktop="no" applications="no" startMenu="no" startup="no"
+        iconFile="$INSTALL_PATH\uninstaller\uninstaller.ico" iconIndex="0">
+        <createForPack name="core"/>
+    </shortcut>
+    
+    <shortcut name="${3DCITYDB_SHORTNAME} SQL Skripte für Oracle Spatial" target="$INSTALL_PATH\3dcitydb" commandLine="" workingDirectory="$INSTALL_PATH\3dcitydb"
+        description="SQL Skripte der ${3DCITYDB_NAME} ${3DCITYDB_VER} für Oracle Spatial 10G und 11G" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
+        <createForPack name="3dcitydb"/>
+    </shortcut>
+    
+    <shortcut name="Dokumentation" target="$INSTALL_PATH\manual" commandLine="" workingDirectory="$INSTALL_PATH\manual"
+        description="Die Dokumentation der ${3DCITYDB_NAME} und des ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
+        <createForPack name="manual"/>
+    </shortcut>
+    
+    <shortcut name="Beispieldaten" target="$INSTALL_PATH\samples" commandLine="" workingDirectory="$INSTALL_PATH\samples"
+        description="CityGML und KML/COLLADA Beispieldaten" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
+        <createForPack name="samples"/>
+    </shortcut>
+    
+    <shortcut name="Vorlagen" target="$INSTALL_PATH\templates" commandLine="" workingDirectory="$INSTALL_PATH\templates"
+        description="Vorlagen für den ${APP_SHORTCUT_NAME}" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
+        <createForPack name="samples"/>
+    </shortcut>
+</shortcuts>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<langpack>
+    <str id="installer.reversetitle" txt="Installation - ${APP_NAME} ${APP_VER}"/>
+
+    <str id="HelloPanel.headline" txt="${APP_NAME} ${APP_VER}"/>
+    
+    <str id="InfoPanel.headline" txt="Information"/>
+    <str id="InfoPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Bitte lesen Sie die folgende Programminformation sorgfältig.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="LicencePanel.headline" txt="Lizenzvereinbarung"/>
+    <str id="LicencePanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Um fortzufahren, müssen Sie die Lizenzvereinbarungen akzeptieren.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="TargetPanel.headline" txt="Installationspfad wählen"/>
+    <str id="TargetPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Wählen Sie den Ort für die Installation des ${APP_NAME}.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="TreePacksPanel.headline" txt="Installationspakete wählen"/>
+    <str id="TreePacksPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Wählen Sie die zu installierenden Programmfunktionen aus.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="SummaryPanel.headline" txt="Bereit zur Installation"/>
+    <str id="SummaryPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Das ${APP_NAME} kann nun installiert werden.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="InstallPanel.headline" txt="Installation läuft"/>
+    <str id="InstallPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Bitte warten Sie, bis der ${APP_NAME} installiert ist.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="ShortcutPanel.headline" txt="Verknüpfungen einrichten"/>
+    <str id="ShortcutPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Erstellen Sie Verknüpfungen für den ${APP_NAME}.&lt;/body&gt;&lt;/html&gt;"/>
+
+    <str id="SimpleFinishPanel.headline" txt="Installation beendet"/>
+    <str id="SimpleFinishPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Der ${APP_NAME} wurde erfolgreich installiert.&lt;/body&gt;&lt;/html&gt;"/>
+   
+    <str id="installer.quit.reversemessage"
+        txt="&lt;html&gt;&lt;body&gt;Die Installation ist unvollständig. Wenn Sie das Installationsprogramm jetzt beenden,&lt;br&gt;wird die Anwendung nicht installiert.&lt;br/&gt;&lt;br/&gt;Sie können das Installationsprogramm zu einem späteren Zeitpunkt ausführen,&lt;br&gt;um die Installation abzuschließen.&lt;br/&gt;&lt;br/&gt;Installation abbrechen?&lt;br/&gt;&lt;/body&gt;&lt;/html&gt;"/>
+    <str id="installer.quit.reversetitle" txt="Installation abbrechen"/>
+</langpack>
