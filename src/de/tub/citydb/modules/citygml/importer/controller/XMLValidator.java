@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
+import javax.xml.namespace.QName;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.builder.jaxb.xml.io.reader.CityGMLChunk;
@@ -77,7 +78,7 @@ public class XMLValidator implements EventHandler {
 	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private DirectoryScanner directoryScanner;
 	private long xmlValidationErrorCounter;
-	
+
 	private int runState;
 	private final int PREPARING = 1;
 	private final int VALIDATING = 2;
@@ -89,17 +90,17 @@ public class XMLValidator implements EventHandler {
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
-	
+
 	public void cleanup() {
 		eventDispatcher.removeEventHandler(this);
 	}
 
 	public boolean doProcess() {
 		runState = PREPARING;
-		
+
 		// adding listeners
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-		
+
 		// worker pool settings 
 		de.tub.citydb.config.project.system.System system = config.getProject().getImporter().getSystem();
 		int maxThreads = system.getThreadPool().getDefaultPool().getMaxThreads();
@@ -137,14 +138,15 @@ public class XMLValidator implements EventHandler {
 			in = jaxbBuilder.createCityGMLInputFactory();
 			in.setProperty(CityGMLInputFactory.USE_VALIDATION, true);
 			in.setProperty(CityGMLInputFactory.FEATURE_READ_MODE, FeatureReadMode.SPLIT_PER_COLLECTION_MEMBER);
+			in.setProperty(CityGMLInputFactory.SPLIT_AT_FEATURE_PROPERTY, new QName("generalizesTo"));
 			in.setValidationEventHandler(validationHandler);
 		} catch (CityGMLReadException e) {
 			LOG.error("Failed to initialize CityGML parser. Aborting.");
 			return false;
 		}
-		
+
 		runState = VALIDATING;
-		
+
 		while (shouldRun && fileCounter < importFiles.size()) {
 			try {
 				File file = importFiles.get(fileCounter++);
@@ -166,10 +168,15 @@ public class XMLValidator implements EventHandler {
 
 				// ok, preparation done. inform user and  start parsing the input file
 				JAXBChunkReader reader = null;
+				boolean containsCityGML = false;
+
 				try {
 					reader = (JAXBChunkReader)in.createCityGMLReader(file);					
 					LOG.info("Validating document: " + file.toString());						
 
+					containsCityGML = reader.hasNextChunk();
+
+					// iterate through chunks and validate
 					while (shouldRun && reader.hasNextChunk()) {
 						CityGMLChunk chunk = reader.nextChunk();
 						featureWorkerPool.addWork(chunk);
@@ -189,7 +196,7 @@ public class XMLValidator implements EventHandler {
 				} catch (InterruptedException ie) {
 					//
 				}
-				
+
 				try {
 					reader.close();
 				} catch (CityGMLReadException e) {
@@ -199,8 +206,12 @@ public class XMLValidator implements EventHandler {
 				// show XML validation errors
 				if (xmlValidationErrorCounter > 0)
 					LOG.warn(xmlValidationErrorCounter + " error(s) encountered while validating the document.");
-				else if (xmlValidationErrorCounter == 0 && shouldRun)
-					LOG.info("The document does not contain invalid CityGML content.");
+				else if (xmlValidationErrorCounter == 0 && shouldRun) {
+					if (!containsCityGML)
+						LOG.info("The document does not contain any CityGML elements.");
+					else 
+						LOG.info("The CityGML elements contained in the document are valid.");
+				}
 
 				xmlValidationErrorCounter = 0;
 			} finally {
@@ -231,7 +242,7 @@ public class XMLValidator implements EventHandler {
 				String log = ((InterruptEvent)e).getLogMessage();
 				if (log != null)
 					LOG.log(((InterruptEvent)e).getLogLevelType(), log);
-				
+
 				if (runState == PREPARING && directoryScanner != null)
 					directoryScanner.stopScanning();
 			}
@@ -270,7 +281,7 @@ public class XMLValidator implements EventHandler {
 				.append(event.getLocator().getColumnNumber())
 				.append("]");
 			}
-			
+
 			msg.append(": ");
 			msg.append(event.getMessage());
 			LOG.log(type, msg.toString());

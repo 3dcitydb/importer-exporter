@@ -65,28 +65,38 @@ public class DirectoryScanner {
 		recursive = enable;
 	}
 
-	public List<File> getFiles(File input) {
+	public List<File> getFiles(File baseDir) {
 		List<File> files = new ArrayList<File>();
 
-		if (input != null && input.exists()) {
+		if (baseDir != null && baseDir.exists()) {
 			shouldRun = isScanning = true;
-			buildFileList(input, files, true);
+
+			if (baseDir.isFile() && baseDir.canRead())
+				files.add(baseDir);
+			else	
+				buildFileList(baseDir, files, true);
+			
 			isScanning = false;
 		}
 
 		return files;
 	}
 
-	public List<File> getFiles(File[] input) {
+	public List<File> getFiles(File[] baseDir) {
 		shouldRun = isScanning = true;
 
 		List<File> files = new ArrayList<File>();
-		for (File file : input) {
+		for (File file : baseDir) {
 			if (!shouldRun)
 				break;
 
 			if (file == null || !file.exists())
 				continue;
+
+			if (file.isFile() && file.canRead()) {
+				files.add(file);
+				continue;
+			}
 
 			buildFileList(file, files, true);
 		}
