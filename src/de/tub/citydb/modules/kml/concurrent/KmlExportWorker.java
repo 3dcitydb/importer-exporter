@@ -1219,7 +1219,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, dbConnectionPool.getActiveConnection().getMetaData().getSrid());
 				coords = convertToWGS84(jGeometry).getOrdinatesArray();
 
-				Logger.getInstance().info("Getting zOffset from Google's elevation API for " + gmlId);
+				Logger.getInstance().info("Getting zOffset from Google's elevation API for " + gmlId + " with " + candidates.size() + " points.");
 				zOffset = elevationServiceHandler.getZOffset(coords);
 				// avoid "OVER_QUERY_LIMIT" from elevation service
 				Thread.currentThread().sleep(elevationServicePause);
