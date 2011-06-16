@@ -1,41 +1,34 @@
 package de.tub.citydb.plugins.matching_merging.gui.preferences;
 
-import de.tub.citydb.plugins.matching_merging.PluginImpl;
+import java.awt.Component;
+
+import de.tub.citydb.api.plugin.extension.preferences.PreferencesEntry;
+import de.tub.citydb.api.plugin.extension.preferences.PreferencesEvent;
 import de.tub.citydb.plugins.matching_merging.util.Util;
 
-public class MatchingEntry extends DefaultPreferencesEntry {
+public class MatchingEntry extends PreferencesEntry {
 
-	@SuppressWarnings("serial")
-	public MatchingEntry(PluginImpl plugin) {
-		super(new AbstractPreferencesComponent(plugin) {
-			
-			@Override
-			public void switchLocale() {
-			}
-			
-			@Override
-			public void setSettings() {
-			}
-			
-			@Override
-			public void loadSettings() {
-			}
-			
-			@Override
-			public boolean isModified() {
-				return false;
-			}
-			
-			@Override
-			public String getTitle() {
-				return null;
-			}
-		});
-	}
-	
 	@Override
 	public String getLocalizedTitle() {
 		return Util.I18N.getString("pref.tree.matching");
+	}
+
+	@Override
+	public boolean isModified() {
+		// we do not have content which could be modified by the user
+		return false;
+	}
+
+	@Override
+	public boolean handleEvent(PreferencesEvent event) {
+		// we do not handle events
+		return true;
+	}
+
+	@Override
+	public Component getViewComponent() {
+		// we do not have content thus return null
+		return null;
 	}
 
 }
