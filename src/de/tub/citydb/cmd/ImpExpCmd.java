@@ -42,14 +42,14 @@ import org.citygml4j.builder.jaxb.JAXBBuilder;
 
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.log.LogLevelType;
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.exporter.controller.Exporter;
 import de.tub.citydb.modules.citygml.importer.controller.Importer;
 import de.tub.citydb.modules.citygml.importer.controller.XMLValidator;
@@ -220,7 +220,7 @@ public class ImpExpCmd {
 		try {
 			dbPool.connect(config);
 			LOG.info("Database connection established.");
-			conn.getMetaData().printToConsole(LogLevelType.INFO);
+			conn.getMetaData().printToConsole(LogLevel.INFO);
 
 			// log whether user-defined SRSs are supported
 			for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) {

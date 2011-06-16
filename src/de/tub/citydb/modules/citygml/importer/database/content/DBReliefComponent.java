@@ -48,8 +48,8 @@ import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.primitives.Tin;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
 public class DBReliefComponent implements DBImporter {

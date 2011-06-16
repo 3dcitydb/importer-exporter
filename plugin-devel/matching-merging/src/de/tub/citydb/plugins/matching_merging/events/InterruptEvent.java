@@ -30,13 +30,13 @@
 package de.tub.citydb.plugins.matching_merging.events;
 
 import de.tub.citydb.api.event.Event;
-import de.tub.citydb.api.log.LogLevelType;
+import de.tub.citydb.api.log.LogLevel;
 
 public class InterruptEvent extends Event {
 	private String logMessage;
-	private LogLevelType logLevelType;
+	private LogLevel logLevelType;
 	
-	public InterruptEvent(String logMessage, LogLevelType logLevelType, Object source) {
+	public InterruptEvent(String logMessage, LogLevel logLevelType, Object source) {
 		super(EventType.INTERRUPT, source);
 		this.logMessage = logMessage;
 		this.logLevelType = logLevelType;
@@ -46,7 +46,7 @@ public class InterruptEvent extends Event {
 		return logMessage;
 	}
 
-	public LogLevelType getLogLevelType() {
+	public LogLevel getLogLevelType() {
 		return logLevelType;
 	}
 	

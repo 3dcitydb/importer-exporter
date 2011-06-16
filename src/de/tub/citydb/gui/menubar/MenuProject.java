@@ -47,7 +47,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.plugin.extension.config.ConfigExtension;
 import de.tub.citydb.api.plugin.extension.config.PluginConfig;
 import de.tub.citydb.api.plugin.extension.config.PluginConfigEvent;
@@ -60,6 +59,7 @@ import de.tub.citydb.config.project.Project;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.preferences.PreferencesPlugin;
 import de.tub.citydb.plugin.InternalPlugin;
 import de.tub.citydb.plugin.PluginService;

@@ -69,7 +69,6 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.common.ApplicationEvent;
 import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.ConfigUtil;
@@ -82,6 +81,7 @@ import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.database.DBUtil;
 import de.tub.citydb.util.gui.GuiUtil;
 

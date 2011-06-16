@@ -68,8 +68,7 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.common.ApplicationEvent;
 import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
-import de.tub.citydb.api.log.LogLevelType;
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -85,6 +84,7 @@ import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 import de.tub.citydb.util.database.DBUtil;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -270,7 +270,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 				topFrame.clearConsole();
 				DBConnection conn = dbPool.getActiveConnection();
 				LOG.info("Connected to database profile '" + conn.getDescription() + "'.");
-				conn.getMetaData().printToConsole(LogLevelType.INFO);
+				conn.getMetaData().printToConsole(LogLevel.INFO);
 			}
 		});
 
@@ -538,7 +538,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 					}
 
 					LOG.error("Connection to database could not be established.");
-					if (config.getProject().getGlobal().getLogging().getConsole().getLogLevel() == LogLevelType.DEBUG) {
+					if (LOG.getDefaultConsoleLogLevel() == LogLevel.DEBUG) {
 						LOG.debug("Check the following stack trace for details:");
 						e.printStackTrace();
 					}
@@ -548,7 +548,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 
 				if (dbPool.isConnected()) {
 					LOG.info("Database connection established.");
-					conn.getMetaData().printToConsole(LogLevelType.INFO);
+					conn.getMetaData().printToConsole(LogLevel.INFO);
 					
 					// log whether user-defined SRSs are supported
 					for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) {
@@ -651,7 +651,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 							if (line != null) {
 								line = line.replaceAll("\\\\n", "\\\n");
 								line = line.replaceAll("\\\\t", "\\\t");
-								LOG.write(line);
+								LOG.print(line);
 							}
 						}
 

@@ -38,7 +38,7 @@ import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.log.Logger;
 
 public class IOWriterWorker implements Worker<SAXEventBuffer> {
 	private final Logger LOG = Logger.getInstance();

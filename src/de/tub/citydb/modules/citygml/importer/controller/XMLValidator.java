@@ -49,11 +49,11 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.log.LogLevelType;
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.XMLValidation;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.importer.concurrent.FeatureReaderWorkerFactory;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -258,17 +258,17 @@ public class XMLValidator implements EventHandler {
 				return true;
 
 			StringBuilder msg = new StringBuilder();
-			LogLevelType type;
+			LogLevel type;
 
 			switch (event.getSeverity()) {
 			case ValidationEvent.FATAL_ERROR:
 			case ValidationEvent.ERROR:
 				msg.append("Invalid content");
-				type = LogLevelType.ERROR;
+				type = LogLevel.ERROR;
 				break;
 			case ValidationEvent.WARNING:
 				msg.append("Warning");
-				type = LogLevelType.WARN;
+				type = LogLevel.WARN;
 				break;
 			default:
 				return allErrors;

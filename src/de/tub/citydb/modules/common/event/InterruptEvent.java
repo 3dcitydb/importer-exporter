@@ -30,19 +30,19 @@
 package de.tub.citydb.modules.common.event;
 
 import de.tub.citydb.api.event.Event;
-import de.tub.citydb.api.log.LogLevelType;
+import de.tub.citydb.api.log.LogLevel;
 
 public class InterruptEvent extends Event {
 	private InterruptEnum interruptType;
 	private String logMessage;
-	private LogLevelType logLevelType;
+	private LogLevel logLevelType;
 	
 	public InterruptEvent(InterruptEnum interruptType, Object source) {
 		super(EventType.INTERRUPT, source);
 		this.interruptType = interruptType;
 	}
 	
-	public InterruptEvent(InterruptEnum interruptType, String logMessage, LogLevelType logLevelType, Object source) {
+	public InterruptEvent(InterruptEnum interruptType, String logMessage, LogLevel logLevelType, Object source) {
 		this(interruptType, source);
 		this.logMessage = logMessage;
 		this.logLevelType = logLevelType;
@@ -56,7 +56,7 @@ public class InterruptEvent extends Event {
 		return logMessage;
 	}
 
-	public LogLevelType getLogLevelType() {
+	public LogLevel getLogLevelType() {
 		return logLevelType;
 	}
 	

@@ -31,9 +31,9 @@ package de.tub.citydb.modules.kml.database;
 
 import java.util.HashMap;
 
-import de.tub.citydb.api.log.LogLevelType;
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
+import de.tub.citydb.log.Logger;
 
 public class TileQueries {
 
@@ -603,7 +603,7 @@ public class TileQueries {
     	    	query = singleBuildingQueriesLod4.get(displayLevel.getLevel());
     	    	break;
     	    default:
-    	    	Logger.getInstance().log(LogLevelType.INFO, "No single building query found for LoD" + lodToExportFrom);
+    	    	Logger.getInstance().log(LogLevel.INFO, "No single building query found for LoD" + lodToExportFrom);
     	}
     	
 //    	Logger.getInstance().log(LogLevelType.DEBUG, query);
@@ -627,7 +627,7 @@ public class TileQueries {
     	    	query = singleBuildingQueriesLod4Alt.get(displayLevel.getLevel());
     	    	break;
     	    default:
-    	    	Logger.getInstance().log(LogLevelType.INFO, "No alternative single building query found for LoD" + lodToExportFrom);
+    	    	Logger.getInstance().log(LogLevel.INFO, "No alternative single building query found for LoD" + lodToExportFrom);
     	}
     	
 //    	Logger.getInstance().log(LogLevelType.DEBUG, query);
@@ -650,7 +650,7 @@ public class TileQueries {
     			query = QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD4_GET_BUILDING_DATA;
     	    	break;
     	    default:
-    	    	Logger.getInstance().log(LogLevelType.INFO, "No single building highlighting query found for LoD" + lodToExportFrom);
+    	    	Logger.getInstance().log(LogLevel.INFO, "No single building highlighting query found for LoD" + lodToExportFrom);
     	}
     	
 //    	Logger.getInstance().log(LogLevelType.DEBUG, query);

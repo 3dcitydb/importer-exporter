@@ -55,7 +55,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.plugin.extension.preferences.PreferencesEntry;
 import de.tub.citydb.api.plugin.extension.preferences.PreferencesEvent;
 import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
@@ -63,6 +62,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.preferences.NullComponent;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.modules.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.modules.database.DatabasePlugin;

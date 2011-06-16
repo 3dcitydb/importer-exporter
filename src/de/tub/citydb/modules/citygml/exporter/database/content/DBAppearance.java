@@ -85,9 +85,9 @@ import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DBTypeValueEnum;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFileEnum;
 import de.tub.citydb.util.Util;

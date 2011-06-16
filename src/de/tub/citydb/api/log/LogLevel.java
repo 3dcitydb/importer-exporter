@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="LogLevelType")
 @XmlEnum
-public enum LogLevelType {
+public enum LogLevel {
 	@XmlEnumValue("error")
 	ERROR("ERROR"),
 	@XmlEnumValue("warn")
@@ -47,7 +47,7 @@ public enum LogLevelType {
 	
 	private final String value;
 
-	LogLevelType(String v) {
+	LogLevel(String v) {
         value = v;
     }
 
@@ -55,8 +55,8 @@ public enum LogLevelType {
         return value;
     }
 
-    public static LogLevelType fromValue(String v) {
-        for (LogLevelType c: LogLevelType.values()) {
+    public static LogLevel fromValue(String v) {
+        for (LogLevel c: LogLevel.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

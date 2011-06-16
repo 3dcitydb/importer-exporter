@@ -75,8 +75,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.log.LogLevelType;
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -86,6 +85,7 @@ import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.ImportStatusDialog;
 import de.tub.citydb.gui.components.XMLValidationStatusDialog;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.gui.view.FilterPanel;
 import de.tub.citydb.modules.citygml.common.gui.view.FilterPanel.FilterPanelType;
 import de.tub.citydb.modules.citygml.importer.controller.Importer;
@@ -395,7 +395,7 @@ public class ImportPanel extends JPanel {
 							eventDispatcher.triggerEvent(new InterruptEvent(
 									InterruptEnum.USER_ABORT, 
 									"User abort of database import.", 
-									LogLevelType.INFO, 
+									LogLevel.INFO, 
 									this));
 						}
 					});
@@ -475,7 +475,7 @@ public class ImportPanel extends JPanel {
 							eventDispatcher.triggerEvent(new InterruptEvent(
 									InterruptEnum.USER_ABORT, 
 									"User abort of XML validation.", 
-									LogLevelType.INFO, 
+									LogLevel.INFO, 
 									this));
 						}
 					});

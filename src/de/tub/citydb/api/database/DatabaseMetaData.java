@@ -1,6 +1,6 @@
 package de.tub.citydb.api.database;
 
-import de.tub.citydb.api.log.LogLevelType;
+import de.tub.citydb.api.log.LogLevel;
 
 public interface DatabaseMetaData {	
 	public String getDatabaseProductName();	
@@ -14,5 +14,5 @@ public interface DatabaseMetaData {
 	public int getSrid();
 	public String getSrsName();
 	public boolean isVersionEnabled();
-	public void printToConsole(LogLevelType level);
+	public void printToConsole(LogLevel level);
 }

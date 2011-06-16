@@ -65,9 +65,9 @@ import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
 public class DBSdoGeometry implements DBImporter {

@@ -27,7 +27,7 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.api.log;
+package de.tub.citydb.log;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -37,12 +37,13 @@ import java.text.DecimalFormat;
 import java.util.Calendar;
 
 import de.tub.citydb.api.controller.LogController;
+import de.tub.citydb.api.log.LogLevel;
 
 public class Logger implements LogController {
 	private static Logger INSTANCE = new Logger();
 
-	private LogLevelType consoleLogLevel = LogLevelType.INFO;
-	private LogLevelType fileLogLevel = LogLevelType.INFO;
+	private LogLevel consoleLogLevel = LogLevel.INFO;
+	private LogLevel fileLogLevel = LogLevel.INFO;
 	
 	private Calendar cal;
 	private DecimalFormat df = new DecimalFormat("00");
@@ -58,15 +59,25 @@ public class Logger implements LogController {
 		return INSTANCE;
 	}
 
-	public void setConsoleLogLevel(LogLevelType consoleLogLevel) {
+	public void setDefaultConsoleLogLevel(LogLevel consoleLogLevel) {
 		this.consoleLogLevel = consoleLogLevel;
 	}
 	
-	public void setFileLogLevel(LogLevelType fileLogLevel) {
+	public void setDefaultFileLogLevel(LogLevel fileLogLevel) {
 		this.fileLogLevel = fileLogLevel;
 	}
 
-	public String getPrefix(LogLevelType type) {
+	@Override
+	public LogLevel getDefaultConsoleLogLevel() {
+		return consoleLogLevel;
+	}
+
+	@Override
+	public LogLevel getDefaultFileLogLevel() {
+		return fileLogLevel;
+	}
+
+	public String getPrefix(LogLevel type) {
 		cal = Calendar.getInstance();
 
 		int h = cal.get(Calendar.HOUR_OF_DAY);
@@ -87,7 +98,8 @@ public class Logger implements LogController {
 		return prefix.toString();
 	}
 
-	public void log(LogLevelType type, String msg) {
+	@Override
+	public void log(LogLevel type, String msg) {
 		StringBuffer buffer = new StringBuffer(getPrefix(type));
 		buffer.append(msg);
 
@@ -105,23 +117,28 @@ public class Logger implements LogController {
 		}
 	}
 
+	@Override
 	public void debug(String msg) {		
-		log(LogLevelType.DEBUG, msg);
+		log(LogLevel.DEBUG, msg);
 	}
 
+	@Override
 	public void info(String msg) {
-		log(LogLevelType.INFO, msg);
+		log(LogLevel.INFO, msg);
 	}
 
+	@Override
 	public void warn(String msg) {
-		log(LogLevelType.WARN, msg);
+		log(LogLevel.WARN, msg);
 	}
 
+	@Override
 	public void error(String msg) {
-		log(LogLevelType.ERROR, msg);
+		log(LogLevel.ERROR, msg);
 	}
 	
-	public void write(String msg) {
+	@Override
+	public void print(String msg) {
 		System.out.println(msg);
 		writeToFile(msg);
 	}

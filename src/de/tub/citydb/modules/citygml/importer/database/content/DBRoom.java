@@ -45,9 +45,9 @@ import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
 

@@ -41,10 +41,10 @@ import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DBTableEnum;
 import de.tub.citydb.database.DBTypeValueEnum;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
 

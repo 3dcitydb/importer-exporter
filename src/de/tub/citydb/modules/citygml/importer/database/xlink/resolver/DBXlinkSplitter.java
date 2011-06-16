@@ -36,9 +36,9 @@ import java.text.MessageFormat;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;

@@ -80,8 +80,8 @@ import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.log.Logger;
 
 public class DBSurfaceGeometry implements DBExporter {
 	private final Logger LOG = Logger.getInstance();

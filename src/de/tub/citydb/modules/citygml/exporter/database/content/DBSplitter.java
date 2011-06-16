@@ -43,7 +43,6 @@ import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
@@ -52,6 +51,7 @@ import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.StatusDialogMessage;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.BoundingBoxFilter;

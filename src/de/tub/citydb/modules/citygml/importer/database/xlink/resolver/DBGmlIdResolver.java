@@ -36,8 +36,8 @@ import java.sql.SQLException;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;

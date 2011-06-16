@@ -31,7 +31,7 @@ package de.tub.citydb.config.project.global;
 
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.api.log.LogLevelType;
+import de.tub.citydb.api.log.LogLevel;
 
 @XmlType(name="LogConsoleType", propOrder={
 		"wrapText",
@@ -39,16 +39,16 @@ import de.tub.citydb.api.log.LogLevelType;
 		})
 public class LogConsole {
 	private boolean wrapText = false;
-	private LogLevelType logLevel = LogLevelType.INFO;
+	private LogLevel logLevel = LogLevel.INFO;
 	
 	public LogConsole() {
 	}
 
-	public LogLevelType getLogLevel() {
+	public LogLevel getLogLevel() {
 		return logLevel;
 	}
 
-	public void setLogLevel(LogLevelType logLevel) {
+	public void setLogLevel(LogLevel logLevel) {
 		this.logLevel = logLevel;
 	}
 

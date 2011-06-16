@@ -33,13 +33,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.controller.LogController;
+import de.tub.citydb.api.registry.ObjectRegistry;
 
 public class EventHandlerContainerQueue {
-	private final Logger LOG = Logger.getInstance();
+	private final LogController LOG;
 	private ConcurrentLinkedQueue<EventHandlerContainer> containerQueue;
 
 	public EventHandlerContainerQueue() {
+		LOG = ObjectRegistry.getInstance().getLogController();
 		containerQueue = new ConcurrentLinkedQueue<EventHandlerContainer>();
 	}
 

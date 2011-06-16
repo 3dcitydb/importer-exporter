@@ -45,7 +45,7 @@ import java.util.StringTokenizer;
 import oracle.jdbc.OracleResultSet;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.log.Logger;
 
 public class BalloonTemplateHandler {
 

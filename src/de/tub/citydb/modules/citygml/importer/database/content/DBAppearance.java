@@ -39,10 +39,10 @@ import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
 

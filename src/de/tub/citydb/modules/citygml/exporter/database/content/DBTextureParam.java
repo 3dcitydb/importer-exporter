@@ -52,7 +52,7 @@ import org.citygml4j.model.citygml.appearance.TextureCoordinates;
 import org.citygml4j.model.citygml.appearance.WorldToTexture;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
 public class DBTextureParam implements DBExporter {

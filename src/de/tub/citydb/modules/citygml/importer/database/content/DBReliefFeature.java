@@ -38,9 +38,9 @@ import org.citygml4j.model.citygml.relief.AbstractReliefComponent;
 import org.citygml4j.model.citygml.relief.ReliefComponentProperty;
 import org.citygml4j.model.citygml.relief.ReliefFeature;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
 

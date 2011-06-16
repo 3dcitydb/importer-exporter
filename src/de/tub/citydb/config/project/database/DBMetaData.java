@@ -30,8 +30,8 @@
 package de.tub.citydb.config.project.database;
 
 import de.tub.citydb.api.database.DatabaseMetaData;
-import de.tub.citydb.api.log.LogLevelType;
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.log.LogLevel;
+import de.tub.citydb.log.Logger;
 
 public class DBMetaData implements DatabaseMetaData {
 	private static final Logger LOG = Logger.getInstance();	
@@ -165,7 +165,7 @@ public class DBMetaData implements DatabaseMetaData {
 	}
 
 	@Override
-	public void printToConsole(LogLevelType level) {
+	public void printToConsole(LogLevel level) {
 		LOG.log(level, getShortDatabaseProductVersion());
 		LOG.log(level, "SRID: " + srid + " (" + referenceSystemName + ')');
 		LOG.log(level, "gml:srsName: " + srsName);

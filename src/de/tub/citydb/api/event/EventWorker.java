@@ -33,10 +33,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.controller.LogController;
+import de.tub.citydb.api.registry.ObjectRegistry;
 
 public class EventWorker implements Worker<Event> {
-	private final Logger LOG = Logger.getInstance();
+	private final LogController LOG;
 	
 	// instance members needed for WorkPool
 	private volatile boolean shouldRun = true;
@@ -50,6 +51,7 @@ public class EventWorker implements Worker<Event> {
 
 	public EventWorker(EventDispatcher eventDispatcher) {
 		this.eventDispatcher = eventDispatcher;
+		LOG = ObjectRegistry.getInstance().getLogController();
 	}
 
 	@Override

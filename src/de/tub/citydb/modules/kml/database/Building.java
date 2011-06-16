@@ -104,8 +104,8 @@ import org.w3c.dom.Element;
 
 import com.sun.j3d.utils.geometry.GeometryInfo;
 
-import de.tub.citydb.api.log.LogLevelType;
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.log.LogLevel;
+import de.tub.citydb.log.Logger;
 
 public class Building {
 	
@@ -559,7 +559,7 @@ public class Building {
 					}
 					else { // should never happen
 						triangles.getP().add(texCoordsCounter); // wrong data is better than triangles out of sync
-						Logger.getInstance().log(LogLevelType.DEBUG, 
+						Logger.getInstance().log(LogLevel.DEBUG, 
 								"texCoords not found for (" + coordPoint.x + ", " + coordPoint.y + ", "
 								+ coordPoint.z + "). TOLERANCE = " + TOLERANCE_AFTER_TRIANGULATION);
 					}

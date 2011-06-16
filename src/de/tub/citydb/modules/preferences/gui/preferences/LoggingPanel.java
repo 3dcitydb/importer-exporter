@@ -44,14 +44,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import de.tub.citydb.api.log.LogLevelType;
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -83,12 +83,12 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 	public boolean isModified() {
 		Logging logging = config.getProject().getGlobal().getLogging();
 
-		if ((LogLevelType)logLevelConsoleCombo.getSelectedItem() != logging.getConsole().getLogLevel()) return true;
+		if ((LogLevel)logLevelConsoleCombo.getSelectedItem() != logging.getConsole().getLogLevel()) return true;
 		if (wrapTextConsole.isSelected() != logging.getConsole().isWrapText()) return true;
 		if (useLogFile.isSelected() != logging.getFile().isSet()) return true;		
 		if (useLogPath.isSelected() != logging.getFile().isSetUseAlternativeLogPath()) return true;
 		if (!logPathText.getText().equals(logging.getFile().getAlternativeLogPath())) return true;
-		if ((LogLevelType)logLevelFileCombo.getSelectedItem() != logging.getFile().getLogLevel()) return true;
+		if ((LogLevel)logLevelFileCombo.getSelectedItem() != logging.getFile().getLogLevel()) return true;
 
 		return false;
 	}
@@ -215,7 +215,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
 		logLevelConsoleCombo.removeAllItems();
 		logLevelFileCombo.removeAllItems();		
-		for (LogLevelType level : LogLevelType.values()) {		
+		for (LogLevel level : LogLevel.values()) {		
 			logLevelConsoleCombo.addItem(level);
 			logLevelFileCombo.addItem(level);
 		}
@@ -238,18 +238,18 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 		logging.getFile().setUseAlternativeLogPath(useLogPath.isSelected());
 		logging.getFile().setAlternativeLogPath(logPathText.getText());
 
-		LogLevelType consoleLogLevel = (LogLevelType)logLevelConsoleCombo.getSelectedItem();
+		LogLevel consoleLogLevel = (LogLevel)logLevelConsoleCombo.getSelectedItem();
 		logging.getConsole().setLogLevel(consoleLogLevel);
-		LOG.setConsoleLogLevel(consoleLogLevel);
+		LOG.setDefaultConsoleLogLevel(consoleLogLevel);
 
 		logging.getConsole().setWrapText(wrapTextConsole.isSelected());
 		topFrame.getConsole().setLineWrap(wrapTextConsole.isSelected());
 		topFrame.getConsole().setWrapStyleWord(wrapTextConsole.isSelected());
 		topFrame.getConsole().repaint();
 
-		LogLevelType fileLogLevel = (LogLevelType)logLevelFileCombo.getSelectedItem();
+		LogLevel fileLogLevel = (LogLevel)logLevelFileCombo.getSelectedItem();
 		logging.getFile().setLogLevel(fileLogLevel);
-		LOG.setFileLogLevel(fileLogLevel);
+		LOG.setDefaultFileLogLevel(fileLogLevel);
 
 		// change log file
 		if (isModified && useLogFile.isSelected()) {

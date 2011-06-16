@@ -40,7 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.log.Logger;
 
 public class GmlIdLookupServer {
 	private final Logger LOG = Logger.getInstance();

@@ -41,7 +41,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.log.Logger;
 
 public class ElevationServiceHandler extends DefaultHandler {
 

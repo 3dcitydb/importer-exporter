@@ -39,8 +39,8 @@ import java.sql.SQLException;
 
 import oracle.jdbc.OracleResultSet;
 import oracle.ord.im.OrdImage;
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;

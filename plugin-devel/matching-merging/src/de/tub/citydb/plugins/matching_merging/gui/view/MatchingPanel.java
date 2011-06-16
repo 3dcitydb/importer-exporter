@@ -55,13 +55,13 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import de.tub.citydb.api.controller.DatabaseController;
+import de.tub.citydb.api.controller.LogController;
 import de.tub.citydb.api.controller.ViewController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.log.LogLevelType;
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.plugins.matching_merging.PluginImpl;
 import de.tub.citydb.plugins.matching_merging.controller.Matcher;
@@ -74,7 +74,7 @@ import de.tub.citydb.plugins.matching_merging.util.Util;
 @SuppressWarnings("serial")
 public class MatchingPanel extends JPanel implements PropertyChangeListener, EventHandler {	
 	private final ReentrantLock mainLock = new ReentrantLock();
-	private final Logger LOG = Logger.getInstance();
+	private final LogController logController;
 	private final PluginImpl plugin;
 	private final DatabaseController databaseController;
 	private final ViewController viewController;
@@ -133,6 +133,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		databaseController = ObjectRegistry.getInstance().getDatabaseController();
 		viewController = ObjectRegistry.getInstance().getViewController();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		logController = ObjectRegistry.getInstance().getLogController();
 
 		plugin.getConfig().getMerging().addPropertyChangeListener(this);
 		initGui();
@@ -512,10 +513,8 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				try {
 					databaseController.connect(true);
 				} catch (DatabaseConfigurationException e) {
-					LOG.error("Failed to connect to database: " + e.getMessage());
 					return;
 				} catch (SQLException e) {
-					LOG.error("Failed to connect to database: " + e.getMessage());
 					return;
 				}
 
@@ -524,7 +523,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			}
 
 			viewController.setStatusText(Util.I18N.getString("main.status.match.label"));
-			LOG.info("Initializing matching process...");
+			logController.info("Initializing matching process...");
 
 			// initialize event dispatcher
 			eventDispatcher.addEventHandler(EventType.RELEVANT_MATCHES, this);
@@ -551,7 +550,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 						public void run() {
 							eventDispatcher.triggerEvent(new InterruptEvent(
 									"User abort of matching process.", 
-									LogLevelType.INFO, 
+									LogLevel.INFO, 
 									this));
 						}
 					});
@@ -576,9 +575,9 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			matcher.cleanup();
 			
 			if (success) {
-				LOG.info("Matching process successfully finished.");
+				logController.info("Matching process successfully finished.");
 			} else {
-				LOG.warn("Matching process aborted.");
+				logController.warn("Matching process aborted.");
 			}
 
 			viewController.setStatusText(Util.I18N.getString("main.status.ready.label"));
@@ -606,10 +605,8 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				try {
 					databaseController.connect(true);
 				} catch (DatabaseConfigurationException e) {
-					LOG.error("Failed to connect to database: " + e.getMessage());
 					return;
 				} catch (SQLException e) {
-					LOG.error("Failed to connect to database: " + e.getMessage());
 					return;
 				}
 
@@ -618,7 +615,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			}
 
 			viewController.setStatusText(Util.I18N.getString("main.status.merge.label"));
-			LOG.info("Initializing merging process...");
+			logController.info("Initializing merging process...");
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
@@ -655,9 +652,9 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			matcher.cleanup();
 
 			if (success) {
-				LOG.info("Merging process successfully finished.");
+				logController.info("Merging process successfully finished.");
 			} else {
-				LOG.warn("Merging process aborted abnormally.");
+				logController.warn("Merging process aborted abnormally.");
 			}
 
 			setEnabledButtons(false);
@@ -680,10 +677,8 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				try {
 					databaseController.connect(true);
 				} catch (DatabaseConfigurationException e) {
-					LOG.error("Failed to connect to database: " + e.getMessage());
 					return;
 				} catch (SQLException e) {
-					LOG.error("Failed to connect to database: " + e.getMessage());
 					return;
 				}
 
@@ -692,7 +687,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			}
 
 			viewController.setStatusText(Util.I18N.getString("main.status.overlap.label"));
-			LOG.info("Initializing matching process...");
+			logController.info("Initializing matching process...");
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
@@ -731,9 +726,9 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			matcher.cleanup();
 
 			if (success) {
-				LOG.info("Matching process successfully finished.");
+				logController.info("Matching process successfully finished.");
 			} else {
-				LOG.warn("Matching process aborted abnormally.");
+				logController.warn("Matching process aborted abnormally.");
 			}
 
 			viewController.setStatusText(Util.I18N.getString("main.status.ready.label"));
@@ -761,10 +756,8 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				try {
 					databaseController.connect(true);
 				} catch (DatabaseConfigurationException e) {
-					LOG.error("Failed to connect to database: " + e.getMessage());
 					return;
 				} catch (SQLException e) {
-					LOG.error("Failed to connect to database: " + e.getMessage());
 					return;
 				}
 
@@ -773,7 +766,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			}
 
 			viewController.setStatusText(Util.I18N.getString("main.status.delete.label"));
-			LOG.info("Initializing deletion of buildings...");
+			logController.info("Initializing deletion of buildings...");
 
 			String msg = Util.I18N.getString("match.tools.dialog.msg");
 			Object[] args = new Object[]{ plugin.getConfig().getDeleteBuildingsByLineage().getLineage() };
@@ -814,9 +807,9 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			matcher.cleanup();
 
 			if (success) {
-				LOG.info("Deletion of buildings successfully finished.");
+				logController.info("Deletion of buildings successfully finished.");
 			} else {
-				LOG.warn("Deletion of buildings aborted abnormally.");
+				logController.warn("Deletion of buildings aborted abnormally.");
 			}
 
 			viewController.setStatusText(Util.I18N.getString("main.status.ready.label"));

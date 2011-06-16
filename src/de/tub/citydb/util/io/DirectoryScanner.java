@@ -34,7 +34,7 @@ import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.tub.citydb.api.log.Logger;
+import de.tub.citydb.log.Logger;
 
 public class DirectoryScanner {
 	private final Logger LOG = Logger.getInstance();

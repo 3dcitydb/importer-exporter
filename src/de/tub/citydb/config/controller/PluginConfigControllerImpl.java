@@ -1,10 +1,10 @@
 package de.tub.citydb.config.controller;
 
 import de.tub.citydb.api.controller.PluginConfigController;
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.plugin.extension.config.ConfigExtension;
 import de.tub.citydb.api.plugin.extension.config.PluginConfig;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.log.Logger;
 
 public class PluginConfigControllerImpl implements PluginConfigController {
 	private final Logger LOG = Logger.getInstance();

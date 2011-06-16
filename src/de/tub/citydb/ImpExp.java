@@ -53,7 +53,6 @@ import org.kohsuke.args4j.Option;
 
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.common.ApplicationEvent;
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.api.plugin.Plugin;
 import de.tub.citydb.api.plugin.extension.config.ConfigExtension;
 import de.tub.citydb.api.plugin.extension.config.PluginConfig;
@@ -69,6 +68,7 @@ import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.SplashScreen;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.modules.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.modules.database.DatabasePlugin;
@@ -358,9 +358,9 @@ public class ImpExp {
 
 		// init logging environment
 		Logging logging = config.getProject().getGlobal().getLogging();
-		LOG.setConsoleLogLevel(logging.getConsole().getLogLevel());
+		LOG.setDefaultConsoleLogLevel(logging.getConsole().getLogLevel());
 		if (logging.getFile().isSet()) {
-			LOG.setFileLogLevel(logging.getFile().getLogLevel());
+			LOG.setDefaultFileLogLevel(logging.getFile().getLogLevel());
 
 			if (logging.getFile().isSetUseAlternativeLogPath() &&
 					logging.getFile().getAlternativeLogPath().trim().length() == 0)

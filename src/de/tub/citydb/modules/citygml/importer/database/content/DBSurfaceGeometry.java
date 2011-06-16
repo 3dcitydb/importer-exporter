@@ -75,10 +75,10 @@ import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLinearRing;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.util.Util;

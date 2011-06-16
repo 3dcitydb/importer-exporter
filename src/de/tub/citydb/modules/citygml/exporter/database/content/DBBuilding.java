@@ -104,8 +104,8 @@ import org.citygml4j.model.xal.ThoroughfareName;
 import org.citygml4j.model.xal.ThoroughfareNumber;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;

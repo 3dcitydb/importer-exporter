@@ -43,8 +43,8 @@ import java.sql.SQLException;
 
 import oracle.jdbc.OracleResultSet;
 import oracle.sql.BLOB;
-import de.tub.citydb.api.log.Logger;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 
 public class XlinkLibraryObject implements DBXlinkResolver {

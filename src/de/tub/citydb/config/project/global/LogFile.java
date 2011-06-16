@@ -32,7 +32,7 @@ package de.tub.citydb.config.project.global;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.api.log.LogLevelType;
+import de.tub.citydb.api.log.LogLevel;
 
 @XmlType(name="LogFileType", propOrder={
 		"logLevel",
@@ -42,7 +42,7 @@ import de.tub.citydb.api.log.LogLevelType;
 public class LogFile {
 	@XmlAttribute(required=false)
 	private Boolean active = false;
-	private LogLevelType logLevel = LogLevelType.INFO;
+	private LogLevel logLevel = LogLevel.INFO;
 	private Boolean useAlternativeLogPath = false;
 	private String alternativeLogPath = "";
 	
@@ -64,11 +64,11 @@ public class LogFile {
 		this.active = active;
 	}
 
-	public LogLevelType getLogLevel() {
+	public LogLevel getLogLevel() {
 		return logLevel;
 	}
 
-	public void setLogLevel(LogLevelType logLevel) {
+	public void setLogLevel(LogLevel logLevel) {
 		if (logLevel != null)
 			this.logLevel = logLevel;
 	}
