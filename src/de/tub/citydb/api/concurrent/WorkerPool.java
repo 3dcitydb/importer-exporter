@@ -99,7 +99,7 @@ public class WorkerPool<T> {
 			workItems[putIndex] = work;
 			putIndex = inc(putIndex);
 			++count;
-			notEmpty.signalAll();
+			notEmpty.signal();
 		}
 
 		private E extract() {
@@ -108,7 +108,7 @@ public class WorkerPool<T> {
 			workItems[takeIndex] = null;
 			takeIndex = inc(takeIndex);
 			--count;
-			notFull.signalAll();
+			notFull.signal();
 			if (count == 0)
 				empty.signalAll();
 			return work;
@@ -134,7 +134,7 @@ public class WorkerPool<T> {
 			}
 
 			--count;
-			notFull.signalAll();
+			notFull.signal();
 			if (count == 0)
 				empty.signalAll();
 		}
@@ -183,7 +183,7 @@ public class WorkerPool<T> {
 					try {
 						nanos = notFull.awaitNanos(nanos);
 					} catch (InterruptedException ie) {
-						notFull.signalAll();
+						notFull.signal();
 						throw ie;
 					}
 				}
@@ -243,7 +243,7 @@ public class WorkerPool<T> {
 					try {
 						nanos = notEmpty.awaitNanos(nanos);
 					} catch (InterruptedException ie) {
-						notEmpty.signalAll();
+						notEmpty.signal();
 						throw ie;
 					}
 				}
@@ -260,7 +260,7 @@ public class WorkerPool<T> {
 					while (count == 0)
 						notEmpty.await();
 				} catch (InterruptedException ie) {
-					notEmpty.signalAll();
+					notEmpty.signal();
 					throw ie;
 				}
 
