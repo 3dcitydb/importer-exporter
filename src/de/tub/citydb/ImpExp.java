@@ -52,7 +52,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.event.common.ApplicationEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.plugin.Plugin;
 import de.tub.citydb.api.plugin.extension.config.ConfigExtension;
 import de.tub.citydb.api.plugin.extension.config.PluginConfig;
@@ -427,8 +427,8 @@ public class ImpExp {
 
 		// register illegal plugin event checker with event dispatcher
 		IllegalPluginEventChecker checker = IllegalPluginEventChecker.getInstance();
-		eventDispatcher.addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, checker);
-		eventDispatcher.addEventHandler(ApplicationEvent.SWITCH_LOCALE, checker);
+		eventDispatcher.addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, checker);
+		eventDispatcher.addEventHandler(GlobalEvents.SWITCH_LOCALE, checker);
 
 		// start application
 		if (!shell) {

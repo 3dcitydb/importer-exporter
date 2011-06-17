@@ -32,8 +32,7 @@ package de.tub.citydb.api.event;
 import java.lang.ref.WeakReference;
 
 public class EventHandlerContainer {
-
-	private WeakReference<EventHandler> eventHandlerRef = null;
+	private final WeakReference<EventHandler> eventHandlerRef;
 	private boolean autoRemove = false;
 
 	public EventHandlerContainer(EventHandler handler) {

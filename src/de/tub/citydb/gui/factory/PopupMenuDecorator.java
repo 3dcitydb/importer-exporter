@@ -22,7 +22,7 @@ import javax.swing.text.JTextComponent;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.common.ApplicationEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.gui.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.internal.Internal;
@@ -103,7 +103,7 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 		private JMenuItem selectAll;
 
 		private StandardEditingPopupMenu() {
-			ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.SWITCH_LOCALE, this);
+			ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);
 		}
 
 		private void init(Component component) {

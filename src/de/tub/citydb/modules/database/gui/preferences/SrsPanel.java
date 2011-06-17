@@ -67,8 +67,8 @@ import javax.xml.bind.JAXBException;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.common.ApplicationEvent;
-import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
+import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.ConfigUtil;
@@ -125,7 +125,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		dbPool = DBConnectionPool.getInstance();
 
 		initGui();
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
 	}
 
 	@Override

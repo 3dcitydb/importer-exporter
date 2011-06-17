@@ -81,8 +81,8 @@ import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.common.ApplicationEvent;
-import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
+import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.gui.ComponentFactory;
 import de.tub.citydb.api.plugin.Plugin;
 import de.tub.citydb.api.plugin.extension.view.View;
@@ -147,7 +147,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		dbPool = DBConnectionPool.getInstance();
 		
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		eventDispatcher.addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
+		eventDispatcher.addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
 
 		// required for preferences plugin
 		consoleText = new JTextArea();

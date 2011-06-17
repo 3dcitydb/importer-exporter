@@ -65,8 +65,8 @@ import javax.xml.bind.JAXBContext;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.common.ApplicationEvent;
-import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
+import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
@@ -185,7 +185,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		this.mainView = mainView;
 		this.config = config;
 		dbPool = DBConnectionPool.getInstance();
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
 
 		initGui();
 		addListeners();

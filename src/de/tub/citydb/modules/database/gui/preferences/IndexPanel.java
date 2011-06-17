@@ -47,8 +47,8 @@ import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.common.ApplicationEvent;
-import de.tub.citydb.api.event.common.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
+import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -80,7 +80,7 @@ public class IndexPanel extends AbstractPreferencesComponent implements EventHan
 		this.topFrame = topFrame;
 
 		initGui();
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.DATABASE_CONNECTION_STATE, this);
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
 	}
 
 	@Override

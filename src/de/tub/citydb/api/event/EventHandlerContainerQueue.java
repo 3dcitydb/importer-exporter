@@ -31,6 +31,7 @@ package de.tub.citydb.api.event;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import de.tub.citydb.api.controller.LogController;
@@ -70,32 +71,34 @@ public class EventHandlerContainerQueue {
 	}
 
 	protected Event propagate(Event event) {
-		ArrayList<EventHandlerContainer> removeList = new ArrayList<EventHandlerContainer>();
-
-		for (EventHandlerContainer container : containerQueue) {
+		Iterator<EventHandlerContainer> iter = containerQueue.iterator();
+		
+		while (iter.hasNext()) {
+			EventHandlerContainer container = iter.next();
 			EventHandler handler = container.getEventHandler();
 			
 			// since we deal with weak references, check whether
 			// handler is null and remove its container in this case
-			if (handler != null) {
-				try {
-					handler.handleEvent(event);
-				} catch (Exception e) {
-					LOG.error("The following error occurred while processing an event:");
-					e.printStackTrace();
-					break;
-				}
-			} else
-				removeList.add(container);
-
+			if (handler == null) {
+				iter.remove();
+				continue;
+			}
+			
+			try {
+				handler.handleEvent(event);
+			} catch (Exception e) {
+				LOG.error("The following error occurred while processing an event:");
+				e.printStackTrace();
+				break;
+			}
+			
 			if (container.isAutoRemove())
-				removeList.add(container);
-
+				iter.remove();
+			
 			if (event.isCancelled())
 				break;
 		}
 
-		containerQueue.removeAll(removeList);
 		return event;
 	}
 
@@ -105,5 +108,26 @@ public class EventHandlerContainerQueue {
 
 	public Iterator<EventHandlerContainer> iterator() {
 		return containerQueue.iterator();
+	}
+	
+	public List<EventHandler> getHandlers() {
+		List<EventHandler> handlers = new ArrayList<EventHandler>();		
+		Iterator<EventHandlerContainer> iter = containerQueue.iterator();
+		
+		while (iter.hasNext()) {
+			EventHandlerContainer container = iter.next();
+			EventHandler handler = container.getEventHandler();
+			
+			// since we deal with weak references, check whether
+			// handler is null and remove its container in this case
+			if (handler == null) {
+				iter.remove();
+				continue;
+			}
+			
+			handlers.add(handler);
+		}
+
+		return handlers;
 	}
 }

@@ -29,7 +29,9 @@
  */
 package de.tub.citydb.api.event;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -50,7 +52,7 @@ public class EventDispatcher {
 		eventDispatcherThread.prestartCoreWorkers();
 		mainLock = new ReentrantLock();
 	}
-	
+
 	public EventDispatcher() {
 		this(100);
 	}
@@ -74,7 +76,7 @@ public class EventDispatcher {
 		EventHandlerContainerQueue containerQueue = containerQueueMap.get(type);
 		return containerQueue.removeEventHandler(handler);
 	}
-	
+
 	public void removeEventHandler(EventHandler handler) {
 		for (EventHandlerContainerQueue containerQueue : containerQueueMap.values())
 			containerQueue.removeEventHandler(handler);	
@@ -111,9 +113,9 @@ public class EventDispatcher {
 		}
 	}
 
-	public Enum<?>[] getRegisteredEventTypes() {
-		Enum<?>[] types = containerQueueMap.keySet().toArray(new Enum<?>[0]);
-		return types;
+	public List<EventHandler> getRegisteredHandlers(Enum<?> type) {
+		return containerQueueMap.containsKey(type) ?
+				containerQueueMap.get(type).getHandlers() : new ArrayList<EventHandler>();
 	}
 
 	public void reset() {
@@ -122,7 +124,7 @@ public class EventDispatcher {
 			containerQueue.clear();
 		}
 	}
-	
+
 	public void flushEvents() throws InterruptedException {
 		eventDispatcherThread.join();
 	}

@@ -1,4 +1,4 @@
-package de.tub.citydb.api.event.common;
+package de.tub.citydb.api.event.global;
 
 public interface DatabaseConnectionStateEvent {
 	public boolean isConnected();

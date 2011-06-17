@@ -41,7 +41,7 @@ import javax.swing.JList;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.common.ApplicationEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.gui.DatabaseSrsComboBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
@@ -106,7 +106,7 @@ public class SrsComboBoxFactory {
 			this.onlyShowSupported = onlyShowSupported;
 			setRenderer(new SrsComboBoxRenderer(this));
 
-			ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(ApplicationEvent.SWITCH_LOCALE, this);
+			ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);
 		}
 
 		@Override
