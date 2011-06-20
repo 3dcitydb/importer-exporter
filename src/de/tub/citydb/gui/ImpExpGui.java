@@ -597,16 +597,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		consoleWindow.dispose();
 
-		if (dbPool.isConnected()) {
-			LOG.info("Terminating database connection");
-			try {
-				dbPool.disconnect();
-			} catch (SQLException e) {
-				LOG.error("Failed to terminate database connection: " + e.getMessage());
-				success = false;
-			}
-		}
-
 		// shutdown plugins
 		if (!pluginService.getExternalPlugins().isEmpty())
 			LOG.info("Shutting down plugins");
@@ -618,6 +608,16 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		saveProjectSettings();
 		saveGUISettings();
 
+		if (dbPool.isConnected()) {
+			LOG.info("Terminating database connection");
+			try {
+				dbPool.disconnect();
+			} catch (SQLException e) {
+				LOG.error("Failed to terminate database connection: " + e.getMessage());
+				success = false;
+			}
+		}
+		
 		if (success)
 			LOG.info("Application successfully terminated");
 		else {
