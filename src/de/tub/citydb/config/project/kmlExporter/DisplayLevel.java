@@ -54,6 +54,7 @@ public class DisplayLevel {
 	public static final String EXTRUDED_STR = "extruded";  
 	public static final String GEOMETRY_STR = "geometry";
 	public static final String COLLADA_STR = "collada";
+	public static final String HIGHLIGTHTED_STR = "highlighted";
 
 	public static final String FOOTPRINT_PLACEMARK_ID = "KMLFootp_";  
 	public static final String EXTRUDED_PLACEMARK_ID = "KMLExtr_";  

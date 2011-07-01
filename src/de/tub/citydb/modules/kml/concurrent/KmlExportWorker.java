@@ -83,6 +83,7 @@ import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
+import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.database.DBConnectionPool;
@@ -919,8 +920,14 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		model.setOrientation(orientation);
 
 		LinkType link = kmlFactory.createLinkType();
-		// File.separator would be wrong here, it MUST be "/"
-		link.setHref(building.getId() + "/" + building.getId() + ".dae");
+		if (config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue() &&
+				config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode() == TilingMode.ONE_FILE_PER_OBJECT) {
+			link.setHref(building.getId() + ".dae");
+		}
+		else {
+			// File.separator would be wrong here, it MUST be "/"
+			link.setHref(building.getId() + "/" + building.getId() + ".dae");
+		}
 		model.setLink(link);
 
 		placemark.setAbstractGeometryGroup(kmlFactory.createModel(model));
