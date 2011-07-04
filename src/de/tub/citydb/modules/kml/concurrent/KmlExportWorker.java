@@ -281,6 +281,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		finally {
 			if (connection != null) {
 				try {
+					connection.commit(); // for all possible GE_LoDn_zOffset values
 					connection.close();
 				}
 				catch (SQLException e) {}
@@ -315,7 +316,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					psQuery.setString(i, work.getGmlId());
 				}
 				rs = (OracleResultSet)psQuery.executeQuery();
-				if (rs.isBeforeFirst()) break; // result set not empty
+				if (rs.isBeforeFirst()) {
+					break; // result set not empty
+				}
+				else {
+					try { rs.close(); /* release cursor on DB */ } catch (SQLException e) {}
+					try { psQuery.close(); /* release cursor on DB */ } catch (SQLException e) {}
+				}
 
 				// try alternative query
 				psQuery = connection.prepareStatement(
@@ -328,7 +335,14 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					psQuery.setString(i, work.getGmlId());
 				}
 				rs = (OracleResultSet)psQuery.executeQuery();
-				if (rs.isBeforeFirst()) break; // result set not empty
+				if (rs.isBeforeFirst()) {
+					break; // result set not empty
+				}
+				else {
+					try { rs.close(); /* release cursor on DB */ } catch (SQLException e) {}
+					try { psQuery.close(); /* release cursor on DB */ } catch (SQLException e) {}
+				}
+
 				currentLod--;
 			}
 
@@ -432,10 +446,10 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		finally {
 			if (rs != null)
 				try { rs.close(); } catch (SQLException e) {}
-				if (psQuery != null)
-					try { psQuery.close(); } catch (SQLException e) {}
+			if (psQuery != null)
+				try { psQuery.close(); } catch (SQLException e) {}
 
-					runLock.unlock();
+			runLock.unlock();
 		}
 	}
 
