@@ -228,7 +228,7 @@ public class KmlExporterManager {
         			}
         		}
         	}
-			if (isBBoxActive && tiling.getMode() == TilingMode.ONE_FILE_PER_OBJECT) {
+			if (isBBoxActive && tiling.getMode() == TilingMode.ONE_FILE_PER_OBJECT && kmlType != null) { // some Placemarks ARE null
 				if (config.getProject().getKmlExporter().isExportAsKmz()) {
     				kmlMarshaller.marshal(kmlFactory.createKml(kmlType), fileWriter);
 					zipOut.closeEntry();
