@@ -33,6 +33,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
+import oracle.ucp.jdbc.ValidConnection;
 import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
@@ -117,7 +118,7 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 		batchConn = dbPool.getConnection();
 		batchConn.setAutoCommit(false);
 
-		externalFileConn = dbPool.getNonPooledConnection();
+		externalFileConn = dbPool.getConnection();
 		externalFileConn.setAutoCommit(false);
 		
 		Database database = config.getProject().getDatabase();
@@ -225,6 +226,7 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 
 			if (externalFileConn != null) {
 				try {
+					((ValidConnection)externalFileConn).setInvalid();
 					externalFileConn.close();
 				} catch (SQLException e) {
 					//
