@@ -36,7 +36,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Vector;
 
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
@@ -460,7 +459,7 @@ public class DBSurfaceGeometry implements DBExporter {
 			// we strongly assume solids contain one single CompositeSurface
 			// as exterior. Nothing else is interpreted here...
 			if (geomNode.childNodes.size() == 1) {
-				DBSurfaceGeometryResult geomMember = rebuildGeometry(geomNode.childNodes.firstElement(), isSetOrientableSurface);
+				DBSurfaceGeometryResult geomMember = rebuildGeometry(geomNode.childNodes.get(0), isSetOrientableSurface);
 
 				if (geomMember != null) {
 					AbstractGeometry absGeom = geomMember.getAbstractGeometry();
@@ -646,10 +645,10 @@ public class DBSurfaceGeometry implements DBExporter {
 		protected boolean isXlink;
 		protected boolean isReverse;
 		protected JGeometry geometry;
-		protected Vector<GeometryNode> childNodes;
+		protected List<GeometryNode> childNodes;
 
 		public GeometryNode() {
-			childNodes = new Vector<GeometryNode>();
+			childNodes = new ArrayList<GeometryNode>();
 		}
 	}
 

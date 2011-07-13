@@ -36,10 +36,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
 
 import oracle.spatial.geometry.JGeometry;
@@ -59,7 +56,7 @@ import de.tub.citydb.util.Util;
 
 public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	private static final ReentrantLock mainLock = new ReentrantLock();
-	
+
 	private final Connection batchConn;
 	private final HeapCacheTable heapTable;
 	private final Config config;
@@ -70,7 +67,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	private PreparedStatement psUpdateSurfGeom;
 	private PreparedStatement psParentElem;
 	private PreparedStatement psMemberElem;
-	
+
 	private int parentBatchCounter;
 	private int memberBatchCounter;
 	private int updateBatchCounter;
@@ -92,7 +89,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			gmlIdCodespace = "null";
 
 		psSelectTmpSurfGeom = heapTable.getConnection().prepareStatement("select ID from " + heapTable.getTableName() + " where PARENT_ID=?");
-		psSelectSurfGeom = batchConn.prepareStatement("select * from SURFACE_GEOMETRY where ROOT_ID=?");
+		psSelectSurfGeom = batchConn.prepareStatement("select sg.*, LEVEL from SURFACE_GEOMETRY sg start with sg.ID=? connect by prior sg.ID=sg.PARENT_ID");
 		psUpdateSurfGeom = batchConn.prepareStatement("update SURFACE_GEOMETRY set IS_XLINK=1 where ID=?");
 
 		psParentElem = batchConn.prepareStatement("insert into SURFACE_GEOMETRY (ID, GMLID, GMLID_CODESPACE, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY) values "
@@ -115,17 +112,9 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			String gmlId = rootGeometryEntry.getMapping();
 			if (Util.isRemoteXlink(gmlId))
 				return false;
-			
-			boolean reverse = rootGeometryEntry.isReverse() ^ xlink.isReverse();			
-			GeometryTree geomTree = read(rootGeometryEntry.getRootId(), reverse);
-			if (geomTree == null)
-				return false;
-	
-			gmlId = gmlId.replaceAll("^#", "");
-			GeometryNode xlinkNode = geomTree.getNode(gmlId);
-			
+
 			// check whether this geometry is referenced by another xlink
-			psSelectTmpSurfGeom.setLong(1, xlinkNode.id);
+			psSelectTmpSurfGeom.setLong(1, rootGeometryEntry.getId());
 			rs = psSelectTmpSurfGeom.executeQuery();
 
 			if (rs.next()) {
@@ -134,16 +123,21 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				return true;
 			}
 
+			boolean reverse = rootGeometryEntry.isReverse() ^ xlink.isReverse();			
+			GeometryNode xlinkNode = read(rootGeometryEntry.getId(), reverse);
+			if (xlinkNode == null)
+				return false;
+
 			// we cannot go on if we do not know the geometry type
 			if (xlinkNode.type == GMLClass.UNDEFINED)
 				return false;
-			
+
 			insert(xlinkNode, xlink.getId(), xlink.getRootId());
 			psUpdateSurfGeom.setLong(1, xlinkNode.id);
 			psUpdateSurfGeom.addBatch();
 			if (++updateBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
 				executeUpdateSurfGeomBatch();
-			
+
 			return true;
 
 		} finally {
@@ -180,7 +174,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				psMemberElem.executeBatch();
 				memberBatchCounter = 0;
 			}
-			
+
 		} else if (node.type != GMLClass.POLYGON) {
 			// set root entry
 			long isSolid = node.isSolid ? 1 : 0;
@@ -213,56 +207,68 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		}
 	}
 
-	private GeometryTree read(long rootId, boolean reverse) throws SQLException {
+	private GeometryNode read(long rootId, boolean reverse) throws SQLException {
 		ResultSet rs = null;
 
-		psSelectSurfGeom.setLong(1, rootId);
-		rs = psSelectSurfGeom.executeQuery();
-		GeometryTree geomTree = new GeometryTree();
+		try {
+			psSelectSurfGeom.setLong(1, rootId);
+			rs = psSelectSurfGeom.executeQuery();
 
-		// firstly, read the geometry entries into a
-		// flat geometry tree structure
-		while (rs.next()) {
-			long id = rs.getLong("ID");
-			String gmlId = rs.getString("GMLID");
-			long parentId = rs.getLong("PARENT_ID");
-			int isSolid = rs.getInt("IS_SOLID");
-			int isComposite = rs.getInt("IS_COMPOSITE");
-			int isTriangulated = rs.getInt("IS_TRIANGULATED");
-			int isReverse = rs.getInt("IS_REVERSE");
+			GeometryNode root = null;
+			HashMap<Integer, GeometryNode> parentMap = new HashMap<Integer, GeometryNode>();
 
-			if (id == rootId)
-				parentId = 0;
+			// rebuild geometry hierarchy
+			while (rs.next()) {
+				long id = rs.getLong("ID");
+				String gmlId = rs.getString("GMLID");
+				int isSolid = rs.getInt("IS_SOLID");
+				int isComposite = rs.getInt("IS_COMPOSITE");
+				int isTriangulated = rs.getInt("IS_TRIANGULATED");
+				int isReverse = rs.getInt("IS_REVERSE");
+				int level = rs.getInt("LEVEL");
 
-			JGeometry geometry = null;
-			STRUCT struct = (STRUCT)rs.getObject("GEOMETRY");
-			if (!rs.wasNull() && struct != null)
-				geometry = JGeometry.load(struct);
+				JGeometry geometry = null;
+				STRUCT struct = (STRUCT)rs.getObject("GEOMETRY");
+				if (!rs.wasNull() && struct != null)
+					geometry = JGeometry.load(struct);
 
-			// constructing a geometry node
-			GeometryNode geomNode = new GeometryNode();
-			geomNode.id = id;
-			geomNode.gmlId = gmlId;
-			geomNode.type = GMLClass.UNDEFINED;
-			geomNode.parentId = parentId;
-			geomNode.isSolid = isSolid == 1;
-			geomNode.isComposite = isComposite == 1;
-			geomNode.isTriangulated = isTriangulated == 1;
-			geomNode.isReverse = (isReverse == 1) ^ reverse;
-			geomNode.geometry = geometry;
+				// constructing a geometry node
+				GeometryNode geomNode = new GeometryNode();
+				geomNode.id = id;
+				geomNode.gmlId = gmlId;
+				geomNode.type = GMLClass.UNDEFINED;
+				geomNode.isSolid = isSolid == 1;
+				geomNode.isComposite = isComposite == 1;
+				geomNode.isTriangulated = isTriangulated == 1;
+				geomNode.isReverse = (isReverse == 1) ^ reverse;
+				geomNode.geometry = geometry;
 
-			// put it into our geometry tree
-			geomTree.insertNode(geomNode, parentId);
-		}
+				if (root != null)
+					parentMap.get(level).childNodes.add(geomNode);
+				else
+					root = geomNode;
 
-		rs.close();
+				// make this node the parent for the next hierarchy level
+				parentMap.put(level + 1, geomNode);			
+			}
 
-		// interpret geometry tree
-		if (geomTree.root != 0) {
-			rebuildGeometry(geomTree.getNode(geomTree.root), reverse);
-			return geomTree;
-		} else {
-			return null;
+			// interpret geometry tree
+			if (root != null) {
+				rebuildGeometry(root, reverse);
+				return root;
+			} else {
+				return null;
+			}
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException sqlEx) {
+					//
+				}
+
+				rs = null;
+			}
 		}
 	}
 
@@ -338,7 +344,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				geomNode.type = GMLClass.SOLID;
 
 				if (geomNode.childNodes.size() == 1)
-					rebuildGeometry(geomNode.childNodes.firstElement(), reverse);
+					rebuildGeometry(geomNode.childNodes.get(0), reverse);
 
 				return;
 			}
@@ -380,105 +386,15 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		protected long id;
 		protected String gmlId;
 		protected GMLClass type;
-		protected long parentId;
 		protected boolean isSolid;
 		protected boolean isComposite;
 		protected boolean isTriangulated;
 		protected boolean isReverse;
-		protected JGeometry geometry;
-		protected Vector<GeometryNode> childNodes;
+		protected JGeometry geometry;	
+		protected List<GeometryNode> childNodes;
 
 		public GeometryNode() {
-			childNodes = new Vector<GeometryNode>();
-		}
-	}
-
-	private class GeometryTree {
-		long root;
-		private HashMap<Long, GeometryNode> geometryTree;
-
-		public GeometryTree() {
-			geometryTree = new HashMap<Long, GeometryNode>();
-		}
-
-		public void insertNode(GeometryNode geomNode, long parentId) {
-
-			if (parentId == 0)
-				root = geomNode.id;
-
-			if (geometryTree.containsKey(geomNode.id)) {
-
-				// we have inserted a pseudo node previously
-				// so fill that one with life...
-				GeometryNode pseudoNode = geometryTree.get(geomNode.id);
-				pseudoNode.id = geomNode.id;
-				pseudoNode.gmlId = geomNode.gmlId;
-				pseudoNode.type = geomNode.type;
-				pseudoNode.parentId = geomNode.parentId;
-				pseudoNode.isSolid = geomNode.isSolid;
-				pseudoNode.isComposite = geomNode.isComposite;
-				pseudoNode.isTriangulated = geomNode.isTriangulated;
-				pseudoNode.isReverse = geomNode.isReverse;
-				pseudoNode.geometry = geomNode.geometry;
-
-				geomNode = pseudoNode;
-
-			} else {
-				// identify hierarchy nodes and place them
-				// into the tree
-				if (geomNode.geometry == null || parentId == 0)
-					geometryTree.put(geomNode.id, geomNode);
-			}
-
-			// make the node known to its parent...
-			if (parentId != 0) {
-				GeometryNode parentNode = geometryTree.get(parentId);
-
-				if (parentNode == null) {
-					// there is no entry so far, so lets create a
-					// pseude node
-					parentNode = new GeometryNode();
-					geometryTree.put(parentId, parentNode);
-				}
-
-				parentNode.childNodes.add(geomNode);
-			}
-		}
-
-		public GeometryNode getNode(long entryId) {
-			Iterator<Entry<Long, GeometryNode>> iter = geometryTree.entrySet().iterator();
-			while (iter.hasNext()) {
-				Entry<Long, GeometryNode> mapEntry = iter.next();
-
-				if (mapEntry.getKey() == entryId)
-					return mapEntry.getValue();
-
-				if (mapEntry.getValue().childNodes.size() != 0) {
-					for (GeometryNode node : mapEntry.getValue().childNodes)
-						if (node.id == entryId)
-							return node;
-				}
-			}
-
-			return null;
-		}
-
-		public GeometryNode getNode(String gmlId) {
-			Iterator<Entry<Long, GeometryNode>> iter = geometryTree.entrySet().iterator();
-			while (iter.hasNext()) {
-				Entry<Long, GeometryNode> mapEntry = iter.next();
-
-				if (mapEntry.getValue().gmlId != null && mapEntry.getValue().gmlId.equals(gmlId))
-					return mapEntry.getValue();
-
-				if (mapEntry.getValue().childNodes.size() != 0) {
-					for (GeometryNode node : mapEntry.getValue().childNodes)
-						if (node.gmlId != null && node.gmlId.equals(gmlId))
-							return node;
-				}
-			}
-
-			return null;
+			childNodes = new ArrayList<GeometryNode>();
 		}
 	}
 
@@ -488,10 +404,10 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		psMemberElem.executeBatch();		
 		parentBatchCounter = 0;
 		memberBatchCounter = 0;
-		
+
 		executeUpdateSurfGeomBatch();
 	}
-	
+
 	private void executeUpdateSurfGeomBatch() throws SQLException {
 		// we need to synchronize updates otherwise Oracle will run
 		// into deadlocks
