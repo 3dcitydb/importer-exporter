@@ -794,13 +794,12 @@ public class KmlExporter implements EventHandler {
 				}
 			}
 			else { // tiling.getMode() == TilingMode.ONE_FILE_PER_OBJECT
+				String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
 				for (String gmlId: alreadyExported) {
+					double[] ordinatesArray = getEnvelopeInWGS84(gmlId);
 					for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
 
 						if (!displayLevel.isActive()) continue;
-
-						String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
-						double[] ordinatesArray = getEnvelopeInWGS84(gmlId);
 
 						NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
 						networkLinkType.setName(gmlId + " " + displayLevel.getName());
