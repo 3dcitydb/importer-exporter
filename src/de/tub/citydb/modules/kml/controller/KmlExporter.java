@@ -641,7 +641,6 @@ public class KmlExporter implements EventHandler {
 		saxWriter.setPrefix("atom", "http://www.w3.org/2005/Atom");
 		saxWriter.setPrefix("xal", "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0");
 
-		SAXEventBuffer saxBuffer = new SAXEventBuffer();
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
@@ -702,13 +701,14 @@ public class KmlExporter implements EventHandler {
 			}
 
 			if (config.getProject().getKmlExporter().isShowBoundingBox()) {
-
+				SAXEventBuffer tmp = new SAXEventBuffer();
+				
 				StyleType frameStyleType = kmlFactory.createStyleType();
 				frameStyleType.setId("frameStyle");
 				LineStyleType frameLineStyleType = kmlFactory.createLineStyleType();
 				frameLineStyleType.setWidth(4.0);
 				frameStyleType.setLineStyle(frameLineStyleType);
-				marshaller.marshal(kmlFactory.createStyle(frameStyleType), saxBuffer);
+				marshaller.marshal(kmlFactory.createStyle(frameStyleType), tmp);
 
 				PlacemarkType placemarkType = kmlFactory.createPlacemarkType();
 				placemarkType.setName("Bounding box border");
@@ -721,15 +721,9 @@ public class KmlExporter implements EventHandler {
 				lineStringType.getCoordinates().add(" " + (wgs84TileMatrix.getUpperCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5));
 				lineStringType.getCoordinates().add(" " + (wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5));
 				placemarkType.setAbstractGeometryGroup(kmlFactory.createLineString(lineStringType));
-				marshaller.marshal(kmlFactory.createPlacemark(placemarkType), saxBuffer);
-
-				ioWriterPool.addWork(saxBuffer);
-			}
-
-			try {
-				saxWriter.flush();
-			} catch (SAXException saxE) {
-				Logger.getInstance().error("I/O error: " + saxE.getMessage());
+				
+				marshaller.marshal(kmlFactory.createPlacemark(placemarkType), tmp);
+				ioWriterPool.addWork(tmp);
 			}
 
 			if (tiling.getMode() == TilingMode.MANUAL || tiling.getMode() == TilingMode.AUTOMATIC) {
@@ -783,13 +777,9 @@ public class KmlExporter implements EventHandler {
 							networkLinkType.setRegion(regionType);
 							folderType.getAbstractFeatureGroup().add(kmlFactory.createNetworkLink(networkLinkType));
 						}
-						marshaller.marshal(kmlFactory.createFolder(folderType), saxBuffer);
-						ioWriterPool.addWork(saxBuffer);
-						try {
-							saxWriter.flush();
-						} catch (SAXException saxE) {
-							Logger.getInstance().error("I/O error: " + saxE.getMessage());
-						}
+						SAXEventBuffer tmp = new SAXEventBuffer();
+						marshaller.marshal(kmlFactory.createFolder(folderType), tmp);
+						ioWriterPool.addWork(tmp);
 					}
 				}
 			}
@@ -797,8 +787,8 @@ public class KmlExporter implements EventHandler {
 				String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
 				for (String gmlId: alreadyExported) {
 					double[] ordinatesArray = getEnvelopeInWGS84(gmlId);
+					SAXEventBuffer tmp = new SAXEventBuffer();
 					for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
-
 						if (!displayLevel.isActive()) continue;
 
 						NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
@@ -828,7 +818,7 @@ public class KmlExporter implements EventHandler {
 						networkLinkType.getRest().add(kmlFactory.createLink(linkType));
 						networkLinkType.setRegion(regionType);
 
-						marshaller.marshal(kmlFactory.createNetworkLink(networkLinkType), saxBuffer);
+						marshaller.marshal(kmlFactory.createNetworkLink(networkLinkType), tmp);
 
 						// include highlighting if selected
 						if ((displayLevel.getLevel() == DisplayLevel.GEOMETRY &&
@@ -848,15 +838,10 @@ public class KmlExporter implements EventHandler {
 							hNetworkLinkType.getRest().add(kmlFactory.createLink(hLinkType));
 							hNetworkLinkType.setRegion(regionType);
 
-							marshaller.marshal(kmlFactory.createNetworkLink(hNetworkLinkType), saxBuffer);
+							marshaller.marshal(kmlFactory.createNetworkLink(hNetworkLinkType), tmp);
 						}
 					}
-					ioWriterPool.addWork(saxBuffer);
-					try {
-						saxWriter.flush();
-					} catch (SAXException saxE) {
-						Logger.getInstance().error("I/O error: " + saxE.getMessage());
-					}
+					ioWriterPool.addWork(tmp);
 				}
 			}
 
