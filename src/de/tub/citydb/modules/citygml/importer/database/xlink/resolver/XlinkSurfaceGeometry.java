@@ -171,7 +171,10 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 
 			psMemberElem.addBatch();
 			if (++memberBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+				psParentElem.executeBatch();
 				psMemberElem.executeBatch();
+				
+				parentBatchCounter = 0;
 				memberBatchCounter = 0;
 			}
 
@@ -199,11 +202,9 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				parentBatchCounter = 0;
 			}
 
-			parentId = surfaceGeometryId;
-
 			for (GeometryNode childNode : node.childNodes)
 				if (childNode.type != GMLClass.UNDEFINED)
-					insert(childNode, parentId, rootId);
+					insert(childNode, surfaceGeometryId, rootId);
 		}
 	}
 
