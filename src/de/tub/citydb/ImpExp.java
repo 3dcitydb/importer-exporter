@@ -545,9 +545,9 @@ public class ImpExp {
 	}
 
 	private void printUsage(CmdLineParser parser, PrintStream out) {
-		out.println("Usage: java -jar impexp.jar [-options]");
+		out.println("Usage: java -jar 3dcitydb-impexp.jar [-options]");
 		out.println("            (default: to execute gui version)");
-		out.println("   or  java -jar impexp.jar -shell [-command] [-options]");
+		out.println("   or  java -jar 3dcitydb-impexp.jar -shell [-command] [-options]");
 		out.println("            (to execute shell version)");
 		out.println();
 		out.println("where options include:");
