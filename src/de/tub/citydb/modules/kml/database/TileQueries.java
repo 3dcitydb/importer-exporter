@@ -74,7 +74,7 @@ public class TileQueries {
 
 	private static final String QUERY_EXTRUDED_LOD4_GET_BUILDING_DATA_ALT =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
-				"MAX(b.building_root_id) AS building_root_id, MAX(SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3)) AS measured_height " +
+				"MAX(b.measured_height) AS measured_height, MAX(SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3)) AS envelope_measured_height " +
 		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -97,7 +97,8 @@ public class TileQueries {
 		"GROUP BY b.building_root_id";
 
 	private static final String QUERY_EXTRUDED_LOD4_GET_BUILDING_DATA =
-		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326), b.measured_height " +
+		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326), " +
+				"b.measured_height, SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
 		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co, BUILDING b " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -256,7 +257,7 @@ public class TileQueries {
 
 	private static final String QUERY_EXTRUDED_LOD3_GET_BUILDING_DATA_ALT =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
-				"MAX(b.building_root_id) AS building_root_id, MAX(SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3)) AS measured_height " +
+				"MAX(b.measured_height) AS measured_height, MAX(SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3)) AS envelope_measured_height " +
 		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -279,7 +280,8 @@ public class TileQueries {
 		"GROUP BY b.building_root_id";
 
 	private static final String QUERY_EXTRUDED_LOD3_GET_BUILDING_DATA =
-		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326), b.measured_height " +
+		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326), " +
+				"b.measured_height, SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
 		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co, BUILDING b " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -416,7 +418,7 @@ public class TileQueries {
 
 	private static final String QUERY_EXTRUDED_LOD2_GET_BUILDING_DATA_ALT =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
-				"MAX(b.building_root_id) AS building_root_id, MAX(SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3)) AS measured_height " +
+				"MAX(b.measured_height) AS measured_height, MAX(SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3)) AS envelope_measured_height " +
 		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -463,7 +465,8 @@ public class TileQueries {
 		"GROUP BY b.building_root_id";
 	
 	private static final String QUERY_EXTRUDED_LOD2_GET_BUILDING_DATA =
-		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326), b.measured_height " +
+		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326), " +
+				"b.measured_height, SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
 		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co, BUILDING b " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -497,7 +500,7 @@ public class TileQueries {
 
 	private static final String QUERY_EXTRUDED_LOD1_GET_BUILDING_DATA =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
-				"MAX(b.building_root_id) AS building_id, MAX(b.measured_height) AS measured_height " +
+				"b.measured_height, SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
 //		"SELECT sg.geometry, b.id AS building_id, " +
 //				"SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) AS measured_height " +
 		"FROM SURFACE_GEOMETRY sg, BUILDING b, CITYOBJECT co " +
@@ -505,7 +508,7 @@ public class TileQueries {
 			"co.gmlid = ? " +
 			"AND b.building_root_id = co.id " +
 			"AND sg.root_id = b.lod1_geometry_id " +
-			"AND sg.geometry IS NOT NULL ";
+			"AND sg.geometry IS NOT NULL";
 
 	private static final String QUERY_FOOTPRINT_LOD1_GET_BUILDING_DATA =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +

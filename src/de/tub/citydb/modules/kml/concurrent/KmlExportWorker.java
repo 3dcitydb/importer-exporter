@@ -544,6 +544,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			// ColumnName is SDO_CS.TRANSFORM(sg.geometry, 4326)
 			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 			double measuredHeight = rs.getDouble("measured_height");
+			if (measuredHeight == 0) {
+				measuredHeight = rs.getDouble("envelope_measured_height");
+			}
 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
 
@@ -572,25 +575,24 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					int startNextGeometry = ((i+3) < groundSurface.getElemInfo().length) ? 
 							groundSurface.getElemInfo()[i+3] - 1: // still more geometries
 								ordinatesArray.length; // default
-							/*
-							if (currentLod == 1) {
-								for (int j = groundSurface.getElemInfo()[i] - 1; j < startNextGeometry; j = j+3) {
-									linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," 
-											+ ordinatesArray[j+1] + ","
-											+ measuredHeight));
-								}
-							}
-							else {
-							 */
-							// order points counter-clockwise
-							for (int j = startNextGeometry - 3; j >= groundSurface.getElemInfo()[i] - 1; j = j-3) {
-								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," 
-										+ ordinatesArray[j+1] + ","
-										+ measuredHeight));
-							}
-							/*
-							}
-							 */
+
+					boolean reverseOrder = false; // trick for "difficult" datasets, default is false
+					if (reverseOrder) {
+						for (int j = groundSurface.getElemInfo()[i] - 1; j < startNextGeometry; j = j+3) {
+							linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," 
+									+ ordinatesArray[j+1] + ","
+									+ measuredHeight));
+						}
+					}
+					else {
+						// order points counter-clockwise
+						for (int j = startNextGeometry - 3; j >= groundSurface.getElemInfo()[i] - 1; j = j-3) {
+							linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," 
+									+ ordinatesArray[j+1] + ","
+									+ measuredHeight));
+						}
+					}
+
 				}
 				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 			}
