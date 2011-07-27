@@ -340,13 +340,14 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				}
 				else {
 					try { rs.close(); /* release cursor on DB */ } catch (SQLException e) {}
+					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 					try { psQuery.close(); /* release cursor on DB */ } catch (SQLException e) {}
 				}
 
 				currentLod--;
 			}
 
-			if (rs == null || !rs.isBeforeFirst()) { // result empty, give up
+			if (rs == null || rs.isClosed() || !rs.isBeforeFirst()) { // result empty, give up
 				if (config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
 					// only for single building exports, tiles would fill the whole textarea
 					Logger.getInstance().info("No info found for object " + work.getGmlId() 
@@ -437,7 +438,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 		}
 		catch (SQLException sqlEx) {
-			Logger.getInstance().error("SQL error while querying city object: " + sqlEx.getMessage());
+			Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
 			return;
 		}
 		catch (JAXBException jaxbEx) {

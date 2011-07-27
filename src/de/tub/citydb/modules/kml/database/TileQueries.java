@@ -39,15 +39,27 @@ public class TileQueries {
 
 	private static final String QUERY_FOOTPRINT_LOD4_GET_BUILDING_DATA_ALT =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
-				"MAX(b.building_root_id) AS building_id " +
+				"MAX(b.building_root_id) AS building_root_id " +
 		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg " +
 		"WHERE " +
 			"co.gmlid = ? " +
 		"AND b.building_root_id = co.id " +
-		"AND sg.root_id = b.lod4_geometry_id " +
-		"AND sg.geometry IS NOT NULL " +
-		"GROUP BY b.id " +
-		"ORDER BY b.id";
+		"AND sg.root_id IN ( " +
+			"SELECT b.lod4_geometry_id " +
+			"FROM CITYOBJECT co, BUILDING b " +
+			"WHERE " +
+				"co.gmlid = ? " +
+				"AND b.building_root_id = co.id " +
+				"AND b.lod4_geometry_id IS NOT NULL " +
+			"UNION " +
+			"SELECT ts.lod4_multi_surface_id " +
+			"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " +
+			"WHERE " +
+				"co.gmlid = ? " +
+				"AND b.building_root_id = co.id " +
+				"AND ts.building_id = b.id " +
+				"AND ts.lod4_multi_surface_id IS NOT NULL) " +
+		"GROUP BY b.building_root_id";
 
 	private static final String QUERY_FOOTPRINT_LOD4_GET_BUILDING_DATA =
 		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326) " +
@@ -62,15 +74,27 @@ public class TileQueries {
 
 	private static final String QUERY_EXTRUDED_LOD4_GET_BUILDING_DATA_ALT =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
-				"MAX(b.building_root_id) AS building_id, MAX(SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3)) AS measured_height " +
+				"MAX(b.building_root_id) AS building_root_id, MAX(SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3)) AS measured_height " +
 		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg " +
 		"WHERE " +
 			"co.gmlid = ? " +
 		"AND b.building_root_id = co.id " +
-		"AND sg.root_id = b.lod4_geometry_id " +
-		"AND sg.geometry IS NOT NULL " +
-		"GROUP BY b.id " +
-		"ORDER BY b.id";
+		"AND sg.root_id IN ( " +
+			"SELECT b.lod4_geometry_id " +
+			"FROM CITYOBJECT co, BUILDING b " +
+			"WHERE " +
+				"co.gmlid = ? " +
+				"AND b.building_root_id = co.id " +
+				"AND b.lod4_geometry_id IS NOT NULL " +
+			"UNION " +
+			"SELECT ts.lod4_multi_surface_id " +
+			"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " +
+			"WHERE " +
+				"co.gmlid = ? " +
+				"AND b.building_root_id = co.id " +
+				"AND ts.building_id = b.id " +
+				"AND ts.lod4_multi_surface_id IS NOT NULL) " +
+		"GROUP BY b.building_root_id";
 
 	private static final String QUERY_EXTRUDED_LOD4_GET_BUILDING_DATA =
 		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326), b.measured_height " +
@@ -197,15 +221,27 @@ public class TileQueries {
 	
 	private static final String QUERY_FOOTPRINT_LOD3_GET_BUILDING_DATA_ALT =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
-				"MAX(b.building_root_id) AS building_id " +
+				"MAX(b.building_root_id) AS building_root_id " +
 		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg " +
 		"WHERE " +
 			"co.gmlid = ? " +
 		"AND b.building_root_id = co.id " +
-		"AND sg.root_id = b.lod3_geometry_id " +
-		"AND sg.geometry IS NOT NULL " +
-		"GROUP BY b.id " +
-		"ORDER BY b.id";
+		"AND sg.root_id IN ( " +
+			"SELECT b.lod3_geometry_id " +
+			"FROM CITYOBJECT co, BUILDING b " +
+			"WHERE " +
+				"co.gmlid = ? " +
+				"AND b.building_root_id = co.id " +
+				"AND b.lod3_geometry_id IS NOT NULL " +
+			"UNION " +
+			"SELECT ts.lod3_multi_surface_id " +
+			"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " +
+			"WHERE " +
+				"co.gmlid = ? " +
+				"AND b.building_root_id = co.id " +
+				"AND ts.building_id = b.id " +
+				"AND ts.lod3_multi_surface_id IS NOT NULL) " +
+		"GROUP BY b.building_root_id";
 
 	private static final String QUERY_FOOTPRINT_LOD3_GET_BUILDING_DATA =
 		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326) " +
@@ -220,15 +256,27 @@ public class TileQueries {
 
 	private static final String QUERY_EXTRUDED_LOD3_GET_BUILDING_DATA_ALT =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
-				"MAX(b.building_root_id) AS building_id, MAX(SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3)) AS measured_height " +
+				"MAX(b.building_root_id) AS building_root_id, MAX(SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3)) AS measured_height " +
 		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg " +
 		"WHERE " +
 			"co.gmlid = ? " +
 		"AND b.building_root_id = co.id " +
-		"AND sg.root_id = b.lod3_geometry_id " +
-		"AND sg.geometry IS NOT NULL " +
-		"GROUP BY b.id " +
-		"ORDER BY b.id";
+		"AND sg.root_id IN ( " +
+			"SELECT b.lod3_geometry_id " +
+			"FROM CITYOBJECT co, BUILDING b " +
+			"WHERE " +
+				"co.gmlid = ? " +
+				"AND b.building_root_id = co.id " +
+				"AND b.lod3_geometry_id IS NOT NULL " +
+			"UNION " +
+			"SELECT ts.lod3_multi_surface_id " +
+			"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " +
+			"WHERE " +
+				"co.gmlid = ? " +
+				"AND b.building_root_id = co.id " +
+				"AND ts.building_id = b.id " +
+				"AND ts.lod3_multi_surface_id IS NOT NULL) " +
+		"GROUP BY b.building_root_id";
 
 	private static final String QUERY_EXTRUDED_LOD3_GET_BUILDING_DATA =
 		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326), b.measured_height " +
@@ -368,15 +416,27 @@ public class TileQueries {
 
 	private static final String QUERY_EXTRUDED_LOD2_GET_BUILDING_DATA_ALT =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
-				"MAX(b.building_root_id) AS building_id, MAX(SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3)) AS measured_height " +
+				"MAX(b.building_root_id) AS building_root_id, MAX(SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3)) AS measured_height " +
 		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg " +
 		"WHERE " +
 			"co.gmlid = ? " +
 		"AND b.building_root_id = co.id " +
-		"AND sg.root_id = b.lod2_geometry_id " +
-		"AND sg.geometry IS NOT NULL " +
-		"GROUP BY b.id " +
-		"ORDER BY b.id";
+		"AND sg.root_id IN ( " +
+			"SELECT b.lod2_geometry_id " +
+			"FROM CITYOBJECT co, BUILDING b " +
+			"WHERE " +
+				"co.gmlid = ? " +
+				"AND b.building_root_id = co.id " +
+				"AND b.lod2_geometry_id IS NOT NULL " +
+			"UNION " +
+			"SELECT ts.lod2_multi_surface_id " +
+			"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " +
+			"WHERE " +
+				"co.gmlid = ? " +
+				"AND b.building_root_id = co.id " +
+				"AND ts.building_id = b.id " +
+				"AND ts.lod2_multi_surface_id IS NOT NULL) " +
+		"GROUP BY b.building_root_id";
 
 	private static final String QUERY_FOOTPRINT_LOD2_GET_BUILDING_DATA_ALT =
 		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
@@ -385,10 +445,22 @@ public class TileQueries {
 		"WHERE " +
 			"co.gmlid = ? " +
 		"AND b.building_root_id = co.id " +
-		"AND sg.root_id = b.lod2_geometry_id " +
-		"AND sg.geometry IS NOT NULL " +
-		"GROUP BY b.id " +
-		"ORDER BY b.id";
+		"AND sg.root_id IN ( " +
+			"SELECT b.lod2_geometry_id " +
+			"FROM CITYOBJECT co, BUILDING b " +
+			"WHERE " +
+				"co.gmlid = ? " +
+				"AND b.building_root_id = co.id " +
+				"AND b.lod2_geometry_id IS NOT NULL " +
+			"UNION " +
+			"SELECT ts.lod2_multi_surface_id " +
+			"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " +
+			"WHERE " +
+				"co.gmlid = ? " +
+				"AND b.building_root_id = co.id " +
+				"AND ts.building_id = b.id " +
+				"AND ts.lod2_multi_surface_id IS NOT NULL) " +
+		"GROUP BY b.building_root_id";
 	
 	private static final String QUERY_EXTRUDED_LOD2_GET_BUILDING_DATA =
 		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326), b.measured_height " +
