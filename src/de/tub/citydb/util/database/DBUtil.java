@@ -79,7 +79,7 @@ public class DBUtil {
 
 			// get 3dcitydb specific meta data
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("select * from table(geodb_util.db_info)");
+			rs = stmt.executeQuery("select * from table(geodb_util.db_metadata)");
 			if (rs.next()) {
 				metaData.setSrid(rs.getInt("SRID"));
 				metaData.setSrsName(rs.getString("GML_SRS_NAME"));
