@@ -22,7 +22,7 @@ public class PluginServiceFactory {
 
 	private static class ClassLoader extends URLClassLoader {
 		protected ClassLoader() {
-			super(new URL[]{});
+			super(new URL[]{}, PluginServiceFactory.class.getClassLoader());
 		}
 
 		@Override
