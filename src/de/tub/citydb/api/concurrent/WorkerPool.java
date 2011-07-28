@@ -53,6 +53,9 @@ public class WorkerPool<T> {
 	private static final int STOP       = 2;
 	private static final int TERMINATED = 3;
 
+	private ClassLoader contextClassLoader;
+	private ClassLoader defaultClassLoader;
+
 	private volatile int corePoolSize;
 	private volatile int maximumPoolSize;
 	private final int queueSize;
@@ -401,12 +404,13 @@ public class WorkerPool<T> {
 			throw new IllegalArgumentException();
 
 		if (workerFactory == null)
-			throw new NullPointerException();
+			throw new IllegalArgumentException("WorkerFactory may not be null.");
 
 		this.corePoolSize = corePoolSize;
 		this.maximumPoolSize = maximumPoolSize;
 		this.daemon = daemon;
 		this.workerFactory = workerFactory;
+		this.defaultClassLoader = Thread.currentThread().getContextClassLoader();
 
 		// setting up work queue
 		this.queueSize = queueSize;
@@ -430,7 +434,15 @@ public class WorkerPool<T> {
 			int queueSize) {
 		this(corePoolSize, maximumPoolSize, workerFactory, queueSize, false);
 	}
+	
+	public ClassLoader getDefaultContextClassLoader() {
+		return defaultClassLoader;
+	}
 
+	public void setContextClassLoader(ClassLoader contextClassLoader) {
+		this.contextClassLoader = contextClassLoader;
+	}
+	
 	private boolean addWorker(T firstWork) {
 		final ReentrantLock mainLock = this.mainLock;
 		mainLock.lock();
@@ -442,6 +454,8 @@ public class WorkerPool<T> {
 				if (worker != null) {
 					Thread workerThread = new Thread(worker);
 					workerThread.setDaemon(daemon);
+					if (contextClassLoader != null)
+						workerThread.setContextClassLoader(contextClassLoader);
 
 					worker.setWorkQueue(workQueue);
 					worker.setThread(workerThread);
