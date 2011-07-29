@@ -2,7 +2,7 @@
 --
 -- Authors:     Claus Nagel <nagel@igg.tu-berlin.de>
 --
--- Copyright:   (c) 2007-2008  Institute for Geodesy and Geoinformation Science,
+-- Copyright:   (c) 2007-2011  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
@@ -21,6 +21,7 @@
 --
 -- Version | Date       | Description                               | Author
 -- 1.0.0     2008-09-10   release version                             CNag
+-- 1.1.0     2011-07-28   update to 2.0.6                             CNag
 --
 
 /*****************************************************************
@@ -57,7 +58,8 @@ CREATE OR REPLACE PACKAGE geodb_util
 AS
   FUNCTION versioning_table(table_name VARCHAR2) RETURN VARCHAR2;
   FUNCTION versioning_db RETURN VARCHAR2;
-  FUNCTION db_info RETURN DB_INFO_TABLE;
+  PROCEDURE db_info(srid OUT DATABASE_SRS.SRID%TYPE, srs OUT DATABASE_SRS.GML_SRS_NAME%TYPE, versioning OUT VARCHAR2);
+  FUNCTION db_metadata RETURN DB_INFO_TABLE;
   FUNCTION error_msg(err_code VARCHAR2) RETURN VARCHAR2;
   FUNCTION split(list VARCHAR2, delim VARCHAR2 := ',') RETURN STRARRAY;
   FUNCTION min(a number, b number) return number;
@@ -120,13 +122,24 @@ AS
   END;  
   
   /*****************************************************************
-  * error_msg
+  * db_info
   *
   * @param srid database srid
   * @param srs database srs name
   * @param versioning database versioning
   ******************************************************************/
-  FUNCTION db_info RETURN DB_INFO_TABLE 
+  PROCEDURE db_info(srid OUT DATABASE_SRS.SRID%TYPE, srs OUT DATABASE_SRS.GML_SRS_NAME%TYPE, versioning OUT VARCHAR2) 
+  IS
+  BEGIN
+    execute immediate 'SELECT SRID, GML_SRS_NAME from DATABASE_SRS' into srid, srs;
+    versioning := versioning_db;
+  END;
+  
+  /*****************************************************************
+  * db_metadata
+  *
+  ******************************************************************/
+  FUNCTION db_metadata RETURN DB_INFO_TABLE 
   IS
     info_ret DB_INFO_TABLE;
     info_tmp DB_INFO_OBJ;
