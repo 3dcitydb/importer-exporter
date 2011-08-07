@@ -1,4 +1,4 @@
-package de.tub.citydb.modules.citygml.importer.database.content;
+package de.tub.citydb.modules.citygml.importer.util;
 
 import java.util.List;
 

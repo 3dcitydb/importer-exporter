@@ -58,6 +58,7 @@ import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.database.DBTableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
+import de.tub.citydb.modules.citygml.importer.util.LocalGeometryXlinkResolver;
 import de.tub.citydb.util.Util;
 
 public class DBCityObject implements DBImporter {
@@ -71,6 +72,7 @@ public class DBCityObject implements DBImporter {
 	private DBCityObjectGenericAttrib genericAttributeImporter;
 	private DBExternalReference externalReferenceImporter;
 	private DBAppearance appearanceImporter;
+	private LocalGeometryXlinkResolver resolver;
 
 	private String updatingPerson;
 	private String reasonForUpdate;
@@ -135,6 +137,7 @@ public class DBCityObject implements DBImporter {
 		genericAttributeImporter = (DBCityObjectGenericAttrib)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
 		externalReferenceImporter = (DBExternalReference)dbImporterManager.getDBImporter(DBImporterEnum.EXTERNAL_REFERENCE);
 		appearanceImporter = (DBAppearance)dbImporterManager.getDBImporter(DBImporterEnum.APPEARANCE);
+		resolver = new LocalGeometryXlinkResolver();
 	}
 
 	public long insert(AbstractCityObject cityObject, long cityObjectId) throws SQLException {
@@ -212,6 +215,21 @@ public class DBCityObject implements DBImporter {
 			psCityObject.setObject(4, obj);
 		} else {
 			psCityObject.setNull(4, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+		}
+		
+		// resolve local xlinks to geometry objects
+		boolean success = resolver.resolveGeometryXlinks(cityObject);
+		if (!success) {
+			StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+					cityObject.getCityGMLClass(), 
+					origGmlId));
+			msg.append(": Skipped due to circular reference of geometry XLinks.");
+			LOG.error(msg.toString());
+			LOG.error("The targets causing the circular reference are:");
+			for (String target : resolver.getCircularReferences())
+				LOG.print(target);
+			
+			return 0;
 		}
 
 		psCityObject.addBatch();

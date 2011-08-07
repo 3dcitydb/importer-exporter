@@ -44,6 +44,7 @@ import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerMa
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
+import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 
 public class DBImporterManager {
 	private final Connection batchConn;
