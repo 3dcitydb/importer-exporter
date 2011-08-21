@@ -29,31 +29,12 @@
  */
 package de.tub.citydb.config.project.database;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlID;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
-
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.api.database.DatabaseSrs;
 
-@XmlType(name="ReferenceSystemType", propOrder={
-		"srid",
-		"srsName",
-		"description"
-		})
-public class ReferenceSystem implements DatabaseSrs, Comparable<ReferenceSystem> {
+public class ReferenceSystem extends DatabaseSrs {
 	public static final ReferenceSystem DEFAULT = new ReferenceSystem("", 0, "n/a", "", true);
-
-	@XmlAttribute
-	@XmlID
-	private String id;
-	private int srid = 0;
-	private String srsName = "";
-	private String description = "";
-	@XmlTransient
-	private boolean isSupported = true;
 
 	public ReferenceSystem() {
 		id = DefaultGMLIdManager.getInstance().generateUUID();
@@ -87,45 +68,20 @@ public class ReferenceSystem implements DatabaseSrs, Comparable<ReferenceSystem>
 		this.srid = srid;
 	}
 
-	@Override
-	public int getSrid() {
-		return srid;
-	}
-
 	public void setSrsName(String srsName) {
 		this.srsName = srsName;
-	}
-
-	@Override
-	public String getSrsName() {
-		return srsName;
 	}
 
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
-	@Override
-	public String getDescription() {
-		return description;
-	}
-
 	public String toString() {
 		return getDescription();
 	}
 
-	@Override
-	public boolean isSupported() {
-		return isSupported;
-	}
-
 	public void setSupported(boolean isSupported) {
 		this.isSupported = isSupported;
-	}
-
-	@Override
-	public int compareTo(ReferenceSystem o) {
-		return getDescription().toUpperCase().compareTo(o.getDescription().toUpperCase());
 	}
 	
 }

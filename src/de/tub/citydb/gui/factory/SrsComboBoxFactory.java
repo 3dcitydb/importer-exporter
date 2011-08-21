@@ -39,6 +39,7 @@ import java.util.List;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 
+import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.global.GlobalEvents;
@@ -116,9 +117,39 @@ public class SrsComboBoxFactory {
 		}
 
 		@Override
-		public void addItem(Object anObject) {
-			if (anObject instanceof ReferenceSystem)
-				super.addItem(anObject);
+		public ReferenceSystem getItemAt(int index) {
+			DatabaseSrs databaseSrs = super.getItemAt(index);
+			return (databaseSrs instanceof ReferenceSystem) ? (ReferenceSystem)databaseSrs : null;
+		}
+
+		@Override
+		public void setSelectedItem(Object anObject) {
+			if (anObject instanceof ReferenceSystem) {
+				ReferenceSystem refSys = (ReferenceSystem)anObject;
+
+				if (refSys == dbRefSys || config.getProject().getDatabase().getReferenceSystems().contains(refSys))
+					super.setSelectedItem(refSys);
+				else {
+					ReferenceSystem cand = null;
+
+					for (int i = 0; i < getItemCount(); i++) {
+						ReferenceSystem item = getItemAt(i);
+						if (item != null) {
+							if (item.getId().equals(refSys.getId())) {
+								super.setSelectedItem(item);
+								cand = null;
+								break;
+							} else if (cand == null && item.getSrid() == refSys.getSrid())
+								cand = refSys;
+						}
+					}
+
+					if (cand != null)
+						super.setSelectedItem(cand);
+				}
+
+			}
+
 		}
 
 		public boolean isDBReferenceSystemSelected() {
