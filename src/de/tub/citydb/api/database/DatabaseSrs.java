@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlType;
 		"srsName",
 		"description"
 		})
-public abstract class DatabaseSrs implements Comparable<DatabaseSrs> {
+public class DatabaseSrs implements Comparable<DatabaseSrs> {
 	@XmlAttribute
 	@XmlID
 	protected String id;
@@ -19,6 +19,10 @@ public abstract class DatabaseSrs implements Comparable<DatabaseSrs> {
 	protected String description = "";
 	@XmlTransient
 	protected boolean isSupported = true;
+	
+	protected DatabaseSrs() {
+		
+	}
 	
 	public int getSrid() {
 		return srid;
