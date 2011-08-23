@@ -158,7 +158,7 @@ public class DBSplitter {
 
 				String mask = ((tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode())) ? 
 						"INSIDE+CONTAINS+EQUAL+COVERS+COVEREDBY+OVERLAPBDYINTERSECT" :
-							"INSIDE+CONTAINS+EQUAL";
+							"INSIDE+COVEREDBY+EQUAL";
 
 				bboxFilter = "SDO_RELATE(co.ENVELOPE, MDSYS.SDO_GEOMETRY(2003, " + bboxSrid + ", NULL, " +
 				"MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 3), " +

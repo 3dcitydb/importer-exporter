@@ -742,7 +742,7 @@ public class TileQueries {
 		"FROM CITYOBJECT co " +
 		"WHERE " +
 		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+equal') ='TRUE' " +
+					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby+equal') ='TRUE' " +
 		  "OR SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
 					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
 		"ORDER BY co.gmlid";
