@@ -64,8 +64,8 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	private double columnWidth = 0;
 	private int rows = 1;  
 	private int columns = 1;
-	private int activeRow = 1;
-	private int activeColumn = 1;
+	private int activeRow = 0;
+	private int activeColumn = 0;
 	private int srid;
 
 	public BoundingBoxFilter(Config config, FilterMode mode) {

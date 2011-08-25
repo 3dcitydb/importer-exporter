@@ -49,6 +49,7 @@ import de.tub.citydb.config.project.system.System;
 		"showBoundingBox",
 		"showTileBorders",
 		"autoTileSideLength",
+		"writeJSONFile",
 		"footprintHighlighting",
 		"geometryHighlighting",
 		"geometryHighlightingDistance",
@@ -84,6 +85,7 @@ public class KmlExporter {
 	private boolean showBoundingBox;
 	private boolean showTileBorders;
 	private double autoTileSideLength;
+	private boolean writeJSONFile;
 	private boolean footprintHighlighting;
 	private boolean geometryHighlighting;
 	private double geometryHighlightingDistance;
@@ -119,6 +121,7 @@ public class KmlExporter {
 		showBoundingBox = true;
 		showTileBorders = true;
 		autoTileSideLength = 125.0;
+		writeJSONFile = false;
 		footprintHighlighting = false;
 		geometryHighlighting = false;
 		setGeometryHighlightingDistance(0.75);
@@ -402,6 +405,14 @@ public class KmlExporter {
 
 	public boolean isBalloonContentInSeparateFile() {
 		return balloonContentInSeparateFile;
+	}
+
+	public void setWriteJSONFile(boolean writeJSONFile) {
+		this.writeJSONFile = writeJSONFile;
+	}
+
+	public boolean isWriteJSONFile() {
+		return writeJSONFile;
 	}
 
 }

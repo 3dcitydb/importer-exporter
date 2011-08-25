@@ -35,6 +35,8 @@ import java.sql.SQLException;
 import java.util.HashSet;
 
 import oracle.jdbc.OracleResultSet;
+import oracle.spatial.geometry.JGeometry;
+import oracle.sql.STRUCT;
 
 import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -46,6 +48,7 @@ import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.filter.ExportFilter;
+import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.util.Util;
 
 public class KmlSplitter {
@@ -56,7 +59,7 @@ public class KmlSplitter {
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
 	private final DisplayLevel displayLevel;
 	private final ExportFilter exportFilter;
-	private final HashSet<String> alreadyExported;
+	private final HashSet<CityObject4JSON> alreadyExported;
 	private final Config config;
 	private volatile boolean shouldRun = true;
 
@@ -66,7 +69,7 @@ public class KmlSplitter {
 					   WorkerPool<KmlSplittingResult> dbWorkerPool, 
 					   ExportFilter exportFilter, 
 					   DisplayLevel displayLevel,
-					   HashSet<String> alreadyExported,
+					   HashSet<CityObject4JSON> alreadyExported,
 					   Config config) throws SQLException {
 		this.dbConnectionPool = dbConnectionPool;
 		this.dbWorkerPool = dbWorkerPool;
@@ -96,10 +99,13 @@ public class KmlSplitter {
 		if (config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
 			for (String gmlId: config.getProject().getKmlExporter().getFilter().getSimpleFilter().getGmlIdFilter().getGmlIds()) {
 				if (!shouldRun) break;
-				if (alreadyExported.contains(gmlId)) continue;
+				CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
+				if (alreadyExported.contains(cityObject4Json)) continue;
 				KmlSplittingResult splitter = new KmlSplittingResult(gmlId, displayLevel);
 				dbWorkerPool.addWork(splitter);
-				alreadyExported.add(gmlId);
+				double[] ordinatesArray = getEnvelopeInWGS84(gmlId);
+				cityObject4Json.setEnvelope(ordinatesArray);
+				alreadyExported.add(cityObject4Json);
 			}
 		}
 		else if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter() &&
@@ -147,10 +153,15 @@ public class KmlSplitter {
 				while (rs.next() && shouldRun) {
 					String gmlId = rs.getString("gmlId");
 					int classId = rs.getInt("class_id");
-					if (classId != BUILDING || alreadyExported.contains(gmlId)) continue;
+					CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
+					if (classId != BUILDING || alreadyExported.contains(cityObject4Json)) continue;
 					KmlSplittingResult splitter = new KmlSplittingResult(gmlId, displayLevel);
 					dbWorkerPool.addWork(splitter);
-					alreadyExported.add(gmlId);
+					cityObject4Json.setTileRow(exportFilter.getBoundingBoxFilter().getTileRow());
+					cityObject4Json.setTileColumn(exportFilter.getBoundingBoxFilter().getTileColumn());
+					double[] ordinatesArray = getEnvelopeInWGS84(gmlId);
+					cityObject4Json.setEnvelope(ordinatesArray);
+					alreadyExported.add(cityObject4Json);
 					objectCount++;
 				}
 
@@ -213,6 +224,46 @@ public class KmlSplitter {
 
 	public void shutdown() {
 		shouldRun = false;
+	}
+
+	private double[] getEnvelopeInWGS84(String gmlId) {
+		double[] ordinatesArray = null;
+		PreparedStatement psQuery = null;
+		OracleResultSet rs = null;
+
+		try {
+			psQuery = connection.prepareStatement(TileQueries.QUERY_GET_ENVELOPE_IN_WGS84_FROM_GML_ID);
+
+			psQuery.setString(1, gmlId);
+
+			rs = (OracleResultSet)psQuery.executeQuery();
+			if (rs.next()) {
+				STRUCT struct = (STRUCT)rs.getObject(1); 
+				if (!rs.wasNull() && struct != null) {
+					JGeometry geom = JGeometry.load(struct);
+					ordinatesArray = geom.getOrdinatesArray();
+				}
+			}
+		} 
+		catch (SQLException sqlEx) {}
+		finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException sqlEx) {}
+
+				rs = null;
+			}
+
+			if (psQuery != null) {
+				try {
+					psQuery.close();
+				} catch (SQLException sqlEx) {}
+
+				psQuery = null;
+			}
+		}
+		return ordinatesArray;
 	}
 
 }

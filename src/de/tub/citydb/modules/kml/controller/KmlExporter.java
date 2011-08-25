@@ -36,8 +36,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -75,10 +73,7 @@ import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
-import oracle.jdbc.OracleResultSet;
 import oracle.ord.im.OrdImage;
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
 
 import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.geometry.BoundingBox;
@@ -115,8 +110,8 @@ import de.tub.citydb.modules.kml.database.BalloonTemplateHandler;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
-import de.tub.citydb.modules.kml.database.TileQueries;
 import de.tub.citydb.modules.kml.util.KMLHeaderWriter;
+import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.util.database.DBUtil;
 
 public class KmlExporter implements EventHandler {
@@ -153,7 +148,7 @@ public class KmlExporter implements EventHandler {
 	private String path;
 	private String filename;
 
-	private HashSet<String> alreadyExported;
+	private HashSet<CityObject4JSON> alreadyExported;
 
 	public KmlExporter (JAXBContext jaxbKmlContext,
 						JAXBContext jaxbColladaContext,
@@ -308,7 +303,7 @@ public class KmlExporter implements EventHandler {
 		for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
 			if (!displayLevel.isActive()) continue;
 
-			alreadyExported = new HashSet<String>();
+			alreadyExported = new HashSet<CityObject4JSON>();
 
 			for (int i = 0; shouldRun && i < rows; i++) {
 				for (int j = 0; shouldRun && j < columns; j++) {
@@ -579,6 +574,25 @@ public class KmlExporter implements EventHandler {
 				return false;
 			}
 		}
+
+		if (config.getProject().getKmlExporter().isWriteJSONFile()) {
+			try {
+				Logger.getInstance().info("Writing file: " + filename + ".json");
+				File jsonFile = new File(path + File.separator + filename + ".json");
+				FileOutputStream outputStream = new FileOutputStream(jsonFile);
+				outputStream.write("{\n".getBytes());
+				for (CityObject4JSON alreadyExportedCityObject: alreadyExported) {
+					outputStream.write(alreadyExportedCityObject.toString().getBytes());
+				}
+				outputStream.write("}\n".getBytes());
+				outputStream.close();
+			}
+			catch (IOException ioe) {
+				Logger.getInstance().error("I/O error: " + ioe.getMessage());
+//				ioe.printStackTrace();
+			}
+		}
+		
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.finish.msg"), this));
 		return shouldRun;
 	}
@@ -785,8 +799,9 @@ public class KmlExporter implements EventHandler {
 			}
 			else { // tiling.getMode() == TilingMode.ONE_FILE_PER_OBJECT
 				String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
-				for (String gmlId: alreadyExported) {
-					double[] ordinatesArray = getEnvelopeInWGS84(gmlId);
+				for (CityObject4JSON alreadyExportedCityObject: alreadyExported) {
+					String gmlId = alreadyExportedCityObject.getGmlId();
+					
 					SAXEventBuffer tmp = new SAXEventBuffer();
 					for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
 						if (!displayLevel.isActive()) continue;
@@ -797,10 +812,10 @@ public class KmlExporter implements EventHandler {
 						RegionType regionType = kmlFactory.createRegionType();
 						
 						LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
-						latLonAltBoxType.setNorth(ordinatesArray[4]);
-						latLonAltBoxType.setSouth(ordinatesArray[1]);
-						latLonAltBoxType.setEast(ordinatesArray[3]);
-						latLonAltBoxType.setWest(ordinatesArray[0]);
+						latLonAltBoxType.setNorth(alreadyExportedCityObject.getEnvelopeYmax());
+						latLonAltBoxType.setSouth(alreadyExportedCityObject.getEnvelopeYmin());
+						latLonAltBoxType.setEast(alreadyExportedCityObject.getEnvelopeXmax());
+						latLonAltBoxType.setWest(alreadyExportedCityObject.getEnvelopeXmin());
 
 						LodType lodType = kmlFactory.createLodType();
 						lodType.setMinLodPixels((double)displayLevel.getVisibleFrom());
@@ -859,7 +874,7 @@ public class KmlExporter implements EventHandler {
 		catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
-
+		
 	}
 
 	private void addStyleAndBorder(DisplayLevel displayLevel, int i, int j) throws JAXBException {
@@ -1138,59 +1153,6 @@ public class KmlExporter implements EventHandler {
 			return null;
 		}
 		return bytes;
-	}
-
-	private double[] getEnvelopeInWGS84(String gmlId) {
-		double[] ordinatesArray = null;
-		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
-		Connection conn = null;
-
-		try {
-			conn = dbPool.getConnection();
-			psQuery = conn.prepareStatement(TileQueries.QUERY_GET_ENVELOPE_IN_WGS84_FROM_GML_ID);
-
-			psQuery.setString(1, gmlId);
-
-			rs = (OracleResultSet)psQuery.executeQuery();
-			if (rs.next()) {
-				STRUCT struct = (STRUCT)rs.getObject(1); 
-				if (!rs.wasNull() && struct != null) {
-					JGeometry geom = JGeometry.load(struct);
-					ordinatesArray = geom.getOrdinatesArray();
-				}
-			}
-		} 
-		catch (SQLException sqlEx) {}
-		finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException sqlEx) {
-				}
-
-				rs = null;
-			}
-
-			if (psQuery != null) {
-				try {
-					psQuery.close();
-				} catch (SQLException sqlEx) {
-				}
-
-				psQuery = null;
-			}
-
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException sqlEx) {
-				}
-
-				conn = null;
-			}
-		}
-		return ordinatesArray;
 	}
 
 	@Override

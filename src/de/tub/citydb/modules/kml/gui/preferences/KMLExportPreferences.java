@@ -11,6 +11,7 @@ public class KMLExportPreferences extends AbstractPreferences {
 		super(new KMLExportEntry());
 		
 		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new RenderingPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new BalloonPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new AltitudePanel(config)));
 	}
