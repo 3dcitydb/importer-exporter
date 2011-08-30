@@ -33,13 +33,17 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.border.TitledBorder;
+
+import net.opengis.kml._2.ViewRefreshModeEnumType;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -58,13 +62,18 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private JCheckBox showBoundingBoxCheckbox = new JCheckBox();
 	private JCheckBox showTileBordersCheckbox = new JCheckBox();
 	private JLabel autoTileSideLengthLabel = new JLabel();
-	private JTextField autoTileSideLengthText = new JTextField("", 4);
+	private JFormattedTextField autoTileSideLengthText;
 	private JCheckBox oneFilePerObjectCheckbox = new JCheckBox();
 	private JLabel visibleFromLabel = new JLabel();
-	private JTextField visibleFromText = new JTextField("", 4);
+	private JFormattedTextField visibleFromText;
 	private JLabel pixelsLabel = new JLabel();
 	private JLabel mLabel = new JLabel("m.");
 	private JCheckBox writeJSONCheckbox = new JCheckBox();
+	private JLabel viewRefreshModeLabel = new JLabel();
+	private JComboBox viewRefreshModeComboBox = new JComboBox();
+	private JLabel viewRefreshTimeLabel = new JLabel();
+	private JLabel sLabel = new JLabel("s.");
+	private JFormattedTextField viewRefreshTimeText;
 	
 	
 	public GeneralPanel(Config config) {
@@ -80,6 +89,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (showBoundingBoxCheckbox.isSelected() != kmlExporter.isShowBoundingBox()) return true;
 		if (showTileBordersCheckbox.isSelected() != kmlExporter.isShowTileBorders()) return true;
 
+		try { autoTileSideLengthText.commitEdit(); } catch (ParseException e) {}
 		double autoTileSideLength = 125.0;
 		try {
 			autoTileSideLength = Double.parseDouble(autoTileSideLengthText.getText().trim());
@@ -91,12 +101,24 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (autoTileSideLength != kmlExporter.getAutoTileSideLength()) return true;
 
 		if (oneFilePerObjectCheckbox.isSelected() != kmlExporter.isOneFilePerObject()) return true;
+
+		try { visibleFromText.commitEdit(); } catch (ParseException e) {}
 		double objectRegionSize = 50;
 		try {
 			objectRegionSize = Double.parseDouble(visibleFromText.getText().trim());
 		}
 		catch (NumberFormatException nfe) {return true;}
 		if (objectRegionSize != kmlExporter.getSingleObjectRegionSize()) return true;
+
+		if (!viewRefreshModeComboBox.getSelectedItem().equals(kmlExporter.getViewRefreshMode())) return true;
+
+		try { viewRefreshTimeText.commitEdit(); } catch (ParseException e) {}
+		double viewRefreshTime = 50;
+		try {
+			viewRefreshTime = Double.parseDouble(viewRefreshTimeText.getText().trim());
+		}
+		catch (NumberFormatException nfe) {return true;}
+		if (viewRefreshTime != kmlExporter.getViewRefreshTime()) return true;
 
 		if (writeJSONCheckbox.isSelected() != kmlExporter.isWriteJSONFile()) return true;
 
@@ -105,6 +127,10 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 	private void initGui() {
 		setLayout(new GridBagLayout());
+
+		DecimalFormat threeIntFormat = new DecimalFormat("###");	
+		threeIntFormat.setMaximumIntegerDigits(3);
+		threeIntFormat.setMinimumIntegerDigits(1);
 
 		JPanel generalPanel = new JPanel();
 		add(generalPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
@@ -116,32 +142,49 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		writeJSONCheckbox.setIconTextGap(10);
 
 		generalPanel.add(kmzCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
-		generalPanel.add(showBoundingBoxCheckbox, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
-		generalPanel.add(showTileBordersCheckbox, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
-		generalPanel.add(autoTileSideLengthLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
-		
-		GridBagConstraints atslt = GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
-		atslt.gridwidth = 2;
-		generalPanel.add(autoTileSideLengthText, atslt);
 
-		GridBagConstraints ml = GuiUtil.setConstraints(3,3,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		generalPanel.add(showBoundingBoxCheckbox, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
+
+		generalPanel.add(showTileBordersCheckbox, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
+		
+		autoTileSideLengthText = new JFormattedTextField(threeIntFormat);
+		generalPanel.add(autoTileSideLengthLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
+		generalPanel.add(autoTileSideLengthText, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		GridBagConstraints ml = GuiUtil.setConstraints(2,3,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		ml.anchor = GridBagConstraints.WEST;
 		generalPanel.add(mLabel, ml);
 
 		generalPanel.add(oneFilePerObjectCheckbox, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
-		GridBagConstraints vfl = GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
+		visibleFromText = new JFormattedTextField(threeIntFormat);
+		GridBagConstraints vfl = GuiUtil.setConstraints(0,5,1.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
 		vfl.anchor = GridBagConstraints.EAST;
 		generalPanel.add(visibleFromLabel, vfl);
-
-		generalPanel.add(visibleFromText, GuiUtil.setConstraints(2,4,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		GridBagConstraints pl = GuiUtil.setConstraints(3,4,1.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		generalPanel.add(visibleFromText, GuiUtil.setConstraints(1,5,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		GridBagConstraints pl = GuiUtil.setConstraints(2,5,1.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		pl.anchor = GridBagConstraints.WEST;
 		generalPanel.add(pixelsLabel, pl);
 
-		generalPanel.add(writeJSONCheckbox, GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
+		for (ViewRefreshModeEnumType refreshMode: ViewRefreshModeEnumType.values()) {
+			viewRefreshModeComboBox.addItem(refreshMode.value());
+		}
+		GridBagConstraints wrml = GuiUtil.setConstraints(0,6,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
+		wrml.anchor = GridBagConstraints.EAST;
+		generalPanel.add(viewRefreshModeLabel, wrml);
+		generalPanel.add(viewRefreshModeComboBox, GuiUtil.setConstraints(1,6,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
-		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, visibleFromText);
+		viewRefreshTimeText = new JFormattedTextField(threeIntFormat);
+		GridBagConstraints vrtl = GuiUtil.setConstraints(0,7,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
+		vrtl.anchor = GridBagConstraints.EAST;
+		generalPanel.add(viewRefreshTimeLabel, vrtl);
+		generalPanel.add(viewRefreshTimeText, GuiUtil.setConstraints(1,7,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		GridBagConstraints sl = GuiUtil.setConstraints(2,7,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		sl.anchor = GridBagConstraints.WEST;
+		generalPanel.add(sLabel, sl);
+
+		generalPanel.add(writeJSONCheckbox, GuiUtil.setConstraints(0,8,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
+
+		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, visibleFromText, viewRefreshTimeText);
 
 		oneFilePerObjectCheckbox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -149,6 +192,11 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 			}
 		});
 
+		viewRefreshModeComboBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setEnabledComponents();
+			}
+		});
 	}
 
 	@Override
@@ -160,6 +208,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		oneFilePerObjectCheckbox.setText(Internal.I18N.getString("kmlExport.label.oneFilePerObject"));
 		visibleFromLabel.setText(Internal.I18N.getString("kmlExport.label.visibleFrom"));
 		pixelsLabel.setText(Internal.I18N.getString("kmlExport.label.pixels"));
+		viewRefreshModeLabel.setText(Internal.I18N.getString("kmlExport.label.viewRefreshMode"));
+		viewRefreshTimeLabel.setText(Internal.I18N.getString("kmlExport.label.viewRefreshTime"));
 		writeJSONCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.writeJSONFile"));
 	}
 
@@ -173,6 +223,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		autoTileSideLengthText.setText(String.valueOf(kmlExporter.getAutoTileSideLength()));
 		oneFilePerObjectCheckbox.setSelected(kmlExporter.isOneFilePerObject());
 		visibleFromText.setText(String.valueOf(kmlExporter.getSingleObjectRegionSize()));
+		viewRefreshModeComboBox.setSelectedItem(kmlExporter.getViewRefreshMode());
+		viewRefreshTimeText.setText(String.valueOf(kmlExporter.getViewRefreshTime()));
 		writeJSONCheckbox.setSelected(kmlExporter.isWriteJSONFile());
 
 		setEnabledComponents();
@@ -200,6 +252,12 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		}
 		catch (NumberFormatException nfe) {}
 
+		kmlExporter.setViewRefreshMode(viewRefreshModeComboBox.getSelectedItem().toString());
+		try {
+			kmlExporter.setViewRefreshTime(Double.parseDouble(viewRefreshTimeText.getText().trim()));
+		}
+		catch (NumberFormatException nfe) {}
+
 		kmlExporter.setWriteJSONFile(writeJSONCheckbox.isSelected());
 	}
 
@@ -207,6 +265,13 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		visibleFromLabel.setEnabled(oneFilePerObjectCheckbox.isSelected());
 		visibleFromText.setEnabled(oneFilePerObjectCheckbox.isSelected());
 		pixelsLabel.setEnabled(oneFilePerObjectCheckbox.isSelected());
+
+		viewRefreshModeLabel.setEnabled(oneFilePerObjectCheckbox.isSelected());
+		viewRefreshModeComboBox.setEnabled(oneFilePerObjectCheckbox.isSelected());
+
+		viewRefreshTimeLabel.setEnabled(oneFilePerObjectCheckbox.isSelected() && ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshModeComboBox.getSelectedItem()));
+		viewRefreshTimeText.setEnabled(oneFilePerObjectCheckbox.isSelected() && ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshModeComboBox.getSelectedItem()));
+		sLabel.setEnabled(oneFilePerObjectCheckbox.isSelected() && ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshModeComboBox.getSelectedItem()));
 	}
 
 	@Override

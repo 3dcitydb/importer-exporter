@@ -781,8 +781,11 @@ public class KmlExporter implements EventHandler {
 
 						LinkType linkType = kmlFactory.createLinkType();
 						linkType.setHref(tilenameForDisplayLevel);
-						linkType.setViewRefreshMode(ViewRefreshModeEnumType.ON_REQUEST);
+						linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
 						linkType.setViewFormat("");
+						if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
+							linkType.setViewRefreshTime(config.getProject().getKmlExporter().getViewRefreshTime());
+						}
 
 						// confusion between atom:link and kml:Link in ogckml22.xsd
 						networkLinkType.getRest().add(kmlFactory.createLink(linkType));

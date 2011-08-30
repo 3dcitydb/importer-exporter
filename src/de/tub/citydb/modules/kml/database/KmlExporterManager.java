@@ -66,7 +66,6 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
@@ -83,8 +82,6 @@ public class KmlExporterManager {
 	private boolean isBBoxActive;
 	private String mainFilename;
 	
-	private TilingMode tilingMode;
-	
 	private static final String ENCODING = "UTF-8";
 
 	public KmlExporterManager(JAXBContext jaxbKmlContext,
@@ -100,7 +97,6 @@ public class KmlExporterManager {
 		this.buildingQueue = buildingQueue;
 		this.config = config;
 
-		tilingMode = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode();
 		isBBoxActive = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue();
 		mainFilename = config.getInternal().getExportFileName().trim();
 		if (mainFilename.lastIndexOf(File.separator) != -1) {
@@ -256,8 +252,11 @@ public class KmlExporterManager {
 
 							LinkType linkType = kmlFactory.createLinkType();
 							linkType.setHref(gmlId + "/" + gmlId + "_" + displayLevelName + fileExtension);
-							linkType.setViewRefreshMode(ViewRefreshModeEnumType.ON_REGION);
+							linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
 							linkType.setViewFormat("");
+							if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
+								linkType.setViewRefreshTime(config.getProject().getKmlExporter().getViewRefreshTime());
+							}
 
 							// confusion between atom:link and kml:Link in ogckml22.xsd
 							networkLinkType.getRest().add(kmlFactory.createLink(linkType));
@@ -274,8 +273,11 @@ public class KmlExporterManager {
 
 								LinkType hLinkType = kmlFactory.createLinkType();
 								hLinkType.setHref(gmlId + "/" + gmlId + "_" + displayLevelName + "_" + DisplayLevel.HIGHLIGTHTED_STR + fileExtension);
-								hLinkType.setViewRefreshMode(ViewRefreshModeEnumType.ON_REGION);
+								hLinkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
 								hLinkType.setViewFormat("");
+								if (hLinkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
+									hLinkType.setViewRefreshTime(config.getProject().getKmlExporter().getViewRefreshTime());
+								}
 
 								// confusion between atom:link and kml:Link in ogckml22.xsd
 								hNetworkLinkType.getRest().add(kmlFactory.createLink(hLinkType));
@@ -407,8 +409,11 @@ public class KmlExporterManager {
 
 				LinkType linkType = kmlFactory.createLinkType();
 				linkType.setHref(colladaBundle.getBuildingId() + "/" + colladaBundle.getBuildingId() + "_" + DisplayLevel.COLLADA_STR + fileExtension);
-				linkType.setViewRefreshMode(ViewRefreshModeEnumType.ON_REGION);
+				linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
 				linkType.setViewFormat("");
+				if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
+					linkType.setViewRefreshTime(config.getProject().getKmlExporter().getViewRefreshTime());
+				}
 
 				// confusion between atom:link and kml:Link in ogckml22.xsd
 				networkLinkType.getRest().add(kmlFactory.createLink(linkType));

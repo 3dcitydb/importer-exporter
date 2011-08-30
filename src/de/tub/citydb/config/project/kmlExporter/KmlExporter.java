@@ -51,6 +51,8 @@ import de.tub.citydb.config.project.system.System;
 		"autoTileSideLength",
 		"oneFilePerObject",
 		"singleObjectRegionSize",
+		"viewRefreshMode",
+		"viewRefreshTime",
 		"writeJSONFile",
 		"footprintHighlighting",
 		"geometryHighlighting",
@@ -89,6 +91,8 @@ public class KmlExporter {
 	private double autoTileSideLength;
 	private boolean oneFilePerObject;
 	private double singleObjectRegionSize;
+	private String viewRefreshMode;
+	private double viewRefreshTime;
 	private boolean writeJSONFile;
 	private boolean footprintHighlighting;
 	private boolean geometryHighlighting;
@@ -125,6 +129,10 @@ public class KmlExporter {
 		showBoundingBox = true;
 		showTileBorders = true;
 		autoTileSideLength = 125.0;
+		oneFilePerObject = false;
+		singleObjectRegionSize = 50.0;
+		viewRefreshMode = "onRegion";
+		viewRefreshTime = 1;
 		writeJSONFile = false;
 		footprintHighlighting = false;
 		geometryHighlighting = false;
@@ -433,6 +441,22 @@ public class KmlExporter {
 
 	public double getSingleObjectRegionSize() {
 		return singleObjectRegionSize;
+	}
+
+	public void setViewRefreshMode(String viewRefreshMode) {
+		this.viewRefreshMode = viewRefreshMode;
+	}
+
+	public String getViewRefreshMode() {
+		return viewRefreshMode;
+	}
+
+	public void setViewRefreshTime(double viewRefreshTime) {
+		this.viewRefreshTime = viewRefreshTime;
+	}
+
+	public double getViewRefreshTime() {
+		return viewRefreshTime;
 	}
 
 }
