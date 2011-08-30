@@ -41,9 +41,7 @@ public enum TilingMode {
     @XmlEnumValue("automatic")
     AUTOMATIC("automatic"),
     @XmlEnumValue("manual")
-    MANUAL("manual"),
-    @XmlEnumValue("one_file_per_object")
-	ONE_FILE_PER_OBJECT("one_file_per_object");
+    MANUAL("manual");
 
     private final String value;
 

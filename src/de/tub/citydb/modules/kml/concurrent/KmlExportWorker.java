@@ -938,7 +938,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		LinkType link = kmlFactory.createLinkType();
 		if (config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue() &&
-				config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode() == TilingMode.ONE_FILE_PER_OBJECT) {
+				config.getProject().getKmlExporter().isOneFilePerObject()) {
 			link.setHref(building.getId() + ".dae");
 		}
 		else {

@@ -37,7 +37,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
@@ -148,7 +148,7 @@ public class KmlExporter implements EventHandler {
 	private String path;
 	private String filename;
 
-	private HashSet<CityObject4JSON> alreadyExported;
+	private static HashMap<String, CityObject4JSON> alreadyExported;
 
 	public KmlExporter (JAXBContext jaxbKmlContext,
 						JAXBContext jaxbColladaContext,
@@ -160,6 +160,9 @@ public class KmlExporter implements EventHandler {
 		this.dbPool = dbPool;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
+
+		kmlFactory = new ObjectFactory();		
+		cityGMLFactory = new CityGMLFactory();		
 	}
 	
 	public void cleanup() {
@@ -256,9 +259,6 @@ public class KmlExporter implements EventHandler {
 		saxWriter.setPrefix("atom", "http://www.w3.org/2005/Atom");
 		saxWriter.setPrefix("xal", "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0");
 		
-		kmlFactory = new ObjectFactory();		
-		cityGMLFactory = new CityGMLFactory();		
-
 		Properties props = new Properties();
 		props.put(Marshaller.JAXB_FRAGMENT, new Boolean(true));
 
@@ -282,8 +282,7 @@ public class KmlExporter implements EventHandler {
 			path = path.substring(0, path.lastIndexOf(File.separator));
 		}
 
-		if (isBBoxActive &&
-			(tiling.getMode() == TilingMode.MANUAL || tiling.getMode() == TilingMode.AUTOMATIC)) {
+		if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
 			try {
 				int activeDisplayLevelAmount = config.getProject().getKmlExporter().getActiveDisplayLevelAmount();
 				Logger.getInstance().info(String.valueOf(rows * columns * activeDisplayLevelAmount) +
@@ -303,7 +302,7 @@ public class KmlExporter implements EventHandler {
 		for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
 			if (!displayLevel.isActive()) continue;
 
-			alreadyExported = new HashSet<CityObject4JSON>();
+			alreadyExported = new HashMap<String, CityObject4JSON>();
 
 			for (int i = 0; shouldRun && i < rows; i++) {
 				for (int j = 0; shouldRun && j < columns; j++) {
@@ -319,41 +318,36 @@ public class KmlExporter implements EventHandler {
 					ZipOutputStream zipOut = null;
 
 					try {
-						if (!isBBoxActive || tiling.getMode() != TilingMode.ONE_FILE_PER_OBJECT) {
-							String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
-							if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
-								exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
-								file = new File(path + File.separator + filename + "_Tile_"
+						String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
+						if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
+							exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
+							file = new File(path + File.separator + filename + "_Tile_"
 									 	 	+ i + "_" + j + "_" + displayLevel.getName() + fileExtension);
-							}
-							else {
-								file = new File(path + File.separator + filename + "_" + displayLevel.getName() + fileExtension);
-							}
-
-							eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
-
-							// open file for writing
-							try {
-								if (config.getProject().getKmlExporter().isExportAsKmz()) { 
-									zipOut = new ZipOutputStream(new FileOutputStream(file));
-									ZipEntry zipEntry = new ZipEntry("doc.kml");
-									zipOut.putNextEntry(zipEntry);
-									fileWriter = new OutputStreamWriter(zipOut);
-								}
-								else {
-									Charset charset = Charset.forName(ENCODING);
-									fileWriter = new OutputStreamWriter(new FileOutputStream(file), charset);
-								}
-								
-								// set output for SAXWriter
-								saxWriter.setOutput(new StreamResult(fileWriter));	
-							} catch (IOException ioE) {
-								Logger.getInstance().error("Failed to open file '" + file.getName() + "' for writing: " + ioE.getMessage());
-								return false;
-							}
 						}
 						else {
-							eventDispatcher.triggerEvent(new StatusDialogTitle(filename + ".kml", this));
+							file = new File(path + File.separator + filename + "_" + displayLevel.getName() + fileExtension);
+						}
+
+						eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
+
+						// open file for writing
+						try {
+							if (config.getProject().getKmlExporter().isExportAsKmz()) { 
+								zipOut = new ZipOutputStream(new FileOutputStream(file));
+								ZipEntry zipEntry = new ZipEntry("doc.kml");
+								zipOut.putNextEntry(zipEntry);
+								fileWriter = new OutputStreamWriter(zipOut);
+							}
+							else {
+								Charset charset = Charset.forName(ENCODING);
+								fileWriter = new OutputStreamWriter(new FileOutputStream(file), charset);
+							}
+								
+							// set output for SAXWriter
+							saxWriter.setOutput(new StreamResult(fileWriter));	
+						} catch (IOException ioE) {
+							Logger.getInstance().error("Failed to open file '" + file.getName() + "' for writing: " + ioE.getMessage());
+							return false;
 						}
 
 						// create worker pools
@@ -386,40 +380,42 @@ public class KmlExporter implements EventHandler {
 						// create file header
 						KMLHeaderWriter kmlHeader = new KMLHeaderWriter(saxWriter);
 
-						if (!isBBoxActive || tiling.getMode() != TilingMode.ONE_FILE_PER_OBJECT) {
-							// ok, preparations done. inform user...
-							Logger.getInstance().info("Exporting to file: " + file.getAbsolutePath());
+						// ok, preparations done. inform user...
+						Logger.getInstance().info("Exporting to file: " + file.getAbsolutePath());
 
-							// create kml root element
-							KmlType kmlType = kmlFactory.createKmlType();
-							JAXBElement<KmlType> kml = kmlFactory.createKml(kmlType);
+						// create kml root element
+						KmlType kmlType = kmlFactory.createKmlType();
+						JAXBElement<KmlType> kml = kmlFactory.createKml(kmlType);
 
-							DocumentType document = kmlFactory.createDocumentType();
-							if (isBBoxActive &&
-									(tiling.getMode() == TilingMode.MANUAL || tiling.getMode() == TilingMode.AUTOMATIC)) {
-								document.setName(filename + "_Tile_" + i + "_" + j + "_" + displayLevel.getName());
+						DocumentType document = kmlFactory.createDocumentType();
+						if (isBBoxActive &&	tiling.getMode() != TilingMode.NO_TILING) {
+							document.setName(filename + "_Tile_" + i + "_" + j + "_" + displayLevel.getName());
+						}
+						else {
+							document.setName(filename + "_" + displayLevel.getName());
+						}
+						document.setOpen(true);
+						kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
+
+						try {
+							kmlHeader.setRootElement(kml, jaxbKmlContext, props);
+							kmlHeader.startRootElement();
+
+							// make sure header has been written
+							saxWriter.flush();
+
+							if (!config.getProject().getKmlExporter().isOneFilePerObject()) {
+								addStyle(displayLevel);
 							}
-							else {
-								document.setName(filename + "_" + displayLevel.getName());
+							if (isBBoxActive &&	tiling.getMode() != TilingMode.NO_TILING) {
+								addBorder(i, j);
 							}
-							document.setOpen(true);
-							kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
-
-							try {
-								kmlHeader.setRootElement(kml, jaxbKmlContext, props);
-								kmlHeader.startRootElement();
-
-								// make sure header has been written
-								saxWriter.flush();
-
-								addStyleAndBorder(displayLevel, i, j);
-							} catch (JAXBException jaxBE) {
-								Logger.getInstance().error("I/O error: " + jaxBE.getMessage());
-								return false;
-							} catch (SAXException saxE) {
-								Logger.getInstance().error("I/O error: " + saxE.getMessage());
-								return false;
-							}
+						} catch (JAXBException jaxBE) {
+							Logger.getInstance().error("I/O error: " + jaxBE.getMessage());
+							return false;
+						} catch (SAXException saxE) {
+							Logger.getInstance().error("I/O error: " + saxE.getMessage());
+							return false;
 						}
 
 						// get database splitter and start query
@@ -430,7 +426,6 @@ public class KmlExporter implements EventHandler {
 									kmlWorkerPool,
 									exportFilter,
 									displayLevel,
-									alreadyExported,
 									config);
 
 							if (shouldRun)
@@ -449,91 +444,89 @@ public class KmlExporter implements EventHandler {
 							System.out.println(e.getMessage());
 						}
 
-						if (!isBBoxActive || tiling.getMode() != TilingMode.ONE_FILE_PER_OBJECT) {
-							// write footer element
-							try {
-								kmlHeader.endRootElement();
-							} catch (SAXException saxE) {
-								Logger.getInstance().error("XML error: " + saxE.getMessage());
-								return false;
-							}
+						// write footer element
+						try {
+							kmlHeader.endRootElement();
+						} catch (SAXException saxE) {
+							Logger.getInstance().error("XML error: " + saxE.getMessage());
+							return false;
+						}
 
-							eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.writingToFile"), this));
+						eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.writingToFile"), this));
 
-							// flush sax writer and close file
-							try {
-								saxWriter.flush();
-								if (config.getProject().getKmlExporter().isExportAsKmz()) { 
-									zipOut.closeEntry();
+						// flush sax writer and close file
+						try {
+							saxWriter.flush();
+							if (config.getProject().getKmlExporter().isExportAsKmz()) { 
+								zipOut.closeEntry();
 
-									// ZipOutputStream must be accessed sequentially and is not thread-safe
-									if (buildingQueue != null) {
-										ColladaBundle colladaBundle = buildingQueue.poll();
-										while (colladaBundle != null) {
-											// ----------------- model saving -----------------
-											if (colladaBundle.getColladaAsString() != null) {
-												// File.separator would be wrong here, it MUST be "/"
-												ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" 
-														+ colladaBundle.getBuildingId() + ".dae");
-												zipOut.putNextEntry(zipEntry);
-												zipOut.write(colladaBundle.getColladaAsString().getBytes());
-												zipOut.closeEntry();
-											}
-
-											// ----------------- balloon saving -----------------
-											if (colladaBundle.getExternalBalloonFileContent() != null) {
-												ZipEntry zipEntry = new ZipEntry(BalloonTemplateHandler.balloonDirectoryName + "/" + colladaBundle.getBuildingId() + ".html");
-												zipOut.putNextEntry(zipEntry);
-												zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes());
-												zipOut.closeEntry();
-											}
-
-											// ----------------- image saving -----------------
-											if (colladaBundle.getTexOrdImages() != null) {
-												Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
-												Iterator<String> iterator = keySet.iterator();
-												while (iterator.hasNext()) {
-													String imageFilename = iterator.next();
-													OrdImage texOrdImage = colladaBundle.getTexOrdImages().get(imageFilename);
-													byte[] ordImageBytes = texOrdImage.getDataInByteArray();
-
-													ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
-													zipOut.putNextEntry(zipEntry);
-													zipOut.write(ordImageBytes, 0, ordImageBytes.length);
-													zipOut.closeEntry();
-												}
-											}
-
-											if (colladaBundle.getTexImages() != null) {
-												Set<String> keySet = colladaBundle.getTexImages().keySet();
-												Iterator<String> iterator = keySet.iterator();
-												while (iterator.hasNext()) {
-													String imageFilename = iterator.next();
-													BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename);
-													String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
-
-													ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
-													zipOut.putNextEntry(zipEntry);
-													ImageIO.write(texImage, imageType, zipOut);
-													zipOut.closeEntry();
-												}
-											}
-											colladaBundle = buildingQueue.poll();
+								// ZipOutputStream must be accessed sequentially and is not thread-safe
+								if (buildingQueue != null) {
+									ColladaBundle colladaBundle = buildingQueue.poll();
+									while (colladaBundle != null) {
+										// ----------------- model saving -----------------
+										if (colladaBundle.getColladaAsString() != null) {
+											// File.separator would be wrong here, it MUST be "/"
+											ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" 
+													+ colladaBundle.getBuildingId() + ".dae");
+											zipOut.putNextEntry(zipEntry);
+											zipOut.write(colladaBundle.getColladaAsString().getBytes());
+											zipOut.closeEntry();
 										}
-									}
 
-									zipOut.close();
+										// ----------------- balloon saving -----------------
+										if (colladaBundle.getExternalBalloonFileContent() != null) {
+											ZipEntry zipEntry = new ZipEntry(BalloonTemplateHandler.balloonDirectoryName + "/" + colladaBundle.getBuildingId() + ".html");
+											zipOut.putNextEntry(zipEntry);
+											zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes());
+											zipOut.closeEntry();
+										}
+
+										// ----------------- image saving -----------------
+										if (colladaBundle.getTexOrdImages() != null) {
+											Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
+											Iterator<String> iterator = keySet.iterator();
+											while (iterator.hasNext()) {
+												String imageFilename = iterator.next();
+												OrdImage texOrdImage = colladaBundle.getTexOrdImages().get(imageFilename);
+												byte[] ordImageBytes = texOrdImage.getDataInByteArray();
+
+												ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
+												zipOut.putNextEntry(zipEntry);
+												zipOut.write(ordImageBytes, 0, ordImageBytes.length);
+												zipOut.closeEntry();
+											}
+										}
+
+										if (colladaBundle.getTexImages() != null) {
+											Set<String> keySet = colladaBundle.getTexImages().keySet();
+											Iterator<String> iterator = keySet.iterator();
+											while (iterator.hasNext()) {
+												String imageFilename = iterator.next();
+												BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename);
+												String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
+
+												ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
+												zipOut.putNextEntry(zipEntry);
+												ImageIO.write(texImage, imageType, zipOut);
+												zipOut.closeEntry();
+											}
+										}
+										colladaBundle = buildingQueue.poll();
+									}
 								}
+
+								zipOut.close();
+							}
+							fileWriter.close();
+						}
+						catch (Exception ioe) {
+							Logger.getInstance().error("I/O error: " + ioe.getMessage());
+							try {
 								fileWriter.close();
 							}
-							catch (Exception ioe) {
-								Logger.getInstance().error("I/O error: " + ioe.getMessage());
-								try {
-									fileWriter.close();
-								}
-								catch (Exception e) {}
-								return false;
-							}
+							catch (Exception e) {}
+							return false;
 						}
 
 						eventDispatcher.triggerEvent(new StatusDialogMessage(" ", this));
@@ -563,7 +556,7 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 
-		if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
+		if (isBBoxActive) {
 			try {
 				eventDispatcher.triggerEvent(new StatusDialogTitle(filename + ".kml", this));
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.writingMainFile"), this));
@@ -581,9 +574,14 @@ public class KmlExporter implements EventHandler {
 				File jsonFile = new File(path + File.separator + filename + ".json");
 				FileOutputStream outputStream = new FileOutputStream(jsonFile);
 				outputStream.write("{\n".getBytes());
-				for (CityObject4JSON alreadyExportedCityObject: alreadyExported) {
-					outputStream.write(alreadyExportedCityObject.toString().getBytes());
+
+				Iterator<String> iterator = alreadyExported.keySet().iterator();
+				while (iterator.hasNext()) {
+					String gmlId = iterator.next();
+					outputStream.write(("\t{\"gmlId\": \"" + gmlId).toString().getBytes());
+					outputStream.write(alreadyExported.get(gmlId).toString().getBytes());
 				}
+
 				outputStream.write("}\n".getBytes());
 				outputStream.close();
 			}
@@ -614,11 +612,11 @@ public class KmlExporter implements EventHandler {
 			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, dbSrid, WGS84_SRID);
 		}
 		
-		if (tilingMode.equals(TilingMode.NO_TILING)) {
+		if (tilingMode == TilingMode.NO_TILING) {
 			rows = 1;
 			columns = 1;
 		}
-		else if (tilingMode.equals(TilingMode.AUTOMATIC)) {
+		else if (tilingMode == TilingMode.AUTOMATIC) {
 			// approximate
 			rows = (int)((tileMatrix.getUpperCorner().getY() - tileMatrix.getLowerCorner().getY()) / autoTileSideLength) + 1;
 			columns = (int)((tileMatrix.getUpperCorner().getX() - tileMatrix.getLowerCorner().getX()) / autoTileSideLength) + 1;
@@ -663,7 +661,7 @@ public class KmlExporter implements EventHandler {
 //		props.put(Marshaller.JAXB_FORMATTED_OUTPUT, new Boolean(true));
 //		props.put(Marshaller.JAXB_ENCODING, ENCODING);
 
-		Tiling tiling = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
+		TilingMode tilingMode = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode();
 
 		try {
 			File mainFile = new File(path + File.separator + filename + ".kml");
@@ -698,19 +696,17 @@ public class KmlExporter implements EventHandler {
 			try {
 				kmlHeader.setRootElement(kml, jaxbKmlContext, props);
 				kmlHeader.startRootElement();
-
-				if (tiling.getMode() == TilingMode.ONE_FILE_PER_OBJECT) {
+				if (config.getProject().getKmlExporter().isOneFilePerObject()) {
 					for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
-						if (!displayLevel.isActive()) continue;
-						addStyleAndBorder(displayLevel, 0, 0);
+						if (displayLevel.isActive()) {
+							addStyle(displayLevel);
+						}
 					}
 				}
-
 				// make sure header has been written
 				saxWriter.flush();
-			} catch (JAXBException jaxBE) {
-				Logger.getInstance().error("I/O error: " + jaxBE.getMessage());
-			} catch (SAXException saxE) {
+			}
+			catch (SAXException saxE) {
 				Logger.getInstance().error("I/O error: " + saxE.getMessage());
 			}
 
@@ -740,122 +736,61 @@ public class KmlExporter implements EventHandler {
 				ioWriterPool.addWork(tmp);
 			}
 
-			if (tiling.getMode() == TilingMode.MANUAL || tiling.getMode() == TilingMode.AUTOMATIC) {
-				for (int i = 0; i < rows; i++) {
-					for (int j = 0; j < columns; j++) {
+			for (int i = 0; i < rows; i++) {
+				for (int j = 0; j < columns; j++) {
 
-						// must be done like this to avoid non-matching tile limits
-						double wgs84TileSouthLimit = wgs84TileMatrix.getLowerCorner().getY() + (i * wgs84DeltaLatitude); 
-						double wgs84TileNorthLimit = wgs84TileMatrix.getLowerCorner().getY() + ((i+1) * wgs84DeltaLatitude); 
-						double wgs84TileWestLimit = wgs84TileMatrix.getLowerCorner().getX() + (j * wgs84DeltaLongitude); 
-						double wgs84TileEastLimit = wgs84TileMatrix.getLowerCorner().getX() + ((j+1) * wgs84DeltaLongitude); 
+					// must be done like this to avoid non-matching tile limits
+					double wgs84TileSouthLimit = wgs84TileMatrix.getLowerCorner().getY() + (i * wgs84DeltaLatitude); 
+					double wgs84TileNorthLimit = wgs84TileMatrix.getLowerCorner().getY() + ((i+1) * wgs84DeltaLatitude); 
+					double wgs84TileWestLimit = wgs84TileMatrix.getLowerCorner().getX() + (j * wgs84DeltaLongitude); 
+					double wgs84TileEastLimit = wgs84TileMatrix.getLowerCorner().getX() + ((j+1) * wgs84DeltaLongitude); 
 
-						// tileName should not contain special characters,
-						// since it will be used as filename for all displayLevel files
-						String tileName = filename + "_Tile_" + i + "_" + j;
-						FolderType folderType = kmlFactory.createFolderType();
-						folderType.setName(tileName);
-
-						for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
-
-							if (!displayLevel.isActive()) continue;
-
-							String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
-							String tilenameForDisplayLevel = tileName + "_" + displayLevel.getName() + fileExtension; 
-
-							NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
-							networkLinkType.setName("Display as " + displayLevel.getName());
-
-							RegionType regionType = kmlFactory.createRegionType();
-							
-							LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
-							latLonAltBoxType.setNorth(wgs84TileNorthLimit);
-							latLonAltBoxType.setSouth(wgs84TileSouthLimit);
-							latLonAltBoxType.setEast(wgs84TileEastLimit);
-							latLonAltBoxType.setWest(wgs84TileWestLimit);
-
-							LodType lodType = kmlFactory.createLodType();
-							lodType.setMinLodPixels((double)displayLevel.getVisibleFrom());
-							lodType.setMaxLodPixels((double)displayLevel.getVisibleUpTo());
-							
-							regionType.setLatLonAltBox(latLonAltBoxType);
-							regionType.setLod(lodType);
-
-							LinkType linkType = kmlFactory.createLinkType();
-							linkType.setHref(tilenameForDisplayLevel);
-							linkType.setViewRefreshMode(ViewRefreshModeEnumType.ON_REQUEST);
-							linkType.setViewFormat("");
-
-							// confusion between atom:link and kml:Link in ogckml22.xsd
-							networkLinkType.getRest().add(kmlFactory.createLink(linkType));
-							networkLinkType.setRegion(regionType);
-							folderType.getAbstractFeatureGroup().add(kmlFactory.createNetworkLink(networkLinkType));
-						}
-						SAXEventBuffer tmp = new SAXEventBuffer();
-						marshaller.marshal(kmlFactory.createFolder(folderType), tmp);
-						ioWriterPool.addWork(tmp);
+					// tileName should not contain special characters,
+					// since it will be used as filename for all displayLevel files
+					String tileName = filename;
+					if (tilingMode != TilingMode.NO_TILING) {
+						tileName = tileName + "_Tile_" + i + "_" + j;
 					}
-				}
-			}
-			else { // tiling.getMode() == TilingMode.ONE_FILE_PER_OBJECT
-				String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
-				for (CityObject4JSON alreadyExportedCityObject: alreadyExported) {
-					String gmlId = alreadyExportedCityObject.getGmlId();
-					
-					SAXEventBuffer tmp = new SAXEventBuffer();
+					FolderType folderType = kmlFactory.createFolderType();
+					folderType.setName(tileName);
+
 					for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
+
 						if (!displayLevel.isActive()) continue;
 
+						String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
+						String tilenameForDisplayLevel = tileName + "_" + displayLevel.getName() + fileExtension; 
+
 						NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
-						networkLinkType.setName(gmlId + " " + displayLevel.getName());
+						networkLinkType.setName("Display as " + displayLevel.getName());
 
 						RegionType regionType = kmlFactory.createRegionType();
-						
+
 						LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
-						latLonAltBoxType.setNorth(alreadyExportedCityObject.getEnvelopeYmax());
-						latLonAltBoxType.setSouth(alreadyExportedCityObject.getEnvelopeYmin());
-						latLonAltBoxType.setEast(alreadyExportedCityObject.getEnvelopeXmax());
-						latLonAltBoxType.setWest(alreadyExportedCityObject.getEnvelopeXmin());
+						latLonAltBoxType.setNorth(wgs84TileNorthLimit);
+						latLonAltBoxType.setSouth(wgs84TileSouthLimit);
+						latLonAltBoxType.setEast(wgs84TileEastLimit);
+						latLonAltBoxType.setWest(wgs84TileWestLimit);
 
 						LodType lodType = kmlFactory.createLodType();
 						lodType.setMinLodPixels((double)displayLevel.getVisibleFrom());
 						lodType.setMaxLodPixels((double)displayLevel.getVisibleUpTo());
-						
+
 						regionType.setLatLonAltBox(latLonAltBoxType);
 						regionType.setLod(lodType);
 
 						LinkType linkType = kmlFactory.createLinkType();
-						linkType.setHref(gmlId + "/" + gmlId + "_" + displayLevel.getName() + fileExtension);
-						linkType.setViewRefreshMode(ViewRefreshModeEnumType.ON_REGION);
+						linkType.setHref(tilenameForDisplayLevel);
+						linkType.setViewRefreshMode(ViewRefreshModeEnumType.ON_REQUEST);
 						linkType.setViewFormat("");
 
 						// confusion between atom:link and kml:Link in ogckml22.xsd
 						networkLinkType.getRest().add(kmlFactory.createLink(linkType));
 						networkLinkType.setRegion(regionType);
-
-						marshaller.marshal(kmlFactory.createNetworkLink(networkLinkType), tmp);
-
-						// include highlighting if selected
-						if ((displayLevel.getLevel() == DisplayLevel.GEOMETRY &&
-							config.getProject().getKmlExporter().isGeometryHighlighting()) ||
-							(displayLevel.getLevel() == DisplayLevel.COLLADA &&
-							config.getProject().getKmlExporter().isColladaHighlighting())) {
-							
-							NetworkLinkType hNetworkLinkType = kmlFactory.createNetworkLinkType();
-							hNetworkLinkType.setName(gmlId + " " + displayLevel.getName() + " " + DisplayLevel.HIGHLIGTHTED_STR);
-
-							LinkType hLinkType = kmlFactory.createLinkType();
-							hLinkType.setHref(gmlId + "/" + gmlId + "_" + displayLevel.getName() + "_" + DisplayLevel.HIGHLIGTHTED_STR + fileExtension);
-							hLinkType.setViewRefreshMode(ViewRefreshModeEnumType.ON_REGION);
-							hLinkType.setViewFormat("");
-
-							// confusion between atom:link and kml:Link in ogckml22.xsd
-							hNetworkLinkType.getRest().add(kmlFactory.createLink(hLinkType));
-							hNetworkLinkType.setRegion(regionType);
-
-							marshaller.marshal(kmlFactory.createNetworkLink(hNetworkLinkType), tmp);
-						}
+						folderType.getAbstractFeatureGroup().add(kmlFactory.createNetworkLink(networkLinkType));
 					}
+					SAXEventBuffer tmp = new SAXEventBuffer();
+					marshaller.marshal(kmlFactory.createFolder(folderType), tmp);
 					ioWriterPool.addWork(tmp);
 				}
 			}
@@ -877,7 +812,7 @@ public class KmlExporter implements EventHandler {
 		
 	}
 
-	private void addStyleAndBorder(DisplayLevel displayLevel, int i, int j) throws JAXBException {
+	private void addStyle(DisplayLevel displayLevel) throws JAXBException {
 		SAXEventBuffer saxBuffer = new SAXEventBuffer();
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
@@ -1108,18 +1043,23 @@ public class KmlExporter implements EventHandler {
 			// no style
 			break;
 		}
+	}
 
-		if (config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode() != TilingMode.ONE_FILE_PER_OBJECT &&
-			config.getProject().getKmlExporter().getFilter().isSetComplexFilter() &&
-			config.getProject().getKmlExporter().isShowTileBorders()) {
+	private void addBorder(int i, int j) throws JAXBException {
+		SAXEventBuffer saxBuffer = new SAXEventBuffer();
+		Marshaller marshaller = jaxbKmlContext.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+
+		if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter() &&
+				config.getProject().getKmlExporter().isShowTileBorders()) {
 			saxBuffer = new SAXEventBuffer();
-			
+
 			// must be done like this to avoid non-matching tile limits
 			double wgs84TileSouthLimit = wgs84TileMatrix.getLowerCorner().getY() + (i * wgs84DeltaLatitude); 
 			double wgs84TileNorthLimit = wgs84TileMatrix.getLowerCorner().getY() + ((i+1) * wgs84DeltaLatitude); 
 			double wgs84TileWestLimit = wgs84TileMatrix.getLowerCorner().getX() + (j * wgs84DeltaLongitude); 
 			double wgs84TileEastLimit = wgs84TileMatrix.getLowerCorner().getX() + ((j+1) * wgs84DeltaLongitude); 
-			
+
 			PlacemarkType placemark = kmlFactory.createPlacemarkType();
 			placemark.setName("Tile border");
 			LineStringType lineString = kmlFactory.createLineStringType();
@@ -1134,7 +1074,6 @@ public class KmlExporter implements EventHandler {
 			marshaller.marshal(kmlFactory.createPlacemark(placemark), saxBuffer);
 			ioWriterPool.addWork(saxBuffer);
 		}
-		
 	}
 
 	private byte[] hexStringToByteArray(String hex) {
@@ -1176,5 +1115,8 @@ public class KmlExporter implements EventHandler {
 		}
 	}
 
+	public static HashMap<String, CityObject4JSON> getAlreadyExported() {
+		return alreadyExported;
+	}
 
 }

@@ -145,7 +145,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private JRadioButton noTilingRadioButton = new JRadioButton("");
 	private JRadioButton automaticTilingRadioButton = new JRadioButton("");
 	private JRadioButton manualTilingRadioButton = new JRadioButton("");
-	private JRadioButton oneFilePerObjectRadioButton = new JRadioButton("");
 
 	private JLabel rowsLabel = new JLabel();
 	private JTextField rowsText = new JTextField("");
@@ -258,8 +257,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		automaticTilingRadioButton.setIconTextGap(10);
 		tilingButtonGroup.add(manualTilingRadioButton);
 		manualTilingRadioButton.setIconTextGap(10);
-		tilingButtonGroup.add(oneFilePerObjectRadioButton);
-		oneFilePerObjectRadioButton.setIconTextGap(10);
 		automaticTilingRadioButton.setSelected(true);
 
 		tilingPanel = new JPanel();
@@ -267,15 +264,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		tilingPanel.setBorder(BorderFactory.createTitledBorder(""));
 
 		tilingPanel.add(noTilingRadioButton, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
-		tilingPanel.add(manualTilingRadioButton, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,BORDER_THICKNESS,0));
-		tilingPanel.add(rowsLabel, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,BORDER_THICKNESS,0));
-		tilingPanel.add(rowsText, GuiUtil.setConstraints(3,0,0.5,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
-		tilingPanel.add(columnsLabel, GuiUtil.setConstraints(4,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 3,BORDER_THICKNESS,0));
-		tilingPanel.add(columnsText, GuiUtil.setConstraints(5,0,0.5,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS * 2));
-		tilingPanel.add(automaticTilingRadioButton, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
-		GridBagConstraints ofpo = GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,BORDER_THICKNESS,0);
-		ofpo.gridwidth = 5;
-		tilingPanel.add(oneFilePerObjectRadioButton, ofpo);
+		tilingPanel.add(automaticTilingRadioButton, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
+		tilingPanel.add(manualTilingRadioButton, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 2,BORDER_THICKNESS,0));
+		tilingPanel.add(rowsLabel, GuiUtil.setConstraints(3,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,BORDER_THICKNESS,0));
+		tilingPanel.add(rowsText, GuiUtil.setConstraints(4,0,0.5,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+		tilingPanel.add(columnsLabel, GuiUtil.setConstraints(5,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 3,BORDER_THICKNESS,0));
+		tilingPanel.add(columnsText, GuiUtil.setConstraints(6,0,0.5,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS * 2));
 
 		Box tilingParentPanel = Box.createHorizontalBox();
 		tilingParentPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)));
@@ -422,7 +416,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		rowsLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.rows"));
 		columnsLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.columns"));
 		automaticTilingRadioButton.setText(Internal.I18N.getString("kmlExport.label.automatic"));
-		oneFilePerObjectRadioButton.setText(Internal.I18N.getString("kmlExport.label.oneFilePerObject"));
 		
 		exportFromLODPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("kmlExport.label.fromLOD")));
 /**/
@@ -537,9 +530,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			}
 			else if (tilingMode.equals(TilingMode.AUTOMATIC.value())) {
 				automaticTilingRadioButton.setSelected(true);
-			}
-			else if (tilingMode.equals(TilingMode.ONE_FILE_PER_OBJECT.value())) {
-				oneFilePerObjectRadioButton.setSelected(true);
 			}
 			else {
 				manualTilingRadioButton.setSelected(true);
@@ -675,9 +665,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			}
 			else if (automaticTilingRadioButton.isSelected()) {
 				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setMode(TilingMode.AUTOMATIC);
-			}
-			else if (oneFilePerObjectRadioButton.isSelected()) {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setMode(TilingMode.ONE_FILE_PER_OBJECT);
 			}
 			else {
 				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setMode(TilingMode.MANUAL);
@@ -834,7 +821,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		noTilingRadioButton.addActionListener(filterListener);
 		manualTilingRadioButton.addActionListener(filterListener);
 		automaticTilingRadioButton.addActionListener(filterListener);
-		oneFilePerObjectRadioButton.addActionListener(filterListener);
 
 		lodComboBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -985,12 +971,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					return;
 				}
 			}
-			if (filter.getComplexFilter().getTiledBoundingBox().getTiling().getMode() == TilingMode.ONE_FILE_PER_OBJECT) {
-				tileAmount = 1;
-			}
-			else {
-				tileAmount = tileAmount * activeDisplayLevelAmount;
-			}
+
+			tileAmount = tileAmount * activeDisplayLevelAmount;
 
 			mainView.setStatusText(Internal.I18N.getString("main.status.kmlExport.label"));
 			Logger.getInstance().info("Initializing database export...");
@@ -1067,7 +1049,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		noTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());
 		automaticTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());
-		oneFilePerObjectRadioButton.setEnabled(boundingBoxRadioButton.isSelected());
 		manualTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());
 		((TitledBorder) tilingPanel.getBorder()).setTitleColor(boundingBoxRadioButton.isSelected() ? 
 				UIManager.getColor("Label.foreground"):

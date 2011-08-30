@@ -48,6 +48,7 @@ import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.filter.ExportFilter;
+import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.util.Util;
 
@@ -59,7 +60,6 @@ public class KmlSplitter {
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
 	private final DisplayLevel displayLevel;
 	private final ExportFilter exportFilter;
-	private final HashSet<CityObject4JSON> alreadyExported;
 	private final Config config;
 	private volatile boolean shouldRun = true;
 
@@ -69,13 +69,11 @@ public class KmlSplitter {
 					   WorkerPool<KmlSplittingResult> dbWorkerPool, 
 					   ExportFilter exportFilter, 
 					   DisplayLevel displayLevel,
-					   HashSet<CityObject4JSON> alreadyExported,
 					   Config config) throws SQLException {
 		this.dbConnectionPool = dbConnectionPool;
 		this.dbWorkerPool = dbWorkerPool;
 		this.exportFilter = exportFilter;
 		this.displayLevel = displayLevel;
-		this.alreadyExported = alreadyExported;
 		this.config = config;
 
 		init();
@@ -99,13 +97,14 @@ public class KmlSplitter {
 		if (config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
 			for (String gmlId: config.getProject().getKmlExporter().getFilter().getSimpleFilter().getGmlIdFilter().getGmlIds()) {
 				if (!shouldRun) break;
-				CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
-				if (alreadyExported.contains(cityObject4Json)) continue;
+				if (KmlExporter.getAlreadyExported().containsKey(gmlId)) continue;
 				KmlSplittingResult splitter = new KmlSplittingResult(gmlId, displayLevel);
 				dbWorkerPool.addWork(splitter);
+
 				double[] ordinatesArray = getEnvelopeInWGS84(gmlId);
+				CityObject4JSON cityObject4Json = new CityObject4JSON();
 				cityObject4Json.setEnvelope(ordinatesArray);
-				alreadyExported.add(cityObject4Json);
+				KmlExporter.getAlreadyExported().put(gmlId, cityObject4Json);
 			}
 		}
 		else if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter() &&
@@ -153,15 +152,17 @@ public class KmlSplitter {
 				while (rs.next() && shouldRun) {
 					String gmlId = rs.getString("gmlId");
 					int classId = rs.getInt("class_id");
-					CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
-					if (classId != BUILDING || alreadyExported.contains(cityObject4Json)) continue;
+					if (classId != BUILDING || KmlExporter.getAlreadyExported().containsKey(gmlId)) continue;
 					KmlSplittingResult splitter = new KmlSplittingResult(gmlId, displayLevel);
 					dbWorkerPool.addWork(splitter);
+
+					CityObject4JSON cityObject4Json = new CityObject4JSON();
 					cityObject4Json.setTileRow(exportFilter.getBoundingBoxFilter().getTileRow());
 					cityObject4Json.setTileColumn(exportFilter.getBoundingBoxFilter().getTileColumn());
 					double[] ordinatesArray = getEnvelopeInWGS84(gmlId);
 					cityObject4Json.setEnvelope(ordinatesArray);
-					alreadyExported.add(cityObject4Json);
+					KmlExporter.getAlreadyExported().put(gmlId, cityObject4Json);
+
 					objectCount++;
 				}
 

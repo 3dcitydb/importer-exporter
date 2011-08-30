@@ -49,6 +49,8 @@ import de.tub.citydb.config.project.system.System;
 		"showBoundingBox",
 		"showTileBorders",
 		"autoTileSideLength",
+		"oneFilePerObject",
+		"singleObjectRegionSize",
 		"writeJSONFile",
 		"footprintHighlighting",
 		"geometryHighlighting",
@@ -85,6 +87,8 @@ public class KmlExporter {
 	private boolean showBoundingBox;
 	private boolean showTileBorders;
 	private double autoTileSideLength;
+	private boolean oneFilePerObject;
+	private double singleObjectRegionSize;
 	private boolean writeJSONFile;
 	private boolean footprintHighlighting;
 	private boolean geometryHighlighting;
@@ -413,6 +417,22 @@ public class KmlExporter {
 
 	public boolean isWriteJSONFile() {
 		return writeJSONFile;
+	}
+
+	public void setOneFilePerObject(boolean oneFilePerObject) {
+		this.oneFilePerObject = oneFilePerObject;
+	}
+
+	public boolean isOneFilePerObject() {
+		return oneFilePerObject;
+	}
+
+	public void setSingleObjectRegionSize(double singleObjectRegionSize) {
+		this.singleObjectRegionSize = singleObjectRegionSize;
+	}
+
+	public double getSingleObjectRegionSize() {
+		return singleObjectRegionSize;
 	}
 
 }

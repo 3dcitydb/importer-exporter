@@ -52,17 +52,24 @@ import javax.xml.bind.Marshaller;
 
 import net.opengis.kml._2.DocumentType;
 import net.opengis.kml._2.KmlType;
+import net.opengis.kml._2.LatLonAltBoxType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LodType;
+import net.opengis.kml._2.NetworkLinkType;
 import net.opengis.kml._2.ObjectFactory;
 import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.RegionType;
+import net.opengis.kml._2.ViewRefreshModeEnumType;
 import oracle.ord.im.OrdImage;
 
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
+import de.tub.citydb.modules.kml.controller.KmlExporter;
+import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.log.Logger;
 
 public class KmlExporterManager {
@@ -73,9 +80,10 @@ public class KmlExporterManager {
 	private final ConcurrentLinkedQueue<ColladaBundle> buildingQueue;
 	private final Config config;
 	
-	private Tiling tiling;
 	private boolean isBBoxActive;
 	private String mainFilename;
+	
+	private TilingMode tilingMode;
 	
 	private static final String ENCODING = "UTF-8";
 
@@ -92,7 +100,7 @@ public class KmlExporterManager {
 		this.buildingQueue = buildingQueue;
 		this.config = config;
 
-		tiling = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
+		tilingMode = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode();
 		isBBoxActive = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue();
 		mainFilename = config.getInternal().getExportFileName().trim();
 		if (mainFilename.lastIndexOf(File.separator) != -1) {
@@ -115,7 +123,7 @@ public class KmlExporterManager {
 	public void print(List<PlacemarkType> placemarkList) throws JAXBException {
 		SAXEventBuffer buffer = new SAXEventBuffer();
 		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
-		if (isBBoxActive && tiling.getMode() == TilingMode.ONE_FILE_PER_OBJECT) {
+		if (isBBoxActive && config.getProject().getKmlExporter().isOneFilePerObject()) {
 			kmlMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 		}
 		else {
@@ -170,7 +178,9 @@ public class KmlExporterManager {
         					balloonExtracted = true;
         				}
         			}
-        			if (isBBoxActive && tiling.getMode() == TilingMode.ONE_FILE_PER_OBJECT) {
+
+        			if (isBBoxActive && config.getProject().getKmlExporter().isOneFilePerObject()) {
+						String displayLevelName = null;
         				if (gmlId == null) {
         					gmlId = placemark.getName();
 							String path = config.getInternal().getExportFileName().trim();
@@ -180,19 +190,22 @@ public class KmlExporterManager {
 							// currently active displayLevel unknown
 							// can be found out through placemark.getId() and placemark.getStyleUrl() 
 							if (placemark.getId().startsWith(DisplayLevel.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID)) {
-								String displayLevel = placemark.getStyleUrl().startsWith("#" + DisplayLevel.GEOMETRY_STR) ?
-													  DisplayLevel.GEOMETRY_STR: DisplayLevel.COLLADA_STR;
-								filename = gmlId + "_" + displayLevel + "_" + DisplayLevel.HIGHLIGTHTED_STR;
+								displayLevelName = placemark.getStyleUrl().startsWith("#" + DisplayLevel.GEOMETRY_STR) ?
+												   DisplayLevel.GEOMETRY_STR: DisplayLevel.COLLADA_STR;
+								filename = gmlId + "_" + displayLevelName + "_" + DisplayLevel.HIGHLIGTHTED_STR;
 							}
 							else if (placemark.getId().startsWith(DisplayLevel.GEOMETRY_PLACEMARK_ID)) {
         						gmlId = gmlId.substring(0, gmlId.lastIndexOf("_")); // "_WallSurface", "_RoofSurface"
-								filename = gmlId + "_" + DisplayLevel.GEOMETRY_STR;
+        						displayLevelName = DisplayLevel.GEOMETRY_STR;
+								filename = gmlId + "_" + displayLevelName;
 							} 
 							else if (placemark.getId().startsWith(DisplayLevel.EXTRUDED_PLACEMARK_ID)) {
-								filename = gmlId + "_" + DisplayLevel.EXTRUDED_STR;
+        						displayLevelName = DisplayLevel.EXTRUDED_STR;
+								filename = gmlId + "_" + displayLevelName;
 							} 
 							else if (placemark.getId().startsWith(DisplayLevel.FOOTPRINT_PLACEMARK_ID)) {
-								filename = gmlId + "_" + DisplayLevel.FOOTPRINT_STR;
+        						displayLevelName = DisplayLevel.FOOTPRINT_STR;
+								filename = gmlId + "_" + displayLevelName;
 							}
 
 							File placemarkDirectory = new File(path + File.separator + gmlId);
@@ -207,7 +220,9 @@ public class KmlExporterManager {
 							document.setName(filename);
 							kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
 
+							String fileExtension = ".kml";
 							if (config.getProject().getKmlExporter().isExportAsKmz()) {
+								fileExtension = ".kmz";
 								File placemarkFile = new File(placemarkDirectory, filename + ".kmz");
 								zipOut = new ZipOutputStream(new FileOutputStream(placemarkFile));
 								ZipEntry zipEntry = new ZipEntry("doc.kml");
@@ -219,8 +234,58 @@ public class KmlExporterManager {
 								Charset charset = Charset.forName(ENCODING);
 								fileWriter = new OutputStreamWriter(new FileOutputStream(placemarkFile), charset);
 							}
+							
+							// the network link pointing to the file
+							NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
+							networkLinkType.setName(gmlId + " " + displayLevelName);
+
+							RegionType regionType = kmlFactory.createRegionType();
+							
+							LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
+							CityObject4JSON cityObject4JSON = KmlExporter.getAlreadyExported().get(gmlId);
+							latLonAltBoxType.setNorth(cityObject4JSON.getEnvelopeYmax());
+							latLonAltBoxType.setSouth(cityObject4JSON.getEnvelopeYmin());
+							latLonAltBoxType.setEast(cityObject4JSON.getEnvelopeXmax());
+							latLonAltBoxType.setWest(cityObject4JSON.getEnvelopeXmin());
+
+							LodType lodType = kmlFactory.createLodType();
+							lodType.setMinLodPixels(config.getProject().getKmlExporter().getSingleObjectRegionSize());
+							
+							regionType.setLatLonAltBox(latLonAltBoxType);
+							regionType.setLod(lodType);
+
+							LinkType linkType = kmlFactory.createLinkType();
+							linkType.setHref(gmlId + "/" + gmlId + "_" + displayLevelName + fileExtension);
+							linkType.setViewRefreshMode(ViewRefreshModeEnumType.ON_REGION);
+							linkType.setViewFormat("");
+
+							// confusion between atom:link and kml:Link in ogckml22.xsd
+							networkLinkType.getRest().add(kmlFactory.createLink(linkType));
+							networkLinkType.setRegion(regionType);
+
+							kmlMarshaller.marshal(kmlFactory.createNetworkLink(networkLinkType), buffer);
+
+							// include highlighting if selected
+							if (config.getProject().getKmlExporter().isGeometryHighlighting() ||
+								config.getProject().getKmlExporter().isColladaHighlighting()) {
+								
+								NetworkLinkType hNetworkLinkType = kmlFactory.createNetworkLinkType();
+								hNetworkLinkType.setName(gmlId + " " + displayLevelName + " " + DisplayLevel.HIGHLIGTHTED_STR);
+
+								LinkType hLinkType = kmlFactory.createLinkType();
+								hLinkType.setHref(gmlId + "/" + gmlId + "_" + displayLevelName + "_" + DisplayLevel.HIGHLIGTHTED_STR + fileExtension);
+								hLinkType.setViewRefreshMode(ViewRefreshModeEnumType.ON_REGION);
+								hLinkType.setViewFormat("");
+
+								// confusion between atom:link and kml:Link in ogckml22.xsd
+								hNetworkLinkType.getRest().add(kmlFactory.createLink(hLinkType));
+								hNetworkLinkType.setRegion(regionType);
+
+								kmlMarshaller.marshal(kmlFactory.createNetworkLink(hNetworkLinkType), buffer);
+							}
+
         				}
-        				placemark.setStyleUrl(".." + File.separator + mainFilename + placemark.getStyleUrl());
+       					placemark.setStyleUrl(".." + File.separator + mainFilename + placemark.getStyleUrl());
         				document.getAbstractFeatureGroup().add(kmlFactory.createPlacemark(placemark));
         			}
         			else {
@@ -228,7 +293,7 @@ public class KmlExporterManager {
         			}
         		}
         	}
-			if (isBBoxActive && tiling.getMode() == TilingMode.ONE_FILE_PER_OBJECT && kmlType != null) { // some Placemarks ARE null
+			if (isBBoxActive && config.getProject().getKmlExporter().isOneFilePerObject() && kmlType != null) { // some Placemarks ARE null
 				if (config.getProject().getKmlExporter().isExportAsKmz()) {
     				kmlMarshaller.marshal(kmlFactory.createKml(kmlType), fileWriter);
 					zipOut.closeEntry();
@@ -239,9 +304,8 @@ public class KmlExporterManager {
 					fileWriter.close();
 				}
         	}
-        	else {
-        		ioWriterPool.addWork(buffer);
-        	}
+
+			ioWriterPool.addWork(buffer); // placemark or region depending on isOneFilePerObject()
         }
         catch (IOException ioe) {
         	ioe.printStackTrace();
@@ -257,7 +321,7 @@ public class KmlExporterManager {
 		SAXEventBuffer buffer = new SAXEventBuffer();
 
 		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
-		if (isBBoxActive && tiling.getMode() == TilingMode.ONE_FILE_PER_OBJECT) {
+		if (isBBoxActive && config.getProject().getKmlExporter().isOneFilePerObject()) {
 			kmlMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 		}
 		else {
@@ -280,8 +344,9 @@ public class KmlExporterManager {
 				placemark.setDescription(parentFrame.toString());
 				colladaBundle.setExternalBalloonFileContent(placemarkDescription);
 			}
-			if (isBBoxActive && tiling.getMode() == TilingMode.ONE_FILE_PER_OBJECT) {
-				// create kml root element
+			if (isBBoxActive && config.getProject().getKmlExporter().isOneFilePerObject()) {
+				
+				// the file per object
 				KmlType kmlType = kmlFactory.createKmlType();
 				DocumentType document = kmlFactory.createDocumentType();
 				document.setOpen(true);
@@ -297,8 +362,10 @@ public class KmlExporterManager {
 					placemarkDirectory.mkdir();
 				}
 
+				String fileExtension = ".kml";
 				try {
 					if (config.getProject().getKmlExporter().isExportAsKmz()) {
+						fileExtension = ".kmz";
 						File placemarkFile = new File(placemarkDirectory, colladaBundle.getBuildingId() + "_collada.kmz");
 						zipOut = new ZipOutputStream(new FileOutputStream(placemarkFile));
 						ZipEntry zipEntry = new ZipEntry("doc.kml");
@@ -318,14 +385,46 @@ public class KmlExporterManager {
 				catch (IOException ioe) {
 					ioe.printStackTrace();
 				}
+
+				// the network link pointing to the file
+				NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
+				networkLinkType.setName(colladaBundle.getBuildingId() + " " + DisplayLevel.COLLADA_STR);
+
+				RegionType regionType = kmlFactory.createRegionType();
+				
+				LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
+				CityObject4JSON cityObject4JSON = KmlExporter.getAlreadyExported().get(colladaBundle.getBuildingId());
+				latLonAltBoxType.setNorth(cityObject4JSON.getEnvelopeYmax());
+				latLonAltBoxType.setSouth(cityObject4JSON.getEnvelopeYmin());
+				latLonAltBoxType.setEast(cityObject4JSON.getEnvelopeXmax());
+				latLonAltBoxType.setWest(cityObject4JSON.getEnvelopeXmin());
+
+				LodType lodType = kmlFactory.createLodType();
+				lodType.setMinLodPixels(config.getProject().getKmlExporter().getSingleObjectRegionSize());
+				
+				regionType.setLatLonAltBox(latLonAltBoxType);
+				regionType.setLod(lodType);
+
+				LinkType linkType = kmlFactory.createLinkType();
+				linkType.setHref(colladaBundle.getBuildingId() + "/" + colladaBundle.getBuildingId() + "_" + DisplayLevel.COLLADA_STR + fileExtension);
+				linkType.setViewRefreshMode(ViewRefreshModeEnumType.ON_REGION);
+				linkType.setViewFormat("");
+
+				// confusion between atom:link and kml:Link in ogckml22.xsd
+				networkLinkType.getRest().add(kmlFactory.createLink(linkType));
+				networkLinkType.setRegion(regionType);
+
+				kmlMarshaller.marshal(kmlFactory.createNetworkLink(networkLinkType), buffer);
 			}
-			else {
+			else { // !config.getProject().getKmlExporter().isOneFilePerObject()
 				kmlMarshaller.marshal(kmlFactory.createPlacemark(placemark), buffer);
-				ioWriterPool.addWork(buffer);
-		        colladaBundle.setPlacemark(null); // free heap space
 			}
+
+			ioWriterPool.addWork(buffer); // placemark or region depending on isOneFilePerObject()
+	        colladaBundle.setPlacemark(null); // free heap space
 		}
 
+		// so much for the placemark, now model, images and balloon...
 
 		if (config.getProject().getKmlExporter().isExportAsKmz()) {
 			// marshalling in parallel threads should save some time
@@ -336,10 +435,10 @@ public class KmlExporterManager {
 
 	        // list will be used at KmlExporter since ZipOutputStream
 	        // must be accessed sequentially and is not thread-safe
-			if (!isBBoxActive || tiling.getMode() != TilingMode.ONE_FILE_PER_OBJECT) {
+			if (!isBBoxActive || !config.getProject().getKmlExporter().isOneFilePerObject()) {
 				buildingQueue.add(colladaBundle);
 			}
-			else { // TilingMode.ONE_FILE_PER_OBJECT
+			else {
 				// ----------------- model saving -----------------
 				ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + ".dae");
 				zipOut.putNextEntry(zipEntry);
