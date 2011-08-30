@@ -578,11 +578,14 @@ public class KmlExporter implements EventHandler {
 				Iterator<String> iterator = alreadyExported.keySet().iterator();
 				while (iterator.hasNext()) {
 					String gmlId = iterator.next();
-					outputStream.write(("\t{\"gmlId\": \"" + gmlId).toString().getBytes());
+					outputStream.write(("\t\"" + gmlId + "\": {").toString().getBytes());
 					outputStream.write(alreadyExported.get(gmlId).toString().getBytes());
+					if (iterator.hasNext()) {
+						outputStream.write(",\n".getBytes());
+					}
 				}
 
-				outputStream.write("}\n".getBytes());
+				outputStream.write("\n}\n".getBytes());
 				outputStream.close();
 			}
 			catch (IOException ioe) {

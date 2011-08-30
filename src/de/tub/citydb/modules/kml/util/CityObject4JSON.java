@@ -23,8 +23,8 @@ public class CityObject4JSON {
 			   "\",\n\t\"envelope\": [" + envelopeXmin + ", " + envelopeYmin + ", " + envelopeXmax + ", " + envelopeYmax +
 			   "],\n\t\"tile\": [" + tileRow + ", " + tileColumn + "]}\n";
 */
-		return "\",\n\t\"envelope\": [" + envelopeXmin + ", " + envelopeYmin + ", " + envelopeXmax + ", " + envelopeYmax +
-		   	   "],\n\t\"tile\": [" + tileRow + ", " + tileColumn + "]}\n";
+		return "\n\t\"envelope\": [" + envelopeXmin + ", " + envelopeYmin + ", " + envelopeXmax + ", " + envelopeYmax +
+		   	   "],\n\t\"tile\": [" + tileRow + ", " + tileColumn + "]}";
 	}
 
 /*
