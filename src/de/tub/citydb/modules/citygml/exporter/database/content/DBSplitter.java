@@ -233,6 +233,8 @@ public class DBSplitter {
 			String additionalWhere = null;
 
 			for (CityGMLClass featureClass : featureClassFilter.getNotFilterState()) {
+				additionalWhere = null;
+				
 				switch (featureClass) {
 				case BUILDING:
 					tableName = DBTableEnum.BUILDING.toString();
