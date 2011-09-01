@@ -83,7 +83,6 @@ import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.database.DBConnectionPool;
@@ -91,6 +90,7 @@ import de.tub.citydb.database.DBTypeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
+import de.tub.citydb.modules.common.event.GeometryCounterEvent;
 import de.tub.citydb.modules.kml.database.BalloonTemplateHandler;
 import de.tub.citydb.modules.kml.database.Building;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
@@ -480,6 +480,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
+				eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
 				polygon = kmlFactory.createPolygonType();
 				polygon.setTessellate(true);
@@ -549,6 +550,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
+				eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
 				polygon = kmlFactory.createPolygonType();
 				polygon.setTessellate(true);
@@ -643,6 +645,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 			JGeometry surface = convertToWGS84(JGeometry.load(buildingGeometryObj));
 			double[] ordinatesArray = surface.getOrdinatesArray();
+
+			eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
 			polygon = kmlFactory.createPolygonType();
 			switch (config.getProject().getKmlExporter().getAltitudeMode()) {
@@ -756,6 +760,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					}
 
 					// from hier on it is a surfaceMember
+					eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 					long parentId = rs2.getLong("parent_id");
 
 					String texImageUri = null;

@@ -99,6 +99,8 @@ import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.database.DBTypeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.concurrent.IOWriterWorkerFactory;
+import de.tub.citydb.modules.common.event.CounterEvent;
+import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.EventType;
 import de.tub.citydb.modules.common.event.InterruptEvent;
 import de.tub.citydb.modules.common.event.StatusDialogMessage;
@@ -148,6 +150,9 @@ public class KmlExporter implements EventHandler {
 	private String path;
 	private String filename;
 
+	private long featureCounter;
+	private long geometryCounter;
+
 	private static HashMap<String, CityObject4JSON> alreadyExported;
 
 	public KmlExporter (JAXBContext jaxbKmlContext,
@@ -170,6 +175,9 @@ public class KmlExporter implements EventHandler {
 	}
 
 	public boolean doProcess() {
+		featureCounter = 0;
+		geometryCounter = 0;
+		
 		// get config shortcuts
 		de.tub.citydb.config.project.system.System system = config.getProject().getKmlExporter().getSystem();
 
@@ -178,6 +186,8 @@ public class KmlExporter implements EventHandler {
 		int maxThreads = system.getThreadPool().getDefaultPool().getMaxThreads();
 
 		// adding listener
+		eventDispatcher.addEventHandler(EventType.COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		// checking workspace...
@@ -595,6 +605,18 @@ public class KmlExporter implements EventHandler {
 		}
 		
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.finish.msg"), this));
+		Logger.getInstance().info("Exported CityGML features:");
+		int appearances = 0;
+		for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
+			if (displayLevel.isActive() && DisplayLevel.COLLADA == displayLevel.getLevel()) {
+				appearances = de.tub.citydb.config.project.kmlExporter.KmlExporter.THEME_NONE.equals(selectedTheme)? 0 : 1;
+				break;
+			}
+		}
+		Logger.getInstance().info("APPEARANCE: " + appearances);
+		Logger.getInstance().info("BUILDING: " + featureCounter);
+		Logger.getInstance().info("Processed geometry objects: " + geometryCounter);
+
 		return shouldRun;
 	}
 
@@ -1103,7 +1125,14 @@ public class KmlExporter implements EventHandler {
 	@Override
 	public void handleEvent(Event e) throws Exception {
 
-		if (e.getEventType() == EventType.INTERRUPT) {
+		if (e.getEventType() == EventType.COUNTER &&
+				((CounterEvent)e).getType() == CounterType.TOPLEVEL_FEATURE) {
+			featureCounter++;
+		}
+		else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
+			geometryCounter++;
+		}
+		else if (e.getEventType() == EventType.INTERRUPT) {
 			if (isInterrupted.compareAndSet(false, true)) {
 				shouldRun = false;
 
