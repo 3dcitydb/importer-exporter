@@ -332,16 +332,15 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				// when for EXTRUDED or FOOTPRINT there is no ground surface modelled, try to find it out indirectly
 				if (rs == null && (work.getDisplayLevel().getLevel() == DisplayLevel.FOOTPRINT || 
 						   			work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED)) {
-					psQuery = connection.prepareStatement(TileQueries.QUERY_AGGREGATE_GEOMETRIES_PREFIX +
-														  TileQueries.QUERY_GET_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod)) +
-														  TileQueries.QUERY_AGGREGATE_GEOMETRIES_SUFFIX);
+
+					psQuery = connection.prepareStatement(TileQueries.QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod)));
 
 					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 						psQuery.setString(i, work.getGmlId());
 					}
 					try {
-						rs = (OracleResultSet)psQuery.executeQuery();
 						reversePointOrder = true;
+						rs = (OracleResultSet)psQuery.executeQuery();
 						if (rs.isBeforeFirst()) {
 							break; // result set not empty
 						}
@@ -351,7 +350,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 						try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
 						Logger.getInstance().debug("SQL error while aggregating geometries for " + work.getGmlId() + ": " + e.getMessage());
-/*
+
 						// aggregation of surfaces failed, so just return them as they are
 						psQuery = connection.prepareStatement(TileQueries.QUERY_GET_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod)));
 
@@ -367,7 +366,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 							rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 							try { psQuery.close(); } catch (SQLException sqle) {}
 						}
-*/
+
 					}
 				}
 

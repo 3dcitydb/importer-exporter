@@ -505,9 +505,7 @@ public class TileQueries {
     
     public static final String QUERY_GET_GEOMETRIES_FOR_LOD =
 		
-		"SELECT sg.geometry AS simple_geom, " +
-		  	   "b.measured_height AS measured_height, " + 
-		  	   "SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
+		"SELECT SDO_CS.TRANSFORM(sg.geometry , 4326) " +
 		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
 		"WHERE " +
 		  "co.gmlid = ? " +
@@ -519,25 +517,35 @@ public class TileQueries {
 		      "AND sg.root_id = b.lod<LoD>_geometry_id)) " +
 		"AND sg.geometry IS NOT NULL";
 
-    public static final String QUERY_AGGREGATE_GEOMETRIES_PREFIX =
+    public static final String QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD =
 		
 		"SELECT SDO_CS.TRANSFORM(sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom,0.05)), 4326) aggr_geom " +
 		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom,0.05)) aggr_geom " +
 		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom,0.05)) aggr_geom " +
 		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom,0.05)) aggr_geom " +
 		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom,0.05)) aggr_geom " +
-		"FROM (";
+		"FROM (" +
 
-    public static final String QUERY_AGGREGATE_GEOMETRIES_SUFFIX =
+		"SELECT sg.geometry AS simple_geom " +
+		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
+		"WHERE " +
+		  "co.gmlid = ? " +
+		"AND b.building_root_id = co.ID " +
+		"AND ((ts.building_id = b.ID " +
+		      "AND ts.lod<LoD>_multi_surface_id IS NOT NULL " +
+		      "AND sg.root_id = ts.lod<LoD>_multi_surface_id) " +
+		  "OR (b.lod<LoD>_geometry_id IS NOT NULL " +
+		      "AND sg.root_id = b.lod<LoD>_geometry_id)) " +
+		"AND sg.geometry IS NOT NULL" +
 		
 		") " +
-		"GROUP BY mod(rownum, 16) " +
+		"GROUP BY mod(rownum, 64) " +
+		") " +
+		"GROUP BY mod (rownum, 32) " +
+		") " +
+		"GROUP BY mod (rownum, 16) " +
 		") " +
 		"GROUP BY mod (rownum, 8) " +
-		") " +
-		"GROUP BY mod (rownum, 4) " +
-		") " +
-		"GROUP BY mod (rownum, 2) " +
 		")";
 
 	public static final String QUERY_EXTRUDED_HEIGHTS =
