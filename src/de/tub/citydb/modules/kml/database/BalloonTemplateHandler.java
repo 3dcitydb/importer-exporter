@@ -920,9 +920,10 @@ public class BalloonTemplateHandler {
 			else if (BUILDING_INSTALLATION_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "bi";
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(tableShortId, columns, BUILDING_INSTALLATION_COLUMNS) + aggregateClosingString +
-							   " FROM CITYOBJECT co, BUILDING_INSTALLATION " + tableShortId +
+							   " FROM CITYOBJECT co, BUILDING b, BUILDING_INSTALLATION " + tableShortId +
 							   " WHERE co.gmlid = ?" +
-							   " AND bi.building_id = co.id";
+							   " AND b.building_root_id = co.id" +
+							   " AND bi.building_id = b.id";
 			}
 	 		else if (CITYMODEL_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "cm";
@@ -1002,26 +1003,29 @@ public class BalloonTemplateHandler {
 			else if (OPENING_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "o";
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(tableShortId, columns, OPENING_COLUMNS) + aggregateClosingString +
-							   " FROM CITYOBJECT co, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING " + tableShortId +
+							   " FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING " + tableShortId +
 							   " WHERE co.gmlid = ?" +
-							   " AND ts.building_id = co.id" +
+							   " AND b.building_root_id = co.id" +
+							   " AND ts.building_id = b.id" +
 							   " AND o2ts.thematic_surface_id = ts.id" +
 							   " AND o.id = o2ts.opening_id";
 			}
 			else if (OPENING_TO_THEM_SURFACE_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "o2ts";
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(tableShortId, columns, OPENING_TO_THEM_SURFACE_COLUMNS) + aggregateClosingString +
-							   " FROM CITYOBJECT co, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE " + tableShortId +
+							   " FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE " + tableShortId +
 							   " WHERE co.gmlid = ?" +
-							   " AND ts.building_id = co.id" +
+							   " AND b.building_root_id = co.id" +
+							   " AND ts.building_id = b.id" +
 							   " AND o2ts.thematic_surface_id = ts.id";
 			}
 			else if (ROOM_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "r";
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(tableShortId, columns, ROOM_COLUMNS) + aggregateClosingString +
-							   " FROM CITYOBJECT co, ROOM " + tableShortId +
+							   " FROM CITYOBJECT co, BUILDING b, ROOM " + tableShortId +
 							   " WHERE co.gmlid = ?" +
-							   " AND r.building_id = co.id";
+							   " AND b.building_root_id = co.id" +
+							   " AND r.building_id = b.id";
 			}
 			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "sd";
@@ -1042,15 +1046,16 @@ public class BalloonTemplateHandler {
 							   "(SELECT sg.id" +
 							   " FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY " + tableShortId +
 							   " WHERE co.gmlid = ?" +
-							   " AND b.id = co.id" +
+							   " AND b.building_root_id = co.id" +
 							   " AND sg.root_id = b.lod" + lod + "_geometry_id";
 				if (lod > 1) {
 					sqlStatement = sqlStatement +
 							   " UNION " +
 							   "SELECT sg.id" +
-							   " FROM CITYOBJECT co, THEMATIC_SURFACE ts, SURFACE_GEOMETRY " + tableShortId +
+							   " FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts, SURFACE_GEOMETRY " + tableShortId +
 							   " WHERE co.gmlid = ?" +
-							   " AND ts.building_id = co.id " + 
+							   " AND b.building_root_id = co.id" +
+							   " AND ts.building_id = b.id" + 
 							   " AND sg.root_id = ts.lod" + lod + "_multi_surface_id";
 				}
 				sqlStatement = sqlStatement + ")";
@@ -1063,15 +1068,16 @@ public class BalloonTemplateHandler {
 						   	   " (SELECT sg.id" + 
 						   	   " FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg" + 
 						   	   " WHERE co.gmlid = ?" +
-						   	   " AND b.id = co.id" +
+							   " AND b.building_root_id = co.id" +
 						   	   " AND sg.root_id = b.lod" + lod + "_geometry_id";
 				if (lod > 1) {
 					sqlStatement = sqlStatement +
 							   " UNION " +
 						   	   "SELECT sg.id" + 
-						   	   " FROM CITYOBJECT co, THEMATIC_SURFACE ts, SURFACE_GEOMETRY sg" +
+						   	   " FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts, SURFACE_GEOMETRY sg" +
 						   	   " WHERE co.gmlid = ?" +
-						   	   " AND ts.building_id = co.id " + 
+							   " AND b.building_root_id = co.id" +
+							   " AND ts.building_id = b.id" + 
 						   	   " AND sg.root_id = ts.lod" + lod + "_multi_surface_id";
 				}
 				sqlStatement = sqlStatement + ")";
@@ -1079,9 +1085,10 @@ public class BalloonTemplateHandler {
 			else if (THEMATIC_SURFACE_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "ts";
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(tableShortId, columns, THEMATIC_SURFACE_COLUMNS) + aggregateClosingString +
-							   " FROM CITYOBJECT co, THEMATIC_SURFACE " + tableShortId +
+							   " FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE " + tableShortId +
 							   " WHERE co.gmlid = ?" +
-							   " AND ts.building_id = co.id";
+							   " AND b.building_root_id = co.id" +
+							   " AND ts.building_id = b.id";
 			}
 			else {
 				throw new Exception("Unsupported table \"" + table + "\" in statement \"" + rawStatement + "\"");
