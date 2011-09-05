@@ -103,6 +103,8 @@ import de.tub.citydb.util.Util;
 
 public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
+	private static final int POINT = 1;
+	private static final int LINE_STRING = 2;
 	private static final int EXTERIOR_POLYGON_RING = 1003;
 	private static final int INTERIOR_POLYGON_RING = 2003;
 
@@ -298,6 +300,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		PreparedStatement psQuery = null;
 		OracleResultSet rs = null;
 
+		boolean reversePointOrder = false;
+
 		try {
 			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
@@ -320,34 +324,57 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					break; // result set not empty
 				}
 				else {
-					try { rs.close(); /* release cursor on DB */ } catch (SQLException e) {}
-					try { psQuery.close(); /* release cursor on DB */ } catch (SQLException e) {}
-				}
-
-				// try alternative query
-				psQuery = connection.prepareStatement(
-						TileQueries.getSingleBuildingQueryAlt(currentLod, work.getDisplayLevel()),
-						// work-around for JDBC problem with rs.getDouble() and ResultSet.TYPE_SCROLL_INSENSITIVE
-						work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED ? ResultSet.TYPE_FORWARD_ONLY: ResultSet.TYPE_SCROLL_INSENSITIVE,
-								ResultSet.CONCUR_READ_ONLY);
-
-				for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-					psQuery.setString(i, work.getGmlId());
-				}
-				rs = (OracleResultSet)psQuery.executeQuery();
-				if (rs.isBeforeFirst()) {
-					break; // result set not empty
-				}
-				else {
-					try { rs.close(); /* release cursor on DB */ } catch (SQLException e) {}
+					try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
 					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
-					try { psQuery.close(); /* release cursor on DB */ } catch (SQLException e) {}
+					try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+				}
+
+				// when for EXTRUDED or FOOTPRINT there is no ground surface modelled, try to find it out indirectly
+				if (rs == null && (work.getDisplayLevel().getLevel() == DisplayLevel.FOOTPRINT || 
+						   			work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED)) {
+					psQuery = connection.prepareStatement(TileQueries.QUERY_AGGREGATE_GEOMETRIES_PREFIX +
+														  TileQueries.QUERY_GET_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod)) +
+														  TileQueries.QUERY_AGGREGATE_GEOMETRIES_SUFFIX);
+
+					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
+						psQuery.setString(i, work.getGmlId());
+					}
+					try {
+						rs = (OracleResultSet)psQuery.executeQuery();
+						reversePointOrder = true;
+						if (rs.isBeforeFirst()) {
+							break; // result set not empty
+						}
+					}
+					catch (Exception e) {
+						try { if (rs != null) rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
+						try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+						Logger.getInstance().debug("SQL error while aggregating geometries for " + work.getGmlId() + ": " + e.getMessage());
+/*
+						// aggregation of surfaces failed, so just return them as they are
+						psQuery = connection.prepareStatement(TileQueries.QUERY_GET_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod)));
+
+						for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
+							psQuery.setString(i, work.getGmlId());
+						}
+						rs = (OracleResultSet)psQuery.executeQuery();
+						if (rs.isBeforeFirst()) {
+							break; // result set not empty
+						}
+						else {
+							try { rs.close(); } catch (SQLException sqle) {}
+							rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
+							try { psQuery.close(); } catch (SQLException sqle) {}
+						}
+*/
+					}
 				}
 
 				currentLod--;
 			}
 
-			if (rs == null || rs.isClosed() || !rs.isBeforeFirst()) { // result empty, give up
+			if (rs == null) { // result empty, give up
 				if (config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
 					// only for single building exports, tiles would fill the whole textarea
 					Logger.getInstance().info("No info found for object " + work.getGmlId() 
@@ -362,7 +389,21 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					kmlExporterManager.print(createPlacemarksForFootprint(rs, work.getGmlId()));
 					break;
 				case DisplayLevel.EXTRUDED:
-					kmlExporterManager.print(createPlacemarksForExtruded(rs, work.getGmlId()));
+
+					PreparedStatement psQuery2 = connection.prepareStatement(TileQueries.QUERY_EXTRUDED_HEIGHTS);
+					for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
+						psQuery2.setString(i, work.getGmlId());
+					}
+					OracleResultSet rs2 = (OracleResultSet)psQuery2.executeQuery();
+					rs2.next();
+					double measuredHeight = rs2.getDouble("measured_height");
+					if (measuredHeight == 0) {
+						measuredHeight = rs2.getDouble("envelope_measured_height");
+					}
+					try { rs2.close(); /* release cursor on DB */ } catch (SQLException e) {}
+					try { psQuery2.close(); /* release cursor on DB */ } catch (SQLException e) {}
+					
+					kmlExporterManager.print(createPlacemarksForExtruded(rs, work.getGmlId(), measuredHeight, reversePointOrder));
 					break;
 				case DisplayLevel.GEOMETRY:
 					if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter()) { // region
@@ -499,6 +540,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					case INTERIOR_POLYGON_RING:
 						polygon.getInnerBoundaryIs().add(boundary);
 						break;
+					case POINT:
+					case LINE_STRING:
+						continue;
 					default:
 						Logger.getInstance().warn("Unknown geometry for " + gmlId);
 						continue;
@@ -522,7 +566,10 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		return placemarkList;
 	}
 
-	private List<PlacemarkType> createPlacemarksForExtruded(OracleResultSet rs, String gmlId) throws SQLException {
+	private List<PlacemarkType> createPlacemarksForExtruded(OracleResultSet rs,
+															String gmlId,
+															double measuredHeight,
+															boolean reversePointOrder) throws SQLException {
 
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
@@ -544,10 +591,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		while (rs.next()) {
 			// ColumnName is SDO_CS.TRANSFORM(sg.geometry, 4326)
 			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
-			double measuredHeight = rs.getDouble("measured_height");
-			if (measuredHeight == 0) {
-				measuredHeight = rs.getDouble("envelope_measured_height");
-			}
 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
 				eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
@@ -569,6 +612,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					case INTERIOR_POLYGON_RING:
 						polygon.getInnerBoundaryIs().add(boundary);
 						break;
+					case POINT:
+					case LINE_STRING:
+						continue;
 					default:
 						Logger.getInstance().warn("Unknown geometry for " + gmlId);
 						continue;
@@ -578,8 +624,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 							groundSurface.getElemInfo()[i+3] - 1: // still more geometries
 								ordinatesArray.length; // default
 
-					boolean reverseOrder = false; // trick for "difficult" datasets, default is false
-					if (reverseOrder) {
+					if (reversePointOrder) {
 						for (int j = groundSurface.getElemInfo()[i] - 1; j < startNextGeometry; j = j+3) {
 							linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," 
 									+ ordinatesArray[j+1] + ","
