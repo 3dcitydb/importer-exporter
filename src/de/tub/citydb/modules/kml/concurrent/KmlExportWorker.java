@@ -395,10 +395,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					}
 					OracleResultSet rs2 = (OracleResultSet)psQuery2.executeQuery();
 					rs2.next();
-					double measuredHeight = rs2.getDouble("measured_height");
-					if (measuredHeight == 0) {
-						measuredHeight = rs2.getDouble("envelope_measured_height");
-					}
+					double measuredHeight = rs2.getDouble("envelope_measured_height");
 					try { rs2.close(); /* release cursor on DB */ } catch (SQLException e) {}
 					try { psQuery2.close(); /* release cursor on DB */ } catch (SQLException e) {}
 					
@@ -528,6 +525,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
 
 				JGeometry groundSurface = JGeometry.load(buildingGeometryObj);
+				int dim = groundSurface.getDimensions();
 				for (int i = 0; i < groundSurface.getElemInfo().length; i = i+3) {
 					LinearRingType linearRing = kmlFactory.createLinearRingType();
 					BoundaryType boundary = kmlFactory.createBoundaryType();
@@ -552,7 +550,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 							groundSurface.getElemInfo()[i+3] - 1: // still more geometries
 								ordinatesArray.length; // default
 							// order points counter-clockwise
-							for (int j = startNextGeometry - 3; j >= groundSurface.getElemInfo()[i] - 1; j = j-3) {
+							for (int j = startNextGeometry - dim; j >= groundSurface.getElemInfo()[i] - 1; j = j-dim) {
 								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
 							}
 				}
@@ -600,6 +598,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
 
 				JGeometry groundSurface = JGeometry.load(buildingGeometryObj);
+				int dim = groundSurface.getDimensions();
 				for (int i = 0; i < groundSurface.getElemInfo().length; i = i+3) {
 					LinearRingType linearRing = kmlFactory.createLinearRingType();
 					BoundaryType boundary = kmlFactory.createBoundaryType();
@@ -624,7 +623,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 								ordinatesArray.length; // default
 
 					if (reversePointOrder) {
-						for (int j = groundSurface.getElemInfo()[i] - 1; j < startNextGeometry; j = j+3) {
+						for (int j = groundSurface.getElemInfo()[i] - 1; j < startNextGeometry; j = j+dim) {
 							linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," 
 									+ ordinatesArray[j+1] + ","
 									+ measuredHeight));
@@ -632,7 +631,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					}
 					else {
 						// order points counter-clockwise
-						for (int j = startNextGeometry - 3; j >= groundSurface.getElemInfo()[i] - 1; j = j-3) {
+						for (int j = startNextGeometry - dim; j >= groundSurface.getElemInfo()[i] - 1; j = j-dim) {
 							linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," 
 									+ ordinatesArray[j+1] + ","
 									+ measuredHeight));

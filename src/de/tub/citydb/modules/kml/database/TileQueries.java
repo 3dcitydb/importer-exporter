@@ -522,11 +522,11 @@ public class TileQueries {
 		"SELECT SDO_CS.TRANSFORM(sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom,0.05)), 4326) aggr_geom " +
 		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom,0.05)) aggr_geom " +
 		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom,0.05)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom,0.05)) aggr_geom " +
 		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom,0.05)) aggr_geom " +
 		"FROM (" +
 
-		"SELECT sg.geometry AS simple_geom " +
+		"SELECT geodb_match.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
+//		"SELECT sg.geometry AS simple_geom " +
 		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
 		"WHERE " +
 		  "co.gmlid = ? " +
@@ -539,20 +539,18 @@ public class TileQueries {
 		"AND sg.geometry IS NOT NULL" +
 		
 		") " +
-		"GROUP BY mod(rownum, 64) " +
+		"GROUP BY mod(rownum, 256) " +
 		") " +
-		"GROUP BY mod (rownum, 32) " +
+		"GROUP BY mod (rownum, 64) " +
 		") " +
 		"GROUP BY mod (rownum, 16) " +
-		") " +
-		"GROUP BY mod (rownum, 8) " +
 		")";
 
 	public static final String QUERY_EXTRUDED_HEIGHTS =
-		"SELECT b.measured_height, SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
-		"FROM CITYOBJECT co, BUILDING b " +
+		"SELECT " + // "b.measured_height, " +
+		"SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) - SDO_GEOM.SDO_MIN_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
+		"FROM CITYOBJECT co " + // ", BUILDING b " +
 		"WHERE " +
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id";
+			"co.gmlid = ?"; // + " AND b.building_root_id = co.id";
 
 }
