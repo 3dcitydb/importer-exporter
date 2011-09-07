@@ -67,8 +67,8 @@ import javax.xml.bind.JAXBException;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.ConfigUtil;
@@ -357,7 +357,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		browseFileButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				browseImpExpFile(Internal.I18N.getString("pref.db.srs.label.file"));
+				browseReferenceSystemFile(Internal.I18N.getString("pref.db.srs.label.file"));
 			}
 		});
 
@@ -659,7 +659,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		return projectContext;
 	}
 
-	private void browseImpExpFile(String title) {
+	private void browseReferenceSystemFile(String title) {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(title);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -671,6 +671,8 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		if (!fileText.getText().trim().isEmpty())
 			chooser.setCurrentDirectory(new File(fileText.getText()));
+		else
+			chooser.setCurrentDirectory(new File(Internal.SRS_TEMPLATES_PATH));
 
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 

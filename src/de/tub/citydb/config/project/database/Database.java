@@ -78,6 +78,10 @@ public class Database {
 	public void addReferenceSystem(ReferenceSystem referenceSystem) {
 		referenceSystems.addItem(referenceSystem);
 	}
+	
+	public void addDefaultReferenceSystems() {
+		referenceSystems.addDefaultItems();
+	}
 
 	public List<DBConnection> getConnections() {
 		return connections;

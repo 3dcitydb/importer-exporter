@@ -49,8 +49,13 @@ public class Config {
 	}
 
 	public void setProject(Project project) {
-		if (project != null)
+		if (project != null) {
 			this.project = project;
+			
+			// add things to be done after changing the project settings
+			// (e.g., after unmarshalling the config file) here 
+			project.getDatabase().addDefaultReferenceSystems();
+		}
 	}
 
 	public Gui getGui() {

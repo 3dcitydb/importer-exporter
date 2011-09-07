@@ -35,6 +35,11 @@ import de.tub.citydb.api.database.DatabaseSrs;
 
 public class ReferenceSystem extends DatabaseSrs {
 	public static final ReferenceSystem DEFAULT = new ReferenceSystem("", 0, "n/a", "", false);
+	public static final ReferenceSystem[] PREDEFINED = new ReferenceSystem[1];
+
+	static {
+		PREDEFINED[0] = new ReferenceSystem(4326, "urn:ogc:def:crs:EPSG:7.7:4326", "[Default] WGS 84", true);
+	}
 
 	public ReferenceSystem() {
 		id = DefaultGMLIdManager.getInstance().generateUUID();
@@ -43,11 +48,11 @@ public class ReferenceSystem extends DatabaseSrs {
 	public ReferenceSystem(int srid, String srsName, String description, boolean isSupported) {
 		this(DefaultGMLIdManager.getInstance().generateUUID(), srid, srsName, description, isSupported);
 	}
-	
+
 	public ReferenceSystem(ReferenceSystem other) {
 		this(other.getSrid(), other.getSrsName(), other.getDescription(), other.isSupported);
 	}
-	
+
 	public ReferenceSystem(String id, int srid, String srsName, String description, boolean isSupported) {
 		this.id = id;
 		this.srid = srid;
@@ -83,5 +88,5 @@ public class ReferenceSystem extends DatabaseSrs {
 	public void setSupported(boolean isSupported) {
 		this.isSupported = isSupported;
 	}
-	
+
 }

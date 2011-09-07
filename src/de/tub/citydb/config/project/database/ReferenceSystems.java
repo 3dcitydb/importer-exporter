@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ReferenceSystems {
 	@XmlElement(name="referenceSystem")
 	private List<ReferenceSystem> items;
-	
+
 	public ReferenceSystems() {
 		items = new ArrayList<ReferenceSystem>();
 	}
@@ -51,9 +51,29 @@ public class ReferenceSystems {
 	public void setItems(List<ReferenceSystem> items) {
 		this.items = items;
 	}
-	
+
 	public boolean addItem(ReferenceSystem item) {
 		return items.add(item);
 	}
-	 
+
+	public void addDefaultItems() {		
+		boolean[] addSRS = new boolean[ReferenceSystem.PREDEFINED.length];
+		for (int i = 0; i < addSRS.length; ++i)
+			addSRS[i] = true;
+						
+		for (ReferenceSystem refSys : items) {
+			for (int i = 0; i < ReferenceSystem.PREDEFINED.length; ++i) {
+				if (addSRS[i] && refSys.getSrid() == ReferenceSystem.PREDEFINED[i].getSrid()) {
+					addSRS[i] = false;
+					break;
+				}
+			}
+		}
+
+		for (int i = 0; i < addSRS.length; ++i) {
+			if (addSRS[i])
+				items.add(ReferenceSystem.PREDEFINED[i]);
+		}
+	}
+
 }

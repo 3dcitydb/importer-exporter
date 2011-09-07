@@ -47,6 +47,7 @@ public class Internal {
 	// path names and files
 	public static final String USER_PATH = System.getProperty("user.home") + File.separator + "3DCityDB-Importer-Exporter";	
 	public static final String PLUGINS_PATH = System.getProperty("user.dir") + File.separator + "plugins";
+	public static final String SRS_TEMPLATES_PATH = System.getProperty("user.dir") + File.separator + "templates" + File.separator + "CoordinateReferenceSystems";
 	private String configPath =  USER_PATH + File.separator + "config";
 	private String logPath = USER_PATH + File.separator + "log";
 	private String currentLogPath = "";
