@@ -34,7 +34,7 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import de.tub.citydb.api.database.DatabaseSrs;
 
 public class ReferenceSystem extends DatabaseSrs {
-	public static final ReferenceSystem DEFAULT = new ReferenceSystem("", 0, "n/a", "", true);
+	public static final ReferenceSystem DEFAULT = new ReferenceSystem("", 0, "n/a", "", false);
 
 	public ReferenceSystem() {
 		id = DefaultGMLIdManager.getInstance().generateUUID();
