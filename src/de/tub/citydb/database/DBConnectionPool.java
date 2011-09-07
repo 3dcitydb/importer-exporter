@@ -133,7 +133,7 @@ public class DBConnectionPool {
 			// retrieve connection metadata
 			conn.setMetaData(DBUtil.getDatabaseInfo());
 
-			// check user-defined reference systems are supported
+			// check whether user-defined reference systems are supported
 			for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) { 
 				boolean isSupported = DBUtil.isSrsSupported(refSys.getSrid());
 				refSys.setSupported(isSupported);

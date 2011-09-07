@@ -53,10 +53,10 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 						if (!e.getComponent().isEnabled())
 							return;
 
-						if (e.getComponent() instanceof JTextComponent &&
-								!((JTextComponent)e.getComponent()).isEditable()) {
-							popupMenu.cut.setEnabled(false);
-							popupMenu.paste.setEnabled(false);
+						if (e.getComponent() instanceof JTextComponent) {
+							boolean isEditable = ((JTextComponent)e.getComponent()).isEditable();
+							popupMenu.cut.setEnabled(isEditable);
+							popupMenu.paste.setEnabled(isEditable);
 						}
 
 						popupMenu.show(e.getComponent(), e.getX(), e.getY());
