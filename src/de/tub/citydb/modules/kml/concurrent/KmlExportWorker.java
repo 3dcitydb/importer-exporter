@@ -310,63 +310,68 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			while (currentLod >= minLod) {
 				if(!work.getDisplayLevel().isAchievableFromLoD(currentLod)) break;
 
-				psQuery = connection.prepareStatement(
-						TileQueries.getSingleBuildingQuery(currentLod, work.getDisplayLevel()),
-						// work-around for JDBC problem with rs.getDouble() and ResultSet.TYPE_SCROLL_INSENSITIVE
-						work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED ? ResultSet.TYPE_FORWARD_ONLY: ResultSet.TYPE_SCROLL_INSENSITIVE,
-								ResultSet.CONCUR_READ_ONLY);
-
-				for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-					psQuery.setString(i, work.getGmlId());
+				try {
+					psQuery = connection.prepareStatement(
+							TileQueries.getSingleBuildingQuery(currentLod, work.getDisplayLevel()),
+							// work-around for JDBC problem with rs.getDouble() and ResultSet.TYPE_SCROLL_INSENSITIVE
+							work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED ? ResultSet.TYPE_FORWARD_ONLY: ResultSet.TYPE_SCROLL_INSENSITIVE,
+									ResultSet.CONCUR_READ_ONLY);
+	
+					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
+						psQuery.setString(i, work.getGmlId());
+					}
+				
+					rs = (OracleResultSet)psQuery.executeQuery();
+					if (rs.isBeforeFirst()) {
+						break; // result set not empty
+					}
+					else {
+						try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
+						try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+					}
 				}
-				rs = (OracleResultSet)psQuery.executeQuery();
-				if (rs.isBeforeFirst()) {
-					break; // result set not empty
-				}
-				else {
-					try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+				catch (Exception e2) {
+					// just in case connection was lost
+					try {Thread.currentThread().sleep(1000); } catch (InterruptedException ie) {}
+					
+					try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
 					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
-					try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 				}
 
 				// when for EXTRUDED or FOOTPRINT there is no ground surface modelled, try to find it out indirectly
 				if (rs == null && (work.getDisplayLevel().getLevel() == DisplayLevel.FOOTPRINT || 
 						   			work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED)) {
 
-					psQuery = connection.prepareStatement(TileQueries.QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod)));
+					reversePointOrder = true;
 
-					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-						psQuery.setString(i, work.getGmlId());
-					}
-					try {
-						reversePointOrder = true;
-						rs = (OracleResultSet)psQuery.executeQuery();
-						if (rs.isBeforeFirst()) {
-							break; // result set not empty
-						}
-					}
-					catch (Exception e) {
-						try { if (rs != null) rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
-						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
-						try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
-						Logger.getInstance().debug("SQL error while aggregating geometries for " + work.getGmlId() + ": " + e.getMessage());
+					int groupBasis = 4;
+					while (groupBasis > 0) {
+						try {
+							psQuery = connection.prepareStatement(TileQueries.
+									QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod))
+																		  .replace("<GROUP_BY_1>", String.valueOf(Math.pow(groupBasis, 4)))
+																		  .replace("<GROUP_BY_2>", String.valueOf(Math.pow(groupBasis, 3)))
+																		  .replace("<GROUP_BY_3>", String.valueOf(Math.pow(groupBasis, 2))));
 
-						// aggregation of surfaces failed, so just return them as they are
-						psQuery = connection.prepareStatement(TileQueries.QUERY_GET_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod)));
+							for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
+								psQuery.setString(i, work.getGmlId());
+							}
+							rs = (OracleResultSet)psQuery.executeQuery();
+							if (rs.isBeforeFirst()) {
+								break; // result set not empty
+							}
+						}
+						catch (Exception e2) {
+							// just in case connection was lost
+							try {Thread.currentThread().sleep(1000); } catch (InterruptedException ie) {}
 
-						for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-							psQuery.setString(i, work.getGmlId());
-						}
-						rs = (OracleResultSet)psQuery.executeQuery();
-						if (rs.isBeforeFirst()) {
-							break; // result set not empty
-						}
-						else {
-							try { rs.close(); } catch (SQLException sqle) {}
+							try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
 							rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
-							try { psQuery.close(); } catch (SQLException sqle) {}
+							try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 						}
-
+						groupBasis--;
 					}
 				}
 
