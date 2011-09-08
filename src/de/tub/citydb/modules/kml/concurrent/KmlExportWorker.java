@@ -346,8 +346,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 					reversePointOrder = true;
 
-					int groupBasis = 1;
-					while (groupBasis < 5) {
+					int groupBasis = 4;
+					while (groupBasis > 0) {
 						try {
 							psQuery = connection.prepareStatement(TileQueries.
 									QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod))
@@ -371,7 +371,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 							rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 							try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 						}
-						groupBasis++;
+						groupBasis--;
 					}
 				}
 
