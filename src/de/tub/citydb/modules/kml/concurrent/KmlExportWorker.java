@@ -346,8 +346,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 					reversePointOrder = true;
 
-					int groupBasis = 4;
-					while (groupBasis > 0) {
+					int groupBasis = 1;
+					while (groupBasis < 5) {
 						try {
 							psQuery = connection.prepareStatement(TileQueries.
 									QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod))
@@ -371,7 +371,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 							rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 							try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 						}
-						groupBasis--;
+						groupBasis++;
 					}
 				}
 
@@ -379,11 +379,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 
 			if (rs == null) { // result empty, give up
-				if (config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
-					// only for single building exports, tiles would fill the whole textarea
-					Logger.getInstance().info("No info found for object " + work.getGmlId() 
-							+ " to display as " + work.getDisplayLevel().getName() + ".");
-				}
+				Logger.getInstance().info("Could not display object " + work.getGmlId() 
+						+ " as " + work.getDisplayLevel().getName() + ".");
 			}
 			else { // result not empty
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
