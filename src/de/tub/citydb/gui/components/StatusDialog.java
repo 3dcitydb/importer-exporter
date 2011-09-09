@@ -68,7 +68,6 @@ public class StatusDialog extends JDialog implements EventHandler {
 	private JButton button;
 	private volatile boolean acceptStatusUpdate = true;
 
-
 	public StatusDialog(JFrame frame, 
 			String windowTitle, 
 			String statusTitle,

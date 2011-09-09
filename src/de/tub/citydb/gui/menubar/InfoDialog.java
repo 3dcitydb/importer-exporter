@@ -94,7 +94,7 @@ public class InfoDialog extends JDialog {
 				c.anchor = GridBagConstraints.NORTHEAST;
 				header.add(titel, c);
 
-				JLabel img = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/logo.png"))));
+				JLabel img = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/common/logo.png"))));
 				header.add(img, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.NONE,5,0,5,10));
 			}
 
@@ -190,14 +190,14 @@ public class InfoDialog extends JDialog {
 				Font font = UIManager.getFont("Label.font");
 		        String bodyRule = "body { font-family: " + font.getFamily() + "; " + "font-size: " + font.getSize() + "pt; }";
 
-		        JLabel blc_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/blc_logo.png"))));
+		        JLabel blc_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/blc_logo.png"))));
 				logos.add(blc_logo, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,5,0,5,0));
 				JEditorPane blc_label = new JEditorPane("text/html", "<html><b>Business Location Center, Berlin</b><br/>http://www.businesslocationcenter.de/</html>");
 		        ((HTMLDocument)blc_label.getDocument()).getStyleSheet().addRule(bodyRule);
 				blc_label.setEditable(false);
 		        logos.add(blc_label, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
 
-				JLabel vcs_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/vcs_logo.png"))));
+				JLabel vcs_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/vcs_logo.png"))));
 				logos.add(vcs_logo, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.NONE,5,0,5,0));
 				JEditorPane vcs_label = new JEditorPane("text/html", "<html><b>virtualcitySYSTEMS GmbH, Berlin</b><br/>http://www.virtualcitysystems.de/</html>");
 		        ((HTMLDocument)vcs_label.getDocument()).getStyleSheet().addRule(bodyRule);
@@ -207,7 +207,7 @@ public class InfoDialog extends JDialog {
 				String wtf_label_text = config.getProject().getGlobal().getLanguage() == LanguageType.EN ?
 						"Berlin Senate of Business, <br/>Technology and Women" : "Senatsverwaltung für Wirtschaft, <br/>Technologie und Frauen, Berlin";
 				
-				JLabel wtf_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/wtf_logo.png"))));
+				JLabel wtf_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/wtf_logo.png"))));
 				logos.add(wtf_logo, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.NONE,5,0,5,0));
 				JEditorPane wtf_label = new JEditorPane("text/html", "<html><b>" + wtf_label_text + "</b><br/>http://www.berlin.de/sen/wtf/</html>");
 		        ((HTMLDocument)wtf_label.getDocument()).getStyleSheet().addRule(bodyRule);

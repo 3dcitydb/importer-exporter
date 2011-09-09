@@ -39,48 +39,59 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 	public static synchronized PopupMenuDecorator getInstance() {
 		if (instance == null)
 			instance = new PopupMenuDecorator();
-		
+
 		return instance;
 	}
-	
-	public void decorate(final JComponent... components) {
-		for (final JComponent component : components) {
-			final StandardEditingPopupMenu popupMenu = getStandardEditingPopupMenu(component);
 
-			component.addMouseListener(new MouseAdapter() {
-				private void processMouseEvent(MouseEvent e) {
-					if (e.isPopupTrigger()) {
-						if (!e.getComponent().isEnabled())
-							return;
+	private void decorate (final JComponent component, final StandardEditingPopupMenu popupMenu) {
+		component.addMouseListener(new MouseAdapter() {
+			private void processMouseEvent(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					if (!e.getComponent().isEnabled())
+						return;
 
-						if (e.getComponent() instanceof JTextComponent) {
-							boolean isEditable = ((JTextComponent)e.getComponent()).isEditable();
-							popupMenu.cut.setEnabled(isEditable);
-							popupMenu.paste.setEnabled(isEditable);
-						}
-
-						popupMenu.show(e.getComponent(), e.getX(), e.getY());
-						popupMenu.setInvoker(e.getComponent());
+					if (e.getComponent() instanceof JTextComponent) {
+						boolean isEditable = ((JTextComponent)e.getComponent()).isEditable();
+						popupMenu.cut.setEnabled(isEditable);
+						popupMenu.paste.setEnabled(isEditable);
 					}
-				}
 
-				@Override
-				public void mouseReleased(MouseEvent e) {
-					processMouseEvent(e);
+					popupMenu.show(e.getComponent(), e.getX(), e.getY());
+					popupMenu.setInvoker(e.getComponent());
 				}
+			}
 
-				@Override
-				public void mousePressed(MouseEvent e) {
-					processMouseEvent(e);
-				}
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				processMouseEvent(e);
+			}
 
-			});
-		}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				processMouseEvent(e);
+			}
+
+		});
 	}
-	
+
+	public void decorate(final JComponent... components) {
+		for (final JComponent component : components)
+			decorate(component, getStandardEditingPopupMenu(component));
+	}
+
 	@Override
 	public void decorate(JTextComponent... components) {
 		decorate((JComponent[])components);
+	}
+	
+	@Override
+	public JPopupMenu decorate(JTextComponent component) {
+		StandardEditingPopupMenu popupMenu = new StandardEditingPopupMenu();
+		popupMenu.init(component);
+		popupMenu.doTranslation();
+		decorate(component, popupMenu);
+
+		return popupMenu;
 	}
 
 	private StandardEditingPopupMenu getStandardEditingPopupMenu(JComponent component) {

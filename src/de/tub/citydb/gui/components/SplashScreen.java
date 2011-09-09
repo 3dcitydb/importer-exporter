@@ -29,7 +29,7 @@ public class SplashScreen extends JWindow {
 	private int step;
 
 	public SplashScreen(int numberOfSteps, int messageX, int messageY, Color messageColor) {
-		icon = new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/splash.png")));
+		icon = new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/splash/splash.png")));
 		
 		init(numberOfSteps, messageX, messageY, messageColor);
 	}
