@@ -520,14 +520,17 @@ public class TileQueries {
 */
     public static final String QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD =
 		
-		"SELECT SDO_CS.TRANSFORM(sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom,0.05)), 4326) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom,0.05)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom,0.05)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom,0.05)) aggr_geom " +
+		"SELECT SDO_CS.TRANSFORM(sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, 0.001)), 4326) aggr_geom " +
+		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, 0.001)) aggr_geom " +
+		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, 0.001)) aggr_geom " +
+		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, 0.001)) aggr_geom " +
 		"FROM (" +
 
-//		"SELECT geodb_match.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
-		"SELECT sg.geometry AS simple_geom " +
+		"SELECT * FROM (" +
+		"SELECT * FROM (" +
+
+		"SELECT geodb_match.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
+//		"SELECT sg.geometry AS simple_geom " +
 		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
 		"WHERE " +
 		  "co.gmlid = ? " +
@@ -538,6 +541,9 @@ public class TileQueries {
 		  "OR (b.lod<LoD>_geometry_id IS NOT NULL " +
 		      "AND sg.root_id = b.lod<LoD>_geometry_id)) " +
 		"AND sg.geometry IS NOT NULL" +
+		
+		") WHERE sdo_geom.validate_geometry(simple_geom, 0.001) = 'TRUE'" +
+		") WHERE sdo_geom.sdo_area(simple_geom, 0.001) > 0.001" +
 		
 		") " +
 		"GROUP BY mod(rownum, <GROUP_BY_1>) " +

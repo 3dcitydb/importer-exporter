@@ -347,7 +347,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					reversePointOrder = true;
 
 					int groupBasis = 4;
-					while (groupBasis > 0) {
+					while (groupBasis > 3) {
 						try {
 							psQuery = connection.prepareStatement(TileQueries.
 									QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod))
