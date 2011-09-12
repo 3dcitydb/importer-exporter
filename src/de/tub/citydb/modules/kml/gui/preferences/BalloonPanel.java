@@ -128,6 +128,7 @@ public class BalloonPanel extends AbstractPreferencesComponent {
 		GridBagConstraints frb = GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		frb.gridwidth = 2;
 		contentSourcePanel.add(fileRadioButton, frb);
+		browseText.setPreferredSize(browseText.getSize());
 		contentSourcePanel.add(browseText, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,0,0));
 		contentSourcePanel.add(browseButton, GuiUtil.setConstraints(1,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
 		GridBagConstraints gaafrb = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
