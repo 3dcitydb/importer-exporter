@@ -223,7 +223,7 @@ public class BalloonTemplateHandler {
 		CITYOBJECTGROUP_COLUMNS.add("PARENT_CITYOBJECT_ID");
 	}
 
-	private static final String CITYOBJECT_MEMBER_TABLE = "CITYOBJECT";
+	private static final String CITYOBJECT_MEMBER_TABLE = "CITYOBJECT_MEMBER";
 	private static final Set<String> CITYOBJECT_MEMBER_COLUMNS = new HashSet<String>();
 	static {
 		CITYOBJECT_MEMBER_COLUMNS.add("CITYMODEL_ID");
