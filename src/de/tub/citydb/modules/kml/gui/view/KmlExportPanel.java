@@ -290,28 +290,20 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		filterPanel.setBorder(BorderFactory.createTitledBorder(""));
 		filterPanel.add(filterContentPanel, BorderLayout.CENTER);
 
+		exportFromLODPanel = new JPanel();
+		exportFromLODPanel.setLayout(new GridBagLayout());
+		exportFromLODPanel.setBorder(BorderFactory.createTitledBorder(""));
 
-		Box mainLODPanel = Box.createHorizontalBox();
-		mainLODPanel.add(Box.createRigidArea(new Dimension(10 * BORDER_THICKNESS, 0)));
-		mainLODPanel.add(lodComboBox);
-		mainLODPanel.add(Box.createRigidArea(new Dimension(10 * BORDER_THICKNESS, 0)));
 		for (int index = 1; index < 5; index++) { // exclude LoD0 for the time being
 			lodComboBox.insertItemAt("LoD" + index, index - 1);
 		}
+		lodComboBox.insertItemAt(Internal.I18N.getString("kmlExport.label.highestLODAvailable"), lodComboBox.getItemCount());
 		lodComboBox.setSelectedIndex(1);
-		lodComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, (int)lodComboBox.getPreferredSize().getHeight()));
-		lodComboBox.setMinimumSize(new Dimension((int)lodComboBox.getPreferredSize().getWidth(), (int)lodComboBox.getPreferredSize().getHeight()));
-
-		Box exportFromLODContentPanel = Box.createVerticalBox();
-		exportFromLODContentPanel.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS
-				+ footprintCheckbox.getPreferredSize().height)));
-		exportFromLODContentPanel.add(mainLODPanel);
-		exportFromLODContentPanel.add(Box.createRigidArea(new Dimension(0, footprintCheckbox.getPreferredSize().height)));
-
-		exportFromLODPanel = new JPanel();
-		exportFromLODPanel.setLayout(new BorderLayout());
-		exportFromLODPanel.setBorder(BorderFactory.createTitledBorder(""));
-		exportFromLODPanel.add(exportFromLODContentPanel, BorderLayout.CENTER);
+		GridBagConstraints lcb = GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS + footprintCheckbox.getPreferredSize().height,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
+		lcb.anchor = GridBagConstraints.NORTH;
+		exportFromLODPanel.add(lodComboBox, lcb);
+		lodComboBox.setMinimumSize(lodComboBox.getPreferredSize());
+		exportFromLODPanel.setMinimumSize(exportFromLODPanel.getPreferredSize());
 
 		displayAsPanel = new JPanel();
 		displayAsPanel.setLayout(new GridBagLayout());
@@ -425,6 +417,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 		lodComboBox.insertItemAt(Internal.I18N.getString("kmlExport.label.highestLODAvailable"), lodComboBox.getItemCount());
 		lodComboBox.setSelectedIndex(selectedIndex);
+		lodComboBox.setMinimumSize(lodComboBox.getPreferredSize());
+		exportFromLODPanel.setMinimumSize(exportFromLODPanel.getPreferredSize());
 /**/
 		displayAsPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("kmlExport.label.displayAs")));
 		footprintCheckbox.setText(Internal.I18N.getString("kmlExport.label.footprint"));
