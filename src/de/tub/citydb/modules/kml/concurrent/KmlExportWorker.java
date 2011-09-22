@@ -83,6 +83,7 @@ import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
+import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.database.DBConnectionPool;
@@ -182,7 +183,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			buildingGroupSize = config.getProject().getKmlExporter().getGroupSize();
 		}
 
-		if (config.getProject().getKmlExporter().isIncludeDescription()) {
+		if (config.getProject().getKmlExporter().isIncludeDescription() &&
+			config.getProject().getKmlExporter().getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
 			String balloonTemplateFilename = config.getProject().getKmlExporter().getBalloonContentTemplateFile();
 			if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
 				balloonTemplateHandler = new BalloonTemplateHandler(new File(balloonTemplateFilename), connection);
@@ -1173,6 +1175,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		case GEN_ATTRIB:
 			String balloonTemplate = getBalloonContentGenericAttribute(gmlId);
 			if (balloonTemplate != null) {
+				if (balloonTemplateHandler == null) { // just in case
+					balloonTemplateHandler = new BalloonTemplateHandler(null, connection);
+				}
 				placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, currentLod));
 			}
 			break;

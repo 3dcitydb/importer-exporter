@@ -94,6 +94,7 @@ import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
+import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.database.DBTypeValueEnum;
@@ -240,7 +241,8 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 		
-		if (config.getProject().getKmlExporter().isIncludeDescription()) {
+		if (config.getProject().getKmlExporter().isIncludeDescription() &&
+			config.getProject().getKmlExporter().getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
 			String balloonTemplateFilename = config.getProject().getKmlExporter().getBalloonContentTemplateFile();
 			if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
 				File ballonTemplateFile = new File(balloonTemplateFilename);

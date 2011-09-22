@@ -398,7 +398,8 @@ public class BalloonTemplateHandler {
 
 	public BalloonTemplateHandler(File templateFile, Connection connection) {
 		this.connection = connection;
-
+		if (templateFile == null) return; // dummy constructor for templates coming from generic attribute Balloon_Content
+		
 		// read file as String
 	    byte[] buffer = new byte[(int)templateFile.length()];
 	    FileInputStream f = null;
