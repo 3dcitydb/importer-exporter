@@ -502,22 +502,7 @@ public class TileQueries {
 		  "OR SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
 					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
 		"ORDER BY co.gmlid";
-/*
-    public static final String QUERY_GET_GEOMETRIES_FOR_LOD =
-		
-//		"SELECT SDO_CS.TRANSFORM(geodb_match.to_2d(sg.geometry, (select srid from database_srs)) , 4326) " +
-		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326) " +
-		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
-		"WHERE " +
-		  "co.gmlid = ? " +
-		"AND b.building_root_id = co.ID " +
-		"AND ((ts.building_id = b.ID " +
-		      "AND ts.lod<LoD>_multi_surface_id IS NOT NULL " +
-		      "AND sg.root_id = ts.lod<LoD>_multi_surface_id) " +
-		  "OR (b.lod<LoD>_geometry_id IS NOT NULL " +
-		      "AND sg.root_id = b.lod<LoD>_geometry_id)) " +
-		"AND sg.geometry IS NOT NULL";
-*/
+
     public static final String QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD =
 		
 		"SELECT SDO_CS.TRANSFORM(sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, 0.001)), 4326) aggr_geom " +
@@ -531,16 +516,25 @@ public class TileQueries {
 
 		"SELECT geodb_match.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
 //		"SELECT sg.geometry AS simple_geom " +
-		"FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
+		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE " +
-		  "co.gmlid = ? " +
-		"AND b.building_root_id = co.ID " +
-		"AND ((ts.building_id = b.ID " +
-		      "AND ts.lod<LoD>_multi_surface_id IS NOT NULL " +
-		      "AND sg.root_id = ts.lod<LoD>_multi_surface_id) " +
-		  "OR (b.lod<LoD>_geometry_id IS NOT NULL " +
-		      "AND sg.root_id = b.lod<LoD>_geometry_id)) " +
-		"AND sg.geometry IS NOT NULL" +
+		  "sg.root_id IN( " +
+		     "SELECT b.lod<LoD>_geometry_id " +
+		     "FROM CITYOBJECT co, BUILDING b " +
+		     "WHERE "+
+		       "co.gmlid = ? " +
+		       "AND b.building_root_id = co.id " +
+		       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
+		     "UNION " +
+		     "SELECT ts.lod<LoD>_multi_surface_id " +
+		     "FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts " +
+		     "WHERE "+
+		       "co.gmlid = ? " +
+		       "AND b.building_root_id = co.id " +
+		       "AND ts.building_id = b.id " +
+		       "AND ts.lod<LoD>_multi_surface_id IS NOT NULL "+
+		  ") " +
+		  "AND sg.geometry IS NOT NULL" +
 		
 		") WHERE sdo_geom.validate_geometry(simple_geom, 0.001) = 'TRUE'" +
 		") WHERE sdo_geom.sdo_area(simple_geom, 0.001) > 0.001" +

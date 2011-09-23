@@ -334,9 +334,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					}
 				}
 				catch (Exception e2) {
-					// just in case connection was lost
-					try {Thread.currentThread().sleep(1000); } catch (InterruptedException ie) {}
-					
 					try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
 					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
@@ -349,35 +346,35 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					reversePointOrder = true;
 
 					int groupBasis = 4;
-					while (groupBasis > 3) {
-						try {
-							psQuery = connection.prepareStatement(TileQueries.
-									QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod))
+					try {
+						psQuery = connection.prepareStatement(TileQueries.
+								  	QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod))
 																		  .replace("<GROUP_BY_1>", String.valueOf(Math.pow(groupBasis, 4)))
 																		  .replace("<GROUP_BY_2>", String.valueOf(Math.pow(groupBasis, 3)))
 																		  .replace("<GROUP_BY_3>", String.valueOf(Math.pow(groupBasis, 2))));
 
-							for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-								psQuery.setString(i, work.getGmlId());
-							}
-							rs = (OracleResultSet)psQuery.executeQuery();
-							if (rs.isBeforeFirst()) {
-								break; // result set not empty
-							}
+						for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
+							psQuery.setString(i, work.getGmlId());
 						}
-						catch (Exception e2) {
-							// just in case connection was lost
-							try {Thread.currentThread().sleep(1000); } catch (InterruptedException ie) {}
-
-							try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
+						rs = (OracleResultSet)psQuery.executeQuery();
+						if (rs.isBeforeFirst()) {
+							break; // result set not empty
+						}
+						else {
+							try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
 							rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
-							try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
+							try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
 						}
-						groupBasis--;
+					}
+					catch (Exception e2) {
+						try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
+						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
+						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 					}
 				}
 
 				currentLod--;
+				reversePointOrder = false;
 			}
 
 			if (rs == null) { // result empty, give up
