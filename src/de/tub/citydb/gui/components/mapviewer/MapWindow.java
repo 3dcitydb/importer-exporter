@@ -119,9 +119,16 @@ public class MapWindow extends JFrame {
 		searchBox.setPreferredSize(new Dimension(500, (int)searchBox.getPreferredSize().getHeight()));
 		searchButton.setFont(font);
 
+		JButton okButton = new JButton("Ok");
+		JButton cancelButton = new JButton("Cancel");
+		cancelButton.setFont(font);
+		okButton.setFont(font.deriveFont(Font.BOLD));
+		
 		top.add(searchBox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 5));
 		top.add(searchButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 10, 5, 0, 10));
-		top.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(3, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 0, 0));
+		top.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 0, 0));
+		top.add(okButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.BOTH, 10, 0, 0, 5));
+		top.add(cancelButton, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.BOTH, 10, 5, 0, 5));
 		top.add(searchResult, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 2, 10, 2, 10));
 
 		// left components
@@ -334,7 +341,6 @@ public class MapWindow extends JFrame {
 		map.addReverseGeocoderListener(new ReverseGeocoderListener() {
 			public void searching() {
 				reverseSearchProgress.setIcon(loadIcon);
-				reverseSearchProgress.repaint();
 			}
 
 			public void process(final Location location) {
@@ -355,7 +361,6 @@ public class MapWindow extends JFrame {
 						LAT_LON_FORMATTER.format(location.getPosition().getLongitude()));
 				reverseText.setVisible(true);
 				reverseInfo.setVisible(true);
-				reverseSearchProgress.setVisible(false);
 				reverseSearchProgress.setIcon(null);
 			}
 
@@ -363,7 +368,6 @@ public class MapWindow extends JFrame {
 				reverseInfo.setText(response.getStatus().toString());
 				reverseText.setVisible(false);
 				reverseInfo.setVisible(true);
-				reverseSearchProgress.setVisible(false);
 				reverseSearchProgress.setIcon(null);
 			}
 		});

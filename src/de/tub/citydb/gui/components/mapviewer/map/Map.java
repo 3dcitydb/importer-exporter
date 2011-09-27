@@ -1,7 +1,7 @@
 package de.tub.citydb.gui.components.mapviewer.map;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.MouseAdapter;
@@ -13,6 +13,7 @@ import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.jdesktop.swingx.JXMapKit;
 import org.jdesktop.swingx.JXMapKit.DefaultProviders;
@@ -31,7 +32,8 @@ public class Map {
 	private DefaultWaypointPainter waypointPainter;
 	private ZoomPainter zoomPainter;
 	private MapPopupMenu popupMenu;
-
+	private JPanel hints;
+	
 	public Map() {
 		initComponents();
 	}
@@ -44,14 +46,13 @@ public class Map {
 		popupMenu = new MapPopupMenu(this);
 
 		Color borderColor = new Color(0, 0, 0, 150);
-		Color iconBackground = new Color(0, 0, 0, 70);
-		
+
 		final JPanel footer = new JPanel();
 		footer.setBackground(borderColor);
 		footer.setLayout(new GridBagLayout());
 
 		JPanel header = new JPanel();
-		header.setBackground(borderColor);
+		header.setOpaque(false);
 		header.setLayout(new GridBagLayout());
 
 		GridBagConstraints gridBagConstraints = GuiUtil.setConstraints(0, 0, 1, 1, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0);
@@ -61,68 +62,49 @@ public class Map {
 		gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
 		mapKit.getMainMap().add(header, gridBagConstraints);
 
-		// header icons
-		JLabel magnifierSelection = new JLabel();
-		magnifierSelection.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/magnifier_plus_selection.png")));
-		magnifierSelection.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-		magnifierSelection.setBackground(iconBackground);
-		magnifierSelection.setOpaque(true);
+		JPanel headerMenu = new JPanel();
+		headerMenu.setBackground(borderColor);
+		headerMenu.setLayout(new GridBagLayout());
 
-		JLabel magnifierSelectionAction = new JLabel("+ SHIFT");
-		magnifierSelectionAction.setFont(new Font("SansSerif", Font.BOLD, magnifierSelectionAction.getFont().getSize()));
-		magnifierSelectionAction.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/mouse_left.png")));
-		magnifierSelectionAction.setIconTextGap(0);
-		magnifierSelectionAction.setForeground(Color.WHITE);
+		hints = new JPanel();
+		hints.setBackground(new Color(hints.getBackground().getRed(), hints.getBackground().getBlue(), hints.getBackground().getGreen(), 220));
+		hints.setLayout(new GridBagLayout());
+		hints.setBorder(BorderFactory.createMatteBorder(0, 2, 2, 2, borderColor));
+		hints.setVisible(false);
+		
+		header.add(headerMenu, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		gridBagConstraints = GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 0);
+		gridBagConstraints.anchor = GridBagConstraints.EAST;
+		header.add(hints, gridBagConstraints);
 
-		JLabel magnifier = new JLabel();
-		magnifier.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/magnifier.png")));
-		magnifier.setForeground(Color.WHITE);
-		magnifier.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-		magnifier.setBackground(iconBackground);
-		magnifier.setOpaque(true);
+		final JLabel hintsLabel = new JLabel("<html><u>Show usage hints</u></html>");
+		hintsLabel.setBackground(borderColor);
+		hintsLabel.setForeground(Color.WHITE);
+		hintsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-		JLabel magnifierAction = new JLabel();
-		magnifierAction.setFont(new Font("SansSerif", Font.BOLD, magnifierSelectionAction.getFont().getSize()));
-		magnifierAction.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/mouse_middle.png")));
-		magnifierAction.setIconTextGap(0);
-		magnifierAction.setForeground(Color.WHITE);
+		headerMenu.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
+		headerMenu.add(hintsLabel, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 2, 2, 2, 5));
 
-		JLabel bbox = new JLabel();
-		bbox.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/selection.png")));
-		bbox.setForeground(Color.WHITE);
-		bbox.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-		bbox.setBackground(iconBackground);
-		bbox.setOpaque(true);
+		// usage hints
+		createUsageHint("Select bounding box", new ImageIcon(getClass().getResource("/resources/img/map/selection.png")),
+				"Hold Alt key and left mouse button to select bounding box", 0);
+		
+		createUsageHint("Lookup address", new ImageIcon(getClass().getResource("/resources/img/map/waypoint_small.png")),
+				"Press right mouse button to open popup menu", 1);
 
-		JLabel bboxAction = new JLabel("+ ALT");
-		bboxAction.setFont(new Font("SansSerif", Font.BOLD, magnifierSelectionAction.getFont().getSize()));
-		bboxAction.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/mouse_left.png")));
-		bboxAction.setIconTextGap(0);
-		bboxAction.setForeground(Color.WHITE);
+		createUsageHint("Zoom in/out", new ImageIcon(getClass().getResource("/resources/img/map/magnifier.png")),
+				"Use mouse wheel", 2);
+		
+		createUsageHint("Zoom into selected area", new ImageIcon(getClass().getResource("/resources/img/map/magnifier_plus_selection.png")),
+				"Hold Shift key and left mouse button to select area", 3);
 
-		JLabel address = new JLabel();
-		address.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/waypoint_small.png")));
-		address.setForeground(Color.WHITE);
-		address.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-		address.setBackground(iconBackground);
-		address.setOpaque(true);
+		createUsageHint("Move map", new ImageIcon(getClass().getResource("/resources/img/map/move.png")),
+				"Hold left mouse button to move the map", 4);
 
-		JLabel addressAction = new JLabel();
-		addressAction.setFont(new Font("SansSerif", Font.BOLD, magnifierSelectionAction.getFont().getSize()));
-		addressAction.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/mouse_right.png")));
-		addressAction.setIconTextGap(0);
-		addressAction.setForeground(Color.WHITE);	
+		createUsageHint("Center map and zoom in", new ImageIcon(getClass().getResource("/resources/img/map/center.png")),
+				"Double-click left mouse button to center map", 5);
 
-		header.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
-		header.add(magnifier, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 0, 0, 1, 0));
-		header.add(magnifierAction, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 1, 0));
-		header.add(magnifierSelection, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.BOTH, 0, 20, 1, 0));
-		header.add(magnifierSelectionAction, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 1, 0));
-		header.add(bbox, GuiUtil.setConstraints(5, 0, 0, 0, GridBagConstraints.BOTH, 0, 20, 1, 0));
-		header.add(bboxAction, GuiUtil.setConstraints(6, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 1, 0));
-		header.add(address, GuiUtil.setConstraints(7, 0, 0, 0, GridBagConstraints.BOTH, 0, 20, 1, 0));
-		header.add(addressAction, GuiUtil.setConstraints(8, 0, 0, 0, GridBagConstraints.BOTH, 0, 5, 1, 0));		
-
+		
 		// footer label
 		final JLabel label = new JLabel("[n/a]");
 		label.setForeground(Color.WHITE);
@@ -186,6 +168,22 @@ public class Map {
 				mapKit.repaint();
 			}			
 		});
+
+		// usage hints
+		hintsLabel.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				if (SwingUtilities.isLeftMouseButton(e)) {
+					boolean visible = !hints.isVisible();				
+					hintsLabel.setText(visible ? "<html><u>Hide usage hints</u></html>" : "<html><u>Show usage hints</u></html>");
+					hints.setVisible(visible);
+				}
+			}
+		});
+		
+		// just to disable double-click action
+		headerMenu.addMouseListener(new MouseAdapter() {});
+		hints.addMouseListener(new MouseAdapter() {});
+		footer.addMouseListener(new MouseAdapter() {});
 	}
 
 	public JXMapKit getMapKit() {
@@ -222,6 +220,22 @@ public class Map {
 
 	public boolean removeMapBoundsListener(MapBoundsListener listener) {
 		return popupMenu.removeMapBoundsListener(listener);
+	}
+	
+	private void createUsageHint(String action, ImageIcon actionIcon, String hint, int level) {
+		action = action.replaceAll("\\n", "<br/>");
+		hint = hint.replaceAll("\\n", "<br/>");
+		
+		JLabel actionLabel = new JLabel();
+		actionLabel.setIcon(actionIcon);
+		actionLabel.setOpaque(false);
+
+		JLabel hintLabel = new JLabel("<html><b>" + action + "</b><br/>" + hint + "</html>");
+		
+		GridBagConstraints gridBagConstraints = GuiUtil.setConstraints(0, level, 0, 0, GridBagConstraints.NONE, 5, 5, 1, 5);
+		gridBagConstraints.anchor = GridBagConstraints.NORTH;
+		hints.add(actionLabel, gridBagConstraints);
+		hints.add(hintLabel, GuiUtil.setConstraints(1, level, 1, 0, GridBagConstraints.BOTH, 5, 5, 1, 5));
 	}
 
 }
