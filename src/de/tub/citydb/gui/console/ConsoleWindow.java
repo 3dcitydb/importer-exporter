@@ -62,7 +62,7 @@ public class ConsoleWindow extends JFrame {
 	private void init() {
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
-		setIconImage(Toolkit.getDefaultToolkit().getImage(ConsoleWindow.class.getResource("/resources/img/logo_small.png")));
+		setIconImage(Toolkit.getDefaultToolkit().getImage(ConsoleWindow.class.getResource("/resources/img/common/logo_small.png")));
 		setLayout(new GridBagLayout());
 	}
 
