@@ -31,6 +31,7 @@ package de.tub.citydb.modules.kml.database;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +43,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.util.io.Base64;
 
 public class ElevationServiceHandler extends DefaultHandler {
 
@@ -68,6 +70,21 @@ public class ElevationServiceHandler extends DefaultHandler {
 	double minElevationLong = 0;
 	double lastLat = 0;
 	double lastLong = 0;
+	
+	String proxyHost = "";
+	int proxyPort = 0;
+	String proxyUser = "";
+	String proxyPassword = "";
+
+	public ElevationServiceHandler (String proxyHost, int proxyPort, String proxyUser, String proxyPassword) {
+		this.proxyHost = proxyHost;
+		this.proxyPort = proxyPort;
+		this.proxyUser = proxyUser;
+		this.proxyPassword = proxyPassword;
+	}
+
+	public ElevationServiceHandler () {
+	}
 
 	public double getZOffset(double[] candidateCoords) throws Exception {
 		
@@ -106,16 +123,33 @@ public class ElevationServiceHandler extends DefaultHandler {
 
 		try {
 			for (String elevationString: elevationStringList) {
-				URL elevationService = new URL(elevationString);
-				saxParser.parse(elevationService.openStream(), this);
+				URL elevationService;
+				if (proxyHost.length() > 0 && proxyPort > 0) {
+					elevationService = new URL("http", proxyHost, proxyPort, elevationString);
+				}
+				else {
+					elevationService = new URL(elevationString);
+				}
+				
+				URLConnection connection = elevationService.openConnection();
+
+				if (proxyUser.length() > 0 && proxyPassword.length() > 0) {
+					String encodedPassword = Base64.encode(proxyUser + ":" + proxyPassword);
+					connection.setRequestProperty("Proxy-Authorization", "Basic " + encodedPassword);
+				}
+				
+				saxParser.parse(connection.getInputStream(), this);
 			}
 		}
 		catch (Throwable t) {
-			t.printStackTrace();
+			Logger.getInstance().error("Could not access Elevation API. Please check your network settings.");
+//			t.printStackTrace();
 		}
 		
 		if (!status.equalsIgnoreCase(OK)) {
-			Logger.getInstance().warn("Elevation API returned " + status);
+			if (status.length() > 0) {
+				Logger.getInstance().warn("Elevation API returned " + status);
+			}
 			throw new Exception("Elevation API returned " + status);
 		}
 

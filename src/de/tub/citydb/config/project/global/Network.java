@@ -29,45 +29,74 @@
  */
 package de.tub.citydb.config.project.global;
 
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="GlobalType", propOrder={
-		"logging",
-		"language",
-		"network"
+@XmlType(name="NetworkType", propOrder={
+		"proxyHost",
+		"proxyPort",
+		"proxyUser",
+		"proxyPassword",
+		"savePassword"
 		})
-public class Global {
-	private Logging logging;
-	private LanguageType language = LanguageType.fromValue(System.getProperty("user.language"));
-	private Network network;
+public class Network {
+	private String proxyHost = "";
+	private int proxyPort = 0;
+	private String proxyUser = "";
+	private String proxyPassword = "";
+	private boolean savePassword = false;
+	@XmlTransient
+	private String internalProxyPassword = "";
 
-	public Global() {
-		logging = new Logging();
-		network = new Network();
-	}
-	
-	public Logging getLogging() {
-		return logging;
+	public Network() {
 	}
 
-	public void setLogging(Logging logging) {
-		if (logging != null)
-			this.logging = logging;
+	public void setProxyHost(String proxyHost) {
+		this.proxyHost = proxyHost;
 	}
 
-	public LanguageType getLanguage() {
-		return language;
+	public String getProxyHost() {
+		return proxyHost;
 	}
 
-	public void setLanguage(LanguageType language) {
-		this.language = language;
+	public void setProxyPort(int proxyPort) {
+		this.proxyPort = proxyPort;
 	}
 
-	public void setNetwork(Network network) {
-		this.network = network;
+	public int getProxyPort() {
+		return proxyPort;
 	}
 
-	public Network getNetwork() {
-		return network;
+	public void setProxyUser(String proxyUser) {
+		this.proxyUser = proxyUser;
 	}
+
+	public String getProxyUser() {
+		return proxyUser;
+	}
+
+	public void setProxyPassword(String proxyPassword) {
+		this.proxyPassword = proxyPassword;
+	}
+
+	public String getProxyPassword() {
+		return proxyPassword;
+	}
+
+	public void setSavePassword(boolean savePassword) {
+		this.savePassword = savePassword;
+	}
+
+	public boolean isSavePassword() {
+		return savePassword;
+	}
+
+	public void setInternalProxyPassword(String internalProxyPassword) {
+		this.internalProxyPassword = internalProxyPassword;
+	}
+
+	public String getInternalProxyPassword() {
+		return internalProxyPassword;
+	}
+
 }

@@ -14,6 +14,7 @@ public class GeneralPreferences extends AbstractPreferences {
 		loggingPanel = new LoggingPanel(config, mainView);
 		root.addChildEntry(new DefaultPreferencesEntry(loggingPanel));
 		root.addChildEntry(new DefaultPreferencesEntry(new PathPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new NetworkPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new LanguagePanel(config, mainView)));
 	}
 
