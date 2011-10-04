@@ -16,9 +16,11 @@ import de.tub.citydb.log.Logger;
 public class BoundingBoxClipboardHandler implements ClipboardOwner {
 	private static final Logger LOG = Logger.getInstance();
 	private static BoundingBoxClipboardHandler instance;
+	private boolean isMac;
 
 	private BoundingBoxClipboardHandler() {
 		// just to thwart instantiation
+		isMac = System.getProperty("os.name").toLowerCase().contains("mac");
 	}
 
 	public static synchronized BoundingBoxClipboardHandler getInstance() {
@@ -66,7 +68,7 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 	}
 	
 	public boolean containsPossibleBoundingBox() {
-		return Toolkit.getDefaultToolkit().getSystemClipboard().isDataFlavorAvailable(DataFlavor.stringFlavor);
+		return isMac ? true : Toolkit.getDefaultToolkit().getSystemClipboard().isDataFlavorAvailable(DataFlavor.stringFlavor);
 	}
 
 	@Override
