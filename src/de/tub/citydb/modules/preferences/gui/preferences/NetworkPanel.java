@@ -136,12 +136,12 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("common.pref.network.border.proxySettings")));
-		proxyHostLabel.setText(Internal.I18N.getString("common.pref.network.label.proxyHost"));
-		proxyPortLabel.setText(Internal.I18N.getString("common.pref.network.label.proxyPort"));
-		proxyUserLabel.setText(Internal.I18N.getString("common.pref.network.label.proxyUser"));
-		proxyPasswordLabel.setText(Internal.I18N.getString("common.pref.network.label.proxyPassword"));
-		passwordCheck.setText(Internal.I18N.getString("db.label.passwordCheck"));
+		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.network.border.proxySettings")));
+		proxyHostLabel.setText(Internal.I18N.getString("common.label.server"));
+		proxyPortLabel.setText(Internal.I18N.getString("common.label.port"));
+		proxyUserLabel.setText(Internal.I18N.getString("common.label.username"));
+		proxyPasswordLabel.setText(Internal.I18N.getString("common.label.password"));
+		passwordCheck.setText(Internal.I18N.getString("common.label.passwordCheck"));
 	}
 
 	@Override

@@ -32,7 +32,8 @@ package de.tub.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.project.database.ReferenceSystem;
+import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.general.Path;
 import de.tub.citydb.config.project.system.System;
 
@@ -48,7 +49,7 @@ import de.tub.citydb.config.project.system.System;
 public class Exporter {
 	private Path path;
 	@XmlIDREF
-	private ReferenceSystem targetSRS = ReferenceSystem.DEFAULT;
+	private DatabaseSrs targetSRS = Database.DEFAULT_SRS;
 	private ExportAppearance appearances;
 	private ExportFilterConfig filter;
 	private CityGMLVersionType cityGMLVersion = CityGMLVersionType.v1_0_0;
@@ -72,11 +73,11 @@ public class Exporter {
 			this.path = path;
 	}
 
-	public ReferenceSystem getTargetSRS() {
+	public DatabaseSrs getTargetSRS() {
 		return targetSRS;
 	}
 
-	public void setTargetSRS(ReferenceSystem targetSRS) {
+	public void setTargetSRS(DatabaseSrs targetSRS) {
 		if (targetSRS != null)
 			this.targetSRS = targetSRS;
 	}

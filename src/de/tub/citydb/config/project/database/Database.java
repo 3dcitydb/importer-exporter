@@ -30,12 +30,15 @@
 package de.tub.citydb.config.project.database;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
+
+import de.tub.citydb.api.config.DatabaseSrs;
 
 @XmlType(name="DatabaseType", propOrder={
 		"referenceSystems",
@@ -46,7 +49,18 @@ import javax.xml.bind.annotation.XmlType;
 		"operation"
 })
 public class Database {
-	private ReferenceSystems referenceSystems;
+	public static final DatabaseSrs DEFAULT_SRS = new DatabaseSrs("", 0, "n/a", "", false);
+	public static final EnumMap<PredefinedSrsName, DatabaseSrs> PREDEFINED_SRS = new EnumMap<PredefinedSrsName, DatabaseSrs>(PredefinedSrsName.class);
+
+	public enum PredefinedSrsName {
+		WGS84_2D
+	}
+	
+	static {
+		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG:7.9:4326", "[Default] WGS 84", true));
+	}
+	
+	private DatabaseSrsList referenceSystems;
 	@XmlElement(name="connection", required=true)
 	@XmlElementWrapper(name="connections")	
 	private List<DBConnection> connections;
@@ -59,23 +73,23 @@ public class Database {
 	private DBOperation operation;
 
 	public Database() {
-		referenceSystems = new ReferenceSystems();
+		referenceSystems = new DatabaseSrsList();
 		connections = new ArrayList<DBConnection>();
 		updateBatching = new UpdateBatching();
 		workspaces = new Workspaces();
 		operation = new DBOperation();
 	}
 
-	public List<ReferenceSystem> getReferenceSystems() {
+	public List<DatabaseSrs> getReferenceSystems() {
 		return referenceSystems.getItems();
 	}
 
-	public void setReferenceSystems(List<ReferenceSystem> referenceSystems) {
+	public void setReferenceSystems(List<DatabaseSrs> referenceSystems) {
 		if (referenceSystems != null)
 			this.referenceSystems.setItems(referenceSystems);
 	}
 
-	public void addReferenceSystem(ReferenceSystem referenceSystem) {
+	public void addReferenceSystem(DatabaseSrs referenceSystem) {
 		referenceSystems.addItem(referenceSystem);
 	}
 	

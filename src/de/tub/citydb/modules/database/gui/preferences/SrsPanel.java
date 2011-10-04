@@ -65,6 +65,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
@@ -73,8 +74,7 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.ConfigUtil;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.database.ReferenceSystem;
-import de.tub.citydb.config.project.database.ReferenceSystems;
+import de.tub.citydb.config.project.database.DatabaseSrsList;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
@@ -130,7 +130,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	@Override
 	public boolean isModified() {
-		ReferenceSystem refSys = srsComboBox.getSelectedItem();
+		DatabaseSrs refSys = srsComboBox.getSelectedItem();
 
 		try { sridText.commitEdit(); } catch (ParseException e) { }
 		if (((Number)sridText.getValue()).intValue() != refSys.getSrid()) return true;
@@ -282,7 +282,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		newButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (requestChange()) {
-					ReferenceSystem refSys = new ReferenceSystem(0, "", getNewRefSysDescription(), !dbPool.isConnected());
+					DatabaseSrs refSys = new DatabaseSrs(0, "", getNewRefSysDescription(), !dbPool.isConnected());
 
 					config.getProject().getDatabase().addReferenceSystem(refSys);
 					updateSrsComboBoxes(false);
@@ -296,8 +296,8 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		copyButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (requestChange()) {
-					ReferenceSystem orig = srsComboBox.getSelectedItem();
-					ReferenceSystem copy = new ReferenceSystem(orig);
+					DatabaseSrs orig = srsComboBox.getSelectedItem();
+					DatabaseSrs copy = new DatabaseSrs(orig);
 					copy.setDescription(getCopyOfDescription(orig));
 
 					config.getProject().getDatabase().addReferenceSystem(copy);
@@ -318,7 +318,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				ReferenceSystem refSys = srsComboBox.getSelectedItem();
+				DatabaseSrs refSys = srsComboBox.getSelectedItem();
 				int index = srsComboBox.getSelectedIndex();
 
 				String text = Internal.I18N.getString("pref.db.srs.dialog.delete.msg");
@@ -409,7 +409,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	@Override
 	public void setSettings() {
-		ReferenceSystem refSys = srsComboBox.getSelectedItem();
+		DatabaseSrs refSys = srsComboBox.getSelectedItem();
 		int srid = ((Number)sridText.getValue()).intValue();
 
 		if (dbPool.isConnected() && srid != refSys.getSrid()) {
@@ -445,7 +445,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	}
 
 	private void displaySelectedValues() {
-		ReferenceSystem refSys = srsComboBox.getSelectedItem();
+		DatabaseSrs refSys = srsComboBox.getSelectedItem();
 		if (refSys == null) 
 			return;
 
@@ -462,7 +462,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		deleteButton.setEnabled(enabled);
 	}
 
-	private String getCopyOfDescription(ReferenceSystem refSys) {
+	private String getCopyOfDescription(DatabaseSrs refSys) {
 		// pattern: "referenceSystemName - copy 1"
 		// so to retrieve referenceSystem, " - copy*" has to be deleted...
 
@@ -473,7 +473,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		if (Internal.I18N.getString("common.label.boundingBox.crs.sameAsInDB").replaceAll("\\s*-\\s*" + Internal.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
 			nr++;
 
-		for (ReferenceSystem tmp : config.getProject().getDatabase().getReferenceSystems()) 
+		for (DatabaseSrs tmp : config.getProject().getDatabase().getReferenceSystems()) 
 			if (tmp.getDescription().replaceAll("\\s*-\\s*" + Internal.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
 				nr++;
 
@@ -486,7 +486,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	private String getNewRefSysDescription() {
 		int nr = 1;
 		String name = Internal.I18N.getString("pref.db.srs.label.newReferenceSystem");
-		for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) 
+		for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) 
 			if (refSys.getDescription().toLowerCase().startsWith(name.toLowerCase()))
 				nr++;
 
@@ -525,15 +525,15 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			}
 			
 			Object object = ConfigUtil.unmarshal(file, getJAXBContext());
-			if (object instanceof ReferenceSystems) {
-				ReferenceSystems refSyss = (ReferenceSystems)object;				
+			if (object instanceof DatabaseSrsList) {
+				DatabaseSrsList refSyss = (DatabaseSrsList)object;				
 				if (replace)
 					config.getProject().getDatabase().getReferenceSystems().clear();
 
 				if (dbPool.isConnected())
 					LOG.info("Checking whether reference systems are supported by database profile.");
 
-				for (ReferenceSystem refSys : refSyss.getItems()) {
+				for (DatabaseSrs refSys : refSyss.getItems()) {
 					msg = "Adding reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ").";
 
 					if (dbPool.isConnected()) {
@@ -609,9 +609,9 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			File file = new File(fileName);
 			LOG.info("Writing reference systems to file '" + file.getAbsolutePath() + "'.");
 
-			ReferenceSystems refSys = new ReferenceSystems();
-			for (ReferenceSystem tmp : config.getProject().getDatabase().getReferenceSystems()) {
-				ReferenceSystem copy = new ReferenceSystem(tmp);
+			DatabaseSrsList refSys = new DatabaseSrsList();
+			for (DatabaseSrs tmp : config.getProject().getDatabase().getReferenceSystems()) {
+				DatabaseSrs copy = new DatabaseSrs(tmp);
 				copy.setId(null);				
 				refSys.addItem(copy);
 
@@ -654,7 +654,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	private JAXBContext getJAXBContext() throws JAXBException {
 		if (projectContext == null)
-			projectContext = JAXBContext.newInstance(ReferenceSystems.class);
+			projectContext = JAXBContext.newInstance(DatabaseSrsList.class);
 
 		return projectContext;
 	}
@@ -686,7 +686,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		boolean isConnected = ((DatabaseConnectionStateEvent)event).isConnected();
 
 		if (!isConnected) {
-			for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems())
+			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
 				refSys.setSupported(true);
 		}
 

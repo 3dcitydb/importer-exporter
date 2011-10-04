@@ -43,13 +43,13 @@ import oracle.ucp.admin.UniversalConnectionPoolManager;
 import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
+import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.event.DatabaseConnectionStateEventImpl;
 import de.tub.citydb.util.database.DBUtil;
@@ -134,7 +134,7 @@ public class DBConnectionPool {
 			conn.setMetaData(DBUtil.getDatabaseInfo());
 
 			// check whether user-defined reference systems are supported
-			for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) { 
+			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) { 
 				boolean isSupported = DBUtil.isSrsSupported(refSys.getSrid());
 				refSys.setSupported(isSupported);
 			}

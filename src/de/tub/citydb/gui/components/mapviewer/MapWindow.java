@@ -5,14 +5,24 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.FlavorEvent;
+import java.awt.datatransfer.FlavorListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Locale;
@@ -23,6 +33,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -33,28 +44,50 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLDocument;
 
+import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 
+import de.tub.citydb.api.config.BoundingBox;
+import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.global.GlobalEvents;
+import de.tub.citydb.api.registry.ObjectRegistry;
+import de.tub.citydb.config.Config;
+import de.tub.citydb.config.gui.window.WindowSize;
+import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.project.database.Database;
+import de.tub.citydb.config.project.database.Database.PredefinedSrsName;
+import de.tub.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
+import de.tub.citydb.gui.components.bbox.BoundingBoxListener;
 import de.tub.citydb.gui.components.mapviewer.geocoder.Geocoder;
 import de.tub.citydb.gui.components.mapviewer.geocoder.GeocoderResponse;
 import de.tub.citydb.gui.components.mapviewer.geocoder.Location;
 import de.tub.citydb.gui.components.mapviewer.geocoder.LocationType;
 import de.tub.citydb.gui.components.mapviewer.geocoder.ResponseType;
 import de.tub.citydb.gui.components.mapviewer.geocoder.StatusCode;
-import de.tub.citydb.gui.components.mapviewer.map.BBoxSelectionListener;
 import de.tub.citydb.gui.components.mapviewer.map.DefaultWaypoint;
 import de.tub.citydb.gui.components.mapviewer.map.DefaultWaypoint.WaypointType;
 import de.tub.citydb.gui.components.mapviewer.map.Map;
-import de.tub.citydb.gui.components.mapviewer.map.MapBoundsListener;
-import de.tub.citydb.gui.components.mapviewer.map.ReverseGeocoderListener;
+import de.tub.citydb.gui.components.mapviewer.map.event.BoundingBoxSelection;
+import de.tub.citydb.gui.components.mapviewer.map.event.MapBoundsSelection;
+import de.tub.citydb.gui.components.mapviewer.map.event.MapEvents;
+import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent;
+import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent.ReverseGeocoderStatus;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
-import de.tub.citydb.util.gui.BBoxClipboardHandler;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class MapWindow extends JFrame {
-	private static MapWindow mapWindow = null;
-	public static DecimalFormat LAT_LON_FORMATTER = new DecimalFormat("##0.000000", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+public class MapWindow extends JDialog implements EventHandler {
+	private static MapWindow instance = null;
+	public static DecimalFormat LAT_LON_FORMATTER = new DecimalFormat("##0.0000000", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+
+	static {
+		LAT_LON_FORMATTER.setMaximumIntegerDigits(3);
+		LAT_LON_FORMATTER.setMinimumIntegerDigits(1);
+		LAT_LON_FORMATTER.setMinimumFractionDigits(2);
+		LAT_LON_FORMATTER.setMaximumFractionDigits(7);
+	}
 
 	private Map map;	
 	private JComboBox searchBox;
@@ -66,24 +99,58 @@ public class MapWindow extends JFrame {
 	private JFormattedTextField maxX;
 	private JFormattedTextField maxY;
 
-	private MapWindow() {
-		// just to thwart instantiation
-	}
-	
-	public static final MapWindow getInstance() {
-		if (mapWindow == null) {
-			mapWindow = new MapWindow();
-			mapWindow.init();
-		}
+	private JButton goButton;
+	private JButton applyButton;
+	private JButton cancelButton;
+	private JButton copyBBox;
+	private JButton pasteBBox;
+	private JButton showBBox;
+	private JButton clearBBox;
+
+	private JLabel bboxTitel;
+	private JLabel reverseTitle;
+	private JTextField reverseInfo;
+	private JTextPane reverseText;
+	private JLabel reverseSearchProgress;
+
+	private BoundingBoxListener listener;
+	private BBoxPopupMenu[] bboxPopups;
+	private Config config;
+	private JFrame mainFrame;
+
+	private MapWindow(Config config) {
+		super(ObjectRegistry.getInstance().getViewController().getTopFrame(), true);
 		
-		return mapWindow;
+		// register for events
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(MapEvents.BOUNDING_BOX_SELECTION, this);
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(MapEvents.MAP_BOUNDS, this);
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(MapEvents.REVERSE_GEOCODER, this);
+
+		init();
+		doTranslation();
+	}
+
+	public static final MapWindow getInstance(BoundingBoxListener listener, Config config) {
+		if (instance == null)
+			instance = new MapWindow(config);
+
+		instance.listener = listener;
+		instance.config = config;
+
+		if (!instance.isVisible())
+			instance.setSizeOnScreen();
+
+		return instance;
 	}
 
 	private void init() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setTitle("3DCityDB OSM Prototype");
+		setTitle(Internal.I18N.getString("map.window.title"));
 		setLayout(new GridBagLayout());
 		getContentPane().setBackground(Color.WHITE);
+
+		mainFrame = ObjectRegistry.getInstance().getViewController().getTopFrame();
 
 		Color borderColor = new Color(0, 0, 0, 150);
 		loadIcon = new ImageIcon(getClass().getResource("/resources/img/map/loader.gif"));
@@ -96,7 +163,7 @@ public class MapWindow extends JFrame {
 
 		// map
 		map.getMapKit().setBorder(BorderFactory.createMatteBorder(1, 2, 0, 0, borderColor));
-		
+
 		GridBagConstraints gridBagConstraints = GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0);
 		gridBagConstraints.gridwidth = 2;
 		add(top, gridBagConstraints);
@@ -108,7 +175,7 @@ public class MapWindow extends JFrame {
 		top.setBackground(new Color(245, 245, 245));
 		top.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor));
 
-		JButton searchButton = new JButton("Go");
+		goButton = new JButton();
 		searchBox = new JComboBox();
 		searchResult = new JLabel();
 		searchResult.setPreferredSize(new Dimension(searchResult.getPreferredSize().width, loadIcon.getIconHeight()));
@@ -117,17 +184,18 @@ public class MapWindow extends JFrame {
 		Font font = new Font(searchBox.getFont().getName(), searchBox.getFont().getStyle(), searchBox.getFont().getSize() + 4);
 		searchBox.setFont(font);
 		searchBox.setPreferredSize(new Dimension(500, (int)searchBox.getPreferredSize().getHeight()));
-		searchButton.setFont(font);
+		goButton.setFont(font);
 
-		JButton okButton = new JButton("Ok");
-		JButton cancelButton = new JButton("Cancel");
+		applyButton = new JButton();
+		cancelButton = new JButton();
 		cancelButton.setFont(font);
-		okButton.setFont(font.deriveFont(Font.BOLD));
-		
+		applyButton.setFont(font.deriveFont(Font.BOLD));
+		applyButton.setEnabled(false);
+
 		top.add(searchBox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 5));
-		top.add(searchButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 10, 5, 0, 10));
+		top.add(goButton, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 10, 5, 0, 10));
 		top.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(2, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 5, 0, 0));
-		top.add(okButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.BOTH, 10, 0, 0, 5));
+		top.add(applyButton, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.BOTH, 10, 0, 0, 5));
 		top.add(cancelButton, GuiUtil.setConstraints(4, 0, 0, 0, GridBagConstraints.BOTH, 10, 5, 0, 5));
 		top.add(searchResult, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 2, 10, 2, 10));
 
@@ -140,28 +208,18 @@ public class MapWindow extends JFrame {
 		bbox.setBorder(BorderFactory.createTitledBorder(""));
 		bbox.setLayout(new GridBagLayout());	
 
-		JLabel bboxTitel = new JLabel("Bounding Box");
+		bboxTitel = new JLabel();
 		bboxTitel.setFont(bbox.getFont().deriveFont(Font.BOLD));
 		bboxTitel.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/selection.png")));
 		bboxTitel.setIconTextGap(5);
 
 		final JPanel bboxFields = new JPanel();
-		bboxFields.setLayout(new GridBagLayout());
-		DecimalFormat f = new DecimalFormat("###.######", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-		f.setMaximumIntegerDigits(3);
-		f.setMinimumIntegerDigits(1);
-		f.setMinimumFractionDigits(2);
-		f.setMaximumFractionDigits(6);
+		bboxFields.setLayout(new GridBagLayout());		
 
-		minX = new JFormattedTextField(f);
-		minY = new JFormattedTextField(f);
-		maxX = new JFormattedTextField(f);
-		maxY = new JFormattedTextField(f);
-
-		minX.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		minY.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		maxX.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		maxY.setFocusLostBehavior(JFormattedTextField.COMMIT);
+		minX = new JFormattedTextField(LAT_LON_FORMATTER);
+		minY = new JFormattedTextField(LAT_LON_FORMATTER);
+		maxX = new JFormattedTextField(LAT_LON_FORMATTER);
+		maxY = new JFormattedTextField(LAT_LON_FORMATTER);
 
 		minX.setBackground(Color.WHITE);
 		minY.setBackground(Color.WHITE);
@@ -173,11 +231,6 @@ public class MapWindow extends JFrame {
 		minY.setPreferredSize(dim);
 		maxX.setPreferredSize(dim);
 		maxY.setPreferredSize(dim);
-
-		minX.setValue(0);
-		minY.setValue(0);
-		maxX.setValue(0);
-		maxY.setValue(0);
 
 		gridBagConstraints = GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 5, 2, 0, 2);
 		gridBagConstraints.gridwidth = 2;
@@ -200,28 +253,33 @@ public class MapWindow extends JFrame {
 		JPanel bboxButtons = new JPanel();
 		bboxButtons.setLayout(new GridBagLayout());
 		bboxButtons.setBackground(bbox.getBackground());
-		
-		JButton showBBox = new JButton("Show");
-		showBBox.setToolTipText("Show bounding box in map");
-		
-		JButton copyBBox = new JButton();
+
+		showBBox = new JButton();
+		clearBBox = new JButton();
+
+		copyBBox = new JButton();
 		ImageIcon copyIcon = new ImageIcon(getClass().getResource("/resources/img/common/bbox_copy.png")); 
 		copyBBox.setIcon(copyIcon);
 		copyBBox.setPreferredSize(new Dimension(copyIcon.getIconWidth() + 6, copyIcon.getIconHeight() + 6));
-		copyBBox.setToolTipText("Copy bounding box to clipboard");
-
-		JButton pasteBBox = new JButton();
+		copyBBox.setEnabled(false);
+		
+		pasteBBox = new JButton();
 		ImageIcon pasteIcon = new ImageIcon(getClass().getResource("/resources/img/common/bbox_paste.png")); 
 		pasteBBox.setIcon(pasteIcon);
 		pasteBBox.setPreferredSize(new Dimension(copyIcon.getIconWidth() + 6, copyIcon.getIconHeight() + 6));
-		pasteBBox.setToolTipText("Paste bounding box from clipboard");
-				
-		bboxButtons.add(showBBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-		bboxButtons.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
-		bboxButtons.add(copyBBox, GuiUtil.setConstraints(2, 0, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 0));
-		bboxButtons.add(pasteBBox, GuiUtil.setConstraints(3, 0, 0, 0, GridBagConstraints.NONE, 0, 5, 0, 0));
+		pasteBBox.setEnabled(BoundingBoxClipboardHandler.getInstance().containsPossibleBoundingBox());
 
-		bbox.add(bboxTitel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
+		bboxButtons.add(showBBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 0, 0));
+		bboxButtons.add(clearBBox, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 5, 0, 0));
+
+		Box bboxTitelBox = Box.createHorizontalBox();
+		bboxTitelBox.add(bboxTitel);
+		bboxTitelBox.add(Box.createHorizontalGlue());
+		bboxTitelBox.add(copyBBox);
+		bboxTitelBox.add(Box.createHorizontalStrut(5));
+		bboxTitelBox.add(pasteBBox);
+
+		bbox.add(bboxTitelBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
 		bbox.add(bboxFields, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.HORIZONTAL, 5, 0, 5, 0));
 		bbox.add(bboxButtons, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 0));
 
@@ -230,14 +288,14 @@ public class MapWindow extends JFrame {
 		reverse.setBorder(BorderFactory.createTitledBorder(""));
 		reverse.setLayout(new GridBagLayout());
 
-		JLabel reverseTitle = new JLabel("Address lookup");
+		reverseTitle = new JLabel();
 		reverseTitle.setFont(reverseTitle.getFont().deriveFont(Font.BOLD));
 		reverseTitle.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/waypoint_small.png")));
 
 		reverseTitle.setIconTextGap(5);
-		final JLabel reverseSearchProgress = new JLabel();
+		reverseSearchProgress = new JLabel();
 
-		final JTextPane reverseText = new JTextPane();
+		reverseText = new JTextPane();
 		reverseText.setEditable(false);
 		reverseText.setBorder(minX.getBorder());
 		reverseText.setBackground(Color.WHITE);
@@ -246,17 +304,17 @@ public class MapWindow extends JFrame {
 				"body { font-family: " + reverseText.getFont().getFamily() + "; " + "font-size: " + reverseText.getFont().getSize() + "pt; }");
 		reverseText.setVisible(false);
 
-		final JTextField reverseInfo = new JTextField("Use popup menu for queries.");
+		reverseInfo = new JTextField();
 		reverseInfo.setBorder(BorderFactory.createEmptyBorder());
 		reverseInfo.setOpaque(false);
 		reverseInfo.setEditable(false);
 
-		Box box = Box.createHorizontalBox();
-		box.add(reverseTitle);
-		box.add(Box.createHorizontalGlue());
-		box.add(reverseSearchProgress);
+		Box reverseTitelBox = Box.createHorizontalBox();
+		reverseTitelBox.add(reverseTitle);
+		reverseTitelBox.add(Box.createHorizontalGlue());
+		reverseTitelBox.add(reverseSearchProgress);
 
-		reverse.add(box, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
+		reverse.add(reverseTitelBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
 		reverse.add(reverseText, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
 		reverse.add(reverseInfo, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 0));
 
@@ -265,7 +323,7 @@ public class MapWindow extends JFrame {
 		left.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 2, 0, 1, GridBagConstraints.VERTICAL, 5, 0, 2, 0));
 
 		// actions
-		searchButton.addActionListener(new ActionListener() {
+		goButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (searchBox.getSelectedItem() != null)
 					geocode(searchBox.getSelectedItem().toString());
@@ -299,6 +357,12 @@ public class MapWindow extends JFrame {
 			}
 		});
 
+		clearBBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				map.getSelectionPainter().clearSelectedArea();
+			}
+		});
+
 		KeyAdapter showBBoxAdapter = new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
@@ -310,89 +374,76 @@ public class MapWindow extends JFrame {
 		minY.addKeyListener(showBBoxAdapter);
 		maxX.addKeyListener(showBBoxAdapter);
 		maxY.addKeyListener(showBBoxAdapter);
-		
+
 		showBBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				showBoundingBox();
 			}
 		});
-		
+
 		copyBBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				copyBoundingBoxToClipboard();
 			}
 		});
-		
+
 		pasteBBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				pasteBoundingBoxFromClipboard();
 			}
-		});
-
-		map.addBBoxSelectionListener(new BBoxSelectionListener() {
-			public void bboxSelected(final GeoPosition[] bbox) {	
-				minX.setValue(bbox[0].getLatitude());
-				minY.setValue(bbox[0].getLongitude());
-				maxX.setValue(bbox[1].getLatitude());
-				maxY.setValue(bbox[1].getLongitude());
-			}
-		});
-
-		map.addReverseGeocoderListener(new ReverseGeocoderListener() {
-			public void searching() {
-				reverseSearchProgress.setIcon(loadIcon);
-			}
-
-			public void process(final Location location) {
-				final StringBuilder rest = new StringBuilder();
-				String[] tokens = location.getFormattedAddress().split(", ");
-				for (int i = 0; i < tokens.length; ++i) {
-					if (i == 0) 
-						rest.append("<b>").append(tokens[i]).append("</b>");
-					else
-						rest.append(tokens[i]);
-
-					if (i < tokens.length - 1)
-						rest.append("<br>");
-				}
-
-				reverseText.setText(rest.toString());
-				reverseInfo.setText(LAT_LON_FORMATTER.format(location.getPosition().getLatitude()) + ", " + 
-						LAT_LON_FORMATTER.format(location.getPosition().getLongitude()));
-				reverseText.setVisible(true);
-				reverseInfo.setVisible(true);
-				reverseSearchProgress.setIcon(null);
-			}
-
-			public void error(final GeocoderResponse response) {
-				reverseInfo.setText(response.getStatus().toString());
-				reverseText.setVisible(false);
-				reverseInfo.setVisible(true);
-				reverseSearchProgress.setIcon(null);
-			}
-		});
-
-		map.addMapBoundsListener(new MapBoundsListener() {
-			public void getMapBounds(GeoPosition[] bbox) {
-				minX.setValue(bbox[0].getLongitude());
-				minY.setValue(bbox[0].getLatitude());
-				maxX.setValue(bbox[1].getLongitude());
-				maxY.setValue(bbox[1].getLatitude());
-				map.getSelectionPainter().clearSelectedArea();
-			}
-		});
+		});		
 
 		PopupMenuDecorator popupMenuDecorator = PopupMenuDecorator.getInstance();
 		popupMenuDecorator.decorate((JComponent)searchBox.getEditor().getEditorComponent(), reverseText, reverseInfo);
 
-		createBoundingBoxPopupMenu(popupMenuDecorator.decorate(minX), true);
-		createBoundingBoxPopupMenu(popupMenuDecorator.decorate(minY), true);
-		createBoundingBoxPopupMenu(popupMenuDecorator.decorate(maxX), true);
-		createBoundingBoxPopupMenu(popupMenuDecorator.decorate(maxY), true);
-		
 		// popup menu
 		final JPopupMenu popupMenu = new JPopupMenu();
-		createBoundingBoxPopupMenu(popupMenu, false);
+		bboxPopups = new BBoxPopupMenu[5];
+
+		bboxPopups[0] = new BBoxPopupMenu(popupMenuDecorator.decorate(minX), true);
+		bboxPopups[1] = new BBoxPopupMenu(popupMenuDecorator.decorate(minY), true);
+		bboxPopups[2] = new BBoxPopupMenu(popupMenuDecorator.decorate(maxX), true);
+		bboxPopups[3] = new BBoxPopupMenu(popupMenuDecorator.decorate(maxY), true);
+		bboxPopups[4] = new BBoxPopupMenu(popupMenu, false);
+
+		Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(new FlavorListener() {
+			public void flavorsChanged(FlavorEvent e) {
+				boolean enable = BoundingBoxClipboardHandler.getInstance().containsPossibleBoundingBox();
+				
+				pasteBBox.setEnabled(enable);
+				for (int i = 0; i < bboxPopups.length; ++i)
+					bboxPopups[i].paste.setEnabled(enable);
+			}
+		});
+		
+		PropertyChangeListener commitListener = new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (evt.getPropertyName().equals("value")) {
+					try {
+						minX.commitEdit();
+						minY.commitEdit();
+						maxX.commitEdit();
+						maxY.commitEdit();
+						applyButton.setEnabled(true);
+						copyBBox.setEnabled(true);
+						
+						for (int i = 0; i < bboxPopups.length; ++i)
+							bboxPopups[i].copy.setEnabled(true);
+					} catch (ParseException e1) {
+						applyButton.setEnabled(false);
+						copyBBox.setEnabled(false);
+						
+						for (int i = 0; i < bboxPopups.length; ++i)
+							bboxPopups[i].copy.setEnabled(false);
+					}
+				}
+			}
+		};
+		
+		minX.addPropertyChangeListener(commitListener);
+		minY.addPropertyChangeListener(commitListener);
+		maxX.addPropertyChangeListener(commitListener);
+		maxY.addPropertyChangeListener(commitListener);
 		
 		bbox.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
@@ -410,40 +461,68 @@ public class MapWindow extends JFrame {
 				}
 			}
 		});
-		
-		setSize(new Dimension(1024, 768));
-	}
-	
-	private void createBoundingBoxPopupMenu(JPopupMenu popupMenu, boolean addSeparator) {
-		JMenuItem copy = new JMenuItem("Copy bounding box");	
-		JMenuItem paste = new JMenuItem("Paste bounding box");
-		
-		if (addSeparator)
-			popupMenu.addSeparator();
-		popupMenu.add(copy);
-		popupMenu.add(paste);
-		
-		copy.addActionListener(new ActionListener() {
+
+		addWindowListener(new WindowAdapter() {
+			public void windowClosed(WindowEvent e) {
+				// clear map cache
+				((AbstractTileFactory)map.getMapKit().getMainMap().getTileFactory()).clearTileCache();
+				((AbstractTileFactory)map.getMapKit().getMiniMap().getTileFactory()).clearTileCache();
+
+				WindowSize size = config.getGui().getMapWindow().getSize();
+				Rectangle rect = MapWindow.this.getBounds();
+				size.setX(rect.x);
+				size.setY(rect.y);
+				size.setWidth(rect.width);
+				size.setHeight(rect.height);
+			}
+		});
+
+		applyButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				final BoundingBox bbox = new BoundingBox();
+				bbox.getLowerLeftCorner().setX(((Number)minX.getValue()).doubleValue());
+				bbox.getLowerLeftCorner().setY(((Number)minY.getValue()).doubleValue());
+				bbox.getUpperRightCorner().setX(((Number)maxX.getValue()).doubleValue());
+				bbox.getUpperRightCorner().setY(((Number)maxY.getValue()).doubleValue());		
+
+				DatabaseSrs wgs84 = null;
+				for (DatabaseSrs srs : config.getProject().getDatabase().getReferenceSystems()) {
+					if (srs.getSrid() == Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
+						wgs84 = srs;
+						break;
+					}
+				}
+				
+				bbox.setSrs(wgs84);
+				
+				Thread t = new Thread() {
+					public void run() {
+						listener.setBoundingBox(bbox);
+					}
+				};
+				t.setDaemon(true);
+				t.start();
+
 				copyBoundingBoxToClipboard();
+				dispose();
 			}
 		});
-		
-		paste.addActionListener(new ActionListener() {
+
+		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				pasteBoundingBoxFromClipboard();
+				dispose();
 			}
 		});
 	}
-	
+
 	private void copyBoundingBoxToClipboard() {
 		try {
 			minX.commitEdit();
 			minY.commitEdit();
 			maxX.commitEdit();
 			maxY.commitEdit();
-			
-			BBoxClipboardHandler.getInstance().putBoundingBox(
+
+			BoundingBoxClipboardHandler.getInstance().putBoundingBox(
 					((Number)minX.getValue()).doubleValue(),
 					((Number)minY.getValue()).doubleValue(),
 					((Number)maxX.getValue()).doubleValue(),
@@ -452,10 +531,10 @@ public class MapWindow extends JFrame {
 			//
 		}
 	}
-	
+
 	private void pasteBoundingBoxFromClipboard() {
-		double[] bbox = BBoxClipboardHandler.getInstance().getBoundingBox();
-		
+		double[] bbox = BoundingBoxClipboardHandler.getInstance().getBoundingBox();
+
 		if (bbox != null && bbox.length == 4) {
 			minX.setValue(bbox[0]);
 			minY.setValue(bbox[1]);
@@ -463,14 +542,14 @@ public class MapWindow extends JFrame {
 			maxY.setValue(bbox[3]);
 		}
 	}
-	
+
 	private void showBoundingBox() {
 		try {
 			minX.commitEdit();
 			minY.commitEdit();
 			maxX.commitEdit();
 			maxY.commitEdit();
-			
+
 			GeoPosition southWest = new GeoPosition(((Number)minY.getValue()).doubleValue(), ((Number)minX.getValue()).doubleValue());
 			GeoPosition northEast = new GeoPosition(((Number)maxY.getValue()).doubleValue(), ((Number)maxX.getValue()).doubleValue());
 
@@ -481,7 +560,7 @@ public class MapWindow extends JFrame {
 			map.getMapKit().setZoom(1);
 			map.getMapKit().getMainMap().calculateZoomFrom(positions);
 		} catch (ParseException e1) {
-			//
+			map.getSelectionPainter().clearSelectedArea();
 		}
 	}
 
@@ -506,18 +585,21 @@ public class MapWindow extends JFrame {
 					searchBox.setSelectedItem(response.getLocations()[0]);
 
 					if (response.getType() == ResponseType.LAT_LON)
-						resultMsg = "Map positioned to geographic coordinates";
+						resultMsg = Internal.I18N.getString("map.geocoder.search.latLon");
 					else {
-						int num = response.getLocations().length;
-						resultMsg = num + " match" + ((num == 1) ? " " : "es ") + "returned from geocoding";
+						String text = Internal.I18N.getString("map.geocoder.search.result");
+						Object[] args = new Object[]{ response.getLocations().length };
+						resultMsg = MessageFormat.format(text, args);
 					}
 				} else if (response.getStatus() == StatusCode.ZERO_RESULTS) {
-					resultMsg = "No match returned";
+					String text = Internal.I18N.getString("map.geocoder.search.result");
+					Object[] args = new Object[]{ 0 };
+					resultMsg = MessageFormat.format(text, args);
 				} else {
-					resultMsg = "Fatal service response: " + response.getStatus();
+					resultMsg = Internal.I18N.getString("map.geocoder.search.fatal") + ": " + response.getStatus();
 				}
 
-				resultMsg += " (" + ((System.currentTimeMillis() - time) / 1000.0) + " seconds)";
+				resultMsg += " (" + ((System.currentTimeMillis() - time) / 1000.0) + " " + Internal.I18N.getString("map.geocoder.search.sec") + ")";
 				searchResult.setText(resultMsg);
 				searchResult.setIcon(null);
 			}
@@ -525,4 +607,161 @@ public class MapWindow extends JFrame {
 		t.setDaemon(true);
 		t.start();		
 	}
+
+	private void setSizeOnScreen() {
+		WindowSize size = config.getGui().getMapWindow().getSize();
+
+		Integer x = size.getX();
+		Integer y = size.getY();
+		Integer width = size.getWidth();
+		Integer height = size.getHeight();
+
+		// create default values for main window
+		if (x == null || y == null || width == null || height == null) {
+			x = mainFrame.getLocation().x + 10;
+			y = mainFrame.getLocation().y + 10;
+			width = 1024;
+			height = 768;
+
+			Toolkit t = Toolkit.getDefaultToolkit();
+			Insets frame_insets = t.getScreenInsets(mainFrame.getGraphicsConfiguration());
+			int frame_insets_x = frame_insets.left + frame_insets.right;
+			int frame_insets_y = frame_insets.bottom + frame_insets.top;
+
+			Rectangle bounds = mainFrame.getGraphicsConfiguration().getBounds();
+
+			if (!bounds.contains(x, y, width + frame_insets_x, height + frame_insets_y)) {
+				// check width
+				if (x + width + frame_insets_x > bounds.width || y + height + frame_insets_y > bounds.height) {
+					x = frame_insets.left;
+					y = frame_insets.top;
+
+					if (width + frame_insets_x > bounds.width)
+						width = bounds.width - frame_insets_x;
+
+					if (height + frame_insets_y > bounds.height)
+						height = bounds.height - frame_insets_y;
+				}
+			}
+		}
+
+		setLocation(x, y);
+		setSize(new Dimension(width, height));
+	}
+
+	private void doTranslation() {
+		applyButton.setText(Internal.I18N.getString("common.button.apply"));
+		cancelButton.setText(Internal.I18N.getString("common.button.cancel"));
+		goButton.setText(Internal.I18N.getString("map.button.go"));
+		bboxTitel.setText(Internal.I18N.getString("map.boundingBox.label"));
+		showBBox.setText(Internal.I18N.getString("map.boundingBox.show.button"));
+		showBBox.setToolTipText(Internal.I18N.getString("map.boundingBox.show.tooltip"));
+		clearBBox.setText(Internal.I18N.getString("map.boundingBox.clear.button"));
+		clearBBox.setToolTipText(Internal.I18N.getString("map.boundingBox.clear.tooltip"));
+		copyBBox.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.copy"));
+		pasteBBox.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.paste"));
+		reverseTitle.setText(Internal.I18N.getString("map.reverseGeocoder.label"));
+		reverseInfo.setText(Internal.I18N.getString("map.reverseGeocoder.hint.label"));
+
+		map.doTranslation();		
+		for (int i = 0; i < bboxPopups.length; ++i)
+			bboxPopups[i].doTranslation();
+	}
+
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		if (event.getEventType() == GlobalEvents.SWITCH_LOCALE) {
+			doTranslation();
+		}
+		
+		else if (event.getEventType() == MapEvents.BOUNDING_BOX_SELECTION) {
+			BoundingBoxSelection e = (BoundingBoxSelection)event;
+			GeoPosition[] bbox = e.getBoundingBox();
+			
+			minX.setValue(bbox[0].getLatitude());
+			minY.setValue(bbox[0].getLongitude());
+			maxX.setValue(bbox[1].getLatitude());
+			maxY.setValue(bbox[1].getLongitude());
+		}
+		
+		else if (event.getEventType() == MapEvents.MAP_BOUNDS) {
+			MapBoundsSelection e = (MapBoundsSelection)event;
+			GeoPosition[] bbox = e.getBoundingBox();
+
+			minX.setValue(bbox[0].getLongitude());
+			minY.setValue(bbox[0].getLatitude());
+			maxX.setValue(bbox[1].getLongitude());
+			maxY.setValue(bbox[1].getLatitude());
+			map.getSelectionPainter().setSelectedArea(bbox[0], bbox[1]);
+		}
+		
+		else if (event.getEventType() == MapEvents.REVERSE_GEOCODER) {
+			ReverseGeocoderEvent e = (ReverseGeocoderEvent)event;
+			
+			if (e.getStatus() == ReverseGeocoderStatus.SEARCHING) {
+				reverseSearchProgress.setIcon(loadIcon);
+			} else if (e.getStatus() == ReverseGeocoderStatus.RESULT) {
+				Location location = e.getLocation();
+				StringBuilder rest = new StringBuilder();
+				String[] tokens = location.getFormattedAddress().split(", ");
+				for (int i = 0; i < tokens.length; ++i) {
+					if (i == 0) 
+						rest.append("<b>").append(tokens[i]).append("</b>");
+					else
+						rest.append(tokens[i]);
+
+					if (i < tokens.length - 1)
+						rest.append("<br>");
+				}
+
+				reverseText.setText(rest.toString());
+				reverseInfo.setText(LAT_LON_FORMATTER.format(location.getPosition().getLatitude()) + ", " + 
+						LAT_LON_FORMATTER.format(location.getPosition().getLongitude()));
+				reverseText.setVisible(true);
+				reverseInfo.setVisible(true);
+				reverseSearchProgress.setIcon(null);
+			} else if (e.getStatus() == ReverseGeocoderStatus.ERROR) {
+				GeocoderResponse response = e.getResponse();
+				reverseInfo.setText(response.getStatus().toString());
+				reverseText.setVisible(false);
+				reverseInfo.setVisible(true);
+				reverseSearchProgress.setIcon(null);
+			}
+		}
+	}
+
+	private final class BBoxPopupMenu extends JPopupMenu {
+		private JMenuItem copy;	
+		private JMenuItem paste;
+
+		public BBoxPopupMenu(JPopupMenu popupMenu, boolean addSeparator) {
+			copy = new JMenuItem();	
+			paste = new JMenuItem();
+			
+			copy.setEnabled(false);
+			paste.setEnabled(BoundingBoxClipboardHandler.getInstance().containsPossibleBoundingBox());
+
+			if (addSeparator) popupMenu.addSeparator();
+			popupMenu.add(copy);
+			popupMenu.add(paste);
+
+			copy.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					copyBoundingBoxToClipboard();
+				}
+			});
+
+			paste.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					pasteBoundingBoxFromClipboard();
+				}
+			});
+		}
+
+		private void doTranslation() {
+			copy.setText(Internal.I18N.getString("common.popup.boundingBox.copy"));
+			paste.setText(Internal.I18N.getString("common.popup.boundingBox.paste"));
+		}
+	}
+
 }

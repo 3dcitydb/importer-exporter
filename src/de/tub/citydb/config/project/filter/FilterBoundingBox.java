@@ -27,30 +27,57 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.importer;
+package de.tub.citydb.config.project.filter;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.project.filter.AbstractComplexFilter;
-import de.tub.citydb.config.project.filter.FilterBoundingBox;
+import de.tub.citydb.api.config.BoundingBox;
+import de.tub.citydb.config.project.database.Database;
 
-@XmlType(name="ImportComplexFilterType", propOrder={
-		"boundingBox"
+@XmlType(name="FilterBoundingBoxType", propOrder={
+		"mode"
 })
-public class ImportComplexFilter extends AbstractComplexFilter {
-	private FilterBoundingBox boundingBox;
+public class FilterBoundingBox extends BoundingBox {
+	@XmlElement(required=true)
+	private FilterBoundingBoxMode mode = FilterBoundingBoxMode.OVERLAP;
+	@XmlAttribute(required=true)
+	private Boolean active = false;
 
-	public ImportComplexFilter() {
-		boundingBox = new FilterBoundingBox();
+	public FilterBoundingBox() {
+		setSrs(Database.DEFAULT_SRS);
 	}
 
-	public FilterBoundingBox getBoundingBox() {
-		return boundingBox;
+	public boolean isSetContainMode() {
+		return mode == FilterBoundingBoxMode.CONTAIN;
 	}
 
-	public void setBoundingBox(FilterBoundingBox boundingBox) {
-		if (boundingBox != null)
-			this.boundingBox = boundingBox;
+	public boolean isSetOverlapMode() {
+		return mode == FilterBoundingBoxMode.OVERLAP;
+	}
+
+	public FilterBoundingBoxMode getMode() {
+		return mode;
+	}
+
+	public void setMode(FilterBoundingBoxMode mode) {
+		this.mode = mode;
+	}
+
+	public boolean isSet() {
+		if (active != null)
+			return active.booleanValue();
+
+		return false;
+	}
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
 	}
 
 }

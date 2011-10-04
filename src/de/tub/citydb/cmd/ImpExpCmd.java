@@ -40,13 +40,13 @@ import javax.xml.bind.JAXBContext;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 
+import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.DBConnection;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.log.Logger;
@@ -185,7 +185,7 @@ public class ImpExpCmd {
 				kmlExporter.calculateRowsColumnsAndDelta();
 			}
 			catch (SQLException sqle) {
-				String srsDescription = filter.getComplexFilter().getBoundingBox().getSRS().getDescription();
+				String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs().getDescription();
 				LOG.error(srsDescription + " " + sqle.getMessage());
 				return;
 			}
@@ -223,7 +223,7 @@ public class ImpExpCmd {
 			conn.getMetaData().printToConsole(LogLevel.INFO);
 
 			// log whether user-defined SRSs are supported
-			for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) {
+			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
 				if (refSys.isSupported())
 					LOG.debug("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") supported.");
 				else

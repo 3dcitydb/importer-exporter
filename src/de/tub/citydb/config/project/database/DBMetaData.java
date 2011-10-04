@@ -60,8 +60,8 @@ public class DBMetaData implements DatabaseMetaData {
 	
 		referenceSystemName = null;
 		isReferenceSystem3D = false;
-		srid = ReferenceSystem.DEFAULT.getSrid();
-		srsName = ReferenceSystem.DEFAULT.getSrsName();		
+		srid = Database.DEFAULT_SRS.getSrid();
+		srsName = Database.DEFAULT_SRS.getSrsName();		
 		versioning = Versioning.OFF;
 	}
 

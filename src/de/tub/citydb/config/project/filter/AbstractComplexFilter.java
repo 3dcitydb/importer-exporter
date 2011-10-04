@@ -47,8 +47,8 @@ public abstract class AbstractComplexFilter {
 		featureClass = new FeatureClass();
 	}
 
-	public abstract BoundingBox getBoundingBox();
-	public abstract void setBoundingBox(BoundingBox boundingBox);
+	public abstract FilterBoundingBox getBoundingBox();
+	public abstract void setBoundingBox(FilterBoundingBox boundingBox);
 	
 	public GmlName getGmlName() {
 		return gmlName;

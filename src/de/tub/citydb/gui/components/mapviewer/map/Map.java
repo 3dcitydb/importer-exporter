@@ -23,6 +23,7 @@ import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.painter.CompoundPainter;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.components.mapviewer.MapWindow;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -33,7 +34,12 @@ public class Map {
 	private ZoomPainter zoomPainter;
 	private MapPopupMenu popupMenu;
 	private JPanel hints;
-	
+
+	private JLabel hintsLabel;
+	private JLabel hintLabels[];
+	private JLabel hintIcons[];
+	private JLabel label;
+
 	public Map() {
 		initComponents();
 	}
@@ -71,13 +77,13 @@ public class Map {
 		hints.setLayout(new GridBagLayout());
 		hints.setBorder(BorderFactory.createMatteBorder(0, 2, 2, 2, borderColor));
 		hints.setVisible(false);
-		
+
 		header.add(headerMenu, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		gridBagConstraints = GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.NONE, 0, 0, 0, 0);
 		gridBagConstraints.anchor = GridBagConstraints.EAST;
 		header.add(hints, gridBagConstraints);
 
-		final JLabel hintsLabel = new JLabel("<html><u>Show usage hints</u></html>");
+		hintsLabel = new JLabel();
 		hintsLabel.setBackground(borderColor);
 		hintsLabel.setForeground(Color.WHITE);
 		hintsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -86,27 +92,36 @@ public class Map {
 		headerMenu.add(hintsLabel, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 2, 2, 2, 5));
 
 		// usage hints
-		createUsageHint("Select bounding box", new ImageIcon(getClass().getResource("/resources/img/map/selection.png")),
-				"Hold Alt key and left mouse button to select bounding box", 0);
+		hintLabels = new JLabel[7];
+		hintIcons = new JLabel[7];
+
+		for (int i = 0; i < hintLabels.length; ++i) {
+			hintLabels[i] = new JLabel();
+			hintIcons[i] = new JLabel();
+			hintIcons[i].setOpaque(false);
+		}
 		
-		createUsageHint("Lookup address", new ImageIcon(getClass().getResource("/resources/img/map/waypoint_small.png")),
-				"Press right mouse button to open popup menu", 1);
+		hintIcons[0].setIcon(new ImageIcon(getClass().getResource("/resources/img/map/selection.png")));
+		hintIcons[1].setIcon(new ImageIcon(getClass().getResource("/resources/img/map/waypoint_small.png")));
+		hintIcons[2].setIcon(new ImageIcon(getClass().getResource("/resources/img/map/magnifier.png")));
+		hintIcons[3].setIcon(new ImageIcon(getClass().getResource("/resources/img/map/magnifier_plus_selection.png")));
+		hintIcons[4].setIcon(new ImageIcon(getClass().getResource("/resources/img/map/move.png")));
+		hintIcons[5].setIcon(new ImageIcon(getClass().getResource("/resources/img/map/center.png")));
+		hintIcons[6].setIcon(new ImageIcon(getClass().getResource("/resources/img/map/popup.png")));
 
-		createUsageHint("Zoom in/out", new ImageIcon(getClass().getResource("/resources/img/map/magnifier.png")),
-				"Use mouse wheel", 2);
-		
-		createUsageHint("Zoom into selected area", new ImageIcon(getClass().getResource("/resources/img/map/magnifier_plus_selection.png")),
-				"Hold Shift key and left mouse button to select area", 3);
+		gridBagConstraints = GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 5, 5, 1, 5);
+		gridBagConstraints.anchor = GridBagConstraints.NORTH;
 
-		createUsageHint("Move map", new ImageIcon(getClass().getResource("/resources/img/map/move.png")),
-				"Hold left mouse button to move the map", 4);
+		for (int i = 0; i < hintLabels.length; ++i) {			
+			gridBagConstraints.gridy = i;
+			gridBagConstraints.gridx = 0;
+			hints.add(hintIcons[i], gridBagConstraints);
+			gridBagConstraints.gridx = 1;
+			hints.add(hintLabels[i], gridBagConstraints);
+		}
 
-		createUsageHint("Center map and zoom in", new ImageIcon(getClass().getResource("/resources/img/map/center.png")),
-				"Double-click left mouse button to center map", 5);
-
-		
 		// footer label
-		final JLabel label = new JLabel("[n/a]");
+		label = new JLabel("[n/a]");
 		label.setForeground(Color.WHITE);
 		label.setPreferredSize(new Dimension(200, label.getPreferredSize().height));
 		JLabel copyright = new JLabel("<html><body>Map data &copy; 'OpenStreetMap' <i>(and)</i> contributors, CC-BY-SA</html></body>");
@@ -170,19 +185,22 @@ public class Map {
 		});
 
 		// usage hints
-		hintsLabel.addMouseListener(new MouseAdapter() {
+		MouseAdapter hintsMouseAdapter = new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e)) {
-					boolean visible = !hints.isVisible();				
-					hintsLabel.setText(visible ? "<html><u>Hide usage hints</u></html>" : "<html><u>Show usage hints</u></html>");
+					boolean visible = !hints.isVisible();
+					String hintsText = !visible ? Internal.I18N.getString("map.hints.show") : Internal.I18N.getString("map.hints.hide");
+					hintsLabel.setText("<html><u>" + hintsText + "</u></html>");
 					hints.setVisible(visible);
 				}
 			}
-		});
+		};
 		
+		hintsLabel.addMouseListener(hintsMouseAdapter);
+		hints.addMouseListener(hintsMouseAdapter);
+
 		// just to disable double-click action
 		headerMenu.addMouseListener(new MouseAdapter() {});
-		hints.addMouseListener(new MouseAdapter() {});
 		footer.addMouseListener(new MouseAdapter() {});
 	}
 
@@ -198,44 +216,19 @@ public class Map {
 		return waypointPainter;
 	}
 
-	public void addBBoxSelectionListener(BBoxSelectionListener listener) {
-		selectionPainter.addBBoxSelectionListener(listener);
-	}
+	public void doTranslation() {
+		String hintsText = !hints.isVisible() ? Internal.I18N.getString("map.hints.show") : Internal.I18N.getString("map.hints.hide");
+		hintsLabel.setText("<html><u>" + hintsText + "</u></html>");
 
-	public boolean removeBBoxSelectionListener(BBoxSelectionListener listener) {
-		return selectionPainter.removeBBoxSelectionListener(listener);
-	}
-
-	public void addReverseGeocoderListener(ReverseGeocoderListener listener) {
-		popupMenu.addReverseGeocoderListener(listener);
-	}
-
-	public boolean removeReverseGeocoderListener(ReverseGeocoderListener listener) {
-		return popupMenu.removeReverseGeocoderListener(listener);
-	}
-
-	public void addMapBoundsListener(MapBoundsListener listener) {
-		popupMenu.addMapBoundsListener(listener);
-	}
-
-	public boolean removeMapBoundsListener(MapBoundsListener listener) {
-		return popupMenu.removeMapBoundsListener(listener);
-	}
+		hintLabels[0].setText("<html><b>" + Internal.I18N.getString("map.hints.selectBoundingBox")+ "</b><br/>" + Internal.I18N.getString("map.hints.selectBoundingBox.hint") + "</html>");
+		hintLabels[1].setText("<html><b>" + Internal.I18N.getString("map.hints.reverseGeocoder")+ "</b><br/>" + Internal.I18N.getString("map.hints.reverseGeocoder.hint") + "</html>");
+		hintLabels[2].setText("<html><b>" + Internal.I18N.getString("map.hints.zoom")+ "</b><br/>" + Internal.I18N.getString("map.hints.zoom.hint") + "</html>");
+		hintLabels[3].setText("<html><b>" + Internal.I18N.getString("map.hints.zoomSelected")+ "</b><br/>" + Internal.I18N.getString("map.hints.zoomSelected.hint") + "</html>");
+		hintLabels[4].setText("<html><b>" + Internal.I18N.getString("map.hints.move")+ "</b><br/>" + Internal.I18N.getString("map.hints.move.hint") + "</html>");
+		hintLabels[5].setText("<html><b>" + Internal.I18N.getString("map.hints.center")+ "</b><br/>" + Internal.I18N.getString("map.hints.center.hint") + "</html>");
+		hintLabels[6].setText("<html><b>" + Internal.I18N.getString("map.hints.popup")+ "</b><br/>" + Internal.I18N.getString("map.hints.popup.hint") + "</html>");
 	
-	private void createUsageHint(String action, ImageIcon actionIcon, String hint, int level) {
-		action = action.replaceAll("\\n", "<br/>");
-		hint = hint.replaceAll("\\n", "<br/>");
-		
-		JLabel actionLabel = new JLabel();
-		actionLabel.setIcon(actionIcon);
-		actionLabel.setOpaque(false);
-
-		JLabel hintLabel = new JLabel("<html><b>" + action + "</b><br/>" + hint + "</html>");
-		
-		GridBagConstraints gridBagConstraints = GuiUtil.setConstraints(0, level, 0, 0, GridBagConstraints.NONE, 5, 5, 1, 5);
-		gridBagConstraints.anchor = GridBagConstraints.NORTH;
-		hints.add(actionLabel, gridBagConstraints);
-		hints.add(hintLabel, GuiUtil.setConstraints(1, level, 1, 0, GridBagConstraints.BOTH, 5, 5, 1, 5));
+		popupMenu.doTranslation();
 	}
 
 }

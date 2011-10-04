@@ -27,37 +27,48 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.filter;
+package de.tub.citydb.api.config;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="BoundingBoxModeType")
-@XmlEnum
-public enum BoundingBoxMode {
-	@XmlEnumValue("contain")
-    CONTAIN("contain"),
-    @XmlEnumValue("overlap")
-    OVERLAP("overlap");
+@XmlType(name="BoundingBoxCornerType", propOrder={
+		"x",
+		"y"
+		})
+public class BoundingBoxCorner {
+	private Double x;
+	private Double y;
+	
+	public BoundingBoxCorner() {
+	}
 
-    private final String value;
+	public BoundingBoxCorner(Double x, Double y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	public boolean isSetX() {
+		return x != null;
+	}
+	
+	public Double getX() {
+		return x;
+	}
 
-    BoundingBoxMode(String v) {
-        value = v;
-    }
+	public void setX(Double x) {
+		this.x = x;
+	}
+	
+	public boolean isSetY() {
+		return y != null;
+	}
 
-    public String value() {
-        return value;
-    }
+	public Double getY() {
+		return y;
+	}
 
-    public static BoundingBoxMode fromValue(String v) {
-        for (BoundingBoxMode c: BoundingBoxMode.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-
-        return CONTAIN;
-    }
+	public void setY(Double y) {
+		this.y = y;
+	}
+	
 }

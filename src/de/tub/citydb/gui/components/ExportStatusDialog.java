@@ -34,8 +34,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -160,16 +160,10 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 		pack();
 		progressBar.setIndeterminate(true);
 
-		addWindowListener(new WindowListener() {
+		addWindowListener(new WindowAdapter() {
 			public void windowClosed(WindowEvent e) {
 				eventDispatcher.removeEventHandler(ExportStatusDialog.this);
 			}
-			public void windowActivated(WindowEvent e) {}
-			public void windowClosing(WindowEvent e) {}
-			public void windowDeactivated(WindowEvent e) {}
-			public void windowDeiconified(WindowEvent e) {}
-			public void windowIconified(WindowEvent e) {}
-			public void windowOpened(WindowEvent e) {}
 		});
 	}
 

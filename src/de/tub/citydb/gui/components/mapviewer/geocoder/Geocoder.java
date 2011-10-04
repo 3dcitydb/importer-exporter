@@ -20,6 +20,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.components.mapviewer.MapWindow;
 
 public class Geocoder {
@@ -37,9 +38,14 @@ public class Geocoder {
 	
 	public static final GeocoderResponse geocode(String requestType, String requestString) {
 		GeocoderResponse geocodingResult = new GeocoderResponse(ResponseType.ADDRESS);
-
+		
+		// get language from GUI settings
+		String language = Internal.I18N.getLocale().getLanguage();
+		if (language.length() != 0)
+			language = "&language=" + language;
+		
 		try {
-			URL url = new URL(GEOCODER_REQUEST_PREFIX_FOR_XML + "?" + requestType + "=" + URLEncoder.encode(requestString, "UTF-8") + "&sensor=false");
+			URL url = new URL(GEOCODER_REQUEST_PREFIX_FOR_XML + "?" + requestType + "=" + URLEncoder.encode(requestString, "UTF-8") + "&sensor=false" + language);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();			
 			Document response = null;
 

@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="TiledBoundingBoxType", propOrder={
 		"tiling"
 })
-public class TiledBoundingBox extends BoundingBox {
+public class TiledBoundingBox extends FilterBoundingBox {
 	@XmlElement(required=true)
 	private Tiling tiling;
 

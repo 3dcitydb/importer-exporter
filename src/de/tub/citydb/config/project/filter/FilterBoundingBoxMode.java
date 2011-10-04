@@ -27,30 +27,37 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.importer;
+package de.tub.citydb.config.project.filter;
 
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.project.filter.AbstractComplexFilter;
-import de.tub.citydb.config.project.filter.FilterBoundingBox;
+@XmlType(name="BoundingBoxModeType")
+@XmlEnum
+public enum FilterBoundingBoxMode {
+	@XmlEnumValue("contain")
+    CONTAIN("contain"),
+    @XmlEnumValue("overlap")
+    OVERLAP("overlap");
 
-@XmlType(name="ImportComplexFilterType", propOrder={
-		"boundingBox"
-})
-public class ImportComplexFilter extends AbstractComplexFilter {
-	private FilterBoundingBox boundingBox;
+    private final String value;
 
-	public ImportComplexFilter() {
-		boundingBox = new FilterBoundingBox();
-	}
+    FilterBoundingBoxMode(String v) {
+        value = v;
+    }
 
-	public FilterBoundingBox getBoundingBox() {
-		return boundingBox;
-	}
+    public String value() {
+        return value;
+    }
 
-	public void setBoundingBox(FilterBoundingBox boundingBox) {
-		if (boundingBox != null)
-			this.boundingBox = boundingBox;
-	}
+    public static FilterBoundingBoxMode fromValue(String v) {
+        for (FilterBoundingBoxMode c: FilterBoundingBoxMode.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
 
+        return CONTAIN;
+    }
 }

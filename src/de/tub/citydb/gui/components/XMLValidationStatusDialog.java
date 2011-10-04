@@ -33,6 +33,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -58,6 +60,8 @@ import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class XMLValidationStatusDialog extends JDialog implements EventHandler {
+	private EventDispatcher eventDispatcher;
+	
 	private JLabel titleLabel;
 	private JLabel messageLabel;
 	private JProgressBar progressBar;
@@ -78,6 +82,7 @@ public class XMLValidationStatusDialog extends JDialog implements EventHandler {
 			EventDispatcher eventDispatcher) {
 		super(frame, windowTitle, true);
 		
+		this.eventDispatcher = eventDispatcher;
 		eventDispatcher.addEventHandler(EventType.COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_MESSAGE, this);
@@ -162,6 +167,13 @@ public class XMLValidationStatusDialog extends JDialog implements EventHandler {
 
 			pack();
 			progressBar.setIndeterminate(true);
+			
+			addWindowListener(new WindowAdapter() {
+				public void windowClosed(WindowEvent e) {
+					if (eventDispatcher != null)
+						eventDispatcher.removeEventHandler(XMLValidationStatusDialog.this);
+				}
+			});
 		}
 	}
 

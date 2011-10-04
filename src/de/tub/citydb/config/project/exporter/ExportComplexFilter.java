@@ -32,7 +32,7 @@ package de.tub.citydb.config.project.exporter;
 import javax.xml.bind.annotation.XmlType;
 
 import de.tub.citydb.config.project.filter.AbstractComplexFilter;
-import de.tub.citydb.config.project.filter.BoundingBox;
+import de.tub.citydb.config.project.filter.FilterBoundingBox;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 
 @XmlType(name="ExportComplexFilterType", propOrder={
@@ -46,12 +46,12 @@ public class ExportComplexFilter extends AbstractComplexFilter {
 	}
 
 	@Override
-	public BoundingBox getBoundingBox() {
+	public FilterBoundingBox getBoundingBox() {
 		return boundingBox;
 	}
 
 	@Override
-	public void setBoundingBox(BoundingBox boundingBox) {
+	public void setBoundingBox(FilterBoundingBox boundingBox) {
 		if (boundingBox instanceof TiledBoundingBox) 
 			this.boundingBox = (TiledBoundingBox)boundingBox;
 		else {
@@ -59,7 +59,7 @@ public class ExportComplexFilter extends AbstractComplexFilter {
 			this.boundingBox.setLowerLeftCorner(boundingBox.getLowerLeftCorner());
 			this.boundingBox.setUpperRightCorner(boundingBox.getUpperRightCorner());
 			this.boundingBox.setMode(boundingBox.getMode());
-			this.boundingBox.setSRS(boundingBox.getSRS());
+			this.boundingBox.setSrs(boundingBox.getSrs());
 		}
 	}
 

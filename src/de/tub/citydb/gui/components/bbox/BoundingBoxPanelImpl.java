@@ -1,0 +1,302 @@
+package de.tub.citydb.gui.components.bbox;
+
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Toolkit;
+import java.awt.datatransfer.FlavorEvent;
+import java.awt.datatransfer.FlavorListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
+import java.util.Locale;
+
+import javax.swing.Box;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+
+import de.tub.citydb.api.config.BoundingBox;
+import de.tub.citydb.api.config.BoundingBoxCorner;
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.global.GlobalEvents;
+import de.tub.citydb.api.gui.BoundingBoxPanel;
+import de.tub.citydb.api.registry.ObjectRegistry;
+import de.tub.citydb.config.Config;
+import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.gui.components.mapviewer.MapWindow;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory;
+import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
+import de.tub.citydb.log.Logger;
+import de.tub.citydb.util.gui.GuiUtil;
+
+@SuppressWarnings("serial")
+public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandler, BoundingBoxListener {
+	private final Logger LOG = Logger.getInstance();
+	private final Config config;
+
+	private JButton map;
+	private JButton copy;
+	private JButton paste;
+	private JLabel srsLabel;
+	private SrsComboBox srsComboBox;
+	private JFormattedTextField xmin;
+	private JFormattedTextField ymin;
+	private JFormattedTextField xmax;
+	private JFormattedTextField ymax;
+	private JLabel xminLabel;
+	private JLabel xmaxLabel;
+	private JLabel yminLabel;
+	private JLabel ymaxLabel;
+
+	private BBoxPopupMenu[] bboxPopups;
+
+	public BoundingBoxPanelImpl(Config config) {
+		this.config = config;
+
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);		
+		init();
+	}
+
+	private void init() {
+		srsLabel = new JLabel();
+		srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
+
+		DecimalFormat bboxFormat = new DecimalFormat("##########.##############", DecimalFormatSymbols.getInstance(Locale.ENGLISH));	
+		xmin = new JFormattedTextField(bboxFormat);	
+		ymin = new JFormattedTextField(bboxFormat);
+		xmax = new JFormattedTextField(bboxFormat);
+		ymax = new JFormattedTextField(bboxFormat);
+
+		xmin.setFocusLostBehavior(JFormattedTextField.COMMIT);
+		ymin.setFocusLostBehavior(JFormattedTextField.COMMIT);
+		xmax.setFocusLostBehavior(JFormattedTextField.COMMIT);
+		ymax.setFocusLostBehavior(JFormattedTextField.COMMIT);
+
+		xminLabel = new JLabel("Xmin");
+		xmaxLabel = new JLabel("Xmax");
+		yminLabel = new JLabel("Ymin");
+		ymaxLabel = new JLabel("Ymax");
+
+		// buttons and srs combo box
+		JPanel actionPanel = new JPanel();
+		actionPanel.setLayout(new GridBagLayout());
+
+		map = new JButton();
+		ImageIcon mapIcon = new ImageIcon(getClass().getResource("/resources/img/common/map_select.png")); 
+		map.setIcon(mapIcon);
+		map.setPreferredSize(new Dimension(mapIcon.getIconWidth() + 6, mapIcon.getIconHeight() + 6));
+
+		copy = new JButton();
+		ImageIcon copyIcon = new ImageIcon(getClass().getResource("/resources/img/common/bbox_copy.png")); 
+		copy.setIcon(copyIcon);
+		copy.setPreferredSize(new Dimension(copyIcon.getIconWidth() + 6, copyIcon.getIconHeight() + 6));
+
+		paste = new JButton();
+		ImageIcon pasteIcon = new ImageIcon(getClass().getResource("/resources/img/common/bbox_paste.png")); 
+		paste.setIcon(pasteIcon);
+		paste.setPreferredSize(new Dimension(pasteIcon.getIconWidth() + 6, pasteIcon.getIconHeight() + 6));
+
+		actionPanel.add(map, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));
+		actionPanel.add(copy, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));
+		actionPanel.add(paste, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));
+		actionPanel.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(3,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));			
+		actionPanel.add(srsLabel, GuiUtil.setConstraints(4,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));			
+		actionPanel.add(srsComboBox, GuiUtil.setConstraints(5,0,0.0,0.0,GridBagConstraints.NONE,0,5,0,0));
+
+		// input fields
+		JPanel inputFieldsPanel = new JPanel();
+		inputFieldsPanel.setLayout(new GridBagLayout());
+		xmin.setPreferredSize(xmax.getPreferredSize());
+		xmax.setPreferredSize(xmin.getPreferredSize());
+		ymin.setPreferredSize(ymax.getPreferredSize());
+		ymax.setPreferredSize(ymin.getPreferredSize());
+		inputFieldsPanel.add(xminLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,0));
+		inputFieldsPanel.add(xmin, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,0));
+		inputFieldsPanel.add(xmaxLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,0,0));
+		inputFieldsPanel.add(xmax, GuiUtil.setConstraints(3,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,0));
+		inputFieldsPanel.add(yminLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,2,0,0,0));
+		inputFieldsPanel.add(ymin, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,5,0,0));
+		inputFieldsPanel.add(ymaxLabel, GuiUtil.setConstraints(2,1,0.0,0.0,GridBagConstraints.NONE,2,10,0,0));
+		inputFieldsPanel.add(ymax, GuiUtil.setConstraints(3,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,5,0,0));
+
+		setLayout(new GridBagLayout());
+		add(actionPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
+		add(inputFieldsPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
+
+		// popup menus
+		PopupMenuDecorator popupMenuDecorator = PopupMenuDecorator.getInstance();
+		bboxPopups = new BBoxPopupMenu[4];
+
+		bboxPopups[0] = new BBoxPopupMenu(popupMenuDecorator.decorate(xmin));
+		bboxPopups[1] = new BBoxPopupMenu(popupMenuDecorator.decorate(ymin));
+		bboxPopups[2] = new BBoxPopupMenu(popupMenuDecorator.decorate(xmax));
+		bboxPopups[3] = new BBoxPopupMenu(popupMenuDecorator.decorate(ymax));
+
+		// button actions
+		map.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						MapWindow.getInstance(BoundingBoxPanelImpl.this, config).setVisible(true);
+					}
+				});
+			}
+		});
+
+		copy.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				copyBoundingBoxToClipboard();
+			}
+		});
+
+		paste.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				pasteBoundingBoxFromClipboard();
+			}
+		});
+
+		Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(new FlavorListener() {
+			public void flavorsChanged(FlavorEvent e) {
+				boolean enable = BoundingBoxClipboardHandler.getInstance().containsPossibleBoundingBox();
+
+				paste.setEnabled(enable);
+				for (int i = 0; i < bboxPopups.length; ++i)
+					bboxPopups[i].paste.setEnabled(enable);			}
+		});
+	}
+
+	private void doTranslation() {
+		map.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.map"));
+		copy.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.copy"));
+		paste.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.paste"));
+		srsLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
+
+		for (int i = 0; i < bboxPopups.length; ++i)
+			bboxPopups[i].doTranslation();
+	}
+
+	private void copyBoundingBoxToClipboard() {
+		try {
+			xmin.commitEdit();
+			ymin.commitEdit();
+			xmax.commitEdit();
+			ymax.commitEdit();
+
+			BoundingBoxClipboardHandler.getInstance().putBoundingBox(
+					((Number)xmin.getValue()).doubleValue(),
+					((Number)ymin.getValue()).doubleValue(),
+					((Number)xmax.getValue()).doubleValue(),
+					((Number)ymax.getValue()).doubleValue());			
+		} catch (ParseException e1) {
+			LOG.error("Failed to interpret values of input fields as bounding box.");
+		}
+	}
+
+	private void pasteBoundingBoxFromClipboard() {
+		double[] bbox = BoundingBoxClipboardHandler.getInstance().getBoundingBox();
+
+		if (bbox != null && bbox.length == 4) {
+			xmin.setValue(bbox[0]);
+			ymin.setValue(bbox[1]);
+			xmax.setValue(bbox[2]);
+			ymax.setValue(bbox[3]);
+		}
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+
+		map.setEnabled(enabled);
+		copy.setEnabled(enabled);
+		paste.setEnabled(enabled ? BoundingBoxClipboardHandler.getInstance().containsPossibleBoundingBox() : false);
+		xminLabel.setEnabled(enabled);
+		xmaxLabel.setEnabled(enabled);
+		yminLabel.setEnabled(enabled);
+		ymaxLabel.setEnabled(enabled);
+		xmin.setEnabled(enabled);
+		xmax.setEnabled(enabled);
+		ymin.setEnabled(enabled);
+		ymax.setEnabled(enabled);
+		srsLabel.setEnabled(enabled);
+		srsComboBox.setEnabled(enabled);
+	}
+
+	@Override
+	public BoundingBox getBoundingBox() {
+		BoundingBox bbox = new BoundingBox();
+		bbox.setSrs(srsComboBox.getSelectedItem());
+
+		bbox.getLowerLeftCorner().setX(xmin.isEditValid() && xmin.getValue() != null ? ((Number)xmin.getValue()).doubleValue() : null);
+		bbox.getLowerLeftCorner().setY(ymin.isEditValid() && ymin.getValue() != null ? ((Number)ymin.getValue()).doubleValue() : null);
+		bbox.getUpperRightCorner().setX(xmax.isEditValid() && xmax.getValue() != null ? ((Number)xmax.getValue()).doubleValue() : null);
+		bbox.getUpperRightCorner().setY(ymax.isEditValid() && ymax.getValue() != null ? ((Number)ymax.getValue()).doubleValue() : null);
+
+		return bbox;
+	}
+
+	@Override
+	public void setBoundingBox(BoundingBox boundingBox) {
+		if (boundingBox != null) {
+			BoundingBoxCorner lowerLeft = boundingBox.getLowerLeftCorner();
+			BoundingBoxCorner upperRight = boundingBox.getUpperRightCorner();
+
+			xmin.setValue(lowerLeft.getX());
+			ymin.setValue(lowerLeft.getY());
+			xmax.setValue(upperRight.getX());
+			ymax.setValue(upperRight.getY());
+
+			if (boundingBox.isSetSrs())
+				srsComboBox.setSelectedItem(boundingBox.getSrs());
+		}
+	}
+
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		doTranslation();
+	}
+
+	private final class BBoxPopupMenu extends JPopupMenu {
+		private JMenuItem copy;	
+		private JMenuItem paste;
+
+		public BBoxPopupMenu(JPopupMenu popupMenu) {
+			copy = new JMenuItem();	
+			paste = new JMenuItem();
+
+			paste.setEnabled(BoundingBoxClipboardHandler.getInstance().containsPossibleBoundingBox());
+
+			popupMenu.addSeparator();
+			popupMenu.add(copy);
+			popupMenu.add(paste);
+
+			copy.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					copyBoundingBoxToClipboard();
+				}
+			});
+
+			paste.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					pasteBoundingBoxFromClipboard();
+				}
+			});
+		}
+
+		private void doTranslation() {
+			copy.setText(Internal.I18N.getString("common.popup.boundingBox.copy"));
+			paste.setText(Internal.I18N.getString("common.popup.boundingBox.paste"));
+		}
+	}
+
+}

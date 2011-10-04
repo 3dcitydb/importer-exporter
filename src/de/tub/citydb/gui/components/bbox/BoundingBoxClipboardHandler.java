@@ -1,4 +1,4 @@
-package de.tub.citydb.util.gui;
+package de.tub.citydb.gui.components.bbox;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -11,16 +11,19 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class BBoxClipboardHandler implements ClipboardOwner {
-	private static BBoxClipboardHandler instance;
+import de.tub.citydb.log.Logger;
 
-	private BBoxClipboardHandler() {
+public class BoundingBoxClipboardHandler implements ClipboardOwner {
+	private static final Logger LOG = Logger.getInstance();
+	private static BoundingBoxClipboardHandler instance;
+
+	private BoundingBoxClipboardHandler() {
 		// just to thwart instantiation
 	}
 
-	public static synchronized BBoxClipboardHandler getInstance() {
+	public static synchronized BoundingBoxClipboardHandler getInstance() {
 		if (instance == null)
-			instance = new BBoxClipboardHandler();
+			instance = new BoundingBoxClipboardHandler();
 
 		return instance;
 	}
@@ -57,10 +60,14 @@ public class BBoxClipboardHandler implements ClipboardOwner {
 				//
 			}
 		}
-
+		
+		LOG.error("Failed to interpret clipboard content as bounding box.");
 		return null;
 	}
-
+	
+	public boolean containsPossibleBoundingBox() {
+		return Toolkit.getDefaultToolkit().getSystemClipboard().isDataFlavorAvailable(DataFlavor.stringFlavor);
+	}
 
 	@Override
 	public void lostOwnership(Clipboard clipboard, Transferable contents) {

@@ -40,28 +40,32 @@ import javax.xml.bind.annotation.XmlType;
 
 import de.tub.citydb.config.gui.window.ConsoleWindow;
 import de.tub.citydb.config.gui.window.MainWindow;
+import de.tub.citydb.config.gui.window.MapWindow;
 
 @XmlRootElement
 @XmlType(name="GuiType", propOrder={
 		"main",
 		"console",
+		"map",
 		"showPreferencesConfirmDialog",
 		"recentlyUsedProjects"
 })
 public class Gui {
 	private MainWindow main; 
 	private ConsoleWindow console;
+	private MapWindow map;
 	private boolean showPreferencesConfirmDialog = true;
 	@XmlElementWrapper(name="recentlyUsedProjects")
 	@XmlElement(name="fileName")
 	private List<String> recentlyUsedProjects;
-	
+
 	@XmlTransient
 	private final int maxLastUsedEntries = 5;
 
 	public Gui() {
 		main = new MainWindow();
 		console = new ConsoleWindow();
+		map = new MapWindow();
 		recentlyUsedProjects = new ArrayList<String>(maxLastUsedEntries + 1);
 	}
 
@@ -81,6 +85,15 @@ public class Gui {
 	public void setConsoleWindow(ConsoleWindow console) {
 		if (console != null)
 			this.console = console;
+	}
+
+	public MapWindow getMapWindow() {
+		return map;
+	}
+
+	public void setMapWindow(MapWindow map) {
+		if (map != null)
+			this.map = map;
 	}
 
 	public boolean isShowPreferencesConfirmDialog() {

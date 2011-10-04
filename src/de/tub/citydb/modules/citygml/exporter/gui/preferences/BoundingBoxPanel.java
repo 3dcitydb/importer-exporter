@@ -56,7 +56,7 @@ import javax.swing.border.TitledBorder;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
-import de.tub.citydb.config.project.filter.BoundingBoxMode;
+import de.tub.citydb.config.project.filter.FilterBoundingBoxMode;
 import de.tub.citydb.config.project.filter.TileNameSuffixMode;
 import de.tub.citydb.config.project.filter.TileSuffixMode;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
@@ -365,7 +365,7 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 	public void setSettings() {
 		TiledBoundingBox bbox = config.getProject().getExporter().getFilter().getComplexFilter().getTiledBoundingBox();
 
-		bbox.setMode(expBBRadioInside.isSelected() ? BoundingBoxMode.CONTAIN : BoundingBoxMode.OVERLAP);
+		bbox.setMode(expBBRadioInside.isSelected() ? FilterBoundingBoxMode.CONTAIN : FilterBoundingBoxMode.OVERLAP);
 
 		Tiling tiling = bbox.getTiling();
 		tiling.setMode(useTiling.isSelected() ? TilingMode.MANUAL : TilingMode.NO_TILING);

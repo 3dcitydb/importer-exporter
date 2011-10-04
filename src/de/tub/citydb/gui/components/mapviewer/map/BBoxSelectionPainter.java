@@ -7,8 +7,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.SwingUtilities;
@@ -17,10 +15,13 @@ import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.painter.Painter;
 
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.registry.ObjectRegistry;
+import de.tub.citydb.gui.components.mapviewer.map.event.BoundingBoxSelection;
+
 public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapViewer> {
 	private final JXMapViewer map;
-
-	private List<BBoxSelectionListener> listeners;
+	private final EventDispatcher eventDispatcher;
 
 	private Color borderColor = new Color(0, 0, 200);
 	private Color regionColor = new Color(0, 0, 200, 75);
@@ -36,19 +37,10 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 
 	public BBoxSelectionPainter(JXMapViewer map) {
 		this.map = map;
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		
 		map.addMouseListener(this);
 		map.addMouseMotionListener(this);
-	}
-
-	protected void addBBoxSelectionListener(BBoxSelectionListener listener) {
-		if (listeners == null)
-			listeners = new ArrayList<BBoxSelectionListener>();
-
-		listeners.add(listener);
-	}
-
-	protected boolean removeBBoxSelectionListener(BBoxSelectionListener listener) {
-		return listeners != null ? listeners.remove(listener) : false;
 	}
 
 	public GeoPosition[] getSelectedArea() {
@@ -68,21 +60,8 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 		map.repaint();
 
 		final GeoPosition[] bounds = getSelectedArea();
-		if (bounds != null && !listeners.isEmpty()) {
-			Thread t = new Thread() {
-				public void run() {
-					for (final BBoxSelectionListener listener : listeners) {
-						SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-								listener.bboxSelected(bounds);
-							}
-						});
-					}									
-				}
-			};
-			t.setDaemon(true);
-			t.start();
-		}
+		if (bounds != null)
+			eventDispatcher.triggerEvent(new BoundingBoxSelection(bounds, this));	
 	}
 
 	public void clearSelectedArea() {
@@ -169,25 +148,9 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 				end = createGeoRectangle2D(e.getPoint());
 				selectedArea = start.createUnion(end);
 
-				if (!listeners.isEmpty()) {
-					final GeoPosition[] bounds = getSelectedArea();
-					if (bounds != null) {
-						Thread t = new Thread() {
-							public void run() {
-								for (final BBoxSelectionListener listener : listeners) {
-									SwingUtilities.invokeLater(new Runnable() {
-										public void run() {
-											listener.bboxSelected(bounds);
-										}
-									});
-								}									
-							}
-						};
-						t.setDaemon(true);
-						t.start();
-					}
-				}
-
+				final GeoPosition[] bounds = getSelectedArea();
+				if (bounds != null)
+					eventDispatcher.triggerEvent(new BoundingBoxSelection(bounds, this));
 			} else 
 				selectedArea = null;
 

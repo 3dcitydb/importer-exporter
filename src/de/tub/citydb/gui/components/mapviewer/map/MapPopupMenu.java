@@ -6,19 +6,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
 
 import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.mapviewer.TileFactory;
 
+import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.registry.ObjectRegistry;
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.components.mapviewer.geocoder.Geocoder;
 import de.tub.citydb.gui.components.mapviewer.geocoder.GeocoderResponse;
 import de.tub.citydb.gui.components.mapviewer.geocoder.Location;
@@ -26,14 +26,14 @@ import de.tub.citydb.gui.components.mapviewer.geocoder.LocationType;
 import de.tub.citydb.gui.components.mapviewer.geocoder.ResultType;
 import de.tub.citydb.gui.components.mapviewer.geocoder.StatusCode;
 import de.tub.citydb.gui.components.mapviewer.map.DefaultWaypoint.WaypointType;
+import de.tub.citydb.gui.components.mapviewer.map.event.MapBoundsSelection;
+import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent;
 
 @SuppressWarnings("serial")
 public class MapPopupMenu extends JPopupMenu {
 	private final Map mapViewer;
 	private final JXMapViewer map;
-
-	private List<ReverseGeocoderListener> reverseListener;
-	private List<MapBoundsListener> boundsListener;
+	private final EventDispatcher eventDispatcher;
 
 	private JMenuItem zoomIn;
 	private JMenuItem zoomOut;
@@ -46,6 +46,9 @@ public class MapPopupMenu extends JPopupMenu {
 	public MapPopupMenu(Map mapViewer) {
 		this.mapViewer = mapViewer;
 		this.map = mapViewer.getMapKit().getMainMap();
+		
+		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+		
 		init();
 	}
 
@@ -83,22 +86,8 @@ public class MapPopupMenu extends JPopupMenu {
 				final GeoPosition[] bounds = new GeoPosition[2];
 				bounds[0] = fac.pixelToGeo(new Point2D.Double(view.getMinX(), view.getMaxY()), zoom);
 				bounds[1] = fac.pixelToGeo(new Point2D.Double(view.getMaxX(), view.getMinY()), zoom);
-
-				if (!boundsListener.isEmpty()) {
-					Thread t = new Thread() {
-						public void run() {
-							for (final MapBoundsListener listener : boundsListener) {
-								SwingUtilities.invokeLater(new Runnable() {
-									public void run() {
-										listener.getMapBounds(bounds);	
-									}
-								});								
-							}
-						}
-					};
-					t.setDaemon(true);
-					t.start();
-				}
+				
+				eventDispatcher.triggerEvent(new MapBoundsSelection(bounds, MapPopupMenu.this));
 			}
 		});
 
@@ -106,13 +95,7 @@ public class MapPopupMenu extends JPopupMenu {
 			public void actionPerformed(ActionEvent e) {
 				Thread t = new Thread() {
 					public void run() {
-						for (final ReverseGeocoderListener listener : reverseListener) {
-							SwingUtilities.invokeLater(new Runnable() {
-								public void run() {
-									listener.searching();	
-								}
-							});								
-						}
+						eventDispatcher.triggerEvent(new ReverseGeocoderEvent(MapPopupMenu.this));
 
 						GeoPosition position = map.convertPointToGeoPosition(mousePosition);
 						final GeocoderResponse response = Geocoder.geocode(position);
@@ -151,29 +134,13 @@ public class MapPopupMenu extends JPopupMenu {
 									new DefaultWaypoint(location.getPosition(), type));
 							map.repaint();
 
-							if (!reverseListener.isEmpty()) {
-								for (final ReverseGeocoderListener listener : reverseListener) {
-									SwingUtilities.invokeLater(new Runnable() {
-										public void run() {
-											listener.process(location);	
-										}
-									});								
-								}
-							}
+							eventDispatcher.triggerEvent(new ReverseGeocoderEvent(location, MapPopupMenu.this));
 
 						} else {
 							mapViewer.getWaypointPainter().clearWaypoints();
 							map.repaint();
-
-							if (!reverseListener.isEmpty()) {
-								for (final ReverseGeocoderListener listener : reverseListener) {
-									SwingUtilities.invokeLater(new Runnable() {
-										public void run() {
-											listener.error(response);							
-										}
-									});	
-								}					
-							}
+							
+							eventDispatcher.triggerEvent(new ReverseGeocoderEvent(response, MapPopupMenu.this));
 						}
 					}
 				};
@@ -185,6 +152,7 @@ public class MapPopupMenu extends JPopupMenu {
 		add(zoomIn);
 		add(zoomOut);
 		add(centerMap);
+		addSeparator();
 		add(mapBounds);
 		addSeparator();
 		add(geocode);
@@ -194,26 +162,12 @@ public class MapPopupMenu extends JPopupMenu {
 		this.mousePosition = mousePosition;
 	}
 
-	protected void addReverseGeocoderListener(ReverseGeocoderListener listener) {
-		if (reverseListener == null)
-			reverseListener = new ArrayList<ReverseGeocoderListener>();
-
-		reverseListener.add(listener);
-	}
-
-	protected boolean removeReverseGeocoderListener(ReverseGeocoderListener listener) {
-		return reverseListener != null ? reverseListener.remove(listener) : false;
-	}
-
-	protected void addMapBoundsListener(MapBoundsListener listener) {
-		if (boundsListener == null)
-			boundsListener = new ArrayList<MapBoundsListener>();
-
-		boundsListener.add(listener);
-	}
-
-	protected boolean removeMapBoundsListener(MapBoundsListener listener) {
-		return boundsListener != null ? boundsListener.remove(listener) : false;
+	protected void doTranslation() {
+		zoomIn.setText(Internal.I18N.getString("map.popup.zoomIn"));
+		zoomOut.setText(Internal.I18N.getString("map.popup.zoomOut"));
+		centerMap.setText(Internal.I18N.getString("map.popup.centerMap"));
+		mapBounds.setText(Internal.I18N.getString("map.popup.mapBounds"));
+		geocode.setText(Internal.I18N.getString("map.popup.geocode"));
 	}
 
 }

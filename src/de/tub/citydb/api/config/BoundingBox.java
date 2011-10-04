@@ -27,92 +27,70 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.filter;
+package de.tub.citydb.api.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.project.database.ReferenceSystem;
-
 @XmlType(name="BoundingBoxType", propOrder={
-		"mode",
 		"srs",
 		"lowerLeftCorner",
 		"upperRightCorner"		
 })
 public class BoundingBox {
-	@XmlElement(required=true)
-	private BoundingBoxMode mode = BoundingBoxMode.OVERLAP;
 	@XmlIDREF
-	private ReferenceSystem srs = ReferenceSystem.DEFAULT;
-	private BoundingBoxPoint lowerLeftCorner;
-	private BoundingBoxPoint upperRightCorner;
-	@XmlAttribute(required=true)
-	private Boolean active = false;
+	private DatabaseSrs srs;
+	private BoundingBoxCorner lowerLeftCorner;
+	private BoundingBoxCorner upperRightCorner;
 
 	public BoundingBox() {
-		lowerLeftCorner = new BoundingBoxPoint();
-		upperRightCorner = new BoundingBoxPoint();
+		lowerLeftCorner = new BoundingBoxCorner();
+		upperRightCorner = new BoundingBoxCorner();
+	}
+	
+	public boolean isSetLowerLeftCorner() {
+		return lowerLeftCorner != null;
 	}
 
-	public boolean isSetContainMode() {
-		return mode == BoundingBoxMode.CONTAIN;
-	}
-
-	public boolean isSetOverlapMode() {
-		return mode == BoundingBoxMode.OVERLAP;
-	}
-
-	public BoundingBoxMode getMode() {
-		return mode;
-	}
-
-	public void setMode(BoundingBoxMode mode) {
-		this.mode = mode;
-	}
-
-	public BoundingBoxPoint getLowerLeftCorner() {
+	public BoundingBoxCorner getLowerLeftCorner() {
 		return lowerLeftCorner;
 	}
 
-	public void setLowerLeftCorner(BoundingBoxPoint lowerLeftCorner) {
+	public void setLowerLeftCorner(BoundingBoxCorner lowerLeftCorner) {
 		if (lowerLeftCorner != null)
 			this.lowerLeftCorner = lowerLeftCorner;
 	}
 
-	public BoundingBoxPoint getUpperRightCorner() {
+	public boolean isSetUpperRightCorner() {
+		return upperRightCorner != null;
+	}
+	
+	public BoundingBoxCorner getUpperRightCorner() {
 		return upperRightCorner;
 	}
 
-	public void setUpperRightCorner(BoundingBoxPoint upperRightCorner) {
+	public void setUpperRightCorner(BoundingBoxCorner upperRightCorner) {
 		if (upperRightCorner != null)
 			this.upperRightCorner = upperRightCorner;
 	}
 
-	public boolean isSet() {
-		if (active != null)
-			return active.booleanValue();
-
-		return false;
+	public boolean isSetSrs() {
+		return srs != null;
 	}
-
-	public Boolean getActive() {
-		return active;
-	}
-
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
-
-	public void setSRS(ReferenceSystem srs) {
+	
+	public void setSrs(DatabaseSrs srs) {
 		if (srs != null)
 			this.srs = srs;
 	}
 
-	public ReferenceSystem getSRS() {
+	public DatabaseSrs getSrs() {
 		return srs;
+	}
+	
+	public void copyFrom(BoundingBox other) {
+		srs = other.srs;
+		lowerLeftCorner = new BoundingBoxCorner(other.getLowerLeftCorner().getX(), other.getLowerLeftCorner().getY());
+		upperRightCorner = new BoundingBoxCorner(other.getUpperRightCorner().getX(), other.getUpperRightCorner().getY());
 	}
 
 }

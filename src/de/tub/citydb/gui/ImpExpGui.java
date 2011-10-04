@@ -40,8 +40,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilterOutputStream;
@@ -81,8 +81,8 @@ import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.gui.ComponentFactory;
 import de.tub.citydb.api.plugin.Plugin;
 import de.tub.citydb.api.plugin.extension.view.View;
@@ -252,17 +252,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			}
 		});
 
-		addWindowListener(new WindowListener() {
+		addWindowListener(new WindowAdapter() {
 			public void windowClosed(WindowEvent e) {
 				shutdown();
 			}
-
-			public void windowActivated(WindowEvent e) {}
-			public void windowClosing(WindowEvent e) {}
-			public void windowDeactivated(WindowEvent e) {}
-			public void windowDeiconified(WindowEvent e) {}
-			public void windowIconified(WindowEvent e) {}
-			public void windowOpened(WindowEvent e) {}
 		});
 
 		//layout

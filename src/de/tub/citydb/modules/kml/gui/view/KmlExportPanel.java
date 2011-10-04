@@ -65,8 +65,8 @@ import javax.xml.bind.JAXBContext;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
@@ -82,9 +82,8 @@ import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.ExportStatusDialog;
+import de.tub.citydb.gui.components.bbox.BoundingBoxPanelImpl;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
-import de.tub.citydb.gui.factory.SrsComboBoxFactory;
-import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.InterruptEnum;
 import de.tub.citydb.modules.common.event.InterruptEvent;
@@ -127,19 +126,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private JTextField gmlIdText = new JTextField("");
 
 	private JRadioButton boundingBoxRadioButton = new JRadioButton("");
-	private JLabel srsLabel = new JLabel();
-	private SrsComboBox srsComboBox;
-
-	private JLabel bbXMinLabel = new JLabel();
-	private JTextField bbXMinText = new JTextField("Xmin");
-	private JLabel bbXMaxLabel = new JLabel();
-	private JTextField bbXMaxText = new JTextField("Xmax");
-
-	private JLabel bbYMinLabel = new JLabel();
-	private JTextField bbYMinText = new JTextField("Ymin");
-	private JLabel bbYMaxLabel = new JLabel();
-	private JTextField bbYMaxText = new JTextField("Ymax");
-
+	private BoundingBoxPanelImpl bboxComponent;
+	
 	private JPanel tilingPanel;
 	private ButtonGroup tilingButtonGroup = new ButtonGroup();
 	private JRadioButton noTilingRadioButton = new JRadioButton("");
@@ -216,13 +204,14 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		filterButtonGroup.add(boundingBoxRadioButton);
 		boundingBoxRadioButton.setIconTextGap(10);
 		boundingBoxRadioButton.setSelected(true);
+		int lmargin = (int)(singleBuildingRadioButton.getPreferredSize().getWidth()) + 6;
 
 		JPanel singleBuildingRadioPanel = new JPanel();
 		singleBuildingRadioPanel.setLayout(new BorderLayout());
 		singleBuildingRadioPanel.add(singleBuildingRadioButton, BorderLayout.WEST);
 
 		Box singleBuildingPanel = Box.createHorizontalBox();
-		singleBuildingPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 6, 0)));
+		singleBuildingPanel.add(Box.createRigidArea(new Dimension(lmargin, 0)));
 		singleBuildingPanel.add(gmlIdLabel);
 		singleBuildingPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS * 2, 0)));
 		singleBuildingPanel.add(gmlIdText);
@@ -231,25 +220,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		JPanel boundingBoxRadioPanel = new JPanel();
 		boundingBoxRadioPanel.setLayout(new GridBagLayout());
 		boundingBoxRadioPanel.add(boundingBoxRadioButton, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,BORDER_THICKNESS));
-		boundingBoxRadioPanel.add(srsLabel, GuiUtil.setConstraints(1,0,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
-	    srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
-	    boundingBoxRadioPanel.add(srsComboBox, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		JPanel boundingBoxPanel = new JPanel();
 		boundingBoxPanel.setLayout(new GridBagLayout());
+		bboxComponent = new BoundingBoxPanelImpl(config);
 
-		bbXMinText.setPreferredSize(bbXMaxText.getPreferredSize());
-		bbXMaxText.setPreferredSize(bbXMinText.getPreferredSize());
-		bbYMinText.setPreferredSize(bbYMaxText.getPreferredSize());
-		bbYMaxText.setPreferredSize(bbYMinText.getPreferredSize());
-		boundingBoxPanel.add(bbXMinLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 6,0,BORDER_THICKNESS));
-		boundingBoxPanel.add(bbXMinText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		boundingBoxPanel.add(bbXMaxLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 4 ,0,BORDER_THICKNESS));
-		boundingBoxPanel.add(bbXMaxText, GuiUtil.setConstraints(3,0,1.0,0.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		boundingBoxPanel.add(bbYMinLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 6,0,BORDER_THICKNESS));
-		boundingBoxPanel.add(bbYMinText, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		boundingBoxPanel.add(bbYMaxLabel, GuiUtil.setConstraints(2,1,0.0,0.0,GridBagConstraints.NONE,2,BORDER_THICKNESS * 4,0,BORDER_THICKNESS));
-		boundingBoxPanel.add(bbYMaxText, GuiUtil.setConstraints(3,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(bboxComponent, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,2,lmargin,0,BORDER_THICKNESS));
 
 		tilingButtonGroup.add(noTilingRadioButton);
 		noTilingRadioButton.setIconTextGap(10);
@@ -377,7 +353,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		this.add(exportButtonPanel, BorderLayout.SOUTH);
 
 		PopupMenuDecorator.getInstance().decorate(browseText, workspaceText, timestampText, 
-				gmlIdText, bbXMinText, bbXMaxText, bbYMinText, bbYMaxText, rowsText, columnsText,
+				gmlIdText, rowsText, columnsText,
 				footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText);		
 	}
 
@@ -394,13 +370,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		filterPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("kmlExport.label.exportContents")));
 		singleBuildingRadioButton.setText(Internal.I18N.getString("kmlExport.label.singleBuilding"));
 		boundingBoxRadioButton.setText(Internal.I18N.getString("filter.border.boundingBox"));
-
-		srsLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
-
-		bbXMinLabel.setText(Internal.I18N.getString("filter.label.boundingBox.xMin"));
-		bbXMaxLabel.setText(Internal.I18N.getString("filter.label.boundingBox.xMax"));
-		bbYMinLabel.setText(Internal.I18N.getString("filter.label.boundingBox.yMin"));
-		bbYMaxLabel.setText(Internal.I18N.getString("filter.label.boundingBox.yMax"));
 
 		tilingPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.export.boundingBox.border.tiling")));
 		noTilingRadioButton.setText(Internal.I18N.getString("kmlExport.label.noTiling"));
@@ -449,11 +418,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		gmlIdText.setText("");
 
-		bbXMinText.setText("");
-		bbXMaxText.setText("");
-		bbYMinText.setText("");
-		bbYMaxText.setText("");
-
 		setFilterEnabledValues();
 
 		rowsText.setText("");
@@ -473,8 +437,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 	public void loadSettings() {
 		clearGui();
-
-		srsComboBox.setSelectedIndex(0);
 
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().getName());
 		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().getTimestamp());
@@ -499,23 +461,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 		else {
 			boundingBoxRadioButton.setSelected(true);
-			srsComboBox.setSelectedItem(kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getSRS());
-
-			if (kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getLowerLeftCorner().getX() != null)
-				bbXMinText.setText(String.valueOf(kmlExporter.getFilter().getComplexFilter().
-						getTiledBoundingBox().getLowerLeftCorner().getX()));
-
-			if (kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getUpperRightCorner().getX() != null)
-				bbXMaxText.setText(String.valueOf(kmlExporter.getFilter().getComplexFilter().
-						getTiledBoundingBox().getUpperRightCorner().getX()));
-
-			if (kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getLowerLeftCorner().getY() != null)
-				bbYMinText.setText(String.valueOf(kmlExporter.getFilter().getComplexFilter().
-						getTiledBoundingBox().getLowerLeftCorner().getY()));
-
-			if (kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getUpperRightCorner().getY() != null)
-				bbYMaxText.setText(String.valueOf(kmlExporter.getFilter().getComplexFilter().
-						getTiledBoundingBox().getUpperRightCorner().getY()));
+			bboxComponent.setBoundingBox(kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox());
 
 			String tilingMode = kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode().value();
 
@@ -617,42 +563,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		else {
 			kmlExporter.getFilter().setMode(FilterMode.COMPLEX);
 			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().setActive(true);
-			if (srsComboBox.getSelectedItem() != null) {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().setSRS(srsComboBox.getSelectedItem());
-			}
-
-			try {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
-				getLowerLeftCorner().setX(Double.parseDouble(bbXMinText.getText().trim()));
-			}
-			catch (NumberFormatException nfe) {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
-				getLowerLeftCorner().setX(0d);
-			}
-			try {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
-				getUpperRightCorner().setX(Double.parseDouble(bbXMaxText.getText().trim()));
-			}
-			catch (NumberFormatException nfe) {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
-				getUpperRightCorner().setX(0d);
-			}
-			try {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
-				getLowerLeftCorner().setY(Double.parseDouble(bbYMinText.getText().trim()));
-			}
-			catch (NumberFormatException nfe) {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
-				getLowerLeftCorner().setY(0d);
-			}
-			try {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
-				getUpperRightCorner().setY(Double.parseDouble(bbYMaxText.getText().trim()));
-			}
-			catch (NumberFormatException nfe) {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
-				getUpperRightCorner().setY(0d);
-			}
+			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().copyFrom(bboxComponent.getBoundingBox());
 
 			if (noTilingRadioButton.isSelected()) {
 				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setMode(TilingMode.NO_TILING);
@@ -960,7 +871,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					tileAmount = kmlExporter.calculateRowsColumnsAndDelta();
 				}
 				catch (SQLException sqle) {
-					String srsDescription = filter.getComplexFilter().getBoundingBox().getSRS().getDescription();
+					String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs().getDescription();
 					Logger.getInstance().error(srsDescription + " " + sqle.getMessage());
 					return;
 				}
@@ -1029,17 +940,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private void setFilterEnabledValues() {
 		gmlIdText.setEnabled(singleBuildingRadioButton.isSelected());
 
-		srsLabel.setEnabled(boundingBoxRadioButton.isSelected());
-		srsComboBox.setEnabled(boundingBoxRadioButton.isSelected());
-
-		bbXMinLabel.setEnabled(boundingBoxRadioButton.isSelected());
-		bbXMaxLabel.setEnabled(boundingBoxRadioButton.isSelected());
-		bbYMinLabel.setEnabled(boundingBoxRadioButton.isSelected());
-		bbYMaxLabel.setEnabled(boundingBoxRadioButton.isSelected());
-		bbXMinText.setEnabled(boundingBoxRadioButton.isSelected());
-		bbXMaxText.setEnabled(boundingBoxRadioButton.isSelected());
-		bbYMinText.setEnabled(boundingBoxRadioButton.isSelected());
-		bbYMaxText.setEnabled(boundingBoxRadioButton.isSelected());
+		bboxComponent.setEnabled(boundingBoxRadioButton.isSelected());
 
 		noTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());
 		automaticTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());

@@ -43,7 +43,7 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 		return instance;
 	}
 
-	private void decorate (final JComponent component, final StandardEditingPopupMenu popupMenu) {
+	private void decorate(final JComponent component, final StandardEditingPopupMenu popupMenu) {
 		component.addMouseListener(new MouseAdapter() {
 			private void processMouseEvent(MouseEvent e) {
 				if (e.isPopupTrigger()) {

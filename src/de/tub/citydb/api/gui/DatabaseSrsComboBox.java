@@ -2,7 +2,7 @@ package de.tub.citydb.api.gui;
 
 import javax.swing.JComboBox;
 
-import de.tub.citydb.api.database.DatabaseSrs;
+import de.tub.citydb.api.config.DatabaseSrs;
 
 @SuppressWarnings("serial")
 public abstract class DatabaseSrsComboBox extends JComboBox {

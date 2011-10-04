@@ -36,10 +36,10 @@ import org.citygml4j.geometry.Point;
 import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
+import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
-import de.tub.citydb.config.project.filter.BoundingBox;
+import de.tub.citydb.config.project.filter.FilterBoundingBox;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
@@ -55,7 +55,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 
 	private boolean isActive;
 	private boolean useTiling;
-	private BoundingBox boundingBoxConfig;
+	private FilterBoundingBox boundingBoxConfig;
 
 	private org.citygml4j.geometry.BoundingBox boundingBox;
 	private org.citygml4j.geometry.BoundingBox activeBoundingBox;
@@ -103,18 +103,18 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 				);
 
 				// check whether we have to transform coordinate values of bounding box
-				int bboxSrid = boundingBoxConfig.getSRS().getSrid();
+				int bboxSrid = boundingBoxConfig.getSrs().getSrid();
 				srid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 
 				// target db srid differs if another coordinate transformation is
 				// applied to the CityGML export
 				if (mode == FilterMode.EXPORT) {
-					ReferenceSystem targetSRS = config.getProject().getExporter().getTargetSRS();
+					DatabaseSrs targetSRS = config.getProject().getExporter().getTargetSRS();
 					if (targetSRS.isSupported() && targetSRS.getSrid() != srid)
 						srid = targetSRS.getSrid();
 				}
 				
-				if (boundingBoxConfig.getSRS().isSupported() && bboxSrid != srid) {			
+				if (boundingBoxConfig.getSrs().isSupported() && bboxSrid != srid) {			
 					try {
 						boundingBox = DBUtil.transformBBox(boundingBox, bboxSrid, srid);
 					} catch (SQLException sqlEx) {

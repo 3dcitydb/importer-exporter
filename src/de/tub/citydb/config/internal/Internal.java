@@ -32,7 +32,7 @@ package de.tub.citydb.config.internal;
 import java.io.File;
 import java.util.ResourceBundle;
 
-import de.tub.citydb.config.project.database.ReferenceSystem;
+import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 
 public class Internal {
@@ -61,7 +61,7 @@ public class Internal {
 	private String exportTextureFilePath = "";
 
 	// database related settings
-	private ReferenceSystem exportTargetSRS;
+	private DatabaseSrs exportTargetSRS;
 
 	// internal variables
 	private String currentGmlIdCodespace = "";
@@ -90,11 +90,11 @@ public class Internal {
 		this.exportPath = exportPath;
 	}
 
-	public ReferenceSystem getExportTargetSRS() {
+	public DatabaseSrs getExportTargetSRS() {
 		return exportTargetSRS;
 	}
 
-	public void setExportTargetSRS(ReferenceSystem exportTargetSRS) {
+	public void setExportTargetSRS(DatabaseSrs exportTargetSRS) {
 		this.exportTargetSRS = exportTargetSRS;
 	}
 

@@ -4,9 +4,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
-import de.tub.citydb.api.database.DatabaseSrs;
 
 public interface DatabaseController {
 	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException;

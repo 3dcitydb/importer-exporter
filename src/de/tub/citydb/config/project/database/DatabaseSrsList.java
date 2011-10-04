@@ -30,49 +30,59 @@
 package de.tub.citydb.config.project.database;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement()
-public class ReferenceSystems {
-	@XmlElement(name="referenceSystem")
-	private List<ReferenceSystem> items;
+import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.config.project.database.Database.PredefinedSrsName;
 
-	public ReferenceSystems() {
-		items = new ArrayList<ReferenceSystem>();
+@XmlRootElement(name="referenceSystems")
+public class DatabaseSrsList {
+	@XmlElement(name="referenceSystem")
+	private List<DatabaseSrs> items;
+
+	public DatabaseSrsList() {
+		items = new ArrayList<DatabaseSrs>();
 	}
 
-	public List<ReferenceSystem> getItems() {
+	public List<DatabaseSrs> getItems() {
 		return items;
 	}
 
-	public void setItems(List<ReferenceSystem> items) {
+	public void setItems(List<DatabaseSrs> items) {
 		this.items = items;
 	}
 
-	public boolean addItem(ReferenceSystem item) {
+	public boolean addItem(DatabaseSrs item) {
 		return items.add(item);
 	}
 
 	public void addDefaultItems() {		
-		boolean[] addSRS = new boolean[ReferenceSystem.PREDEFINED.length];
-		for (int i = 0; i < addSRS.length; ++i)
-			addSRS[i] = true;
+		HashMap<PredefinedSrsName, Boolean> addSRS = new HashMap<Database.PredefinedSrsName, Boolean>(Database.PREDEFINED_SRS.size());
+		for (PredefinedSrsName name : PredefinedSrsName.values())
+			addSRS.put(name, Boolean.TRUE);
 						
-		for (ReferenceSystem refSys : items) {
-			for (int i = 0; i < ReferenceSystem.PREDEFINED.length; ++i) {
-				if (addSRS[i] && refSys.getSrid() == ReferenceSystem.PREDEFINED[i].getSrid()) {
-					addSRS[i] = false;
+		for (DatabaseSrs refSys : items) {
+			Iterator<Entry<PredefinedSrsName, DatabaseSrs>> iter = Database.PREDEFINED_SRS.entrySet().iterator();
+			while (iter.hasNext()) {
+				Entry<PredefinedSrsName, DatabaseSrs> entry = iter.next();
+				if (addSRS.get(entry.getKey()) && refSys.getSrid() == entry.getValue().getSrid()) {
+					addSRS.put(entry.getKey(), Boolean.FALSE);
 					break;
 				}
 			}
 		}
-
-		for (int i = 0; i < addSRS.length; ++i) {
-			if (addSRS[i])
-				items.add(ReferenceSystem.PREDEFINED[i]);
+		
+		Iterator<Entry<PredefinedSrsName, Boolean>> iter = addSRS.entrySet().iterator();
+		while (iter.hasNext()) {
+			Entry<PredefinedSrsName, Boolean> entry = iter.next();
+			if (entry.getValue())
+				items.add(Database.PREDEFINED_SRS.get(entry.getKey()));
 		}
 	}
 

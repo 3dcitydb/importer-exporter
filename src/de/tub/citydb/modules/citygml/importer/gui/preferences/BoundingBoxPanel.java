@@ -39,8 +39,8 @@ import javax.swing.JRadioButton;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.filter.BoundingBox;
-import de.tub.citydb.config.project.filter.BoundingBoxMode;
+import de.tub.citydb.config.project.filter.FilterBoundingBox;
+import de.tub.citydb.config.project.filter.FilterBoundingBoxMode;
 import de.tub.citydb.config.project.importer.ImportFilterConfig;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -97,7 +97,7 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		BoundingBox bbox = config.getProject().getImporter().getFilter().getComplexFilter().getBoundingBox();
+		FilterBoundingBox bbox = config.getProject().getImporter().getFilter().getComplexFilter().getBoundingBox();
 
 		if (bbox.isSetOverlapMode())
 			impBBRadioIntersect.setSelected(true);
@@ -107,8 +107,8 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		BoundingBox bbox = config.getProject().getImporter().getFilter().getComplexFilter().getBoundingBox();
-		bbox.setMode(impBBRadioInside.isSelected() ? BoundingBoxMode.CONTAIN : BoundingBoxMode.OVERLAP);
+		FilterBoundingBox bbox = config.getProject().getImporter().getFilter().getComplexFilter().getBoundingBox();
+		bbox.setMode(impBBRadioInside.isSelected() ? FilterBoundingBoxMode.CONTAIN : FilterBoundingBoxMode.OVERLAP);
 	}
 	
 	@Override

@@ -36,9 +36,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
-import java.util.Locale;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -57,18 +55,17 @@ import javax.swing.tree.TreePath;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
-import de.tub.citydb.config.project.filter.BoundingBox;
 import de.tub.citydb.config.project.filter.FeatureClass;
 import de.tub.citydb.config.project.filter.FeatureCount;
+import de.tub.citydb.config.project.filter.FilterBoundingBox;
 import de.tub.citydb.config.project.filter.FilterMode;
 import de.tub.citydb.config.project.filter.GmlName;
 import de.tub.citydb.config.project.general.FeatureClassMode;
+import de.tub.citydb.gui.components.bbox.BoundingBoxPanelImpl;
 import de.tub.citydb.gui.components.checkboxtree.CheckboxTree;
 import de.tub.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import de.tub.citydb.gui.components.checkboxtree.DefaultTreeCheckingModel;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
-import de.tub.citydb.gui.factory.SrsComboBoxFactory;
-import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import de.tub.citydb.util.Util;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -87,25 +84,16 @@ public class FilterPanel extends JPanel {
 	private JCheckBox featureClassFilter;
 	private JFormattedTextField coStartText;
 	private JFormattedTextField coEndText;
-	private JFormattedTextField bbXMinText;
-	private JFormattedTextField bbYMinText;
-	private JFormattedTextField bbXMaxText;
-	private JFormattedTextField bbYMaxText;
 	private CheckboxTree fcTree;
 
+	private BoundingBoxPanelImpl bboxPanel;
+	
 	private JLabel gmlNameLabel;
 	private JLabel gmlIdLabel;
 	private JLabel coStartLabel;
 	private JLabel coEndLabel;
-	private JLabel bbXMinLabel;
-	private JLabel bbXMaxLabel;
-	private JLabel bbYMinLabel;
-	private JLabel bbYMaxLabel;
 	private JPanel row3col2;
 	private JPanel row4col2;
-
-	private JLabel srsLabel;
-	private SrsComboBox srsComboBox;
 
 	private DefaultMutableTreeNode cityObject;
 	private DefaultMutableTreeNode building;
@@ -157,30 +145,11 @@ public class FilterPanel extends JPanel {
 		coEndText.setFocusLostBehavior(JFormattedTextField.COMMIT);
 
 		boundingBoxFilter = new JCheckBox();
-		bbXMinLabel = new JLabel();
-		bbXMaxLabel = new JLabel();
-		bbYMinLabel = new JLabel();
-		bbYMaxLabel = new JLabel();
-
-		DecimalFormat bboxFormat = new DecimalFormat("##########.##############", DecimalFormatSymbols.getInstance(Locale.ENGLISH));	
-		bbXMinText = new JFormattedTextField(bboxFormat);	
-		bbYMinText = new JFormattedTextField(bboxFormat);
-		bbXMaxText = new JFormattedTextField(bboxFormat);
-		bbYMaxText = new JFormattedTextField(bboxFormat);
-
-		bbXMinText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		bbYMinText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		bbXMaxText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		bbYMaxText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-
-		srsLabel = new JLabel();
-		srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
-
-		PopupMenuDecorator.getInstance().decorate(gmlNameText, gmlIdText, 
-				coStartText, coEndText, bbXMinText, bbYMinText,  bbXMaxText, bbYMaxText);
+		bboxPanel = new BoundingBoxPanelImpl(config);
+		
+		PopupMenuDecorator.getInstance().decorate(gmlNameText, gmlIdText, coStartText, coEndText);
 		
 		featureClassFilter = new JCheckBox();		
-
 		cityObject = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECT);
 		building = new DefaultMutableTreeNode(FeatureClassMode.BUILDING);
 		water = new DefaultMutableTreeNode(FeatureClassMode.WATERBODY);
@@ -275,42 +244,17 @@ public class FilterPanel extends JPanel {
 					}
 
 					// bounding box filter
-					JPanel bboxFilterPanel = new JPanel();
-					row4col2.add(bboxFilterPanel, GuiUtil.setConstraints(0,4,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,1,5));
-					bboxFilterPanel.setLayout(new GridBagLayout());
-					{
-						boundingBoxFilter.setIconTextGap(10);
-						bboxFilterPanel.add(boundingBoxFilter, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,5));
-						bboxFilterPanel.add(srsLabel, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.NONE,0,5,0,5));			
-						bboxFilterPanel.add(srsComboBox, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,5,0,0));
-					}
-
-					// content
-					JPanel panel6 = new JPanel();
-					row4col2.add(panel6, GuiUtil.setConstraints(0,5,1.0,0.0,GridBagConstraints.HORIZONTAL,0,lmargin,0,0));
-					panel6.setLayout(new GridBagLayout());
-					{
-						bbXMinText.setPreferredSize(bbXMaxText.getPreferredSize());
-						bbXMaxText.setPreferredSize(bbXMinText.getPreferredSize());
-						bbYMinText.setPreferredSize(bbYMaxText.getPreferredSize());
-						bbYMaxText.setPreferredSize(bbYMinText.getPreferredSize());
-						panel6.add(bbXMinLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));
-						panel6.add(bbXMinText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
-						panel6.add(bbXMaxLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,0,5));
-						panel6.add(bbXMaxText, GuiUtil.setConstraints(3,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
-						panel6.add(bbYMinLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,2,0,0,5));
-						panel6.add(bbYMinText, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,5,0,5));
-						panel6.add(bbYMaxLabel, GuiUtil.setConstraints(2,1,0.0,0.0,GridBagConstraints.NONE,2,10,0,5));
-						panel6.add(bbYMaxText, GuiUtil.setConstraints(3,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,5,0,5));
-					}
+					boundingBoxFilter.setIconTextGap(10);
+					row4col2.add(boundingBoxFilter, GuiUtil.setConstraints(0,4,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));				
+					row4col2.add(bboxPanel, GuiUtil.setConstraints(0,6,1.0,0.0,GridBagConstraints.HORIZONTAL,0,lmargin,0,5));
 
 					// feature class filter
 					featureClassFilter.setIconTextGap(10);
-					row4col2.add(featureClassFilter, GuiUtil.setConstraints(0,6,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
+					row4col2.add(featureClassFilter, GuiUtil.setConstraints(0,7,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
 
 					// content
 					JPanel panel8 = new JPanel();
-					row4col2.add(panel8, GuiUtil.setConstraints(0,7,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,0));
+					row4col2.add(panel8, GuiUtil.setConstraints(0,8,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,0));
 					panel8.setLayout(new GridBagLayout());
 					{
 						JScrollPane scroll = new JScrollPane(fcTree);
@@ -355,7 +299,7 @@ public class FilterPanel extends JPanel {
 
 		ActionListener bboxListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				setEnabledBBox();
+				setEnabledBBox();				
 			}
 		};
 
@@ -401,16 +345,7 @@ public class FilterPanel extends JPanel {
 
 		boundingBoxFilter.setEnabled(complexFilter.isSelected());
 		enable = complexFilter.isSelected() && boundingBoxFilter.isSelected();
-		bbXMinLabel.setEnabled(enable);
-		bbXMaxLabel.setEnabled(enable);
-		bbYMinLabel.setEnabled(enable);
-		bbYMaxLabel.setEnabled(enable);
-		bbXMinText.setEnabled(enable);
-		bbYMinText.setEnabled(enable);
-		bbXMaxText.setEnabled(enable);
-		bbYMaxText.setEnabled(enable);
-		srsLabel.setEnabled(enable);
-		srsComboBox.setEnabled(enable);
+		bboxPanel.setEnabled(enable);
 
 		featureClassFilter.setEnabled(complexFilter.isSelected());
 		enable = complexFilter.isSelected() && featureClassFilter.isSelected();
@@ -441,16 +376,7 @@ public class FilterPanel extends JPanel {
 	}
 
 	private void setEnabledBBox() {
-		bbXMinLabel.setEnabled(boundingBoxFilter.isSelected());
-		bbXMaxLabel.setEnabled(boundingBoxFilter.isSelected());
-		bbYMinLabel.setEnabled(boundingBoxFilter.isSelected());
-		bbYMaxLabel.setEnabled(boundingBoxFilter.isSelected());
-		bbXMinText.setEnabled(boundingBoxFilter.isSelected());
-		bbYMinText.setEnabled(boundingBoxFilter.isSelected());
-		bbXMaxText.setEnabled(boundingBoxFilter.isSelected());
-		bbYMaxText.setEnabled(boundingBoxFilter.isSelected());
-		srsLabel.setEnabled(boundingBoxFilter.isSelected());
-		srsComboBox.setEnabled(boundingBoxFilter.isSelected());
+		bboxPanel.setEnabled(boundingBoxFilter.isSelected());
 	}
 
 	private void setEnabledClassFilter() {
@@ -473,24 +399,19 @@ public class FilterPanel extends JPanel {
 		gmlIdLabel.setText(Internal.I18N.getString("filter.label.gmlId"));
 		coStartLabel.setText(Internal.I18N.getString("filter.label.counter.start"));
 		coEndLabel.setText(Internal.I18N.getString("filter.label.counter.end"));
-		bbXMinLabel.setText(Internal.I18N.getString("filter.label.boundingBox.xMin"));
-		bbXMaxLabel.setText(Internal.I18N.getString("filter.label.boundingBox.xMax"));
-		bbYMinLabel.setText(Internal.I18N.getString("filter.label.boundingBox.yMin"));
-		bbYMaxLabel.setText(Internal.I18N.getString("filter.label.boundingBox.yMax"));
 		row3col2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("filter.border.gmlId")));
 		row4col2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("filter.border.complexFilter")));
 		cityObjectFilter.setText(Internal.I18N.getString("filter.border.counter"));
 		gmlNameFilter.setText(Internal.I18N.getString("filter.border.gmlName"));
 		boundingBoxFilter.setText(Internal.I18N.getString("filter.border.boundingBox"));
 		featureClassFilter.setText(Internal.I18N.getString("filter.border.featureClass"));
-		srsLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
 	}
 
 	public void loadSettings() {
 		AbstractFilterConfig filterConfig = type == FilterPanelType.IMPORT ? config.getProject().getImporter().getFilter() : 
 			config.getProject().getExporter().getFilter();
 
-		BoundingBox bbox = filterConfig.getComplexFilter().getBoundingBox();
+		FilterBoundingBox bbox = filterConfig.getComplexFilter().getBoundingBox();
 		GmlName gmlName = filterConfig.getComplexFilter().getGmlName();
 		FeatureCount featureCount = filterConfig.getComplexFilter().getFeatureCount();
 		FeatureClass featureClass = filterConfig.getComplexFilter().getFeatureClass();
@@ -508,16 +429,11 @@ public class FilterPanel extends JPanel {
 		gmlNameText.setText(gmlName.getValue());		
 		gmlIdText.setText(Util.collection2string(filterConfig.getSimpleFilter().getGmlIdFilter().getGmlIds(), ","));
 
-		srsComboBox.setSelectedItem(bbox.getSRS());
-
 		coStartText.setValue(featureCount.getFrom());
 		coEndText.setValue(featureCount.getTo());
 
-		bbXMinText.setValue(bbox.getLowerLeftCorner().getX());
-		bbYMinText.setValue(bbox.getLowerLeftCorner().getY());
-		bbXMaxText.setValue(bbox.getUpperRightCorner().getX());
-		bbYMaxText.setValue(bbox.getUpperRightCorner().getY());
-
+		bboxPanel.setBoundingBox(bbox);
+		
 		if (!featureClass.isSetBuilding())
 			fcTree.getCheckingModel().addCheckingPath(new TreePath(building.getPath()));
 		else
@@ -570,7 +486,7 @@ public class FilterPanel extends JPanel {
 		AbstractFilterConfig filterConfig = type == FilterPanelType.IMPORT ? config.getProject().getImporter().getFilter() :
 			config.getProject().getExporter().getFilter();
 
-		BoundingBox bbox = filterConfig.getComplexFilter().getBoundingBox();
+		FilterBoundingBox bbox = filterConfig.getComplexFilter().getBoundingBox();
 		GmlName gmlName = filterConfig.getComplexFilter().getGmlName();
 		FeatureCount featureCount = filterConfig.getComplexFilter().getFeatureCount();
 		FeatureClass featureClass = filterConfig.getComplexFilter().getFeatureClass();		
@@ -583,7 +499,6 @@ public class FilterPanel extends JPanel {
 		bbox.setActive(boundingBoxFilter.isSelected());
 
 		gmlName.setValue(gmlNameText.getText());
-		bbox.setSRS(srsComboBox.getSelectedItem());
 
 		if (gmlIdText.getText() != null && gmlIdText.getText().trim().length() > 0) {
 			String trimmed = gmlIdText.getText().replaceAll("\\s*", "");
@@ -601,25 +516,7 @@ public class FilterPanel extends JPanel {
 		else
 			featureCount.setTo(null);
 
-		if (bbXMinText.isEditValid() && bbXMinText.getValue() != null)
-			bbox.getLowerLeftCorner().setX(((Number)bbXMinText.getValue()).doubleValue());
-		else
-			bbox.getLowerLeftCorner().setX(null);
-
-		if (bbYMinText.isEditValid() && bbYMinText.getValue() != null)
-			bbox.getLowerLeftCorner().setY(((Number)bbYMinText.getValue()).doubleValue());
-		else
-			bbox.getLowerLeftCorner().setY(null);
-
-		if (bbXMaxText.isEditValid() && bbXMaxText.getValue() != null)
-			bbox.getUpperRightCorner().setX(((Number)bbXMaxText.getValue()).doubleValue());
-		else
-			bbox.getUpperRightCorner().setX(null);
-
-		if (bbYMaxText.isEditValid() && bbYMaxText.getValue() != null)
-			bbox.getUpperRightCorner().setY(((Number)bbYMaxText.getValue()).doubleValue());
-		else
-			bbox.getUpperRightCorner().setY(null);
+		bbox.copyFrom(bboxPanel.getBoundingBox());
 
 		featureClass.setBuilding(!fcTree.getCheckingModel().isPathChecked(new TreePath(building.getPath()))); 
 		featureClass.setWaterBody(!fcTree.getCheckingModel().isPathChecked(new TreePath(water.getPath())));

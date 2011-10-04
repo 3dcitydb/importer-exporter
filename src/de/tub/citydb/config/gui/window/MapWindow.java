@@ -27,40 +27,27 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.filter;
+package de.tub.citydb.config.gui.window;
 
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="BoundingBoxPointType", propOrder={
-		"x",
-		"y"
+@XmlType(name="MapWindowType", propOrder={
+		"size"
 		})
-public class BoundingBoxPoint {
-	private Double x;
-	private Double y;
-	
-	public BoundingBoxPoint() {
+public class MapWindow {
+	private WindowSize size;
+
+	public MapWindow() {
+		size = new WindowSize();
 	}
 
-	public BoundingBoxPoint(double x, double y) {
-		this.x = x;
-		this.y = y;
-	}
-	
-	public Double getX() {
-		return x;
+	public WindowSize getSize() {
+		return size;
 	}
 
-	public void setX(Double x) {
-		this.x = x;
-	}
-
-	public Double getY() {
-		return y;
-	}
-
-	public void setY(Double y) {
-		this.y = y;
+	public void setSize(WindowSize size) {
+		if (size != null)
+			this.size = size;
 	}
 	
 }

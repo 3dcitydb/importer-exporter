@@ -61,13 +61,13 @@ import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.SingleWorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.exporter.ExportAppearance;
 import de.tub.citydb.config.project.filter.TileNameSuffixMode;
@@ -223,7 +223,7 @@ public class Exporter implements EventHandler {
 		}
 
 		// set target reference system for export
-		ReferenceSystem targetSRS = config.getProject().getExporter().getTargetSRS();
+		DatabaseSrs targetSRS = config.getProject().getExporter().getTargetSRS();
 		internalConfig.setTransformCoordinates(targetSRS.isSupported() && 
 				targetSRS.getSrid() != dbPool.getActiveConnection().getMetaData().getSrid());
 		if (internalConfig.isTransformCoordinates()) {

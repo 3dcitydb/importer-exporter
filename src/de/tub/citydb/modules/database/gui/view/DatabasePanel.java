@@ -63,11 +63,12 @@ import javax.swing.border.TitledBorder;
 
 import org.citygml4j.geometry.BoundingBox;
 
+import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
@@ -75,7 +76,6 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.DBOperationMode;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.ReferenceSystem;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
 import de.tub.citydb.database.DBConnectionPool;
@@ -423,12 +423,12 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		row2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("db.border.connectionDetails")));
 		connLabel.setText(Internal.I18N.getString("db.label.connection"));
 		descriptionLabel.setText(Internal.I18N.getString("db.label.description"));
-		userLabel.setText(Internal.I18N.getString("db.label.user"));
-		passwordLabel.setText(Internal.I18N.getString("db.label.password"));
-		serverLabel.setText(Internal.I18N.getString("db.label.server"));
-		portLabel.setText(Internal.I18N.getString("db.label.port"));
+		userLabel.setText(Internal.I18N.getString("common.label.username"));
+		passwordLabel.setText(Internal.I18N.getString("common.label.password"));
+		serverLabel.setText(Internal.I18N.getString("common.label.server"));
+		portLabel.setText(Internal.I18N.getString("common.label.port"));
 		databaseLabel.setText(Internal.I18N.getString("db.label.sid"));
-		passwordCheck.setText(Internal.I18N.getString("db.label.passwordCheck"));
+		passwordCheck.setText(Internal.I18N.getString("common.label.passwordCheck"));
 		applyButton.setText(Internal.I18N.getString("common.button.apply"));
 		newButton.setText(Internal.I18N.getString("db.button.new"));
 		copyButton.setText(Internal.I18N.getString("db.button.copy"));
@@ -551,7 +551,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 					conn.getMetaData().printToConsole(LogLevel.INFO);
 					
 					// log whether user-defined SRSs are supported
-					for (ReferenceSystem refSys : config.getProject().getDatabase().getReferenceSystems()) {
+					for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
 						if (refSys.isSupported())
 							LOG.debug("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") supported.");
 						else
