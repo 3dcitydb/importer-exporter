@@ -226,7 +226,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		maxX.setBackground(Color.WHITE);
 		maxY.setBackground(Color.WHITE);
 
-		Dimension dim = new Dimension(85, minX.getPreferredSize().height);		
+		Dimension dim = new Dimension(90, minX.getPreferredSize().height);		
 		minX.setPreferredSize(dim);
 		minY.setPreferredSize(dim);
 		maxX.setPreferredSize(dim);
