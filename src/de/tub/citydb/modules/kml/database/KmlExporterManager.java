@@ -239,10 +239,12 @@ public class KmlExporterManager {
 							
 							LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
 							CityObject4JSON cityObject4JSON = KmlExporter.getAlreadyExported().get(gmlId);
-							latLonAltBoxType.setNorth(cityObject4JSON.getEnvelopeYmax());
-							latLonAltBoxType.setSouth(cityObject4JSON.getEnvelopeYmin());
-							latLonAltBoxType.setEast(cityObject4JSON.getEnvelopeXmax());
-							latLonAltBoxType.setWest(cityObject4JSON.getEnvelopeXmin());
+							if (cityObject4JSON != null) { // avoid NPE when aborting large KML/COLLADA exports
+								latLonAltBoxType.setNorth(cityObject4JSON.getEnvelopeYmax());
+								latLonAltBoxType.setSouth(cityObject4JSON.getEnvelopeYmin());
+								latLonAltBoxType.setEast(cityObject4JSON.getEnvelopeXmax());
+								latLonAltBoxType.setWest(cityObject4JSON.getEnvelopeXmin());
+							}
 
 							LodType lodType = kmlFactory.createLodType();
 							lodType.setMinLodPixels(config.getProject().getKmlExporter().getSingleObjectRegionSize());
@@ -396,10 +398,12 @@ public class KmlExporterManager {
 				
 				LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
 				CityObject4JSON cityObject4JSON = KmlExporter.getAlreadyExported().get(colladaBundle.getBuildingId());
-				latLonAltBoxType.setNorth(cityObject4JSON.getEnvelopeYmax());
-				latLonAltBoxType.setSouth(cityObject4JSON.getEnvelopeYmin());
-				latLonAltBoxType.setEast(cityObject4JSON.getEnvelopeXmax());
-				latLonAltBoxType.setWest(cityObject4JSON.getEnvelopeXmin());
+				if (cityObject4JSON != null) { // avoid NPE when aborting large KML/COLLADA exports
+					latLonAltBoxType.setNorth(cityObject4JSON.getEnvelopeYmax());
+					latLonAltBoxType.setSouth(cityObject4JSON.getEnvelopeYmin());
+					latLonAltBoxType.setEast(cityObject4JSON.getEnvelopeXmax());
+					latLonAltBoxType.setWest(cityObject4JSON.getEnvelopeXmin());
+				}
 
 				LodType lodType = kmlFactory.createLodType();
 				lodType.setMinLodPixels(config.getProject().getKmlExporter().getSingleObjectRegionSize());
