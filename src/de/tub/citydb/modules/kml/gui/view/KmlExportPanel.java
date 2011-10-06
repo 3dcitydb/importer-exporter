@@ -1006,10 +1006,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		fileChooser.addChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 		fileChooser.setFileFilter(filter);
 
-		if (config.getProject().getKmlExporter().getPath().isSetLastUsedMode()) {
+		if (config.getProject().getExporter().getPath().isSetLastUsedMode()) {
 			fileChooser.setCurrentDirectory(new File(config.getProject().getKmlExporter().getPath().getLastUsedPath()));
 		} else {
-			fileChooser.setCurrentDirectory(new File(config.getProject().getKmlExporter().getPath().getStandardPath()));
+			fileChooser.setCurrentDirectory(new File(config.getProject().getExporter().getPath().getStandardPath()));
 		}
 		int result = fileChooser.showSaveDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) return;
