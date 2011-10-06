@@ -30,6 +30,7 @@
 package de.tub.citydb.modules.kml.database;
 
 import java.math.BigDecimal;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -42,9 +43,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import de.tub.citydb.config.Config;
+import de.tub.citydb.config.project.global.HttpProxy;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.io.Base64;
 
 public class ElevationServiceHandler extends DefaultHandler {
 
@@ -72,18 +72,10 @@ public class ElevationServiceHandler extends DefaultHandler {
 	double lastLat = 0;
 	double lastLong = 0;
 
-	String proxyHost = "";
-	int proxyPort = 0;
-	String proxyUser = "";
-	String proxyPassword = "";
+	HttpProxy proxy;
 
-	public ElevationServiceHandler (Config config) {
-		if (config.getProject().getGlobal().getNetwork().isSetUseProxySettings()) {
-			proxyHost = config.getProject().getGlobal().getNetwork().getProxyHost();
-			proxyPort = config.getProject().getGlobal().getNetwork().getProxyPort();
-			proxyUser = config.getProject().getGlobal().getNetwork().getProxyUser();
-			proxyPassword = config.getProject().getGlobal().getNetwork().getInternalProxyPassword();
-		}
+	public ElevationServiceHandler (HttpProxy proxy) {
+		this.proxy = proxy;
 	}
 
 	public double getZOffset(double[] candidateCoords) throws Exception {
@@ -123,19 +115,16 @@ public class ElevationServiceHandler extends DefaultHandler {
 
 		try {
 			for (String elevationString: elevationStringList) {
-				URL elevationService;
-				if (proxyHost.length() > 0 && proxyPort > 0) {
-					elevationService = new URL("http", proxyHost, proxyPort, elevationString);
+				URL elevationService = new URL(elevationString);
+				URLConnection connection;
+				
+				if (proxy.isSetUseProxy() && proxy.hasValidProxySettings()) {
+					connection = (HttpURLConnection)elevationService.openConnection(proxy.getProxy());
+					if (proxy.hasUserCredentials())
+						connection.setRequestProperty("Proxy-Authorization", "Basic " + proxy.getBase64EncodedCredentials());
 				}
 				else {
-					elevationService = new URL(elevationString);
-				}
-
-				URLConnection connection = elevationService.openConnection();
-
-				if (proxyUser.length() > 0 && proxyPassword.length() > 0) {
-					String encodedPassword = Base64.encode(proxyUser + ":" + proxyPassword);
-					connection.setRequestProperty("Proxy-Authorization", "Basic " + encodedPassword);
+					connection = elevationService.openConnection();
 				}
 
 				saxParser.parse(connection.getInputStream(), this);

@@ -23,6 +23,7 @@ import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.painter.CompoundPainter;
 
+import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.components.mapviewer.MapWindow;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -40,16 +41,16 @@ public class Map {
 	private JLabel hintIcons[];
 	private JLabel label;
 
-	public Map() {
-		initComponents();
+	public Map(Config config) {
+		initComponents(config);
 	}
 
-	private void initComponents() {
+	private void initComponents(Config config) {
 		mapKit = new JXMapKit();
 		selectionPainter = new BBoxSelectionPainter(mapKit.getMainMap());
 		waypointPainter = new DefaultWaypointPainter();
 		zoomPainter = new ZoomPainter(mapKit.getMainMap());
-		popupMenu = new MapPopupMenu(this);
+		popupMenu = new MapPopupMenu(this, config);
 
 		Color borderColor = new Color(0, 0, 0, 150);
 

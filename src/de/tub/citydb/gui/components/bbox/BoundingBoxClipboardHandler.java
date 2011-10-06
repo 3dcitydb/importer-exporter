@@ -16,11 +16,14 @@ import de.tub.citydb.log.Logger;
 public class BoundingBoxClipboardHandler implements ClipboardOwner {
 	private static final Logger LOG = Logger.getInstance();
 	private static BoundingBoxClipboardHandler instance;
+	
 	private boolean isMac;
-
+	private Clipboard systemClipboard;
+	
 	private BoundingBoxClipboardHandler() {
 		// just to thwart instantiation
 		isMac = System.getProperty("os.name").toLowerCase().contains("mac");
+		systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 	}
 
 	public static synchronized BoundingBoxClipboardHandler getInstance() {
@@ -31,23 +34,20 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 	}
 
 	public void putBoundingBox(double minX, double minY, double maxX, double maxY) {
-		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		StringBuilder content = new StringBuilder();
-		content.append("BBOX=")
+		content.append("bbox=")
 		.append(minX).append(",")
 		.append(minY).append(",")
 		.append(maxX).append(",")
 		.append(maxY);
 
-		clipboard.setContents(new StringSelection(content.toString()), this);
+		systemClipboard.setContents(new StringSelection(content.toString()), this);
 	}
 
 	public double[] getBoundingBox() {
-		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-
-		if (clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
+		if (systemClipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
 			try {
-				Transferable content = clipboard.getContents(null);
+				Transferable content = systemClipboard.getContents(null);
 				String bbox = (String)content.getTransferData(DataFlavor.stringFlavor);
 
 				double[] result = parseWebServiceRepresentation(bbox);
@@ -68,7 +68,7 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 	}
 	
 	public boolean containsPossibleBoundingBox() {
-		return isMac ? true : Toolkit.getDefaultToolkit().getSystemClipboard().isDataFlavorAvailable(DataFlavor.stringFlavor);
+		return isMac ? true : systemClipboard.isDataFlavorAvailable(DataFlavor.stringFlavor);
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 		String value = "([-|\\+]?\\d*?(\\.\\d+?)??)";
 
 		StringBuilder regex = new StringBuilder();
-		regex.append("(?i)BBOX(?-i)\\s*=\\s*")		
+		regex.append("(?i)bbox(?-i)\\s*=\\s*")		
 		.append(value).append(separators)
 		.append(value).append(separators)
 		.append(value).append(separators)

@@ -191,7 +191,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 		}
 
-		elevationServiceHandler = new ElevationServiceHandler(config);
+		elevationServiceHandler = new ElevationServiceHandler(config.getProject().getGlobal().getHttpProxy());
 		// pause interval: 100 * maxThreads must be enough, but experience says it isn't!
 		elevationServicePause = 250 * config.getProject().getKmlExporter().getSystem().getThreadPool().getDefaultPool().getMaxThreads();
 		dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");

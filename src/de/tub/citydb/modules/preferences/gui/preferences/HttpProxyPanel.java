@@ -53,7 +53,7 @@ import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class NetworkPanel extends AbstractPreferencesComponent{
+public class HttpProxyPanel extends AbstractPreferencesComponent{
 	private JPanel block1;
 	private JCheckBox useProxySettings;
 	private JLabel proxyHostLabel;
@@ -66,7 +66,7 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 	private JPasswordField proxyPasswordText;
 	private JCheckBox passwordCheck;
 
-	public NetworkPanel(Config config) {
+	public HttpProxyPanel(Config config) {
 		super(config);
 		initGui();
 	}
@@ -75,16 +75,13 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 	public boolean isModified() {
 		try { proxyPortText.commitEdit(); } catch (ParseException e) { }
 		checkProxySettings();
-		
-		if (useProxySettings.isSelected() != config.getProject().getGlobal().getNetwork().isSetUseProxySettings()) return true;
-		if (!proxyHostText.getText().trim().equals(config.getProject().getGlobal().getNetwork().getProxyHost())) return true;
-		if (((Number)proxyPortText.getValue()).intValue() != config.getProject().getGlobal().getNetwork().getProxyPort()) return true;
-		if (!proxyUserText.getText().trim().equals(config.getProject().getGlobal().getNetwork().getProxyUser())) return true;
-		if (passwordCheck.isSelected() != config.getProject().getGlobal().getNetwork().isSavePassword()) return true;
-		
-		if (!String.valueOf(proxyPasswordText.getPassword()).equals(config.getProject().getGlobal().getNetwork().getInternalProxyPassword())) return true;
-		if (passwordCheck.isSelected() &&
-			!String.valueOf(proxyPasswordText.getPassword()).equals(config.getProject().getGlobal().getNetwork().getProxyPassword())) return true;
+
+		if (useProxySettings.isSelected() != config.getProject().getGlobal().getHttpProxy().isSetUseProxy()) return true;
+		if (!proxyHostText.getText().trim().equals(config.getProject().getGlobal().getHttpProxy().getHost())) return true;
+		if (((Number)proxyPortText.getValue()).intValue() != config.getProject().getGlobal().getHttpProxy().getPort()) return true;
+		if (!proxyUserText.getText().trim().equals(config.getProject().getGlobal().getHttpProxy().getUser())) return true;
+		if (passwordCheck.isSelected() != config.getProject().getGlobal().getHttpProxy().isSavePassword()) return true;		
+		if (!String.valueOf(proxyPasswordText.getPassword()).equals(config.getProject().getGlobal().getHttpProxy().getInternalPassword())) return true;
 
 		return false;
 	}
@@ -106,21 +103,21 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 		proxyPasswordText = new JPasswordField();
 		passwordCheck = new JCheckBox();
 		passwordCheck.setIconTextGap(10);
-		
+
 		PopupMenuDecorator.getInstance().decorate(proxyHostText, proxyPortText, proxyUserText, proxyPasswordText);
-		
+
 		proxyPortText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				checkNonNegativeRange(proxyPortText, 0, 65535);
 			}
 		});
-		
+
 		setLayout(new GridBagLayout());
 		add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 		block1.setBorder(BorderFactory.createTitledBorder(""));
 		block1.setLayout(new GridBagLayout());
 		{
-			
+
 			useProxySettings.setIconTextGap(10);
 			GridBagConstraints c = GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,5,0);
 			c.gridwidth = 2;
@@ -143,7 +140,7 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 			}
 		});
 	}
-	
+
 	private void checkProxySettings() {
 		String host = proxyHostText.getText().trim();
 		int port = ((Number)proxyPortText.getValue()).intValue();
@@ -152,14 +149,14 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 
 		setEnabledProxySettings();
 	}
-	
+
 	private void checkNonNegativeRange(JFormattedTextField field, int min, int max) {
 		if (((Number)field.getValue()).intValue() < min)
 			field.setValue(min);
 		else if (((Number)field.getValue()).intValue() > max)
 			field.setValue(max);
 	}
-	
+
 	private void setEnabledProxySettings() {
 		boolean enabled = useProxySettings.isSelected();
 		proxyHostLabel.setEnabled(enabled);
@@ -175,8 +172,8 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.network.border.proxySettings")));
-		useProxySettings.setText(Internal.I18N.getString("pref.network.label.useProxy"));
+		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.httpProxy.border.proxySettings")));
+		useProxySettings.setText(Internal.I18N.getString("pref.httpProxy.label.useProxy"));
 		proxyHostLabel.setText(Internal.I18N.getString("common.label.server"));
 		proxyPortLabel.setText(Internal.I18N.getString("common.label.port"));
 		proxyUserLabel.setText(Internal.I18N.getString("common.label.username"));
@@ -186,40 +183,37 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void loadSettings() {
-		useProxySettings.setSelected(config.getProject().getGlobal().getNetwork().isSetUseProxySettings());
-		proxyHostText.setText(config.getProject().getGlobal().getNetwork().getProxyHost());
-		proxyPortText.setValue(config.getProject().getGlobal().getNetwork().getProxyPort());
-		proxyUserText.setText(config.getProject().getGlobal().getNetwork().getProxyUser());
-		passwordCheck.setSelected(config.getProject().getGlobal().getNetwork().isSavePassword());
-		if (passwordCheck.isSelected())
-			proxyPasswordText.setText(config.getProject().getGlobal().getNetwork().getProxyPassword());
-		else
-			proxyPasswordText.setText(config.getProject().getGlobal().getNetwork().getInternalProxyPassword());
-	
+		useProxySettings.setSelected(config.getProject().getGlobal().getHttpProxy().isSetUseProxy());
+		proxyHostText.setText(config.getProject().getGlobal().getHttpProxy().getHost());
+		proxyPortText.setValue(config.getProject().getGlobal().getHttpProxy().getPort());
+		proxyUserText.setText(config.getProject().getGlobal().getHttpProxy().getUser());
+		passwordCheck.setSelected(config.getProject().getGlobal().getHttpProxy().isSavePassword());		
+		proxyPasswordText.setText(config.getProject().getGlobal().getHttpProxy().getPassword());
+		config.getProject().getGlobal().getHttpProxy().setInternalPassword(config.getProject().getGlobal().getHttpProxy().getPassword());
+
 		checkProxySettings();
 	}
 
 	@Override
 	public void setSettings() {
 		checkProxySettings();
-		
-		config.getProject().getGlobal().getNetwork().setUseProxySettings(useProxySettings.isSelected());
-		config.getProject().getGlobal().getNetwork().setProxyHost(proxyHostText.getText().trim());
-		config.getProject().getGlobal().getNetwork().setProxyPort(((Number)proxyPortText.getValue()).intValue());
-		config.getProject().getGlobal().getNetwork().setProxyUser(proxyUserText.getText().trim());
-		config.getProject().getGlobal().getNetwork().setInternalProxyPassword(String.valueOf(proxyPasswordText.getPassword()));
-		config.getProject().getGlobal().getNetwork().setSavePassword(passwordCheck.isSelected());
-		if (passwordCheck.isSelected()) {
-			config.getProject().getGlobal().getNetwork().setProxyPassword(String.valueOf(proxyPasswordText.getPassword()));
-		}
-		else {
-			config.getProject().getGlobal().getNetwork().setProxyPassword("");
-		}
+
+		config.getProject().getGlobal().getHttpProxy().setUseProxy(useProxySettings.isSelected());
+		config.getProject().getGlobal().getHttpProxy().setHost(proxyHostText.getText().trim());
+		config.getProject().getGlobal().getHttpProxy().setPort(((Number)proxyPortText.getValue()).intValue());
+		config.getProject().getGlobal().getHttpProxy().setUser(proxyUserText.getText().trim());
+		config.getProject().getGlobal().getHttpProxy().setInternalPassword(String.valueOf(proxyPasswordText.getPassword()));
+		config.getProject().getGlobal().getHttpProxy().setSavePassword(passwordCheck.isSelected());
+
+		if (passwordCheck.isSelected()) 
+			config.getProject().getGlobal().getHttpProxy().setPassword(String.valueOf(proxyPasswordText.getPassword()));
+		else
+			config.getProject().getGlobal().getHttpProxy().setPassword("");
 	}
-	
+
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.general.network");
+		return Internal.I18N.getString("pref.tree.general.httpProxy");
 	}
 }
 

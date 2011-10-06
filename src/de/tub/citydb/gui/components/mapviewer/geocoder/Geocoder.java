@@ -21,6 +21,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.project.global.HttpProxy;
 import de.tub.citydb.gui.components.mapviewer.MapWindow;
 
 public class Geocoder {
@@ -28,15 +29,15 @@ public class Geocoder {
 	private static final String ADDRESS_REQUEST = "address";
 	private static final String LATLON_REQUEST = "latlng";
 	
-	public static final GeocoderResponse geocode(String address) {
-		return geocode(ADDRESS_REQUEST, address);
+	public static final GeocoderResponse geocode(String address, HttpProxy proxy) {
+		return geocode(ADDRESS_REQUEST, address, proxy);
 	}
 	
-	public static final GeocoderResponse geocode(GeoPosition latlon) {
-		return geocode(LATLON_REQUEST, latlon.getLatitude() + "," + latlon.getLongitude());
+	public static final GeocoderResponse geocode(GeoPosition latlon, HttpProxy proxy) {
+		return geocode(LATLON_REQUEST, latlon.getLatitude() + "," + latlon.getLongitude(), proxy);
 	}
 	
-	public static final GeocoderResponse geocode(String requestType, String requestString) {
+	public static final GeocoderResponse geocode(String requestType, String requestString, HttpProxy proxy) {
 		GeocoderResponse geocodingResult = new GeocoderResponse(ResponseType.ADDRESS);
 		
 		// get language from GUI settings
@@ -46,9 +47,16 @@ public class Geocoder {
 		
 		try {
 			URL url = new URL(GEOCODER_REQUEST_PREFIX_FOR_XML + "?" + requestType + "=" + URLEncoder.encode(requestString, "UTF-8") + "&sensor=false" + language);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();			
+			HttpURLConnection conn;
 			Document response = null;
-
+			
+			if (proxy.isSetUseProxy() && proxy.hasValidProxySettings()) {
+				conn = (HttpURLConnection)url.openConnection(proxy.getProxy());
+				if (proxy.hasUserCredentials())
+					conn.setRequestProperty("Proxy-Authorization", "Basic " + proxy.getBase64EncodedCredentials());
+			} else
+				conn = (HttpURLConnection)url.openConnection();
+			
 			try {
 				conn.connect();
 				InputSource is = new InputSource(conn.getInputStream());

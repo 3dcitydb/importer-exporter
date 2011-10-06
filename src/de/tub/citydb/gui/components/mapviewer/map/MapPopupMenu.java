@@ -18,6 +18,7 @@ import org.jdesktop.swingx.mapviewer.TileFactory;
 
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.registry.ObjectRegistry;
+import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.components.mapviewer.geocoder.Geocoder;
 import de.tub.citydb.gui.components.mapviewer.geocoder.GeocoderResponse;
@@ -32,6 +33,7 @@ import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent;
 @SuppressWarnings("serial")
 public class MapPopupMenu extends JPopupMenu {
 	private final Map mapViewer;
+	private final Config config;
 	private final JXMapViewer map;
 	private final EventDispatcher eventDispatcher;
 
@@ -43,9 +45,10 @@ public class MapPopupMenu extends JPopupMenu {
 
 	private Point mousePosition;
 
-	public MapPopupMenu(Map mapViewer) {
+	public MapPopupMenu(Map mapViewer, Config config) {
 		this.mapViewer = mapViewer;
 		this.map = mapViewer.getMapKit().getMainMap();
+		this.config = config;
 		
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		
@@ -98,7 +101,7 @@ public class MapPopupMenu extends JPopupMenu {
 						eventDispatcher.triggerEvent(new ReverseGeocoderEvent(MapPopupMenu.this));
 
 						GeoPosition position = map.convertPointToGeoPosition(mousePosition);
-						final GeocoderResponse response = Geocoder.geocode(position);
+						final GeocoderResponse response = Geocoder.geocode(position, config.getProject().getGlobal().getHttpProxy());
 
 						if (response.getStatus() == StatusCode.OK) {
 							int index;

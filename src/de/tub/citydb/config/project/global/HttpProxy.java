@@ -29,76 +29,82 @@
  */
 package de.tub.citydb.config.project.global;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.Proxy.Type;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="NetworkType", propOrder={
-		"proxyHost",
-		"proxyPort",
-		"proxyUser",
-		"proxyPassword",
+import de.tub.citydb.util.io.Base64;
+
+@XmlType(name="HttpProxyType", propOrder={
+		"host",
+		"port",
+		"user",
+		"password",
 		"savePassword"
 		})
-public class Network {
+public class HttpProxy {
 	@XmlAttribute(required=true)
-	private Boolean useProxySettings = false;
-	private String proxyHost = "";
-	private int proxyPort = 0;
-	private String proxyUser = "";
-	private String proxyPassword = "";
+	private Boolean useProxy = false;
+	private String host = "";
+	private int port = 0;
+	private String user = "";
+	private String password = "";
 	private boolean savePassword = false;
 	@XmlTransient
-	private String internalProxyPassword = "";
+	private String internalPassword = "";
 
-	public Network() {
+	public HttpProxy() {
 	}
 	
-	public boolean isSetUseProxySettings() {
-		if (useProxySettings != null)
-			return useProxySettings.booleanValue();
+	public boolean isSetUseProxy() {
+		if (useProxy != null)
+			return useProxy.booleanValue();
 
 		return false;
 	}
 
-	public Boolean getUseProxySettings() {
-		return useProxySettings;
+	public Boolean getUseProxy() {
+		return useProxy;
 	}
 
-	public void setUseProxySettings(Boolean useProxySettings) {
-		this.useProxySettings = useProxySettings;
+	public void setUseProxy(Boolean useProxy) {
+		this.useProxy = useProxy;
 	}
 
-	public void setProxyHost(String proxyHost) {
-		this.proxyHost = proxyHost;
+	public void setHost(String host) {
+		this.host = host;
 	}
 
-	public String getProxyHost() {
-		return proxyHost;
+	public String getHost() {
+		return host;
 	}
 
-	public void setProxyPort(int proxyPort) {
-		this.proxyPort = proxyPort;
+	public void setPort(int port) {
+		this.port = port;
 	}
 
-	public int getProxyPort() {
-		return proxyPort;
+	public int getPort() {
+		return port;
 	}
 
-	public void setProxyUser(String proxyUser) {
-		this.proxyUser = proxyUser;
+	public void setUser(String user) {
+		this.user = user;
 	}
 
-	public String getProxyUser() {
-		return proxyUser;
+	public String getUser() {
+		return user;
 	}
 
-	public void setProxyPassword(String proxyPassword) {
-		this.proxyPassword = proxyPassword;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
-	public String getProxyPassword() {
-		return proxyPassword;
+	public String getPassword() {
+		return password;
 	}
 
 	public void setSavePassword(boolean savePassword) {
@@ -109,12 +115,28 @@ public class Network {
 		return savePassword;
 	}
 
-	public void setInternalProxyPassword(String internalProxyPassword) {
-		this.internalProxyPassword = internalProxyPassword;
+	public void setInternalPassword(String internalPassword) {
+		this.internalPassword = internalPassword;
 	}
 
-	public String getInternalProxyPassword() {
-		return internalProxyPassword;
+	public String getInternalPassword() {
+		return internalPassword.length() > 0 ? internalPassword : password;
+	}
+	
+	public boolean hasValidProxySettings() {
+		return host.length() > 0 && port > 0;
+	}
+	
+	public boolean hasUserCredentials() {
+		return user.length() > 0 && password.length() > 0;	
+	}
+	
+	public Proxy getProxy() {
+		return hasValidProxySettings() ? new Proxy(Type.HTTP, new InetSocketAddress(host, port)) : null;
+	}
+	
+	public String getBase64EncodedCredentials() {
+		return hasUserCredentials() ? Base64.encode(user + ":" + internalPassword) : null;
 	}
 
 }

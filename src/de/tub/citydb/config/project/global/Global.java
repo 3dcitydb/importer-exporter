@@ -34,16 +34,16 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="GlobalType", propOrder={
 		"logging",
 		"language",
-		"network"
+		"httpProxy"
 		})
 public class Global {
 	private Logging logging;
 	private LanguageType language = LanguageType.fromValue(System.getProperty("user.language"));
-	private Network network;
+	private HttpProxy httpProxy;
 
 	public Global() {
 		logging = new Logging();
-		network = new Network();
+		httpProxy = new HttpProxy();
 	}
 	
 	public Logging getLogging() {
@@ -63,11 +63,11 @@ public class Global {
 		this.language = language;
 	}
 
-	public void setNetwork(Network network) {
-		this.network = network;
+	public void setHttpProxy(HttpProxy httpProxy) {
+		this.httpProxy = httpProxy;
 	}
 
-	public Network getNetwork() {
-		return network;
+	public HttpProxy getHttpProxy() {
+		return httpProxy;
 	}
 }

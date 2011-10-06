@@ -59,7 +59,6 @@ import de.tub.citydb.config.gui.window.WindowSize;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Database.PredefinedSrsName;
-import de.tub.citydb.config.project.global.Network;
 import de.tub.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
 import de.tub.citydb.gui.components.bbox.BoundingBoxListener;
 import de.tub.citydb.gui.components.mapviewer.geocoder.Geocoder;
@@ -159,7 +158,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		Color borderColor = new Color(0, 0, 0, 150);
 		loadIcon = new ImageIcon(getClass().getResource("/resources/img/map/loader.gif"));
 
-		map = new Map();
+		map = new Map(config);
 		JPanel top = new JPanel();
 		JPanel left = new JPanel();
 		left.setMaximumSize(new Dimension(200, 1));
@@ -470,7 +469,9 @@ public class MapWindow extends JDialog implements EventHandler {
 			public void windowClosed(WindowEvent e) {
 				// clear map cache
 				((AbstractTileFactory)map.getMapKit().getMainMap().getTileFactory()).clearTileCache();
+				((AbstractTileFactory)map.getMapKit().getMainMap().getTileFactory()).shutdownTileServicePool();
 				((AbstractTileFactory)map.getMapKit().getMiniMap().getTileFactory()).clearTileCache();
+				((AbstractTileFactory)map.getMapKit().getMiniMap().getTileFactory()).shutdownTileServicePool();
 
 				WindowSize size = config.getGui().getMapWindow().getSize();
 				Rectangle rect = MapWindow.this.getBounds();
@@ -578,7 +579,7 @@ public class MapWindow extends JDialog implements EventHandler {
 				long time = System.currentTimeMillis();
 				GeocoderResponse response = Geocoder.parseLatLon(searchString);
 				if (response == null)
-					response = Geocoder.geocode(searchString);
+					response = Geocoder.geocode(searchString, config.getProject().getGlobal().getHttpProxy());
 
 				String resultMsg;
 				if (response.getStatus() == StatusCode.OK) {
@@ -654,19 +655,9 @@ public class MapWindow extends JDialog implements EventHandler {
 	}
 	
 	private void updateHttpProxySettings() {
-		HttpProxySettings proxy = null;
-
-		if (config.getProject().getGlobal().getNetwork().isSetUseProxySettings()) {
-			Network network = config.getProject().getGlobal().getNetwork();
-			
-			if (network.getProxyHost().length() > 0 && network.getProxyPort() > 0) {
-				proxy = new HttpProxySettings();
-				proxy.setHost(network.getProxyHost());
-				proxy.setPort(network.getProxyPort());
-				proxy.setUser(network.getProxyUser());
-				proxy.setPassword(network.getInternalProxyPassword());
-			}
-		}
+		HttpProxySettings proxy = new HttpProxySettings();;
+		proxy.setProxy(config.getProject().getGlobal().getHttpProxy().getProxy());
+		proxy.setCredentials(config.getProject().getGlobal().getHttpProxy().getBase64EncodedCredentials());
 		
 		map.getMapKit().getMainMap().getTileFactory().getInfo().setHttpProxySettings(proxy);
 		map.getMapKit().getMiniMap().getTileFactory().getInfo().setHttpProxySettings(proxy);
