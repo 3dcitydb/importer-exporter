@@ -46,6 +46,7 @@ import javax.swing.text.html.HTMLDocument;
 
 import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
+import org.jdesktop.swingx.mapviewer.HttpProxySettings;
 
 import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.api.config.DatabaseSrs;
@@ -58,6 +59,7 @@ import de.tub.citydb.config.gui.window.WindowSize;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Database.PredefinedSrsName;
+import de.tub.citydb.config.project.global.Network;
 import de.tub.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
 import de.tub.citydb.gui.components.bbox.BoundingBoxListener;
 import de.tub.citydb.gui.components.mapviewer.geocoder.Geocoder;
@@ -89,6 +91,8 @@ public class MapWindow extends JDialog implements EventHandler {
 		LAT_LON_FORMATTER.setMaximumFractionDigits(7);
 	}
 
+	private final Config config;
+
 	private Map map;	
 	private JComboBox searchBox;
 	private JLabel searchResult;
@@ -115,11 +119,11 @@ public class MapWindow extends JDialog implements EventHandler {
 
 	private BoundingBoxListener listener;
 	private BBoxPopupMenu[] bboxPopups;
-	private Config config;
 	private JFrame mainFrame;
 
 	private MapWindow(Config config) {
 		super(ObjectRegistry.getInstance().getViewController().getTopFrame(), true);
+		this.config = config;
 		
 		// register for events
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);
@@ -136,8 +140,8 @@ public class MapWindow extends JDialog implements EventHandler {
 			instance = new MapWindow(config);
 
 		instance.listener = listener;
-		instance.config = config;
-
+		instance.updateHttpProxySettings();
+		
 		if (!instance.isVisible())
 			instance.setSizeOnScreen();
 
@@ -647,6 +651,25 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		setLocation(x, y);
 		setSize(new Dimension(width, height));
+	}
+	
+	private void updateHttpProxySettings() {
+		HttpProxySettings proxy = null;
+
+		if (config.getProject().getGlobal().getNetwork().isSetUseProxySettings()) {
+			Network network = config.getProject().getGlobal().getNetwork();
+			
+			if (network.getProxyHost().length() > 0 && network.getProxyPort() > 0) {
+				proxy = new HttpProxySettings();
+				proxy.setHost(network.getProxyHost());
+				proxy.setPort(network.getProxyPort());
+				proxy.setUser(network.getProxyUser());
+				proxy.setPassword(network.getInternalProxyPassword());
+			}
+		}
+		
+		map.getMapKit().getMainMap().getTileFactory().getInfo().setHttpProxySettings(proxy);
+		map.getMapKit().getMiniMap().getTileFactory().getInfo().setHttpProxySettings(proxy);
 	}
 
 	private void doTranslation() {

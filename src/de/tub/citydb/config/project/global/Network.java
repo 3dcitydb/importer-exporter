@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.config.project.global;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
@@ -40,6 +41,8 @@ import javax.xml.bind.annotation.XmlType;
 		"savePassword"
 		})
 public class Network {
+	@XmlAttribute(required=true)
+	private Boolean useProxySettings = false;
 	private String proxyHost = "";
 	private int proxyPort = 0;
 	private String proxyUser = "";
@@ -49,6 +52,21 @@ public class Network {
 	private String internalProxyPassword = "";
 
 	public Network() {
+	}
+	
+	public boolean isSetUseProxySettings() {
+		if (useProxySettings != null)
+			return useProxySettings.booleanValue();
+
+		return false;
+	}
+
+	public Boolean getUseProxySettings() {
+		return useProxySettings;
+	}
+
+	public void setUseProxySettings(Boolean useProxySettings) {
+		this.useProxySettings = useProxySettings;
 	}
 
 	public void setProxyHost(String proxyHost) {

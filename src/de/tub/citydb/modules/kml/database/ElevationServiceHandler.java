@@ -42,6 +42,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.io.Base64;
 
@@ -59,7 +60,7 @@ public class ElevationServiceHandler extends DefaultHandler {
 	SAXParser saxParser = null;
 	String currentElement = "";
 	StringBuffer textBuffer = null;
-	
+
 	String status = "";
 	double elevation = 0;
 
@@ -70,28 +71,27 @@ public class ElevationServiceHandler extends DefaultHandler {
 	double minElevationLong = 0;
 	double lastLat = 0;
 	double lastLong = 0;
-	
+
 	String proxyHost = "";
 	int proxyPort = 0;
 	String proxyUser = "";
 	String proxyPassword = "";
 
-	public ElevationServiceHandler (String proxyHost, int proxyPort, String proxyUser, String proxyPassword) {
-		this.proxyHost = proxyHost;
-		this.proxyPort = proxyPort;
-		this.proxyUser = proxyUser;
-		this.proxyPassword = proxyPassword;
-	}
-
-	public ElevationServiceHandler () {
+	public ElevationServiceHandler (Config config) {
+		if (config.getProject().getGlobal().getNetwork().isSetUseProxySettings()) {
+			proxyHost = config.getProject().getGlobal().getNetwork().getProxyHost();
+			proxyPort = config.getProject().getGlobal().getNetwork().getProxyPort();
+			proxyUser = config.getProject().getGlobal().getNetwork().getProxyUser();
+			proxyPassword = config.getProject().getGlobal().getNetwork().getInternalProxyPassword();
+		}
 	}
 
 	public double getZOffset(double[] candidateCoords) throws Exception {
-		
+
 		double zOffset = 0;
 		location = -1;
 		minElevation = Double.MAX_VALUE;
-		
+
 		if (saxParser == null) {
 			// Use the default (non-validating) parser
 			SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -102,7 +102,7 @@ public class ElevationServiceHandler extends DefaultHandler {
 				t.printStackTrace();
 			}
 		}
-		
+
 		List<String> elevationStringList = new ArrayList<String>();
 		int index = 0;
 		while (index < candidateCoords.length) { 
@@ -130,22 +130,22 @@ public class ElevationServiceHandler extends DefaultHandler {
 				else {
 					elevationService = new URL(elevationString);
 				}
-				
+
 				URLConnection connection = elevationService.openConnection();
 
 				if (proxyUser.length() > 0 && proxyPassword.length() > 0) {
 					String encodedPassword = Base64.encode(proxyUser + ":" + proxyPassword);
 					connection.setRequestProperty("Proxy-Authorization", "Basic " + encodedPassword);
 				}
-				
+
 				saxParser.parse(connection.getInputStream(), this);
 			}
 		}
 		catch (Throwable t) {
 			Logger.getInstance().error("Could not access Elevation API. Please check your network settings.");
-//			t.printStackTrace();
+			//			t.printStackTrace();
 		}
-		
+
 		if (!status.equalsIgnoreCase(OK)) {
 			if (status.length() > 0) {
 				Logger.getInstance().warn("Elevation API returned " + status);
@@ -170,11 +170,11 @@ public class ElevationServiceHandler extends DefaultHandler {
 	public void startDocument() throws SAXException	{}
 
 	public void endDocument() throws SAXException {}
-	
+
 	public void startElement(String namespaceURI,
-							 String sName, // simple name
-							 String qName, // qualified name
-							 Attributes attrs) throws SAXException {
+			String sName, // simple name
+			String qName, // qualified name
+			Attributes attrs) throws SAXException {
 		String eName = sName; // element name
 		if ("".equals(eName)) {
 			eName = qName; // not namespace-aware
@@ -182,41 +182,41 @@ public class ElevationServiceHandler extends DefaultHandler {
 
 		currentElement = eName;
 	}
-	
+
 	public void endElement(String namespaceURI,
-	        			   String sName, // simple name
-	        			   String qName  // qualified name
-	        			   ) throws SAXException {
-	  String eName = sName; // element name
-	  if ("".equals(eName)) eName = qName; // not namespace-aware
+			String sName, // simple name
+			String qName  // qualified name
+			) throws SAXException {
+		String eName = sName; // element name
+		if ("".equals(eName)) eName = qName; // not namespace-aware
 
-	  String value = textBuffer.toString().trim();
-	  if(!value.equals("")) {
-		  if (currentElement.equalsIgnoreCase(STATUS)) {
-			  status = value;
-		  }
+		String value = textBuffer.toString().trim();
+		if(!value.equals("")) {
+			if (currentElement.equalsIgnoreCase(STATUS)) {
+				status = value;
+			}
 
-		  else if (currentElement.equalsIgnoreCase(LAT)) {
+			else if (currentElement.equalsIgnoreCase(LAT)) {
 				lastLat = Double.parseDouble(value);
-		  }
-		  else if (currentElement.equalsIgnoreCase(LNG)) {
+			}
+			else if (currentElement.equalsIgnoreCase(LNG)) {
 				lastLong = Double.parseDouble(value);
-		  }
-		  else if (currentElement.equalsIgnoreCase(ELEVATION)) {
-			  elevation = Double.parseDouble(value);
-			  location++;
-			  if (elevation < minElevation) {
-				  minElevation = elevation;
-				  minElevationLat = lastLat;
-				  minElevationLong = lastLong;
-			  }
-		  }
-	  }
+			}
+			else if (currentElement.equalsIgnoreCase(ELEVATION)) {
+				elevation = Double.parseDouble(value);
+				location++;
+				if (elevation < minElevation) {
+					minElevation = elevation;
+					minElevationLat = lastLat;
+					minElevationLong = lastLong;
+				}
+			}
+		}
 
-	  textBuffer = null; 
+		textBuffer = null; 
 	} 
 
-	
+
 	public void characters(char buf[], int offset, int len) throws SAXException
 	{
 		String s = new String(buf, offset, len);

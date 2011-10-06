@@ -31,6 +31,8 @@ package de.tub.citydb.modules.preferences.gui.preferences;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
@@ -41,8 +43,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -53,6 +55,7 @@ import de.tub.citydb.util.gui.GuiUtil;
 @SuppressWarnings("serial")
 public class NetworkPanel extends AbstractPreferencesComponent{
 	private JPanel block1;
+	private JCheckBox useProxySettings;
 	private JLabel proxyHostLabel;
 	private JTextField proxyHostText;
 	private JLabel proxyPortLabel;
@@ -71,7 +74,9 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 	@Override
 	public boolean isModified() {
 		try { proxyPortText.commitEdit(); } catch (ParseException e) { }
-
+		checkProxySettings();
+		
+		if (useProxySettings.isSelected() != config.getProject().getGlobal().getNetwork().isSetUseProxySettings()) return true;
 		if (!proxyHostText.getText().trim().equals(config.getProject().getGlobal().getNetwork().getProxyHost())) return true;
 		if (((Number)proxyPortText.getValue()).intValue() != config.getProject().getGlobal().getNetwork().getProxyPort()) return true;
 		if (!proxyUserText.getText().trim().equals(config.getProject().getGlobal().getNetwork().getProxyUser())) return true;
@@ -86,6 +91,7 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 
 	private void initGui(){
 		block1 = new JPanel();
+		useProxySettings = new JCheckBox();
 		proxyHostLabel = new JLabel();
 		proxyPortLabel = new JLabel();
 		proxyUserLabel = new JLabel();
@@ -114,17 +120,37 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 		block1.setBorder(BorderFactory.createTitledBorder(""));
 		block1.setLayout(new GridBagLayout());
 		{
-			block1.add(proxyHostLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(proxyHostText, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(proxyPortLabel, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(proxyPortText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(proxyUserLabel, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(proxyUserText, GuiUtil.setConstraints(1,2,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(proxyPasswordLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(proxyPasswordText, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
-			block1.add(passwordCheck, GuiUtil.setConstraints(1,4,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+			
+			useProxySettings.setIconTextGap(10);
+			GridBagConstraints c = GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,5,0);
+			c.gridwidth = 2;
+
+			block1.add(useProxySettings, c);
+			block1.add(proxyHostLabel, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+			block1.add(proxyHostText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block1.add(proxyPortLabel, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block1.add(proxyPortText, GuiUtil.setConstraints(1,2,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block1.add(proxyUserLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block1.add(proxyUserText, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block1.add(proxyPasswordLabel, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block1.add(proxyPasswordText, GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block1.add(passwordCheck, GuiUtil.setConstraints(1,5,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 		}
 
+		useProxySettings.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setEnabledProxySettings();
+			}
+		});
+	}
+	
+	private void checkProxySettings() {
+		String host = proxyHostText.getText().trim();
+		int port = ((Number)proxyPortText.getValue()).intValue();
+		if (useProxySettings.isSelected() && (host.length() == 0 || port == 0))
+			useProxySettings.setSelected(false);
+
+		setEnabledProxySettings();
 	}
 	
 	private void checkNonNegativeRange(JFormattedTextField field, int min, int max) {
@@ -133,10 +159,24 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 		else if (((Number)field.getValue()).intValue() > max)
 			field.setValue(max);
 	}
+	
+	private void setEnabledProxySettings() {
+		boolean enabled = useProxySettings.isSelected();
+		proxyHostLabel.setEnabled(enabled);
+		proxyPortLabel.setEnabled(enabled);
+		proxyUserLabel.setEnabled(enabled);
+		proxyPasswordLabel.setEnabled(enabled);
+		passwordCheck.setEnabled(enabled);
+		proxyHostText.setEnabled(enabled);
+		proxyPortText.setEnabled(enabled);
+		proxyUserText.setEnabled(enabled);
+		proxyPasswordText.setEnabled(enabled);
+	}
 
 	@Override
 	public void doTranslation() {
 		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.network.border.proxySettings")));
+		useProxySettings.setText(Internal.I18N.getString("pref.network.label.useProxy"));
 		proxyHostLabel.setText(Internal.I18N.getString("common.label.server"));
 		proxyPortLabel.setText(Internal.I18N.getString("common.label.port"));
 		proxyUserLabel.setText(Internal.I18N.getString("common.label.username"));
@@ -146,6 +186,7 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void loadSettings() {
+		useProxySettings.setSelected(config.getProject().getGlobal().getNetwork().isSetUseProxySettings());
 		proxyHostText.setText(config.getProject().getGlobal().getNetwork().getProxyHost());
 		proxyPortText.setValue(config.getProject().getGlobal().getNetwork().getProxyPort());
 		proxyUserText.setText(config.getProject().getGlobal().getNetwork().getProxyUser());
@@ -154,10 +195,15 @@ public class NetworkPanel extends AbstractPreferencesComponent{
 			proxyPasswordText.setText(config.getProject().getGlobal().getNetwork().getProxyPassword());
 		else
 			proxyPasswordText.setText(config.getProject().getGlobal().getNetwork().getInternalProxyPassword());
+	
+		checkProxySettings();
 	}
 
 	@Override
 	public void setSettings() {
+		checkProxySettings();
+		
+		config.getProject().getGlobal().getNetwork().setUseProxySettings(useProxySettings.isSelected());
 		config.getProject().getGlobal().getNetwork().setProxyHost(proxyHostText.getText().trim());
 		config.getProject().getGlobal().getNetwork().setProxyPort(((Number)proxyPortText.getValue()).intValue());
 		config.getProject().getGlobal().getNetwork().setProxyUser(proxyUserText.getText().trim());

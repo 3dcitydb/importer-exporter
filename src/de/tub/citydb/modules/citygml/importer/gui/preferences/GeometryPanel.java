@@ -174,13 +174,11 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 			}
 		});
 		
-		ActionListener transformationListener = new ActionListener() {
+		useAffineTransformation.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setEnabledTransformation();
 			}
-		};
-
-		useAffineTransformation.addActionListener(transformationListener);
+		});
 	}
 
 	private void setEnabledBorderTitle() {

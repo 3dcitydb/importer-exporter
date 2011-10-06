@@ -1,14 +1,13 @@
 package de.tub.citydb.config.project.general;
 
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="AffineTransformationType", propOrder={
-		"useAffineTransformation",
 		"transformationMatrix"
 })
 public class AffineTransformation {
-	@XmlElement(required=true, defaultValue="false")
+	@XmlAttribute(required=true)
 	private Boolean useAffineTransformation = false;
 	private TransformationMatrix transformationMatrix;
 
