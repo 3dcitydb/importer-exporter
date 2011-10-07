@@ -59,11 +59,14 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 	private JLabel ymaxLabel;
 
 	private BBoxPopupMenu[] bboxPopups;
+	private BoundingBoxClipboardHandler clipboardHandler;
 
 	public BoundingBoxPanelImpl(Config config) {
 		this.config = config;
 
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);		
+		clipboardHandler = BoundingBoxClipboardHandler.getInstance(config);
+		
 		init();
 	}
 
@@ -167,7 +170,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 
 		Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(new FlavorListener() {
 			public void flavorsChanged(FlavorEvent e) {
-				boolean enable = BoundingBoxClipboardHandler.getInstance().containsPossibleBoundingBox();
+				boolean enable = clipboardHandler.containsPossibleBoundingBox();
 
 				paste.setEnabled(enable);
 				for (int i = 0; i < bboxPopups.length; ++i)
@@ -192,24 +195,25 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 			xmax.commitEdit();
 			ymax.commitEdit();
 
-			BoundingBoxClipboardHandler.getInstance().putBoundingBox(
-					((Number)xmin.getValue()).doubleValue(),
-					((Number)ymin.getValue()).doubleValue(),
-					((Number)xmax.getValue()).doubleValue(),
-					((Number)ymax.getValue()).doubleValue());			
+			clipboardHandler.putBoundingBox(getBoundingBox());			
 		} catch (ParseException e1) {
 			LOG.error("Failed to interpret values of input fields as bounding box.");
 		}
 	}
 
 	private void pasteBoundingBoxFromClipboard() {
-		double[] bbox = BoundingBoxClipboardHandler.getInstance().getBoundingBox();
+		BoundingBox bbox = clipboardHandler.getBoundingBox();
 
-		if (bbox != null && bbox.length == 4) {
-			xmin.setValue(bbox[0]);
-			ymin.setValue(bbox[1]);
-			xmax.setValue(bbox[2]);
-			ymax.setValue(bbox[3]);
+		if (bbox != null) {
+			xmin.setValue(bbox.getLowerLeftCorner().getX());
+			ymin.setValue(bbox.getLowerLeftCorner().getY());
+			xmax.setValue(bbox.getUpperRightCorner().getX());
+			ymax.setValue(bbox.getUpperRightCorner().getY());
+			
+			if (bbox.isSetSrs())
+				srsComboBox.setSelectedItem(bbox.getSrs());
+			else
+				srsComboBox.setDBReferenceSystem();
 		}
 	}
 
@@ -219,7 +223,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 
 		map.setEnabled(enabled);
 		copy.setEnabled(enabled);
-		paste.setEnabled(enabled ? BoundingBoxClipboardHandler.getInstance().containsPossibleBoundingBox() : false);
+		paste.setEnabled(enabled ? clipboardHandler.containsPossibleBoundingBox() : false);
 		xminLabel.setEnabled(enabled);
 		xmaxLabel.setEnabled(enabled);
 		yminLabel.setEnabled(enabled);
@@ -274,7 +278,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 			copy = new JMenuItem();	
 			paste = new JMenuItem();
 
-			paste.setEnabled(BoundingBoxClipboardHandler.getInstance().containsPossibleBoundingBox());
+			paste.setEnabled(clipboardHandler.containsPossibleBoundingBox());
 
 			popupMenu.addSeparator();
 			popupMenu.add(copy);

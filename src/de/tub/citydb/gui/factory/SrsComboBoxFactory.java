@@ -139,6 +139,10 @@ public class SrsComboBoxFactory {
 			}
 
 		}
+		
+		public void setDBReferenceSystem() {
+			setSelectedItem(dbRefSys);
+		}
 
 		public boolean isDBReferenceSystemSelected() {
 			return getSelectedItem() == dbRefSys;
