@@ -106,6 +106,10 @@ BEGIN
       EXECUTE IMMEDIATE 'grant execute on ' || UPPER('&SCHEMA_OWNER') || '.GEODB_IDX to ' || v_role;
       EXECUTE IMMEDIATE 'grant execute on ' || UPPER('&SCHEMA_OWNER') || '.GEODB_STAT to ' || v_role;
       EXECUTE IMMEDIATE 'grant execute on ' || UPPER('&SCHEMA_OWNER') || '.GEODB_UTIL to ' || v_role;
+      EXECUTE IMMEDIATE 'grant execute on ' || UPPER('&SCHEMA_OWNER') || '.GEODB_DELETE_BY_LINEAGE to ' || v_role;
+      EXECUTE IMMEDIATE 'grant execute on ' || UPPER('&SCHEMA_OWNER') || '.GEODB_MATCH to ' || v_role;
+      EXECUTE IMMEDIATE 'grant execute on ' || UPPER('&SCHEMA_OWNER') || '.GEODB_DELETE to ' || v_role;
+      EXECUTE IMMEDIATE 'grant execute on ' || UPPER('&SCHEMA_OWNER') || '.GEODB_MERGE to ' || v_role;
       EXECUTE IMMEDIATE 'grant select on ' || UPPER('&SCHEMA_OWNER') || '.GROUP_TO_CITYOBJECT to ' || v_role;
       EXECUTE IMMEDIATE 'grant select on ' || UPPER('&SCHEMA_OWNER') || '.IMPLICIT_GEOMETRY to ' || v_role;
       EXECUTE IMMEDIATE 'grant select on ' || UPPER('&SCHEMA_OWNER') || '.IMPORT_PROCEDURES to ' || v_role;
