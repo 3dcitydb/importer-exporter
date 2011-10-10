@@ -143,8 +143,9 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	// internal state
 	private LanguageType currentLang = null;
 
-	public ImpExpGui() {
+	public ImpExpGui(Config config) {
 		dbPool = DBConnectionPool.getInstance();
+		this.config = config;
 		
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		eventDispatcher.addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
@@ -156,12 +157,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	public void invoke(JAXBContext jaxbProjectContext,
 			JAXBContext jaxbGuiContext,
 			PluginService pluginService,
-			Config config,
 			List<String> errMsgs) {		
 		this.jaxbProjectContext = jaxbProjectContext;
 		this.jaxbGuiContext = jaxbGuiContext;
 		this.pluginService = pluginService;
-		this.config = config;
 
 		// init GUI elements
 		initGui();

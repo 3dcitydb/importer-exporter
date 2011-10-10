@@ -433,7 +433,7 @@ public class ImpExp {
 		// start application
 		if (!shell) {
 			// create main view instance
-			final ImpExpGui mainView = new ImpExpGui();
+			final ImpExpGui mainView = new ImpExpGui(config);
 			final DatabasePlugin databasePlugin = new DatabasePlugin(config, mainView);
 
 			// add gui related objects to registry
@@ -472,7 +472,6 @@ public class ImpExp {
 					mainView.invoke(projectContext,
 							guiContext,
 							pluginService,
-							config,
 							errMsgs);
 				}
 			});
