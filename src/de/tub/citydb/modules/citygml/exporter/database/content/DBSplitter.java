@@ -38,10 +38,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -151,10 +151,10 @@ public class DBSplitter {
 				TiledBoundingBox tiledBBox = expFilterConfig.getComplexFilter().getTiledBoundingBox();
 				int bboxSrid = boundingBoxFilter.getSrid();
 
-				double minX = bbox.getLowerCorner().getX();
-				double minY = bbox.getLowerCorner().getY();
-				double maxX = bbox.getUpperCorner().getX();
-				double maxY = bbox.getUpperCorner().getY();
+				double minX = bbox.getLowerLeftCorner().getX();
+				double minY = bbox.getLowerLeftCorner().getY();
+				double maxX = bbox.getUpperRightCorner().getX();
+				double maxY = bbox.getUpperRightCorner().getY();
 
 				String mask = ((tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode())) ? 
 						"INSIDE+CONTAINS+EQUAL+COVERS+COVEREDBY+OVERLAPBDYINTERSECT" :

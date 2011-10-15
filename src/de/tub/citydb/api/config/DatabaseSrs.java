@@ -13,6 +13,8 @@ import javax.xml.bind.annotation.XmlType;
 		"description"
 		})
 public final class DatabaseSrs implements Comparable<DatabaseSrs> {
+	public static final DatabaseSrs DEFAULT = new DatabaseSrs("", 0, "n/a", "", false);
+
 	@XmlAttribute
 	@XmlID
 	protected String id;

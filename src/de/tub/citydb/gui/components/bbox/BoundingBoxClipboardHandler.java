@@ -78,7 +78,16 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 	}
 
 	public boolean containsPossibleBoundingBox() {
-		return isMac ? true : systemClipboard.isDataFlavorAvailable(DataFlavor.stringFlavor);
+		if (!isMac) {		
+			try {
+				return systemClipboard.isDataFlavorAvailable(DataFlavor.stringFlavor);			
+			} catch (Exception e) {
+				// we face strange access issues on Windows sometimes
+				// silently discard them...
+			}
+		}
+
+		return true;
 	}
 
 	@Override
@@ -89,6 +98,7 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 	private BoundingBox parseWebServiceRepresentation(String candidate) {	
 		BoundingBox bbox = new BoundingBox();
 		String[] tokens = candidate.trim().split("&+");
+		boolean success = false;
 
 		for (String token : tokens) {
 			String[] pair = token.trim().split("=");
@@ -107,6 +117,8 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 								bbox.getLowerLeftCorner().setY(format.parse(coords[1].trim()).doubleValue());
 								bbox.getUpperRightCorner().setX(format.parse(coords[2].trim()).doubleValue());
 								bbox.getUpperRightCorner().setY(format.parse(coords[3].trim()).doubleValue());
+
+								success = true;
 							} catch (Exception e) {
 								//
 							}
@@ -123,7 +135,7 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 			}
 		}
 
-		return bbox.isSetLowerLeftCorner() && bbox.isSetUpperRightCorner() ? bbox : null;
+		return success ? bbox : null;
 	}
 
 	private BoundingBox parseGMLEnvelopeRepresentation(String candidate) {	

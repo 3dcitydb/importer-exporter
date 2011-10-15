@@ -47,18 +47,19 @@ import de.tub.citydb.api.gui.DatabaseSrsComboBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.database.DBConnectionPool;
 
 public class SrsComboBoxFactory {
 	private static SrsComboBoxFactory instance = null;
-	private final DatabaseSrs dbRefSys = new DatabaseSrs(Database.DEFAULT_SRS);
+	private final DatabaseSrs dbRefSys;
 	private final List<WeakReference<SrsComboBox>> srsBoxes = new ArrayList<WeakReference<SrsComboBox>>();
 	private final Config config;
 
 	private SrsComboBoxFactory(Config config) {
 		// just to thwart instantiation
 		this.config = config;
+		dbRefSys = new DatabaseSrs(DatabaseSrs.DEFAULT);
+		dbRefSys.setSupported(true);
 	}
 
 	public static synchronized SrsComboBoxFactory getInstance(Config config) {
@@ -164,8 +165,8 @@ public class SrsComboBoxFactory {
 				dbRefSys.setSrid(dbPool.getActiveConnection().getMetaData().getSrid());
 				dbRefSys.setSrsName(dbPool.getActiveConnection().getMetaData().getSrsName());
 			} else {
-				dbRefSys.setSrid(Database.DEFAULT_SRS.getSrid());
-				dbRefSys.setSrsName(Database.DEFAULT_SRS.getSrsName());				
+				dbRefSys.setSrid(DatabaseSrs.DEFAULT.getSrid());
+				dbRefSys.setSrsName(DatabaseSrs.DEFAULT.getSrsName());				
 			}		
 
 			DatabaseSrs selectedItem = getSelectedItem();

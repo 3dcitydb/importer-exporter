@@ -32,16 +32,15 @@ package de.tub.citydb.modules.kml.database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashSet;
 
 import oracle.jdbc.OracleResultSet;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
@@ -120,19 +119,19 @@ public class KmlSplitter {
 
 				spatialQuery.setInt(1, srid);
 				// coordinates for inside
-				spatialQuery.setDouble(2, tile.getLowerCorner().getX());
-				spatialQuery.setDouble(3, tile.getLowerCorner().getY());
-				spatialQuery.setDouble(4, tile.getUpperCorner().getX());
-				spatialQuery.setDouble(5, tile.getUpperCorner().getY());
+				spatialQuery.setDouble(2, tile.getLowerLeftCorner().getX());
+				spatialQuery.setDouble(3, tile.getLowerLeftCorner().getY());
+				spatialQuery.setDouble(4, tile.getUpperRightCorner().getX());
+				spatialQuery.setDouble(5, tile.getUpperRightCorner().getY());
 
 				spatialQuery.setInt(6, srid);
 				// coordinates for overlapbdydisjoint
-				spatialQuery.setDouble(7, tile.getLowerCorner().getX());
-				spatialQuery.setDouble(8, tile.getUpperCorner().getY());
-				spatialQuery.setDouble(9, tile.getLowerCorner().getX());
-				spatialQuery.setDouble(10, tile.getLowerCorner().getY());
-				spatialQuery.setDouble(11, tile.getUpperCorner().getX());
-				spatialQuery.setDouble(12, tile.getLowerCorner().getY());
+				spatialQuery.setDouble(7, tile.getLowerLeftCorner().getX());
+				spatialQuery.setDouble(8, tile.getUpperRightCorner().getY());
+				spatialQuery.setDouble(9, tile.getLowerLeftCorner().getX());
+				spatialQuery.setDouble(10, tile.getLowerLeftCorner().getY());
+				spatialQuery.setDouble(11, tile.getUpperRightCorner().getX());
+				spatialQuery.setDouble(12, tile.getLowerLeftCorner().getY());
 
 				rs = (OracleResultSet)spatialQuery.executeQuery();
 /*

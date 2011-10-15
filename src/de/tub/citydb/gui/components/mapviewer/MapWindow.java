@@ -75,6 +75,7 @@ import de.tub.citydb.gui.components.mapviewer.map.event.MapBoundsSelection;
 import de.tub.citydb.gui.components.mapviewer.map.event.MapEvents;
 import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent;
 import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent.ReverseGeocoderStatus;
+import de.tub.citydb.gui.components.mapviewer.validation.BoundingBoxValidator;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -120,11 +121,12 @@ public class MapWindow extends JDialog implements EventHandler {
 	private BBoxPopupMenu[] bboxPopups;
 	private JFrame mainFrame;
 	private BoundingBoxClipboardHandler clipboardHandler;
+	private BoundingBoxValidator validator;
 
 	private MapWindow(Config config) {
 		super(ObjectRegistry.getInstance().getViewController().getTopFrame(), true);
 		this.config = config;
-		
+
 		// register for events
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(MapEvents.BOUNDING_BOX_SELECTION, this);
@@ -132,6 +134,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(MapEvents.REVERSE_GEOCODER, this);
 
 		clipboardHandler = BoundingBoxClipboardHandler.getInstance(config);
+		validator = new BoundingBoxValidator(this, config);
 		
 		init();
 		doTranslation();
@@ -143,7 +146,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		instance.listener = listener;
 		instance.updateHttpProxySettings();
-		
+
 		if (!instance.isVisible())
 			instance.setSizeOnScreen();
 
@@ -164,9 +167,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		map = new Map(config);
 		JPanel top = new JPanel();
 		JPanel left = new JPanel();
-		left.setMaximumSize(new Dimension(200, 1));
-		left.setPreferredSize(left.getMaximumSize());
-
+		
 		// map
 		map.getMapKit().setBorder(BorderFactory.createMatteBorder(1, 2, 0, 0, borderColor));
 
@@ -187,15 +188,11 @@ public class MapWindow extends JDialog implements EventHandler {
 		searchResult.setPreferredSize(new Dimension(searchResult.getPreferredSize().width, loadIcon.getIconHeight()));
 
 		searchBox.setEditable(true);
-		Font font = new Font(searchBox.getFont().getName(), searchBox.getFont().getStyle(), searchBox.getFont().getSize() + 4);
-		searchBox.setFont(font);
 		searchBox.setPreferredSize(new Dimension(500, (int)searchBox.getPreferredSize().getHeight()));
-		goButton.setFont(font);
 
 		applyButton = new JButton();
 		cancelButton = new JButton();
-		cancelButton.setFont(font);
-		applyButton.setFont(font.deriveFont(Font.BOLD));
+		applyButton.setFont(applyButton.getFont().deriveFont(Font.BOLD));
 		applyButton.setEnabled(false);
 
 		top.add(searchBox, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 10, 10, 0, 5));
@@ -237,7 +234,11 @@ public class MapWindow extends JDialog implements EventHandler {
 		minY.setPreferredSize(dim);
 		maxX.setPreferredSize(dim);
 		maxY.setPreferredSize(dim);
-
+		minX.setMinimumSize(dim);
+		minY.setMinimumSize(dim);
+		maxX.setMinimumSize(dim);
+		maxY.setMinimumSize(dim);
+		
 		gridBagConstraints = GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 5, 2, 0, 2);
 		gridBagConstraints.gridwidth = 2;
 		gridBagConstraints.anchor = GridBagConstraints.CENTER;		
@@ -268,7 +269,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		copyBBox.setIcon(copyIcon);
 		copyBBox.setPreferredSize(new Dimension(copyIcon.getIconWidth() + 6, copyIcon.getIconHeight() + 6));
 		copyBBox.setEnabled(false);
-		
+
 		pasteBBox = new JButton();
 		ImageIcon pasteIcon = new ImageIcon(getClass().getResource("/resources/img/common/bbox_paste.png")); 
 		pasteBBox.setIcon(pasteIcon);
@@ -327,6 +328,8 @@ public class MapWindow extends JDialog implements EventHandler {
 		left.add(bbox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
 		left.add(reverse, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
 		left.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 2, 0, 1, GridBagConstraints.VERTICAL, 5, 0, 2, 0));
+
+		left.setMinimumSize(left.getPreferredSize());
 
 		// actions
 		goButton.addActionListener(new ActionListener() {
@@ -415,13 +418,13 @@ public class MapWindow extends JDialog implements EventHandler {
 		Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(new FlavorListener() {
 			public void flavorsChanged(FlavorEvent e) {
 				boolean enable = clipboardHandler.containsPossibleBoundingBox();
-				
+
 				pasteBBox.setEnabled(enable);
 				for (int i = 0; i < bboxPopups.length; ++i)
 					bboxPopups[i].paste.setEnabled(enable);
 			}
 		});
-		
+
 		PropertyChangeListener commitListener = new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (evt.getPropertyName().equals("value")) {
@@ -430,23 +433,20 @@ public class MapWindow extends JDialog implements EventHandler {
 						minY.commitEdit();
 						maxX.commitEdit();
 						maxY.commitEdit();
-						applyButton.setEnabled(true);
-						copyBBox.setEnabled(true);
-						
-						for (int i = 0; i < bboxPopups.length; ++i)
-							bboxPopups[i].copy.setEnabled(true);
+
+						setEnabledApplyBoundingBox(true);
 					} catch (ParseException e1) {
 						//
 					}
 				}
 			}
 		};
-		
+
 		minX.addPropertyChangeListener(commitListener);
 		minY.addPropertyChangeListener(commitListener);
 		maxX.addPropertyChangeListener(commitListener);
 		maxY.addPropertyChangeListener(commitListener);
-		
+
 		bbox.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
 				showPopupMenu(e);
@@ -496,9 +496,9 @@ public class MapWindow extends JDialog implements EventHandler {
 						break;
 					}
 				}
-				
+
 				bbox.setSrs(wgs84);
-				
+
 				Thread t = new Thread() {
 					public void run() {
 						listener.setBoundingBox(bbox);
@@ -519,13 +519,38 @@ public class MapWindow extends JDialog implements EventHandler {
 		});
 	}
 
+	public void setBoundingBox(final BoundingBox bbox) {
+		Thread t = new Thread() {
+			public void run() {
+				if (bbox != null) {
+					switch (validator.isValid(bbox)) {
+					case CANCEL:
+						dispose();
+						break;
+					case INVALID:
+						clearBoundingBox();
+						break;
+					default:
+						minX.setValue(bbox.getLowerLeftCorner().getX());
+						minY.setValue(bbox.getLowerLeftCorner().getY());
+						maxX.setValue(bbox.getUpperRightCorner().getX());
+						maxY.setValue(bbox.getUpperRightCorner().getY());
+						showBoundingBox();
+					}
+				}
+			}
+		};
+		t.setDaemon(true);
+		t.start();
+	}
+
 	private void copyBoundingBoxToClipboard() {
 		try {
 			minX.commitEdit();
 			minY.commitEdit();
 			maxX.commitEdit();
 			maxY.commitEdit();
-			
+
 			BoundingBox bbox = new BoundingBox();
 			bbox.getLowerLeftCorner().setX(minX.isEditValid() && minX.getValue() != null ? ((Number)minX.getValue()).doubleValue() : null);
 			bbox.getLowerLeftCorner().setY(minY.isEditValid() && minY.getValue() != null ? ((Number)minY.getValue()).doubleValue() : null);
@@ -533,20 +558,13 @@ public class MapWindow extends JDialog implements EventHandler {
 			bbox.getUpperRightCorner().setY(maxY.isEditValid() && maxY.getValue() != null ? ((Number)maxY.getValue()).doubleValue() : null);
 
 			clipboardHandler.putBoundingBox(bbox);			
-		} catch (ParseException e1) {
+		} catch (ParseException e) {
 			//
 		}
 	}
 
 	private void pasteBoundingBoxFromClipboard() {
-		BoundingBox bbox = clipboardHandler.getBoundingBox();
-
-		if (bbox != null) {
-			minX.setValue(bbox.getLowerLeftCorner().getX());
-			minY.setValue(bbox.getLowerLeftCorner().getY());
-			maxX.setValue(bbox.getUpperRightCorner().getX());
-			maxY.setValue(bbox.getUpperRightCorner().getY());
-		}
+		setBoundingBox(clipboardHandler.getBoundingBox());
 	}
 
 	private void showBoundingBox() {
@@ -569,18 +587,22 @@ public class MapWindow extends JDialog implements EventHandler {
 			//
 		}
 	}
-	
+
 	private void clearBoundingBox() {
 		map.getSelectionPainter().clearSelectedArea();
 		minX.setText("");
 		maxX.setText("");
 		minY.setText("");
 		maxY.setText("");
-		
-		applyButton.setEnabled(false);
-		copyBBox.setEnabled(false);		
+
+		setEnabledApplyBoundingBox(false);
+	}
+
+	private void setEnabledApplyBoundingBox(boolean enable) {
+		applyButton.setEnabled(enable);
+		copyBBox.setEnabled(enable);		
 		for (int i = 0; i < bboxPopups.length; ++i)
-			bboxPopups[i].copy.setEnabled(false);
+			bboxPopups[i].copy.setEnabled(enable);
 	}
 
 	private void geocode(final String searchString) {
@@ -667,12 +689,12 @@ public class MapWindow extends JDialog implements EventHandler {
 		setLocation(x, y);
 		setSize(new Dimension(width, height));
 	}
-	
+
 	private void updateHttpProxySettings() {
 		HttpProxySettings proxy = new HttpProxySettings();;
 		proxy.setProxy(config.getProject().getGlobal().getHttpProxy().getProxy());
 		proxy.setCredentials(config.getProject().getGlobal().getHttpProxy().getBase64EncodedCredentials());
-		
+
 		map.getMapKit().getMainMap().getTileFactory().getInfo().setHttpProxySettings(proxy);
 		map.getMapKit().getMiniMap().getTileFactory().getInfo().setHttpProxySettings(proxy);
 	}
@@ -690,7 +712,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		pasteBBox.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.paste"));
 		reverseTitle.setText(Internal.I18N.getString("map.reverseGeocoder.label"));
 		reverseInfo.setText(Internal.I18N.getString("map.reverseGeocoder.hint.label"));
-
+		
 		map.doTranslation();		
 		for (int i = 0; i < bboxPopups.length; ++i)
 			bboxPopups[i].doTranslation();
@@ -701,17 +723,17 @@ public class MapWindow extends JDialog implements EventHandler {
 		if (event.getEventType() == GlobalEvents.SWITCH_LOCALE) {
 			doTranslation();
 		}
-		
+
 		else if (event.getEventType() == MapEvents.BOUNDING_BOX_SELECTION) {
 			BoundingBoxSelection e = (BoundingBoxSelection)event;
 			GeoPosition[] bbox = e.getBoundingBox();
-			
+
 			minX.setValue(bbox[0].getLatitude());
 			minY.setValue(bbox[0].getLongitude());
 			maxX.setValue(bbox[1].getLatitude());
 			maxY.setValue(bbox[1].getLongitude());
 		}
-		
+
 		else if (event.getEventType() == MapEvents.MAP_BOUNDS) {
 			MapBoundsSelection e = (MapBoundsSelection)event;
 			GeoPosition[] bbox = e.getBoundingBox();
@@ -722,10 +744,10 @@ public class MapWindow extends JDialog implements EventHandler {
 			maxY.setValue(bbox[1].getLatitude());
 			map.getSelectionPainter().setSelectedArea(bbox[0], bbox[1]);
 		}
-		
+
 		else if (event.getEventType() == MapEvents.REVERSE_GEOCODER) {
 			ReverseGeocoderEvent e = (ReverseGeocoderEvent)event;
-			
+
 			if (e.getStatus() == ReverseGeocoderStatus.SEARCHING) {
 				reverseSearchProgress.setIcon(loadIcon);
 			} else if (e.getStatus() == ReverseGeocoderStatus.RESULT) {
@@ -765,7 +787,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		public BBoxPopupMenu(JPopupMenu popupMenu, boolean addSeparator) {
 			copy = new JMenuItem();	
 			paste = new JMenuItem();
-			
+
 			copy.setEnabled(false);
 			paste.setEnabled(clipboardHandler.containsPossibleBoundingBox());
 

@@ -40,16 +40,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oracle.jdbc.OracleCallableStatement;
-import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.OracleTypes;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.ARRAY;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.geometry.BoundingBox;
-import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.api.config.BoundingBox;
+import de.tub.citydb.api.config.BoundingBoxCorner;
 import de.tub.citydb.config.project.database.DBMetaData;
 import de.tub.citydb.config.project.database.DBMetaData.Versioning;
 import de.tub.citydb.config.project.database.Workspace;
@@ -231,8 +230,8 @@ public class DBUtil {
 				query += " and CLASS_ID in (" + Util.collection2string(featureTypes, ", ") +") ";
 
 			rs = stmt.executeQuery(query);
-			Point lowerCorner = new Point(Double.MAX_VALUE);
-			Point upperCorner = new Point(-Double.MAX_VALUE);
+			BoundingBoxCorner lowerCorner = new BoundingBoxCorner(Double.MAX_VALUE);
+			BoundingBoxCorner upperCorner = new BoundingBoxCorner(-Double.MAX_VALUE);
 
 			if (rs.next()) {
 				STRUCT struct = (STRUCT)rs.getObject(1);
@@ -505,7 +504,7 @@ public class DBUtil {
 	public static BoundingBox transformBBox(BoundingBox bbox, int sourceSrid, int targetSrid) throws SQLException {
 		BoundingBox result = new BoundingBox(bbox);
 		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
+		ResultSet rs = null;
 		Connection conn = null;
 
 		try {
@@ -514,22 +513,22 @@ public class DBUtil {
 					", NULL, MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 1), " +
 					"MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), " + targetSrid + ") from dual");
 
-			psQuery.setDouble(1, bbox.getLowerCorner().getX());
-			psQuery.setDouble(2, bbox.getLowerCorner().getY());
-			psQuery.setDouble(3, bbox.getUpperCorner().getX());
-			psQuery.setDouble(4, bbox.getUpperCorner().getY());
+			psQuery.setDouble(1, bbox.getLowerLeftCorner().getX());
+			psQuery.setDouble(2, bbox.getLowerLeftCorner().getY());
+			psQuery.setDouble(3, bbox.getUpperRightCorner().getX());
+			psQuery.setDouble(4, bbox.getUpperRightCorner().getY());
 
-			rs = (OracleResultSet)psQuery.executeQuery();
+			rs = psQuery.executeQuery();
 			if (rs.next()) {
 				STRUCT struct = (STRUCT)rs.getObject(1); 
 				if (!rs.wasNull() && struct != null) {
 					JGeometry geom = JGeometry.load(struct);
 					double[] ordinatesArray = geom.getOrdinatesArray();
 
-					result.getLowerCorner().setX(ordinatesArray[0]);
-					result.getLowerCorner().setY(ordinatesArray[1]);
-					result.getUpperCorner().setX(ordinatesArray[2]);
-					result.getUpperCorner().setY(ordinatesArray[3]);
+					result.getLowerLeftCorner().setX(ordinatesArray[0]);
+					result.getLowerLeftCorner().setY(ordinatesArray[1]);
+					result.getUpperRightCorner().setX(ordinatesArray[2]);
+					result.getUpperRightCorner().setY(ordinatesArray[3]);
 				}
 			}
 		} catch (SQLException sqlEx) {
@@ -572,7 +571,7 @@ public class DBUtil {
 	public static boolean isSrsSupported(int srid) throws SQLException {
 		Connection conn = null;
 		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
+		ResultSet rs = null;
 		boolean isSupported = false;
 
 		try {
@@ -581,7 +580,7 @@ public class DBUtil {
 
 			psQuery.setInt(1, srid);
 
-			rs = (OracleResultSet)psQuery.executeQuery();
+			rs = psQuery.executeQuery();
 			if (rs.next()) {
 				isSupported = (rs.getInt(1) > 0);
 			}
@@ -626,7 +625,7 @@ public class DBUtil {
 	public static List<String> getAppearanceThemeList(Workspace workspace) throws SQLException {
 		Connection conn = null;
 		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
+		ResultSet rs = null;
 		ArrayList<String> appearanceThemes = new ArrayList<String>();
 
 		try {
@@ -643,7 +642,7 @@ public class DBUtil {
 
 			conn = dbConnectionPool.getConnection();
 			psQuery = conn.prepareStatement("select distinct theme from appearance order by theme");
-			rs = (OracleResultSet)psQuery.executeQuery();
+			rs = psQuery.executeQuery();
 			while (rs.next()) {
 				appearanceThemes.add(rs.getString(1));
 			}

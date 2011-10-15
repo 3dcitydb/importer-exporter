@@ -32,10 +32,11 @@ package de.tub.citydb.modules.common.filter.feature;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.citygml4j.geometry.Point;
 import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
+import de.tub.citydb.api.config.BoundingBox;
+import de.tub.citydb.api.config.BoundingBoxCorner;
 import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
@@ -57,8 +58,8 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	private boolean useTiling;
 	private FilterBoundingBox boundingBoxConfig;
 
-	private org.citygml4j.geometry.BoundingBox boundingBox;
-	private org.citygml4j.geometry.BoundingBox activeBoundingBox;
+	private BoundingBox boundingBox;
+	private BoundingBox activeBoundingBox;
 
 	private double rowHeight = 0;  
 	private double columnWidth = 0;
@@ -91,16 +92,11 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 			if (mode == FilterMode.EXPORT || mode == FilterMode.KML_EXPORT)
 				useTiling = ((TiledBoundingBox)boundingBoxConfig).getTiling().getMode() != TilingMode.NO_TILING;
 
-			Double minX = boundingBoxConfig.getLowerLeftCorner().getX();
-			Double minY = boundingBoxConfig.getLowerLeftCorner().getY();
-			Double maxX = boundingBoxConfig.getUpperRightCorner().getX();
-			Double maxY = boundingBoxConfig.getUpperRightCorner().getY();
-
-			if (minX != null && minY != null && maxX != null && maxY != null) {
-				boundingBox = new org.citygml4j.geometry.BoundingBox (
-						new Point(minX, minY, 0),
-						new Point(maxX, maxY, 0)
-				);
+			if (boundingBoxConfig.getLowerLeftCorner().getX() != null && 
+					boundingBoxConfig.getLowerLeftCorner().getY() != null &&
+					boundingBoxConfig.getUpperRightCorner().getX() != null && 
+					boundingBoxConfig.getUpperRightCorner().getY() != null) {
+				boundingBox = new BoundingBox(boundingBoxConfig);
 
 				// check whether we have to transform coordinate values of bounding box
 				int bboxSrid = boundingBoxConfig.getSrs().getSrid();
@@ -128,8 +124,8 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 					Tiling tiling = ((TiledBoundingBox)boundingBoxConfig).getTiling();					
 					rows = tiling.getRows();
 					columns = tiling.getColumns();
-					rowHeight = (boundingBox.getUpperCorner().getY() - boundingBox.getLowerCorner().getY()) / rows;  
-					columnWidth = (boundingBox.getUpperCorner().getX() - boundingBox.getLowerCorner().getX()) / columns;
+					rowHeight = (boundingBox.getUpperRightCorner().getY() - boundingBox.getLowerLeftCorner().getY()) / rows;  
+					columnWidth = (boundingBox.getUpperRightCorner().getX() - boundingBox.getLowerLeftCorner().getX()) / columns;
 				}
 			} 
 			else
@@ -171,20 +167,20 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 
 			if (!useTiling) { // no tiling
 				if (boundingBoxConfig.isSetContainMode()) {
-					if (minX >= activeBoundingBox.getLowerCorner().getX() &&
-							minY >= activeBoundingBox.getLowerCorner().getY() &&
-							maxX <= activeBoundingBox.getUpperCorner().getX() &&
-							maxY <= activeBoundingBox.getUpperCorner().getY())
+					if (minX >= activeBoundingBox.getLowerLeftCorner().getX() &&
+							minY >= activeBoundingBox.getLowerLeftCorner().getY() &&
+							maxX <= activeBoundingBox.getUpperRightCorner().getX() &&
+							maxY <= activeBoundingBox.getUpperRightCorner().getY())
 						return false;
 					else
 						return true;
 				}
 
 				else if (boundingBoxConfig.isSetOverlapMode()) {
-					if (minX >= activeBoundingBox.getUpperCorner().getX() ||
-							maxX <= activeBoundingBox.getLowerCorner().getX() ||
-							minY >= activeBoundingBox.getUpperCorner().getY() ||
-							maxY <= activeBoundingBox.getLowerCorner().getY())
+					if (minX >= activeBoundingBox.getUpperRightCorner().getX() ||
+							maxX <= activeBoundingBox.getLowerLeftCorner().getX() ||
+							minY >= activeBoundingBox.getUpperRightCorner().getY() ||
+							maxY <= activeBoundingBox.getLowerLeftCorner().getY())
 						return true;
 					else 
 						return false;
@@ -193,10 +189,10 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 			else { // manual tiling
 				double centroidX = (minX + maxX) / 2;
 				double centroidY = (minY + maxY) / 2;
-				if (centroidX >= activeBoundingBox.getLowerCorner().getX() &&
-						centroidY > activeBoundingBox.getLowerCorner().getY() &&
-						centroidX < activeBoundingBox.getUpperCorner().getX() &&
-						centroidY <= activeBoundingBox.getUpperCorner().getY())
+				if (centroidX >= activeBoundingBox.getLowerLeftCorner().getX() &&
+						centroidY > activeBoundingBox.getLowerLeftCorner().getY() &&
+						centroidX < activeBoundingBox.getUpperRightCorner().getX() &&
+						centroidY <= activeBoundingBox.getUpperRightCorner().getY())
 					return false;
 				else
 					return true;
@@ -206,7 +202,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 		return false;
 	}
 
-	public org.citygml4j.geometry.BoundingBox getFilterState() {
+	public BoundingBox getFilterState() {
 		return activeBoundingBox;
 	}
 
@@ -223,14 +219,14 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 		this.activeRow = activeRow;
 		this.activeColumn = activeColumn;
 
-		double lowerLeftX = boundingBox.getLowerCorner().getX() + (activeColumn * columnWidth);
-		double lowerLeftY = boundingBox.getLowerCorner().getY() + (activeRow * rowHeight);
+		double lowerLeftX = boundingBox.getLowerLeftCorner().getX() + (activeColumn * columnWidth);
+		double lowerLeftY = boundingBox.getLowerLeftCorner().getY() + (activeRow * rowHeight);
 		double upperRightX = lowerLeftX + columnWidth;
 		double upperRightY = lowerLeftY + rowHeight;
 
-		activeBoundingBox = new org.citygml4j.geometry.BoundingBox (
-				new Point(lowerLeftX, lowerLeftY, 0),
-				new Point(upperRightX, upperRightY, 0)
+		activeBoundingBox = new BoundingBox(
+				new BoundingBoxCorner(lowerLeftX, lowerLeftY),
+				new BoundingBoxCorner(upperRightX, upperRightY)
 		);
 	}
 

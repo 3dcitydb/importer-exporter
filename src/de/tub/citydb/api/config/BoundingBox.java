@@ -34,48 +34,50 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="BoundingBoxType", propOrder={
 		"srs",
-		"lowerLeftCorner",
-		"upperRightCorner"		
+		"lowerLeft",
+		"upperRight"		
 })
 public class BoundingBox {
 	@XmlIDREF
 	private DatabaseSrs srs;
-	private BoundingBoxCorner lowerLeftCorner;
-	private BoundingBoxCorner upperRightCorner;
+	private BoundingBoxCorner lowerLeft;
+	private BoundingBoxCorner upperRight;
 
 	public BoundingBox() {
-		lowerLeftCorner = new BoundingBoxCorner();
-		upperRightCorner = new BoundingBoxCorner();
+		srs = DatabaseSrs.DEFAULT;
+		lowerLeft = new BoundingBoxCorner();
+		upperRight = new BoundingBoxCorner();
 	}
 	
-	public boolean isSetLowerLeftCorner() {
-		return lowerLeftCorner != null;
+	public BoundingBox(BoundingBoxCorner lowerleft, BoundingBoxCorner upperRight) {
+		this.lowerLeft = lowerleft;
+		this.upperRight = upperRight;
 	}
 
+	public BoundingBox(BoundingBox bbox) {
+		copyFrom(bbox);
+	}
+	
 	public BoundingBoxCorner getLowerLeftCorner() {
-		return lowerLeftCorner;
+		return lowerLeft;
 	}
 
-	public void setLowerLeftCorner(BoundingBoxCorner lowerLeftCorner) {
-		if (lowerLeftCorner != null)
-			this.lowerLeftCorner = lowerLeftCorner;
-	}
-
-	public boolean isSetUpperRightCorner() {
-		return upperRightCorner != null;
+	public void setLowerLeftCorner(BoundingBoxCorner lowerLeft) {
+		if (lowerLeft != null)
+			this.lowerLeft = lowerLeft;
 	}
 	
 	public BoundingBoxCorner getUpperRightCorner() {
-		return upperRightCorner;
+		return upperRight;
 	}
 
-	public void setUpperRightCorner(BoundingBoxCorner upperRightCorner) {
-		if (upperRightCorner != null)
-			this.upperRightCorner = upperRightCorner;
+	public void setUpperRightCorner(BoundingBoxCorner upperRight) {
+		if (upperRight != null)
+			this.upperRight = upperRight;
 	}
 
 	public boolean isSetSrs() {
-		return srs != null;
+		return srs != DatabaseSrs.DEFAULT;
 	}
 	
 	public void setSrs(DatabaseSrs srs) {
@@ -89,8 +91,8 @@ public class BoundingBox {
 	
 	public void copyFrom(BoundingBox other) {
 		srs = other.srs;
-		lowerLeftCorner = new BoundingBoxCorner(other.getLowerLeftCorner().getX(), other.getLowerLeftCorner().getY());
-		upperRightCorner = new BoundingBoxCorner(other.getUpperRightCorner().getX(), other.getUpperRightCorner().getY());
+		lowerLeft = new BoundingBoxCorner(other.getLowerLeftCorner().getX(), other.getLowerLeftCorner().getY());
+		upperRight = new BoundingBoxCorner(other.getUpperRightCorner().getX(), other.getUpperRightCorner().getY());
 	}
 
 }

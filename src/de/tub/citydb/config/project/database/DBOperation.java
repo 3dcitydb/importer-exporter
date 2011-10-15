@@ -44,7 +44,7 @@ public class DBOperation {
 	private DBOperationMode execute = DBOperationMode.REPORT;
 	private FeatureClassMode boundingBoxFeatureClass = FeatureClassMode.CITYOBJECT;
 	@XmlIDREF
-	private DatabaseSrs boundingBoxSrs = Database.DEFAULT_SRS;
+	private DatabaseSrs boundingBoxSrs = DatabaseSrs.DEFAULT;
 	
 	public DBOperation() {
 	}

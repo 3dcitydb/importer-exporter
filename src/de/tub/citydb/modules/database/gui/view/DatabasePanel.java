@@ -61,8 +61,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
-import org.citygml4j.geometry.BoundingBox;
-
+import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.Event;
@@ -740,10 +739,10 @@ public class DatabasePanel extends JPanel implements EventHandler {
 							}					
 						}
 
-						double xmin = bbox.getLowerCorner().getX();
-						double ymin = bbox.getLowerCorner().getY();
-						double xmax = bbox.getUpperCorner().getX();
-						double ymax = bbox.getUpperCorner().getY();
+						double xmin = bbox.getLowerLeftCorner().getX();
+						double ymin = bbox.getLowerLeftCorner().getY();
+						double xmax = bbox.getUpperRightCorner().getX();
+						double ymax = bbox.getUpperRightCorner().getY();
 
 						if (xmin != Double.MAX_VALUE && ymin != Double.MAX_VALUE &&
 								ymin != -Double.MAX_VALUE && ymax != -Double.MAX_VALUE) {						

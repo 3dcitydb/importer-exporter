@@ -140,6 +140,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 						doExport();
 					}
 				};
+				thread.setDaemon(true);
 				thread.start();
 			}
 		});
@@ -171,7 +172,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 				timestampText.setMinimumSize(timestampText.getPreferredSize());
 		
 				row2.add(srsComboBoxLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-				GridBagConstraints c = GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5);
+				GridBagConstraints c = GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5);
 				c.gridwidth = 3;
 				row2.add(srsComboBox, c);
 			}

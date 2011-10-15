@@ -49,7 +49,6 @@ import de.tub.citydb.api.config.DatabaseSrs;
 		"operation"
 })
 public class Database {
-	public static final DatabaseSrs DEFAULT_SRS = new DatabaseSrs("", 0, "n/a", "", false);
 	public static final EnumMap<PredefinedSrsName, DatabaseSrs> PREDEFINED_SRS = new EnumMap<PredefinedSrsName, DatabaseSrs>(PredefinedSrsName.class);
 
 	public enum PredefinedSrsName {

@@ -43,7 +43,6 @@ import javax.xml.transform.stream.StreamResult;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.builder.jaxb.xml.io.writer.JAXBModelWriter;
 import org.citygml4j.builder.jaxb.xml.io.writer.JAXBOutputFactory;
-import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.module.Module;
@@ -61,6 +60,7 @@ import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.SingleWorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
@@ -256,10 +256,10 @@ public class Exporter implements EventHandler {
 						String suffix = "";
 
 						BoundingBox bbox = exportFilter.getBoundingBoxFilter().getFilterState();
-						double minX = bbox.getLowerCorner().getX();
-						double minY = bbox.getLowerCorner().getY();
-						double maxX = bbox.getUpperCorner().getX();
-						double maxY = bbox.getUpperCorner().getY();
+						double minX = bbox.getLowerLeftCorner().getX();
+						double minY = bbox.getLowerLeftCorner().getY();
+						double maxX = bbox.getUpperRightCorner().getX();
+						double maxY = bbox.getUpperRightCorner().getY();
 
 						switch (suffixMode) {
 						case XMIN_YMIN:

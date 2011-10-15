@@ -34,7 +34,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import de.tub.citydb.api.config.BoundingBox;
-import de.tub.citydb.config.project.database.Database;
 
 @XmlType(name="FilterBoundingBoxType", propOrder={
 		"mode"
@@ -46,7 +45,6 @@ public class FilterBoundingBox extends BoundingBox {
 	private Boolean active = false;
 
 	public FilterBoundingBox() {
-		setSrs(Database.DEFAULT_SRS);
 	}
 
 	public boolean isSetContainMode() {

@@ -13,7 +13,6 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Locale;
 
-import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
@@ -43,6 +42,7 @@ import de.tub.citydb.util.gui.GuiUtil;
 public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandler, BoundingBoxListener {
 	private final Logger LOG = Logger.getInstance();
 	private final Config config;
+	private boolean isEnabled;
 
 	private JButton map;
 	private JButton copy;
@@ -66,7 +66,8 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);		
 		clipboardHandler = BoundingBoxClipboardHandler.getInstance(config);
-		
+		isEnabled = true;
+
 		init();
 	}
 
@@ -109,12 +110,11 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		paste.setIcon(pasteIcon);
 		paste.setPreferredSize(new Dimension(pasteIcon.getIconWidth() + 6, pasteIcon.getIconHeight() + 6));
 
-		actionPanel.add(map, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));
-		actionPanel.add(copy, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));
-		actionPanel.add(paste, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));
-		actionPanel.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(3,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));			
-		actionPanel.add(srsLabel, GuiUtil.setConstraints(4,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));			
-		actionPanel.add(srsComboBox, GuiUtil.setConstraints(5,0,0.0,0.0,GridBagConstraints.NONE,0,5,0,0));
+		actionPanel.add(map, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,5));
+		actionPanel.add(copy, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,5));
+		actionPanel.add(paste, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,5));
+		actionPanel.add(srsLabel, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,40,0,5));			
+		actionPanel.add(srsComboBox, GuiUtil.setConstraints(4,0,1.0,0.0,GridBagConstraints.BOTH,0,5,0,0));
 
 		// input fields
 		JPanel inputFieldsPanel = new JPanel();
@@ -123,13 +123,13 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		xmax.setPreferredSize(xmin.getPreferredSize());
 		ymin.setPreferredSize(ymax.getPreferredSize());
 		ymax.setPreferredSize(ymin.getPreferredSize());
-		inputFieldsPanel.add(xminLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,0));
-		inputFieldsPanel.add(xmin, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,0));
-		inputFieldsPanel.add(xmaxLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,0,0));
+		inputFieldsPanel.add(xminLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,0,0,5));
+		inputFieldsPanel.add(xmin, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
+		inputFieldsPanel.add(xmaxLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,0,5));
 		inputFieldsPanel.add(xmax, GuiUtil.setConstraints(3,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,0));
-		inputFieldsPanel.add(yminLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,2,0,0,0));
-		inputFieldsPanel.add(ymin, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,5,0,0));
-		inputFieldsPanel.add(ymaxLabel, GuiUtil.setConstraints(2,1,0.0,0.0,GridBagConstraints.NONE,2,10,0,0));
+		inputFieldsPanel.add(yminLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,2,0,0,5));
+		inputFieldsPanel.add(ymin, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,5,0,5));
+		inputFieldsPanel.add(ymaxLabel, GuiUtil.setConstraints(2,1,0.0,0.0,GridBagConstraints.NONE,2,10,0,5));
 		inputFieldsPanel.add(ymax, GuiUtil.setConstraints(3,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,5,0,0));
 
 		setLayout(new GridBagLayout());
@@ -148,11 +148,15 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		// button actions
 		map.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				final MapWindow map = MapWindow.getInstance(BoundingBoxPanelImpl.this, config);
+
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						MapWindow.getInstance(BoundingBoxPanelImpl.this, config).setVisible(true);
+						map.setVisible(true);
 					}
 				});
+
+				map.setBoundingBox(getBoundingBox());
 			}
 		});
 
@@ -170,11 +174,13 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 
 		Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(new FlavorListener() {
 			public void flavorsChanged(FlavorEvent e) {
-				boolean enable = clipboardHandler.containsPossibleBoundingBox();
-
-				paste.setEnabled(enable);
-				for (int i = 0; i < bboxPopups.length; ++i)
-					bboxPopups[i].paste.setEnabled(enable);			}
+				if (isEnabled) {
+					boolean enable = clipboardHandler.containsPossibleBoundingBox();
+					paste.setEnabled(enable);
+					for (int i = 0; i < bboxPopups.length; ++i)
+						bboxPopups[i].paste.setEnabled(enable);			
+				}
+			}
 		});
 	}
 
@@ -209,7 +215,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 			ymin.setValue(bbox.getLowerLeftCorner().getY());
 			xmax.setValue(bbox.getUpperRightCorner().getX());
 			ymax.setValue(bbox.getUpperRightCorner().getY());
-			
+
 			if (bbox.isSetSrs())
 				srsComboBox.setSelectedItem(bbox.getSrs());
 			else
@@ -218,22 +224,23 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 	}
 
 	@Override
-	public void setEnabled(boolean enabled) {
-		super.setEnabled(enabled);
-
-		map.setEnabled(enabled);
-		copy.setEnabled(enabled);
-		paste.setEnabled(enabled ? clipboardHandler.containsPossibleBoundingBox() : false);
-		xminLabel.setEnabled(enabled);
-		xmaxLabel.setEnabled(enabled);
-		yminLabel.setEnabled(enabled);
-		ymaxLabel.setEnabled(enabled);
-		xmin.setEnabled(enabled);
-		xmax.setEnabled(enabled);
-		ymin.setEnabled(enabled);
-		ymax.setEnabled(enabled);
-		srsLabel.setEnabled(enabled);
-		srsComboBox.setEnabled(enabled);
+	public void setEnabled(boolean enable) {
+		super.setEnabled(enable);
+		isEnabled = enable;
+		
+		map.setEnabled(enable);
+		copy.setEnabled(enable);
+		paste.setEnabled(enable ? clipboardHandler.containsPossibleBoundingBox() : false);
+		xminLabel.setEnabled(enable);
+		xmaxLabel.setEnabled(enable);
+		yminLabel.setEnabled(enable);
+		ymaxLabel.setEnabled(enable);
+		xmin.setEnabled(enable);
+		xmax.setEnabled(enable);
+		ymin.setEnabled(enable);
+		ymax.setEnabled(enable);
+		srsLabel.setEnabled(enable);
+		srsComboBox.setEnabled(enable);
 	}
 
 	@Override

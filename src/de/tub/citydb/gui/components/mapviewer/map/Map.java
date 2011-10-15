@@ -88,6 +88,8 @@ public class Map {
 		hintsLabel.setBackground(borderColor);
 		hintsLabel.setForeground(Color.WHITE);
 		hintsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		hintsLabel.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/help.png")));
+		hintsLabel.setIconTextGap(5);
 
 		headerMenu.add(Box.createHorizontalGlue(), GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 0, 0, 0, 0));
 		headerMenu.add(hintsLabel, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.BOTH, 2, 2, 2, 5));

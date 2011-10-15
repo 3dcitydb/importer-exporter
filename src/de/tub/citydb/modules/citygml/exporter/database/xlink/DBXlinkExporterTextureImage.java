@@ -134,7 +134,6 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 			return false;
 		}
 
-		LOG.debug("Exporting texture file: " + fileName);
 		xlinkExporterManager.propagateEvent(counter);
 
 		// read oracle image data type

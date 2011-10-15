@@ -181,6 +181,7 @@ public class ImportPanel extends JPanel {
 						doImport();
 					}
 				};
+				thread.setDaemon(true);
 				thread.start();
 			}
 		});
@@ -192,6 +193,7 @@ public class ImportPanel extends JPanel {
 						doValidate();
 					}
 				};
+				thread.setDaemon(true);
 				thread.start();
 			}
 		});

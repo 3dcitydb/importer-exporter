@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.config.project.database;
 
+import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseMetaData;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.log.Logger;
@@ -60,8 +61,8 @@ public class DBMetaData implements DatabaseMetaData {
 	
 		referenceSystemName = null;
 		isReferenceSystem3D = false;
-		srid = Database.DEFAULT_SRS.getSrid();
-		srsName = Database.DEFAULT_SRS.getSrsName();		
+		srid = DatabaseSrs.DEFAULT.getSrid();
+		srsName = DatabaseSrs.DEFAULT.getSrsName();		
 		versioning = Versioning.OFF;
 	}
 

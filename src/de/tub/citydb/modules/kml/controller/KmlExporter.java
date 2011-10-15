@@ -76,8 +76,6 @@ import net.opengis.kml._2.ViewRefreshModeEnumType;
 import oracle.ord.im.OrdImage;
 
 import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.geometry.BoundingBox;
-import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
@@ -85,6 +83,8 @@ import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.SingleWorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.config.BoundingBox;
+import de.tub.citydb.api.config.BoundingBoxCorner;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
@@ -113,8 +113,8 @@ import de.tub.citydb.modules.kml.database.BalloonTemplateHandler;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
-import de.tub.citydb.modules.kml.util.KMLHeaderWriter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
+import de.tub.citydb.modules.kml.util.KMLHeaderWriter;
 import de.tub.citydb.util.database.DBUtil;
 
 public class KmlExporter implements EventHandler {
@@ -627,8 +627,8 @@ public class KmlExporter implements EventHandler {
 		TilingMode tilingMode = bbox.getTiling().getMode();
 		double autoTileSideLength = config.getProject().getKmlExporter().getAutoTileSideLength();
 
-		tileMatrix = new BoundingBox(new Point(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(), 0),
-										new Point(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY(), 0));
+		tileMatrix = new BoundingBox(new BoundingBoxCorner(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY()),
+										new BoundingBoxCorner(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY()));
 
 		int dbSrid = dbPool.getActiveConnection().getMetaData().getSrid();
 		if (bbox.getSrs().getSrid() != 0 && bbox.getSrs().getSrid() != dbSrid) {
@@ -645,8 +645,8 @@ public class KmlExporter implements EventHandler {
 		}
 		else if (tilingMode == TilingMode.AUTOMATIC) {
 			// approximate
-			rows = (int)((tileMatrix.getUpperCorner().getY() - tileMatrix.getLowerCorner().getY()) / autoTileSideLength) + 1;
-			columns = (int)((tileMatrix.getUpperCorner().getX() - tileMatrix.getLowerCorner().getX()) / autoTileSideLength) + 1;
+			rows = (int)((tileMatrix.getUpperRightCorner().getY() - tileMatrix.getLowerLeftCorner().getY()) / autoTileSideLength) + 1;
+			columns = (int)((tileMatrix.getUpperRightCorner().getX() - tileMatrix.getLowerLeftCorner().getX()) / autoTileSideLength) + 1;
 			bbox.getTiling().setRows(rows);
 			bbox.getTiling().setColumns(columns);
 		}
@@ -656,8 +656,8 @@ public class KmlExporter implements EventHandler {
 		}
 
 		// must be done like this to avoid non-matching tile limits
-		wgs84DeltaLatitude = (wgs84TileMatrix.getUpperCorner().getY() - wgs84TileMatrix.getLowerCorner().getY()) / rows;
-		wgs84DeltaLongitude = (wgs84TileMatrix.getUpperCorner().getX() - wgs84TileMatrix.getLowerCorner().getX()) / columns;
+		wgs84DeltaLatitude = (wgs84TileMatrix.getUpperRightCorner().getY() - wgs84TileMatrix.getLowerLeftCorner().getY()) / rows;
+		wgs84DeltaLongitude = (wgs84TileMatrix.getUpperRightCorner().getX() - wgs84TileMatrix.getLowerLeftCorner().getX()) / columns;
 		
 		return rows*columns;
 	}
@@ -711,8 +711,8 @@ public class KmlExporter implements EventHandler {
 			document.setOpen(true);
 			document.setName(filename);
 			LookAtType lookAtType = kmlFactory.createLookAtType();
-			lookAtType.setLongitude((wgs84TileMatrix.getUpperCorner().getX() + wgs84TileMatrix.getLowerCorner().getX())/2);
-			lookAtType.setLatitude((wgs84TileMatrix.getLowerCorner().getY() + (wgs84TileMatrix.getUpperCorner().getY() - wgs84TileMatrix.getLowerCorner().getY())/3));
+			lookAtType.setLongitude((wgs84TileMatrix.getUpperRightCorner().getX() + wgs84TileMatrix.getLowerLeftCorner().getX())/2);
+			lookAtType.setLatitude((wgs84TileMatrix.getLowerLeftCorner().getY() + (wgs84TileMatrix.getUpperRightCorner().getY() - wgs84TileMatrix.getLowerLeftCorner().getY())/3));
 			lookAtType.setAltitude(0.0);
 			lookAtType.setHeading(0.0);
 			lookAtType.setTilt(60.0);
@@ -752,11 +752,11 @@ public class KmlExporter implements EventHandler {
 				placemarkType.setStyleUrl("#" + frameStyleType.getId());
 				LineStringType lineStringType = kmlFactory.createLineStringType();
 				lineStringType.setTessellate(true);
-				lineStringType.getCoordinates().add("" + (wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5));
-				lineStringType.getCoordinates().add(" " + (wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getUpperCorner().getY() + BORDER_GAP * .5));
-				lineStringType.getCoordinates().add(" " + (wgs84TileMatrix.getUpperCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getUpperCorner().getY() + BORDER_GAP * .5));
-				lineStringType.getCoordinates().add(" " + (wgs84TileMatrix.getUpperCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5));
-				lineStringType.getCoordinates().add(" " + (wgs84TileMatrix.getLowerCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerCorner().getY() - BORDER_GAP * .5));
+				lineStringType.getCoordinates().add("" + (wgs84TileMatrix.getLowerLeftCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerLeftCorner().getY() - BORDER_GAP * .5));
+				lineStringType.getCoordinates().add(" " + (wgs84TileMatrix.getLowerLeftCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getUpperRightCorner().getY() + BORDER_GAP * .5));
+				lineStringType.getCoordinates().add(" " + (wgs84TileMatrix.getUpperRightCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getUpperRightCorner().getY() + BORDER_GAP * .5));
+				lineStringType.getCoordinates().add(" " + (wgs84TileMatrix.getUpperRightCorner().getX() + BORDER_GAP) + "," + (wgs84TileMatrix.getLowerLeftCorner().getY() - BORDER_GAP * .5));
+				lineStringType.getCoordinates().add(" " + (wgs84TileMatrix.getLowerLeftCorner().getX() - BORDER_GAP) + "," + (wgs84TileMatrix.getLowerLeftCorner().getY() - BORDER_GAP * .5));
 				placemarkType.setAbstractGeometryGroup(kmlFactory.createLineString(lineStringType));
 				
 				marshaller.marshal(kmlFactory.createPlacemark(placemarkType), tmp);
@@ -767,10 +767,10 @@ public class KmlExporter implements EventHandler {
 				for (int j = 0; j < columns; j++) {
 
 					// must be done like this to avoid non-matching tile limits
-					double wgs84TileSouthLimit = wgs84TileMatrix.getLowerCorner().getY() + (i * wgs84DeltaLatitude); 
-					double wgs84TileNorthLimit = wgs84TileMatrix.getLowerCorner().getY() + ((i+1) * wgs84DeltaLatitude); 
-					double wgs84TileWestLimit = wgs84TileMatrix.getLowerCorner().getX() + (j * wgs84DeltaLongitude); 
-					double wgs84TileEastLimit = wgs84TileMatrix.getLowerCorner().getX() + ((j+1) * wgs84DeltaLongitude); 
+					double wgs84TileSouthLimit = wgs84TileMatrix.getLowerLeftCorner().getY() + (i * wgs84DeltaLatitude); 
+					double wgs84TileNorthLimit = wgs84TileMatrix.getLowerLeftCorner().getY() + ((i+1) * wgs84DeltaLatitude); 
+					double wgs84TileWestLimit = wgs84TileMatrix.getLowerLeftCorner().getX() + (j * wgs84DeltaLongitude); 
+					double wgs84TileEastLimit = wgs84TileMatrix.getLowerLeftCorner().getX() + ((j+1) * wgs84DeltaLongitude); 
 
 					// tileName should not contain special characters,
 					// since it will be used as filename for all displayLevel files
@@ -1085,10 +1085,10 @@ public class KmlExporter implements EventHandler {
 			saxBuffer = new SAXEventBuffer();
 
 			// must be done like this to avoid non-matching tile limits
-			double wgs84TileSouthLimit = wgs84TileMatrix.getLowerCorner().getY() + (i * wgs84DeltaLatitude); 
-			double wgs84TileNorthLimit = wgs84TileMatrix.getLowerCorner().getY() + ((i+1) * wgs84DeltaLatitude); 
-			double wgs84TileWestLimit = wgs84TileMatrix.getLowerCorner().getX() + (j * wgs84DeltaLongitude); 
-			double wgs84TileEastLimit = wgs84TileMatrix.getLowerCorner().getX() + ((j+1) * wgs84DeltaLongitude); 
+			double wgs84TileSouthLimit = wgs84TileMatrix.getLowerLeftCorner().getY() + (i * wgs84DeltaLatitude); 
+			double wgs84TileNorthLimit = wgs84TileMatrix.getLowerLeftCorner().getY() + ((i+1) * wgs84DeltaLatitude); 
+			double wgs84TileWestLimit = wgs84TileMatrix.getLowerLeftCorner().getX() + (j * wgs84DeltaLongitude); 
+			double wgs84TileEastLimit = wgs84TileMatrix.getLowerLeftCorner().getX() + ((j+1) * wgs84DeltaLongitude); 
 
 			PlacemarkType placemark = kmlFactory.createPlacemarkType();
 			placemark.setName("Tile border");

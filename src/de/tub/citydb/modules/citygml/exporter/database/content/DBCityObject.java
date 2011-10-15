@@ -43,7 +43,6 @@ import javax.xml.datatype.DatatypeFactory;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.geometry.BoundingBox;
 import org.citygml4j.geometry.Point;
 import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
 import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
@@ -67,6 +66,7 @@ import org.citygml4j.model.citygml.generics.UriAttribute;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
+import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
@@ -343,10 +343,10 @@ public class DBCityObject implements DBExporter {
 				if (isTopLevelObject && setTileInfoAsGenericAttribute) {
 					String value;
 
-					double minX = activeTile.getLowerCorner().getX();
-					double minY = activeTile.getLowerCorner().getY();
-					double maxX = activeTile.getUpperCorner().getX();
-					double maxY = activeTile.getUpperCorner().getY();
+					double minX = activeTile.getLowerLeftCorner().getX();
+					double minY = activeTile.getLowerLeftCorner().getY();
+					double maxX = activeTile.getUpperRightCorner().getX();
+					double maxY = activeTile.getUpperRightCorner().getY();
 
 					switch (tiling.getGenericAttributeValue()) {
 					case XMIN_YMIN:

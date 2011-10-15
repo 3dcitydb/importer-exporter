@@ -41,6 +41,10 @@ public class BoundingBoxCorner {
 	
 	public BoundingBoxCorner() {
 	}
+	
+	public BoundingBoxCorner(Double value) {
+		x = y = value;
+	}
 
 	public BoundingBoxCorner(Double x, Double y) {
 		this.x = x;
