@@ -40,7 +40,6 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.text.html.HTMLDocument;
 
@@ -77,10 +76,12 @@ import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent;
 import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent.ReverseGeocoderStatus;
 import de.tub.citydb.gui.components.mapviewer.validation.BoundingBoxValidator;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class MapWindow extends JDialog implements EventHandler {
+	private final Logger LOG = Logger.getInstance();
 	private static MapWindow instance = null;
 	public static DecimalFormat LAT_LON_FORMATTER = new DecimalFormat("##0.0000000", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
@@ -113,7 +114,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 	private JLabel bboxTitel;
 	private JLabel reverseTitle;
-	private JTextField reverseInfo;
+	private JTextPane reverseInfo;
 	private JTextPane reverseText;
 	private JLabel reverseSearchProgress;
 
@@ -135,7 +136,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		clipboardHandler = BoundingBoxClipboardHandler.getInstance(config);
 		validator = new BoundingBoxValidator(this, config);
-		
+
 		init();
 		doTranslation();
 	}
@@ -167,7 +168,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		map = new Map(config);
 		JPanel top = new JPanel();
 		JPanel left = new JPanel();
-		
+
 		// map
 		map.getMapKit().setBorder(BorderFactory.createMatteBorder(1, 2, 0, 0, borderColor));
 
@@ -238,7 +239,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		minY.setMinimumSize(dim);
 		maxX.setMinimumSize(dim);
 		maxY.setMinimumSize(dim);
-		
+
 		gridBagConstraints = GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 5, 2, 0, 2);
 		gridBagConstraints.gridwidth = 2;
 		gridBagConstraints.anchor = GridBagConstraints.CENTER;		
@@ -311,10 +312,13 @@ public class MapWindow extends JDialog implements EventHandler {
 				"body { font-family: " + reverseText.getFont().getFamily() + "; " + "font-size: " + reverseText.getFont().getSize() + "pt; }");
 		reverseText.setVisible(false);
 
-		reverseInfo = new JTextField();
+		reverseInfo = new JTextPane();
 		reverseInfo.setBorder(BorderFactory.createEmptyBorder());
-		reverseInfo.setOpaque(false);
 		reverseInfo.setEditable(false);
+		reverseInfo.setOpaque(false);
+		reverseInfo.setContentType("text/html");
+		((HTMLDocument)reverseInfo.getDocument()).getStyleSheet().addRule(
+				"body { font-family: " + reverseText.getFont().getFamily() + "; " + "font-size: " + reverseInfo.getFont().getSize() + "pt; }");
 
 		Box reverseTitelBox = Box.createHorizontalBox();
 		reverseTitelBox.add(reverseTitle);
@@ -330,6 +334,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		left.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 2, 0, 1, GridBagConstraints.VERTICAL, 5, 0, 2, 0));
 
 		left.setMinimumSize(left.getPreferredSize());
+		left.setPreferredSize(left.getMinimumSize());
 
 		// actions
 		goButton.addActionListener(new ActionListener() {
@@ -523,7 +528,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		Thread t = new Thread() {
 			public void run() {
 				if (bbox != null) {
-					switch (validator.isValid(bbox)) {
+					switch (validator.validate(bbox)) {
 					case CANCEL:
 						dispose();
 						break;
@@ -556,6 +561,13 @@ public class MapWindow extends JDialog implements EventHandler {
 			bbox.getLowerLeftCorner().setY(minY.isEditValid() && minY.getValue() != null ? ((Number)minY.getValue()).doubleValue() : null);
 			bbox.getUpperRightCorner().setX(maxX.isEditValid() && maxX.getValue() != null ? ((Number)maxX.getValue()).doubleValue() : null);
 			bbox.getUpperRightCorner().setY(maxY.isEditValid() && maxY.getValue() != null ? ((Number)maxY.getValue()).doubleValue() : null);
+
+			for (DatabaseSrs srs : config.getProject().getDatabase().getReferenceSystems()) {
+				if (srs.getSrid() == Database.PREDEFINED_SRS.get(Database.PredefinedSrsName.WGS84_2D).getSrid()) {
+					bbox.setSrs(srs);
+					break;
+				}
+			}
 
 			clipboardHandler.putBoundingBox(bbox);			
 		} catch (ParseException e) {
@@ -637,7 +649,17 @@ public class MapWindow extends JDialog implements EventHandler {
 					Object[] args = new Object[]{ 0 };
 					resultMsg = MessageFormat.format(text, args);
 				} else {
-					resultMsg = Internal.I18N.getString("map.geocoder.search.fatal") + ": " + response.getStatus();
+					switch (response.getStatus()) {
+					case OVER_QUERY_LIMIT:
+						resultMsg = Internal.I18N.getString("map.geocoder.search.overLimit");
+						break;		
+					case REQUEST_DENIED:
+						resultMsg = Internal.I18N.getString("map.geocoder.search.denied");
+						break;		
+					default:
+						LOG.error("Fatal service response from geocoder: " + response.getException().getMessage());
+						resultMsg = Internal.I18N.getString("map.geocoder.search.fatal");
+					}					
 				}
 
 				resultMsg += " (" + ((System.currentTimeMillis() - time) / 1000.0) + " " + Internal.I18N.getString("map.geocoder.search.sec") + ")";
@@ -691,9 +713,12 @@ public class MapWindow extends JDialog implements EventHandler {
 	}
 
 	private void updateHttpProxySettings() {
-		HttpProxySettings proxy = new HttpProxySettings();;
-		proxy.setProxy(config.getProject().getGlobal().getHttpProxy().getProxy());
-		proxy.setCredentials(config.getProject().getGlobal().getHttpProxy().getBase64EncodedCredentials());
+		HttpProxySettings proxy = new HttpProxySettings();
+
+		if (config.getProject().getGlobal().getHttpProxy().isSetUseProxy()) {
+			proxy.setProxy(config.getProject().getGlobal().getHttpProxy().getProxy());
+			proxy.setCredentials(config.getProject().getGlobal().getHttpProxy().getBase64EncodedCredentials());
+		}
 
 		map.getMapKit().getMainMap().getTileFactory().getInfo().setHttpProxySettings(proxy);
 		map.getMapKit().getMiniMap().getTileFactory().getInfo().setHttpProxySettings(proxy);
@@ -712,7 +737,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		pasteBBox.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.paste"));
 		reverseTitle.setText(Internal.I18N.getString("map.reverseGeocoder.label"));
 		reverseInfo.setText(Internal.I18N.getString("map.reverseGeocoder.hint.label"));
-		
+
 		map.doTranslation();		
 		for (int i = 0; i < bboxPopups.length; ++i)
 			bboxPopups[i].doTranslation();
@@ -752,19 +777,19 @@ public class MapWindow extends JDialog implements EventHandler {
 				reverseSearchProgress.setIcon(loadIcon);
 			} else if (e.getStatus() == ReverseGeocoderStatus.RESULT) {
 				Location location = e.getLocation();
-				StringBuilder rest = new StringBuilder();
+				StringBuilder result = new StringBuilder();
 				String[] tokens = location.getFormattedAddress().split(", ");
 				for (int i = 0; i < tokens.length; ++i) {
 					if (i == 0) 
-						rest.append("<b>").append(tokens[i]).append("</b>");
+						result.append("<b>").append(tokens[i]).append("</b>");
 					else
-						rest.append(tokens[i]);
+						result.append(tokens[i]);
 
 					if (i < tokens.length - 1)
-						rest.append("<br>");
+						result.append("<br>");
 				}
 
-				reverseText.setText(rest.toString());
+				reverseText.setText(result.toString());
 				reverseInfo.setText(LAT_LON_FORMATTER.format(location.getPosition().getLatitude()) + ", " + 
 						LAT_LON_FORMATTER.format(location.getPosition().getLongitude()));
 				reverseText.setVisible(true);
@@ -772,7 +797,22 @@ public class MapWindow extends JDialog implements EventHandler {
 				reverseSearchProgress.setIcon(null);
 			} else if (e.getStatus() == ReverseGeocoderStatus.ERROR) {
 				GeocoderResponse response = e.getResponse();
-				reverseInfo.setText(response.getStatus().toString());
+
+				switch (response.getStatus()) {
+				case ZERO_RESULTS:
+					reverseInfo.setText(Internal.I18N.getString("map.reverseGeocoder.search.noResult"));
+					break;
+				case OVER_QUERY_LIMIT:
+					reverseInfo.setText(Internal.I18N.getString("map.geocoder.search.overLimit"));
+					break;		
+				case REQUEST_DENIED:
+					reverseInfo.setText(Internal.I18N.getString("map.geocoder.search.denied"));
+					break;		
+				default:
+					LOG.error("Fatal service response from reverse geocoder: " + response.getException().getMessage());
+					reverseInfo.setText(Internal.I18N.getString("map.geocoder.search.fatal"));
+				}
+
 				reverseText.setVisible(false);
 				reverseInfo.setVisible(true);
 				reverseSearchProgress.setIcon(null);

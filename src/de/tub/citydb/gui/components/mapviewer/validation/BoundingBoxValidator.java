@@ -57,7 +57,7 @@ public class BoundingBoxValidator {
 		dbController = ObjectRegistry.getInstance().getDatabaseController();
 	}
 
-	public ValidationResult isValid(final BoundingBox bbox) {
+	public ValidationResult validate(final BoundingBox bbox) {
 		boolean isDBConnected = dbController.isConnected();
 
 		// invalid bbox
@@ -238,8 +238,8 @@ public class BoundingBoxValidator {
 			JLabel lowerLabel = new JLabel("Xmin / Ymin");
 			JLabel upperLabel = new JLabel("Xmax / Ymax");
 
-			JLabel upper = new JLabel(String.valueOf(bbox.getLowerLeftCorner().getX()) + " / " + String.valueOf(bbox.getLowerLeftCorner().getY()));
-			JLabel lower = new JLabel(String.valueOf(bbox.getUpperRightCorner().getX()) + " / " + String.valueOf(bbox.getUpperRightCorner().getY()));
+			JLabel lower = new JLabel(String.valueOf(bbox.getLowerLeftCorner().getX()) + " / " + String.valueOf(bbox.getLowerLeftCorner().getY()));
+			JLabel upper = new JLabel(String.valueOf(bbox.getUpperRightCorner().getX()) + " / " + String.valueOf(bbox.getUpperRightCorner().getY()));
 
 			bboxPanel.add(title, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,2,0,5));
 			bboxPanel.add(new JSeparator(JSeparator.HORIZONTAL), GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,10,0,5));
