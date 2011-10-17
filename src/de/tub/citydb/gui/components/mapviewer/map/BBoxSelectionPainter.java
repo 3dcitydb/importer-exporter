@@ -97,7 +97,7 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 			if (outOfBounds && isThreadRunning.compareAndSet(false, true)) {
 				Thread t = new Thread() {
 					public void run() {
-						while (outOfBounds && selectedArea != null) {
+						while (outOfBounds && selectedArea != null && start != null) {
 							Point2D center = map.getCenter();
 							Rectangle bounds = map.getBounds();
 							bounds.grow(-shrinkViewPort, -shrinkViewPort);
