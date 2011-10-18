@@ -26,6 +26,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -41,6 +42,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.text.html.HTMLDocument;
 
 import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
@@ -75,6 +78,7 @@ import de.tub.citydb.gui.components.mapviewer.map.event.MapEvents;
 import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent;
 import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent.ReverseGeocoderStatus;
 import de.tub.citydb.gui.components.mapviewer.validation.BoundingBoxValidator;
+import de.tub.citydb.gui.components.mapviewer.validation.BoundingBoxValidator.ValidationResult;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -525,10 +529,14 @@ public class MapWindow extends JDialog implements EventHandler {
 	}
 
 	public void setBoundingBox(final BoundingBox bbox) {
-		Thread t = new Thread() {
-			public void run() {
-				if (bbox != null) {
-					switch (validator.validate(bbox)) {
+		new SwingWorker<ValidationResult, Void>() {
+			protected ValidationResult doInBackground() throws Exception {
+				return validator.validate(bbox);
+			}
+
+			protected void done() {
+				try {
+					switch (get()) {
 					case CANCEL:
 						dispose();
 						break;
@@ -542,11 +550,13 @@ public class MapWindow extends JDialog implements EventHandler {
 						maxY.setValue(bbox.getUpperRightCorner().getY());
 						showBoundingBox();
 					}
+				} catch (InterruptedException e) {
+					//
+				} catch (ExecutionException e) {
+					//
 				}
 			}
-		};
-		t.setDaemon(true);
-		t.start();
+		}.execute();
 	}
 
 	private void copyBoundingBoxToClipboard() {
@@ -622,53 +632,62 @@ public class MapWindow extends JDialog implements EventHandler {
 		searchResult.setText("");
 		searchResult.repaint();
 
-		Thread t = new Thread() {
-			public void run() {
-				long time = System.currentTimeMillis();
+		final long time = System.currentTimeMillis();
+		new SwingWorker<GeocoderResponse, Void>() {
+			protected GeocoderResponse doInBackground() throws Exception {
 				GeocoderResponse response = Geocoder.parseLatLon(searchString);
 				if (response == null)
 					response = Geocoder.geocode(searchString, config.getProject().getGlobal().getHttpProxy());
 
-				String resultMsg;
-				if (response.getStatus() == StatusCode.OK) {
-					searchBox.removeAllItems();
-					for (Location tmp : response.getLocations())
-						searchBox.addItem(tmp);
-
-					searchBox.setSelectedItem(response.getLocations()[0]);
-
-					if (response.getType() == ResponseType.LAT_LON)
-						resultMsg = Internal.I18N.getString("map.geocoder.search.latLon");
-					else {
-						String text = Internal.I18N.getString("map.geocoder.search.result");
-						Object[] args = new Object[]{ response.getLocations().length };
-						resultMsg = MessageFormat.format(text, args);
-					}
-				} else if (response.getStatus() == StatusCode.ZERO_RESULTS) {
-					String text = Internal.I18N.getString("map.geocoder.search.result");
-					Object[] args = new Object[]{ 0 };
-					resultMsg = MessageFormat.format(text, args);
-				} else {
-					switch (response.getStatus()) {
-					case OVER_QUERY_LIMIT:
-						resultMsg = Internal.I18N.getString("map.geocoder.search.overLimit");
-						break;		
-					case REQUEST_DENIED:
-						resultMsg = Internal.I18N.getString("map.geocoder.search.denied");
-						break;		
-					default:
-						LOG.error("Fatal service response from geocoder: " + response.getException().getMessage());
-						resultMsg = Internal.I18N.getString("map.geocoder.search.fatal");
-					}					
-				}
-
-				resultMsg += " (" + ((System.currentTimeMillis() - time) / 1000.0) + " " + Internal.I18N.getString("map.geocoder.search.sec") + ")";
-				searchResult.setText(resultMsg);
-				searchResult.setIcon(null);
+				return response;
 			}
-		};
-		t.setDaemon(true);
-		t.start();		
+
+			protected void done() {
+				try {
+					GeocoderResponse response = get();
+					String resultMsg;
+					if (response.getStatus() == StatusCode.OK) {
+						searchBox.removeAllItems();
+						for (Location tmp : response.getLocations())
+							searchBox.addItem(tmp);
+
+						searchBox.setSelectedItem(response.getLocations()[0]);
+
+						if (response.getType() == ResponseType.LAT_LON)
+							resultMsg = Internal.I18N.getString("map.geocoder.search.latLon");
+						else {
+							String text = Internal.I18N.getString("map.geocoder.search.result");
+							Object[] args = new Object[]{ response.getLocations().length };
+							resultMsg = MessageFormat.format(text, args);
+						}
+					} else if (response.getStatus() == StatusCode.ZERO_RESULTS) {
+						String text = Internal.I18N.getString("map.geocoder.search.result");
+						Object[] args = new Object[]{ 0 };
+						resultMsg = MessageFormat.format(text, args);
+					} else {
+						switch (response.getStatus()) {
+						case OVER_QUERY_LIMIT:
+							resultMsg = Internal.I18N.getString("map.geocoder.search.overLimit");
+							break;		
+						case REQUEST_DENIED:
+							resultMsg = Internal.I18N.getString("map.geocoder.search.denied");
+							break;		
+						default:
+							LOG.error("Fatal service response from geocoder: " + response.getException().getMessage());
+							resultMsg = Internal.I18N.getString("map.geocoder.search.fatal");
+						}					
+					}
+
+					resultMsg += " (" + ((System.currentTimeMillis() - time) / 1000.0) + " " + Internal.I18N.getString("map.geocoder.search.sec") + ")";
+					searchResult.setText(resultMsg);
+					searchResult.setIcon(null);
+				} catch (InterruptedException e) {
+					//
+				} catch (ExecutionException e) {
+					//
+				}
+			}
+		}.execute();
 	}
 
 	private void setSizeOnScreen() {
@@ -751,33 +770,47 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		else if (event.getEventType() == MapEvents.BOUNDING_BOX_SELECTION) {
 			BoundingBoxSelection e = (BoundingBoxSelection)event;
-			GeoPosition[] bbox = e.getBoundingBox();
+			final GeoPosition[] bbox = e.getBoundingBox();
 
-			minX.setValue(bbox[0].getLatitude());
-			minY.setValue(bbox[0].getLongitude());
-			maxX.setValue(bbox[1].getLatitude());
-			maxY.setValue(bbox[1].getLongitude());
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					minX.setValue(bbox[0].getLatitude());
+					minY.setValue(bbox[0].getLongitude());
+					maxX.setValue(bbox[1].getLatitude());
+					maxY.setValue(bbox[1].getLongitude());				
+				}
+			});
 		}
 
 		else if (event.getEventType() == MapEvents.MAP_BOUNDS) {
 			MapBoundsSelection e = (MapBoundsSelection)event;
-			GeoPosition[] bbox = e.getBoundingBox();
+			final GeoPosition[] bbox = e.getBoundingBox();
 
-			minX.setValue(bbox[0].getLongitude());
-			minY.setValue(bbox[0].getLatitude());
-			maxX.setValue(bbox[1].getLongitude());
-			maxY.setValue(bbox[1].getLatitude());
-			map.getSelectionPainter().setSelectedArea(bbox[0], bbox[1]);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					minX.setValue(bbox[0].getLongitude());
+					minY.setValue(bbox[0].getLatitude());
+					maxX.setValue(bbox[1].getLongitude());
+					maxY.setValue(bbox[1].getLatitude());
+					map.getSelectionPainter().setSelectedArea(bbox[0], bbox[1]);				
+				}
+			});	
 		}
 
 		else if (event.getEventType() == MapEvents.REVERSE_GEOCODER) {
 			ReverseGeocoderEvent e = (ReverseGeocoderEvent)event;
 
 			if (e.getStatus() == ReverseGeocoderStatus.SEARCHING) {
-				reverseSearchProgress.setIcon(loadIcon);
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						reverseSearchProgress.setIcon(loadIcon);						
+					}
+				});
+
 			} else if (e.getStatus() == ReverseGeocoderStatus.RESULT) {
-				Location location = e.getLocation();
-				StringBuilder result = new StringBuilder();
+				final Location location = e.getLocation();
+				final StringBuilder result = new StringBuilder();
+
 				String[] tokens = location.getFormattedAddress().split(", ");
 				for (int i = 0; i < tokens.length; ++i) {
 					if (i == 0) 
@@ -789,33 +822,45 @@ public class MapWindow extends JDialog implements EventHandler {
 						result.append("<br>");
 				}
 
-				reverseText.setText(result.toString());
-				reverseInfo.setText(LAT_LON_FORMATTER.format(location.getPosition().getLatitude()) + ", " + 
-						LAT_LON_FORMATTER.format(location.getPosition().getLongitude()));
-				reverseText.setVisible(true);
-				reverseInfo.setVisible(true);
-				reverseSearchProgress.setIcon(null);
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						reverseText.setText(result.toString());
+						reverseInfo.setText(LAT_LON_FORMATTER.format(location.getPosition().getLatitude()) + ", " + 
+								LAT_LON_FORMATTER.format(location.getPosition().getLongitude()));
+						reverseText.setVisible(true);
+						reverseInfo.setVisible(true);
+						reverseSearchProgress.setIcon(null);
+					}
+				});
+
 			} else if (e.getStatus() == ReverseGeocoderStatus.ERROR) {
 				GeocoderResponse response = e.getResponse();
+				final String info;
 
 				switch (response.getStatus()) {
 				case ZERO_RESULTS:
-					reverseInfo.setText(Internal.I18N.getString("map.reverseGeocoder.search.noResult"));
+					info = Internal.I18N.getString("map.reverseGeocoder.search.noResult");
 					break;
 				case OVER_QUERY_LIMIT:
-					reverseInfo.setText(Internal.I18N.getString("map.geocoder.search.overLimit"));
+					info = Internal.I18N.getString("map.geocoder.search.overLimit");
 					break;		
 				case REQUEST_DENIED:
-					reverseInfo.setText(Internal.I18N.getString("map.geocoder.search.denied"));
+					info = Internal.I18N.getString("map.geocoder.search.denied");
 					break;		
 				default:
 					LOG.error("Fatal service response from reverse geocoder: " + response.getException().getMessage());
-					reverseInfo.setText(Internal.I18N.getString("map.geocoder.search.fatal"));
+					info = Internal.I18N.getString("map.geocoder.search.fatal");
 				}
 
-				reverseText.setVisible(false);
-				reverseInfo.setVisible(true);
-				reverseSearchProgress.setIcon(null);
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						reverseInfo.setText(info);
+						reverseText.setVisible(false);
+						reverseInfo.setVisible(true);
+						reverseSearchProgress.setIcon(null);
+					}
+				});
+
 			}
 		}
 	}

@@ -8,9 +8,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingWorker;
 
 import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
@@ -96,59 +98,66 @@ public class MapPopupMenu extends JPopupMenu {
 
 		geocode.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Thread t = new Thread() {
-					public void run() {
-						eventDispatcher.triggerEvent(new ReverseGeocoderEvent(MapPopupMenu.this));
+				eventDispatcher.triggerEvent(new ReverseGeocoderEvent(MapPopupMenu.this));
+				final GeoPosition position = map.convertPointToGeoPosition(mousePosition);
 
-						GeoPosition position = map.convertPointToGeoPosition(mousePosition);
-						final GeocoderResponse response = Geocoder.geocode(position, config.getProject().getGlobal().getHttpProxy());
+				new SwingWorker<GeocoderResponse, Void>() {
+					protected GeocoderResponse doInBackground() throws Exception {
+						return Geocoder.geocode(position, config.getProject().getGlobal().getHttpProxy());
+					}
 
-						if (response.getStatus() == StatusCode.OK) {
-							int index;
-
-							for (index = 0; index < response.getLocations().length; ++index) {
-								Location tmp = response.getLocations()[index];
-
-								Point2D southWest = map.convertGeoPositionToPoint(tmp.getViewPort().getSouthWest());
-								Rectangle2D sizeOnScreen = new Rectangle.Double(southWest.getX(), southWest.getY(), 0, 0);
-								sizeOnScreen.add(map.convertGeoPositionToPoint(tmp.getViewPort().getNorthEast()));
-
-								if (tmp.getResultTypes().contains(ResultType.POSTAL_CODE))
-									continue;
-
-								if (sizeOnScreen.getHeight() * sizeOnScreen.getWidth() >= 500)
-									break;
-							}
-
-							if (index == response.getLocations().length)
-								--index;
-
-							final Location location = response.getLocations()[index];
-							Set<GeoPosition> set = new HashSet<GeoPosition>(2);
-							set.add(location.getPosition());
-							set.add(position);
-							map.calculateZoomFrom(set);
-
-							WaypointType type = location.getLocationType() == LocationType.ROOFTOP ? 
-									WaypointType.PRECISE : WaypointType.APPROXIMATE;
-
-							mapViewer.getWaypointPainter().showWaypoints(
-									new DefaultWaypoint(position, WaypointType.REVERSE),
-									new DefaultWaypoint(location.getPosition(), type));
-							map.repaint();
-
-							eventDispatcher.triggerEvent(new ReverseGeocoderEvent(location, MapPopupMenu.this));
-
-						} else {
-							mapViewer.getWaypointPainter().clearWaypoints();
-							map.repaint();
+					protected void done() {
+						try {
+							GeocoderResponse response = get();
 							
-							eventDispatcher.triggerEvent(new ReverseGeocoderEvent(response, MapPopupMenu.this));
+							if (response.getStatus() == StatusCode.OK) {
+								int index;
+
+								for (index = 0; index < response.getLocations().length; ++index) {
+									Location tmp = response.getLocations()[index];
+
+									Point2D southWest = map.convertGeoPositionToPoint(tmp.getViewPort().getSouthWest());
+									Rectangle2D sizeOnScreen = new Rectangle.Double(southWest.getX(), southWest.getY(), 0, 0);
+									sizeOnScreen.add(map.convertGeoPositionToPoint(tmp.getViewPort().getNorthEast()));
+
+									if (tmp.getResultTypes().contains(ResultType.POSTAL_CODE))
+										continue;
+
+									if (sizeOnScreen.getHeight() * sizeOnScreen.getWidth() >= 500)
+										break;
+								}
+
+								if (index == response.getLocations().length)
+									--index;
+
+								final Location location = response.getLocations()[index];
+								Set<GeoPosition> set = new HashSet<GeoPosition>(2);
+								set.add(location.getPosition());
+								set.add(position);
+								map.calculateZoomFrom(set);
+
+								WaypointType type = location.getLocationType() == LocationType.ROOFTOP ? 
+										WaypointType.PRECISE : WaypointType.APPROXIMATE;
+
+								mapViewer.getWaypointPainter().showWaypoints(
+										new DefaultWaypoint(position, WaypointType.REVERSE),
+										new DefaultWaypoint(location.getPosition(), type));
+								map.repaint();
+
+								eventDispatcher.triggerEvent(new ReverseGeocoderEvent(location, MapPopupMenu.this));
+							} else {
+								mapViewer.getWaypointPainter().clearWaypoints();
+								map.repaint();
+								
+								eventDispatcher.triggerEvent(new ReverseGeocoderEvent(response, MapPopupMenu.this));
+							}
+						} catch (InterruptedException e) {
+							//
+						} catch (ExecutionException e) {
+							//
 						}
 					}
-				};
-				t.setDaemon(true);
-				t.start();
+				}.execute();
 			}
 		});
 
