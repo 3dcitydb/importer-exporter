@@ -780,9 +780,9 @@ public class Building {
     	double currentDistancePow2;
     	while (vertexInfoIterator != null) {
     		if (vertexInfoIterator.getTexCoords(surfaceId) != null) {
-    			currentDistancePow2 = Math.pow(x - vertexInfoIterator.getX(), 2) + 
-    								  Math.pow(y - vertexInfoIterator.getY(), 2) +
-    								  Math.pow(z - vertexInfoIterator.getZ(), 2);
+    			currentDistancePow2 = Math.pow(x - (float)vertexInfoIterator.getX(), 2) + 
+				  					  Math.pow(y - (float)vertexInfoIterator.getY(), 2) +
+				  					  Math.pow(z - (float)vertexInfoIterator.getZ(), 2);
     			if (currentDistancePow2 < distancePow2) {
     				distancePow2 = currentDistancePow2;
     				result = vertexInfoIterator;
@@ -802,9 +802,9 @@ public class Building {
     	double distancePow2 = Double.MAX_VALUE;
     	double currentDistancePow2;
 		while (vertexInfoIterator != null) {
-			currentDistancePow2 = Math.pow(x - vertexInfoIterator.getX(), 2) + 
-								  Math.pow(y - vertexInfoIterator.getY(), 2) +
-								  Math.pow(z - vertexInfoIterator.getZ(), 2);
+			currentDistancePow2 = Math.pow(x - (float)vertexInfoIterator.getX(), 2) + 
+								  Math.pow(y - (float)vertexInfoIterator.getY(), 2) +
+								  Math.pow(z - (float)vertexInfoIterator.getZ(), 2);
 			if (currentDistancePow2 < distancePow2) {
 				distancePow2 = currentDistancePow2;
 				result = vertexInfoIterator;
