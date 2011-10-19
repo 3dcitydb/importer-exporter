@@ -80,6 +80,7 @@ import de.tub.citydb.config.project.general.FeatureClassMode;
 import de.tub.citydb.database.DBConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.StatusDialog;
+import de.tub.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
@@ -260,6 +261,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 						}
 					}
 				};
+				thread.setDaemon(true);
 				thread.start();
 			}
 		});
@@ -283,6 +285,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 							boundingBox((FeatureClassMode)bboxComboBox.getSelectedItem());
 					}
 				};
+				thread.setDaemon(true);
 				thread.start();
 			}
 		});
@@ -729,11 +732,11 @@ public class DatabasePanel extends JPanel implements EventHandler {
 					bbox = DBUtil.calcBoundingBox(workspace, featureClass);
 					if (bbox != null) {
 						int dbSrid = dbPool.getActiveConnection().getMetaData().getSrid();
-						int bboxSrid = db.getOperation().getBoundingBoxSRS().getSrid();
+						DatabaseSrs srs = db.getOperation().getBoundingBoxSRS();
 
-						if (db.getOperation().getBoundingBoxSRS().isSupported() && bboxSrid != dbSrid) {
+						if (db.getOperation().getBoundingBoxSRS().isSupported() && srs.getSrid() != dbSrid) {
 							try {
-								bbox = DBUtil.transformBBox(bbox, dbSrid, bboxSrid);
+								bbox = DBUtil.transformBBox(bbox, dbSrid, srs.getSrid());
 							} catch (SQLException e) {
 								//
 							}					
@@ -745,11 +748,14 @@ public class DatabasePanel extends JPanel implements EventHandler {
 						double ymax = bbox.getUpperRightCorner().getY();
 
 						if (xmin != Double.MAX_VALUE && ymin != Double.MAX_VALUE &&
-								ymin != -Double.MAX_VALUE && ymax != -Double.MAX_VALUE) {						
+								ymin != -Double.MAX_VALUE && ymax != -Double.MAX_VALUE) {
+							bbox.setSrs(srs);
+							BoundingBoxClipboardHandler.getInstance(config).putBoundingBox(bbox);
+
 							LOG.info("Maximum bounding box for feature class " + featureClass + ':');
 							LOG.info("Xmin = " + xmin + ", Ymin = " + ymin);
 							LOG.info("Xmax = " + xmax + ", Ymax = " + ymax);
-							LOG.info("Bounding box successfully calculated.");
+							LOG.info("Bounding box successfully calculated.");							
 						} else {
 							LOG.warn("The bounding box could not be calculated.");
 							LOG.warn("Either the database does not contain " + featureClass + " features or their ENVELOPE attribute is not set.");

@@ -43,15 +43,14 @@ public class BoundingBox {
 	private BoundingBoxCorner lowerLeft;
 	private BoundingBoxCorner upperRight;
 
-	public BoundingBox() {
-		srs = DatabaseSrs.DEFAULT;
-		lowerLeft = new BoundingBoxCorner();
-		upperRight = new BoundingBoxCorner();
-	}
-	
 	public BoundingBox(BoundingBoxCorner lowerleft, BoundingBoxCorner upperRight) {
+		srs = DatabaseSrs.DEFAULT;
 		this.lowerLeft = lowerleft;
 		this.upperRight = upperRight;
+	}
+	
+	public BoundingBox() {
+		this(new BoundingBoxCorner(), new BoundingBoxCorner());
 	}
 
 	public BoundingBox(BoundingBox bbox) {

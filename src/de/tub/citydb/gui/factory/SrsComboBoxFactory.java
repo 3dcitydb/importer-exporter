@@ -80,8 +80,16 @@ public class SrsComboBoxFactory {
 
 		return srsBox;
 	}
-
+	
 	public void updateAll(boolean sort) {
+		processSrsComboBoxes(sort, true);
+	}
+	
+	public void resetAll(boolean sort) {
+		processSrsComboBoxes(sort, false);
+	}
+	
+	private void processSrsComboBoxes(boolean sort, boolean update) {
 		if (sort)
 			Collections.sort(config.getProject().getDatabase().getReferenceSystems());
 
@@ -95,7 +103,11 @@ public class SrsComboBoxFactory {
 				continue;
 			}
 
-			srsBox.updateContent();
+			if (update)
+				srsBox.updateContent();
+			else
+				srsBox.reset();
+				
 			srsBox.repaint();
 		}
 	}
@@ -157,8 +169,8 @@ public class SrsComboBoxFactory {
 				if (!onlyShowSupported || refSys.isSupported())
 					addItem(refSys);
 		}
-
-		private void updateContent() {
+		
+		private void reset() {
 			DBConnectionPool dbPool = DBConnectionPool.getInstance();
 
 			if (dbPool.isConnected()) {
@@ -167,20 +179,18 @@ public class SrsComboBoxFactory {
 			} else {
 				dbRefSys.setSrid(DatabaseSrs.DEFAULT.getSrid());
 				dbRefSys.setSrsName(DatabaseSrs.DEFAULT.getSrsName());				
-			}		
+			}
+			
+			removeAllItems();
+			init();
+		}
 
+		private void updateContent() {
 			DatabaseSrs selectedItem = getSelectedItem();
 			if (selectedItem == null)
 				selectedItem = dbRefSys;
 
-			removeAllItems();
-			addItem(dbRefSys);
-
-			// user-defined reference systems
-			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
-				if (!onlyShowSupported || refSys.isSupported())
-					addItem(refSys);
-
+			reset();
 			setSelectedItem(selectedItem);
 		}
 
