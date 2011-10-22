@@ -42,9 +42,6 @@ import java.util.List;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
@@ -105,14 +102,11 @@ import org.citygml4j.model.xal.ThoroughfareNumber;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
 
 public class DBBuilding implements DBExporter {
-	private final Logger LOG = Logger.getInstance();
-
 	private final DBExporterManager dbExporterManager;
 	private final Config config;
 	private final Connection connection;
@@ -126,7 +120,6 @@ public class DBBuilding implements DBExporter {
 	private DBRoom roomExporter;
 	private DBSdoGeometry sdoGeometry;
 	private FeatureClassFilter featureClassFilter;
-	private DatatypeFactory datatypeFactory;
 
 	private boolean transformCoords;
 
@@ -152,7 +145,7 @@ public class DBBuilding implements DBExporter {
 			"from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			
+
 			psBuilding = connection.prepareStatement("select b.ID, b.BUILDING_PARENT_ID, b.NAME, b.NAME_CODESPACE, b.DESCRIPTION, b.CLASS, b.FUNCTION, " +
 					"b.USAGE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, b.ROOF_TYPE, b.MEASURED_HEIGHT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, " +
 					"b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_BELOW_GROUND, b.LOD1_GEOMETRY_ID, b.LOD2_GEOMETRY_ID, b.LOD3_GEOMETRY_ID, b.LOD4_GEOMETRY_ID, " +
@@ -173,13 +166,7 @@ public class DBBuilding implements DBExporter {
 		thematicSurfaceExporter = (DBThematicSurface)dbExporterManager.getDBExporter(DBExporterEnum.THEMATIC_SURFACE);
 		buildingInstallationExporter = (DBBuildingInstallation)dbExporterManager.getDBExporter(DBExporterEnum.BUILDING_INSTALLATION);
 		roomExporter = (DBRoom)dbExporterManager.getDBExporter(DBExporterEnum.ROOM);
-		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);		
-
-		try {
-			datatypeFactory = DatatypeFactory.newInstance();
-		} catch (DatatypeConfigurationException e) {
-			//
-		}
+		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
@@ -435,23 +422,13 @@ public class DBBuilding implements DBExporter {
 		if (buildingNode.yearOfConstruction != null) {
 			GregorianCalendar gregDate = new GregorianCalendar();
 			gregDate.setTime(buildingNode.yearOfConstruction);
-
-			if (datatypeFactory != null)
-				abstractBuilding.setYearOfConstruction(gregDate);
-			else
-				LOG.error(Util.getFeatureSignature(abstractBuilding.getCityGMLClass(), abstractBuilding.getId()) + 
-				": Failed to write attribute 'yearOfConstruction' due to an internal error.");
+			abstractBuilding.setYearOfConstruction(gregDate);
 		}
 
 		if (buildingNode.yearOfDemolition != null) {
 			GregorianCalendar gregDate = new GregorianCalendar();
 			gregDate.setTime(buildingNode.yearOfDemolition);
-
-			if (datatypeFactory != null)
-				abstractBuilding.setYearOfDemolition(gregDate);
-			else
-				LOG.error(Util.getFeatureSignature(abstractBuilding.getCityGMLClass(), abstractBuilding.getId()) + 
-				": Failed to write attribute 'yearOfDemolition' due to an internal error.");
+			abstractBuilding.setYearOfDemolition(gregDate);
 		}
 
 		if (buildingNode.roofType != null) {

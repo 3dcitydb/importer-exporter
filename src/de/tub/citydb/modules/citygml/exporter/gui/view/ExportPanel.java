@@ -164,6 +164,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			timestampLabel = new JLabel();
 			srsComboBoxLabel = new JLabel();
 			srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
+			srsComboBox.setMinimumSize(srsComboBox.getPreferredSize());
 			{
 				row2.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 				row2.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));

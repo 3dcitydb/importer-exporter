@@ -37,9 +37,6 @@ import java.sql.SQLException;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
@@ -71,14 +68,10 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.BoundingBoxFilter;
-import de.tub.citydb.util.Util;
 
 public class DBCityObject implements DBExporter {
-	private final Logger LOG = Logger.getInstance();
-
 	private final DBExporterManager dbExporterManager;
 	private final Config config;
 	private final Connection connection;
@@ -96,7 +89,6 @@ public class DBCityObject implements DBExporter {
 	private BoundingBoxFilter boundingBoxFilter;
 	private BoundingBox activeTile;
 	private Tiling tiling;
-	private DatatypeFactory datatypeFactory;
 
 	private HashSet<Long> generalizesToSet;
 	private HashSet<Long> externalReferenceSet;
@@ -128,7 +120,7 @@ public class DBCityObject implements DBExporter {
 		transformCoords = config.getInternal().isTransformCoordinates();
 		if (!transformCoords) {		
 			gmlSrsName = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrsName();
-			
+
 			psCityObject = connection.prepareStatement("select co.GMLID, co.ENVELOPE, co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
 					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
 					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
@@ -137,7 +129,7 @@ public class DBCityObject implements DBExporter {
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			gmlSrsName = config.getInternal().getExportTargetSRS().getSrsName();
-			
+
 			psCityObject = connection.prepareStatement("select co.GMLID, " +
 					"geodb_util.transform_or_null(co.ENVELOPE, " + srid + ") AS ENVELOPE, " +
 					"co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
@@ -149,12 +141,6 @@ public class DBCityObject implements DBExporter {
 
 		appearanceExporter = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.APPEARANCE);
 		generalizesToExporter = (DBGeneralization)dbExporterManager.getDBExporter(DBExporterEnum.GENERALIZATION);
-
-		try {
-			datatypeFactory = DatatypeFactory.newInstance();
-		} catch (DatatypeConfigurationException e) {
-			//
-		}
 	}
 
 
@@ -222,12 +208,7 @@ public class DBCityObject implements DBExporter {
 				if (creationDate != null) {
 					GregorianCalendar gregDate = new GregorianCalendar();
 					gregDate.setTime(creationDate);
-
-					if (datatypeFactory != null)
-						cityObject.setCreationDate(gregDate);
-					else
-						LOG.error(Util.getFeatureSignature(cityObject.getCityGMLClass(), cityObject.getId()) + 
-						": Failed to write attribute 'creationDate' due to an internal error.");
+					cityObject.setCreationDate(gregDate);
 				}
 
 				// terminationDate
@@ -235,12 +216,7 @@ public class DBCityObject implements DBExporter {
 				if (terminationDate != null) {
 					GregorianCalendar gregDate = new GregorianCalendar();
 					gregDate.setTime(terminationDate);
-
-					if (datatypeFactory != null)
-						cityObject.setTerminationDate(gregDate);
-					else
-						LOG.error(Util.getFeatureSignature(cityObject.getCityGMLClass(), cityObject.getId()) + 
-						": Failed to write attribute 'terminationDate' due to an internal error.");
+					cityObject.setTerminationDate(gregDate);
 				}
 
 				do {
@@ -290,44 +266,37 @@ public class DBCityObject implements DBExporter {
 						switch (dataType) {
 						case 1:
 							String strVal = rs.getString("STRVAL");
-							if (strVal != null) {
-								genericAttrib = new StringAttributeImpl();
-								((StringAttribute)genericAttrib).setValue(strVal);
-							}
+							genericAttrib = new StringAttributeImpl();
+							((StringAttribute)genericAttrib).setValue(strVal);
 							break;
 						case 2:
 							Integer intVal = rs.getInt("INTVAL");
-							if (!rs.wasNull() && intVal != null) {
-								genericAttrib = new IntAttributeImpl();
-								((IntAttribute)genericAttrib).setValue(intVal);
-							}
+							if (rs.wasNull())
+								intVal = null;
+							
+							genericAttrib = new IntAttributeImpl();
+							((IntAttribute)genericAttrib).setValue(intVal);
 							break;
 						case 3:
 							Double realVal = rs.getDouble("REALVAL");
-							if (!rs.wasNull() && realVal != null) {
-								genericAttrib = new DoubleAttributeImpl();
-								((DoubleAttribute)genericAttrib).setValue(realVal);
-							}
+							if (rs.wasNull())
+								realVal = null;
+							
+							genericAttrib = new DoubleAttributeImpl();
+							((DoubleAttribute)genericAttrib).setValue(realVal);
 							break;
 						case 4:
 							String uriVal = rs.getString("URIVAL");
-							if (uriVal != null) {
-								genericAttrib = new UriAttributeImpl();
-								((UriAttribute)genericAttrib).setValue(uriVal);
-							}
+							genericAttrib = new UriAttributeImpl();
+							((UriAttribute)genericAttrib).setValue(uriVal);
 							break;
 						case 5:
 							Date dateVal = rs.getDate("DATEVAL");
 							if (dateVal != null) {
 								genericAttrib = new DateAttributeImpl();
 								GregorianCalendar gregDate = new GregorianCalendar();
-								gregDate.setTime(dateVal);
-
-								if (datatypeFactory != null)
-									((DateAttribute)genericAttrib).setValue(gregDate);
-								else
-									LOG.error(Util.getFeatureSignature(cityObject.getCityGMLClass(), cityObject.getId()) + 
-											": Failed to write generic dateAttribute '" + genericAttrib.getName() + "' due to an internal error.");
+								gregDate.setTime(dateVal);	
+								((DateAttribute)genericAttrib).setValue(gregDate);
 							}
 							break;
 						}
