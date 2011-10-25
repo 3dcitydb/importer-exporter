@@ -446,40 +446,43 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		if (kmlExporter.getFilter().isSetSimpleFilter()) {
 			singleBuildingRadioButton.setSelected(true);
-			boolean isFirst = true;
-			String gmlIds = "";
-			for (String gmlId: kmlExporter.getFilter().getSimpleFilter().getGmlIdFilter().getGmlIds()) {
-				if (!isFirst) {
-					gmlIds = gmlIds + ", ";
-				}
-				else {
-					isFirst = false;
-				}
-				gmlIds = gmlIds + gmlId;
-			}
-			gmlIdText.setText(gmlIds);
 		}
 		else {
 			boundingBoxRadioButton.setSelected(true);
-			bboxComponent.setBoundingBox(kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox());
-
-			String tilingMode = kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode().value();
-
-			if (tilingMode.equals(TilingMode.NO_TILING.value())) {
-				noTilingRadioButton.setSelected(true);
-			}
-			else if (tilingMode.equals(TilingMode.AUTOMATIC.value())) {
-				automaticTilingRadioButton.setSelected(true);
-			}
-			else {
-				manualTilingRadioButton.setSelected(true);
-				rowsText.setText(String.valueOf(kmlExporter.getFilter().getComplexFilter().
-						getTiledBoundingBox().getTiling().getRows()));
-				columnsText.setText(String.valueOf(kmlExporter.getFilter().getComplexFilter().
-						getTiledBoundingBox().getTiling().getColumns()));
-			}
 		}
 
+		boolean isFirst = true;
+		String gmlIds = "";
+		for (String gmlId: kmlExporter.getFilter().getSimpleFilter().getGmlIdFilter().getGmlIds()) {
+			if (!isFirst) {
+				gmlIds = gmlIds + ", ";
+			}
+			else {
+				isFirst = false;
+			}
+			gmlIds = gmlIds + gmlId;
+		}
+		gmlIdText.setText(gmlIds);
+
+		bboxComponent.setBoundingBox(kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox());
+
+		String tilingMode = kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode().value();
+
+		if (tilingMode.equals(TilingMode.NO_TILING.value())) {
+			noTilingRadioButton.setSelected(true);
+		}
+		else if (tilingMode.equals(TilingMode.AUTOMATIC.value())) {
+			automaticTilingRadioButton.setSelected(true);
+		}
+		else {
+			manualTilingRadioButton.setSelected(true);
+		}
+
+		rowsText.setText(String.valueOf(kmlExporter.getFilter().getComplexFilter().
+				getTiledBoundingBox().getTiling().getRows()));
+		columnsText.setText(String.valueOf(kmlExporter.getFilter().getComplexFilter().
+				getTiledBoundingBox().getTiling().getColumns()));
+		
 		int lod = kmlExporter.getLodToExportFrom() - 1; // exclude LoD0 for the time being
 		lod = lod >= lodComboBox.getItemCount() ? lodComboBox.getItemCount() - 1: lod; 
 		lodComboBox.setSelectedIndex(lod);
@@ -551,19 +554,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		KmlExporter kmlExporter = config.getProject().getKmlExporter();
 
+		kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().setActive(!singleBuildingRadioButton.isSelected());
 		if (singleBuildingRadioButton.isSelected()) {
 			kmlExporter.getFilter().setMode(FilterMode.SIMPLE);
-			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().setActive(false);
-			kmlExporter.getFilter().getSimpleFilter().getGmlIdFilter().getGmlIds().clear();
-			StringTokenizer st = new StringTokenizer(gmlIdText.getText().trim(), ",");
-			while (st.hasMoreTokens()) {
-				kmlExporter.getFilter().getSimpleFilter().getGmlIdFilter().addGmlId(st.nextToken().trim());
-			}
 		}
 		else {
 			kmlExporter.getFilter().setMode(FilterMode.COMPLEX);
-			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().setActive(true);
-			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().copyFrom(bboxComponent.getBoundingBox());
 
 			if (noTilingRadioButton.isSelected()) {
 				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setMode(TilingMode.NO_TILING);
@@ -573,23 +569,30 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			}
 			else {
 				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setMode(TilingMode.MANUAL);
-				try {
-					kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
-					getTiling().setRows(Integer.parseInt(rowsText.getText().trim()));
-				}
-				catch (NumberFormatException nfe) {
-					kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
-					getTiling().setRows(1);
-				}
-				try {
-					kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
-					getTiling().setColumns(Integer.parseInt(columnsText.getText().trim()));
-				}
-				catch (NumberFormatException nfe) {
-					kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
-					getTiling().setColumns(1);
-				}
 			}
+		}
+
+		kmlExporter.getFilter().getSimpleFilter().getGmlIdFilter().getGmlIds().clear();
+		StringTokenizer st = new StringTokenizer(gmlIdText.getText().trim(), ",");
+		while (st.hasMoreTokens()) {
+			kmlExporter.getFilter().getSimpleFilter().getGmlIdFilter().addGmlId(st.nextToken().trim());
+		}
+
+		kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().copyFrom(bboxComponent.getBoundingBox());
+
+		try {
+			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
+			getTiling().setRows(Integer.parseInt(rowsText.getText().trim()));
+		}
+		catch (NumberFormatException nfe) {
+			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setRows(1);
+		}
+		try {
+			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
+			getTiling().setColumns(Integer.parseInt(columnsText.getText().trim()));
+		}
+		catch (NumberFormatException nfe) {
+			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setColumns(1);
 		}
 
 		kmlExporter.setLodToExportFrom(lodComboBox.getSelectedIndex() + 1); // exclude LoD0 for the time being
