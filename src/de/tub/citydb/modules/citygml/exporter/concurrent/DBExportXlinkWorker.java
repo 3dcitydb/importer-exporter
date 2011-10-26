@@ -38,7 +38,7 @@ import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkEnum;
@@ -61,14 +61,14 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 	private Thread workerThread = null;
 
 	// instance members needed to do work
-	private final DBConnectionPool dbConnectionPool;
+	private final DatabaseConnectionPool dbConnectionPool;
 	private final Config config;
 	private Connection connection;
 	private final EventDispatcher eventDispatcher;
 
 	private DBXlinkExporterManager xlinkExporterManager;
 
-	public DBExportXlinkWorker(DBConnectionPool dbConnectionPool, Config config, EventDispatcher eventDispatcher) throws SQLException {
+	public DBExportXlinkWorker(DatabaseConnectionPool dbConnectionPool, Config config, EventDispatcher eventDispatcher) throws SQLException {
 		this.dbConnectionPool = dbConnectionPool;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;

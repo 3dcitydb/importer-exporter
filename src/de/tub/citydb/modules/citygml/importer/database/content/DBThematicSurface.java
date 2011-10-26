@@ -41,8 +41,8 @@ import org.citygml4j.model.citygml.building.OpeningProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBTableEnum;
-import de.tub.citydb.database.DBTypeValueEnum;
+import de.tub.citydb.database.TableEnum;
+import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
@@ -114,7 +114,7 @@ public class DBThematicSurface implements DBImporter {
 		}
 
 		// TYPE
-        psThematicSurface.setString(5, DBTypeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString());
+        psThematicSurface.setString(5, TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString());
 
         // parentId
 		switch (parent) {
@@ -159,9 +159,9 @@ public class DBThematicSurface implements DBImporter {
         			if (href != null && href.length() != 0) {
         				DBXlinkBasic xlink = new DBXlinkBasic(
         						boundarySurfaceId,
-        						DBTableEnum.THEMATIC_SURFACE,
+        						TableEnum.THEMATIC_SURFACE,
         						href,
-        						DBTableEnum.SURFACE_GEOMETRY
+        						TableEnum.SURFACE_GEOMETRY
         				);
 
         				xlink.setAttrName("LOD" + lod + "_MULTI_SURFACE_ID");
@@ -225,9 +225,9 @@ public class DBThematicSurface implements DBImporter {
         			if (href != null && href.length() != 0) {
         				dbImporterManager.propagateXlink(new DBXlinkBasic(
         						boundarySurfaceId,
-        						DBTableEnum.THEMATIC_SURFACE,
+        						TableEnum.THEMATIC_SURFACE,
         						href,
-        						DBTableEnum.OPENING
+        						TableEnum.OPENING
         				));
         			}
         		}

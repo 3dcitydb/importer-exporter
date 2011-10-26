@@ -29,32 +29,34 @@
  */
 package de.tub.citydb.config.project.database;
 
-import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
 import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.config.project.general.FeatureClassMode;
 
 @XmlType(name="DBOperationType", propOrder={
-		"execute",
+		"lastUsed",
 		"boundingBoxFeatureClass",
-		"boundingBoxSrs"
+		"boundingBoxSrs",
+		"spatialIndex",
+		"normalIndex"
 })
 public class DBOperation {
-	private DBOperationMode execute = DBOperationMode.REPORT;
+	private DBOperationType lastUsed = DBOperationType.REPORT;
 	private FeatureClassMode boundingBoxFeatureClass = FeatureClassMode.CITYOBJECT;
-	@XmlIDREF
 	private DatabaseSrs boundingBoxSrs = DatabaseSrs.DEFAULT;
+	private boolean spatialIndex;
+	private boolean normalIndex;
 	
 	public DBOperation() {
 	}
 
-	public DBOperationMode getExecute() {
-		return execute;
+	public DBOperationType lastUsed() {
+		return lastUsed;
 	}
 
-	public void setExecute(DBOperationMode execute) {
-		this.execute = execute;
+	public void setLastUsed(DBOperationType mode) {
+		this.lastUsed = mode;
 	}
 
 	public FeatureClassMode getBoundingBoxFeatureClass() {
@@ -71,6 +73,22 @@ public class DBOperation {
 
 	public void setBoundingBoxSRS(DatabaseSrs boundingBoxSrs) {
 		this.boundingBoxSrs = boundingBoxSrs;
+	}
+
+	public boolean isSetSpatialIndex() {
+		return spatialIndex;
+	}
+
+	public void setSpatialIndex(boolean spatialIndex) {
+		this.spatialIndex = spatialIndex;
+	}
+
+	public boolean isSetNormalIndex() {
+		return normalIndex;
+	}
+
+	public void setNormalIndex(boolean normalIndex) {
+		this.normalIndex = normalIndex;
 	}
 	
 }

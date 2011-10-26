@@ -35,20 +35,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 
 public class BranchTemporaryCacheTable implements CacheTable {
 	private final TemporaryCacheTable main;
 	private final CacheTableModelEnum model;
-	private final DBConnectionPool dbPool;
+	private final DatabaseConnectionPool dbPool;
 	private final ReentrantLock mainLock = new ReentrantLock();
 
 	private Connection conn;
 	private volatile boolean isCreated = false;
 	private List<TemporaryCacheTable> branches;
 
-	protected BranchTemporaryCacheTable(CacheTableModelEnum model, DBConnectionPool dbPool) {
+	protected BranchTemporaryCacheTable(CacheTableModelEnum model, DatabaseConnectionPool dbPool) {
 		this.model = model;
 		this.dbPool = dbPool;
 

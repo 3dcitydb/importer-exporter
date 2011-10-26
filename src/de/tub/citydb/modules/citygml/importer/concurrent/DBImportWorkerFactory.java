@@ -38,20 +38,20 @@ import de.tub.citydb.api.concurrent.WorkerFactory;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.common.filter.ImportFilter;
 
 public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
-	private final DBConnectionPool dbConnectionPool;
+	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<DBXlink> xlinkWorkerPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
 	private final ImportFilter importFilter;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBImportWorkerFactory(DBConnectionPool dbConnectionPool,
+	public DBImportWorkerFactory(DatabaseConnectionPool dbConnectionPool,
 			WorkerPool<DBXlink> xlinkWorkerPool,
 			DBGmlIdLookupServerManager lookupServerManager,
 			ImportFilter importFilter,

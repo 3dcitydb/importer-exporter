@@ -32,14 +32,14 @@ package de.tub.citydb.modules.citygml.common.database.cache;
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
 
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 
 public class CacheManager {
-	private final DBConnectionPool dbPool;	
+	private final DatabaseConnectionPool dbPool;	
 	private ConcurrentHashMap<CacheTableModelEnum, CacheTable> cacheTableMap;
 	
-	public CacheManager(DBConnectionPool dbPool, int concurrencyLevel) {
+	public CacheManager(DatabaseConnectionPool dbPool, int concurrencyLevel) {
 		this.dbPool = dbPool;
 		
 		cacheTableMap = new ConcurrentHashMap<CacheTableModelEnum, CacheTable>(

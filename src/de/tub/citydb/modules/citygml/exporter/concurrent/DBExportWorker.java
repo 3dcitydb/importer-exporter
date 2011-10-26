@@ -43,7 +43,7 @@ import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
@@ -78,7 +78,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 	private Thread workerThread = null;
 
 	// instance members needed to do work
-	private final DBConnectionPool dbConnectionPool;
+	private final DatabaseConnectionPool dbConnectionPool;
 	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
@@ -90,7 +90,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 	private final EventDispatcher eventDispatcher;
 	private int exportCounter = 0;
 
-	public DBExportWorker(DBConnectionPool dbConnectionPool,
+	public DBExportWorker(DatabaseConnectionPool dbConnectionPool,
 			JAXBBuilder jaxbBuilder,
 			WorkerPool<SAXEventBuffer> ioWriterPool,
 			WorkerPool<DBXlink> xlinkExporterPool,

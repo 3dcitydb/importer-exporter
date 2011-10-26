@@ -2,7 +2,7 @@ package de.tub.citydb.database;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-public enum DBTypeValueEnum {
+public enum TypeAttributeValueEnum {
 	X3D_MATERIAL("X3DMaterial"),
 	GEOREFERENCED_TEXTURE("GeoreferencedTexture"),
 	PARAMETERIZED_TEXTURE("ParameterizedTexture"),
@@ -29,11 +29,11 @@ public enum DBTypeValueEnum {
 
 	private String value;
 	
-	private DBTypeValueEnum(String value) {
+	private TypeAttributeValueEnum(String value) {
 		this.value = value;
 	}
 	
-	public static DBTypeValueEnum fromCityGMLClass(CityGMLClass type) {
+	public static TypeAttributeValueEnum fromCityGMLClass(CityGMLClass type) {
 		switch (type) {
 		case X3D_MATERIAL:
 			return X3D_MATERIAL;

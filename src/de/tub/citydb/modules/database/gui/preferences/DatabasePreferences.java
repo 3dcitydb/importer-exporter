@@ -10,7 +10,6 @@ public class DatabasePreferences extends AbstractPreferences {
 	public DatabasePreferences(Config config, ImpExpGui mainView) {
 		super(new DatabaseEntry());
 		
-		root.addChildEntry(new DefaultPreferencesEntry(new IndexPanel(config, mainView)));
 		root.addChildEntry(new DefaultPreferencesEntry(new SrsPanel(config, mainView)));
 	}
 

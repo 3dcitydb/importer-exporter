@@ -44,14 +44,14 @@ import de.tub.citydb.api.concurrent.WorkerFactory;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
 
 public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult> {
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
-	private final DBConnectionPool dbConnectionPool;
+	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final ObjectFactory kmlFactory;
 	private final CityGMLFactory cityGMLFactory;
@@ -62,7 +62,7 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 	public KmlExportWorkerFactory(
 			JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
-			DBConnectionPool dbConnectionPool,
+			DatabaseConnectionPool dbConnectionPool,
 			WorkerPool<SAXEventBuffer> ioWriterPool,
 			ObjectFactory kmlFactory,
 			CityGMLFactory cityGMLFactory,

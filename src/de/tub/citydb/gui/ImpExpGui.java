@@ -94,7 +94,7 @@ import de.tub.citydb.config.gui.window.MainWindow;
 import de.tub.citydb.config.gui.window.WindowSize;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.global.LanguageType;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.event.SwitchLocaleEventImpl;
 import de.tub.citydb.gui.console.ConsoleWindow;
 import de.tub.citydb.gui.factory.DefaultComponentFactory;
@@ -118,7 +118,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private JAXBContext jaxbProjectContext;
 	private JAXBContext jaxbGuiContext;
 	private PluginService pluginService;
-	private DBConnectionPool dbPool;
+	private DatabaseConnectionPool dbPool;
 
 	private JPanel main;
 	private JTextArea consoleText;
@@ -144,7 +144,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private LanguageType currentLang = null;
 
 	public ImpExpGui(Config config) {
-		dbPool = DBConnectionPool.getInstance();
+		dbPool = DatabaseConnectionPool.getInstance();
 		this.config = config;
 		
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
@@ -408,14 +408,9 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", locale);
 			currentLang = lang;
 
-			setTitle(Internal.I18N.getString("main.window.title"));
+			setDatabaseStatus(dbPool.isConnected());
 			statusText.setText(Internal.I18N.getString("main.status.ready.label"));
 			consoleLabel.setText(Internal.I18N.getString("main.label.console"));
-
-			if (dbPool.isConnected())
-				connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
-			else
-				connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
 
 			// fire translation notification to plugins
 			for (Plugin plugin : pluginService.getPlugins())
@@ -566,7 +561,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	public void connectToDatabase() {
 		try {
-			databasePlugin.getDatabaseController().connect(true);
+			ObjectRegistry.getInstance().getDatabaseController().connect(true);
 		} catch (DatabaseConfigurationException e) {
 			//
 		} catch (SQLException e) {
@@ -576,9 +571,19 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	public void disconnectFromDatabase() {
 		try {
-			databasePlugin.getDatabaseController().disconnect(true);
+			ObjectRegistry.getInstance().getDatabaseController().disconnect(true);
 		} catch (SQLException e) {
 			//
+		}
+	}
+	
+	private void setDatabaseStatus(boolean isConnected) {
+		if (!isConnected) {
+			setTitle(Internal.I18N.getString("main.window.title"));
+			connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
+		} else {
+			setTitle(Internal.I18N.getString("main.window.title") + " : " + dbPool.getActiveConnection().getDescription());
+			connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
 		}
 	}
 
@@ -664,9 +669,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		if (!((DatabaseConnectionStateEvent)event).isConnected())
-			connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
-		else
-			connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
+		setDatabaseStatus(((DatabaseConnectionStateEvent)event).isConnected());
 	}
 }

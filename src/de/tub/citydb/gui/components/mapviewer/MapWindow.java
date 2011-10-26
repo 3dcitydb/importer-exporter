@@ -145,15 +145,24 @@ public class MapWindow extends JDialog implements EventHandler {
 		doTranslation();
 	}
 
-	public static final MapWindow getInstance(BoundingBoxListener listener, Config config) {
+	public static final synchronized MapWindow getInstance(Config config) {
 		if (instance == null)
 			instance = new MapWindow(config);
 
-		instance.listener = listener;
 		instance.updateHttpProxySettings();
+		instance.applyButton.setVisible(false);
+		instance.setSizeOnScreen();
 
-		if (!instance.isVisible())
-			instance.setSizeOnScreen();
+		return instance;
+	}
+
+	public static final synchronized MapWindow getInstance(BoundingBoxListener listener, Config config) {
+		instance = getInstance(config);
+
+		if (listener != null) {
+			instance.listener = listener;
+			instance.applyButton.setVisible(true);
+		}
 
 		return instance;
 	}

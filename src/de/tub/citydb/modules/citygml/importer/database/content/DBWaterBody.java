@@ -47,7 +47,7 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
@@ -184,9 +184,9 @@ public class DBWaterBody implements DBImporter {
         			if (href != null && href.length() != 0) {
         				DBXlinkBasic xlink = new DBXlinkBasic(
         						waterBodyId,
-        						DBTableEnum.WATERBODY,
+        						TableEnum.WATERBODY,
         						href,
-        						DBTableEnum.SURFACE_GEOMETRY
+        						TableEnum.SURFACE_GEOMETRY
         				);
 
         				xlink.setAttrName("LOD" + lod + "_SOLID_ID");
@@ -247,9 +247,9 @@ public class DBWaterBody implements DBImporter {
         			if (href != null && href.length() != 0) {
         				DBXlinkBasic xlink = new DBXlinkBasic(
         						waterBodyId,
-        						DBTableEnum.WATERBODY,
+        						TableEnum.WATERBODY,
         						href,
-        						DBTableEnum.SURFACE_GEOMETRY
+        						TableEnum.SURFACE_GEOMETRY
         				);
 
         				xlink.setAttrName("LOD" + lod + "_MULTI_SURFACE_ID");
@@ -346,9 +346,9 @@ public class DBWaterBody implements DBImporter {
 					if (href != null && href.length() != 0) {
 						dbImporterManager.propagateXlink(new DBXlinkBasic(
         						waterBodyId,
-        						DBTableEnum.WATERBODY,
+        						TableEnum.WATERBODY,
         						href,
-        						DBTableEnum.WATERBOUNDARY_SURFACE
+        						TableEnum.WATERBOUNDARY_SURFACE
         				));
 					}
 				}

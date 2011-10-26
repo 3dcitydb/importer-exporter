@@ -40,13 +40,12 @@ import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -55,15 +54,14 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
-import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
+import de.tub.citydb.api.database.DatabaseConnectionDetails;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
@@ -73,28 +71,21 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
-import de.tub.citydb.config.project.database.DBOperationMode;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.Workspace;
-import de.tub.citydb.config.project.general.FeatureClassMode;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.ConnectionViewHandler;
+import de.tub.citydb.database.ConnectionStateEnum;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.gui.components.StatusDialog;
-import de.tub.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
-import de.tub.citydb.gui.factory.SrsComboBoxFactory;
-import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.Util;
-import de.tub.citydb.util.database.DBUtil;
+import de.tub.citydb.modules.database.gui.operations.DatabaseOperationsPanel;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class DatabasePanel extends JPanel implements EventHandler {
+public class DatabasePanel extends JPanel implements ConnectionViewHandler, EventHandler {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final ImpExpGui topFrame;
-	private final DBConnectionPool dbPool;
+	private final DatabaseController databaseController;
 
 	private JComboBox connCombo;
 	private JTextField descriptionText;
@@ -102,8 +93,6 @@ public class DatabasePanel extends JPanel implements EventHandler {
 	private JFormattedTextField portText;
 	private JTextField databaseText;
 	private JTextField userText;
-	private JTextField workspaceText;
-	private JFormattedTextField timestampText;
 	private JPasswordField passwordText;
 	private JCheckBox passwordCheck;
 	private JButton applyButton;
@@ -111,17 +100,11 @@ public class DatabasePanel extends JPanel implements EventHandler {
 	private JButton copyButton;
 	private JButton deleteButton;
 	private JButton connectButton;
-	private JButton executeButton;
-	private JButton infoButton;
-	private JComboBox bboxComboBox;
-	private JRadioButton dbReport;
-	private JRadioButton dbBBox;
-	private SrsComboBox srsComboBox;
-	private SrsComboBoxFactory srsComboBoxFactory;
+	private JButton infoButton;	
 
-	private JPanel row2;
-	private JPanel row2_buttons;
-	private JPanel row3;
+	private JPanel connectionDetails;
+	private JPanel connectionButtons;
+	private JPanel operations;
 
 	private JLabel connLabel;
 	private JLabel descriptionLabel;
@@ -130,10 +113,8 @@ public class DatabasePanel extends JPanel implements EventHandler {
 	private JLabel serverLabel;
 	private JLabel portLabel;
 	private JLabel databaseLabel;
-	private JLabel workspaceLabel;
-	private JLabel timestampLabel;
-	private JLabel featureClassLabel;
-	private JLabel srsLabel;
+
+	private DatabaseOperationsPanel operationsPanel;
 
 	private Config config;
 	private Database databaseConfig;
@@ -142,7 +123,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 	public DatabasePanel(Config config, ImpExpGui topFrame) {
 		this.config = config;
 		this.topFrame = topFrame;
-		dbPool = DBConnectionPool.getInstance();
+		databaseController = ObjectRegistry.getInstance().getDatabaseController();
 
 		initGui();		
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
@@ -172,38 +153,90 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		portText.setColumns(5);
 		databaseText = new JTextField();
 		userText = new JTextField();
-		workspaceText = new JTextField();
-		timestampText = new JFormattedTextField(new SimpleDateFormat("dd.MM.yyyy"));
-		timestampText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		timestampText.setColumns(10);
 		passwordText = new JPasswordField();
 		passwordCheck = new JCheckBox();
-		
+
 		applyButton = new JButton();
 		newButton = new JButton();
 		copyButton = new JButton();
 		deleteButton = new JButton();
 		connectButton = new JButton();
-		executeButton = new JButton();
-		infoButton = new JButton();
+		infoButton = new JButton();		
 
-		dbReport = new JRadioButton();
-		dbBBox = new JRadioButton();
-		ButtonGroup dbOperations = new ButtonGroup();
-		dbOperations.add(dbReport);
-		dbOperations.add(dbBBox);
+		PopupMenuDecorator.getInstance().decorate(descriptionText, serverText, portText, databaseText, userText, passwordText);
 
-		bboxComboBox = new JComboBox();
-		for (FeatureClassMode type : FeatureClassMode.values())
-			bboxComboBox.addItem(type);
+		setLayout(new GridBagLayout());
+		JPanel chooserPanel = new JPanel();
+		add(chooserPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,5,5));
+		chooserPanel.setLayout(new GridBagLayout());
+		connLabel = new JLabel();
 
-		srsComboBoxFactory = SrsComboBoxFactory.getInstance(config);
-		srsComboBox = srsComboBoxFactory.createSrsComboBox(true);
+		chooserPanel.add(connLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
+		chooserPanel.add(connCombo, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
 
-		PopupMenuDecorator.getInstance().decorate(
-				descriptionText, serverText, portText, databaseText, userText, passwordText, 
-				workspaceText, timestampText);
-		
+		connectionDetails = new JPanel();
+		add(connectionDetails, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.setBorder(BorderFactory.createTitledBorder(""));
+		connectionDetails.setLayout(new GridBagLayout());
+		descriptionLabel = new JLabel();
+		userLabel = new JLabel();
+		passwordLabel = new JLabel();
+		serverLabel = new JLabel();
+		portLabel = new JLabel();
+		databaseLabel = new JLabel();
+		passwordCheck.setIconTextGap(10);
+
+		connectionDetails.add(descriptionLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(descriptionText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(userLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(userText, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(passwordLabel, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(passwordText, GuiUtil.setConstraints(1,2,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(passwordCheck, GuiUtil.setConstraints(1,3,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(serverLabel, GuiUtil.setConstraints(0,4,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(serverText, GuiUtil.setConstraints(1,4,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(portLabel, GuiUtil.setConstraints(0,5,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+
+		GridBagConstraints c = GuiUtil.setConstraints(1,5,0.0,0.0,GridBagConstraints.NONE,0,5,5,5);
+		c.anchor = GridBagConstraints.WEST;
+		connectionDetails.add(portText, c);
+		portText.setMinimumSize(portText.getPreferredSize());
+
+		connectionDetails.add(databaseLabel, GuiUtil.setConstraints(0,6,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(databaseText, GuiUtil.setConstraints(1,6,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+
+		connectionButtons = new JPanel();
+		c = GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5);
+		c.gridheight = 6;
+		connectionDetails.add(connectionButtons,c);
+		connectionButtons.setLayout(new GridBagLayout());
+		connectionButtons.add(applyButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
+		connectionButtons.add(newButton, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
+		connectionButtons.add(copyButton, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
+
+		c = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.HORIZONTAL,5,0,0,0);
+		c.anchor = GridBagConstraints.NORTH;				
+		connectionButtons.add(deleteButton, c);
+
+		c = GuiUtil.setConstraints(0,7,0.0,0.0,GridBagConstraints.NONE,10,5,5,5);
+		c.gridwidth = 3;
+		connectionDetails.add(connectButton, c);
+		connectionDetails.add(infoButton, GuiUtil.setConstraints(2,7,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,5));
+
+		operations = new JPanel();
+		add(operations, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
+		operations.setBorder(BorderFactory.createTitledBorder(""));
+		operations.setLayout(new GridBagLayout());
+
+		operationsPanel = new DatabaseOperationsPanel(config);
+		operations.add(operationsPanel, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+
+		add(Box.createVerticalGlue(), GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+
+		// influence focus policy
+		connectionDetails.setFocusCycleRoot(false);
+		connectionButtons.setFocusCycleRoot(true);
+
 		portText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (portText.getValue() != null) {
@@ -212,7 +245,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 				}
 			}
 		});
-		
+
 		applyButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				apply();
@@ -244,7 +277,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 			public void actionPerformed(ActionEvent e) {
 				Thread thread = new Thread() {
 					public void run() {
-						if (!dbPool.isConnected()) {
+						if (!databaseController.isConnected()) {
 							try {
 								connect(true);
 							} catch (DatabaseConfigurationException e) {
@@ -269,24 +302,9 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		infoButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				topFrame.clearConsole();
-				DBConnection conn = dbPool.getActiveConnection();
-				LOG.info("Connected to database profile '" + conn.getDescription() + "'.");
-				conn.getMetaData().printToConsole(LogLevel.INFO);
-			}
-		});
-
-		executeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread() {
-					public void run() {
-						if (dbReport.isSelected())
-							report();
-						else if (dbBBox.isSelected())
-							boundingBox((FeatureClassMode)bboxComboBox.getSelectedItem());
-					}
-				};
-				thread.setDaemon(true);
-				thread.start();
+				DatabaseConnectionDetails details = databaseController.getActiveConnectionDetails();
+				LOG.info("Connected to database profile '" + details.getDescription() + "'.");
+				details.getMetaData().printToConsole(LogLevel.INFO);
 			}
 		});
 
@@ -296,133 +314,10 @@ public class DatabasePanel extends JPanel implements EventHandler {
 					selectConnection();
 			}
 		});
-
-		setLayout(new GridBagLayout());
-		{
-			JPanel row1 = new JPanel();
-			add(row1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,5,5));
-			row1.setLayout(new GridBagLayout());
-			connLabel = new JLabel();
-			{
-				row1.add(connLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-				row1.add(connCombo, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-			}
-		}
-		{
-			row2 = new JPanel();
-			add(row2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-			row2.setBorder(BorderFactory.createTitledBorder(""));
-			row2.setLayout(new GridBagLayout());
-			descriptionLabel = new JLabel();
-			userLabel = new JLabel();
-			passwordLabel = new JLabel();
-			serverLabel = new JLabel();
-			portLabel = new JLabel();
-			databaseLabel = new JLabel();
-			passwordCheck.setIconTextGap(10);
-			{
-				row2.add(descriptionLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-				row2.add(descriptionText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-				row2.add(userLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-				row2.add(userText, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-				row2.add(passwordLabel, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-				row2.add(passwordText, GuiUtil.setConstraints(1,2,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-				row2.add(passwordCheck, GuiUtil.setConstraints(1,3,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-				row2.add(serverLabel, GuiUtil.setConstraints(0,4,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-				row2.add(serverText, GuiUtil.setConstraints(1,4,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-				row2.add(portLabel, GuiUtil.setConstraints(0,5,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-
-				GridBagConstraints c = GuiUtil.setConstraints(1,5,0.0,0.0,GridBagConstraints.NONE,0,5,5,5);
-				c.anchor = GridBagConstraints.WEST;
-				row2.add(portText, c);
-				portText.setMinimumSize(portText.getPreferredSize());
-
-				row2.add(databaseLabel, GuiUtil.setConstraints(0,6,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-				row2.add(databaseText, GuiUtil.setConstraints(1,6,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-
-				row2_buttons = new JPanel();
-				c = GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5);
-				c.gridheight = 6;
-				row2.add(row2_buttons,c);
-				row2_buttons.setLayout(new GridBagLayout());
-				row2_buttons.add(applyButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
-				row2_buttons.add(newButton, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
-				row2_buttons.add(copyButton, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
-
-				c = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.HORIZONTAL,5,0,0,0);
-				c.anchor = GridBagConstraints.NORTH;				
-				row2_buttons.add(deleteButton, c);
-
-				c = GuiUtil.setConstraints(0,7,0.0,0.0,GridBagConstraints.NONE,10,5,5,5);
-				c.gridwidth = 3;
-				row2.add(connectButton, c);
-				row2.add(infoButton, GuiUtil.setConstraints(2,7,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
-			}
-		}
-		{
-			row3 = new JPanel();
-			add(row3, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-			row3.setBorder(BorderFactory.createTitledBorder(""));
-			row3.setLayout(new GridBagLayout());
-			workspaceLabel = new JLabel("");
-			timestampLabel = new JLabel("");
-			featureClassLabel = new JLabel("");
-			srsLabel = new JLabel("");
-			{
-				row3.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,5,5,5));
-				row3.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-				row3.add(timestampLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,5,5));
-				row3.add(timestampText, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-				timestampText.setMinimumSize(timestampText.getPreferredSize());
-
-				JPanel row3_1 = new JPanel();
-				row3_1.setBorder(BorderFactory.createEmptyBorder());
-				row3_1.setLayout(new GridBagLayout());
-
-				GridBagConstraints c = GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,10,5,5);
-				c.gridwidth = 4;
-				row3.add(row3_1, c);
-
-				dbReport.setIconTextGap(10);
-				dbBBox.setIconTextGap(10);				
-				row3_1.add(dbReport, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,5,0,0));
-				row3_1.add(dbBBox, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,0,5,0,0));
-
-				int lmargin = (int)(dbBBox.getPreferredSize().getWidth()) + 11; 
-				JPanel row3_2 = new JPanel();
-				row3_1.add(row3_2, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,0,lmargin,5,0));
-				row3_2.setBorder(BorderFactory.createEmptyBorder());
-				row3_2.setLayout(new GridBagLayout());
-
-				row3_2.add(featureClassLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,0,0,5,5));
-				row3_2.add(bboxComboBox, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,0,5,5,0));
-				row3_2.add(srsLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.BOTH,0,0,5,5));
-				row3_2.add(srsComboBox, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,0));
-
-				row3_1.add(executeButton, GuiUtil.setConstraints(0,3,0.0,0.0,GridBagConstraints.NONE,5,5,0,5));	
-			}
-		}
-		{
-			JPanel row4 = new JPanel();
-			add(row4, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,20,5,15,5));
-		}
-
-		// influence focus policy
-		row2.setFocusCycleRoot(false);
-		row2_buttons.setFocusCycleRoot(true);
-
-		ActionListener featureClassListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledFeatureClass();
-			}
-		};
-
-		dbReport.addActionListener(featureClassListener);
-		dbBBox.addActionListener(featureClassListener);
 	}
 
 	public void doTranslation() {
-		row2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("db.border.connectionDetails")));
+		connectionDetails.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("db.border.connectionDetails")));
 		connLabel.setText(Internal.I18N.getString("db.label.connection"));
 		descriptionLabel.setText(Internal.I18N.getString("db.label.description"));
 		userLabel.setText(Internal.I18N.getString("common.label.username"));
@@ -437,17 +332,10 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		deleteButton.setText(Internal.I18N.getString("db.button.delete"));
 		infoButton.setText(Internal.I18N.getString("db.button.info"));
 
-		row3.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("db.border.databaseOperations")));
-		workspaceLabel.setText(Internal.I18N.getString("common.label.workspace"));
-		timestampLabel.setText(Internal.I18N.getString("common.label.timestamp"));
-		dbReport.setText(Internal.I18N.getString("db.label.report"));
-		dbBBox.setText(Internal.I18N.getString("db.label.bbox"));
-		featureClassLabel.setText(Internal.I18N.getString("db.label.bbox.featureClass"));
-		executeButton.setText(Internal.I18N.getString("db.button.execute"));
+		operations.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("db.border.databaseOperations")));
+		operationsPanel.doTranslation();
 
-		srsLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
-
-		if (!dbPool.isConnected())
+		if (!databaseController.isConnected())
 			connectButton.setText(Internal.I18N.getString("db.button.connect"));
 		else
 			connectButton.setText(Internal.I18N.getString("db.button.disconnect"));
@@ -513,56 +401,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		lock.lock();
 
 		try {
-			if (!dbPool.isConnected()) {
-				setSettings();
-				
-				DBConnection conn = config.getProject().getDatabase().getActiveConnection();			
-				topFrame.setStatusText(Internal.I18N.getString("main.status.database.connect.label"));
-				LOG.info("Connecting to database profile '" + conn.getDescription() + "'.");
-
-				try {
-					dbPool.connect(config);
-				} catch (DatabaseConfigurationException e) {					
-					if (showErrorDialog)
-						topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
-
-					LOG.error("Connection to database could not be established.");
-					topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
-					throw e;
-				} catch (SQLException e) {
-					if (showErrorDialog) {
-						String text = Internal.I18N.getString("db.dialog.error.openConn");
-						Object[] args = new Object[]{ e.getMessage() };
-						String result = MessageFormat.format(text, args);					
-
-						topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
-						topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
-					}
-
-					LOG.error("Connection to database could not be established.");
-					if (LOG.getDefaultConsoleLogLevel() == LogLevel.DEBUG) {
-						LOG.debug("Check the following stack trace for details:");
-						e.printStackTrace();
-					}
-
-					throw e;
-				}
-
-				if (dbPool.isConnected()) {
-					LOG.info("Database connection established.");
-					conn.getMetaData().printToConsole(LogLevel.INFO);
-					
-					// log whether user-defined SRSs are supported
-					for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
-						if (refSys.isSupported())
-							LOG.debug("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") supported.");
-						else
-							LOG.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") NOT supported.");
-					}					
-				}
-
-				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
-			}
+			databaseController.connect(true);
 		} finally {
 			lock.unlock();
 		}
@@ -572,256 +411,109 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
-		try {			
-			if (dbPool.isConnected()) {
-				topFrame.setStatusText(Internal.I18N.getString("main.status.database.disconnect.label"));
-
-				try {
-					dbPool.disconnect();
-				} catch (SQLException e) {
-					LOG.error("Connection error: " + e.getMessage().trim());
-					LOG.error("Terminating connection...");
-					dbPool.forceDisconnect();
-
-					if (showErrorDialog) {
-						String text = Internal.I18N.getString("db.dialog.error.closeConn");
-						Object[] args = new Object[]{ e.getMessage() };
-						String result = MessageFormat.format(text, args);
-
-						topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
-					}
-					
-					throw e;
-				}
-
-				LOG.info("Disconnected from database.");
-				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
-			}
+		try {
+			databaseController.disconnect(true);
 		} finally {
 			lock.unlock();
 		}
 	}
 
-	private void report() {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
+	@Override
+	public void commitConnectionDetails() {
+		setSettings();
+	}
 
-		try {
-			setSettings();
-			Workspace workspace = config.getProject().getDatabase().getWorkspaces().getOperationWorkspace();		
-			if (!checkWorkspaceInput(workspace))
-				return;
+	@Override
+	public void printConnectionState(ConnectionStateEnum state) {
+		DBConnection conn = config.getProject().getDatabase().getActiveConnection();			
 
-			topFrame.clearConsole();
-			topFrame.setStatusText(Internal.I18N.getString("main.status.database.report.label"));
+		switch (state) {
+		case INIT_CONNECT:
+			topFrame.setStatusText(Internal.I18N.getString("main.status.database.connect.label"));
+			LOG.info("Connecting to database profile '" + conn.getDescription() + "'.");
+			break;
+		case FINISH_CONNECT:
+			if (databaseController.isConnected()) {
+				LOG.info("Database connection established.");
+				conn.getMetaData().printToConsole(LogLevel.INFO);
 
-			LOG.info("Generating database report...");			
+				// log whether user-defined SRSs are supported
+				for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
+					if (refSys.isSupported())
+						LOG.debug("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") supported.");
+					else
+						LOG.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") NOT supported.");
+				}					
+			}
 
-			final StatusDialog reportDialog = new StatusDialog(topFrame, 
-					Internal.I18N.getString("db.dialog.report.window"), 
-					Internal.I18N.getString("db.dialog.report.title"), 
-					null,
-					Internal.I18N.getString("db.dialog.report.details"), 
-					true);
+			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
+			break;
+		case INIT_DISCONNECT:
+			topFrame.setStatusText(Internal.I18N.getString("main.status.database.disconnect.label"));
+			break;
+		case FINISH_DISCONNECT:
+			LOG.info("Disconnected from database.");
+			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+			break;
+		}
+	}
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					reportDialog.setLocationRelativeTo(getTopLevelAncestor());
-					reportDialog.setVisible(true);
-				}
-			});
+	@Override
+	public void printError(ConnectionStateEnum state, DatabaseConfigurationException e, boolean showErrorDialog) {
+		switch (state) {
+		case CONNECT_ERROR:
+			if (showErrorDialog)
+				topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
 
-			reportDialog.getButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							DBUtil.cancelOperation();
-						}
-					});
-				}
-			});
+			LOG.error("Connection to database could not be established.");
+			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+			break;
+		}
+	}
 
-			String[] report = null;
-			String dbSqlEx = null;
-			try {
-				// checking workspace... this should be improved in future...
-				if (changeWorkspace(workspace)) {
-					report = DBUtil.databaseReport(workspace);
+	@Override
+	public void printError(ConnectionStateEnum state, SQLException e, boolean showErrorDialog) {
+		switch (state) {
+		case CONNECT_ERROR:
+			if (showErrorDialog) {
+				String text = Internal.I18N.getString("db.dialog.error.openConn");
+				Object[] args = new Object[]{ e.getMessage() };
+				String result = MessageFormat.format(text, args);					
 
-					if (report != null) {
-						for(String line : report) {
-							if (line != null) {
-								line = line.replaceAll("\\\\n", "\\\n");
-								line = line.replaceAll("\\\\t", "\\\t");
-								LOG.print(line);
-							}
-						}
+				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
+				topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
+			}
 
-						LOG.info("Database report successfully generated.");
-					} else
-						LOG.warn("Generation of database report aborted.");
-				}
+			LOG.error("Connection to database could not be established.");
+			if (LOG.getDefaultConsoleLogLevel() == LogLevel.DEBUG) {
+				LOG.debug("Check the following stack trace for details:");
+				e.printStackTrace();
+			}
 
-			} catch (SQLException sqlEx) {
-				dbSqlEx = sqlEx.getMessage().trim();
-				String text = Internal.I18N.getString("db.dialog.error.report");
-				Object[] args = new Object[]{ dbSqlEx };
+			break;
+		case DISCONNECT_ERROR:
+			LOG.error("Connection error: " + e.getMessage().trim());
+			LOG.error("Terminating connection...");
+			databaseController.forceDisconnect();
+
+			if (showErrorDialog) {
+				String text = Internal.I18N.getString("db.dialog.error.closeConn");
+				Object[] args = new Object[]{ e.getMessage() };
 				String result = MessageFormat.format(text, args);
 
 				topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
-				LOG.error("SQL error: " + dbSqlEx);
-			} finally {			
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						reportDialog.dispose();
-					}
-				});
-
-				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 			}
 
-		} finally {
-			lock.unlock();
+			break;
 		}
-	}
-
-	private void boundingBox(FeatureClassMode featureClass) {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
-
-		try {
-			setSettings();
-			Database db = config.getProject().getDatabase();			
-			Workspace workspace = db.getWorkspaces().getOperationWorkspace();
-			if (!checkWorkspaceInput(workspace))
-				return;
-
-			topFrame.clearConsole();
-			topFrame.setStatusText(Internal.I18N.getString("main.status.database.bbox.label"));
-
-			LOG.info("Calculating bounding box...");			
-
-			final StatusDialog bboxDialog = new StatusDialog(topFrame, 
-					Internal.I18N.getString("db.dialog.bbox.window"), 
-					Internal.I18N.getString("db.dialog.bbox.title"), 
-					null,
-					Internal.I18N.getString("db.dialog.bbox.details"), 
-					true);
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					bboxDialog.setLocationRelativeTo(getTopLevelAncestor());
-					bboxDialog.setVisible(true);
-				}
-			});
-
-			bboxDialog.getButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							DBUtil.cancelOperation();
-						}
-					});
-				}
-			});
-
-			BoundingBox bbox = null;
-			try {
-				// checking workspace... this should be improved in future...
-				if (changeWorkspace(workspace)) {
-					bbox = DBUtil.calcBoundingBox(workspace, featureClass);
-					if (bbox != null) {
-						int dbSrid = dbPool.getActiveConnection().getMetaData().getSrid();
-						DatabaseSrs srs = db.getOperation().getBoundingBoxSRS();
-
-						if (db.getOperation().getBoundingBoxSRS().isSupported() && srs.getSrid() != dbSrid) {
-							try {
-								bbox = DBUtil.transformBBox(bbox, dbSrid, srs.getSrid());
-							} catch (SQLException e) {
-								//
-							}					
-						}
-
-						double xmin = bbox.getLowerLeftCorner().getX();
-						double ymin = bbox.getLowerLeftCorner().getY();
-						double xmax = bbox.getUpperRightCorner().getX();
-						double ymax = bbox.getUpperRightCorner().getY();
-
-						if (xmin != Double.MAX_VALUE && ymin != Double.MAX_VALUE &&
-								ymin != -Double.MAX_VALUE && ymax != -Double.MAX_VALUE) {
-							bbox.setSrs(srs);
-							BoundingBoxClipboardHandler.getInstance(config).putBoundingBox(bbox);
-
-							LOG.info("Maximum bounding box for feature class " + featureClass + ':');
-							LOG.info("Xmin = " + xmin + ", Ymin = " + ymin);
-							LOG.info("Xmax = " + xmax + ", Ymax = " + ymax);
-							LOG.info("Bounding box successfully calculated.");							
-						} else {
-							LOG.warn("The bounding box could not be calculated.");
-							LOG.warn("Either the database does not contain " + featureClass + " features or their ENVELOPE attribute is not set.");
-						}
-
-					} else
-						LOG.warn("Calculation of bounding box aborted.");
-				}
-			} catch (SQLException sqlEx) {
-				String sqlExMsg = sqlEx.getMessage().trim();
-				String text = Internal.I18N.getString("db.dialog.error.bbox");
-				Object[] args = new Object[]{ sqlExMsg };
-				String result = MessageFormat.format(text, args);
-
-				topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
-				LOG.error("SQL error: " + sqlExMsg);
-			} finally {		
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						bboxDialog.dispose();
-					}
-				});
-
-				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
-			}
-
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	private boolean changeWorkspace(Workspace workspace) {		
-		if (!workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.existsWorkspace(workspace);
-
-			String name = "'" + workspace.getName().trim() + "'";
-			String timestamp = workspace.getTimestamp();
-			if (timestamp.trim().length() > 0)
-				name += " at timestamp " + timestamp;
-
-			if (!workspaceExists) {
-				LOG.error("Database workspace " + name + " is not available.");
-				return false;
-			} else 
-				LOG.info("Switching to database workspace " + name + '.');
-		}
-
-		return true;
-	}
-
-	private boolean checkWorkspaceInput(Workspace workspace) {
-		if (!Util.checkWorkspaceTimestamp(workspace)) {
-			topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.operation.incorrectData"), 
-					Internal.I18N.getString("common.dialog.error.incorrectData.date"));
-			return false;
-		}
-
-		return true;
 	}
 
 	public void loadSettings() {
-		if (dbPool.isConnected()) {
+		if (databaseController.isConnected()) {
 			try {
 				disconnect(true);
 			} catch (SQLException e) {
-				dbPool.forceDisconnect();
+				databaseController.forceDisconnect();
 			}
 		}
 
@@ -849,41 +541,24 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		connCombo.setSelectedItem(dbConnection);
 		dbConnection.setInternalPassword(dbConnection.getPassword());
 
-		workspaceText.setText(databaseConfig.getWorkspaces().getOperationWorkspace().getName());
-		timestampText.setText(databaseConfig.getWorkspaces().getOperationWorkspace().getTimestamp());
-		bboxComboBox.setSelectedItem(databaseConfig.getOperation().getBoundingBoxFeatureClass());
-
-		srsComboBox.setSelectedItem(databaseConfig.getOperation().getBoundingBoxSRS());
-
-		if (databaseConfig.getOperation().getExecute() == DBOperationMode.REPORT)
-			dbReport.setSelected(true);
-		else
-			dbBBox.setSelected(true);
+		operationsPanel.loadSettings();
 
 		setEnabledDBOperations(false);
 		isSettingsLoaded = true;
 	}
 
 	public void setSettings() {
-		DBConnection dbConnection = (DBConnection)connCombo.getSelectedItem();
-		setDbConnection(dbConnection);
-
-		String workspace = workspaceText.getText().trim();
-		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
-				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
-			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
-
-		databaseConfig.getWorkspaces().getOperationWorkspace().setName(workspaceText.getText());
-		databaseConfig.getWorkspaces().getOperationWorkspace().setTimestamp(timestampText.getText());
-		databaseConfig.getOperation().setExecute(dbReport.isSelected() ? DBOperationMode.REPORT : DBOperationMode.BBOX);
-		databaseConfig.getOperation().setBoundingBoxFeatureClass((FeatureClassMode)bboxComboBox.getSelectedItem());
-		databaseConfig.getOperation().setBoundingBoxSRS(srsComboBox.getSelectedItem());
+		setDbConnection((DBConnection)connCombo.getSelectedItem());
+		operationsPanel.setSettings();
 	}
 
 	private void setDbConnection(DBConnection dbConnection) {
-		if (!descriptionText.getText().trim().equals(""))
+		if (!descriptionText.getText().trim().equals("")) {
+			boolean repaint = dbConnection == databaseConfig.getActiveConnection() && !descriptionText.getText().equals(dbConnection.getDescription());
 			dbConnection.setDescription(descriptionText.getText());
-		else
+			if (repaint) 
+				connCombo.repaint();			
+		} else
 			descriptionText.setText(dbConnection.getDescription());
 
 		dbConnection.setServer(serverText.getText().trim());	
@@ -911,6 +586,9 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		else
 			passwordText.setText(dbConnection.getInternalPassword());
 
+		if (dbConnection.getInternalPassword() == null)
+			dbConnection.setInternalPassword(dbConnection.getPassword());
+		
 		Integer port = dbConnection.getPort();
 		if (port == null || port == 0) {
 			port = 1521;
@@ -950,7 +628,7 @@ public class DatabasePanel extends JPanel implements EventHandler {
 			return name;
 	}
 
-	public boolean requestChange() {
+	private boolean requestChange() {
 		if (isModified()) {
 			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), Internal.I18N.getString("db.dialog.apply.msg"), 
 					Internal.I18N.getString("db.dialog.apply.title"), JOptionPane.YES_NO_CANCEL_OPTION);
@@ -974,6 +652,16 @@ public class DatabasePanel extends JPanel implements EventHandler {
 		int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), result, Internal.I18N.getString("db.dialog.delete.title"), JOptionPane.YES_NO_OPTION);
 		return res==JOptionPane.YES_OPTION;
 	}
+	
+	private void setEnabledDBOperations(boolean enable) {
+		((TitledBorder)operations.getBorder()).setTitleColor(enable ? 
+				UIManager.getColor("TitledBorder.titleColor"):
+					UIManager.getColor("Label.disabledForeground"));
+		operations.repaint();
+
+		infoButton.setEnabled(enable);		
+		operationsPanel.setEnabled(enable);
+	}
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
@@ -986,33 +674,6 @@ public class DatabasePanel extends JPanel implements EventHandler {
 
 		connectButton.repaint();
 		setEnabledDBOperations(isConnected);
-	}
-
-	private void setEnabledDBOperations(boolean enable) {
-		((TitledBorder)row3.getBorder()).setTitleColor(enable ? 
-				UIManager.getColor("TitledBorder.titleColor"):
-					UIManager.getColor("Label.disabledForeground"));
-		row3.repaint();
-
-		infoButton.setEnabled(enable);
-		workspaceLabel.setEnabled(enable);
-		workspaceText.setEnabled(enable);
-		timestampLabel.setEnabled(enable);
-		timestampText.setEnabled(enable);
-		dbReport.setEnabled(enable);
-		dbBBox.setEnabled(enable);
-		bboxComboBox.setEnabled(dbBBox.isSelected() && enable);
-		featureClassLabel.setEnabled(dbBBox.isSelected() && enable);
-		srsLabel.setEnabled(dbBBox.isSelected() && enable);
-		srsComboBox.setEnabled(dbBBox.isSelected() && enable);
-		executeButton.setEnabled(enable);
-	}
-
-	private void setEnabledFeatureClass() {
-		bboxComboBox.setEnabled(dbBBox.isSelected());
-		featureClassLabel.setEnabled(dbBBox.isSelected());
-		srsLabel.setEnabled(dbBBox.isSelected());
-		srsComboBox.setEnabled(dbBBox.isSelected());
 	}
 
 }

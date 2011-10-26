@@ -49,8 +49,8 @@ import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.TilingMode;
-import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.StatusDialogMessage;
 import de.tub.citydb.modules.common.filter.ExportFilter;
@@ -65,7 +65,7 @@ import de.tub.citydb.util.database.DBUtil;
 public class DBSplitter {
 	private final Logger LOG = Logger.getInstance();
 
-	private final DBConnectionPool dbConnectionPool;
+	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<DBSplittingResult> dbWorkerPool;
 	private final ExportFilter exportFilter;
 	private final Config config;
@@ -89,7 +89,7 @@ public class DBSplitter {
 
 	private ExportFilterConfig expFilterConfig;
 
-	public DBSplitter(DBConnectionPool dbConnectionPool, 
+	public DBSplitter(DatabaseConnectionPool dbConnectionPool, 
 			WorkerPool<DBSplittingResult> dbWorkerPool, 
 			ExportFilter exportFilter, 
 			EventDispatcher eventDispatcher, 
@@ -237,37 +237,37 @@ public class DBSplitter {
 				
 				switch (featureClass) {
 				case BUILDING:
-					tableName = DBTableEnum.BUILDING.toString();
+					tableName = TableEnum.BUILDING.toString();
 					break;
 				case CITY_FURNITURE:
-					tableName = DBTableEnum.CITY_FURNITURE.toString();
+					tableName = TableEnum.CITY_FURNITURE.toString();
 					break;
 				case LAND_USE:
-					tableName = DBTableEnum.LAND_USE.toString();
+					tableName = TableEnum.LAND_USE.toString();
 					break;
 				case WATER_BODY:
-					tableName = DBTableEnum.WATERBODY.toString();
+					tableName = TableEnum.WATERBODY.toString();
 					break;
 				case PLANT_COVER:
-					tableName = DBTableEnum.PLANT_COVER.toString();
+					tableName = TableEnum.PLANT_COVER.toString();
 					break;
 				case SOLITARY_VEGETATION_OBJECT:
-					tableName = DBTableEnum.SOLITARY_VEGETAT_OBJECT.toString();
+					tableName = TableEnum.SOLITARY_VEGETAT_OBJECT.toString();
 					break;
 				case TRANSPORTATION_COMPLEX:
 				case ROAD:
 				case RAILWAY:
 				case TRACK:
 				case SQUARE:
-					tableName = DBTableEnum.TRANSPORTATION_COMPLEX.toString();
+					tableName = TableEnum.TRANSPORTATION_COMPLEX.toString();
 					additionalWhere = "co.CLASS_ID=" + Util.cityObject2classId(featureClass);
 					break;
 				case RELIEF_FEATURE:
-					tableName = DBTableEnum.RELIEF_FEATURE.toString();
+					tableName = TableEnum.RELIEF_FEATURE.toString();
 					additionalWhere = "co.CLASS_ID=" + Util.cityObject2classId(featureClass);
 					break;
 				case GENERIC_CITY_OBJECT:
-					tableName = DBTableEnum.GENERIC_CITYOBJECT.toString();
+					tableName = TableEnum.GENERIC_CITYOBJECT.toString();
 					break;
 				default:
 					continue;

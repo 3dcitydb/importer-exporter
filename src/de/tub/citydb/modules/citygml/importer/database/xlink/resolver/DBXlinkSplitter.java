@@ -37,7 +37,7 @@ import java.text.MessageFormat;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
@@ -149,9 +149,9 @@ public class DBXlinkSplitter {
 				// set initial context...
 				DBXlinkBasic xlink = new DBXlinkBasic(
 						id,
-						DBTableEnum.fromInt(fromTable),
+						TableEnum.fromInt(fromTable),
 						gmlId,
-						DBTableEnum.fromInt(toTable));
+						TableEnum.fromInt(toTable));
 
 				if (attrName != null && attrName.length() != 0)
 					xlink.setAttrName(attrName);

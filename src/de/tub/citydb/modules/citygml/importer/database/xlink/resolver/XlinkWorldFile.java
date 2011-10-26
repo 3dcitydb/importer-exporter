@@ -44,7 +44,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.util.Util;
@@ -69,7 +69,7 @@ public class XlinkWorldFile implements DBXlinkResolver {
 
     private void init() throws SQLException {
         localPath = config.getInternal().getImportPath();
-        dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
+        dbSrid = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 
         psUpdate = batchConn.prepareStatement("update SURFACE_DATA set GT_ORIENTATION=?, GT_REFERENCE_POINT=? where ID=?");
     }

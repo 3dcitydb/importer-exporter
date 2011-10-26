@@ -67,7 +67,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.filter.TilingMode;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.ExportStatusDialog;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
@@ -89,7 +89,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	private final JAXBBuilder jaxbBuilder;
 	private final Config config;
 	private final ImpExpGui mainView;
-	private final DBConnectionPool dbPool;
+	private final DatabaseConnectionPool dbPool;
 	
 	private JTextField browseText;
 	private JButton browseButton;
@@ -108,7 +108,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		this.jaxbBuilder = jaxbBuilder;
 		this.config = config;
 		this.mainView = mainView;
-		dbPool = DBConnectionPool.getInstance();
+		dbPool = DatabaseConnectionPool.getInstance();
 		
 		initGui();
 	}

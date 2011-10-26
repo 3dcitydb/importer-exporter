@@ -65,7 +65,7 @@ import de.tub.citydb.config.project.general.AffineTransformation;
 import de.tub.citydb.config.project.importer.ImportGmlId;
 import de.tub.citydb.config.project.importer.Index;
 import de.tub.citydb.config.project.importer.XMLValidation;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
@@ -99,7 +99,7 @@ public class Importer implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
 
 	private final JAXBBuilder jaxbBuilder;
-	private final DBConnectionPool dbPool;
+	private final DatabaseConnectionPool dbPool;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
@@ -125,7 +125,7 @@ public class Importer implements EventHandler {
 	private final int XLINK_RESOLVING = 3;
 
 	public Importer(JAXBBuilder jaxbBuilder, 
-			DBConnectionPool dbPool, 
+			DatabaseConnectionPool dbPool, 
 			Config config, 
 			EventDispatcher eventDispatcher) {
 		this.jaxbBuilder = jaxbBuilder;

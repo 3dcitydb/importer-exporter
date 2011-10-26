@@ -41,7 +41,7 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
@@ -188,9 +188,9 @@ public class DBAppearance implements DBImporter {
 					if (href != null && href.length() != 0) {
 						dbImporterManager.propagateXlink(new DBXlinkBasic(
 								appearanceId,
-								DBTableEnum.APPEARANCE,
+								TableEnum.APPEARANCE,
 								href,
-								DBTableEnum.SURFACE_DATA
+								TableEnum.SURFACE_DATA
 						));
 					}
 				}

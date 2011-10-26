@@ -40,8 +40,8 @@ import org.citygml4j.model.citygml.waterbody.WaterSurface;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBTableEnum;
-import de.tub.citydb.database.DBTypeValueEnum;
+import de.tub.citydb.database.TableEnum;
+import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
 
@@ -105,7 +105,7 @@ public class DBWaterBoundarySurface implements DBImporter {
 		}
 
 		// TYPE
-		psWaterBoundarySurface.setString(5, DBTypeValueEnum.fromCityGMLClass(waterBoundarySurface.getCityGMLClass()).toString());
+		psWaterBoundarySurface.setString(5, TypeAttributeValueEnum.fromCityGMLClass(waterBoundarySurface.getCityGMLClass()).toString());
 
 		// waterLevel
 		if (waterBoundarySurface.getCityGMLClass() == CityGMLClass.WATER_SURFACE)
@@ -140,9 +140,9 @@ public class DBWaterBoundarySurface implements DBImporter {
         			if (href != null && href.length() != 0) {
         				DBXlinkBasic xlink = new DBXlinkBasic(
         						waterBoundarySurfaceId,
-        						DBTableEnum.WATERBOUNDARY_SURFACE,
+        						TableEnum.WATERBOUNDARY_SURFACE,
         						href,
-        						DBTableEnum.SURFACE_GEOMETRY
+        						TableEnum.SURFACE_GEOMETRY
         				);
 
         				xlink.setAttrName("LOD" + lod + "_SURFACE_ID");

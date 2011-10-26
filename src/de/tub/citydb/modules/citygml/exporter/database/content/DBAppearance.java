@@ -86,7 +86,7 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.DBTypeValueEnum;
+import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFileEnum;
@@ -240,11 +240,11 @@ public class DBAppearance implements DBExporter {
 					if (rs.wasNull() || surfaceDataType == null || surfaceDataType.length() == 0)
 						continue;
 
-					if (surfaceDataType.equals(DBTypeValueEnum.X3D_MATERIAL.toString().toUpperCase()))
+					if (surfaceDataType.equals(TypeAttributeValueEnum.X3D_MATERIAL.toString().toUpperCase()))
 						surfaceData = new X3DMaterialImpl();
-					else if (surfaceDataType.equals(DBTypeValueEnum.PARAMETERIZED_TEXTURE.toString().toUpperCase()))
+					else if (surfaceDataType.equals(TypeAttributeValueEnum.PARAMETERIZED_TEXTURE.toString().toUpperCase()))
 						surfaceData = new ParameterizedTextureImpl();
-					else if (surfaceDataType.equals(DBTypeValueEnum.GEOREFERENCED_TEXTURE.toString().toUpperCase()))
+					else if (surfaceDataType.equals(TypeAttributeValueEnum.GEOREFERENCED_TEXTURE.toString().toUpperCase()))
 						surfaceData = new GeoreferencedTextureImpl();
 
 					if (surfaceData == null)
@@ -622,11 +622,11 @@ public class DBAppearance implements DBExporter {
 				if (rs.wasNull() || surfaceDataType == null || surfaceDataType.length() == 0)
 					continue;
 
-				if (surfaceDataType.equals(DBTypeValueEnum.X3D_MATERIAL.toString().toUpperCase()))
+				if (surfaceDataType.equals(TypeAttributeValueEnum.X3D_MATERIAL.toString().toUpperCase()))
 					surfaceData = new X3DMaterialImpl();
-				else if (surfaceDataType.equals(DBTypeValueEnum.PARAMETERIZED_TEXTURE.toString().toUpperCase()))
+				else if (surfaceDataType.equals(TypeAttributeValueEnum.PARAMETERIZED_TEXTURE.toString().toUpperCase()))
 					surfaceData = new ParameterizedTextureImpl();
-				else if (surfaceDataType.equals(DBTypeValueEnum.GEOREFERENCED_TEXTURE.toString().toUpperCase()))
+				else if (surfaceDataType.equals(TypeAttributeValueEnum.GEOREFERENCED_TEXTURE.toString().toUpperCase()))
 					surfaceData = new GeoreferencedTextureImpl();
 
 				if (surfaceData == null)

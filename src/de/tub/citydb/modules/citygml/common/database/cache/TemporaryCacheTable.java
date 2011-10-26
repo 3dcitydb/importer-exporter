@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableBasic;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableDeprecatedMaterial;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGmlId;
@@ -52,7 +52,7 @@ import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableType;
 
 public class TemporaryCacheTable implements CacheTable {	
 	private final CacheTableModel model;
-	private final DBConnectionPool dbPool;
+	private final DatabaseConnectionPool dbPool;
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final String tableName;
 	private final boolean isStandAlone;
@@ -62,7 +62,7 @@ public class TemporaryCacheTable implements CacheTable {
 	private volatile boolean isCreated = false;
 	private volatile boolean isIndexed = false;
 
-	protected TemporaryCacheTable(CacheTableModelEnum model, DBConnectionPool dbPool, boolean isStandAlone) {
+	protected TemporaryCacheTable(CacheTableModelEnum model, DatabaseConnectionPool dbPool, boolean isStandAlone) {
 		switch (model) {
 		case BASIC:
 			this.model = CacheTableBasic.getInstance();
@@ -104,7 +104,7 @@ public class TemporaryCacheTable implements CacheTable {
 		tableName = createTableName();
 	}
 
-	protected TemporaryCacheTable(CacheTableModelEnum model, DBConnectionPool dbPool) {
+	protected TemporaryCacheTable(CacheTableModelEnum model, DatabaseConnectionPool dbPool) {
 		this(model, dbPool, true);
 	}
 

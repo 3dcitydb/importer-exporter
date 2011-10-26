@@ -27,37 +27,48 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.database;
+package de.tub.citydb.database;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.bind.annotation.XmlType;
+public enum TableEnum {
+	UNDEFINED,
+	ADDRESS,
+	ADDRESS_TO_BUILDING,
+	APPEARANCE,
+	SURFACE_DATA,
+	SURFACE_GEOMETRY,
+	IMPLICIT_GEOMETRY,
+	CITYOBJECT,
+	CITYOBJECT_GENERICATTRIB,
+	EXTERNAL_REFERENCE,
+	BUILDING,
+	ROOM,
+	BUILDING_FURNITURE,
+	BUILDING_INSTALLATION,
+	THEMATIC_SURFACE,
+	OPENING,
+	OPENING_TO_THEM_SURFACE,
+	WATERBODY,
+	WATERBOUNDARY_SURFACE,
+	WATERBOD_TO_WATERBND_SRF,
+	PLANT_COVER,
+	SOLITARY_VEGETAT_OBJECT,
+	TRANSPORTATION_COMPLEX,
+	TRAFFIC_AREA,
+	CITY_FURNITURE,
+	LAND_USE,
+	RELIEF_FEATURE,
+	RELIEF_COMPONENT,
+	TIN_RELIEF,
+	GENERIC_CITYOBJECT,
+	CITYOBJECTGROUP;
 
-@XmlType(name="DBOperationModeType")
-@XmlEnum
-public enum DBOperationMode {
-	@XmlEnumValue("report")
-    REPORT("report"),
-    @XmlEnumValue("boundingBox")
-    BBOX("boundingBox");
+	public static TableEnum fromInt(int i) {
+		for (TableEnum c : TableEnum.values()) {
+			if (c.ordinal() == i) {
+				return c;
+			}
+		}
 
-    private final String value;
-
-    DBOperationMode(String v) {
-        value = v;
-    }
-
-    public String value() {
-        return value;
-    }
-
-    public static DBOperationMode fromValue(String v) {
-        for (DBOperationMode c:DBOperationMode.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-
-        return REPORT;
-    }
+		return UNDEFINED;
+	}
 }

@@ -53,8 +53,8 @@ import org.citygml4j.model.gml.geometry.primitives.AbstractGeometricPrimitive;
 import org.citygml4j.model.gml.geometry.primitives.GeometricPrimitiveProperty;
 
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBTableEnum;
-import de.tub.citydb.database.DBTypeValueEnum;
+import de.tub.citydb.database.TableEnum;
+import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
@@ -154,7 +154,7 @@ public class DBTransportationComplex implements DBImporter {
 		}
 
 		// TYPE
-		psTransComplex.setString(7, DBTypeValueEnum.fromCityGMLClass(transComplex.getCityGMLClass()).toString());
+		psTransComplex.setString(7, TypeAttributeValueEnum.fromCityGMLClass(transComplex.getCityGMLClass()).toString());
 
 		// Geometry
         for (int lod = 1; lod < 5; lod++) {
@@ -186,9 +186,9 @@ public class DBTransportationComplex implements DBImporter {
         			if (href != null && href.length() != 0) {
         				DBXlinkBasic xlink = new DBXlinkBasic(
         						transComplexId,
-        						DBTableEnum.TRANSPORTATION_COMPLEX,
+        						TableEnum.TRANSPORTATION_COMPLEX,
         						href,
-        						DBTableEnum.SURFACE_GEOMETRY
+        						TableEnum.SURFACE_GEOMETRY
         				);
 
         				xlink.setAttrName("LOD" + lod + "_MULTI_SURFACE_ID");

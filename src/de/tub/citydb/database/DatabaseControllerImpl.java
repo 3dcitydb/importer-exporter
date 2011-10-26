@@ -1,4 +1,4 @@
-package de.tub.citydb.modules.database.controller;
+package de.tub.citydb.database;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,31 +10,64 @@ import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Workspace;
-import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.modules.database.DatabasePlugin;
-import de.tub.citydb.modules.database.gui.view.DatabasePanel;
 import de.tub.citydb.util.database.DBUtil;
 
 public class DatabaseControllerImpl implements DatabaseController {
-	private final DatabasePlugin plugin;
 	private final Config config;
-	private final DBConnectionPool dbPool;
-	
-	public DatabaseControllerImpl(Config config, DatabasePlugin plugin) {
-		this.plugin = plugin;
+	private final DatabaseConnectionPool dbPool;
+
+	private ConnectionViewHandler viewHandler;
+
+	public DatabaseControllerImpl(Config config) {
 		this.config = config;
-		
-		dbPool = DBConnectionPool.getInstance();
+		dbPool = DatabaseConnectionPool.getInstance();
 	}	
+	
+	public void setConnectionViewHandler(ConnectionViewHandler viewHandler) {
+		this.viewHandler = viewHandler;
+	}
 
 	@Override
-	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException {
-		((DatabasePanel)plugin.getView().getViewComponent()).connect(showErrorDialog);
+	public synchronized void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException {
+		if (!dbPool.isConnected()) {
+			viewHandler.commitConnectionDetails();
+			viewHandler.printConnectionState(ConnectionStateEnum.INIT_CONNECT);
+
+			try {
+				dbPool.connect(config);
+			} catch (DatabaseConfigurationException e) {
+				viewHandler.printError(ConnectionStateEnum.CONNECT_ERROR, e, showErrorDialog);
+				throw e;
+			} catch (SQLException e) {
+				viewHandler.printError(ConnectionStateEnum.CONNECT_ERROR, e, showErrorDialog);
+				throw e;
+			}
+
+			viewHandler.printConnectionState(ConnectionStateEnum.FINISH_CONNECT);
+		}
 	}
 
 	@Override
 	public void disconnect(boolean showErrorDialog) throws SQLException {
-		((DatabasePanel)plugin.getView().getViewComponent()).disconnect(showErrorDialog);
+		if (dbPool.isConnected()) {
+			viewHandler.printConnectionState(ConnectionStateEnum.INIT_DISCONNECT);
+
+			try {
+				dbPool.disconnect();
+			} catch (SQLException e) {
+				viewHandler.printError(ConnectionStateEnum.DISCONNECT_ERROR, e, showErrorDialog);
+				throw e;
+			}
+
+			viewHandler.printConnectionState(ConnectionStateEnum.FINISH_DISCONNECT);
+		}
+		
+		//((DatabasePanel)plugin.getView().getViewComponent()).disconnect(showErrorDialog);
+	}
+
+	@Override
+	public void forceDisconnect() {
+		dbPool.forceDisconnect();
 	}
 
 	public boolean isConnected() {
@@ -60,7 +93,7 @@ public class DatabaseControllerImpl implements DatabaseController {
 	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) throws SQLException {
 		return dbPool.gotoWorkspace(conn, new Workspace(workspaceName, timestamp));
 	}
-	
+
 	@Override
 	public boolean gotoWorkspace(Connection conn, String workspaceName) throws SQLException {
 		return gotoWorkspace(conn, workspaceName, null);
@@ -75,5 +108,5 @@ public class DatabaseControllerImpl implements DatabaseController {
 	public List<? extends DatabaseSrs> getDatabaseSrs() {
 		return config.getProject().getDatabase().getReferenceSystems();
 	}
-	
+
 }

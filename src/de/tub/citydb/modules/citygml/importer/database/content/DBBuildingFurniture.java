@@ -47,7 +47,7 @@ import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
 
@@ -155,9 +155,9 @@ public class DBBuildingFurniture implements DBImporter {
 				if (href != null && href.length() != 0) {
 					DBXlinkBasic xlink = new DBXlinkBasic(
 							buildingFurnitureId,
-							DBTableEnum.BUILDING_FURNITURE,
+							TableEnum.BUILDING_FURNITURE,
 							href,
-							DBTableEnum.SURFACE_GEOMETRY
+							TableEnum.SURFACE_GEOMETRY
 					);
 
 					xlink.setAttrName("LOD4_GEOMETRY_ID");

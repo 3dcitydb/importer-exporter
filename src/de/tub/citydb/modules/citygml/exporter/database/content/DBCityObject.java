@@ -67,7 +67,7 @@ import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.BoundingBoxFilter;
 
@@ -119,7 +119,7 @@ public class DBCityObject implements DBExporter {
 
 		transformCoords = config.getInternal().isTransformCoordinates();
 		if (!transformCoords) {		
-			gmlSrsName = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrsName();
+			gmlSrsName = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getSrsName();
 
 			psCityObject = connection.prepareStatement("select co.GMLID, co.ENVELOPE, co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
 					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
@@ -271,19 +271,17 @@ public class DBCityObject implements DBExporter {
 							break;
 						case 2:
 							Integer intVal = rs.getInt("INTVAL");
-							if (rs.wasNull())
-								intVal = null;
-							
-							genericAttrib = new IntAttributeImpl();
-							((IntAttribute)genericAttrib).setValue(intVal);
+							if (!rs.wasNull()) {
+								genericAttrib = new IntAttributeImpl();
+								((IntAttribute)genericAttrib).setValue(intVal);
+							}
 							break;
 						case 3:
 							Double realVal = rs.getDouble("REALVAL");
-							if (rs.wasNull())
-								realVal = null;
-							
-							genericAttrib = new DoubleAttributeImpl();
-							((DoubleAttribute)genericAttrib).setValue(realVal);
+							if (!rs.wasNull()) {							
+								genericAttrib = new DoubleAttributeImpl();
+								((DoubleAttribute)genericAttrib).setValue(realVal);
+							}
 							break;
 						case 4:
 							String uriVal = rs.getString("URIVAL");

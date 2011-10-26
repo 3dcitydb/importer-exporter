@@ -43,7 +43,7 @@ import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
@@ -208,9 +208,9 @@ public class DBImplicitGeometry implements DBImporter {
 		if (isXLink && gmlId != null) {
 			dbImporterManager.propagateXlink(new DBXlinkBasic(
 					implicitGeometryId, 
-					DBTableEnum.IMPLICIT_GEOMETRY, 
+					TableEnum.IMPLICIT_GEOMETRY, 
 					gmlId, 
-					DBTableEnum.SURFACE_GEOMETRY)
+					TableEnum.SURFACE_GEOMETRY)
 			);
 		}
 		

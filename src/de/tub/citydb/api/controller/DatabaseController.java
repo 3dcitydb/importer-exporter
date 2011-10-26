@@ -11,6 +11,7 @@ import de.tub.citydb.api.database.DatabaseConnectionDetails;
 public interface DatabaseController {
 	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException;
 	public void disconnect(boolean showErrorDialog) throws SQLException;
+	public void forceDisconnect();
 	public boolean isConnected();
 
 	public DatabaseConnectionDetails getActiveConnectionDetails();

@@ -58,8 +58,8 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.database.DBTypeValueEnum;
+import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFileEnum;
@@ -95,7 +95,7 @@ public class DBSurfaceData implements DBImporter {
 
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-		dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
+		dbSrid = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 		importTextureImage = config.getProject().getImporter().getAppearances().isSetImportTextureFiles();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
@@ -195,7 +195,7 @@ public class DBSurfaceData implements DBImporter {
 			psSurfaceData.setInt(6, 1);
 
 		// type
-		psSurfaceData.setString(7, DBTypeValueEnum.fromCityGMLClass(abstractSurfData.getCityGMLClass()).toString());
+		psSurfaceData.setString(7, TypeAttributeValueEnum.fromCityGMLClass(abstractSurfData.getCityGMLClass()).toString());
 
 		// fill other columns depending on the type
 		if (abstractSurfData.getCityGMLClass() == CityGMLClass.X3D_MATERIAL) {

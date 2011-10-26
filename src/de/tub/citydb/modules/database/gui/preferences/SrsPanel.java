@@ -75,7 +75,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.ConfigUtil;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DatabaseSrsList;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory;
@@ -89,7 +89,7 @@ import de.tub.citydb.util.gui.GuiUtil;
 public class SrsPanel extends AbstractPreferencesComponent implements EventHandler, DropTargetListener {
 	private static final int BORDER_THICKNESS = 5;
 	private final Logger LOG = Logger.getInstance();
-	private final DBConnectionPool dbPool;
+	private final DatabaseConnectionPool dbPool;
 	private final ImpExpGui topFrame;
 
 	private JLabel srsComboBoxLabel;
@@ -122,7 +122,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	public SrsPanel(Config config, ImpExpGui topFrame) {
 		super(config);
 		this.topFrame = topFrame;
-		dbPool = DBConnectionPool.getInstance();
+		dbPool = DatabaseConnectionPool.getInstance();
 
 		initGui();
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);

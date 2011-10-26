@@ -42,8 +42,8 @@ import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBTableEnum;
-import de.tub.citydb.database.DBTypeValueEnum;
+import de.tub.citydb.database.TableEnum;
+import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
@@ -117,7 +117,7 @@ public class DBOpening implements DBImporter {
 		}
 
 		// TYPE
-		psOpening.setString(5, DBTypeValueEnum.fromCityGMLClass(opening.getCityGMLClass()).toString());
+		psOpening.setString(5, TypeAttributeValueEnum.fromCityGMLClass(opening.getCityGMLClass()).toString());
 
 		// citygml:address
 		if (opening.getCityGMLClass() == CityGMLClass.DOOR) {
@@ -151,9 +151,9 @@ public class DBOpening implements DBImporter {
 					if (href != null && href.length() != 0) {
 						DBXlinkBasic xlink = new DBXlinkBasic(
 								openingId,
-								DBTableEnum.OPENING,
+								TableEnum.OPENING,
 								href,
-								DBTableEnum.ADDRESS
+								TableEnum.ADDRESS
 						);
 
 						xlink.setAttrName("ADDRESS_ID");
@@ -195,9 +195,9 @@ public class DBOpening implements DBImporter {
 					if (href != null && href.length() != 0) {
 						DBXlinkBasic xlink = new DBXlinkBasic(
 								openingId,
-								DBTableEnum.OPENING,
+								TableEnum.OPENING,
 								href,
-								DBTableEnum.SURFACE_GEOMETRY
+								TableEnum.SURFACE_GEOMETRY
 						);
 
 						xlink.setAttrName("LOD" + lod + "_MULTI_SURFACE_ID");

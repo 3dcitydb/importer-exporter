@@ -39,7 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 
@@ -64,7 +64,7 @@ public class XlinkBasic implements DBXlinkResolver {
 	}
 
 	public boolean insert(DBXlinkBasic xlink) throws SQLException {
-		CityGMLClass type = xlink.getToTable() == DBTableEnum.SURFACE_GEOMETRY ? 
+		CityGMLClass type = xlink.getToTable() == TableEnum.SURFACE_GEOMETRY ? 
 				CityGMLClass.ABSTRACT_GML_GEOMETRY : CityGMLClass.ABSTRACT_CITY_OBJECT;
 
 		GmlIdEntry entry = resolverManager.getDBId(xlink.getGmlId(), type);
@@ -86,7 +86,7 @@ public class XlinkBasic implements DBXlinkResolver {
 				psBatchCounterMap.put(key, counter);
 		}
 		
-		if (xlink.getToTable() == DBTableEnum.SURFACE_GEOMETRY) {
+		if (xlink.getToTable() == TableEnum.SURFACE_GEOMETRY) {
 			psUpdateSurfGeom.setLong(1, entry.getId());
 			psUpdateSurfGeom.addBatch();
 			if (++updateBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
@@ -97,39 +97,39 @@ public class XlinkBasic implements DBXlinkResolver {
 	}
 
 	private PreparedStatement getPreparedStatement(DBXlinkBasic xlink, String key) throws SQLException {
-		DBTableEnum fromTable = xlink.getFromTable();
-		DBTableEnum toTable = xlink.getToTable();
+		TableEnum fromTable = xlink.getFromTable();
+		TableEnum toTable = xlink.getToTable();
 		String attrName = xlink.getAttrName();
 		
 		PreparedStatement ps = psMap.get(key);
 
 		if (ps == null) {
-			if (fromTable == DBTableEnum.THEMATIC_SURFACE && toTable == DBTableEnum.OPENING) {
+			if (fromTable == TableEnum.THEMATIC_SURFACE && toTable == TableEnum.OPENING) {
 				ps = batchConn.prepareStatement("insert into OPENING_TO_THEM_SURFACE (OPENING_ID, THEMATIC_SURFACE_ID) values " +
 				"(?, ?)");
 			}
 
-			else if (fromTable == DBTableEnum.APPEARANCE && toTable == DBTableEnum.SURFACE_DATA) {
+			else if (fromTable == TableEnum.APPEARANCE && toTable == TableEnum.SURFACE_DATA) {
 				ps = batchConn.prepareStatement("insert into APPEAR_TO_SURFACE_DATA (SURFACE_DATA_ID, APPEARANCE_ID) values " +
 				"(?, ?)");
 			}
 
-			else if (fromTable == DBTableEnum.WATERBODY && toTable == DBTableEnum.WATERBOUNDARY_SURFACE) {
+			else if (fromTable == TableEnum.WATERBODY && toTable == TableEnum.WATERBOUNDARY_SURFACE) {
 				ps = batchConn.prepareStatement("insert into WATERBOD_TO_WATERBND_SRF (WATERBOUNDARY_SURFACE_ID, WATERBODY_ID) values " +
 				"(?, ?)");
 			}
 
-			else if (fromTable == DBTableEnum.BUILDING && toTable == DBTableEnum.ADDRESS) {
+			else if (fromTable == TableEnum.BUILDING && toTable == TableEnum.ADDRESS) {
 				ps = batchConn.prepareStatement("insert into ADDRESS_TO_BUILDING (ADDRESS_ID, BUILDING_ID) values " +
 				"(?, ?)");
 			}
 
-			else if (fromTable == DBTableEnum.RELIEF_FEATURE && toTable == DBTableEnum.RELIEF_COMPONENT) {
+			else if (fromTable == TableEnum.RELIEF_FEATURE && toTable == TableEnum.RELIEF_COMPONENT) {
 				ps = batchConn.prepareStatement("insert into RELIEF_FEAT_TO_REL_COMP (RELIEF_COMPONENT_ID, RELIEF_FEATURE_ID) values " +
 				"(?, ?)");
 			} 
 
-			else if (fromTable == DBTableEnum.CITYOBJECT && toTable == DBTableEnum.CITYOBJECT) {
+			else if (fromTable == TableEnum.CITYOBJECT && toTable == TableEnum.CITYOBJECT) {
 				ps = batchConn.prepareStatement("insert into GENERALIZATION (GENERALIZES_TO_ID, CITYOBJECT_ID) values " +
 				"(?, ?)");
 			}

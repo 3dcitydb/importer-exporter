@@ -44,7 +44,7 @@ import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
@@ -55,7 +55,7 @@ public class KmlSplitter {
 
 	private final static int BUILDING = Util.cityObject2classId(CityGMLClass.BUILDING);
 	
-	private final DBConnectionPool dbConnectionPool;
+	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
 	private final DisplayLevel displayLevel;
 	private final ExportFilter exportFilter;
@@ -64,7 +64,7 @@ public class KmlSplitter {
 
 	private Connection connection;
 	
-	public KmlSplitter(DBConnectionPool dbConnectionPool, 
+	public KmlSplitter(DatabaseConnectionPool dbConnectionPool, 
 					   WorkerPool<KmlSplittingResult> dbWorkerPool, 
 					   ExportFilter exportFilter, 
 					   DisplayLevel displayLevel,
@@ -115,7 +115,7 @@ public class KmlSplitter {
 			try {
 				spatialQuery = connection.prepareStatement(TileQueries.QUERY_GET_GMLIDS);
 
-				int srid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
+				int srid = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 
 				spatialQuery.setInt(1, srid);
 				// coordinates for inside

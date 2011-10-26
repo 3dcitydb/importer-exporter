@@ -42,7 +42,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
@@ -82,7 +82,7 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 	private Thread workerThread = null;
 
 	// instance members needed to do work
-	private final DBConnectionPool dbPool;
+	private final DatabaseConnectionPool dbPool;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
 	private final CacheManager cacheManager;
@@ -96,7 +96,7 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 	private int updateCounter = 0;
 	private int commitAfter = 20;
 
-	public DBImportXlinkResolverWorker(DBConnectionPool dbPool, 
+	public DBImportXlinkResolverWorker(DatabaseConnectionPool dbPool, 
 			WorkerPool<DBXlink> tmpXlinkPool, 
 			DBGmlIdLookupServerManager lookupServerManager, 
 			CacheManager cacheManager, 

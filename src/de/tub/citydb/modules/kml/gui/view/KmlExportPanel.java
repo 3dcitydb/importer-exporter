@@ -79,7 +79,7 @@ import de.tub.citydb.config.project.filter.FilterMode;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.ExportStatusDialog;
 import de.tub.citydb.gui.components.bbox.BoundingBoxPanelImpl;
@@ -104,7 +104,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private final JAXBContext jaxbKmlContext, jaxbColladaContext;
 	private final Config config;
 	private final ImpExpGui mainView;
-	private final DBConnectionPool dbPool;
+	private final DatabaseConnectionPool dbPool;
 
 	private Box jPanelInput;
 
@@ -172,7 +172,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.mainView = mainView;
 		this.config = config;
-		dbPool = DBConnectionPool.getInstance();
+		dbPool = DatabaseConnectionPool.getInstance();
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
 
 		initGui();

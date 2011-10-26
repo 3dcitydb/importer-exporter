@@ -86,8 +86,8 @@ import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
-import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.database.DBTypeValueEnum;
+import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -119,7 +119,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	// instance members needed to do work
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
-	private final DBConnectionPool dbConnectionPool;
+	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final ObjectFactory kmlFactory; 
 	private final CityGMLFactory cityGMLFactory; 
@@ -144,7 +144,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 	public KmlExportWorker(JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
-			DBConnectionPool dbConnectionPool,
+			DatabaseConnectionPool dbConnectionPool,
 			WorkerPool<SAXEventBuffer> ioWriterPool,
 			ObjectFactory kmlFactory,
 			CityGMLFactory cityGMLFactory,
@@ -681,8 +681,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				surfaceType = surfaceType + "Surface";
 			}
 
-			if ((!includeGroundSurface && DBTypeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) ||
-					(!includeClosureSurface && DBTypeValueEnum.fromCityGMLClass(CityGMLClass.CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType)))	{
+			if ((!includeGroundSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) ||
+					(!includeClosureSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType)))	{
 				continue;
 			}
 
@@ -733,8 +733,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 			if (surfaceType == null) {
 				surfaceType = (probablyRoof && currentLod < 3) ?
-						DBTypeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() :
-							DBTypeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString();
+						TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() :
+							TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString();
 			}
 
 			multiGeometry = multiGeometries.get(surfaceType);
@@ -1432,7 +1432,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 			long surfaceId = rs.getLong("id");
 			// results are ordered by surface type
-			if (!includeGroundSurface && DBTypeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) {
+			if (!includeGroundSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) {
 				continue;
 			}
 
@@ -1499,8 +1499,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 						if (surfaceType == null) {
 							String likelySurfaceType = (probablyRoof && currentLod < 3) ?
-									DBTypeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString().toString() :
-										DBTypeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString();
+									TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString().toString() :
+										TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString();
 									placemark.setStyleUrl("#" + likelySurfaceType + "Normal");
 						}
 

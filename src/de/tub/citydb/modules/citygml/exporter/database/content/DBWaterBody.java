@@ -69,7 +69,7 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.DBTypeValueEnum;
+import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
@@ -283,11 +283,11 @@ public class DBWaterBody implements DBExporter {
 				if (rs.wasNull() || type == null || type.length() == 0)
 					continue;
 
-				if (type.equals(DBTypeValueEnum.WATER_SURFACE.toString().toUpperCase()))
+				if (type.equals(TypeAttributeValueEnum.WATER_SURFACE.toString().toUpperCase()))
 					waterBoundarySurface = new WaterSurfaceImpl();
-				else if (type.equals(DBTypeValueEnum.WATER_GROUND_SURFACE.toString().toUpperCase()))
+				else if (type.equals(TypeAttributeValueEnum.WATER_GROUND_SURFACE.toString().toUpperCase()))
 					waterBoundarySurface = new WaterGroundSurfaceImpl();
-				else if (type.equals(DBTypeValueEnum.WATER_CLOSURE_SURFACE.toString().toUpperCase()))
+				else if (type.equals(TypeAttributeValueEnum.WATER_CLOSURE_SURFACE.toString().toUpperCase()))
 					waterBoundarySurface = new WaterClosureSurfaceImpl();
 
 				if (waterBoundarySurface == null)

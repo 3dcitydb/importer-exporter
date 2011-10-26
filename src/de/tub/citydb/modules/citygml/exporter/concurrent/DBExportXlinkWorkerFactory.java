@@ -35,15 +35,15 @@ import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerFactory;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 
 public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
-	private final DBConnectionPool dbConnectionPool;
+	private final DatabaseConnectionPool dbConnectionPool;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBExportXlinkWorkerFactory(DBConnectionPool dbConnectionPool, Config config, EventDispatcher eventDispatcher) {
+	public DBExportXlinkWorkerFactory(DatabaseConnectionPool dbConnectionPool, Config config, EventDispatcher eventDispatcher) {
 		this.dbConnectionPool = dbConnectionPool;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;

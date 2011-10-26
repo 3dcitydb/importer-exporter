@@ -48,7 +48,7 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.exporter.controller.Exporter;
 import de.tub.citydb.modules.citygml.importer.controller.Importer;
@@ -57,7 +57,7 @@ import de.tub.citydb.modules.kml.controller.KmlExporter;
 
 public class ImpExpCmd {
 	private final Logger LOG = Logger.getInstance();
-	private final DBConnectionPool dbPool;
+	private final DatabaseConnectionPool dbPool;
 	private JAXBBuilder cityGMLBuilder;
 	private JAXBContext jaxbKmlContext;
 	private JAXBContext jaxbColladaContext;
@@ -66,7 +66,7 @@ public class ImpExpCmd {
 	public ImpExpCmd(JAXBBuilder cityGMLBuilder, Config config) {
 		this.cityGMLBuilder = cityGMLBuilder;
 		this.config = config;
-		dbPool = DBConnectionPool.getInstance();
+		dbPool = DatabaseConnectionPool.getInstance();
 	}
 
 	public ImpExpCmd(JAXBContext jaxbKmlContext,
@@ -75,7 +75,7 @@ public class ImpExpCmd {
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.config = config;
-		dbPool = DBConnectionPool.getInstance();
+		dbPool = DatabaseConnectionPool.getInstance();
 	}
 
 	public void doImport(String importFiles) {

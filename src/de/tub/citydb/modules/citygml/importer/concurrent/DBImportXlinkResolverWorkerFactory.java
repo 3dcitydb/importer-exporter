@@ -36,14 +36,14 @@ import de.tub.citydb.api.concurrent.WorkerFactory;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.common.filter.ImportFilter;
 
 public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink> {
-	private final DBConnectionPool dbPool;
+	private final DatabaseConnectionPool dbPool;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
 	private final CacheManager cacheManager;
@@ -51,7 +51,7 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBImportXlinkResolverWorkerFactory(DBConnectionPool dbPool, 
+	public DBImportXlinkResolverWorkerFactory(DatabaseConnectionPool dbPool, 
 			WorkerPool<DBXlink> tmpXlinkPool, 
 			DBGmlIdLookupServerManager lookupServerManager, 
 			CacheManager cacheManager, 

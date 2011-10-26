@@ -38,7 +38,7 @@ import org.citygml4j.model.citygml.landuse.LandUse;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
 
@@ -167,9 +167,9 @@ public class DBLandUse implements DBImporter {
         			if (href != null && href.length() != 0) {
         				DBXlinkBasic xlink = new DBXlinkBasic(
         						landUseId,
-        						DBTableEnum.LAND_USE,
+        						TableEnum.LAND_USE,
         						href,
-        						DBTableEnum.SURFACE_GEOMETRY
+        						TableEnum.SURFACE_GEOMETRY
         				);
 
         				xlink.setAttrName("LOD" + lod + "_MULTI_SURFACE_ID");

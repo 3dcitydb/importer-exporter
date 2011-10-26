@@ -29,16 +29,16 @@
  */
 package de.tub.citydb.modules.citygml.common.database.xlink;
 
-import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.TableEnum;
 
 public class DBXlinkBasic implements DBXlink {
 	private long id;
-	private DBTableEnum fromTable;
+	private TableEnum fromTable;
 	private String gmlId;
-	private DBTableEnum toTable;
+	private TableEnum toTable;
 	private String attrName;
 
-	public DBXlinkBasic(long id, DBTableEnum fromTable, String gmlId, DBTableEnum toTable) {
+	public DBXlinkBasic(long id, TableEnum fromTable, String gmlId, TableEnum toTable) {
 		this.id = id;
 		this.fromTable = fromTable;
 		this.gmlId = gmlId;
@@ -49,19 +49,19 @@ public class DBXlinkBasic implements DBXlink {
 		return id;
 	}
 
-	public DBTableEnum getFromTable() {
+	public TableEnum getFromTable() {
 		return fromTable;
 	}
 
-	public void setFromTable(DBTableEnum fromTable) {
+	public void setFromTable(TableEnum fromTable) {
 		this.fromTable = fromTable;
 	}
 
-	public DBTableEnum getToTable() {
+	public TableEnum getToTable() {
 		return toTable;
 	}
 
-	public void setToTable(DBTableEnum toTable) {
+	public void setToTable(TableEnum toTable) {
 		this.toTable = toTable;
 	}
 

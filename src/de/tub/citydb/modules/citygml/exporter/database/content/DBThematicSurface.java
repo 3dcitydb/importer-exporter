@@ -101,7 +101,7 @@ import org.citygml4j.model.xal.ThoroughfareNumber;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.DBTypeValueEnum;
+import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.util.Util;
 
 public class DBThematicSurface implements DBExporter {
@@ -193,19 +193,19 @@ public class DBThematicSurface implements DBExporter {
 					if (rs.wasNull() || type == null || type.length() == 0)
 						continue;
 
-					if (type.equals(DBTypeValueEnum.WALL_SURFACE.toString().toUpperCase()))
+					if (type.equals(TypeAttributeValueEnum.WALL_SURFACE.toString().toUpperCase()))
 						boundarySurface = new WallSurfaceImpl();
-					else if (type.equals(DBTypeValueEnum.ROOF_SURFACE.toString().toUpperCase()))
+					else if (type.equals(TypeAttributeValueEnum.ROOF_SURFACE.toString().toUpperCase()))
 						boundarySurface = new RoofSurfaceImpl();
-					else if (type.equals(DBTypeValueEnum.INTERIOR_WALL_SURFACE.toString().toUpperCase()))
+					else if (type.equals(TypeAttributeValueEnum.INTERIOR_WALL_SURFACE.toString().toUpperCase()))
 						boundarySurface = new InteriorWallSurfaceImpl();
-					else if (type.equals(DBTypeValueEnum.GROUND_SURFACE.toString().toUpperCase()))
+					else if (type.equals(TypeAttributeValueEnum.GROUND_SURFACE.toString().toUpperCase()))
 						boundarySurface = new GroundSurfaceImpl();
-					else if (type.equals(DBTypeValueEnum.FLOOR_SURFACE.toString().toUpperCase()))
+					else if (type.equals(TypeAttributeValueEnum.FLOOR_SURFACE.toString().toUpperCase()))
 						boundarySurface = new FloorSurfaceImpl();
-					else if (type.equals(DBTypeValueEnum.CLOSURE_SURFACE.toString().toUpperCase()))
+					else if (type.equals(TypeAttributeValueEnum.CLOSURE_SURFACE.toString().toUpperCase()))
 						boundarySurface = new ClosureSurfaceImpl();
-					else if (type.equals(DBTypeValueEnum.CEILING_SURFACE.toString().toUpperCase()))
+					else if (type.equals(TypeAttributeValueEnum.CEILING_SURFACE.toString().toUpperCase()))
 						boundarySurface = new CeilingSurfaceImpl();
 
 					if (boundarySurface == null)
@@ -274,9 +274,9 @@ public class DBThematicSurface implements DBExporter {
 				if (rs.wasNull() || type == null || type.length() == 0)
 					continue;
 
-				if (type.equals(DBTypeValueEnum.WINDOW.toString().toUpperCase()))
+				if (type.equals(TypeAttributeValueEnum.WINDOW.toString().toUpperCase()))
 					opening = new WindowImpl();
-				else if (type.equals(DBTypeValueEnum.DOOR.toString().toUpperCase()))
+				else if (type.equals(TypeAttributeValueEnum.DOOR.toString().toUpperCase()))
 					opening = new DoorImpl();
 
 				if (opening == null)
@@ -407,19 +407,19 @@ public class DBThematicSurface implements DBExporter {
 					if (rs.wasNull() || type == null || type.length() == 0)
 						continue;
 
-					if (type.equals(DBTypeValueEnum.WALL_SURFACE.toString().toUpperCase()))
+					if (type.equals(TypeAttributeValueEnum.WALL_SURFACE.toString().toUpperCase()))
 						boundarySurface = new WallSurfaceImpl();
-					else if (type.equals(DBTypeValueEnum.ROOF_SURFACE.toString().toUpperCase()))
+					else if (type.equals(TypeAttributeValueEnum.ROOF_SURFACE.toString().toUpperCase()))
 						boundarySurface = new RoofSurfaceImpl();
-					else if (type.equals(DBTypeValueEnum.INTERIOR_WALL_SURFACE.toString().toUpperCase()))
+					else if (type.equals(TypeAttributeValueEnum.INTERIOR_WALL_SURFACE.toString().toUpperCase()))
 						boundarySurface = new InteriorWallSurfaceImpl();
-					else if (type.equals(DBTypeValueEnum.GROUND_SURFACE.toString().toUpperCase()))
+					else if (type.equals(TypeAttributeValueEnum.GROUND_SURFACE.toString().toUpperCase()))
 						boundarySurface = new GroundSurfaceImpl();
-					else if (type.equals(DBTypeValueEnum.FLOOR_SURFACE.toString().toUpperCase()))
+					else if (type.equals(TypeAttributeValueEnum.FLOOR_SURFACE.toString().toUpperCase()))
 						boundarySurface = new FloorSurfaceImpl();
-					else if (type.equals(DBTypeValueEnum.CLOSURE_SURFACE.toString().toUpperCase()))
+					else if (type.equals(TypeAttributeValueEnum.CLOSURE_SURFACE.toString().toUpperCase()))
 						boundarySurface = new ClosureSurfaceImpl();
-					else if (type.equals(DBTypeValueEnum.CEILING_SURFACE.toString().toUpperCase()))
+					else if (type.equals(TypeAttributeValueEnum.CEILING_SURFACE.toString().toUpperCase()))
 						boundarySurface = new CeilingSurfaceImpl();
 
 					if (boundarySurface == null)
@@ -488,9 +488,9 @@ public class DBThematicSurface implements DBExporter {
 				if (rs.wasNull() || type == null || type.length() == 0)
 					continue;
 
-				if (type.equals(DBTypeValueEnum.WINDOW.toString().toUpperCase()))
+				if (type.equals(TypeAttributeValueEnum.WINDOW.toString().toUpperCase()))
 					opening = new WindowImpl();
-				else if (type.equals(DBTypeValueEnum.DOOR.toString().toUpperCase()))
+				else if (type.equals(TypeAttributeValueEnum.DOOR.toString().toUpperCase()))
 					opening = new DoorImpl();
 
 				if (opening == null)

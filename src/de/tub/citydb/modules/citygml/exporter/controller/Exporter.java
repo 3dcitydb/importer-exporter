@@ -74,7 +74,7 @@ import de.tub.citydb.config.project.filter.TileNameSuffixMode;
 import de.tub.citydb.config.project.filter.TileSuffixMode;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
@@ -100,7 +100,7 @@ public class Exporter implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
 
 	private final JAXBBuilder jaxbBuilder;
-	private final DBConnectionPool dbPool;
+	private final DatabaseConnectionPool dbPool;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 	private DBSplitter dbSplitter;
@@ -121,7 +121,7 @@ public class Exporter implements EventHandler {
 	private EnumMap<CityGMLClass, Long> featureCounterMap;
 	private EnumMap<GMLClass, Long> geometryCounterMap;
 
-	public Exporter(JAXBBuilder jaxbBuilder, DBConnectionPool dbPool, Config config, EventDispatcher eventDispatcher) {
+	public Exporter(JAXBBuilder jaxbBuilder, DatabaseConnectionPool dbPool, Config config, EventDispatcher eventDispatcher) {
 		this.jaxbBuilder = jaxbBuilder;
 		this.dbPool = dbPool;
 		this.config = config;

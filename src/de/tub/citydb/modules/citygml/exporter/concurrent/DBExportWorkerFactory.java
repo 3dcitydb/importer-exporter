@@ -39,14 +39,14 @@ import de.tub.citydb.api.concurrent.WorkerFactory;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBSplittingResult;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 
 public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
-	private final DBConnectionPool dbConnectionPool;
+	private final DatabaseConnectionPool dbConnectionPool;
 	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
@@ -56,7 +56,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	private final EventDispatcher eventDispatcher;
 
 	public DBExportWorkerFactory(
-			DBConnectionPool dbConnectionPool,
+			DatabaseConnectionPool dbConnectionPool,
 			JAXBBuilder jaxbBuilder,
 			WorkerPool<SAXEventBuffer> ioWriterPool,
 			WorkerPool<DBXlink> xlinkExporterPool,

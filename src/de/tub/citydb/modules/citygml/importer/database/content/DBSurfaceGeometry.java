@@ -77,7 +77,7 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLinearRing;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
@@ -111,7 +111,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-		dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
+		dbSrid = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();

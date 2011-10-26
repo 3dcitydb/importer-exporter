@@ -54,8 +54,8 @@ import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.event.DatabaseConnectionStateEventImpl;
 import de.tub.citydb.util.database.DBUtil;
 
-public class DBConnectionPool {
-	private static DBConnectionPool instance = new DBConnectionPool();
+public class DatabaseConnectionPool {
+	private static DatabaseConnectionPool instance = new DatabaseConnectionPool();
 
 	private final String poolName = "oracle.pool";
 	private final EventDispatcher eventDispatcher;
@@ -63,7 +63,7 @@ public class DBConnectionPool {
 	private PoolDataSource poolDataSource;
 	private DBConnection activeConnection;
 
-	private DBConnectionPool() {
+	private DatabaseConnectionPool() {
 		// just to thwart instantiation
 		try {
 			poolManager = UniversalConnectionPoolManagerImpl.getUniversalConnectionPoolManager();
@@ -74,7 +74,7 @@ public class DBConnectionPool {
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 	}
 
-	public static DBConnectionPool getInstance() {
+	public static DatabaseConnectionPool getInstance() {
 		return instance;
 	}
 

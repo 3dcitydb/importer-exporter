@@ -54,8 +54,8 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.modules.citygml.importer.util.LocalGeometryXlinkResolver;
@@ -97,7 +97,7 @@ public class DBCityObject implements DBImporter {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		rememberGmlId = config.getProject().getImporter().getGmlId().isSetKeepGmlIdAsExternalReference();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
-		dbSrid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
+		dbSrid = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 
@@ -263,9 +263,9 @@ public class DBCityObject implements DBImporter {
 					if (href != null && href.length() != 0) {
 						dbImporterManager.propagateXlink(new DBXlinkBasic(
 								cityObjectId,
-								DBTableEnum.CITYOBJECT,
+								TableEnum.CITYOBJECT,
 								href,
-								DBTableEnum.CITYOBJECT
+								TableEnum.CITYOBJECT
 						));
 					}
 				}

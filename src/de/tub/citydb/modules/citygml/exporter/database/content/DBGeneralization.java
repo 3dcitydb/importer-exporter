@@ -48,7 +48,7 @@ import org.citygml4j.model.citygml.core.GeneralizationRelation;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.BoundingBoxFilter;
 import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
@@ -138,42 +138,42 @@ public class DBGeneralization implements DBExporter {
 					if (featureGmlNameFilter.isActive()) {
 						// we need to get the gml:name of the feature 
 						// we only check top-level features
-						DBTableEnum table = null;
+						TableEnum table = null;
 
 						switch (type) {
 						case BUILDING:
-							table = DBTableEnum.BUILDING;
+							table = TableEnum.BUILDING;
 							break;
 						case CITY_FURNITURE:
-							table = DBTableEnum.CITY_FURNITURE;
+							table = TableEnum.CITY_FURNITURE;
 							break;
 						case LAND_USE:
-							table = DBTableEnum.LAND_USE;
+							table = TableEnum.LAND_USE;
 							break;
 						case WATER_BODY:
-							table = DBTableEnum.WATERBODY;
+							table = TableEnum.WATERBODY;
 							break;
 						case PLANT_COVER:
-							table = DBTableEnum.SOLITARY_VEGETAT_OBJECT;
+							table = TableEnum.SOLITARY_VEGETAT_OBJECT;
 							break;
 						case SOLITARY_VEGETATION_OBJECT:
-							table = DBTableEnum.PLANT_COVER;
+							table = TableEnum.PLANT_COVER;
 							break;
 						case TRANSPORTATION_COMPLEX:
 						case ROAD:
 						case RAILWAY:
 						case TRACK:
 						case SQUARE:
-							table = DBTableEnum.TRANSPORTATION_COMPLEX;
+							table = TableEnum.TRANSPORTATION_COMPLEX;
 							break;
 						case RELIEF_FEATURE:
-							table = DBTableEnum.RELIEF_FEATURE;
+							table = TableEnum.RELIEF_FEATURE;
 							break;
 						case GENERIC_CITY_OBJECT:
-							table = DBTableEnum.GENERIC_CITYOBJECT;
+							table = TableEnum.GENERIC_CITYOBJECT;
 							break;
 						case CITY_OBJECT_GROUP:
-							table = DBTableEnum.CITYOBJECTGROUP;
+							table = TableEnum.CITYOBJECTGROUP;
 							break;
 						}
 

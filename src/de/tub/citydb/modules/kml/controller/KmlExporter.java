@@ -96,8 +96,8 @@ import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
-import de.tub.citydb.database.DBConnectionPool;
-import de.tub.citydb.database.DBTypeValueEnum;
+import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.concurrent.IOWriterWorkerFactory;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -120,7 +120,7 @@ import de.tub.citydb.util.database.DBUtil;
 public class KmlExporter implements EventHandler {
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
-	private final DBConnectionPool dbPool;
+	private final DatabaseConnectionPool dbPool;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
@@ -158,7 +158,7 @@ public class KmlExporter implements EventHandler {
 
 	public KmlExporter (JAXBContext jaxbKmlContext,
 						JAXBContext jaxbColladaContext,
-						DBConnectionPool dbPool,
+						DatabaseConnectionPool dbPool,
 						Config config,
 						EventDispatcher eventDispatcher) {
 		this.jaxbKmlContext = jaxbKmlContext;
@@ -917,7 +917,7 @@ public class KmlExporter implements EventHandler {
 			PolyStyleType polyStyleGroundSurface = kmlFactory.createPolyStyleType();
 			polyStyleGroundSurface.setColor(hexStringToByteArray("ff00aa00"));
 			StyleType styleGroundSurface = kmlFactory.createStyleType();
-			styleGroundSurface.setId(DBTypeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString() + "Style");
+			styleGroundSurface.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString() + "Style");
 			styleGroundSurface.setPolyStyle(polyStyleGroundSurface);
 
 			indexOfDl = config.getProject().getKmlExporter().getDisplayLevels().indexOf(displayLevel);
@@ -946,7 +946,7 @@ public class KmlExporter implements EventHandler {
 			PolyStyleType polyStyleWallNormal = kmlFactory.createPolyStyleType();
 			polyStyleWallNormal.setColor(hexStringToByteArray(wallFillColor));
 			StyleType styleWallNormal = kmlFactory.createStyleType();
-			styleWallNormal.setId(DBTypeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString() + "Normal");
+			styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString() + "Normal");
 			styleWallNormal.setLineStyle(lineStyleWallNormal);
 			styleWallNormal.setPolyStyle(polyStyleWallNormal);
 
@@ -955,7 +955,7 @@ public class KmlExporter implements EventHandler {
 			PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
 			polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
 			StyleType styleRoofNormal = kmlFactory.createStyleType();
-			styleRoofNormal.setId(DBTypeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() + "Normal");
+			styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() + "Normal");
 			styleRoofNormal.setLineStyle(lineStyleRoofNormal);
 			styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
 

@@ -39,7 +39,7 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.DBTableEnum;
+import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
 
@@ -168,9 +168,9 @@ public class DBPlantCover implements DBImporter {
         			if (href != null && href.length() != 0) {
         				DBXlinkBasic xlink = new DBXlinkBasic(
         						plantCoverId,
-        						DBTableEnum.PLANT_COVER,
+        						TableEnum.PLANT_COVER,
         						href,
-        						DBTableEnum.SURFACE_GEOMETRY
+        						TableEnum.SURFACE_GEOMETRY
         				);
 
         				xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
@@ -248,9 +248,9 @@ public class DBPlantCover implements DBImporter {
         			if (href != null && href.length() != 0) {
         				DBXlinkBasic xlink = new DBXlinkBasic(
         						plantCoverId,
-        						DBTableEnum.PLANT_COVER,
+        						TableEnum.PLANT_COVER,
         						href,
-        						DBTableEnum.SURFACE_GEOMETRY
+        						TableEnum.SURFACE_GEOMETRY
         				);
 
         				xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");

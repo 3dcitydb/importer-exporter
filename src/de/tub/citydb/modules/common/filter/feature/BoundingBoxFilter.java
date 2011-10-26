@@ -44,7 +44,7 @@ import de.tub.citydb.config.project.filter.FilterBoundingBox;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.modules.common.filter.Filter;
 import de.tub.citydb.modules.common.filter.FilterMode;
 import de.tub.citydb.util.database.DBUtil;
@@ -100,7 +100,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 
 				// check whether we have to transform coordinate values of bounding box
 				int bboxSrid = boundingBoxConfig.getSrs().getSrid();
-				srid = DBConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
+				srid = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getSrid();
 
 				// target db srid differs if another coordinate transformation is
 				// applied to the CityGML export

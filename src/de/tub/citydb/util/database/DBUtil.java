@@ -53,12 +53,12 @@ import de.tub.citydb.config.project.database.DBMetaData;
 import de.tub.citydb.config.project.database.DBMetaData.Versioning;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
 public class DBUtil {
-	private static final DBConnectionPool dbConnectionPool = DBConnectionPool.getInstance();
+	private static final DatabaseConnectionPool dbConnectionPool = DatabaseConnectionPool.getInstance();
 	private static volatile boolean cancelled = false;
 
 	// use for interuptable operations
@@ -305,11 +305,11 @@ public class DBUtil {
 		return bbox;
 	}
 
-	private static String[] dropIndexes(DB_INDEX_TYPE type) throws SQLException {
+	private static String[] dropIndexes(DBIndexType type) throws SQLException {
 		String[] report = null;
 		Connection conn = null;
 
-		String call = type == DB_INDEX_TYPE.SPATIAL ? 
+		String call = type == DBIndexType.SPATIAL ? 
 				"{? = call geodb_idx.drop_spatial_indexes}" : 
 					"{? = call geodb_idx.drop_normal_indexes}";
 
@@ -347,11 +347,11 @@ public class DBUtil {
 		return report;
 	}
 
-	private static String[] createIndexes(DB_INDEX_TYPE type) throws SQLException {
+	private static String[] createIndexes(DBIndexType type) throws SQLException {
 		String[] report = null;
 		Connection conn = null;
 
-		String call = type == DB_INDEX_TYPE.SPATIAL ? 
+		String call = type == DBIndexType.SPATIAL ? 
 				"{? = call geodb_idx.create_spatial_indexes}" : 
 					"{? = call geodb_idx.create_normal_indexes}";
 
@@ -429,19 +429,19 @@ public class DBUtil {
 	}
 
 	public static String[] dropSpatialIndexes() throws SQLException {
-		return dropIndexes(DB_INDEX_TYPE.SPATIAL);
+		return dropIndexes(DBIndexType.SPATIAL);
 	}
 
 	public static String[] dropNormalIndexes() throws SQLException {
-		return dropIndexes(DB_INDEX_TYPE.NORMAL);
+		return dropIndexes(DBIndexType.NORMAL);
 	}
 
 	public static String[] createSpatialIndexes() throws SQLException {
-		return createIndexes(DB_INDEX_TYPE.SPATIAL);
+		return createIndexes(DBIndexType.SPATIAL);
 	}
 
 	public static String[] createNormalIndexes() throws SQLException {
-		return createIndexes(DB_INDEX_TYPE.NORMAL);
+		return createIndexes(DBIndexType.NORMAL);
 	}
 
 	public static String errorMessage(String errorCode) throws SQLException {
@@ -496,7 +496,7 @@ public class DBUtil {
 		}
 	}
 
-	public static enum DB_INDEX_TYPE {
+	public static enum DBIndexType {
 		SPATIAL,
 		NORMAL
 	}

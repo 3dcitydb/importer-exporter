@@ -66,6 +66,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.Project;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.config.project.global.Logging;
+import de.tub.citydb.database.DatabaseControllerImpl;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.SplashScreen;
 import de.tub.citydb.log.Logger;
@@ -419,11 +420,21 @@ public class ImpExp {
 
 		// initialize object registry
 		ObjectRegistry registry = ObjectRegistry.getInstance();
-		EventDispatcher eventDispatcher = new EventDispatcher();		
-		PluginConfigControllerImpl pluginConfigController = new PluginConfigControllerImpl(config);
+		
+		// register log controller
 		registry.setLogController(Logger.getInstance());
+		
+		// create and register application-wide event dispatcher
+		EventDispatcher eventDispatcher = new EventDispatcher();		
 		registry.setEventDispatcher(eventDispatcher);
+
+		// create and register plugin config controller
+		PluginConfigControllerImpl pluginConfigController = new PluginConfigControllerImpl(config);
 		registry.setPluginConfigController(pluginConfigController);
+
+		// create and register database controller
+		DatabaseControllerImpl databaseController = new DatabaseControllerImpl(config);
+		registry.setDatabaseController(databaseController);
 
 		// register illegal plugin event checker with event dispatcher
 		IllegalPluginEventChecker checker = IllegalPluginEventChecker.getInstance();
@@ -434,11 +445,11 @@ public class ImpExp {
 		if (!shell) {
 			// create main view instance
 			final ImpExpGui mainView = new ImpExpGui(config);
-			final DatabasePlugin databasePlugin = new DatabasePlugin(config, mainView);
-
-			// add gui related objects to registry
 			registry.setViewController(mainView);
-			registry.setDatabaseController(databasePlugin.getDatabaseController());
+
+			// create database plugin
+			final DatabasePlugin databasePlugin = new DatabasePlugin(config, mainView);
+			databaseController.setConnectionViewHandler(databasePlugin.getConnectionViewHandler());
 
 			// propogate config to plugins
 			for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())

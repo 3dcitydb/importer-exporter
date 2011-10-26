@@ -58,7 +58,7 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
@@ -96,7 +96,7 @@ public class DBImportWorker implements Worker<CityGML> {
 	private Thread workerThread = null;
 
 	// instance members needed to do work
-	private final DBConnectionPool dbConnectionPool;
+	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
 	private final Config config;
@@ -114,7 +114,7 @@ public class DBImportWorker implements Worker<CityGML> {
 	private GmlIdFilter featureGmlIdFilter;
 	private GmlNameFilter featureGmlNameFilter;
 
-	public DBImportWorker(DBConnectionPool dbConnectionPool,
+	public DBImportWorker(DatabaseConnectionPool dbConnectionPool,
 			WorkerPool<DBXlink> tmpXlinkPool,
 			DBGmlIdLookupServerManager lookupServerManager,
 			ImportFilter importFilter,

@@ -80,7 +80,7 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.ImportFilterConfig;
-import de.tub.citydb.database.DBConnectionPool;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.ImportStatusDialog;
 import de.tub.citydb.gui.components.XMLValidationStatusDialog;
@@ -101,7 +101,7 @@ public class ImportPanel extends JPanel {
 	private final JAXBBuilder jaxbBuilder;
 	private final Config config;
 	private final ImpExpGui mainView;
-	private final DBConnectionPool dbPool;
+	private final DatabaseConnectionPool dbPool;
 	
 	private JList fileList;
 	private DefaultListModel fileListModel;
@@ -119,7 +119,7 @@ public class ImportPanel extends JPanel {
 		this.jaxbBuilder = jaxbBuilder;
 		this.config = config;
 		this.mainView = mainView;
-		dbPool = DBConnectionPool.getInstance();
+		dbPool = DatabaseConnectionPool.getInstance();
 		
 		initGui();
 	}
