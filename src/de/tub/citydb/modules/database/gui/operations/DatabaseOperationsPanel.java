@@ -106,12 +106,9 @@ public class DatabaseOperationsPanel extends JPanel {
 		
 		int index = 0;
 		for (int i = 0; i < operations.length; ++i) {
-			operations[i].loadSettings();
-			
-			if (operations[i].getType() == db.getOperation().lastUsed()) {
+			operations[i].loadSettings();			
+			if (operations[i].getType() == db.getOperation().lastUsed())
 				index = i;
-				break;
-			}
 		}
 		
 		operationsTab.setSelectedIndex(-1);
