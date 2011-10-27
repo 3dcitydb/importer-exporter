@@ -388,6 +388,48 @@ public class DBUtil {
 
 		return report;
 	}
+	
+	private static String[] getIndexStatus(DBIndexType type) throws SQLException {
+		String[] status = null;
+		Connection conn = null;
+
+		String call = type == DBIndexType.SPATIAL ? 
+				"{? = call geodb_idx.status_spatial_indexes}" : 
+					"{? = call geodb_idx.status_normal_indexes}";
+
+		try {
+			conn = dbConnectionPool.getConnection();
+			callableStmt = (OracleCallableStatement)conn.prepareCall(call);
+			callableStmt.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
+			callableStmt.executeUpdate();
+
+			ARRAY result = callableStmt.getARRAY(1);
+			status = (String[])result.getArray();
+
+		} catch (SQLException sqlEx) {
+			throw sqlEx;
+		} finally {
+			if (callableStmt != null) {
+				try {
+					callableStmt.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				callableStmt = null;
+			}
+
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+			}
+		}
+
+		return status;
+	}
 
 	public static boolean isIndexed(String tableName, String columnName) throws SQLException {
 		Connection conn = null;
@@ -442,6 +484,14 @@ public class DBUtil {
 
 	public static String[] createNormalIndexes() throws SQLException {
 		return createIndexes(DBIndexType.NORMAL);
+	}
+	
+	public static String[] getStatusSpatialIndexes() throws SQLException {
+		return getIndexStatus(DBIndexType.SPATIAL);
+	}
+
+	public static String[] getStatusNormalIndexes() throws SQLException {
+		return getIndexStatus(DBIndexType.NORMAL);
 	}
 
 	public static String errorMessage(String errorCode) throws SQLException {

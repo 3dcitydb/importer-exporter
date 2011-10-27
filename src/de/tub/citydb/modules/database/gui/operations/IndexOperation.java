@@ -354,8 +354,6 @@ public class IndexOperation implements DatabaseOperationView {
 		try {
 			viewController.clearConsole();
 			viewController.setStatusText(Internal.I18N.getString("main.status.database.index.query"));
-			
-			LOG.info("Querying index status...");
 
 			final StatusDialog dialog = new StatusDialog(viewController.getTopFrame(), 
 					Internal.I18N.getString("db.dialog.index.query.window"), 
@@ -373,27 +371,28 @@ public class IndexOperation implements DatabaseOperationView {
 
 			try {
 				for (DBIndexType type : DBIndexType.values()) {
+					String[] queryResult = null;
+
 					if (type == DBIndexType.SPATIAL && spatial.isSelected()) {
 						LOG.info("Checking spatial indexes...");
-						boolean envelope = DBUtil.isIndexed("CITYOBJECT", "ENVELOPE");
-						boolean geometry = DBUtil.isIndexed("SURFACE_GEOMETRY", "GEOMETRY");
-
-						LOG.info((envelope ? "ON" : "OFF") + ": CITYOBJECT_SPX on CITYOBJECT(ENVELOPE)");
-						LOG.info((geometry ? "ON" : "OFF") + ": SURFACE_GEOM_SPX on SURFACE_GEOMETRY(GEOMETRY)");
+						queryResult = DBUtil.getStatusSpatialIndexes();
 					} else if (type == DBIndexType.NORMAL && normal.isSelected()) {
 						LOG.info("Checking normal indexes...");
-						boolean cityObject = DBUtil.isIndexed("CITYOBJECT", "GMLID") && DBUtil.isIndexed("CITYOBJECT", "GMLID_CODESPACE");
-						boolean surfaceGeometry = DBUtil.isIndexed("SURFACE_GEOMETRY", "GMLID") && DBUtil.isIndexed("SURFACE_GEOMETRY", "GMLID_CODESPACE");
-						boolean appearance = DBUtil.isIndexed("APPEARANCE", "GMLID") && DBUtil.isIndexed("APPEARANCE", "GMLID_CODESPACE");
-						boolean surfaceData = DBUtil.isIndexed("SURFACE_DATA", "GMLID") && DBUtil.isIndexed("SURFACE_DATA", "GMLID_CODESPACE");
+						queryResult = DBUtil.getStatusNormalIndexes();
+					}
 
-						LOG.info((cityObject ? "ON" : "OFF") + ": CITYOBJECT_INX on CITYOBJECT(GMLID, GMLID_CODESPACE)");
-						LOG.info((surfaceGeometry ? "ON" : "OFF") + ": SURFACE_GEOMETRY_INX on SURFACE_GEOMETRY(GMLID, GMLID_CODESPACE)");
-						LOG.info((appearance ? "ON" : "OFF") + ": APPEARANCE_INX on APPEARANCE(GMLID, GMLID_CODESPACE)");
-						LOG.info((surfaceData ? "ON" : "OFF") + ": SURFACE_DATA_INX on SURFACE_DATA(GMLID, GMLID_CODESPACE)");
+					if (queryResult != null) {
+						for (String line : queryResult) {
+							String[] parts = line.split(":");
+
+							if (parts[3].equals("VALID"))
+								LOG.info("ON: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
+							else
+								LOG.info("OFF: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
+						}
 					}
 				}
-				
+
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						dialog.dispose();
@@ -409,7 +408,7 @@ public class IndexOperation implements DatabaseOperationView {
 				});
 
 				String sqlExMsg = sqlEx.getMessage().trim();
-				String text = Internal.I18N.getString("db.dialog.error.bbox");
+				String text = Internal.I18N.getString("db.dialog.index.query.error");
 				Object[] args = new Object[]{ sqlExMsg };
 				String result = MessageFormat.format(text, args);
 
