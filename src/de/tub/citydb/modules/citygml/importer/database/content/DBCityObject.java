@@ -186,10 +186,12 @@ public class DBCityObject implements DBImporter {
 		else if (!cityObject.getBoundedBy().getEnvelope().isSetLowerCorner() ||
 				!cityObject.getBoundedBy().getEnvelope().isSetUpperCorner()) {
 			Envelope envelope = cityObject.getBoundedBy().getEnvelope().convert3d();
-			if (envelope != null)
+			if (envelope != null) {
 				cityObject.getBoundedBy().setEnvelope(envelope);
-			else
+			} else {
+				cityObject.unsetBoundedBy();
 				cityObject.calcBoundedBy(true);
+			}
 		}
 
 		if (cityObject.isSetBoundedBy()) {
