@@ -195,14 +195,17 @@ public class DBCityObject implements DBImporter {
 		}
 
 		if (cityObject.isSetBoundedBy()) {
-			int[] elemInfo = { 1, 1003, 3 };
-
-			// re-check this. we are assuming to find an envelope with upper and
-			// lower corner set...
-			List<Double> points = new ArrayList<Double>();
+			List<Double> points = new ArrayList<Double>(15);
 			points.addAll(cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue());
+			points.add(cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(0));
+			points.add(cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(1));
+			points.add(cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(2));
 			points.addAll(cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue());
-
+			points.add(cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(0));
+			points.add(cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(1));
+			points.add(cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(2));
+			points.addAll(cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue());
+			
 			if (affineTransformation)
 				dbImporterManager.getAffineTransformer().transformCoordinates(points);
 			
@@ -211,7 +214,7 @@ public class DBCityObject implements DBImporter {
 			for (Double point : points)
 				ordinates[i++] = point.doubleValue();
 
-			JGeometry boundedBy = new JGeometry(3003, dbSrid, elemInfo, ordinates);
+			JGeometry boundedBy = JGeometry.createLinearPolygon(ordinates, 3, dbSrid);
 			STRUCT obj = SyncJGeometry.syncStore(boundedBy, batchConn);
 
 			psCityObject.setObject(4, obj);

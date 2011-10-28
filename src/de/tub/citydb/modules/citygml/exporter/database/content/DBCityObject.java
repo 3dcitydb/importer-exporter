@@ -164,31 +164,28 @@ public class DBCityObject implements DBExporter {
 				STRUCT struct = (STRUCT)rs.getObject("ENVELOPE");
 				if (!rs.wasNull() && struct != null) {
 					JGeometry jGeom = JGeometry.load(struct);
-					int dim = jGeom.getDimensions();
-					if (dim == 2 || dim == 3) {
-						double[] points = jGeom.getOrdinatesArray();
-						Envelope env = new EnvelopeImpl();
+					double[] points = jGeom.getMBR();
+					
+					Envelope env = new EnvelopeImpl();
+					Point lower = null;
+					Point upper = null;
 
-						Point lower = null;
-						Point upper = null;
-
-						if (dim == 2) {
-							lower = new Point(points[0], points[1], 0);
-							upper = new Point(points[2], points[3], 0);
-						} else {					
-							lower = new Point(points[0], points[1], points[2]);
-							upper = new Point(points[3], points[4], points[5]);
-						}
-
-						env.setLowerCorner(lower);
-						env.setUpperCorner(upper);
-						env.setSrsDimension(3);
-						env.setSrsName(gmlSrsName);
-
-						BoundingShape boundedBy = new BoundingShapeImpl();
-						boundedBy.setEnvelope(env);
-						cityObject.setBoundedBy(boundedBy);
+					if (jGeom.getDimensions() == 2) {
+						lower = new Point(points[0], points[1], 0);
+						upper = new Point(points[2], points[3], 0);
+					} else {					
+						lower = new Point(points[0], points[1], points[2]);
+						upper = new Point(points[3], points[4], points[5]);
 					}
+
+					env.setLowerCorner(lower);
+					env.setUpperCorner(upper);
+					env.setSrsDimension(3);
+					env.setSrsName(gmlSrsName);
+
+					BoundingShape boundedBy = new BoundingShapeImpl();
+					boundedBy.setEnvelope(env);
+					cityObject.setBoundedBy(boundedBy);
 				}
 
 				// check bounding volume filter
