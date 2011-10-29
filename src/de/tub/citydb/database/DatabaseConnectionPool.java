@@ -134,10 +134,8 @@ public class DatabaseConnectionPool {
 			conn.setMetaData(DBUtil.getDatabaseInfo());
 
 			// check whether user-defined reference systems are supported
-			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) { 
-				boolean isSupported = DBUtil.isSrsSupported(refSys.getSrid());
-				refSys.setSupported(isSupported);
-			}
+			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
+				DBUtil.getSrsInfo(refSys);
 
 		} catch (SQLException e) {
 			try {

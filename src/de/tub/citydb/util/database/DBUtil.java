@@ -49,6 +49,7 @@ import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.api.config.BoundingBoxCorner;
+import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.config.project.database.DBMetaData;
 import de.tub.citydb.config.project.database.DBMetaData.Versioning;
 import de.tub.citydb.config.project.database.Workspace;
@@ -114,6 +115,62 @@ public class DBUtil {
 				} catch (SQLException sqlEx) {
 					throw sqlEx;
 				}
+			}
+		}
+	}
+	
+	public static void getSrsInfo(DatabaseSrs srs) throws SQLException {
+		Connection conn = null;
+		PreparedStatement psQuery = null;
+		ResultSet rs = null;
+
+		try {
+			conn = dbConnectionPool.getConnection();
+			psQuery = conn.prepareStatement("select count(*) from MDSYS.CS_SRS where srid = ?");
+			psQuery.setInt(1, srs.getSrid());
+
+			rs = psQuery.executeQuery();
+			srs.setSupported(rs.next() && rs.getInt(1) > 0);
+			
+			psQuery = conn.prepareStatement("select geodb_util.is_coord_ref_sys_3d(?) from dual");
+			psQuery.setInt(1, srs.getSrid());
+			
+			rs = psQuery.executeQuery();
+			srs.setIs3D(rs.next() && rs.getInt(1) > 0);
+			
+			
+			//SELECT COORD_REF_SYS_NAME from SDO_COORD_REF_SYS where SRID=:1
+		} catch (SQLException sqlEx) {
+			throw sqlEx;
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				rs = null;
+			}
+
+			if (psQuery != null) {
+				try {
+					psQuery.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				psQuery = null;
+			}
+
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				conn = null;
 			}
 		}
 	}
@@ -616,60 +673,6 @@ public class DBUtil {
 		}
 
 		return result;
-	}
-
-	public static boolean isSrsSupported(int srid) throws SQLException {
-		Connection conn = null;
-		PreparedStatement psQuery = null;
-		ResultSet rs = null;
-		boolean isSupported = false;
-
-		try {
-			conn = dbConnectionPool.getConnection();
-			psQuery = conn.prepareStatement("select count(*) from MDSYS.CS_SRS where srid = ?");
-
-			psQuery.setInt(1, srid);
-
-			rs = psQuery.executeQuery();
-			if (rs.next()) {
-				isSupported = (rs.getInt(1) > 0);
-			}
-
-		} catch (SQLException sqlEx) {
-			throw sqlEx;
-		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException sqlEx) {
-					throw sqlEx;
-				}
-
-				rs = null;
-			}
-
-			if (psQuery != null) {
-				try {
-					psQuery.close();
-				} catch (SQLException sqlEx) {
-					throw sqlEx;
-				}
-
-				psQuery = null;
-			}
-
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException sqlEx) {
-					throw sqlEx;
-				}
-
-				conn = null;
-			}
-		}
-
-		return isSupported;
 	}
 
 	public static List<String> getAppearanceThemeList(Workspace workspace) throws SQLException {

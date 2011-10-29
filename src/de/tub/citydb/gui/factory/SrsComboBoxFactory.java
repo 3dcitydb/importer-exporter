@@ -47,16 +47,19 @@ import de.tub.citydb.api.gui.DatabaseSrsComboBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.project.database.DBMetaData;
 import de.tub.citydb.database.DatabaseConnectionPool;
 
 public class SrsComboBoxFactory {
 	private static SrsComboBoxFactory instance = null;
 	private final DatabaseSrs dbRefSys;
 	private final List<WeakReference<SrsComboBox>> srsBoxes = new ArrayList<WeakReference<SrsComboBox>>();
+	private final DatabaseConnectionPool dbPool;
 	private final Config config;
 
 	private SrsComboBoxFactory(Config config) {
 		// just to thwart instantiation
+		this.dbPool = DatabaseConnectionPool.getInstance();
 		this.config = config;
 		dbRefSys = new DatabaseSrs(DatabaseSrs.DEFAULT);
 		dbRefSys.setSupported(true);
@@ -114,10 +117,11 @@ public class SrsComboBoxFactory {
 
 	@SuppressWarnings("serial")
 	public class SrsComboBox extends DatabaseSrsComboBox implements EventHandler {
-		private final boolean onlyShowSupported;
+		private boolean showOnlySupported;
+		private boolean showOnlySameDimension;
 
 		private SrsComboBox(boolean onlyShowSupported) {
-			this.onlyShowSupported = onlyShowSupported;
+			this.showOnlySupported = onlyShowSupported;
 			setRenderer(new SrsComboBoxRenderer(this, getRenderer()));
 
 			ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);
@@ -148,11 +152,19 @@ public class SrsComboBoxFactory {
 					if (cand != null)
 						super.setSelectedItem(cand);
 				}
-
 			}
-
 		}
 		
+		@Override
+		public void setShowOnlySupported(boolean show) {
+			showOnlySupported = show;
+		}
+
+		@Override
+		public void setShowOnlySameDimension(boolean show) {
+			showOnlySameDimension = show;
+		}
+
 		public void setDBReferenceSystem() {
 			setSelectedItem(dbRefSys);
 		}
@@ -165,20 +177,27 @@ public class SrsComboBoxFactory {
 			addItem(dbRefSys);
 
 			// user-defined reference systems
-			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
-				if (!onlyShowSupported || refSys.isSupported())
-					addItem(refSys);
+			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
+				if (showOnlySupported && !refSys.isSupported())
+					continue;
+				
+				if (showOnlySameDimension && refSys.is3D() != dbRefSys.is3D())
+					continue;
+					
+				addItem(refSys);
+			}
 		}
 		
 		private void reset() {
-			DatabaseConnectionPool dbPool = DatabaseConnectionPool.getInstance();
-
 			if (dbPool.isConnected()) {
-				dbRefSys.setSrid(dbPool.getActiveConnection().getMetaData().getSrid());
-				dbRefSys.setSrsName(dbPool.getActiveConnection().getMetaData().getSrsName());
+				DBMetaData metaData = dbPool.getActiveConnection().getMetaData(); 
+				dbRefSys.setSrid(metaData.getSrid());
+				dbRefSys.setSrsName(metaData.getSrsName());
+				dbRefSys.setIs3D(metaData.isReferenceSystem3D());
 			} else {
 				dbRefSys.setSrid(DatabaseSrs.DEFAULT.getSrid());
-				dbRefSys.setSrsName(DatabaseSrs.DEFAULT.getSrsName());				
+				dbRefSys.setSrsName(DatabaseSrs.DEFAULT.getSrsName());
+				dbRefSys.setIs3D(false);
 			}
 			
 			removeAllItems();

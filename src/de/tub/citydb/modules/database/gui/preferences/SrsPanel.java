@@ -346,7 +346,10 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				}			
 
 				try {
-					if (DBUtil.isSrsSupported(srid))
+					DatabaseSrs tmp = new DatabaseSrs(DatabaseSrs.DEFAULT);
+					tmp.setSrid(srid);
+					DBUtil.getSrsInfo(tmp);
+					if (tmp.isSupported())
 						LOG.info("SRID " + srid + " is supported.");
 					else
 						LOG.warn("SRID " + srid + " is NOT supported.");
@@ -414,23 +417,20 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		int srid = ((Number)sridText.getValue()).intValue();
 
 		if (dbPool.isConnected() && srid != refSys.getSrid()) {
-			boolean isSupported = false;
+			refSys.setSrid(srid);
 
 			try {
-				isSupported = DBUtil.isSrsSupported(srid);
+				DBUtil.getSrsInfo(refSys);
 
-				if (isSupported)
+				if (refSys.isSupported())
 					LOG.debug("SRID " + srid + " is supported.");
 				else
 					LOG.warn("SRID " + srid + " is NOT supported.");
 			} catch (SQLException sqlEx) {
 				LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
 			}
-
-			refSys.setSupported(isSupported);
 		}
 
-		refSys.setSrid(srid);
 		refSys.setSrsName(srsNameText.getText().trim());
 		refSys.setDescription(descriptionText.getText().trim());
 		if (refSys.getDescription().length() == 0)
@@ -538,11 +538,9 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 					msg = "Adding reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ").";
 
 					if (dbPool.isConnected()) {
-						boolean isSupported = false;
-
 						try {
-							isSupported = DBUtil.isSrsSupported(refSys.getSrid());
-							if (!isSupported)
+							DBUtil.getSrsInfo(refSys);
+							if (!refSys.isSupported())
 								msg += " (NOT supported)";
 							else
 								msg += " (supported)";
@@ -550,8 +548,6 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 						} catch (SQLException sqlEx) {
 							LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
 						}
-
-						refSys.setSupported(isSupported);
 					}
 
 					config.getProject().getDatabase().getReferenceSystems().add(refSys);
@@ -687,8 +683,10 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		boolean isConnected = ((DatabaseConnectionStateEvent)event).isConnected();
 
 		if (!isConnected) {
-			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
+			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
 				refSys.setSupported(true);
+				refSys.setIs3D(false);
+			}
 		}
 
 		checkButton.setEnabled(isConnected);

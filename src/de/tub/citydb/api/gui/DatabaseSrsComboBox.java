@@ -7,6 +7,9 @@ import de.tub.citydb.api.config.DatabaseSrs;
 @SuppressWarnings("serial")
 public abstract class DatabaseSrsComboBox extends JComboBox {
 	
+	public abstract void setShowOnlySameDimension(boolean show);
+	public abstract void setShowOnlySupported(boolean show);
+	
 	@Override
 	public DatabaseSrs getSelectedItem() {
 		Object object = super.getSelectedItem();

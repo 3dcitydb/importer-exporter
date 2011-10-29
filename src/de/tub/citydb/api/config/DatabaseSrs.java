@@ -23,6 +23,8 @@ public final class DatabaseSrs implements Comparable<DatabaseSrs> {
 	protected String description = "";
 	@XmlTransient
 	protected boolean isSupported = true;
+	@XmlTransient
+	protected boolean is3D;
 	
 	protected DatabaseSrs() {
 		id = generateUUID();
@@ -84,6 +86,18 @@ public final class DatabaseSrs implements Comparable<DatabaseSrs> {
 		this.isSupported = isSupported;
 	}
 	
+	public boolean is3D() {
+		return is3D;
+	}
+	
+	public boolean is2D() {
+		return !is3D;
+	}
+
+	public void setIs3D(boolean is3d) {
+		is3D = is3d;
+	}
+
 	@Override
 	public int compareTo(DatabaseSrs o) {
 		return getDescription().toUpperCase().compareTo(o.getDescription().toUpperCase());
