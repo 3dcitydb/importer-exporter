@@ -29,7 +29,6 @@
  */
 package de.tub.citydb.modules.preferences.gui.view;
 
-import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -169,6 +168,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 			{
 				JScrollPane scroll = new JScrollPane(menuTree);
 				scroll.setBorder(BorderFactory.createEmptyBorder());
+				scroll.setViewportBorder(BorderFactory.createEmptyBorder());
 				col1.add(scroll, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,2,2,2,2));
 			}
 		}
@@ -195,12 +195,13 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 				col2panel = new JPanel();
 				col2panel.setBorder(BorderFactory.createEmptyBorder());
-				col2panel.setLayout(new BorderLayout());
+				col2panel.setLayout(new GridBagLayout());
 
 				scrollPane = new JScrollPane(col2panel);
 				scrollPane.setBorder(BorderFactory.createEmptyBorder());
-
-				col2.add(scrollPane, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+				scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
+				
+				col2.add(scrollPane, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
 
 				JPanel col2buttons = new JPanel();
 				col2.add(col2buttons, GuiUtil.setConstraints(0,4,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
@@ -257,10 +258,10 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 		col2panel.removeAll();
 		if (node.entry.getViewComponent() == null || node.entry.getViewComponent() == NullComponent.getInstance()) {
-			col2panel.add(noticePanel, BorderLayout.NORTH);
+			col2panel.add(noticePanel, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,5,5,5));
 			activeEntry = null;
 		} else {
-			col2panel.add(node.entry.getViewComponent(), BorderLayout.NORTH);
+			col2panel.add(node.entry.getViewComponent(), GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,5,5,5));
 			activeEntry = node.entry;
 		}
 

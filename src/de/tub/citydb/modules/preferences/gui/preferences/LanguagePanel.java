@@ -36,6 +36,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -91,7 +92,7 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		language.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.general.language.border.selection")));
+		((TitledBorder)language.getBorder()).setTitle(Internal.I18N.getString("pref.general.language.border.selection"));
 		importLanguageRadioDe.setText(Internal.I18N.getString("pref.general.language.label.de"));
 		importLanguageRadioEn.setText(Internal.I18N.getString("pref.general.language.label.en"));
 	}

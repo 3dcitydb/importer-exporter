@@ -40,6 +40,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -231,11 +232,12 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("common.pref.resources.border.multiCPU")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("common.pref.resources.border.multiCPU"));
+		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("common.pref.resources.border.idCache"));
+
 		expResMinThreadsLabel.setText(Internal.I18N.getString("common.pref.resources.label.minThreads"));
 		expResMaxThreadsLabel.setText(Internal.I18N.getString("common.pref.resources.label.maxThreads"));
 
-		block2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("common.pref.resources.border.idCache")));
 		expResGeomLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry"));
 		expResGeomCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry.entry"));
 		expResGeomDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry.drain"));

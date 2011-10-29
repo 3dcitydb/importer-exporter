@@ -39,7 +39,7 @@ import de.tub.citydb.config.internal.Internal;
 public class GuiUtil {
 
 	public static GridBagConstraints setConstraints(int gridx, int gridy, double weightx, double weighty, int fill,
-			                                 int insetTop, int insetLeft, int insetBottom, int insetRight) {
+			int insetTop, int insetLeft, int insetBottom, int insetRight) {
 		GridBagConstraints constraint = new GridBagConstraints();
 		constraint.gridx = gridx;
 		constraint.gridy = gridy;
@@ -49,7 +49,25 @@ public class GuiUtil {
 		constraint.insets = new Insets(insetTop, insetLeft, insetBottom, insetRight);
 		return constraint;
 	}
-	
+
+	public static GridBagConstraints setConstraints(int gridx, int gridy, double weightx, double weighty, int anchor, int fill,
+			int insetTop, int insetLeft, int insetBottom, int insetRight) {
+		GridBagConstraints constraint = setConstraints(gridx, gridy, weightx, weighty, fill,
+				insetTop, insetLeft, insetBottom, insetRight);
+		constraint.anchor = anchor;
+		return constraint;
+	}
+
+	public static GridBagConstraints setConstraints(int gridx, int gridy, int gridwidth, int gridheight, 
+			double weightx, double weighty, int fill,
+			int insetTop, int insetLeft, int insetBottom, int insetRight) {
+		GridBagConstraints constraint = setConstraints(gridx, gridy, weightx, weighty, fill,
+				insetTop, insetLeft, insetBottom, insetRight);
+		constraint.gridwidth = gridwidth;
+		constraint.gridheight = gridheight;
+		return constraint;
+	}
+
 	public static void setMnemonic(JMenuItem item, String label, int index) {
 		try {
 			char mnemonic = label.charAt(index);
@@ -59,7 +77,7 @@ public class GuiUtil {
 			//
 		}
 	}
-	
+
 	public static void setMnemonic(JMenuItem item, String labelKey, String indexKey) {		
 		try {
 			setMnemonic(item, Internal.I18N.getString(labelKey), Integer.valueOf(Internal.I18N.getString(indexKey)));

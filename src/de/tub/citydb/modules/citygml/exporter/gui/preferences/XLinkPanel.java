@@ -41,6 +41,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.util.gmlid.GMLIdManager;
@@ -209,14 +210,15 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.export.xlink.border.feature")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.export.xlink.border.feature"));	
+		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.export.xlink.border.geometry"));	
+
 		xlinkToFeature.setText(Internal.I18N.getString("pref.export.xlink.label.feature.export"));
 		copyFeature.setText(Internal.I18N.getString("pref.export.xlink.label.feature.copy"));	
 		featureIdPrefixLabel.setText(Internal.I18N.getString("pref.export.xlink.label.copy.prefix"));
 		featureAppendId.setText(Internal.I18N.getString("pref.export.xlink.label.append"));
 		featureKeepExtRef.setText(Internal.I18N.getString("pref.export.xlink.label.feature.keepId"));
 
-		block2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.export.xlink.border.geometry")));
 		xlinkToGeometry.setText(Internal.I18N.getString("pref.export.xlink.label.geometry.export"));
 		copyGeometry.setText(Internal.I18N.getString("pref.export.xlink.label.geometry.copy"));	
 		geometryIdPrefixLabel.setText(Internal.I18N.getString("pref.export.xlink.label.copy.prefix"));

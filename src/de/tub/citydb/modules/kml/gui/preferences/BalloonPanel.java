@@ -44,6 +44,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.tub.citydb.config.Config;
@@ -174,8 +175,9 @@ public class BalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
+		((TitledBorder)contentSourcePanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.balloon.contentSource.border"));	
+
 		includeDescription.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.includeDescription"));
-		contentSourcePanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.kmlexport.balloon.contentSource.border")));
 		genAttribRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.genAttrib"));
 		fileRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.file"));
 		genAttribAndFileRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.genAttribAndFile"));

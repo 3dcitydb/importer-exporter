@@ -36,6 +36,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -90,7 +91,7 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("common.pref.boundingBox.border.selection")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("common.pref.boundingBox.border.selection"));	
 		impBBRadioInside.setText(Internal.I18N.getString("common.pref.boundingBox.label.inside"));
 		impBBRadioIntersect.setText(Internal.I18N.getString("common.pref.boundingBox.label.overlap"));
 	}

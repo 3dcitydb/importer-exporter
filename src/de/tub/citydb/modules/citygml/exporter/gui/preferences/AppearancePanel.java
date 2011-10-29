@@ -196,8 +196,8 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.export.appearance.border.export")));
-		path1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.export.appearance.border.path")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.export.appearance.border.export"));
+		((TitledBorder)path1.getBorder()).setTitle(Internal.I18N.getString("pref.export.appearance.border.path"));
 		expAppOverwriteCheck.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithTexture.overwrite"));
 		expAppRadioNoExp.setText(Internal.I18N.getString("pref.export.appearance.label.noExport"));
 		expAppRadioAppExp.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithoutTexture"));

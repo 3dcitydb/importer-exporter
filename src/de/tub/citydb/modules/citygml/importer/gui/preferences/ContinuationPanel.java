@@ -40,6 +40,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -138,11 +139,12 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.import.continuation.border.lineage")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.import.continuation.border.lineage"));	
+		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.import.continuation.border.updatingPerson"));	
+
 		lineageLabel.setText(Internal.I18N.getString("pref.import.continuation.label.lineage"));
 		reasonForUpdateLabel.setText(Internal.I18N.getString("pref.import.continuation.label.reasonForUpdate"));
 
-		block2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.import.continuation.border.updatingPerson")));
 		updatingPersonDBAccount.setText(Internal.I18N.getString("pref.import.continuation.label.updatingPerson.database"));
 		updatingPersonUser.setText(Internal.I18N.getString("pref.import.continuation.label.updatingPerson.user"));		
 	}

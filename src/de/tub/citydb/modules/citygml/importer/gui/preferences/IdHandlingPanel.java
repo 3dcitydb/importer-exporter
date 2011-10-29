@@ -40,6 +40,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -161,11 +162,12 @@ public class IdHandlingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		block2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.import.idHandling.border.idCodeSpace")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.import.idHandling.border.idAllocation"));	
+		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.import.idHandling.border.idCodeSpace"));	
+
 		impIdCSRadioFile.setText(Internal.I18N.getString("pref.import.idHandling.label.idCodeSpace.file"));
 		impIdCSRadioFilePath.setText(Internal.I18N.getString("pref.import.idHandling.label.idCodeSpace.filePath"));
 		impIdCSRadioUser.setText(Internal.I18N.getString("pref.import.idHandling.label.idCodeSpace.user"));
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.import.idHandling.border.idAllocation")));
 		impIdCheckExtRef.setText(Internal.I18N.getString("pref.import.idHandling.label.idAllocation.extReference"));
 		impIdRadioAdd.setText(Internal.I18N.getString("pref.import.idHandling.label.idAllocation.add"));
 		impIdRadioExchange.setText(Internal.I18N.getString("pref.import.idHandling.label.idAllocation.exchange"));

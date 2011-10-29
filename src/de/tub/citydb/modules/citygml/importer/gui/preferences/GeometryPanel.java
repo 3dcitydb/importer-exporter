@@ -208,10 +208,11 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("common.pref.geometry.border.transformation")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("common.pref.geometry.border.transformation"));	
+		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("common.pref.geometry.border.preset"));	
+
 		useAffineTransformation.setText(Internal.I18N.getString("common.pref.geometry.label.useTransformation"));
 		matrixDescr.setText(Internal.I18N.getString("common.pref.geometry.label.matrix"));
-		block2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("common.pref.geometry.border.preset")));
 		identityMatrixButton.setText(Internal.I18N.getString("common.pref.geometry.button.identity"));
 		swapXYMatrixButton.setText(Internal.I18N.getString("common.pref.geometry.button.swapXY"));
 		

@@ -70,6 +70,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
+import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -102,7 +103,7 @@ public class ImportPanel extends JPanel {
 	private final Config config;
 	private final ImpExpGui mainView;
 	private final DatabaseConnectionPool dbPool;
-	
+
 	private JList fileList;
 	private DefaultListModel fileListModel;
 	private JButton browseButton;
@@ -112,7 +113,7 @@ public class ImportPanel extends JPanel {
 	private FilterPanel filterPanel;
 	private JTextField workspaceText;
 
-	private JPanel row2;
+	private JPanel workspacePanel;
 	private JLabel row2_1;
 
 	public ImportPanel(JAXBBuilder jaxbBuilder, Config config, ImpExpGui mainView) {
@@ -120,7 +121,7 @@ public class ImportPanel extends JPanel {
 		this.config = config;
 		this.mainView = mainView;
 		dbPool = DatabaseConnectionPool.getInstance();
-		
+
 		initGui();
 	}
 
@@ -134,12 +135,12 @@ public class ImportPanel extends JPanel {
 		workspaceText = new JTextField();
 
 		DropCutCopyPasteHandler handler = new DropCutCopyPasteHandler();
-		
+
 		fileListModel = new DefaultListModel();
 		fileList.setModel(fileListModel);
 		fileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		fileList.setTransferHandler(handler);
-
+		
 		DropTarget dropTarget = new DropTarget(fileList, handler);
 		fileList.setDropTarget(dropTarget);
 		setDropTarget(dropTarget);
@@ -157,7 +158,7 @@ public class ImportPanel extends JPanel {
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
 
 		PopupMenuDecorator.getInstance().decorate(fileList, workspaceText);
-		
+
 		browseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				loadFile(Internal.I18N.getString("main.tabbedPane.import"));
@@ -185,7 +186,7 @@ public class ImportPanel extends JPanel {
 				thread.start();
 			}
 		});
-		
+
 		validateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Thread thread = new Thread() {
@@ -197,54 +198,43 @@ public class ImportPanel extends JPanel {
 				thread.start();
 			}
 		});
-		
-		//layout
-		setLayout(new GridBagLayout());
-		{
-			JPanel row1 = new JPanel();
-			JPanel buttons = new JPanel();
-			add(row1,GuiUtil.setConstraints(0,0,1.0,.3,GridBagConstraints.BOTH,10,5,5,5));
-			row1.setLayout(new GridBagLayout());
-			{
-				row1.add(new JScrollPane(fileList), GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
-				row1.add(buttons, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
-				buttons.setLayout(new GridBagLayout());
-				{
-					buttons.add(browseButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
-					GridBagConstraints c = GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.HORIZONTAL,5,0,5,0);
-					c.anchor = GridBagConstraints.NORTH;
-					buttons.add(removeButton, c);
-				}
-			}
-		}
-		{
-			row2 = new JPanel();
-			add(row2, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-			row2.setBorder(BorderFactory.createTitledBorder(""));
-			row2.setLayout(new GridBagLayout());
-			row2_1 = new JLabel();
-			{
-				row2.add(row2_1, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,5,5,5));
-				row2.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-			}
-		}
-		{
-			add(filterPanel, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-		}
-		{
-			JPanel row3 = new JPanel();
-			add(row3, GuiUtil.setConstraints(0,3,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));	
-			row3.setLayout(new GridBagLayout());
-			{
-				GridBagConstraints c = GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.NONE,5,5,5,5);
-				c.gridwidth = 2;
-				row3.add(importButton, c);				
 
-				c = GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.NONE,5,5,5,0);
-				c.anchor = GridBagConstraints.EAST;
-				row3.add(validateButton, c);
-			}
-		}
+		setLayout(new GridBagLayout());
+
+		JPanel filePanel = new JPanel();
+		JPanel fileButton = new JPanel();
+		add(filePanel,GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,10,5,5,5));
+		filePanel.setLayout(new GridBagLayout());
+		JScrollPane fileScroll = new JScrollPane(fileList);
+		
+		filePanel.add(fileScroll, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+		filePanel.add(fileButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
+		fileButton.setLayout(new GridBagLayout());
+		fileButton.add(browseButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
+		fileButton.add(removeButton, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,0,15,0));
+
+		JPanel view = new JPanel();
+		view.setLayout(new GridBagLayout());
+		JScrollPane scrollPane = new JScrollPane(view);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
+		add(scrollPane, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
+
+		workspacePanel = new JPanel();
+		view.add(workspacePanel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+		workspacePanel.setBorder(BorderFactory.createTitledBorder(""));
+		workspacePanel.setLayout(new GridBagLayout());
+		row2_1 = new JLabel();
+		workspacePanel.add(row2_1, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,5,5,5));
+		workspacePanel.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+
+		view.add(filterPanel, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,0,5,0,5));
+		
+		JPanel buttonPanel = new JPanel();
+		add(buttonPanel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));	
+		buttonPanel.setLayout(new GridBagLayout());
+		buttonPanel.add(importButton, GuiUtil.setConstraints(0,0,2,1,1.0,0.0,GridBagConstraints.NONE,5,5,5,5));				
+		buttonPanel.add(validateButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,5,5,5,0));
 	}
 
 	public void doTranslation() {
@@ -252,13 +242,12 @@ public class ImportPanel extends JPanel {
 		removeButton.setText(Internal.I18N.getString("import.button.remove"));
 		importButton.setText(Internal.I18N.getString("import.button.import"));
 		validateButton.setText(Internal.I18N.getString("import.button.validate"));
-		row2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("common.border.versioning")));
+		((TitledBorder)workspacePanel.getBorder()).setTitle(Internal.I18N.getString("common.border.versioning"));
 		row2_1.setText(Internal.I18N.getString("common.label.workspace"));
 
 		filterPanel.doTranslation();
 	}
 
-	//public-methoden
 	public void loadSettings() {
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getImportWorkspace().getName());
 		filterPanel.loadSettings();
@@ -354,7 +343,7 @@ public class ImportPanel extends JPanel {
 					return;
 				}
 			}
-			
+
 			// affine transformation
 			if (config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation()) {
 				if (JOptionPane.showConfirmDialog(
@@ -417,7 +406,7 @@ public class ImportPanel extends JPanel {
 					importDialog.dispose();
 				}
 			});
-			
+
 			// cleanup
 			importer.cleanup();
 
@@ -432,7 +421,7 @@ public class ImportPanel extends JPanel {
 			lock.unlock();
 		}
 	}
-	
+
 	private void doValidate() {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
@@ -497,7 +486,7 @@ public class ImportPanel extends JPanel {
 					validatorDialog.dispose();
 				}
 			});
-			
+
 			// cleanup
 			validator.cleanup();
 
@@ -617,7 +606,7 @@ public class ImportPanel extends JPanel {
 
 			fileList.setSelectedIndex(first);
 		}
-		
+
 		@Override
 		public void dragEnter(DropTargetDragEvent dtde) {
 			dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
@@ -663,12 +652,12 @@ public class ImportPanel extends JPanel {
 			config.getProject().getImporter().getPath().setLastUsedPath(
 					new File(fileListModel.getElementAt(0).toString()).getAbsolutePath());
 		}
-		
+
 		@Override
 		public void dropActionChanged(DropTargetDragEvent dtde) {
 			// nothing to do here
 		}
-		
+
 		@Override
 		public void dragExit(DropTargetEvent dte) {
 			// nothing to do here

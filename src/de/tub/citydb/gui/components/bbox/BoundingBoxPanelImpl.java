@@ -116,8 +116,9 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		actionPanel.add(copy, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,5));
 		actionPanel.add(paste, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,5));
 		actionPanel.add(srsLabel, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,40,0,5));			
-		actionPanel.add(srsComboBox, GuiUtil.setConstraints(4,0,1.0,0.0,GridBagConstraints.BOTH,0,5,0,0));
-
+		actionPanel.add(srsComboBox, GuiUtil.setConstraints(4,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,0));
+		srsComboBox.setPreferredSize(new Dimension(50, srsComboBox.getPreferredSize().height));
+				
 		// input fields
 		JPanel inputFieldsPanel = new JPanel();
 		inputFieldsPanel.setLayout(new GridBagLayout());

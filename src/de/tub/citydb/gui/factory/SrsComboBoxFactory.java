@@ -36,8 +36,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 
 import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.event.Event;
@@ -118,7 +118,7 @@ public class SrsComboBoxFactory {
 
 		private SrsComboBox(boolean onlyShowSupported) {
 			this.onlyShowSupported = onlyShowSupported;
-			setRenderer(new SrsComboBoxRenderer(this));
+			setRenderer(new SrsComboBoxRenderer(this, getRenderer()));
 
 			ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);
 		}
@@ -216,12 +216,13 @@ public class SrsComboBoxFactory {
 		}
 	}
 
-	@SuppressWarnings("serial")
-	private class SrsComboBoxRenderer extends DefaultListCellRenderer {
+	private class SrsComboBoxRenderer implements ListCellRenderer {
 		final SrsComboBox box;
-
-		public SrsComboBoxRenderer(SrsComboBox box) {
+		final ListCellRenderer renderer;
+		
+		public SrsComboBoxRenderer(SrsComboBox box, ListCellRenderer renderer) {
 			this.box = box;
+			this.renderer = renderer;
 		}
 
 		@Override
@@ -230,12 +231,12 @@ public class SrsComboBoxFactory {
 				int index, 
 				boolean isSelected, 
 				boolean cellHasFocus) {
-			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			Component c = renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
 			if (value != null)
 				box.setToolTipText(value.toString());
 
-			return this;
+			return c;
 		}
 	}
 }

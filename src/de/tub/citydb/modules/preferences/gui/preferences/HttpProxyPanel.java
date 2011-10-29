@@ -45,6 +45,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -172,7 +173,7 @@ public class HttpProxyPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.httpProxy.border.proxySettings")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.httpProxy.border.proxySettings"));
 		useProxySettings.setText(Internal.I18N.getString("pref.httpProxy.label.useProxy"));
 		proxyHostLabel.setText(Internal.I18N.getString("common.label.server"));
 		proxyPortLabel.setText(Internal.I18N.getString("common.label.port"));

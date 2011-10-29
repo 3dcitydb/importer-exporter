@@ -7,6 +7,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.border.TitledBorder;
 
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 
@@ -64,7 +65,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.export.version.border.versions")));		
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.export.version.border.versions"));	
 	}
 
 	@Override

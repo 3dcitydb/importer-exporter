@@ -43,6 +43,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.Config;
@@ -189,11 +190,11 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.general.logging.border.console")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.general.logging.border.console"));
 		wrapTextConsole.setText(Internal.I18N.getString("pref.general.logging.label.wrapTextConsole"));
 		logLevelConsoleLabel.setText(Internal.I18N.getString("pref.general.logging.label.logLevel"));
 
-		block2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.general.logging.border.file")));	
+		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.general.logging.border.file"));
 		useLogFile.setText(Internal.I18N.getString("pref.general.logging.label.useLogFile"));
 		logLevelFileLabel.setText(Internal.I18N.getString("pref.general.logging.label.logLevel"));
 		useLogPath.setText(Internal.I18N.getString("pref.general.logging.label.useLogPath"));

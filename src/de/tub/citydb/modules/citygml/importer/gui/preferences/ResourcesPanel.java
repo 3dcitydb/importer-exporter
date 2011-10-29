@@ -40,6 +40,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -290,17 +291,18 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("common.pref.resources.border.multiCPU")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("common.pref.resources.border.multiCPU"));	
+		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.import.resources.border.commit"));	
+		((TitledBorder)block3.getBorder()).setTitle(Internal.I18N.getString("common.pref.resources.border.idCache"));	
+
 		impResMinThreadsLabel.setText(Internal.I18N.getString("common.pref.resources.label.minThreads"));
 		impResMaxThreadsLabel.setText(Internal.I18N.getString("common.pref.resources.label.maxThreads"));
 		
-		block2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.import.resources.border.commit")));
 		impResTransaktLabel.setText(Internal.I18N.getString("pref.import.resources.label.commit"));
 		impResTransaktFeatureLabel.setText(Internal.I18N.getString("pref.import.resources.label.commit.feature"));
 		impResTransaktCacheLabel.setText(Internal.I18N.getString("pref.import.resources.label.commit.cache"));
 		impResTransaktTempLabel.setText(Internal.I18N.getString("pref.import.resources.label.commit.temp"));
 
-		block3.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("common.pref.resources.border.idCache")));
 		impResGeomLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry"));
 		impResGeomCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry.entry"));
 		impResGeomDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry.drain"));

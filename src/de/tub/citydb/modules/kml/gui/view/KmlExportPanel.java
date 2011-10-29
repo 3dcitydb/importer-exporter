@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -105,8 +106,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private final Config config;
 	private final ImpExpGui mainView;
 	private final DatabaseConnectionPool dbPool;
-
-	private Box jPanelInput;
 
 	private JPanel browsePanel;
 	private JTextField browseText = new JTextField("");
@@ -181,8 +180,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	}
 
 	private void initGui() {
-
-		jPanelInput = Box.createVerticalBox();
 
 		browsePanel = new JPanel();
 		browsePanel.setLayout(new GridBagLayout());
@@ -333,24 +330,22 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		exportAndDisplayPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)), GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NONE,0,0,0,0));
 		exportAndDisplayPanel.add(displayAsPanel, GuiUtil.setConstraints(2,0,0.7,0,GridBagConstraints.BOTH,0,0,0,0));
 
-
 		JPanel exportButtonPanel = new JPanel();
 		exportButtonPanel.add(exportButton);
 
-		jPanelInput.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
-		jPanelInput.add(browsePanel);
-		jPanelInput.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
-		jPanelInput.add(versioningPanel);
-		jPanelInput.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
-		jPanelInput.add(filterPanel);
-		jPanelInput.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
-		jPanelInput.add(exportAndDisplayPanel);
-		jPanelInput.add(Box.createRigidArea(new Dimension(0, BORDER_THICKNESS)));
-
-		this.setLayout(new BorderLayout());
-		this.setBorder(BorderFactory.createEmptyBorder(BORDER_THICKNESS, BORDER_THICKNESS, BORDER_THICKNESS, BORDER_THICKNESS));
-		this.add(jPanelInput, BorderLayout.NORTH);
-		this.add(exportButtonPanel, BorderLayout.SOUTH);
+		JPanel scrollView = new JPanel();
+		scrollView.setLayout(new GridBagLayout());
+		scrollView.add(versioningPanel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+		scrollView.add(filterPanel, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
+		scrollView.add(exportAndDisplayPanel, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,0,5,0,5));
+		JScrollPane scrollPane = new JScrollPane(scrollView);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
+		
+		this.setLayout(new GridBagLayout());	
+		this.add(browsePanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,5,5));
+		this.add(scrollPane, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
+		this.add(exportButtonPanel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
 
 		PopupMenuDecorator.getInstance().decorate(browseText, workspaceText, timestampText, 
 				gmlIdText, rowsText, columnsText,
@@ -363,22 +358,22 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		//		browsePanel.setBorder(BorderFactory.createTitledBorder("Output path and filename"));
 		browseButton.setText(Internal.I18N.getString("common.button.browse"));
 
-		versioningPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("common.border.versioning")));
+		((TitledBorder)versioningPanel.getBorder()).setTitle(Internal.I18N.getString("common.border.versioning"));
 		workspaceLabel.setText(Internal.I18N.getString("common.label.workspace"));
 		timestampLabel.setText(Internal.I18N.getString("common.label.timestamp"));
 
-		filterPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("kmlExport.label.exportContents")));
+		((TitledBorder)filterPanel.getBorder()).setTitle(Internal.I18N.getString("kmlExport.label.exportContents"));
 		singleBuildingRadioButton.setText(Internal.I18N.getString("kmlExport.label.singleBuilding"));
 		boundingBoxRadioButton.setText(Internal.I18N.getString("filter.border.boundingBox"));
 
-		tilingPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.export.boundingBox.border.tiling")));
+		((TitledBorder) tilingPanel.getBorder()).setTitle(Internal.I18N.getString("pref.export.boundingBox.border.tiling"));
 		noTilingRadioButton.setText(Internal.I18N.getString("kmlExport.label.noTiling"));
 		manualTilingRadioButton.setText(Internal.I18N.getString("kmlExport.label.manual"));
 		rowsLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.rows"));
 		columnsLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.columns"));
 		automaticTilingRadioButton.setText(Internal.I18N.getString("kmlExport.label.automatic"));
 		
-		exportFromLODPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("kmlExport.label.fromLOD")));
+		((TitledBorder)exportFromLODPanel.getBorder()).setTitle(Internal.I18N.getString("kmlExport.label.fromLOD"));
 /**/
 		int selectedIndex = lodComboBox.getSelectedIndex();
 		if (!lodComboBox.getItemAt(lodComboBox.getItemCount() - 1).toString().endsWith("4")) {
@@ -389,7 +384,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		lodComboBox.setMinimumSize(lodComboBox.getPreferredSize());
 		exportFromLODPanel.setMinimumSize(exportFromLODPanel.getPreferredSize());
 /**/
-		displayAsPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("kmlExport.label.displayAs")));
+		((TitledBorder)displayAsPanel.getBorder()).setTitle(Internal.I18N.getString("kmlExport.label.displayAs"));
 		footprintCheckbox.setText(Internal.I18N.getString("kmlExport.label.footprint"));
 		extrudedCheckbox.setText(Internal.I18N.getString("kmlExport.label.extruded"));
 		geometryCheckbox.setText(Internal.I18N.getString("kmlExport.label.geometry"));
@@ -941,6 +936,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	}
 
 	private void setFilterEnabledValues() {
+		gmlIdLabel.setEnabled(singleBuildingRadioButton.isSelected());
 		gmlIdText.setEnabled(singleBuildingRadioButton.isSelected());
 
 		bboxComponent.setEnabled(boundingBoxRadioButton.isSelected());
@@ -952,7 +948,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				UIManager.getColor("Label.foreground"):
 					UIManager.getColor("Label.disabledForeground"));
 		tilingPanel.repaint();
-
+		
 		rowsLabel.setEnabled(manualTilingRadioButton.isEnabled()&& manualTilingRadioButton.isSelected());
 		rowsText.setEnabled(manualTilingRadioButton.isEnabled()&& manualTilingRadioButton.isSelected());
 		columnsLabel.setEnabled(manualTilingRadioButton.isEnabled()&& manualTilingRadioButton.isSelected());

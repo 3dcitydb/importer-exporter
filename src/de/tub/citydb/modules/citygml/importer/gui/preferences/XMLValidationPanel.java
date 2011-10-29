@@ -37,6 +37,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -91,7 +92,7 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.import.xmlValidation.border.import")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.import.xmlValidation.border.import"));	
 		useXMLValidation.setText(Internal.I18N.getString("pref.import.xmlValidation.label.useXMLValidation"));
 		useXMLValidationDescr.setText(Internal.I18N.getString("pref.import.xmlValidation.label.useXMLValidation.description"));
 		oneError.setText(Internal.I18N.getString("pref.import.xmlValidation.label.oneError"));

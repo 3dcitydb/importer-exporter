@@ -61,6 +61,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -382,7 +383,8 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	@Override
 	public void doTranslation() {
-		contentsPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.db.srs.border.currentlySupported")));
+		((TitledBorder)contentsPanel.getBorder()).setTitle(Internal.I18N.getString("pref.db.srs.border.currentlySupported"));	
+		((TitledBorder)impExpPanel.getBorder()).setTitle(Internal.I18N.getString("pref.db.srs.border.impexp"));	
 
 		srsComboBoxLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));		
 		sridLabel.setText(Internal.I18N.getString("pref.db.srs.label.srid"));
@@ -394,7 +396,6 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		copyButton.setText(Internal.I18N.getString("pref.db.srs.button.copy"));		
 		checkButton.setText(Internal.I18N.getString("pref.db.srs.button.check"));
 
-		impExpPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.db.srs.border.impexp")));
 		fileLabel.setText(Internal.I18N.getString("pref.db.srs.label.file"));
 		browseFileButton.setText(Internal.I18N.getString("common.button.browse"));
 		addFileButton.setText(Internal.I18N.getString("pref.db.srs.button.addFile"));

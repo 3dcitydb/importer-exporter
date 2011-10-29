@@ -36,6 +36,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -124,12 +125,13 @@ public class IndexPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.import.index.spatial.border.handling")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.import.index.spatial.border.handling"));	
+		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.import.index.normal.border.handling"));	
+
 		impSIRadioDeacAc.setText(Internal.I18N.getString("pref.import.index.spatial.label.autoActivate"));
 		impSIRadioDeac.setText(Internal.I18N.getString("pref.import.index.spatial.label.manuActivate"));
 		impSIRadioNoDeac.setText(Internal.I18N.getString("pref.import.index.spatial.label.keepState"));
 
-		block2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.import.index.normal.border.handling")));
 		impNIRadioDeacAc.setText(Internal.I18N.getString("pref.import.index.normal.label.autoActivate"));
 		impNIRadioDeac.setText(Internal.I18N.getString("pref.import.index.normal.label.manuActivate"));
 		impNIRadioNoDeac.setText(Internal.I18N.getString("pref.import.index.normal.label.keepState"));

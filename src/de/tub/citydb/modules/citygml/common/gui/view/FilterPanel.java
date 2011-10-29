@@ -45,7 +45,6 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
@@ -172,8 +171,10 @@ public class FilterPanel extends JPanel {
 		cityObject.add(cityObjectGroup);
 
 		fcTree = new CheckboxTree(cityObject);
-		fcTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 4);
-
+		fcTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 4);		
+		fcTree.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), 
+				BorderFactory.createEmptyBorder(0, 0, 4, 4)));
+		
 		// get rid of standard icons
 		DefaultCheckboxTreeCellRenderer renderer = (DefaultCheckboxTreeCellRenderer)fcTree.getCellRenderer();
 		renderer.setLeafIcon(null);
@@ -201,7 +202,7 @@ public class FilterPanel extends JPanel {
 		}
 		{
 			JPanel row4 = new JPanel();
-			add(row4, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
+			add(row4, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
 			row4.setLayout(new GridBagLayout());
 			{
 				row4.add(complexFilter, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,5,0,5,5));
@@ -246,20 +247,18 @@ public class FilterPanel extends JPanel {
 					// bounding box filter
 					boundingBoxFilter.setIconTextGap(10);
 					row4col2.add(boundingBoxFilter, GuiUtil.setConstraints(0,4,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));				
-					row4col2.add(bboxPanel, GuiUtil.setConstraints(0,6,1.0,0.0,GridBagConstraints.HORIZONTAL,0,lmargin,0,5));
+					row4col2.add(bboxPanel, GuiUtil.setConstraints(0,5,1.0,0.0,GridBagConstraints.HORIZONTAL,0,lmargin,0,5));
 
 					// feature class filter
 					featureClassFilter.setIconTextGap(10);
-					row4col2.add(featureClassFilter, GuiUtil.setConstraints(0,7,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
+					row4col2.add(featureClassFilter, GuiUtil.setConstraints(0,6,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
 
 					// content
 					JPanel panel8 = new JPanel();
-					row4col2.add(panel8, GuiUtil.setConstraints(0,8,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,0));
+					row4col2.add(panel8, GuiUtil.setConstraints(0,7,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,0));
 					panel8.setLayout(new GridBagLayout());
 					{
-						JScrollPane scroll = new JScrollPane(fcTree);
-						scroll.setBorder(BorderFactory.createEtchedBorder());
-						panel8.add(scroll, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,5));	
+						panel8.add(fcTree, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,5));	
 					}
 				}
 			}
@@ -398,9 +397,9 @@ public class FilterPanel extends JPanel {
 		gmlNameLabel.setText(Internal.I18N.getString("filter.label.gmlName"));
 		gmlIdLabel.setText(Internal.I18N.getString("filter.label.gmlId"));
 		coStartLabel.setText(Internal.I18N.getString("filter.label.counter.start"));
-		coEndLabel.setText(Internal.I18N.getString("filter.label.counter.end"));
-		row3col2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("filter.border.gmlId")));
-		row4col2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("filter.border.complexFilter")));
+		coEndLabel.setText(Internal.I18N.getString("filter.label.counter.end"));	
+		((TitledBorder)row3col2.getBorder()).setTitle(Internal.I18N.getString("filter.border.gmlId"));
+		((TitledBorder)row4col2.getBorder()).setTitle(Internal.I18N.getString("filter.border.complexFilter"));
 		cityObjectFilter.setText(Internal.I18N.getString("filter.border.counter"));
 		gmlNameFilter.setText(Internal.I18N.getString("filter.border.gmlName"));
 		boundingBoxFilter.setText(Internal.I18N.getString("filter.border.boundingBox"));

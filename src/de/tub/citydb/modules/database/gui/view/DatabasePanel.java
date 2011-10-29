@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.modules.database.gui.view;
 
+import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -54,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
@@ -165,9 +167,15 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		PopupMenuDecorator.getInstance().decorate(descriptionText, serverText, portText, databaseText, userText, passwordText);
 
-		setLayout(new GridBagLayout());
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
+		
+		JPanel view = new JPanel();
+		view.setLayout(new GridBagLayout());
+		
 		JPanel chooserPanel = new JPanel();
-		add(chooserPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,5,5));
+		view.add(chooserPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,5,5));
 		chooserPanel.setLayout(new GridBagLayout());
 		connLabel = new JLabel();
 
@@ -175,7 +183,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		chooserPanel.add(connCombo, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
 
 		connectionDetails = new JPanel();
-		add(connectionDetails, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		view.add(connectionDetails, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 		connectionDetails.setBorder(BorderFactory.createTitledBorder(""));
 		connectionDetails.setLayout(new GridBagLayout());
 		descriptionLabel = new JLabel();
@@ -197,42 +205,36 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		connectionDetails.add(serverText, GuiUtil.setConstraints(1,4,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 		connectionDetails.add(portLabel, GuiUtil.setConstraints(0,5,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 
-		GridBagConstraints c = GuiUtil.setConstraints(1,5,0.0,0.0,GridBagConstraints.NONE,0,5,5,5);
-		c.anchor = GridBagConstraints.WEST;
-		connectionDetails.add(portText, c);
+		connectionDetails.add(portText, GuiUtil.setConstraints(1,5,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,0,5,5,5));
 		portText.setMinimumSize(portText.getPreferredSize());
 
 		connectionDetails.add(databaseLabel, GuiUtil.setConstraints(0,6,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 		connectionDetails.add(databaseText, GuiUtil.setConstraints(1,6,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 
 		connectionButtons = new JPanel();
-		c = GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5);
-		c.gridheight = 6;
-		connectionDetails.add(connectionButtons,c);
+		connectionDetails.add(connectionButtons, GuiUtil.setConstraints(2,0,1,6,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 		connectionButtons.setLayout(new GridBagLayout());
 		connectionButtons.add(applyButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
 		connectionButtons.add(newButton, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
 		connectionButtons.add(copyButton, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
-
-		c = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.HORIZONTAL,5,0,0,0);
-		c.anchor = GridBagConstraints.NORTH;				
-		connectionButtons.add(deleteButton, c);
-
-		c = GuiUtil.setConstraints(0,7,0.0,0.0,GridBagConstraints.NONE,10,5,5,5);
-		c.gridwidth = 3;
-		connectionDetails.add(connectButton, c);
+		connectionButtons.add(deleteButton, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,0,0,0));
+		connectionDetails.add(connectButton, GuiUtil.setConstraints(0,7,3,1,0.0,0.0,GridBagConstraints.NONE,10,5,5,5));
 		connectionDetails.add(infoButton, GuiUtil.setConstraints(2,7,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,5));
 
 		operations = new JPanel();
-		add(operations, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
+		view.add(operations, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
 		operations.setBorder(BorderFactory.createTitledBorder(""));
 		operations.setLayout(new GridBagLayout());
 
 		operationsPanel = new DatabaseOperationsPanel(config);
 		operations.add(operationsPanel, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 
-		add(Box.createVerticalGlue(), GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+		view.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 
+		scrollPane.setViewportView(view);
+		setLayout(new BorderLayout());
+		add(scrollPane);
+		
 		// influence focus policy
 		connectionDetails.setFocusCycleRoot(false);
 		connectionButtons.setFocusCycleRoot(true);
@@ -317,7 +319,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	public void doTranslation() {
-		connectionDetails.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("db.border.connectionDetails")));
+		((TitledBorder)connectionDetails.getBorder()).setTitle(Internal.I18N.getString("db.border.connectionDetails"));
 		connLabel.setText(Internal.I18N.getString("db.label.connection"));
 		descriptionLabel.setText(Internal.I18N.getString("db.label.description"));
 		userLabel.setText(Internal.I18N.getString("common.label.username"));
@@ -332,7 +334,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		deleteButton.setText(Internal.I18N.getString("db.button.delete"));
 		infoButton.setText(Internal.I18N.getString("db.button.info"));
 
-		operations.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("db.border.databaseOperations")));
+		((TitledBorder)operations.getBorder()).setTitle(Internal.I18N.getString("db.border.databaseOperations"));
 		operationsPanel.doTranslation();
 
 		if (!databaseController.isConnected())

@@ -166,7 +166,7 @@ public class DBSplitter {
 				"'querytype=WINDOW mask=" + mask + "') = 'TRUE'";
 
 			} else {
-				LOG.error("Bounding box filter is enabled although spatial indexes are deactivated.");
+				LOG.error("Bounding box filter is enabled although spatial indexes are disabled.");
 				LOG.error("Filtering will not be performed using spatial database operations.");
 				config.getInternal().setUseInternalBBoxFilter(true);
 			}

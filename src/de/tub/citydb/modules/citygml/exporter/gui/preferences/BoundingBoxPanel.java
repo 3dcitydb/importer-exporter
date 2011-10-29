@@ -317,10 +317,10 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("common.pref.boundingBox.border.selection")));
-		block2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.export.boundingBox.border.tiling")));
-		block3.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.export.boundingBox.border.path")));
-		block4.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.export.boundingBox.border.options")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("common.pref.boundingBox.border.selection"));
+		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.export.boundingBox.border.tiling"));
+		((TitledBorder)block3.getBorder()).setTitle(Internal.I18N.getString("pref.export.boundingBox.border.path"));
+		((TitledBorder)block4.getBorder()).setTitle(Internal.I18N.getString("pref.export.boundingBox.border.options"));
 		
 		expBBRadioInside.setText(Internal.I18N.getString("common.pref.boundingBox.label.inside"));
 		expBBRadioIntersect.setText(Internal.I18N.getString("common.pref.boundingBox.label.overlap"));

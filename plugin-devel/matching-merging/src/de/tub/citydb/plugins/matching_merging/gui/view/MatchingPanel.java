@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.plugins.matching_merging.gui.view;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -45,12 +46,14 @@ import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -237,10 +240,15 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			}
 		});
 
-		setLayout(new GridBagLayout());
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
+		
+		JPanel view = new JPanel();		
+		view.setLayout(new GridBagLayout());
 		{
 			workspacePanel = new JPanel();
-			add(workspacePanel, Util.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,10,5,5,5));
+			view.add(workspacePanel, Util.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,10,5,5,5));
 			workspacePanel.setBorder(BorderFactory.createTitledBorder(""));
 			workspacePanel.setLayout(new GridBagLayout());
 			{
@@ -252,7 +260,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			}
 
 			JPanel buildings = new JPanel();
-			add(buildings, Util.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,5,5));
+			view.add(buildings, Util.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,5,5));
 			buildings.setBorder(BorderFactory.createEmptyBorder());
 			buildings.setLayout(new GridBagLayout());
 			{
@@ -291,7 +299,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			}
 
 			matchPanel = new JPanel();
-			add(matchPanel, Util.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,5,5));
+			view.add(matchPanel, Util.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,5,5));
 			matchPanel.setBorder(BorderFactory.createTitledBorder(""));
 			matchPanel.setLayout(new GridBagLayout());
 			matchToleranceLabel = new JLabel();
@@ -333,7 +341,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			}
 
 			mergePanel = new JPanel();
-			add(mergePanel, Util.setConstraints(0,3,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,5,5));
+			view.add(mergePanel, Util.setConstraints(0,3,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,5,5));
 			mergePanel.setBorder(BorderFactory.createTitledBorder(""));
 			mergePanel.setLayout(new GridBagLayout());
 			mergeLineageLabel = new JLabel();
@@ -368,7 +376,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			}
 
 			tools = new JPanel();
-			add(tools, Util.setConstraints(0,4,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,5,5));
+			view.add(tools, Util.setConstraints(0,4,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,5,5));
 			tools.setBorder(BorderFactory.createTitledBorder(""));
 			tools.setLayout(new GridBagLayout());
 			deleteLineageLabel = new JLabel();
@@ -379,9 +387,12 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			}
 		}
 
-		JPanel panel = new JPanel();
-		add(panel, Util.setConstraints(0,5,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+		view.add(Box.createVerticalGlue(), Util.setConstraints(0,5,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 
+		scrollPane.setViewportView(view);
+		setLayout(new BorderLayout());
+		add(scrollPane);
+		
 		setEnabledLineage();
 		setEnabledButtons(false);
 	}

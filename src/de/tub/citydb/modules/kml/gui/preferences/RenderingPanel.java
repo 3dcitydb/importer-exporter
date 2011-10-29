@@ -50,6 +50,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.border.TitledBorder;
 
 import org.citygml.textureAtlasAPI.TextureAtlasGenerator;
 
@@ -707,8 +708,10 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
+		((TitledBorder)footprintPanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.border.footprint"));	
+		((TitledBorder)geometryPanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.border.geometry"));	
+		((TitledBorder)colladaPanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.border.collada"));	
 
-		footprintPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.kmlexport.border.footprint")));
 		footprintAlphaLabel.setText(Internal.I18N.getString("pref.kmlexport.label.alpha"));
 		footprintFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.fillColor"));
 		footprintLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.lineColor"));
@@ -716,7 +719,6 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 		footprintHLFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
 		footprintHLLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 
-		geometryPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.kmlexport.border.geometry")));
 		geometryAlphaLabel.setText(Internal.I18N.getString("pref.kmlexport.label.alpha"));
 		geometryWallFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.wallFillColor"));
 		geometryWallLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.wallLineColor"));
@@ -727,7 +729,6 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 		geometryHLFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
 		geometryHLLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 
-		colladaPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.kmlexport.border.collada")));
 		ignoreSurfaceOrientationCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.ignoreSurfaceOrientation"));
 		textureAtlasCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.generateTextureAtlases"));
 		scaleTexImagesCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.scaleTexImages"));

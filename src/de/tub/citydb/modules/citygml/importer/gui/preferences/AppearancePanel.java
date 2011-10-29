@@ -144,11 +144,12 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		block1.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.import.appearance.border.import")));
+		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.import.appearance.border.import"));	
+		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.import.appearance.border.texturedSurface"));	
+
 		impAppRadioNoImp.setText(Internal.I18N.getString("pref.import.appearance.label.noImport"));
 		impAppRadioAppImp.setText(Internal.I18N.getString("pref.import.appearance.label.importWithoutTexture"));
 		impAppRadioImp.setText(Internal.I18N.getString("pref.import.appearance.label.importWithTexture"));
-		block2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.import.appearance.border.texturedSurface")));
 		impAppOldLabel.setText(Internal.I18N.getString("pref.import.appearance.label.theme"));
 	}
 

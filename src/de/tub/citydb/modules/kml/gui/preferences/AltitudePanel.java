@@ -42,6 +42,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -164,15 +165,15 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
+		((TitledBorder)modePanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.altitude.mode.border"));	
+		((TitledBorder)offsetPanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.altitude.offset.border"));	
 
-		modePanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.kmlexport.altitude.mode.border")));
 		modeComboBox.removeAllItems();
         for (AltitudeMode c: AltitudeMode.values()) {
     		modeComboBox.addItem(c);
         }
 		modeComboBox.setSelectedItem(config.getProject().getKmlExporter().getAltitudeMode());
 		
-		offsetPanel.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("pref.kmlexport.altitude.offset.border")));
 		noOffsetRadioButton.setText(Internal.I18N.getString("pref.kmlexport.altitude.label.noOffset"));
 		constantOffsetRadioButton.setText(Internal.I18N.getString("pref.kmlexport.altitude.label.constantOffset"));
 		genericAttributeRadioButton.setText(Internal.I18N.getString("pref.kmlexport.altitude.label.genericAttributeOffset"));

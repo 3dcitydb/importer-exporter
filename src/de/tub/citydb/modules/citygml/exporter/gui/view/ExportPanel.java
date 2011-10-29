@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.modules.citygml.exporter.gui.view;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.datatransfer.DataFlavor;
@@ -53,8 +54,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -90,7 +93,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	private final Config config;
 	private final ImpExpGui mainView;
 	private final DatabaseConnectionPool dbPool;
-	
+
 	private JTextField browseText;
 	private JButton browseButton;
 	private JTextField workspaceText;
@@ -98,7 +101,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	private FilterPanel filterPanel;
 	private JButton exportButton;
 
-	private JPanel row2;
+	private JPanel operations;
 	private JLabel workspaceLabel;
 	private JLabel timestampLabel;
 	private JLabel srsComboBoxLabel;
@@ -109,7 +112,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		this.config = config;
 		this.mainView = mainView;
 		dbPool = DatabaseConnectionPool.getInstance();
-		
+
 		initGui();
 	}
 
@@ -130,9 +133,9 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 				saveFile(Internal.I18N.getString("main.tabbedPane.export"));
 			}
 		});
-		
+
 		PopupMenuDecorator.getInstance().decorate(workspaceText, timestampText, browseText);
-		
+
 		exportButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Thread thread = new Thread() {
@@ -146,54 +149,52 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		});
 
 		setLayout(new GridBagLayout());
-		{
-			JPanel row1 = new JPanel();
-			add(row1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,5,5));
-			row1.setLayout(new GridBagLayout());
-			{
-				row1.add(browseText, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
-				row1.add(browseButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.NONE,5,5,5,5));
-			}
-		}
-		{
-			row2 = new JPanel();
-			add(row2, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-			row2.setBorder(BorderFactory.createTitledBorder(""));
-			row2.setLayout(new GridBagLayout());
-			workspaceLabel = new JLabel();
-			timestampLabel = new JLabel();
-			srsComboBoxLabel = new JLabel();
-			srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
-			srsComboBox.setMinimumSize(srsComboBox.getPreferredSize());
-			{
-				row2.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-				row2.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-				row2.add(timestampLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,5,5));
-				row2.add(timestampText, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-				timestampText.setMinimumSize(timestampText.getPreferredSize());
+
+		JPanel filePanel = new JPanel();
+		add(filePanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,5,5));
+		filePanel.setLayout(new GridBagLayout());
+		filePanel.add(browseText, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
+		filePanel.add(browseButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.NONE,5,5,5,5));
+
+		JPanel view = new JPanel();
+		view.setLayout(new GridBagLayout());
+		JScrollPane scrollPane = new JScrollPane(view);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
+		add(scrollPane, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
+
+		operations = new JPanel();
+		view.add(operations, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+		operations.setBorder(BorderFactory.createTitledBorder(""));
+		operations.setLayout(new GridBagLayout());
+		workspaceLabel = new JLabel();
+		timestampLabel = new JLabel();
+		srsComboBoxLabel = new JLabel();
+		srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
+		srsComboBox.setPreferredSize(new Dimension(50, srsComboBox.getPreferredSize().height));
 		
-				row2.add(srsComboBoxLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-				GridBagConstraints c = GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5);
-				c.gridwidth = 3;
-				row2.add(srsComboBox, c);
-			}
-		}
-		{
-			add(filterPanel, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-		}
-		{
-			JPanel row3 = new JPanel();
-			add(row3, GuiUtil.setConstraints(0,4,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-			row3.add(exportButton);
-		}
-		
+		operations.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+		operations.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+		operations.add(timestampLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,5,5));
+		operations.add(timestampText, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+		timestampText.setMinimumSize(timestampText.getPreferredSize());
+
+		operations.add(srsComboBoxLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+		operations.add(srsComboBox, GuiUtil.setConstraints(1,1,3,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+
+		view.add(filterPanel, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,0,5,0,5));
+
+		JPanel buttons = new JPanel();
+		add(buttons, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
+		buttons.add(exportButton);
+
 		DropTarget dropTarget = new DropTarget(browseText, this);
 		browseText.setDropTarget(dropTarget);
 		setDropTarget(dropTarget);
 	}
 
 	public void doTranslation() {
-		row2.setBorder(BorderFactory.createTitledBorder(Internal.I18N.getString("export.border.settings")));
+		((TitledBorder)operations.getBorder()).setTitle(Internal.I18N.getString("export.border.settings"));
 		workspaceLabel.setText(Internal.I18N.getString("common.label.workspace"));
 		timestampLabel.setText(Internal.I18N.getString("common.label.timestamp"));
 		browseButton.setText(Internal.I18N.getString("common.button.browse"));
@@ -206,9 +207,9 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		browseText.setText(config.getInternal().getExportFileName());
 		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getName());
 		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
-		
+
 		srsComboBox.setSelectedItem(config.getProject().getExporter().getTargetSRS());
-		
+
 		filterPanel.loadSettings();
 	}
 
@@ -219,7 +220,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
 				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
 			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
-		
+
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText());
 		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(timestampText.getText());
 		config.getProject().getExporter().setTargetSRS(srsComboBox.getSelectedItem());
@@ -369,7 +370,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 					exportDialog.dispose();
 				}
 			});
-			
+
 			// cleanup
 			exporter.cleanup();
 
@@ -388,7 +389,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	private void saveFile(String title) {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(title);
-		
+
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("CityGML Files (*.gml, *.xml)", "gml", "xml");
 		chooser.addChoosableFileFilter(filter);
 		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());

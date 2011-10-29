@@ -286,6 +286,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			console.add(consoleLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,5,5,0,5));
 			JScrollPane scroll = new JScrollPane(consoleText);
 			scroll.setBorder(BorderFactory.createEtchedBorder());
+			scroll.setViewportBorder(BorderFactory.createEmptyBorder());
 			console.add(scroll, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
 		}
 
