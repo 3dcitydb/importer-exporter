@@ -47,7 +47,6 @@ import de.tub.citydb.api.gui.DatabaseSrsComboBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.database.DBMetaData;
 import de.tub.citydb.database.DatabaseConnectionPool;
 
 public class SrsComboBoxFactory {
@@ -61,14 +60,14 @@ public class SrsComboBoxFactory {
 		// just to thwart instantiation
 		this.dbPool = DatabaseConnectionPool.getInstance();
 		this.config = config;
-		dbRefSys = new DatabaseSrs(DatabaseSrs.DEFAULT);
+		dbRefSys = DatabaseSrs.createDefaultSrs();
 		dbRefSys.setSupported(true);
 	}
 
 	public static synchronized SrsComboBoxFactory getInstance(Config config) {
 		if (instance == null) {
 			instance = new SrsComboBoxFactory(config);
-			Collections.sort(config.getProject().getDatabase().getReferenceSystems());
+			instance.resetAll(true);
 		}
 
 		return instance;
@@ -83,15 +82,20 @@ public class SrsComboBoxFactory {
 
 		return srsBox;
 	}
-	
+
 	public void updateAll(boolean sort) {
 		processSrsComboBoxes(sort, true);
 	}
-	
+
 	public void resetAll(boolean sort) {
+		// by default, any reference system is not supported. In GUI mode we can
+		// override this because the SRS combo boxes will take care.
+		for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
+			refSys.setSupported(true);
+		
 		processSrsComboBoxes(sort, false);
 	}
-	
+
 	private void processSrsComboBoxes(boolean sort, boolean update) {
 		if (sort)
 			Collections.sort(config.getProject().getDatabase().getReferenceSystems());
@@ -110,7 +114,7 @@ public class SrsComboBoxFactory {
 				srsBox.updateContent();
 			else
 				srsBox.reset();
-				
+
 			srsBox.repaint();
 		}
 	}
@@ -154,7 +158,7 @@ public class SrsComboBoxFactory {
 				}
 			}
 		}
-		
+
 		@Override
 		public void setShowOnlySupported(boolean show) {
 			showOnlySupported = show;
@@ -180,26 +184,22 @@ public class SrsComboBoxFactory {
 			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
 				if (showOnlySupported && !refSys.isSupported())
 					continue;
-				
+
 				if (showOnlySameDimension && refSys.is3D() != dbRefSys.is3D())
 					continue;
-					
+
 				addItem(refSys);
 			}
 		}
-		
+
 		private void reset() {
-			if (dbPool.isConnected()) {
-				DBMetaData metaData = dbPool.getActiveConnection().getMetaData(); 
-				dbRefSys.setSrid(metaData.getSrid());
-				dbRefSys.setSrsName(metaData.getSrsName());
-				dbRefSys.setIs3D(metaData.isReferenceSystem3D());
-			} else {
-				dbRefSys.setSrid(DatabaseSrs.DEFAULT.getSrid());
-				dbRefSys.setSrsName(DatabaseSrs.DEFAULT.getSrsName());
-				dbRefSys.setIs3D(false);
-			}
-			
+			DatabaseSrs tmp = dbPool.isConnected() ? dbPool.getActiveConnection().getMetaData().getReferenceSystem() :  DatabaseSrs.createDefaultSrs();
+
+			dbRefSys.setSrid(tmp.getSrid());
+			dbRefSys.setGMLSrsName(tmp.getGMLSrsName());
+			dbRefSys.setDatabaseSrsName(tmp.getDatabaseSrsName());
+			dbRefSys.setType(tmp.getType());
+
 			removeAllItems();
 			init();
 		}
@@ -238,7 +238,7 @@ public class SrsComboBoxFactory {
 	private class SrsComboBoxRenderer implements ListCellRenderer {
 		final SrsComboBox box;
 		final ListCellRenderer renderer;
-		
+
 		public SrsComboBoxRenderer(SrsComboBox box, ListCellRenderer renderer) {
 			this.box = box;
 			this.renderer = renderer;

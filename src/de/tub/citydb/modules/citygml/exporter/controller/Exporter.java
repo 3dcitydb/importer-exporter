@@ -225,7 +225,7 @@ public class Exporter implements EventHandler {
 		// set target reference system for export
 		DatabaseSrs targetSRS = config.getProject().getExporter().getTargetSRS();
 		internalConfig.setTransformCoordinates(targetSRS.isSupported() && 
-				targetSRS.getSrid() != dbPool.getActiveConnection().getMetaData().getSrid());
+				targetSRS.getSrid() != dbPool.getActiveConnection().getMetaData().getReferenceSystem().getSrid());
 		if (internalConfig.isTransformCoordinates()) {
 			internalConfig.setExportTargetSRS(targetSRS);
 			LOG.info("Transforming geometry representation to reference system '" + targetSRS.getDescription() + "' (SRID: " + targetSRS.getSrid() + ").");

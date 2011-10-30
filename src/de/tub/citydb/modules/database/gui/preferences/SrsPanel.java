@@ -32,6 +32,7 @@ package de.tub.citydb.modules.database.gui.preferences;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
@@ -61,6 +62,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBContext;
@@ -97,9 +99,13 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	private JLabel sridLabel;
 	private JFormattedTextField sridText;
 	private JLabel srsNameLabel;
-	private JTextField srsNameText;
+	private JTextField gmlSrsNameText;
 	private JLabel descriptionLabel;
 	private JTextField descriptionText;
+	private JLabel dbSrsTypeLabel;
+	private JTextPane dbSrsTypeText;
+	private JLabel dbSrsNameLabel;
+	private JTextPane dbSrsNameText;
 	private JButton newButton;
 	private JButton applyButton;
 	private JButton deleteButton;
@@ -136,7 +142,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		try { sridText.commitEdit(); } catch (ParseException e) { }
 		if (((Number)sridText.getValue()).intValue() != refSys.getSrid()) return true;
 
-		if (!srsNameText.getText().equals(refSys.getSrsName())) return true;
+		if (!gmlSrsNameText.getText().equals(refSys.getGMLSrsName())) return true;
 		if (!descriptionText.getText().equals(refSys.getDescription())) return true;
 
 		return false;
@@ -152,7 +158,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		sridText = new JFormattedTextField(tileFormat);
 
 		srsNameLabel = new JLabel();
-		srsNameText = new JTextField();
+		gmlSrsNameText = new JTextField();
 		descriptionLabel = new JLabel();
 		descriptionText = new JTextField();
 		newButton = new JButton();
@@ -169,10 +175,15 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		replaceWithFileButton = new JButton();
 		saveFileButton = new JButton();
 
+		dbSrsTypeLabel = new JLabel();
+		dbSrsTypeText = new JTextPane();
+		dbSrsNameLabel = new JLabel();
+		dbSrsNameText = new JTextPane();
+
 		srsComboBoxFactory = SrsComboBoxFactory.getInstance(config);
 		srsComboBox = srsComboBoxFactory.createSrsComboBox(false);
 
-		PopupMenuDecorator.getInstance().decorate(sridText, srsNameText, descriptionText, fileText);
+		PopupMenuDecorator.getInstance().decorate(sridText, gmlSrsNameText, descriptionText, fileText, dbSrsTypeText, dbSrsNameText);
 
 		sridText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -195,23 +206,36 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			JPanel srsPanel = new JPanel();
 			srsPanel.setLayout(new GridBagLayout());
 
-			srsNameText.setPreferredSize(srsNameText.getPreferredSize());
-			descriptionText.setPreferredSize(srsNameText.getPreferredSize());
-			srsComboBox.setPreferredSize(srsNameText.getPreferredSize());
+			gmlSrsNameText.setPreferredSize(gmlSrsNameText.getPreferredSize());
+			descriptionText.setPreferredSize(gmlSrsNameText.getPreferredSize());
+			srsComboBox.setPreferredSize(gmlSrsNameText.getPreferredSize());
 
 			srsPanel.add(sridLabel, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 			srsPanel.add(sridText, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 			srsPanel.add(checkButton, GuiUtil.setConstraints(2,0,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 			srsPanel.add(srsNameLabel, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-			GridBagConstraints c =  GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
-			c.gridwidth = 2;
-			srsPanel.add(srsNameText, c);
+			srsPanel.add(gmlSrsNameText, GuiUtil.setConstraints(1,1,2,1,1,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
-			srsPanel.add(descriptionLabel, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
-			c = GuiUtil.setConstraints(1,2,1,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
-			c.gridwidth = 2;
-			srsPanel.add(descriptionText, c);
+			srsPanel.add(descriptionLabel, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+			srsPanel.add(descriptionText, GuiUtil.setConstraints(1,2,2,1,1,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+
+
+			Insets borderMargin = sridText.getInsets();
+			dbSrsTypeText.setEditable(false);
+			dbSrsTypeText.setBorder(BorderFactory.createEmptyBorder(borderMargin.top, borderMargin.left, borderMargin.bottom, borderMargin.right));
+			dbSrsTypeText.setBackground(srsPanel.getBackground());
+			dbSrsTypeText.setMargin(sridText.getMargin());
+
+			dbSrsNameText.setEditable(false);
+			dbSrsNameText.setBorder(BorderFactory.createEmptyBorder(borderMargin.top, borderMargin.left, borderMargin.bottom, borderMargin.right));
+			dbSrsNameText.setBackground(srsPanel.getBackground());
+			dbSrsNameText.setMargin(sridText.getMargin());
+
+			srsPanel.add(dbSrsNameLabel, GuiUtil.setConstraints(0,3,0,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+			srsPanel.add(dbSrsNameText, GuiUtil.setConstraints(1,3,2,1,1,0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+			srsPanel.add(dbSrsTypeLabel, GuiUtil.setConstraints(0,4,0,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
+			srsPanel.add(dbSrsTypeText, GuiUtil.setConstraints(1,4,2,1,1,0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 
 			Box buttonsPanel = Box.createHorizontalBox();
 			buttonsPanel.add(applyButton);
@@ -223,8 +247,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			buttonsPanel.add(deleteButton);
 			buttonsPanel.add(Box.createRigidArea(new Dimension(2*BORDER_THICKNESS, 0)));
 
-			c = GuiUtil.setConstraints(0,3,1,0,GridBagConstraints.NONE,BORDER_THICKNESS*2,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
-			c.gridwidth = 3;
+			GridBagConstraints c = GuiUtil.setConstraints(0,5,3,1,1,0,GridBagConstraints.NONE,BORDER_THICKNESS*2,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
 			c.anchor = GridBagConstraints.CENTER;
 			srsPanel.add(buttonsPanel, c);
 
@@ -283,7 +306,9 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		newButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (requestChange()) {
-					DatabaseSrs refSys = new DatabaseSrs(0, "", getNewRefSysDescription(), !dbPool.isConnected());
+					DatabaseSrs refSys = DatabaseSrs.createDefaultSrs();
+					refSys.setDescription(getNewRefSysDescription());
+					refSys.setSupported(!dbPool.isConnected());
 
 					config.getProject().getDatabase().addReferenceSystem(refSys);
 					updateSrsComboBoxes(false);
@@ -346,12 +371,14 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				}			
 
 				try {
-					DatabaseSrs tmp = new DatabaseSrs(DatabaseSrs.DEFAULT);
+					DatabaseSrs tmp = DatabaseSrs.createDefaultSrs();
 					tmp.setSrid(srid);
 					DBUtil.getSrsInfo(tmp);
-					if (tmp.isSupported())
+					if (tmp.isSupported()) {
 						LOG.info("SRID " + srid + " is supported.");
-					else
+						LOG.info("Database name: " + tmp.getDatabaseSrsName());
+						LOG.info("SRS type: " + tmp.getType());
+					} else
 						LOG.warn("SRID " + srid + " is NOT supported.");
 				} catch (SQLException sqlEx) {
 					LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
@@ -393,6 +420,8 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		sridLabel.setText(Internal.I18N.getString("pref.db.srs.label.srid"));
 		srsNameLabel.setText(Internal.I18N.getString("pref.db.srs.label.srsName"));
 		descriptionLabel.setText(Internal.I18N.getString("pref.db.srs.label.description"));
+		dbSrsTypeLabel.setText(Internal.I18N.getString("pref.db.srs.label.dbSrsType"));		
+		dbSrsNameLabel.setText(Internal.I18N.getString("pref.db.srs.label.dbSrsName"));		
 		newButton.setText(Internal.I18N.getString("pref.db.srs.button.new"));
 		applyButton.setText(Internal.I18N.getString("common.button.apply"));
 		deleteButton.setText(Internal.I18N.getString("pref.db.srs.button.delete"));
@@ -407,7 +436,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	}
 
 	@Override
-	public void loadSettings() {		
+	public void loadSettings() {
 		displaySelectedValues();
 	}
 
@@ -431,7 +460,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			}
 		}
 
-		refSys.setSrsName(srsNameText.getText().trim());
+		refSys.setGMLSrsName(gmlSrsNameText.getText().trim());
 		refSys.setDescription(descriptionText.getText().trim());
 		if (refSys.getDescription().length() == 0)
 			refSys.setDescription(getNewRefSysDescription());
@@ -451,16 +480,29 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			return;
 
 		sridText.setValue(refSys.getSrid());
-		srsNameText.setText(refSys.getSrsName());
+		gmlSrsNameText.setText(refSys.getGMLSrsName());
 		descriptionText.setText(refSys.toString());
 		srsComboBox.setToolTipText(refSys.getDescription());
+		dbSrsNameText.setText(wrap(refSys.getDatabaseSrsName(), 40));
+		dbSrsTypeText.setText(refSys.getType().toString());
+		
+		boolean isDBSrs = !srsComboBox.isDBReferenceSystemSelected();
+		sridText.setEditable(isDBSrs);
+		gmlSrsNameText.setEditable(isDBSrs);
+		descriptionText.setEditable(isDBSrs);
+		applyButton.setEnabled(isDBSrs);		
+		deleteButton.setEnabled(isDBSrs);
+	}
 
-		boolean enabled = !srsComboBox.isDBReferenceSystemSelected();
-		sridText.setEnabled(enabled);
-		srsNameText.setEnabled(enabled);
-		descriptionText.setEnabled(enabled);
-		applyButton.setEnabled(enabled);		
-		deleteButton.setEnabled(enabled);
+	private String wrap(String in,int len) {
+		if (in.length() <= len)
+			return in;
+
+		int wrapAt = Math.max(in.substring(0, len).lastIndexOf(' '), in.substring(0, len).lastIndexOf('-'));
+		
+		return wrapAt == -1 ?
+				in.substring(0, len) + '-' + System.getProperty("line.separator") + wrap(in.substring(len, in.length()).trim(), len) :
+				in.substring(0, wrapAt) + System.getProperty("line.separator") + wrap(in.substring(wrapAt, in.length()).trim(), len);
 	}
 
 	private String getCopyOfDescription(DatabaseSrs refSys) {
@@ -524,7 +566,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 						MessageFormat.format(Internal.I18N.getString("common.dialog.file.read.error"), Internal.I18N.getString("pref.db.srs.error.read.msg")));
 				return;
 			}
-			
+
 			Object object = ConfigUtil.unmarshal(file, getJAXBContext());
 			if (object instanceof DatabaseSrsList) {
 				DatabaseSrsList refSyss = (DatabaseSrsList)object;				
@@ -683,16 +725,17 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		boolean isConnected = ((DatabaseConnectionStateEvent)event).isConnected();
 
 		if (!isConnected) {
+			DatabaseSrs tmp = DatabaseSrs.createDefaultSrs();
 			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
 				refSys.setSupported(true);
-				refSys.setIs3D(false);
+				refSys.setDatabaseSrsName(tmp.getDatabaseSrsName());
+				refSys.setType(tmp.getType());
 			}
 		}
 
 		checkButton.setEnabled(isConnected);
 		updateSrsComboBoxes(false);			
-		if (srsComboBox.isDBReferenceSystemSelected())
-			displaySelectedValues();
+		displaySelectedValues();
 	}
 
 	@Override

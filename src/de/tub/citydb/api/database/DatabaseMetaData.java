@@ -1,5 +1,6 @@
 package de.tub.citydb.api.database;
 
+import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.log.LogLevel;
 
 public interface DatabaseMetaData {	
@@ -9,10 +10,7 @@ public interface DatabaseMetaData {
 	public int getDatabaseMajorVersion();
 	public int getDatabaseMinorVersion();
 	public String getDatabaseProductString();
-	public String getReferenceSystemName();
-	public boolean isReferenceSystem3D();
-	public int getSrid();
-	public String getSrsName();
+	public DatabaseSrs getReferenceSystem();
 	public boolean isVersionEnabled();
 	public void printToConsole(LogLevel level);
 }

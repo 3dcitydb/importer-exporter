@@ -1292,7 +1292,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					coords[index++] = point3d.y;
 					coords[index++] = point3d.z;
 				}
-				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, dbConnectionPool.getActiveConnection().getMetaData().getSrid());
+				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, dbConnectionPool.getActiveConnection().getMetaData().getReferenceSystem().getSrid());
 				coords = convertToWGS84(jGeometry).getOrdinatesArray();
 
 				Logger.getInstance().info("Getting zOffset from Google's elevation API for " + gmlId + " with " + candidates.size() + " points.");
@@ -1365,7 +1365,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		double[] pointCoords = null; 
 		// createLinearLineString is a workaround for Oracle11g!
-		JGeometry jGeometry = JGeometry.createLinearLineString(coords, coords.length, dbConnectionPool.getActiveConnection().getMetaData().getSrid());
+		JGeometry jGeometry = JGeometry.createLinearLineString(coords, coords.length, dbConnectionPool.getActiveConnection().getMetaData().getReferenceSystem().getSrid());
 		JGeometry convertedPointGeom = convertToWGS84(jGeometry);
 		if (convertedPointGeom != null) {
 			pointCoords = convertedPointGeom.getFirstPoint();

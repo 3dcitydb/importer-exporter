@@ -39,6 +39,7 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
 import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.api.database.DatabaseSrsType;
 
 @XmlType(name="DatabaseType", propOrder={
 		"referenceSystems",
@@ -56,7 +57,7 @@ public class Database {
 	}
 	
 	static {
-		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG:7.9:4326", "[Default] WGS 84", true));
+		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG:7.9:4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGRAPHIC2D, true));
 	}
 	
 	private DatabaseSrsList referenceSystems;

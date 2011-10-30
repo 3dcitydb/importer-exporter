@@ -48,7 +48,7 @@ import de.tub.citydb.config.project.system.System;
 public class Exporter {
 	private Path path;
 	@XmlIDREF
-	private DatabaseSrs targetSRS = DatabaseSrs.DEFAULT;
+	private DatabaseSrs targetSRS = DatabaseSrs.createDefaultSrs();
 	private ExportAppearance appearances;
 	private ExportFilterConfig filter;
 	private CityGMLVersionType cityGMLVersion = CityGMLVersionType.v1_0_0;

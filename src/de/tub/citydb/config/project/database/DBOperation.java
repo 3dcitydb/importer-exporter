@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.config.project.database;
 
+import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
 import de.tub.citydb.api.config.DatabaseSrs;
@@ -44,7 +45,8 @@ import de.tub.citydb.config.project.general.FeatureClassMode;
 public class DBOperation {
 	private DBOperationType lastUsed = DBOperationType.REPORT;
 	private FeatureClassMode boundingBoxFeatureClass = FeatureClassMode.CITYOBJECT;
-	private DatabaseSrs boundingBoxSrs = DatabaseSrs.DEFAULT;
+	@XmlIDREF
+	private DatabaseSrs boundingBoxSrs = DatabaseSrs.createDefaultSrs();
 	private boolean spatialIndex;
 	private boolean normalIndex;
 	

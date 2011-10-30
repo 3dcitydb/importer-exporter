@@ -255,7 +255,7 @@ public class MenuProject extends JMenu {
 			config.setProject(project);
 			mainView.doTranslation();
 
-			// update contents of srs combo boxes
+			// reset contents of srs combo boxes
 			SrsComboBoxFactory.getInstance(config).resetAll(true);
 
 			// load settings for internal plugins

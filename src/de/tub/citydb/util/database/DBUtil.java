@@ -50,6 +50,7 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.api.config.BoundingBoxCorner;
 import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.api.database.DatabaseSrsType;
 import de.tub.citydb.config.project.database.DBMetaData;
 import de.tub.citydb.config.project.database.DBMetaData.Versioning;
 import de.tub.citydb.config.project.database.Workspace;
@@ -81,10 +82,13 @@ public class DBUtil {
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery("select * from table(geodb_util.db_metadata)");
 			if (rs.next()) {
-				metaData.setSrid(rs.getInt("SRID"));
-				metaData.setSrsName(rs.getString("GML_SRS_NAME"));
-				metaData.setReferenceSystemName(rs.getString("COORD_REF_SYS_NAME"));
-				metaData.setReferenceSystem3D(rs.getBoolean("IS_COORD_REF_SYS_3D"));
+				DatabaseSrs srs = metaData.getReferenceSystem();
+				srs.setSrid(rs.getInt("SRID"));
+				srs.setGMLSrsName(rs.getString("GML_SRS_NAME"));
+				srs.setDatabaseSrsName(rs.getString("COORD_REF_SYS_NAME"));
+				srs.setType(DatabaseSrsType.fromValue(rs.getString("COORD_REF_SYS_KIND")));
+				srs.setSupported(true);
+
 				metaData.setVersioning(Versioning.valueOf(rs.getString("VERSIONING")));
 			} else
 				throw new SQLException("Failed to retrieve metadata information from database.");
@@ -118,7 +122,7 @@ public class DBUtil {
 			}
 		}
 	}
-	
+
 	public static void getSrsInfo(DatabaseSrs srs) throws SQLException {
 		Connection conn = null;
 		PreparedStatement psQuery = null;
@@ -126,20 +130,21 @@ public class DBUtil {
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			psQuery = conn.prepareStatement("select count(*) from MDSYS.CS_SRS where srid = ?");
-			psQuery.setInt(1, srs.getSrid());
 
-			rs = psQuery.executeQuery();
-			srs.setSupported(rs.next() && rs.getInt(1) > 0);
-			
-			psQuery = conn.prepareStatement("select geodb_util.is_coord_ref_sys_3d(?) from dual");
+			psQuery = conn.prepareStatement("select coord_ref_sys_name, coord_ref_sys_kind from sdo_coord_ref_sys where srid = ?");
 			psQuery.setInt(1, srs.getSrid());
-			
 			rs = psQuery.executeQuery();
-			srs.setIs3D(rs.next() && rs.getInt(1) > 0);
-			
-			
-			//SELECT COORD_REF_SYS_NAME from SDO_COORD_REF_SYS where SRID=:1
+			if (rs.next()) {
+				srs.setSupported(true);
+				srs.setDatabaseSrsName(rs.getString(1));
+				srs.setType(DatabaseSrsType.fromValue(rs.getString(2)));
+			} else {
+				DatabaseSrs tmp = DatabaseSrs.createDefaultSrs();
+				srs.setDatabaseSrsName(tmp.getDatabaseSrsName());
+				srs.setType(tmp.getType());
+				srs.setSupported(false);
+			}
+
 		} catch (SQLException sqlEx) {
 			throw sqlEx;
 		} finally {
@@ -445,7 +450,7 @@ public class DBUtil {
 
 		return report;
 	}
-	
+
 	private static String[] getIndexStatus(DBIndexType type) throws SQLException {
 		String[] status = null;
 		Connection conn = null;
@@ -542,7 +547,7 @@ public class DBUtil {
 	public static String[] createNormalIndexes() throws SQLException {
 		return createIndexes(DBIndexType.NORMAL);
 	}
-	
+
 	public static String[] getStatusSpatialIndexes() throws SQLException {
 		return getIndexStatus(DBIndexType.SPATIAL);
 	}

@@ -44,25 +44,15 @@ public class DBMetaData implements DatabaseMetaData {
 	private int databaseMinorVersion;
 	
 	// 3DCityDB related information
-	private String referenceSystemName;
-	private boolean isReferenceSystem3D;
-	private int srid;
-	private String srsName;
+	private DatabaseSrs srs =  DatabaseSrs.createDefaultSrs();
 	private Versioning versioning = Versioning.OFF;
-	
-	public DBMetaData() {
-	}
 	
 	public void reset() {
 		databaseProductName = null;
 		databaseProductString = null;
 		databaseMajorVersion = 0;
 		databaseMinorVersion = 0;
-	
-		referenceSystemName = null;
-		isReferenceSystem3D = false;
-		srid = DatabaseSrs.DEFAULT.getSrid();
-		srsName = DatabaseSrs.DEFAULT.getSrsName();		
+		srs = DatabaseSrs.createDefaultSrs();
 		versioning = Versioning.OFF;
 	}
 
@@ -116,40 +106,12 @@ public class DBMetaData implements DatabaseMetaData {
 		this.databaseProductString = databaseProductString;
 	}
 
-	@Override
-	public String getReferenceSystemName() {
-		return referenceSystemName;
+	public DatabaseSrs getReferenceSystem() {
+		return srs;
 	}
 
-	public void setReferenceSystemName(String referenceSystemName) {
-		this.referenceSystemName = referenceSystemName;
-	}
-
-	@Override
-	public boolean isReferenceSystem3D() {
-		return isReferenceSystem3D;
-	}
-
-	public void setReferenceSystem3D(boolean isReferenceSystem3D) {
-		this.isReferenceSystem3D = isReferenceSystem3D;
-	}
-
-	@Override
-	public int getSrid() {
-		return srid;
-	}
-
-	public void setSrid(int srid) {
-		this.srid = srid;
-	}
-
-	@Override
-	public String getSrsName() {
-		return srsName;
-	}
-
-	public void setSrsName(String srsName) {
-		this.srsName = srsName;
+	public void setReferenceSystem(DatabaseSrs srs) {
+		this.srs = srs;
 	}
 
 	@Override
@@ -168,8 +130,9 @@ public class DBMetaData implements DatabaseMetaData {
 	@Override
 	public void printToConsole(LogLevel level) {
 		LOG.log(level, getShortDatabaseProductVersion());
-		LOG.log(level, "SRID: " + srid + " (" + referenceSystemName + ')');
-		LOG.log(level, "gml:srsName: " + srsName);
+		LOG.log(level, "SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
+		LOG.log(level, "SRS: " + srs.getDatabaseSrsName());
+		LOG.log(level, "gml:srsName: " + srs.getGMLSrsName());
 		LOG.log(level, "Versioning: " + versioning);
 	}
 	
