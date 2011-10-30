@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
@@ -215,6 +216,7 @@ public class BoundingBoxValidator {
 
 		private void init() {
 			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/resources/img/map/map_icon.png")));
 			setLayout(new GridBagLayout());
 			setBackground(Color.WHITE);			
 		}
@@ -396,6 +398,7 @@ public class BoundingBoxValidator {
 
 		private void init() {
 			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/resources/img/map/map_icon.png")));
 			setLayout(new GridBagLayout());
 			setBackground(Color.WHITE);	
 
@@ -424,6 +427,7 @@ public class BoundingBoxValidator {
 			messageLabel.setText(message);
 			messageLabel.setMinimumSize(messageLabel.getSize());
 			pack();
+			setLocationRelativeTo(getOwner());
 		}
 
 		private void setErrorMessage(String message) {
@@ -436,6 +440,7 @@ public class BoundingBoxValidator {
 			messageLabel.setMinimumSize(messageLabel.getSize());
 			button.setVisible(true);
 			pack();
+			setLocationRelativeTo(getOwner());
 		}
 	}
 }

@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import de.tub.citydb.api.controller.ViewController;
+import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -198,10 +199,10 @@ public class IndexOperation implements DatabaseOperationView {
 					String[] queryResult = null;
 
 					if (type == DBIndexType.SPATIAL && spatial.isSelected()) {
-						LOG.info("Activating spatial indexes...");
+						LOG.all(LogLevel.INFO, "Activating spatial indexes...");
 						queryResult = DBUtil.createSpatialIndexes();
 					} else if (type == DBIndexType.NORMAL && normal.isSelected()) {
-						LOG.info("Activating normal indexes...");
+						LOG.all(LogLevel.INFO, "Activating normal indexes...");
 						queryResult = DBUtil.createNormalIndexes();
 					}
 
@@ -214,7 +215,7 @@ public class IndexOperation implements DatabaseOperationView {
 								String errMsg = DBUtil.errorMessage(parts[3]);
 								LOG.error("Error cause: " + errMsg);
 							} else
-								LOG.info("SUCCESS: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
+								LOG.all(LogLevel.INFO, "SUCCESS: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
 						}
 					}
 				}
@@ -225,7 +226,7 @@ public class IndexOperation implements DatabaseOperationView {
 					}
 				});
 
-				LOG.info("Activating indexes successfully finished.");
+				LOG.all(LogLevel.INFO, "Activating indexes successfully finished.");
 			} catch (SQLException sqlEx) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -286,10 +287,10 @@ public class IndexOperation implements DatabaseOperationView {
 					String[] queryResult = null;
 
 					if (type == DBIndexType.SPATIAL && spatial.isSelected()) {
-						LOG.info("Deactivating spatial indexes...");
+						LOG.all(LogLevel.INFO, "Deactivating spatial indexes...");
 						queryResult = DBUtil.dropSpatialIndexes();
 					} else if (type == DBIndexType.NORMAL && normal.isSelected()) {
-						LOG.info("Deactivating normal indexes...");
+						LOG.all(LogLevel.INFO, "Deactivating normal indexes...");
 						queryResult = DBUtil.dropNormalIndexes();
 					}
 
@@ -302,7 +303,7 @@ public class IndexOperation implements DatabaseOperationView {
 								String errMsg = DBUtil.errorMessage(parts[3]);
 								LOG.error("Error cause: " + errMsg);
 							} else
-								LOG.info("SUCCESS: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
+								LOG.all(LogLevel.INFO, "SUCCESS: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
 						}
 					}
 				}
@@ -313,7 +314,7 @@ public class IndexOperation implements DatabaseOperationView {
 					}
 				});
 
-				LOG.info("Deactivating indexes successfully finished.");
+				LOG.all(LogLevel.INFO, "Deactivating indexes successfully finished.");
 			} catch (SQLException sqlEx) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -374,10 +375,10 @@ public class IndexOperation implements DatabaseOperationView {
 					String[] queryResult = null;
 
 					if (type == DBIndexType.SPATIAL && spatial.isSelected()) {
-						LOG.info("Checking spatial indexes...");
+						LOG.all(LogLevel.INFO, "Checking spatial indexes...");
 						queryResult = DBUtil.getStatusSpatialIndexes();
 					} else if (type == DBIndexType.NORMAL && normal.isSelected()) {
-						LOG.info("Checking normal indexes...");
+						LOG.all(LogLevel.INFO, "Checking normal indexes...");
 						queryResult = DBUtil.getStatusNormalIndexes();
 					}
 
@@ -386,9 +387,9 @@ public class IndexOperation implements DatabaseOperationView {
 							String[] parts = line.split(":");
 
 							if (parts[3].equals("VALID"))
-								LOG.info("ON: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
+								LOG.all(LogLevel.INFO, "ON: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
 							else
-								LOG.info("OFF: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
+								LOG.all(LogLevel.INFO, "OFF: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
 						}
 					}
 				}
@@ -399,7 +400,7 @@ public class IndexOperation implements DatabaseOperationView {
 					}
 				});
 
-				LOG.info("Querying index status successfully finished.");
+				LOG.all(LogLevel.INFO, "Querying index status successfully finished.");
 			} catch (SQLException sqlEx) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {

@@ -32,7 +32,6 @@ package de.tub.citydb.modules.database.gui.preferences;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
@@ -73,6 +72,7 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.event.global.GlobalEvents;
+import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.ConfigUtil;
@@ -220,15 +220,13 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			srsPanel.add(descriptionLabel, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 			srsPanel.add(descriptionText, GuiUtil.setConstraints(1,2,2,1,1,0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
-
-			Insets borderMargin = sridText.getInsets();
 			dbSrsTypeText.setEditable(false);
-			dbSrsTypeText.setBorder(BorderFactory.createEmptyBorder(borderMargin.top, borderMargin.left, borderMargin.bottom, borderMargin.right));
+			dbSrsTypeText.setBorder(sridText.getBorder()); 
 			dbSrsTypeText.setBackground(srsPanel.getBackground());
 			dbSrsTypeText.setMargin(sridText.getMargin());
 
 			dbSrsNameText.setEditable(false);
-			dbSrsNameText.setBorder(BorderFactory.createEmptyBorder(borderMargin.top, borderMargin.left, borderMargin.bottom, borderMargin.right));
+			dbSrsNameText.setBorder(sridText.getBorder()); 
 			dbSrsNameText.setBackground(srsPanel.getBackground());
 			dbSrsNameText.setMargin(sridText.getMargin());
 
@@ -375,11 +373,11 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 					tmp.setSrid(srid);
 					DBUtil.getSrsInfo(tmp);
 					if (tmp.isSupported()) {
-						LOG.info("SRID " + srid + " is supported.");
-						LOG.info("Database name: " + tmp.getDatabaseSrsName());
-						LOG.info("SRS type: " + tmp.getType());
+						LOG.all(LogLevel.INFO, "SRID " + srid + " is supported.");
+						LOG.all(LogLevel.INFO, "Database name: " + tmp.getDatabaseSrsName());
+						LOG.all(LogLevel.INFO, "SRS type: " + tmp.getType());
 					} else
-						LOG.warn("SRID " + srid + " is NOT supported.");
+						LOG.all(LogLevel.WARN, "SRID " + srid + " is NOT supported.");
 				} catch (SQLException sqlEx) {
 					LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
 				}

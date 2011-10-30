@@ -44,7 +44,7 @@ public class Logger implements LogController {
 
 	private LogLevel consoleLogLevel = LogLevel.INFO;
 	private LogLevel fileLogLevel = LogLevel.INFO;
-	
+
 	private Calendar cal;
 	private DecimalFormat df = new DecimalFormat("00");
 
@@ -62,7 +62,7 @@ public class Logger implements LogController {
 	public void setDefaultConsoleLogLevel(LogLevel consoleLogLevel) {
 		this.consoleLogLevel = consoleLogLevel;
 	}
-	
+
 	public void setDefaultFileLogLevel(LogLevel fileLogLevel) {
 		this.fileLogLevel = fileLogLevel;
 	}
@@ -76,24 +76,24 @@ public class Logger implements LogController {
 	public LogLevel getDefaultFileLogLevel() {
 		return fileLogLevel;
 	}
-
-	public String getPrefix(LogLevel type) {
+	
+	private String getPrefix(LogLevel type) {
 		cal = Calendar.getInstance();
 
 		int h = cal.get(Calendar.HOUR_OF_DAY);
 		int m = cal.get(Calendar.MINUTE);
 		int s = cal.get(Calendar.SECOND);
-
-		StringBuffer prefix = new StringBuffer();
-		prefix.append("[");
-		prefix.append(df.format(h));
-		prefix.append(":");
-		prefix.append(df.format(m));
-		prefix.append(":");
-		prefix.append(df.format(s));
-		prefix.append(" ");
-		prefix.append(type.value());
-		prefix.append("] ");
+		
+		StringBuffer prefix = new StringBuffer()
+		.append("[")
+		.append(df.format(h))
+		.append(":")
+		.append(df.format(m))
+		.append(":")
+		.append(df.format(s))
+		.append(" ")
+		.append(type.value())
+		.append("] ");
 
 		return prefix.toString();
 	}
@@ -136,13 +136,22 @@ public class Logger implements LogController {
 	public void error(String msg) {
 		log(LogLevel.ERROR, msg);
 	}
-	
+
+	@Override
+	public void all(LogLevel type, String message) {
+		StringBuffer buffer = new StringBuffer(getPrefix(type));
+		buffer.append(message);
+		
+		System.out.println(buffer.toString());
+		writeToFile(buffer.toString());
+	}
+
 	@Override
 	public void print(String msg) {
 		System.out.println(msg);
 		writeToFile(msg);
 	}
-	
+
 	public void writeToFile(String msg) {
 		if (isLogToFile) {
 			try {
@@ -154,11 +163,11 @@ public class Logger implements LogController {
 			}
 		}
 	}
-	
+
 	public void logToFile(boolean isLogToFile) {		
 		this.isLogToFile = isLogToFile;
 	}
-	
+
 	public boolean appendLogFile(String logPath) {
 		File createPath = new File(logPath);
 
@@ -171,7 +180,7 @@ public class Logger implements LogController {
 		try {
 			info("Writing log messages to file: '" + file.getAbsolutePath() + "'");
 			detachLogFile();
-			
+
 			logFile = new BufferedWriter(new FileWriter(file, file.exists()));
 			isLogToFile = true;
 		} catch (IOException e) {
@@ -179,7 +188,7 @@ public class Logger implements LogController {
 			error("Not writing log messages to file");
 			return false;
 		}
-				
+
 		return true;
 	}
 
@@ -196,7 +205,7 @@ public class Logger implements LogController {
 			}
 		}
 	}
-	
+
 	private String getDefaultLogFile() {
 		cal = Calendar.getInstance();
 

@@ -74,8 +74,8 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.database.ConnectionViewHandler;
 import de.tub.citydb.database.ConnectionStateEnum;
+import de.tub.citydb.database.ConnectionViewHandler;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.log.Logger;
@@ -305,8 +305,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			public void actionPerformed(ActionEvent e) {
 				topFrame.clearConsole();
 				DatabaseConnectionDetails details = databaseController.getActiveConnectionDetails();
-				LOG.info("Connected to database profile '" + details.getDescription() + "'.");
-				details.getMetaData().printToConsole(LogLevel.INFO);
+				LOG.all(LogLevel.INFO, "Connected to database profile '" + details.getDescription() + "'.");
+				details.getMetaData().printToConsole();
 			}
 		});
 
@@ -437,7 +437,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		case FINISH_CONNECT:
 			if (databaseController.isConnected()) {
 				LOG.info("Database connection established.");
-				conn.getMetaData().printToConsole(LogLevel.INFO);
+				conn.getMetaData().printToConsole();
 
 				// log whether user-defined SRSs are supported
 				for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {

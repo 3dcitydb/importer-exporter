@@ -169,7 +169,8 @@ public class MapWindow extends JDialog implements EventHandler {
 
 	private void init() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setTitle(Internal.I18N.getString("map.window.title"));
+		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/resources/img/map/map_icon.png")));
+		
 		setLayout(new GridBagLayout());
 		getContentPane().setBackground(Color.WHITE);
 
@@ -753,6 +754,7 @@ public class MapWindow extends JDialog implements EventHandler {
 	}
 
 	private void doTranslation() {
+		setTitle(Internal.I18N.getString("map.window.title"));
 		applyButton.setText(Internal.I18N.getString("common.button.apply"));
 		cancelButton.setText(Internal.I18N.getString("common.button.cancel"));
 		goButton.setText(Internal.I18N.getString("map.button.go"));

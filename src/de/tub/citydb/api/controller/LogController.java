@@ -7,6 +7,7 @@ public interface LogController {
 	public void info(String message);
 	public void warn(String message);
 	public void error(String message);
+	public void all(LogLevel level, String message);
 	public void log(LogLevel level, String msg);
 	public void print(String msg);
 	

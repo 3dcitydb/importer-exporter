@@ -49,7 +49,7 @@ public class MenuBar extends JMenuBar {
 
 	private MenuFile file;
 	private MenuProject project;
-	private MenuWindow window;
+	private MenuView view;
 	private MenuHelp help;
 
 	private JMenu extensions;
@@ -65,7 +65,7 @@ public class MenuBar extends JMenuBar {
 	private void init() {
 		file = new MenuFile();
 		project = new MenuProject(pluginService, config, ctx, topFrame);
-		window = new MenuWindow(config, topFrame);
+		view = new MenuView(config, topFrame);
 		help = new MenuHelp(config, topFrame);
 
 		add(file);
@@ -85,19 +85,19 @@ public class MenuBar extends JMenuBar {
 		if (extensions != null)
 			add(extensions);
 
-		add(window);
+		add(view);
 		add(help);
 	}
 
 	public void doTranslation() {
 		file.setText(Internal.I18N.getString("menu.file.label"));
 		project.setText(Internal.I18N.getString("menu.project.label"));
-		window.setText(Internal.I18N.getString("menu.window.label"));
+		view.setText(Internal.I18N.getString("menu.view.label"));
 		help.setText(Internal.I18N.getString("menu.help.label"));
 
 		GuiUtil.setMnemonic(file, "menu.file.label", "menu.file.label.mnemonic");
 		GuiUtil.setMnemonic(project, "menu.project.label", "menu.project.label.mnemonic");
-		GuiUtil.setMnemonic(window, "menu.window.label", "menu.window.label.mnemonic");
+		GuiUtil.setMnemonic(view, "menu.view.label", "menu.view.label.mnemonic");
 		GuiUtil.setMnemonic(help, "menu.help.label", "menu.help.label.mnemonic");
 
 		if (extensions != null) {
@@ -111,7 +111,7 @@ public class MenuBar extends JMenuBar {
 
 		file.doTranslation();
 		project.doTranslation();
-		window.doTranslation();
+		view.doTranslation();
 		help.doTranslation();
 	}
 

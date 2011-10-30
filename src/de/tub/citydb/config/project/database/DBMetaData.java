@@ -128,12 +128,12 @@ public class DBMetaData implements DatabaseMetaData {
 	}
 
 	@Override
-	public void printToConsole(LogLevel level) {
-		LOG.log(level, getShortDatabaseProductVersion());
-		LOG.log(level, "SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
-		LOG.log(level, "SRS: " + srs.getDatabaseSrsName());
-		LOG.log(level, "gml:srsName: " + srs.getGMLSrsName());
-		LOG.log(level, "Versioning: " + versioning);
+	public void printToConsole() {
+		LOG.all(LogLevel.INFO, getShortDatabaseProductVersion());
+		LOG.all(LogLevel.INFO, "SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
+		LOG.all(LogLevel.INFO, "SRS: " + srs.getDatabaseSrsName());
+		LOG.all(LogLevel.INFO, "gml:srsName: " + srs.getGMLSrsName());
+		LOG.all(LogLevel.INFO, "Versioning: " + versioning);
 	}
 	
 	public enum Versioning {
