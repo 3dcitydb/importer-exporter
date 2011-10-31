@@ -114,8 +114,7 @@ AS
   procedure clear_matching_tables;
  
   function aggregate_mbr(table_name varchar2) return mdsys.sdo_geometry;
-  function aggregate_geometry_by_id(id number, tolerance number := 0.001, aggregate_building number := 1) return mdsys.sdo_geometry;
-  function to_2d(geom mdsys.sdo_geometry, srid number) return mdsys.sdo_geometry;  
+  function aggregate_geometry_by_id(id number, tolerance number := 0.001, aggregate_building number := 1) return mdsys.sdo_geometry; 
 END geodb_match;
 /
 
@@ -227,7 +226,7 @@ AS
   
     -- second, retrieve exterior shell surfaces from building
     execute immediate 'insert all /*+ append nologging */ into match_collect_geom
-      select bl.id, bl.parent_id, bl.root_id, geodb_match.to_2d(s.geometry, :1)
+      select bl.id, bl.parent_id, bl.root_id, geodb_util.to_2d(s.geometry, :1)
         from match_tmp_building bl, surface_geometry s
         where s.root_id = bl.geometry_id
               and s.geometry is not null'
@@ -239,7 +238,7 @@ AS
       -- retrieve surfaces from building installations referencing the identified
       -- building tupels
       execute immediate 'insert all /*+ append nologging */ into match_collect_geom
-        select bl.id, bl.parent_id, bl.root_id, geodb_match.to_2d(s.geometry, :1)
+        select bl.id, bl.parent_id, bl.root_id, geodb_util.to_2d(s.geometry, :1)
           from match_tmp_building bl, building_installation i, surface_geometry s
           where i.building_id = bl.id
                 and i.is_external = 1
@@ -250,7 +249,7 @@ AS
       -- retrieve surfaces from thematic surfaces referencing the identified
       -- building tupels
       execute immediate 'insert all /*+ append nologging */ into match_collect_geom
-        select bl.id, bl.parent_id, bl.root_id, geodb_match.to_2d(s.geometry, :1)
+        select bl.id, bl.parent_id, bl.root_id, geodb_util.to_2d(s.geometry, :1)
           from match_tmp_building bl, thematic_surface t, surface_geometry s
           where t.building_id = bl.id
                 and upper(t.type) not in (''INTERIORWALLSURFACE'', ''CEILINGSURFACE'', ''FLOORSURFACE'')
@@ -487,90 +486,6 @@ AS
   exception
     when others then
       dbms_output.put_line(id || ': ' || SQLERRM);
-      return null;
-  end;
-
-  /*
-  * code taken from http://forums.oracle.com/forums/thread.jspa?messageID=960492&#960492
-  */
-  function to_2d (geom mdsys.sdo_geometry, srid number)
-  return mdsys.sdo_geometry
-  is
-    geom_2d mdsys.sdo_geometry;
-    dim_count integer; -- number of dimensions in layer
-    gtype integer; -- geometry type (single digit)
-    n_points integer; -- number of points in ordinates array
-    n_ordinates integer; -- number of ordinates
-    i integer;
-    j integer;
-    k integer;
-    offset integer;
-  begin
-    -- If the input geometry is null, just return null
-    if geom is null then
-      return (null);
-    end if;
-    
-    -- Get the number of dimensions from the gtype
-    if length (geom.sdo_gtype) = 4 then
-      dim_count := substr (geom.sdo_gtype, 1, 1);
-      gtype := substr (geom.sdo_gtype, 4, 1);
-    else
-    -- Indicate failure
-      raise_application_error (-20000, 'Unable to determine dimensionality from gtype');
-    end if;
-    
-    if dim_count = 2 then
-      -- Nothing to do, geometry is already 2D
-      return (geom);
-    end if;
-  
-    -- Construct and prepare the output geometry
-    geom_2d := mdsys.sdo_geometry (
-                2000+gtype, srid, geom.sdo_point,
-                mdsys.sdo_elem_info_array (), mdsys.sdo_ordinate_array()
-                );
-  
-    -- Process the point structure
-    if geom_2d.sdo_point is not null then
-      geom_2D.sdo_point.z := null;
-    else
-      -- It is not a point  
-      -- Process the ordinates array
-  
-      -- Prepare the size of the output array
-      n_points := geom.sdo_ordinates.count / dim_count;
-      n_ordinates := n_points * 2;
-      geom_2d.sdo_ordinates.extend(n_ordinates);
-  
-      -- Copy the ordinates array
-      j := geom.sdo_ordinates.first; -- index into input elem_info array
-      k := 1; -- index into output ordinate array
-      for i in 1..n_points loop
-        geom_2d.sdo_ordinates (k) := geom.sdo_ordinates (j); -- copy X
-        geom_2d.sdo_ordinates (k+1) := geom.sdo_ordinates (j+1); -- copy Y
-        j := j + dim_count;
-        k := k + 2;
-      end loop;
-  
-      -- Process the element info array
-      
-      -- Copy the input array into the output array
-      geom_2d.sdo_elem_info := geom.sdo_elem_info;
-      
-      -- Adjust the offsets
-      i := geom_2d.sdo_elem_info.first;
-      while i < geom_2d.sdo_elem_info.last loop
-        offset := geom_2d.sdo_elem_info(i);
-        geom_2d.sdo_elem_info(i) := (offset-1)/dim_count*2+1;
-        i := i + 3;
-      end loop;
-    end if;
-  
-    return geom_2d;
-  exception
-    when others then
-      dbms_output.put_line('to_2d: ' || SQLERRM);
       return null;
   end;
   

@@ -83,6 +83,8 @@ AS
   TYPE index_table IS TABLE OF INDEX_OBJ;
   FUNCTION index_status(idx INDEX_OBJ) RETURN VARCHAR2;
   FUNCTION index_status(table_name VARCHAR2, column_name VARCHAR2) RETURN VARCHAR2;
+  FUNCTION status_spatial_indexes RETURN STRARRAY;
+  FUNCTION status_normal_indexes RETURN STRARRAY;
   FUNCTION create_index(idx INDEX_OBJ, is_versioned BOOLEAN, params VARCHAR2 := '') RETURN VARCHAR2;
   FUNCTION drop_index(idx INDEX_OBJ, is_versioned BOOLEAN) RETURN VARCHAR2;
   FUNCTION create_spatial_indexes RETURN STRARRAY;
@@ -357,8 +359,54 @@ AS
         log.extend;
         log(log.count) := INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code || ':' || index_status(INDICES(i));
       END IF;
-    END LOOP;  
+    END LOOP; 
     
+    RETURN log;
+  END;
+  
+  /*****************************************************************
+  * status_spatial_indexes
+  * 
+  * @return STRARRAY array of log message strings
+  ******************************************************************/
+  FUNCTION status_spatial_indexes RETURN STRARRAY
+  IS
+    log STRARRAY;
+    sql_error_code VARCHAR2(20);
+  BEGIN
+    log := STRARRAY();
+  
+    FOR i in INDICES.FIRST .. INDICES.LAST LOOP
+      IF INDICES(i).type = SPATIAL THEN
+        sql_error_code := index_status(INDICES(i));
+        log.extend;
+        log(log.count) := INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code;
+      END IF;
+    END LOOP;      
+
+    RETURN log;
+  END;
+  
+  /*****************************************************************
+  * status_normal_indexes
+  * 
+  * @return STRARRAY array of log message strings
+  ******************************************************************/
+  FUNCTION status_normal_indexes RETURN STRARRAY
+  IS
+    log STRARRAY;
+    sql_error_code VARCHAR2(20);
+  BEGIN
+    log := STRARRAY();
+  
+    FOR i in INDICES.FIRST .. INDICES.LAST LOOP
+      IF INDICES(i).type = NORMAL THEN
+        sql_error_code := index_status(INDICES(i));
+        log.extend;
+        log(log.count) := INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code;
+      END IF;
+    END LOOP;      
+
     RETURN log;
   END;
 

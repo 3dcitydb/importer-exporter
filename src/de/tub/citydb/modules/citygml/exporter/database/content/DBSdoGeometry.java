@@ -81,16 +81,12 @@ import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.DatabaseConnectionPool;
 
 public class DBSdoGeometry implements DBExporter {
 	private String gmlSrsName;
 
 	public DBSdoGeometry(Config config) {
-		if (config.getInternal().isTransformCoordinates())
-			gmlSrsName = config.getInternal().getExportTargetSRS().getGMLSrsName();
-		else
-			gmlSrsName = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getReferenceSystem().getGMLSrsName();
+		gmlSrsName = config.getInternal().getExportTargetSRS().getGMLSrsName();
 	}
 
 	public PointProperty getPoint(JGeometry geom, boolean setSrsName) {

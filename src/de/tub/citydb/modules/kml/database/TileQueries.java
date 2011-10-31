@@ -514,7 +514,7 @@ public class TileQueries {
 		"SELECT * FROM (" +
 		"SELECT * FROM (" +
 
-		"SELECT geodb_match.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
+		"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
 //		"SELECT sg.geometry AS simple_geom " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE " +

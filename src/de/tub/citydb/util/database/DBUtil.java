@@ -236,7 +236,7 @@ public class DBUtil {
 			stmt = conn.createStatement();
 
 			List<Integer> featureTypes = new ArrayList<Integer>();
-			String query = "select sdo_aggr_mbr(geodb_match.to_2d(ENVELOPE, (select srid from database_srs))) from CITYOBJECT where ENVELOPE is not NULL";
+			String query = "select sdo_aggr_mbr(geodb_util.to_2d(ENVELOPE, (select srid from database_srs))) from CITYOBJECT where ENVELOPE is not NULL";
 
 			switch (featureClass) {
 			case BUILDING:

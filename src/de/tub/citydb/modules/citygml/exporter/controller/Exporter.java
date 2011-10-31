@@ -224,10 +224,12 @@ public class Exporter implements EventHandler {
 
 		// set target reference system for export
 		DatabaseSrs targetSRS = config.getProject().getExporter().getTargetSRS();
-		if (targetSRS.isSupported() && targetSRS.getSrid() != dbPool.getActiveConnection().getMetaData().getReferenceSystem().getSrid()) {
+		internalConfig.setExportTargetSRS(targetSRS);
+		internalConfig.setTransformCoordinates(targetSRS.isSupported() && 
+				targetSRS.getSrid() != dbPool.getActiveConnection().getMetaData().getReferenceSystem().getSrid());
+
+		if (internalConfig.isTransformCoordinates()) {
 			if (targetSRS.is3D() == dbPool.getActiveConnection().getMetaData().getReferenceSystem().is3D()) {
-				internalConfig.setTransformCoordinates(true);
-				internalConfig.setExportTargetSRS(targetSRS);
 				LOG.info("Transforming geometry representation to reference system '" + targetSRS.getDescription() + "' (SRID: " + targetSRS.getSrid() + ").");
 				LOG.warn("Transformation is NOT applied to height reference system.");
 			} else {
