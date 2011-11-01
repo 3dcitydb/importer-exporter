@@ -80,6 +80,7 @@ public class DBSplitter {
 	private String gmlIdFilter;
 	private String gmlNameFilter;
 	private String bboxFilter;
+	private String optimizerHint;
 
 	private FeatureClassFilter featureClassFilter;
 	private FeatureCounterFilter featureCounterFilter;
@@ -124,6 +125,9 @@ public class DBSplitter {
 	}
 
 	private void initFilter() throws SQLException {
+		// do not use any optimizer hints per default
+		optimizerHint = "";
+		
 		// feature counter filter
 		List<Long> counterFilterState = featureCounterFilter.getFilterState();
 		firstElement = counterFilterState.get(0);
@@ -142,7 +146,7 @@ public class DBSplitter {
 			gmlNameFilter = gmlNameFilter.toUpperCase();
 
 		// bounding box filter
-		BoundingBox bbox = boundingBoxFilter.getFilterState();		
+		BoundingBox bbox = boundingBoxFilter.getFilterState();
 		config.getInternal().setUseInternalBBoxFilter(false);
 		if (bbox != null) {
 
@@ -165,6 +169,11 @@ public class DBSplitter {
 				"MDSYS.SDO_ORDINATE_ARRAY(" + minX + ", " + minY + ", " + maxX + ", " + maxY + ")), " +
 				"'querytype=WINDOW mask=" + mask + "') = 'TRUE'";
 
+				// on Oracle 11g the query performance greatly benefits from setting
+				// an no_index hint for the class_id column
+				if (dbConnectionPool.getActiveConnection().getMetaData().getDatabaseMajorVersion() == 11)
+					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
+				
 			} else {
 				LOG.error("Bounding box filter is enabled although spatial indexes are disabled.");
 				LOG.error("Filtering will not be performed using spatial database operations.");
@@ -273,35 +282,35 @@ public class DBSplitter {
 					continue;
 				}
 
-				String query = "select co.ID, co.CLASS_ID from CITYOBJECT co, " 
-					+ tableName + " j where co.ID=j.ID and ";
+				StringBuilder query = new StringBuilder("select ").append(optimizerHint).append(" co.ID, co.CLASS_ID from CITYOBJECT co, ")
+				.append(tableName).append(" j where co.ID=j.ID and ");
 
 				if (bboxFilter != null)
-					query += bboxFilter + " and ";
+					query.append(bboxFilter).append(" and ");
 
 				if (additionalWhere != null)
-					query += additionalWhere + " and ";
+					query.append(additionalWhere).append(" and ");
 
-				query += "upper(j.NAME) like '%" + gmlNameFilter + "%' ";
+				query.append("upper(j.NAME) like '%").append(gmlNameFilter).append("%' ");
 
 				if (featureCounterFilter.isActive())
-					query += "order by co.ID";
+					query.append("order by co.ID");
 
-				queryList.add(query);
+				queryList.add(query.toString());
 			}
 
 		} else {
-			String select = "select co.ID, co.CLASS_ID from CITYOBJECT co where ";
-			String query = select;
+			StringBuilder query = new StringBuilder();
 
 			if (expFilterConfig.isSetSimpleFilter()) {
-				query += "co.CLASS_ID <> 23 ";
-
+				query.append("select co.ID, co.CLASS_ID from CITYOBJECT co where co.CLASS_ID <> 23 ");
 				if (gmlIdFilter != null)
-					query += "and " + gmlIdFilter;
+					query.append("and ").append(gmlIdFilter);
 
-				queryList.add(query);
-			} else {			
+				queryList.add(query.toString());
+			} else {
+				query.append("select ").append(optimizerHint).append(" co.ID, co.CLASS_ID from CITYOBJECT co where ");
+
 				List<Integer> classIds = new ArrayList<Integer>();
 				List<CityGMLClass> allowedFeature = featureClassFilter.getNotFilterState();
 				for (CityGMLClass featureClass : allowedFeature) {
@@ -314,15 +323,15 @@ public class DBSplitter {
 				if (!classIds.isEmpty()) {
 					String classIdQuery = Util.collection2string(classIds, ", ");
 
-					query += "co.CLASS_ID in (" + classIdQuery + ") "; 
+					query.append("co.CLASS_ID in (").append(classIdQuery).append(") "); 
 
 					if (bboxFilter != null)
-						query += "intersect " + select + bboxFilter + " ";
+						query.append("and ").append(bboxFilter).append(" ");
 
 					if (featureCounterFilter.isActive())
-						query += "order by ID";
+						query.append("order by ID");
 
-					queryList.add(query);
+					queryList.add(query.toString());
 				}				
 			}
 		}
@@ -392,20 +401,24 @@ public class DBSplitter {
 		Statement stmt = null;
 		ResultSet rs = null;
 
-		String query = "select co.ID from CITYOBJECT co where co.CLASS_ID=23 ";
+		StringBuilder query = new StringBuilder();
 		List<Integer> classIds = new ArrayList<Integer>();
 
 		if (expFilterConfig.isSetSimpleFilter()) {
+			query.append("select co.ID from CITYOBJECT co where co.CLASS_ID=23 ");
 			if (gmlIdFilter != null)
-				query += "and " + gmlIdFilter;
+				query.append("and ").append(gmlIdFilter);
 		} else {
+			query.append("select ").append(optimizerHint).append(" co.ID from CITYOBJECT co");
+			
 			if (gmlNameFilter != null)
-				query = "select co.ID from CITYOBJECT co, CITYOBJECTGROUP j " +
-				"where co.ID=j.ID " +
-				"and upper(j.NAME) like '%" + gmlNameFilter + "%' ";
+				query.append(", CITYOBJECTGROUP j where co.ID=j.ID ")
+				.append("and upper(j.NAME) like '%").append(gmlNameFilter).append("%' ");
+			else
+				query.append(" where co.CLASS_ID=23 ");
 
 			if (bboxFilter != null)
-				query += "and " + bboxFilter;
+				query.append("and ").append(bboxFilter);
 
 			List<CityGMLClass> allowedFeature = featureClassFilter.getNotFilterState();
 			for (CityGMLClass featureClass : allowedFeature) {
@@ -418,7 +431,7 @@ public class DBSplitter {
 
 		try {
 			stmt = connection.createStatement();
-			rs = stmt.executeQuery(query);
+			rs = stmt.executeQuery(query.toString());
 			List<Long> groupIds = new ArrayList<Long>();
 
 			while (rs.next() && shouldRun) {	
@@ -482,14 +495,14 @@ public class DBSplitter {
 			stmt = connection.createStatement();
 
 			// first: check nested groups being group members
-			String innerGroupQuery = "select co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co " +
-			"where co.ID=gtc.CITYOBJECT_ID " +
-			"and gtc.CITYOBJECTGROUP_ID=" + groupId + " and co.CLASS_ID=23 ";
+			StringBuilder innerGroupQuery = new StringBuilder("select ").append(optimizerHint)
+			.append(" co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co where co.ID=gtc.CITYOBJECT_ID ")
+			.append("and gtc.CITYOBJECTGROUP_ID=").append(groupId).append(" and co.CLASS_ID=23 ");
 
 			if (bboxFilter != null)
-				innerGroupQuery += "and " + bboxFilter;
+				innerGroupQuery.append("and ").append(bboxFilter);
 
-			rs = stmt.executeQuery(innerGroupQuery);
+			rs = stmt.executeQuery(innerGroupQuery.toString());
 
 			List<Long> groupIds = new ArrayList<Long>();			
 			while (rs.next() && shouldRun) {
@@ -514,16 +527,16 @@ public class DBSplitter {
 				classIdsString = "and co.CLASS_ID in (" + Util.collection2string(classIds, ",") + ")";
 
 			// second: work on groupMembers which are not groups
-			String groupMemberQuery = "select co.ID, co.CLASS_ID from CITYOBJECT co, GROUP_TO_CITYOBJECT gtc " +
-			"where gtc.CITYOBJECT_ID=co.ID " +
-			"and gtc.CITYOBJECTGROUP_ID=" + groupId;
+			StringBuilder groupMemberQuery = new StringBuilder("select ").append(optimizerHint)
+			.append(" co.ID, co.CLASS_ID from CITYOBJECT co, GROUP_TO_CITYOBJECT gtc where gtc.CITYOBJECT_ID=co.ID ")
+			.append("and gtc.CITYOBJECTGROUP_ID=").append(groupId);
 
 			if (bboxFilter != null)
-				groupMemberQuery += " and " + bboxFilter;
+				groupMemberQuery.append(" and ").append(bboxFilter);
 
-			groupMemberQuery += " and not co.CLASS_ID=23 " + classIdsString;
+			groupMemberQuery.append(" and not co.CLASS_ID=23 ").append(classIdsString);
 
-			rs = stmt.executeQuery(groupMemberQuery);
+			rs = stmt.executeQuery(groupMemberQuery.toString());
 
 			while (rs.next() && shouldRun) {				
 				long memberId = rs.getLong(1);
@@ -540,16 +553,16 @@ public class DBSplitter {
 			stmt.close();
 
 			// third: work on parents which are not groups
-			String parentQuery = "select grp.PARENT_CITYOBJECT_ID, co.CLASS_ID from CITYOBJECTGROUP grp, CITYOBJECT co " +
-			"where co.ID=grp.PARENT_CITYOBJECT_ID " +
-			"and grp.ID=" + groupId + " AND not grp.PARENT_CITYOBJECT_ID is NULL";
+			StringBuilder parentQuery = new StringBuilder("select ").append(optimizerHint)
+			.append(" grp.PARENT_CITYOBJECT_ID, co.CLASS_ID from CITYOBJECTGROUP grp, CITYOBJECT co ")
+			.append("where co.ID=grp.PARENT_CITYOBJECT_ID and grp.ID=").append(groupId).append(" and not grp.PARENT_CITYOBJECT_ID is NULL");
 
 			if (bboxFilter != null)
-				parentQuery += " and " + bboxFilter;
+				parentQuery.append(" and ").append(bboxFilter);
 
-			parentQuery += " and not co.CLASS_ID=23 " + classIdsString;			
+			parentQuery.append(" and not co.CLASS_ID=23 ").append(classIdsString);			
 
-			rs = stmt.executeQuery(parentQuery);
+			rs = stmt.executeQuery(parentQuery.toString());
 
 			while (rs.next() && shouldRun) {				
 				long memberId = rs.getLong(1);
