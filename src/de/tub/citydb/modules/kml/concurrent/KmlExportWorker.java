@@ -378,8 +378,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 
 			if (rs == null) { // result empty, give up
+				String fromMessage = lodToExportFrom == 5 ? " from any LoD": " from LoD" + lodToExportFrom;
 				Logger.getInstance().info("Could not display object " + work.getGmlId() 
-						+ " as " + work.getDisplayLevel().getName() + ".");
+						+ " as " + work.getDisplayLevel().getName() + fromMessage + ".");
 			}
 			else { // result not empty
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
