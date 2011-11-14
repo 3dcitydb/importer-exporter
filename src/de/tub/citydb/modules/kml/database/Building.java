@@ -990,6 +990,7 @@ public class Building {
 		
 		tiInfo.setTexCoordinates(tiInfoCoords);
 		
+		taGenerator.setUsePOTS(false);
 		tiInfo = taGenerator.convert(tiInfo, packingAlgorithm);
 		
 		texImageUris = tiInfo.getTexImageURIs();
