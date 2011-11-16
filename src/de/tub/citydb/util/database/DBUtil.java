@@ -613,16 +613,16 @@ public class DBUtil {
 		NORMAL
 	}
 
-	public static BoundingBox transformBBox(BoundingBox bbox, int sourceSrid, int targetSrid) throws SQLException {
+	public static BoundingBox transformBBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
 		BoundingBox result = new BoundingBox(bbox);
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 		Connection conn = null;
 
-		sourceSrid = get2DSrid(sourceSrid);
-		targetSrid = get2DSrid(targetSrid);
-
 		try {
+			int sourceSrid = get2DSrid(sourceSrs);
+			int targetSrid = get2DSrid(targetSrs);
+			
 			conn = dbConnectionPool.getConnection();
 			psQuery = conn.prepareStatement("select SDO_CS.TRANSFORM(MDSYS.SDO_GEOMETRY(2003, " + sourceSrid +
 					", NULL, MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 1), " +
@@ -683,8 +683,9 @@ public class DBUtil {
 		return result;
 	}
 
-	public static int get2DSrid(int srid) throws SQLException {
-		int srid2d = srid;
+	public static int get2DSrid(DatabaseSrs srs) throws SQLException {
+		if (!srs.is3D())
+			return srs.getSrid();
 
 		Connection conn = null;
 		PreparedStatement psQuery = null;
@@ -692,60 +693,17 @@ public class DBUtil {
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			DatabaseSrsType srsType = null;
-			if (srid != dbConnectionPool.getActiveConnection().getMetaData().getReferenceSystem().getSrid()) {
-				psQuery = conn.prepareStatement("select coord_ref_sys_kind from sdo_coord_ref_sys where srid = ?");
-				psQuery.setInt(1, srid);
-				rs = psQuery.executeQuery();
-				if (rs.next()) {
-					srsType = (DatabaseSrsType.fromValue(rs.getString(1)));
-				}
-			}
-			else {
-				srsType = dbConnectionPool.getActiveConnection().getMetaData().getReferenceSystem().getType();
-			}
-				
-			if (srsType == DatabaseSrsType.GEOGRAPHIC3D || srsType == DatabaseSrsType.COMPOUND) {
+			psQuery = conn.prepareStatement(srs.getType() == DatabaseSrsType.GEOGRAPHIC3D ? 
+					"select min(crs2d.srid) from sdo_coord_ref_sys crs3d, sdo_coord_ref_sys crs2d where crs3d.srid = "
+					+ srs.getSrid() + " and crs2d.coord_ref_sys_kind = 'GEOGRAPHIC2D' and crs3d.datum_id = crs2d.datum_id" :
+						"select cmpd_horiz_srid from sdo_coord_ref_sys where srid = " + srs.getSrid());
 
-				String statement = srsType == DatabaseSrsType.GEOGRAPHIC3D ? 
-						"select min(crs2d.srid) from sdo_coord_ref_sys crs3d, sdo_coord_ref_sys crs2d where crs3d.srid = "
-						+ srid + " and crs2d.coord_ref_sys_kind = 'GEOGRAPHIC2D' and crs3d.datum_id = crs2d.datum_id" :
-							"select cmpd_horiz_srid from sdo_coord_ref_sys where srid = " + srid;
-
-				PreparedStatement psQuery2 = null;
-				ResultSet rs2 = null;
-
-				try {
-					psQuery2 = conn.prepareStatement(statement);
-					rs2 = psQuery2.executeQuery();
-					if (rs2.next()) {
-						srid2d = rs2.getInt(1);
-					}
-				} catch (SQLException sqlEx) {
-					throw sqlEx;
-				} finally {
-					if (rs2 != null) {
-						try {
-							rs2.close();
-						} catch (SQLException sqlEx) {
-							throw sqlEx;
-						}
-
-						rs2 = null;
-					}
-
-					if (psQuery2 != null) {
-						try {
-							psQuery2.close();
-						} catch (SQLException sqlEx) {
-							throw sqlEx;
-						}
-
-						psQuery2 = null;
-					}
-				}
-			}
-
+			rs = psQuery.executeQuery();
+			if (rs.next()) 
+				return rs.getInt(1);
+			else
+				throw new SQLException("Failed to discover 2D equivalent for the 3D SRID " + srs.getSrid());
+			
 		} catch (SQLException sqlEx) {
 			throw sqlEx;
 		} finally {
@@ -779,8 +737,6 @@ public class DBUtil {
 				conn = null;
 			}
 		}
-
-		return srid2d;
 	}
 
 	public static List<String> getAppearanceThemeList(Workspace workspace) throws SQLException {

@@ -67,7 +67,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	private int columns = 1;
 	private int activeRow = 0;
 	private int activeColumn = 0;
-	private int srid;
+	private DatabaseSrs srs;
 
 	public BoundingBoxFilter(Config config, FilterMode mode) {
 		this.mode = mode;
@@ -99,20 +99,20 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 				boundingBox = new BoundingBox(boundingBoxConfig);
 
 				// check whether we have to transform coordinate values of bounding box
-				int bboxSrid = boundingBoxConfig.getSrs().getSrid();
-				srid = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getReferenceSystem().getSrid();
+				DatabaseSrs bboxSrs = boundingBoxConfig.getSrs();
+				srs = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getReferenceSystem();
 
 				// target db srid differs if another coordinate transformation is
 				// applied to the CityGML export
 				if (mode == FilterMode.EXPORT) {
 					DatabaseSrs targetSRS = config.getProject().getExporter().getTargetSRS();
-					if (targetSRS.isSupported() && targetSRS.getSrid() != srid)
-						srid = targetSRS.getSrid();
+					if (targetSRS.isSupported() && targetSRS.getSrid() != srs.getSrid())
+						srs = targetSRS;
 				}
 				
-				if (boundingBoxConfig.getSrs().isSupported() && bboxSrid != srid) {			
+				if (boundingBoxConfig.getSrs().isSupported() && bboxSrs.getSrid() != srs.getSrid()) {			
 					try {
-						boundingBox = DBUtil.transformBBox(boundingBox, bboxSrid, srid);
+						boundingBox = DBUtil.transformBBox(boundingBox, bboxSrs, srs);
 					} catch (SQLException sqlEx) {
 						//
 					}
@@ -207,7 +207,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	}
 
 	public int getSrid() {
-		return srid;
+		return srs.getSrid();
 	}
 	
 	public void setActiveTile(int activeRow, int activeColumn) {

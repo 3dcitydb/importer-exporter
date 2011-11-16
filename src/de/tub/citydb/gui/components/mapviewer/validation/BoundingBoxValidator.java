@@ -170,7 +170,7 @@ public class BoundingBoxValidator {
 				}
 			});
 
-			bbox.copyFrom(DBUtil.transformBBox(bbox, bbox.getSrs().getSrid(), Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()));
+			bbox.copyFrom(DBUtil.transformBBox(bbox, bbox.getSrs(), Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D)));
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {

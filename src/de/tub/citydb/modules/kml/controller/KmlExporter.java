@@ -33,8 +33,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
@@ -86,11 +86,14 @@ import de.tub.citydb.api.concurrent.SingleWorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.api.config.BoundingBoxCorner;
+import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.project.database.Database;
+import de.tub.citydb.config.project.database.Database.PredefinedSrsName;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
@@ -138,7 +141,7 @@ public class KmlExporter implements EventHandler {
 
 	private static final String ENCODING = "UTF-8";
 
-	private final int WGS84_SRID = 4326;
+	private final DatabaseSrs WGS84_2D = Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D);
 
 	private BoundingBox tileMatrix;
 	private BoundingBox wgs84TileMatrix;
@@ -638,13 +641,13 @@ public class KmlExporter implements EventHandler {
 		tileMatrix = new BoundingBox(new BoundingBoxCorner(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY()),
 										new BoundingBoxCorner(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY()));
 
-		int dbSrid = dbPool.getActiveConnection().getMetaData().getReferenceSystem().getSrid();
-		if (bbox.getSrs().getSrid() != 0 && bbox.getSrs().getSrid() != dbSrid) {
-			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSrs().getSrid(), WGS84_SRID);
-			tileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSrs().getSrid(), dbSrid);
+		DatabaseSrs dbSrs = dbPool.getActiveConnection().getMetaData().getReferenceSystem();
+		if (bbox.getSrs().getSrid() != 0 && bbox.getSrs().getSrid() != dbSrs.getSrid()) {
+			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSrs(), WGS84_2D);
+			tileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSrs(), dbSrs);
 		}
 		else {
-			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, dbSrid, WGS84_SRID);
+			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, dbSrs, WGS84_2D);
 		}
 		
 		if (tilingMode == TilingMode.NO_TILING) {

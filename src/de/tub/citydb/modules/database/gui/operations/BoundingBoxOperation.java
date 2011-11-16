@@ -191,12 +191,12 @@ public class BoundingBoxOperation implements DatabaseOperationView {
 					bbox = DBUtil.calcBoundingBox(workspace, featureClass);
 					
 					if (bbox != null) {
-						int dbSrid = databaseController.getActiveConnectionDetails().getMetaData().getReferenceSystem().getSrid();
-						DatabaseSrs srs = bboxPanel.getSrsComboBox().getSelectedItem();
+						DatabaseSrs dbSrs = databaseController.getActiveConnectionDetails().getMetaData().getReferenceSystem();
+						DatabaseSrs targetSrs = bboxPanel.getSrsComboBox().getSelectedItem();
 
-						if (srs.isSupported() && srs.getSrid() != dbSrid) {
+						if (targetSrs.isSupported() && targetSrs.getSrid() != dbSrs.getSrid()) {
 							try {
-								bbox = DBUtil.transformBBox(bbox, dbSrid, srs.getSrid());
+								bbox = DBUtil.transformBBox(bbox, dbSrs, targetSrs);
 							} catch (SQLException e) {
 								//
 							}					
@@ -208,7 +208,7 @@ public class BoundingBoxOperation implements DatabaseOperationView {
 								bbox.getUpperRightCorner().getY() != -Double.MAX_VALUE) {
 
 							bboxPanel.setBoundingBox(bbox);	
-							bbox.setSrs(srs);
+							bbox.setSrs(targetSrs);
 							BoundingBoxClipboardHandler.getInstance(config).putBoundingBox(bbox);
 							LOG.info("Bounding box for feature " + featureClass + " successfully calculated.");							
 						} else {
