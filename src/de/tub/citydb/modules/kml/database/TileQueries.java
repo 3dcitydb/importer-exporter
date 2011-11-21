@@ -38,7 +38,7 @@ import de.tub.citydb.log.Logger;
 public class TileQueries {
 
 	private static final String QUERY_FOOTPRINT_LOD4_GET_BUILDING_DATA =
-		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326) " +
+		"SELECT sg.geometry " +
 		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -159,7 +159,7 @@ public class TileQueries {
 			"AND bi.lod4_geometry_id IS NOT NULL";
 			
 	private static final String QUERY_FOOTPRINT_LOD3_GET_BUILDING_DATA =
-		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326) " +
+		"SELECT sg.geometry " +
 		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -249,7 +249,6 @@ public class TileQueries {
 
 
 	public static final String QUERY_COLLADA_GET_BUILDING_DATA =
-		// geometry will not be transformed: cartesian coordinates needed for collada
 		"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, " +
 				"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
 				"sd.tex_image_uri, sd.tex_image, tp.texture_coordinates, a.theme " +
@@ -294,7 +293,7 @@ public class TileQueries {
 					"AND bi.lod2_geometry_id IS NOT NULL)";
 
 	private static final String QUERY_FOOTPRINT_LOD2_GET_BUILDING_DATA =
-		"SELECT SDO_CS.TRANSFORM(sg.geometry, 4326) " +
+		"SELECT sg.geometry " +
 		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co " +
 		"WHERE " +
 			"co.gmlid = ? " +
@@ -315,7 +314,7 @@ public class TileQueries {
 		"ORDER BY b.id";
 
 	private static final String QUERY_FOOTPRINT_LOD1_GET_BUILDING_DATA =
-		"SELECT SDO_CS.TRANSFORM(SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), 4326), " +
+		"SELECT SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), " +
 				"MAX(b.building_root_id) AS building_id " +
 		"FROM SURFACE_GEOMETRY sg, BUILDING b, CITYOBJECT co " +
 		"WHERE " +
@@ -410,8 +409,16 @@ public class TileQueries {
 	public static final String TRANSFORM_GEOMETRY_TO_WGS84 =
 		"SELECT SDO_CS.TRANSFORM(?, 4326) FROM DUAL";
 
+	public static final String TRANSFORM_GEOMETRY_TO_WGS84_3D =
+		"SELECT SDO_CS.TRANSFORM(?, 4327) FROM DUAL";
+
 	public static final String QUERY_GET_ENVELOPE_IN_WGS84_FROM_GML_ID =
 		"SELECT SDO_CS.TRANSFORM(co.envelope, 4326) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String QUERY_GET_ENVELOPE_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT SDO_CS.TRANSFORM(co.envelope, 4327) " +
 		"FROM CITYOBJECT co " +
 		"WHERE co.gmlid = ?";
 
@@ -505,7 +512,7 @@ public class TileQueries {
 
     public static final String QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD =
 		
-		"SELECT SDO_CS.TRANSFORM(sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, 0.001)), 4326) aggr_geom " +
+		"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, 0.001)) aggr_geom " +
 		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, 0.001)) aggr_geom " +
 		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, 0.001)) aggr_geom " +
 		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, 0.001)) aggr_geom " +
@@ -513,8 +520,9 @@ public class TileQueries {
 
 		"SELECT * FROM (" +
 		"SELECT * FROM (" +
-
-		"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
+		
+    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+//		"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
 //		"SELECT sg.geometry AS simple_geom " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE " +

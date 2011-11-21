@@ -101,6 +101,7 @@ import de.tub.citydb.modules.kml.database.KmlSplittingResult;
 import de.tub.citydb.modules.kml.database.TexCoords;
 import de.tub.citydb.modules.kml.database.TileQueries;
 import de.tub.citydb.util.Util;
+import de.tub.citydb.util.database.DBUtil;
 
 public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
@@ -315,9 +316,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				try {
 					psQuery = connection.prepareStatement(
 							TileQueries.getSingleBuildingQuery(currentLod, work.getDisplayLevel()),
-							// work-around for JDBC problem with rs.getDouble() and ResultSet.TYPE_SCROLL_INSENSITIVE
-							work.getDisplayLevel().getLevel() == DisplayLevel.EXTRUDED ? ResultSet.TYPE_FORWARD_ONLY: ResultSet.TYPE_SCROLL_INSENSITIVE,
-									ResultSet.CONCUR_READ_ONLY);
+															   ResultSet.TYPE_SCROLL_INSENSITIVE,
+															   ResultSet.CONCUR_READ_ONLY);
 	
 					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 						psQuery.setString(i, work.getGmlId());
@@ -348,23 +348,30 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					int groupBasis = 4;
 					try {
 						psQuery = connection.prepareStatement(TileQueries.
-								  	QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<LoD>", String.valueOf(currentLod))
+								  	QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<2D_SRID>", String.valueOf(DBUtil.get2DSrid(dbConnectionPool.getActiveConnection().getMetaData().getReferenceSystem())))
+								  										  .replace("<LoD>", String.valueOf(currentLod))
 																		  .replace("<GROUP_BY_1>", String.valueOf(Math.pow(groupBasis, 4)))
 																		  .replace("<GROUP_BY_2>", String.valueOf(Math.pow(groupBasis, 3)))
-																		  .replace("<GROUP_BY_3>", String.valueOf(Math.pow(groupBasis, 2))));
+																		  .replace("<GROUP_BY_3>", String.valueOf(Math.pow(groupBasis, 2))),
+															  ResultSet.TYPE_SCROLL_INSENSITIVE,
+															  ResultSet.CONCUR_READ_ONLY);
 
 						for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 							psQuery.setString(i, work.getGmlId());
 						}
 						rs = (OracleResultSet)psQuery.executeQuery();
 						if (rs.isBeforeFirst()) {
-							break; // result set not empty
+							rs.next();
+							if(rs.getObject(1) != null) {
+								rs.beforeFirst();
+								break; // result set not empty
+							}
 						}
-						else {
+//						else {
 							try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
 							rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 							try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
-						}
+//						}
 					}
 					catch (Exception e2) {
 						try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
@@ -428,13 +435,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					currentBuilding.setIgnoreSurfaceOrientation(config.getProject().getKmlExporter().isIgnoreSurfaceOrientation());
 					try {
 						if (config.getProject().getKmlExporter().isColladaHighlighting()) {
-							//							kmlExporterManager.print(createHighlingtingPlacemarkForEachSurfaceGeometry(work.getGmlId(),
-							//									   																   work.getDisplayLevel()));
+//							kmlExporterManager.print(createHighlingtingPlacemarkForEachSurfaceGeometry(work.getGmlId(),
+//									   																   work.getDisplayLevel()));
 							kmlExporterManager.print(createPlacemarksForHighlighting(work.getGmlId(),
-									work.getDisplayLevel()));
+																					 work.getDisplayLevel()));
 						}
 						if (config.getProject().getKmlExporter().isGenerateTextureAtlases()) {
-							//							eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.creatingAtlases")));
+//							eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.creatingAtlases")));
 							currentBuilding.createTextureAtlas(config.getProject().getKmlExporter().getPackingAlgorithm());
 						}
 						if (config.getProject().getKmlExporter().isScaleImages()) {
@@ -515,7 +522,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		PolygonType polygon = null; 
 		while (rs.next()) {
-			// ColumnName is SDO_CS.TRANSFORM(sg.geometry, 4326)
 			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
@@ -526,7 +532,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				polygon.setExtrude(false);
 				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
 
-				JGeometry groundSurface = JGeometry.load(buildingGeometryObj);
+				JGeometry groundSurface = convertToWGS84(JGeometry.load(buildingGeometryObj));
 				int dim = groundSurface.getDimensions();
 				for (int i = 0; i < groundSurface.getElemInfo().length; i = i+3) {
 					LinearRingType linearRing = kmlFactory.createLinearRingType();
@@ -588,7 +594,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		PolygonType polygon = null; 
 		while (rs.next()) {
-			// ColumnName is SDO_CS.TRANSFORM(sg.geometry, 4326)
 			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 
 			if (!rs.wasNull() && buildingGeometryObj != null) {
@@ -599,7 +604,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				polygon.setExtrude(true);
 				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
 
-				JGeometry groundSurface = JGeometry.load(buildingGeometryObj);
+				JGeometry groundSurface = convertToWGS84(JGeometry.load(buildingGeometryObj));
 				int dim = groundSurface.getDimensions();
 				for (int i = 0; i < groundSurface.getElemInfo().length; i = i+3) {
 					LinearRingType linearRing = kmlFactory.createLinearRingType();
@@ -793,11 +798,10 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					// surfaceId is the key to all Hashmaps in building
 					long surfaceId = rs2.getLong("id");
 
-					X3DMaterial x3dMaterial = cityGMLFactory.createX3DMaterial();
-					fillX3dMaterialValues(x3dMaterial, rs2);
-
 					if (buildingGeometryObj == null) { // root or parent
 						if (selectedTheme.equalsIgnoreCase(theme)) {
+							X3DMaterial x3dMaterial = cityGMLFactory.createX3DMaterial();
+							fillX3dMaterialValues(x3dMaterial, rs2);
 							// x3dMaterial will only added if not all x3dMaterial members are null
 							currentBuilding.addX3dMaterial(surfaceId, x3dMaterial);
 						}
@@ -1380,7 +1384,10 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		PreparedStatement convertStmt = null;
 		OracleResultSet rs2 = null;
 		try {
-			convertStmt = connection.prepareStatement(TileQueries.TRANSFORM_GEOMETRY_TO_WGS84);
+			convertStmt = (dbConnectionPool.getActiveConnection().getMetaData().getReferenceSystem().is3D() && 
+						   jGeometry.getDimensions() == 3) ?
+					  	  connection.prepareStatement(TileQueries.TRANSFORM_GEOMETRY_TO_WGS84_3D):
+					  	  connection.prepareStatement(TileQueries.TRANSFORM_GEOMETRY_TO_WGS84);
 			// now convert to WGS84
 			STRUCT unconverted = SyncJGeometry.syncStore(jGeometry, connection);
 			convertStmt.setObject(1, unconverted);
