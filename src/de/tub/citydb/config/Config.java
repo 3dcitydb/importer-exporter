@@ -39,8 +39,8 @@ public class Config {
 	private Internal internal;
 	
 	public Config() {
-		project = new Project();
-		gui = new Gui();
+		setProject(new Project());
+		setGui(new Gui());
 		internal = new Internal();
 	}
 
