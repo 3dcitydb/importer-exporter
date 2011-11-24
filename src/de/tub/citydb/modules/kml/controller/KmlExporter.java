@@ -420,7 +420,8 @@ public class KmlExporter implements EventHandler {
 							// make sure header has been written
 							saxWriter.flush();
 
-							if (!config.getProject().getKmlExporter().isOneFilePerObject()) {
+							if (!config.getProject().getKmlExporter().isOneFilePerObject() ||
+								config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
 								addStyle(displayLevel);
 							}
 							if (isBBoxActive &&	tiling.getMode() != TilingMode.NO_TILING) {
