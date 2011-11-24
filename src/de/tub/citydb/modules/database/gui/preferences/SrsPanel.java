@@ -441,18 +441,17 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	@Override
 	public void setSettings() {
 		DatabaseSrs refSys = srsComboBox.getSelectedItem();
-		int srid = ((Number)sridText.getValue()).intValue();
+		int prev = refSys.getSrid();
 
-		if (dbPool.isConnected() && srid != refSys.getSrid()) {
-			refSys.setSrid(srid);
-
+		refSys.setSrid(((Number)sridText.getValue()).intValue());
+		if (dbPool.isConnected() && prev != refSys.getSrid()) {
 			try {
 				DBUtil.getSrsInfo(refSys);
 
 				if (refSys.isSupported())
-					LOG.debug("SRID " + srid + " is supported.");
+					LOG.debug("SRID " + refSys.getSrid() + " is supported.");
 				else
-					LOG.warn("SRID " + srid + " is NOT supported.");
+					LOG.warn("SRID " + refSys.getSrid() + " is NOT supported.");
 			} catch (SQLException sqlEx) {
 				LOG.error("Error while checking user-defined SRSs: " + sqlEx.getMessage().trim());
 			}

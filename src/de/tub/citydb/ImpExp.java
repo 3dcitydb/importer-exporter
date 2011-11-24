@@ -303,9 +303,9 @@ public class ImpExp {
 		config.getInternal().setConfigPath(confPath);
 		config.getInternal().setConfigProject(projectFileName);
 		File projectFile = new File(confPath + File.separator + projectFileName);
+		Project configProject = config.getProject();
 
 		try {
-			Project configProject = null;
 			Object object = ConfigUtil.unmarshal(projectFile, projectContext);
 
 			if (!(object instanceof Project)) {
@@ -319,7 +319,6 @@ public class ImpExp {
 			} else
 				configProject = (Project)object;
 
-			config.setProject(configProject);
 		} catch (IOException fne) {
 			String errMsg = "Failed to read project settings file '" + projectFile + '\'';
 			if (shell) {
@@ -336,7 +335,9 @@ public class ImpExp {
 				System.exit(1);
 			} else
 				errMsgs.add(errMsg);
-		} 
+		} finally {
+			config.setProject(configProject);
+		}
 
 		if (!shell) {
 			File guiFile = new File(confPath + File.separator + config.getInternal().getConfigGui());
