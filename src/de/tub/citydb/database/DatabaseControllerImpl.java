@@ -2,6 +2,7 @@ package de.tub.citydb.database;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import de.tub.citydb.api.config.DatabaseSrs;
@@ -9,6 +10,7 @@ import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.util.database.DBUtil;
 
@@ -61,8 +63,6 @@ public class DatabaseControllerImpl implements DatabaseController {
 
 			viewHandler.printConnectionState(ConnectionStateEnum.FINISH_DISCONNECT);
 		}
-		
-		//((DatabasePanel)plugin.getView().getViewComponent()).disconnect(showErrorDialog);
 	}
 
 	@Override
@@ -105,7 +105,16 @@ public class DatabaseControllerImpl implements DatabaseController {
 	}
 
 	@Override
-	public List<? extends DatabaseSrs> getDatabaseSrs() {
+	public List<DatabaseConnectionDetails> getConnectionDetails() {
+		ArrayList<DatabaseConnectionDetails> tmp = new ArrayList<DatabaseConnectionDetails>();
+		for (DBConnection conn : config.getProject().getDatabase().getConnections())
+			tmp.add(conn);
+		
+		return tmp;
+	}
+
+	@Override
+	public List<DatabaseSrs> getDatabaseSrs() {
 		return config.getProject().getDatabase().getReferenceSystems();
 	}
 

@@ -45,11 +45,13 @@ import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.filter.Filter;
 import de.tub.citydb.modules.common.filter.FilterMode;
 import de.tub.citydb.util.database.DBUtil;
 
 public class BoundingBoxFilter implements Filter<Envelope> {
+	private final Logger LOG = Logger.getInstance();
 	private final AbstractFilterConfig filterConfig;
 	private final FilterMode mode;
 	private final Config config;
@@ -114,7 +116,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 					try {
 						boundingBox = DBUtil.transformBBox(boundingBox, bboxSrs, srs);
 					} catch (SQLException sqlEx) {
-						//
+						LOG.error("Failed to initialize bounding box filter.");
 					}
 				}
 

@@ -170,7 +170,7 @@ public class DBSplitter {
 				"'querytype=WINDOW mask=" + mask + "') = 'TRUE'";
 
 				// on Oracle 11g the query performance greatly benefits from setting
-				// an no_index hint for the class_id column
+				// a no_index hint for the class_id column
 				if (dbConnectionPool.getActiveConnection().getMetaData().getDatabaseMajorVersion() == 11)
 					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
 				

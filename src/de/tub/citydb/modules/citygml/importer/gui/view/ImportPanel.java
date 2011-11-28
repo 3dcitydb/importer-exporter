@@ -347,7 +347,7 @@ public class ImportPanel extends JPanel {
 			// affine transformation
 			if (config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation()) {
 				if (JOptionPane.showConfirmDialog(
-						this, 
+						mainView, 
 						Internal.I18N.getString("import.dialog.warning.affineTransformation"),
 						Internal.I18N.getString("common.dialog.warning.title"), 
 						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION)

@@ -27,14 +27,14 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.database;
+package de.tub.citydb.database;
 
 import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseMetaData;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.log.Logger;
 
-public class DBMetaData implements DatabaseMetaData {
+public class DatabaseMetaDataImpl implements DatabaseMetaData {
 	private static final Logger LOG = Logger.getInstance();	
 	
 	// database related information

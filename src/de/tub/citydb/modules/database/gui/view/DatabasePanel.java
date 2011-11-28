@@ -219,7 +219,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		connectionButtons.add(copyButton, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
 		connectionButtons.add(deleteButton, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,0,0,0));
 		connectionDetails.add(connectButton, GuiUtil.setConstraints(0,7,3,1,0.0,0.0,GridBagConstraints.NONE,10,5,5,5));
-		connectionDetails.add(infoButton, GuiUtil.setConstraints(2,7,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,5));
+		connectionDetails.add(infoButton, GuiUtil.setConstraints(2,7,0.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
 
 		operations = new JPanel();
 		view.add(operations, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));

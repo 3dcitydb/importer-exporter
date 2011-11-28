@@ -92,6 +92,10 @@ import de.tub.citydb.modules.common.filter.FilterMode;
 import de.tub.citydb.modules.common.filter.ImportFilter;
 import de.tub.citydb.modules.common.filter.statistic.FeatureCounterFilter;
 import de.tub.citydb.util.database.DBUtil;
+import de.tub.citydb.util.database.IndexStatusInfo;
+import de.tub.citydb.util.database.IndexStatusInfo.IndexInfoObject;
+import de.tub.citydb.util.database.IndexStatusInfo.IndexStatus;
+import de.tub.citydb.util.database.IndexStatusInfo.IndexType;
 import de.tub.citydb.util.io.DirectoryScanner;
 import de.tub.citydb.util.io.DirectoryScanner.CityGMLFilenameFilter;
 
@@ -139,7 +143,7 @@ public class Importer implements EventHandler {
 		featureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
 		geometryCounterMap = new EnumMap<GMLClass, Long>(GMLClass.class);
 	}
-	
+
 	public void cleanup() {
 		eventDispatcher.removeEventHandler(this);
 	}
@@ -157,7 +161,7 @@ public class Importer implements EventHandler {
 		Database database = config.getProject().getDatabase();
 		Internal intConfig = config.getInternal();		
 		de.tub.citydb.config.project.system.System system = importer.getSystem();
-		
+
 		Index index = importer.getIndexes();
 		ImportGmlId gmlId = importer.getGmlId();
 
@@ -168,7 +172,7 @@ public class Importer implements EventHandler {
 
 		// gml:id lookup cache update
 		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdLookupServerBatchValue();
-		
+
 		// checking workspace... this should be improved in future...
 		Workspace workspace = database.getWorkspaces().getImportWorkspace();
 		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
@@ -188,42 +192,48 @@ public class Importer implements EventHandler {
 			try {
 				if (shouldRun && (index.isSpatialIndexModeDeactivate() || index.isSpatialIndexModeDeactivateActivate())) {
 					LOG.info("Deactivating spatial indexes...");
-					String[] result = DBUtil.dropSpatialIndexes();
+					IndexStatusInfo indexStatus = DBUtil.dropSpatialIndexes();
 
-					if (result != null) {
-						for (String line : result) {
-							String[] parts = line.split(":");
-
-							if (!parts[4].equals("DROPPED")) {
-								LOG.error("FAILED: " + parts[0] + " auf " + parts[1] + "(" + parts[2] + ")");
-								String errMsg = DBUtil.errorMessage(parts[3]);
-								LOG.error("Error cause: " + errMsg);
+					if (indexStatus != null) {				
+						for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
+							if (indexObj.getStatus() != IndexStatus.DROPPED) {
+								LOG.error("FAILED: " + index.toString());
+								if (indexObj.hasErrorMessage())
+									LOG.error("Error cause: " + indexObj.getErrorMessage());
 							}
 						}
 					}
-				}
-
+				} else
+					DBUtil.getIndexStatus(IndexType.SPATIAL).printStatusToConsole();
+				
 				if (shouldRun && (index.isNormalIndexModeDeactivate() || index.isNormalIndexModeDeactivateActivate())) {
 					LOG.info("Deactivating normal indexes...");
-					String[] result = DBUtil.dropNormalIndexes();
+					IndexStatusInfo indexStatus = DBUtil.dropNormalIndexes();
 
-					if (result != null) {
-						for (String line : result) {
-							String[] parts = line.split(":");
-
-							if (!parts[4].equals("DROPPED")) {
-								LOG.error("FAILED: " + parts[0] + " auf " + parts[1] + "(" + parts[2] + ")");
-								String errMsg = DBUtil.errorMessage(parts[3]);
-								LOG.error("Error cause: " + errMsg);
+					if (indexStatus != null) {				
+						for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
+							if (indexObj.getStatus() != IndexStatus.DROPPED) {
+								LOG.error("FAILED: " + index.toString());
+								if (indexObj.hasErrorMessage())
+									LOG.error("Error cause: " + indexObj.getErrorMessage());
 							}
 						}
 					}
-				}
-
+				} else
+					DBUtil.getIndexStatus(IndexType.NORMAL).printStatusToConsole();
+				
 			} catch (SQLException e) {
 				LOG.error("Database error while deactivating indexes: " + e.getMessage());
 				return false;
 			}			
+		} else {
+			try {
+				for (IndexType type : IndexType.values())
+					DBUtil.getIndexStatus(type).printStatusToConsole();
+			} catch (SQLException e) {
+				LOG.error("Database error while querying index status: " + e.getMessage());
+				return false;
+			}
 		}
 
 		// build list of import files
@@ -247,7 +257,7 @@ public class Importer implements EventHandler {
 
 		// import filter
 		ImportFilter importFilter = new ImportFilter(config);
-		
+
 		// prepare CityGML input factory
 		CityGMLInputFactory in = null;
 		try {
@@ -274,12 +284,12 @@ public class Importer implements EventHandler {
 			validationHandler.allErrors = !xmlValidation.isSetReportOneErrorPerFeature();
 			in.setValidationEventHandler(validationHandler);
 		}
-		
+
 		// affine transformation
 		AffineTransformation affineTransformation = importer.getAffineTransformation();
 		if (affineTransformation.isSetUseAffineTransformation()) {
 			LOG.info("Applying affine coordinates transformation.");
-			
+
 			try {
 				intConfig.setAffineTransformer(new AffineTransformer(config));
 			} catch (Exception e) {
@@ -293,14 +303,14 @@ public class Importer implements EventHandler {
 		Long counterFirstElement = counterFilter.getFilterState().get(0);
 		Long counterLastElement = counterFilter.getFilterState().get(1);
 		long elementCounter = 0;
-		
+
 		runState = PARSING;
 
 		while (shouldRun && fileCounter < importFiles.size()) {
 			// check whether we reached the counter limit
 			if (counterLastElement != null && elementCounter > counterLastElement)
 				break;
-			
+
 			try {
 				File file = importFiles.get(fileCounter++);
 				intConfig.setImportPath(file.getParent());
@@ -399,7 +409,7 @@ public class Importer implements EventHandler {
 
 						if (counterFilter.isActive()) {
 							elementCounter++;
-							
+
 							if (counterFirstElement != null && elementCounter < counterFirstElement)
 								continue;
 
@@ -545,16 +555,14 @@ public class Importer implements EventHandler {
 				try {
 					if (index.isSpatialIndexModeDeactivateActivate()) {
 						LOG.info("Activating spatial indexes. This can take long time...");
-						String[] result = DBUtil.createSpatialIndexes();
+						IndexStatusInfo indexStatus = DBUtil.createSpatialIndexes();
 
-						if (result != null) {
-							for (String line : result) {
-								String[] parts = line.split(":");
-
-								if (!parts[4].equals("VALID")) {
-									LOG.error("FAILED: " + parts[0] + " auf " + parts[1] + "(" + parts[2] + ")");
-									String errMsg = DBUtil.errorMessage(parts[3]);
-									LOG.error("Error cause: " + errMsg);
+						if (indexStatus != null) {				
+							for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
+								if (indexObj.getStatus() != IndexStatus.VALID) {
+									LOG.error("FAILED: " + index.toString());
+									if (indexObj.hasErrorMessage())
+										LOG.error("Error cause: " + indexObj.getErrorMessage());
 								}
 							}
 						}
@@ -562,16 +570,14 @@ public class Importer implements EventHandler {
 
 					if (index.isNormalIndexModeDeactivateActivate()) {
 						LOG.info("Activating normal indexes. This can take long time...");
-						String[] result = DBUtil.createNormalIndexes();
+						IndexStatusInfo indexStatus = DBUtil.createNormalIndexes();
 
-						if (result != null) {
-							for (String line : result) {
-								String[] parts = line.split(":");
-
-								if (!parts[4].equals("VALID")) {
-									LOG.error("FAILED: " + parts[0] + " auf " + parts[1] + "(" + parts[2] + ")");
-									String errMsg = DBUtil.errorMessage(parts[3]);
-									LOG.error("Error cause: " + errMsg);
+						if (indexStatus != null) {				
+							for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
+								if (indexObj.getStatus() != IndexStatus.VALID) {
+									LOG.error("FAILED: " + index.toString());
+									if (indexObj.hasErrorMessage())
+										LOG.error("Error cause: " + indexObj.getErrorMessage());
 								}
 							}
 						}
@@ -658,7 +664,7 @@ public class Importer implements EventHandler {
 
 				if (runState == PREPARING && directoryScanner != null)
 					directoryScanner.stopScanning();
-				
+
 				if (runState == XLINK_RESOLVING && tmpSplitter != null)
 					tmpSplitter.shutdown();
 			}

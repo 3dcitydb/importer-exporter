@@ -95,6 +95,8 @@ import de.tub.citydb.modules.common.event.StatusDialogMessage;
 import de.tub.citydb.modules.common.event.StatusDialogTitle;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.util.Util;
+import de.tub.citydb.util.database.DBUtil;
+import de.tub.citydb.util.database.IndexStatusInfo.IndexType;
 
 public class Exporter implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
@@ -238,6 +240,15 @@ public class Exporter implements EventHandler {
 			}
 		}
 
+		// log index status
+		try {
+			for (IndexType type : IndexType.values())
+				DBUtil.getIndexStatus(type).printStatusToConsole();
+		} catch (SQLException e) {
+			LOG.error("Database error while querying index status: " + e.getMessage());
+			return false;
+		}
+		
 		// getting export filter
 		exportFilter = new ExportFilter(config);
 
@@ -569,9 +580,10 @@ public class Exporter implements EventHandler {
 			}
 		}
 
-		if (useTiling && (rows > 1 || columns > 1)) { // show total exported features
+		// show totally exported features
+		if (useTiling && (rows > 1 || columns > 1)) {
 			if (!totalFeatureCounterMap.isEmpty()) {
-				LOG.info("Total exported CityGML features:");
+				LOG.info("Totally exported CityGML features:");
 				for (CityGMLClass type : totalFeatureCounterMap.keySet())
 					LOG.info(type + ": " + totalFeatureCounterMap.get(type));
 			}

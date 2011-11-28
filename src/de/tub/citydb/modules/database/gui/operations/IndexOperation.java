@@ -27,7 +27,10 @@ import de.tub.citydb.config.project.database.DBOperationType;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.database.DBUtil;
-import de.tub.citydb.util.database.DBUtil.DBIndexType;
+import de.tub.citydb.util.database.IndexStatusInfo;
+import de.tub.citydb.util.database.IndexStatusInfo.IndexInfoObject;
+import de.tub.citydb.util.database.IndexStatusInfo.IndexStatus;
+import de.tub.citydb.util.database.IndexStatusInfo.IndexType;
 import de.tub.citydb.util.gui.GuiUtil;
 
 public class IndexOperation implements DatabaseOperationView {
@@ -195,27 +198,25 @@ public class IndexOperation implements DatabaseOperationView {
 			});
 
 			try {
-				for (DBIndexType type : DBIndexType.values()) {
-					String[] queryResult = null;
+				for (IndexType type : IndexType.values()) {
+					IndexStatusInfo indexStatus = null;
 
-					if (type == DBIndexType.SPATIAL && spatial.isSelected()) {
+					if (type == IndexType.SPATIAL && spatial.isSelected()) {
 						LOG.all(LogLevel.INFO, "Activating spatial indexes...");
-						queryResult = DBUtil.createSpatialIndexes();
-					} else if (type == DBIndexType.NORMAL && normal.isSelected()) {
+						indexStatus = DBUtil.createSpatialIndexes();
+					} else if (type == IndexType.NORMAL && normal.isSelected()) {
 						LOG.all(LogLevel.INFO, "Activating normal indexes...");
-						queryResult = DBUtil.createNormalIndexes();
+						indexStatus = DBUtil.createNormalIndexes();
 					}
 
-					if (queryResult != null) {				
-						for (String line : queryResult) {				
-							String[] parts = line.split(":");
-
-							if (!parts[4].equals("VALID")) {
-								LOG.error("FAILED: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
-								String errMsg = DBUtil.errorMessage(parts[3]);
-								LOG.error("Error cause: " + errMsg);
+					if (indexStatus != null) {				
+						for (IndexInfoObject index : indexStatus.getIndexObjects()) {							
+							if (index.getStatus() != IndexStatus.VALID) {
+								LOG.error("FAILED: " + index.toString());
+								if (index.hasErrorMessage())
+								LOG.error("Error cause: " + index.getErrorMessage());
 							} else
-								LOG.all(LogLevel.INFO, "SUCCESS: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
+								LOG.all(LogLevel.INFO, "SUCCESS: " + index.toString());
 						}
 					}
 				}
@@ -283,27 +284,25 @@ public class IndexOperation implements DatabaseOperationView {
 			});
 
 			try {
-				for (DBIndexType type : DBIndexType.values()) {
-					String[] queryResult = null;
+				for (IndexType type : IndexType.values()) {
+					IndexStatusInfo indexStatus = null;
 
-					if (type == DBIndexType.SPATIAL && spatial.isSelected()) {
+					if (type == IndexType.SPATIAL && spatial.isSelected()) {
 						LOG.all(LogLevel.INFO, "Deactivating spatial indexes...");
-						queryResult = DBUtil.dropSpatialIndexes();
-					} else if (type == DBIndexType.NORMAL && normal.isSelected()) {
+						indexStatus = DBUtil.dropSpatialIndexes();
+					} else if (type == IndexType.NORMAL && normal.isSelected()) {
 						LOG.all(LogLevel.INFO, "Deactivating normal indexes...");
-						queryResult = DBUtil.dropNormalIndexes();
+						indexStatus = DBUtil.dropNormalIndexes();
 					}
 
-					if (queryResult != null) {
-						for (String line : queryResult) {
-							String[] parts = line.split(":");
-
-							if (!parts[4].equals("DROPPED")) {
-								LOG.error("FAILED: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
-								String errMsg = DBUtil.errorMessage(parts[3]);
-								LOG.error("Error cause: " + errMsg);
+					if (indexStatus != null) {				
+						for (IndexInfoObject index : indexStatus.getIndexObjects()) {							
+							if (index.getStatus() != IndexStatus.DROPPED) {
+								LOG.error("FAILED: " + index.toString());
+								if (index.hasErrorMessage())
+								LOG.error("Error cause: " + index.getErrorMessage());
 							} else
-								LOG.all(LogLevel.INFO, "SUCCESS: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
+								LOG.all(LogLevel.INFO, "SUCCESS: " + index.toString());
 						}
 					}
 				}
@@ -371,25 +370,20 @@ public class IndexOperation implements DatabaseOperationView {
 			});
 
 			try {
-				for (DBIndexType type : DBIndexType.values()) {
-					String[] queryResult = null;
+				for (IndexType type : IndexType.values()) {
+					IndexStatusInfo indexStatus = null;
 
-					if (type == DBIndexType.SPATIAL && spatial.isSelected()) {
+					if (type == IndexType.SPATIAL && spatial.isSelected()) {
 						LOG.all(LogLevel.INFO, "Checking spatial indexes...");
-						queryResult = DBUtil.getStatusSpatialIndexes();
-					} else if (type == DBIndexType.NORMAL && normal.isSelected()) {
+						indexStatus = DBUtil.getStatusSpatialIndexes();
+					} else if (type == IndexType.NORMAL && normal.isSelected()) {
 						LOG.all(LogLevel.INFO, "Checking normal indexes...");
-						queryResult = DBUtil.getStatusNormalIndexes();
+						indexStatus = DBUtil.getStatusNormalIndexes();
 					}
 
-					if (queryResult != null) {
-						for (String line : queryResult) {
-							String[] parts = line.split(":");
-
-							if (parts[3].equals("VALID"))
-								LOG.all(LogLevel.INFO, "ON: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
-							else
-								LOG.all(LogLevel.INFO, "OFF: " + parts[0] + " on " + parts[1] + "(" + parts[2] + ")");
+					if (indexStatus != null) {
+						for (IndexInfoObject index : indexStatus.getIndexObjects()) {
+							LOG.all(LogLevel.INFO, (index.getStatus() == IndexStatus.VALID ? "ON" : "OFF") + ": " + index.toString());
 						}
 					}
 				}

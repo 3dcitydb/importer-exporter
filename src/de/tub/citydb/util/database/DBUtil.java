@@ -51,13 +51,14 @@ import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.api.config.BoundingBoxCorner;
 import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseSrsType;
-import de.tub.citydb.config.project.database.DBMetaData;
-import de.tub.citydb.config.project.database.DBMetaData.Versioning;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
+import de.tub.citydb.database.DatabaseMetaDataImpl;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.DatabaseMetaDataImpl.Versioning;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
+import de.tub.citydb.util.database.IndexStatusInfo.IndexType;
 
 public class DBUtil {
 	private static final DatabaseConnectionPool dbConnectionPool = DatabaseConnectionPool.getInstance();
@@ -67,8 +68,8 @@ public class DBUtil {
 	private static OracleCallableStatement callableStmt;
 	private static Statement stmt;
 
-	public static DBMetaData getDatabaseInfo() throws SQLException {
-		DBMetaData metaData = new DBMetaData();
+	public static DatabaseMetaDataImpl getDatabaseInfo() throws SQLException {
+		DatabaseMetaDataImpl metaData = new DatabaseMetaDataImpl();
 		Connection conn = null;
 		ResultSet rs = null;
 
@@ -367,11 +368,10 @@ public class DBUtil {
 		return bbox;
 	}
 
-	private static String[] dropIndexes(DBIndexType type) throws SQLException {
-		String[] report = null;
+	private static IndexStatusInfo dropIndexes(IndexType type) throws SQLException {
 		Connection conn = null;
 
-		String call = type == DBIndexType.SPATIAL ? 
+		String call = type == IndexType.SPATIAL ? 
 				"{? = call geodb_idx.drop_spatial_indexes}" : 
 					"{? = call geodb_idx.drop_normal_indexes}";
 
@@ -382,7 +382,7 @@ public class DBUtil {
 			callableStmt.executeUpdate();
 
 			ARRAY result = callableStmt.getARRAY(1);
-			report = (String[])result.getArray();
+			return IndexStatusInfo.createFromDatabaseQuery((String[])result.getArray(), type);
 
 		} catch (SQLException sqlEx) {
 			throw sqlEx;
@@ -405,15 +405,12 @@ public class DBUtil {
 				}
 			}
 		}
-
-		return report;
 	}
 
-	private static String[] createIndexes(DBIndexType type) throws SQLException {
-		String[] report = null;
+	private static IndexStatusInfo createIndexes(IndexType type) throws SQLException {
 		Connection conn = null;
 
-		String call = type == DBIndexType.SPATIAL ? 
+		String call = type == IndexType.SPATIAL ? 
 				"{? = call geodb_idx.create_spatial_indexes}" : 
 					"{? = call geodb_idx.create_normal_indexes}";
 
@@ -424,7 +421,7 @@ public class DBUtil {
 			callableStmt.executeUpdate();
 
 			ARRAY result = callableStmt.getARRAY(1);
-			report = (String[])result.getArray();
+			return IndexStatusInfo.createFromDatabaseQuery((String[])result.getArray(), type);
 
 		} catch (SQLException sqlEx) {
 			throw sqlEx;
@@ -447,15 +444,12 @@ public class DBUtil {
 				}
 			}
 		}
-
-		return report;
 	}
 
-	private static String[] getIndexStatus(DBIndexType type) throws SQLException {
-		String[] status = null;
+	public static IndexStatusInfo getIndexStatus(IndexType type) throws SQLException {
 		Connection conn = null;
 
-		String call = type == DBIndexType.SPATIAL ? 
+		String call = type == IndexType.SPATIAL ? 
 				"{? = call geodb_idx.status_spatial_indexes}" : 
 					"{? = call geodb_idx.status_normal_indexes}";
 
@@ -466,8 +460,8 @@ public class DBUtil {
 			callableStmt.executeUpdate();
 
 			ARRAY result = callableStmt.getARRAY(1);
-			status = (String[])result.getArray();
-
+			return IndexStatusInfo.createFromDatabaseQuery((String[])result.getArray(), type);
+			
 		} catch (SQLException sqlEx) {
 			throw sqlEx;
 		} finally {
@@ -489,8 +483,6 @@ public class DBUtil {
 				}
 			}
 		}
-
-		return status;
 	}
 
 	public static boolean isIndexed(String tableName, String columnName) throws SQLException {
@@ -532,28 +524,28 @@ public class DBUtil {
 		return isIndexed;
 	}
 
-	public static String[] dropSpatialIndexes() throws SQLException {
-		return dropIndexes(DBIndexType.SPATIAL);
+	public static IndexStatusInfo dropSpatialIndexes() throws SQLException {
+		return dropIndexes(IndexType.SPATIAL);
 	}
 
-	public static String[] dropNormalIndexes() throws SQLException {
-		return dropIndexes(DBIndexType.NORMAL);
+	public static IndexStatusInfo dropNormalIndexes() throws SQLException {
+		return dropIndexes(IndexType.NORMAL);
 	}
 
-	public static String[] createSpatialIndexes() throws SQLException {
-		return createIndexes(DBIndexType.SPATIAL);
+	public static IndexStatusInfo createSpatialIndexes() throws SQLException {
+		return createIndexes(IndexType.SPATIAL);
 	}
 
-	public static String[] createNormalIndexes() throws SQLException {
-		return createIndexes(DBIndexType.NORMAL);
+	public static IndexStatusInfo createNormalIndexes() throws SQLException {
+		return createIndexes(IndexType.NORMAL);
 	}
 
-	public static String[] getStatusSpatialIndexes() throws SQLException {
-		return getIndexStatus(DBIndexType.SPATIAL);
+	public static IndexStatusInfo getStatusSpatialIndexes() throws SQLException {
+		return getIndexStatus(IndexType.SPATIAL);
 	}
 
-	public static String[] getStatusNormalIndexes() throws SQLException {
-		return getIndexStatus(DBIndexType.NORMAL);
+	public static IndexStatusInfo getStatusNormalIndexes() throws SQLException {
+		return getIndexStatus(IndexType.NORMAL);
 	}
 
 	public static String errorMessage(String errorCode) throws SQLException {
@@ -606,11 +598,6 @@ public class DBUtil {
 		} catch (SQLException sqlEx) {
 			//
 		}
-	}
-
-	public static enum DBIndexType {
-		SPATIAL,
-		NORMAL
 	}
 
 	public static BoundingBox transformBBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {

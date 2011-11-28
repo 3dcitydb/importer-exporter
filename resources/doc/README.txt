@@ -69,7 +69,7 @@ programs.
 ----------------------
 
 * Java JRE or JDK >= 1.6.0_05
-* 3D City Database version 2.0.5 on an Oracle Spatial DBMS >= 10G R2
+* 3D City Database version 2.0.6 on an Oracle Spatial DBMS >= 10G R2
   
 The !impexp.name! can be run on any platform 
 providing appropriate Java support. It has been tested on the 

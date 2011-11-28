@@ -15,7 +15,8 @@ public interface DatabaseController {
 	public boolean isConnected();
 
 	public DatabaseConnectionDetails getActiveConnectionDetails();
-	public List<? extends DatabaseSrs> getDatabaseSrs();
+	public List<DatabaseConnectionDetails> getConnectionDetails();
+	public List<DatabaseSrs> getDatabaseSrs();
 	
 	public Connection getConnection() throws SQLException;
 	public boolean isIndexEnabled(String tableName, String columnName) throws SQLException;
