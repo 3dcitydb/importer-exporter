@@ -171,7 +171,7 @@ public class DBSplitter {
 
 				// on Oracle 11g the query performance greatly benefits from setting
 				// a no_index hint for the class_id column
-				if (dbConnectionPool.getActiveConnection().getMetaData().getDatabaseMajorVersion() == 11)
+				if (dbConnectionPool.getActiveConnectionMetaData().getDatabaseMajorVersion() == 11)
 					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
 				
 			} else {

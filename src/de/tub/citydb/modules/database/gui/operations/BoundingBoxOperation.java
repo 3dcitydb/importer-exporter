@@ -191,7 +191,7 @@ public class BoundingBoxOperation implements DatabaseOperationView {
 					bbox = DBUtil.calcBoundingBox(workspace, featureClass);
 					
 					if (bbox != null) {
-						DatabaseSrs dbSrs = databaseController.getActiveConnectionDetails().getMetaData().getReferenceSystem();
+						DatabaseSrs dbSrs = databaseController.getActiveConnectionMetaData().getReferenceSystem();
 						DatabaseSrs targetSrs = bboxPanel.getSrsComboBox().getSelectedItem();
 
 						if (targetSrs.isSupported() && targetSrs.getSrid() != dbSrs.getSrid()) {

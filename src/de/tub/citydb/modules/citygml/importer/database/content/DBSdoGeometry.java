@@ -80,7 +80,7 @@ public class DBSdoGeometry implements DBImporter {
 	public DBSdoGeometry(Config config, DBImporterManager dbImporterManager) {
 		this.dbImporterManager = dbImporterManager;
 		
-		dbSrid = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getReferenceSystem().getSrid();
+		dbSrid = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().getSrid();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 	}
 

@@ -69,7 +69,7 @@ public class XlinkWorldFile implements DBXlinkResolver {
 
     private void init() throws SQLException {
         localPath = config.getInternal().getImportPath();
-        dbSrid = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getReferenceSystem().getSrid();
+        dbSrid = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().getSrid();
 
         psUpdate = batchConn.prepareStatement("update SURFACE_DATA set GT_ORIENTATION=?, GT_REFERENCE_POINT=? where ID=?");
     }

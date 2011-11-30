@@ -642,7 +642,7 @@ public class KmlExporter implements EventHandler {
 		tileMatrix = new BoundingBox(new BoundingBoxCorner(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY()),
 										new BoundingBoxCorner(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY()));
 
-		DatabaseSrs dbSrs = dbPool.getActiveConnection().getMetaData().getReferenceSystem();
+		DatabaseSrs dbSrs = dbPool.getActiveConnectionMetaData().getReferenceSystem();
 		if (bbox.getSrs().getSrid() != 0 && bbox.getSrs().getSrid() != dbSrs.getSrid()) {
 			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSrs(), WGS84_2D);
 			tileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSrs(), dbSrs);

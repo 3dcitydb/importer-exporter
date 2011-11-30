@@ -102,7 +102,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 
 				// check whether we have to transform coordinate values of bounding box
 				DatabaseSrs bboxSrs = boundingBoxConfig.getSrs();
-				srs = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getReferenceSystem();
+				srs = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem();
 
 				// target db srid differs if another coordinate transformation is
 				// applied to the CityGML export

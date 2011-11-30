@@ -38,7 +38,6 @@ import javax.xml.bind.annotation.XmlType;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
-import de.tub.citydb.database.DatabaseMetaDataImpl;
 
 @XmlType(name="ConnectionType", propOrder={
 		"description",
@@ -64,8 +63,6 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 	private Boolean savePassword = false;
 	@XmlTransient
 	private String internalPassword;
-	@XmlTransient
-	private DatabaseMetaDataImpl metaData;
 		
 	public DBConnection() {
 		id = DefaultGMLIdManager.getInstance().generateUUID();
@@ -158,20 +155,7 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 	public void setInternalPassword(String internalPassword) {
 		this.internalPassword = internalPassword;
 	}
-
-	@Override
-	public DatabaseMetaDataImpl getMetaData() {
-		return metaData;
-	}
-
-	public void setMetaData(DatabaseMetaDataImpl metaData) {
-		this.metaData = metaData;
-	}
 	
-	public boolean isSetMetaData() {
-		return metaData != null;
-	}
-
 	@Override
 	public int compareTo(DBConnection o) {
 		return description.toUpperCase().compareTo(o.getDescription().toUpperCase());

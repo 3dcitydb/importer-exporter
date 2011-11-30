@@ -115,7 +115,7 @@ public class KmlSplitter {
 			try {
 				spatialQuery = connection.prepareStatement(TileQueries.QUERY_GET_GMLIDS);
 
-				int srid = DatabaseConnectionPool.getInstance().getActiveConnection().getMetaData().getReferenceSystem().getSrid();
+				int srid = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().getSrid();
 
 				spatialQuery.setInt(1, srid);
 				// coordinates for inside
@@ -232,7 +232,7 @@ public class KmlSplitter {
 		OracleResultSet rs = null;
 
 		try {
-			psQuery = dbConnectionPool.getActiveConnection().getMetaData().getReferenceSystem().is3D() ? 
+			psQuery = dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem().is3D() ? 
 					  connection.prepareStatement(TileQueries.QUERY_GET_ENVELOPE_IN_WGS84_3D_FROM_GML_ID):
 					  connection.prepareStatement(TileQueries.QUERY_GET_ENVELOPE_IN_WGS84_FROM_GML_ID);
 						  

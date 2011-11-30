@@ -193,7 +193,7 @@ public class SrsComboBoxFactory {
 		}
 
 		private void reset() {
-			DatabaseSrs tmp = dbPool.isConnected() ? dbPool.getActiveConnection().getMetaData().getReferenceSystem() :  DatabaseSrs.createDefaultSrs();
+			DatabaseSrs tmp = dbPool.isConnected() ? dbPool.getActiveConnectionMetaData().getReferenceSystem() :  DatabaseSrs.createDefaultSrs();
 
 			dbRefSys.setSrid(tmp.getSrid());
 			dbRefSys.setGMLSrsName(tmp.getGMLSrsName());

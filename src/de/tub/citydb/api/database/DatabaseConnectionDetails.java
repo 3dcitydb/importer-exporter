@@ -6,5 +6,4 @@ public interface DatabaseConnectionDetails {
 	public Integer getPort();
 	public String getSid();
 	public String getUser();
-	public DatabaseMetaData getMetaData();
 }

@@ -9,6 +9,7 @@ import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
+import de.tub.citydb.api.database.DatabaseMetaData;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Workspace;
@@ -102,6 +103,11 @@ public class DatabaseControllerImpl implements DatabaseController {
 	@Override
 	public DatabaseConnectionDetails getActiveConnectionDetails() {
 		return dbPool.getActiveConnection();
+	}
+
+	@Override
+	public DatabaseMetaData getActiveConnectionMetaData() {
+		return dbPool.getActiveConnectionMetaData();
 	}
 
 	@Override

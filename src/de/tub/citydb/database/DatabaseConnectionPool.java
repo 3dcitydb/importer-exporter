@@ -62,6 +62,7 @@ public class DatabaseConnectionPool {
 	private UniversalConnectionPoolManager poolManager;
 	private PoolDataSource poolDataSource;
 	private DBConnection activeConnection;
+	private DatabaseMetaDataImpl activeMetaData;
 
 	private DatabaseConnectionPool() {
 		// just to thwart instantiation
@@ -131,7 +132,7 @@ public class DatabaseConnectionPool {
 
 		try {
 			// retrieve connection metadata
-			conn.setMetaData(DBUtil.getDatabaseInfo());
+			activeMetaData = DBUtil.getDatabaseInfo();
 
 			// check whether user-defined reference systems are supported
 			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
@@ -184,6 +185,10 @@ public class DatabaseConnectionPool {
 
 	public DBConnection getActiveConnection() {
 		return activeConnection;
+	}
+	
+	public DatabaseMetaDataImpl getActiveConnectionMetaData() {
+		return activeMetaData;
 	}
 
 	public int getBorrowedConnectionsCount() throws SQLException {
@@ -257,7 +262,7 @@ public class DatabaseConnectionPool {
 		}
 
 		if (activeConnection != null) {
-			activeConnection.setMetaData(null);
+			activeMetaData = null;
 			activeConnection = null;
 		}
 
@@ -276,7 +281,7 @@ public class DatabaseConnectionPool {
 		}
 
 		if (activeConnection != null) {
-			activeConnection.setMetaData(null);
+			activeMetaData = null;
 			activeConnection = null;
 		}
 

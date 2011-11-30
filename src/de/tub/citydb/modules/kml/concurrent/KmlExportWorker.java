@@ -348,7 +348,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					int groupBasis = 4;
 					try {
 						psQuery = connection.prepareStatement(TileQueries.
-								  	QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<2D_SRID>", String.valueOf(DBUtil.get2DSrid(dbConnectionPool.getActiveConnection().getMetaData().getReferenceSystem())))
+								  	QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<2D_SRID>", String.valueOf(DBUtil.get2DSrid(dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem())))
 								  										  .replace("<LoD>", String.valueOf(currentLod))
 																		  .replace("<GROUP_BY_1>", String.valueOf(Math.pow(groupBasis, 4)))
 																		  .replace("<GROUP_BY_2>", String.valueOf(Math.pow(groupBasis, 3)))
@@ -1297,13 +1297,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					coords[index++] = point3d.y;
 					coords[index++] = point3d.z;
 				}
-				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, dbConnectionPool.getActiveConnection().getMetaData().getReferenceSystem().getSrid());
+				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem().getSrid());
 				coords = convertToWGS84(jGeometry).getOrdinatesArray();
 
 				Logger.getInstance().info("Getting zOffset from Google's elevation API for " + gmlId + " with " + candidates.size() + " points.");
 				zOffset = elevationServiceHandler.getZOffset(coords);
 				// avoid "OVER_QUERY_LIMIT" from elevation service
-				Thread.currentThread().sleep(elevationServicePause);
+				Thread.sleep(elevationServicePause);
 
 				// save result in DB for next time
 				String genericAttribName = "GE_LoD" + currentLod + "_zOffset";
@@ -1370,7 +1370,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		double[] pointCoords = null; 
 		// createLinearLineString is a workaround for Oracle11g!
-		JGeometry jGeometry = JGeometry.createLinearLineString(coords, coords.length, dbConnectionPool.getActiveConnection().getMetaData().getReferenceSystem().getSrid());
+		JGeometry jGeometry = JGeometry.createLinearLineString(coords, coords.length, dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem().getSrid());
 		JGeometry convertedPointGeom = convertToWGS84(jGeometry);
 		if (convertedPointGeom != null) {
 			pointCoords = convertedPointGeom.getFirstPoint();
@@ -1384,7 +1384,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		PreparedStatement convertStmt = null;
 		OracleResultSet rs2 = null;
 		try {
-			convertStmt = (dbConnectionPool.getActiveConnection().getMetaData().getReferenceSystem().is3D() && 
+			convertStmt = (dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem().is3D() && 
 						   jGeometry.getDimensions() == 3) ?
 					  	  connection.prepareStatement(TileQueries.TRANSFORM_GEOMETRY_TO_WGS84_3D):
 					  	  connection.prepareStatement(TileQueries.TRANSFORM_GEOMETRY_TO_WGS84);

@@ -7,6 +7,7 @@ import java.util.List;
 import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
+import de.tub.citydb.api.database.DatabaseMetaData;
 
 public interface DatabaseController {
 	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException;
@@ -15,6 +16,7 @@ public interface DatabaseController {
 	public boolean isConnected();
 
 	public DatabaseConnectionDetails getActiveConnectionDetails();
+	public DatabaseMetaData getActiveConnectionMetaData();
 	public List<DatabaseConnectionDetails> getConnectionDetails();
 	public List<DatabaseSrs> getDatabaseSrs();
 	
