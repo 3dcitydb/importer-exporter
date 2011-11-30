@@ -47,10 +47,10 @@ import oracle.sql.STRUCT;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.api.config.BoundingBox;
-import de.tub.citydb.api.config.BoundingBoxCorner;
-import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseSrsType;
+import de.tub.citydb.api.gui.BoundingBox;
+import de.tub.citydb.api.gui.BoundingBoxCorner;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
 import de.tub.citydb.database.DatabaseMetaDataImpl;

@@ -63,7 +63,7 @@ import org.citygml4j.model.citygml.generics.UriAttribute;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
-import de.tub.citydb.api.config.BoundingBox;
+import de.tub.citydb.api.gui.BoundingBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;

@@ -38,7 +38,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseSrsType;
 
 @XmlType(name="DatabaseType", propOrder={

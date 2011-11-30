@@ -32,7 +32,7 @@ package de.tub.citydb.config.internal;
 import java.io.File;
 import java.util.ResourceBundle;
 
-import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 
 public class Internal {

@@ -1,4 +1,4 @@
-package de.tub.citydb.api.config;
+package de.tub.citydb.api.database;
 
 import java.util.UUID;
 
@@ -7,7 +7,6 @@ import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.api.database.DatabaseSrsType;
 
 @XmlType(name="DatabaseSrsType", propOrder={
 		"srid",
@@ -15,7 +14,7 @@ import de.tub.citydb.api.database.DatabaseSrsType;
 		"description"
 		})
 public final class DatabaseSrs implements Comparable<DatabaseSrs> {	
-	protected static DatabaseSrs DEFAULT = new DatabaseSrs(0, "", "n/a", "n/a", DatabaseSrsType.UNKNOWN, false);
+	private static DatabaseSrs DEFAULT = new DatabaseSrs(0, "", "n/a", "n/a", DatabaseSrsType.UNKNOWN, false);
 	
 	@XmlAttribute
 	@XmlID

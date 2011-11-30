@@ -32,7 +32,7 @@ package de.tub.citydb.config.project.database;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.config.project.general.FeatureClassMode;
 
 @XmlType(name="DBOperationType", propOrder={

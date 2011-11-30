@@ -38,7 +38,7 @@ import java.util.Map.Entry;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.config.project.database.Database.PredefinedSrsName;
 
 @XmlRootElement(name="referenceSystems")

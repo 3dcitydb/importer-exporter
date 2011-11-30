@@ -17,10 +17,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import de.tub.citydb.api.config.BoundingBox;
-import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.controller.ViewController;
+import de.tub.citydb.api.database.DatabaseSrs;
+import de.tub.citydb.api.gui.BoundingBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;

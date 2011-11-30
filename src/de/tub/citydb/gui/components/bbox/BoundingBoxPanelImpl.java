@@ -22,11 +22,11 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
-import de.tub.citydb.api.config.BoundingBox;
-import de.tub.citydb.api.config.BoundingBoxCorner;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.global.GlobalEvents;
+import de.tub.citydb.api.gui.BoundingBox;
+import de.tub.citydb.api.gui.BoundingBoxCorner;
 import de.tub.citydb.api.gui.BoundingBoxPanel;
 import de.tub.citydb.api.gui.DatabaseSrsComboBox;
 import de.tub.citydb.api.registry.ObjectRegistry;

@@ -35,9 +35,9 @@ import java.util.List;
 import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
-import de.tub.citydb.api.config.BoundingBox;
-import de.tub.citydb.api.config.BoundingBoxCorner;
-import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.api.database.DatabaseSrs;
+import de.tub.citydb.api.gui.BoundingBox;
+import de.tub.citydb.api.gui.BoundingBoxCorner;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
 import de.tub.citydb.config.project.filter.FilterBoundingBox;

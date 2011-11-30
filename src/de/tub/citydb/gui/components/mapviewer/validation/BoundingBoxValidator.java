@@ -17,9 +17,9 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 
-import de.tub.citydb.api.config.BoundingBox;
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
+import de.tub.citydb.api.gui.BoundingBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -170,16 +170,19 @@ public class BoundingBoxValidator {
 				}
 			});
 
-			bbox.copyFrom(DBUtil.transformBBox(bbox, bbox.getSrs(), Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D)));
+			if (bbox.getSrs().isSupported()) {
+				bbox.copyFrom(DBUtil.transformBBox(bbox, bbox.getSrs(), Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D)));
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					transform.dispose();
-				}
-			});
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						transform.dispose();
+					}
+				});
 
-			return ValidationResult.VALID;
-			
+				return ValidationResult.VALID;
+			} else
+				throw new SQLException("The spatial reference system '" + bbox.getSrs().getDescription() + "' is not supported.");
+
 		} catch (SQLException e) {
 			LOG.error("Failed to transform bounding box to WGS 84: " + e.getMessage());
 			SwingUtilities.invokeLater(new Runnable() {
@@ -294,7 +297,7 @@ public class BoundingBoxValidator {
 
 				hint = hint.replaceAll("\\n", "<br>");
 				JLabel hintLabel = new JLabel("<html>" + hint + "</html>");
-				
+
 				actionPanel.add(hintLabel, GuiUtil.setConstraints(1,1,0.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
 			}
 

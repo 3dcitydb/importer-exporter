@@ -39,7 +39,7 @@ import java.util.List;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
-import de.tub.citydb.api.config.DatabaseSrs;
+import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.global.GlobalEvents;

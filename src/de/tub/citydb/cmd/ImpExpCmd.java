@@ -40,8 +40,8 @@ import javax.xml.bind.JAXBContext;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 
-import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
+import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;

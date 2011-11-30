@@ -29,8 +29,8 @@
  */
 package de.tub.citydb.database;
 
-import de.tub.citydb.api.config.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseMetaData;
+import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.log.Logger;
 

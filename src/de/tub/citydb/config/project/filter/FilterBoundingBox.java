@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.api.config.BoundingBox;
+import de.tub.citydb.api.gui.BoundingBox;
 
 @XmlType(name="FilterBoundingBoxType", propOrder={
 		"mode"

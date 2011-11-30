@@ -27,10 +27,12 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.api.config;
+package de.tub.citydb.api.gui;
 
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
+
+import de.tub.citydb.api.database.DatabaseSrs;
 
 @XmlType(name="BoundingBoxType", propOrder={
 		"srs",
@@ -44,7 +46,6 @@ public class BoundingBox {
 	private BoundingBoxCorner upperRight;
 
 	public BoundingBox(BoundingBoxCorner lowerleft, BoundingBoxCorner upperRight) {
-		srs = DatabaseSrs.DEFAULT;
 		this.lowerLeft = lowerleft;
 		this.upperRight = upperRight;
 	}
@@ -76,7 +77,7 @@ public class BoundingBox {
 	}
 
 	public boolean isSetSrs() {
-		return srs != DatabaseSrs.DEFAULT;
+		return srs != null;
 	}
 	
 	public void setSrs(DatabaseSrs srs) {

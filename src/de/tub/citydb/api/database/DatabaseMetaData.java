@@ -1,6 +1,5 @@
 package de.tub.citydb.api.database;
 
-import de.tub.citydb.api.config.DatabaseSrs;
 
 public interface DatabaseMetaData {	
 	public String getDatabaseProductName();	
