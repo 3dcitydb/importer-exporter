@@ -173,6 +173,9 @@ public class MenuProject extends JMenu {
 					mainView.disconnectFromDatabase();
 
 					config.setProject(new Project());
+					
+					// reset contents of srs combo boxes
+					SrsComboBoxFactory.getInstance(config).resetAll(true);
 
 					// reset defaults on internal plugins
 					for (InternalPlugin plugin : pluginService.getInternalPlugins())

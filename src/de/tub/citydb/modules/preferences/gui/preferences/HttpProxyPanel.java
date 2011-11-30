@@ -54,7 +54,7 @@ import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class HttpProxyPanel extends AbstractPreferencesComponent{
+public class HttpProxyPanel extends AbstractPreferencesComponent {
 	private JPanel block1;
 	private JCheckBox useProxySettings;
 	private JLabel proxyHostLabel;

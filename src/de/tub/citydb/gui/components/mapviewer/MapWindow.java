@@ -121,6 +121,9 @@ public class MapWindow extends JDialog implements EventHandler {
 	private JTextPane reverseInfo;
 	private JTextPane reverseText;
 	private JLabel reverseSearchProgress;
+	
+	private JLabel helpTitle;
+	private JLabel helpText;
 
 	private BoundingBoxListener listener;
 	private BBoxPopupMenu[] bboxPopups;
@@ -343,9 +346,25 @@ public class MapWindow extends JDialog implements EventHandler {
 		reverse.add(reverseText, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
 		reverse.add(reverseInfo, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 0));
 
+		// help
+		JPanel help = new JPanel();
+		help.setBorder(BorderFactory.createTitledBorder(""));
+		help.setLayout(new GridBagLayout());	
+
+		helpTitle = new JLabel();
+		helpTitle.setFont(help.getFont().deriveFont(Font.BOLD));
+		helpTitle.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/help.png")));
+		helpTitle.setIconTextGap(5);
+		
+		helpText = new JLabel();
+
+		help.add(helpTitle, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
+		help.add(helpText, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
+
 		left.add(bbox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
 		left.add(reverse, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
-		left.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 2, 0, 1, GridBagConstraints.VERTICAL, 5, 0, 2, 0));
+		left.add(help, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
+		left.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 3, 0, 1, GridBagConstraints.VERTICAL, 5, 0, 2, 0));
 
 		left.setMinimumSize(left.getPreferredSize());
 		left.setPreferredSize(left.getMinimumSize());
@@ -767,6 +786,8 @@ public class MapWindow extends JDialog implements EventHandler {
 		pasteBBox.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.paste"));
 		reverseTitle.setText(Internal.I18N.getString("map.reverseGeocoder.label"));
 		reverseInfo.setText(Internal.I18N.getString("map.reverseGeocoder.hint.label"));
+		helpTitle.setText(Internal.I18N.getString("map.help.label"));
+		helpText.setText("<html>" + Internal.I18N.getString("map.help.hint") + "</html>");
 
 		map.doTranslation();		
 		for (int i = 0; i < bboxPopups.length; ++i)

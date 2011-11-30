@@ -434,6 +434,12 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	}
 
 	@Override
+	public void resetSettings() {
+		config.getProject().getDatabase().addDefaultReferenceSystems();
+		srsComboBoxFactory.updateAll(true);
+	}
+
+	@Override
 	public void loadSettings() {
 		displaySelectedValues();
 	}
