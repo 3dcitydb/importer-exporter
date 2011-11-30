@@ -331,7 +331,7 @@ AS
       IF INDICES(i).type = type THEN
         sql_error_code := create_index(INDICES(i), geodb_util.versioning_table(INDICES(i).table_name) = 'ON');
         log.extend;
-        log(log.count) := INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code || ':' || index_status(INDICES(i));
+        log(log.count) := index_status(INDICES(i)) || ':' || INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code;
       END IF;
     END LOOP;     
     
@@ -357,7 +357,7 @@ AS
       IF INDICES(i).type = type THEN
         sql_error_code := drop_index(INDICES(i), geodb_util.versioning_table(INDICES(i).table_name) = 'ON');
         log.extend;
-        log(log.count) := INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code || ':' || index_status(INDICES(i));
+        log(log.count) := index_status(INDICES(i)) || ':' || INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code;
       END IF;
     END LOOP; 
     
@@ -372,15 +372,15 @@ AS
   FUNCTION status_spatial_indexes RETURN STRARRAY
   IS
     log STRARRAY;
-    sql_error_code VARCHAR2(20);
+    status VARCHAR2(20);
   BEGIN
     log := STRARRAY();
   
     FOR i in INDICES.FIRST .. INDICES.LAST LOOP
       IF INDICES(i).type = SPATIAL THEN
-        sql_error_code := index_status(INDICES(i));
+        status := index_status(INDICES(i));
         log.extend;
-        log(log.count) := INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code;
+        log(log.count) := status || ':' || INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name;
       END IF;
     END LOOP;      
 
@@ -395,15 +395,15 @@ AS
   FUNCTION status_normal_indexes RETURN STRARRAY
   IS
     log STRARRAY;
-    sql_error_code VARCHAR2(20);
+    status VARCHAR2(20);
   BEGIN
     log := STRARRAY();
   
     FOR i in INDICES.FIRST .. INDICES.LAST LOOP
       IF INDICES(i).type = NORMAL THEN
-        sql_error_code := index_status(INDICES(i));
+        status := index_status(INDICES(i));
         log.extend;
-        log(log.count) := INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code;
+        log(log.count) := status || ':' || INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name;
       END IF;
     END LOOP;      
 
