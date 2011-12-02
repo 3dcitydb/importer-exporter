@@ -512,10 +512,10 @@ public class TileQueries {
 
     public static final String QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD =
 		
-		"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, 0.001)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, 0.001)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, 0.001)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, 0.001)) aggr_geom " +
+		"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
 		"FROM (" +
 
 		"SELECT * FROM (" +
@@ -544,8 +544,8 @@ public class TileQueries {
 		  ") " +
 		  "AND sg.geometry IS NOT NULL" +
 		
-		") WHERE sdo_geom.validate_geometry(simple_geom, 0.001) = 'TRUE'" +
-		") WHERE sdo_geom.sdo_area(simple_geom, 0.001) > 0.001" +
+		") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
+		") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
 		
 		") " +
 		"GROUP BY mod(rownum, <GROUP_BY_1>) " +

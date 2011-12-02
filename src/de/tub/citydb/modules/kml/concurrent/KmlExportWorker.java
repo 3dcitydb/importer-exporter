@@ -348,7 +348,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					int groupBasis = 4;
 					try {
 						psQuery = connection.prepareStatement(TileQueries.
-								  	QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<2D_SRID>", String.valueOf(DBUtil.get2DSrid(dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem())))
+								  	QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<TOLERANCE>", "0.001")
+								  										  .replace("<2D_SRID>", String.valueOf(DBUtil.get2DSrid(dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem())))
 								  										  .replace("<LoD>", String.valueOf(currentLod))
 																		  .replace("<GROUP_BY_1>", String.valueOf(Math.pow(groupBasis, 4)))
 																		  .replace("<GROUP_BY_2>", String.valueOf(Math.pow(groupBasis, 3)))
