@@ -569,9 +569,10 @@ public class Building {
 
 		VertexInfo vertexInfoIterator = firstVertexInfo;
 		while (vertexInfoIterator != null) {
-			positionValues.add(new Double(reducePrecisionForXorY(vertexInfoIterator.getX() - originX)));
-			positionValues.add(new Double(reducePrecisionForXorY(vertexInfoIterator.getY() - originY)));
-			positionValues.add(new Double(reducePrecisionForZ(vertexInfoIterator.getZ() - originZ)));
+			// undo trick for very close coordinates
+			positionValues.add(new Double(reducePrecisionForXorY((vertexInfoIterator.getX() - originX)/100)));
+			positionValues.add(new Double(reducePrecisionForXorY((vertexInfoIterator.getY() - originY)/100)));
+			positionValues.add(new Double(reducePrecisionForZ((vertexInfoIterator.getZ() - originZ)/100)));
 			vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
 		} 
 		positionArray.setCount(new BigInteger(String.valueOf(positionValues.size()))); // gotta love BigInteger!
@@ -921,7 +922,7 @@ public class Building {
 	}
 
 
-	public void createTextureAtlas(int packingAlgorithm) throws SQLException, IOException {
+	public void createTextureAtlas(int packingAlgorithm, double imageScaleFactor, boolean pots) throws SQLException, IOException {
 
 		if (texImages.size() == 0 && texOrdImages == null) {
 			// building has no textures at all or they are in an unknown image format 
@@ -930,14 +931,14 @@ public class Building {
 		
 		switch (packingAlgorithm) {
 			case -1:
-				useInternalTAGenerator();
+				useInternalTAGenerator(imageScaleFactor, pots);
 				break;
 			default:
-				useExternalTAGenerator(packingAlgorithm);
+				useExternalTAGenerator(packingAlgorithm, imageScaleFactor, pots);
 		}
 	}
 
-	private void useExternalTAGenerator(int packingAlgorithm) throws SQLException, IOException {
+	private void useExternalTAGenerator(int packingAlgorithm, double scaleFactor, boolean pots) throws SQLException, IOException {
 
 		TextureAtlasGenerator taGenerator = new TextureAtlasGenerator();
 		TexImageInfo tiInfo = new TexImageInfo();
@@ -990,7 +991,7 @@ public class Building {
 		
 		tiInfo.setTexCoordinates(tiInfoCoords);
 		
-		taGenerator.setUsePOTS(false);
+		taGenerator.setUsePOTS(pots);
 		tiInfo = taGenerator.convert(tiInfo, packingAlgorithm);
 		
 		texImageUris = tiInfo.getTexImageURIs();
@@ -1035,7 +1036,7 @@ public class Building {
 		} 
 	}
 	
-	private void useInternalTAGenerator() throws SQLException, IOException {
+	private void useInternalTAGenerator(double scaleFactor, boolean pots) throws SQLException, IOException {
 
 		if (texImages.size() == 0) {
 			// building has no textures at all or they are in an unknown image format 
@@ -1061,7 +1062,7 @@ public class Building {
 		}
 		
 		// calculate size of texture atlas
-		final int TEX_ATLAS_MAX_WIDTH = (int)(totalWidth/Math.sqrt(inobih.size()));
+		final int TEX_ATLAS_MAX_WIDTH = (int)(totalWidth*scaleFactor/Math.sqrt(inobih.size()));
 		int accumulatedWidth = 0;
 		int maxWidth = 0;
 		int maxHeightForRow = 0;
@@ -1069,17 +1070,22 @@ public class Building {
 		
 		for (String imageName: inobih) {
 			BufferedImage imageToAdd = texImages.get(imageName);
-			if (accumulatedWidth + imageToAdd.getWidth() > TEX_ATLAS_MAX_WIDTH) { // new row
+			if (accumulatedWidth + imageToAdd.getWidth()*scaleFactor > TEX_ATLAS_MAX_WIDTH) { // new row
 				maxWidth = Math.max(maxWidth, accumulatedWidth);
 				accumulatedHeight = accumulatedHeight + maxHeightForRow;
 				accumulatedWidth = 0;
 				maxHeightForRow = 0;
 			}
-			maxHeightForRow = Math.max(maxHeightForRow, imageToAdd.getHeight());
-			accumulatedWidth = accumulatedWidth + imageToAdd.getWidth();
+			maxHeightForRow = Math.max(maxHeightForRow, (int)(imageToAdd.getHeight()*scaleFactor));
+			accumulatedWidth = accumulatedWidth + (int)(imageToAdd.getWidth()*scaleFactor);
 		}
 		maxWidth = Math.max(maxWidth, accumulatedWidth);
 		accumulatedHeight = accumulatedHeight + maxHeightForRow; // add last row
+
+		if (pots) {
+			maxWidth = roundUpPots(maxWidth);
+			accumulatedHeight = roundUpPots(accumulatedHeight);
+		}
 
 		// check the first image as example, is it jpeg or png?
 		int type = (texImages.get(inobih.get(0)).getTransparency() == Transparency.OPAQUE) ?
@@ -1096,18 +1102,18 @@ public class Building {
 		
 		for (String imageName: inobih) {
 			BufferedImage imageToAdd = texImages.get(imageName);
-			if (accumulatedWidth + imageToAdd.getWidth() > TEX_ATLAS_MAX_WIDTH) { // new row
+			if (accumulatedWidth + imageToAdd.getWidth()*scaleFactor > TEX_ATLAS_MAX_WIDTH) { // new row
 				maxWidth = Math.max(maxWidth, accumulatedWidth);
 				accumulatedHeight = accumulatedHeight + maxHeightForRow;
 				accumulatedWidth = 0;
 				maxHeightForRow = 0;
 			}
-			maxHeightForRow = Math.max(maxHeightForRow, imageToAdd.getHeight());
+			maxHeightForRow = Math.max(maxHeightForRow, (int)(imageToAdd.getHeight()*scaleFactor));
 			Point offsetPoint = new Point (accumulatedWidth,
-										   accumulatedHeight + maxHeightForRow - imageToAdd.getHeight());
-			g2d.drawImage(imageToAdd, offsetPoint.x, offsetPoint.y, null);
+										   accumulatedHeight + maxHeightForRow - (int)(imageToAdd.getHeight()*scaleFactor));
+			g2d.drawImage(imageToAdd, offsetPoint.x, offsetPoint.y, (int)(imageToAdd.getWidth()*scaleFactor), (int)(imageToAdd.getHeight()*scaleFactor), null);
 			imageOffset.put(imageName, offsetPoint);
-			accumulatedWidth = accumulatedWidth + imageToAdd.getWidth();
+			accumulatedWidth = accumulatedWidth + (int)(imageToAdd.getWidth()*scaleFactor);
 		}
 
 
@@ -1130,11 +1136,11 @@ public class Building {
 					
 					double s = vertexInfoIterator.getTexCoords(surfaceId).getS();
 					double t = vertexInfoIterator.getTexCoords(surfaceId).getT();
- 					s = (imageOffset.get(imageName).x + (s * texImage.getWidth())) / textureAtlas.getWidth();
+ 					s = (imageOffset.get(imageName).x + (s * texImage.getWidth()*scaleFactor)) / textureAtlas.getWidth();
 					// graphics2D coordinates start at the top left point
 					// texture coordinates start at the bottom left point
-					t = ((textureAtlas.getHeight() - imageOffset.get(imageName).y - texImage.getHeight()) + 
-							t * texImage.getHeight()) / textureAtlas.getHeight();
+					t = ((textureAtlas.getHeight() - imageOffset.get(imageName).y - texImage.getHeight()*scaleFactor) + 
+							t * texImage.getHeight()*scaleFactor) / textureAtlas.getHeight();
 					vertexInfoIterator.getTexCoords(surfaceId).setS(s);
 					vertexInfoIterator.getTexCoords(surfaceId).setT(t);
 				}
@@ -1365,6 +1371,19 @@ public class Building {
 		protected NodeZ(double key, Object value){
 			super(key, value);
 		}
+	}
+	
+	private int roundUpPots(int t)
+	{
+	    t--;
+	    t |= t >> 1;
+	    t |= t >> 2;
+	    t |= t >> 4;
+	    t |= t >> 8;
+	    t |= t >> 16;
+	    t |= t >> 32;
+	    t++;
+	    return t;
 	}
 	
 }

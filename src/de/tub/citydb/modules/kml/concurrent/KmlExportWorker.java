@@ -435,6 +435,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					if (currentBuilding == null) return;
 					currentBuilding.setIgnoreSurfaceOrientation(config.getProject().getKmlExporter().isIgnoreSurfaceOrientation());
 					try {
+						double imageScaleFactor = 1;
 						if (config.getProject().getKmlExporter().isColladaHighlighting()) {
 //							kmlExporterManager.print(createHighlingtingPlacemarkForEachSurfaceGeometry(work.getGmlId(),
 //									   																   work.getDisplayLevel()));
@@ -443,10 +444,15 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						}
 						if (config.getProject().getKmlExporter().isGenerateTextureAtlases()) {
 //							eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.creatingAtlases")));
-							currentBuilding.createTextureAtlas(config.getProject().getKmlExporter().getPackingAlgorithm());
+							if (config.getProject().getKmlExporter().isScaleImages()) {
+								imageScaleFactor = config.getProject().getKmlExporter().getImageScaleFactor();
+							}
+							currentBuilding.createTextureAtlas(config.getProject().getKmlExporter().getPackingAlgorithm(),
+															   imageScaleFactor,
+															   config.getProject().getKmlExporter().isTextureAtlasPots());
 						}
-						if (config.getProject().getKmlExporter().isScaleImages()) {
-							double imageScaleFactor = config.getProject().getKmlExporter().getImageScaleFactor();
+						else if (config.getProject().getKmlExporter().isScaleImages()) {
+							imageScaleFactor = config.getProject().getKmlExporter().getImageScaleFactor();
 							if (imageScaleFactor < 1) {
 								currentBuilding.resizeAllImagesByFactor(imageScaleFactor);
 							}
@@ -887,9 +893,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 						for (int j = startOfCurrentRing; j < startOfNextRing - 3; j = j+3) {
 
-							giOrdinatesArray[(j-(currentContour-1)*3)] = ordinatesArray[j];
-							giOrdinatesArray[(j-(currentContour-1)*3)+1] = ordinatesArray[j+1];
-							giOrdinatesArray[(j-(currentContour-1)*3)+2] = ordinatesArray[j+2];
+							giOrdinatesArray[(j-(currentContour-1)*3)] = ordinatesArray[j] * 100; // trick for very close coordinates
+							giOrdinatesArray[(j-(currentContour-1)*3)+1] = ordinatesArray[j+1] * 100;
+							giOrdinatesArray[(j-(currentContour-1)*3)+2] = ordinatesArray[j+2] * 100;
 
 							TexCoords texCoordsForThisSurface = null;
 							if (texCoordsTokenized != null) {
@@ -956,7 +962,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		ModelType model = kmlFactory.createModelType();
 		LocationType location = kmlFactory.createLocationType();
 
-		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {building.getOriginX(), building.getOriginY(), building.getOriginZ()});
+		// undo trick for very close coordinates
+		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {building.getOriginX()/100, building.getOriginY()/100, building.getOriginZ()/100});
 		building.setLocationX(Building.reducePrecisionForXorY(originInWGS84[0]));
 		building.setLocationY(Building.reducePrecisionForXorY(originInWGS84[1]));
 
@@ -976,7 +983,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		// correct heading value
 		double lat1 = originInWGS84[1];
-		double[] dummy = convertPointCoordinatesToWGS84(new double[] {building.getOriginX(), building.getOriginY() - 20, building.getOriginZ()});
+		// undo trick for very close coordinates
+		double[] dummy = convertPointCoordinatesToWGS84(new double[] {building.getOriginX()/100, building.getOriginY()/100 - 20, building.getOriginZ()/100});
 		double lat2 = dummy[1];
 		double dLon = dummy[0] - originInWGS84[0];
 		double y = Math.sin(dLon) * Math.cos(lat2);

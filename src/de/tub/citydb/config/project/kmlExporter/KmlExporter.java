@@ -63,6 +63,7 @@ import de.tub.citydb.config.project.system.System;
 		"colladaHighlightingDistance",
 		"generateTextureAtlases",
 		"packingAlgorithm",
+		"textureAtlasPots",
 		"scaleImages",
 		"imageScaleFactor",
 		"groupBuildings",
@@ -103,6 +104,7 @@ public class KmlExporter {
 	private double colladaHighlightingDistance;
 	private boolean generateTextureAtlases;
 	private int packingAlgorithm;
+	private boolean textureAtlasPots;
 	private boolean scaleImages;
 	private double imageScaleFactor;
 	private boolean groupBuildings;
@@ -143,6 +145,7 @@ public class KmlExporter {
 		setColladaHighlightingDistance(0.75);
 		generateTextureAtlases = true;
 		packingAlgorithm = 5; // TextureAtlasGenerator.TPIM
+		setTextureAtlasPots(true);
 		scaleImages = false;
 		imageScaleFactor = 1.0;
 		groupBuildings = false;
@@ -457,6 +460,14 @@ public class KmlExporter {
 
 	public double getViewRefreshTime() {
 		return viewRefreshTime;
+	}
+
+	public void setTextureAtlasPots(boolean textureAtlasPots) {
+		this.textureAtlasPots = textureAtlasPots;
+	}
+
+	public boolean isTextureAtlasPots() {
+		return textureAtlasPots;
 	}
 
 }

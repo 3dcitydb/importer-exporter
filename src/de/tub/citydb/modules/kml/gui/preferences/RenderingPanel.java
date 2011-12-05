@@ -103,6 +103,7 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 	private JPanel colladaPanel;
 	private JCheckBox ignoreSurfaceOrientationCheckbox = new JCheckBox();
 	private JCheckBox textureAtlasCheckbox = new JCheckBox();
+	private JCheckBox textureAtlasPotsCheckbox = new JCheckBox();
 	private JCheckBox scaleTexImagesCheckbox = new JCheckBox();
 	private JTextField scaleFactorText = new JTextField("", 3);
 	private JRadioButton groupBuildingsRButton = new JRadioButton();
@@ -260,6 +261,7 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 
 		if (ignoreSurfaceOrientationCheckbox.isSelected() != kmlExporter.isIgnoreSurfaceOrientation()) return true;
 		if (textureAtlasCheckbox.isSelected() != kmlExporter.isGenerateTextureAtlases()) return true;
+		if (textureAtlasPotsCheckbox.isSelected() != kmlExporter.isTextureAtlasPots()) return true;
 		if (packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue() != kmlExporter.getPackingAlgorithm()) return true;
 
 		int groupSize = 1;
@@ -492,12 +494,17 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 		GridBagConstraints pacb = GuiUtil.setConstraints(2,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
 		pacb.gridwidth = 2;
 		colladaPanel.add(packingAlgorithmsComboBox, pacb);
-				
+
+		textureAtlasPotsCheckbox.setIconTextGap(10);
+		GridBagConstraints tapc = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS + 23,0,0);
+		tapc.gridwidth = 4;
+		colladaPanel.add(textureAtlasPotsCheckbox, tapc);
+		
 		scaleTexImagesCheckbox.setIconTextGap(10);
-		GridBagConstraints stic = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
+		GridBagConstraints stic = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
 		stic.gridwidth = 2;
 		colladaPanel.add(scaleTexImagesCheckbox, stic);
-		GridBagConstraints sft = GuiUtil.setConstraints(2,2,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
+		GridBagConstraints sft = GuiUtil.setConstraints(2,3,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
 		sft.gridwidth = 2;
 		colladaPanel.add(scaleFactorText, sft);
 
@@ -506,26 +513,26 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 		colladaRadioGroup.add(colladaHighlightingRButton);
 
 		groupBuildingsRButton.setIconTextGap(10);
-		GridBagConstraints gbr = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
+		GridBagConstraints gbr = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
 		gbr.gridwidth = 2;
 		colladaPanel.add(groupBuildingsRButton, gbr);
-		GridBagConstraints gst = GuiUtil.setConstraints(2,3,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
+		GridBagConstraints gst = GuiUtil.setConstraints(2,4,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS);
 		gst.gridwidth = 2;
 		colladaPanel.add(groupSizeText, gst);
 
 		colladaHighlightingRButton.setIconTextGap(10);
-		GridBagConstraints chrb = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
+		GridBagConstraints chrb = GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		chrb.gridwidth = 2;
 		colladaPanel.add(colladaHighlightingRButton, chrb);
 
-		GridBagConstraints chldl = GuiUtil.setConstraints(2,4,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints chldl = GuiUtil.setConstraints(2,5,0.0,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		chldl.anchor = GridBagConstraints.EAST;
 		colladaPanel.add(colladaHLSurfaceDistanceLabel, chldl);
 
-		GridBagConstraints chldt = GuiUtil.setConstraints(3,4,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints chldt = GuiUtil.setConstraints(3,5,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		colladaPanel.add(colladaHLSurfaceDistanceText, chldt);
 
-		GridBagConstraints chlfcl = GuiUtil.setConstraints(0,5,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints chlfcl = GuiUtil.setConstraints(0,6,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		chlfcl.anchor = GridBagConstraints.EAST;
 		colladaPanel.add(colladaHLFillColorLabel, chlfcl);
 
@@ -533,9 +540,9 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 		colladaHLFillColorButton.setBackground(new Color(DisplayLevel.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		colladaHLFillColorButton.setContentAreaFilled(false);
 		colladaHLFillColorButton.setOpaque(true);
-		colladaPanel.add(colladaHLFillColorButton, GuiUtil.setConstraints(1,5,0.25,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0));
+		colladaPanel.add(colladaHLFillColorButton, GuiUtil.setConstraints(1,6,0.25,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0));
 
-		GridBagConstraints chllcl = GuiUtil.setConstraints(2,5,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints chllcl = GuiUtil.setConstraints(2,6,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		chllcl.anchor = GridBagConstraints.EAST;
 		colladaPanel.add(colladaHLLineColorLabel, chllcl);
 
@@ -543,7 +550,7 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 		colladaHLLineColorButton.setBackground(new Color(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		colladaHLLineColorButton.setContentAreaFilled(false);
 		colladaHLLineColorButton.setOpaque(true);
-		colladaPanel.add(colladaHLLineColorButton, GuiUtil.setConstraints(3,5,0.25,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		colladaPanel.add(colladaHLLineColorButton, GuiUtil.setConstraints(3,6,0.25,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 		
 
 		PopupMenuDecorator.getInstance().decorate(geometryHLSurfaceDistanceText, scaleFactorText, 
@@ -731,6 +738,7 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 
 		ignoreSurfaceOrientationCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.ignoreSurfaceOrientation"));
 		textureAtlasCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.generateTextureAtlases"));
+		textureAtlasPotsCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.textureAtlasPots"));
 		scaleTexImagesCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.scaleTexImages"));
 		groupBuildingsRButton.setText(Internal.I18N.getString("pref.kmlexport.label.groupBuildings"));
 		colladaHighlightingRButton.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
@@ -790,6 +798,7 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 
 		ignoreSurfaceOrientationCheckbox.setSelected(kmlExporter.isIgnoreSurfaceOrientation());
 		textureAtlasCheckbox.setSelected(kmlExporter.isGenerateTextureAtlases());
+		textureAtlasPotsCheckbox.setSelected(kmlExporter.isTextureAtlasPots());
 		for (String key: packingAlgorithms.keySet()) {
 			if (packingAlgorithms.get(key).intValue() == kmlExporter.getPackingAlgorithm()) {
 				packingAlgorithmsComboBox.setSelectedItem(key);
@@ -922,6 +931,7 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 
 		kmlExporter.setIgnoreSurfaceOrientation(ignoreSurfaceOrientationCheckbox.isSelected());
 		kmlExporter.setGenerateTextureAtlases(textureAtlasCheckbox.isSelected());
+		kmlExporter.setTextureAtlasPots(textureAtlasPotsCheckbox.isSelected());
 		kmlExporter.setPackingAlgorithm(packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue()); 
 
 		kmlExporter.setScaleImages(scaleTexImagesCheckbox.isSelected());
@@ -982,6 +992,7 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 		geometryHLSurfaceDistanceText.setEnabled(geometryHighlightingCheckbox.isSelected());
 
 		packingAlgorithmsComboBox.setEnabled(textureAtlasCheckbox.isSelected());
+		textureAtlasPotsCheckbox.setEnabled(textureAtlasCheckbox.isSelected());
 		groupSizeText.setEnabled(groupBuildingsRButton.isSelected());
 
 		colladaHLFillColorLabel.setEnabled(colladaHighlightingRButton.isSelected());
