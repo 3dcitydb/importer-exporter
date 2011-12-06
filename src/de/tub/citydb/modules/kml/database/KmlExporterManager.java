@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
@@ -461,11 +462,17 @@ public class KmlExporterManager {
 					while (iterator.hasNext()) {
 						String imageFilename = iterator.next();
 						OrdImage texOrdImage = colladaBundle.getTexOrdImages().get(imageFilename);
-						byte[] ordImageBytes = texOrdImage.getDataInByteArray();
+						if (texOrdImage.getContentLength() < 1) continue;
+//						byte[] ordImageBytes = texOrdImage.getDataInByteArray();
+						byte[] ordImageBytes = new byte[texOrdImage.getContentLength()];
+						InputStream is = texOrdImage.getDataInStream();
+						int bytes_read = is.read(ordImageBytes, 0, ordImageBytes.length);
 
 						zipEntry = new ZipEntry(imageFilename);
 						zipOut.putNextEntry(zipEntry);
-						zipOut.write(ordImageBytes, 0, ordImageBytes.length);
+//						zipOut.write(ordImageBytes, 0, ordImageBytes.length);
+						zipOut.write(ordImageBytes, 0, bytes_read);
+						is.close();
 						zipOut.closeEntry();
 					}
 				}
@@ -520,12 +527,14 @@ public class KmlExporterManager {
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
 					OrdImage texOrdImage = colladaBundle.getTexOrdImages().get(imageFilename);
-					byte[] ordImageBytes = texOrdImage.getDataInByteArray();
-
-					File imageFile = new File(buildingDirectory, imageFilename);
-					FileOutputStream outputStream = new FileOutputStream(imageFile);
-					outputStream.write(ordImageBytes, 0, ordImageBytes.length);
-					outputStream.close();
+					if (texOrdImage.getContentLength() < 1) continue;
+					try {
+						texOrdImage.getDataInFile(buildingDirectory + File.separator + imageFilename);
+					}
+					catch (IOException ioEx) {}
+					finally {
+						texOrdImage.close();
+					}
 				}
 			}
 
