@@ -462,17 +462,13 @@ public class KmlExporterManager {
 					while (iterator.hasNext()) {
 						String imageFilename = iterator.next();
 						OrdImage texOrdImage = colladaBundle.getTexOrdImages().get(imageFilename);
-						if (texOrdImage.getContentLength() < 1) continue;
 //						byte[] ordImageBytes = texOrdImage.getDataInByteArray();
-						byte[] ordImageBytes = new byte[texOrdImage.getContentLength()];
-						InputStream is = texOrdImage.getDataInStream();
-						int bytes_read = is.read(ordImageBytes, 0, ordImageBytes.length);
+						byte[] ordImageBytes = texOrdImage.getBlobContent().getBytes(1, (int)texOrdImage.getBlobContent().length());
 
 						zipEntry = new ZipEntry(imageFilename);
 						zipOut.putNextEntry(zipEntry);
-//						zipOut.write(ordImageBytes, 0, ordImageBytes.length);
-						zipOut.write(ordImageBytes, 0, bytes_read);
-						is.close();
+						zipOut.write(ordImageBytes, 0, ordImageBytes.length);
+//						zipOut.write(ordImageBytes, 0, bytes_read);
 						zipOut.closeEntry();
 					}
 				}
