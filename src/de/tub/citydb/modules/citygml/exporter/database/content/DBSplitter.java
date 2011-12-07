@@ -511,7 +511,6 @@ public class DBSplitter {
 			}
 
 			rs.close();
-			stmt.close();
 
 			for (Long innerGroupId : groupIds) {
 				if (visited.contains(innerGroupId))
@@ -550,7 +549,6 @@ public class DBSplitter {
 			} 
 
 			rs.close();
-			stmt.close();
 
 			// third: work on parents which are not groups
 			StringBuilder parentQuery = new StringBuilder("select ").append(optimizerHint)
@@ -576,7 +574,6 @@ public class DBSplitter {
 			}
 
 			rs.close();
-			stmt.close();
 
 			// wait for jobs to be done...
 			try {
