@@ -1302,9 +1302,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				double[] coords = new double[candidates.size()*3];
 				int index = 0;
 				for (Point3d point3d: candidates) {
-					coords[index++] = point3d.x;
-					coords[index++] = point3d.y;
-					coords[index++] = point3d.z;
+					coords[index++] = point3d.x / 100; // undo trick for very close coordinates
+					coords[index++] = point3d.y / 100;
+					coords[index++] = point3d.z / 100;
 				}
 				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem().getSrid());
 				coords = convertToWGS84(jGeometry).getOrdinatesArray();
