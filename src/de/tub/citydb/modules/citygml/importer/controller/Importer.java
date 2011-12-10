@@ -49,6 +49,7 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.xml.io.CityGMLInputFactory;
+import org.citygml4j.xml.io.reader.CityGMLInputFilter;
 import org.citygml4j.xml.io.reader.CityGMLReadException;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
 
@@ -157,7 +158,7 @@ public class Importer implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		// get config shortcuts
-		de.tub.citydb.config.project.importer.Importer importer = config.getProject().getImporter();
+		final de.tub.citydb.config.project.importer.Importer importer = config.getProject().getImporter();
 		Database database = config.getProject().getDatabase();
 		Internal intConfig = config.getInternal();		
 		de.tub.citydb.config.project.system.System system = importer.getSystem();
@@ -197,7 +198,7 @@ public class Importer implements EventHandler {
 					if (indexStatus != null) {				
 						for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
 							if (indexObj.getStatus() != IndexStatus.DROPPED) {
-								LOG.error("FAILED: " + index.toString());
+								LOG.error("FAILED: " + indexObj.toString());
 								if (indexObj.hasErrorMessage())
 									LOG.error("Error cause: " + indexObj.getErrorMessage());
 							}
@@ -205,7 +206,7 @@ public class Importer implements EventHandler {
 					}
 				} else
 					DBUtil.getIndexStatus(IndexType.SPATIAL).printStatusToConsole();
-				
+
 				if (shouldRun && (index.isNormalIndexModeDeactivate() || index.isNormalIndexModeDeactivateActivate())) {
 					LOG.info("Deactivating normal indexes...");
 					IndexStatusInfo indexStatus = DBUtil.dropNormalIndexes();
@@ -213,7 +214,7 @@ public class Importer implements EventHandler {
 					if (indexStatus != null) {				
 						for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
 							if (indexObj.getStatus() != IndexStatus.DROPPED) {
-								LOG.error("FAILED: " + index.toString());
+								LOG.error("FAILED: " + indexObj.toString());
 								if (indexObj.hasErrorMessage())
 									LOG.error("Error cause: " + indexObj.getErrorMessage());
 							}
@@ -221,7 +222,7 @@ public class Importer implements EventHandler {
 					}
 				} else
 					DBUtil.getIndexStatus(IndexType.NORMAL).printStatusToConsole();
-				
+
 			} catch (SQLException e) {
 				LOG.error("Database error while deactivating indexes: " + e.getMessage());
 				return false;
@@ -254,9 +255,6 @@ public class Importer implements EventHandler {
 		int remainingFiles = importFiles.size();
 		LOG.info("List of import files successfully created.");
 		LOG.info(remainingFiles + " file(s) will be imported.");
-
-		// import filter
-		ImportFilter importFilter = new ImportFilter(config);
 
 		// prepare CityGML input factory
 		CityGMLInputFactory in = null;
@@ -303,6 +301,15 @@ public class Importer implements EventHandler {
 		Long counterFirstElement = counterFilter.getFilterState().get(0);
 		Long counterLastElement = counterFilter.getFilterState().get(1);
 		long elementCounter = 0;
+
+		// prepare feature filter
+		final ImportFilter importFilter = new ImportFilter(config);
+		CityGMLInputFilter inputFilter = new CityGMLInputFilter() {
+			public boolean accept(CityGMLClass type) {
+				return type != CityGMLClass.APPEARANCE ? 
+						!importFilter.getFeatureClassFilter().filter(type) : importer.getAppearances().isSetImportAppearance();
+			}
+		};
 
 		runState = PARSING;
 
@@ -401,7 +408,7 @@ public class Importer implements EventHandler {
 				// ok, preparation done. inform user and start parsing the input file
 				JAXBChunkReader reader = null;
 				try {
-					reader = (JAXBChunkReader)in.createCityGMLReader(file);	
+					reader = (JAXBChunkReader)in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);	
 					LOG.info("Importing file: " + file.toString());						
 
 					while (shouldRun && reader.hasNextChunk()) {
@@ -560,7 +567,7 @@ public class Importer implements EventHandler {
 						if (indexStatus != null) {				
 							for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
 								if (indexObj.getStatus() != IndexStatus.VALID) {
-									LOG.error("FAILED: " + index.toString());
+									LOG.error("FAILED: " + indexObj.toString());
 									if (indexObj.hasErrorMessage())
 										LOG.error("Error cause: " + indexObj.getErrorMessage());
 								}
@@ -575,7 +582,7 @@ public class Importer implements EventHandler {
 						if (indexStatus != null) {				
 							for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
 								if (indexObj.getStatus() != IndexStatus.VALID) {
-									LOG.error("FAILED: " + index.toString());
+									LOG.error("FAILED: " + indexObj.toString());
 									if (indexObj.hasErrorMessage())
 										LOG.error("Error cause: " + indexObj.getErrorMessage());
 								}

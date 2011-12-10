@@ -81,7 +81,6 @@ import de.tub.citydb.modules.common.event.FeatureCounterEvent;
 import de.tub.citydb.modules.common.event.GeometryCounterEvent;
 import de.tub.citydb.modules.common.filter.ImportFilter;
 import de.tub.citydb.modules.common.filter.feature.BoundingBoxFilter;
-import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
 import de.tub.citydb.modules.common.filter.feature.GmlIdFilter;
 import de.tub.citydb.modules.common.filter.feature.GmlNameFilter;
 
@@ -109,7 +108,6 @@ public class DBImportWorker implements Worker<CityGML> {
 	private int commitAfter = 20;
 
 	// filter
-	private FeatureClassFilter featureClassFilter;
 	private BoundingBoxFilter featureBoundingBoxFilter;
 	private GmlIdFilter featureGmlIdFilter;
 	private GmlNameFilter featureGmlNameFilter;
@@ -144,7 +142,6 @@ public class DBImportWorker implements Worker<CityGML> {
 		dbConnectionPool.gotoWorkspace(commitConn, workspace);
 
 		// init filter 
-		featureClassFilter = importFilter.getFeatureClassFilter();
 		featureBoundingBoxFilter = importFilter.getBoundingBoxFilter();
 		featureGmlIdFilter = importFilter.getGmlIdFilter();
 		featureGmlNameFilter = importFilter.getGmlNameFilter();		
@@ -269,9 +266,6 @@ public class DBImportWorker implements Worker<CityGML> {
 
 				if (work.getCityGMLClass() == CityGMLClass.APPEARANCE) {
 					// global appearances
-					if (!config.getProject().getImporter().getAppearances().isSetImportAppearance())
-						return;
-
 					DBAppearance dbAppearance = (DBAppearance)dbImporterManager.getDBImporter(DBImporterEnum.APPEARANCE);
 					if (dbAppearance != null)
 						id = dbAppearance.insert((Appearance)work, CityGMLClass.CITY_MODEL, 0);
@@ -323,10 +317,6 @@ public class DBImportWorker implements Worker<CityGML> {
 					// filter
 					if (cityObject.isSetBoundedBy() && 
 							featureBoundingBoxFilter.filter(cityObject.getBoundedBy().getEnvelope()))
-						return;
-
-					// top-level filter
-					if (featureClassFilter.filter(work.getCityGMLClass()))
 						return;
 
 					// if the cityobject did pass all filters, let us furhter work on it
