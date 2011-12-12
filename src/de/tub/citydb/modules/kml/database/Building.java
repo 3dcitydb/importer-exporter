@@ -992,6 +992,7 @@ public class Building {
 		tiInfo.setTexCoordinates(tiInfoCoords);
 		
 		taGenerator.setUsePOTS(pots);
+		taGenerator.setScaleFactor(scaleFactor);
 		tiInfo = taGenerator.convert(tiInfo, packingAlgorithm);
 		
 		texImageUris = tiInfo.getTexImageURIs();
