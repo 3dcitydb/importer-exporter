@@ -682,12 +682,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		if (zOffset == Double.MAX_VALUE) {
 			zOffset = getZOffsetFromGEService(gmlId, lowestPointCandidates);
 		}
-		double lowestZCoordinate = convertPointCoordinatesToWGS84(new double[] {lowestPointCandidates.get(0).x,
-				lowestPointCandidates.get(0).y,	
-				lowestPointCandidates.get(0).z}) [2];
+		double lowestZCoordinate = convertPointCoordinatesToWGS84(new double[] {
+				lowestPointCandidates.get(0).x/100, // undo trick for very close coordinates
+				lowestPointCandidates.get(0).y/100,	
+				lowestPointCandidates.get(0).z/100}) [2];
 
 		while (rs.next()) {
-			//			Long surfaceId = rs.getLong("id");
+//			Long surfaceId = rs.getLong("id");
 
 			String surfaceType = rs.getString("type");
 			if (surfaceType != null && !surfaceType.endsWith("Surface")) {
@@ -1372,6 +1373,11 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		}
 		while (true);
 
+		for (Point3d point3d: coords) {
+			point3d.x = point3d.x * 100; // trick for very close coordinates
+			point3d.y = point3d.y * 100;
+			point3d.z = point3d.z * 100;
+		}
 		return coords;
 	}
 
@@ -1436,9 +1442,10 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		if (zOffset == Double.MAX_VALUE) {
 			zOffset = getZOffsetFromGEService(gmlId, lowestPointCandidates);
 		}
-		double lowestZCoordinate = convertPointCoordinatesToWGS84(new double[] {lowestPointCandidates.get(0).x,
-				lowestPointCandidates.get(0).y,	
-				lowestPointCandidates.get(0).z}) [2];
+		double lowestZCoordinate = convertPointCoordinatesToWGS84(new double[] {
+				lowestPointCandidates.get(0).x/100, // undo trick for very close coordinates
+				lowestPointCandidates.get(0).y/100,	
+				lowestPointCandidates.get(0).z/100}) [2];
 
 		while (rs.next()) {
 			String surfaceType = rs.getString("type");
