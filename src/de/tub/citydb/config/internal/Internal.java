@@ -70,6 +70,7 @@ public class Internal {
 	// internal flags
 	private boolean useInternalBBoxFilter = false;
 	private boolean transformCoordinates = false;
+	private boolean exportGlobalAppearances = false;
 
 	public Internal() {
 	}
@@ -192,6 +193,14 @@ public class Internal {
 
 	public void setAffineTransformer(AffineTransformer affineTransformer) {
 		this.affineTransformer = affineTransformer;
+	}
+
+	public boolean isExportGlobalAppearances() {
+		return exportGlobalAppearances;
+	}
+
+	public void setExportGlobalAppearances(boolean exportGlobalAppearances) {
+		this.exportGlobalAppearances = exportGlobalAppearances;
 	}
 
 }

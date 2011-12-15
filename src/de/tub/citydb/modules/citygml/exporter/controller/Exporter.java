@@ -249,6 +249,14 @@ public class Exporter implements EventHandler {
 			return false;
 		}
 		
+		// check whether database contains global appearances and set internal flag
+		try {
+			internalConfig.setExportGlobalAppearances(DBUtil.getNumGlobalAppearances() > 0);
+		} catch (SQLException e) {
+			LOG.error("Database error while querying the number of global appearances: " + e.getMessage());
+			return false;
+		}
+		
 		// getting export filter
 		exportFilter = new ExportFilter(config);
 

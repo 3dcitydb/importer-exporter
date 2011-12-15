@@ -53,8 +53,8 @@ import de.tub.citydb.api.gui.BoundingBox;
 import de.tub.citydb.api.gui.BoundingBoxCorner;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
-import de.tub.citydb.database.DatabaseMetaDataImpl;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.DatabaseMetaDataImpl;
 import de.tub.citydb.database.DatabaseMetaDataImpl.Versioning;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
@@ -104,6 +104,16 @@ public class DBUtil {
 		} catch (SQLException sqlEx) {
 			throw sqlEx;
 		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				rs = null;
+			}
+			
 			if (stmt != null) {
 				try {
 					stmt.close();
@@ -675,17 +685,16 @@ public class DBUtil {
 			return srs.getSrid();
 
 		Connection conn = null;
-		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			psQuery = conn.prepareStatement(srs.getType() == DatabaseSrsType.GEOGRAPHIC3D ? 
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(srs.getType() == DatabaseSrsType.GEOGRAPHIC3D ? 
 					"select min(crs2d.srid) from sdo_coord_ref_sys crs3d, sdo_coord_ref_sys crs2d where crs3d.srid = "
 					+ srs.getSrid() + " and crs2d.coord_ref_sys_kind = 'GEOGRAPHIC2D' and crs3d.datum_id = crs2d.datum_id" :
 						"select cmpd_horiz_srid from sdo_coord_ref_sys where srid = " + srs.getSrid());
 
-			rs = psQuery.executeQuery();
 			if (rs.next()) 
 				return rs.getInt(1);
 			else
@@ -704,14 +713,14 @@ public class DBUtil {
 				rs = null;
 			}
 
-			if (psQuery != null) {
+			if (stmt != null) {
 				try {
-					psQuery.close();
+					stmt.close();
 				} catch (SQLException sqlEx) {
 					throw sqlEx;
 				}
 
-				psQuery = null;
+				stmt = null;
 			}
 
 			if (conn != null) {
@@ -728,7 +737,6 @@ public class DBUtil {
 
 	public static List<String> getAppearanceThemeList(Workspace workspace) throws SQLException {
 		Connection conn = null;
-		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 		ArrayList<String> appearanceThemes = new ArrayList<String>();
 
@@ -745,8 +753,8 @@ public class DBUtil {
 			} 
 
 			conn = dbConnectionPool.getConnection();
-			psQuery = conn.prepareStatement("select distinct theme from appearance order by theme");
-			rs = psQuery.executeQuery();
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select distinct theme from appearance order by theme");
 			while (rs.next()) {
 				appearanceThemes.add(rs.getString(1));
 			}
@@ -764,14 +772,14 @@ public class DBUtil {
 				rs = null;
 			}
 
-			if (psQuery != null) {
+			if (stmt != null) {
 				try {
-					psQuery.close();
+					stmt.close();
 				} catch (SQLException sqlEx) {
 					throw sqlEx;
 				}
 
-				psQuery = null;
+				stmt = null;
 			}
 
 			if (conn != null) {
@@ -786,5 +794,54 @@ public class DBUtil {
 		}
 
 		return appearanceThemes;
+	}
+	
+	public static int getNumGlobalAppearances() throws SQLException {
+		Connection conn = null;
+		ResultSet rs = null;
+
+		try {
+			conn = dbConnectionPool.getConnection();
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select count(id) from appearance where cityobject_id is null");
+
+			if (rs.next()) 
+				return rs.getInt(1);
+			else
+				throw new SQLException("Failed to discover number of global appearances.");
+			
+		} catch (SQLException sqlEx) {
+			throw sqlEx;
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				rs = null;
+			}
+
+			if (stmt != null) {
+				try {
+					stmt.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				stmt = null;
+			}
+
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				conn = null;
+			}
+		}
 	}
 }

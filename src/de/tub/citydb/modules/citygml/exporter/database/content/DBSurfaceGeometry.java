@@ -106,7 +106,9 @@ public class DBSurfaceGeometry implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		exportAppearance = config.getProject().getExporter().getAppearances().isSetExportAppearance();
+		exportAppearance = 
+			config.getProject().getExporter().getAppearances().isSetExportAppearance() && 
+			config.getInternal().isExportGlobalAppearances();
 		useXLink = config.getProject().getExporter().getXlink().getGeometry().isModeXLink();
 		if (!useXLink) {
 			appendOldGmlId = config.getProject().getExporter().getXlink().getGeometry().isSetAppendId();
@@ -118,7 +120,7 @@ public class DBSurfaceGeometry implements DBExporter {
 			psSurfaceGeometry = connection.prepareStatement("select * from SURFACE_GEOMETRY where ROOT_ID = ?");
 		} else {	
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			
+
 			psSurfaceGeometry = connection.prepareStatement("select ID, GMLID, PARENT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, " +
 					"geodb_util.transform_or_null(GEOMETRY, " + srid + ") AS GEOMETRY " +
 			"from SURFACE_GEOMETRY where ROOT_ID = ?");
