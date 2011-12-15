@@ -494,10 +494,9 @@ public class Exporter implements EventHandler {
 					}
 
 					try {
-						if (shouldRun) {
-							dbWorkerPool.shutdownAndWait();
+						dbWorkerPool.shutdownAndWait();
+						if (shouldRun)
 							xlinkExporterPool.shutdownAndWait();
-						}
 						
 						ioWriterPool.shutdownAndWait();
 					} catch (InterruptedException e) {
@@ -528,17 +527,17 @@ public class Exporter implements EventHandler {
 
 					// cleaning up...
 					try {
+						lookupServerManager.shutdownAll();
+					} catch (SQLException e) {
+						LOG.error("SQL error: " + e.getMessage());
+					}
+					
+					try {
 						LOG.info("Cleaning temporary cache.");
 						cacheManager.dropAll();
 					} catch (SQLException sqlE) {
 						LOG.error("SQL error: " + sqlE.getMessage());
 						return false;
-					}
-
-					try {
-						lookupServerManager.shutdownAll();
-					} catch (SQLException e) {
-						LOG.error("SQL error: " + e.getMessage());
 					}
 
 					// finally join eventDispatcher
@@ -670,7 +669,7 @@ public class Exporter implements EventHandler {
 					xlinkExporterPool.shutdownNow();
 				
 				if (dbWorkerPool != null)
-					dbWorkerPool.shutdownNow();
+					dbWorkerPool.drainWorkQueue();
 			}
 		}
 	}

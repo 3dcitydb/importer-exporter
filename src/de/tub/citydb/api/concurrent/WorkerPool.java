@@ -637,7 +637,7 @@ public class WorkerPool<T> {
 		if (runState >= SHUTDOWN)
 			return null;
 
-		List<T> workList = drainQueue();
+		List<T> workList = drainWorkQueue();
 
 		final ReentrantLock mainLock = this.mainLock;	
 		mainLock.lock();
@@ -757,7 +757,7 @@ public class WorkerPool<T> {
 		}
 	}
 
-	private List<T> drainQueue() {
+	public List<T> drainWorkQueue() {
 		List<T> workList = new ArrayList<T>();
 		workQueue.drainTo(workList);
 

@@ -508,16 +508,16 @@ public class Importer implements EventHandler {
 
 				// finally clean up and join eventDispatcher
 				try {
+					lookupServerManager.shutdownAll();
+				} catch (SQLException e) {
+					LOG.error("SQL error: " + e.getMessage());
+				}
+				
+				try {
 					LOG.info("Cleaning temporary cache.");
 					cacheManager.dropAll();
 				} catch (SQLException sqlE) {
 					LOG.error("SQL error: " + sqlE.getMessage());
-				}
-
-				try {
-					lookupServerManager.shutdownAll();
-				} catch (SQLException e) {
-					LOG.error("SQL error: " + e.getMessage());
 				}
 
 				try {
