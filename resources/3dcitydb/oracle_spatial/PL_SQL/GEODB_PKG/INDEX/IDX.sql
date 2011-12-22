@@ -91,6 +91,7 @@ AS
   FUNCTION drop_spatial_indexes RETURN STRARRAY;
   FUNCTION create_normal_indexes RETURN STRARRAY;
   FUNCTION drop_normal_indexes RETURN STRARRAY;
+  FUNCTION get_index(table_name VARCHAR2, column_name VARCHAR2) RETURN INDEX_OBJ;
 END geodb_idx;
 /
 
@@ -465,5 +466,30 @@ AS
     dbms_output.enable;
     return drop_indexes(NORMAL);
   END;    
+
+
+  /*****************************************************************
+  * get_index
+  * convience method for getting an index object 
+  * given the table and column it indexes
+  * 
+  * @param table_name
+  * @param attribute_name
+  * @return INDEX_OBJ
+  ******************************************************************/
+  FUNCTION get_index(table_name VARCHAR2, column_name VARCHAR2) RETURN INDEX_OBJ
+  IS
+    idx INDEX_OBJ;
+  BEGIN    
+    
+    FOR i in INDICES.FIRST .. INDICES.LAST LOOP
+      IF INDICES(i).attribute_name = UPPER(column_name) AND INDICES(i).table_name = UPPER(table_name) THEN
+        idx := INDICES(i);
+        EXIT;
+      END IF;
+    END LOOP; 
+    
+    RETURN idx;
+  END;
 END geodb_idx;
 /
