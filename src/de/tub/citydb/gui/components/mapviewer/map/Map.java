@@ -50,7 +50,7 @@ public class Map {
 		selectionPainter = new BBoxSelectionPainter(mapKit.getMainMap());
 		waypointPainter = new DefaultWaypointPainter();
 		zoomPainter = new ZoomPainter(mapKit.getMainMap());
-		popupMenu = new MapPopupMenu(this, config);
+		popupMenu = new MapPopupMenu(this);
 
 		Color borderColor = new Color(0, 0, 0, 150);
 

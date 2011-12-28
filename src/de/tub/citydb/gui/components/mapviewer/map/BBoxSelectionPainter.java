@@ -17,7 +17,7 @@ import org.jdesktop.swingx.painter.Painter;
 
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.registry.ObjectRegistry;
-import de.tub.citydb.gui.components.mapviewer.map.event.BoundingBoxSelection;
+import de.tub.citydb.gui.components.mapviewer.map.event.BoundingBoxSelectionEvent;
 
 public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapViewer> {
 	private final JXMapViewer map;
@@ -61,7 +61,7 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 
 		final GeoPosition[] bounds = getSelectedArea();
 		if (bounds != null)
-			eventDispatcher.triggerEvent(new BoundingBoxSelection(bounds, this));	
+			eventDispatcher.triggerEvent(new BoundingBoxSelectionEvent(bounds, this));	
 	}
 
 	public void clearSelectedArea() {
@@ -150,7 +150,7 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 
 				final GeoPosition[] bounds = getSelectedArea();
 				if (bounds != null)
-					eventDispatcher.triggerEvent(new BoundingBoxSelection(bounds, this));
+					eventDispatcher.triggerEvent(new BoundingBoxSelectionEvent(bounds, this));
 			} else 
 				selectedArea = null;
 

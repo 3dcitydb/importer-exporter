@@ -53,6 +53,8 @@ import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.XMLValidation;
+import de.tub.citydb.io.DirectoryScanner;
+import de.tub.citydb.io.DirectoryScanner.CityGMLFilenameFilter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.importer.concurrent.FeatureReaderWorkerFactory;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -62,8 +64,6 @@ import de.tub.citydb.modules.common.event.InterruptEvent;
 import de.tub.citydb.modules.common.event.StatusDialogMessage;
 import de.tub.citydb.modules.common.event.StatusDialogProgressBar;
 import de.tub.citydb.modules.common.event.StatusDialogTitle;
-import de.tub.citydb.util.io.DirectoryScanner;
-import de.tub.citydb.util.io.DirectoryScanner.CityGMLFilenameFilter;
 
 public class XMLValidator implements EventHandler {
 	private final Logger LOG = Logger.getInstance();

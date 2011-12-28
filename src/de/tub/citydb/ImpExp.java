@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.ProxySelector;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -69,6 +70,9 @@ import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.database.DatabaseControllerImpl;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.SplashScreen;
+import de.tub.citydb.io.DirectoryScanner;
+import de.tub.citydb.io.IOControllerImpl;
+import de.tub.citydb.io.InternalProxySelector;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.modules.citygml.importer.CityGMLImportPlugin;
@@ -78,7 +82,6 @@ import de.tub.citydb.modules.preferences.PreferencesPlugin;
 import de.tub.citydb.plugin.IllegalPluginEventChecker;
 import de.tub.citydb.plugin.PluginService;
 import de.tub.citydb.plugin.PluginServiceFactory;
-import de.tub.citydb.util.io.DirectoryScanner;
 
 public class ImpExp {
 
@@ -256,12 +259,43 @@ public class ImpExp {
 				LOG.error("Please check the following error message: " + e.getMessage());
 				System.exit(1);
 			}
-		}			
-
+		}	
+		
 		// initialize application environment
 		printInfoMessage("Initializing application environment");
 		config = new Config();
+		
+		// initialize object registry
+		ObjectRegistry registry = ObjectRegistry.getInstance();
+		
+		// register log controller
+		registry.setLogController(Logger.getInstance());
+		
+		// create and register application-wide event dispatcher
+		EventDispatcher eventDispatcher = new EventDispatcher();		
+		registry.setEventDispatcher(eventDispatcher);
+		
+		// create and register plugin config controller
+		PluginConfigControllerImpl pluginConfigController = new PluginConfigControllerImpl(config);
+		registry.setPluginConfigController(pluginConfigController);
 
+		// create and register database controller
+		DatabaseControllerImpl databaseController = new DatabaseControllerImpl(config);
+		registry.setDatabaseController(databaseController);
+		
+		// create and register i/o controller
+		IOControllerImpl ioController = new IOControllerImpl(config);
+		registry.setIOController(ioController);
+
+		// register illegal plugin event checker with event dispatcher
+		IllegalPluginEventChecker checker = IllegalPluginEventChecker.getInstance();
+		eventDispatcher.addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, checker);
+		eventDispatcher.addEventHandler(GlobalEvents.SWITCH_LOCALE, checker);
+		
+		// set internal proxy selector as default
+		ProxySelector.setDefault(InternalProxySelector.getInstance(config));
+
+		// create JAXB contexts
 		try {
 			jaxbBuilder = new JAXBBuilder();
 			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", Thread.currentThread().getContextClassLoader());
@@ -417,29 +451,6 @@ public class ImpExp {
 		}
 
 		Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", new Locale(lang.value()));
-
-		// initialize object registry
-		ObjectRegistry registry = ObjectRegistry.getInstance();
-		
-		// register log controller
-		registry.setLogController(Logger.getInstance());
-		
-		// create and register application-wide event dispatcher
-		EventDispatcher eventDispatcher = new EventDispatcher();		
-		registry.setEventDispatcher(eventDispatcher);
-
-		// create and register plugin config controller
-		PluginConfigControllerImpl pluginConfigController = new PluginConfigControllerImpl(config);
-		registry.setPluginConfigController(pluginConfigController);
-
-		// create and register database controller
-		DatabaseControllerImpl databaseController = new DatabaseControllerImpl(config);
-		registry.setDatabaseController(databaseController);
-
-		// register illegal plugin event checker with event dispatcher
-		IllegalPluginEventChecker checker = IllegalPluginEventChecker.getInstance();
-		eventDispatcher.addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, checker);
-		eventDispatcher.addEventHandler(GlobalEvents.SWITCH_LOCALE, checker);
 
 		// start application
 		if (!shell) {

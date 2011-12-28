@@ -30,9 +30,7 @@
 package de.tub.citydb.modules.kml.database;
 
 import java.math.BigDecimal;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +41,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import de.tub.citydb.config.project.global.HttpProxy;
 import de.tub.citydb.log.Logger;
 
 public class ElevationServiceHandler extends DefaultHandler {
@@ -71,12 +68,6 @@ public class ElevationServiceHandler extends DefaultHandler {
 	double minElevationLong = 0;
 	double lastLat = 0;
 	double lastLong = 0;
-
-	HttpProxy proxy;
-
-	public ElevationServiceHandler (HttpProxy proxy) {
-		this.proxy = proxy;
-	}
 
 	public double getZOffset(double[] candidateCoords) throws Exception {
 
@@ -116,18 +107,7 @@ public class ElevationServiceHandler extends DefaultHandler {
 		try {
 			for (String elevationString: elevationStringList) {
 				URL elevationService = new URL(elevationString);
-				URLConnection connection;
-				
-				if (proxy.isSetUseProxy() && proxy.hasValidProxySettings()) {
-					connection = (HttpURLConnection)elevationService.openConnection(proxy.getProxy());
-					if (proxy.hasUserCredentials())
-						connection.setRequestProperty("Proxy-Authorization", "Basic " + proxy.getBase64EncodedCredentials());
-				}
-				else {
-					connection = elevationService.openConnection();
-				}
-
-				saxParser.parse(connection.getInputStream(), this);
+				saxParser.parse(elevationService.openStream(), this);
 			}
 		}
 		catch (Throwable t) {

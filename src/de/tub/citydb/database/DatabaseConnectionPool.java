@@ -34,6 +34,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import oracle.jdbc.OracleConnection;
 import oracle.ucp.UniversalConnectionPoolAdapter;
@@ -56,6 +62,7 @@ import de.tub.citydb.util.database.DBUtil;
 
 public class DatabaseConnectionPool {
 	private static DatabaseConnectionPool instance = new DatabaseConnectionPool();
+	private static final int LOGIN_TIMEOUT = 120;
 
 	private final String poolName = "oracle.pool";
 	private final EventDispatcher eventDispatcher;
@@ -115,11 +122,11 @@ public class DatabaseConnectionPool {
 
 			// set connection properties
 			Properties props = new Properties();
-			
+
 			// let statement data buffers be cached on a per thread basis
 			props.put(OracleConnection.CONNECTION_PROPERTY_USE_THREADLOCAL_BUFFER_CACHE, "true");
 			poolDataSource.setConnectionProperties(props);
-			
+
 			poolManager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);		
 			poolManager.startConnectionPool(poolName);
 		} catch (UniversalConnectionPoolException e) {
@@ -165,9 +172,35 @@ public class DatabaseConnectionPool {
 		if (poolDataSource == null)
 			throw new SQLException("Database is not connected.");
 
-		return poolDataSource.getConnection();
+		ExecutorService service = Executors.newFixedThreadPool(1, new ThreadFactory() {
+			public Thread newThread(Runnable r) {
+				Thread t = new Thread(r);
+				t.setDaemon(true);
+				return t;
+			}
+		});
+
+		FutureTask<Connection> connectTask = new FutureTask<Connection>(new Callable<Connection>() {
+			public Connection call() throws Exception {
+				return poolDataSource.getConnection();
+			}
+		});
+
+		Connection connection = null;
+		service.execute(connectTask);
+
+		try {
+			connection = connectTask.get(LOGIN_TIMEOUT, TimeUnit.SECONDS);
+			service.shutdown();
+		} catch (Exception e) {
+			service.shutdownNow();
+			forceDisconnect();
+			throw new SQLException("A connection to the database could not be established.\nThe database did not respond for " + LOGIN_TIMEOUT + " seconds.");
+		}
+		
+		return connection;
 	}
-	
+
 	public UniversalConnectionPoolLifeCycleState getLifeCyleState() {
 		try {
 			if (isManagedConnectionPool(poolName))
@@ -186,7 +219,7 @@ public class DatabaseConnectionPool {
 	public DBConnection getActiveConnection() {
 		return activeConnection;
 	}
-	
+
 	public DatabaseMetaDataImpl getActiveConnectionMetaData() {
 		return activeMetaData;
 	}

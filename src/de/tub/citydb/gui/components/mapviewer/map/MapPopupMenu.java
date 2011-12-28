@@ -20,7 +20,6 @@ import org.jdesktop.swingx.mapviewer.TileFactory;
 
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.registry.ObjectRegistry;
-import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.components.mapviewer.geocoder.Geocoder;
 import de.tub.citydb.gui.components.mapviewer.geocoder.GeocoderResponse;
@@ -29,13 +28,12 @@ import de.tub.citydb.gui.components.mapviewer.geocoder.LocationType;
 import de.tub.citydb.gui.components.mapviewer.geocoder.ResultType;
 import de.tub.citydb.gui.components.mapviewer.geocoder.StatusCode;
 import de.tub.citydb.gui.components.mapviewer.map.DefaultWaypoint.WaypointType;
-import de.tub.citydb.gui.components.mapviewer.map.event.MapBoundsSelection;
+import de.tub.citydb.gui.components.mapviewer.map.event.MapBoundsSelectionEvent;
 import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent;
 
 @SuppressWarnings("serial")
 public class MapPopupMenu extends JPopupMenu {
 	private final Map mapViewer;
-	private final Config config;
 	private final JXMapViewer map;
 	private final EventDispatcher eventDispatcher;
 
@@ -47,13 +45,11 @@ public class MapPopupMenu extends JPopupMenu {
 
 	private Point mousePosition;
 
-	public MapPopupMenu(Map mapViewer, Config config) {
+	public MapPopupMenu(Map mapViewer) {
 		this.mapViewer = mapViewer;
 		this.map = mapViewer.getMapKit().getMainMap();
-		this.config = config;
 		
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		
 		init();
 	}
 
@@ -92,7 +88,7 @@ public class MapPopupMenu extends JPopupMenu {
 				bounds[0] = fac.pixelToGeo(new Point2D.Double(view.getMinX(), view.getMaxY()), zoom);
 				bounds[1] = fac.pixelToGeo(new Point2D.Double(view.getMaxX(), view.getMinY()), zoom);
 				
-				eventDispatcher.triggerEvent(new MapBoundsSelection(bounds, MapPopupMenu.this));
+				eventDispatcher.triggerEvent(new MapBoundsSelectionEvent(bounds, MapPopupMenu.this));
 			}
 		});
 
@@ -103,7 +99,7 @@ public class MapPopupMenu extends JPopupMenu {
 
 				new SwingWorker<GeocoderResponse, Void>() {
 					protected GeocoderResponse doInBackground() throws Exception {
-						return Geocoder.geocode(position, config.getProject().getGlobal().getHttpProxy());
+						return Geocoder.geocode(position);
 					}
 
 					protected void done() {

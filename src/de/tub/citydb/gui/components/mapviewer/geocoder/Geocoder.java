@@ -1,6 +1,5 @@
 package de.tub.citydb.gui.components.mapviewer.geocoder;
 
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.NumberFormat;
@@ -18,10 +17,8 @@ import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.global.HttpProxy;
 import de.tub.citydb.gui.components.mapviewer.MapWindow;
 
 public class Geocoder {
@@ -29,15 +26,15 @@ public class Geocoder {
 	private static final String ADDRESS_REQUEST = "address";
 	private static final String LATLON_REQUEST = "latlng";
 	
-	public static final GeocoderResponse geocode(String address, HttpProxy proxy) {
-		return geocode(ADDRESS_REQUEST, address, proxy);
+	public static final GeocoderResponse geocode(String address) {
+		return geocode(ADDRESS_REQUEST, address);
 	}
 	
-	public static final GeocoderResponse geocode(GeoPosition latlon, HttpProxy proxy) {
-		return geocode(LATLON_REQUEST, latlon.getLatitude() + "," + latlon.getLongitude(), proxy);
+	public static final GeocoderResponse geocode(GeoPosition latlon) {
+		return geocode(LATLON_REQUEST, latlon.getLatitude() + "," + latlon.getLongitude());
 	}
 	
-	public static final GeocoderResponse geocode(String requestType, String requestString, HttpProxy proxy) {
+	public static final GeocoderResponse geocode(String requestType, String requestString) {
 		GeocoderResponse geocodingResult = new GeocoderResponse(ResponseType.ADDRESS);
 		
 		// get language from GUI settings
@@ -47,24 +44,7 @@ public class Geocoder {
 		
 		try {
 			URL url = new URL(GEOCODER_REQUEST_PREFIX_FOR_XML + "?" + requestType + "=" + URLEncoder.encode(requestString, "UTF-8") + "&sensor=false" + language);
-			HttpURLConnection conn;
-			Document response = null;
-			
-			if (proxy.isSetUseProxy() && proxy.hasValidProxySettings()) {
-				conn = (HttpURLConnection)url.openConnection(proxy.getProxy());
-				if (proxy.hasUserCredentials())
-					conn.setRequestProperty("Proxy-Authorization", "Basic " + proxy.getBase64EncodedCredentials());
-			} else
-				conn = (HttpURLConnection)url.openConnection();
-			
-			try {
-				conn.connect();
-				InputSource is = new InputSource(conn.getInputStream());
-				response = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
-			} finally {
-				conn.disconnect();
-			}
-
+			Document response = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(url.openStream());
 			XPath xpath = XPathFactory.newInstance().newXPath();
 
 			// check the response status

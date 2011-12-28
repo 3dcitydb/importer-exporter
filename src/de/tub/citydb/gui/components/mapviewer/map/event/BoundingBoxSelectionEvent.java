@@ -4,11 +4,11 @@ import org.jdesktop.swingx.mapviewer.GeoPosition;
 
 import de.tub.citydb.api.event.Event;
 
-public class MapBoundsSelection extends Event {
+public class BoundingBoxSelectionEvent extends Event {
 	private final GeoPosition[] boundingBox;
 	
-	public MapBoundsSelection(GeoPosition[] boundingBox, Object source) {
-		super(MapEvents.MAP_BOUNDS, source);
+	public BoundingBoxSelectionEvent(GeoPosition[] boundingBox, Object source) {
+		super(MapEvents.BOUNDING_BOX_SELECTION, source);
 		this.boundingBox = boundingBox;
 	}
 

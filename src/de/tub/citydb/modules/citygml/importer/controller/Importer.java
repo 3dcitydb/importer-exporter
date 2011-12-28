@@ -67,6 +67,8 @@ import de.tub.citydb.config.project.importer.ImportGmlId;
 import de.tub.citydb.config.project.importer.Index;
 import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.io.DirectoryScanner;
+import de.tub.citydb.io.DirectoryScanner.CityGMLFilenameFilter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
@@ -97,8 +99,6 @@ import de.tub.citydb.util.database.IndexStatusInfo;
 import de.tub.citydb.util.database.IndexStatusInfo.IndexInfoObject;
 import de.tub.citydb.util.database.IndexStatusInfo.IndexStatus;
 import de.tub.citydb.util.database.IndexStatusInfo.IndexType;
-import de.tub.citydb.util.io.DirectoryScanner;
-import de.tub.citydb.util.io.DirectoryScanner.CityGMLFilenameFilter;
 
 public class Importer implements EventHandler {
 	private final Logger LOG = Logger.getInstance();

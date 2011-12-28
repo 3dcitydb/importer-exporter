@@ -3,6 +3,7 @@ package de.tub.citydb.api.registry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.tub.citydb.api.controller.DatabaseController;
+import de.tub.citydb.api.controller.IOController;
 import de.tub.citydb.api.controller.LogController;
 import de.tub.citydb.api.controller.PluginConfigController;
 import de.tub.citydb.api.controller.ViewController;
@@ -17,6 +18,7 @@ public class ObjectRegistry {
 	private DatabaseController databaseController;
 	private LogController logController;
 	private PluginConfigController pluginConfigController;
+	private IOController ioController;
 
 	private ObjectRegistry() {
 		// just to thwart instantiation
@@ -94,6 +96,17 @@ public class ObjectRegistry {
 			throw new IllegalArgumentException("Plugin config controller is already registered with the object registry.");
 
 		this.pluginConfigController = pluginConfigController;
+	}
+
+	public IOController getIOController() {
+		return ioController;
+	}
+
+	public void setIOController(IOController ioController) {
+		if (this.ioController != null)
+			throw new IllegalArgumentException("I/O controller is already registered with the object registry.");
+
+		this.ioController = ioController;
 	}
 
 }

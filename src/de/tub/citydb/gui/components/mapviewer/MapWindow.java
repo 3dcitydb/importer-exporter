@@ -48,7 +48,6 @@ import javax.swing.text.html.HTMLDocument;
 
 import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
-import org.jdesktop.swingx.mapviewer.HttpProxySettings;
 
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.Event;
@@ -72,8 +71,8 @@ import de.tub.citydb.gui.components.mapviewer.geocoder.StatusCode;
 import de.tub.citydb.gui.components.mapviewer.map.DefaultWaypoint;
 import de.tub.citydb.gui.components.mapviewer.map.DefaultWaypoint.WaypointType;
 import de.tub.citydb.gui.components.mapviewer.map.Map;
-import de.tub.citydb.gui.components.mapviewer.map.event.BoundingBoxSelection;
-import de.tub.citydb.gui.components.mapviewer.map.event.MapBoundsSelection;
+import de.tub.citydb.gui.components.mapviewer.map.event.BoundingBoxSelectionEvent;
+import de.tub.citydb.gui.components.mapviewer.map.event.MapBoundsSelectionEvent;
 import de.tub.citydb.gui.components.mapviewer.map.event.MapEvents;
 import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent;
 import de.tub.citydb.gui.components.mapviewer.map.event.ReverseGeocoderEvent.ReverseGeocoderStatus;
@@ -152,7 +151,6 @@ public class MapWindow extends JDialog implements EventHandler {
 		if (instance == null)
 			instance = new MapWindow(config);
 
-		instance.updateHttpProxySettings();
 		instance.applyButton.setVisible(false);
 		instance.setSizeOnScreen();
 
@@ -666,7 +664,7 @@ public class MapWindow extends JDialog implements EventHandler {
 			protected GeocoderResponse doInBackground() throws Exception {
 				GeocoderResponse response = Geocoder.parseLatLon(searchString);
 				if (response == null)
-					response = Geocoder.geocode(searchString, config.getProject().getGlobal().getHttpProxy());
+					response = Geocoder.geocode(searchString);
 
 				return response;
 			}
@@ -760,18 +758,6 @@ public class MapWindow extends JDialog implements EventHandler {
 		setSize(new Dimension(width, height));
 	}
 
-	private void updateHttpProxySettings() {
-		HttpProxySettings proxy = new HttpProxySettings();
-
-		if (config.getProject().getGlobal().getHttpProxy().isSetUseProxy()) {
-			proxy.setProxy(config.getProject().getGlobal().getHttpProxy().getProxy());
-			proxy.setCredentials(config.getProject().getGlobal().getHttpProxy().getBase64EncodedCredentials());
-		}
-
-		map.getMapKit().getMainMap().getTileFactory().getInfo().setHttpProxySettings(proxy);
-		map.getMapKit().getMiniMap().getTileFactory().getInfo().setHttpProxySettings(proxy);
-	}
-
 	private void doTranslation() {
 		setTitle(Internal.I18N.getString("map.window.title"));
 		applyButton.setText(Internal.I18N.getString("common.button.apply"));
@@ -801,7 +787,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		}
 
 		else if (event.getEventType() == MapEvents.BOUNDING_BOX_SELECTION) {
-			BoundingBoxSelection e = (BoundingBoxSelection)event;
+			BoundingBoxSelectionEvent e = (BoundingBoxSelectionEvent)event;
 			final GeoPosition[] bbox = e.getBoundingBox();
 
 			SwingUtilities.invokeLater(new Runnable() {
@@ -815,7 +801,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		}
 
 		else if (event.getEventType() == MapEvents.MAP_BOUNDS) {
-			MapBoundsSelection e = (MapBoundsSelection)event;
+			MapBoundsSelectionEvent e = (MapBoundsSelectionEvent)event;
 			final GeoPosition[] bbox = e.getBoundingBox();
 
 			SwingUtilities.invokeLater(new Runnable() {

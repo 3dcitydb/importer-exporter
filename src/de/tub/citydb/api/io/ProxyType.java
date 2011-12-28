@@ -27,47 +27,45 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.global;
+package de.tub.citydb.api.io;
 
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="GlobalType", propOrder={
-		"logging",
-		"language",
-		"proxies"
-		})
-public class Global {
-	private Logging logging;
-	private LanguageType language = LanguageType.fromValue(System.getProperty("user.language"));
-	private Proxies proxies;
+@XmlType(name="ProxyType")
+@XmlEnum
+public enum ProxyType {
+	@XmlEnumValue("http")
+	HTTP("HTTP", "http"),
+	@XmlEnumValue("https")
+	HTTPS("HTTPS", "https"),
+	@XmlEnumValue("socks")
+	SOCKS("SOCKS", "socket", "socks");
 
-	public Global() {
-		logging = new Logging();
-		proxies = new Proxies();
-	}
-	
-	public Logging getLogging() {
-		return logging;
-	}
+	private final String value;
+	private final String[] protocols;
 
-	public void setLogging(Logging logging) {
-		if (logging != null)
-			this.logging = logging;
+	ProxyType(String value, String... protocol) {
+		this.value = value;
+		this.protocols = protocol;
 	}
 
-	public LanguageType getLanguage() {
-		return language;
+	public static ProxyType fromProtocol(String protocol) {
+		if (protocol != null) {
+			String p = protocol.toLowerCase().trim();
+			for (ProxyType type: ProxyType.values()) {
+				for (String tmp : type.protocols) {
+					if (tmp.equals(p))
+						return type;
+				}
+			}
+		}
+
+		return null;
 	}
 
-	public void setLanguage(LanguageType language) {
-		this.language = language;
-	}
-
-	public Proxies getProxies() {
-		return proxies;
-	}
-
-	public void setProxies(Proxies proxies) {
-		this.proxies = proxies;
+	public String toString() {
+		return value;
 	}
 }

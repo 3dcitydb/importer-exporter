@@ -25,7 +25,7 @@ public class PluginConfigListAdapter extends XmlAdapter<PluginConfigList, HashMa
 
 	@Override
 	public PluginConfigList marshal(HashMap<Class<? extends PluginConfig>, PluginConfig> v) throws Exception {
-		PluginConfigList map = new PluginConfigList();
+		PluginConfigList list = new PluginConfigList();
 
 		if (v != null) {
 			Iterator<Entry<Class<? extends PluginConfig>, PluginConfig>> iter = v.entrySet().iterator();
@@ -33,11 +33,11 @@ public class PluginConfigListAdapter extends XmlAdapter<PluginConfigList, HashMa
 				Entry<Class<? extends PluginConfig>, PluginConfig> entry = iter.next();
 				PluginConfigItem item = new PluginConfigItem();
 				item.setConfig(entry.getValue());
-				map.addItem(item);
+				list.addItem(item);
 			}
 		}
 
-		return map;
+		return list;
 	}
 
 }
