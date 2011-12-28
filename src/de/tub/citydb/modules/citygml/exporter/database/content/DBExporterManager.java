@@ -61,6 +61,9 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
@@ -72,6 +75,7 @@ public class DBExporterManager {
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
+	private final CacheManager cacheManager;
 	private final ExportFilter exportFilter;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -86,6 +90,7 @@ public class DBExporterManager {
 			WorkerPool<SAXEventBuffer> ioWriterPool,
 			WorkerPool<DBXlink> xlinkExporterPool,
 			DBGmlIdLookupServerManager lookupServerManager,
+			CacheManager cacheManager,
 			ExportFilter exportFilter,
 			Config config,
 			EventDispatcher eventDispatcher) {
@@ -94,6 +99,7 @@ public class DBExporterManager {
 		this.ioWriterPool = ioWriterPool;
 		this.xlinkExporterPool = xlinkExporterPool;
 		this.lookupServerManager = lookupServerManager;
+		this.cacheManager = cacheManager;
 		this.exportFilter = exportFilter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -109,11 +115,15 @@ public class DBExporterManager {
 
 	public DBExporter getDBExporter(DBExporterEnum dbExporterType) throws SQLException {
 		DBExporter dbExporter = dbExporterMap.get(dbExporterType);
+		TemporaryCacheTable globalAppTempTable = null;
 
 		if (dbExporter == null) {
 			switch (dbExporterType) {
 			case SURFACE_GEOMETRY:
-				dbExporter = new DBSurfaceGeometry(connection, config, this);
+				if (config.getInternal().isExportGlobalAppearances()) 
+					globalAppTempTable = cacheManager.createTemporaryCacheTableWithIndexes(CacheTableModelEnum.GLOBAL_APPEARANCE);
+
+				dbExporter = new DBSurfaceGeometry(connection, globalAppTempTable, config, this);
 				break;
 			case IMPLICIT_GEOMETRY:
 				dbExporter = new DBImplicitGeometry(connection, this);
@@ -159,6 +169,11 @@ public class DBExporterManager {
 				break;
 			case APPEARANCE:
 				dbExporter = new DBAppearance(connection, config, this);
+				break;
+			case GLOBAL_APPEARANCE:
+				globalAppTempTable = (TemporaryCacheTable)cacheManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+				if (globalAppTempTable != null)
+					dbExporter = new DBGlobalAppearance(globalAppTempTable, config, this);
 				break;
 			case TEXTUREPARAM:
 				dbExporter = new DBTextureParam(connection);
@@ -278,7 +293,7 @@ public class DBExporterManager {
 				JAXBElement<?> jaxbElement = jaxbMarshaller.marshalJAXBElement(member);
 				if (jaxbElement != null)
 					marshaller.marshal(jaxbElement, buffer);
-				
+
 				if (!buffer.isEmpty())
 					ioWriterPool.addWork(buffer);
 			} catch (JAXBException e) {

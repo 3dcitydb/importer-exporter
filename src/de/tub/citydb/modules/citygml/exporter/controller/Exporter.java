@@ -150,8 +150,8 @@ public class Exporter implements EventHandler {
 
 		// calc queueSize
 		// how to properly calculate?
-		int dbQueueSize = maxThreads * 20;
-		int writerQueueSize = maxThreads * 100;
+		//int dbQueueSize = maxThreads * 20;
+		//int writerQueueSize = maxThreads * 100;
 
 		// gml:id lookup cache update
 		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdLookupServerBatchValue();		
@@ -248,15 +248,16 @@ public class Exporter implements EventHandler {
 			LOG.error("Database error while querying index status: " + e.getMessage());
 			return false;
 		}
-		
+
 		// check whether database contains global appearances and set internal flag
 		try {
-			internalConfig.setExportGlobalAppearances(DBUtil.getNumGlobalAppearances() > 0);
+			internalConfig.setExportGlobalAppearances(config.getProject().getExporter().getAppearances().isSetExportAppearance() && 
+					DBUtil.getNumGlobalAppearances() > 0);
 		} catch (SQLException e) {
 			LOG.error("Database error while querying the number of global appearances: " + e.getMessage());
 			return false;
 		}
-		
+
 		// getting export filter
 		exportFilter = new ExportFilter(config);
 
@@ -440,6 +441,7 @@ public class Exporter implements EventHandler {
 									ioWriterPool,
 									xlinkExporterPool,
 									lookupServerManager,
+									cacheManager,
 									exportFilter,
 									config,
 									eventDispatcher),

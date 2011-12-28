@@ -42,7 +42,8 @@ public enum CacheTableModelEnum {
 	TEXTURE_FILE("TF"),
 	LIBRARY_OBJECT("LO"),
 	DEPRECATED_MATERIAL("DP"),
-	GROUP_TO_CITYOBJECT("GTC");
+	GROUP_TO_CITYOBJECT("GTC"),
+	GLOBAL_APPEARANCE("GA");
 
 	private final String value;
 

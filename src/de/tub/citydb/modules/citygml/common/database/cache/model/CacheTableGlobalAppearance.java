@@ -27,29 +27,50 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.modules.citygml.exporter.database.content;
+package de.tub.citydb.modules.citygml.common.database.cache.model;
 
-public enum DBExporterEnum {
-	SURFACE_GEOMETRY,
-	IMPLICIT_GEOMETRY,
-	CITYOBJECT,
-	BUILDING,
-	ROOM,
-	BUILDING_FURNITURE,
-	BUILDING_INSTALLATION,
-	THEMATIC_SURFACE,
-	CITY_FURNITURE,
-	LAND_USE,
-	WATERBODY,
-	PLANT_COVER,
-	TRANSPORTATION_COMPLEX,
-	SOLITARY_VEGETAT_OBJECT,
-	RELIEF_FEATURE,
-	APPEARANCE,
-	GLOBAL_APPEARANCE,
-	TEXTUREPARAM,
-	GENERIC_CITYOBJECT,
-	CITYOBJECTGROUP,
-	GENERALIZATION,
-	SDO_GEOMETRY,
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+
+public class CacheTableGlobalAppearance extends CacheTableModel {
+	private static CacheTableGlobalAppearance instance;
+
+	private CacheTableGlobalAppearance() {
+	}
+
+	public synchronized static CacheTableGlobalAppearance getInstance() {
+		if (instance == null)
+			instance = new CacheTableGlobalAppearance();
+
+		return instance;
+	}
+
+	@Override
+	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
+		Statement stmt = null;
+
+		try {
+			stmt = conn.createStatement();
+
+			stmt.executeUpdate("create unique index idx_" + tableName + " on " + tableName + " (ID) " + properties);
+		} finally {
+			if (stmt != null) {
+				stmt.close();
+				stmt = null;
+			}
+		}
+	}
+
+	@Override
+	public CacheTableModelEnum getType() {
+		return CacheTableModelEnum.GLOBAL_APPEARANCE;
+	}
+
+	@Override
+	protected String getColumns() {
+		return "(GMLID VARCHAR2(256), " +
+		"ID NUMBER)";
+	}
 }

@@ -62,12 +62,14 @@ public class MapPopupMenu extends JPopupMenu {
 
 		zoomIn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				map.setCenterPosition(map.convertPointToGeoPosition(mousePosition));
 				map.setZoom(map.getZoom() - 1);
 			}
 		});
 
 		zoomOut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				map.setCenterPosition(map.convertPointToGeoPosition(mousePosition));
 				map.setZoom(map.getZoom() + 1);
 			}
 		});

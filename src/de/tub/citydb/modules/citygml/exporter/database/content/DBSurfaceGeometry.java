@@ -80,16 +80,20 @@ import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
 
 public class DBSurfaceGeometry implements DBExporter {
 	private final Logger LOG = Logger.getInstance();
 
+	private final Connection connection;
+	private final TemporaryCacheTable tempTable;
 	private final DBExporterManager dbExporterManager;
 	private final Config config;
-	private final Connection connection;
 
 	private PreparedStatement psSurfaceGeometry;
+	private PreparedStatement psImportGmlId;
 
 	private boolean exportAppearance;
 	private boolean useXLink;
@@ -97,8 +101,12 @@ public class DBSurfaceGeometry implements DBExporter {
 	private boolean transformCoords;
 	private String gmlIdPrefix;
 
-	public DBSurfaceGeometry(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	private int commitAfter = 1000;
+	private int batchCounter;
+
+	public DBSurfaceGeometry(Connection connection, TemporaryCacheTable tempTable, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
+		this.tempTable = tempTable;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
 
@@ -106,9 +114,20 @@ public class DBSurfaceGeometry implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		exportAppearance = 
-			config.getProject().getExporter().getAppearances().isSetExportAppearance() && 
-			config.getInternal().isExportGlobalAppearances();
+		exportAppearance = config.getInternal().isExportGlobalAppearances();
+
+		if (exportAppearance) {
+			Integer commitAfterProp = config.getProject().getDatabase().getUpdateBatching().getTempBatchValue();
+			if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= Internal.ORACLE_MAX_BATCH_SIZE)
+				commitAfter = commitAfterProp;
+
+			psImportGmlId = tempTable.getConnection().prepareStatement(
+					"insert into " + tempTable.getTableName() + 
+					" select ?, ? from dual " +
+					" where exists (select SURFACE_GEOMETRY_ID from TEXTUREPARAM where SURFACE_GEOMETRY_ID = ?)"
+			);
+		}
+
 		useXLink = config.getProject().getExporter().getXlink().getGeometry().isModeXLink();
 		if (!useXLink) {
 			appendOldGmlId = config.getProject().getExporter().getXlink().getGeometry().isSetAppendId();
@@ -182,7 +201,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		}
 	}
 
-	private DBSurfaceGeometryResult rebuildGeometry(GeometryNode geomNode, boolean isSetOrientableSurface) {
+	private DBSurfaceGeometryResult rebuildGeometry(GeometryNode geomNode, boolean isSetOrientableSurface) throws SQLException {
 		// try and determine the geometry type
 		GMLClass surfaceGeometryType = null;
 		if (geomNode.geometry != null) {
@@ -252,8 +271,18 @@ public class DBSurfaceGeometry implements DBExporter {
 					}
 
 				}
-			} else if (exportAppearance)
-				dbExporterManager.putGmlId(geomNode.gmlId, geomNode.id, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+			} else if (exportAppearance) {
+				psImportGmlId.setString(1, geomNode.gmlId);
+				psImportGmlId.setLong(2, geomNode.id);
+				psImportGmlId.setLong(3, geomNode.id);
+				psImportGmlId.addBatch();
+				batchCounter++;
+
+				if (batchCounter == commitAfter || batchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+					psImportGmlId.executeBatch();
+					batchCounter = 0;
+				}
+			}
 		}
 
 		// check whether we have to initialize an orientableSurface
@@ -630,6 +659,10 @@ public class DBSurfaceGeometry implements DBExporter {
 	@Override
 	public void close() throws SQLException {
 		psSurfaceGeometry.close();
+		if (psImportGmlId != null) {
+			psImportGmlId.executeBatch();
+			psImportGmlId.close();
+		}
 	}
 
 	@Override

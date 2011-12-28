@@ -45,15 +45,16 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
-import de.tub.citydb.modules.citygml.exporter.database.content.DBAppearance;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBBuilding;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBCityFurniture;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBCityObjectGroup;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBExporterEnum;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBExporterManager;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBGenericCityObject;
+import de.tub.citydb.modules.citygml.exporter.database.content.DBGlobalAppearance;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBLandUse;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBPlantCover;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBReliefFeature;
@@ -83,6 +84,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
+	private final CacheManager cacheManager;
 	private final ExportFilter exportFilter;
 	private final Config config;
 	private Connection connection;	
@@ -95,6 +97,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 			WorkerPool<SAXEventBuffer> ioWriterPool,
 			WorkerPool<DBXlink> xlinkExporterPool,
 			DBGmlIdLookupServerManager lookupServerManager,
+			CacheManager cacheManager,
 			ExportFilter exportFilter,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
@@ -103,6 +106,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 		this.ioWriterPool = ioWriterPool;
 		this.xlinkExporterPool = xlinkExporterPool;
 		this.lookupServerManager = lookupServerManager;
+		this.cacheManager = cacheManager;
 		this.exportFilter = exportFilter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -125,6 +129,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 				ioWriterPool,
 				xlinkExporterPool,
 				lookupServerManager,
+				cacheManager,
 				exportFilter,
 				config,
 				eventDispatcher);
@@ -268,7 +273,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 					break;
 				case APPEARANCE:
 					// we are working on global appearances here
-					DBAppearance dbAppearance = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.APPEARANCE);
+					DBGlobalAppearance dbAppearance = (DBGlobalAppearance)dbExporterManager.getDBExporter(DBExporterEnum.GLOBAL_APPEARANCE);
 					if (dbAppearance != null)
 						success = dbAppearance.read(work);
 					break;

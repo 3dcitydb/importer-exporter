@@ -643,6 +643,14 @@ public class DBSplitter {
 			rs = stmt.executeQuery(query);
 
 			while (rs.next() && shouldRun) {
+				elementCounter++;
+
+				if (firstElement != null && elementCounter < firstElement)
+					continue;
+
+				if (lastElement != null && elementCounter > lastElement)
+					break;
+				
 				long id = rs.getLong(1);
 
 				// set initial context

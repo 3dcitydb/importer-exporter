@@ -114,7 +114,6 @@ public class DBXlinkResolverManager {
 				HeapCacheTable texAssHeapView = dbTempTableManager.getDerivedHeapCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION);
 				if (texAssHeapView != null)
 					dbResolver = new XlinkTextureAssociation(batchConn, texAssHeapView, this);
-
 				break;
 			case TEXTURE_IMAGE:
 				dbResolver = new XlinkTextureImage(commitConn, config, this);

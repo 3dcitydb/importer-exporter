@@ -519,11 +519,16 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		applyButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				double xmin = ((Number)minX.getValue()).doubleValue();
+				double xmax = ((Number)maxX.getValue()).doubleValue();
+				double ymin = ((Number)minY.getValue()).doubleValue();
+				double ymax = ((Number)maxY.getValue()).doubleValue();
+							
 				final BoundingBox bbox = new BoundingBox();
-				bbox.getLowerLeftCorner().setX(((Number)minX.getValue()).doubleValue());
-				bbox.getLowerLeftCorner().setY(((Number)minY.getValue()).doubleValue());
-				bbox.getUpperRightCorner().setX(((Number)maxX.getValue()).doubleValue());
-				bbox.getUpperRightCorner().setY(((Number)maxY.getValue()).doubleValue());		
+				bbox.getLowerLeftCorner().setX(Math.min(xmin, xmax));
+				bbox.getLowerLeftCorner().setY(Math.min(ymin, ymax));
+				bbox.getUpperRightCorner().setX(Math.max(xmin, xmax));
+				bbox.getUpperRightCorner().setY(Math.max(ymin, ymax));		
 
 				DatabaseSrs wgs84 = null;
 				for (DatabaseSrs srs : config.getProject().getDatabase().getReferenceSystems()) {

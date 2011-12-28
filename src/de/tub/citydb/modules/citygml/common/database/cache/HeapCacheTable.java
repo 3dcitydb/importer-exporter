@@ -38,6 +38,7 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableBasic;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableDeprecatedMaterial;
+import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGlobalAppearance;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGmlId;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGroupToCityObject;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableLibraryObject;
@@ -94,6 +95,9 @@ public class HeapCacheTable implements CacheTable {
 			break;
 		case TEXTUREPARAM:
 			this.model = CacheTableTextureParam.getInstance();
+			break;
+		case GLOBAL_APPEARANCE:
+			this.model = CacheTableGlobalAppearance.getInstance();
 			break;
 		default:
 			throw new IllegalArgumentException("Unsupported cache table type " + model);
