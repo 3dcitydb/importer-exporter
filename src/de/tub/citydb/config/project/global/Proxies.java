@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -19,6 +20,7 @@ public class Proxies {
 	@XmlAttribute
 	private ProxyType singleProxy;
 	@XmlJavaTypeAdapter(de.tub.citydb.config.project.global.ProxyListAdapter.class)
+	@XmlElement(name="proxyList")
 	private HashMap<ProxyType, ProxyConfigImpl> proxies;
 
 	public Proxies() {

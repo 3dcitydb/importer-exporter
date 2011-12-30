@@ -47,7 +47,7 @@ public class ProjectSchemaWriter extends SchemaOutputResolver {
 	public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
 		File file;
 
-		if (namespaceUri.equals("http://www.gis.tu-berlin.de/3dcitydb-impexp/config/core"))
+		if (namespaceUri.equals("http://www.gis.tu-berlin.de/3dcitydb-impexp/config"))
 			file = new File(path + File.separator + "config.xsd");
 		else
 			file = new File(path + File.separator + "plugin_" + suggestedFileName);

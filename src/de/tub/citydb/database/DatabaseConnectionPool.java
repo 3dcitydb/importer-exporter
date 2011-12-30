@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
@@ -167,11 +168,11 @@ public class DatabaseConnectionPool {
 		activeConnection = conn;
 		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(false, true, this));
 	}
-
-	public Connection getConnection() throws SQLException {
+	
+	public Connection getConnectionWithTimeout() throws SQLException {
 		if (poolDataSource == null)
 			throw new SQLException("Database is not connected.");
-
+		
 		ExecutorService service = Executors.newFixedThreadPool(1, new ThreadFactory() {
 			public Thread newThread(Runnable r) {
 				Thread t = new Thread(r);
@@ -181,7 +182,7 @@ public class DatabaseConnectionPool {
 		});
 
 		FutureTask<Connection> connectTask = new FutureTask<Connection>(new Callable<Connection>() {
-			public Connection call() throws Exception {
+			public Connection call() throws SQLException {
 				return poolDataSource.getConnection();
 			}
 		});
@@ -195,10 +196,21 @@ public class DatabaseConnectionPool {
 		} catch (Exception e) {
 			service.shutdownNow();
 			forceDisconnect();
-			throw new SQLException("A connection to the database could not be established.\nThe database did not respond for " + LOGIN_TIMEOUT + " seconds.");
+			
+			if (e instanceof ExecutionException)
+				throw (SQLException)e.getCause();
+			else 
+				throw new SQLException("A connection to the database could not be established.\nThe database did not respond for " + LOGIN_TIMEOUT + " seconds.");
 		}
 		
 		return connection;
+	}
+	
+	public Connection getConnection() throws SQLException {
+		if (poolDataSource == null)
+			throw new SQLException("Database is not connected.");
+		
+		return poolDataSource.getConnection();
 	}
 
 	public UniversalConnectionPoolLifeCycleState getLifeCyleState() {

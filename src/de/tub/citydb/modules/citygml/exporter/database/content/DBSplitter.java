@@ -618,19 +618,6 @@ public class DBSplitter {
 		if (!shouldRun)
 			return;
 
-		// there are two possible approaches for global appearances.
-		// 1. (followed here)
-		// iterate over all appearances that are not bound to a specific cityobject. if
-		// a surface data member of that appearance is pointing to a geometry object
-		// held in the gmlIdCache, then the appearance has to be written. this approach
-		// might be slow if we have a large number of global appearances
-		// 2.
-		// drain all geometry entries held in the gmlIdCache to the database. on the
-		// database level make a big join with the temporary cache table
-		// (using dynamic_sampling for the temp table) and all relevant appearance tables.
-		// the result is a list of those appearances that have to be written. this might
-		// be slow if we have a big cache size but only a small number of global appearances
-
 		LOG.info("Processing global appearance features.");
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.globalApp.msg"), this));
 

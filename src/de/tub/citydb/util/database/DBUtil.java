@@ -74,7 +74,7 @@ public class DBUtil {
 		ResultSet rs = null;
 
 		try {
-			conn = dbConnectionPool.getConnection();
+			conn = dbConnectionPool.getConnectionWithTimeout();
 
 			// get vendor specific meta data
 			DatabaseMetaData dbMetaData = conn.getMetaData();			
