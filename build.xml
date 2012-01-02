@@ -7,12 +7,6 @@
 	<!-- internal properties -->
 	<property name="dir.build.base" location="${dir.build}/base" />
 	<property name="dir.build.plugin.api" location="${dir.build}/plugin-api" />
-	<condition property="isMacOSX">
-		<and>
-	  		<os family="mac" />
-			<os family="unix" />
-		</and>
-	</condition>
 	
 	<!-- classpath -->
 	<path id="classpath">
@@ -159,6 +153,9 @@
 		<replace file="${dir.dest}/3DCityDB-Importer-Exporter.bat" token="!impexp.name!" value="${impexp.name}" />
 		<replace file="${dir.dest}/3DCityDB-Importer-Exporter.sh" token="!impexp.jar.filename!" value="${impexp.jar.filename}" />
 		<replace file="${dir.dest}/3DCityDB-Importer-Exporter.sh" token="!impexp.name!" value="${impexp.name}" />
+		<replace file="${dir.dest}/3DCityDB-Importer-Exporter-MacOSX.sh" token="!impexp.jar.filename!" value="${impexp.jar.filename}" />
+		<replace file="${dir.dest}/3DCityDB-Importer-Exporter-MacOSX.sh" token="!impexp.name!" value="${impexp.name}" />
+		<replace file="${dir.dest}/3DCityDB-Importer-Exporter-MacOSX.sh" token="!mac.os.x!" value="-Xdock:name=&quot;${impexp.name}&quot;" />
 		<replace file="${dir.dest.license}/LICENSE.txt" token="!software.name!" value="${impexp.name}" />
 		<replace file="${dir.dest}/README.txt" token="!impexp.name!" value="${impexp.name}" />
 		<replace file="${dir.dest}/README.txt" token="!impexp.jar.filename!" value="${impexp.jar.filename}" />
@@ -169,8 +166,6 @@
 		<replace file="${dir.dest}/README.txt" token="!vendor.copyright.year!" value="${vendor.copyright.year}" />
 		<replace file="${dir.dest}/README.txt" token="!vendor.homepage!" value="${vendor.homepage}" />
 		<replace file="${dir.dest}/README.txt" token="!vendor.country!" value="${vendor.country}" />
-		<antcall target="script_macos_x"/>
-		<replace file="${dir.dest}/3DCityDB-Importer-Exporter.sh" token="!mac.os.x!" value="" />
 
 		<!-- set package variables -->
 		<pathconvert property="manifest.classpath" dirsep="/" pathsep=" " refid="classpath">
@@ -239,9 +234,5 @@
 
 	<target name="run" depends="dist" description="run importer/exporter application">
 		<java jar="${dir.dest.lib}/${impexp.jar.filename}" fork="true" dir="${dir.dest}" />
-	</target>
-	
-	<target name="script_macos_x" if="isMacOSX">
-		<replace file="${dir.dest}/3DCityDB-Importer-Exporter.sh" token="!mac.os.x!" value="-Xdock:name=&quot;${impexp.name}&quot;" />
 	</target>
 </project>

@@ -80,7 +80,7 @@
             <fileset dir="!dir.dest!" targetdir="$INSTALL_PATH" excludes="!dir.dest.plugin.api.relative!/ !dir.dest.plugins.relative!/ *.bat *.sh" override="true"/>
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH" os="windows" override="true"/>
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.sh" targetdir="$INSTALL_PATH" os="unix" override="true"/>
-            <file src="!dir.dest!/3DCityDB-Importer-Exporter.sh" targetdir="$INSTALL_PATH" os="mac" override="true"/>
+            <singlefile src="!dir.dest!/3DCityDB-Importer-Exporter-MacOSX.sh" target="$INSTALL_PATH/3DCityDB-Importer-Exporter.sh" os="mac" override="true"/>
             <file src="!dir.resources.izpack.config!/img/impexp.ico" targetdir="$INSTALL_PATH" os="windows" override="true"/>
             <file src="!dir.resources.izpack.config!/img/uninstaller.ico" targetdir="$INSTALL_PATH/uninstaller" os="windows" override="true"/>
             <file src="!dir.resources.izpack.config!/img/impexp.png" targetdir="$INSTALL_PATH" os="unix" override="true"/>
