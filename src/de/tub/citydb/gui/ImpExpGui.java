@@ -108,6 +108,7 @@ import de.tub.citydb.modules.kml.KMLExportPlugin;
 import de.tub.citydb.modules.preferences.PreferencesPlugin;
 import de.tub.citydb.plugin.PluginService;
 import de.tub.citydb.util.gui.GuiUtil;
+import de.tub.citydb.util.gui.OSXAdapter;
 
 @SuppressWarnings("serial")
 public final class ImpExpGui extends JFrame implements ViewController, EventHandler {
@@ -256,6 +257,19 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				shutdown();
 			}
 		});
+		
+		// settings specific to Mac OS X
+		if (OSXAdapter.IS_MAC_OS_X) {
+			try {
+				OSXAdapter.setQuitHandler(this, getClass().getDeclaredMethod("shutdown", (Class[])null));
+				OSXAdapter.setAboutHandler(menuBar, menuBar.getClass().getDeclaredMethod("printInfo", (Class[])null));
+				OSXAdapter.setPreferencesHandler(this, getClass().getDeclaredMethod("showPreferences", (Class[])null));
+			} catch (SecurityException e) {
+				//
+			} catch (NoSuchMethodException e) {
+				//
+			}
+		}
 
 		//layout
 		setIconImage(Toolkit.getDefaultToolkit().getImage(ImpExpGui.class.getResource("/resources/img/common/logo_small.png")));
@@ -587,8 +601,13 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
 		}
 	}
+	
+	public void showPreferences() {
+		// preferences handler for Mac OS X
+		menu.setSelectedIndex(menu.indexOfComponent(preferencesPlugin.getView().getViewComponent()));
+	}
 
-	private void shutdown() {		
+	public void shutdown() {		
 		System.setOut(out);
 		System.setErr(err);
 		boolean success = true;

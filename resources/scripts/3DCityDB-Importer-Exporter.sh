@@ -21,4 +21,4 @@ fi
 # exec "$JAVA" -jar -Xms128m -Xmx768m lib/!impexp.jar.filename! "$@"
 
 # The following command executes the GUI version 
-exec "$JAVA" -jar -Xms128m -Xmx768m lib/!impexp.jar.filename!
+exec "$JAVA" -jar -Xms128m -Xmx768m !mac.os.x! lib/!impexp.jar.filename!

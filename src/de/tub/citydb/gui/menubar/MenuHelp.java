@@ -60,7 +60,7 @@ public class MenuHelp extends JMenu {
 		
 		info.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				printHelp();
+				printInfo();
 			}
 		});
 		
@@ -82,7 +82,7 @@ public class MenuHelp extends JMenu {
 		GuiUtil.setMnemonic(readMe, "menu.help.readMe.label", "menu.help.readMe.label.mnemonic");
 	}
 	
-	private void printHelp() {		
+	public void printInfo() {		
 		final InfoDialog infoDialog = new InfoDialog(config, topFrame);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {

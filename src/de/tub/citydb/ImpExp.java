@@ -30,6 +30,7 @@
 package de.tub.citydb;
 
 import java.awt.Color;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -82,6 +83,7 @@ import de.tub.citydb.modules.preferences.PreferencesPlugin;
 import de.tub.citydb.plugin.IllegalPluginEventChecker;
 import de.tub.citydb.plugin.PluginService;
 import de.tub.citydb.plugin.PluginServiceFactory;
+import de.tub.citydb.util.gui.OSXAdapter;
 
 public class ImpExp {
 
@@ -89,6 +91,11 @@ public class ImpExp {
 	static {
 		try {
 			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+			if (OSXAdapter.IS_MAC_OS_X) {
+				OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(ImpExp.class.getResource("/resources/img/common/logo_small.png")));
+				System.setProperty("apple.laf.useScreenMenuBar", "true");
+			}
+
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

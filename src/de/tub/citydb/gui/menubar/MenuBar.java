@@ -39,6 +39,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.plugin.PluginService;
 import de.tub.citydb.util.gui.GuiUtil;
+import de.tub.citydb.util.gui.OSXAdapter;
 
 @SuppressWarnings("serial")
 public class MenuBar extends JMenuBar {
@@ -68,7 +69,11 @@ public class MenuBar extends JMenuBar {
 		view = new MenuView(config, topFrame);
 		help = new MenuHelp(config, topFrame);
 
-		add(file);
+		// as long as the file menu only allows to close the application
+		// we do not need it on Mac OS X
+		if (!OSXAdapter.IS_MAC_OS_X)
+			add(file);
+		
 		add(project);
 
 		for (MenuExtension extension : pluginService.getExternalMenuExtensions()) {
@@ -103,7 +108,7 @@ public class MenuBar extends JMenuBar {
 		if (extensions != null) {
 			extensions.setText(Internal.I18N.getString("menu.extensions.label"));
 			GuiUtil.setMnemonic(extensions, "menu.extensions.label", "menu.extensions.label.mnemonic");
-			
+
 			int index = 0;
 			for (MenuExtension extension : pluginService.getExternalMenuExtensions())
 				((JMenu)extensions.getMenuComponent(index++)).setText(extension.getMenu().getLocalizedTitle());
@@ -113,6 +118,10 @@ public class MenuBar extends JMenuBar {
 		project.doTranslation();
 		view.doTranslation();
 		help.doTranslation();
+	}
+
+	public void printInfo() {
+		help.printInfo();
 	}
 
 }
