@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.locks.ReentrantLock;
 
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.registry.ObjectRegistry;
@@ -25,6 +26,7 @@ import de.tub.citydb.log.Logger;
 
 public class InternalProxySelector extends ProxySelector {
 	private static InternalProxySelector instance;
+	private final ReentrantLock mainLock = new ReentrantLock();
 
 	private final Logger LOG = Logger.getInstance();
 	private final ProxySelector parent;
@@ -71,15 +73,28 @@ public class InternalProxySelector extends ProxySelector {
 			throw new IllegalArgumentException("Arguments can't be null.");
 
 		ProxyConfigImpl proxy = config.getProject().getGlobal().getProxies().getProxyForProtocol(uri.getScheme());
-		
+
 		if (proxy != null) {
 			if (proxy.isCopy())
 				proxy = proxy.getCopiedFrom();
-			
+
 			InetSocketAddress proxyAddress = new InetSocketAddress(proxy.getHost(), proxy.getPort());
-			if (proxyAddress.equals(sa) && proxy.failed() == maxConnectAttempts) {
-				eventDispatcher.triggerEvent(new ProxyServerUnavailableEventImpl(proxy, this));
-				LOG.error("Failed to connect to " + proxy.getType().toString() + " proxy server in " + maxConnectAttempts + " attempts.");	
+			if (proxyAddress.equals(sa)) {
+				final ReentrantLock lock = this.mainLock;
+				lock.lock();
+
+				try {
+					int connectAttempts = proxy.failed();					
+					if (connectAttempts <= maxConnectAttempts)
+						LOG.warn("Could not connect to " + proxy.getType().toString() + " proxy server at " + proxy.getHost() + ":" + proxy.getPort() + ".");
+
+					if (connectAttempts == maxConnectAttempts) {
+						LOG.error("Failed " + maxConnectAttempts + " times to connect to " + proxy.getType().toString() + " proxy server.");
+						eventDispatcher.triggerEvent(new ProxyServerUnavailableEventImpl(proxy, this));
+					}
+				} finally {
+					lock.unlock();
+				}
 			}
 		} else
 			parent.connectFailed(uri, sa, ioe);
@@ -88,7 +103,7 @@ public class InternalProxySelector extends ProxySelector {
 	@SuppressWarnings("unchecked")
 	public void resetAuthenticationCache(ProxyConfigImpl proxy) {
 		// the following is a hack to overcome a bug in Oracle's Java 6
-		
+
 		try {
 			Class<?> containerClass = Class.forName("sun.net.www.protocol.http.AuthCacheValue");
 			Class<?> cacheClass = Class.forName("sun.net.www.protocol.http.AuthCacheImpl");
