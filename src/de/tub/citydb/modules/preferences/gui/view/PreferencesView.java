@@ -10,7 +10,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.plugin.PluginService;
 
-public class PreferencesView implements View {
+public class PreferencesView extends View {
 	private PreferencesPanel component;
 	
 	public PreferencesView(PluginService pluginService, Config config, ImpExpGui mainView) {

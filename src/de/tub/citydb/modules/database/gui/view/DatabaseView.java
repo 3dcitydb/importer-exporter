@@ -9,7 +9,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
 
-public class DatabaseView implements View {
+public class DatabaseView extends View {
 	private final DatabasePanel component;
 	
 	public DatabaseView(Config config, ImpExpGui mainView) {

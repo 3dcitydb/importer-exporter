@@ -25,7 +25,7 @@ import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.database.DBUtil;
 import de.tub.citydb.util.gui.GuiUtil;
 
-public class ReportOperation implements DatabaseOperationView {
+public class ReportOperation extends DatabaseOperationView {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final DatabaseOperationsPanel parent;

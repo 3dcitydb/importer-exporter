@@ -10,7 +10,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
 
-public class KMLExportView implements View {
+public class KMLExportView extends View {
 	private final KmlExportPanel component;
 	
 	public KMLExportView(JAXBContext jaxbKmlContext, JAXBContext jaxbColladaContext, Config config, ImpExpGui mainView) {

@@ -83,6 +83,8 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.event.global.GlobalEvents;
+import de.tub.citydb.api.event.global.ViewEvent;
+import de.tub.citydb.api.event.global.ViewEvent.ViewState;
 import de.tub.citydb.api.gui.ComponentFactory;
 import de.tub.citydb.api.plugin.Plugin;
 import de.tub.citydb.api.plugin.extension.view.View;
@@ -114,7 +116,7 @@ import de.tub.citydb.util.gui.OSXAdapter;
 public final class ImpExpGui extends JFrame implements ViewController, EventHandler {
 	private final Logger LOG = Logger.getInstance();
 	private final EventDispatcher eventDispatcher; 
-	
+
 	private Config config;
 	private JAXBContext jaxbProjectContext;
 	private JAXBContext jaxbGuiContext;
@@ -147,7 +149,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	public ImpExpGui(Config config) {
 		dbPool = DatabaseConnectionPool.getInstance();
 		this.config = config;
-		
+
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		eventDispatcher.addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
 
@@ -203,7 +205,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consoleWindow = new ConsoleWindow(console, config, this);
 
 		PopupMenuDecorator.getInstance().decorate(consoleText);
-		
+
 		statusText = new JLabel();
 		connectText = new JLabel();
 
@@ -244,9 +246,17 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 					return;
 
 				if (menu.getComponentAt(activePosition) == preferencesPlugin.getView().getViewComponent()) {
-					if (!preferencesPlugin.requestChange())
+					if (!preferencesPlugin.requestChange()) {
 						menu.setSelectedIndex(activePosition);
+						return;
+					}
 				}
+
+				// fire events for main views
+				View newView = views.get(menu.getSelectedIndex());
+				View oldView = views.get(activePosition);
+				newView.fireViewEvent(new ViewEvent(newView, ViewState.VIEW_ACTIVATED, this));
+				oldView.fireViewEvent(new ViewEvent(oldView, ViewState.VIEW_DEACTIVATED, this));
 
 				activePosition = menu.getSelectedIndex();
 			}
@@ -257,7 +267,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				shutdown();
 			}
 		});
-		
+
 		// settings specific to Mac OS X
 		if (OSXAdapter.IS_MAC_OS_X) {
 			try {
@@ -436,7 +446,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				menu.setTitleAt(index++, view.getLocalizedTitle());
 
 			menuBar.doTranslation();
-			
+
 			eventDispatcher.triggerSyncEvent(new SwitchLocaleEventImpl(locale, this));
 		} catch (MissingResourceException e) {
 			LOG.error("Missing resource: " + e.getKey());
@@ -554,7 +564,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	public void clearConsole() {
 		consoleText.setText("");
 	}
-	
+
 	@Override
 	public void setDefaultStatus() {
 		statusText.setText(Internal.I18N.getString("main.status.ready.label"));
@@ -591,7 +601,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			//
 		}
 	}
-	
+
 	private void setDatabaseStatus(boolean isConnected) {
 		if (!isConnected) {
 			setTitle(Internal.I18N.getString("main.window.title"));
@@ -601,7 +611,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
 		}
 	}
-	
+
 	public void showPreferences() {
 		// preferences handler for Mac OS X
 		menu.setSelectedIndex(menu.indexOfComponent(preferencesPlugin.getView().getViewComponent()));
@@ -634,7 +644,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				success = false;
 			}
 		}
-		
+
 		if (success)
 			LOG.info("Application successfully terminated");
 		else {

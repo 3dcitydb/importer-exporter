@@ -33,7 +33,7 @@ import de.tub.citydb.util.database.IndexStatusInfo.IndexStatus;
 import de.tub.citydb.util.database.IndexStatusInfo.IndexType;
 import de.tub.citydb.util.gui.GuiUtil;
 
-public class IndexOperation implements DatabaseOperationView {
+public class IndexOperation extends DatabaseOperationView {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final ViewController viewController;

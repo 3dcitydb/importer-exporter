@@ -8,7 +8,7 @@ import de.tub.citydb.api.plugin.extension.view.View;
 import de.tub.citydb.plugins.matching_merging.PluginImpl;
 import de.tub.citydb.plugins.matching_merging.util.Util;
 
-public class MatchingView implements View {
+public class MatchingView extends View {
 	private final MatchingPanel component;
 	
 	public MatchingView(PluginImpl plugin) {

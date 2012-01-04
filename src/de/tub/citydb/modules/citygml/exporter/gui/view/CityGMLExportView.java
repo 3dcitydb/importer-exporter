@@ -11,7 +11,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
 
-public class CityGMLExportView implements View {
+public class CityGMLExportView extends View {
 	private final ExportPanel component;
 	
 	public CityGMLExportView(JAXBBuilder jaxbBuilder, Config config, ImpExpGui mainView) {
