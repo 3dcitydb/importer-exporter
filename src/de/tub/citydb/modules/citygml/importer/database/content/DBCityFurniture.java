@@ -103,7 +103,7 @@ public class DBCityFurniture implements DBImporter {
 
 	private boolean insert(CityFurniture cityFurniture, long cityFurnitureId) throws SQLException {
 		// CityObject
-		long cityObjectId = cityObjectImporter.insert(cityFurniture, cityFurnitureId);
+		long cityObjectId = cityObjectImporter.insert(cityFurniture, cityFurnitureId, true);
 		if (cityObjectId == 0)
 			return false;
 

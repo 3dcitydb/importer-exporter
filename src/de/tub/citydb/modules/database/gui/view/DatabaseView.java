@@ -14,6 +14,7 @@ public class DatabaseView extends View {
 	
 	public DatabaseView(Config config, ImpExpGui mainView) {
 		component = new DatabasePanel(config, mainView);
+		addViewListener(component);
 	}
 	
 	@Override

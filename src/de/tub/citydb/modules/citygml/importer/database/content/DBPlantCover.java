@@ -84,7 +84,7 @@ public class DBPlantCover implements DBImporter {
 
 	private boolean insert(PlantCover plantCover, long plantCoverId) throws SQLException {
 		// CityObject
-		long cityObjectId = cityObjectImporter.insert(plantCover, plantCoverId);
+		long cityObjectId = cityObjectImporter.insert(plantCover, plantCoverId, true);
 		if (cityObjectId == 0)
 			return false;
 

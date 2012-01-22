@@ -102,7 +102,7 @@ public class DBWaterBody implements DBImporter {
 		String origGmlId = waterBody.getId();
 		
 		// CityObject
-		long cityObjectId = cityObjectImporter.insert(waterBody, waterBodyId);
+		long cityObjectId = cityObjectImporter.insert(waterBody, waterBodyId, true);
 		if (cityObjectId == 0)
 			return false;
 

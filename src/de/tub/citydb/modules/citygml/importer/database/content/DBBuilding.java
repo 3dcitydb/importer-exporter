@@ -126,7 +126,7 @@ public class DBBuilding implements DBImporter {
 		String origGmlId = building.getId();
 		
 		// CityObject
-		long cityObjectId = cityObjectImporter.insert(building, buildingId);
+		long cityObjectId = cityObjectImporter.insert(building, buildingId, parentId == 0);
 		if (cityObjectId == 0)
 			return false;
 

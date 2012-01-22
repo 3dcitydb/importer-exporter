@@ -108,7 +108,7 @@ public class DBTransportationComplex implements DBImporter {
 		String origGmlId = transComplex.getId();
 		
 		// CityObject
-		long cityObjectId = cityObjectImporter.insert(transComplex, transComplexId);
+		long cityObjectId = cityObjectImporter.insert(transComplex, transComplexId, true);
 		if (cityObjectId == 0)
 			return false;
 

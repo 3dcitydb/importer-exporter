@@ -83,7 +83,7 @@ public class DBLandUse implements DBImporter {
 
 	private boolean insert(LandUse landUse, long landUseId) throws SQLException {
 		// CityObject
-		long cityObjectId = cityObjectImporter.insert(landUse, landUseId);
+		long cityObjectId = cityObjectImporter.insert(landUse, landUseId, true);
 		if (cityObjectId == 0)
 			return false;
 

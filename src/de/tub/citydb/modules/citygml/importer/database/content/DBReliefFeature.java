@@ -88,7 +88,7 @@ public class DBReliefFeature implements DBImporter {
 		String origGmlId = reliefFeature.getId();
 		
 		// CityObject
-		long cityObjectId = cityObjectImporter.insert(reliefFeature, reliefFeatureId);
+		long cityObjectId = cityObjectImporter.insert(reliefFeature, reliefFeatureId, true);
 		if (cityObjectId == 0)
 			return false;
 

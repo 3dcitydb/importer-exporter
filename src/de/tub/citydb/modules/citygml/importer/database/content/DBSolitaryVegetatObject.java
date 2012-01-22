@@ -105,7 +105,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 
 	private boolean insert(SolitaryVegetationObject solVegObject, long solVegObjectId) throws SQLException {
 		// CityObject
-		long cityObjectId = cityObjectImporter.insert(solVegObject, solVegObjectId);
+		long cityObjectId = cityObjectImporter.insert(solVegObject, solVegObjectId, true);
 		if (cityObjectId == 0)
 			return false;
 

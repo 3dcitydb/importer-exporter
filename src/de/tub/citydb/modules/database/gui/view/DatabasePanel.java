@@ -67,7 +67,9 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.event.global.GlobalEvents;
+import de.tub.citydb.api.event.global.ViewEvent;
 import de.tub.citydb.api.log.LogLevel;
+import de.tub.citydb.api.plugin.extension.view.ViewListener;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -82,7 +84,7 @@ import de.tub.citydb.modules.database.gui.operations.DatabaseOperationsPanel;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class DatabasePanel extends JPanel implements ConnectionViewHandler, EventHandler {
+public class DatabasePanel extends JPanel implements ConnectionViewHandler, EventHandler, ViewListener {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final ImpExpGui topFrame;
@@ -169,10 +171,10 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
-		
+
 		JPanel view = new JPanel();
 		view.setLayout(new GridBagLayout());
-		
+
 		JPanel chooserPanel = new JPanel();
 		view.add(chooserPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,5,5));
 		chooserPanel.setLayout(new GridBagLayout());
@@ -233,7 +235,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		scrollPane.setViewportView(view);
 		setLayout(new BorderLayout());
 		add(scrollPane);
-		
+
 		// influence focus policy
 		connectionDetails.setFocusCycleRoot(false);
 		connectionButtons.setFocusCycleRoot(true);
@@ -553,9 +555,10 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	private void setDbConnection(DBConnection dbConnection) {
-		if (!descriptionText.getText().trim().equals("")) {
-			boolean repaint = dbConnection == databaseConfig.getActiveConnection() && !descriptionText.getText().equals(dbConnection.getDescription());
-			dbConnection.setDescription(descriptionText.getText());
+		String description = descriptionText.getText().trim();		
+		if (!description.equals("")) {
+			boolean repaint = dbConnection == databaseConfig.getActiveConnection() && !description.equals(dbConnection.getDescription());
+			dbConnection.setDescription(description);
 			if (repaint) 
 				connCombo.repaint();			
 		} else
@@ -588,7 +591,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		if (dbConnection.getInternalPassword() == null)
 			dbConnection.setInternalPassword(dbConnection.getPassword());
-		
+
 		Integer port = dbConnection.getPort();
 		if (port == null || port == 0) {
 			port = 1521;
@@ -652,7 +655,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), result, Internal.I18N.getString("db.dialog.delete.title"), JOptionPane.YES_NO_OPTION);
 		return res==JOptionPane.YES_OPTION;
 	}
-	
+
 	private void setEnabledDBOperations(boolean enable) {
 		((TitledBorder)operations.getBorder()).setTitleColor(enable ? 
 				UIManager.getColor("TitledBorder.titleColor"):
@@ -674,6 +677,17 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		connectButton.repaint();
 		setEnabledDBOperations(isConnected);
+	}
+
+	@Override
+	public void viewActivated(ViewEvent e) {
+		// nothing to do here
+	}
+
+	@Override
+	public void viewDeactivated(ViewEvent e) {
+		if (isModified())
+			setDbConnection((DBConnection)connCombo.getSelectedItem());
 	}
 
 }

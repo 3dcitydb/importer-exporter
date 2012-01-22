@@ -92,7 +92,7 @@ public class DBCityObjectGroup implements DBImporter {
 		String origGmlId = cityObjectGroup.getId();
 		
 		// CityObject
-		long cityObjectId = cityObjectImporter.insert(cityObjectGroup, cityObjectGroupId);
+		long cityObjectId = cityObjectImporter.insert(cityObjectGroup, cityObjectGroupId, true);
 		if (cityObjectId == 0)
 			return false;
 

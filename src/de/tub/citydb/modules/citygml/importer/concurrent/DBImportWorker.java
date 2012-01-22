@@ -336,7 +336,7 @@ public class DBImportWorker implements Worker<CityGML> {
 					case LAND_USE:
 						DBLandUse dbLandUse = (DBLandUse)dbImporterManager.getDBImporter(DBImporterEnum.LAND_USE);
 						if (dbLandUse != null)
-							id = dbLandUse.insert( (LandUse)work);
+							id = dbLandUse.insert((LandUse)work);
 
 						break;
 					case WATER_BODY:

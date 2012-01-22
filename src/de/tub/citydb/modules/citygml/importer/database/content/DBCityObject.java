@@ -63,7 +63,7 @@ import de.tub.citydb.util.Util;
 
 public class DBCityObject implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
-	
+
 	private final Connection batchConn;
 	private final Config config;
 	private final DBImporterManager dbImporterManager;
@@ -103,7 +103,7 @@ public class DBCityObject implements DBImporter {
 
 		if (rememberGmlId)
 			importFileName = config.getInternal().getCurrentImportFile().getAbsolutePath();
-		
+
 		reasonForUpdate = config.getProject().getImporter().getContinuation().getReasonForUpdate();
 		lineage = config.getProject().getImporter().getContinuation().getLineage();
 		if (config.getProject().getImporter().getContinuation().isUpdatingPersonModeDatabase())
@@ -141,6 +141,10 @@ public class DBCityObject implements DBImporter {
 	}
 
 	public long insert(AbstractCityObject cityObject, long cityObjectId) throws SQLException {
+		return insert(cityObject, cityObjectId, false);
+	}
+	
+	public long insert(AbstractCityObject cityObject, long cityObjectId, boolean isTopLevelFeature) throws SQLException {
 		// ID
 		psCityObject.setLong(1, cityObjectId);
 
@@ -205,10 +209,10 @@ public class DBCityObject implements DBImporter {
 			points.add(cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(1));
 			points.add(cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(2));
 			points.addAll(cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue());
-			
+
 			if (affineTransformation)
 				dbImporterManager.getAffineTransformer().transformCoordinates(points);
-			
+
 			double[] ordinates = new double[points.size()];
 			int i = 0;
 			for (Double point : points)
@@ -221,20 +225,22 @@ public class DBCityObject implements DBImporter {
 		} else {
 			psCityObject.setNull(4, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
 		}
-		
+
 		// resolve local xlinks to geometry objects
-		boolean success = resolver.resolveGeometryXlinks(cityObject);
-		if (!success) {
-			StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-					cityObject.getCityGMLClass(), 
-					origGmlId));
-			msg.append(": Skipped due to circular reference of geometry XLinks.");
-			LOG.error(msg.toString());
-			LOG.error("The targets causing the circular reference are:");
-			for (String target : resolver.getCircularReferences())
-				LOG.print(target);
-			
-			return 0;
+		if (isTopLevelFeature) {
+			boolean success = resolver.resolveGeometryXlinks(cityObject);
+			if (!success) {
+				StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+						cityObject.getCityGMLClass(), 
+						origGmlId));
+				msg.append(": Skipped due to circular reference of geometry XLinks.");
+				LOG.error(msg.toString());
+				LOG.error("The targets causing the circular reference are:");
+				for (String target : resolver.getCircularReferences())
+					LOG.print(target);
+
+				return 0;
+			}
 		}
 
 		psCityObject.addBatch();
@@ -258,7 +264,7 @@ public class DBCityObject implements DBImporter {
 					StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 							cityObject.getCityGMLClass(), 
 							origGmlId));
-					
+
 					msg.append(": XML read error while parsing generalizesTo element.");
 					LOG.error(msg.toString());
 				} else {
@@ -284,7 +290,7 @@ public class DBCityObject implements DBImporter {
 					if (appearanceProperty.isSetAppearance()) {
 						String gmlId = appearanceProperty.getAppearance().getId();
 						long id = appearanceImporter.insert(appearanceProperty.getAppearance(), CityGMLClass.ABSTRACT_CITY_OBJECT, cityObjectId);
-						
+
 						if (id == 0) {
 							StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 									cityObject.getCityGMLClass(), 
@@ -293,10 +299,10 @@ public class DBCityObject implements DBImporter {
 							msg.append(Util.getFeatureSignature(
 									CityGMLClass.APPEARANCE, 
 									gmlId));
-							
+
 							LOG.error(msg.toString());
 						}
-						
+
 						// free memory of nested feature
 						appearanceProperty.unsetAppearance();
 					} else {
@@ -314,7 +320,7 @@ public class DBCityObject implements DBImporter {
 		dbImporterManager.updateFeatureCounter(cityObject.getCityGMLClass());
 		return cityObjectId;
 	}
-	
+
 	@Override
 	public void executeBatch() throws SQLException {
 		psCityObject.executeBatch();
