@@ -57,6 +57,7 @@ import de.tub.citydb.config.controller.PluginConfigControllerImpl;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.Project;
 import de.tub.citydb.config.project.global.Logging;
+import de.tub.citydb.event.ProjectChangedEventImpl;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory;
 import de.tub.citydb.log.Logger;
@@ -72,7 +73,6 @@ public class MenuProject extends JMenu {
 	private final Config config;
 	private final JAXBContext ctx;
 	private final ImpExpGui mainView;
-	private final PluginConfigControllerImpl pluginConfigController;
 
 	private JMenuItem openProject;
 	private JMenuItem saveProject;
@@ -90,7 +90,6 @@ public class MenuProject extends JMenu {
 		this.ctx = ctx;
 		this.mainView = mainView;
 
-		pluginConfigController = (PluginConfigControllerImpl)ObjectRegistry.getInstance().getPluginConfigController();
 		init();
 	}
 
@@ -185,6 +184,9 @@ public class MenuProject extends JMenu {
 					for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
 						plugin.handleEvent(PluginConfigEvent.RESET_DEFAULT_CONFIG);
 
+					// trigger event
+					ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ProjectChangedEventImpl(this));
+
 					mainView.doTranslation();
 					LOG.info("Project settings are reset to default values.");
 				}
@@ -266,6 +268,7 @@ public class MenuProject extends JMenu {
 				plugin.loadSettings();
 
 			// update plugin configs
+			PluginConfigControllerImpl pluginConfigController = (PluginConfigControllerImpl)ObjectRegistry.getInstance().getPluginConfigController();
 			for (ConfigExtension<? extends PluginConfig> plugin : pluginService.getExternalConfigExtensions())
 				pluginConfigController.setOrCreatePluginConfig(plugin);
 
@@ -274,6 +277,9 @@ public class MenuProject extends JMenu {
 
 			// reset logging settings
 			pluginService.getInternalPlugin(PreferencesPlugin.class).setLoggingSettings();
+			
+			// trigger event
+			ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(new ProjectChangedEventImpl(this));
 			success = true;
 		} catch (IOException e1) {
 			LOG.error("Failed to read project settings file '" + file.toString() + "'.");
