@@ -121,7 +121,7 @@ AS
     end if;
   
     if lod >= 3 then
-        -- monster join to retrieve all openings of all thematic surfaces beloning to all buildings and building parts
+        -- retrieve all openings of all thematic surfaces beloning to all buildings and building parts
       execute immediate 'insert all /*+ append nologging */ into merge_collect_geom
         select b.building_root_id, o.lod'||to_char(lod)||'_multi_surface_id, o.id
           from match_overlap_relevant m, thematic_surface t, building b, opening o, opening_to_them_surface ot
@@ -168,7 +168,7 @@ AS
                 and b.building_root_id = m.id1
                 and t.lod4_multi_surface_id is not null';
   
-        -- monster join to retrieve all openings of all thematic surfaces beloning to all rooms in all buildings and building parts
+        -- retrieve all openings of all thematic surfaces beloning to all rooms in all buildings and building parts
       execute immediate 'insert all /*+ append nologging */ into merge_collect_geom
         select b.building_root_id, o.lod4_multi_surface_id, o.id
           from match_overlap_relevant m, thematic_surface t, building b, opening o, opening_to_them_surface ot, room r
@@ -218,7 +218,7 @@ AS
     end if;
   
     if lod >= 3 then
-      -- monster join to retrieve all openings of all thematic surfaces beloning to all buildings and building parts
+      -- retrieve all openings of all thematic surfaces beloning to all buildings and building parts
       execute immediate 'update opening o
         set o.lod'||to_char(lod)||'_multi_surface_id = null
         where o.id in
@@ -260,7 +260,7 @@ AS
         where r.building_id = b.id
             and b.building_root_id = m.id1)';
   
-      -- monster join to retrieve all openings of all thematic surfaces beloning to all rooms in all buildings and building parts
+      -- retrieve all openings of all thematic surfaces beloning to all rooms in all buildings and building parts
       execute immediate 'update opening o
       set o.lod4_multi_surface_id = null
       where o.id in
@@ -560,7 +560,7 @@ AS
           and b.building_root_id = m.id1)'
       using lineage;
   
-      -- monster join to retrieve all openings of all thematic surfaces beloning to all buildings and building parts
+      -- retrieve all openings of all thematic surfaces beloning to all buildings and building parts
       execute immediate 'update cityobject c
       set c.lineage = :1
       where c.id in (select o.id from opening o, match_overlap_relevant m, thematic_surface t, building b, opening_to_them_surface ot
@@ -605,7 +605,7 @@ AS
                   and b.building_root_id = m.id1)'
       using lineage;
   
-      -- monster join to retrieve all openings of all thematic surfaces beloning to all rooms in all buildings and building parts
+      -- retrieve all openings of all thematic surfaces beloning to all rooms in all buildings and building parts
       execute immediate 'update cityobject c
       set c.lineage = :1
       where c.id in (select o.id from opening o, match_overlap_relevant m, thematic_surface t, building b, opening_to_them_surface ot, room r
