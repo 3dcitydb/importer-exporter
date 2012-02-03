@@ -248,6 +248,9 @@ public class DBSurfaceGeometry implements DBExporter {
 				if (dbExporterManager.lookupAndPutGmlId(geomNode.gmlId, geomNode.id, CityGMLClass.ABSTRACT_GML_GEOMETRY)) {
 
 					if (useXLink) {
+						if (exportAppearance)
+							writeToAppearanceCache(geomNode);
+						
 						// check whether we have to embrace the geometry with an orientableSurface
 						if (geomNode.isReverse != isSetOrientableSurface) {
 							OrientableSurface orientableSurface = new OrientableSurfaceImpl();				
@@ -271,18 +274,8 @@ public class DBSurfaceGeometry implements DBExporter {
 					}
 
 				}
-			} else if (exportAppearance) {
-				psImportGmlId.setString(1, geomNode.gmlId);
-				psImportGmlId.setLong(2, geomNode.id);
-				psImportGmlId.setLong(3, geomNode.id);
-				psImportGmlId.addBatch();
-				batchCounter++;
-
-				if (batchCounter == commitAfter || batchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
-					psImportGmlId.executeBatch();
-					batchCounter = 0;
-				}
-			}
+			} else if (exportAppearance)
+				writeToAppearanceCache(geomNode);
 		}
 
 		// check whether we have to initialize an orientableSurface
@@ -654,6 +647,19 @@ public class DBSurfaceGeometry implements DBExporter {
 		}
 
 		return null;
+	}
+	
+	private void writeToAppearanceCache(GeometryNode geomNode) throws SQLException {
+		psImportGmlId.setString(1, geomNode.gmlId);
+		psImportGmlId.setLong(2, geomNode.id);
+		psImportGmlId.setLong(3, geomNode.id);
+		psImportGmlId.addBatch();
+		batchCounter++;
+
+		if (batchCounter == commitAfter || batchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+			psImportGmlId.executeBatch();
+			batchCounter = 0;
+		}
 	}
 
 	@Override
