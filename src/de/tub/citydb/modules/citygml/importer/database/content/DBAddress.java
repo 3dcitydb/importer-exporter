@@ -52,7 +52,7 @@ import org.citygml4j.model.xal.PostalCode;
 import org.citygml4j.model.xal.PostalCodeNumber;
 import org.citygml4j.model.xal.Thoroughfare;
 import org.citygml4j.model.xal.ThoroughfareName;
-import org.citygml4j.model.xal.ThoroughfareNumber;
+import org.citygml4j.model.xal.ThoroughfareNumberOrRange;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.util.Util;
@@ -176,11 +176,9 @@ public class DBAddress implements DBImporter {
 							// house number - we do not support number ranges so far...						
 							if (thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange()) {
 								List<String> houseNumber = new ArrayList<String>();								
-								for (Object object : thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange()) {
-									if (object instanceof ThoroughfareNumber) {
-										ThoroughfareNumber number = (ThoroughfareNumber)object;										
-										houseNumber.add(number.getContent());
-									}
+								for (ThoroughfareNumberOrRange number : thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange()) {
+									if (number.isSetThoroughfareNumber())
+										houseNumber.add(number.getThoroughfareNumber().getContent());
 								}
 								
 								houseNoAttr = Util.collection2string(houseNumber, ",");
