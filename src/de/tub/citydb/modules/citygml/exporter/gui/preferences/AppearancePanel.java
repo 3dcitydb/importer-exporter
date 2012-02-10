@@ -59,15 +59,16 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	private JPanel block1;
 	private JPanel path1;
 
-	private JCheckBox expAppOverwriteCheck;
-	private JRadioButton expAppRadioNoExp;
-	private JRadioButton expAppRadioAppExp;
-	private JRadioButton expAppRadioExp;
-	private JRadioButton expAppRadioPathAbs;
-	private JRadioButton expAppRadioPathRel;
-	private JTextField expAppPathAbsText;
-	private JButton expAppPathAbsButton;
-	private JTextField expAppPathRelText;
+	private JCheckBox overwriteCheck;
+	private JCheckBox generateUniqueCheck;
+	private JRadioButton radioNoExp;
+	private JRadioButton radioAppExp;
+	private JRadioButton radioExp;
+	private JRadioButton radioPathAbs;
+	private JRadioButton radioPathRel;
+	private JTextField pathAbsText;
+	private JButton pathAbsButton;
+	private JTextField pathRelText;
 
 	public AppearancePanel(Config config) {
 		super(config);
@@ -78,43 +79,45 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	public boolean isModified() {
 		ExportAppearance appearances = config.getProject().getExporter().getAppearances();
 
-		if (!expAppPathAbsText.getText().equals(appearances.getAbsoluteTexturePath())) return true;
-		if (!expAppPathRelText.getText().equals(appearances.getRelativeTexturePath())) return true;
-		if (expAppRadioPathRel.isSelected() != appearances.isTexturePathRealtive()) return true;
-		if (expAppRadioPathAbs.isSelected() != appearances.isTexturePathAbsolute()) return true;
-		if (expAppRadioExp.isSelected() && !(appearances.isSetExportAppearance() && appearances.isSetExportTextureFiles())) return true;
-		if (expAppRadioNoExp.isSelected() && !(!appearances.isSetExportAppearance() && !appearances.isSetExportTextureFiles())) return true;
-		if (expAppRadioAppExp.isSelected() && !(appearances.isSetExportAppearance() && !appearances.isSetExportTextureFiles())) return true;
-		if (expAppOverwriteCheck.isSelected() != appearances.isSetOverwriteTextureFiles()) return true;
-
+		if (!pathAbsText.getText().equals(appearances.getAbsoluteTexturePath())) return true;
+		if (!pathRelText.getText().equals(appearances.getRelativeTexturePath())) return true;
+		if (radioPathRel.isSelected() != appearances.isTexturePathRealtive()) return true;
+		if (radioPathAbs.isSelected() != appearances.isTexturePathAbsolute()) return true;
+		if (radioExp.isSelected() && !(appearances.isSetExportAppearance() && appearances.isSetExportTextureFiles())) return true;
+		if (radioNoExp.isSelected() && !(!appearances.isSetExportAppearance() && !appearances.isSetExportTextureFiles())) return true;
+		if (radioAppExp.isSelected() && !(appearances.isSetExportAppearance() && !appearances.isSetExportTextureFiles())) return true;
+		if (overwriteCheck.isSelected() != appearances.isSetOverwriteTextureFiles()) return true;
+		if (generateUniqueCheck.isSelected() != appearances.isSetUniqueTextureFileNames()) return true;
+		
 		return false;
 	}
 
 	private void initGui() {
-		expAppOverwriteCheck = new JCheckBox();
-		expAppRadioNoExp = new JRadioButton();
-		expAppRadioAppExp = new JRadioButton();
-		expAppRadioExp = new JRadioButton();
+		overwriteCheck = new JCheckBox();
+		generateUniqueCheck = new JCheckBox();
+		radioNoExp = new JRadioButton();
+		radioAppExp = new JRadioButton();
+		radioExp = new JRadioButton();
 		ButtonGroup expAppRadio = new ButtonGroup();
-		expAppRadio.add(expAppRadioNoExp);
-		expAppRadio.add(expAppRadioAppExp);
-		expAppRadio.add(expAppRadioExp);
-		expAppRadioPathAbs = new JRadioButton();
-		expAppRadioPathRel = new JRadioButton();
+		expAppRadio.add(radioNoExp);
+		expAppRadio.add(radioAppExp);
+		expAppRadio.add(radioExp);
+		radioPathAbs = new JRadioButton();
+		radioPathRel = new JRadioButton();
 		ButtonGroup expAppRadioPath = new ButtonGroup();
-		expAppRadioPath.add(expAppRadioPathAbs);
-		expAppRadioPath.add(expAppRadioPathRel);
-		expAppPathAbsText = new JTextField();
-		expAppPathAbsButton = new JButton();
-		expAppPathRelText = new JTextField();
+		expAppRadioPath.add(radioPathAbs);
+		expAppRadioPath.add(radioPathRel);
+		pathAbsText = new JTextField();
+		pathAbsButton = new JButton();
+		pathRelText = new JTextField();
 
-		PopupMenuDecorator.getInstance().decorate(expAppPathAbsText);
+		PopupMenuDecorator.getInstance().decorate(pathAbsText);
 		
-		expAppPathAbsButton.addActionListener(new ActionListener() {
+		pathAbsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String sImp = browseFile(Internal.I18N.getString("pref.export.appearance.label.absPath"), expAppPathAbsText.getText());
+				String sImp = browseFile(Internal.I18N.getString("pref.export.appearance.label.absPath"), pathAbsText.getText());
 				if (!sImp.isEmpty())
-					expAppPathAbsText.setText(sImp);
+					pathAbsText.setText(sImp);
 			}
 		});
 
@@ -126,30 +129,32 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 			add(block1, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block1.setBorder(BorderFactory.createTitledBorder(""));
 			block1.setLayout(new GridBagLayout());
-			expAppRadioExp.setIconTextGap(10);
-			expAppRadioAppExp.setIconTextGap(10);
-			expAppRadioNoExp.setIconTextGap(10);
-			expAppOverwriteCheck.setIconTextGap(10);
-			int lmargin = (int)(expAppRadioExp.getPreferredSize().getWidth()) + 11;
+			radioExp.setIconTextGap(10);
+			radioAppExp.setIconTextGap(10);
+			radioNoExp.setIconTextGap(10);
+			overwriteCheck.setIconTextGap(10);
+			generateUniqueCheck.setIconTextGap(10);
+			int lmargin = (int)(radioExp.getPreferredSize().getWidth()) + 11;
 			{
-				block1.add(expAppRadioExp, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(expAppOverwriteCheck, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));
-				block1.add(expAppRadioAppExp, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block1.add(expAppRadioNoExp, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block1.add(radioExp, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block1.add(overwriteCheck, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));
+				block1.add(generateUniqueCheck, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));
+				block1.add(radioAppExp, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block1.add(radioNoExp, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 			}
 
 			add(path1, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			path1.setBorder(BorderFactory.createTitledBorder(""));
 			path1.setLayout(new GridBagLayout());
-			expAppRadioPathAbs.setIconTextGap(10);
-			expAppRadioPathRel.setIconTextGap(10);
-			expAppPathAbsText.setPreferredSize(expAppPathAbsText.getSize());
+			radioPathAbs.setIconTextGap(10);
+			radioPathRel.setIconTextGap(10);
+			pathAbsText.setPreferredSize(pathAbsText.getSize());
 			{
-				path1.add(expAppRadioPathAbs, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				path1.add(expAppPathAbsText, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));
-				path1.add(expAppPathAbsButton, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				path1.add(expAppRadioPathRel, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,5,5,0,5));
-				path1.add(expAppPathRelText, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
+				path1.add(radioPathAbs, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				path1.add(pathAbsText, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,0,5));
+				path1.add(pathAbsButton, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				path1.add(radioPathRel, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,5,5,0,5));
+				path1.add(pathRelText, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
 			}
 
 		}
@@ -166,45 +171,47 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 			}
 		};
 		
-		expAppRadioNoExp.addActionListener(textureExportListener);
-		expAppRadioAppExp.addActionListener(textureExportListener);
-		expAppRadioExp.addActionListener(textureExportListener);		
-		expAppRadioPathAbs.addActionListener(texturePathListener);
-		expAppRadioPathRel.addActionListener(texturePathListener);
+		radioNoExp.addActionListener(textureExportListener);
+		radioAppExp.addActionListener(textureExportListener);
+		radioExp.addActionListener(textureExportListener);		
+		radioPathAbs.addActionListener(texturePathListener);
+		radioPathRel.addActionListener(texturePathListener);
 	}
 
 	private void setEnabledTextureExport() {
-		expAppOverwriteCheck.setEnabled(expAppRadioExp.isSelected());
+		overwriteCheck.setEnabled(radioExp.isSelected());
+		generateUniqueCheck.setEnabled(radioExp.isSelected());
 		
-		((TitledBorder)path1.getBorder()).setTitleColor(!expAppRadioNoExp.isSelected() ? 
+		((TitledBorder)path1.getBorder()).setTitleColor(!radioNoExp.isSelected() ? 
 				UIManager.getColor("TitledBorder.titleColor"):
 					UIManager.getColor("Label.disabledForeground"));
 		path1.repaint();
 
-		expAppRadioPathAbs.setEnabled(!expAppRadioNoExp.isSelected());
-		expAppRadioPathRel.setEnabled(!expAppRadioNoExp.isSelected());
-		expAppPathAbsText.setEnabled(!expAppRadioNoExp.isSelected() && expAppRadioPathAbs.isSelected());
-		expAppPathAbsButton.setEnabled(!expAppRadioNoExp.isSelected() && expAppRadioPathAbs.isSelected());
-		expAppPathRelText.setEnabled(!expAppRadioNoExp.isSelected() && expAppRadioPathRel.isSelected());
+		radioPathAbs.setEnabled(!radioNoExp.isSelected());
+		radioPathRel.setEnabled(!radioNoExp.isSelected());
+		pathAbsText.setEnabled(!radioNoExp.isSelected() && radioPathAbs.isSelected());
+		pathAbsButton.setEnabled(!radioNoExp.isSelected() && radioPathAbs.isSelected());
+		pathRelText.setEnabled(!radioNoExp.isSelected() && radioPathRel.isSelected());
 	}
 	
 	private void setEnabledTexturePath() {
-		expAppPathAbsText.setEnabled(expAppRadioPathAbs.isSelected());
-		expAppPathAbsButton.setEnabled(expAppRadioPathAbs.isSelected());
-		expAppPathRelText.setEnabled(expAppRadioPathRel.isSelected());
+		pathAbsText.setEnabled(radioPathAbs.isSelected());
+		pathAbsButton.setEnabled(radioPathAbs.isSelected());
+		pathRelText.setEnabled(radioPathRel.isSelected());
 	}
 
 	@Override
 	public void doTranslation() {
 		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.export.appearance.border.export"));
 		((TitledBorder)path1.getBorder()).setTitle(Internal.I18N.getString("pref.export.appearance.border.path"));
-		expAppOverwriteCheck.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithTexture.overwrite"));
-		expAppRadioNoExp.setText(Internal.I18N.getString("pref.export.appearance.label.noExport"));
-		expAppRadioAppExp.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithoutTexture"));
-		expAppRadioExp.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithTexture"));
-		expAppRadioPathAbs.setText(Internal.I18N.getString("pref.export.appearance.label.absPath"));
-		expAppRadioPathRel.setText(Internal.I18N.getString("pref.export.appearance.label.relPath"));
-		expAppPathAbsButton.setText(Internal.I18N.getString("common.button.browse"));
+		overwriteCheck.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithTexture.overwrite"));
+		generateUniqueCheck.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithTexture.unique"));
+		radioNoExp.setText(Internal.I18N.getString("pref.export.appearance.label.noExport"));
+		radioAppExp.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithoutTexture"));
+		radioExp.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithTexture"));
+		radioPathAbs.setText(Internal.I18N.getString("pref.export.appearance.label.absPath"));
+		radioPathRel.setText(Internal.I18N.getString("pref.export.appearance.label.relPath"));
+		pathAbsButton.setText(Internal.I18N.getString("common.button.browse"));
 	}
 
 	@Override
@@ -213,18 +220,19 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 		if (appearances.isSetExportAppearance()) {
 			if (appearances.isSetExportTextureFiles())
-				expAppRadioExp.setSelected(true);
+				radioExp.setSelected(true);
 			else
-				expAppRadioAppExp.setSelected(true);
+				radioAppExp.setSelected(true);
 		} else
-			expAppRadioNoExp.setSelected(true);
+			radioNoExp.setSelected(true);
 
 
-		expAppOverwriteCheck.setSelected(appearances.isSetOverwriteTextureFiles());
-		expAppPathRelText.setText(appearances.getRelativeTexturePath());
-		expAppPathAbsText.setText(appearances.getAbsoluteTexturePath());
-		expAppRadioPathRel.setSelected(appearances.isTexturePathRealtive());
-		expAppRadioPathAbs.setSelected(!appearances.isTexturePathRealtive());
+		overwriteCheck.setSelected(appearances.isSetOverwriteTextureFiles());
+		generateUniqueCheck.setSelected(appearances.isSetUniqueTextureFileNames());
+		pathRelText.setText(appearances.getRelativeTexturePath());
+		pathAbsText.setText(appearances.getAbsoluteTexturePath());
+		radioPathRel.setSelected(appearances.isTexturePathRealtive());
+		radioPathAbs.setSelected(!appearances.isTexturePathRealtive());
 		
 		setEnabledTextureExport();
 	}
@@ -233,27 +241,28 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	public void setSettings() {
 		ExportAppearance appearances = config.getProject().getExporter().getAppearances();
 
-		if (expAppRadioExp.isSelected()) {
+		if (radioExp.isSelected()) {
 			appearances.setExportAppearances(true);
 			appearances.setExportTextureFiles(true);
 		}
-		if (expAppRadioAppExp.isSelected()) {
+		if (radioAppExp.isSelected()) {
 			appearances.setExportAppearances(true);
 			appearances.setExportTextureFiles(false);
 		}
-		if (expAppRadioNoExp.isSelected()) {
+		if (radioNoExp.isSelected()) {
 			appearances.setExportAppearances(false);
 			appearances.setExportTextureFiles(false);
 		}
 
-		appearances.setOverwriteTextureFiles(expAppOverwriteCheck.isSelected());
-		appearances.setAbsoluteTexturePath(expAppPathAbsText.getText());
+		appearances.setOverwriteTextureFiles(overwriteCheck.isSelected());
+		appearances.setUniqueTextureFileNames(generateUniqueCheck.isSelected());
+		appearances.setAbsoluteTexturePath(pathAbsText.getText());
 		
-		if (expAppPathRelText.getText() == null || expAppPathRelText.getText().trim().length() == 0)
-			expAppPathRelText.setText("appearance"); 
-		appearances.setRelativeTexturePath(expAppPathRelText.getText());
+		if (pathRelText.getText() == null || pathRelText.getText().trim().length() == 0)
+			pathRelText.setText("appearance"); 
+		appearances.setRelativeTexturePath(pathRelText.getText());
 
-		if (expAppRadioPathRel.isSelected())
+		if (radioPathRel.isSelected())
 			appearances.setTexturePathMode(TexturePathMode.RELATIVE);
 		else
 			appearances.setTexturePathMode(TexturePathMode.ABSOLUTE);

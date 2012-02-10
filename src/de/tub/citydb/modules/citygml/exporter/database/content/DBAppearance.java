@@ -89,6 +89,7 @@ public class DBAppearance implements DBExporter {
 	private PreparedStatement psAppearanceCityObject;
 	private DBTextureParam textureParamExporter;
 	private boolean exportTextureImage;
+	private boolean uniqueFileNames;
 	private String texturePath;
 	private boolean useXLink;
 	private boolean appendOldGmlId;
@@ -106,6 +107,8 @@ public class DBAppearance implements DBExporter {
 
 	private void init() throws SQLException {
 		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
+		uniqueFileNames = config.getProject().getExporter().getAppearances().isSetUniqueTextureFileNames();
+		
 		texturePath = config.getInternal().getExportTextureFilePath();
 		pathSeparator = config.getProject().getExporter().getAppearances().isTexturePathAbsolute() ?
 				File.separator : "/";
@@ -317,6 +320,11 @@ public class DBAppearance implements DBExporter {
 					long dbImageSize = rs.getLong("DB_TEX_IMAGE_SIZE");
 					String imageURI = rs.getString("TEX_IMAGE_URI");
 					if (imageURI != null) {
+						if (uniqueFileNames) {
+							String extension = Util.getFileExtension(imageURI);
+							imageURI = "tex" + surfaceDataId + (extension != null ? "." + extension : "");
+						}
+						
 						File file = new File(imageURI);
 						String fileName = file.getName();
 						if (texturePath != null)

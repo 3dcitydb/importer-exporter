@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlType;
 		"exportAppearances",
 		"exportTextureFiles",
 		"overwriteTextureFiles",
+		"uniqueTextureFileNames",
 		"texturePathMode",
 		"relativeTexturePath",
 		"absoluteTexturePath"
@@ -47,6 +48,7 @@ public class ExportAppearance {
 	private Boolean exportTextureFiles = true;
 	@XmlElement(defaultValue="false")
 	private Boolean overwriteTextureFiles = true;
+	private Boolean uniqueTextureFileNames = false;
 	private TexturePathMode texturePathMode = TexturePathMode.RELATIVE;
 	private String relativeTexturePath = "appearance";
 	private String absoluteTexturePath = "";
@@ -97,6 +99,21 @@ public class ExportAppearance {
 
 	public void setOverwriteTextureFiles(Boolean overwriteTextureFiles) {
 		this.overwriteTextureFiles = overwriteTextureFiles;
+	}
+	
+	public boolean isSetUniqueTextureFileNames() {
+		if (uniqueTextureFileNames != null)
+			return uniqueTextureFileNames.booleanValue();
+		
+		return false;
+	}
+	
+	public Boolean getUniqueTextureFileNames() {
+		return uniqueTextureFileNames;
+	}
+
+	public void setUniqueTextureFileNames(Boolean uniqueTextureFileNames) {
+		this.uniqueTextureFileNames = uniqueTextureFileNames;
 	}
 
 	public boolean isTexturePathAbsolute() {
