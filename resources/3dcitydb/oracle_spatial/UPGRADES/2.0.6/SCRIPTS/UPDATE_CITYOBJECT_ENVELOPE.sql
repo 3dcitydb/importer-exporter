@@ -4,7 +4,7 @@
 --              Claus Nagel <claus.nagel@tu-berlin.de>
 --
 -- Copyright:   (c) 2007-2011, Institute for Geodesy and Geoinformation Science,
---                             Technische Universit√§t Berlin, Germany
+--                             Technische Universit‰t Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -26,12 +26,6 @@
 --
 
 set serveroutput on;
-
-  prompt
-  prompt
-  accept DISABLE_SPX char default 'yes' prompt 'To speed up the process, disable envelope spatial index and reenable it afterwards? (yes/no, default is yes) '
-  prompt
-  prompt
 
 declare
 
@@ -69,7 +63,7 @@ declare
 -- main program --
 begin
 
-  v_disable_spx := UPPER('&DISABLE_SPX');
+  v_disable_spx := UPPER('yes');
 
   select srid into v_srid from database_srs;
   select value into v_onnc from nls_database_parameters where parameter = 'NLS_NUMERIC_CHARACTERS';
@@ -183,7 +177,7 @@ begin
   
   dbms_output.put_line(' ');
   if v_not_updated_counter = 0 then
-    dbms_output.put_line('update_cityobject_envelope.sql finished successfully.');
+    dbms_output.put_line('update_cityobject_envelope.sql successfully finished.');
   else
     dbms_output.put_line('update_cityobject_envelope.sql finished with errors.');
   end if;

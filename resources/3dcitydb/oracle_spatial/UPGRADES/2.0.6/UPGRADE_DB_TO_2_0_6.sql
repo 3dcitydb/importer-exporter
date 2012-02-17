@@ -41,4 +41,18 @@ SELECT 'Installing GEODB package...' as message from DUAL;
 @@../../PL_SQL/GEODB_PKG/MATCHING/MERGE.sql;
 SELECT 'GEODB package installed.' as message from DUAL;
 
+--// rename objects having more than 26 characters in their name
+@@SCRIPTS/RENAME_OBJECTS.sql
+
+--// creating indexes on APPEAR_TO_SURFACE_DATA 
+--// (should already exist on databases of version 2.0.2 and later)
+SELECT 'Creating additional indexes on APPEAR_TO_SURFACE_DATA. This may take a while...' as message from DUAL;
+@@SCRIPTS/CREATE_INDEXES.sql
+
+--// update contents in CITYOBJECT.ENVELOPE 
+SELECT 'Updating CITYOBJECT.ENVELOPE contents...' as message from DUAL;
+SELECT 'Spatial indexes will be disabled and re-enabled after update. This may take a long time and SHALL NOT be interrupted. Please be patient...' as message from DUAL;
+@@SCRIPTS/UPDATE_CITYOBJECT_ENVELOPE.sql;
+SELECT 'CITYOBJECT.ENVELOPE contents updated.' as message from DUAL;
+
 SELECT 'DB upgrade complete!' as message from DUAL;
