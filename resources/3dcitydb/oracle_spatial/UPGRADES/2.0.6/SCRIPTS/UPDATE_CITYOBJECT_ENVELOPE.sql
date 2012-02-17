@@ -63,7 +63,11 @@ declare
 -- main program --
 begin
 
-  v_disable_spx := UPPER('yes');
+  if geodb_idx.index_status('CITYOBJECT', 'ENVELOPE') = 'VALID' then
+    v_disable_spx := UPPER('yes');
+  else
+    v_disable_spx := UPPER('no');
+  end if;
 
   select srid into v_srid from database_srs;
   select value into v_onnc from nls_database_parameters where parameter = 'NLS_NUMERIC_CHARACTERS';

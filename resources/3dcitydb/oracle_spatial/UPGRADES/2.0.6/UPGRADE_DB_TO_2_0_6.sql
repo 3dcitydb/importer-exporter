@@ -50,8 +50,7 @@ SELECT 'Creating additional indexes on APPEAR_TO_SURFACE_DATA. This may take a w
 @@SCRIPTS/CREATE_INDEXES.sql
 
 --// update contents in CITYOBJECT.ENVELOPE 
-SELECT 'Updating CITYOBJECT.ENVELOPE contents...' as message from DUAL;
-SELECT 'Spatial indexes will be disabled and re-enabled after update. This may take a long time and SHALL NOT be interrupted. Please be patient...' as message from DUAL;
+SELECT 'Updating CITYOBJECT.ENVELOPE contents. This may take a long time and SHALL NOT be interrupted. Please be patient...' as message from DUAL;
 @@SCRIPTS/UPDATE_CITYOBJECT_ENVELOPE.sql;
 SELECT 'CITYOBJECT.ENVELOPE contents updated.' as message from DUAL;
 
