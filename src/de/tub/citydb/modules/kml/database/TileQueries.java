@@ -410,7 +410,7 @@ public class TileQueries {
 		"SELECT SDO_CS.TRANSFORM(?, 4326) FROM DUAL";
 
 	public static final String TRANSFORM_GEOMETRY_TO_WGS84_3D =
-		"SELECT SDO_CS.TRANSFORM(?, 4327) FROM DUAL";
+		"SELECT SDO_CS.TRANSFORM(?, 4329) FROM DUAL";
 
 	public static final String QUERY_GET_ENVELOPE_IN_WGS84_FROM_GML_ID =
 		"SELECT SDO_CS.TRANSFORM(co.envelope, 4326) " +
@@ -418,7 +418,7 @@ public class TileQueries {
 		"WHERE co.gmlid = ?";
 
 	public static final String QUERY_GET_ENVELOPE_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT SDO_CS.TRANSFORM(co.envelope, 4327) " +
+		"SELECT SDO_CS.TRANSFORM(co.envelope, 4329) " +
 		"FROM CITYOBJECT co " +
 		"WHERE co.gmlid = ?";
 
