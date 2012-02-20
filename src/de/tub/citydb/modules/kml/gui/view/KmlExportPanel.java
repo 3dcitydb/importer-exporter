@@ -592,7 +592,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		kmlExporter.setLodToExportFrom(lodComboBox.getSelectedIndex() + 1); // exclude LoD0 for the time being
 
-		int previousLevelVisibility = -1;
 
 		DisplayLevel dl = new DisplayLevel(DisplayLevel.COLLADA, -1, -1);
 		int indexOfDl = kmlExporter.getDisplayLevels().indexOf(dl); 
@@ -610,8 +609,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			catch (NumberFormatException nfe) {}
 			dl.setActive(true);
 			dl.setVisibleFrom(levelVisibility);
-			dl.setVisibleUpTo(previousLevelVisibility);
-			previousLevelVisibility = levelVisibility;
 		}
 		else {
 			dl.setActive(false);
@@ -633,8 +630,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			catch (NumberFormatException nfe) {}
 			dl.setActive(true);
 			dl.setVisibleFrom(levelVisibility);
-			dl.setVisibleUpTo(previousLevelVisibility);
-			previousLevelVisibility = levelVisibility;
 		}
 		else {
 			dl.setActive(false);
@@ -656,8 +651,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			catch (NumberFormatException nfe) {}
 			dl.setActive(true);
 			dl.setVisibleFrom(levelVisibility);
-			dl.setVisibleUpTo(previousLevelVisibility);
-			previousLevelVisibility = levelVisibility;
 		}
 		else {
 			dl.setActive(false);
@@ -679,7 +672,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			catch (NumberFormatException nfe) {}
 			dl.setActive(true);
 			dl.setVisibleFrom(levelVisibility);
-			dl.setVisibleUpTo(previousLevelVisibility);
 		}
 		else {
 			dl.setActive(false);

@@ -777,6 +777,18 @@ public class KmlExporter implements EventHandler {
 				ioWriterPool.addWork(tmp);
 			}
 
+			int upperLevelVisibility = -1; 
+			for (int i = DisplayLevel.COLLADA; i >= DisplayLevel.FOOTPRINT; i--) {
+				DisplayLevel dl = new DisplayLevel(i, -1, -1);
+				int indexOfDl = config.getProject().getKmlExporter().getDisplayLevels().indexOf(dl); 
+				dl = config.getProject().getKmlExporter().getDisplayLevels().get(indexOfDl);
+
+				if (dl.isActive()) {
+					dl.setVisibleUpTo(upperLevelVisibility);
+					upperLevelVisibility = dl.getVisibleFrom();
+				}
+			}
+			
 			for (int i = 0; i < rows; i++) {
 				for (int j = 0; j < columns; j++) {
 
