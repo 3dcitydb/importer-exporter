@@ -640,6 +640,11 @@ public class KmlExporter implements EventHandler {
 										new BoundingBoxCorner(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY()));
 
 		DatabaseSrs dbSrs = dbPool.getActiveConnectionMetaData().getReferenceSystem();
+
+		if (bbox.getSrs() == null) {
+			throw new SQLException("Unknown BoundingBox srs");
+		}
+
 		if (bbox.getSrs().getSrid() != 0 && bbox.getSrs().getSrid() != dbSrs.getSrid()) {
 			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSrs(), WGS84_2D);
 			tileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSrs(), dbSrs);

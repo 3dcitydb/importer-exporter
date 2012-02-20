@@ -184,8 +184,12 @@ public class ImpExpCmd {
 				kmlExporter.calculateRowsColumnsAndDelta();
 			}
 			catch (SQLException sqle) {
-				String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs().getDescription();
-				LOG.error(srsDescription + " " + sqle.getMessage());
+				String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs() == null ?
+										"": filter.getComplexFilter().getBoundingBox().getSrs().getDescription() + ": ";
+				String message = sqle.getMessage().indexOf("\n") > -1? // cut ORA- stack traces
+								 sqle.getMessage().substring(0, sqle.getMessage().indexOf("\n")): sqle.getMessage();
+				LOG.error(srsDescription + message);
+				LOG.warn("Database export aborted.");
 				return;
 			}
 		}
