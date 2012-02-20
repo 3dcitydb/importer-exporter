@@ -112,7 +112,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 						srs = targetSRS;
 				}
 				
-				if (boundingBoxConfig.getSrs().isSupported() && bboxSrs.getSrid() != srs.getSrid()) {			
+				if (bboxSrs != null && bboxSrs.isSupported() && bboxSrs.getSrid() != srs.getSrid()) {			
 					try {
 						boundingBox = DBUtil.transformBBox(boundingBox, bboxSrs, srs);
 					} catch (SQLException sqlEx) {
