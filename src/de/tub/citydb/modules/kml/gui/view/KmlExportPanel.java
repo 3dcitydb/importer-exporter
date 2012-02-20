@@ -831,19 +831,11 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				return;
 			}
 
-			if (!dbPool.isConnected()) {
-				mainView.connectToDatabase();
-
-				if (!dbPool.isConnected())
-					return;
-			}
-
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			de.tub.citydb.modules.kml.controller.KmlExporter kmlExporter = new de.tub.citydb.modules.kml.controller.KmlExporter(jaxbKmlContext, jaxbColladaContext, dbPool, config, eventDispatcher);
 
-			int tileAmount = 1;
-			// BoundingBox
+			// BoundingBox check
 			if (filter.isSetComplexFilter() &&
 				filter.getComplexFilter().getTiledBoundingBox().isSet()) {
 				Double xMin = filter.getComplexFilter().getTiledBoundingBox().getLowerLeftCorner().getX();
@@ -856,7 +848,19 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 							Internal.I18N.getString("common.dialog.error.incorrectData.bbox"));
 					return;
 				}
+			}
 
+			if (!dbPool.isConnected()) {
+				mainView.connectToDatabase();
+
+				if (!dbPool.isConnected())
+					return;
+			}
+
+			// tile amount calculation
+			int tileAmount = 1;
+			if (filter.isSetComplexFilter() &&
+				filter.getComplexFilter().getTiledBoundingBox().isSet()) {
 				try {
 					tileAmount = kmlExporter.calculateRowsColumnsAndDelta();
 				}
@@ -866,7 +870,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					return;
 				}
 			}
-
 			tileAmount = tileAmount * activeDisplayLevelAmount;
 
 			mainView.setStatusText(Internal.I18N.getString("main.status.kmlExport.label"));
