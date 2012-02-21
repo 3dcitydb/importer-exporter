@@ -771,7 +771,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString();
 				switch (currentLod) {
 					case 1:
-						if (probablyRoof && (Math.abs(nz) > 0.999)) {
+						if (probablyRoof && (nz > 0.999)) {
 							surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString();
 						}
 						break;
