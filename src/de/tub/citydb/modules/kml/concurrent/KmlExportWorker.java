@@ -421,10 +421,10 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					}
 					else { // reverse order for single buildings
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work.getGmlId()));
-						//						kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
+//							kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
 						if (config.getProject().getKmlExporter().isGeometryHighlighting()) {
-							//							kmlExporterManager.print(createHighlingtingPlacemarkForEachSurfaceGeometry(work.getGmlId(),
-							//																									   work.getDisplayLevel()));
+//							kmlExporterManager.print(createHighlingtingPlacemarkForEachSurfaceGeometry(work.getGmlId(),
+//																									   work.getDisplayLevel()));
 							kmlExporterManager.print(createPlacemarksForHighlighting(work.getGmlId(),
 									work.getDisplayLevel()));
 						}
@@ -718,6 +718,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 			// just in case surfaceType == null
 			boolean probablyRoof = true;
+			double nx = 0;
+			double ny = 0;
+			double nz = 0;
 
 			for (int i = 0; i < surface.getElemInfo().length; i = i+3) {
 				LinearRingType linearRing = kmlFactory.createLinearRingType();
@@ -732,7 +735,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 				int startNextRing = ((i+3) < surface.getElemInfo().length) ? 
 						surface.getElemInfo()[i+3] - 1: // still holes to come
-							ordinatesArray.length; // default
+						ordinatesArray.length; // default
 
 						// order points clockwise
 						for (int j = surface.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
@@ -742,13 +745,42 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 							probablyRoof = probablyRoof && (Building.reducePrecisionForZ(ordinatesArray[j+2] - lowestZCoordinate) > 0);
 							// not touching the ground
+
+							if (currentLod == 1) { // calculate normal
+								int current = j;
+								int next = j+3;
+								if (next >= startNextRing) next = surface.getElemInfo()[i] - 1;
+								nx = nx + ((ordinatesArray[current+1] - ordinatesArray[next+1]) * (ordinatesArray[current+2] + ordinatesArray[next+2])); 
+								ny = ny + ((ordinatesArray[current+2] - ordinatesArray[next+2]) * (ordinatesArray[current] + ordinatesArray[next])); 
+								nz = nz + ((ordinatesArray[current] - ordinatesArray[next]) * (ordinatesArray[current+1] + ordinatesArray[next+1]));
+							}
 						}
 			}
 
+			if (currentLod == 1) { // calculate normal
+				double value = Math.sqrt(nx * nx + ny * ny + nz * nz);
+				if (value == 0) { // not a surface, but a line
+					continue;
+				}
+				nx = nx / value;
+				ny = ny / value;
+				nz = nz / value;
+			}
+
 			if (surfaceType == null) {
-				surfaceType = (probablyRoof && currentLod < 3) ?
-						TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() :
-							TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString();
+				surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString();
+				switch (currentLod) {
+					case 1:
+						if (probablyRoof && (Math.abs(nz) > 0.999)) {
+							surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString();
+						}
+						break;
+					case 2:
+						if (probablyRoof) {
+							surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString();
+						}
+						break;
+				}
 			}
 
 			multiGeometry = multiGeometries.get(surfaceType);
