@@ -247,8 +247,7 @@ public class TileQueries {
 			"AND bi.building_id = b.id " +
 			"AND bi.lod2_geometry_id IS NOT NULL";
 
-
-	public static final String QUERY_COLLADA_GET_BUILDING_DATA =
+	private static final String QUERY_COLLADA_GET_BUILDING_DATA =
 		"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, " +
 				"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
 				"sd.tex_image_uri, sd.tex_image, tp.texture_coordinates, a.theme " +
@@ -258,9 +257,14 @@ public class TileQueries {
 			"LEFT JOIN APPEAR_TO_SURFACE_DATA a2sd ON a2sd.surface_data_id = sd.id " +
 			"LEFT JOIN APPEARANCE a ON a2sd.appearance_id = a.id " +
 		"WHERE " +
-			"sg.root_id = ? " +
+			"sg.root_id = ? "; // +
 //			"AND (a.theme = ? OR a.theme IS NULL) " +
-		"ORDER BY sg.parent_id DESC"; // own root surfaces first
+//			"ORDER BY sg.parent_id ASC"; // own root surfaces first
+
+	public static final String[] QUERIES_COLLADA_GET_BUILDING_DATA = new String[] {
+		QUERY_COLLADA_GET_BUILDING_DATA + "AND sg.geometry IS NULL", // parents
+		QUERY_COLLADA_GET_BUILDING_DATA + "AND sg.geometry IS NOT NULL" // elementary surfaces
+	};
 
 	private static final String QUERY_GEOMETRY_LOD2_GET_BUILDING_DATA =
 		"SELECT sg.geometry, ts.type, sg.id " +

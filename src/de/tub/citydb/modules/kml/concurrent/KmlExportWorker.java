@@ -423,8 +423,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work.getGmlId()));
 //							kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
 						if (config.getProject().getKmlExporter().isGeometryHighlighting()) {
-//							kmlExporterManager.print(createHighlingtingPlacemarkForEachSurfaceGeometry(work.getGmlId(),
-//																									   work.getDisplayLevel()));
+//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work.getGmlId(),
+//																								work.getDisplayLevel()));
 							kmlExporterManager.print(createPlacemarksForHighlighting(work.getGmlId(),
 									work.getDisplayLevel()));
 						}
@@ -437,8 +437,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					try {
 						double imageScaleFactor = 1;
 						if (config.getProject().getKmlExporter().isColladaHighlighting()) {
-//							kmlExporterManager.print(createHighlingtingPlacemarkForEachSurfaceGeometry(work.getGmlId(),
-//									   																   work.getDisplayLevel()));
+//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work.getGmlId(),
+//									   															work.getDisplayLevel()));
 							kmlExporterManager.print(createPlacemarksForHighlighting(work.getGmlId(),
 																					 work.getDisplayLevel()));
 						}
@@ -823,150 +823,156 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
-			PreparedStatement psQuery = null;
-			OracleResultSet rs2 = null;
-			try {
-				psQuery = connection.prepareStatement(TileQueries.QUERY_COLLADA_GET_BUILDING_DATA);
-				psQuery.setLong(1, surfaceRootId);
-				//				psQuery.setString(2, selectedTheme);
-				rs2 = (OracleResultSet)psQuery.executeQuery();
-
-				while (rs2.next()) {
-					String theme = rs2.getString("theme");
-
-					buildingGeometryObj = (STRUCT)rs2.getObject(1); 
-					// surfaceId is the key to all Hashmaps in building
-					long surfaceId = rs2.getLong("id");
-
-					if (buildingGeometryObj == null) { // root or parent
-						if (selectedTheme.equalsIgnoreCase(theme)) {
-							X3DMaterial x3dMaterial = cityGMLFactory.createX3DMaterial();
-							fillX3dMaterialValues(x3dMaterial, rs2);
-							// x3dMaterial will only added if not all x3dMaterial members are null
-							currentBuilding.addX3dMaterial(surfaceId, x3dMaterial);
+			for (String colladaQuery: TileQueries.QUERIES_COLLADA_GET_BUILDING_DATA) { // parent surfaces come first
+				PreparedStatement psQuery = null;
+				OracleResultSet rs2 = null;
+				try {
+					psQuery = connection.prepareStatement(colladaQuery);
+					psQuery.setLong(1, surfaceRootId);
+					//				psQuery.setString(2, selectedTheme);
+					rs2 = (OracleResultSet)psQuery.executeQuery();
+	
+					while (rs2.next()) {
+						String theme = rs2.getString("theme");
+	
+						buildingGeometryObj = (STRUCT)rs2.getObject(1); 
+						// surfaceId is the key to all Hashmaps in building
+						long surfaceId = rs2.getLong("id");
+	
+						if (buildingGeometryObj == null) { // root or parent
+							if (selectedTheme.equalsIgnoreCase(theme)) {
+								X3DMaterial x3dMaterial = cityGMLFactory.createX3DMaterial();
+								fillX3dMaterialValues(x3dMaterial, rs2);
+								// x3dMaterial will only added if not all x3dMaterial members are null
+								currentBuilding.addX3dMaterial(surfaceId, x3dMaterial);
+							}
+							continue; 
 						}
-						continue; 
-					}
-
-					// from hier on it is a surfaceMember
-					eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
-					long parentId = rs2.getLong("parent_id");
-
-					String texImageUri = null;
-					OrdImage texImage = null;
-					StringTokenizer texCoordsTokenized = null;
-
-					if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
-						currentBuilding.addX3dMaterial(surfaceId, defaultX3dMaterial);
-					}
-					else if	(!selectedTheme.equalsIgnoreCase(theme) && // no surface data for this surface and theme
-							currentBuilding.getX3dMaterial(parentId) != null) {// material for parent surface known
-						currentBuilding.addX3dMaterial(surfaceId, currentBuilding.getX3dMaterial(parentId));
-					}
-					else {
-						texImageUri = rs2.getString("tex_image_uri");
-						texImage = (OrdImage)rs2.getORAData("tex_image", OrdImage.getORADataFactory());
-						String texCoords = rs2.getString("texture_coordinates");
-
-						if (texImageUri != null && texImageUri.trim().length() != 0
-								&&  texCoords != null && texCoords.trim().length() != 0
-								&&	texImage != null) {
-
-							texImageCounter++;
-							if (texImageCounter > 20) {
-								eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
-								texImageCounter = 0;
-							}
-
-							int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
-							texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
-
-							currentBuilding.addTexImageUri(surfaceId, texImageUri);
-							if (currentBuilding.getTexOrdImage(texImageUri) == null) { // not already marked as wrapping texture
-								BufferedImage bufferedImage = null;
-								try {
-									bufferedImage = ImageIO.read(texImage.getDataInStream());
-								}
-								catch (IOException ioe) {}
-								if (bufferedImage != null) { // image in JPEG, PNG or another usual format
-									currentBuilding.addTexImage(texImageUri, bufferedImage);
-								}
-								else {
-									currentBuilding.addTexOrdImage(texImageUri, texImage);
-								}
-							}
-
-							texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
-							texCoordsTokenized = new StringTokenizer(texCoords, " ");
+	
+						// from hier on it is a surfaceMember
+						eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
+						long parentId = rs2.getLong("parent_id");
+	
+						String texImageUri = null;
+						OrdImage texImage = null;
+						StringTokenizer texCoordsTokenized = null;
+	
+						if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
+							currentBuilding.addX3dMaterial(surfaceId, defaultX3dMaterial);
+						}
+						else if	(!selectedTheme.equalsIgnoreCase(theme) && // no surface data for this surface and theme
+								currentBuilding.getX3dMaterial(parentId) != null) { // material for parent surface known
+							currentBuilding.addX3dMaterial(surfaceId, currentBuilding.getX3dMaterial(parentId));
 						}
 						else {
-							if (currentBuilding.getX3dMaterial(surfaceId) == null) {
-								// untextured surface and no x3dMaterial -> default x3dMaterial (gray)
-								currentBuilding.addX3dMaterial(surfaceId, defaultX3dMaterial);
-							}
-						}
-					}
-
-					JGeometry surface = JGeometry.load(buildingGeometryObj);
-					double[] ordinatesArray = surface.getOrdinatesArray();
-
-					GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
-					int contourCount = surface.getElemInfo().length/3;
-					// last point of polygons in gml is identical to first and useless for GeometryInfo
-					double[] giOrdinatesArray = new double[ordinatesArray.length - (contourCount*3)];
-
-					int[] stripCountArray = new int[contourCount];
-					int[] countourCountArray = {contourCount};
-
-					for (int currentContour = 1; currentContour <= contourCount; currentContour++) {
-						int startOfCurrentRing = surface.getElemInfo()[(currentContour-1)*3] - 1;
-						int startOfNextRing = (currentContour == contourCount) ? 
-								ordinatesArray.length: // last
-									surface.getElemInfo()[currentContour*3] - 1; // still holes to come
-
-						for (int j = startOfCurrentRing; j < startOfNextRing - 3; j = j+3) {
-
-							giOrdinatesArray[(j-(currentContour-1)*3)] = ordinatesArray[j] * 100; // trick for very close coordinates
-							giOrdinatesArray[(j-(currentContour-1)*3)+1] = ordinatesArray[j+1] * 100;
-							giOrdinatesArray[(j-(currentContour-1)*3)+2] = ordinatesArray[j+2] * 100;
-
-							TexCoords texCoordsForThisSurface = null;
-							if (texCoordsTokenized != null) {
-								double s = Double.parseDouble(texCoordsTokenized.nextToken());
-								double t = Double.parseDouble(texCoordsTokenized.nextToken());
-								if (s > 1.1 || s < -0.1 || t < -0.1 || t > 1.1) { // texture wrapping -- it conflicts with texture atlas
-									currentBuilding.removeTexImage(texImageUri);
-									currentBuilding.addTexOrdImage(texImageUri, texImage);
+							texImageUri = rs2.getString("tex_image_uri");
+							texImage = (OrdImage)rs2.getORAData("tex_image", OrdImage.getORADataFactory());
+							String texCoords = rs2.getString("texture_coordinates");
+	
+							if (texImageUri != null && texImageUri.trim().length() != 0
+									&&  texCoords != null && texCoords.trim().length() != 0
+									&&	texImage != null) {
+	
+								texImageCounter++;
+								if (texImageCounter > 20) {
+									eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
+									texImageCounter = 0;
 								}
-								texCoordsForThisSurface = new TexCoords(s, t);
+	
+								int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
+								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
+	
+								currentBuilding.addTexImageUri(surfaceId, texImageUri);
+								if (currentBuilding.getTexOrdImage(texImageUri) == null) { // not already marked as wrapping texture
+									BufferedImage bufferedImage = null;
+									try {
+										bufferedImage = ImageIO.read(texImage.getDataInStream());
+									}
+									catch (IOException ioe) {}
+									if (bufferedImage != null) { // image in JPEG, PNG or another usual format
+										currentBuilding.addTexImage(texImageUri, bufferedImage);
+									}
+									else {
+										currentBuilding.addTexOrdImage(texImageUri, texImage);
+									}
+								}
+	
+								texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
+								texCoordsTokenized = new StringTokenizer(texCoords, " ");
 							}
-							currentBuilding.setVertexInfoForXYZ(surfaceId,
-									giOrdinatesArray[(j-(currentContour-1)*3)],
-									giOrdinatesArray[(j-(currentContour-1)*3)+1],
-									giOrdinatesArray[(j-(currentContour-1)*3)+2],
-									texCoordsForThisSurface);
+							else {
+								X3DMaterial x3dMaterial = cityGMLFactory.createX3DMaterial();
+								fillX3dMaterialValues(x3dMaterial, rs2);
+								// x3dMaterial will only added if not all x3dMaterial members are null
+								currentBuilding.addX3dMaterial(surfaceId, x3dMaterial);
+								if (currentBuilding.getX3dMaterial(surfaceId) == null) {
+									// untextured surface and no x3dMaterial -> default x3dMaterial (gray)
+									currentBuilding.addX3dMaterial(surfaceId, defaultX3dMaterial);
+								}
+							}
 						}
-						stripCountArray[currentContour-1] = (startOfNextRing -3 - startOfCurrentRing)/3;
-						if (texCoordsTokenized != null) {
-							texCoordsTokenized.nextToken(); // geometryInfo ignores last point in a polygon
-							texCoordsTokenized.nextToken(); // keep texture coordinates in sync
+	
+						JGeometry surface = JGeometry.load(buildingGeometryObj);
+						double[] ordinatesArray = surface.getOrdinatesArray();
+	
+						GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
+						int contourCount = surface.getElemInfo().length/3;
+						// last point of polygons in gml is identical to first and useless for GeometryInfo
+						double[] giOrdinatesArray = new double[ordinatesArray.length - (contourCount*3)];
+	
+						int[] stripCountArray = new int[contourCount];
+						int[] countourCountArray = {contourCount};
+	
+						for (int currentContour = 1; currentContour <= contourCount; currentContour++) {
+							int startOfCurrentRing = surface.getElemInfo()[(currentContour-1)*3] - 1;
+							int startOfNextRing = (currentContour == contourCount) ? 
+									ordinatesArray.length: // last
+										surface.getElemInfo()[currentContour*3] - 1; // still holes to come
+	
+							for (int j = startOfCurrentRing; j < startOfNextRing - 3; j = j+3) {
+	
+								giOrdinatesArray[(j-(currentContour-1)*3)] = ordinatesArray[j] * 100; // trick for very close coordinates
+								giOrdinatesArray[(j-(currentContour-1)*3)+1] = ordinatesArray[j+1] * 100;
+								giOrdinatesArray[(j-(currentContour-1)*3)+2] = ordinatesArray[j+2] * 100;
+	
+								TexCoords texCoordsForThisSurface = null;
+								if (texCoordsTokenized != null) {
+									double s = Double.parseDouble(texCoordsTokenized.nextToken());
+									double t = Double.parseDouble(texCoordsTokenized.nextToken());
+									if (s > 1.1 || s < -0.1 || t < -0.1 || t > 1.1) { // texture wrapping -- it conflicts with texture atlas
+										currentBuilding.removeTexImage(texImageUri);
+										currentBuilding.addTexOrdImage(texImageUri, texImage);
+									}
+									texCoordsForThisSurface = new TexCoords(s, t);
+								}
+								currentBuilding.setVertexInfoForXYZ(surfaceId,
+										giOrdinatesArray[(j-(currentContour-1)*3)],
+										giOrdinatesArray[(j-(currentContour-1)*3)+1],
+										giOrdinatesArray[(j-(currentContour-1)*3)+2],
+										texCoordsForThisSurface);
+							}
+							stripCountArray[currentContour-1] = (startOfNextRing -3 - startOfCurrentRing)/3;
+							if (texCoordsTokenized != null) {
+								texCoordsTokenized.nextToken(); // geometryInfo ignores last point in a polygon
+								texCoordsTokenized.nextToken(); // keep texture coordinates in sync
+							}
 						}
+						gi.setCoordinates(giOrdinatesArray);
+						gi.setContourCounts(countourCountArray);
+						gi.setStripCounts(stripCountArray);
+						currentBuilding.addGeometryInfo(surfaceId, gi);
 					}
-					gi.setCoordinates(giOrdinatesArray);
-					gi.setContourCounts(countourCountArray);
-					gi.setStripCounts(stripCountArray);
-					currentBuilding.addGeometryInfo(surfaceId, gi);
 				}
-			}
-			catch (SQLException sqlEx) {
-				Logger.getInstance().error("SQL error while querying city object: " + sqlEx.getMessage());
-				return null;
-			}
-			finally {
-				if (rs2 != null)
-					try { rs2.close(); } catch (SQLException e) {}
-					if (psQuery != null)
-						try { psQuery.close(); } catch (SQLException e) {}
+				catch (SQLException sqlEx) {
+					Logger.getInstance().error("SQL error while querying city object: " + sqlEx.getMessage());
+					return null;
+				}
+				finally {
+					if (rs2 != null)
+						try { rs2.close(); } catch (SQLException e) {}
+						if (psQuery != null)
+							try { psQuery.close(); } catch (SQLException e) {}
+				}
 			}
 		}
 
@@ -1568,7 +1574,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	}
 
 
-	private List<PlacemarkType> createHighlingtingPlacemarkForEachSurfaceGeometry(String gmlId,
+	private List<PlacemarkType> createPlacemarkForEachHighlingtingGeometry(String gmlId,
 			DisplayLevel displayLevel) throws SQLException {
 
 		PlacemarkType highlightingPlacemark = null; 
