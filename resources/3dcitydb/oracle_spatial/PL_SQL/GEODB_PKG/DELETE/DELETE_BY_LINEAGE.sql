@@ -2,7 +2,7 @@
 --
 -- Authors:     Claus Nagel <claus.nagel@tu-berlin.de>
 --
--- Copyright:   (c) 2007-2008  Institute for Geodesy and Geoinformation Science,
+-- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
@@ -20,6 +20,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description                               | Author
+-- 1.2.0     2012-02-22   minor changes                               CNag
 -- 1.1.0     2011-02-11   moved to new DELETE functionality           CNag
 -- 1.0.0     2008-09-10   release version                             ASta
 --
@@ -42,9 +43,15 @@ AS
       begin
         geodb_delete.delete_building(building_rec.id);
       exception
-        when others then null;
+        when others then
+          dbms_output.put_line('delete_buildings: deletion of building with ID ' || building_rec.id || ' threw: ' || SQLERRM);
       end;
     end loop;
+    
+    -- cleanup
+    geodb_delete.cleanup_appearances;
+    geodb_delete.cleanup_cityobjectgroups;
+    geodb_delete.cleanup_citymodels;
   exception
     when others then
       dbms_output.put_line('delete_buildings: ' || SQLERRM);

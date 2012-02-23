@@ -2,7 +2,7 @@
 --
 -- Authors:     Claus Nagel <nagel@igg.tu-berlin.de>
 --
--- Copyright:   (c) 2007-2008  Institute for Geodesy and Geoinformation Science,
+-- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
@@ -20,6 +20,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description                               | Author
+-- 1.1.0     2012-02-22   some performance improvements               CNag
 -- 1.0.0     2011-02-11   release version                             CNag
 --
 
@@ -40,6 +41,8 @@ AS
   procedure delete_building_furniture(pid number);
   procedure delete_building(pid number);
   procedure cleanup_appearances(only_global int :=1);
+  procedure cleanup_cityobjectgroups;
+  procedure cleanup_citymodels;
 END geodb_delete;
 /
 
@@ -78,9 +81,60 @@ AS
   procedure pre_delete_building(building_rec building%rowtype);
   procedure post_delete_building(building_rec building%rowtype);
 
-  --
-  -- pre and post conditions of delete operations
-  -- 
+  function is_not_referenced(table_name varchar2, check_column varchar2, check_id number, not_column varchar2, not_id number) return boolean;
+  type ref_cursor is ref cursor;
+  
+  /*
+    internal helpers
+  */
+  function is_not_referenced(table_name varchar2, check_column varchar2, check_id number, not_column varchar2, not_id number) return boolean
+  is
+    ref_cur ref_cursor;
+    dummy number;
+    is_not_referenced boolean;
+  begin
+    open ref_cur for 'select 1 from ' || table_name || ' where ' || check_column || '=:1 and not ' || not_column || '=:2' using check_id, not_id;
+    loop 
+      fetch ref_cur into dummy;
+      is_not_referenced := ref_cur%notfound;
+      exit;
+    end loop;
+    close ref_cur;
+    
+    return is_not_referenced;
+  end;
+  
+  /*
+    internal: delete from SURFACE_GEOMETRY
+  */
+  procedure intern_delete_surface_geometry(pid number)
+  is
+  begin
+    execute immediate 'delete from textureparam where surface_geometry_id in (select id from (select id from surface_geometry start with id=:1 connect by prior id=parent_id order by level desc))' using pid;
+    execute immediate 'delete from surface_geometry where id in (select id from (select id from surface_geometry start with id=:1 connect by prior id=parent_id order by level desc))' using pid; 
+  exception
+    when others then
+      dbms_output.put_line('intern_delete_surface_geometry (id: ' || pid || '): ' || SQLERRM);
+  end;
+  
+  /*
+    internal: delete from IMPLICIT_GEOMETRY
+  */
+  procedure intern_delete_implicit_geom(pid number)
+  is
+    implicit_geometry_rec implicit_geometry%rowtype;
+  begin
+    execute immediate 'select * from implicit_geometry where id=:1'
+      into implicit_geometry_rec
+      using pid;
+  
+    execute immediate 'delete from implicit_geometry where id=:1' using pid;
+    post_delete_implicit_geom(implicit_geometry_rec);
+  exception
+    when others then
+      dbms_output.put_line('intern_delete_implicit_geom (id: ' || pid || '): ' || SQLERRM);
+  end; 
+  
   procedure post_delete_implicit_geom(implicit_geometry_rec implicit_geometry%rowtype)
   is
   begin
@@ -92,46 +146,14 @@ AS
       dbms_output.put_line('post_delete_implicit_geom (id: ' || implicit_geometry_rec.id || '): ' || SQLERRM);
   end;
   
+  /*
+    internal: delete from CITY_OBJECT
+  */
   procedure pre_delete_cityobject(pid number)
   is
-    cursor cityobjectgroup_cur is
-      select cityobjectgroup_id, count(*) as count from group_to_cityobject
-        where cityobjectgroup_id in
-          (select cityobjectgroup_id from group_to_cityobject where cityobject_id=pid)
-       group by cityobjectgroup_id;
-    
-    cursor citymodel_cur is
-      select citymodel_id, count(*) as count from cityobject_member
-        where citymodel_id in
-          (select citymodel_id from cityobject_member where cityobject_id=pid)
-       group by citymodel_id; 
-       
     cursor appearance_cur is
-      select * from appearance where cityobject_id=pid;
-       
-    cityobjectgroup_rec cityobjectgroup%rowtype;
-    citymodel_rec citymodel%rowtype;
-  begin
-    -- delete groups which do not hold members any more.
-    for rec in cityobjectgroup_cur loop
-      if rec.count=1 then
-        execute immediate 'select * from cityobjectgroup where id=:1'
-          into cityobjectgroup_rec
-          using rec.cityobjectgroup_id;
-        delete_cityobjectgroup(cityobjectgroup_rec);
-      end if;
-    end loop;
-    
-    -- delete city models which do not hold members any more.
-    for rec in citymodel_cur loop
-      if rec.count=1 then
-        execute immediate 'select * from citymodel where id=:1'
-          into citymodel_rec
-          using rec.citymodel_id;
-        delete_citymodel(citymodel_rec);
-      end if;
-    end loop;
-    
+      select * from appearance where cityobject_id=pid;      
+  begin   
     execute immediate 'delete from cityobject_member where cityobject_id=:1' using pid;
     execute immediate 'delete from group_to_cityobject where cityobject_id=:1' using pid;
     execute immediate 'delete from generalization where generalizes_to_id=:1' using pid;
@@ -146,8 +168,21 @@ AS
   exception
     when others then
       dbms_output.put_line('pre_delete_cityobject (id: ' || pid || '): ' || SQLERRM);
-  end; 
+  end;
   
+  procedure intern_delete_cityobject(pid number)
+  is
+  begin
+    pre_delete_cityobject(pid);
+    execute immediate 'delete from cityobject where id=:1' using pid;
+  exception
+    when others then
+      dbms_output.put_line('intern_delete_cityobject (id: ' || pid || '): ' || SQLERRM);
+  end;
+  
+  /*
+    internal: delete from CITYMODEL
+  */
   procedure pre_delete_citymodel(citymodel_rec citymodel%rowtype)
   is
     cursor appearance_cur is
@@ -166,23 +201,29 @@ AS
       dbms_output.put_line('pre_delete_citymodel (id: ' || citymodel_rec.id || '): ' || SQLERRM);
   end;
   
+  procedure delete_citymodel(citymodel_rec citymodel%rowtype)
+  is
+  begin
+    pre_delete_citymodel(citymodel_rec);
+    execute immediate 'delete from citymodel where id=:1' using citymodel_rec.id;
+  exception
+    when others then
+      dbms_output.put_line('delete_citymodel (id: ' || citymodel_rec.id || '): ' || SQLERRM);
+  end;
+
+  /*
+    internal: delete from APPEARANCE
+  */
   procedure pre_delete_appearance(appearance_rec appearance%rowtype)
   is
     cursor surface_data_cur is
-      select surface_data_id, count(*) as count from appear_to_surface_data
-        where surface_data_id in
-          (select surface_data_id from appear_to_surface_data where appearance_id=appearance_rec.id)
-        group by surface_data_id;
-        
-    surface_data_rec surface_data%rowtype;
+      select s.* from surface_data s, appear_to_surface_data ats
+        where s.id=ats.surface_data_id and ats.appearance_id=appearance_rec.id;
   begin
     -- delete surface data not being referenced by appearances any more
     for rec in surface_data_cur loop
-      if rec.count=1 then
-        execute immediate 'select * from surface_data where id=:1'
-          into surface_data_rec
-          using rec.surface_data_id;
-        delete_surface_data(surface_data_rec);
+      if is_not_referenced('appear_to_surface_data', 'surface_data_id', rec.id, 'appearance_id', appearance_rec.id) then 
+        delete_surface_data(rec);
       end if;
     end loop;
     
@@ -192,6 +233,19 @@ AS
       dbms_output.put_line('pre_delete_appearance (id: ' || appearance_rec.id || '): ' || SQLERRM);
   end;
   
+  procedure delete_appearance(appearance_rec appearance%rowtype)
+  is
+  begin
+    pre_delete_appearance(appearance_rec);
+    execute immediate 'delete from appearance where id=:1' using appearance_rec.id;
+  exception
+    when others then
+      dbms_output.put_line('delete_appearance (id: ' || appearance_rec.id || '): ' || SQLERRM);
+  end;
+  
+  /*
+    internal: delete from SURFACE_DATA
+  */
   procedure pre_delete_surface_data(surface_data_rec surface_data%rowtype)
   is
   begin
@@ -202,6 +256,19 @@ AS
       dbms_output.put_line('pre_delete_surface_data (id: ' || surface_data_rec.id || '): ' || SQLERRM);
   end;
   
+  procedure delete_surface_data(surface_data_rec surface_data%rowtype)
+  is
+  begin
+    pre_delete_surface_data(surface_data_rec);
+    execute immediate 'delete from surface_data where id=:1' using surface_data_rec.id;
+  exception
+    when others then
+      dbms_output.put_line('delete_surface_data (id: ' || surface_data_rec.id || '): ' || SQLERRM);
+  end;
+  
+  /*
+    internal: delete from CITYOBJECTGROUP
+  */
   procedure pre_delete_cityobjectgroup(cityobjectgroup_rec cityobjectgroup%rowtype)
   is
   begin
@@ -209,6 +276,17 @@ AS
   exception
     when others then
       dbms_output.put_line('pre_delete_cityobjectgroup (id: ' || cityobjectgroup_rec.id || '): ' || SQLERRM);
+  end;
+  
+  procedure delete_cityobjectgroup(cityobjectgroup_rec cityobjectgroup%rowtype)
+  is
+  begin
+    pre_delete_cityobjectgroup(cityobjectgroup_rec);
+    execute immediate 'delete from cityobjectgroup where id=:1' using cityobjectgroup_rec.id;
+    post_delete_cityobjectgroup(cityobjectgroup_rec);      
+    exception
+    when others then
+      dbms_output.put_line('delete_cityobjectgroup (id: ' || cityobjectgroup_rec.id || '): ' || SQLERRM);
   end;
   
   procedure post_delete_cityobjectgroup(cityobjectgroup_rec cityobjectgroup%rowtype)
@@ -222,25 +300,21 @@ AS
   exception
     when others then
       dbms_output.put_line('post_delete_cityobjectgroup (id: ' || cityobjectgroup_rec.id || '): ' || SQLERRM);
-  end;  
+  end;
   
+  /*
+    internal: delete from THEMATIC_SURFACE
+  */
   procedure pre_delete_thematic_surface(thematic_surface_rec thematic_surface%rowtype)
   is
     cursor opening_cur is
-      select opening_id, count(*) as count from opening_to_them_surface
-        where opening_id in
-          (select opening_id from opening_to_them_surface where thematic_surface_id=thematic_surface_rec.id)
-        group by opening_id;
-        
-    opening_rec opening%rowtype;
+      select o.* from opening o, opening_to_them_surface otm 
+        where o.id=otm.opening_id and otm.thematic_surface_id=thematic_surface_rec.id;
   begin
-    -- delete openings not being referenced by a thematic surface any more.
+    -- delete openings not being referenced by a thematic surface any more
     for rec in opening_cur loop
-      if rec.count=1 then
-        execute immediate 'select * from opening where id=:1'
-          into opening_rec
-          using rec.opening_id;
-        delete_opening(opening_rec);
+      if is_not_referenced('opening_to_them_surface', 'opening_id', rec.id, 'thematic_surface_id', thematic_surface_rec.id) then 
+        delete_opening(rec);
       end if;
     end loop;
   
@@ -248,6 +322,17 @@ AS
   exception
     when others then
       dbms_output.put_line('pre_delete_thematic_surface (id: ' || thematic_surface_rec.id || '): ' || SQLERRM);
+  end;
+  
+  procedure delete_thematic_surface(thematic_surface_rec thematic_surface%rowtype)
+  is
+  begin
+    pre_delete_thematic_surface(thematic_surface_rec);
+    execute immediate 'delete from thematic_surface where id=:1' using thematic_surface_rec.id;
+    post_delete_thematic_surface(thematic_surface_rec);
+  exception
+    when others then
+      dbms_output.put_line('delete_thematic_surface (id: ' || thematic_surface_rec.id || '): ' || SQLERRM);
   end;
   
   procedure post_delete_thematic_surface(thematic_surface_rec thematic_surface%rowtype)
@@ -269,6 +354,9 @@ AS
       dbms_output.put_line('post_delete_thematic_surface (id: ' || thematic_surface_rec.id || '): ' || SQLERRM);
   end;
   
+  /*
+    internal: delete from OPENING
+  */
   procedure pre_delete_opening(opening_rec opening%rowtype)
   is
   begin
@@ -278,11 +366,22 @@ AS
       dbms_output.put_line('pre_delete_opening (id: ' || opening_rec.id || '): ' || SQLERRM);
   end;
   
+  procedure delete_opening(opening_rec opening%rowtype)
+  is
+  begin
+    pre_delete_opening(opening_rec);
+    execute immediate 'delete from opening where id=:1' using opening_rec.id;
+    post_delete_opening(opening_rec);
+  exception
+    when others then
+      dbms_output.put_line('delete_opening (id: ' || opening_rec.id || '): ' || SQLERRM);
+  end;
+  
   procedure post_delete_opening(opening_rec opening%rowtype)
   is
     cursor address_cur is
-      select a.id from address a where a.id=opening_rec.address_id and
-        (select count(*) from address_to_building ab where ab.address_id=a.id)=0;
+      select a.id from address a left outer join address_to_building ab
+        on a.id=ab.address_id where a.id=opening_rec.address_id and ab.address_id is null;
   begin
     if opening_rec.lod3_multi_surface_id is not null then
       intern_delete_surface_geometry(opening_rec.lod3_multi_surface_id);
@@ -291,14 +390,30 @@ AS
       intern_delete_surface_geometry(opening_rec.lod4_multi_surface_id);
     end if;
     
+    -- delete addresses not being referenced from buildings and openings any more
     for rec in address_cur loop
-      delete_address(rec.id);
+      if is_not_referenced('opening', 'address_id', rec.id, 'id', opening_rec.id) then
+        delete_address(rec.id);
+      end if;   
     end loop;
     
     intern_delete_cityobject(opening_rec.id);
   exception
     when others then
       dbms_output.put_line('post_delete_opening (id: ' || opening_rec.id || '): ' || SQLERRM);
+  end;
+  
+  /*
+    internal: delete from BUILDING_INSTALLATION
+  */
+  procedure delete_building_installation(building_installation_rec building_installation%rowtype)
+  is
+  begin
+    execute immediate 'delete from building_installation where id=:1' using building_installation_rec.id;
+    post_delete_building_inst(building_installation_rec);
+  exception
+    when others then
+      dbms_output.put_line('delete_building_installation (id: ' || building_installation_rec.id || '): ' || SQLERRM);
   end;
   
   procedure post_delete_building_inst(building_installation_rec building_installation%rowtype)
@@ -320,6 +435,9 @@ AS
       dbms_output.put_line('post_delete_building_inst (id: ' || building_installation_rec.id || '): ' || SQLERRM);
   end;
   
+  /*
+    internal: delete from ROOM
+  */
   procedure pre_delete_room(room_rec room%rowtype)
   is
     cursor thematic_surface_cur is
@@ -347,6 +465,17 @@ AS
       dbms_output.put_line('pre_delete_room (id: ' || room_rec.id || '): ' || SQLERRM);
   end;
   
+  procedure delete_room(room_rec room%rowtype)
+  is
+  begin
+    pre_delete_room(room_rec);
+    execute immediate 'delete from room where id=:1' using room_rec.id;
+    post_delete_room(room_rec);
+  exception
+    when others then
+      dbms_output.put_line('delete_room (id: ' || room_rec.id || '): ' || SQLERRM);
+  end;
+  
   procedure post_delete_room(room_rec room%rowtype)
   is
   begin
@@ -358,6 +487,19 @@ AS
   exception
     when others then
       dbms_output.put_line('post_delete_room (id: ' || room_rec.id || '): ' || SQLERRM);
+  end;
+  
+  /*
+    internal: delete from BUILDING_FURNITURE
+  */
+  procedure delete_building_furniture(building_furniture_rec building_furniture%rowtype)
+  is
+  begin
+    execute immediate 'delete from building_furniture where id=:1' using building_furniture_rec.id;
+    post_delete_building_furniture(building_furniture_rec);
+  exception
+    when others then
+      dbms_output.put_line('delete_building_furniture (id: ' || building_furniture_rec.id || '): ' || SQLERRM);
   end;
   
   procedure post_delete_building_furniture(building_furniture_rec building_furniture%rowtype)
@@ -376,6 +518,9 @@ AS
       dbms_output.put_line('post_delete_building_furniture (id: ' || building_furniture_rec.id || '): ' || SQLERRM);
   end;
   
+  /*
+    internal: delete from BUILDING
+  */
   procedure pre_delete_building(building_rec building%rowtype)
   is    
     cursor building_part_cur is
@@ -389,16 +534,12 @@ AS
       
     cursor room_cur is
       select * from room where building_id=building_rec.id;
-      
+    
     cursor address_cur is
-      select ab.address_id, count(*) as count from address_to_building ab
-        where ab.address_id in
-          (select address_id from address_to_building where building_id=building_rec.id) and
-          (select count(*) from opening where address_id=ab.address_id)=0
-        group by ab.address_id;
+      select address_id from address_to_building where building_id=building_rec.id;
   begin
-    for building_part_rec in building_part_cur loop
-      delete_building(building_part_rec);
+    for rec in building_part_cur loop
+      delete_building(rec);
     end loop;
     
     for rec in thematic_surface_cur loop
@@ -413,9 +554,10 @@ AS
       delete_room(rec);
     end loop;
         
+    -- delete addresses being not referenced from buildings any more
     for rec in address_cur loop
-      if rec.count=1 then
-       delete_address(rec.address_id);
+      if is_not_referenced('address_to_building', 'address_id', rec.address_id, 'building_id', building_rec.id) then 
+        delete_address(rec.address_id);
       end if;
     end loop;
     
@@ -423,6 +565,17 @@ AS
   exception
     when others then
       dbms_output.put_line('pre_delete_building (id: ' || building_rec.id || '): ' || SQLERRM);
+  end;
+  
+  procedure delete_building(building_rec building%rowtype)
+  is
+  begin
+    pre_delete_building(building_rec);
+    execute immediate 'delete from building where id=:1' using building_rec.id;
+    post_delete_building(building_rec);
+  exception
+    when others then
+      dbms_output.put_line('delete_building (id: ' || building_rec.id || '): ' || SQLERRM);
   end;
   
   procedure post_delete_building(building_rec building%rowtype)
@@ -447,202 +600,9 @@ AS
       dbms_output.put_line('post_delete_building (id: ' || building_rec.id || '): ' || SQLERRM);
   end;
   
-  --
-  -- internal delete operations
-  --  
-  procedure intern_delete_surface_geometry(pid number)
-  is
-    type id_type is table of surface_geometry.id%type;
-    ids id_type;
-  begin
-    execute immediate 'select id from surface_geometry start with id=:1 connect by prior id=parent_id order by level desc'
-      bulk collect into ids 
-      using pid;
-    
-    forall i in ids.first .. ids.last
-      execute immediate 'delete from textureparam where surface_geometry_id=:1' using ids(i);
-
-    forall i in ids.first .. ids.last
-      execute immediate 'delete from surface_geometry where id=:1' using ids(i);
-  
-    ids.delete;  
-  exception
-    when others then
-      dbms_output.put_line('intern_delete_surface_geometry (id: ' || pid || '): ' || SQLERRM);
-  end; 
-  
-  procedure intern_delete_implicit_geom(pid number)
-  is
-    implicit_geometry_rec implicit_geometry%rowtype;
-  begin
-    execute immediate 'select * from implicit_geometry where id=:1'
-      into implicit_geometry_rec
-      using pid;
-  
-    execute immediate 'delete from implicit_geometry where id=:1' using pid;
-    post_delete_implicit_geom(implicit_geometry_rec);
-  exception
-    when others then
-      dbms_output.put_line('intern_delete_implicit_geom (id: ' || pid || '): ' || SQLERRM);
-  end; 
-  
-  procedure intern_delete_cityobject(pid number)
-  is
-  begin
-    pre_delete_cityobject(pid);
-    execute immediate 'delete from cityobject where id=:1' using pid;
-  exception
-    when others then
-      dbms_output.put_line('intern_delete_cityobject (id: ' || pid || '): ' || SQLERRM);
-  end;
-  
-  procedure delete_citymodel(citymodel_rec citymodel%rowtype)
-  is
-  begin
-    pre_delete_citymodel(citymodel_rec);
-    execute immediate 'delete from citymodel where id=:1' using citymodel_rec.id;
-  exception
-    when others then
-      dbms_output.put_line('delete_citymodel (id: ' || citymodel_rec.id || '): ' || SQLERRM);
-  end;
-  
-  procedure delete_appearance(appearance_rec appearance%rowtype)
-  is
-  begin
-    pre_delete_appearance(appearance_rec);
-    execute immediate 'delete from appearance where id=:1' using appearance_rec.id;
-  exception
-    when others then
-      dbms_output.put_line('delete_appearance (id: ' || appearance_rec.id || '): ' || SQLERRM);
-  end;
-  
-  procedure cleanup_appearances(only_global int :=1)
-  is
-    cursor surface_data_global_cur is
-      select * from surface_data s where
-        (select count(*) from textureparam t where t.surface_data_id=s.id)=0;
-    
-    cursor appearance_cur is
-      select * from appearance a where
-        (select count(*) from appear_to_surface_data asd where asd.appearance_id=a.id)=0;
-        
-    cursor appearance_global_cur is
-      select * from appearance a where a.cityobject_id is null and
-        (select count(*) from appear_to_surface_data asd where asd.appearance_id=a.id)=0;
-  begin
-    -- global appearances are not related to a cityobject.
-    -- however, we assume that all surface geometries of a cityobject
-    -- have been deleted at this stage. thus, we can check and delete
-    -- surface data which does not have a valid texture parameterization
-    -- any more.
-    for rec in surface_data_global_cur loop
-      delete_surface_data(rec);
-    end loop;
-    
-    -- required global appearances if we deleted surface data because
-    -- it lacked a texture parameterization
-    if only_global=1 then
-      for rec in appearance_global_cur loop
-        delete_appearance(rec);
-      end loop;
-    else
-      for rec in appearance_cur loop
-        delete_appearance(rec);
-      end loop;
-    end if;
-  exception
-    when others then
-      dbms_output.put_line('delete_global_appearances: ' || SQLERRM);
-  end;
-  
-  procedure delete_surface_data(surface_data_rec surface_data%rowtype)
-  is
-  begin
-    pre_delete_surface_data(surface_data_rec);
-    execute immediate 'delete from surface_data where id=:1' using surface_data_rec.id;
-  exception
-    when others then
-      dbms_output.put_line('delete_surface_data (id: ' || surface_data_rec.id || '): ' || SQLERRM);
-  end;
-  
-  procedure delete_cityobjectgroup(cityobjectgroup_rec cityobjectgroup%rowtype)
-  is
-  begin
-    pre_delete_cityobjectgroup(cityobjectgroup_rec);
-    execute immediate 'delete from cityobjectgroup where id=:1' using cityobjectgroup_rec.id;
-    post_delete_cityobjectgroup(cityobjectgroup_rec);      
-    exception
-    when others then
-      dbms_output.put_line('delete_cityobjectgroup (id: ' || cityobjectgroup_rec.id || '): ' || SQLERRM);
-  end;
-  
-  procedure delete_thematic_surface(thematic_surface_rec thematic_surface%rowtype)
-  is
-  begin
-    pre_delete_thematic_surface(thematic_surface_rec);
-    execute immediate 'delete from thematic_surface where id=:1' using thematic_surface_rec.id;
-    post_delete_thematic_surface(thematic_surface_rec);
-  exception
-    when others then
-      dbms_output.put_line('delete_thematic_surface (id: ' || thematic_surface_rec.id || '): ' || SQLERRM);
-  end;
-  
-  procedure delete_opening(opening_rec opening%rowtype)
-  is
-  begin
-    pre_delete_opening(opening_rec);
-    execute immediate 'delete from opening where id=:1' using opening_rec.id;
-    post_delete_opening(opening_rec);
-  exception
-    when others then
-      dbms_output.put_line('delete_opening (id: ' || opening_rec.id || '): ' || SQLERRM);
-  end;
-  
-  procedure delete_building_installation(building_installation_rec building_installation%rowtype)
-  is
-  begin
-    execute immediate 'delete from building_installation where id=:1' using building_installation_rec.id;
-    post_delete_building_inst(building_installation_rec);
-  exception
-    when others then
-      dbms_output.put_line('delete_building_installation (id: ' || building_installation_rec.id || '): ' || SQLERRM);
-  end;
-  
-  procedure delete_room(room_rec room%rowtype)
-  is
-  begin
-    pre_delete_room(room_rec);
-    execute immediate 'delete from room where id=:1' using room_rec.id;
-    post_delete_room(room_rec);
-  exception
-    when others then
-      dbms_output.put_line('delete_room (id: ' || room_rec.id || '): ' || SQLERRM);
-  end;
-  
-  procedure delete_building_furniture(building_furniture_rec building_furniture%rowtype)
-  is
-  begin
-    execute immediate 'delete from building_furniture where id=:1' using building_furniture_rec.id;
-    post_delete_building_furniture(building_furniture_rec);
-  exception
-    when others then
-      dbms_output.put_line('delete_building_furniture (id: ' || building_furniture_rec.id || '): ' || SQLERRM);
-  end;
-  
-  procedure delete_building(building_rec building%rowtype)
-  is
-  begin
-    pre_delete_building(building_rec);
-    execute immediate 'delete from building where id=:1' using building_rec.id;
-    post_delete_building(building_rec);
-  exception
-    when others then
-      dbms_output.put_line('delete_building (id: ' || building_rec.id || '): ' || SQLERRM);
-  end;
-  
-  --  
-  -- public API procedures
-  --
+  /*
+    PUBLIC API PROCEDURES
+  */  
   procedure delete_surface_geometry(pid number, clean_apps int := 0)
   is
   begin
@@ -674,6 +634,8 @@ AS
   begin
     execute immediate 'delete from external_reference where id=:1' using pid;
   exception
+    when no_data_found then
+      return;
     when others then
       dbms_output.put_line('delete_external_reference (id: ' || pid || '): ' || SQLERRM);
   end; 
@@ -687,7 +649,6 @@ AS
       using pid;
     
     delete_citymodel(citymodel_rec);
-    cleanup_appearances;
   exception
     when no_data_found then
       return;
@@ -704,7 +665,6 @@ AS
       using pid;
     
     delete_appearance(appearance_rec);
-    cleanup_appearances;
   exception
     when no_data_found then
       return;
@@ -721,7 +681,6 @@ AS
       using pid;
     
     delete_surface_data(surface_data_rec);
-    cleanup_appearances(0);
   exception
     when no_data_found then
       return;
@@ -738,7 +697,6 @@ AS
       using pid;
     
     delete_cityobjectgroup(cityobjectgroup_rec);
-    cleanup_appearances;
   exception
     when no_data_found then
       return;
@@ -755,7 +713,6 @@ AS
       using pid;
   
     delete_thematic_surface(thematic_surface_rec);
-    cleanup_appearances;
   exception
     when no_data_found then
       return;
@@ -772,7 +729,6 @@ AS
       using pid;
     
     delete_opening(opening_rec);
-    cleanup_appearances;
   exception
     when no_data_found then
       return;
@@ -802,7 +758,6 @@ AS
       using pid;
     
     delete_building_installation(building_installation_rec);
-    cleanup_appearances;
   exception
     when no_data_found then
       return;
@@ -819,7 +774,6 @@ AS
       using pid;
     
     delete_room(room_rec);
-    cleanup_appearances;
   exception
     when no_data_found then
       return;
@@ -836,7 +790,6 @@ AS
       using pid;
     
     delete_building_furniture(building_furniture_rec);
-    cleanup_appearances;
   exception
     when no_data_found then
       return;
@@ -853,12 +806,77 @@ AS
       using pid;
     
     delete_building(building_rec);
-    cleanup_appearances;
   exception
     when no_data_found then
       return;
     when others then
       dbms_output.put_line('delete_building (id: ' || pid || '): ' || SQLERRM);
+  end;
+  
+  procedure cleanup_appearances(only_global int :=1)
+  is
+    cursor surface_data_global_cur is
+      select s.* from surface_data s left outer join textureparam t
+        on s.id=t.surface_data_id where t.surface_data_id is null;
+    
+    cursor appearance_cur is
+      select a.* from appearance a left outer join appear_to_surface_data asd
+        on a.id=asd.appearance_id where asd.appearance_id is null;
+        
+    cursor appearance_global_cur is
+      select a.* from appearance a left outer join appear_to_surface_data asd
+        on a.id=asd.appearance_id where a.cityobject_id is null and asd.appearance_id is null;
+  begin
+    -- global appearances are not related to a cityobject.
+    -- however, we assume that all surface geometries of a cityobject
+    -- have been deleted at this stage. thus, we can check and delete
+    -- surface data which does not have a valid texture parameterization
+    -- any more.
+    for rec in surface_data_global_cur loop
+      delete_surface_data(rec);
+    end loop;
+    
+    -- delete appearances which does not have surface data any more
+    if only_global=1 then
+      for rec in appearance_global_cur loop
+        delete_appearance(rec);
+      end loop;
+    else
+      for rec in appearance_cur loop
+        delete_appearance(rec);
+      end loop;
+    end if;
+  exception
+    when others then
+      dbms_output.put_line('cleanup_appearances: ' || SQLERRM);
+  end;
+
+  procedure cleanup_cityobjectgroups
+  is
+    cursor group_cur is
+      select g.* from cityobjectgroup g left outer join group_to_cityobject gtc
+        on g.id=gtc.cityobject_id where gtc.cityobject_id is null;
+  begin
+    for rec in group_cur loop
+      delete_cityobjectgroup(rec);
+    end loop;
+  exception
+    when others then
+      dbms_output.put_line('cleanup_cityobjectgroups: ' || SQLERRM);
+  end;
+  
+  procedure cleanup_citymodels
+  is
+    cursor citymodel_cur is
+      select c.* from citymodel c left outer join cityobject_member cm
+        on c.id=cm.citymodel_id where cm.citymodel_id is null;
+  begin
+    for rec in citymodel_cur loop
+      delete_citymodel(rec);
+    end loop;
+  exception
+    when others then
+      dbms_output.put_line('cleanup_citymodel: ' || SQLERRM);
   end;
   
 END geodb_delete;
