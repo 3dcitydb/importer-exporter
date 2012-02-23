@@ -315,7 +315,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		displayAsPanel.add(pixelsColladaLabel, GuiUtil.setConstraints(4,3,0.0,1.0,GridBagConstraints.BOTH,2,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		displayAsPanel.add(themeLabel, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,32,BORDER_THICKNESS,0));
-		themeComboBox.setMinimumSize(new Dimension(80, (int)themeComboBox.getPreferredSize().getHeight()));
+//		themeComboBox.setMinimumSize(new Dimension(80, (int)themeComboBox.getPreferredSize().getHeight()));
+//		themeComboBox.setPreferredSize(new Dimension(80, (int)fetchThemesButton.getPreferredSize().getHeight()));
 		GridBagConstraints tcb = GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,0);
 		tcb.gridwidth = 1;
 		displayAsPanel.add(themeComboBox, tcb);
@@ -694,6 +695,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 						doExport();
 					}
 				};
+				thread.setDaemon(true);
 				thread.start();
 			}
 		});
@@ -749,42 +751,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		fetchThemesButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// dialog preparation
-				String text = Internal.I18N.getString("pref.kmlexport.connectDialog.line2");
-				DBConnection conn = config.getProject().getDatabase().getActiveConnection();
-				Object[] args = new Object[]{conn.getDescription(), conn.toConnectString()};
-				String formattedMsg = MessageFormat.format(text, args);
-				String[] connectConfirm = {Internal.I18N.getString("pref.kmlexport.connectDialog.line1"),
-						formattedMsg,
-						Internal.I18N.getString("pref.kmlexport.connectDialog.line3")};
-
-				if (!dbPool.isConnected() &&
-						JOptionPane.showConfirmDialog(getTopLevelAncestor(),
-								connectConfirm,
-								Internal.I18N.getString("pref.kmlexport.connectDialog.title"),
-								JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-					mainView.connectToDatabase();
-				}
-
-				if (dbPool.isConnected()) {
-					themeComboBox.removeAllItems();
-					themeComboBox.addItem(KmlExporter.THEME_NONE);
-					themeComboBox.setSelectedItem(KmlExporter.THEME_NONE);
-					try {
-						Workspace workspace = new Workspace();
-						workspace.setName(workspaceText.getText().trim());
-						workspace.setTimestamp(timestampText.getText().trim());
-						for (String theme: DBUtil.getAppearanceThemeList(workspace)) {
-							if (theme == null) continue; 
-							themeComboBox.addItem(theme);
-							if (theme.equals(config.getProject().getKmlExporter().getAppearanceTheme())) {
-								themeComboBox.setSelectedItem(theme);
-							}
-						}
-						themeComboBox.setEnabled(true);
-					}
-					catch (SQLException sqlEx) { }
-				}
+				ThemeUpdater themeUpdater = new ThemeUpdater();
+				themeUpdater.setDaemon(true);
+				themeUpdater.start();
 			}
 		});
 
@@ -1037,4 +1006,48 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 	}
 
+	private class ThemeUpdater extends Thread {
+		public void run() {
+			Thread.currentThread().setName(this.getClass().getSimpleName());
+			fetchThemesButton.setEnabled(false);
+			try {
+				String text = Internal.I18N.getString("pref.kmlexport.connectDialog.line2");
+				DBConnection conn = config.getProject().getDatabase().getActiveConnection();
+				Object[] args = new Object[]{conn.getDescription(), conn.toConnectString()};
+				String formattedMsg = MessageFormat.format(text, args);
+				String[] connectConfirm = {Internal.I18N.getString("pref.kmlexport.connectDialog.line1"),
+						formattedMsg,
+						Internal.I18N.getString("pref.kmlexport.connectDialog.line3")};
+	
+				if (!dbPool.isConnected() &&
+						JOptionPane.showConfirmDialog(getTopLevelAncestor(),
+								connectConfirm,
+								Internal.I18N.getString("pref.kmlexport.connectDialog.title"),
+								JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+					mainView.connectToDatabase();
+				}
+	
+				if (dbPool.isConnected()) {
+					themeComboBox.removeAllItems();
+					themeComboBox.addItem(KmlExporter.THEME_NONE);
+					themeComboBox.setSelectedItem(KmlExporter.THEME_NONE);
+					Workspace workspace = new Workspace();
+					workspace.setName(workspaceText.getText().trim());
+					workspace.setTimestamp(timestampText.getText().trim());
+					for (String theme: DBUtil.getAppearanceThemeList(workspace)) {
+						if (theme == null) continue; 
+						themeComboBox.addItem(theme);
+						if (theme.equals(config.getProject().getKmlExporter().getAppearanceTheme())) {
+							themeComboBox.setSelectedItem(theme);
+						}
+					}
+					themeComboBox.setEnabled(true);
+				}
+			}
+			catch (Exception e) { }
+			finally {
+				fetchThemesButton.setEnabled(true);
+			}
+		}
+	}
 }
