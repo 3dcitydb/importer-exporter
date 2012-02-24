@@ -103,7 +103,7 @@ public class DBAddress implements DBImporter {
 	private void init() throws SQLException {
 		psAddress = batchConn.prepareStatement("insert into ADDRESS (ID, STREET, HOUSE_NUMBER, PO_BOX, ZIP_CODE, CITY, COUNTRY, MULTI_POINT) values "+
 				"(?, ?, ?, ?, ?, ?, ?, ?)");
-		
+
 		addressToBuildingImporter = (DBAddressToBuilding)dbImporterManager.getDBImporter(DBImporterEnum.ADDRESS_TO_BUILDING);
 		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
 	}
@@ -111,15 +111,19 @@ public class DBAddress implements DBImporter {
 	public long insert(Address address) throws SQLException {
 		if (!address.isSetXalAddress() || !address.getXalAddress().isSetAddressDetails())
 			return 0;
-		
+
 		XalAddressProperty xalAddressProperty = address.getXalAddress();
 		AddressDetails addressDetails = xalAddressProperty.getAddressDetails();
-		
+
 		// ok, let's start
 		long addressId = dbImporterManager.getDBId(DBSequencerEnum.ADDRESS_SEQ);
 		if (addressId == 0)
 			return 0;
-		
+
+		// propagate gml:id
+		if (address.isSetId())
+			dbImporterManager.putGmlId(address.getId(), addressId, address.getCityGMLClass());
+
 		// we just interpret addresses having a <country> child element
 		if (addressDetails.isSetCountry()) {
 			// this is the information we need...
@@ -127,52 +131,52 @@ public class DBAddress implements DBImporter {
 			streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = null;
 			JGeometry multiPoint = null;
 			Country country = addressDetails.getCountry();
-			
+
 			// country name
 			if (country.isSetCountryName()) {
 				List<String> countryName = new ArrayList<String>();				
 				for (CountryName name : country.getCountryName())
 					countryName.add(name.getContent());
-				
+
 				countryAttr = Util.collection2string(countryName, ",");
 			} 
-			
+
 			// locality
 			if (country.isSetLocality()) {
 				Locality locality = country.getLocality();
-				
+
 				// check whether we deal with a city or a town
 				if (locality.isSetType() && 
 						(locality.getType().toUpperCase().equals("CITY") ||
 								locality.getType().toUpperCase().equals("TOWN"))) {
-					
+
 					// city name
 					if (locality.isSetLocalityName()) {
 						List<String> localityName = new ArrayList<String>();						
 						for (LocalityName name : locality.getLocalityName())
 							localityName.add(name.getContent());
-						
+
 						cityAttr = Util.collection2string(localityName, ",");
 					} 
-					
+
 					// thoroughfare - just streets are supported
 					if (locality.isSetThoroughfare()) {
 						Thoroughfare thoroughfare = locality.getThoroughfare();
-						
+
 						// check whether we deal with a street
 						if (thoroughfare.isSetType() && 
 								(thoroughfare.getType().toUpperCase().equals("STREET") ||
 										thoroughfare.getType().toUpperCase().equals("ROAD"))) {
-							
+
 							// street name
 							if (thoroughfare.isSetThoroughfareName()) {
 								List<String> fareName = new ArrayList<String>();								
 								for (ThoroughfareName name : thoroughfare.getThoroughfareName())
 									fareName.add(name.getContent());
-								
+
 								streetAttr = Util.collection2string(fareName, ",");
 							}
-							
+
 							// house number - we do not support number ranges so far...						
 							if (thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange()) {
 								List<String> houseNumber = new ArrayList<String>();								
@@ -180,7 +184,7 @@ public class DBAddress implements DBImporter {
 									if (number.isSetThoroughfareNumber())
 										houseNumber.add(number.getThoroughfareNumber().getContent());
 								}
-								
+
 								houseNoAttr = Util.collection2string(houseNumber, ",");
 							}
 						}
@@ -189,32 +193,32 @@ public class DBAddress implements DBImporter {
 					// postal code
 					if (locality.isSetPostalCode()) {
 						PostalCode postalCode = locality.getPostalCode();
-						
+
 						// get postal code number
 						if (postalCode.isSetPostalCodeNumber()) {
 							List<String> zipCode = new ArrayList<String>();							
 							for (PostalCodeNumber number : postalCode.getPostalCodeNumber())
 								zipCode.add(number.getContent());
-							
+
 							zipCodeAttr = Util.collection2string(zipCode, ",");
 						}
 					}
-					
+
 					// post box
 					if (locality.isSetPostBox()) {
 						PostBox postBox = locality.getPostBox();
-						
+
 						// get post box nummber
 						if (postBox.isSetPostBoxNumber())
 							poBoxAttr = postBox.getPostBoxNumber().getContent();
 					}
 				}
 			}
-			
+
 			// multiPoint geometry
 			if (address.isSetMultiPoint())
 				multiPoint = sdoGeometry.getMultiPoint(address.getMultiPoint());
-			
+
 			psAddress.setLong(1, addressId);
 			psAddress.setString(2, streetAttr);
 			psAddress.setString(3, houseNoAttr);
@@ -222,34 +226,34 @@ public class DBAddress implements DBImporter {
 			psAddress.setString(5, zipCodeAttr);
 			psAddress.setString(6, cityAttr);
 			psAddress.setString(7, countryAttr);
-			
+
 			if (multiPoint != null) {
 				STRUCT multiPointObj = SyncJGeometry.syncStore(multiPoint, batchConn);
 				psAddress.setObject(8, multiPointObj);
 			} else
 				psAddress.setNull(8, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
-			
+
 			psAddress.addBatch();
 			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
 				dbImporterManager.executeBatch(DBImporterEnum.ADDRESS);
-			
+
 			// enable xlinks
 			if (address.isSetId())
 				dbImporterManager.putGmlId(address.getId(), addressId, address.getCityGMLClass());
 		}	
-		
+
 		return addressId;
 	}
-	
+
 	public long insert(Address address, long parentId) throws SQLException {
 		long addressId = insert(address);
-		
+
 		if (addressId != 0)
 			addressToBuildingImporter.insert(addressId, parentId);		
-				
+
 		return addressId;
 	}
-	
+
 	@Override
 	public void executeBatch() throws SQLException {
 		psAddress.executeBatch();

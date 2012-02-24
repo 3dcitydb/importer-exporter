@@ -218,7 +218,7 @@ public class KmlExporter implements EventHandler {
 			if (!DBUtil.isIndexed("CITYOBJECT", "ENVELOPE") || 
 					!DBUtil.isIndexed("SURFACE_GEOMETRY", "GEOMETRY")) {
 				Logger.getInstance().error("Spatial indexes are not activated.");
-				Logger.getInstance().error("Please use the preferences tab to activate the spatial indexes.");
+				Logger.getInstance().error("Please use the database tab to activate the spatial indexes.");
 				return false;
 			}
 		}

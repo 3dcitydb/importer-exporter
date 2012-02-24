@@ -376,6 +376,8 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 			useSingleProxy.setSelected(previousSingleProxy != null);
 		} else
 			loadProxySettings(currentProxy);
+		
+		setEnabledUserSettings();
 	}
 
 	@Override
