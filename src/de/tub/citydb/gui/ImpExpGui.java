@@ -40,6 +40,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayOutputStream;
@@ -60,8 +62,10 @@ import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -71,6 +75,8 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.xml.bind.JAXBContext;
@@ -124,15 +130,18 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private DatabaseConnectionPool dbPool;
 
 	private JPanel main;
-	private JTextArea consoleText;
 	private JLabel statusText;
 	private JLabel connectText;
 	private MenuBar menuBar;
 	private JTabbedPane menu;
 	private JSplitPane splitPane;
+	
 	private JPanel console;
 	private JLabel consoleLabel;
+	private ConsolePopupMenuWrapper consolePopup;
 	private ConsoleWindow consoleWindow;
+	private JTextArea consoleText;
+	
 	private int tmpConsoleWidth;
 	private int activePosition;
 
@@ -203,8 +212,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consoleText.setFont(new Font(Font.MONOSPACED, 0, 11));
 		consoleText.setEditable(false);
 		consoleWindow = new ConsoleWindow(console, config, this);
-
-		PopupMenuDecorator.getInstance().decorate(consoleText);
+		consolePopup = new ConsolePopupMenuWrapper(PopupMenuDecorator.getInstance().decorate(consoleText));
 
 		statusText = new JLabel();
 		connectText = new JLabel();
@@ -401,13 +409,13 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		}
 
 		// let standard out point to console
-		JTextAreaOutputStream jTextwriter = new JTextAreaOutputStream(consoleText, new ByteArrayOutputStream(), encoding);
+		JTextAreaOutputStream consoleWriter = new JTextAreaOutputStream(consoleText, new ByteArrayOutputStream(), encoding);
 		PrintStream writer;
 
 		try {
-			writer = new PrintStream(jTextwriter, true, encoding.displayName());
+			writer = new PrintStream(consoleWriter, true, encoding.displayName());
 		} catch (UnsupportedEncodingException e) {
-			writer = new PrintStream(jTextwriter);
+			writer = new PrintStream(consoleWriter);
 		}
 
 		out = System.out;
@@ -435,7 +443,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 			setDatabaseStatus(dbPool.isConnected());
 			statusText.setText(Internal.I18N.getString("main.status.ready.label"));
-			consoleLabel.setText(Internal.I18N.getString("main.label.console"));
+			consoleLabel.setText(Internal.I18N.getString("main.console.label"));
 
 			// fire translation notification to plugins
 			for (Plugin plugin : pluginService.getPlugins())
@@ -446,6 +454,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				menu.setTitleAt(index++, view.getLocalizedTitle());
 
 			menuBar.doTranslation();
+			consolePopup.doTranslation();
 
 			eventDispatcher.triggerSyncEvent(new SwitchLocaleEventImpl(locale, this));
 		} catch (MissingResourceException e) {
@@ -653,6 +662,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		}
 	}
 
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		setDatabaseStatus(((DatabaseConnectionStateEvent)event).isConnected());
+	}
+	
 	private class JTextAreaOutputStream extends FilterOutputStream {
 		private final int MAX_DOC_LENGTH = 10000;
 		private final JTextArea ta;
@@ -696,9 +710,44 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			});
 		}
 	}
+	
+	private final class ConsolePopupMenuWrapper {
+		private JMenuItem clear;	
 
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		setDatabaseStatus(((DatabaseConnectionStateEvent)event).isConnected());
+		public ConsolePopupMenuWrapper(JPopupMenu popupMenu) {
+			clear = new JMenuItem();	
+
+			popupMenu.addSeparator();
+			popupMenu.add(clear);
+
+			clear.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					clearConsole();
+				}
+			});
+			
+			popupMenu.addPopupMenuListener(new PopupMenuListener() {
+				
+				@Override
+				public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+					clear.setEnabled(consoleText.getDocument().getLength() != 0);
+				}
+				
+				@Override
+				public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+					// nothing to do
+				}
+				
+				@Override
+				public void popupMenuCanceled(PopupMenuEvent e) {
+					// nothing to do
+				}
+			});
+			
+		}
+
+		private void doTranslation() {
+			clear.setText(Internal.I18N.getString("main.console.popup.clear"));
+		}
 	}
 }

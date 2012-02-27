@@ -60,7 +60,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 	private JLabel yminLabel;
 	private JLabel ymaxLabel;
 
-	private BBoxPopupMenu[] bboxPopups;
+	private BBoxPopupMenuWrapper[] bboxPopups;
 	private BoundingBoxClipboardHandler clipboardHandler;
 
 	public BoundingBoxPanelImpl(Config config) {
@@ -141,12 +141,12 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 
 		// popup menus
 		PopupMenuDecorator popupMenuDecorator = PopupMenuDecorator.getInstance();
-		bboxPopups = new BBoxPopupMenu[4];
+		bboxPopups = new BBoxPopupMenuWrapper[4];
 
-		bboxPopups[0] = new BBoxPopupMenu(popupMenuDecorator.decorate(xmin));
-		bboxPopups[1] = new BBoxPopupMenu(popupMenuDecorator.decorate(ymin));
-		bboxPopups[2] = new BBoxPopupMenu(popupMenuDecorator.decorate(xmax));
-		bboxPopups[3] = new BBoxPopupMenu(popupMenuDecorator.decorate(ymax));
+		bboxPopups[0] = new BBoxPopupMenuWrapper(popupMenuDecorator.decorate(xmin));
+		bboxPopups[1] = new BBoxPopupMenuWrapper(popupMenuDecorator.decorate(ymin));
+		bboxPopups[2] = new BBoxPopupMenuWrapper(popupMenuDecorator.decorate(xmax));
+		bboxPopups[3] = new BBoxPopupMenuWrapper(popupMenuDecorator.decorate(ymax));
 
 		// button actions
 		map.addActionListener(new ActionListener() {
@@ -322,11 +322,11 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		doTranslation();
 	}
 
-	private final class BBoxPopupMenu extends JPopupMenu {
+	private final class BBoxPopupMenuWrapper {
 		private JMenuItem copy;	
 		private JMenuItem paste;
 
-		public BBoxPopupMenu(JPopupMenu popupMenu) {
+		public BBoxPopupMenuWrapper(JPopupMenu popupMenu) {
 			copy = new JMenuItem();	
 			paste = new JMenuItem();
 

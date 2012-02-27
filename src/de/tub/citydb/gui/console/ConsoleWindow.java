@@ -102,7 +102,7 @@ public class ConsoleWindow extends JFrame {
 	}
 
 	public void doTranslation() {
-		setTitle(Internal.I18N.getString("main.window.title") + " - " + Internal.I18N.getString("main.label.console"));
+		setTitle(Internal.I18N.getString("main.window.title") + " - " + Internal.I18N.getString("main.console.label"));
 	}
 
 }

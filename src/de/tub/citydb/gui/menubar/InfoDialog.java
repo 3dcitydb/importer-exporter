@@ -156,10 +156,10 @@ public class InfoDialog extends JDialog {
 			copy.setEditable(false);
 			copy.setBackground(new Color(255, 255, 255));
 			copy.setFont(authorsHeader.getFont());
-			copy.setText("(c) 2007 - 2011\n" +
+			copy.setText("(c) 2007 - 2012\n" +
 					"Institute for Geodesy and Geoinformation Science (IGG)\n" +
 					"Technische Universität Berlin, Germany\n" +
-					"http://www.gis.tu-berlin.de/\n\n" +
+					"http://www.igg.tu-berlin.de/\n\n" +
 					"This program is free software under the GNU Lesser General\n" +
 			"Public License Version 3.0. For a copy of the GNU LGPL see\n<http://www.gnu.org/licenses/>.");				
 			general.add(copy, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,2,5,5,5));				
