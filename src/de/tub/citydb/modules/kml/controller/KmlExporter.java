@@ -113,7 +113,7 @@ import de.tub.citydb.modules.common.event.StatusDialogTitle;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.FilterMode;
 import de.tub.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
-import de.tub.citydb.modules.kml.concurrent.BalloonTemplateHandlerImpl;
+import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;

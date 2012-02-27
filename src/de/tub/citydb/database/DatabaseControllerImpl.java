@@ -15,7 +15,7 @@ import de.tub.citydb.api.database.BalloonTemplateHandler;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Workspace;
-import de.tub.citydb.modules.kml.concurrent.BalloonTemplateHandlerImpl;
+import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.util.database.DBUtil;
 
 public class DatabaseControllerImpl implements DatabaseController {

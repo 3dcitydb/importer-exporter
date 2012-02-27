@@ -68,7 +68,7 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
-import de.tub.citydb.modules.kml.concurrent.BalloonTemplateHandlerImpl;
+import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.log.Logger;
