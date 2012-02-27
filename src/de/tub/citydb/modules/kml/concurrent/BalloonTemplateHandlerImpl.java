@@ -27,16 +27,19 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.modules.kml.database;
+package de.tub.citydb.modules.kml.concurrent;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
@@ -45,335 +48,11 @@ import java.util.StringTokenizer;
 import oracle.jdbc.OracleResultSet;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
+
+import de.tub.citydb.api.concurrent.BalloonTemplateHandler;
 import de.tub.citydb.log.Logger;
 
-public class BalloonTemplateHandler {
-
-	private static final String START_TAG = "<3DCityDB>";
-	private static final String END_TAG = "</3DCityDB>";
-	private static final String FOREACH_TAG = "FOREACH";
-	private static final String END_FOREACH_TAG = "END FOREACH";
-	
-	private static final String MAX = "MAX";
-	private static final String MIN = "MIN";
-	private static final String AVG = "AVG";
-	private static final String COUNT = "COUNT";
-	private static final String SUM = "SUM";
-	private static final String FIRST = "FIRST";
-	private static final String LAST = "LAST";
-
-	private static final String ADDRESS_TABLE = "ADDRESS";
-	private static final Set<String> ADDRESS_COLUMNS = new HashSet<String>();
-	static {
-		ADDRESS_COLUMNS.add("ID");
-		ADDRESS_COLUMNS.add("STREET");
-		ADDRESS_COLUMNS.add("HOUSE_NUMBER");
-		ADDRESS_COLUMNS.add("PO_BOX");
-		ADDRESS_COLUMNS.add("ZIP_CODE");
-		ADDRESS_COLUMNS.add("CITY");
-		ADDRESS_COLUMNS.add("STATE");
-		ADDRESS_COLUMNS.add("COUNTRY");
-		ADDRESS_COLUMNS.add("MULTI_POINT");
-		ADDRESS_COLUMNS.add("XAL_SOURCE");
-	}
-
-	private static final String ADDRESS_TO_BUILDING_TABLE = "ADDRESS_TO_BUILDING";
-	private static final Set<String> ADDRESS_TO_BUILDING_COLUMNS = new HashSet<String>();
-	static {
-		ADDRESS_TO_BUILDING_COLUMNS.add("BUILDING_ID");
-		ADDRESS_TO_BUILDING_COLUMNS.add("ADDRESS_ID");
-	}
-
-	private static final String APPEAR_TO_SURFACE_DATA_TABLE = "APPEAR_TO_SURFACE_DATA";
-	private static final Set<String> APPEAR_TO_SURFACE_DATA_COLUMNS = new HashSet<String>();
-	static {
-		APPEAR_TO_SURFACE_DATA_COLUMNS.add("SURFACE_DATA_ID");
-		APPEAR_TO_SURFACE_DATA_COLUMNS.add("APPEARANCE_ID");
-	}
-
-	private static final String APPEARANCE_TABLE = "APPEARANCE";
-	private static final Set<String> APPEARANCE_COLUMNS = new HashSet<String>();
-	static {
-		APPEARANCE_COLUMNS.add("ID");
-		APPEARANCE_COLUMNS.add("GMLID");
-		APPEARANCE_COLUMNS.add("GMLID_CODESPACE");
-		APPEARANCE_COLUMNS.add("NAME");
-		APPEARANCE_COLUMNS.add("NAME_CODESPACE");
-		APPEARANCE_COLUMNS.add("DESCRIPTION");
-		APPEARANCE_COLUMNS.add("THEME");
-		APPEARANCE_COLUMNS.add("CITYMODEL_ID");
-		APPEARANCE_COLUMNS.add("CITYOBJECT_ID");
-	}
-
-	private static final String BUILDING_TABLE = "BUILDING";
-	private static final Set<String> BUILDING_COLUMNS = new HashSet<String>();
-	static {
-		BUILDING_COLUMNS.add("ID");
-		BUILDING_COLUMNS.add("NAME");
-		BUILDING_COLUMNS.add("NAME_CODESPACE");
-		BUILDING_COLUMNS.add("BUILDING_PARENT_ID");
-		BUILDING_COLUMNS.add("BUILDING_ROOT_ID");
-		BUILDING_COLUMNS.add("DESCRIPTION");
-		BUILDING_COLUMNS.add("CLASS");
-		BUILDING_COLUMNS.add("FUNCTION");
-		BUILDING_COLUMNS.add("USAGE");
-		BUILDING_COLUMNS.add("YEAR_OF_CONSTRUCTION");
-		BUILDING_COLUMNS.add("YEAR_OF_DEMOLITION");
-		BUILDING_COLUMNS.add("ROOF_TYPE");
-		BUILDING_COLUMNS.add("MEASURED_HEIGHT");
-		BUILDING_COLUMNS.add("STOREYS_ABOVE_GROUND");
-		BUILDING_COLUMNS.add("STOREYS_BELOW_GROUND");
-		BUILDING_COLUMNS.add("STOREY_HEIGHTS_ABOVE_GROUND");
-		BUILDING_COLUMNS.add("STOREY_HEIGHTS_BELOW_GROUND");
-		BUILDING_COLUMNS.add("LOD1_TERRAIN_INTERSECTION");
-		BUILDING_COLUMNS.add("LOD2_TERRAIN_INTERSECTION");
-		BUILDING_COLUMNS.add("LOD3_TERRAIN_INTERSECTION");
-		BUILDING_COLUMNS.add("LOD4_TERRAIN_INTERSECTION");
-		BUILDING_COLUMNS.add("LOD2_MULTI_CURVE");
-		BUILDING_COLUMNS.add("LOD3_MULTI_CURVE");
-		BUILDING_COLUMNS.add("LOD4_MULTI_CURVE");
-		BUILDING_COLUMNS.add("LOD1_GEOMETRY_ID");
-		BUILDING_COLUMNS.add("LOD2_GEOMETRY_ID");
-		BUILDING_COLUMNS.add("LOD3_GEOMETRY_ID");
-		BUILDING_COLUMNS.add("LOD4_GEOMETRY_ID");
-	}
-
-	private static final String BUILDING_INSTALLATION_TABLE = "BUILDING_INSTALLATION";
-	private static final Set<String> BUILDING_INSTALLATION_COLUMNS = new HashSet<String>();
-	static {
-		BUILDING_INSTALLATION_COLUMNS.add("ID");
-		BUILDING_INSTALLATION_COLUMNS.add("IS_EXTERNAL");
-		BUILDING_INSTALLATION_COLUMNS.add("NAME");
-		BUILDING_INSTALLATION_COLUMNS.add("NAME_CODESPACE");
-		BUILDING_INSTALLATION_COLUMNS.add("DESCRIPTION");
-		BUILDING_INSTALLATION_COLUMNS.add("CLASS");
-		BUILDING_INSTALLATION_COLUMNS.add("FUNCTION");
-		BUILDING_INSTALLATION_COLUMNS.add("USAGE");
-		BUILDING_INSTALLATION_COLUMNS.add("BUILDING_ID");
-		BUILDING_INSTALLATION_COLUMNS.add("ROOM_ID");
-		BUILDING_INSTALLATION_COLUMNS.add("LOD2_GEOMETRY_ID");
-		BUILDING_INSTALLATION_COLUMNS.add("LOD3_GEOMETRY_ID");
-		BUILDING_INSTALLATION_COLUMNS.add("LOD4_GEOMETRY_ID");
-	}
-
-	private static final String CITYMODEL_TABLE = "CITYMODEL";
-	private static final Set<String> CITYMODEL_COLUMNS = new HashSet<String>();
-	static {
-		CITYMODEL_COLUMNS.add("ID");
-		CITYMODEL_COLUMNS.add("GMLID");
-		CITYMODEL_COLUMNS.add("GMLID_CODESPACE");
-		CITYMODEL_COLUMNS.add("NAME");
-		CITYMODEL_COLUMNS.add("NAME_CODESPACE");
-		CITYMODEL_COLUMNS.add("DESCRIPTION");
-		CITYMODEL_COLUMNS.add("ENVELOPE");
-		CITYMODEL_COLUMNS.add("CREATION_DATE");
-		CITYMODEL_COLUMNS.add("TERMINATION_DATE");
-		CITYMODEL_COLUMNS.add("LAST_MODIFICATION_DATE");
-		CITYMODEL_COLUMNS.add("UPDATING_PERSON");
-		CITYMODEL_COLUMNS.add("REASON_FOR_UPDATE");
-		CITYMODEL_COLUMNS.add("LINEAGE");
-	}
-
-	private static final String CITYOBJECT_TABLE = "CITYOBJECT";
-	private static final Set<String> CITYOBJECT_COLUMNS = new HashSet<String>();
-	static {
-		CITYOBJECT_COLUMNS.add("ID");
-		CITYOBJECT_COLUMNS.add("CLASS_ID");
-		CITYOBJECT_COLUMNS.add("GMLID");
-		CITYOBJECT_COLUMNS.add("GMLID_CODESPACE");
-		CITYOBJECT_COLUMNS.add("ENVELOPE");
-		CITYOBJECT_COLUMNS.add("CREATION_DATE");
-		CITYOBJECT_COLUMNS.add("TERMINATION_DATE");
-		CITYOBJECT_COLUMNS.add("LAST_MODIFICATION_DATE");
-		CITYOBJECT_COLUMNS.add("UPDATING_PERSON");
-		CITYOBJECT_COLUMNS.add("REASON_FOR_UPDATE");
-		CITYOBJECT_COLUMNS.add("LINEAGE");
-		CITYOBJECT_COLUMNS.add("XML_SOURCE");
-	}
-
-	private static final String CITYOBJECT_GENERICATTRIB_TABLE = "CITYOBJECT_GENERICATTRIB";
-	private static final Set<String> CITYOBJECT_GENERICATTRIB_COLUMNS = new HashSet<String>();
-	static {
-		CITYOBJECT_GENERICATTRIB_COLUMNS.add("ID");
-		CITYOBJECT_GENERICATTRIB_COLUMNS.add("ATTRNAME");
-		CITYOBJECT_GENERICATTRIB_COLUMNS.add("DATATYPE");
-		CITYOBJECT_GENERICATTRIB_COLUMNS.add("STRVAL");
-		CITYOBJECT_GENERICATTRIB_COLUMNS.add("INTVAL");
-		CITYOBJECT_GENERICATTRIB_COLUMNS.add("REALVAL");
-		CITYOBJECT_GENERICATTRIB_COLUMNS.add("URIVAL");
-		CITYOBJECT_GENERICATTRIB_COLUMNS.add("DATEVAL");
-		CITYOBJECT_GENERICATTRIB_COLUMNS.add("GEOMVAL");
-		CITYOBJECT_GENERICATTRIB_COLUMNS.add("BLOBVAL");
-		CITYOBJECT_GENERICATTRIB_COLUMNS.add("CITYOBJECT_ID");
-		CITYOBJECT_GENERICATTRIB_COLUMNS.add("SURFACE_GEOMETRY_ID");
-	}
-
-	private static final String CITYOBJECTGROUP_TABLE = "CITYOBJECTGROUP";
-	private static final Set<String> CITYOBJECTGROUP_COLUMNS = new HashSet<String>();
-	static {
-		CITYOBJECTGROUP_COLUMNS.add("ID");
-		CITYOBJECTGROUP_COLUMNS.add("NAME");
-		CITYOBJECTGROUP_COLUMNS.add("NAME_CODESPACE");
-		CITYOBJECTGROUP_COLUMNS.add("DESCRIPTION");
-		CITYOBJECTGROUP_COLUMNS.add("CLASS");
-		CITYOBJECTGROUP_COLUMNS.add("FUNCTION");
-		CITYOBJECTGROUP_COLUMNS.add("USAGE");
-		CITYOBJECTGROUP_COLUMNS.add("GEOMETRY");
-		CITYOBJECTGROUP_COLUMNS.add("SURFACE_GEOMETRY_ID");
-		CITYOBJECTGROUP_COLUMNS.add("PARENT_CITYOBJECT_ID");
-	}
-
-	private static final String CITYOBJECT_MEMBER_TABLE = "CITYOBJECT_MEMBER";
-	private static final Set<String> CITYOBJECT_MEMBER_COLUMNS = new HashSet<String>();
-	static {
-		CITYOBJECT_MEMBER_COLUMNS.add("CITYMODEL_ID");
-		CITYOBJECT_MEMBER_COLUMNS.add("CITYOBJECT_ID");
-	}
-
-	private static final String COLLECT_GEOM_TABLE = "COLLECT_GEOM";
-	private static final Set<String> COLLECT_GEOM_COLUMNS = new HashSet<String>();
-	static {
-		COLLECT_GEOM_COLUMNS.add("BUILDING_ID");
-		COLLECT_GEOM_COLUMNS.add("GEOMETRY_ID");
-		COLLECT_GEOM_COLUMNS.add("CITYOBJECT_ID");
-	}
-
-	private static final String EXTERNAL_REFERENCE_TABLE = "EXTERNAL_REFERENCE";
-	private static final Set<String> EXTERNAL_REFERENCE_COLUMNS = new HashSet<String>();
-	static {
-		EXTERNAL_REFERENCE_COLUMNS.add("ID");
-		EXTERNAL_REFERENCE_COLUMNS.add("INFOSYS");
-		EXTERNAL_REFERENCE_COLUMNS.add("NAME");
-		EXTERNAL_REFERENCE_COLUMNS.add("URI");
-		EXTERNAL_REFERENCE_COLUMNS.add("CITYOBJECT_ID");
-	}
-
-	private static final String GENERALIZATION_TABLE = "GENERALIZATION";
-	private static final Set<String> GENERALIZATION_COLUMNS = new HashSet<String>();
-	static {
-		GENERALIZATION_COLUMNS.add("CITYOBJECT_ID");
-		GENERALIZATION_COLUMNS.add("GENERALIZES_TO_ID");
-	}
-
-	private static final String GROUP_TO_CITYOBJECT_TABLE = "GROUP_TO_CITYOBJECT";
-	private static final Set<String> GROUP_TO_CITYOBJECT_COLUMNS = new HashSet<String>();
-	static {
-		GROUP_TO_CITYOBJECT_COLUMNS.add("CITYOBJECT_ID");
-		GROUP_TO_CITYOBJECT_COLUMNS.add("CITYOBJECTGROUP_ID");
-		GROUP_TO_CITYOBJECT_COLUMNS.add("ROLE");
-	}
-
-	private static final String OBJECTCLASS_TABLE = "OBJECTCLASS";
-	private static final Set<String> OBJECTCLASS_COLUMNS = new HashSet<String>();
-	static {
-		OBJECTCLASS_COLUMNS.add("ID");
-		OBJECTCLASS_COLUMNS.add("CLASSNAME");
-		OBJECTCLASS_COLUMNS.add("SUPERCLASS_ID");
-	}
-
-	private static final String OPENING_TABLE = "OPENING";
-	private static final Set<String> OPENING_COLUMNS = new HashSet<String>();
-	static {
-		OPENING_COLUMNS.add("ID");
-		OPENING_COLUMNS.add("NAME");
-		OPENING_COLUMNS.add("NAME_CODESPACE");
-		OPENING_COLUMNS.add("DESCRIPTION");
-		OPENING_COLUMNS.add("TYPE");
-		OPENING_COLUMNS.add("ADDRESS_ID");
-		OPENING_COLUMNS.add("LOD3_MULTI_SURFACE_ID");
-		OPENING_COLUMNS.add("LOD4_MULTI_SURFACE_ID");
-	}
-
-	private static final String OPENING_TO_THEM_SURFACE_TABLE = "OPENING_TO_THEM_SURFACE";
-	private static final Set<String> OPENING_TO_THEM_SURFACE_COLUMNS = new HashSet<String>();
-	static {
-		OPENING_TO_THEM_SURFACE_COLUMNS.add("OPENING_ID");
-		OPENING_TO_THEM_SURFACE_COLUMNS.add("THEMATIC_SURFACE_ID");
-	}
-
-	private static final String ROOM_TABLE = "ROOM";
-	private static final Set<String> ROOM_COLUMNS = new HashSet<String>();
-	static {
-		ROOM_COLUMNS.add("ID");
-		ROOM_COLUMNS.add("NAME");
-		ROOM_COLUMNS.add("NAME_CODESPACE");
-		ROOM_COLUMNS.add("DESCRIPTION");
-		ROOM_COLUMNS.add("CLASS");
-		ROOM_COLUMNS.add("FUNCTION");
-		ROOM_COLUMNS.add("USAGE");
-		ROOM_COLUMNS.add("BUILDING_ID");
-		ROOM_COLUMNS.add("LOD4_GEOMETRY_ID");
-	}
-
-	private static final String SURFACE_DATA_TABLE = "SURFACE_DATA";
-	private static final Set<String> SURFACE_DATA_COLUMNS = new HashSet<String>();
-	static {
-		SURFACE_DATA_COLUMNS.add("ID");
-		SURFACE_DATA_COLUMNS.add("GMLID");
-		SURFACE_DATA_COLUMNS.add("GMLID_CODESPACE");
-		SURFACE_DATA_COLUMNS.add("NAME");
-		SURFACE_DATA_COLUMNS.add("NAME_CODESPACE");
-		SURFACE_DATA_COLUMNS.add("DESCRIPTION");
-		SURFACE_DATA_COLUMNS.add("IS_FRONT");
-		SURFACE_DATA_COLUMNS.add("TYPE");
-		SURFACE_DATA_COLUMNS.add("X3D_SHININESS");
-		SURFACE_DATA_COLUMNS.add("X3D_TRANSPARENCY");
-		SURFACE_DATA_COLUMNS.add("X3D_AMBIENT_INTENSITY");
-		SURFACE_DATA_COLUMNS.add("X3D_SPECULAR_COLOR");
-		SURFACE_DATA_COLUMNS.add("X3D_DIFFUSE_COLOR");
-		SURFACE_DATA_COLUMNS.add("X3D_EMISSIVE_COLOR");
-		SURFACE_DATA_COLUMNS.add("X3D_IS_SMOOTH");
-		SURFACE_DATA_COLUMNS.add("TEX_IMAGE_URI");
-		SURFACE_DATA_COLUMNS.add("TEX_IMAGE");
-		SURFACE_DATA_COLUMNS.add("TEX_MIME_TYPE");
-		SURFACE_DATA_COLUMNS.add("TEX_TEXTURE_TYPE");
-		SURFACE_DATA_COLUMNS.add("TEX_WRAP_MODE");
-		SURFACE_DATA_COLUMNS.add("TEX_BORDER_COLOR");
-		SURFACE_DATA_COLUMNS.add("GT_PREFER_WORLDFILE");
-		SURFACE_DATA_COLUMNS.add("GT_ORIENTATION");
-		SURFACE_DATA_COLUMNS.add("GT_REFERENCE_POINT");
-	}
-
-	private static final String SURFACE_GEOMETRY_TABLE = "SURFACE_GEOMETRY";
-	private static final Set<String> SURFACE_GEOMETRY_COLUMNS = new HashSet<String>();
-	static {
-		SURFACE_GEOMETRY_COLUMNS.add("ID");
-		SURFACE_GEOMETRY_COLUMNS.add("GMLID");
-		SURFACE_GEOMETRY_COLUMNS.add("GMLID_CODESPACE");
-		SURFACE_GEOMETRY_COLUMNS.add("PARENT_ID");
-		SURFACE_GEOMETRY_COLUMNS.add("ROOT_ID");
-		SURFACE_GEOMETRY_COLUMNS.add("IS_SOLID");
-		SURFACE_GEOMETRY_COLUMNS.add("IS_COMPOSITE");
-		SURFACE_GEOMETRY_COLUMNS.add("IS_TRIANGULATED");
-		SURFACE_GEOMETRY_COLUMNS.add("IS_XLINK");
-		SURFACE_GEOMETRY_COLUMNS.add("IS_REVERSE");
-		SURFACE_GEOMETRY_COLUMNS.add("GEOMETRY");
-	}
-
-	private static final String TEXTUREPARAM_TABLE = "TEXTUREPARAM";
-	private static final Set<String> TEXTUREPARAM_COLUMNS = new HashSet<String>();
-	static {
-		TEXTUREPARAM_COLUMNS.add("SURFACE_GEOMETRY_ID");
-		TEXTUREPARAM_COLUMNS.add("IS_TEXTURE_PARAMETRIZATION");
-		TEXTUREPARAM_COLUMNS.add("WORLD_TO_TEXTURE");
-		TEXTUREPARAM_COLUMNS.add("TEXTURE_COORDINATES");
-		TEXTUREPARAM_COLUMNS.add("SURFACE_DATA_ID");
-	}
-
-	private static final String THEMATIC_SURFACE_TABLE = "THEMATIC_SURFACE";
-	private static final Set<String> THEMATIC_SURFACE_COLUMNS = new HashSet<String>();
-	static {
-		THEMATIC_SURFACE_COLUMNS.add("ID");
-		THEMATIC_SURFACE_COLUMNS.add("NAME");
-		THEMATIC_SURFACE_COLUMNS.add("NAME_CODESPACE");
-		THEMATIC_SURFACE_COLUMNS.add("DESCRIPTION");
-		THEMATIC_SURFACE_COLUMNS.add("TYPE");
-		THEMATIC_SURFACE_COLUMNS.add("BUILDING_ID");
-		THEMATIC_SURFACE_COLUMNS.add("ROOM_ID");
-		THEMATIC_SURFACE_COLUMNS.add("LOD2_MULTI_SURFACE_ID");
-		THEMATIC_SURFACE_COLUMNS.add("LOD3_MULTI_SURFACE_ID");
-		THEMATIC_SURFACE_COLUMNS.add("LOD4_MULTI_SURFACE_ID");
-	}
+public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 
 	public static final String balloonDirectoryName = "balloons";
 	public static final String parentFrameStart =
@@ -390,15 +69,31 @@ public class BalloonTemplateHandler {
 	public static final String parentFrameEnd = ".html\" id=\"childframe\"></iframe>\n" +
 		"  </body>\n" +
 		"</html>";
-	
+
 	private Connection connection;
 
-	List<BalloonStatement> statementList = new ArrayList<BalloonStatement>();
-	List<String> htmlChunkList = new ArrayList<String>();
+	List<BalloonStatement> statementList = null;
+	List<String> htmlChunkList = null;
 
-	public BalloonTemplateHandler(File templateFile, Connection connection) {
+	public BalloonTemplateHandlerImpl(File templateFile, Connection connection) {
+		setConnection(connection);
+		setTemplate(templateFile);
+	}
+
+	public BalloonTemplateHandlerImpl(String templateString, Connection connection) {
+		setConnection(connection);
+		setTemplate(templateString);
+	}
+
+	private void setConnection(Connection connection) {
 		this.connection = connection;
-		if (templateFile == null) return; // dummy constructor for templates coming from generic attribute Balloon_Content
+	}
+
+	private void setTemplate(File templateFile) {
+		statementList = new ArrayList<BalloonStatement>();
+		htmlChunkList = new ArrayList<String>();
+
+		if (templateFile == null) return; // it was a dummy call
 		
 		// read file as String
 	    byte[] buffer = new byte[(int)templateFile.length()];
@@ -427,7 +122,23 @@ public class BalloonTemplateHandler {
 		}
 	}
 	
-	public String getBalloonContent(String template, String gmlId, int lod) {
+	private void setTemplate(String templateString) {
+		statementList = new ArrayList<BalloonStatement>();
+		htmlChunkList = new ArrayList<String>();
+
+		if (templateString == null) return; // it was a dummy call
+		
+		try {
+			fillStatementAndHtmlChunkList(templateString);
+		}
+		catch (Exception e) {
+			Logger.getInstance().warn(e.getMessage());
+		}
+	}
+	
+	public String getBalloonContent(String template, String gmlId, int lod) throws Exception {
+		if (connection == null) throw new SQLException("Null or invalid connection");
+
 		String balloonContent = "";
 		List<BalloonStatement> statementListBackup = statementList;
 		List<String> htmlChunkListBackup = htmlChunkList;
@@ -446,7 +157,10 @@ public class BalloonTemplateHandler {
 		return balloonContent;
 	}
 
-	public String getBalloonContent(String gmlId, int lod) {
+	public String getBalloonContent(String gmlId, int lod) throws Exception {
+		if (connection == null) throw new SQLException("Null or invalid connection");
+		if (statementList == null && htmlChunkList == null) throw new Exception("Invalid template file"); 
+
 		StringBuffer balloonContent = new StringBuffer();
 		
 		if (statementList != null) {

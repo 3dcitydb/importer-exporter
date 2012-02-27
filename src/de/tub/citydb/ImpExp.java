@@ -79,6 +79,7 @@ import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
 import de.tub.citydb.modules.citygml.importer.CityGMLImportPlugin;
 import de.tub.citydb.modules.database.DatabasePlugin;
 import de.tub.citydb.modules.kml.KMLExportPlugin;
+import de.tub.citydb.modules.kml.controller.BalloonTemplateControllerImpl;
 import de.tub.citydb.modules.preferences.PreferencesPlugin;
 import de.tub.citydb.plugin.IllegalPluginEventChecker;
 import de.tub.citydb.plugin.PluginService;
@@ -293,6 +294,10 @@ public class ImpExp {
 		// create and register i/o controller
 		IOControllerImpl ioController = new IOControllerImpl(config);
 		registry.setIOController(ioController);
+
+		// create and register balloon template controller
+		BalloonTemplateControllerImpl balloonTemplateControllerImpl = new BalloonTemplateControllerImpl(config);
+		registry.setBalloonTemplateController(balloonTemplateControllerImpl);
 
 		// register illegal plugin event checker with event dispatcher
 		IllegalPluginEventChecker checker = IllegalPluginEventChecker.getInstance();

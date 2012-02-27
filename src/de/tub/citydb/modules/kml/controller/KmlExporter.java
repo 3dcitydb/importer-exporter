@@ -113,7 +113,7 @@ import de.tub.citydb.modules.common.event.StatusDialogTitle;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.FilterMode;
 import de.tub.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
-import de.tub.citydb.modules.kml.database.BalloonTemplateHandler;
+import de.tub.citydb.modules.kml.concurrent.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
@@ -493,7 +493,7 @@ public class KmlExporter implements EventHandler {
 
 										// ----------------- balloon saving -----------------
 										if (colladaBundle.getExternalBalloonFileContent() != null) {
-											ZipEntry zipEntry = new ZipEntry(BalloonTemplateHandler.balloonDirectoryName + "/" + colladaBundle.getBuildingId() + ".html");
+											ZipEntry zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + colladaBundle.getBuildingId() + ".html");
 											zipOut.putNextEntry(zipEntry);
 											zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes());
 											zipOut.closeEntry();

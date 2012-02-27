@@ -68,6 +68,7 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
+import de.tub.citydb.modules.kml.concurrent.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.log.Logger;
@@ -143,9 +144,9 @@ public class KmlExporterManager {
         			String placemarkDescription = placemark.getDescription();
         			if (placemarkDescription != null && config.getProject().getKmlExporter().isBalloonContentInSeparateFile()) {
 
-        				StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandler.parentFrameStart);
+        				StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandlerImpl.parentFrameStart);
         				parentFrame.append(placemark.getName());
-        				parentFrame.append(BalloonTemplateHandler.parentFrameEnd);
+        				parentFrame.append(BalloonTemplateHandlerImpl.parentFrameEnd);
         				placemark.setDescription(parentFrame.toString());
 
         				if (!balloonExtracted) {
@@ -159,7 +160,7 @@ public class KmlExporterManager {
         						String path = config.getInternal().getExportFileName().trim();
         						path = path.substring(0, path.lastIndexOf(File.separator));
         						try {
-        							File balloonsDirectory = new File(path + File.separator + BalloonTemplateHandler.balloonDirectoryName);
+        							File balloonsDirectory = new File(path + File.separator + BalloonTemplateHandlerImpl.balloonDirectoryName);
         							if (!balloonsDirectory.exists()) {
         								balloonsDirectory.mkdir();
         							}
@@ -343,9 +344,9 @@ public class KmlExporterManager {
 			String placemarkDescription = placemark.getDescription();
 			if (placemarkDescription != null && config.getProject().getKmlExporter().isBalloonContentInSeparateFile()) {
 
-				StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandler.parentFrameStart);
+				StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandlerImpl.parentFrameStart);
 				parentFrame.append(colladaBundle.getBuildingId());
-				parentFrame.append(BalloonTemplateHandler.parentFrameEnd);
+				parentFrame.append(BalloonTemplateHandlerImpl.parentFrameEnd);
 				placemark.setDescription(parentFrame.toString());
 				colladaBundle.setExternalBalloonFileContent(placemarkDescription);
 			}
@@ -490,7 +491,7 @@ public class KmlExporterManager {
 
 				// ----------------- balloon saving -----------------
 				if (colladaBundle.getExternalBalloonFileContent() != null) {
-					zipEntry = new ZipEntry(BalloonTemplateHandler.balloonDirectoryName + "/" + colladaBundle.getBuildingId() + ".html");
+					zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + colladaBundle.getBuildingId() + ".html");
 					zipOut.putNextEntry(zipEntry);
 					zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes());
 					zipOut.closeEntry();
@@ -550,7 +551,7 @@ public class KmlExporterManager {
 			// ----------------- balloon saving -----------------
 			if (colladaBundle.getExternalBalloonFileContent() != null) {
 				try {
-					File balloonsDirectory = new File(path + File.separator + BalloonTemplateHandler.balloonDirectoryName);
+					File balloonsDirectory = new File(path + File.separator + BalloonTemplateHandlerImpl.balloonDirectoryName);
 					if (!balloonsDirectory.exists()) {
 						balloonsDirectory.mkdir();
 					}

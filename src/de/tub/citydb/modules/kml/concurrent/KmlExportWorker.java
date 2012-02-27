@@ -92,7 +92,6 @@ import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.GeometryCounterEvent;
-import de.tub.citydb.modules.kml.database.BalloonTemplateHandler;
 import de.tub.citydb.modules.kml.database.Building;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.ElevationServiceHandler;
@@ -135,7 +134,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private int buildingGroupCounter = 0;
 	private int buildingGroupSize = 1;
 
-	private BalloonTemplateHandler balloonTemplateHandler = null;
+	private BalloonTemplateHandlerImpl balloonTemplateHandler = null;
 
 	private ElevationServiceHandler elevationServiceHandler;
 	private long elevationServicePause;
@@ -188,7 +187,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			config.getProject().getKmlExporter().getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
 			String balloonTemplateFilename = config.getProject().getKmlExporter().getBalloonContentTemplateFile();
 			if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
-				balloonTemplateHandler = new BalloonTemplateHandler(new File(balloonTemplateFilename), connection);
+				balloonTemplateHandler = new BalloonTemplateHandlerImpl(new File(balloonTemplateFilename), connection);
 			}
 		}
 
@@ -1221,28 +1220,31 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	}
 
 	private void addBalloonContents(PlacemarkType placemark, String gmlId) {
-		switch (config.getProject().getKmlExporter().getBalloonContentMode()) {
-		case GEN_ATTRIB:
-			String balloonTemplate = getBalloonContentGenericAttribute(gmlId);
-			if (balloonTemplate != null) {
-				if (balloonTemplateHandler == null) { // just in case
-					balloonTemplateHandler = new BalloonTemplateHandler(null, connection);
+		try {
+			switch (config.getProject().getKmlExporter().getBalloonContentMode()) {
+			case GEN_ATTRIB:
+				String balloonTemplate = getBalloonContentGenericAttribute(gmlId);
+				if (balloonTemplate != null) {
+					if (balloonTemplateHandler == null) { // just in case
+						balloonTemplateHandler = new BalloonTemplateHandlerImpl((File) null, connection);
+					}
+					placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, currentLod));
 				}
-				placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, currentLod));
-			}
-			break;
-		case GEN_ATTRIB_AND_FILE:
-			balloonTemplate = getBalloonContentGenericAttribute(gmlId);
-			if (balloonTemplate != null) {
-				placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, currentLod));
+				break;
+			case GEN_ATTRIB_AND_FILE:
+				balloonTemplate = getBalloonContentGenericAttribute(gmlId);
+				if (balloonTemplate != null) {
+					placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, currentLod));
+					break;
+				}
+			case FILE :
+				if (balloonTemplateHandler != null) {
+					placemark.setDescription(balloonTemplateHandler.getBalloonContent(gmlId, currentLod));
+				}
 				break;
 			}
-		case FILE :
-			if (balloonTemplateHandler != null) {
-				placemark.setDescription(balloonTemplateHandler.getBalloonContent(gmlId, currentLod));
-			}
-			break;
 		}
+		catch (Exception e) { } // invalid balloons are silently discarded
 	}
 
 	private void fillX3dMaterialValues (X3DMaterial x3dMaterial, OracleResultSet rs) throws SQLException {

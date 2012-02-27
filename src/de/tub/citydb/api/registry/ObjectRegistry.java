@@ -2,6 +2,7 @@ package de.tub.citydb.api.registry;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import de.tub.citydb.api.controller.BalloonTemplateController;
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.controller.IOController;
 import de.tub.citydb.api.controller.LogController;
@@ -19,7 +20,8 @@ public class ObjectRegistry {
 	private LogController logController;
 	private PluginConfigController pluginConfigController;
 	private IOController ioController;
-
+	private BalloonTemplateController balloonTemplateController;
+	
 	private ObjectRegistry() {
 		// just to thwart instantiation
 	}
@@ -107,6 +109,17 @@ public class ObjectRegistry {
 			throw new IllegalArgumentException("I/O controller is already registered with the object registry.");
 
 		this.ioController = ioController;
+	}
+
+	public BalloonTemplateController getBalloonTemplateController() {
+		return balloonTemplateController;
+	}
+
+	public void setBalloonTemplateController(BalloonTemplateController balloonTemplateController) {
+		if (this.balloonTemplateController != null)
+			throw new IllegalArgumentException("Balloon template controller is already registered with the object registry.");
+
+		this.balloonTemplateController = balloonTemplateController;
 	}
 
 }
