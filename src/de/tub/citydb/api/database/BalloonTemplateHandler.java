@@ -27,16 +27,21 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.api.controller;
+package de.tub.citydb.api.database;
 
-import java.io.File;
-import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Set;
 
-import de.tub.citydb.api.concurrent.BalloonTemplateHandler;
+public interface BalloonTemplateHandler {
 
-public interface BalloonTemplateController {
+	// Constants
+	public static final String START_TAG = "<3DCityDB>";
+	public static final String END_TAG = "</3DCityDB>";
+	public static final String FOREACH_TAG = "FOREACH";
+	public static final String END_FOREACH_TAG = "END FOREACH";
 
-	public BalloonTemplateHandler createNewHandler(File templateFile, Connection connection);
-	public BalloonTemplateHandler createNewHandler(String templateString, Connection connection);
-
+	public String getBalloonContent(String gmlId, int lod) throws Exception;	
+	public Set<String> getSupportedAggregationFunctions();
+	public HashMap<String, Set<String>> getSupportedTablesAndColumns();
+		
 }

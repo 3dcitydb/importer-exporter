@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
@@ -49,10 +48,353 @@ import oracle.jdbc.OracleResultSet;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import de.tub.citydb.api.concurrent.BalloonTemplateHandler;
+import de.tub.citydb.api.database.BalloonTemplateHandler;
 import de.tub.citydb.log.Logger;
 
 public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
+
+	private static final String ADDRESS_TABLE = "ADDRESS";
+	private static final Set<String> ADDRESS_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("STREET");
+		add("HOUSE_NUMBER");
+		add("PO_BOX");
+		add("ZIP_CODE");
+		add("CITY");
+		add("STATE");
+		add("COUNTRY");
+		add("MULTI_POINT");
+		add("XAL_SOURCE");
+	}};
+
+	private static final String ADDRESS_TO_BUILDING_TABLE = "ADDRESS_TO_BUILDING";
+	private static final Set<String> ADDRESS_TO_BUILDING_COLUMNS = new HashSet<String>() {{
+		add("BUILDING_ID");
+		add("ADDRESS_ID");
+	}};
+
+	private static final String APPEAR_TO_SURFACE_DATA_TABLE = "APPEAR_TO_SURFACE_DATA";
+	private static final Set<String> APPEAR_TO_SURFACE_DATA_COLUMNS = new HashSet<String>() {{
+		add("SURFACE_DATA_ID");
+		add("APPEARANCE_ID");
+	}};
+
+	private static final String APPEARANCE_TABLE = "APPEARANCE";
+	private static final Set<String> APPEARANCE_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("GMLID");
+		add("GMLID_CODESPACE");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("THEME");
+		add("CITYMODEL_ID");
+		add("CITYOBJECT_ID");
+	}};
+
+	private static final String BUILDING_TABLE = "BUILDING";
+	private static final Set<String> BUILDING_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("BUILDING_PARENT_ID");
+		add("BUILDING_ROOT_ID");
+		add("DESCRIPTION");
+		add("CLASS");
+		add("FUNCTION");
+		add("USAGE");
+		add("YEAR_OF_CONSTRUCTION");
+		add("YEAR_OF_DEMOLITION");
+		add("ROOF_TYPE");
+		add("MEASURED_HEIGHT");
+		add("STOREYS_ABOVE_GROUND");
+		add("STOREYS_BELOW_GROUND");
+		add("STOREY_HEIGHTS_ABOVE_GROUND");
+		add("STOREY_HEIGHTS_BELOW_GROUND");
+		add("LOD1_TERRAIN_INTERSECTION");
+		add("LOD2_TERRAIN_INTERSECTION");
+		add("LOD3_TERRAIN_INTERSECTION");
+		add("LOD4_TERRAIN_INTERSECTION");
+		add("LOD2_MULTI_CURVE");
+		add("LOD3_MULTI_CURVE");
+		add("LOD4_MULTI_CURVE");
+		add("LOD1_GEOMETRY_ID");
+		add("LOD2_GEOMETRY_ID");
+		add("LOD3_GEOMETRY_ID");
+		add("LOD4_GEOMETRY_ID");
+	}};
+
+	private static final String BUILDING_INSTALLATION_TABLE = "BUILDING_INSTALLATION";
+	private static final Set<String> BUILDING_INSTALLATION_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("IS_EXTERNAL");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("CLASS");
+		add("FUNCTION");
+		add("USAGE");
+		add("BUILDING_ID");
+		add("ROOM_ID");
+		add("LOD2_GEOMETRY_ID");
+		add("LOD3_GEOMETRY_ID");
+		add("LOD4_GEOMETRY_ID");
+	}};
+
+	private static final String CITYMODEL_TABLE = "CITYMODEL";
+	private static final Set<String> CITYMODEL_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("GMLID");
+		add("GMLID_CODESPACE");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("ENVELOPE");
+		add("CREATION_DATE");
+		add("TERMINATION_DATE");
+		add("LAST_MODIFICATION_DATE");
+		add("UPDATING_PERSON");
+		add("REASON_FOR_UPDATE");
+		add("LINEAGE");
+	}};
+
+	private static final String CITYOBJECT_TABLE = "CITYOBJECT";
+	private static final Set<String> CITYOBJECT_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("CLASS_ID");
+		add("GMLID");
+		add("GMLID_CODESPACE");
+		add("ENVELOPE");
+		add("CREATION_DATE");
+		add("TERMINATION_DATE");
+		add("LAST_MODIFICATION_DATE");
+		add("UPDATING_PERSON");
+		add("REASON_FOR_UPDATE");
+		add("LINEAGE");
+		add("XML_SOURCE");
+	}};
+
+	private static final String CITYOBJECT_GENERICATTRIB_TABLE = "CITYOBJECT_GENERICATTRIB";
+	private static final Set<String> CITYOBJECT_GENERICATTRIB_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("ATTRNAME");
+		add("DATATYPE");
+		add("STRVAL");
+		add("INTVAL");
+		add("REALVAL");
+		add("URIVAL");
+		add("DATEVAL");
+		add("GEOMVAL");
+		add("BLOBVAL");
+		add("CITYOBJECT_ID");
+		add("SURFACE_GEOMETRY_ID");
+	}};
+
+	private static final String CITYOBJECTGROUP_TABLE = "CITYOBJECTGROUP";
+	private static final Set<String> CITYOBJECTGROUP_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("CLASS");
+		add("FUNCTION");
+		add("USAGE");
+		add("GEOMETRY");
+		add("SURFACE_GEOMETRY_ID");
+		add("PARENT_CITYOBJECT_ID");
+	}};
+
+	private static final String CITYOBJECT_MEMBER_TABLE = "CITYOBJECT_MEMBER";
+	private static final Set<String> CITYOBJECT_MEMBER_COLUMNS = new HashSet<String>() {{
+		add("CITYMODEL_ID");
+		add("CITYOBJECT_ID");
+	}};
+
+	private static final String COLLECT_GEOM_TABLE = "COLLECT_GEOM";
+	private static final Set<String> COLLECT_GEOM_COLUMNS = new HashSet<String>() {{
+		add("BUILDING_ID");
+		add("GEOMETRY_ID");
+		add("CITYOBJECT_ID");
+	}};
+
+	private static final String EXTERNAL_REFERENCE_TABLE = "EXTERNAL_REFERENCE";
+	private static final Set<String> EXTERNAL_REFERENCE_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("INFOSYS");
+		add("NAME");
+		add("URI");
+		add("CITYOBJECT_ID");
+	}};
+
+	private static final String GENERALIZATION_TABLE = "GENERALIZATION";
+	private static final Set<String> GENERALIZATION_COLUMNS = new HashSet<String>() {{
+		add("CITYOBJECT_ID");
+		add("GENERALIZES_TO_ID");
+	}};
+
+	private static final String GROUP_TO_CITYOBJECT_TABLE = "GROUP_TO_CITYOBJECT";
+	private static final Set<String> GROUP_TO_CITYOBJECT_COLUMNS = new HashSet<String>() {{
+		add("CITYOBJECT_ID");
+		add("CITYOBJECTGROUP_ID");
+		add("ROLE");
+	}};
+
+	private static final String OBJECTCLASS_TABLE = "OBJECTCLASS";
+	private static final Set<String> OBJECTCLASS_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("CLASSNAME");
+		add("SUPERCLASS_ID");
+	}};
+
+	private static final String OPENING_TABLE = "OPENING";
+	private static final Set<String> OPENING_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("TYPE");
+		add("ADDRESS_ID");
+		add("LOD3_MULTI_SURFACE_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+	}};
+
+	private static final String OPENING_TO_THEM_SURFACE_TABLE = "OPENING_TO_THEM_SURFACE";
+	private static final Set<String> OPENING_TO_THEM_SURFACE_COLUMNS = new HashSet<String>() {{
+		add("OPENING_ID");
+		add("THEMATIC_SURFACE_ID");
+	}};
+
+	private static final String ROOM_TABLE = "ROOM";
+	private static final Set<String> ROOM_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("CLASS");
+		add("FUNCTION");
+		add("USAGE");
+		add("BUILDING_ID");
+		add("LOD4_GEOMETRY_ID");
+	}};
+
+	private static final String SURFACE_DATA_TABLE = "SURFACE_DATA";
+	private static final Set<String> SURFACE_DATA_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("GMLID");
+		add("GMLID_CODESPACE");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("IS_FRONT");
+		add("TYPE");
+		add("X3D_SHININESS");
+		add("X3D_TRANSPARENCY");
+		add("X3D_AMBIENT_INTENSITY");
+		add("X3D_SPECULAR_COLOR");
+		add("X3D_DIFFUSE_COLOR");
+		add("X3D_EMISSIVE_COLOR");
+		add("X3D_IS_SMOOTH");
+		add("TEX_IMAGE_URI");
+		add("TEX_IMAGE");
+		add("TEX_MIME_TYPE");
+		add("TEX_TEXTURE_TYPE");
+		add("TEX_WRAP_MODE");
+		add("TEX_BORDER_COLOR");
+		add("GT_PREFER_WORLDFILE");
+		add("GT_ORIENTATION");
+		add("GT_REFERENCE_POINT");
+	}};
+
+	private static final String SURFACE_GEOMETRY_TABLE = "SURFACE_GEOMETRY";
+	private static final Set<String> SURFACE_GEOMETRY_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("GMLID");
+		add("GMLID_CODESPACE");
+		add("PARENT_ID");
+		add("ROOT_ID");
+		add("IS_SOLID");
+		add("IS_COMPOSITE");
+		add("IS_TRIANGULATED");
+		add("IS_XLINK");
+		add("IS_REVERSE");
+		add("GEOMETRY");
+	}};
+
+	private static final String TEXTUREPARAM_TABLE = "TEXTUREPARAM";
+	private static final Set<String> TEXTUREPARAM_COLUMNS = new HashSet<String>() {{
+		add("SURFACE_GEOMETRY_ID");
+		add("IS_TEXTURE_PARAMETRIZATION");
+		add("WORLD_TO_TEXTURE");
+		add("TEXTURE_COORDINATES");
+		add("SURFACE_DATA_ID");
+	}};
+
+	private static final String THEMATIC_SURFACE_TABLE = "THEMATIC_SURFACE";
+	private static final Set<String> THEMATIC_SURFACE_COLUMNS = new HashSet<String>() {{
+		add("ID");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("TYPE");
+		add("BUILDING_ID");
+		add("ROOM_ID");
+		add("LOD2_MULTI_SURFACE_ID");
+		add("LOD3_MULTI_SURFACE_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+	}};
+
+	
+	private static final String MAX = "MAX";
+	private static final String MIN = "MIN";
+	private static final String AVG = "AVG";
+	private static final String COUNT = "COUNT";
+	private static final String SUM = "SUM";
+	private static final String FIRST = "FIRST";
+	private static final String LAST = "LAST";
+
+	private static final Set<String> AGGREGATION_FUNCTIONS = new HashSet<String>() {{
+		add(MAX);
+		add(MIN);
+		add(AVG);
+		add(COUNT);
+		add(SUM);
+		add(FIRST);
+		add(LAST);
+	}};
+
+	public Set<String> getSupportedAggregationFunctions() {
+		return AGGREGATION_FUNCTIONS;
+	}
+
+	private static HashMap<String, Set<String>> _3DCITYDB_TABLES_AND_COLUMNS = new HashMap<String, Set<String>>() {{
+		put(ADDRESS_TABLE, ADDRESS_COLUMNS);
+		put(ADDRESS_TO_BUILDING_TABLE, ADDRESS_TO_BUILDING_COLUMNS);
+		put(APPEAR_TO_SURFACE_DATA_TABLE,APPEAR_TO_SURFACE_DATA_COLUMNS );
+		put(APPEARANCE_TABLE, APPEARANCE_COLUMNS);
+		put(BUILDING_TABLE, BUILDING_COLUMNS);
+		put(BUILDING_INSTALLATION_TABLE,BUILDING_INSTALLATION_COLUMNS );
+		put(CITYMODEL_TABLE,CITYMODEL_COLUMNS );
+		put(CITYOBJECT_TABLE, CITYOBJECT_COLUMNS);
+		put(CITYOBJECT_GENERICATTRIB_TABLE,CITYOBJECT_GENERICATTRIB_COLUMNS );
+		put(CITYOBJECTGROUP_TABLE, CITYOBJECTGROUP_COLUMNS);
+		put(CITYOBJECT_MEMBER_TABLE,CITYOBJECT_MEMBER_COLUMNS );
+		put(COLLECT_GEOM_TABLE, COLLECT_GEOM_COLUMNS);
+		put(EXTERNAL_REFERENCE_TABLE,EXTERNAL_REFERENCE_COLUMNS );
+		put(GENERALIZATION_TABLE,GENERALIZATION_COLUMNS );
+		put(GROUP_TO_CITYOBJECT_TABLE, GROUP_TO_CITYOBJECT_COLUMNS);
+		put(OBJECTCLASS_TABLE, OBJECTCLASS_COLUMNS);
+		put(OPENING_TABLE, OPENING_COLUMNS);
+		put(OPENING_TO_THEM_SURFACE_TABLE, OPENING_TO_THEM_SURFACE_COLUMNS);
+		put(ROOM_TABLE, ROOM_COLUMNS);
+		put(SURFACE_DATA_TABLE,SURFACE_DATA_COLUMNS );
+		put(SURFACE_GEOMETRY_TABLE, SURFACE_GEOMETRY_COLUMNS);
+		put(TEXTUREPARAM_TABLE,TEXTUREPARAM_COLUMNS );
+		put(THEMATIC_SURFACE_TABLE,THEMATIC_SURFACE_COLUMNS );
+	}};
+
+	public HashMap<String, Set<String>> getSupportedTablesAndColumns() {
+		return _3DCITYDB_TABLES_AND_COLUMNS;
+	}
 
 	public static final String balloonDirectoryName = "balloons";
 	public static final String parentFrameStart =

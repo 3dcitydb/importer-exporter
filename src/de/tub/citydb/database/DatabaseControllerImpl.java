@@ -1,5 +1,6 @@
 package de.tub.citydb.database;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -10,9 +11,11 @@ import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
 import de.tub.citydb.api.database.DatabaseMetaData;
 import de.tub.citydb.api.database.DatabaseSrs;
+import de.tub.citydb.api.database.BalloonTemplateHandler;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Workspace;
+import de.tub.citydb.modules.kml.concurrent.BalloonTemplateHandlerImpl;
 import de.tub.citydb.util.database.DBUtil;
 
 public class DatabaseControllerImpl implements DatabaseController {
@@ -123,5 +126,16 @@ public class DatabaseControllerImpl implements DatabaseController {
 	public List<DatabaseSrs> getDatabaseSrs() {
 		return config.getProject().getDatabase().getReferenceSystems();
 	}
+
+	@Override
+	public BalloonTemplateHandler createNewBalloonTemplateHandler(File templateFile, Connection connection) {
+		return new BalloonTemplateHandlerImpl(templateFile, connection);
+	}
+
+	@Override
+	public BalloonTemplateHandler createNewBalloonTemplateHandler(String templateString, Connection connection) {
+		return new BalloonTemplateHandlerImpl(templateString, connection);
+	}
+	
 
 }
