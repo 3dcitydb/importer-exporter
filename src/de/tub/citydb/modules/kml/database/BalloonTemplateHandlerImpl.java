@@ -37,7 +37,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -54,7 +54,7 @@ import de.tub.citydb.log.Logger;
 public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 
 	private static final String ADDRESS_TABLE = "ADDRESS";
-	private static final Set<String> ADDRESS_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> ADDRESS_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("STREET");
 		add("HOUSE_NUMBER");
@@ -68,19 +68,19 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String ADDRESS_TO_BUILDING_TABLE = "ADDRESS_TO_BUILDING";
-	private static final Set<String> ADDRESS_TO_BUILDING_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> ADDRESS_TO_BUILDING_COLUMNS = new LinkedHashSet<String>() {{
 		add("BUILDING_ID");
 		add("ADDRESS_ID");
 	}};
 
 	private static final String APPEAR_TO_SURFACE_DATA_TABLE = "APPEAR_TO_SURFACE_DATA";
-	private static final Set<String> APPEAR_TO_SURFACE_DATA_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> APPEAR_TO_SURFACE_DATA_COLUMNS = new LinkedHashSet<String>() {{
 		add("SURFACE_DATA_ID");
 		add("APPEARANCE_ID");
 	}};
 
 	private static final String APPEARANCE_TABLE = "APPEARANCE";
-	private static final Set<String> APPEARANCE_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> APPEARANCE_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("GMLID");
 		add("GMLID_CODESPACE");
@@ -93,7 +93,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String BUILDING_TABLE = "BUILDING";
-	private static final Set<String> BUILDING_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> BUILDING_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("NAME");
 		add("NAME_CODESPACE");
@@ -125,7 +125,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String BUILDING_INSTALLATION_TABLE = "BUILDING_INSTALLATION";
-	private static final Set<String> BUILDING_INSTALLATION_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> BUILDING_INSTALLATION_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("IS_EXTERNAL");
 		add("NAME");
@@ -142,7 +142,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String CITYMODEL_TABLE = "CITYMODEL";
-	private static final Set<String> CITYMODEL_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> CITYMODEL_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("GMLID");
 		add("GMLID_CODESPACE");
@@ -159,7 +159,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String CITYOBJECT_TABLE = "CITYOBJECT";
-	private static final Set<String> CITYOBJECT_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> CITYOBJECT_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("CLASS_ID");
 		add("GMLID");
@@ -175,7 +175,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String CITYOBJECT_GENERICATTRIB_TABLE = "CITYOBJECT_GENERICATTRIB";
-	private static final Set<String> CITYOBJECT_GENERICATTRIB_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> CITYOBJECT_GENERICATTRIB_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("ATTRNAME");
 		add("DATATYPE");
@@ -191,7 +191,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String CITYOBJECTGROUP_TABLE = "CITYOBJECTGROUP";
-	private static final Set<String> CITYOBJECTGROUP_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> CITYOBJECTGROUP_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("NAME");
 		add("NAME_CODESPACE");
@@ -205,20 +205,20 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String CITYOBJECT_MEMBER_TABLE = "CITYOBJECT_MEMBER";
-	private static final Set<String> CITYOBJECT_MEMBER_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> CITYOBJECT_MEMBER_COLUMNS = new LinkedHashSet<String>() {{
 		add("CITYMODEL_ID");
 		add("CITYOBJECT_ID");
 	}};
 
 	private static final String COLLECT_GEOM_TABLE = "COLLECT_GEOM";
-	private static final Set<String> COLLECT_GEOM_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> COLLECT_GEOM_COLUMNS = new LinkedHashSet<String>() {{
 		add("BUILDING_ID");
 		add("GEOMETRY_ID");
 		add("CITYOBJECT_ID");
 	}};
 
 	private static final String EXTERNAL_REFERENCE_TABLE = "EXTERNAL_REFERENCE";
-	private static final Set<String> EXTERNAL_REFERENCE_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> EXTERNAL_REFERENCE_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("INFOSYS");
 		add("NAME");
@@ -227,27 +227,27 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String GENERALIZATION_TABLE = "GENERALIZATION";
-	private static final Set<String> GENERALIZATION_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> GENERALIZATION_COLUMNS = new LinkedHashSet<String>() {{
 		add("CITYOBJECT_ID");
 		add("GENERALIZES_TO_ID");
 	}};
 
 	private static final String GROUP_TO_CITYOBJECT_TABLE = "GROUP_TO_CITYOBJECT";
-	private static final Set<String> GROUP_TO_CITYOBJECT_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> GROUP_TO_CITYOBJECT_COLUMNS = new LinkedHashSet<String>() {{
 		add("CITYOBJECT_ID");
 		add("CITYOBJECTGROUP_ID");
 		add("ROLE");
 	}};
 
 	private static final String OBJECTCLASS_TABLE = "OBJECTCLASS";
-	private static final Set<String> OBJECTCLASS_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> OBJECTCLASS_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("CLASSNAME");
 		add("SUPERCLASS_ID");
 	}};
 
 	private static final String OPENING_TABLE = "OPENING";
-	private static final Set<String> OPENING_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> OPENING_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("NAME");
 		add("NAME_CODESPACE");
@@ -259,13 +259,13 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String OPENING_TO_THEM_SURFACE_TABLE = "OPENING_TO_THEM_SURFACE";
-	private static final Set<String> OPENING_TO_THEM_SURFACE_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> OPENING_TO_THEM_SURFACE_COLUMNS = new LinkedHashSet<String>() {{
 		add("OPENING_ID");
 		add("THEMATIC_SURFACE_ID");
 	}};
 
 	private static final String ROOM_TABLE = "ROOM";
-	private static final Set<String> ROOM_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> ROOM_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("NAME");
 		add("NAME_CODESPACE");
@@ -278,7 +278,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String SURFACE_DATA_TABLE = "SURFACE_DATA";
-	private static final Set<String> SURFACE_DATA_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> SURFACE_DATA_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("GMLID");
 		add("GMLID_CODESPACE");
@@ -306,7 +306,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String SURFACE_GEOMETRY_TABLE = "SURFACE_GEOMETRY";
-	private static final Set<String> SURFACE_GEOMETRY_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> SURFACE_GEOMETRY_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("GMLID");
 		add("GMLID_CODESPACE");
@@ -321,7 +321,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String TEXTUREPARAM_TABLE = "TEXTUREPARAM";
-	private static final Set<String> TEXTUREPARAM_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> TEXTUREPARAM_COLUMNS = new LinkedHashSet<String>() {{
 		add("SURFACE_GEOMETRY_ID");
 		add("IS_TEXTURE_PARAMETRIZATION");
 		add("WORLD_TO_TEXTURE");
@@ -330,7 +330,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}};
 
 	private static final String THEMATIC_SURFACE_TABLE = "THEMATIC_SURFACE";
-	private static final Set<String> THEMATIC_SURFACE_COLUMNS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> THEMATIC_SURFACE_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("NAME");
 		add("NAME_CODESPACE");
@@ -352,7 +352,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final String FIRST = "FIRST";
 	private static final String LAST = "LAST";
 
-	private static final Set<String> AGGREGATION_FUNCTIONS = new HashSet<String>() {{
+	private static final LinkedHashSet<String> AGGREGATION_FUNCTIONS = new LinkedHashSet<String>() {{
 		add(MAX);
 		add(MIN);
 		add(AVG);
