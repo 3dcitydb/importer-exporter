@@ -42,6 +42,5 @@ public interface BalloonTemplateHandler {
 
 	public String getBalloonContent(String gmlId, int lod) throws Exception;	
 	public Set<String> getSupportedAggregationFunctions();
-	public HashMap<String, Set<String>> getSupportedTablesAndColumns();
-		
+	public HashMap<String, Set<String>> getSupportedTablesAndColumns();		
 }

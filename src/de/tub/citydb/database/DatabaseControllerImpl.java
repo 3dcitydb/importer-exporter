@@ -1,21 +1,20 @@
 package de.tub.citydb.database;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import de.tub.citydb.api.controller.DatabaseController;
+import de.tub.citydb.api.database.BalloonTemplateFactory;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
 import de.tub.citydb.api.database.DatabaseMetaData;
 import de.tub.citydb.api.database.DatabaseSrs;
-import de.tub.citydb.api.database.BalloonTemplateHandler;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Workspace;
-import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
+import de.tub.citydb.modules.kml.database.BalloonTemplateFactoryImpl;
 import de.tub.citydb.util.database.DBUtil;
 
 public class DatabaseControllerImpl implements DatabaseController {
@@ -128,14 +127,8 @@ public class DatabaseControllerImpl implements DatabaseController {
 	}
 
 	@Override
-	public BalloonTemplateHandler createNewBalloonTemplateHandler(File templateFile, Connection connection) {
-		return new BalloonTemplateHandlerImpl(templateFile, connection);
+	public BalloonTemplateFactory getBalloonTemplateFactory() {
+		return BalloonTemplateFactoryImpl.getInstance();
 	}
-
-	@Override
-	public BalloonTemplateHandler createNewBalloonTemplateHandler(String templateString, Connection connection) {
-		return new BalloonTemplateHandlerImpl(templateString, connection);
-	}
-	
 
 }

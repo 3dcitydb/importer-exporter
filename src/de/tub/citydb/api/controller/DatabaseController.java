@@ -1,11 +1,10 @@
 package de.tub.citydb.api.controller;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-import de.tub.citydb.api.database.BalloonTemplateHandler;
+import de.tub.citydb.api.database.BalloonTemplateFactory;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
 import de.tub.citydb.api.database.DatabaseMetaData;
@@ -29,7 +28,5 @@ public interface DatabaseController {
 	public boolean gotoWorkspace(Connection conn, String workspaceName) throws SQLException;
 	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) throws SQLException;
 
-
-	public BalloonTemplateHandler createNewBalloonTemplateHandler(File templateFile, Connection connection);
-	public BalloonTemplateHandler createNewBalloonTemplateHandler(String templateString, Connection connection);
+	public BalloonTemplateFactory getBalloonTemplateFactory();
 }
