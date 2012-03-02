@@ -1,6 +1,6 @@
 /*
  * This file is part of the 3D City Database Importer/Exporter.
- * Copyright (c) 2007 - 2011
+ * Copyright (c) 2007 - 2012
  * Institute for Geodesy and Geoinformation Science
  * Technische Universitaet Berlin, Germany
  * http://www.gis.tu-berlin.de/
@@ -138,7 +138,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private BalloonTemplateHandlerImpl balloonTemplateHandler = null;
 
 	private ElevationServiceHandler elevationServiceHandler;
-	private long elevationServicePause;
 	private SimpleDateFormat dateFormatter;
 	private double hlDistance = 0.75; 
 	private X3DMaterial defaultX3dMaterial;
@@ -193,8 +192,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		}
 
 		elevationServiceHandler = new ElevationServiceHandler();
-		// pause interval: 100 * maxThreads must be enough, but experience says it isn't!
-		elevationServicePause = 250 * config.getProject().getKmlExporter().getSystem().getThreadPool().getDefaultPool().getMaxThreads();
+
 		dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 		defaultX3dMaterial = cityGMLFactory.createX3DMaterial();
@@ -1353,8 +1351,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 				Logger.getInstance().info("Getting zOffset from Google's elevation API for " + gmlId + " with " + candidates.size() + " points.");
 				zOffset = elevationServiceHandler.getZOffset(coords);
-				// avoid "OVER_QUERY_LIMIT" from elevation service
-				Thread.sleep(elevationServicePause);
 
 				// save result in DB for next time
 				String genericAttribName = "GE_LoD" + currentLod + "_zOffset";

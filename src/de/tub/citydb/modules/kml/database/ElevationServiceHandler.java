@@ -1,6 +1,6 @@
 /*
  * This file is part of the 3D City Database Importer/Exporter.
- * Copyright (c) 2007 - 2011
+ * Copyright (c) 2007 - 2012
  * Institute for Geodesy and Geoinformation Science
  * Technische Universitaet Berlin, Germany
  * http://www.gis.tu-berlin.de/
@@ -31,8 +31,11 @@ package de.tub.citydb.modules.kml.database;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -43,7 +46,9 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import de.tub.citydb.log.Logger;
 
-public class ElevationServiceHandler extends DefaultHandler {
+public class ElevationServiceHandler {
+
+	private static final ReentrantLock runLock = new ReentrantLock();
 
 	private static final String STATUS = "status";
 	private static final String LAT = "lat";
@@ -69,6 +74,7 @@ public class ElevationServiceHandler extends DefaultHandler {
 	double lastLat = 0;
 	double lastLong = 0;
 
+	
 	public double getZOffset(double[] candidateCoords) throws Exception {
 
 		double zOffset = 0;
@@ -104,15 +110,10 @@ public class ElevationServiceHandler extends DefaultHandler {
 			elevationStringList.add(elevationString);
 		}
 
-		try {
-			for (String elevationString: elevationStringList) {
-				URL elevationService = new URL(elevationString);
-				saxParser.parse(elevationService.openStream(), this);
-			}
-		}
-		catch (Throwable t) {
-			Logger.getInstance().error("Could not access Elevation API. Please check your network settings.");
-			//			t.printStackTrace();
+		for (String elevationString: elevationStringList) {
+			waitForAccess(); // avoid "OVER_QUERY_LIMIT" from elevation service; max 10 calls/sec are allowed
+			ElevationServiceCaller elevationServiceCaller = new ElevationServiceCaller(elevationString);
+			elevationServiceCaller.run();
 		}
 
 		if (!status.equalsIgnoreCase(OK)) {
@@ -136,65 +137,102 @@ public class ElevationServiceHandler extends DefaultHandler {
 		return zOffset;
 	}
 
-	public void startDocument() throws SAXException	{}
+	private static void waitForAccess() {
+		try {
+			runLock.lock();
+			// pause interval: 100 millis should be enough, but experience says it is not!
+			Thread.currentThread().sleep(200);
+		}
+		catch (Exception e) {}
+		finally {
+			runLock.unlock();
+		}
+	}
+	
+	private class ElevationServiceCaller extends DefaultHandler implements Runnable {
 
-	public void endDocument() throws SAXException {}
+		private String elevationString;
 
-	public void startElement(String namespaceURI,
-			String sName, // simple name
-			String qName, // qualified name
-			Attributes attrs) throws SAXException {
-		String eName = sName; // element name
-		if ("".equals(eName)) {
-			eName = qName; // not namespace-aware
+		private ElevationServiceCaller (String elevationString) {
+			this.elevationString = elevationString;
+		}
+		
+		public void run() {
+			try {
+				// for debugging purposes
+//				Thread.currentThread().setName(this.getClass().getSimpleName());
+//				SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS");
+//				Logger.getInstance().info("ElevationServiceCaller started at " + dateFormatter.format(new Date(System.currentTimeMillis())));
+
+				URL elevationService = new URL(elevationString);
+				saxParser.parse(elevationService.openStream(), this);
+			}
+			catch (Throwable t) {
+				Logger.getInstance().error("Could not access Elevation API. Please check your network settings.");
+//				t.printStackTrace();
+			}
 		}
 
-		currentElement = eName;
-	}
+		public void startDocument() throws SAXException	{}
 
-	public void endElement(String namespaceURI,
-			String sName, // simple name
-			String qName  // qualified name
-			) throws SAXException {
-		String eName = sName; // element name
-		if ("".equals(eName)) eName = qName; // not namespace-aware
+		public void endDocument() throws SAXException {}
 
-		String value = textBuffer.toString().trim();
-		if(!value.equals("")) {
-			if (currentElement.equalsIgnoreCase(STATUS)) {
-				status = value;
+		public void startElement(String namespaceURI,
+				String sName, // simple name
+				String qName, // qualified name
+				Attributes attrs) throws SAXException {
+			String eName = sName; // element name
+			if ("".equals(eName)) {
+				eName = qName; // not namespace-aware
 			}
 
-			else if (currentElement.equalsIgnoreCase(LAT)) {
-				lastLat = Double.parseDouble(value);
-			}
-			else if (currentElement.equalsIgnoreCase(LNG)) {
-				lastLong = Double.parseDouble(value);
-			}
-			else if (currentElement.equalsIgnoreCase(ELEVATION)) {
-				elevation = Double.parseDouble(value);
-				location++;
-				if (elevation < minElevation) {
-					minElevation = elevation;
-					minElevationLat = lastLat;
-					minElevationLong = lastLong;
+			currentElement = eName;
+		}
+
+		public void endElement(String namespaceURI,
+				String sName, // simple name
+				String qName  // qualified name
+				) throws SAXException {
+			String eName = sName; // element name
+			if ("".equals(eName)) eName = qName; // not namespace-aware
+
+			String value = textBuffer.toString().trim();
+			if(!value.equals("")) {
+				if (currentElement.equalsIgnoreCase(STATUS)) {
+					status = value;
+				}
+
+				else if (currentElement.equalsIgnoreCase(LAT)) {
+					lastLat = Double.parseDouble(value);
+				}
+				else if (currentElement.equalsIgnoreCase(LNG)) {
+					lastLong = Double.parseDouble(value);
+				}
+				else if (currentElement.equalsIgnoreCase(ELEVATION)) {
+					elevation = Double.parseDouble(value);
+					location++;
+					if (elevation < minElevation) {
+						minElevation = elevation;
+						minElevationLat = lastLat;
+						minElevationLong = lastLong;
+					}
 				}
 			}
-		}
 
-		textBuffer = null; 
-	} 
+			textBuffer = null; 
+		} 
 
 
-	public void characters(char buf[], int offset, int len) throws SAXException
-	{
-		String s = new String(buf, offset, len);
-		if (textBuffer == null) {
-			textBuffer = new StringBuffer(s);
-		}
-		else {
-			textBuffer.append(s);
-		}
-	} 
+		public void characters(char buf[], int offset, int len) throws SAXException
+		{
+			String s = new String(buf, offset, len);
+			if (textBuffer == null) {
+				textBuffer = new StringBuffer(s);
+			}
+			else {
+				textBuffer.append(s);
+			}
+		} 
+	}
 
 }
