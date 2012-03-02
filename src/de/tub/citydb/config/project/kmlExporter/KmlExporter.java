@@ -141,14 +141,15 @@ public class KmlExporter {
 		setGeometryHighlightingDistance(0.75);
 		setAppearanceTheme(THEME_NONE);
 		setIgnoreSurfaceOrientation(false);
-		colladaHighlighting = true;
-		setColladaHighlightingDistance(0.75);
 		generateTextureAtlases = true;
 		packingAlgorithm = 5; // TextureAtlasGenerator.TPIM
 		setTextureAtlasPots(true);
 		scaleImages = false;
 		imageScaleFactor = 1.0;
 		groupBuildings = false;
+		groupSize = 1;
+		colladaHighlighting = true;
+		setColladaHighlightingDistance(0.75);
 		includeDescription = true;
 		setBalloonContentMode(BalloonContentMode.GEN_ATTRIB);
 		balloonContentPath = new Path();
@@ -158,7 +159,6 @@ public class KmlExporter {
 		setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
 		altitudeOffsetValue = 0;
 		callGElevationService = true;
-		groupSize = 1;
 		system = new System();
 	}
 

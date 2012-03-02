@@ -790,6 +790,15 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 		footprintHighlightingCheckbox.setSelected(kmlExporter.isFootprintHighlighting());
 		geometryHighlightingCheckbox.setSelected(kmlExporter.isGeometryHighlighting());
 
+		geometryHLSurfaceDistanceLabel.setEnabled(false);
+		geometryHLSurfaceDistanceText.setEnabled(false);
+		geometryHLSurfaceDistanceText.setText(String.valueOf(kmlExporter.getGeometryHighlightingDistance()));
+		if (kmlExporter.isGeometryHighlighting()) {
+			geometryHighlightingCheckbox.setSelected(true);
+			geometryHLSurfaceDistanceLabel.setEnabled(true);
+			geometryHLSurfaceDistanceText.setEnabled(true);
+		}
+
 		ignoreSurfaceOrientationCheckbox.setSelected(kmlExporter.isIgnoreSurfaceOrientation());
 		textureAtlasCheckbox.setSelected(kmlExporter.isGenerateTextureAtlases());
 		textureAtlasPotsCheckbox.setSelected(kmlExporter.isTextureAtlasPots());
@@ -800,6 +809,7 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 			}
 		}
 
+		scaleTexImagesCheckbox.setSelected(false);
 		scaleFactorText.setEnabled(false);
 		scaleFactorText.setText(String.valueOf(kmlExporter.getImageScaleFactor()));
 		if (kmlExporter.isScaleImages()) {
@@ -812,15 +822,6 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 		if (kmlExporter.isGroupBuildings()) {
 			groupBuildingsRButton.setSelected(true);
 			groupSizeText.setEnabled(true);
-		}
-
-		geometryHLSurfaceDistanceLabel.setEnabled(false);
-		geometryHLSurfaceDistanceText.setEnabled(false);
-		geometryHLSurfaceDistanceText.setText(String.valueOf(kmlExporter.getGeometryHighlightingDistance()));
-		if (kmlExporter.isGeometryHighlighting()) {
-			geometryHighlightingCheckbox.setSelected(true);
-			geometryHLSurfaceDistanceLabel.setEnabled(true);
-			geometryHLSurfaceDistanceText.setEnabled(true);
 		}
 
 		colladaHLSurfaceDistanceLabel.setEnabled(false);
@@ -903,8 +904,7 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 			dl.setRgba5(rgba5.getRGB());
 		}
 
-		int level = DisplayLevel.COLLADA;
-		dl = new DisplayLevel(level, -1, -1);
+		dl = new DisplayLevel(DisplayLevel.COLLADA, -1, -1);
 		indexOfDl = kmlExporter.getDisplayLevels().indexOf(dl); 
 		if (indexOfDl != -1) {
 			dl = kmlExporter.getDisplayLevels().get(indexOfDl);
@@ -921,7 +921,15 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		kmlExporter.setFootprintHighlighting(footprintHighlightingCheckbox.isSelected());
+
 		kmlExporter.setGeometryHighlighting(geometryHighlightingCheckbox.isSelected());
+		try {
+			kmlExporter.setGeometryHighlightingDistance(Double.parseDouble(geometryHLSurfaceDistanceText.getText().trim()));
+			if (kmlExporter.getGeometryHighlightingDistance() <= 0 || kmlExporter.getGeometryHighlightingDistance() >10) {
+				kmlExporter.setGeometryHighlightingDistance(1.0);
+			}
+		}
+		catch (NumberFormatException nfe) {}
 
 		kmlExporter.setIgnoreSurfaceOrientation(ignoreSurfaceOrientationCheckbox.isSelected());
 		kmlExporter.setGenerateTextureAtlases(textureAtlasCheckbox.isSelected());
@@ -946,15 +954,6 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 		}
 		catch (NumberFormatException nfe) {}
 
-		kmlExporter.setGeometryHighlighting(geometryHighlightingCheckbox.isSelected());
-		try {
-			kmlExporter.setGeometryHighlightingDistance(Double.parseDouble(geometryHLSurfaceDistanceText.getText().trim()));
-			if (kmlExporter.getGeometryHighlightingDistance() <= 0 || kmlExporter.getGeometryHighlightingDistance() >10) {
-				kmlExporter.setGeometryHighlightingDistance(1.0);
-			}
-		}
-		catch (NumberFormatException nfe) {}
-
 		kmlExporter.setColladaHighlighting(colladaHighlightingRButton.isSelected());
 		try {
 			kmlExporter.setColladaHighlightingDistance(Double.parseDouble(colladaHLSurfaceDistanceText.getText().trim()));
@@ -964,6 +963,64 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 		}
 		catch (NumberFormatException nfe) {}
 
+	}
+
+	@Override
+	public void resetSettings() {
+		KmlExporter kmlExporter = config.getProject().getKmlExporter();
+
+		for (int level = DisplayLevel.FOOTPRINT; level <= DisplayLevel.EXTRUDED; level++) {
+			DisplayLevel dl = new DisplayLevel(level, -1, -1);
+			int indexOfDl = kmlExporter.getDisplayLevels().indexOf(dl); 
+			if (indexOfDl != -1) {
+				dl = kmlExporter.getDisplayLevels().get(indexOfDl);
+				dl.setRgba0(DisplayLevel.DEFAULT_FILL_COLOR);
+				dl.setRgba1(DisplayLevel.DEFAULT_LINE_COLOR);
+				dl.setRgba4(DisplayLevel.DEFAULT_FILL_HIGHLIGHTED_COLOR);
+				dl.setRgba5(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+			}
+		}
+
+		DisplayLevel dl = new DisplayLevel(DisplayLevel.GEOMETRY, -1, -1);
+		int indexOfDl = kmlExporter.getDisplayLevels().indexOf(dl); 
+		if (indexOfDl != -1) {
+			dl = kmlExporter.getDisplayLevels().get(indexOfDl);
+			dl.setRgba0(DisplayLevel.DEFAULT_WALL_FILL_COLOR);
+			dl.setRgba1(DisplayLevel.DEFAULT_WALL_LINE_COLOR);
+			dl.setRgba2(DisplayLevel.DEFAULT_ROOF_FILL_COLOR);
+			dl.setRgba3(DisplayLevel.DEFAULT_ROOF_LINE_COLOR);
+			dl.setRgba4(DisplayLevel.DEFAULT_FILL_HIGHLIGHTED_COLOR);
+			dl.setRgba5(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+		}
+
+		dl = new DisplayLevel(DisplayLevel.COLLADA, -1, -1);
+		indexOfDl = kmlExporter.getDisplayLevels().indexOf(dl); 
+		if (indexOfDl != -1) {
+			dl = kmlExporter.getDisplayLevels().get(indexOfDl);
+			dl.setRgba4(DisplayLevel.DEFAULT_FILL_HIGHLIGHTED_COLOR);
+			dl.setRgba5(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+		}
+
+		kmlExporter.setFootprintHighlighting(false);
+
+		kmlExporter.setGeometryHighlighting(false);
+		kmlExporter.setGeometryHighlightingDistance(0.75);
+
+		kmlExporter.setIgnoreSurfaceOrientation(false);
+		kmlExporter.setGenerateTextureAtlases(true);
+		kmlExporter.setTextureAtlasPots(true);
+		kmlExporter.setPackingAlgorithm(TextureAtlasGenerator.TPIM); 
+
+		kmlExporter.setScaleImages(false);
+		kmlExporter.setImageScaleFactor(1);
+
+		kmlExporter.setGroupBuildings(false);
+		kmlExporter.setGroupSize(1);
+
+		kmlExporter.setColladaHighlighting(true);
+		kmlExporter.setColladaHighlightingDistance(0.75);
+
+		loadSettings(); // update GUI
 	}
 
 	@Override

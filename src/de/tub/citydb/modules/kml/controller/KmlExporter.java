@@ -991,8 +991,8 @@ public class KmlExporter implements EventHandler {
 
 			if (config.getProject().getKmlExporter().isGeometryHighlighting()) {
 				String invisibleColor = Integer.toHexString(DisplayLevel.INVISIBLE_COLOR);
-				String highlightFillColor = Integer.toHexString(DisplayLevel.EXPLOSION_HIGHLIGHTED_FILL_COLOR);
-				String highlightLineColor = Integer.toHexString(DisplayLevel.EXPLOSION_HIGHLIGHTED_LINE_COLOR);
+				String highlightFillColor = Integer.toHexString(DisplayLevel.DEFAULT_FILL_HIGHLIGHTED_COLOR);
+				String highlightLineColor = Integer.toHexString(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 				if (indexOfDl != -1) {
 					displayLevel = config.getProject().getKmlExporter().getDisplayLevels().get(indexOfDl);
 					if (displayLevel.isSetRgba4()) {
@@ -1046,8 +1046,8 @@ public class KmlExporter implements EventHandler {
 			if (config.getProject().getKmlExporter().isColladaHighlighting()) {
 				indexOfDl = config.getProject().getKmlExporter().getDisplayLevels().indexOf(displayLevel);
 				String invisibleColor = Integer.toHexString(DisplayLevel.INVISIBLE_COLOR);
-				String highlightFillColor = Integer.toHexString(DisplayLevel.EXPLOSION_HIGHLIGHTED_FILL_COLOR);
-				String highlightLineColor = Integer.toHexString(DisplayLevel.EXPLOSION_HIGHLIGHTED_LINE_COLOR);
+				String highlightFillColor = Integer.toHexString(DisplayLevel.DEFAULT_FILL_HIGHLIGHTED_COLOR);
+				String highlightLineColor = Integer.toHexString(DisplayLevel.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 				if (indexOfDl != -1) {
 					displayLevel = config.getProject().getKmlExporter().getDisplayLevels().get(indexOfDl);
 					if (displayLevel.isSetRgba4()) {

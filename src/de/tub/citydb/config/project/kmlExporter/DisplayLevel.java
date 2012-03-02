@@ -62,19 +62,17 @@ public class DisplayLevel {
 	public static final String GEOMETRY_HIGHLIGHTED_PLACEMARK_ID = "KMLGeomHi_";
 	public static final String COLLADA_PLACEMARK_ID = "COLLADA_";
 
-	public static final int DEFAULT_FILL_COLOR = 0xc8ffff00;
-	public static final int DEFAULT_LINE_COLOR = 0xc8ff6400;
-	public static final int DEFAULT_FILL_HIGHLIGHTED_COLOR = 0xc8ffffff;
-	public static final int DEFAULT_LINE_HIGHLIGHTED_COLOR = 0xc8ffcc66;
-	public static final int DEFAULT_WALL_FILL_COLOR = 0xff878787;
- 	public static final int DEFAULT_WALL_LINE_COLOR = DEFAULT_LINE_COLOR;
-	public static final int DEFAULT_ROOF_FILL_COLOR = 0xffcc0000;
-	public static final int DEFAULT_ROOF_LINE_COLOR = DEFAULT_LINE_COLOR;
+	public static final int DEFAULT_FILL_COLOR = 0xc8ffcc00;
+	public static final int DEFAULT_LINE_COLOR = 0xc8ff6633;
+	public static final int DEFAULT_FILL_HIGHLIGHTED_COLOR = 0xc866ff66;
+	public static final int DEFAULT_LINE_HIGHLIGHTED_COLOR = 0xc8ffff66;
+	public static final int DEFAULT_WALL_FILL_COLOR = 0xc8cccccc;
+ 	public static final int DEFAULT_WALL_LINE_COLOR = 0xc8666666;
+	public static final int DEFAULT_ROOF_FILL_COLOR = 0xc8ff3333;
+	public static final int DEFAULT_ROOF_LINE_COLOR = 0xc8990000;
 
 	public static final int INVISIBLE_COLOR = 0x0100aaff;
-	public static final int EXPLOSION_HIGHLIGHTED_FILL_COLOR = 0x8c00aaff;
-	public static final int EXPLOSION_HIGHLIGHTED_LINE_COLOR = 0x8cffffff;
-	public static final int DEFAULT_ALPHA_VALUE = 140; // 0x8c;
+	public static final int DEFAULT_ALPHA_VALUE = 200; // 0xc8;
 
 	private int level;
 	private boolean active = false;
