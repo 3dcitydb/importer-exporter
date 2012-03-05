@@ -1,6 +1,8 @@
 package de.tub.citydb.gui.components.mapviewer;
 
 import java.awt.Color;
+import java.awt.Desktop;
+import java.awt.Desktop.Action;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -18,8 +20,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
@@ -48,6 +54,7 @@ import javax.swing.text.html.HTMLDocument;
 
 import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
+import org.jdesktop.swingx.mapviewer.TileFactory;
 
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.Event;
@@ -117,12 +124,15 @@ public class MapWindow extends JDialog implements EventHandler {
 
 	private JLabel bboxTitel;
 	private JLabel reverseTitle;
-	private JTextPane reverseInfo;
+	private JLabel reverseInfo;
 	private JTextPane reverseText;
 	private JLabel reverseSearchProgress;
 	
 	private JLabel helpTitle;
 	private JLabel helpText;
+	
+	private JLabel googleTitle;
+	private JButton showInGoolgeButton;
 
 	private BoundingBoxListener listener;
 	private BBoxPopupMenu[] bboxPopups;
@@ -317,6 +327,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		reverseTitle.setIconTextGap(5);
 		reverseSearchProgress = new JLabel();
+		reverseInfo = new JLabel();
 
 		reverseText = new JTextPane();
 		reverseText.setEditable(false);
@@ -327,14 +338,6 @@ public class MapWindow extends JDialog implements EventHandler {
 				"body { font-family: " + reverseText.getFont().getFamily() + "; " + "font-size: " + reverseText.getFont().getSize() + "pt; }");
 		reverseText.setVisible(false);
 
-		reverseInfo = new JTextPane();
-		reverseInfo.setBorder(BorderFactory.createEmptyBorder());
-		reverseInfo.setEditable(false);
-		reverseInfo.setOpaque(false);
-		reverseInfo.setContentType("text/html");
-		((HTMLDocument)reverseInfo.getDocument()).getStyleSheet().addRule(
-				"body { font-family: " + reverseText.getFont().getFamily() + "; " + "font-size: " + reverseInfo.getFont().getSize() + "pt; }");
-
 		Box reverseTitelBox = Box.createHorizontalBox();
 		reverseTitelBox.add(reverseTitle);
 		reverseTitelBox.add(Box.createHorizontalGlue());
@@ -344,6 +347,29 @@ public class MapWindow extends JDialog implements EventHandler {
 		reverse.add(reverseText, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
 		reverse.add(reverseInfo, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 0));
 
+		// Google maps
+		JPanel google = new JPanel();
+		google.setBorder(BorderFactory.createTitledBorder(""));
+		google.setLayout(new GridBagLayout());
+		
+		googleTitle = new JLabel();
+		googleTitle.setFont(googleTitle.getFont().deriveFont(Font.BOLD));
+		googleTitle.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/google_maps.png")));
+		googleTitle.setIconTextGap(5);
+
+		showInGoolgeButton = new JButton();
+		ImageIcon goIcon = new ImageIcon(getClass().getResource("/resources/img/map/open.png")); 
+		showInGoolgeButton.setIcon(goIcon);
+		showInGoolgeButton.setPreferredSize(new Dimension(goIcon.getIconWidth() + 6, goIcon.getIconHeight() + 6));
+		showInGoolgeButton.setEnabled(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Action.BROWSE));
+		
+		Box googleBox = Box.createHorizontalBox();
+		googleBox.add(googleTitle);
+		googleBox.add(Box.createHorizontalGlue());
+		googleBox.add(showInGoolgeButton);
+		
+		google.add(googleBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
+
 		// help
 		JPanel help = new JPanel();
 		help.setBorder(BorderFactory.createTitledBorder(""));
@@ -352,17 +378,17 @@ public class MapWindow extends JDialog implements EventHandler {
 		helpTitle = new JLabel();
 		helpTitle.setFont(help.getFont().deriveFont(Font.BOLD));
 		helpTitle.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/help.png")));
-		helpTitle.setIconTextGap(5);
-		
+		helpTitle.setIconTextGap(5);		
 		helpText = new JLabel();
 
 		help.add(helpTitle, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
 		help.add(helpText, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
-
+	
 		left.add(bbox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
 		left.add(reverse, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
-		left.add(help, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
-		left.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 3, 0, 1, GridBagConstraints.VERTICAL, 5, 0, 2, 0));
+		left.add(google, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
+		left.add(help, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
+		left.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 4, 0, 1, GridBagConstraints.VERTICAL, 5, 0, 2, 0));
 
 		left.setMinimumSize(left.getPreferredSize());
 		left.setPreferredSize(left.getMinimumSize());
@@ -439,7 +465,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		});		
 
 		PopupMenuDecorator popupMenuDecorator = PopupMenuDecorator.getInstance();
-		popupMenuDecorator.decorate((JComponent)searchBox.getEditor().getEditorComponent(), reverseText, reverseInfo);
+		popupMenuDecorator.decorate((JComponent)searchBox.getEditor().getEditorComponent(), reverseText);
 
 		// popup menu
 		final JPopupMenu popupMenu = new JPopupMenu();
@@ -556,6 +582,36 @@ public class MapWindow extends JDialog implements EventHandler {
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dispose();
+			}
+		});
+		
+		showInGoolgeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Rectangle view = map.getMapKit().getMainMap().getViewportBounds();
+				TileFactory fac = map.getMapKit().getMainMap().getTileFactory();
+				int zoom = map.getMapKit().getMainMap().getZoom();
+
+				GeoPosition centerPoint = fac.pixelToGeo(new Point2D.Double(view.getCenterX(), view.getCenterY()), zoom);			
+				GeoPosition southWest = fac.pixelToGeo(new Point2D.Double(view.getMinX(), view.getMaxY()), zoom);
+				GeoPosition northEast = fac.pixelToGeo(new Point2D.Double(view.getMaxX(), view.getMinY()), zoom);
+				
+				StringBuilder url = new StringBuilder();
+				url.append("http://maps.google.de/maps?");
+				
+				if (searchBox.getSelectedItem() != null)
+					url.append("&q=").append(((Location)searchBox.getSelectedItem()).getFormattedAddress().replaceAll("\\s+", "+"));
+				
+				url.append("&ll=").append(centerPoint.getLatitude()).append(",").append(centerPoint.getLongitude());
+				url.append("&spn=").append((northEast.getLatitude() - southWest.getLatitude()) / 2).append(",").append((northEast.getLongitude() - southWest.getLongitude()) / 2);
+				url.append("&Sspn=").append(northEast.getLatitude() - southWest.getLatitude()).append(",").append(northEast.getLongitude() - southWest.getLongitude());
+				
+				try {
+					Desktop.getDesktop().browse(new URI(url.toString()));
+				} catch (IOException e1) {
+					LOG.error("Failed to launch default browser.");
+				} catch (URISyntaxException e1) {
+					// 
+				}
 			}
 		});
 	}
@@ -776,10 +832,12 @@ public class MapWindow extends JDialog implements EventHandler {
 		copyBBox.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.copy"));
 		pasteBBox.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.paste"));
 		reverseTitle.setText(Internal.I18N.getString("map.reverseGeocoder.label"));
-		reverseInfo.setText(Internal.I18N.getString("map.reverseGeocoder.hint.label"));
+		reverseInfo.setText("<html>" + Internal.I18N.getString("map.reverseGeocoder.hint.label") + "</html>");
 		helpTitle.setText(Internal.I18N.getString("map.help.label"));
 		helpText.setText("<html>" + Internal.I18N.getString("map.help.hint") + "</html>");
-
+		googleTitle.setText(Internal.I18N.getString("map.google.label"));
+		showInGoolgeButton.setToolTipText(Internal.I18N.getString("map.google.show.tooltip"));
+		
 		map.doTranslation();		
 		for (int i = 0; i < bboxPopups.length; ++i)
 			bboxPopups[i].doTranslation();
@@ -848,11 +906,12 @@ public class MapWindow extends JDialog implements EventHandler {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						reverseText.setText(result.toString());
-						reverseInfo.setText(LAT_LON_FORMATTER.format(location.getPosition().getLatitude()) + ", " + 
-								LAT_LON_FORMATTER.format(location.getPosition().getLongitude()));
 						reverseText.setVisible(true);
-						reverseInfo.setVisible(true);
+						reverseInfo.setVisible(false);
 						reverseSearchProgress.setIcon(null);
+						
+						location.setFormattedAddress(location.getPosition().getLatitude() + ", " + location.getPosition().getLongitude());
+						searchBox.setSelectedItem(location);
 					}
 				});
 
