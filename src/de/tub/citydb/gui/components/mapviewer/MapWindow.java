@@ -131,8 +131,8 @@ public class MapWindow extends JDialog implements EventHandler {
 	private JLabel helpTitle;
 	private JLabel helpText;
 	
-	private JLabel googleTitle;
-	private JButton showInGoolgeButton;
+	private JLabel googleMapsTitle;
+	private JButton googleMapsButton;
 
 	private BoundingBoxListener listener;
 	private BBoxPopupMenu[] bboxPopups;
@@ -352,21 +352,21 @@ public class MapWindow extends JDialog implements EventHandler {
 		google.setBorder(BorderFactory.createTitledBorder(""));
 		google.setLayout(new GridBagLayout());
 		
-		googleTitle = new JLabel();
-		googleTitle.setFont(googleTitle.getFont().deriveFont(Font.BOLD));
-		googleTitle.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/google_maps.png")));
-		googleTitle.setIconTextGap(5);
+		googleMapsTitle = new JLabel();
+		googleMapsTitle.setFont(googleMapsTitle.getFont().deriveFont(Font.BOLD));
+		googleMapsTitle.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/google_maps.png")));
+		googleMapsTitle.setIconTextGap(5);
 
-		showInGoolgeButton = new JButton();
+		googleMapsButton = new JButton();
 		ImageIcon goIcon = new ImageIcon(getClass().getResource("/resources/img/map/open.png")); 
-		showInGoolgeButton.setIcon(goIcon);
-		showInGoolgeButton.setPreferredSize(new Dimension(goIcon.getIconWidth() + 6, goIcon.getIconHeight() + 6));
-		showInGoolgeButton.setEnabled(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Action.BROWSE));
+		googleMapsButton.setIcon(goIcon);
+		googleMapsButton.setPreferredSize(new Dimension(goIcon.getIconWidth() + 6, goIcon.getIconHeight() + 6));
+		googleMapsButton.setEnabled(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Action.BROWSE));
 		
 		Box googleBox = Box.createHorizontalBox();
-		googleBox.add(googleTitle);
+		googleBox.add(googleMapsTitle);
 		googleBox.add(Box.createHorizontalGlue());
-		googleBox.add(showInGoolgeButton);
+		googleBox.add(googleMapsButton);
 		
 		google.add(googleBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
 
@@ -585,7 +585,7 @@ public class MapWindow extends JDialog implements EventHandler {
 			}
 		});
 		
-		showInGoolgeButton.addActionListener(new ActionListener() {
+		googleMapsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Rectangle view = map.getMapKit().getMainMap().getViewportBounds();
 				TileFactory fac = map.getMapKit().getMainMap().getTileFactory();
@@ -603,7 +603,8 @@ public class MapWindow extends JDialog implements EventHandler {
 				
 				url.append("&ll=").append(centerPoint.getLatitude()).append(",").append(centerPoint.getLongitude());
 				url.append("&spn=").append((northEast.getLatitude() - southWest.getLatitude()) / 2).append(",").append((northEast.getLongitude() - southWest.getLongitude()) / 2);
-				url.append("&Sspn=").append(northEast.getLatitude() - southWest.getLatitude()).append(",").append(northEast.getLongitude() - southWest.getLongitude());
+				url.append("&sspn=").append(northEast.getLatitude() - southWest.getLatitude()).append(",").append(northEast.getLongitude() - southWest.getLongitude());
+				url.append("&t=m");
 				
 				try {
 					Desktop.getDesktop().browse(new URI(url.toString()));
@@ -835,8 +836,8 @@ public class MapWindow extends JDialog implements EventHandler {
 		reverseInfo.setText("<html>" + Internal.I18N.getString("map.reverseGeocoder.hint.label") + "</html>");
 		helpTitle.setText(Internal.I18N.getString("map.help.label"));
 		helpText.setText("<html>" + Internal.I18N.getString("map.help.hint") + "</html>");
-		googleTitle.setText(Internal.I18N.getString("map.google.label"));
-		showInGoolgeButton.setToolTipText(Internal.I18N.getString("map.google.show.tooltip"));
+		googleMapsTitle.setText(Internal.I18N.getString("map.google.label"));
+		googleMapsButton.setToolTipText(Internal.I18N.getString("map.google.show.tooltip"));
 		
 		map.doTranslation();		
 		for (int i = 0; i < bboxPopups.length; ++i)
