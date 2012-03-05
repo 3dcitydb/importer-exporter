@@ -67,6 +67,7 @@ import de.tub.citydb.config.project.system.System;
 		"scaleImages",
 		"imageScaleFactor",
 		"groupBuildings",
+		"groupSize",
 		"includeDescription",
 		"balloonContentMode",
 		"balloonContentPath",
@@ -76,7 +77,7 @@ import de.tub.citydb.config.project.system.System;
 		"altitudeOffsetMode",
 		"altitudeOffsetValue",
 		"callGElevationService",
-		"groupSize",
+		"useOriginalZCoords",
 		"system"
 })
 public class KmlExporter {
@@ -108,6 +109,7 @@ public class KmlExporter {
 	private boolean scaleImages;
 	private double imageScaleFactor;
 	private boolean groupBuildings;
+	private int groupSize;
 	private boolean includeDescription;
 	private BalloonContentMode balloonContentMode;
 	private Path balloonContentPath;
@@ -117,7 +119,7 @@ public class KmlExporter {
 	private AltitudeOffsetMode altitudeOffsetMode;
 	private double altitudeOffsetValue;
 	private boolean callGElevationService;
-	private int groupSize;
+	private boolean useOriginalZCoords;
 	private System system;
 
 	public static final String THEME_NONE = "none";
@@ -159,6 +161,7 @@ public class KmlExporter {
 		setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
 		altitudeOffsetValue = 0;
 		callGElevationService = true;
+		setUseOriginalZCoords(false);
 		system = new System();
 	}
 
@@ -468,6 +471,14 @@ public class KmlExporter {
 
 	public boolean isTextureAtlasPots() {
 		return textureAtlasPots;
+	}
+
+	public void setUseOriginalZCoords(boolean useOriginalZCoords) {
+		this.useOriginalZCoords = useOriginalZCoords;
+	}
+
+	public boolean isUseOriginalZCoords() {
+		return useOriginalZCoords;
 	}
 
 }

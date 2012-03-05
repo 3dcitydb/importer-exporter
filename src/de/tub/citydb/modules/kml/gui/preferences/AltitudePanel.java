@@ -65,6 +65,7 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 	private JTextField constantOffsetText = new JTextField("", 3);
 	private JRadioButton genericAttributeRadioButton = new JRadioButton("");
 	private JCheckBox callGElevationService = new JCheckBox();
+	private JCheckBox useOriginalZCoords = new JCheckBox();
 	private JPanel offsetPanel; 
 
 	public AltitudePanel(Config config) {
@@ -105,17 +106,29 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 		if (callGElevationService.isSelected() != config.getProject().getKmlExporter().isCallGElevationService())
 			return true;
 
+		if (useOriginalZCoords.isSelected() != config.getProject().getKmlExporter().isUseOriginalZCoords())
+			return true;
+
 		return false;
 	}
 
 	private void initGui() {
 		setLayout(new GridBagLayout());
 
+		useOriginalZCoords.setIconTextGap(10);
+		add(useOriginalZCoords, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
+
 		modePanel = new JPanel();
 		modePanel.setLayout(new GridBagLayout());
 		modePanel.setBorder(BorderFactory.createTitledBorder(""));
-		add(modePanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
+		add(modePanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
+
 		modePanel.add(modeComboBox, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
+
+		offsetPanel = new JPanel();
+		offsetPanel.setLayout(new GridBagLayout());
+		offsetPanel.setBorder(BorderFactory.createTitledBorder(""));
+		add(offsetPanel, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 
 		ButtonGroup offsetRadioGroup = new ButtonGroup();
 		offsetRadioGroup.add(noOffsetRadioButton);
@@ -124,11 +137,6 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 		constantOffsetRadioButton.setIconTextGap(10);
 		offsetRadioGroup.add(genericAttributeRadioButton);
 		genericAttributeRadioButton.setIconTextGap(10);
-
-		offsetPanel = new JPanel();
-		offsetPanel.setLayout(new GridBagLayout());
-		offsetPanel.setBorder(BorderFactory.createTitledBorder(""));
-		add(offsetPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 
 		GridBagConstraints norb = GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		norb.gridwidth = 2;
@@ -178,6 +186,7 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 		constantOffsetRadioButton.setText(Internal.I18N.getString("pref.kmlexport.altitude.label.constantOffset"));
 		genericAttributeRadioButton.setText(Internal.I18N.getString("pref.kmlexport.altitude.label.genericAttributeOffset"));
 		callGElevationService.setText(Internal.I18N.getString("pref.kmlexport.altitude.label.callGElevationService"));
+		useOriginalZCoords.setText(Internal.I18N.getString("pref.kmlexport.altitude.label.useOriginalZCoords"));
 	}
 
 	@Override
@@ -196,6 +205,7 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 				break;
 		}
 		callGElevationService.setSelected(config.getProject().getKmlExporter().isCallGElevationService());
+		useOriginalZCoords.setSelected(config.getProject().getKmlExporter().isUseOriginalZCoords());
 		setEnabledComponents();
 	}
 
@@ -224,6 +234,7 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 			config.getProject().getKmlExporter().setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
 		}
 		config.getProject().getKmlExporter().setCallGElevationService(callGElevationService.isSelected());
+		config.getProject().getKmlExporter().setUseOriginalZCoords(useOriginalZCoords.isSelected());
 	}
 	
 	@Override

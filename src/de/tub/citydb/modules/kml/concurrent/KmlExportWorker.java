@@ -1432,6 +1432,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 	private JGeometry convertToWGS84(JGeometry jGeometry) throws SQLException {
 
+		double[] originalCoords = jGeometry.getOrdinatesArray();
+
 		JGeometry convertedPointGeom = null;
 		PreparedStatement convertStmt = null;
 		OracleResultSet rs2 = null;
@@ -1460,6 +1462,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				if (convertStmt != null) convertStmt.close();
 			}
 			catch (Exception e2) {}
+		}
+
+		if (config.getProject().getKmlExporter().isUseOriginalZCoords()) {
+			double[] convertedCoords = convertedPointGeom.getOrdinatesArray();
+			for (int i = 2; i < originalCoords.length; i = i + 3) {
+				convertedCoords[i] = originalCoords[i];
+			}
 		}
 
 		return convertedPointGeom;
