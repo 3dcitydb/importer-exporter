@@ -24,8 +24,10 @@ import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
@@ -108,6 +110,7 @@ public class MapWindow extends JDialog implements EventHandler {
 	private JComboBox searchBox;
 	private JLabel searchResult;
 	private ImageIcon loadIcon;
+	private volatile boolean updateSearchBox = true;
 
 	private JFormattedTextField minX;
 	private JFormattedTextField minY;
@@ -127,10 +130,10 @@ public class MapWindow extends JDialog implements EventHandler {
 	private JLabel reverseInfo;
 	private JTextPane reverseText;
 	private JLabel reverseSearchProgress;
-	
+
 	private JLabel helpTitle;
 	private JLabel helpText;
-	
+
 	private JLabel googleMapsTitle;
 	private JButton googleMapsButton;
 
@@ -181,7 +184,7 @@ public class MapWindow extends JDialog implements EventHandler {
 	private void init() {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/resources/img/map/map_icon.png")));
-		
+
 		setLayout(new GridBagLayout());
 		getContentPane().setBackground(Color.WHITE);
 
@@ -348,27 +351,19 @@ public class MapWindow extends JDialog implements EventHandler {
 		reverse.add(reverseInfo, GuiUtil.setConstraints(0, 2, 0, 0, GridBagConstraints.HORIZONTAL, 10, 0, 0, 0));
 
 		// Google maps
-		JPanel google = new JPanel();
-		google.setBorder(BorderFactory.createTitledBorder(""));
-		google.setLayout(new GridBagLayout());
-		
+		JPanel googleMaps = new JPanel();
+		googleMaps.setBorder(BorderFactory.createTitledBorder(""));
+		googleMaps.setLayout(new GridBagLayout());
+
 		googleMapsTitle = new JLabel();
 		googleMapsTitle.setFont(googleMapsTitle.getFont().deriveFont(Font.BOLD));
 		googleMapsTitle.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/google_maps.png")));
-		googleMapsTitle.setIconTextGap(5);
 
 		googleMapsButton = new JButton();
-		ImageIcon goIcon = new ImageIcon(getClass().getResource("/resources/img/map/open.png")); 
-		googleMapsButton.setIcon(goIcon);
-		googleMapsButton.setPreferredSize(new Dimension(goIcon.getIconWidth() + 6, goIcon.getIconHeight() + 6));
 		googleMapsButton.setEnabled(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Action.BROWSE));
-		
-		Box googleBox = Box.createHorizontalBox();
-		googleBox.add(googleMapsTitle);
-		googleBox.add(Box.createHorizontalGlue());
-		googleBox.add(googleMapsButton);
-		
-		google.add(googleBox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
+
+		googleMaps.add(googleMapsTitle, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
+		googleMaps.add(googleMapsButton, GuiUtil.setConstraints(1, 0, 1, 0, GridBagConstraints.NONE, 0, 5, 0, 0));
 
 		// help
 		JPanel help = new JPanel();
@@ -383,10 +378,10 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		help.add(helpTitle, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 0, 0, 2, 0));
 		help.add(helpText, GuiUtil.setConstraints(0, 1, 0, 0, GridBagConstraints.BOTH, 10, 0, 0, 0));
-	
+
 		left.add(bbox, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
 		left.add(reverse, GuiUtil.setConstraints(0, 1, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
-		left.add(google, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
+		left.add(googleMaps, GuiUtil.setConstraints(0, 2, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
 		left.add(help, GuiUtil.setConstraints(0, 3, 1, 0, GridBagConstraints.BOTH, 5, 0, 5, 0));		
 		left.add(Box.createVerticalGlue(), GuiUtil.setConstraints(0, 4, 0, 1, GridBagConstraints.VERTICAL, 5, 0, 2, 0));
 
@@ -409,7 +404,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		searchBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (!"comboBoxEdited".equals(e.getActionCommand())) {
+				if (updateSearchBox && !"comboBoxEdited".equals(e.getActionCommand())) {
 					Object selectedItem = searchBox.getSelectedItem();
 					if (selectedItem instanceof Location) {
 						Location location = (Location)selectedItem;
@@ -549,7 +544,7 @@ public class MapWindow extends JDialog implements EventHandler {
 				double xmax = ((Number)maxX.getValue()).doubleValue();
 				double ymin = ((Number)minY.getValue()).doubleValue();
 				double ymax = ((Number)maxY.getValue()).doubleValue();
-							
+
 				final BoundingBox bbox = new BoundingBox();
 				bbox.getLowerLeftCorner().setX(Math.min(xmin, xmax));
 				bbox.getLowerLeftCorner().setY(Math.min(ymin, ymax));
@@ -584,7 +579,7 @@ public class MapWindow extends JDialog implements EventHandler {
 				dispose();
 			}
 		});
-		
+
 		googleMapsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Rectangle view = map.getMapKit().getMainMap().getViewportBounds();
@@ -594,25 +589,36 @@ public class MapWindow extends JDialog implements EventHandler {
 				GeoPosition centerPoint = fac.pixelToGeo(new Point2D.Double(view.getCenterX(), view.getCenterY()), zoom);			
 				GeoPosition southWest = fac.pixelToGeo(new Point2D.Double(view.getMinX(), view.getMaxY()), zoom);
 				GeoPosition northEast = fac.pixelToGeo(new Point2D.Double(view.getMaxX(), view.getMinY()), zoom);
-				
-				StringBuilder url = new StringBuilder();
+
+				final StringBuilder url = new StringBuilder();
 				url.append("http://maps.google.de/maps?");
-				
-				if (searchBox.getSelectedItem() != null)
-					url.append("&q=").append(((Location)searchBox.getSelectedItem()).getFormattedAddress().replaceAll("\\s+", "+"));
+
+				if (searchBox.getSelectedItem() instanceof Location) {
+					String query = ((Location)searchBox.getSelectedItem()).getFormattedAddress();
+					
+					try {
+						url.append("&q=").append(URLEncoder.encode(query, "UTF-8"));
+					} catch (UnsupportedEncodingException e1) {
+						// 
+					}
+				}
 				
 				url.append("&ll=").append(centerPoint.getLatitude()).append(",").append(centerPoint.getLongitude());
 				url.append("&spn=").append((northEast.getLatitude() - southWest.getLatitude()) / 2).append(",").append((northEast.getLongitude() - southWest.getLongitude()) / 2);
 				url.append("&sspn=").append(northEast.getLatitude() - southWest.getLatitude()).append(",").append(northEast.getLongitude() - southWest.getLongitude());
 				url.append("&t=m");
-				
-				try {
-					Desktop.getDesktop().browse(new URI(url.toString()));
-				} catch (IOException e1) {
-					LOG.error("Failed to launch default browser.");
-				} catch (URISyntaxException e1) {
-					// 
-				}
+
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						try {
+							Desktop.getDesktop().browse(new URI(url.toString()));
+						} catch (IOException e1) {
+							LOG.error("Failed to launch default browser.");
+						} catch (URISyntaxException e1) {
+							// 
+						}
+					}
+				});
 			}
 		});
 	}
@@ -836,9 +842,8 @@ public class MapWindow extends JDialog implements EventHandler {
 		reverseInfo.setText("<html>" + Internal.I18N.getString("map.reverseGeocoder.hint.label") + "</html>");
 		helpTitle.setText(Internal.I18N.getString("map.help.label"));
 		helpText.setText("<html>" + Internal.I18N.getString("map.help.hint") + "</html>");
-		googleMapsTitle.setText(Internal.I18N.getString("map.google.label"));
-		googleMapsButton.setToolTipText(Internal.I18N.getString("map.google.show.tooltip"));
-		
+		googleMapsButton.setText(Internal.I18N.getString("map.google.label"));
+
 		map.doTranslation();		
 		for (int i = 0; i < bboxPopups.length; ++i)
 			bboxPopups[i].doTranslation();
@@ -910,9 +915,11 @@ public class MapWindow extends JDialog implements EventHandler {
 						reverseText.setVisible(true);
 						reverseInfo.setVisible(false);
 						reverseSearchProgress.setIcon(null);
-						
+
 						location.setFormattedAddress(location.getPosition().getLatitude() + ", " + location.getPosition().getLongitude());
+						updateSearchBox = false;
 						searchBox.setSelectedItem(location);
+						updateSearchBox = true;
 					}
 				});
 
