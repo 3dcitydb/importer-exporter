@@ -96,14 +96,14 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 
 	private JTextField browseText;
 	private JButton browseButton;
-	private JTextField workspaceText;
-	private JFormattedTextField timestampText;
+//	private JTextField workspaceText;
+//	private JFormattedTextField timestampText;
 	private FilterPanel filterPanel;
 	private JButton exportButton;
 
 	private JPanel operations;
-	private JLabel workspaceLabel;
-	private JLabel timestampLabel;
+//	private JLabel workspaceLabel;
+//	private JLabel timestampLabel;
 	private JLabel srsComboBoxLabel;
 	private SrsComboBox srsComboBox;
 
@@ -119,22 +119,23 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	private void initGui() {
 		browseText = new JTextField();
 		browseButton = new JButton();
-		workspaceText = new JTextField();
-		timestampText = new JFormattedTextField(new SimpleDateFormat("dd.MM.yyyy"));
-		timestampText.setFocusLostBehavior(JFormattedTextField.COMMIT);
-		timestampText.setColumns(10);
+//		workspaceText = new JTextField();
+//		timestampText = new JFormattedTextField(new SimpleDateFormat("dd.MM.yyyy"));
+//		timestampText.setFocusLostBehavior(JFormattedTextField.COMMIT);
+//		timestampText.setColumns(10);
 		filterPanel = new FilterPanel(config, FilterPanelType.EXPORT);
 		exportButton = new JButton();
 
-		workspaceText.setEnabled(true);
-		timestampText.setEnabled(true);
+//		workspaceText.setEnabled(true);
+//		timestampText.setEnabled(true);
 		browseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				saveFile(Internal.I18N.getString("main.tabbedPane.export"));
 			}
 		});
 
-		PopupMenuDecorator.getInstance().decorate(workspaceText, timestampText, browseText);
+//		PopupMenuDecorator.getInstance().decorate(workspaceText, timestampText, browseText);
+		PopupMenuDecorator.getInstance().decorate(browseText);
 
 		exportButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -167,18 +168,18 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		view.add(operations, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 		operations.setBorder(BorderFactory.createTitledBorder(""));
 		operations.setLayout(new GridBagLayout());
-		workspaceLabel = new JLabel();
-		timestampLabel = new JLabel();
+//		workspaceLabel = new JLabel();
+//		timestampLabel = new JLabel();
 		srsComboBoxLabel = new JLabel();
 		srsComboBox = SrsComboBoxFactory.getInstance(config).createSrsComboBox(true);
 		srsComboBox.setShowOnlySameDimension(true);
 		srsComboBox.setPreferredSize(new Dimension(50, srsComboBox.getPreferredSize().height));
 		
-		operations.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		operations.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		operations.add(timestampLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,5,5));
-		operations.add(timestampText, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		timestampText.setMinimumSize(timestampText.getPreferredSize());
+//		operations.add(workspaceLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+//		operations.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+//		operations.add(timestampLabel, GuiUtil.setConstraints(2,0,0.0,0.0,GridBagConstraints.NONE,0,10,5,5));
+//		operations.add(timestampText, GuiUtil.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+//		timestampText.setMinimumSize(timestampText.getPreferredSize());
 
 		operations.add(srsComboBoxLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 		operations.add(srsComboBox, GuiUtil.setConstraints(1,1,3,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
@@ -196,8 +197,8 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 
 	public void doTranslation() {
 		((TitledBorder)operations.getBorder()).setTitle(Internal.I18N.getString("export.border.settings"));
-		workspaceLabel.setText(Internal.I18N.getString("common.label.workspace"));
-		timestampLabel.setText(Internal.I18N.getString("common.label.timestamp"));
+//		workspaceLabel.setText(Internal.I18N.getString("common.label.workspace"));
+//		timestampLabel.setText(Internal.I18N.getString("common.label.timestamp"));
 		browseButton.setText(Internal.I18N.getString("common.button.browse"));
 		exportButton.setText(Internal.I18N.getString("export.button.export"));
 		srsComboBoxLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
@@ -206,8 +207,8 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 
 	public void loadSettings() {
 		browseText.setText(config.getInternal().getExportFileName());
-		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getName());
-		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
+//		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getName());
+//		timestampText.setText(config.getProject().getDatabase().getWorkspaces().getExportWorkspace().getTimestamp());
 
 		srsComboBox.setSelectedItem(config.getProject().getExporter().getTargetSRS());
 
@@ -217,13 +218,13 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	public void setSettings() {
 		config.getInternal().setExportFileName(browseText.getText());
 
-		String workspace = workspaceText.getText().trim();
-		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
-				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
-			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
-
-		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText());
-		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(timestampText.getText());
+//		String workspace = workspaceText.getText().trim();
+//		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
+//				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
+//			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
+//
+//		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText());
+//		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(timestampText.getText());
 		config.getProject().getExporter().setTargetSRS(srsComboBox.getSelectedItem());
 		filterPanel.setSettings();
 	}
@@ -247,11 +248,11 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			}
 
 			// workspace timestamp
-			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
-				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("common.dialog.error.incorrectData.date"));
-				return;
-			}
+//			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
+//				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
+//						Internal.I18N.getString("common.dialog.error.incorrectData.date"));
+//				return;
+//			}
 
 			// gmlId
 			if (filter.isSetSimpleFilter() &&

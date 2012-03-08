@@ -168,9 +168,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		connection.setAutoCommit(false);
 
 		// try and change workspace for both connections if needed
-		Database database = config.getProject().getDatabase();
-		dbConnectionPool.gotoWorkspace(connection, 
-				database.getWorkspaces().getKmlExportWorkspace());
+//		Database database = config.getProject().getDatabase();
+//		dbConnectionPool.gotoWorkspace(connection, 
+//				database.getWorkspaces().getKmlExportWorkspace());
 
 		kmlExporterManager = new KmlExporterManager(jaxbKmlContext,
 				jaxbColladaContext,
@@ -1438,9 +1438,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		PreparedStatement convertStmt = null;
 		OracleResultSet rs2 = null;
 		try {
-			convertStmt = (dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem().is3D() && 
+			convertStmt = /*(dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem().is3D() && 
 						   jGeometry.getDimensions() == 3) ?
-					  	  connection.prepareStatement(TileQueries.TRANSFORM_GEOMETRY_TO_WGS84_3D):
+					  	  connection.prepareStatement(TileQueries.TRANSFORM_GEOMETRY_TO_WGS84_3D):*/
 					  	  connection.prepareStatement(TileQueries.TRANSFORM_GEOMETRY_TO_WGS84);
 			// now convert to WGS84
 			STRUCT unconverted = SyncJGeometry.syncStore(jGeometry, connection);

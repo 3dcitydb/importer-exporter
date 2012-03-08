@@ -69,7 +69,7 @@ public class DBLandUse implements DBImporter {
 	}
 
 	public long insert(LandUse landUse) throws SQLException {
-		long landUseId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long landUseId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (landUseId != 0)
@@ -213,7 +213,7 @@ public class DBLandUse implements DBImporter {
         }
 
         psLandUse.addBatch();
-        if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+        if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.LAND_USE);
         
 		return true;

@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
@@ -94,7 +93,6 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Database.PredefinedSrsName;
-import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
@@ -196,7 +194,7 @@ public class KmlExporter implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		// checking workspace...
-		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
+		/*Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
 		if (!workspace.getName().toUpperCase().equals("LIVE")) {
 			boolean workspaceExists = dbPool.existsWorkspace(workspace);
 
@@ -210,7 +208,7 @@ public class KmlExporter implements EventHandler {
 				return false;
 			} else 
 				Logger.getInstance().info("Switching to database workspace " + name + '.');
-		}
+		}*/
 		
 		// check whether spatial indexes are enabled
 		Logger.getInstance().info("Checking for spatial indexes on geometry columns of involved tables...");
@@ -232,7 +230,7 @@ public class KmlExporter implements EventHandler {
 			try {
 				for (DisplayLevel displayLevel : config.getProject().getKmlExporter().getDisplayLevels()) {
 					if (displayLevel.getLevel() == DisplayLevel.COLLADA && displayLevel.isActive()) {
-						if (!DBUtil.getAppearanceThemeList(workspace).contains(selectedTheme)) {
+						if (!DBUtil.getAppearanceThemeList().contains(selectedTheme)) {
 							Logger.getInstance().error("Database does not contain appearance theme \"" + selectedTheme + "\"");
 							return false;
 						}

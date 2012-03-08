@@ -80,7 +80,7 @@ public class XlinkTextureParam implements DBXlinkResolver {
 			psTextureParam.setNull(3, Types.VARCHAR);
 
 		psTextureParam.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			executeBatch();
 
 		if (xlink.getType() == DBXlinkTextureParamEnum.TEXCOORDGEN && xlink.getTexParamGmlId() != null) {

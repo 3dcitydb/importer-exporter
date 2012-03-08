@@ -137,7 +137,7 @@ public class DBImplicitGeometry implements DBImporter {
 				implicitGeometryId = dbImporterManager.getDBId(gmlId, CityGMLClass.ABSTRACT_CITY_OBJECT);				
 
 			if (implicitGeometryId == 0) {
-				implicitGeometryId = dbImporterManager.getDBId(DBSequencerEnum.IMPLICIT_GEOMETRY_SEQ);
+				implicitGeometryId = dbImporterManager.getDBId(DBSequencerEnum.IMPLICIT_GEOMETRY_ID_SEQ);
 				psImplicitGeometry.setLong(1, implicitGeometryId);
 				psImplicitGeometry.setString(2, libraryURI);
 				psImplicitGeometry.execute();
@@ -201,7 +201,7 @@ public class DBImplicitGeometry implements DBImporter {
 				psUpdateImplicitGeometry.setNull(2, 0);
 
 			psUpdateImplicitGeometry.addBatch();
-			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 				dbImporterManager.executeBatch(DBImporterEnum.IMPLICIT_GEOMETRY);
 		}
 

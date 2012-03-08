@@ -70,7 +70,7 @@ public class DBPlantCover implements DBImporter {
 	}
 
 	public long insert(PlantCover plantCover) throws SQLException {
-		long plantCoverId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long plantCoverId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (plantCoverId != 0)
@@ -285,7 +285,7 @@ public class DBPlantCover implements DBImporter {
 		}
 
 		psPlantCover.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.PLANT_COVER);
 
 		return true;

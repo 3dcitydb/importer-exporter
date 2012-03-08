@@ -140,7 +140,7 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 					}
 
 					psTextureParam.addBatch();
-					if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+					if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 						executeBatch();
 
 				} else {

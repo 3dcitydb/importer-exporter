@@ -77,7 +77,7 @@ public class Matcher implements EventHandler {
 
 	private boolean checkWorkspace(Workspace workspace) {
 		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = databaseController.existsWorkspace(workspace.getName());
+			/*boolean workspaceExists = databaseController.existsWorkspace(workspace.getName());
 
 			String name = "'" + workspace.getName().trim() + "'";
 			String timestamp = workspace.getTimestamp().trim();
@@ -88,7 +88,7 @@ public class Matcher implements EventHandler {
 				logController.error("Database workspace " + name + " is not available.");
 				return false;
 			} else 
-				logController.info("Switching to database workspace " + name + '.');
+				logController.info("Switching to database workspace " + name + '.');*/
 		}
 
 		return true;
@@ -137,7 +137,7 @@ public class Matcher implements EventHandler {
 
 		try {
 			conn = databaseController.getConnection();
-			databaseController.gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
+			//databaseController.gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
 			conn.setAutoCommit(true);
 
 			eventDispatcher.triggerEvent(new StatusDialogTitle(Util.I18N.getString("match.match.dialog.process"), this));
@@ -501,7 +501,7 @@ public class Matcher implements EventHandler {
 
 		try {
 			conn = databaseController.getConnection();
-			databaseController.gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
+			//databaseController.gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
 			conn.setAutoCommit(true);
 
 			eventDispatcher.triggerEvent(new StatusDialogTitle(Util.I18N.getString("match.merge.dialog.process"), this));
@@ -652,7 +652,7 @@ public class Matcher implements EventHandler {
 
 		try {
 			conn = databaseController.getConnection();
-			databaseController.gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
+			//databaseController.gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
 			conn.setAutoCommit(true);
 
 			stmt = conn.createStatement();

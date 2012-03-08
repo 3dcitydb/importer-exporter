@@ -40,8 +40,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
+import org.postgis.Point;
+
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DatabaseConnectionPool;
@@ -129,15 +131,16 @@ public class XlinkWorldFile implements DBXlinkResolver {
                     	// interpretation of world file content taken from CityGML specification document version 1.0.0
                     	String orientation = content.get(0) + " " + content.get(2) + " " + content.get(1) + " " + content.get(3);
 
-                    	JGeometry geom = new JGeometry(content.get(4), content.get(5), dbSrid);
-						STRUCT obj = JGeometry.store(geom, batchConn);
+                    	Point ptGeom = new Point(content.get(4), content.get(5));
+						Geometry geom = PGgeometry.geomFromString("SRID=" + dbSrid + ";" + ptGeom);
+						PGgeometry pgGeom = new PGgeometry(geom);
 
 						psUpdate.setString(1, orientation);
-						psUpdate.setObject(2, obj);
+						psUpdate.setObject(2, pgGeom);
 						psUpdate.setLong(3, xlink.getId());
 						
 						psUpdate.addBatch();
-						if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+						if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 							executeBatch();
 
 						return true;

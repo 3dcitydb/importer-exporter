@@ -85,7 +85,7 @@ public class DBRoom implements DBImporter {
 	}
 
 	public long insert(Room room, long buildingId) throws SQLException {
-		long roomId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long roomId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (roomId == 0)
 			return 0;
 
@@ -208,7 +208,7 @@ public class DBRoom implements DBImporter {
 			psRoom.setNull(9, 0);
 
 		psRoom.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.ROOM);
 
 		// BoundarySurfaces

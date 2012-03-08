@@ -92,7 +92,7 @@ public abstract class CacheTableModel {
 			stmt = conn.createStatement();
 			stmt.executeUpdate("create table " + 
 					tableName +
-					" nologging" +
+//					" nologging" +
 					" as select * from " + 
 					sourceTableName);
 			conn.commit();

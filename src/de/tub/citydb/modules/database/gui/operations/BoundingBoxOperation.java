@@ -25,7 +25,6 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBOperationType;
-import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
@@ -150,9 +149,9 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		lock.lock();
 
 		try {
-			Workspace workspace = parent.getWorkspace();
-			if (workspace == null)
-				return;
+//			Workspace workspace = parent.getWorkspace();
+//			if (workspace == null)
+//				return;
 
 			viewController.clearConsole();
 			viewController.setStatusText(Internal.I18N.getString("main.status.database.bbox.label"));
@@ -186,9 +185,10 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 			BoundingBox bbox = null;
 			try {
 				// checking workspace... this should be improved in future...
-				if (parent.existsWorkspace()) {
+//				if (parent.existsWorkspace()) {
 					FeatureClassMode featureClass = (FeatureClassMode)featureComboBox.getSelectedItem();
-					bbox = DBUtil.calcBoundingBox(workspace, featureClass);
+//					bbox = DBUtil.calcBoundingBox(workspace, featureClass);
+					bbox = DBUtil.calcBoundingBox(featureClass);
 					
 					if (bbox != null) {
 						DatabaseSrs dbSrs = databaseController.getActiveConnectionMetaData().getReferenceSystem();
@@ -219,7 +219,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 					} else
 						LOG.warn("Calculation of bounding box aborted.");
-				}
+//				}
 
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {

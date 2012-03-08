@@ -37,9 +37,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.impl.citygml.appearance.AppearanceImpl;
 import org.citygml4j.impl.citygml.appearance.AppearancePropertyImpl;
@@ -72,6 +69,8 @@ import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.TypeAttributeValueEnum;
@@ -124,7 +123,7 @@ public class DBAppearance implements DBExporter {
 			psAppearanceCityObject = connection.prepareStatement("select app.ID as APP_ID, app.GMLID as APP_GMLID, app.NAME as APP_NAME, app.NAME_CODESPACE as APP_NAME_CODESPACE, app.DESCRIPTION as APP_DESCRIPTION, app.THEME, " +
 					"sd.ID as SD_ID, sd.GMLID as SD_GMLID, sd.NAME as SD_NAME, sd.NAME_CODESPACE as SD_NAME_CODESPACE, sd.DESCRIPTION as SD_DESCRIPTION, sd.IS_FRONT, upper(sd.TYPE) as TYPE, " +
 					"sd.X3D_SHININESS, sd.X3D_TRANSPARENCY, sd.X3D_AMBIENT_INTENSITY, sd.X3D_SPECULAR_COLOR, sd.X3D_DIFFUSE_COLOR, sd.X3D_EMISSIVE_COLOR, sd.X3D_IS_SMOOTH, " +
-					"sd.TEX_IMAGE_URI, nvl(sd.TEX_IMAGE.getContentLength(), 0) as DB_TEX_IMAGE_SIZE, sd.TEX_IMAGE.getMimeType() as DB_TEX_IMAGE_MIME_TYPE, sd.TEX_MIME_TYPE, lower(sd.TEX_TEXTURE_TYPE) as TEX_TEXTURE_TYPE, lower(sd.TEX_WRAP_MODE) as TEX_WRAP_MODE, sd.TEX_BORDER_COLOR, " +
+					"sd.TEX_IMAGE_URI, COALESCE(length(sd.TEX_IMAGE), 0) as DB_TEX_IMAGE_SIZE, sd.TEX_MIME_TYPE, lower(sd.TEX_TEXTURE_TYPE) as TEX_TEXTURE_TYPE, lower(sd.TEX_WRAP_MODE) as TEX_WRAP_MODE, sd.TEX_BORDER_COLOR, " +
 					"sd.GT_PREFER_WORLDFILE, sd.GT_ORIENTATION, sd.GT_REFERENCE_POINT " +
 			"from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID where app.CITYOBJECT_ID=?");
 		} else {
@@ -133,9 +132,9 @@ public class DBAppearance implements DBExporter {
 			psAppearanceCityObject = connection.prepareStatement("select app.ID as APP_ID, app.GMLID as APP_GMLID, app.NAME as APP_NAME, app.NAME_CODESPACE as APP_NAME_CODESPACE, app.DESCRIPTION as APP_DESCRIPTION, app.THEME, " +
 					"sd.ID as SD_ID, sd.GMLID as SD_GMLID, sd.NAME as SD_NAME, sd.NAME_CODESPACE as SD_NAME_CODESPACE, sd.DESCRIPTION as SD_DESCRIPTION, sd.IS_FRONT, upper(sd.TYPE) as TYPE, " +
 					"sd.X3D_SHININESS, sd.X3D_TRANSPARENCY, sd.X3D_AMBIENT_INTENSITY, sd.X3D_SPECULAR_COLOR, sd.X3D_DIFFUSE_COLOR, sd.X3D_EMISSIVE_COLOR, sd.X3D_IS_SMOOTH, " +
-					"sd.TEX_IMAGE_URI, nvl(sd.TEX_IMAGE.getContentLength(), 0) as DB_TEX_IMAGE_SIZE, sd.TEX_IMAGE.getMimeType() as DB_TEX_IMAGE_MIME_TYPE, sd.TEX_MIME_TYPE, lower(sd.TEX_TEXTURE_TYPE) as TEX_TEXTURE_TYPE, lower(sd.TEX_WRAP_MODE) as TEX_WRAP_MODE, sd.TEX_BORDER_COLOR, " +
+					"sd.TEX_IMAGE_URI, COALESCE(length(sd.TEX_IMAGE), 0) as DB_TEX_IMAGE_SIZE, sd.TEX_MIME_TYPE, lower(sd.TEX_TEXTURE_TYPE) as TEX_TEXTURE_TYPE, lower(sd.TEX_WRAP_MODE) as TEX_WRAP_MODE, sd.TEX_BORDER_COLOR, " +
 					"sd.GT_PREFER_WORLDFILE, sd.GT_ORIENTATION, " +
-					"geodb_util.transform_or_null(sd.GT_REFERENCE_POINT, " + srid + ") AS GT_REFERENCE_POINT " +
+					"geodb_pkg.util_transform_or_null(sd.GT_REFERENCE_POINT, " + srid + ") AS GT_REFERENCE_POINT " +
 			"from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID where app.CITYOBJECT_ID=?");
 		}
 
@@ -353,14 +352,14 @@ public class DBAppearance implements DBExporter {
 						}
 					}
 
-					String dbImageMimeType = rs.getString("DB_TEX_IMAGE_MIME_TYPE");
-					if (dbImageMimeType != null) {
-						absTex.setMimeType(dbImageMimeType);
-					} else {
+//					String dbImageMimeType = rs.getString("DB_TEX_IMAGE_MIME_TYPE");
+//					if (dbImageMimeType != null) {
+//						absTex.setMimeType(dbImageMimeType);
+//					} else {
 						String mimeType = rs.getString("TEX_MIME_TYPE");
 						if (mimeType != null)
 							absTex.setMimeType(mimeType);
-					}
+//					}
 
 					String textureType = rs.getString("TEX_TEXTURE_TYPE");
 					if (textureType != null) {
@@ -408,18 +407,15 @@ public class DBAppearance implements DBExporter {
 						}
 					}
 
-					STRUCT struct = (STRUCT)rs.getObject("GT_REFERENCE_POINT");
-					if (!rs.wasNull() && struct != null) {
-						JGeometry jGeom = JGeometry.load(struct);
-						double[] point = jGeom.getPoint();
-
-						if (point != null && point.length >= 2) {
+					PGgeometry pgGeom = (PGgeometry)rs.getObject("GT_REFERENCE_POINT");
+					
+					if (!rs.wasNull() && pgGeom != null) { 	
+							Geometry geom = pgGeom.getGeometry();
 							Point referencePoint = new PointImpl();
-
 							List<Double> value = new ArrayList<Double>();
-							value.add(point[0]);
-							value.add(point[1]);
-
+							value.add(geom.getPoint(0).getX());
+							value.add(geom.getPoint(0).getY());
+							
 							DirectPosition pos = new DirectPositionImpl();
 							pos.setValue(value);
 							pos.setSrsDimension(2);
@@ -429,7 +425,6 @@ public class DBAppearance implements DBExporter {
 							pointProperty.setPoint(referencePoint);
 
 							geoTex.setReferencePoint(pointProperty);
-						}
 					}
 				}
 

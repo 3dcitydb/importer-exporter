@@ -39,12 +39,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
+import org.postgis.ComposedGeom;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -95,7 +94,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		psParentElem = batchConn.prepareStatement("insert into SURFACE_GEOMETRY (ID, GMLID, GMLID_CODESPACE, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY) values "
 				+ "(?, ?, " + gmlIdCodespace + ", ?, ?, ?, ?, ?, 1, ?, ?)");
 		psMemberElem = batchConn.prepareStatement("insert into SURFACE_GEOMETRY (ID, GMLID, GMLID_CODESPACE, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY) values "
-				+ "(SURFACE_GEOMETRY_SEQ.nextval, ?, " + gmlIdCodespace + ", ?, ?, 0, 0, 0, 1, ?, ?)");
+				+ "(nextval('SURFACE_GEOMETRY_ID_SEQ'), ?, " + gmlIdCodespace + ", ?, ?, 0, 0, 0, 1, ?, ?)");
 
 	}
 
@@ -135,7 +134,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			insert(xlinkNode, xlink.getId(), xlink.getRootId());
 			psUpdateSurfGeom.setLong(1, xlinkNode.id);
 			psUpdateSurfGeom.addBatch();
-			if (++updateBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			if (++updateBatchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 				executeUpdateSurfGeomBatch();
 
 			return true;
@@ -161,16 +160,16 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		String gmlId = node.gmlId;
 
 		if (node.geometry != null) {
-			STRUCT obj = SyncJGeometry.syncStore(node.geometry, batchConn);
+			PGgeometry pgGeom = new PGgeometry(node.geometry);
 
 			psMemberElem.setString(1, gmlId);
 			psMemberElem.setLong(2, parentId);
 			psMemberElem.setLong(3, rootId);
 			psMemberElem.setInt(4, node.isReverse ? 1 : 0);
-			psMemberElem.setObject(5, obj);
+			psMemberElem.setObject(5, pgGeom);
 
 			psMemberElem.addBatch();
-			if (++memberBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+			if (++memberBatchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE) {
 				psParentElem.executeBatch();
 				psMemberElem.executeBatch();
 				
@@ -184,7 +183,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			long isComposite = node.isComposite ? 1 : 0;
 			long isTriangulated = node.isTriangulated ? 1 : 0;
 
-			long surfaceGeometryId = resolverManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
+			long surfaceGeometryId = resolverManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ);
 
 			psParentElem.setLong(1, surfaceGeometryId);
 			psParentElem.setString(2, gmlId);
@@ -194,10 +193,10 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			psParentElem.setLong(6, isComposite);
 			psParentElem.setLong(7, isTriangulated);
 			psParentElem.setInt(8, node.isReverse ? 1 : 0);
-			psParentElem.setNull(9, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psParentElem.setNull(9, Types.OTHER, "ST_GEOMETRY");
 
 			psParentElem.addBatch();
-			if (++parentBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+			if (++parentBatchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE) {
 				psParentElem.executeBatch();
 				parentBatchCounter = 0;
 			}
@@ -228,10 +227,10 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				int isReverse = rs.getInt("IS_REVERSE");
 				int level = rs.getInt("LEVEL");
 
-				JGeometry geometry = null;
-				STRUCT struct = (STRUCT)rs.getObject("GEOMETRY");
-				if (!rs.wasNull() && struct != null)
-					geometry = JGeometry.load(struct);
+				Geometry geometry = null;
+				PGgeometry pgGeometry = (PGgeometry)rs.getObject("GEOMETRY");
+				if (!rs.wasNull() && pgGeometry != null)
+					geometry = pgGeometry.getGeometry();
 
 				// constructing a geometry node
 				GeometryNode geomNode = new GeometryNode();
@@ -273,49 +272,37 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		}
 	}
 
-	private void rebuildGeometry(GeometryNode geomNode, boolean reverse) {
+	private void rebuildGeometry(GeometryNode geomNode, boolean reverse) throws SQLException {
 		if (geomNode.geometry != null) {
 			geomNode.type = GMLClass.POLYGON;
 
 			// reverse order of geometry instance if necessary
 			if (reverse) {
-				int[] elemInfoArray = geomNode.geometry.getElemInfo();
-				double[] ordinatesArray = geomNode.geometry.getOrdinatesArray();
-
-				if (elemInfoArray.length < 3 || ordinatesArray.length == 0) {
-					geomNode.geometry = null;
-					return;
+				
+				String geomEWKT = "SRID=" + geomNode.geometry.getSrid() + ";POLYGON((";
+				ComposedGeom polyGeom = (ComposedGeom)geomNode.geometry;
+				int dimensions = geomNode.geometry.getDimension();
+				
+				for (int i = 0; i < polyGeom.numGeoms(); i++){
+					
+					if (dimensions == 2)
+						for (int j = 0; j < polyGeom.getSubGeometry(i).numPoints(); j++){
+							geomEWKT += polyGeom.getSubGeometry(i).getPoint(j).x + " " + polyGeom.getSubGeometry(i).getPoint(j).y + ",";
+						}
+					
+					if (dimensions == 3)
+						for (int j = 0; j < polyGeom.getSubGeometry(i).numPoints(); j++){
+							geomEWKT += polyGeom.getSubGeometry(i).getPoint(j).x + " " + polyGeom.getSubGeometry(i).getPoint(j).y + " " + polyGeom.getSubGeometry(i).getPoint(j).z + ",";
+						}					
+					
+					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
+					geomEWKT += "),(";				
 				}
-
-				// we are pragmatic here. if elemInfoArray contains more than one entry,
-				// we suppose we have one outer ring and anything else are inner rings.
-				List<Integer> ringLimits = new ArrayList<Integer>();
-				for (int i = 3; i < elemInfoArray.length; i += 3)
-					ringLimits.add(elemInfoArray[i] - 1);
-
-				ringLimits.add(ordinatesArray.length);
-
-				// ok, reverse polygon according to this info
-				Object[] pointArray = new Object[ringLimits.size()];
-				int ringElem = 0;
-				int arrayIndex = 0;
-				for (Integer ringLimit : ringLimits) {
-					double[] coords = new double[ringLimit - ringElem];
-
-					for (int i = 0, j = ringLimit - 3; j >= ringElem; j -= 3, i += 3) {
-						coords[i] = ordinatesArray[j];
-						coords[i + 1] = ordinatesArray[j + 1];
-						coords[i + 2] = ordinatesArray[j + 2];
-					}
-
-					pointArray[arrayIndex++] = coords;
-					ringElem = ringLimit;
-				}
-
-				JGeometry geom = JGeometry.createLinearPolygon(pointArray, 
-						geomNode.geometry.getDimensions(), 
-						geomNode.geometry.getSRID());
-
+				
+				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 2);
+				geomEWKT += ")";
+							
+				Geometry geom = PGgeometry.geomFromString(geomEWKT);
 				geomNode.geometry = geom;
 			}
 
@@ -391,7 +378,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		protected boolean isComposite;
 		protected boolean isTriangulated;
 		protected boolean isReverse;
-		protected JGeometry geometry;	
+		protected Geometry geometry;	
 		protected List<GeometryNode> childNodes;
 
 		public GeometryNode() {
@@ -410,8 +397,8 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	}
 
 	private void executeUpdateSurfGeomBatch() throws SQLException {
-		// we need to synchronize updates otherwise Oracle will run
-		// into deadlocks
+		// we need to synchronize updates otherwise Oracle will run into deadlocks
+		// does PostgreSQL, too?
 		final ReentrantLock lock = mainLock;
 		lock.lock();
 		try {

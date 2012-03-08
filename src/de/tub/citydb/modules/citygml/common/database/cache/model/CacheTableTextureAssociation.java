@@ -70,9 +70,9 @@ public class CacheTableTextureAssociation extends CacheTableModel {
 	
 	@Override
 	protected String getColumns() {
-		return "(SURFACE_DATA_ID NUMBER, " +
-		"SURFACE_GEOMETRY_ID NUMBER, " +
-		"GMLID VARCHAR2(256))";
+		return "(SURFACE_DATA_ID INTEGER, " +
+		"SURFACE_GEOMETRY_ID INTEGER, " +
+		"GMLID VARCHAR(256))";
 	}
 
 }

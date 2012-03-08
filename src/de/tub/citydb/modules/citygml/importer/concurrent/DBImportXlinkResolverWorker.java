@@ -33,7 +33,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.ucp.jdbc.ValidConnection;
 import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
@@ -41,7 +40,6 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
@@ -124,12 +122,12 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 		Database database = config.getProject().getDatabase();
 
 		// try and change workspace for both connections if needed
-		Workspace workspace = database.getWorkspaces().getImportWorkspace();
-		dbPool.gotoWorkspace(batchConn, workspace);
-		dbPool.gotoWorkspace(externalFileConn, workspace);
+//		Workspace workspace = database.getWorkspaces().getImportWorkspace();
+//		dbPool.gotoWorkspace(batchConn, workspace);
+//		dbPool.gotoWorkspace(externalFileConn, workspace);
 
 		Integer commitAfterProp = database.getUpdateBatching().getFeatureBatchValue();
-		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= Internal.ORACLE_MAX_BATCH_SIZE)
+		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			commitAfter = commitAfterProp;
 
 		xlinkResolverManager = new DBXlinkResolverManager(
@@ -226,7 +224,7 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 
 			if (externalFileConn != null) {
 				try {
-					((ValidConnection)externalFileConn).setInvalid();
+//					((ValidConnection)externalFileConn).setInvalid();
 					externalFileConn.close();
 				} catch (SQLException e) {
 					//

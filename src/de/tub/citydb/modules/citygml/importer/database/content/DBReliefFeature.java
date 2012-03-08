@@ -72,7 +72,7 @@ public class DBReliefFeature implements DBImporter {
 	}
 	
 	public long insert(ReliefFeature reliefFeature) throws SQLException {
-		long reliefFeatureId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long reliefFeatureId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (reliefFeatureId != 0)
@@ -123,7 +123,7 @@ public class DBReliefFeature implements DBImporter {
 		psReliefFeature.setInt(5, reliefFeature.getLod());
 		
 		psReliefFeature.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.RELIEF_FEATURE);
 		
 		// relief component

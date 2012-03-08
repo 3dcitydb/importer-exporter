@@ -56,7 +56,7 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 	@XmlSchemaType(name="anyURI")
 	private String server = "";
 	@XmlSchemaType(name="positiveInteger")
-	private Integer port = 1521;
+	private Integer port = 5432;
 	private String sid = "";
 	private String user = "";
 	private String password = "";
@@ -162,7 +162,9 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 	}
 	
 	public String toConnectString() {
-		return user + "@" + server + ":" + port + "/" + sid;
+//	for KML-Export
+//		return user + "@" + server + ":" + port + "/" + sid;
+		return user + "://" + server + ":" + port + "/" + sid;
 	}
 	
 }

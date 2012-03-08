@@ -71,7 +71,7 @@ public class DBTrafficArea implements DBImporter {
 	}
 
 	public long insert(TrafficArea trafficArea, long parentId) throws SQLException {
-		long trafficAreaId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long trafficAreaId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (trafficAreaId == 0)
 			return 0;
 
@@ -192,14 +192,14 @@ public class DBTrafficArea implements DBImporter {
         psTrafficArea.setLong(12, parentId);
 
         psTrafficArea.addBatch();
-        if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+        if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.TRAFFIC_AREA);
         
 		return trafficAreaId;
 	}
 
 	public long insert(AuxiliaryTrafficArea auxiliaryTrafficArea, long parentId) throws SQLException {
-		long auxiliaryTrafficAreaId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long auxiliaryTrafficAreaId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (auxiliaryTrafficAreaId == 0)
 			return 0;
 
@@ -316,7 +316,7 @@ public class DBTrafficArea implements DBImporter {
         psTrafficArea.setLong(12, parentId);
 
         psTrafficArea.addBatch();
-        if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+        if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.TRAFFIC_AREA);
         
 		return auxiliaryTrafficAreaId;

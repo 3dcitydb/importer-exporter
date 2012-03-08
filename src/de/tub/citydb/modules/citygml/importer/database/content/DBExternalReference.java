@@ -55,7 +55,7 @@ public class DBExternalReference implements DBImporter {
 
 	private void init() throws SQLException {
 		psExternalReference = batchConn.prepareStatement("insert into EXTERNAL_REFERENCE (ID, INFOSYS, NAME, URI, CITYOBJECT_ID) values " +
-				"(EXTERNAL_REF_SEQ.nextval, ?, ?, ?, ?)");
+				"(nextval('EXTERNAL_REFERENCE_ID_SEQ'), ?, ?, ?, ?)");
 	}
 
 	public void insert(ExternalReference externalReference, long cityObjectId) throws SQLException {
@@ -92,7 +92,7 @@ public class DBExternalReference implements DBImporter {
 		psExternalReference.setLong(4, cityObjectId);
 
 		psExternalReference.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.EXTERNAL_REFERENCE);
 	}
 

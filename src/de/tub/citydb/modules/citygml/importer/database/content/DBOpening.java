@@ -80,7 +80,7 @@ public class DBOpening implements DBImporter {
 	}
 
 	public long insert(AbstractOpening opening, long parentId) throws SQLException {
-		long openingId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long openingId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (openingId == 0)
 			return 0;
 
@@ -223,7 +223,7 @@ public class DBOpening implements DBImporter {
 		}
 
 		psOpening.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.OPENING);
 		
 		openingToThemSurfaceImporter.insert(openingId, parentId);

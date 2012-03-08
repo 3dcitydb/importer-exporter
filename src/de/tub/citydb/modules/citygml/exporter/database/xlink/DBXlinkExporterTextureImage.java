@@ -30,15 +30,16 @@
 package de.tub.citydb.modules.citygml.exporter.database.xlink;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import oracle.jdbc.OracleResultSet;
-import oracle.ord.im.OrdImage;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
@@ -121,7 +122,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 
 		// try and read texture image attribute from surface_data table
 		psTextureImage.setLong(1, xlink.getId());
-		OracleResultSet rs = (OracleResultSet)psTextureImage.executeQuery();
+		ResultSet rs = (ResultSet)psTextureImage.executeQuery();
 		if (!rs.next()) {
 			if (!isRemote) {
 				// we could not read from database. if we deal with a remote
@@ -136,24 +137,44 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 
 		xlinkExporterManager.propagateEvent(counter);
 
-		// read oracle image data type
-		OrdImage imgProxy = (OrdImage)rs.getORAData(1, OrdImage.getORADataFactory());
-		rs.close();
-		
-		if (imgProxy == null) {
-			LOG.error("Database error while reading texture file: " + fileName);
-			return false;
-		}
-
+		// read image data type, 1st way
+		byte[] imgBytes = rs.getBytes(1);
 		try {
-			imgProxy.getDataInFile(fileURI);
+			FileOutputStream fos = new FileOutputStream(fileURI);
+			fos.write(imgBytes);
+			fos.close();
+		} catch (FileNotFoundException fnfEx) {
+			LOG.error("File not found " + fileName + ": " + fnfEx.getMessage());
 		} catch (IOException ioEx) {
-			LOG.error("Failed to write texture file " + fileName + ": " + ioEx.getMessage());
-			return false;
-		} finally {
-			imgProxy.close();
-		}
+        	LOG.error("Failed to write texture file " + fileName + ": " + ioEx.getMessage());
+        	return false;
+		}           
+		
+		// 2nd possibilty read image data type, 
+		
+//		InputStream imageStream = rs.getBinaryStream(1);
+//			
+//		if (imageStream == null) {
+//           	LOG.error("Database error while reading texture file: " + fileName);
+//           	return false;
+//        }
+//			
+//		try {
+//			byte[] imgBuffer = new byte[1024];
+//			FileOutputStream fos = new FileOutputStream(fileURI);
+//			int l;
+//			while ((l = imageStream.read(imgBuffer)) > 0) {
+//                fos.write(imgBuffer, 0, l);
+//            }
+//			fos.close();			
+//		} catch (FileNotFoundException fnfEx) {
+//			LOG.error("File not found " + fileName + ": " + fnfEx.getMessage());
+//		} catch (IOException ioEx) {
+//           	LOG.error("Failed to write texture file " + fileName + ": " + ioEx.getMessage());
+//           	return false;
+//		}           
 
+		rs.close();
 		return true;
 	}
 

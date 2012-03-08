@@ -118,10 +118,10 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 		connection.setAutoCommit(false);
 
 		// try and change workspace for both connections if needed
-		Database database = config.getProject().getDatabase();
-		dbConnectionPool.gotoWorkspace(
-				connection, 
-				database.getWorkspaces().getExportWorkspace());
+//		Database database = config.getProject().getDatabase();
+//		dbConnectionPool.gotoWorkspace(
+//				connection, 
+//				database.getWorkspaces().getExportWorkspace());
 
 		dbExporterManager = new DBExporterManager( 
 				connection,

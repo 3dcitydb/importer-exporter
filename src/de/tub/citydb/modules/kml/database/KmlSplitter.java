@@ -83,9 +83,9 @@ public class KmlSplitter {
 		connection.setAutoCommit(false);
 
 		// try and change workspace for connection if needed
-		Database database = config.getProject().getDatabase();
-		dbConnectionPool.gotoWorkspace(connection, 
-										 database.getWorkspaces().getKmlExportWorkspace());
+		//		Database database = config.getProject().getDatabase();
+//		dbConnectionPool.gotoWorkspace(connection, 
+//										 database.getWorkspaces().getKmlExportWorkspace());
 
 	}
 
@@ -232,8 +232,8 @@ public class KmlSplitter {
 		OracleResultSet rs = null;
 
 		try {
-			psQuery = dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem().is3D() ? 
-					  connection.prepareStatement(TileQueries.QUERY_GET_ENVELOPE_IN_WGS84_3D_FROM_GML_ID):
+			psQuery = /*dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem().is3D() ? 
+					  connection.prepareStatement(TileQueries.QUERY_GET_ENVELOPE_IN_WGS84_3D_FROM_GML_ID):*/
 					  connection.prepareStatement(TileQueries.QUERY_GET_ENVELOPE_IN_WGS84_FROM_GML_ID);
 						  
 			psQuery.setString(1, gmlId);

@@ -36,9 +36,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
 import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
 import org.citygml4j.impl.citygml.waterbody.BoundedByWaterSurfacePropertyImpl;
@@ -67,6 +64,8 @@ import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.TypeAttributeValueEnum;
@@ -83,7 +82,7 @@ public class DBWaterBody implements DBExporter {
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBStGeometry stGeometry;
 	private FeatureClassFilter featureClassFilter;
 
 	private boolean useXLink;
@@ -124,8 +123,8 @@ public class DBWaterBody implements DBExporter {
 			
 			psWaterBody = connection.prepareStatement("select wb.NAME as WB_NAME, wb.NAME_CODESPACE as WB_NAME_CODESPACE, wb.DESCRIPTION as WB_DESCRIPTION, wb.CLASS, wb.FUNCTION, wb.USAGE, " +
 					"wb.LOD1_SOLID_ID, wb.LOD2_SOLID_ID, wb.LOD3_SOLID_ID, wb.LOD4_SOLID_ID, wb.LOD0_MULTI_SURFACE_ID, wb.LOD1_MULTI_SURFACE_ID, " +
-					"geodb_util.transform_or_null(wb.LOD0_MULTI_CURVE, " + srid + ") AS LOD0_MULTI_CURVE, " +
-					"geodb_util.transform_or_null(wb.LOD1_MULTI_CURVE, " + srid + ") AS LOD1_MULTI_CURVE, " +
+					"geodb_pkg.util_transform_or_null(wb.LOD0_MULTI_CURVE, " + srid + ") AS LOD0_MULTI_CURVE, " +
+					"geodb_pkg.util_transform_or_null(wb.LOD1_MULTI_CURVE, " + srid + ") AS LOD1_MULTI_CURVE, " +
 					"ws.ID as WS_ID, ws.NAME as WS_NAME, ws.NAME_CODESPACE as WS_NAME_CODESPACE, ws.DESCRIPTION as WS_DESCRIPTION, upper(ws.TYPE) as TYPE, ws.WATER_LEVEL, " +
 					"ws.LOD2_SURFACE_ID, ws.LOD3_SURFACE_ID, ws.LOD4_SURFACE_ID " +
 			"from WATERBODY wb left join WATERBOD_TO_WATERBND_SRF w2s on wb.ID=w2s.WATERBODY_ID left join WATERBOUNDARY_SURFACE ws on ws.ID=w2s.WATERBOUNDARY_SURFACE_ID where wb.ID=?");
@@ -133,7 +132,7 @@ public class DBWaterBody implements DBExporter {
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
-		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);
+		stGeometry = (DBStGeometry)dbExporterManager.getDBExporter(DBExporterEnum.ST_GEOMETRY);
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
@@ -247,14 +246,14 @@ public class DBWaterBody implements DBExporter {
 
 					// lodXMultiCurve
 					for (int lod = 0; lod < 2; lod++) {
-						JGeometry multiCurve = null;
-						STRUCT multiCurveObj = (STRUCT)rs.getObject("LOD" + lod + "_MULTI_CURVE");
+						Geometry multiCurve = null;
+						PGgeometry pgMultiCurve = (PGgeometry)rs.getObject("LOD" + lod + "_MULTI_CURVE");
 
-						if (!rs.wasNull() && multiCurveObj != null) {
-							multiCurve = JGeometry.load(multiCurveObj);
+						if (!rs.wasNull() && pgMultiCurve != null) {
+							multiCurve = pgMultiCurve.getGeometry();
 
 							if (multiCurve != null) {
-								MultiCurveProperty multiCurveProperty = sdoGeometry.getMultiCurveProperty(multiCurve, false);
+								MultiCurveProperty multiCurveProperty = stGeometry.getMultiCurveProperty(multiCurve, false);
 								if (multiCurveProperty != null) {
 									switch (lod) {
 									case 0:

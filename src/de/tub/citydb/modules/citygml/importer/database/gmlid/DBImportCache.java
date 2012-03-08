@@ -40,8 +40,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.jdbc.OraclePreparedStatement;
-
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.modules.citygml.common.database.cache.BranchTemporaryCacheTable;
@@ -86,7 +84,7 @@ public class DBImportCache implements DBCacheModel {
 			backUpTables[i] = tempTable;
 			psDrains[i] = conn.prepareStatement("insert into " + tableName + " (GMLID, ID, ROOT_ID, REVERSE, MAPPING, TYPE) values (?, ?, ?, ?, ?, ?)");
 			locks[i] = new ReentrantLock(true);
-			((OraclePreparedStatement)psDrains[i]).setExecuteBatch(batchSize);
+//			((PreparedStatement)psDrains[i]).setExecuteBatch(batchSize);
 		}		
 	}
 
@@ -119,7 +117,8 @@ public class DBImportCache implements DBCacheModel {
 		// finally send batches
 		for (PreparedStatement psDrain : psDrains) 
 			if (psDrain != null)
-				((OraclePreparedStatement)psDrain).sendBatch();
+				psDrain.executeBatch();
+//				((PreparedStatement)psDrain).sendBatch();
 	}
 
 	public GmlIdEntry lookupDB(String key) throws SQLException {

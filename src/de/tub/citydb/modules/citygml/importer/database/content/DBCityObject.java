@@ -36,10 +36,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
 import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -51,6 +47,8 @@ import org.citygml4j.model.citygml.core.GeneralizationRelation;
 import org.citygml4j.model.citygml.generics.AbstractGenericAttribute;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -132,7 +130,7 @@ public class DBCityObject implements DBImporter {
 			gmlIdCodespace = "null";
 
 		psCityObject = batchConn.prepareStatement("insert into CITYOBJECT (ID, CLASS_ID, GMLID, GMLID_CODESPACE, ENVELOPE, CREATION_DATE, TERMINATION_DATE, LAST_MODIFICATION_DATE, UPDATING_PERSON, REASON_FOR_UPDATE, LINEAGE, XML_SOURCE) values " +
-				"(?, ?, ?, " + gmlIdCodespace + ", ?, SYSDATE, null, SYSDATE, " + updatingPerson + ", " + reasonForUpdate + ", " + lineage + ", null)");
+				"(?, ?, ?, " + gmlIdCodespace + ", ?, now(), null, now(), " + updatingPerson + ", " + reasonForUpdate + ", " + lineage + ", null)");
 
 		genericAttributeImporter = (DBCityObjectGenericAttrib)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
 		externalReferenceImporter = (DBExternalReference)dbImporterManager.getDBImporter(DBImporterEnum.EXTERNAL_REFERENCE);
@@ -213,17 +211,21 @@ public class DBCityObject implements DBImporter {
 			if (affineTransformation)
 				dbImporterManager.getAffineTransformer().transformCoordinates(points);
 
-			double[] ordinates = new double[points.size()];
-			int i = 0;
-			for (Double point : points)
-				ordinates[i++] = point.doubleValue();
+			String geomEWKT = "SRID=" + dbSrid + ";POLYGON((";
+			
+			for (int i=0; i<points.size(); i+=3){
+				geomEWKT += points.get(i) + " " + points.get(i+1) + " " + points.get(i+2) + ",";
+			}				
 
-			JGeometry boundedBy = JGeometry.createLinearPolygon(ordinates, 3, dbSrid);
-			STRUCT obj = SyncJGeometry.syncStore(boundedBy, batchConn);
+			geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
+			geomEWKT += "))";
 
-			psCityObject.setObject(4, obj);
+			Geometry boundedBy = PGgeometry.geomFromString(geomEWKT);
+			PGgeometry pgBoundedBy = new PGgeometry(boundedBy);
+
+			psCityObject.setObject(4, pgBoundedBy);
 		} else {
-			psCityObject.setNull(4, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psCityObject.setNull(4, Types.OTHER, "ST_GEOMETRY");
 		}
 
 		// resolve local xlinks to geometry objects
@@ -244,7 +246,7 @@ public class DBCityObject implements DBImporter {
 		}
 
 		psCityObject.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECT);
 
 		// genericAttributes

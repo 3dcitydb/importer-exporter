@@ -44,7 +44,7 @@ import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.database.Workspace;
+//import de.tub.citydb.config.project.database.Workspace;
 
 public class Util {
 
@@ -443,22 +443,22 @@ public class Util {
 		return file;
 	}
 
-	public static boolean checkWorkspaceTimestamp(Workspace workspace) {
-		String timestamp = workspace.getTimestamp().trim();
-		boolean success = true;
-		
-		if (timestamp.length() > 0) {		
-			SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
-			format.setLenient(false);
-			try {
-				format.parse(timestamp);				
-			} catch (java.text.ParseException e) {
-				success = false;
-			}
-		}
-
-		workspace.setTimestamp(timestamp);
-		return success;
-	}
+//	public static boolean checkWorkspaceTimestamp(Workspace workspace) {
+//		String timestamp = workspace.getTimestamp().trim();
+//		boolean success = true;
+//		
+//		if (timestamp.length() > 0) {		
+//			SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+//			format.setLenient(false);
+//			try {
+//				format.parse(timestamp);				
+//			} catch (java.text.ParseException e) {
+//				success = false;
+//			}
+//		}
+//
+//		workspace.setTimestamp(timestamp);
+//		return success;
+//	}
 
 }

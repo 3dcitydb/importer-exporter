@@ -82,7 +82,7 @@ import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 
 import de.tub.citydb.config.Config;
 
-public class DBSdoGeometry implements DBExporter {
+/*public class DBSdoGeometry implements DBExporter {
 	private String gmlSrsName;
 
 	public DBSdoGeometry(Config config) {
@@ -527,4 +527,4 @@ public class DBSdoGeometry implements DBExporter {
 		return DBExporterEnum.SDO_GEOMETRY;
 	}
 
-}
+}*/

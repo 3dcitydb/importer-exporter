@@ -70,7 +70,7 @@ import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
-public class DBSdoGeometry implements DBImporter {
+/*public class DBSdoGeometry implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 	private final DBImporterManager dbImporterManager;
 	
@@ -558,4 +558,4 @@ public class DBSdoGeometry implements DBImporter {
 		return DBImporterEnum.SDO_GEOMETRY;
 	}
 
-}
+}*/

@@ -58,7 +58,7 @@ public class DBXlinkImporterLibraryObject implements DBXlinkImporter {
 		psXlink.setString(2, xlinkEntry.getFileURI());
 
 		psXlink.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			executeBatch();
 
 		return true;

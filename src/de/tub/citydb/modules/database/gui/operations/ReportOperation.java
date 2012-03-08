@@ -19,7 +19,6 @@ import de.tub.citydb.api.controller.ViewController;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBOperationType;
-import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.database.DBUtil;
@@ -111,9 +110,9 @@ public class ReportOperation extends DatabaseOperationView {
 		lock.lock();
 
 		try {
-			Workspace workspace = parent.getWorkspace();
-			if (workspace == null)
-				return;
+//			Workspace workspace = parent.getWorkspace();
+//			if (workspace == null)
+//				return;
 
 			viewController.clearConsole();
 			viewController.setStatusText(Internal.I18N.getString("main.status.database.report.label"));
@@ -147,8 +146,9 @@ public class ReportOperation extends DatabaseOperationView {
 			String[] report = null;
 			String dbSqlEx = null;
 			try {
-				if (parent.existsWorkspace()) {
-					report = DBUtil.databaseReport(workspace);
+//				if (parent.existsWorkspace()) {
+//					report = DBUtil.databaseReport(workspace);
+					report = DBUtil.databaseReport();
 
 					if (report != null) {
 						for(String line : report) {
@@ -162,7 +162,7 @@ public class ReportOperation extends DatabaseOperationView {
 						LOG.info("Database report successfully generated.");
 					} else
 						LOG.warn("Generation of database report aborted.");
-				}
+//				}
 
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {

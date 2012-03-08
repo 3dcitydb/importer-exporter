@@ -30,6 +30,7 @@
 package de.tub.citydb.modules.citygml.importer.database.xlink.resolver;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,9 +40,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import oracle.jdbc.OraclePreparedStatement;
-import oracle.jdbc.OracleResultSet;
-import oracle.ord.im.OrdImage;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
@@ -55,9 +53,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 	private final Config config;
 	private final DBXlinkResolverManager resolverManager;
 
-	private PreparedStatement psPrepare;
-	private PreparedStatement psSelect;
-	private OraclePreparedStatement psInsert;
+	private PreparedStatement psInsert;
 	private String localPath;
 	private CounterEvent counter;
 	private boolean replacePathSeparator;
@@ -75,15 +71,14 @@ public class XlinkTextureImage implements DBXlinkResolver {
 		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
 		replacePathSeparator = File.separatorChar == '/';
 		
-		psPrepare = externalFileConn.prepareStatement("update SURFACE_DATA set TEX_IMAGE=ordimage.init() where ID=?");
-		psSelect = externalFileConn.prepareStatement("select TEX_IMAGE from SURFACE_DATA where ID=? for update");
-		psInsert = (OraclePreparedStatement)externalFileConn.prepareStatement("update SURFACE_DATA set TEX_IMAGE=? where ID=?");
+		psInsert = externalFileConn.prepareStatement("update SURFACE_DATA set TEX_IMAGE=? where ID=?");
 	}
 
 	public boolean insert(DBXlinkTextureFile xlink) throws SQLException {
 		String imageFileName = xlink.getFileURI();
 		boolean isRemote = true;
 		URL imageURL = null;
+		File imageFile = new File(imageFileName);
 		
 		try {
 			// first step: check whether we deal with a local or remote texture file
@@ -97,7 +92,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 				if (replacePathSeparator)
 					imageFileName = imageFileName.replace("\\", "/");
 				
-				File imageFile = new File(imageFileName);
+//				File imageFile = new File(imageFileName);
 				if (!imageFile.isAbsolute()) {
 					imageFileName = localPath + File.separator + imageFile.getPath();
 					imageFile = new File(imageFileName);
@@ -111,61 +106,27 @@ public class XlinkTextureImage implements DBXlinkResolver {
 					LOG.error("Skipping 0 byte texture file '" + imageFileName + "'.");
 					return false;
 				}
+				
+
 			}
+		
+			//set FileInputStream for retrieving image-files
+			FileInputStream fis = new FileInputStream(imageFile);
 			
-			// second step: prepare ORDIMAGE
-			psPrepare.setLong(1, xlink.getId());
-			psPrepare.executeUpdate();
-
-			// thirs step: get prepared ORDIMAGE to fill it with contents
-			psSelect.setLong(1, xlink.getId());
-			OracleResultSet rs = (OracleResultSet)psSelect.executeQuery();
-			if (!rs.next()) {
-				LOG.error("Database error while importing texture file '" + imageFileName + "'.");
-
-				rs.close();
-				externalFileConn.rollback();
-				return false;
-			}
-
-			OrdImage imgProxy = (OrdImage)rs.getORAData(1, OrdImage.getORADataFactory());
-			rs.close();
-			
-			// fourth step: try and upload image data
+			// next step: try and upload image data
 			LOG.debug("Importing texture file: " + imageFileName);
 			resolverManager.propagateEvent(counter);
-						
-			boolean letDBdetermineProperties = true;
-
+							    		
 			if (isRemote) {
 				InputStream stream = imageURL.openStream();
-				imgProxy.loadDataFromInputStream(stream);
+				psInsert.setBinaryStream(1, stream);
 			} else {
-				imgProxy.loadDataFromFile(imageFileName);
-
-				// determing image formats by file extension
-				int index = imageFileName.lastIndexOf('.');
-				if (index != -1) {
-					String extension = imageFileName.substring(index + 1, imageFileName.length());
-
-					if (extension.toUpperCase().equals("RGB")) {
-						imgProxy.setMimeType("image/rgb");
-						imgProxy.setFormat("RGB");
-						imgProxy.setContentLength(1);
-
-						letDBdetermineProperties = false;
-					}
-				}
+				psInsert.setBinaryStream(1, fis, (int)imageFile.length());
 			}
 
-			if (letDBdetermineProperties)
-				imgProxy.setProperties();			
-			
-			psInsert.setORAData(1, imgProxy);
 			psInsert.setLong(2, xlink.getId());
 			psInsert.execute();
-
-			imgProxy.close();
+			
 			externalFileConn.commit();
 			return true;
 			
@@ -197,8 +158,6 @@ public class XlinkTextureImage implements DBXlinkResolver {
 	@Override
 	public void close() throws SQLException {
 		psInsert.close();
-		psPrepare.close();
-		psSelect.close();
 	}
 
 	@Override

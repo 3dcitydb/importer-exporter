@@ -69,9 +69,9 @@ public class CacheTableGroupToCityObject extends CacheTableModel {
 	
 	@Override
 	protected String getColumns() {
-		return "(GROUP_ID NUMBER," +
-		"GMLID VARCHAR2(256), " +
-		"IS_PARENT NUMBER(1,0), " +
-		"ROLE VARCHAR2(256))";
+		return "(GROUP_ID INTEGER," +
+		"GMLID VARCHAR(256), " +
+		"IS_PARENT NUMERIC(1,0), " +
+		"ROLE VARCHAR(256))";
 	}
 }

@@ -34,10 +34,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
@@ -45,6 +41,7 @@ import org.citygml4j.model.citygml.generics.GenericCityObject;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -60,7 +57,7 @@ public class DBGenericCityObject implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBStGeometry stGeometry;
 
 	private boolean affineTransformation;
 	private int batchCounter;
@@ -85,11 +82,11 @@ public class DBGenericCityObject implements DBImporter {
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		implicitGeometryImporter = (DBImplicitGeometry)dbImporterManager.getDBImporter(DBImporterEnum.IMPLICIT_GEOMETRY);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		stGeometry = (DBStGeometry)dbImporterManager.getDBImporter(DBImporterEnum.ST_GEOMETRY);
 	}
 	
 	public long insert(GenericCityObject genericCityObject) throws SQLException {
-		long genericCityObjectId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long genericCityObjectId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (genericCityObjectId != 0)
@@ -234,7 +231,7 @@ public class DBGenericCityObject implements DBImporter {
 
 		for (int lod = 0; lod < 5; lod++) {
 			ImplicitRepresentationProperty implicit = null;
-			JGeometry pointGeom = null;
+			PGgeometry pointGeom = null;
 			String matrixString = null;
 			long implicitId = 0;
 
@@ -262,7 +259,7 @@ public class DBGenericCityObject implements DBImporter {
 
 					// reference Point
 					if (geometry.isSetReferencePoint())
-						pointGeom = sdoGeometry.getPoint(geometry.getReferencePoint());
+						pointGeom = stGeometry.getPoint(geometry.getReferencePoint());
 
 					// transformation matrix
 					if (geometry.isSetTransformationMatrix()) {
@@ -286,10 +283,9 @@ public class DBGenericCityObject implements DBImporter {
 					psGenericCityObject.setNull(13, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psGenericCityObject.setObject(18, obj);
+					psGenericCityObject.setObject(18, pointGeom);
 				} else
-					psGenericCityObject.setNull(18, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psGenericCityObject.setNull(18, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psGenericCityObject.setString(23, matrixString);
@@ -304,10 +300,9 @@ public class DBGenericCityObject implements DBImporter {
 					psGenericCityObject.setNull(14, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psGenericCityObject.setObject(19, obj);
+					psGenericCityObject.setObject(19, pointGeom);
 				} else
-					psGenericCityObject.setNull(19, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psGenericCityObject.setNull(19, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psGenericCityObject.setString(24, matrixString);
@@ -322,10 +317,9 @@ public class DBGenericCityObject implements DBImporter {
 					psGenericCityObject.setNull(15, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psGenericCityObject.setObject(20, obj);
+					psGenericCityObject.setObject(20, pointGeom);
 				} else
-					psGenericCityObject.setNull(20, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psGenericCityObject.setNull(20, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psGenericCityObject.setString(25, matrixString);
@@ -340,10 +334,9 @@ public class DBGenericCityObject implements DBImporter {
 					psGenericCityObject.setNull(16, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psGenericCityObject.setObject(21, obj);
+					psGenericCityObject.setObject(21, pointGeom);
 				} else
-					psGenericCityObject.setNull(21, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psGenericCityObject.setNull(21, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psGenericCityObject.setString(26, matrixString);
@@ -358,10 +351,9 @@ public class DBGenericCityObject implements DBImporter {
 					psGenericCityObject.setNull(17, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psGenericCityObject.setObject(22, obj);
+					psGenericCityObject.setObject(22, pointGeom);
 				} else
-					psGenericCityObject.setNull(22, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psGenericCityObject.setNull(22, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psGenericCityObject.setString(27, matrixString);
@@ -376,8 +368,8 @@ public class DBGenericCityObject implements DBImporter {
 		for (int lod = 0; lod < 5; lod++) {
 			
 			MultiCurveProperty multiCurveProperty = null;
-			JGeometry multiLine = null;
-			
+			PGgeometry multiLine = null;
+
 			switch (lod) {
 			case 0:
 				multiCurveProperty = genericCityObject.getLod0TerrainIntersection();
@@ -397,54 +389,49 @@ public class DBGenericCityObject implements DBImporter {
 			}
 			
 			if (multiCurveProperty != null)
-				multiLine = sdoGeometry.getMultiCurve(multiCurveProperty);
+				multiLine = stGeometry.getMultiCurve(multiCurveProperty);
 
 			switch (lod) {
 			case 0:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psGenericCityObject.setObject(28, multiLineObj);
+					psGenericCityObject.setObject(28, multiLine);
 				} else
-					psGenericCityObject.setNull(28, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psGenericCityObject.setNull(28, Types.OTHER, "ST_GEOMETRY");
 					
 				break;
 			case 1:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psGenericCityObject.setObject(29, multiLineObj);
+					psGenericCityObject.setObject(29, multiLine);
 				} else
-					psGenericCityObject.setNull(29, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psGenericCityObject.setNull(29, Types.OTHER, "ST_GEOMETRY");
 					
 				break;
 			case 2:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psGenericCityObject.setObject(30, multiLineObj);
+					psGenericCityObject.setObject(30, multiLine);
 				} else
-					psGenericCityObject.setNull(30, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psGenericCityObject.setNull(30, Types.OTHER, "ST_GEOMETRY");
 					
 				break;
 			case 3:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psGenericCityObject.setObject(31, multiLineObj);
+					psGenericCityObject.setObject(31, multiLine);
 				} else
-					psGenericCityObject.setNull(31, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psGenericCityObject.setNull(31, Types.OTHER, "ST_GEOMETRY");
 					
 				break;
 			case 4:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psGenericCityObject.setObject(32, multiLineObj);
+					psGenericCityObject.setObject(32, multiLine);
 				} else
-					psGenericCityObject.setNull(32, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psGenericCityObject.setNull(32, Types.OTHER, "ST_GEOMETRY");
 					
 				break;
 			}	
 		}
 		
 		psGenericCityObject.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.GENERIC_CITYOBJECT);
 
 		return true;

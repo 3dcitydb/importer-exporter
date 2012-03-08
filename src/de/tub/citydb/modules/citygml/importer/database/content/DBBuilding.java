@@ -37,10 +37,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
@@ -60,6 +56,7 @@ import org.citygml4j.model.gml.basicTypes.MeasureOrNullList;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
@@ -80,7 +77,7 @@ public class DBBuilding implements DBImporter {
 	private DBBuildingInstallation buildingInstallationImporter;
 	private DBRoom roomImporter;
 	private DBAddress addressImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBStGeometry stGeometry;
 
 	private int batchCounter;
 
@@ -103,11 +100,11 @@ public class DBBuilding implements DBImporter {
 		buildingInstallationImporter = (DBBuildingInstallation)dbImporterManager.getDBImporter(DBImporterEnum.BUILDING_INSTALLATION);
 		roomImporter = (DBRoom)dbImporterManager.getDBImporter(DBImporterEnum.ROOM);
 		addressImporter = (DBAddress)dbImporterManager.getDBImporter(DBImporterEnum.ADDRESS);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		stGeometry = (DBStGeometry)dbImporterManager.getDBImporter(DBImporterEnum.ST_GEOMETRY);
 	}
 
 	public long insert(AbstractBuilding building) throws SQLException {
-		long buildingId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long buildingId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (buildingId != 0)
@@ -423,7 +420,7 @@ public class DBBuilding implements DBImporter {
 		for (int lod = 1; lod < 5; lod++) {
 
 			MultiCurveProperty multiCurveProperty = null;
-			JGeometry multiLine = null;
+			PGgeometry multiLine = null;
 
 			switch (lod) {
 			case 1:
@@ -441,39 +438,35 @@ public class DBBuilding implements DBImporter {
 			}
 
 			if (multiCurveProperty != null)
-				multiLine = sdoGeometry.getMultiCurve(multiCurveProperty);
+				multiLine = stGeometry.getMultiCurve(multiCurveProperty);
 
 			switch (lod) {
 			case 1:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psBuilding.setObject(22, multiLineObj);
+					psBuilding.setObject(22, multiLine);
 				} else
-					psBuilding.setNull(22, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(22, Types.OTHER, "ST_GEOMETRY");
 
 				break;
 			case 2:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psBuilding.setObject(23, multiLineObj);
+					psBuilding.setObject(23, multiLine);
 				} else
-					psBuilding.setNull(23, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(23, Types.OTHER, "ST_GEOMETRY");
 
 				break;
 			case 3:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psBuilding.setObject(24, multiLineObj);
+					psBuilding.setObject(24, multiLine);
 				} else
-					psBuilding.setNull(24, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(24, Types.OTHER, "ST_GEOMETRY");
 
 				break;
 			case 4:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psBuilding.setObject(25, multiLineObj);
+					psBuilding.setObject(25, multiLine);
 				} else
-					psBuilding.setNull(25, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(25, Types.OTHER, "ST_GEOMETRY");
 
 				break;
 			}
@@ -484,7 +477,7 @@ public class DBBuilding implements DBImporter {
 		for (int lod = 2; lod < 5; lod++) {
 
 			MultiCurveProperty multiCurveProperty = null;
-			JGeometry multiLine = null;
+			PGgeometry multiLine = null;
 
 			switch (lod) {
 			case 2:
@@ -499,31 +492,29 @@ public class DBBuilding implements DBImporter {
 			}
 
 			if (multiCurveProperty != null)
-				multiLine = sdoGeometry.getMultiCurve(multiCurveProperty);
+				multiLine = stGeometry.getMultiCurve(multiCurveProperty);
 
+			
 			switch (lod) {
 			case 2:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psBuilding.setObject(26, multiLineObj);
+					psBuilding.setObject(26, multiLine);
 				} else
-					psBuilding.setNull(26, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(26, Types.OTHER, "ST_GEOMETRY");
 
 				break;
 			case 3:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psBuilding.setObject(27, multiLineObj);
+					psBuilding.setObject(27, multiLine);
 				} else
-					psBuilding.setNull(27, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(27, Types.OTHER, "ST_GEOMETRY");
 
 				break;
 			case 4:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psBuilding.setObject(28, multiLineObj);
+					psBuilding.setObject(28, multiLine);
 				} else
-					psBuilding.setNull(28, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(28, Types.OTHER, "ST_GEOMETRY");
 
 				break;
 			}
@@ -531,7 +522,7 @@ public class DBBuilding implements DBImporter {
 		}
 
 		psBuilding.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING);
 
 		// BoundarySurfaces
@@ -676,7 +667,7 @@ public class DBBuilding implements DBImporter {
 				BuildingPart buildingPart = buildingPartProperty.getBuildingPart();
 				
 				if (buildingPart != null) {
-					long id = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+					long id = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 					
 					if (id != 0)
 						insert(buildingPart, id, buildingId, rootId);

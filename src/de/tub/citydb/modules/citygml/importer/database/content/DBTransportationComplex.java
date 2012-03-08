@@ -34,10 +34,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.impl.gml.geometry.complexes.GeometricComplexImpl;
 import org.citygml4j.impl.gml.geometry.primitives.GeometricPrimitivePropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -51,6 +47,7 @@ import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplexProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractGeometricPrimitive;
 import org.citygml4j.model.gml.geometry.primitives.GeometricPrimitiveProperty;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
@@ -69,7 +66,7 @@ public class DBTransportationComplex implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBTrafficArea trafficAreaImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBStGeometry stGeometry;
 	
 	private int batchCounter;
 
@@ -88,11 +85,11 @@ public class DBTransportationComplex implements DBImporter {
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		trafficAreaImporter = (DBTrafficArea)dbImporterManager.getDBImporter(DBImporterEnum.TRAFFIC_AREA);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		stGeometry = (DBStGeometry)dbImporterManager.getDBImporter(DBImporterEnum.ST_GEOMETRY);
 	}
 
 	public long insert(TransportationComplex transComplex) throws SQLException {
-		long transComplexId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long transComplexId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (transComplexId != 0)
@@ -228,7 +225,7 @@ public class DBTransportationComplex implements DBImporter {
         // lod0Network
         if (transComplex.isSetLod0Network()) {
         	GeometricComplex aggregateComplex = new GeometricComplexImpl();
-        	JGeometry multiCurveGeom = null;
+        	PGgeometry multiCurveGeom = null;
         	
         	for (GeometricComplexProperty complexProperty : transComplex.getLod0Network()) {
         		// for lod0Network we just consider appropriate curve geometries
@@ -278,19 +275,18 @@ public class DBTransportationComplex implements DBImporter {
         	}
         	
         	if (aggregateComplex.isSetElement() && !aggregateComplex.getElement().isEmpty())      		
-        		multiCurveGeom = sdoGeometry.getMultiCurve(aggregateComplex);
+        		multiCurveGeom = stGeometry.getMultiCurve(aggregateComplex);
         	
         	if (multiCurveGeom != null) {
-        		STRUCT multiCurveGeomObj = SyncJGeometry.syncStore(multiCurveGeom, batchConn);
-				psTransComplex.setObject(12, multiCurveGeomObj);
+				psTransComplex.setObject(12, multiCurveGeom);
         	} else
-        		psTransComplex.setNull(12, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+        		psTransComplex.setNull(12, Types.OTHER, "ST_GEOMETRY");
         	
         } else
-        	psTransComplex.setNull(12, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+        	psTransComplex.setNull(12, Types.OTHER, "ST_GEOMETRY");
         
         psTransComplex.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.TRANSPORTATION_COMPLEX);
 		        
         // AuxiliaryTrafficArea

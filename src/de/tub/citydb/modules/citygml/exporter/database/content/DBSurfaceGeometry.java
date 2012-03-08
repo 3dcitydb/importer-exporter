@@ -37,9 +37,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.impl.gml.geometry.aggregates.MultiSolidImpl;
 import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfaceImpl;
 import org.citygml4j.impl.gml.geometry.complexes.CompositeSolidImpl;
@@ -78,6 +75,9 @@ import org.citygml4j.model.gml.geometry.primitives.Triangle;
 import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+import org.postgis.ComposedGeom;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -118,7 +118,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 		if (exportAppearance) {
 			Integer commitAfterProp = config.getProject().getDatabase().getUpdateBatching().getTempBatchValue();
-			if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= Internal.ORACLE_MAX_BATCH_SIZE)
+			if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= Internal.POSTGRESQL_MAX_BATCH_SIZE)
 				commitAfter = commitAfterProp;
 
 			psImportGmlId = tempTable.getConnection().prepareStatement(
@@ -141,7 +141,7 @@ public class DBSurfaceGeometry implements DBExporter {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 
 			psSurfaceGeometry = connection.prepareStatement("select ID, GMLID, PARENT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, " +
-					"geodb_util.transform_or_null(GEOMETRY, " + srid + ") AS GEOMETRY " +
+					"geodb_pkg.util_transform_or_null(GEOMETRY, " + srid + ") AS GEOMETRY " +
 			"from SURFACE_GEOMETRY where ROOT_ID = ?");
 		}
 	}
@@ -166,10 +166,10 @@ public class DBSurfaceGeometry implements DBExporter {
 				int isXlink = rs.getInt("IS_XLINK");
 				int isReverse = rs.getInt("IS_REVERSE");
 
-				JGeometry geometry = null;
-				STRUCT struct = (STRUCT)rs.getObject("GEOMETRY");
-				if (!rs.wasNull() && struct != null)
-					geometry = JGeometry.load(struct);
+				Geometry geometry = null;
+				PGgeometry pgGeometry = (PGgeometry)rs.getObject("GEOMETRY");
+				if (!rs.wasNull() && pgGeometry != null)
+					geometry = pgGeometry.getGeometry();
 
 				// constructing a geometry node
 				GeometryNode geomNode = new GeometryNode();
@@ -288,54 +288,41 @@ public class DBSurfaceGeometry implements DBExporter {
 		// deal with geometry according to the identified type
 		// Polygon
 		if (surfaceGeometryType == GMLClass.POLYGON) {
-			// try and interpret JGeometry
+			// try and interpret Geometry
 			Polygon polygon = new PolygonImpl();
 			boolean forceRingIds = false;
+			int dimensions = geomNode.geometry.getDimension();
 
 			if (geomNode.gmlId != null) {
 				polygon.setId(geomNode.gmlId);
 				forceRingIds = true;
 			}
 
-			int[] elemInfoArray = geomNode.geometry.getElemInfo();
-			double[] ordinatesArray = geomNode.geometry.getOrdinatesArray();
-
-			if (elemInfoArray.length < 3 || ordinatesArray.length == 0)
-				return null;
-
-			// we are pragmatic here. if elemInfoArray contains more than one entry,
-			// we suppose we have one outer ring and anything else are inner rings.
-			List<Integer> ringLimits = new ArrayList<Integer>();
-			for (int i = 3; i < elemInfoArray.length; i += 3)
-				ringLimits.add(elemInfoArray[i] - 1);
-
-			ringLimits.add(ordinatesArray.length);
-
-			// ok, rebuild surface according to this info
-			boolean isExterior = elemInfoArray[1] == 1003;
-			int ringElem = 0;
-			int ringNo = 0;
-			for (Integer ringLimit : ringLimits) {
+			ComposedGeom polyGeom = (ComposedGeom)geomNode.geometry;
+			
+			for (int i = 0; i < polyGeom.numGeoms(); i++){
 				List<Double> values = new ArrayList<Double>();
-
-				// check whether we have to reverse the coordinate order
-				if (!geomNode.isReverse) { 
-					for ( ; ringElem < ringLimit; ringElem++)
-						values.add(ordinatesArray[ringElem]);
-				} else {
-					for (int i = ringLimit - 3; i >= ringElem; i -= 3) {
-						values.add(ordinatesArray[i]);
-						values.add(ordinatesArray[i + 1]);
-						values.add(ordinatesArray[i + 2]);
+				
+				if (dimensions == 2)
+					for (int j = 0; j < polyGeom.getSubGeometry(i).numPoints(); j++){
+						values.add(polyGeom.getSubGeometry(i).getPoint(j).x);
+						values.add(polyGeom.getSubGeometry(i).getPoint(j).y);
 					}
-				}
-
-				if (isExterior) {
+				
+				if (dimensions == 3)
+					for (int j = 0; j < polyGeom.getSubGeometry(i).numPoints(); j++){
+						values.add(polyGeom.getSubGeometry(i).getPoint(j).x);
+						values.add(polyGeom.getSubGeometry(i).getPoint(j).y);
+						values.add(polyGeom.getSubGeometry(i).getPoint(j).z);
+					}
+				
+				//isExterior
+				if (i == 0) {
 					LinearRing linearRing = new LinearRingImpl();
 					DirectPositionList directPositionList = new DirectPositionListImpl();
 
 					if (forceRingIds)
-						linearRing.setId(polygon.getId() + '_' + ringNo + '_');
+						linearRing.setId(polygon.getId() + '_' + i + '_');
 
 					directPositionList.setValue(values);
 					directPositionList.setSrsDimension(3);
@@ -345,14 +332,15 @@ public class DBSurfaceGeometry implements DBExporter {
 					exterior.setRing(linearRing);
 					polygon.setExterior(exterior);
 
-					isExterior = false;
 					dbExporterManager.updateGeometryCounter(GMLClass.LINEAR_RING);
+
 				} else {
+				//isInterior
 					LinearRing linearRing = new LinearRingImpl();
 					DirectPositionList directPositionList = new DirectPositionListImpl();
 
 					if (forceRingIds)
-						linearRing.setId(polygon.getId() + '_' + ringNo + '_');
+						linearRing.setId(polygon.getId() + '_' + i + '_');
 
 					directPositionList.setValue(values);
 					directPositionList.setSrsDimension(3);
@@ -364,9 +352,6 @@ public class DBSurfaceGeometry implements DBExporter {
 
 					dbExporterManager.updateGeometryCounter(GMLClass.LINEAR_RING);
 				}
-
-				ringElem = ringLimit;
-				ringNo++;
 			}
 
 			// check whether we have to embrace the polygon with an orientableSurface
@@ -656,7 +641,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		psImportGmlId.addBatch();
 		batchCounter++;
 
-		if (batchCounter == commitAfter || batchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+		if (batchCounter == commitAfter || batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE) {
 			psImportGmlId.executeBatch();
 			batchCounter = 0;
 		}
@@ -685,7 +670,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		protected boolean isTriangulated;
 		protected boolean isXlink;
 		protected boolean isReverse;
-		protected JGeometry geometry;
+		protected Geometry geometry;
 		protected List<GeometryNode> childNodes;
 
 		public GeometryNode() {

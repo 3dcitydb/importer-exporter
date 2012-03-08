@@ -9,6 +9,6 @@ public interface DatabaseMetaData {
 	public int getDatabaseMinorVersion();
 	public String getDatabaseProductString();
 	public DatabaseSrs getReferenceSystem();
-	public boolean isVersionEnabled();
+//	public boolean isVersionEnabled();
 	public void printToConsole();
 }

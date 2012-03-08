@@ -159,7 +159,7 @@ public class HeapCacheTable implements CacheTable {
 
 		try {
 			if (!isIndexed) {
-				model.createIndexes(conn, tableName, "nologging");
+				model.createIndexes(conn, tableName/*, "nologging"*/);
 				isIndexed = true;
 			}
 		} finally {

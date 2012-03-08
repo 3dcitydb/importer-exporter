@@ -74,7 +74,7 @@ public class DBWaterBoundarySurface implements DBImporter {
 	}
 
 	public long insert(AbstractWaterBoundarySurface waterBoundarySurface, long parentId) throws SQLException {
-		long waterBoundarySurfaceId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long waterBoundarySurfaceId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
     	if (waterBoundarySurfaceId == 0)
     		return 0;
 
@@ -174,7 +174,7 @@ public class DBWaterBoundarySurface implements DBImporter {
         }
 
         psWaterBoundarySurface.addBatch();
-        if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+        if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.WATERBOUNDARY_SURFACE);
 
         // boundary surface to waterBody

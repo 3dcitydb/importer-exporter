@@ -35,9 +35,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.impl.citygml.building.BoundarySurfacePropertyImpl;
 import org.citygml4j.impl.citygml.building.CeilingSurfaceImpl;
 import org.citygml4j.impl.citygml.building.ClosureSurfaceImpl;
@@ -99,6 +96,8 @@ import org.citygml4j.model.xal.Thoroughfare;
 import org.citygml4j.model.xal.ThoroughfareName;
 import org.citygml4j.model.xal.ThoroughfareNumber;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.TypeAttributeValueEnum;
@@ -114,7 +113,7 @@ public class DBThematicSurface implements DBExporter {
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBStGeometry stGeometry;
 
 	private boolean useXLink;
 	private boolean appendOldGmlId;
@@ -157,19 +156,19 @@ public class DBThematicSurface implements DBExporter {
 			psBuildingThematicSurface = connection.prepareStatement("select ts.ID as TSID, ts.NAME, ts.NAME_CODESPACE, ts.DESCRIPTION, upper(ts.TYPE) as TYPE, ts.LOD2_MULTI_SURFACE_ID, ts.LOD3_MULTI_SURFACE_ID, ts.LOD4_MULTI_SURFACE_ID, "+
 					"op.ID as OPID, op.NAME as OPNAME, op.NAME_CODESPACE as OPNAME_CODESPACE, op.DESCRIPTION as OPDESCRIPTION, upper(op.TYPE) as OPTYPE, op.ADDRESS_ID as OPADDR, op.LOD3_MULTI_SURFACE_ID as OPLOD3_MULTI_SURFACE_ID, op.LOD4_MULTI_SURFACE_ID as OPLOD4_MULTI_SURFACE_ID, " +
 					"a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY," +
-					"geodb_util.transform_or_null(a.MULTI_POINT, " + srid + ") AS MULTI_POINT " +
+					"geodb_pkg.util_transform_or_null(a.MULTI_POINT, " + srid + ") AS MULTI_POINT " +
 			"from THEMATIC_SURFACE ts left join OPENING_TO_THEM_SURFACE o2t on ts.ID = o2t.THEMATIC_SURFACE_ID left join OPENING op on op.ID = o2t.OPENING_ID left join ADDRESS a on op.ADDRESS_ID=a.ID where ts.BUILDING_ID = ?");
 
 			psRoomThematicSurface = connection.prepareStatement("select ts.ID as TSID, ts.NAME, ts.NAME_CODESPACE, ts.DESCRIPTION, upper(ts.TYPE) as TYPE, ts.LOD2_MULTI_SURFACE_ID, ts.LOD3_MULTI_SURFACE_ID, ts.LOD4_MULTI_SURFACE_ID, "+
 					"op.ID as OPID, op.NAME as OPNAME, op.NAME_CODESPACE as OPNAME_CODESPACE, op.DESCRIPTION as OPDESCRIPTION, upper(op.TYPE) as OPTYPE, op.ADDRESS_ID as OPADDR, op.LOD3_MULTI_SURFACE_ID as OPLOD3_MULTI_SURFACE_ID, op.LOD4_MULTI_SURFACE_ID as OPLOD4_MULTI_SURFACE_ID, " +
 					"a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY," +
-					"geodb_util.transform_or_null(a.MULTI_POINT, " + srid + ") AS MULTI_POINT " +
+					"geodb_pkg.util_transform_or_null(a.MULTI_POINT, " + srid + ") AS MULTI_POINT " +
 			"from THEMATIC_SURFACE ts left join OPENING_TO_THEM_SURFACE o2t on ts.ID = o2t.THEMATIC_SURFACE_ID left join OPENING op on op.ID = o2t.OPENING_ID left join ADDRESS a on op.ADDRESS_ID=a.ID where ts.ROOM_ID = ?");
 		}
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
-		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);
+		stGeometry = (DBStGeometry)dbExporterManager.getDBExporter(DBExporterEnum.ST_GEOMETRY);
 	}
 
 	public void read(AbstractBuilding building, long parentId) throws SQLException {
@@ -365,9 +364,9 @@ public class DBThematicSurface implements DBExporter {
 					properties.put("state", rs.getString("STATE"));
 					properties.put("country", rs.getString("COUNTRY"));
 
-					STRUCT multiPointObj = (STRUCT)rs.getObject("MULTI_POINT");
-					if (!rs.wasNull() && multiPointObj != null) {
-						JGeometry multiPoint = JGeometry.load(multiPointObj);
+					PGgeometry pgMultiPoint = (PGgeometry)rs.getObject("MULTI_POINT");
+					if (!rs.wasNull() && pgMultiPoint != null) {
+						Geometry multiPoint = pgMultiPoint.getGeometry();
 						properties.put("multiPoint", multiPoint);
 					} else
 						properties.put("multiPoint", null);	
@@ -579,9 +578,9 @@ public class DBThematicSurface implements DBExporter {
 					properties.put("state", rs.getString("STATE"));
 					properties.put("country", rs.getString("COUNTRY"));
 
-					STRUCT multiPointObj = (STRUCT)rs.getObject("MULTI_POINT");
-					if (!rs.wasNull() && multiPointObj != null) {
-						JGeometry multiPoint = JGeometry.load(multiPointObj);
+					PGgeometry pgMultiPoint = (PGgeometry)rs.getObject("MULTI_POINT");
+					if (!rs.wasNull() && pgMultiPoint != null) {
+						Geometry multiPoint = pgMultiPoint.getGeometry();
 						properties.put("multiPoint", multiPoint);
 					} else
 						properties.put("multiPoint", null);				
@@ -670,9 +669,9 @@ public class DBThematicSurface implements DBExporter {
 
 			// multiPointGeometry			
 			if (properties.get("multiPoint") != null) {
-				JGeometry multiPoint = (JGeometry)properties.get("multiPoint");
+				Geometry multiPoint = (Geometry)properties.get("multiPoint");
 
-				MultiPointProperty multiPointProperty = sdoGeometry.getMultiPointProperty(multiPoint, false);
+				MultiPointProperty multiPointProperty = stGeometry.getMultiPointProperty(multiPoint, false);
 				if (multiPointProperty != null) {
 					address.setMultiPoint(multiPointProperty);
 				}

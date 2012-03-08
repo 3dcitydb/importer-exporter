@@ -37,12 +37,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import oracle.jdbc.OracleResultSet;
-import oracle.sql.BLOB;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
@@ -83,7 +83,8 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 
 			// second step: get prepared BLOB to fill it with contents
 			psSelect.setLong(1, xlink.getId());
-			OracleResultSet rs = (OracleResultSet)psSelect.executeQuery();
+			ResultSet rs = (ResultSet)psSelect.executeQuery();
+//			OracleResultSet rs = (OracleResultSet)psSelect.executeQuery();
 			if (!rs.next()) {
 				LOG.error("Database error while importing library object: " + objectFileName);
 
@@ -92,7 +93,8 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 				return false;
 			}
 
-			BLOB blob = rs.getBLOB(1);
+//			BLOB blob = rs.getBLOB(1);
+			Blob blob = (Blob)rs.getBlob(1);
 			rs.close();
 
 			// third step: try and upload library object data
@@ -125,7 +127,8 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 
 			OutputStream out = blob.setBinaryStream(1L);
 
-			int size = blob.getBufferSize();
+//			int size = blob.getBufferSize();
+			int size = (int)blob.length();
 			byte[] buffer = new byte[size];
 			int length = -1;
 
@@ -133,7 +136,8 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 				out.write(buffer, 0, length);
 		
 			in.close();
-			blob.close();
+			blob.free();
+//			blob.close();
 			out.close();
 			externalFileConn.commit();
 			return true;

@@ -79,7 +79,7 @@ public class XlinkBasic implements DBXlinkResolver {
 	
 			ps.addBatch();
 			int counter = psBatchCounterMap.get(key);
-			if (++counter == Internal.ORACLE_MAX_BATCH_SIZE) {
+			if (++counter == Internal.POSTGRESQL_MAX_BATCH_SIZE) {
 				ps.executeBatch();
 				psBatchCounterMap.put(key, 0);
 			} else
@@ -89,7 +89,7 @@ public class XlinkBasic implements DBXlinkResolver {
 		if (xlink.getToTable() == TableEnum.SURFACE_GEOMETRY) {
 			psUpdateSurfGeom.setLong(1, entry.getId());
 			psUpdateSurfGeom.addBatch();
-			if (++updateBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			if (++updateBatchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 				executeUpdateSurfGeomBatch();
 		}
 

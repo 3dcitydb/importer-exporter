@@ -29,11 +29,9 @@
  */
 package de.tub.citydb.database;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -42,7 +40,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import oracle.jdbc.OracleConnection;
 import oracle.ucp.UniversalConnectionPoolAdapter;
 import oracle.ucp.UniversalConnectionPoolException;
 import oracle.ucp.UniversalConnectionPoolLifeCycleState;
@@ -57,7 +54,6 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
-import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.event.DatabaseConnectionStateEventImpl;
 import de.tub.citydb.util.database.DBUtil;
 
@@ -65,7 +61,7 @@ public class DatabaseConnectionPool {
 	private static DatabaseConnectionPool instance = new DatabaseConnectionPool();
 	private static final int LOGIN_TIMEOUT = 120;
 
-	private final String poolName = "oracle.pool";
+	private final String poolName = "postgresql.pool";
 	private final EventDispatcher eventDispatcher;
 	private UniversalConnectionPoolManager poolManager;
 	private PoolDataSource poolDataSource;
@@ -116,17 +112,18 @@ public class DatabaseConnectionPool {
 			poolDataSource = PoolDataSourceFactory.getPoolDataSource();
 			poolDataSource.setConnectionPoolName(poolName);
 
-			poolDataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
-			poolDataSource.setURL("jdbc:oracle:thin:@//" + conn.getServer() + ":" + conn.getPort()+ "/" + conn.getSid());
+			poolDataSource.setConnectionFactoryClassName("org.postgresql.ds.PGSimpleDataSource");
+			poolDataSource.setDatabaseName(conn.getSid());
+			poolDataSource.setURL("jdbc:postgresql://" + conn.getServer() + ":" + conn.getPort() + "/" + conn.getSid());
 			poolDataSource.setUser(conn.getUser());
 			poolDataSource.setPassword(conn.getInternalPassword());
 
 			// set connection properties
-			Properties props = new Properties();
-
+//			Properties props = new Properties();
+			
 			// let statement data buffers be cached on a per thread basis
-			props.put(OracleConnection.CONNECTION_PROPERTY_USE_THREADLOCAL_BUFFER_CACHE, "true");
-			poolDataSource.setConnectionProperties(props);
+//			props.put(OracleConnection.CONNECTION_PROPERTY_USE_THREADLOCAL_BUFFER_CACHE, "true");
+//			poolDataSource.setConnectionProperties(props);
 
 			poolManager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);		
 			poolManager.startConnectionPool(poolName);
@@ -334,6 +331,7 @@ public class DatabaseConnectionPool {
 		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(wasConnected, false, this));
 	}
 
+/*
 	public boolean gotoWorkspace(Connection conn, Workspace workspace) {
 		return gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
 	}
@@ -399,7 +397,7 @@ public class DatabaseConnectionPool {
 			}
 		}
 	}
-
+*/
 	private boolean isManagedConnectionPool(String poolName) throws UniversalConnectionPoolException {
 		for (String managedPool : poolManager.getConnectionPoolNames()) {
 			if (managedPool.equals(poolName))

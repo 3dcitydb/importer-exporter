@@ -115,7 +115,7 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 			psGroupParentToCityObject.setLong(2, xlink.getGroupId());
 			
 			psGroupParentToCityObject.addBatch();
-			if (++parentBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+			if (++parentBatchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE) {
 				psGroupParentToCityObject.executeBatch();
 				parentBatchCounter = 0;
 			}
@@ -125,7 +125,7 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 			psGroupMemberToCityObject.setString(3, xlink.getRole());
 
 			psGroupMemberToCityObject.addBatch();
-			if (++memberBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+			if (++memberBatchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE) {
 				psGroupMemberToCityObject.executeBatch();
 				memberBatchCounter = 0;
 			}

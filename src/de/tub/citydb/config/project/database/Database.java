@@ -46,7 +46,7 @@ import de.tub.citydb.api.database.DatabaseSrsType;
 		"connections",
 		"activeConnection",
 		"updateBatching",
-		"workspaces",
+		/*"workspaces",*/
 		"operation"
 })
 public class Database {
@@ -57,7 +57,8 @@ public class Database {
 	}
 	
 	static {
-		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG::4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGRAPHIC2D, true));
+//		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG:7.9:4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGRAPHIC2D, true));
+		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG:7.9:4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGCS, true));
 	}
 	
 	private DatabaseSrsList referenceSystems;
@@ -69,14 +70,14 @@ public class Database {
 	@XmlElement(required=true)
 	private UpdateBatching updateBatching;
 	@XmlElement(required=true)
-	private Workspaces workspaces;
+//	private Workspaces workspaces;
 	private DBOperation operation;
 
 	public Database() {
 		referenceSystems = new DatabaseSrsList();
 		connections = new ArrayList<DBConnection>();
 		updateBatching = new UpdateBatching();
-		workspaces = new Workspaces();
+//		workspaces = new Workspaces();
 		operation = new DBOperation();
 	}
 
@@ -131,14 +132,14 @@ public class Database {
 			this.updateBatching = updateBatching;
 	}
 
-	public Workspaces getWorkspaces() {
-		return workspaces;
-	}
-
-	public void setWorkspaces(Workspaces workspaces) {
-		if (workspaces != null)
-			this.workspaces = workspaces;
-	}
+//	public Workspaces getWorkspaces() {
+//		return workspaces;
+//	}
+//
+//	public void setWorkspaces(Workspaces workspaces) {
+//		if (workspaces != null)
+//			this.workspaces = workspaces;
+//	}
 
 	public DBOperation getOperation() {
 		return operation;

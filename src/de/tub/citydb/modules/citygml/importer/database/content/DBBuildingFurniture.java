@@ -34,16 +34,13 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.building.BuildingFurniture;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -59,7 +56,7 @@ public class DBBuildingFurniture implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBStGeometry stGeometry;
 	
 	private boolean affineTransformation;
 	private int batchCounter;
@@ -80,11 +77,11 @@ public class DBBuildingFurniture implements DBImporter {
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		implicitGeometryImporter = (DBImplicitGeometry)dbImporterManager.getDBImporter(DBImporterEnum.IMPLICIT_GEOMETRY);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		stGeometry = (DBStGeometry)dbImporterManager.getDBImporter(DBImporterEnum.ST_GEOMETRY);
 	}
 
 	public long insert(BuildingFurniture buildingFurniture, long roomId) throws SQLException {
-		long buildingFurnitureId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long buildingFurnitureId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (buildingFurnitureId == 0)
 			return 0;
 
@@ -172,7 +169,7 @@ public class DBBuildingFurniture implements DBImporter {
 			psBuildingFurniture.setNull(9, 0);
 
 		// implicit geometry
-		JGeometry pointGeom = null;
+		PGgeometry pointGeom = null;
 		String matrixString = null;
 		long implicitId = 0;
 
@@ -184,7 +181,7 @@ public class DBBuildingFurniture implements DBImporter {
 
 				// reference Point
 				if (geometry.isSetReferencePoint())
-					pointGeom = sdoGeometry.getPoint(geometry.getReferencePoint());
+					pointGeom = stGeometry.getPoint(geometry.getReferencePoint());
 
 				// transformation matrix
 				if (geometry.isSetTransformationMatrix()) {
@@ -206,10 +203,9 @@ public class DBBuildingFurniture implements DBImporter {
 			psBuildingFurniture.setNull(10, 0);
 
 		if (pointGeom != null) {
-			STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-			psBuildingFurniture.setObject(11, obj);
+			psBuildingFurniture.setObject(11, pointGeom);
 		} else
-			psBuildingFurniture.setNull(11, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psBuildingFurniture.setNull(11, Types.OTHER, "ST_GEOMETRY");
 
 		if (matrixString != null)
 			psBuildingFurniture.setString(12, matrixString);
@@ -217,7 +213,7 @@ public class DBBuildingFurniture implements DBImporter {
 			psBuildingFurniture.setNull(12, Types.VARCHAR);
 
 		psBuildingFurniture.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING_FURNITURE);
 		
 		return buildingFurnitureId;

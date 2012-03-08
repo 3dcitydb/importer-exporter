@@ -51,8 +51,8 @@ public class CacheTableDeprecatedMaterial extends CacheTableModel {
 	
 	@Override
 	protected String getColumns() {
-		return "(ID NUMBER," +
-		"GMLID VARCHAR2(256), " +
-		"SURFACE_GEOMETRY_ID NUMBER)";
+		return "(ID INTEGER," +
+		"GMLID VARCHAR(256), " +
+		"SURFACE_GEOMETRY_ID INTEGER)";
 	}
 }

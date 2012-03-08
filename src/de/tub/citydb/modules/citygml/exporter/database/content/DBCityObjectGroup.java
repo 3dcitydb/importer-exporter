@@ -86,7 +86,7 @@ public class DBCityObjectGroup implements DBExporter {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psCityObjectGroup = connection.prepareStatement("select grp.ID, grp.NAME, grp.NAME_CODESPACE, grp.DESCRIPTION, grp.CLASS, grp.FUNCTION, grp.USAGE, " +
-					"geodb_util.transform_or_null(grp.GEOMETRY, " + srid + ") AS GEOMETRY, " +
+					"geodb_pkg.util_transform_or_null(grp.GEOMETRY, " + srid + ") AS GEOMETRY, " +
 					"grp.SURFACE_GEOMETRY_ID, grp.PARENT_CITYOBJECT_ID, " +
 					"gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp " +
 			"inner join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");

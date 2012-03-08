@@ -59,7 +59,7 @@ public class DBXlinkImporterLinearRing implements DBXlinkImporter {
 		psLinearRing.setInt(3, xlinkEntry.getRingId());
 
 		psLinearRing.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			executeBatch();
 
 		return true;

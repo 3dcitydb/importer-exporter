@@ -77,7 +77,7 @@ public class DBThematicSurface implements DBImporter {
 	}
 
 	public long insert(AbstractBoundarySurface boundarySurface, CityGMLClass parent, long parentId) throws SQLException {
-		long boundarySurfaceId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long boundarySurfaceId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
     	if (boundarySurfaceId == 0)
     		return 0;
 
@@ -193,7 +193,7 @@ public class DBThematicSurface implements DBImporter {
         }
 
         psThematicSurface.addBatch();
-        if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+        if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.THEMATIC_SURFACE);
 
         // Openings

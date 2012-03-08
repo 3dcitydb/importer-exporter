@@ -60,7 +60,7 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 
 	private void init() throws SQLException {
 		psGenericAttribute = batchConn.prepareStatement("insert into CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, INTVAL, REALVAL, URIVAL, DATEVAL, GEOMVAL, BLOBVAL, CITYOBJECT_ID, SURFACE_GEOMETRY_ID) values " +
-			"(CITYOBJECT_GENERICATT_SEQ.nextval, ?, ?, ?, ?, ?, ?, ?, null, null, ?, null)");
+			"(nextval('CITYOBJECT_GENERICATTRIB_ID_SEQ'), ?, ?, ?, ?, ?, ?, ?, null, null, ?, null)");
 	}
 
 	public void insert(AbstractGenericAttribute genericAttribute, long cityObjectId) throws SQLException {
@@ -149,7 +149,7 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 		psGenericAttribute.setLong(8, cityObjectId);
 
 		psGenericAttribute.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
 	}
 

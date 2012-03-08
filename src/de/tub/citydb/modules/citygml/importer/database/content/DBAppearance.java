@@ -83,7 +83,7 @@ public class DBAppearance implements DBImporter {
 	}
 
 	public long insert(Appearance appearance, CityGMLClass parent, long parentId) throws SQLException {
-		long appearanceId = dbImporterManager.getDBId(DBSequencerEnum.APPEARANCE_SEQ);
+		long appearanceId = dbImporterManager.getDBId(DBSequencerEnum.APPEARANCE_ID_SEQ);
 		boolean success = false;
 
 		if (appearanceId != 0)
@@ -158,7 +158,7 @@ public class DBAppearance implements DBImporter {
 		}
 
 		psAppearance.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.APPEARANCE);
 
 		// surfaceData members

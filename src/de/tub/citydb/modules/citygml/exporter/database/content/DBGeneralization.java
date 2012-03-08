@@ -36,9 +36,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashSet;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Point;
 import org.citygml4j.impl.citygml.core.GeneralizationRelationImpl;
 import org.citygml4j.impl.gml.geometry.primitives.EnvelopeImpl;
@@ -46,6 +43,8 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.GeneralizationRelation;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.TableEnum;
@@ -92,7 +91,7 @@ public class DBGeneralization implements DBExporter {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psGeneralization = connection.prepareStatement("select GMLID, CLASS_ID, " +
-					"geodb_util.transform_or_null(co.ENVELOPE, " + srid + ") AS ENVELOPE " +
+					"geodb_pkg.util_transform_or_null(ENVELOPE, " + srid + ") AS ENVELOPE " +
 			"from CITYOBJECT where ID=?");
 		}
 	}
@@ -112,16 +111,15 @@ public class DBGeneralization implements DBExporter {
 
 					int classId = rs.getInt("CLASS_ID");			
 					CityGMLClass type = Util.classId2cityObject(classId);			
-					STRUCT struct = (STRUCT)rs.getObject("ENVELOPE");
+					PGgeometry pgGeom = (PGgeometry)rs.getObject("ENVELOPE");
 
-					if (!rs.wasNull() && struct != null && boundingBoxFilter.isActive()) {
-						JGeometry jGeom = JGeometry.load(struct);
+					if (!rs.wasNull() && pgGeom != null && boundingBoxFilter.isActive()) {
+						Geometry geom = pgGeom.getGeometry();
 						Envelope env = new EnvelopeImpl();
 
-						double[] points = jGeom.getOrdinatesArray();
-						Point lower = new Point(points[0], points[1], points[2]);
-						Point upper = new Point(points[3], points[4], points[5]);
-
+						Point lower = new Point(geom.getFirstPoint().x, geom.getFirstPoint().y, geom.getFirstPoint().z);
+						Point upper = new Point(geom.getPoint(2).x, geom.getPoint(2).y, geom.getPoint(2).z);
+						
 						env.setLowerCorner(lower);
 						env.setUpperCorner(upper);
 

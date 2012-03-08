@@ -184,8 +184,8 @@ public class DBImporterManager {
 			case CITYOBJECTGROUP:
 				dbImporter = new DBCityObjectGroup(batchConn, this);
 				break;
-			case SDO_GEOMETRY:
-				dbImporter = new DBSdoGeometry(config, this);
+			case ST_GEOMETRY:
+				dbImporter = new DBStGeometry(config, this);
 				break;
 			}
 

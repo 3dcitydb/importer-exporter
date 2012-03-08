@@ -89,11 +89,11 @@ public class CacheTableGmlId extends CacheTableModel {
 	
 	@Override
 	protected String getColumns() {
-		return "(GMLID VARCHAR2(256), " +
-		"ID NUMBER, " +
-		"ROOT_ID NUMBER, " +
-		"REVERSE NUMBER(1,0), " +
-		"MAPPING VARCHAR2(256)," +
-		"TYPE NUMBER(3))";
+		return "(GMLID VARCHAR(256), " +
+		"ID INTEGER, " +
+		"ROOT_ID INTEGER, " +
+		"REVERSE NUMERIC(1,0), " +
+		"MAPPING VARCHAR(256)," +
+		"TYPE NUMERIC(3))";
 	}
 }

@@ -59,7 +59,7 @@ public class DBAppearToSurfaceData implements DBImporter {
 		psAppearToSurfaceData.setLong(2, appearanceId);
 
 		psAppearToSurfaceData.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.APPEAR_TO_SURFACE_DATA);
 	}
 

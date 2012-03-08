@@ -45,7 +45,6 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.gui.BoundingBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.TilingMode;
@@ -79,8 +78,8 @@ public class DBSplitter {
 	private Long lastElement;
 	private String gmlIdFilter;
 	private String gmlNameFilter;
-	private String bboxFilter;
-	private String optimizerHint;
+	private List<String> bboxFilter;
+//	private String optimizerHint;
 
 	private FeatureClassFilter featureClassFilter;
 	private FeatureCounterFilter featureCounterFilter;
@@ -109,10 +108,10 @@ public class DBSplitter {
 		connection.setAutoCommit(false);
 
 		// try and change workspace for connection if needed
-		Database database = config.getProject().getDatabase();
-		dbConnectionPool.gotoWorkspace(
-				connection, 
-				database.getWorkspaces().getExportWorkspace());
+//		Database database = config.getProject().getDatabase();
+//		dbConnectionPool.gotoWorkspace(
+//				connection, 
+//				database.getWorkspaces().getExportWorkspace());
 
 		// set filter instances 
 		featureClassFilter = exportFilter.getFeatureClassFilter();
@@ -126,7 +125,7 @@ public class DBSplitter {
 
 	private void initFilter() throws SQLException {
 		// do not use any optimizer hints per default
-		optimizerHint = "";
+//		optimizerHint = "";
 		
 		// feature counter filter
 		List<Long> counterFilterState = featureCounterFilter.getFilterState();
@@ -159,20 +158,51 @@ public class DBSplitter {
 				double minY = bbox.getLowerLeftCorner().getY();
 				double maxX = bbox.getUpperRightCorner().getX();
 				double maxY = bbox.getUpperRightCorner().getY();
+				
+				List<String> maskType = new ArrayList<String>();
 
-				String mask = ((tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode())) ? 
-						"INSIDE+CONTAINS+EQUAL+COVERS+COVEREDBY+OVERLAPBDYINTERSECT" :
-							"INSIDE+COVEREDBY+EQUAL";
+				if ((tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode())){				
+					maskType.add("T*F**F***"); //1 - INSIDE
+					maskType.add("T*****FF*"); //2 - CONTAINS
+					maskType.add("T*F**FFF*"); //3 - EQUAL
+					maskType.add("T*****FF*"); //4 - COVERS
+					maskType.add("*T****FF*"); //5 - COVERS
+					maskType.add("***T**FF*"); //6 - COVERS
+					maskType.add("****T*FF*"); //7 - COVERS
+					maskType.add("T*F**F***"); //8 - COVEREDBY
+					maskType.add("*TF**F***"); //9 - COVEREDBY
+					maskType.add("**FT*F***"); //10 - COVEREDBY
+					maskType.add("**F*TF***"); //11 - COVEREDBY
+					maskType.add("T*T***T**"); //12 - OVERLAP
+					maskType.add("1*T***T**"); //13 - OVERLAP	
+									
+					for (int i=0; i < maskType.size(); i++){
+						bboxFilter.add("st_relate(co.ENVELOPE, st_geomFromText('POLYGON(("
+						+ minX + " " + minY + "," + maxX + " " + minY + "," + maxX + " " + maxY + "," + minX + " " + maxY + "," + minX + " " + minY + "))'," + bboxSrid + "), '"
+							+ maskType.get(i) + "') = 'TRUE'");
+					}
+				}
+				else
+				{
+					maskType.add("T*F**F***"); //1 - INSIDE
+					maskType.add("T*F**F***"); //2 - COVEREDBY
+					maskType.add("*TF**F***"); //3 - COVEREDBY
+					maskType.add("**FT*F***"); //4 - COVEREDBY
+					maskType.add("**F*TF***"); //5 - COVEREDBY
+					maskType.add("T*F**FFF*"); //6 - EQUAL
+								
+					for (int i=0; i < maskType.size(); i++){
+						bboxFilter.add("st_relate(co.ENVELOPE, st_geomFromText('POLYGON(("
+						+ minX + " " + minY + "," + maxX + " " + minY + "," + maxX + " " + maxY + "," + minX + " " + maxY + "," + minX + " " + minY + "))'," + bboxSrid + "), '"
+							+ maskType.get(i) + "') = 'TRUE'");
+					}
+				}
 
-				bboxFilter = "SDO_RELATE(co.ENVELOPE, MDSYS.SDO_GEOMETRY(2003, " + bboxSrid + ", NULL, " +
-				"MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 3), " +
-				"MDSYS.SDO_ORDINATE_ARRAY(" + minX + ", " + minY + ", " + maxX + ", " + maxY + ")), " +
-				"'querytype=WINDOW mask=" + mask + "') = 'TRUE'";
-
+			// this would not work for PostgreSQL
 				// on Oracle 11g the query performance greatly benefits from setting
-				// a no_index hint for the class_id column
-				if (dbConnectionPool.getActiveConnectionMetaData().getDatabaseMajorVersion() == 11)
-					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
+				// an no_index hint for the class_id column
+//				if (dbConnectionPool.getActiveConnection().getMetaData().getDatabaseMajorVersion() == 11)
+//					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
 				
 			} else {
 				LOG.error("Bounding box filter is enabled although spatial indexes are disabled.");
@@ -282,11 +312,16 @@ public class DBSplitter {
 					continue;
 				}
 
-				StringBuilder query = new StringBuilder("select ").append(optimizerHint).append(" co.ID, co.CLASS_ID from CITYOBJECT co, ")
+				StringBuilder query = new StringBuilder("select ")/*.append(optimizerHint)*/.append(" co.ID, co.CLASS_ID from CITYOBJECT co, ")
 				.append(tableName).append(" j where co.ID=j.ID and ");
 
-				if (bboxFilter != null)
-					query.append(bboxFilter).append(" and ");
+				if (bboxFilter != null){
+					for(int i=0; i<bboxFilter.size(); i++){
+						query.append(bboxFilter.get(i)).append(" or ");	
+					}
+					query.substring(0, query.length() - 4);
+					query.append(" and ");
+				}
 
 				if (additionalWhere != null)
 					query.append(additionalWhere).append(" and ");
@@ -309,7 +344,7 @@ public class DBSplitter {
 
 				queryList.add(query.toString());
 			} else {
-				query.append("select ").append(optimizerHint).append(" co.ID, co.CLASS_ID from CITYOBJECT co where ");
+				query.append("select ")/*.append(optimizerHint)*/.append(" co.ID, co.CLASS_ID from CITYOBJECT co where ");
 
 				List<Integer> classIds = new ArrayList<Integer>();
 				List<CityGMLClass> allowedFeature = featureClassFilter.getNotFilterState();
@@ -325,8 +360,14 @@ public class DBSplitter {
 
 					query.append("co.CLASS_ID in (").append(classIdQuery).append(") "); 
 
-					if (bboxFilter != null)
-						query.append("and ").append(bboxFilter).append(" ");
+					if (bboxFilter != null){
+						query.append("and ");
+						for(int i=0; i<bboxFilter.size(); i++){
+							query.append(bboxFilter.get(i)).append(" or ");	
+						}
+						query.substring(0, query.length() - 4);
+						query.append(" ");
+					}
 
 					if (featureCounterFilter.isActive())
 						query.append("order by ID");
@@ -409,7 +450,7 @@ public class DBSplitter {
 			if (gmlIdFilter != null)
 				query.append("and ").append(gmlIdFilter);
 		} else {
-			query.append("select ").append(optimizerHint).append(" co.ID from CITYOBJECT co");
+			query.append("select ")/*.append(optimizerHint)*/.append(" co.ID from CITYOBJECT co");
 			
 			if (gmlNameFilter != null)
 				query.append(", CITYOBJECTGROUP j where co.ID=j.ID ")
@@ -417,8 +458,13 @@ public class DBSplitter {
 			else
 				query.append(" where co.CLASS_ID=23 ");
 
-			if (bboxFilter != null)
-				query.append("and ").append(bboxFilter);
+			if (bboxFilter != null){
+				query.append("and ");
+				for(int i=0; i<bboxFilter.size(); i++){
+					query.append(bboxFilter.get(i)).append(" or ");	
+				}
+				query.substring(0, query.length() - 4);
+			}
 
 			List<CityGMLClass> allowedFeature = featureClassFilter.getNotFilterState();
 			for (CityGMLClass featureClass : allowedFeature) {
@@ -495,12 +541,17 @@ public class DBSplitter {
 			stmt = connection.createStatement();
 
 			// first: check nested groups being group members
-			StringBuilder innerGroupQuery = new StringBuilder("select ").append(optimizerHint)
+			StringBuilder innerGroupQuery = new StringBuilder("select ")/*.append(optimizerHint)*/
 			.append(" co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co where co.ID=gtc.CITYOBJECT_ID ")
 			.append("and gtc.CITYOBJECTGROUP_ID=").append(groupId).append(" and co.CLASS_ID=23 ");
 
-			if (bboxFilter != null)
-				innerGroupQuery.append("and ").append(bboxFilter);
+			if (bboxFilter != null){
+				innerGroupQuery.append("and ");
+				for(int i=0; i<bboxFilter.size(); i++){
+					innerGroupQuery.append(bboxFilter.get(i)).append(" or ");	
+				}
+				innerGroupQuery.substring(0, innerGroupQuery.length() - 4);
+			}
 
 			rs = stmt.executeQuery(innerGroupQuery.toString());
 
@@ -526,12 +577,17 @@ public class DBSplitter {
 				classIdsString = "and co.CLASS_ID in (" + Util.collection2string(classIds, ",") + ")";
 
 			// second: work on groupMembers which are not groups
-			StringBuilder groupMemberQuery = new StringBuilder("select ").append(optimizerHint)
+			StringBuilder groupMemberQuery = new StringBuilder("select ")/*.append(optimizerHint)*/
 			.append(" co.ID, co.CLASS_ID from CITYOBJECT co, GROUP_TO_CITYOBJECT gtc where gtc.CITYOBJECT_ID=co.ID ")
 			.append("and gtc.CITYOBJECTGROUP_ID=").append(groupId);
 
-			if (bboxFilter != null)
-				groupMemberQuery.append(" and ").append(bboxFilter);
+			if (bboxFilter != null){
+				groupMemberQuery.append("and ");
+				for(int i=0; i<bboxFilter.size(); i++){
+					groupMemberQuery.append(bboxFilter.get(i)).append(" or ");	
+				}
+				groupMemberQuery.substring(0, groupMemberQuery.length() - 4);
+			}
 
 			groupMemberQuery.append(" and not co.CLASS_ID=23 ").append(classIdsString);
 
@@ -551,13 +607,18 @@ public class DBSplitter {
 			rs.close();
 
 			// third: work on parents which are not groups
-			StringBuilder parentQuery = new StringBuilder("select ").append(optimizerHint)
+			StringBuilder parentQuery = new StringBuilder("select ")/*.append(optimizerHint)*/
 			.append(" grp.PARENT_CITYOBJECT_ID, co.CLASS_ID from CITYOBJECTGROUP grp, CITYOBJECT co ")
 			.append("where co.ID=grp.PARENT_CITYOBJECT_ID and grp.ID=").append(groupId).append(" and not grp.PARENT_CITYOBJECT_ID is NULL");
 
-			if (bboxFilter != null)
-				parentQuery.append(" and ").append(bboxFilter);
-
+			if (bboxFilter != null){
+				parentQuery.append(" and ");
+				for(int i=0; i<bboxFilter.size(); i++){
+					parentQuery.append(bboxFilter.get(i)).append(" or ");	
+				}
+				parentQuery.substring(0, parentQuery.length() - 4);
+			}
+			
 			parentQuery.append(" and not co.CLASS_ID=23 ").append(classIdsString);			
 
 			rs = stmt.executeQuery(parentQuery.toString());

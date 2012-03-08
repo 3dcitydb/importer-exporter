@@ -51,7 +51,7 @@ public class CacheTableLibraryObject extends CacheTableModel {
 	
 	@Override
 	protected String getColumns() {
-		return "(ID NUMBER, " +
-		"FILE_URI VARCHAR2(1000))";
+		return "(ID INTEGER, " +
+		"FILE_URI VARCHAR(1000))";
 	}
 }

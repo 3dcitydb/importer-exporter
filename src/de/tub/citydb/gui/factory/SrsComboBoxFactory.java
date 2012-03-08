@@ -185,8 +185,8 @@ public class SrsComboBoxFactory {
 				if (showOnlySupported && !refSys.isSupported())
 					continue;
 
-				if (showOnlySameDimension && refSys.is3D() != dbRefSys.is3D())
-					continue;
+//				if (showOnlySameDimension && refSys.is3D() != dbRefSys.is3D())
+//					continue;
 
 				addItem(refSys);
 			}

@@ -321,16 +321,16 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		GmlIdLookupServerConfig feature = config.getProject().getImporter().getSystem().getGmlIdLookupServer().getFeature();
 
 		int commitFeature = commit.getFeatureBatchValue();
-		if (commitFeature > Internal.ORACLE_MAX_BATCH_SIZE)
-			commitFeature = Internal.ORACLE_MAX_BATCH_SIZE;
+		if (commitFeature > Internal.POSTGRESQL_MAX_BATCH_SIZE)
+			commitFeature = Internal.POSTGRESQL_MAX_BATCH_SIZE;
 		
 		int commitCache = commit.getGmlIdLookupServerBatchValue();
-		if (commitCache > Internal.ORACLE_MAX_BATCH_SIZE)
-			commitCache = Internal.ORACLE_MAX_BATCH_SIZE;
+		if (commitCache > Internal.POSTGRESQL_MAX_BATCH_SIZE)
+			commitCache = Internal.POSTGRESQL_MAX_BATCH_SIZE;
 		
 		int commitTemp = commit.getTempBatchValue();
-		if (commitTemp > Internal.ORACLE_MAX_BATCH_SIZE)
-			commitTemp = Internal.ORACLE_MAX_BATCH_SIZE;
+		if (commitTemp > Internal.POSTGRESQL_MAX_BATCH_SIZE)
+			commitTemp = Internal.POSTGRESQL_MAX_BATCH_SIZE;
 		
 		impResMinThreadsText.setValue(threadPool.getMinThreads());
 		impResMaxThreadsText.setValue(threadPool.getMaxThreads());
@@ -363,18 +363,18 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 			impResMinThreadsText.setValue(minThreads);
 		}
 
-		if (featBatch > Internal.ORACLE_MAX_BATCH_SIZE) {
-			featBatch = Internal.ORACLE_MAX_BATCH_SIZE;
+		if (featBatch > Internal.POSTGRESQL_MAX_BATCH_SIZE) {
+			featBatch = Internal.POSTGRESQL_MAX_BATCH_SIZE;
 			impResTransaktFeatureText.setValue(featBatch);
 		}
-		
-		if (lookupBatch > Internal.ORACLE_MAX_BATCH_SIZE) {
-			lookupBatch = Internal.ORACLE_MAX_BATCH_SIZE;
+
+		if (lookupBatch > Internal.POSTGRESQL_MAX_BATCH_SIZE) {
+			lookupBatch = Internal.POSTGRESQL_MAX_BATCH_SIZE;
 			impResTransaktCacheText.setValue(lookupBatch);
 		}
 		
-		if (tempBatch > Internal.ORACLE_MAX_BATCH_SIZE) {
-			tempBatch = Internal.ORACLE_MAX_BATCH_SIZE;
+		if (tempBatch > Internal.POSTGRESQL_MAX_BATCH_SIZE) {
+			tempBatch = Internal.POSTGRESQL_MAX_BATCH_SIZE;
 			impResTransaktTempText.setValue(tempBatch);
 		}
 		

@@ -35,12 +35,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import oracle.jdbc.OracleResultSet;
-import oracle.sql.BLOB;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
@@ -108,7 +108,8 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 
 		// try and read texture image attribute from surface_data table
 		psLibraryObject.setLong(1, xlink.getId());
-		OracleResultSet rs = (OracleResultSet)psLibraryObject.executeQuery();
+		ResultSet rs = (ResultSet)psLibraryObject.executeQuery();
+//		OracleResultSet rs = (OracleResultSet)psLibraryObject.executeQuery();
 		if (!rs.next()) {
 			if (!isReomte) {
 				// we could not read from database. if we deal with a remote
@@ -124,7 +125,8 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 		LOG.info("Exporting library object: " + fileName);
 
 		// read oracle image data type
-		BLOB blob = rs.getBLOB(1);
+//		BLOB blob = rs.getBLOB(1);
+		Blob blob = (Blob)rs.getBlob(1);
 		rs.close();
 
 		if (blob == null) {
@@ -132,13 +134,14 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 			return false;
 		}
 
-		int size = blob.getBufferSize();
+//		int size = blob.getBufferSize();
+		int size = (int)blob.length();
 		byte[] buffer = new byte[size];
 		InputStream in = null;
 		FileOutputStream out = null;
 
 		try {
-			in = blob.getBinaryStream(1L);
+			in = blob.getBinaryStream(1L, size);
 			out = new FileOutputStream(fileURI);
 
 			int length = -1;
@@ -148,7 +151,8 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 			LOG.error("Failed to write library object file " + fileName + ": " + ioEx.getMessage());
 			return false;
 		} finally {
-			blob.close();
+//			blob.close();
+			blob.free();
 
 			if (in != null) {
 				try {

@@ -29,6 +29,8 @@
  */
 package de.tub.citydb.util.database;
 
+import java.sql.Array;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -39,24 +41,17 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.jdbc.OracleCallableStatement;
-import oracle.jdbc.OracleTypes;
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.ARRAY;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseSrsType;
 import de.tub.citydb.api.gui.BoundingBox;
 import de.tub.citydb.api.gui.BoundingBoxCorner;
-import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.DatabaseMetaDataImpl;
-import de.tub.citydb.database.DatabaseMetaDataImpl.Versioning;
-import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 import de.tub.citydb.util.database.IndexStatusInfo.IndexType;
 
@@ -65,7 +60,7 @@ public class DBUtil {
 	private static volatile boolean cancelled = false;
 
 	// use for interuptable operations
-	private static OracleCallableStatement callableStmt;
+	private static CallableStatement callableStmt;
 	private static Statement stmt;
 
 	public static DatabaseMetaDataImpl getDatabaseInfo() throws SQLException {
@@ -81,7 +76,7 @@ public class DBUtil {
 
 			// get 3dcitydb specific meta data
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("select * from table(geodb_util.db_metadata)");
+			rs = stmt.executeQuery("select * from geodb_pkg.util_db_metadata() as t");
 			if (rs.next()) {
 				DatabaseSrs srs = metaData.getReferenceSystem();
 				srs.setSrid(rs.getInt("SRID"));
@@ -90,7 +85,8 @@ public class DBUtil {
 				srs.setType(DatabaseSrsType.fromValue(rs.getString("COORD_REF_SYS_KIND")));
 				srs.setSupported(true);
 
-				metaData.setVersioning(Versioning.valueOf(rs.getString("VERSIONING")));
+//				metaData.setVersioning(Versioning.valueOf(rs.getString("VERSIONING")));
+
 			} else
 				throw new SQLException("Failed to retrieve metadata information from database.");
 
@@ -142,7 +138,7 @@ public class DBUtil {
 		try {
 			conn = dbConnectionPool.getConnection();
 
-			psQuery = conn.prepareStatement("select coord_ref_sys_name, coord_ref_sys_kind from sdo_coord_ref_sys where srid = ?");
+			psQuery = conn.prepareStatement("select split_part(srtext, '\"', 2) as coord_ref_sys_name, split_part(srtext, '[', 1) as coord_ref_sys_kind FROM spatial_ref_sys WHERE SRID = ? ");
 			psQuery.setInt(1, srs.getSrid());
 			rs = psQuery.executeQuery();
 			if (rs.next()) {
@@ -191,19 +187,20 @@ public class DBUtil {
 		}
 	}
 
-	public static String[] databaseReport(Workspace workspace) throws SQLException {
+//	public static String[] databaseReport(Workspace workspace) throws SQLException {
+	public static String[] databaseReport() throws SQLException {
 		String[] report = null;
 		Connection conn = null;
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			dbConnectionPool.gotoWorkspace(conn, workspace);		
+//			dbConnectionPool.gotoWorkspace(conn, workspace);		
 
-			callableStmt = (OracleCallableStatement)conn.prepareCall("{? = call geodb_stat.table_contents}");
-			callableStmt.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
+			callableStmt = (CallableStatement)conn.prepareCall("{? = call geodb_pkg.stat_table_contents()}");
+			callableStmt.registerOutParameter(1, Types.ARRAY);
 			callableStmt.executeUpdate();
 
-			ARRAY result = callableStmt.getARRAY(1);
+			Array result = callableStmt.getArray(1);
 
 			if (!cancelled)
 				report = (String[])result.getArray();
@@ -236,18 +233,19 @@ public class DBUtil {
 		return report;
 	}
 
-	public static BoundingBox calcBoundingBox(Workspace workspace, FeatureClassMode featureClass) throws SQLException {
+//	public static BoundingBox calcBoundingBox(Workspace workspace, FeatureClassMode featureClass) throws SQLException {
+	public static BoundingBox calcBoundingBox(FeatureClassMode featureClass) throws SQLException {
 		BoundingBox bbox = null;
 		Connection conn = null;
 		ResultSet rs = null;
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			dbConnectionPool.gotoWorkspace(conn, workspace);	
+//			dbConnectionPool.gotoWorkspace(conn, workspace);	
 			stmt = conn.createStatement();
 
 			List<Integer> featureTypes = new ArrayList<Integer>();
-			String query = "select sdo_aggr_mbr(geodb_util.to_2d(ENVELOPE, (select srid from database_srs))) from CITYOBJECT where ENVELOPE is not NULL";
+			String query = "select ST_Extent(ST_Force_2d(envelope))::geometry from cityobject where envelope is not null";
 
 			switch (featureClass) {
 			case BUILDING:
@@ -299,35 +297,27 @@ public class DBUtil {
 				featureTypes.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
 			}
 
-			if (!featureTypes.isEmpty()) 
-				query += " and CLASS_ID in (" + Util.collection2string(featureTypes, ", ") +") ";
+			if (!featureTypes.isEmpty())
+				query += " and class_id in (" + Util.collection2string(featureTypes, ", ") + ") ";
 
 			rs = stmt.executeQuery(query);
 			BoundingBoxCorner lowerCorner = new BoundingBoxCorner(Double.MAX_VALUE);
 			BoundingBoxCorner upperCorner = new BoundingBoxCorner(-Double.MAX_VALUE);
 
 			if (rs.next()) {
-				STRUCT struct = (STRUCT)rs.getObject(1);
-				if (!rs.wasNull() && struct != null) {
-					JGeometry jGeom = JGeometry.load(struct);
-					int dim = jGeom.getDimensions();	
+				PGgeometry pgGeom = (PGgeometry)rs.getObject(1);		
+				if (!rs.wasNull() && pgGeom != null) {
+					Geometry geom = pgGeom.getGeometry();
+					int dim = geom.getDimension();	
 					if (dim == 2 || dim == 3) {
-						double[] points = jGeom.getOrdinatesArray();
 						double xmin, ymin, xmax, ymax;
 						xmin = ymin = Double.MAX_VALUE;
 						xmax = ymax = -Double.MAX_VALUE;
-
-						if (dim == 2) {
-							xmin = points[0];
-							ymin = points[1];
-							xmax = points[2];
-							ymax = points[3];
-						} else if (dim == 3) {
-							xmin = points[0];
-							ymin = points[1];
-							xmax = points[3];
-							ymax = points[4];
-						}
+						
+						xmin = (geom.getPoint(0).x);
+						ymin = (geom.getPoint(0).y);
+						xmax = (geom.getPoint(2).x);
+						ymax = (geom.getPoint(2).y);
 
 						lowerCorner.setX(xmin);
 						lowerCorner.setY(ymin);
@@ -382,16 +372,20 @@ public class DBUtil {
 		Connection conn = null;
 
 		String call = type == IndexType.SPATIAL ? 
-				"{? = call geodb_idx.drop_spatial_indexes}" : 
-					"{? = call geodb_idx.drop_normal_indexes}";
+				"{? = call geodb_pkg.idx_switch_off_spatial_indexes()}" :
+					"{? = call geodb_pkg.idx_switch_off_normal_indexes()}";
+		// the hard way: drop the index
+//		String call = type == IndexType.SPATIAL ? 
+//				"{? = call geodb_pkg.idx_drop_spatial_indexes()}" :
+//					"{? = call geodb_pkg.idx_drop_normal_indexes()}";
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			callableStmt = (OracleCallableStatement)conn.prepareCall(call);
-			callableStmt.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
+			callableStmt = (CallableStatement)conn.prepareCall(call);
+			callableStmt.registerOutParameter(1, Types.ARRAY);
 			callableStmt.executeUpdate();
 
-			ARRAY result = callableStmt.getARRAY(1);
+			Array result = callableStmt.getArray(1);
 			return IndexStatusInfo.createFromDatabaseQuery((String[])result.getArray(), type);
 
 		} catch (SQLException sqlEx) {
@@ -420,17 +414,23 @@ public class DBUtil {
 	private static IndexStatusInfo createIndexes(IndexType type) throws SQLException {
 		Connection conn = null;
 
-		String call = type == IndexType.SPATIAL ? 
-				"{? = call geodb_idx.create_spatial_indexes}" : 
-					"{? = call geodb_idx.create_normal_indexes}";
+		// switch index on (indIsValid = true)
+		String call = type == IndexType.SPATIAL ?
+				"{? = call geodb_pkg.idx_switch_on_spatial_indexes()}" :
+					"{? = call geodb_pkg.idx_switch_on_normal_indexes()}";
+		
+		// create the index again
+//		String call = type == IndexType.SPATIAL ? 
+//				"{? = call geodb_pkg.idx_create_spatial_indexes()}" :
+//					"{? = call geodb_pkg.idx_create_normal_indexes()}";
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			callableStmt = (OracleCallableStatement)conn.prepareCall(call);
-			callableStmt.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
+			callableStmt = (CallableStatement)conn.prepareCall(call);
+			callableStmt.registerOutParameter(1, Types.ARRAY);
 			callableStmt.executeUpdate();
 
-			ARRAY result = callableStmt.getARRAY(1);
+			Array result = callableStmt.getArray(1);
 			return IndexStatusInfo.createFromDatabaseQuery((String[])result.getArray(), type);
 
 		} catch (SQLException sqlEx) {
@@ -460,16 +460,16 @@ public class DBUtil {
 		Connection conn = null;
 
 		String call = type == IndexType.SPATIAL ? 
-				"{? = call geodb_idx.status_spatial_indexes}" : 
-					"{? = call geodb_idx.status_normal_indexes}";
+			"{? = call geodb_pkg.idx_status_spatial_indexes()}" :
+				"{? = call geodb_pkg.idx_status_normal_indexes()}";
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			callableStmt = (OracleCallableStatement)conn.prepareCall(call);
-			callableStmt.registerOutParameter(1, OracleTypes.ARRAY, "STRARRAY");
+			callableStmt = (CallableStatement)conn.prepareCall(call);
+			callableStmt.registerOutParameter(1, Types.ARRAY);
 			callableStmt.executeUpdate();
 
-			ARRAY result = callableStmt.getARRAY(1);
+			Array result = callableStmt.getArray(1);
 			return IndexStatusInfo.createFromDatabaseQuery((String[])result.getArray(), type);
 			
 		} catch (SQLException sqlEx) {
@@ -501,7 +501,7 @@ public class DBUtil {
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			callableStmt = (OracleCallableStatement)conn.prepareCall("{? = call geodb_idx.index_status(?, ?)}");
+			callableStmt = (CallableStatement)conn.prepareCall("{? = call geodb_pkg.idx_index_status(?, ?)}");
 			callableStmt.setString(2, tableName);
 			callableStmt.setString(3, columnName);
 			callableStmt.registerOutParameter(1, Types.VARCHAR);
@@ -564,7 +564,7 @@ public class DBUtil {
 
 		try {
 			conn = dbConnectionPool.getConnection();
-			callableStmt = (OracleCallableStatement)conn.prepareCall("{? = call geodb_util.error_msg(?)}");
+			callableStmt = (CallableStatement)conn.prepareCall("{? = call geodb_pkg.util_error_msg(?)}");
 			callableStmt.setString(2, errorCode);
 			callableStmt.registerOutParameter(1, Types.VARCHAR);
 			callableStmt.executeUpdate();
@@ -621,26 +621,32 @@ public class DBUtil {
 			int targetSrid = get2DSrid(targetSrs);
 			
 			conn = dbConnectionPool.getConnection();
-			psQuery = conn.prepareStatement("select SDO_CS.TRANSFORM(MDSYS.SDO_GEOMETRY(2003, " + sourceSrid +
-					", NULL, MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 1), " +
-					"MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), " + targetSrid + ") from dual");
+			psQuery = conn.prepareStatement("select ST_TRANSFORM(select ST_GeomFromText('POLYGON((? ?,? ?,? ?,? ?,? ?))'," + sourceSrid + ")," + targetSrid + ")");
 
 			psQuery.setDouble(1, bbox.getLowerLeftCorner().getX());
 			psQuery.setDouble(2, bbox.getLowerLeftCorner().getY());
+			
 			psQuery.setDouble(3, bbox.getUpperRightCorner().getX());
-			psQuery.setDouble(4, bbox.getUpperRightCorner().getY());
-
+			psQuery.setDouble(4, bbox.getLowerLeftCorner().getY());
+						
+			psQuery.setDouble(5, bbox.getUpperRightCorner().getX());
+			psQuery.setDouble(6, bbox.getUpperRightCorner().getY());
+	
+			psQuery.setDouble(7, bbox.getLowerLeftCorner().getX());
+			psQuery.setDouble(8, bbox.getUpperRightCorner().getY());
+			
+			psQuery.setDouble(9, bbox.getLowerLeftCorner().getX());
+			psQuery.setDouble(10, bbox.getLowerLeftCorner().getY());
+			
 			rs = psQuery.executeQuery();
 			if (rs.next()) {
-				STRUCT struct = (STRUCT)rs.getObject(1); 
-				if (!rs.wasNull() && struct != null) {
-					JGeometry geom = JGeometry.load(struct);
-					double[] ordinatesArray = geom.getOrdinatesArray();
-
-					result.getLowerLeftCorner().setX(ordinatesArray[0]);
-					result.getLowerLeftCorner().setY(ordinatesArray[1]);
-					result.getUpperRightCorner().setX(ordinatesArray[2]);
-					result.getUpperRightCorner().setY(ordinatesArray[3]);
+				PGgeometry pgGeom = (PGgeometry)rs.getObject(1);
+				if (!rs.wasNull() && pgGeom != null) {
+					Geometry geom = pgGeom.getGeometry();
+					result.getLowerLeftCorner().setX(geom.getPoint(0).x);
+					result.getLowerLeftCorner().setY(geom.getPoint(0).y);
+					result.getUpperRightCorner().setX(geom.getPoint(2).x);
+					result.getUpperRightCorner().setY(geom.getPoint(2).y);
 				}
 			}
 		} catch (SQLException sqlEx) {
@@ -681,67 +687,72 @@ public class DBUtil {
 	}
 
 	public static int get2DSrid(DatabaseSrs srs) throws SQLException {
-		if (!srs.is3D())
+//		if (!srs.is3D())
 			return srs.getSrid();
 
-		Connection conn = null;
-		ResultSet rs = null;
-
-		try {
-			conn = dbConnectionPool.getConnection();
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery(srs.getType() == DatabaseSrsType.GEOGRAPHIC3D ? 
-					"select min(crs2d.srid) from sdo_coord_ref_sys crs3d, sdo_coord_ref_sys crs2d where crs3d.srid = "
-					+ srs.getSrid() + " and crs2d.coord_ref_sys_kind = 'GEOGRAPHIC2D' and crs3d.datum_id = crs2d.datum_id" :
-						"select cmpd_horiz_srid from sdo_coord_ref_sys where srid = " + srs.getSrid());
-
-			if (rs.next()) 
-				return rs.getInt(1);
-			else
-				throw new SQLException("Failed to discover 2D equivalent for the 3D SRID " + srs.getSrid());
-			
-		} catch (SQLException sqlEx) {
-			throw sqlEx;
-		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException sqlEx) {
-					throw sqlEx;
-				}
-
-				rs = null;
-			}
-
-			if (stmt != null) {
-				try {
-					stmt.close();
-				} catch (SQLException sqlEx) {
-					throw sqlEx;
-				}
-
-				stmt = null;
-			}
-
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException sqlEx) {
-					throw sqlEx;
-				}
-
-				conn = null;
-			}
-		}
+//		Connection conn = null;
+//		PreparedStatement psQuery = null;
+//		ResultSet rs = null;
+//
+//		try {
+//			conn = dbConnectionPool.getConnection();
+//			psQuery = conn.prepareStatement(srs.getType() == DatabaseSrsType.GEOGCS ? 
+//					"select min(crs2d.srid) from spatial_ref_sys crs3d, spatial_ref_sys crs2d where crs3d.srid = "
+//					+ srs.getSrid() + " and crs2d.srtext LIKE '%GEOGCS%'" : "");
+//					
+////					"select min(crs2d.srid) from sdo_coord_ref_sys crs3d, sdo_coord_ref_sys crs2d where crs3d.srid = "
+////					+ srs.getSrid() + " and crs2d.coord_ref_sys_kind = 'GEOGRAPHIC2D' and crs3d.datum_id = crs2d.datum_id" :
+////						"select cmpd_horiz_srid from sdo_coord_ref_sys where srid = " + srs.getSrid());
+//
+//			rs = psQuery.executeQuery();
+//			if (rs.next()) 
+//				return rs.getInt(1);
+//			else
+//				throw new SQLException("Failed to discover 2D equivalent for the 3D SRID " + srs.getSrid());
+//			
+//		} catch (SQLException sqlEx) {
+//			throw sqlEx;
+//		} finally {
+//			if (rs != null) {
+//				try {
+//					rs.close();
+//				} catch (SQLException sqlEx) {
+//					throw sqlEx;
+//				}
+//
+//				rs = null;
+//			}
+//
+//			if (psQuery != null) {
+//				try {
+//					psQuery.close();
+//				} catch (SQLException sqlEx) {
+//					throw sqlEx;
+//				}
+//
+//				psQuery = null;
+//			}
+//
+//			if (conn != null) {
+//				try {
+//					conn.close();
+//				} catch (SQLException sqlEx) {
+//					throw sqlEx;
+//				}
+//
+//				conn = null;
+//			}
+//		}
 	}
 
-	public static List<String> getAppearanceThemeList(Workspace workspace) throws SQLException {
+	public static List<String> getAppearanceThemeList() throws SQLException {
 		Connection conn = null;
+		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 		ArrayList<String> appearanceThemes = new ArrayList<String>();
 
 		try {
-			boolean workspaceExists = dbConnectionPool.existsWorkspace(workspace);
+			/*boolean workspaceExists = dbConnectionPool.existsWorkspace(workspace);
 
 			String name = "'" + workspace.getName().trim() + "'";
 			String timestamp = workspace.getTimestamp().trim();
@@ -750,7 +761,7 @@ public class DBUtil {
 
 			if (!workspaceExists) {
 				Logger.getInstance().error("Database workspace " + name + " is not available.");
-			} 
+			} */
 
 			conn = dbConnectionPool.getConnection();
 			stmt = conn.createStatement();

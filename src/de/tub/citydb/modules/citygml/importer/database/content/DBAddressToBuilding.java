@@ -59,7 +59,7 @@ public class DBAddressToBuilding implements DBImporter {
 		psAddressToBuilding.setLong(2, addressId);
 
 		psAddressToBuilding.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.ADDRESS_TO_BUILDING);
 	}
 	

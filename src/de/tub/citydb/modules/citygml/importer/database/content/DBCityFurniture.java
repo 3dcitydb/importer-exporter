@@ -34,10 +34,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
@@ -45,6 +41,7 @@ import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -60,7 +57,7 @@ public class DBCityFurniture implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBStGeometry stGeometry;
 	
 	private boolean affineTransformation;
 	private int batchCounter;
@@ -85,11 +82,11 @@ public class DBCityFurniture implements DBImporter {
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		implicitGeometryImporter = (DBImplicitGeometry)dbImporterManager.getDBImporter(DBImporterEnum.IMPLICIT_GEOMETRY);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		stGeometry = (DBStGeometry)dbImporterManager.getDBImporter(DBImporterEnum.ST_GEOMETRY);
 	}
 
 	public long insert(CityFurniture cityFurniture) throws SQLException {
-		long cityFurnitureId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long cityFurnitureId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (cityFurnitureId != 0)
@@ -218,7 +215,7 @@ public class DBCityFurniture implements DBImporter {
 
 		for (int lod = 1; lod < 5; lod++) {
 			ImplicitRepresentationProperty implicit = null;
-			JGeometry pointGeom = null;
+			PGgeometry pointGeom = null;
 			String matrixString = null;
 			long implicitId = 0;
 
@@ -243,7 +240,7 @@ public class DBCityFurniture implements DBImporter {
 
 					// reference Point
 					if (geometry.isSetReferencePoint())
-						pointGeom = sdoGeometry.getPoint(geometry.getReferencePoint());
+						pointGeom = stGeometry.getPoint(geometry.getReferencePoint());
 
 					// transformation matrix
 					if (geometry.isSetTransformationMatrix()) {
@@ -267,10 +264,9 @@ public class DBCityFurniture implements DBImporter {
 					psCityFurniture.setNull(11, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psCityFurniture.setObject(15, obj);
+					psCityFurniture.setObject(15, pointGeom);
 				} else
-					psCityFurniture.setNull(15, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(15, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psCityFurniture.setString(19, matrixString);
@@ -285,10 +281,9 @@ public class DBCityFurniture implements DBImporter {
 					psCityFurniture.setNull(12, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psCityFurniture.setObject(16, obj);
+					psCityFurniture.setObject(16, pointGeom);
 				} else
-					psCityFurniture.setNull(16, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(16, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psCityFurniture.setString(20, matrixString);
@@ -303,10 +298,9 @@ public class DBCityFurniture implements DBImporter {
 					psCityFurniture.setNull(13, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psCityFurniture.setObject(17, obj);
+					psCityFurniture.setObject(17, pointGeom);
 				} else
-					psCityFurniture.setNull(17, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(17, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psCityFurniture.setString(21, matrixString);
@@ -321,10 +315,9 @@ public class DBCityFurniture implements DBImporter {
 					psCityFurniture.setNull(14, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psCityFurniture.setObject(18, obj);
+					psCityFurniture.setObject(18, pointGeom);
 				} else
-					psCityFurniture.setNull(18, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(18, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psCityFurniture.setString(22, matrixString);
@@ -339,7 +332,7 @@ public class DBCityFurniture implements DBImporter {
 		for (int lod = 1; lod < 5; lod++) {
 			
 			MultiCurveProperty multiCurveProperty = null;
-			JGeometry multiLine = null;
+			PGgeometry multiLine = null;
 			
 			switch (lod) {
 			case 1:
@@ -357,46 +350,43 @@ public class DBCityFurniture implements DBImporter {
 			}
 			
 			if (multiCurveProperty != null)
-				multiLine = sdoGeometry.getMultiCurve(multiCurveProperty);
+				multiLine = stGeometry.getMultiCurve(multiCurveProperty);
 
 			switch (lod) {
 			case 1:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psCityFurniture.setObject(23, multiLineObj);
+					psCityFurniture.setObject(23, multiLine);
 				} else
-					psCityFurniture.setNull(23, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(23, Types.OTHER, "ST_GEOMETRY");
 					
 				break;
 			case 2:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psCityFurniture.setObject(24, multiLineObj);
+					psCityFurniture.setObject(24, multiLine);
 				} else
-					psCityFurniture.setNull(24, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(24, Types.OTHER, "ST_GEOMETRY");
 					
 				break;
 			case 3:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psCityFurniture.setObject(25, multiLineObj);
+					psCityFurniture.setObject(25, multiLine);
 				} else
-					psCityFurniture.setNull(25, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(25, Types.OTHER, "ST_GEOMETRY");
 					
 				break;
 			case 4:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
-					psCityFurniture.setObject(26, multiLineObj);
+					psCityFurniture.setObject(26, multiLine);
 				} else
-					psCityFurniture.setNull(26, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(26, Types.OTHER, "ST_GEOMETRY");
 					
 				break;
 			}
+
 		}
 		
 		psCityFurniture.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.CITY_FURNITURE);
 		
 		return true;

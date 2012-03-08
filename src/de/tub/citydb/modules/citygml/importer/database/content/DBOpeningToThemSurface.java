@@ -59,7 +59,7 @@ public class DBOpeningToThemSurface implements DBImporter {
         psOpeningToThemSurface.setLong(2, thematicSurfaceId);
 
         psOpeningToThemSurface.addBatch();
-        if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+        if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.OPENING_TO_THEM_SURFACE);
 	}
 

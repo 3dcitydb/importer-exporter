@@ -57,7 +57,6 @@ import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
@@ -137,9 +136,9 @@ public class DBImportWorker implements Worker<CityGML> {
 
 		// try and change workspace for both connections if needed
 		Database database = config.getProject().getDatabase();
-		Workspace workspace = database.getWorkspaces().getImportWorkspace();
-		dbConnectionPool.gotoWorkspace(batchConn, workspace);
-		dbConnectionPool.gotoWorkspace(commitConn, workspace);
+//		Workspace workspace = database.getWorkspaces().getImportWorkspace();
+//		dbConnectionPool.gotoWorkspace(batchConn, workspace);
+//		dbConnectionPool.gotoWorkspace(commitConn, workspace);
 
 		// init filter 
 		featureBoundingBoxFilter = importFilter.getBoundingBoxFilter();

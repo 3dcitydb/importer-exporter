@@ -35,10 +35,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
@@ -55,6 +51,8 @@ import org.citygml4j.model.citygml.appearance.X3DMaterial;
 import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -122,7 +120,7 @@ public class DBSurfaceData implements DBImporter {
 	}
 
 	public long insert(AbstractSurfaceData abstractSurfData, long parentId) throws SQLException {
-		long surfaceDataId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_DATA_SEQ);
+		long surfaceDataId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_DATA_ID_SEQ);
 		if (surfaceDataId == 0)
 			return 0;
 
@@ -249,7 +247,7 @@ public class DBSurfaceData implements DBImporter {
 				psSurfaceData.setInt(14, 0);
 
 			psSurfaceData.addBatch();
-			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 				dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
 			if (material.isSetTarget()) {
@@ -307,7 +305,7 @@ public class DBSurfaceData implements DBImporter {
 
 		if (abstractSurfData.getCityGMLClass() == CityGMLClass.PARAMETERIZED_TEXTURE) {
 			psSurfaceData.addBatch();
-			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 				dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
 			//xlink
@@ -435,12 +433,12 @@ public class DBSurfaceData implements DBImporter {
 						if (affineTransformation)
 							dbImporterManager.getAffineTransformer().transformCoordinates(coords);
 
-						JGeometry geom = new JGeometry(coords.get(0), coords.get(1), dbSrid);
-						STRUCT obj = SyncJGeometry.syncStore(geom, batchConn);
-
-						psSurfaceData.setObject(15, obj);
+						Geometry geom = PGgeometry.geomFromString("SRID=" + dbSrid + ";POINT(" + coords.get(0) + " " + coords.get(1) + ")");
+						PGgeometry pgGeom = new PGgeometry(geom);						
+						
+						psSurfaceData.setObject(15, pgGeom);
 					} else
-						psSurfaceData.setNull(15, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+						psSurfaceData.setNull(15, Types.OTHER, "ST_GEOMETRY");
 
 				} else {
 					// xlink is not supported...	
@@ -451,7 +449,7 @@ public class DBSurfaceData implements DBImporter {
 					}
 				}
 			} else
-				psSurfaceData.setNull(15, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+				psSurfaceData.setNull(15, Types.OTHER, "ST_GEOMETRY");
 
 			// do we have a world file?!
 			if (geoTex.isSetImageURI() && !geoTex.isSetOrientation() && !geoTex.isSetReferencePoint()) {
@@ -465,7 +463,7 @@ public class DBSurfaceData implements DBImporter {
 			}
 
 			psSurfaceData.addBatch();
-			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 				dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
 			if (geoTex.isSetTarget()) {

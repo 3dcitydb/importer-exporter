@@ -89,7 +89,7 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 		Database database = config.getProject().getDatabase();
 		
 		Integer commitAfterProp = database.getUpdateBatching().getTempBatchValue();
-		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= Internal.ORACLE_MAX_BATCH_SIZE)
+		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			commitAfter = commitAfterProp;		
 	}
 	

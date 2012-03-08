@@ -111,10 +111,10 @@ public class ImportPanel extends JPanel {
 	private JButton importButton;
 	private JButton validateButton;
 	private FilterPanel filterPanel;
-	private JTextField workspaceText;
-
-	private JPanel workspacePanel;
-	private JLabel row2_1;
+//	private JTextField workspaceText;
+//
+//	private JPanel workspacePanel;
+//	private JLabel row2_1;
 
 	public ImportPanel(JAXBBuilder jaxbBuilder, Config config, ImpExpGui mainView) {
 		this.jaxbBuilder = jaxbBuilder;
@@ -132,7 +132,7 @@ public class ImportPanel extends JPanel {
 		filterPanel = new FilterPanel(config, FilterPanelType.IMPORT);
 		importButton = new JButton();
 		validateButton = new JButton();
-		workspaceText = new JTextField();
+//		workspaceText = new JTextField();
 
 		DropCutCopyPasteHandler handler = new DropCutCopyPasteHandler();
 
@@ -157,8 +157,9 @@ public class ImportPanel extends JPanel {
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), TransferHandler.getCutAction().getValue(Action.NAME));
 
-		PopupMenuDecorator.getInstance().decorate(fileList, workspaceText);
-
+//		PopupMenuDecorator.getInstance().decorate(fileList, workspaceText);
+		PopupMenuDecorator.getInstance().decorate(fileList);
+		
 		browseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				loadFile(Internal.I18N.getString("main.tabbedPane.import"));
@@ -221,13 +222,13 @@ public class ImportPanel extends JPanel {
 		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
 		add(scrollPane, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
 
-		workspacePanel = new JPanel();
-		view.add(workspacePanel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		workspacePanel.setBorder(BorderFactory.createTitledBorder(""));
-		workspacePanel.setLayout(new GridBagLayout());
-		row2_1 = new JLabel();
-		workspacePanel.add(row2_1, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,5,5,5));
-		workspacePanel.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+//		workspacePanel = new JPanel();
+//		view.add(workspacePanel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
+//		workspacePanel.setBorder(BorderFactory.createTitledBorder(""));
+//		workspacePanel.setLayout(new GridBagLayout());
+//		row2_1 = new JLabel();
+//		workspacePanel.add(row2_1, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,0,5,5,5));
+//		workspacePanel.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 
 		view.add(filterPanel, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,0,5,0,5));
 		
@@ -243,14 +244,14 @@ public class ImportPanel extends JPanel {
 		removeButton.setText(Internal.I18N.getString("import.button.remove"));
 		importButton.setText(Internal.I18N.getString("import.button.import"));
 		validateButton.setText(Internal.I18N.getString("import.button.validate"));
-		((TitledBorder)workspacePanel.getBorder()).setTitle(Internal.I18N.getString("common.border.versioning"));
-		row2_1.setText(Internal.I18N.getString("common.label.workspace"));
+//		((TitledBorder)workspacePanel.getBorder()).setTitle(Internal.I18N.getString("common.border.versioning"));
+//		row2_1.setText(Internal.I18N.getString("common.label.workspace"));
 
 		filterPanel.doTranslation();
 	}
 
 	public void loadSettings() {
-		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getImportWorkspace().getName());
+//		workspaceText.setText(config.getProject().getDatabase().getWorkspaces().getImportWorkspace().getName());
 		filterPanel.loadSettings();
 	}
 
@@ -261,12 +262,12 @@ public class ImportPanel extends JPanel {
 
 		config.getInternal().setImportFiles(importFiles);		
 
-		String workspace = workspaceText.getText().trim();
-		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
-				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
-			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
-
-		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText());
+//		String workspace = workspaceText.getText().trim();
+//		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
+//				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
+//			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
+//
+//		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText());
 		filterPanel.setSettings();
 	}
 

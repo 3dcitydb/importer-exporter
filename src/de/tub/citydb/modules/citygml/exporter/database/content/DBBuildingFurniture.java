@@ -80,7 +80,7 @@ public class DBBuildingFurniture implements DBExporter {
 			
 			psBuildingFurniture = connection.prepareStatement("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
 					"ROOM_ID, LOD4_GEOMETRY_ID, LOD4_IMPLICIT_REP_ID, " +
-					"geodb_util.transform_or_null(LOD4_IMPLICIT_REF_POINT, " + srid + ") AS LOD4_IMPLICIT_REF_POINT, " +
+					"geodb_pkg.util_transform_or_null(LOD4_IMPLICIT_REF_POINT, " + srid + ") AS LOD4_IMPLICIT_REF_POINT, " +
 			"LOD4_IMPLICIT_TRANSFORMATION from BUILDING_FURNITURE where ROOM_ID = ?");
 		}
 

@@ -81,10 +81,10 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 		connection.setAutoCommit(false);
 
 		// try and change workspace for the connection if needed
-		Database database = config.getProject().getDatabase();
-		dbConnectionPool.gotoWorkspace(
-				connection, 
-				database.getWorkspaces().getExportWorkspace());
+//		Database database = config.getProject().getDatabase();
+//		dbConnectionPool.gotoWorkspace(
+//				connection, 
+//				database.getWorkspaces().getExportWorkspace());
 		
 		xlinkExporterManager = new DBXlinkExporterManager(connection, config, eventDispatcher);
 	}

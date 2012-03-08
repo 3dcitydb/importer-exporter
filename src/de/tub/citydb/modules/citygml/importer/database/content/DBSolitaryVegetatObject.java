@@ -34,16 +34,13 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -60,7 +57,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBStGeometry stGeometry;
 	
 	private boolean affineTransformation;
 	private int batchCounter;
@@ -87,11 +84,11 @@ public class DBSolitaryVegetatObject implements DBImporter {
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		implicitGeometryImporter = (DBImplicitGeometry)dbImporterManager.getDBImporter(DBImporterEnum.IMPLICIT_GEOMETRY);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		stGeometry = (DBStGeometry)dbImporterManager.getDBImporter(DBImporterEnum.ST_GEOMETRY);
 	}
 
 	public long insert(SolitaryVegetationObject solVegObject) throws SQLException {
-		long solVegObjectId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long solVegObjectId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (solVegObjectId != 0)
@@ -247,7 +244,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 
 		for (int lod = 1; lod < 5; lod++) {
 			ImplicitRepresentationProperty implicit = null;
-			JGeometry pointGeom = null;
+			PGgeometry pointGeom = null;
 			String matrixString = null;
 			long implicitId = 0;
 
@@ -272,7 +269,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 
 					// reference Point
 					if (geometry.isSetReferencePoint())
-						pointGeom = sdoGeometry.getPoint(geometry.getReferencePoint());
+						pointGeom = stGeometry.getPoint(geometry.getReferencePoint());
 
 					// transformation matrix
 					if (geometry.isSetTransformationMatrix()) {
@@ -296,10 +293,9 @@ public class DBSolitaryVegetatObject implements DBImporter {
 					psSolitVegObject.setNull(15, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psSolitVegObject.setObject(19, obj);
+					psSolitVegObject.setObject(19, pointGeom);
 				} else
-					psSolitVegObject.setNull(19, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psSolitVegObject.setNull(19, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psSolitVegObject.setString(23, matrixString);
@@ -314,10 +310,9 @@ public class DBSolitaryVegetatObject implements DBImporter {
 					psSolitVegObject.setNull(16, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psSolitVegObject.setObject(20, obj);
+					psSolitVegObject.setObject(20, pointGeom);
 				} else
-					psSolitVegObject.setNull(20, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psSolitVegObject.setNull(20, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psSolitVegObject.setString(24, matrixString);
@@ -332,10 +327,9 @@ public class DBSolitaryVegetatObject implements DBImporter {
 					psSolitVegObject.setNull(17, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psSolitVegObject.setObject(21, obj);
+					psSolitVegObject.setObject(21, pointGeom);
 				} else
-					psSolitVegObject.setNull(21, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psSolitVegObject.setNull(21, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psSolitVegObject.setString(25, matrixString);
@@ -350,10 +344,9 @@ public class DBSolitaryVegetatObject implements DBImporter {
 					psSolitVegObject.setNull(18, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
-					psSolitVegObject.setObject(22, obj);
+					psSolitVegObject.setObject(22, pointGeom);
 				} else
-					psSolitVegObject.setNull(22, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psSolitVegObject.setNull(22, Types.OTHER, "ST_GEOMETRY");
 
 				if (matrixString != null)
 					psSolitVegObject.setString(26, matrixString);
@@ -365,7 +358,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
  		}
 
 		psSolitVegObject.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.SOLITARY_VEGETAT_OBJECT);
 		
 		return true;

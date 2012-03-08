@@ -35,9 +35,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
 import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
 import org.citygml4j.impl.citygml.relief.BreaklineReliefImpl;
@@ -73,6 +70,8 @@ import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
@@ -91,7 +90,7 @@ public class DBReliefFeature implements DBExporter {
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBStGeometry stGeometry;
 	private FeatureClassFilter featureClassFilter;
 
 	private boolean useXLink;
@@ -135,17 +134,17 @@ public class DBReliefFeature implements DBExporter {
 			
 			psReliefFeature = connection.prepareStatement("select rf.ID as RF_ID, rf.NAME as RF_NAME, rf.NAME_CODESPACE as RF_NAME_CODESPACE, rf.DESCRIPTION as RF_DESCRIPTION, rf.LOD as RF_LOD, " +
 					"rc.ID as RC_ID, rc.NAME as RC_NAME, rc.NAME_CODESPACE as RC_NAME_CODESPACE, rc.DESCRIPTION as RC_DESCRIPTION, rc.LOD as RC_LOD, " +
-					"geodb_util.transform_or_null(rc.EXTENT, " + srid + ") as RC_EXTENT, " +
+					"geodb_pkg.util_transform_or_null(rc.EXTENT, " + srid + ") as RC_EXTENT, " +
 					"tr.ID as TR_ID, tr.MAX_LENGTH as TR_MAX_LENGTH, " +
-					"geodb_util.transform_or_null(tr.STOP_LINES, " + srid + ") as TR_STOP_LINES, " +
-					"geodb_util.transform_or_null(tr.BREAK_LINES, " + srid + ") as TR_BREAK_LINES, " +
-					"geodb_util.transform_or_null(tr.CONTROL_POINTS, " + srid + ") as TR_CONTROL_POINTS, " +
+					"geodb_pkg.util_transform_or_null(tr.STOP_LINES, " + srid + ") as TR_STOP_LINES, " +
+					"geodb_pkg.util_transform_or_null(tr.BREAK_LINES, " + srid + ") as TR_BREAK_LINES, " +
+					"geodb_pkg.util_transform_or_null(tr.CONTROL_POINTS, " + srid + ") as TR_CONTROL_POINTS, " +
 					"tr.SURFACE_GEOMETRY_ID as TR_SURFACE_GEOMETRY_ID, " +
 					"mr.ID as MR_ID, " +
-					"geodb_util.transform_or_null(mr.RELIEF_POINTS, " + srid + ") AS MR_RELIEF_POINTS, " +
+					"geodb_pkg.util_transform_or_null(mr.RELIEF_POINTS, " + srid + ") AS MR_RELIEF_POINTS, " +
 					"br.ID as BR_ID, " +
-					"geodb_util.transform_or_null(br.RIDGE_OR_VALLEY_LINES, " + srid + ") as BR_RIDGE_OR_VALLEY_LINES, " +
-					"geodb_util.transform_or_null(br.BREAK_LINES, " + srid + ") as BR_BREAK_LINES " +
+					"geodb_pkg.util_transform_or_null(br.RIDGE_OR_VALLEY_LINES, " + srid + ") as BR_RIDGE_OR_VALLEY_LINES, " +
+					"geodb_pkg.util_transform_or_null(br.BREAK_LINES, " + srid + ") as BR_BREAK_LINES " +
 					"from RELIEF_FEATURE rf inner join RELIEF_FEAT_TO_REL_COMP rf2rc on rf2rc.RELIEF_FEATURE_ID=rf.ID inner join RELIEF_COMPONENT rc on rf2rc.RELIEF_COMPONENT_ID=rc.ID " +
 					"left join TIN_RELIEF tr on tr.ID=rc.ID " +
 					"left join MASSPOINT_RELIEF mr on mr.ID=rc.ID " +
@@ -154,7 +153,7 @@ public class DBReliefFeature implements DBExporter {
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
-		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);
+		stGeometry = (DBStGeometry)dbExporterManager.getDBExporter(DBExporterEnum.ST_GEOMETRY);
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
@@ -273,12 +272,12 @@ public class DBReliefFeature implements DBExporter {
 				else
 					reliefComponent.setLod(lod);
 
-				JGeometry extent = null;
-				STRUCT extentObj = (STRUCT)rs.getObject("RC_EXTENT");
-				if (!rs.wasNull() && extentObj != null) {
-					extent = JGeometry.load(extentObj);
+				Geometry extent = null;
+				PGgeometry pgExtent = (PGgeometry)rs.getObject("RC_EXTENT");
+				if (!rs.wasNull() && pgExtent != null) {
+					extent = pgExtent.getGeometry();
 
-					PolygonProperty polygonProperty = sdoGeometry.getPolygon(extent, false);
+					PolygonProperty polygonProperty = stGeometry.getPolygon(extent, false);
 					if (polygonProperty != null)
 						reliefComponent.setExtent(polygonProperty);
 				}
@@ -293,20 +292,20 @@ public class DBReliefFeature implements DBExporter {
 					if (rs.wasNull())
 						maxLength = null;
 
-					JGeometry stopLines, breakLines, controlPoints;
+					Geometry stopLines, breakLines, controlPoints;
 					stopLines = breakLines = controlPoints = null;
 
-					STRUCT stopLinesObj = (STRUCT)rs.getObject("TR_STOP_LINES");
-					if (!rs.wasNull() && stopLinesObj != null)
-						stopLines = JGeometry.load(stopLinesObj);
+					PGgeometry pgStopLines = (PGgeometry)rs.getObject("TR_STOP_LINES");
+					if (!rs.wasNull() && pgStopLines != null)
+						stopLines = pgStopLines.getGeometry();
 
-					STRUCT breakLinesObj = (STRUCT)rs.getObject("TR_BREAK_LINES");
-					if (!rs.wasNull() && breakLinesObj != null)
-						breakLines = JGeometry.load(breakLinesObj);
+					PGgeometry pgBreakLines = (PGgeometry)rs.getObject("TR_BREAK_LINES");
+					if (!rs.wasNull() && pgBreakLines != null)
+						breakLines = pgBreakLines.getGeometry();
 
-					STRUCT controlPointsObj = (STRUCT)rs.getObject("TR_CONTROL_POINTS");
-					if (!rs.wasNull() && controlPointsObj != null)
-						controlPoints = JGeometry.load(controlPointsObj);
+					PGgeometry pgControlPoints = (PGgeometry)rs.getObject("TR_CONTROL_POINTS");
+					if (!rs.wasNull() && pgControlPoints != null)
+						controlPoints = pgControlPoints.getGeometry();
 
 					long surfaceGeometryId = rs.getLong("TR_SURFACE_GEOMETRY_ID");
 
@@ -364,19 +363,19 @@ public class DBReliefFeature implements DBExporter {
 						}
 
 						if (stopLines != null) {
-							List<LineStringSegmentArrayProperty> arrayPropertyList = sdoGeometry.getListOfLineStringSegmentArrayProperty(stopLines, false);
+							List<LineStringSegmentArrayProperty> arrayPropertyList = stGeometry.getListOfLineStringSegmentArrayProperty(stopLines, false);
 							if (arrayPropertyList != null)
 								tin.setStopLines(arrayPropertyList);
 						}
 
 						if (breakLines != null) {
-							List<LineStringSegmentArrayProperty> arrayPropertyList = sdoGeometry.getListOfLineStringSegmentArrayProperty(breakLines, false);
+							List<LineStringSegmentArrayProperty> arrayPropertyList = stGeometry.getListOfLineStringSegmentArrayProperty(breakLines, false);
 							if (arrayPropertyList != null)
 								tin.setBreakLines(arrayPropertyList);
 						}
 
 						if (controlPoints != null) {
-							ControlPoint controlPoint = sdoGeometry.getControlPoint(controlPoints, false);
+							ControlPoint controlPoint = stGeometry.getControlPoint(controlPoints, false);
 							if (controlPoint != null)
 								tin.setControlPoint(controlPoint);
 						}
@@ -386,13 +385,13 @@ public class DBReliefFeature implements DBExporter {
 				else if (reliefComponent.getCityGMLClass() == CityGMLClass.MASSPOINT_RELIEF) {
 					MassPointRelief massPointRelief = (MassPointRelief)reliefComponent;
 
-					JGeometry reliefPoints = null;				
-					STRUCT reliefPointsObj = (STRUCT)rs.getObject("MR_RELIEF_POINTS");
-					if (!rs.wasNull() && reliefPointsObj != null)
-						reliefPoints = JGeometry.load(reliefPointsObj);
+					Geometry reliefPoints = null;				
+					PGgeometry pgReliefPoints = (PGgeometry)rs.getObject("MR_RELIEF_POINTS");
+					if (!rs.wasNull() && pgReliefPoints != null)
+						reliefPoints = pgReliefPoints.getGeometry();
 
 					if (reliefPoints != null) {
-						MultiPointProperty multiPointProperty = sdoGeometry.getMultiPointProperty(reliefPoints, false);
+						MultiPointProperty multiPointProperty = stGeometry.getMultiPointProperty(reliefPoints, false);
 						if (multiPointProperty != null)
 							massPointRelief.setReliefPoints(multiPointProperty);
 					}
@@ -401,25 +400,25 @@ public class DBReliefFeature implements DBExporter {
 				else if (reliefComponent.getCityGMLClass() == CityGMLClass.BREAKLINE_RELIEF) {
 					BreaklineRelief breaklineRelief = (BreaklineRelief)reliefComponent;
 
-					JGeometry ridgeOrValleyLines, breakLines;
+					Geometry ridgeOrValleyLines, breakLines;
 					ridgeOrValleyLines = breakLines = null;
 
-					STRUCT ridgeOrValleyLinesObj = (STRUCT)rs.getObject("BR_RIDGE_OR_VALLEY_LINES");
-					if (!rs.wasNull() && ridgeOrValleyLinesObj != null)
-						ridgeOrValleyLines = JGeometry.load(ridgeOrValleyLinesObj);
+					PGgeometry pgRidgeOrValleyLines = (PGgeometry)rs.getObject("BR_RIDGE_OR_VALLEY_LINES");
+					if (!rs.wasNull() && pgRidgeOrValleyLines != null)
+						ridgeOrValleyLines = pgRidgeOrValleyLines.getGeometry();
 
-					STRUCT breakLinesObj = (STRUCT)rs.getObject("BR_BREAK_LINES");
-					if (!rs.wasNull() && breakLinesObj != null)
-						breakLines = JGeometry.load(breakLinesObj);
+					PGgeometry pgBreakLines = (PGgeometry)rs.getObject("BR_BREAK_LINES");
+					if (!rs.wasNull() && pgBreakLines != null)
+						breakLines = pgBreakLines.getGeometry();
 
 					if (ridgeOrValleyLines != null) {
-						MultiCurveProperty multiCurveProperty = sdoGeometry.getMultiCurveProperty(ridgeOrValleyLines, false);
+						MultiCurveProperty multiCurveProperty = stGeometry.getMultiCurveProperty(ridgeOrValleyLines, false);
 						if (multiCurveProperty != null)					
 							breaklineRelief.setRidgeOrValleyLines(multiCurveProperty);
 					}
 
 					if (breakLines != null) {
-						MultiCurveProperty multiCurveProperty = sdoGeometry.getMultiCurveProperty(breakLines, false);
+						MultiCurveProperty multiCurveProperty = stGeometry.getMultiCurveProperty(breakLines, false);
 						if (multiCurveProperty != null)					
 							breaklineRelief.setBreaklines(multiCurveProperty);
 					}

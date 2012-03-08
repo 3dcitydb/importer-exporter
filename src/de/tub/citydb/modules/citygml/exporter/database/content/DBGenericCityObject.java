@@ -36,9 +36,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.impl.citygml.core.ImplicitRepresentationPropertyImpl;
 import org.citygml4j.impl.citygml.generics.GenericCityObjectImpl;
 import org.citygml4j.impl.gml.base.StringOrRefImpl;
@@ -52,6 +49,8 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.modules.common.filter.ExportFilter;
@@ -68,7 +67,7 @@ public class DBGenericCityObject implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 	private DBImplicitGeometry implicitGeometryExporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBStGeometry stGeometry;
 	private FeatureClassFilter featureClassFilter;
 
 	private boolean transformCoords;
@@ -91,25 +90,25 @@ public class DBGenericCityObject implements DBExporter {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			
 			psGenericCityObject = connection.prepareStatement("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
-					"geodb_util.transform_or_null(LOD0_TERRAIN_INTERSECTION, " + srid + ") AS LOD0_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(LOD1_TERRAIN_INTERSECTION, " + srid + ") AS LOD1_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(LOD2_TERRAIN_INTERSECTION, " + srid + ") AS LOD2_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(LOD3_TERRAIN_INTERSECTION, " + srid + ") AS LOD3_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(LOD4_TERRAIN_INTERSECTION, " + srid + ") AS LOD4_TERRAIN_INTERSECTION, " +
+					"geodb_pkg.util_transform_or_null(LOD0_TERRAIN_INTERSECTION, " + srid + ") AS LOD0_TERRAIN_INTERSECTION, " +
+					"geodb_pkg.util_transform_or_null(LOD1_TERRAIN_INTERSECTION, " + srid + ") AS LOD1_TERRAIN_INTERSECTION, " +
+					"geodb_pkg.util_transform_or_null(LOD2_TERRAIN_INTERSECTION, " + srid + ") AS LOD2_TERRAIN_INTERSECTION, " +
+					"geodb_pkg.util_transform_or_null(LOD3_TERRAIN_INTERSECTION, " + srid + ") AS LOD3_TERRAIN_INTERSECTION, " +
+					"geodb_pkg.util_transform_or_null(LOD4_TERRAIN_INTERSECTION, " + srid + ") AS LOD4_TERRAIN_INTERSECTION, " +
 					"LOD0_GEOMETRY_ID, LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, " +
 					"LOD0_IMPLICIT_REP_ID, LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID," +
-					"geodb_util.transform_or_null(LOD0_IMPLICIT_REF_POINT, " + srid + ") AS LOD0_IMPLICIT_REF_POINT, " +
-					"geodb_util.transform_or_null(LOD1_IMPLICIT_REF_POINT, " + srid + ") AS LOD1_IMPLICIT_REF_POINT, " +
-					"geodb_util.transform_or_null(LOD2_IMPLICIT_REF_POINT, " + srid + ") AS LOD2_IMPLICIT_REF_POINT, " +
-					"geodb_util.transform_or_null(LOD3_IMPLICIT_REF_POINT, " + srid + ") AS LOD3_IMPLICIT_REF_POINT, " +
-					"geodb_util.transform_or_null(LOD4_IMPLICIT_REF_POINT, " + srid + ") AS LOD4_IMPLICIT_REF_POINT, " +
+					"geodb_pkg.util_transform_or_null(LOD0_IMPLICIT_REF_POINT, " + srid + ") AS LOD0_IMPLICIT_REF_POINT, " +
+					"geodb_pkg.util_transform_or_null(LOD1_IMPLICIT_REF_POINT, " + srid + ") AS LOD1_IMPLICIT_REF_POINT, " +
+					"geodb_pkg.util_transform_or_null(LOD2_IMPLICIT_REF_POINT, " + srid + ") AS LOD2_IMPLICIT_REF_POINT, " +
+					"geodb_pkg.util_transform_or_null(LOD3_IMPLICIT_REF_POINT, " + srid + ") AS LOD3_IMPLICIT_REF_POINT, " +
+					"geodb_pkg.util_transform_or_null(LOD4_IMPLICIT_REF_POINT, " + srid + ") AS LOD4_IMPLICIT_REF_POINT, " +
 			"LOD0_IMPLICIT_TRANSFORMATION, LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION from GENERIC_CITYOBJECT where ID = ?");					
 		}
 		
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 		implicitGeometryExporter = (DBImplicitGeometry)dbExporterManager.getDBExporter(DBExporterEnum.IMPLICIT_GEOMETRY);
-		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);
+		stGeometry = (DBStGeometry)dbExporterManager.getDBExporter(DBExporterEnum.ST_GEOMETRY);
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
@@ -200,10 +199,10 @@ public class DBGenericCityObject implements DBExporter {
 					if (rs.wasNull())
 						continue;
 
-					JGeometry referencePoint = null;
-					STRUCT struct = (STRUCT)rs.getObject("LOD" + lod +"_IMPLICIT_REF_POINT");
-					if (!rs.wasNull() && struct != null)
-						referencePoint = JGeometry.load(struct);
+					Geometry referencePoint = null;
+					PGgeometry pgReferencePoint = (PGgeometry)rs.getObject("LOD" + lod +"_IMPLICIT_REF_POINT");
+					if (!rs.wasNull() && pgReferencePoint != null)
+						referencePoint = pgReferencePoint.getGeometry();
 
 					String transformationMatrix = rs.getString("LOD" + lod + "_IMPLICIT_TRANSFORMATION");
 
@@ -234,14 +233,14 @@ public class DBGenericCityObject implements DBExporter {
 
 				// lodXTerrainIntersection
 				for (int lod = 0; lod < 5; lod++) {
-					JGeometry terrainIntersection = null;
-					STRUCT terrainIntersectionObj = (STRUCT)rs.getObject("LOD" + lod + "_TERRAIN_INTERSECTION");
+					Geometry terrainIntersection = null;
+					PGgeometry pgTerrainIntersection = (PGgeometry)rs.getObject("LOD" + lod + "_TERRAIN_INTERSECTION");
 
-					if (!rs.wasNull() && terrainIntersectionObj != null) {
-						terrainIntersection = JGeometry.load(terrainIntersectionObj);
+					if (!rs.wasNull() && pgTerrainIntersection != null) {
+						terrainIntersection = pgTerrainIntersection.getGeometry();
 
 						if (terrainIntersection != null) {
-							MultiCurveProperty multiCurveProperty = sdoGeometry.getMultiCurveProperty(terrainIntersection, false);
+							MultiCurveProperty multiCurveProperty = stGeometry.getMultiCurveProperty(terrainIntersection, false);
 							if (multiCurveProperty != null) {
 								switch (lod) {
 								case 0:

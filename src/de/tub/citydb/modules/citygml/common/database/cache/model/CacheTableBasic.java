@@ -51,9 +51,9 @@ public class CacheTableBasic extends CacheTableModel {
 
 	@Override
 	protected String getColumns() {
-		return "(ID NUMBER, FROM_TABLE NUMBER(3), " +
-				"GMLID VARCHAR2(256), " +
-				"TO_TABLE NUMBER(3), " +
+		return "(ID INTEGER, FROM_TABLE NUMERIC(3), " +
+				"GMLID VARCHAR(256), " +
+				"TO_TABLE NUMERIC(3), " +
 				"ATTRNAME VARCHAR(50))";
 	}
 

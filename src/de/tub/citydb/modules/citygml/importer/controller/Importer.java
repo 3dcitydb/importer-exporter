@@ -61,7 +61,6 @@ import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.AffineTransformation;
 import de.tub.citydb.config.project.importer.ImportGmlId;
 import de.tub.citydb.config.project.importer.Index;
@@ -175,17 +174,17 @@ public class Importer implements EventHandler {
 		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdLookupServerBatchValue();
 
 		// checking workspace... this should be improved in future...
-		Workspace workspace = database.getWorkspaces().getImportWorkspace();
-		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.existsWorkspace(workspace);
-
-			if (!workspaceExists) {
-				LOG.error("Database workspace '" + workspace.getName().trim() + "' is not available.");
-				return false;
-			} else {
-				LOG.info("Switching to database workspace '" + workspace.getName().trim() + "'.");
-			}
-		}
+//		Workspace workspace = database.getWorkspaces().getImportWorkspace();
+//		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
+//			boolean workspaceExists = dbPool.existsWorkspace(workspace);
+//
+//			if (!workspaceExists) {
+//				LOG.error("Database workspace '" + workspace.getName().trim() + "' is not available.");
+//				return false;
+//			} else {
+//				LOG.info("Switching to database workspace '" + workspace.getName().trim() + "'.");
+//			}
+//		}
 
 		// deactivate database indexes
 		if (shouldRun && (index.isSpatialIndexModeDeactivate() || index.isSpatialIndexModeDeactivateActivate() ||

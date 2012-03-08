@@ -60,7 +60,7 @@ public class DBXlinkImporterGroupToCityObject implements DBXlinkImporter {
 		psXlink.setString(4, xlinkEntry.getRole());
 
 		psXlink.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			executeBatch();
 
 		return true;

@@ -65,7 +65,7 @@ public enum DBImporterEnum {
 	APPEARANCE(CITYOBJECT, DEPRECATED_MATERIAL_MODEL),
 	SURFACE_DATA(),
 	APPEAR_TO_SURFACE_DATA(APPEARANCE, SURFACE_DATA),	
-	SDO_GEOMETRY();
+	ST_GEOMETRY();
 
 	private DBImporterEnum[] dependencies;
 	public static List<DBImporterEnum> EXECUTION_PLAN = getExecutionPlan();

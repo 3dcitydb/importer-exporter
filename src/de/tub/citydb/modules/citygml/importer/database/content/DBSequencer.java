@@ -50,7 +50,8 @@ public class DBSequencer {
 
 		PreparedStatement pstsmt = psIdMap.get(sequence);
 		if (pstsmt == null) {
-			pstsmt = conn.prepareStatement("select " + sequence.toString() + ".nextval from dual");
+			pstsmt = conn.prepareStatement("select nextval('" + sequence.toString() + "')");
+//			pstsmt = conn.prepareStatement("select " + sequence.toString() + ".nextval from dual");
 			psIdMap.put(sequence, pstsmt);
 		}
 

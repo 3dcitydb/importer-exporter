@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.jdbc.OraclePreparedStatement;
+import java.sql.PreparedStatement;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
@@ -81,7 +81,7 @@ public class DBExportCache implements DBCacheModel {
 			psLookupDbIds[i] = conn.prepareStatement("select GMLID, TYPE from " + tableName + " where ID=?");
 			psLookupGmlIds[i] = conn.prepareStatement("select ID, ROOT_ID, REVERSE, MAPPING, TYPE from " + tableName + " where GMLID=?");
 			psDrains[i] = conn.prepareStatement("insert into " + tableName + " (GMLID, ID, ROOT_ID, REVERSE, MAPPING, TYPE) values (?, ?, ?, ?, ?, ?)");
-			((OraclePreparedStatement)psDrains[i]).setExecuteBatch(batchSize);
+//			((OraclePreparedStatement)psDrains[i]).setExecuteBatch(batchSize);
 		}
 	}
 
@@ -142,7 +142,8 @@ public class DBExportCache implements DBCacheModel {
 		// finally send batches
 		for (PreparedStatement psDrain : psDrains) 
 			if (psDrain != null)
-				((OraclePreparedStatement)psDrain).sendBatch();
+				psDrain.executeBatch();
+//				((OraclePreparedStatement)psDrain).sendBatch();
 	}
 
 	@Override

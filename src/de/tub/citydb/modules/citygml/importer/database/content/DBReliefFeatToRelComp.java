@@ -59,7 +59,7 @@ public class DBReliefFeatToRelComp implements DBImporter {
 		psReliefFeatToRelComp.setLong(2, reliefFeatureId);
 
 		psReliefFeatToRelComp.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.RELIEF_FEAT_TO_REL_COMP);
 	}
 	

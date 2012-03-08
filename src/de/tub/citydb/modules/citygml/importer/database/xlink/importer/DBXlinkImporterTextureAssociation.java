@@ -59,7 +59,7 @@ public class DBXlinkImporterTextureAssociation implements DBXlinkImporter {
 		psXlink.setString(3, xlinkEntry.getGmlId());
 
 		psXlink.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			executeBatch();
 
 		return true;

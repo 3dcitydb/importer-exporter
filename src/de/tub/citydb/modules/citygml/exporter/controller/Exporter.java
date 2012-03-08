@@ -68,7 +68,6 @@ import de.tub.citydb.api.gui.BoundingBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.exporter.ExportAppearance;
 import de.tub.citydb.config.project.filter.TileNameSuffixMode;
 import de.tub.citydb.config.project.filter.TileSuffixMode;
@@ -162,21 +161,21 @@ public class Exporter implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		// checking workspace... this should be improved in future...
-		Workspace workspace = database.getWorkspaces().getExportWorkspace();
-		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.existsWorkspace(workspace);
-
-			String name = "'" + workspace.getName().trim() + "'";
-			String timestamp = workspace.getTimestamp().trim();
-			if (timestamp.trim().length() > 0)
-				name += " at timestamp " + timestamp;
-
-			if (!workspaceExists) {
-				LOG.error("Database workspace " + name + " is not available.");
-				return false;
-			} else 
-				LOG.info("Switching to database workspace " + name + '.');
-		}
+//		Workspace workspace = database.getWorkspaces().getExportWorkspace();
+//		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
+//			boolean workspaceExists = dbPool.existsWorkspace(workspace);
+//
+//			String name = "'" + workspace.getName().trim() + "'";
+//			String timestamp = workspace.getTimestamp().trim();
+//			if (timestamp.trim().length() > 0)
+//				name += " at timestamp " + timestamp;
+//
+//			if (!workspaceExists) {
+//				LOG.error("Database workspace " + name + " is not available.");
+//				return false;
+//			} else 
+//				LOG.info("Switching to database workspace " + name + '.');
+//		}
 
 		// set module context according to CityGML version and create SAX writer
 		CityGMLVersion version = config.getProject().getExporter().getCityGMLVersion().toCityGMLVersion();
@@ -230,15 +229,15 @@ public class Exporter implements EventHandler {
 		internalConfig.setTransformCoordinates(targetSRS.isSupported() && 
 				targetSRS.getSrid() != dbPool.getActiveConnectionMetaData().getReferenceSystem().getSrid());
 
-		if (internalConfig.isTransformCoordinates()) {
-			if (targetSRS.is3D() == dbPool.getActiveConnectionMetaData().getReferenceSystem().is3D()) {
-				LOG.info("Transforming geometry representation to reference system '" + targetSRS.getDescription() + "' (SRID: " + targetSRS.getSrid() + ").");
-				LOG.warn("Transformation is NOT applied to height reference system.");
-			} else {
-				LOG.error("Dimensionality of reference system for geometry transformation does not match.");
-				return false;
-			}
-		}
+//		if (internalConfig.isTransformCoordinates()) {
+//			if (targetSRS.is3D() == dbPool.getActiveConnection().getMetaData().getReferenceSystem().is3D()) {
+//				LOG.info("Transforming geometry representation to reference system '" + targetSRS.getDescription() + "' (SRID: " + targetSRS.getSrid() + ").");
+//				LOG.warn("Transformation is NOT applied to height reference system.");
+//			} else {
+//				LOG.error("Dimensionality of reference system for geometry transformation does not match.");
+//				return false;
+//			}
+//		}
 
 		// log index status
 		try {

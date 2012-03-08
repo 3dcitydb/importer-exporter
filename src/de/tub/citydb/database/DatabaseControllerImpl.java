@@ -13,7 +13,6 @@ import de.tub.citydb.api.database.DatabaseMetaData;
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.DBConnection;
-import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.modules.kml.database.BalloonTemplateFactoryImpl;
 import de.tub.citydb.util.database.DBUtil;
 
@@ -87,20 +86,20 @@ public class DatabaseControllerImpl implements DatabaseController {
 		return DBUtil.isIndexed(tableName, columnName);
 	}
 
-	@Override
-	public boolean existsWorkspace(String workspaceName) {
-		return dbPool.existsWorkspace(new Workspace(workspaceName));
-	}
-
-	@Override
-	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) throws SQLException {
-		return dbPool.gotoWorkspace(conn, new Workspace(workspaceName, timestamp));
-	}
-
-	@Override
-	public boolean gotoWorkspace(Connection conn, String workspaceName) throws SQLException {
-		return gotoWorkspace(conn, workspaceName, null);
-	}
+//	@Override
+//	public boolean existsWorkspace(String workspaceName) {
+//		return dbPool.existsWorkspace(new Workspace(workspaceName));
+//	}
+//
+//	@Override
+//	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) throws SQLException {
+//		return dbPool.gotoWorkspace(conn, new Workspace(workspaceName, timestamp));
+//	}
+//
+//	@Override
+//	public boolean gotoWorkspace(Connection conn, String workspaceName) throws SQLException {
+//		return gotoWorkspace(conn, workspaceName, null);
+//	}
 
 	@Override
 	public DatabaseConnectionDetails getActiveConnectionDetails() {

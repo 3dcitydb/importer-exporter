@@ -548,7 +548,7 @@ public class ImpExp {
 
 			return;
 		}
-
+/*
 		if (kmlExportFile != null) {
 			config.getInternal().setExportFileName(kmlExportFile);
 
@@ -561,7 +561,7 @@ public class ImpExp {
 			}.start();
 
 			return;
-		}
+		}*/
 	}
 
 	private void printInfoMessage(String message) {

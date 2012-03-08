@@ -59,7 +59,7 @@ public class DBWaterBodToWaterBndSrf implements DBImporter {
 		psWaterBodToWaterBndSrf.setLong(2, waterBodyId);
 
 		psWaterBodToWaterBndSrf.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.WATERBOD_TO_WATERBND_SRF);
 	}
 

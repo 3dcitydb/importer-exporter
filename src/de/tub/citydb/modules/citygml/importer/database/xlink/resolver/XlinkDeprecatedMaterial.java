@@ -70,7 +70,7 @@ public class XlinkDeprecatedMaterial implements DBXlinkResolver {
 		if (surfaceDataEntry == null || surfaceDataEntry.getId() == -1)
 			return false;
 
-		long newSurfaceDataId = resolverManager.getDBId(DBSequencerEnum.SURFACE_DATA_SEQ);
+		long newSurfaceDataId = resolverManager.getDBId(DBSequencerEnum.SURFACE_DATA_ID_SEQ);
 
 		psSurfaceData.setLong(1, newSurfaceDataId);
 		psSurfaceData.setLong(2, surfaceDataEntry.getId());
@@ -81,7 +81,7 @@ public class XlinkDeprecatedMaterial implements DBXlinkResolver {
 		psTextureParam.setLong(3, surfaceDataEntry.getId());
 		psTextureParam.addBatch();
 		
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			executeBatch();
 
 		return true;

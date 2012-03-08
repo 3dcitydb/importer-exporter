@@ -37,9 +37,6 @@ import java.sql.SQLException;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Point;
 import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
 import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
@@ -62,6 +59,8 @@ import org.citygml4j.model.citygml.generics.StringAttribute;
 import org.citygml4j.model.citygml.generics.UriAttribute;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.api.gui.BoundingBox;
 import de.tub.citydb.config.Config;
@@ -128,7 +127,7 @@ public class DBCityObject implements DBExporter {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 
 			psCityObject = connection.prepareStatement("select co.GMLID, " +
-					"geodb_util.transform_or_null(co.ENVELOPE, " + srid + ") AS ENVELOPE, " +
+					"geodb_pkg.util_transform_or_null(co.ENVELOPE, " + srid + ") AS ENVELOPE, " +
 					"co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
 					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
 					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
@@ -158,23 +157,23 @@ public class DBCityObject implements DBExporter {
 				genericAttributeSet.clear();
 
 				// boundedBy
-				STRUCT struct = (STRUCT)rs.getObject("ENVELOPE");
-				if (!rs.wasNull() && struct != null) {
-					JGeometry jGeom = JGeometry.load(struct);
-					double[] points = jGeom.getMBR();
+				PGgeometry pgGeom = (PGgeometry)rs.getObject("ENVELOPE");
+				if (!rs.wasNull() && pgGeom != null) {
+					Geometry geom = pgGeom.getGeometry();
+//					double[] points = geom.getMBR();
 					
 					Envelope env = new EnvelopeImpl();
 					Point lower = null;
 					Point upper = null;
-
-					if (jGeom.getDimensions() == 2) {
-						lower = new Point(points[0], points[1], 0);
-						upper = new Point(points[2], points[3], 0);
-					} else {					
-						lower = new Point(points[0], points[1], points[2]);
-						upper = new Point(points[3], points[4], points[5]);
-					}
-
+					
+					if (geom.getDimension() == 2) {
+						lower = new Point(geom.getFirstPoint().x, geom.getFirstPoint().y, 0);
+						upper = new Point(geom.getPoint(2).x, geom.getPoint(2).y, 0);
+					} else {
+						lower = new Point(geom.getFirstPoint().x, geom.getFirstPoint().y, geom.getFirstPoint().z);
+						upper = new Point(geom.getPoint(2).x, geom.getPoint(2).y, geom.getPoint(2).z);	
+					}				
+					
 					env.setLowerCorner(lower);
 					env.setUpperCorner(upper);
 					env.setSrsDimension(3);

@@ -36,10 +36,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.XalAddressProperty;
 import org.citygml4j.model.xal.AddressDetails;
@@ -53,6 +49,7 @@ import org.citygml4j.model.xal.PostalCodeNumber;
 import org.citygml4j.model.xal.Thoroughfare;
 import org.citygml4j.model.xal.ThoroughfareName;
 import org.citygml4j.model.xal.ThoroughfareNumberOrRange;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.util.Util;
@@ -90,7 +87,7 @@ public class DBAddress implements DBImporter {
 
 	private PreparedStatement psAddress;
 	private DBAddressToBuilding addressToBuildingImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBStGeometry stGeometry;
 	private int batchCounter;
 
 	public DBAddress(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
@@ -105,7 +102,7 @@ public class DBAddress implements DBImporter {
 				"(?, ?, ?, ?, ?, ?, ?, ?)");
 
 		addressToBuildingImporter = (DBAddressToBuilding)dbImporterManager.getDBImporter(DBImporterEnum.ADDRESS_TO_BUILDING);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		stGeometry = (DBStGeometry)dbImporterManager.getDBImporter(DBImporterEnum.ST_GEOMETRY);
 	}
 
 	public long insert(Address address) throws SQLException {
@@ -116,7 +113,7 @@ public class DBAddress implements DBImporter {
 		AddressDetails addressDetails = xalAddressProperty.getAddressDetails();
 
 		// ok, let's start
-		long addressId = dbImporterManager.getDBId(DBSequencerEnum.ADDRESS_SEQ);
+		long addressId = dbImporterManager.getDBId(DBSequencerEnum.ADDRESS_ID_SEQ);
 		if (addressId == 0)
 			return 0;
 
@@ -129,7 +126,7 @@ public class DBAddress implements DBImporter {
 			// this is the information we need...
 			String streetAttr, houseNoAttr, poBoxAttr, zipCodeAttr, cityAttr, countryAttr;
 			streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = null;
-			JGeometry multiPoint = null;
+			PGgeometry multiPoint = null;
 			Country country = addressDetails.getCountry();
 
 			// country name
@@ -217,8 +214,8 @@ public class DBAddress implements DBImporter {
 
 			// multiPoint geometry
 			if (address.isSetMultiPoint())
-				multiPoint = sdoGeometry.getMultiPoint(address.getMultiPoint());
-
+				multiPoint = stGeometry.getMultiPoint(address.getMultiPoint());
+			
 			psAddress.setLong(1, addressId);
 			psAddress.setString(2, streetAttr);
 			psAddress.setString(3, houseNoAttr);
@@ -228,13 +225,12 @@ public class DBAddress implements DBImporter {
 			psAddress.setString(7, countryAttr);
 
 			if (multiPoint != null) {
-				STRUCT multiPointObj = SyncJGeometry.syncStore(multiPoint, batchConn);
-				psAddress.setObject(8, multiPointObj);
+				psAddress.setObject(8, multiPoint);
 			} else
-				psAddress.setNull(8, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+				psAddress.setNull(8, Types.OTHER, "ST_GEOMETRY");
 
 			psAddress.addBatch();
-			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 				dbImporterManager.executeBatch(DBImporterEnum.ADDRESS);
 
 			// enable xlinks

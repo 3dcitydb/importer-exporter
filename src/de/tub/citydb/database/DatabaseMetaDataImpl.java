@@ -114,10 +114,10 @@ public class DatabaseMetaDataImpl implements DatabaseMetaData {
 		this.srs = srs;
 	}
 
-	@Override
-	public boolean isVersionEnabled() {
-		return versioning == Versioning.ON;
-	}
+//	@Override
+//	public boolean isVersionEnabled() {
+//		return versioning == Versioning.ON;
+//	}
 
 	public Versioning getVersioning() {
 		return versioning;

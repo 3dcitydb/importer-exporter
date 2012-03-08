@@ -72,8 +72,8 @@ public class CacheTableLinearRing extends CacheTableModel {
 	
 	@Override
 	protected String getColumns() {
-		return "(GMLID VARCHAR2(256), " +
-		"PARENT_GMLID VARCHAR2(256), " +
-		"RING_NO NUMBER)"; 
+		return "(GMLID VARCHAR(256), " +
+		"PARENT_GMLID VARCHAR(256), " +
+		"RING_NO NUMERIC)"; 
 	}
 }

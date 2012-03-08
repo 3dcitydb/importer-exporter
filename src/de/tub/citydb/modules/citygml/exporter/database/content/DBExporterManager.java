@@ -187,8 +187,8 @@ public class DBExporterManager {
 			case GENERALIZATION:
 				dbExporter = new DBGeneralization(connection, exportFilter, config);
 				break;
-			case SDO_GEOMETRY:
-				dbExporter = new DBSdoGeometry(config);
+			case ST_GEOMETRY:
+				dbExporter = new DBStGeometry(config);
 				break;
 			}
 

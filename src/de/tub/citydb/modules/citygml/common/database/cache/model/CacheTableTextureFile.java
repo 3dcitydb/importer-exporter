@@ -51,8 +51,8 @@ public class CacheTableTextureFile extends CacheTableModel {
 	
 	@Override
 	protected String getColumns() {
-		return "(ID NUMBER, " +
-		"FILE_URI VARCHAR2(1000), " +
-		"TYPE NUMBER(3))";
+		return "(ID INTEGER, " +
+		"FILE_URI VARCHAR(1000), " +
+		"TYPE NUMERIC(3))";
 	}
 }

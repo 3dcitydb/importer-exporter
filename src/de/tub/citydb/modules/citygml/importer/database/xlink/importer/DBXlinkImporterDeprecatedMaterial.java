@@ -59,7 +59,7 @@ public class DBXlinkImporterDeprecatedMaterial implements DBXlinkImporter {
 		psXlink.setLong(3, xlinkEntry.getSurfaceGeometryId());
 
 		psXlink.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			executeBatch();
 
 		return true;

@@ -71,7 +71,7 @@ public class DBBuildingInstallation implements DBImporter {
 	}
 
 	public long insert(BuildingInstallation buildingInstallation, CityGMLClass parent, long parentId) throws SQLException {
-		long buildingInstallationId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long buildingInstallationId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (buildingInstallationId == 0)
 			return 0;
 
@@ -205,14 +205,14 @@ public class DBBuildingInstallation implements DBImporter {
 		}
 
 		psBuildingInstallation.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING_INSTALLATION);
 		
 		return buildingInstallationId;
 	}
 
 	public long insert(IntBuildingInstallation intBuildingInstallation, CityGMLClass parent, long parentId) throws SQLException {
-		long buildingInstallationId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long buildingInstallationId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (buildingInstallationId == 0)
 			return 0;
 
@@ -319,7 +319,7 @@ public class DBBuildingInstallation implements DBImporter {
 			psBuildingInstallation.setNull(13, 0);
 
 		psBuildingInstallation.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING_INSTALLATION);
 		
 		return buildingInstallationId;
