@@ -40,7 +40,7 @@ public class IndexStatusInfo {
 				String[] parts = indexInfo.split(":");
 
 				if (parts.length > 3) {
-					IndexInfoObject obj = new IndexInfoObject();				
+					IndexInfoObject obj = new IndexInfoObject();		
 
 					if (parts[0].equals("VALID"))
 						obj.status = IndexStatus.VALID;
@@ -59,7 +59,7 @@ public class IndexStatusInfo {
 						try {
 							obj.errorMessage = DBUtil.errorMessage(parts[4]);
 						} catch (SQLException e) {
-							obj.errorMessage = "ORA-" + parts[4];
+							obj.errorMessage = "PostgreSQL Error-Code: " + parts[4];
 						}
 					else
 						obj.errorMessage = "";

@@ -297,7 +297,8 @@ public class IndexOperation extends DatabaseOperationView {
 
 					if (indexStatus != null) {				
 						for (IndexInfoObject index : indexStatus.getIndexObjects()) {							
-							if (index.getStatus() != IndexStatus.DROPPED) {
+							if (index.getStatus() != IndexStatus.INVALID) {
+//							if (index.getStatus() != IndexStatus.DROPPED) {
 								LOG.error("FAILED: " + index.toString());
 								if (index.hasErrorMessage())
 								LOG.error("Error cause: " + index.getErrorMessage());

@@ -196,7 +196,8 @@ public class Importer implements EventHandler {
 
 					if (indexStatus != null) {				
 						for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
-							if (indexObj.getStatus() != IndexStatus.DROPPED) {
+							if (indexObj.getStatus() != IndexStatus.INVALID) {
+//							if (indexObj.getStatus() != IndexStatus.DROPPED) {
 								LOG.error("FAILED: " + indexObj.toString());
 								if (indexObj.hasErrorMessage())
 									LOG.error("Error cause: " + indexObj.getErrorMessage());
@@ -212,7 +213,8 @@ public class Importer implements EventHandler {
 
 					if (indexStatus != null) {				
 						for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
-							if (indexObj.getStatus() != IndexStatus.DROPPED) {
+							if (indexObj.getStatus() != IndexStatus.INVALID) {
+//							if (indexObj.getStatus() != IndexStatus.DROPPED) {
 								LOG.error("FAILED: " + indexObj.toString());
 								if (indexObj.hasErrorMessage())
 									LOG.error("Error cause: " + indexObj.getErrorMessage());

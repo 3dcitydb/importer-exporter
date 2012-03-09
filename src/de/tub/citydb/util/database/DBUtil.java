@@ -371,9 +371,11 @@ public class DBUtil {
 	private static IndexStatusInfo dropIndexes(IndexType type) throws SQLException {
 		Connection conn = null;
 
+		// switch index off (indIsValid = false)
 		String call = type == IndexType.SPATIAL ? 
 				"{? = call geodb_pkg.idx_switch_off_spatial_indexes()}" :
 					"{? = call geodb_pkg.idx_switch_off_normal_indexes()}";
+
 		// the hard way: drop the index
 //		String call = type == IndexType.SPATIAL ? 
 //				"{? = call geodb_pkg.idx_drop_spatial_indexes()}" :
