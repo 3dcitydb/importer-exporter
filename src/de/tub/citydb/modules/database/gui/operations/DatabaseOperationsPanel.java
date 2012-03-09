@@ -15,6 +15,10 @@ import javax.swing.event.ChangeListener;
 
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.controller.ViewController;
+import de.tub.citydb.api.event.Event;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -26,7 +30,7 @@ import de.tub.citydb.util.Util;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class DatabaseOperationsPanel extends JPanel {
+public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
 	private final Config config;
 	
@@ -45,6 +49,7 @@ public class DatabaseOperationsPanel extends JPanel {
 		this.config = config;
 		databaseController = ObjectRegistry.getInstance().getDatabaseController();
 		viewController = ObjectRegistry.getInstance().getViewController();
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
 		
 		init();
 	}
@@ -176,6 +181,13 @@ public class DatabaseOperationsPanel extends JPanel {
 		}
 
 		return workspace;
+	}
+
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent)event;
+		for (int i = 0; i < operations.length; ++i)
+			operations[i].handleDatabaseConnectionStateEvent(state);
 	}
 	
 }

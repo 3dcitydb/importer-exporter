@@ -20,6 +20,7 @@ import javax.swing.SwingUtilities;
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.controller.ViewController;
 import de.tub.citydb.api.database.DatabaseSrs;
+import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.gui.BoundingBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
@@ -255,6 +256,12 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	@Override
+	public void handleDatabaseConnectionStateEvent( DatabaseConnectionStateEvent event) {
+		if (event.wasConnected())
+			bboxPanel.clearBoundingBox();
 	}
 
 }
