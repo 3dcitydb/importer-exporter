@@ -116,7 +116,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 			fileURI = texturePath + File.separator + fileName;
 
 		File file = new File(fileURI);
-		if (file.exists() && !overwriteTextureImage)
+		if (!overwriteTextureImage && file.exists())
 			return false;
 
 		// try and read texture image attribute from surface_data table

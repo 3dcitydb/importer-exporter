@@ -54,7 +54,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
@@ -408,7 +407,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		LOG.error("Disabling " + proxy.getType().toString() + " proxy server settings in preferences.");
 	}
 
-	private final class DisabledListCellRenderer extends DefaultListCellRenderer implements ListCellRenderer { 
+	private final class DisabledListCellRenderer extends DefaultListCellRenderer { 
 		private boolean enable = true;
 		private int singleIndex = 0;
 
