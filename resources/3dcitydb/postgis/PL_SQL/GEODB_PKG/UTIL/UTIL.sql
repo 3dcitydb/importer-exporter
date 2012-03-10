@@ -181,8 +181,7 @@ LANGUAGE plpgsql IMMUTABLE;
 CREATE FUNCTION geodb_pkg.util_transform_or_null(geom GEOMETRY, srid INTEGER) RETURNS geometry AS $$
   BEGIN
     IF geom IS NOT NULL THEN
-      PERFORM ST_Transform(geom, srid);
-	  RETURN geom;
+      RETURN ST_Transform(geom, srid);
     ELSE
       RETURN NULL;
     END IF;

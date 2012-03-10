@@ -623,7 +623,7 @@ public class DBUtil {
 			int targetSrid = get2DSrid(targetSrs);
 			
 			conn = dbConnectionPool.getConnection();
-			psQuery = conn.prepareStatement("select ST_TRANSFORM(select ST_GeomFromText('POLYGON((? ?,? ?,? ?,? ?,? ?))'," + sourceSrid + ")," + targetSrid + ")");
+			psQuery = conn.prepareStatement("select ST_Transform(select ST_GeomFromText('POLYGON((? ?,? ?,? ?,? ?,? ?))'," + sourceSrid + ")," + targetSrid + ")");
 
 			psQuery.setDouble(1, bbox.getLowerLeftCorner().getX());
 			psQuery.setDouble(2, bbox.getLowerLeftCorner().getY());
