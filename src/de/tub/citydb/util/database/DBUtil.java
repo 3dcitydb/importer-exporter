@@ -52,6 +52,7 @@ import de.tub.citydb.api.gui.BoundingBoxCorner;
 import de.tub.citydb.config.project.general.FeatureClassMode;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.DatabaseMetaDataImpl;
+import de.tub.citydb.database.DatabaseMetaDataImpl.Versioning;
 import de.tub.citydb.util.Util;
 import de.tub.citydb.util.database.IndexStatusInfo.IndexType;
 
@@ -84,8 +85,7 @@ public class DBUtil {
 				srs.setDatabaseSrsName(rs.getString("COORD_REF_SYS_NAME"));
 				srs.setType(DatabaseSrsType.fromValue(rs.getString("COORD_REF_SYS_KIND")));
 				srs.setSupported(true);
-
-//				metaData.setVersioning(Versioning.valueOf(rs.getString("VERSIONING")));
+				metaData.setVersioning(Versioning.OFF);
 
 			} else
 				throw new SQLException("Failed to retrieve metadata information from database.");
@@ -372,14 +372,14 @@ public class DBUtil {
 		Connection conn = null;
 
 		// switch index off (indIsValid = false)
-		String call = type == IndexType.SPATIAL ? 
-				"{? = call geodb_pkg.idx_switch_off_spatial_indexes()}" :
-					"{? = call geodb_pkg.idx_switch_off_normal_indexes()}";
+		//String call = type == IndexType.SPATIAL ? 
+			//	"{? = call geodb_pkg.idx_switch_off_spatial_indexes()}" :
+				//	"{? = call geodb_pkg.idx_switch_off_normal_indexes()}";
 
 		// the hard way: drop the index
-//		String call = type == IndexType.SPATIAL ? 
-//				"{? = call geodb_pkg.idx_drop_spatial_indexes()}" :
-//					"{? = call geodb_pkg.idx_drop_normal_indexes()}";
+		String call = type == IndexType.SPATIAL ? 
+				"{? = call geodb_pkg.idx_drop_spatial_indexes()}" :
+					"{? = call geodb_pkg.idx_drop_normal_indexes()}";
 
 		try {
 			conn = dbConnectionPool.getConnection();
@@ -417,14 +417,14 @@ public class DBUtil {
 		Connection conn = null;
 
 		// switch index on (indIsValid = true)
-		String call = type == IndexType.SPATIAL ?
-				"{? = call geodb_pkg.idx_switch_on_spatial_indexes()}" :
-					"{? = call geodb_pkg.idx_switch_on_normal_indexes()}";
+//		String call = type == IndexType.SPATIAL ?
+//				"{? = call geodb_pkg.idx_switch_on_spatial_indexes()}" :
+//					"{? = call geodb_pkg.idx_switch_on_normal_indexes()}";
 		
 		// create the index again
-//		String call = type == IndexType.SPATIAL ? 
-//				"{? = call geodb_pkg.idx_create_spatial_indexes()}" :
-//					"{? = call geodb_pkg.idx_create_normal_indexes()}";
+		String call = type == IndexType.SPATIAL ? 
+				"{? = call geodb_pkg.idx_create_spatial_indexes()}" :
+					"{? = call geodb_pkg.idx_create_normal_indexes()}";
 
 		try {
 			conn = dbConnectionPool.getConnection();
@@ -614,7 +614,7 @@ public class DBUtil {
 
 	public static BoundingBox transformBBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
 		BoundingBox result = new BoundingBox(bbox);
-		PreparedStatement psQuery = null;
+		Statement query = null;
 		ResultSet rs = null;
 		Connection conn = null;
 
@@ -623,24 +623,15 @@ public class DBUtil {
 			int targetSrid = get2DSrid(targetSrs);
 			
 			conn = dbConnectionPool.getConnection();
-			psQuery = conn.prepareStatement("select ST_Transform(select ST_GeomFromText('POLYGON((? ?,? ?,? ?,? ?,? ?))'," + sourceSrid + ")," + targetSrid + ")");
+			query = conn.createStatement();
+			rs = query.executeQuery("select ST_TRANSFORM(ST_GeomFromText('POLYGON((" + 
+			bbox.getLowerLeftCorner().getX() + " " + bbox.getLowerLeftCorner().getY() + "," +
+			bbox.getUpperRightCorner().getX() + " " + bbox.getLowerLeftCorner().getY() + "," +
+			bbox.getUpperRightCorner().getX() + " " + bbox.getUpperRightCorner().getY() + "," +
+			bbox.getLowerLeftCorner().getX() + " " + bbox.getUpperRightCorner().getY() + "," +
+			bbox.getLowerLeftCorner().getX() + " " + bbox.getLowerLeftCorner().getY() +
+			"))'," + sourceSrid + ")," + targetSrid + ")");
 
-			psQuery.setDouble(1, bbox.getLowerLeftCorner().getX());
-			psQuery.setDouble(2, bbox.getLowerLeftCorner().getY());
-			
-			psQuery.setDouble(3, bbox.getUpperRightCorner().getX());
-			psQuery.setDouble(4, bbox.getLowerLeftCorner().getY());
-						
-			psQuery.setDouble(5, bbox.getUpperRightCorner().getX());
-			psQuery.setDouble(6, bbox.getUpperRightCorner().getY());
-	
-			psQuery.setDouble(7, bbox.getLowerLeftCorner().getX());
-			psQuery.setDouble(8, bbox.getUpperRightCorner().getY());
-			
-			psQuery.setDouble(9, bbox.getLowerLeftCorner().getX());
-			psQuery.setDouble(10, bbox.getLowerLeftCorner().getY());
-			
-			rs = psQuery.executeQuery();
 			if (rs.next()) {
 				PGgeometry pgGeom = (PGgeometry)rs.getObject(1);
 				if (!rs.wasNull() && pgGeom != null) {
@@ -664,14 +655,14 @@ public class DBUtil {
 				rs = null;
 			}
 
-			if (psQuery != null) {
+			if (query != null) {
 				try {
-					psQuery.close();
+					query.close();
 				} catch (SQLException sqlEx) {
 					throw sqlEx;
 				}
 
-				psQuery = null;
+				query = null;
 			}
 
 			if (conn != null) {
