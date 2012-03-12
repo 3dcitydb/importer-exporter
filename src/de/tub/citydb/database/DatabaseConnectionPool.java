@@ -189,6 +189,8 @@ public class DatabaseConnectionPool {
 
 		try {
 			connection = connectTask.get(LOGIN_TIMEOUT, TimeUnit.SECONDS);
+			connection.setAutoCommit(true);
+			
 			service.shutdown();
 		} catch (Exception e) {
 			service.shutdownNow();
@@ -207,7 +209,9 @@ public class DatabaseConnectionPool {
 		if (poolDataSource == null)
 			throw new SQLException("Database is not connected.");
 		
-		return poolDataSource.getConnection();
+		Connection conn = poolDataSource.getConnection();
+		conn.setAutoCommit(true);
+		return conn;
 	}
 
 	public UniversalConnectionPoolLifeCycleState getLifeCyleState() {

@@ -154,6 +154,7 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 		} finally {
 			if (connection != null) {
 				try {
+					connection.commit();
 					connection.close();
 				} catch (SQLException e) {
 					//

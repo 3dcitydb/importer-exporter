@@ -204,6 +204,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 		} finally {
 			if (connection != null) {
 				try {
+					connection.commit();
 					connection.close();
 				} catch (SQLException e) {
 					//
