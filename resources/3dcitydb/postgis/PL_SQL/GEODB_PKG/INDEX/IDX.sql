@@ -5,7 +5,7 @@
 -- Conversion:	Felix Kunde <felix-kunde@gmx.de>
 --
 -- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
---                             Technische Universität Berlin, Germany
+--                             Technische Universitaet Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -23,99 +23,96 @@
 -- Version | Date       | Description      | Author | Conversion
 -- 1.0.0     2012-03-09   release version    CNag	  FKun
 --
-
+    
 /*****************************************************************
 * TYPE INDEX_OBJ
 * 
 * global type to store information relevant to indexes
 ******************************************************************/
-
+DROP TYPE IF EXISTS geodb_pkg.INDEX_OBJ CASCADE;
 CREATE TYPE geodb_pkg.INDEX_OBJ AS (
-   index_name 				VARCHAR(100),
-   table_name 				VARCHAR(100),
-   attribute_name 			VARCHAR(100),
-   type       				NUMERIC(1),
-   srid               		INTEGER,
-   is_3d 					NUMERIC(1, 0)
+    index_name          VARCHAR(100),
+    table_name 			VARCHAR(100),
+    attribute_name 		VARCHAR(100),
+    type       			NUMERIC(1),
+    srid               	INTEGER,
+    is_3d 				NUMERIC(1, 0)
 ); 
 
 /******************************************************************
 * constructors for INDEX_OBJ instances
 * 
 ******************************************************************/
-
-CREATE FUNCTION geodb_pkg.idx_construct_spatial_3d
-	(index_name VARCHAR, table_name VARCHAR, attribute_name VARCHAR, srid INTEGER DEFAULT 0) RETURNS geodb_pkg.INDEX_OBJ AS $$
-  DECLARE
-	idx geodb_pkg.INDEX_OBJ;
-  BEGIN
-	idx.index_name := index_name;
-	idx.table_name := table_name;
-	idx.attribute_name := attribute_name;
-	idx.type := 1;
-	idx.srid := srid;
-	idx.is_3d := 1;
-	
-	RETURN idx;
-  END; 
-$$
-LANGUAGE 'plpgsql' IMMUTABLE STRICT;
-
-CREATE FUNCTION geodb_pkg.idx_construct_spatial_2d
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_construct_spatial_3d
     (index_name VARCHAR, table_name VARCHAR, attribute_name VARCHAR, srid INTEGER DEFAULT 0) RETURNS geodb_pkg.INDEX_OBJ AS $$
-  DECLARE
-	idx geodb_pkg.INDEX_OBJ;
-  BEGIN
-	idx.index_name := index_name;
-	idx.table_name := table_name;
-	idx.attribute_name := attribute_name;
-	idx.type := 1;
-	idx.srid := srid;
-	idx.is_3d := 0;
-	
-	RETURN idx;
-  END; 
+DECLARE
+    idx geodb_pkg.INDEX_OBJ;
+BEGIN
+    idx.index_name := index_name;
+    idx.table_name := table_name;
+    idx.attribute_name := attribute_name;
+    idx.type := 1;
+    idx.srid := srid;
+    idx.is_3d := 1;
+    
+    RETURN idx;
+END; 
 $$
 LANGUAGE 'plpgsql' IMMUTABLE STRICT;
 
-CREATE FUNCTION geodb_pkg.idx_construct_normal
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_construct_spatial_2d
     (index_name VARCHAR, table_name VARCHAR, attribute_name VARCHAR, srid INTEGER DEFAULT 0) RETURNS geodb_pkg.INDEX_OBJ AS $$
-  DECLARE
-	idx geodb_pkg.INDEX_OBJ;
-  BEGIN
-	idx.index_name := index_name;
-	idx.table_name := table_name;
-	idx.attribute_name := attribute_name;
-	idx.type := 0;
-	idx.srid := srid;
-	idx.is_3d := 0;
-	
-	RETURN idx;
-  END;
+DECLARE
+    idx geodb_pkg.INDEX_OBJ;
+BEGIN
+    idx.index_name := index_name;   
+    idx.table_name := table_name;
+    idx.attribute_name := attribute_name;
+    idx.type := 1;
+    idx.srid := srid;
+    idx.is_3d := 0;
+
+    RETURN idx;
+END; 
 $$
 LANGUAGE 'plpgsql' IMMUTABLE STRICT;
-     
+
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_construct_normal
+    (index_name VARCHAR, table_name VARCHAR, attribute_name VARCHAR, srid INTEGER DEFAULT 0) RETURNS geodb_pkg.INDEX_OBJ AS $$
+DECLARE
+    idx geodb_pkg.INDEX_OBJ;
+BEGIN
+    idx.index_name := index_name;
+    idx.table_name := table_name;
+    idx.attribute_name := attribute_name;
+    idx.type := 0;
+    idx.srid := srid;
+    idx.is_3d := 0;
+
+    RETURN idx;
+END;
+$$
+LANGUAGE 'plpgsql' IMMUTABLE STRICT;
+
 /******************************************************************
-* Index_Table that holds INDEX_OBJ instances
+* INDEX_TABLE that holds INDEX_OBJ instances
 * 
 ******************************************************************/
-
+DROP TABLE IF EXISTS geodb_pkg.INDEX_TABLE;
 CREATE TABLE geodb_pkg.INDEX_TABLE (
 	ID			SERIAL NOT NULL,
 	idx_obj		geodb_pkg.INDEX_OBJ
 );
 
-ALTER TABLE geodb_pkg.INDEX_TABLE
-ADD CONSTRAINT idx_obj_pk PRIMARY KEY
-(
-ID
-);
-
+/******************************************************************
+* Populate INDEX_TABLE with INDEX_OBJ instances
+* 
+******************************************************************/
 INSERT INTO geodb_pkg.index_table VALUES (1, geodb_pkg.idx_construct_spatial_3d('cityobject_spx', 'cityobject', 'envelope'));
 INSERT INTO geodb_pkg.index_table VALUES (2, geodb_pkg.idx_construct_spatial_3d('surface_geom_spx', 'surface_geometry', 'geometry'));
 INSERT INTO geodb_pkg.index_table VALUES (3, geodb_pkg.idx_construct_normal('cityobject_inx', 'cityobject', 'gmlid, gmlid_codespace'));
 INSERT INTO geodb_pkg.index_table VALUES (4, geodb_pkg.idx_construct_normal('surface_geometry_inx', 'surface_geometry', 'gmlid, gmlid_codespace'));
-INSERT INTO geodb_pkg.index_table VALUES (5, geodb_pkg.idx_construct_normal('appereance_inx', 'appearance', 'gmlid, gmlid_codespace'));
+INSERT INTO geodb_pkg.index_table VALUES (5, geodb_pkg.idx_construct_normal('appearance_inx', 'appearance', 'gmlid, gmlid_codespace'));
 INSERT INTO geodb_pkg.index_table VALUES (6, geodb_pkg.idx_construct_normal('surface_data_inx', 'surface_data', 'gmlid, gmlid_codespace'));
  
 /*****************************************************************
@@ -125,34 +122,28 @@ INSERT INTO geodb_pkg.index_table VALUES (6, geodb_pkg.idx_construct_normal('sur
 * @return VARCHAR string represntation of status, may include
 *                  'DROPPED', 'VALID', 'FAILED', 'INVALID'
 ******************************************************************/
-  
-  CREATE FUNCTION geodb_pkg.idx_index_status(idx geodb_pkg.INDEX_OBJ) RETURNS VARCHAR AS $$
-  DECLARE	
-    index_name VARCHAR(100);
-	is_valid BOOLEAN;
-	status VARCHAR(20);
-  BEGIN
- 	index_name := (idx).index_name;
-	
-	EXECUTE 'SELECT indisvalid FROM pg_index WHERE indexrelid = $1::regclass' INTO is_valid USING index_name;
-	
-	IF is_valid = true THEN
-		status := 'VALID';
-	ELSE
-		status := 'INVALID';
-	END IF;
-	   		
-  RETURN status;
-  
-  EXCEPTION
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_index_status(idx geodb_pkg.INDEX_OBJ) RETURNS VARCHAR AS $$
+DECLARE
+    is_valid BOOLEAN;
+    status VARCHAR(20);
+BEGIN
+    EXECUTE 'SELECT indisvalid FROM pg_index WHERE indexrelid = $1::regclass' INTO is_valid USING (idx).index_name;
+    IF is_valid = true THEN
+        status := 'VALID';
+    ELSE
+        status := 'INVALID';
+    END IF;
+
+    RETURN status;
+
+EXCEPTION
     WHEN NO_DATA_FOUND OR SQLSTATE '42704' OR SQLSTATE '42P01' THEN
-      RETURN 'DROPPED';
+        RETURN 'DROPPED';
     WHEN OTHERS THEN
-      RETURN 'FAILED';
-	  
-  END;
-  $$
-  LANGUAGE plpgsql;
+        RETURN 'FAILED';
+END;
+$$
+LANGUAGE plpgsql;
   
 /*****************************************************************
 * index_status - There is no column_name in the pg_stat_user_indexes-view!
@@ -161,166 +152,112 @@ INSERT INTO geodb_pkg.index_table VALUES (6, geodb_pkg.idx_construct_normal('sur
 * @param column_name column_name of index to retrieve status from
 * @return VARCHAR string represntation of status, may include
 *                  'DROPPED', 'VALID', 'FAILED', 'INVALID'
-* 
-* the pg_index-table has one OID for identifying the table (indrelid)
-* and one for the attribute (indexrelid) the index belongs to 
-* indrelid=tablename::regclass works as shown before
-* as the column_name exists only in pg_attribute-table the more generel ::oid-routine has to be used
-* but ::oid requires an int-value, not the passed char-variable
-* thus the id is queried first an executed into the variable internal_column_id
-* relam = 783 is a GiST-index (_spx), 403 is a btree-index (_pk, _fxk, _inx) 
-*
 ******************************************************************/
-
-  CREATE FUNCTION geodb_pkg.idx_index_status(table_name VARCHAR, column_name VARCHAR) RETURNS VARCHAR AS $$
-  DECLARE
-    internal_table_name ALIAS FOR $1;
-	internal_column_name ALIAS FOR $2;
-	internal_column_id INTEGER;
-	is_valid BOOLEAN;
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_index_status(table_name VARCHAR, column_name VARCHAR) RETURNS VARCHAR AS $$
+DECLARE
+    index_name VARCHAR(40);
+    is_valid BOOLEAN;
     status VARCHAR(20);
-  BEGIN   
- 
-  EXECUTE 'SELECT a.attrelid FROM pg_attribute a
-	JOIN pg_class c ON c.relfilenode=a.attrelid
-	JOIN pg_stat_user_indexes sui ON sui.indexrelname=c.relname 
-	WHERE a.attname=$1 AND
-	(c.relam = 783 OR c.relam = 403) AND
-	sui.relname=$2'
-	INTO internal_column_id USING internal_column_name, internal_table_name;
-  
-  EXECUTE 'SELECT indisvalid FROM pg_index WHERE indrelid=$1::regclass
-	AND indexrelid=$2::oid' INTO is_valid USING internal_table_name, internal_column_id;
-  
-	IF is_valid = true THEN
-		status := 'VALID';
-	ELSE
-		status := 'INVALID';
-	END IF;
-	
-	IF is_valid IS NULL THEN
-		RAISE EXCEPTION NO_DATA_FOUND;
-	END IF;
-    		
-  RETURN status;
-  
-  EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-      RETURN 'DROPPED';
+BEGIN   
+
+    EXECUTE 'select i.relname from pg_class t, pg_class i, pg_index ix, pg_attribute a
+        where t.oid = ix.indrelid
+            and i.oid = ix.indexrelid
+            and a.attrelid = t.oid
+            and a.attnum = ANY(ix.indkey)
+            and t.relkind = ''r''
+            and t.relname = lower($1)
+            and a.attname = lower($2)' INTO index_name USING table_name, column_name;
+
+    IF index_name is not null THEN
+        EXECUTE 'SELECT indisvalid FROM pg_index WHERE indexrelid = $1::regclass' INTO is_valid USING index_name;
+        IF is_valid = true THEN
+            status := 'VALID';
+        ELSE
+            status := 'INVALID';
+        END IF;
+    ELSE
+        status := 'DROPPED'; 	
+    END IF;
+        
+    RETURN status;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND OR SQLSTATE '42704' OR SQLSTATE '42P01' THEN
+        RETURN 'DROPPED';
     WHEN OTHERS THEN
-      RETURN 'FAILED';
-  END;
-  $$
-  LANGUAGE plpgsql;
+        RETURN 'FAILED';
+END;
+$$
+LANGUAGE plpgsql;
     
-/******************************************************************
-* create_spatial_metadata
-* 
-* @param idx index to create metadata for
-******************************************************************/
-  
-  CREATE FUNCTION geodb_pkg.idx_create_spatial_metadata(idx geodb_pkg.INDEX_OBJ) RETURNS void AS $$
-  DECLARE 
-    srid database_srs.srid%TYPE;
-	geom VARCHAR(30);
-  BEGIN
-	
-    PERFORM DropGeometryColumn((idx).table_name, (idx).attribute_name);
-    
-    IF (idx).srid = 0 THEN
-      EXECUTE 'SELECT srid FROM database_srs' INTO srid;
-    ELSE
-      srid := (idx).srid;
-    END IF;
-	
-	geom := 'GEOMETRY';
-    
-    IF (idx).is_3d = 0 THEN
-      PERFORM AddGeometryColumn((idx).table_name, (idx).attribute_name, srid, geom, 2);
-    ELSE
-      PERFORM AddGeometryColumn((idx).table_name, (idx).attribute_name, srid, geom, 3);
-    END IF;
-  END;
-  $$
-  LANGUAGE plpgsql;
-      
 /*****************************************************************
 * create_index
 * 
 * @param idx index to create
 * @param is_versioned TRUE IF database table is version-enabled
-* @return VARCHAR sql error code, 00000 for no errors
+* @return VARCHAR sql error code, 0 for no errors
 ******************************************************************/
-
-CREATE FUNCTION geodb_pkg.idx_create_index(idx geodb_pkg.INDEX_OBJ, params VARCHAR DEFAULT '') RETURNS VARCHAR AS $$
-  DECLARE
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_create_index(idx geodb_pkg.INDEX_OBJ, params VARCHAR DEFAULT '') RETURNS VARCHAR AS $$
+DECLARE
     create_ddl VARCHAR(1000);
     sql_err_code VARCHAR(20);
-	SPATIAL CONSTANT NUMERIC(1) := 1;
-  
-  BEGIN    
-	
-	IF geodb_pkg.idx_index_status(idx) != 'VALID' THEN
-      sql_err_code := geodb_pkg.idx_drop_index(idx);
+    SPATIAL CONSTANT NUMERIC(1) := 1;
+BEGIN
+    IF geodb_pkg.idx_index_status(idx) != 'VALID' THEN
+        sql_err_code := geodb_pkg.idx_drop_index(idx);
             
-      BEGIN
-		
-        IF (idx).type = SPATIAL THEN
-          PERFORM geodb_pkg.idx_create_spatial_metadata(idx);
-          create_ddl := 'CREATE INDEX ' || (idx).index_name || ' ON ' || (idx).table_name || ' USING GIST (' || (idx).attribute_name || ')';
-		ELSE
-		  create_ddl := 'CREATE INDEX ' || (idx).index_name || ' ON ' || (idx).table_name || '(' || (idx).attribute_name || ')';
-        END IF;
+        BEGIN
+            IF (idx).type = SPATIAL THEN
+                create_ddl := 'CREATE INDEX ' || (idx).index_name || ' ON ' || (idx).table_name || ' USING GIST (' || (idx).attribute_name || ')';
+            ELSE
+                create_ddl := 'CREATE INDEX ' || (idx).index_name || ' ON ' || (idx).table_name || '(' || (idx).attribute_name || ')';
+            END IF;
 
-        IF params != '' THEN
-          create_ddl := create_ddl || ' ' || params;
-        END IF;
+            IF params != '' THEN
+                create_ddl := create_ddl || ' ' || params;
+            END IF;
 
-        EXECUTE create_ddl;
+            EXECUTE create_ddl;
         		
         EXCEPTION
-        WHEN OTHERS THEN
-		   RAISE INFO 'failed to execute create_index';
-           RETURN SQLSTATE;
-		   
-      END;
-	  
+            WHEN OTHERS THEN
+                RAISE INFO 'Failed to create index';
+                RETURN SQLSTATE;
+        END;
     END IF;
     
-    RETURN '00000';
-  END;
-  $$
-  LANGUAGE plpgsql;
+    RETURN '0';
+END;
+$$
+LANGUAGE plpgsql;
   
 /****************************************************************
 * drop_index
 * 
 * @param idx index to drop
 * @param is_versioned TRUE IF database table is version-enabled
-* @return VARCHAR sql error code, 00000 for no errors
+* @return VARCHAR sql error code, 0 for no errors
 ******************************************************************/
-
-  CREATE FUNCTION geodb_pkg.idx_drop_index(idx geodb_pkg.INDEX_OBJ) RETURNS VARCHAR AS $$
-  DECLARE
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_drop_index(idx geodb_pkg.INDEX_OBJ) RETURNS VARCHAR AS $$
+DECLARE
     index_name VARCHAR(100);
-  BEGIN
-    IF geodb_pkg.idx_index_status(idx) != 'DROPPED' OR geodb_pkg.idx_index_status(idx) IS NULL THEN
-      BEGIN
-        
-		EXECUTE 'DROP INDEX ' || (idx).index_name;
-        
-		EXCEPTION
-			WHEN OTHERS THEN
-			RAISE INFO 'failed to execute drop_index!';
-			RETURN SQLSTATE;
-		  
-      END;
+BEGIN
+    IF geodb_pkg.idx_index_status(idx) != 'DROPPED' THEN
+        BEGIN    
+            EXECUTE 'DROP INDEX ' || (idx).index_name;
+    
+        EXCEPTION
+            WHEN OTHERS THEN
+                RAISE INFO 'Failed to drop index';
+                RETURN SQLSTATE;
+        END;
     END IF;
     
-    RETURN '00000';
-  END;
-  $$
-  LANGUAGE plpgsql;
+    RETURN '0';
+END;
+$$
+LANGUAGE plpgsql;
 
 /*****************************************************************
 * create_indexes
@@ -330,33 +267,20 @@ CREATE FUNCTION geodb_pkg.idx_create_index(idx geodb_pkg.INDEX_OBJ, params VARCH
 * @param type type of index, e.g. SPATIAL or NORMAL
 * @return ARRAY array of log message strings
 ******************************************************************/
-
-CREATE FUNCTION geodb_pkg.idx_create_indexes(type SMALLINT) RETURNS text[] AS $$
-  DECLARE
-    log text[];
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_create_indexes(type INTEGER) RETURNS text[] AS $$
+DECLARE
+    log text[] := '{}';
     sql_error_code VARCHAR(20);
-	idx geodb_pkg.INDEX_OBJ;
-	i INTEGER;
-	n INTEGER;
-  BEGIN   
-    SELECT max(ID) FROM geodb_pkg.index_table INTO n;
-	
-	FOR i in 1..n LOOP
-          EXECUTE 'SELECT (idx_obj).index_name,
-					  (idx_obj).table_name,
-					  (idx_obj).attribute_name,
-					  (idx_obj).type,
-					  (idx_obj).srid,
-					  (idx_obj).is_3d
-			FROM geodb_pkg.index_table WHERE ID=' || i ||'' INTO idx;
-	  
-	IF idx.type = type THEN
-        sql_error_code := geodb_pkg.idx_create_index(idx);
-        log[i] := geodb_pkg.idx_index_status(idx) || ':' || idx.index_name || ':' || idx.table_name || ':' || idx.attribute_name || ':' || sql_error_code;
-    END IF;
-	END LOOP;     
-    
-    RETURN log;
+    rec RECORD;
+BEGIN
+    FOR rec IN select * from geodb_pkg.index_table LOOP
+        IF (rec.idx_obj).type = type THEN
+            sql_error_code := geodb_pkg.idx_create_index(rec.idx_obj);
+            log := array_append(log, geodb_pkg.idx_index_status(rec.idx_obj) || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name || ':' || sql_error_code);
+        END IF;
+    END LOOP;   
+
+    RETURN log;     
   END;
 $$
 LANGUAGE plpgsql;
@@ -369,34 +293,21 @@ LANGUAGE plpgsql;
 * @param type type of index, e.g. SPATIAL or NORMAL
 * @return ARRAY array of log message strings
 ******************************************************************/
- 
-CREATE FUNCTION geodb_pkg.idx_drop_indexes(type SMALLINT) RETURNS text[] AS $$
-  DECLARE
-    log text[];
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_drop_indexes(type INTEGER) RETURNS text[] AS $$
+DECLARE
+    log text[] := '{}';
     sql_error_code VARCHAR(20);
-	idx geodb_pkg.INDEX_OBJ;
-	i INTEGER;
-	n INTEGER;
-  BEGIN    
-    SELECT max(ID) FROM geodb_pkg.index_table INTO n;
-	
-	FOR i in 1..n LOOP
-      EXECUTE 'SELECT (idx_obj).index_name,
-					  (idx_obj).table_name,
-					  (idx_obj).attribute_name,
-					  (idx_obj).type,
-					  (idx_obj).srid,
-					  (idx_obj).is_3d
-			FROM geodb_pkg.index_table WHERE ID=' || i ||'' INTO idx;
-	
-	  IF idx.type = type THEN
-        sql_error_code := geodb_pkg.idx_drop_index(idx);
-        log[i] := geodb_pkg.idx_index_status(idx) || ':' || idx.index_name || ':' || idx.table_name || ':' || idx.attribute_name || ':' || sql_error_code;
-      END IF;
-    END LOOP; 
-    
+	rec RECORD;
+BEGIN
+    FOR rec IN select * from geodb_pkg.index_table LOOP
+        IF (rec.idx_obj).type = type THEN
+            sql_error_code := geodb_pkg.idx_drop_index(rec.idx_obj);
+            log := array_append(log, geodb_pkg.idx_index_status(rec.idx_obj) || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name || ':' || sql_error_code);
+        END IF;
+    END LOOP;
+
     RETURN log;
-  END;
+END;
 $$
 LANGUAGE plpgsql;
   
@@ -405,33 +316,21 @@ LANGUAGE plpgsql;
 * 
 * @return ARRAY array of log message strings
 ******************************************************************/
-
-CREATE FUNCTION geodb_pkg.idx_status_spatial_indexes() RETURNS text[] AS $$
-  DECLARE
-    log text[];
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_status_spatial_indexes() RETURNS text[] AS $$
+DECLARE
+    log text[] := '{}';
     status VARCHAR(20);
-	idx geodb_pkg.INDEX_OBJ;
-	i INTEGER;
-	n INTEGER;
-  BEGIN
-    SELECT max(ID) FROM geodb_pkg.index_table INTO n;
-	
-	FOR i in 1..n LOOP
-            EXECUTE 'SELECT (idx_obj).index_name,
-					  (idx_obj).table_name,
-					  (idx_obj).attribute_name,
-					  (idx_obj).type,
-					  (idx_obj).srid,
-					  (idx_obj).is_3d
-			FROM geodb_pkg.index_table WHERE ID=' || i ||'' INTO idx;
-	  IF idx.type = 1 THEN
-        status := geodb_pkg.idx_index_status(idx);
-        log[i] := status || ':' || idx.index_name || ':' || idx.table_name || ':' || idx.attribute_name;
-	  END IF;
-    END LOOP;      
+    rec RECORD;
+BEGIN
+    FOR rec IN select * from geodb_pkg.index_table LOOP
+        IF (rec.idx_obj).type = 1 THEN
+            status := geodb_pkg.idx_index_status(rec.idx_obj);
+            log := array_append(log, status || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name);
+        END IF;
+    END LOOP;   
 
     RETURN log;
-  END;
+END;
 $$
 LANGUAGE plpgsql;
   
@@ -440,34 +339,21 @@ LANGUAGE plpgsql;
 * 
 * @return ARRAY array of log message strings
 ******************************************************************/
-
-CREATE FUNCTION geodb_pkg.idx_status_normal_indexes() RETURNS text[] AS $$
-  DECLARE
-    log text[];
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_status_normal_indexes() RETURNS text[] AS $$
+DECLARE
+    log text[] := '{}';
     status VARCHAR(20);
-	idx geodb_pkg.INDEX_OBJ;
-	i INTEGER;
-	n INTEGER;
-  BEGIN
-	SELECT max(ID) FROM geodb_pkg.index_table INTO n;
-	
-	FOR i in 1..n LOOP
-            EXECUTE 'SELECT (idx_obj).index_name,
-					  (idx_obj).table_name,
-					  (idx_obj).attribute_name,
-					  (idx_obj).type,
-					  (idx_obj).srid,
-					  (idx_obj).is_3d
-			FROM geodb_pkg.index_table WHERE ID=' || i ||'' INTO idx;
-	  
-	  IF idx.type = 0 THEN
-        status := geodb_pkg.idx_index_status(idx);
-        log[i] := status || ':' || idx.index_name || ':' || idx.table_name || ':' || idx.attribute_name;
-      END IF;
+    rec RECORD;
+BEGIN
+    FOR rec IN select * from geodb_pkg.index_table LOOP
+        IF (rec.idx_obj).type = 0 THEN
+            status := geodb_pkg.idx_index_status(rec.idx_obj);
+            log := array_append(log, status || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name);
+        END IF;
     END LOOP;      
 
     RETURN log;
-  END;
+END;
 $$
 LANGUAGE plpgsql;
 
@@ -478,11 +364,10 @@ LANGUAGE plpgsql;
 * 
 * @return ARRAY array of log message strings
 ******************************************************************/
-
-CREATE FUNCTION geodb_pkg.idx_create_spatial_indexes() RETURNS text[] AS $$
-  BEGIN
-	RETURN geodb_pkg.idx_create_indexes('1');
-  END;
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_create_spatial_indexes() RETURNS text[] AS $$
+BEGIN
+	RETURN geodb_pkg.idx_create_indexes(1);
+END;
 $$
 LANGUAGE plpgsql;
 
@@ -493,11 +378,10 @@ LANGUAGE plpgsql;
 * 
 * @return ARRAY array of log message strings
 ******************************************************************/
-
-CREATE FUNCTION geodb_pkg.idx_drop_spatial_indexes() RETURNS text[] AS $$
-  BEGIN
-    RETURN geodb_pkg.idx_drop_indexes('1');
-  END;
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_drop_spatial_indexes() RETURNS text[] AS $$
+BEGIN
+    RETURN geodb_pkg.idx_drop_indexes(1);
+END;
 $$
 LANGUAGE plpgsql;
   
@@ -508,11 +392,10 @@ LANGUAGE plpgsql;
 * 
 * @return ARRAY array of log message strings
 ******************************************************************/
-
-CREATE FUNCTION geodb_pkg.idx_create_normal_indexes() RETURNS text[] AS $$
-  BEGIN
-    RETURN geodb_pkg.idx_create_indexes('0');
-  END;
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_create_normal_indexes() RETURNS text[] AS $$
+BEGIN
+    RETURN geodb_pkg.idx_create_indexes(0);
+END;
 $$
 LANGUAGE plpgsql;
 
@@ -523,271 +406,34 @@ LANGUAGE plpgsql;
 * 
 * @return ARRAY array of log message strings
 ******************************************************************/
-
-CREATE FUNCTION geodb_pkg.idx_drop_normal_indexes() RETURNS text[] AS $$
-  BEGIN
-    RETURN geodb_pkg.idx_drop_indexes('0');
-  END;  
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_drop_normal_indexes() RETURNS text[] AS $$
+BEGIN
+    RETURN geodb_pkg.idx_drop_indexes(0);
+END;  
 $$
 LANGUAGE plpgsql;
 
- /*****************************************************************
- * get_index
- * convience method for getting an index object 
- * given the table and column it indexes
- * 
- * @param table_name
- * @param attribute_name
- * @return INDEX_OBJ
-  ******************************************************************/
- CREATE FUNCTION geodb_pkg.idx_get_index(table_name VARCHAR, column_name VARCHAR) RETURNS geodb_pkg.INDEX_OBJ AS $$
-  DECLARE
+/*****************************************************************
+* get_index
+* convience method for getting an index object 
+* given the table and column it indexes
+* 
+* @param table_name
+* @param attribute_name
+* @return INDEX_OBJ
+******************************************************************/
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_get_index(table_name VARCHAR, column_name VARCHAR) RETURNS geodb_pkg.INDEX_OBJ AS $$
+DECLARE
     idx geodb_pkg.INDEX_OBJ;
-	idx_check geodb_pkg.INDEX_OBJ;
-	i INTEGER;
-	n INTEGER;
-  BEGIN    
-    
-	SELECT max(ID) FROM geodb_pkg.index_table INTO n;
-	
-	FOR i in 1..n LOOP
-            EXECUTE 'SELECT (idx_obj).index_name,
-					  (idx_obj).table_name,
-					  (idx_obj).attribute_name,
-					  (idx_obj).type,
-					  (idx_obj).srid,
-					  (idx_obj).is_3d
-			FROM geodb_pkg.index_table WHERE ID=' || i ||'' INTO idx_check;
-	
-      IF (idx_check).attribute_name = column_name AND (idx_check).table_name = table_name THEN
-        idx := idx_check;
-        EXIT;
-      END IF;
-    END LOOP; 
+    rec RECORD;
+BEGIN    
+    FOR rec IN select * from geodb_pkg.index_table LOOP
+        IF (rec.idx_obj).attribute_name = column_name AND (rec.idx_obj).table_name = table_name THEN
+            idx := rec.idx_obj;
+        END IF;
+    END LOOP;  
     
     RETURN idx;
-  END;
-$$
-LANGUAGE plpgsql;
-
-
-/*****************************************************************
- *
- * NEW FUNCTIONS (by FKun)
- * Alternative way of deactivating indexes:
- * indexes are not dropped but set to invalid 
- * in the catalog-table pg_index
- *
- ****************************************************************/
-
-/*****************************************************************
-* switch_on_index
-* 
-* @param idx index to set to indisvalid = true
-* @return VARCHAR sql error code, 00000 for no errors
-******************************************************************/
-
-CREATE FUNCTION geodb_pkg.idx_switch_on_index(idx geodb_pkg.INDEX_OBJ) RETURNS VARCHAR AS $$
-  DECLARE
-    index_name VARCHAR(100);
-	create_status VARCHAR;
-  BEGIN
-    index_name := (idx).index_name;
-	
-	IF geodb_pkg.idx_index_status(idx) != 'VALID' THEN
-		BEGIN
-			IF geodb_pkg.idx_index_status(idx) = 'DROPPED' THEN
-				RAISE INFO 'index had to be created because it was not found';
-				SELECT geodb_pkg.idx_create_index(idx) INTO create_status;
-				IF create_status != '00000' THEN
-					PERFORM geodb_pkg.util_error_msg(create_status);
-				END IF;
-			END IF;
-		UPDATE pg_index SET indisvalid = true WHERE indexrelid = index_name::regclass;
-		
-		EXCEPTION
-			WHEN OTHERS THEN
-				RAISE INFO 'failed to execute switch_on_index!';
-				RETURN SQLSTATE;
-				
-		END;
-	END IF;
-		  
-	RETURN '00000';
-  END;
-  $$
-  LANGUAGE plpgsql;
-  
-/****************************************************************
-* switch_off_index
-* 
-* @param idx index to set to indisvalid = false
-* @return VARCHAR sql error code, 00000 for no errors
-******************************************************************/
-
-CREATE FUNCTION geodb_pkg.idx_switch_off_index(idx geodb_pkg.INDEX_OBJ) RETURNS VARCHAR AS $$
-  DECLARE
-    index_name VARCHAR(100);
-  BEGIN
-    index_name := (idx).index_name;
-	
-	IF geodb_pkg.idx_index_status(idx) != 'INVALID' THEN
-		BEGIN
-			IF geodb_pkg.idx_index_status(idx) = 'DROPPED' THEN
-				RAISE EXCEPTION NO_DATA_FOUND; 
-			END IF;
-        
-			UPDATE pg_index SET indisvalid = false WHERE indexrelid = index_name::regclass;
-		
-		    EXCEPTION
-				WHEN NO_DATA_FOUND THEN
-					RAISE INFO 'unable to switch off index, because it is dropped';
-					RETURN SQLSTATE;
-				WHEN OTHERS THEN
-					RAISE INFO 'failed to execute switch_off_index!';
-					RETURN SQLSTATE;  
-		END;
-  	END IF;
-	   
-    RETURN '00000';
-  END;
-  $$
-  LANGUAGE plpgsql;
- 
-/*****************************************************************
-* switch_on_indexes
-* private convience method for invoking switch_on_index on indexes 
-* of same index type
-* 
-* @param type type of index, e.g. SPATIAL or NORMAL
-* @return ARRAY array of log message strings
-******************************************************************/
-
-CREATE FUNCTION geodb_pkg.idx_switch_on_indexes(type SMALLINT) RETURNS text[] AS $$
-  DECLARE
-    log text[];
-    sql_error_code VARCHAR(20);
-	idx geodb_pkg.INDEX_OBJ;
-	i INTEGER;
-	n INTEGER;
-  BEGIN   
-    SELECT max(ID) FROM geodb_pkg.index_table INTO n;
-	
-	FOR i in 1..n LOOP
-          EXECUTE 'SELECT (idx_obj).index_name,
-					  (idx_obj).table_name,
-					  (idx_obj).attribute_name,
-					  (idx_obj).type,
-					  (idx_obj).srid,
-					  (idx_obj).is_3d
-			FROM geodb_pkg.index_table WHERE ID=' || i ||'' INTO idx;
-	  
-	IF idx.type = type THEN
-        sql_error_code := geodb_pkg.idx_switch_on_index(idx);
-        log[i] := geodb_pkg.idx_index_status(idx) || ':' || idx.index_name || ':' || idx.table_name || ':' || idx.attribute_name || ':' || sql_error_code;
-    END IF;
-	END LOOP;     
-    
-    RETURN log;
-  END;
-$$
-LANGUAGE plpgsql;
-  
-/*****************************************************************
-* switch_off_indexes
-* private convience method for invoking switch_off_index on indexes 
-* of same index type
-* 
-* @param type type of index, e.g. SPATIAL or NORMAL
-* @return ARRAY array of log message strings
-******************************************************************/
- 
-CREATE FUNCTION geodb_pkg.idx_switch_off_indexes(type SMALLINT) RETURNS text[] AS $$
-  DECLARE
-    log text[];
-    sql_error_code VARCHAR(20);
-	idx geodb_pkg.INDEX_OBJ;
-	i INTEGER;
-	n INTEGER;
-  BEGIN    
-    SELECT max(ID) FROM geodb_pkg.index_table INTO n;
-	
-	FOR i in 1..n LOOP
-      EXECUTE 'SELECT (idx_obj).index_name,
-					  (idx_obj).table_name,
-					  (idx_obj).attribute_name,
-					  (idx_obj).type,
-					  (idx_obj).srid,
-					  (idx_obj).is_3d
-			FROM geodb_pkg.index_table WHERE ID=' || i ||'' INTO idx;
-	
-	  IF idx.type = type THEN
-        sql_error_code := geodb_pkg.idx_switch_off_index(idx);
-        log[i] := geodb_pkg.idx_index_status(idx) || ':' || idx.index_name || ':' || idx.table_name || ':' || idx.attribute_name || ':' || sql_error_code;
-      END IF;
-    END LOOP; 
-    
-    RETURN log;
-  END;
-$$
-LANGUAGE plpgsql;
-
-/*****************************************************************
-* switch_on_spatial_indexes
-* convience method for invoking switch_on_index on all normal 
-* indexes 
-* 
-* @return ARRAY array of log message strings
-******************************************************************/
-  
-CREATE FUNCTION geodb_pkg.idx_switch_on_spatial_indexes() RETURNS text[] AS $$
-  BEGIN
-    RETURN geodb_pkg.idx_switch_on_indexes('1');
-  END;  
-$$
-LANGUAGE plpgsql;
-  
-/*****************************************************************
-* switch_off_spatial_indexes
-* convience method for invoking switch_off_index on all normal 
-* indexes 
-* 
-* @return ARRAY array of log message strings
-******************************************************************/
-  
-CREATE FUNCTION geodb_pkg.idx_switch_off_spatial_indexes() RETURNS text[] AS $$
-  BEGIN
-    RETURN geodb_pkg.idx_switch_off_indexes('1');
-  END;  
-$$
-LANGUAGE plpgsql;
-
-/*****************************************************************
-* switch_on_normal_indexes
-* convience method for invoking switch_on_index on all normal 
-* indexes 
-* 
-* @return ARRAY array of log message strings
-******************************************************************/
-  
-CREATE FUNCTION geodb_pkg.idx_switch_on_normal_indexes() RETURNS text[] AS $$
-  BEGIN
-    RETURN geodb_pkg.idx_switch_on_indexes('0');
-  END;  
-$$
-LANGUAGE plpgsql;
-  
-/*****************************************************************
-* switch_off_normal_indexes
-* convience method for invoking switch_off_index on all normal 
-* indexes 
-* 
-* @return ARRAY array of log message strings
-******************************************************************/
-  
-CREATE FUNCTION geodb_pkg.idx_switch_off_normal_indexes() RETURNS text[] AS $$
-  BEGIN
-    RETURN geodb_pkg.idx_switch_off_indexes('0');
-  END;  
+END;
 $$
 LANGUAGE plpgsql;
