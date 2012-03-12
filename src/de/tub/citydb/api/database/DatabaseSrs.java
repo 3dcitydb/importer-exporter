@@ -103,9 +103,9 @@ public final class DatabaseSrs implements Comparable<DatabaseSrs> {
 		this.type = type;
 	}
 
-//	public boolean is3D() {
-//		return type == DatabaseSrsType.COMPOUND || type == DatabaseSrsType.GEOGRAPHIC3D;
-//	}
+	public boolean is3D() {
+		return type == DatabaseSrsType.COMPOUND || type == DatabaseSrsType.GEOGRAPHIC3D;
+	}
 	
 	public String getDatabaseSrsName() {
 		return dbSrsName;

@@ -114,10 +114,10 @@ public class DatabaseMetaDataImpl implements DatabaseMetaData {
 		this.srs = srs;
 	}
 
-//	@Override
-//	public boolean isVersionEnabled() {
-//		return versioning == Versioning.ON;
-//	}
+	@Override
+	public boolean isVersionEnabled() {
+		return versioning == Versioning.ON;
+	}
 
 	public Versioning getVersioning() {
 		return versioning;
@@ -129,7 +129,7 @@ public class DatabaseMetaDataImpl implements DatabaseMetaData {
 
 	@Override
 	public void printToConsole() {
-		LOG.all(LogLevel.INFO, getShortDatabaseProductVersion());
+		LOG.all(LogLevel.INFO, getDatabaseProductName() + ", " + getShortDatabaseProductVersion());
 		LOG.all(LogLevel.INFO, "SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
 		LOG.all(LogLevel.INFO, "SRS: " + srs.getDatabaseSrsName());
 		LOG.all(LogLevel.INFO, "gml:srsName: " + srs.getGMLSrsName());

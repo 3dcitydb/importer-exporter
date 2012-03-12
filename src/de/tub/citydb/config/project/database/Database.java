@@ -57,8 +57,7 @@ public class Database {
 	}
 	
 	static {
-//		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG:7.9:4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGRAPHIC2D, true));
-		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG:7.9:4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGCS, true));
+		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG:7.9:4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGRAPHIC2D, true));
 	}
 	
 	private DatabaseSrsList referenceSystems;
