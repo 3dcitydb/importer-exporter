@@ -1,4 +1,4 @@
-﻿-- STAT.sql
+-- STAT.sql
 --
 -- Authors:     Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
 --              Dr. Thomas H. Kolbe <kolbe@ikg.uni-bonn.de>
@@ -11,10 +11,10 @@
 -- Conversion:	Felix Kunde <felix-kunde@gmx.de>
 --
 -- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
---                             Technische Universitaet Berlin, Germany
+--                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --              (c) 2004-2006, Institute for Cartography and Geoinformation,
---                             Universitaet Bonn, Germany
+--                             Universität Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --              (c) 2005-2006, lat/lon GmbH, Germany
 --                             http://www.lat-lon.de--              
