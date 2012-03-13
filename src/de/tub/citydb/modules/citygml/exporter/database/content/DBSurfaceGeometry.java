@@ -123,7 +123,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 			psImportGmlId = tempTable.getConnection().prepareStatement(
 					"insert into " + tempTable.getTableName() + 
-					" select ?, ? from dual " +
+					" select ?, ? as dual " +
 					" where exists (select SURFACE_GEOMETRY_ID from TEXTUREPARAM where SURFACE_GEOMETRY_ID = ?)"
 			);
 		}

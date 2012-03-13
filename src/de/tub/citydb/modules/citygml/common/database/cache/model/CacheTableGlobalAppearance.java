@@ -70,7 +70,7 @@ public class CacheTableGlobalAppearance extends CacheTableModel {
 
 	@Override
 	protected String getColumns() {
-		return "(GMLID VARCHAR2(256), " +
-		"ID NUMBER)";
+		return "(GMLID VARCHAR(256), " +
+		"ID INTEGER)";
 	}
 }
