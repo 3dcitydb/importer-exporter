@@ -114,7 +114,9 @@ public class DatabaseConnectionPool {
 
 			poolDataSource.setConnectionFactoryClassName("org.postgresql.ds.PGSimpleDataSource");
 			poolDataSource.setDatabaseName(conn.getSid());
-			poolDataSource.setURL("jdbc:postgresql://" + conn.getServer() + ":" + conn.getPort() + "/" + conn.getSid());
+//			poolDataSource.setURL("jdbc:postgresql://" + conn.getServer() + ":" + conn.getPort() + "/" + conn.getSid());
+			poolDataSource.setServerName(conn.getServer());
+			poolDataSource.setPortNumber(conn.getPort());
 			poolDataSource.setUser(conn.getUser());
 			poolDataSource.setPassword(conn.getInternalPassword());
 
