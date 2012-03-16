@@ -72,7 +72,7 @@ The 3D City Database was implemented on behalf of the Berliner
 Senatsverwaltung fuer Wirtschaft, Arbeit und Frauen and the Berlin Partner GmbH.
 The development is continuing the work of the Institute for Cartography and
 Geoinformation (IKG), University of Bonn. Please find the previous version of the
-database at http://www.3dcitydb.org/.
+database at http://www.3dcitydb.net/.
 
 
 4. System requirements
@@ -150,7 +150,7 @@ thomas.kolbe@tu-berlin.de
 ------------
 
 Official 3D City Database website: 
-http://www.3dcitydb.org/
+http://www.3dcitydb.net/
 
 Related websites:
 http://www.igg.tu-berlin.de/
