@@ -14,7 +14,7 @@
 --              for more details.
 -------------------------------------------------------------------------------
 -- About:
--- DROPs package "geodb_util" containing utility methods for applications
+-- Creates package "geodb_util" containing utility methods for applications
 -- and further subpackges. Therefore, "geodb_util" might be a dependency
 -- for other packages and/or methods.
 -------------------------------------------------------------------------------
