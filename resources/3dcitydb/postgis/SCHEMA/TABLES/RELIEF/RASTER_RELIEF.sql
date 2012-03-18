@@ -57,7 +57,7 @@ CREATE TABLE RASTER_RELIEF (
 )
 ;
 
--- SELECT public.AddGeometryColumn('raster_relief', 'extent', 3068, 'GEOMETRY', 3);
+-- SELECT AddGeometryColumn('raster_relief', 'extent', 3068, 'GEOMETRY', 3);
 
 ALTER TABLE RASTER_RELIEF
 ADD CONSTRAINT RASTER_RLF_PK PRIMARY KEY

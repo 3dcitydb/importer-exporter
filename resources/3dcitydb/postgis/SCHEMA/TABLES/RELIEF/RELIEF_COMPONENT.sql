@@ -38,7 +38,7 @@ CREATE TABLE RELIEF_COMPONENT (
 	LOD 								NUMERIC(1,0)
 );
 
-SELECT public.AddGeometryColumn('relief_component', 'extent', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('relief_component', 'extent', 3068, 'GEOMETRY', 3);
 
 ALTER TABLE RELIEF_COMPONENT
 ADD CONSTRAINT RELIEF_COMPONENT_PK PRIMARY KEY

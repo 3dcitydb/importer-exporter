@@ -52,13 +52,13 @@ CREATE TABLE BUILDING
 )
 ;
 
-SELECT public.AddGeometryColumn('building', 'lod1_terrain_intersection', 3068, 'GEOMETRY', 3);
-SELECT public.AddGeometryColumn('building', 'lod2_terrain_intersection', 3068, 'GEOMETRY', 3);
-SELECT public.AddGeometryColumn('building', 'lod3_terrain_intersection', 3068, 'GEOMETRY', 3);
-SELECT public.AddGeometryColumn('building', 'lod4_terrain_intersection', 3068, 'GEOMETRY', 3);
-SELECT public.AddGeometryColumn('building', 'lod2_multi_curve', 3068, 'MULTICURVE', 3);
-SELECT public.AddGeometryColumn('building', 'lod3_multi_curve', 3068, 'MULTICURVE', 3);
-SELECT public.AddGeometryColumn('building', 'lod4_multi_curve', 3068, 'MULTICURVE', 3);
+SELECT AddGeometryColumn('building', 'lod1_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('building', 'lod2_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('building', 'lod3_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('building', 'lod4_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('building', 'lod2_multi_curve', 3068, 'MULTICURVE', 3);
+SELECT AddGeometryColumn('building', 'lod3_multi_curve', 3068, 'MULTICURVE', 3);
+SELECT AddGeometryColumn('building', 'lod4_multi_curve', 3068, 'MULTICURVE', 3);
 
 ALTER TABLE BUILDING
 	ADD COLUMN LOD1_GEOMETRY_ID 		INTEGER,

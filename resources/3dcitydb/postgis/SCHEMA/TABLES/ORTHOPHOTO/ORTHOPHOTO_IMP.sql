@@ -49,7 +49,7 @@ CREATE TABLE ORTHOPHOTO_IMP (
 )
 ;
 
-SELECT public.AddGeometryColumn('orthophoto_imp', 'footprint', 3068, 'POLYGON', 3);
+SELECT AddGeometryColumn('orthophoto_imp', 'footprint', 3068, 'POLYGON', 3);
 
 ALTER TABLE ORTHOPHOTO_IMP
 ADD CONSTRAINT ORTHOPHOTO_IMP_PK PRIMARY KEY

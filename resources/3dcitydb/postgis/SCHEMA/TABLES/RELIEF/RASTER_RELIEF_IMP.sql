@@ -51,7 +51,7 @@ CREATE TABLE RASTER_RELIEF_IMP (
 )
 ;
 
-SELECT public.AddGeometryColumn('raster_relief_imp', 'footprint', 3068, 'POLYGON', 3);
+SELECT AddGeometryColumn('raster_relief_imp', 'footprint', 3068, 'POLYGON', 3);
 
 ALTER TABLE RASTER_RELIEF_IMP
 ADD CONSTRAINT RASTER_RLF_IMP_PK PRIMARY KEY

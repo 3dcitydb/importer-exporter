@@ -38,9 +38,9 @@ CREATE TABLE TIN_RELIEF (
 )
 ;
 
-SELECT public.AddGeometryColumn('tin_relief', 'stop_lines', 3068, 'MULTICURVE', 3);
-SELECT public.AddGeometryColumn('tin_relief', 'break_lines', 3068, 'MULTICURVE', 3);
-SELECT public.AddGeometryColumn('tin_relief', 'control_points', 3068, 'MULTIPOINT', 3);
+SELECT AddGeometryColumn('tin_relief', 'stop_lines', 3068, 'MULTICURVE', 3);
+SELECT AddGeometryColumn('tin_relief', 'break_lines', 3068, 'MULTICURVE', 3);
+SELECT AddGeometryColumn('tin_relief', 'control_points', 3068, 'MULTIPOINT', 3);
 
 ALTER TABLE TIN_RELIEF
 	ADD COLUMN surface_geometry_id 		INTEGER

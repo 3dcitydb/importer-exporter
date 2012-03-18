@@ -57,7 +57,7 @@ CREATE TABLE SURFACE_DATA (
 )
 ;
 
-SELECT public.AddGeometryColumn('surface_data', 'gt_reference_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('surface_data', 'gt_reference_point', 3068, 'POINT', 3);
 
 ALTER TABLE SURFACE_DATA
 ADD CONSTRAINT SURFACE_DATA_PK PRIMARY KEY

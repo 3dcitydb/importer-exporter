@@ -14,7 +14,7 @@
 --              for more details.
 -------------------------------------------------------------------------------
 -- About:
--- Creates package "geodb_util" containing utility methods for applications
+-- DROPs package "geodb_util" containing utility methods for applications
 -- and further subpackges. Therefore, "geodb_util" might be a dependency
 -- for other packages and/or methods.
 -------------------------------------------------------------------------------
@@ -144,7 +144,7 @@ LANGUAGE plpgsql;
 * @RETURN NUMERIC the boolean result encoded as NUMERIC: 0 = false, 1 = true                
 ******************************************************************/
 /*
-CREATE FUNCTION geodb_pkg.util_is_coord_ref_sys_3d(srid INTEGER) RETURNS INTEGER AS $$
+CREATE OR REPLACE FUNCTION geodb_pkg.util_is_coord_ref_sys_3d(srid INTEGER) RETURNS INTEGER AS $$
   DECLARE
     s ALIAS FOR $1;
 	is_3d INTEGER := 0;
@@ -165,7 +165,7 @@ LANGUAGE plpgsql;
 * @RETURN NUMERIC the boolean result encoded as NUMERIC: 0 = false, 1 = true                
 ******************************************************************/
 /*
-CREATE FUNCTION geodb_pkg.util_is_db_coord_ref_sys_3d() RETURNS INTEGER AS $$
+CREATE OR REPLACE FUNCTION geodb_pkg.util_is_db_coord_ref_sys_3d() RETURNS INTEGER AS $$
   DECLARE
     srid INTEGER;
   BEGIN
@@ -182,7 +182,7 @@ LANGUAGE plpgsql;
 *
 *******************************************************************/
 /*
-CREATE FUNCTION geodb_pkg.util_to_2d (geom GEOMETRY, srid INTEGER) RETURNS geometry AS $$
+CREATE OR REPLACE FUNCTION geodb_pkg.util_to_2d (geom GEOMETRY, srid INTEGER) RETURNS geometry AS $$
   DECLARE
     geom_2d GEOMETRY;
     geom_poi VARCHAR;
@@ -236,3 +236,267 @@ CREATE FUNCTION geodb_pkg.util_to_2d (geom GEOMETRY, srid INTEGER) RETURNS geome
 $$
 LANGUAGE plpgsql;
 */
+
+CREATE OR REPLACE FUNCTION geodb_pkg.util_update_db_srid (db_srid INTEGER, db_gml_srs_name VARCHAR) RETURNS setof void AS $$
+BEGIN
+	UPDATE DATABASE_SRS SET SRID=db_srid, GML_SRS_NAME=db_gml_srs_name;
+	
+	PERFORM updategeometrysrid('cityobject', 'envelope', db_srid);
+	PERFORM updategeometrysrid('surface_geometry', 'geometry', db_srid);
+	PERFORM updategeometrysrid('breakline_relief', 'ridge_or_valley_lines', db_srid);
+	PERFORM updategeometrysrid('breakline_relief', 'break_lines', db_srid);
+	PERFORM updategeometrysrid('masspoint_relief', 'relief_points', db_srid);
+	PERFORM updategeometrysrid('orthophoto_imp', 'footprint', db_srid);
+	PERFORM updategeometrysrid('tin_relief', 'stop_lines', db_srid);
+	PERFORM updategeometrysrid('tin_relief', 'break_lines', db_srid);
+	PERFORM updategeometrysrid('tin_relief', 'control_points', db_srid);
+	PERFORM updategeometrysrid('raster_relief_imp', 'footprint', db_srid);
+	PERFORM updategeometrysrid('cityobject_genericattrib', 'geomval', db_srid);
+	PERFORM updategeometrysrid('generic_cityobject', 'lod0_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('generic_cityobject', 'lod1_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('generic_cityobject', 'lod2_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('generic_cityobject', 'lod3_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('generic_cityobject', 'lod4_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('generic_cityobject', 'lod0_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('generic_cityobject', 'lod1_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('generic_cityobject', 'lod2_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('generic_cityobject', 'lod3_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('generic_cityobject', 'lod4_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('address', 'multi_point', db_srid);
+	PERFORM updategeometrysrid('building', 'lod1_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('building', 'lod2_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('building', 'lod3_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('building', 'lod4_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('building', 'lod2_multi_curve', db_srid);
+	PERFORM updategeometrysrid('building', 'lod3_multi_curve', db_srid);
+	PERFORM updategeometrysrid('building', 'lod4_multi_curve', db_srid);
+	PERFORM updategeometrysrid('building_furniture', 'lod4_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('city_furniture', 'lod1_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('city_furniture', 'lod2_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('city_furniture', 'lod3_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('city_furniture', 'lod4_terrain_intersection', db_srid);
+	PERFORM updategeometrysrid('city_furniture', 'lod1_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('city_furniture', 'lod2_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('city_furniture', 'lod3_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('city_furniture', 'lod4_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('citymodel', 'envelope', db_srid);
+	PERFORM updategeometrysrid('cityobjectgroup', 'geometry', db_srid);
+	PERFORM updategeometrysrid('relief_component', 'extent', db_srid);
+	PERFORM updategeometrysrid('solitary_vegetat_object', 'lod1_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('solitary_vegetat_object', 'lod2_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('solitary_vegetat_object', 'lod3_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('solitary_vegetat_object', 'lod4_implicit_ref_point', db_srid);
+	PERFORM updategeometrysrid('surface_data', 'gt_reference_point', db_srid);
+	PERFORM updategeometrysrid('transportation_complex', 'lod0_network', db_srid);
+	PERFORM updategeometrysrid('waterbody', 'lod0_multi_curve', db_srid);
+	PERFORM updategeometrysrid('waterbody', 'lod1_multi_curve', db_srid);
+
+END;
+$$ 
+LANGUAGE plpgsql;
+	
+
+CREATE OR REPLACE FUNCTION geodb_pkg.util_change_db_srid (db_srid INTEGER, db_gml_srs_name VARCHAR) RETURNS setof void AS $$
+BEGIN
+-- Drop spatial indexes
+	DROP INDEX CITYOBJECT_SPX;
+	DROP INDEX SURFACE_GEOM_SPX;
+	DROP INDEX BREAKLINE_RID_SPX;
+	DROP INDEX BREAKLINE_BREAK_SPX;
+	DROP INDEX MASSPOINT_REL_SPX;
+	DROP INDEX ORTHOPHOTO_IMP_SPX;
+	DROP INDEX TIN_RELF_STOP_SPX;
+	DROP INDEX TIN_RELF_BREAK_SPX;
+	DROP INDEX TIN_RELF_CRTLPTS_SPX;
+	DROP INDEX GENERICCITY_LOD0TERR_SPX;
+	DROP INDEX GENERICCITY_LOD1TERR_SPX;
+	DROP INDEX GENERICCITY_LOD2TERR_SPX;
+	DROP INDEX GENERICCITY_LOD3TERR_SPX;
+	DROP INDEX GENERICCITY_LOD4TERR_SPX;
+	DROP INDEX GENERICCITY_LOD1REFPNT_SPX;
+	DROP INDEX GENERICCITY_LOD2REFPNT_SPX;
+	DROP INDEX GENERICCITY_LOD3REFPNT_SPX;
+	DROP INDEX GENERICCITY_LOD4REFPNT_SPX;
+	DROP INDEX BUILDING_LOD1TERR_SPX;
+	DROP INDEX BUILDING_LOD2TERR_SPX;
+	DROP INDEX BUILDING_LOD3TERR_SPX;
+	DROP INDEX BUILDING_LOD4TERR_SPX;
+	DROP INDEX BUILDING_LOD2MULTI_SPX;
+	DROP INDEX BUILDING_LOD3MULTI_SPX;
+	DROP INDEX BUILDING_LOD4MULTI_SPX;
+	DROP INDEX BUILDING_FURN_LOD4REFPNT_SPX;
+	DROP INDEX CITY_FURN_LOD1TERR_SPX;
+	DROP INDEX CITY_FURN_LOD2TERR_SPX;
+	DROP INDEX CITY_FURN_LOD3TERR_SPX;
+	DROP INDEX CITY_FURN_LOD4TERR_SPX;
+	DROP INDEX CITY_FURN_LOD1REFPNT_SPX;
+	DROP INDEX CITY_FURN_LOD2REFPNT_SPX;
+	DROP INDEX CITY_FURN_LOD3REFPNT_SPX;
+	DROP INDEX CITY_FURN_LOD4REFPNT_SPX;
+	DROP INDEX CITYMODEL_SPX;
+	DROP INDEX CITYOBJECTGROUP_SPX;
+	DROP INDEX RELIEF_COMPONENT_SPX;
+	DROP INDEX SOL_VEGETAT_OBJ_LOD1REFPNT_SPX;
+	DROP INDEX SOL_VEGETAT_OBJ_LOD2REFPNT_SPX;
+	DROP INDEX SOL_VEGETAT_OBJ_LOD3REFPNT_SPX;
+	DROP INDEX SOL_VEGETAT_OBJ_LOD4REFPNT_SPX;
+	DROP INDEX SURFACE_DATA_SPX;
+	DROP INDEX TRANSPORTATION_COMPLEX_SPX;
+	DROP INDEX WATERBODY_LOD0MULTI_SPX;
+	DROP INDEX WATERBODY_LOD1MULTI_SPX;
+	
+-- Drop geometry columns from tables and geometry_columns-view
+	PERFORM DropGeometryColumn('cityobject', 'envelope');
+	PERFORM DropGeometryColumn('surface_geometry', 'geometry');
+	PERFORM DropGeometryColumn('breakline_relief', 'ridge_or_valley_lines');
+	PERFORM DropGeometryColumn('breakline_relief', 'break_lines');
+	PERFORM DropGeometryColumn('masspoint_relief', 'relief_points');
+	PERFORM DropGeometryColumn('orthophoto_imp', 'footprint');
+	PERFORM DropGeometryColumn('tin_relief', 'stop_lines');
+	PERFORM DropGeometryColumn('tin_relief', 'break_lines');
+	PERFORM DropGeometryColumn('tin_relief', 'control_points');
+	PERFORM DropGeometryColumn('raster_relief_imp', 'footprint');
+	PERFORM DropGeometryColumn('cityobject_genericattrib', 'geomval');
+	PERFORM DropGeometryColumn('generic_cityobject', 'lod0_terrain_intersection');
+	PERFORM DropGeometryColumn('generic_cityobject', 'lod1_terrain_intersection');
+	PERFORM DropGeometryColumn('generic_cityobject', 'lod2_terrain_intersection');
+	PERFORM DropGeometryColumn('generic_cityobject', 'lod3_terrain_intersection');
+	PERFORM DropGeometryColumn('generic_cityobject', 'lod4_terrain_intersection');
+	PERFORM DropGeometryColumn('generic_cityobject', 'lod0_implicit_ref_point');
+	PERFORM DropGeometryColumn('generic_cityobject', 'lod1_implicit_ref_point');
+	PERFORM DropGeometryColumn('generic_cityobject', 'lod2_implicit_ref_point');
+	PERFORM DropGeometryColumn('generic_cityobject', 'lod3_implicit_ref_point');
+	PERFORM DropGeometryColumn('generic_cityobject', 'lod4_implicit_ref_point');
+	PERFORM DropGeometryColumn('address', 'multi_point');
+	PERFORM DropGeometryColumn('building', 'lod1_terrain_intersection');
+	PERFORM DropGeometryColumn('building', 'lod2_terrain_intersection');
+	PERFORM DropGeometryColumn('building', 'lod3_terrain_intersection');
+	PERFORM DropGeometryColumn('building', 'lod4_terrain_intersection');
+	PERFORM DropGeometryColumn('building', 'lod2_multi_curve');
+	PERFORM DropGeometryColumn('building', 'lod3_multi_curve');
+	PERFORM DropGeometryColumn('building', 'lod4_multi_curve');
+	PERFORM DropGeometryColumn('building_furniture', 'lod4_implicit_ref_point');
+	PERFORM DropGeometryColumn('city_furniture', 'lod1_terrain_intersection');
+	PERFORM DropGeometryColumn('city_furniture', 'lod2_terrain_intersection');
+	PERFORM DropGeometryColumn('city_furniture', 'lod3_terrain_intersection');
+	PERFORM DropGeometryColumn('city_furniture', 'lod4_terrain_intersection');
+	PERFORM DropGeometryColumn('city_furniture', 'lod1_implicit_ref_point');
+	PERFORM DropGeometryColumn('city_furniture', 'lod2_implicit_ref_point');
+	PERFORM DropGeometryColumn('city_furniture', 'lod3_implicit_ref_point');
+	PERFORM DropGeometryColumn('city_furniture', 'lod4_implicit_ref_point');
+	PERFORM DropGeometryColumn('citymodel', 'envelope');
+	PERFORM DropGeometryColumn('cityobjectgroup', 'geometry');
+	PERFORM DropGeometryColumn('relief_component', 'extent');
+	PERFORM DropGeometryColumn('solitary_vegetat_object', 'lod1_implicit_ref_point');
+	PERFORM DropGeometryColumn('solitary_vegetat_object', 'lod2_implicit_ref_point');
+	PERFORM DropGeometryColumn('solitary_vegetat_object', 'lod3_implicit_ref_point');
+	PERFORM DropGeometryColumn('solitary_vegetat_object', 'lod4_implicit_ref_point');
+	PERFORM DropGeometryColumn('surface_data', 'gt_reference_point');
+	PERFORM DropGeometryColumn('transportation_complex', 'lod0_network');
+	PERFORM DropGeometryColumn('waterbody', 'lod0_multi_curve');
+	PERFORM DropGeometryColumn('waterbody', 'lod1_multi_curve');
+
+-- Update entry in DATABASE_SRS-table
+	UPDATE DATABASE_SRS SET SRID=db_srid, GML_SRS_NAME=db_gml_srs_name;
+	
+-- Create geometry columns in associted tables and add them to geometry_columns-view again
+	PERFORM AddGeometryColumn('cityobject', 'envelope', db_srid, 'POLYGON', 3);
+	PERFORM AddGeometryColumn('surface_geometry', 'geometry', db_srid, 'POLYGON', 3);
+	PERFORM AddGeometryColumn('breakline_relief', 'ridge_or_valley_lines', db_srid, 'MULTICURVE', 3);
+	PERFORM AddGeometryColumn('breakline_relief', 'break_lines', db_srid, 'MULTICURVE', 3);
+	PERFORM AddGeometryColumn('masspoint_relief', 'relief_points', db_srid, 'MULTIPOINT', 3);
+	PERFORM AddGeometryColumn('orthophoto_imp', 'footprint', db_srid, 'POLYGON', 3);
+	PERFORM AddGeometryColumn('tin_relief', 'stop_lines', db_srid, 'MULTICURVE', 3);
+	PERFORM AddGeometryColumn('tin_relief', 'break_lines', db_srid, 'MULTICURVE', 3);
+	PERFORM AddGeometryColumn('tin_relief', 'control_points', db_srid, 'MULTIPOINT', 3);
+	PERFORM AddGeometryColumn('raster_relief_imp', 'footprint', db_srid, 'POLYGON', 3);
+	PERFORM AddGeometryColumn('cityobject_genericattrib', 'geomval', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('generic_cityobject', 'lod0_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('generic_cityobject', 'lod1_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('generic_cityobject', 'lod2_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('generic_cityobject', 'lod3_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('generic_cityobject', 'lod4_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('generic_cityobject', 'lod0_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('generic_cityobject', 'lod1_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('generic_cityobject', 'lod2_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('generic_cityobject', 'lod3_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('generic_cityobject', 'lod4_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('address', 'multi_point', db_srid, 'MULTIPOINT', 3);
+	PERFORM AddGeometryColumn('building', 'lod1_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('building', 'lod2_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('building', 'lod3_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('building', 'lod4_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('building', 'lod2_multi_curve', db_srid, 'MULTICURVE', 3);
+	PERFORM AddGeometryColumn('building', 'lod3_multi_curve', db_srid, 'MULTICURVE', 3);
+	PERFORM AddGeometryColumn('building', 'lod4_multi_curve', db_srid, 'MULTICURVE', 3);
+	PERFORM AddGeometryColumn('building_furniture', 'lod4_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('city_furniture', 'lod1_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('city_furniture', 'lod2_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('city_furniture', 'lod3_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('city_furniture', 'lod4_terrain_intersection', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('city_furniture', 'lod1_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('city_furniture', 'lod2_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('city_furniture', 'lod3_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('city_furniture', 'lod4_implicit_ref_point', db_srid, 'POINT', 3);	
+	PERFORM AddGeometryColumn('citymodel', 'envelope', db_srid, 'POLYGON', 3);
+	PERFORM AddGeometryColumn('cityobjectgroup', 'geometry', db_srid, 'POLYGON', 3);
+	PERFORM AddGeometryColumn('relief_component', 'extent', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('solitary_vegetat_object', 'lod1_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('solitary_vegetat_object', 'lod2_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('solitary_vegetat_object', 'lod3_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('solitary_vegetat_object', 'lod4_implicit_ref_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('surface_data', 'gt_reference_point', db_srid, 'POINT', 3);
+	PERFORM AddGeometryColumn('transportation_complex', 'lod0_network', db_srid, 'GEOMETRY', 3);
+	PERFORM AddGeometryColumn('waterbody', 'lod0_multi_curve', db_srid, 'MULTICURVE', 3);
+	PERFORM AddGeometryColumn('waterbody', 'lod1_multi_curve', db_srid, 'MULTICURVE', 3);
+
+-- Create spatial indexes
+	CREATE INDEX CITYOBJECT_SPX 				ON CITYOBJECT 					USING GIST ( ENVELOPE gist_geometry_ops_nd );
+	CREATE INDEX SURFACE_GEOM_SPX 				ON SURFACE_GEOMETRY 			USING GIST ( GEOMETRY gist_geometry_ops_nd );
+	CREATE INDEX BREAKLINE_RID_SPX 				ON BREAKLINE_RELIEF 			USING GIST ( RIDGE_OR_VALLEY_LINES gist_geometry_ops_nd );
+	CREATE INDEX BREAKLINE_BREAK_SPX 			ON BREAKLINE_RELIEF 			USING GIST ( BREAK_LINES gist_geometry_ops_nd );
+	CREATE INDEX MASSPOINT_REL_SPX 				ON MASSPOINT_RELIEF 			USING GIST ( RELIEF_POINTS gist_geometry_ops_nd );
+	CREATE INDEX ORTHOPHOTO_IMP_SPX				ON ORTHOPHOTO_IMP 				USING GIST ( FOOTPRINT );
+	CREATE INDEX TIN_RELF_STOP_SPX 				ON TIN_RELIEF 					USING GIST ( STOP_LINES gist_geometry_ops_nd );
+	CREATE INDEX TIN_RELF_BREAK_SPX 			ON TIN_RELIEF 					USING GIST ( BREAK_LINES gist_geometry_ops_nd ); 
+	CREATE INDEX TIN_RELF_CRTLPTS_SPX			ON TIN_RELIEF 					USING GIST ( CONTROL_POINTS gist_geometry_ops_nd );
+	CREATE INDEX GENERICCITY_LOD0TERR_SPX		ON GENERIC_CITYOBJECT 			USING GIST ( LOD0_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX GENERICCITY_LOD1TERR_SPX		ON GENERIC_CITYOBJECT 			USING GIST ( LOD1_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX GENERICCITY_LOD2TERR_SPX		ON GENERIC_CITYOBJECT 			USING GIST ( LOD2_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX GENERICCITY_LOD3TERR_SPX		ON GENERIC_CITYOBJECT 			USING GIST ( LOD3_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX GENERICCITY_LOD4TERR_SPX		ON GENERIC_CITYOBJECT 			USING GIST ( LOD4_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX GENERICCITY_LOD1REFPNT_SPX		ON GENERIC_CITYOBJECT 			USING GIST ( LOD1_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX GENERICCITY_LOD2REFPNT_SPX		ON GENERIC_CITYOBJECT 			USING GIST ( LOD2_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX GENERICCITY_LOD3REFPNT_SPX		ON GENERIC_CITYOBJECT 			USING GIST ( LOD3_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX GENERICCITY_LOD4REFPNT_SPX		ON GENERIC_CITYOBJECT 			USING GIST ( LOD4_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX BUILDING_LOD1TERR_SPX 			ON BUILDING			 			USING GIST ( LOD1_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX BUILDING_LOD2TERR_SPX 			ON BUILDING			 			USING GIST ( LOD2_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX BUILDING_LOD3TERR_SPX			ON BUILDING			 			USING GIST ( LOD3_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX BUILDING_LOD4TERR_SPX			ON BUILDING			 			USING GIST ( LOD4_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX BUILDING_LOD2MULTI_SPX			ON BUILDING			 			USING GIST ( LOD2_MULTI_CURVE gist_geometry_ops_nd );
+	CREATE INDEX BUILDING_LOD3MULTI_SPX			ON BUILDING			 			USING GIST ( LOD3_MULTI_CURVE gist_geometry_ops_nd );
+	CREATE INDEX BUILDING_LOD4MULTI_SPX			ON BUILDING			 			USING GIST ( LOD4_MULTI_CURVE gist_geometry_ops_nd );
+	CREATE INDEX BUILDING_FURN_LOD4REFPNT_SPX 	ON BUILDING_FURNITURE 			USING GIST ( LOD4_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX CITY_FURN_LOD1TERR_SPX			ON CITY_FURNITURE 				USING GIST ( LOD1_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX CITY_FURN_LOD2TERR_SPX			ON CITY_FURNITURE 				USING GIST ( LOD2_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX CITY_FURN_LOD3TERR_SPX			ON CITY_FURNITURE 				USING GIST ( LOD3_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX CITY_FURN_LOD4TERR_SPX			ON CITY_FURNITURE 				USING GIST ( LOD4_TERRAIN_INTERSECTION gist_geometry_ops_nd );
+	CREATE INDEX CITY_FURN_LOD1REFPNT_SPX		ON CITY_FURNITURE 				USING GIST ( LOD1_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX CITY_FURN_LOD2REFPNT_SPX		ON CITY_FURNITURE 				USING GIST ( LOD2_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX CITY_FURN_LOD3REFPNT_SPX		ON CITY_FURNITURE 				USING GIST ( LOD3_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX CITY_FURN_LOD4REFPNT_SPX 		ON CITY_FURNITURE 				USING GIST ( LOD4_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX CITYMODEL_SPX	 				ON CITYMODEL 					USING GIST ( ENVELOPE gist_geometry_ops_nd );
+	CREATE INDEX CITYOBJECTGROUP_SPX			ON CITYOBJECTGROUP 				USING GIST ( GEOMETRY gist_geometry_ops_nd );
+	CREATE INDEX RELIEF_COMPONENT_SPX 			ON RELIEF_COMPONENT 			USING GIST ( EXTENT );
+	CREATE INDEX SOL_VEGETAT_OBJ_LOD1REFPNT_SPX	ON SOLITARY_VEGETAT_OBJECT 		USING GIST ( LOD1_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX SOL_VEGETAT_OBJ_LOD2REFPNT_SPX	ON SOLITARY_VEGETAT_OBJECT 		USING GIST ( LOD2_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX SOL_VEGETAT_OBJ_LOD3REFPNT_SPX	ON SOLITARY_VEGETAT_OBJECT 		USING GIST ( LOD3_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX SOL_VEGETAT_OBJ_LOD4REFPNT_SPX	ON SOLITARY_VEGETAT_OBJECT 		USING GIST ( LOD4_IMPLICIT_REF_POINT gist_geometry_ops_nd );
+	CREATE INDEX SURFACE_DATA_SPX 				ON SURFACE_DATA 				USING GIST ( GT_REFERENCE_POINT );
+	CREATE INDEX TRANSPORTATION_COMPLEX_SPX		ON TRANSPORTATION_COMPLEX 		USING GIST ( LOD0_NETWORK gist_geometry_ops_nd );
+	CREATE INDEX WATERBODY_LOD0MULTI_SPX		ON WATERBODY 					USING GIST ( LOD0_MULTI_CURVE gist_geometry_ops_nd );
+	CREATE INDEX WATERBODY_LOD1MULTI_SPX		ON WATERBODY 					USING GIST ( LOD1_MULTI_CURVE gist_geometry_ops_nd );
+
+END;
+$$ 
+LANGUAGE plpgsql;

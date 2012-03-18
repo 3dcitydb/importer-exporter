@@ -44,7 +44,7 @@ CREATE TABLE BUILDING_FURNITURE (
 )
 ;
 
-SELECT public.AddGeometryColumn('building_furniture', 'lod4_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('building_furniture', 'lod4_implicit_ref_point', 3068, 'POINT', 3);
 
 ALTER TABLE BUILDING_FURNITURE
 	ADD COLUMN LOD4_IMPLICIT_TRANSFORMATION 	VARCHAR(1000);

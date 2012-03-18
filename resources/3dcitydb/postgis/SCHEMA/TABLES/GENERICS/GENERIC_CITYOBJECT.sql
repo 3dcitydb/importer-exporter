@@ -41,11 +41,11 @@ CREATE TABLE GENERIC_CITYOBJECT (
 )
 ;
 
-SELECT public.AddGeometryColumn('generic_cityobject', 'lod0_terrain_intersection', 3068, 'GEOMETRY', 3);
-SELECT public.AddGeometryColumn('generic_cityobject', 'lod1_terrain_intersection', 3068, 'GEOMETRY', 3);
-SELECT public.AddGeometryColumn('generic_cityobject', 'lod2_terrain_intersection', 3068, 'GEOMETRY', 3);
-SELECT public.AddGeometryColumn('generic_cityobject', 'lod3_terrain_intersection', 3068, 'GEOMETRY', 3);
-SELECT public.AddGeometryColumn('generic_cityobject', 'lod4_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('generic_cityobject', 'lod0_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('generic_cityobject', 'lod1_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('generic_cityobject', 'lod2_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('generic_cityobject', 'lod3_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('generic_cityobject', 'lod4_terrain_intersection', 3068, 'GEOMETRY', 3);
 
 ALTER TABLE GENERIC_CITYOBJECT
 	ADD COLUMN LOD0_GEOMETRY_ID 		INTEGER,
@@ -60,11 +60,11 @@ ALTER TABLE GENERIC_CITYOBJECT
 	ADD COLUMN LOD4_IMPLICIT_REP_ID 	INTEGER
 ;
 
-SELECT public.AddGeometryColumn('generic_cityobject', 'lod0_implicit_ref_point', 3068, 'POINT', 3);
-SELECT public.AddGeometryColumn('generic_cityobject', 'lod1_implicit_ref_point', 3068, 'POINT', 3);
-SELECT public.AddGeometryColumn('generic_cityobject', 'lod2_implicit_ref_point', 3068, 'POINT', 3);
-SELECT public.AddGeometryColumn('generic_cityobject', 'lod3_implicit_ref_point', 3068, 'POINT', 3);
-SELECT public.AddGeometryColumn('generic_cityobject', 'lod4_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('generic_cityobject', 'lod0_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('generic_cityobject', 'lod1_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('generic_cityobject', 'lod2_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('generic_cityobject', 'lod3_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('generic_cityobject', 'lod4_implicit_ref_point', 3068, 'POINT', 3);
 
 ALTER TABLE GENERIC_CITYOBJECT
 	ADD COLUMN LOD0_IMPLICIT_TRANSFORMATION 	VARCHAR(1000),

@@ -209,7 +209,7 @@ BEGIN
             
         BEGIN
             IF (idx).type = SPATIAL THEN
-                create_ddl := 'CREATE INDEX ' || (idx).index_name || ' ON ' || (idx).table_name || ' USING GIST (' || (idx).attribute_name || ')';
+                create_ddl := 'CREATE INDEX ' || (idx).index_name || ' ON ' || (idx).table_name || ' USING GIST (' || (idx).attribute_name || ' gist_geometry_ops_nd)';
             ELSE
                 create_ddl := 'CREATE INDEX ' || (idx).index_name || ' ON ' || (idx).table_name || '(' || (idx).attribute_name || ')';
             END IF;

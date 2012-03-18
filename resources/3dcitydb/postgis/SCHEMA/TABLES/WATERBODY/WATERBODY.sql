@@ -41,8 +41,8 @@ CREATE TABLE WATERBODY (
 )
 ;
 
-SELECT public.AddGeometryColumn('waterbody', 'lod0_multi_curve', 3068, 'MULTICURVE', 3);
-SELECT public.AddGeometryColumn('waterbody', 'lod1_multi_curve', 3068, 'MULTICURVE', 3);
+SELECT AddGeometryColumn('waterbody', 'lod0_multi_curve', 3068, 'MULTICURVE', 3);
+SELECT AddGeometryColumn('waterbody', 'lod1_multi_curve', 3068, 'MULTICURVE', 3);
 
 ALTER TABLE WATERBODY 
 	ADD COLUMN LOD1_SOLID_ID 			INTEGER,

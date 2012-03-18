@@ -35,7 +35,7 @@ CREATE TABLE MASSPOINT_RELIEF (
 )
 ;
 
-SELECT public.AddGeometryColumn('masspoint_relief', 'relief_points', 3068, 'MULTIPOINT', 3);
+SELECT AddGeometryColumn('masspoint_relief', 'relief_points', 3068, 'MULTIPOINT', 3);
 
 ALTER TABLE MASSPOINT_RELIEF
 ADD CONSTRAINT MASSPOINT_RELIEF_PK PRIMARY KEY

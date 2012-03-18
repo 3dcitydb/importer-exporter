@@ -42,7 +42,7 @@ CREATE TABLE ADDRESS (
 )
 ;
 
-SELECT public.AddGeometryColumn('address', 'multi_point', 3068, 'MULTIPOINT', 3);
+SELECT AddGeometryColumn('address', 'multi_point', 3068, 'MULTIPOINT', 3);
 
 ALTER TABLE ADDRESS
 	ADD COLUMN XAL_SOURCE 				TEXT;

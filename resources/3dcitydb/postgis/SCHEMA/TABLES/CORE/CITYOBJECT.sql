@@ -38,7 +38,7 @@ CREATE TABLE CITYOBJECT (
 )
 ;
 
-SELECT public.AddGeometryColumn('cityobject', 'envelope', 3068, 'POLYGON', 3);
+SELECT AddGeometryColumn('cityobject', 'envelope', 3068, 'POLYGON', 3);
 
 ALTER TABLE CITYOBJECT 
 	ADD COLUMN CREATION_DATE 			DATE NOT NULL,

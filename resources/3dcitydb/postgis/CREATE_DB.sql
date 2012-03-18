@@ -30,23 +30,11 @@
 --                                                                    CNag
 --                                                                    ASta
 --
---SET SERVEROUTPUT ON
---SET FEEDBACK ON
---SET VER OFF
 
---VARIABLE VERSIONBATCHFILE VARCHAR2(50);
-
--- This script is called from CREATE_DB.bat and it
--- is required that the three substitution variables
--- &SRSNO, &GMLSRSNAME, and &VERSIONING are set properly.
-
-
---// create database srs
---// !!! edit the path to your 3DCityDB-files, the database-SRID and the GML_SRS_NAME !!!
+-- This script is called from CREATE_DB.bat
 
 \i SCHEMA/TABLES/METADATA/DATABASE_SRS.sql
 INSERT INTO DATABASE_SRS(SRID,GML_SRS_NAME) VALUES (3068,'urn:ogc:def:crs,crs:EPSG:6.12:3068,crs:EPSG:6.12:5783');
---'urn:ogc:def:crs:EPSG::26910');
 
 --// create tables
 \i SCHEMA/TABLES/METADATA/OBJECTCLASS.sql

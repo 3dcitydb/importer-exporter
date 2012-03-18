@@ -42,7 +42,7 @@ CREATE TABLE CITYOBJECT_GENERICATTRIB (
 )
 ;
 
-SELECT public.AddGeometryColumn('cityobject_genericattrib', 'geomval', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('cityobject_genericattrib', 'geomval', 3068, 'GEOMETRY', 3);
 
 ALTER TABLE CITYOBJECT_GENERICATTRIB
 	ADD COLUMN BLOBVAL 					BYTEA,

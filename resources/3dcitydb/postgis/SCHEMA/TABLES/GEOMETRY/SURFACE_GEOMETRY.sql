@@ -44,7 +44,7 @@ CREATE TABLE SURFACE_GEOMETRY(
 )
 ;
 
-SELECT public.AddGeometryColumn('surface_geometry', 'geometry', 3068, 'POLYGON', 3);
+SELECT AddGeometryColumn('surface_geometry', 'geometry', 3068, 'POLYGON', 3);
 
 ALTER TABLE SURFACE_GEOMETRY
 ADD CONSTRAINT SURFACE_GEOMETRY_PK PRIMARY KEY

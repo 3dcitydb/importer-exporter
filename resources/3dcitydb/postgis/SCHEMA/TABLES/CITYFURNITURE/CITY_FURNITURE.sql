@@ -40,10 +40,10 @@ CREATE TABLE CITY_FURNITURE(
 )
 ;
 
-SELECT public.AddGeometryColumn('city_furniture', 'lod1_terrain_intersection', 3068, 'GEOMETRY', 3);
-SELECT public.AddGeometryColumn('city_furniture', 'lod2_terrain_intersection', 3068, 'GEOMETRY', 3);
-SELECT public.AddGeometryColumn('city_furniture', 'lod3_terrain_intersection', 3068, 'GEOMETRY', 3);
-SELECT public.AddGeometryColumn('city_furniture', 'lod4_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('city_furniture', 'lod1_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('city_furniture', 'lod2_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('city_furniture', 'lod3_terrain_intersection', 3068, 'GEOMETRY', 3);
+SELECT AddGeometryColumn('city_furniture', 'lod4_terrain_intersection', 3068, 'GEOMETRY', 3);
 
 ALTER TABLE CITY_FURNITURE
 	ADD COLUMN LOD1_GEOMETRY_ID 		INTEGER,
@@ -56,10 +56,10 @@ ALTER TABLE CITY_FURNITURE
 	ADD COLUMN LOD4_IMPLICIT_REP_ID 	INTEGER
 ;
 
-SELECT public.AddGeometryColumn('city_furniture', 'lod1_implicit_ref_point', 3068, 'POINT', 3);
-SELECT public.AddGeometryColumn('city_furniture', 'lod2_implicit_ref_point', 3068, 'POINT', 3);
-SELECT public.AddGeometryColumn('city_furniture', 'lod3_implicit_ref_point', 3068, 'POINT', 3);
-SELECT public.AddGeometryColumn('city_furniture', 'lod4_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('city_furniture', 'lod1_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('city_furniture', 'lod2_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('city_furniture', 'lod3_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('city_furniture', 'lod4_implicit_ref_point', 3068, 'POINT', 3);
 
 ALTER TABLE CITY_FURNITURE
 	ADD COLUMN LOD1_IMPLICIT_TRANSFORMATION 	VARCHAR(1000),

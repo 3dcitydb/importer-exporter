@@ -35,8 +35,8 @@ CREATE TABLE BREAKLINE_RELIEF (
 )
 ;
 
-SELECT public.AddGeometryColumn('breakline_relief', 'ridge_or_valley_lines', 3068, 'MULTICURVE', 3);
-SELECT public.AddGeometryColumn('breakline_relief', 'break_lines', 3068, 'MULTICURVE', 3);
+SELECT AddGeometryColumn('breakline_relief', 'ridge_or_valley_lines', 3068, 'MULTICURVE', 3);
+SELECT AddGeometryColumn('breakline_relief', 'break_lines', 3068, 'MULTICURVE', 3);
 
 ALTER TABLE BREAKLINE_RELIEF
 ADD CONSTRAINT BREAKLINE_RELIEF_PK PRIMARY KEY

@@ -2,8 +2,7 @@ Hello! Exited to work with the 3DCityDB in PostGIS 2.0?
 
 The creation of the database is handled by the psql-console of PostgreSQL.
 But no worries, you don't have to use the console directly as you can use a batch-file.
-
-WAIT! Before you doubleclick it, you have to edit the file in a way that its suits to your environment:
+Before you doubleclick it, you have to edit the file in a way that its suits to your environment:
 
 set PGPORT = 5432 (this is the default port)
 
@@ -11,9 +10,9 @@ set PGHOST = localhost (this is the default db-server-address)
 
 set PGUSER = postgres (this is the default superuser of PostgreSQL)
 
-set PGPASSWORD = yourPGpassword
+set PGPASSWORD = userPasswordHere
 
-set THEDB = name of the empty database, you must have already created (with template_postgis20) in PGAdminIII or psql.  
+set THEDB = name of the empty database, you must have already created (e.g. with template_postgis20) in PGAdminIII or psql.  
 
 set FILES = absolute path to the folder where you have found this file
 
@@ -22,5 +21,8 @@ set PGBIN= C:\Program Files\PostgreSQL\9.1\bin (or similar to this one)
 
 Edit the DROP_DB.bat in the same way.
 The creation and dropping of the database should then run fast and correct.
+The Database SRID is the Soldner-RefSys for Berlin by default.
+To change it after the database has been created you can use the function util_change_db_srid found in the geodb_pkg-schema.
+To avoid any errors, loss of data or long waiting times this function should be run on an empty database. 
 
 Have fun!

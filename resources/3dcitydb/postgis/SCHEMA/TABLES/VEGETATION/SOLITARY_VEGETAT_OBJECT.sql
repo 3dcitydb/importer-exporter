@@ -52,10 +52,10 @@ CREATE TABLE SOLITARY_VEGETAT_OBJECT (
 )
 ;
 
-SELECT public.AddGeometryColumn('solitary_vegetat_object', 'lod1_implicit_ref_point', 3068, 'POINT', 3);
-SELECT public.AddGeometryColumn('solitary_vegetat_object', 'lod2_implicit_ref_point', 3068, 'POINT', 3);
-SELECT public.AddGeometryColumn('solitary_vegetat_object', 'lod3_implicit_ref_point', 3068, 'POINT', 3);
-SELECT public.AddGeometryColumn('solitary_vegetat_object', 'lod4_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('solitary_vegetat_object', 'lod1_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('solitary_vegetat_object', 'lod2_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('solitary_vegetat_object', 'lod3_implicit_ref_point', 3068, 'POINT', 3);
+SELECT AddGeometryColumn('solitary_vegetat_object', 'lod4_implicit_ref_point', 3068, 'POINT', 3);
 
 ALTER TABLE SOLITARY_VEGETAT_OBJECT 
 	ADD COLUMN LOD1_IMPLICIT_TRANSFORMATION 	VARCHAR(1000),

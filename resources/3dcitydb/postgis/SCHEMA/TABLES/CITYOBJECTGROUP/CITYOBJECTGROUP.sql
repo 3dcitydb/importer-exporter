@@ -41,7 +41,7 @@ CREATE TABLE CITYOBJECTGROUP (
 )
 ;
 
-SELECT public.AddGeometryColumn('cityobjectgroup', 'geometry', 3068, 'POLYGON', 3);
+SELECT AddGeometryColumn('cityobjectgroup', 'geometry', 3068, 'POLYGON', 3);
 
 ALTER TABLE CITYOBJECTGROUP 
 	ADD COLUMN SURFACE_GEOMETRY_ID 		INTEGER,

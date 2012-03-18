@@ -40,7 +40,7 @@ CREATE TABLE CITYMODEL (
 )
 ;
 
-SELECT public.AddGeometryColumn('citymodel', 'envelope', 3068, 'POLYGON', 3);
+SELECT AddGeometryColumn('citymodel', 'envelope', 3068, 'POLYGON', 3);
 
 ALTER TABLE CITYMODEL 
 	ADD COLUMN CREATION_DATE 			DATE,
