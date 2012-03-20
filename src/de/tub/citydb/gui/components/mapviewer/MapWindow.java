@@ -81,6 +81,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.text.html.HTMLDocument;
 
 import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
@@ -263,10 +265,11 @@ public class MapWindow extends JDialog implements EventHandler {
 		// left components
 		left.setLayout(new GridBagLayout());
 		left.setBackground(Color.WHITE);
+		Border componentBorder = BorderFactory.createCompoundBorder(UIManager.getBorder("TitledBorder.border"), BorderFactory.createEmptyBorder(5, 5, 5, 5));		
 
 		// BBox
 		final JPanel bbox = new JPanel();
-		bbox.setBorder(BorderFactory.createTitledBorder(""));
+		bbox.setBorder(componentBorder);
 		bbox.setLayout(new GridBagLayout());	
 
 		bboxTitel = new JLabel();
@@ -350,7 +353,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		// Reverse geocoder
 		JPanel reverse = new JPanel();
-		reverse.setBorder(BorderFactory.createTitledBorder(""));
+		reverse.setBorder(componentBorder);
 		reverse.setLayout(new GridBagLayout());
 
 		reverseTitle = new JLabel();
@@ -381,7 +384,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		// Google maps
 		JPanel googleMaps = new JPanel();
-		googleMaps.setBorder(BorderFactory.createTitledBorder(""));
+		googleMaps.setBorder(componentBorder);
 		googleMaps.setLayout(new GridBagLayout());
 
 		googleMapsTitle = new JLabel();
@@ -396,7 +399,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		// help
 		JPanel help = new JPanel();
-		help.setBorder(BorderFactory.createTitledBorder(""));
+		help.setBorder(componentBorder);
 		help.setLayout(new GridBagLayout());	
 
 		helpTitle = new JLabel();
