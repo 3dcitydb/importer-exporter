@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <installation version="1.0">
     <info>
         <appname>!impexp.name!</appname>
@@ -8,7 +8,7 @@
             <author name="Claus Nagel" email="claus.nagel@tu-berlin.de"/>
             <author name="Javier Herreruela" email="javier.herreruela@tu-berlin.de"/>
             <author name="Alexandra Lorenz" email="lorenz@tu-berlin.de"/>
-            <author name="Gerhard Koenig" email="gerhard.koenig@tu-berlin.de"/>
+            <author name="Gerhard König" email="gerhard.koenig@tu-berlin.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tu-berlin.de"/>
         </authors>
         <url>!impexp.homepage!</url>
