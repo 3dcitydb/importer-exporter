@@ -702,11 +702,8 @@ public class DBBuilding implements DBExporter {
 
 				buildingNode = pseudoNode;
 
-			} else {
-				//identify hierarchy nodes and place them into the tree
-				if (parentId == 0)
-					buildingTree.put(buildingNode.id, buildingNode);
-			}
+			} else
+				buildingTree.put(buildingNode.id, buildingNode);
 
 			// make the node known to its parent...
 			if (parentId != 0) {
