@@ -33,17 +33,13 @@
 -- DROP TABLE "TIN_RELIEF" CASCADE CONSTRAINT PURGE;
                                                             
 CREATE TABLE TIN_RELIEF (
-	ID 					SERIAL NOT NULL,
-	MAX_LENGTH 			DOUBLE PRECISION
+	ID 						SERIAL NOT NULL,
+	MAX_LENGTH 				DOUBLE PRECISION,
+	STOP_LINES				GEOMETRY(MultiCurveZ,3068),
+	BREAK_LINES				GEOMETRY(MultiCurveZ,3068),
+	CONTROL_POINTS			GEOMETRY(MultiPointZ,3068),
+	surface_geometry_id 	INTEGER
 )
-;
-
-SELECT AddGeometryColumn('tin_relief', 'stop_lines', 3068, 'MULTICURVE', 3);
-SELECT AddGeometryColumn('tin_relief', 'break_lines', 3068, 'MULTICURVE', 3);
-SELECT AddGeometryColumn('tin_relief', 'control_points', 3068, 'MULTIPOINT', 3);
-
-ALTER TABLE TIN_RELIEF
-	ADD COLUMN surface_geometry_id 		INTEGER
 ;
 
 ALTER TABLE TIN_RELIEF

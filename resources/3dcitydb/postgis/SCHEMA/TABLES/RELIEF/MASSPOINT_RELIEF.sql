@@ -31,11 +31,10 @@
 --                                           ASta
 --
 CREATE TABLE MASSPOINT_RELIEF (
-	ID 			SERIAL NOT NULL
+	ID 					SERIAL NOT NULL,
+	RELIEF_POINTS		GEOMETRY(MultiPointZ,3068)
 )
 ;
-
-SELECT AddGeometryColumn('masspoint_relief', 'relief_points', 3068, 'MULTIPOINT', 3);
 
 ALTER TABLE MASSPOINT_RELIEF
 ADD CONSTRAINT MASSPOINT_RELIEF_PK PRIMARY KEY
