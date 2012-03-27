@@ -1,4 +1,4 @@
--- IDX.sql
+﻿-- IDX.sql
 --
 -- Authors:     Claus Nagel <nagel@igg.tu-berlin.de>
 --
@@ -127,18 +127,22 @@ DECLARE
     is_valid BOOLEAN;
     status VARCHAR(20);
 BEGIN
-    EXECUTE 'SELECT indisvalid FROM pg_index WHERE indexrelid = $1::regclass' INTO is_valid USING (idx).index_name;
-    IF is_valid = true THEN
+    EXECUTE 'SELECT DISTINCT pgi.indisvalid FROM pg_index pgi
+        JOIN pg_stat_user_indexes pgsui ON pgsui.relid=pgi.indrelid
+        JOIN pg_attribute pga ON pga.attrelid=pgi.indexrelid
+        WHERE pgsui.indexrelname=$1' INTO is_valid USING idx.index_name;
+
+    IF is_valid is null THEN
+        status := 'DROPPED';
+    ELSIF is_valid = true THEN
         status := 'VALID';
     ELSE
         status := 'INVALID';
     END IF;
-
+    
     RETURN status;
 
 EXCEPTION
-    WHEN NO_DATA_FOUND OR SQLSTATE '42704' OR SQLSTATE '42P01' THEN
-        RETURN 'DROPPED';
     WHEN OTHERS THEN
         RETURN 'FAILED';
 END;
@@ -155,36 +159,25 @@ LANGUAGE plpgsql;
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_index_status(table_name VARCHAR, column_name VARCHAR) RETURNS VARCHAR AS $$
 DECLARE
-    index_name VARCHAR(40);
     is_valid BOOLEAN;
     status VARCHAR(20);
 BEGIN   
+    EXECUTE 'SELECT DISTINCT pgi.indisvalid FROM pg_index pgi
+        JOIN pg_stat_user_indexes pgsui ON pgsui.relid=pgi.indrelid
+        JOIN pg_attribute pga ON pga.attrelid=pgi.indexrelid
+        WHERE pgsui.relname=$1 AND pga.attname=$2' INTO is_valid USING lower(table_name), lower(column_name);
 
-    EXECUTE 'select i.relname from pg_class t, pg_class i, pg_index ix, pg_attribute a
-        where t.oid = ix.indrelid
-            and i.oid = ix.indexrelid
-            and a.attrelid = t.oid
-            and a.attnum = ANY(ix.indkey)
-            and t.relkind = ''r''
-            and t.relname = lower($1)
-            and a.attname = lower($2)' INTO index_name USING table_name, column_name;
-
-    IF index_name is not null THEN
-        EXECUTE 'SELECT indisvalid FROM pg_index WHERE indexrelid = $1::regclass' INTO is_valid USING index_name;
-        IF is_valid = true THEN
-            status := 'VALID';
-        ELSE
-            status := 'INVALID';
-        END IF;
+    IF is_valid is null THEN
+        status := 'DROPPED';
+    ELSIF is_valid = true THEN
+        status := 'VALID';
     ELSE
-        status := 'DROPPED'; 	
+        status := 'INVALID';
     END IF;
-        
+    
     RETURN status;
 
 EXCEPTION
-    WHEN NO_DATA_FOUND OR SQLSTATE '42704' OR SQLSTATE '42P01' THEN
-        RETURN 'DROPPED';
     WHEN OTHERS THEN
         RETURN 'FAILED';
 END;
@@ -201,17 +194,16 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_create_index(idx geodb_pkg.INDEX_OBJ, params VARCHAR DEFAULT '') RETURNS VARCHAR AS $$
 DECLARE
     create_ddl VARCHAR(1000);
-    sql_err_code VARCHAR(20);
     SPATIAL CONSTANT NUMERIC(1) := 1;
 BEGIN
     IF geodb_pkg.idx_index_status(idx) != 'VALID' THEN
-        sql_err_code := geodb_pkg.idx_drop_index(idx);
-            
+        PERFORM geodb_pkg.idx_drop_index(idx);
+        
         BEGIN
-            IF (idx).type = SPATIAL THEN
-                create_ddl := 'CREATE INDEX ' || (idx).index_name || ' ON ' || (idx).table_name || ' USING GIST (' || (idx).attribute_name || ' gist_geometry_ops_nd)';
+            IF idx.type = SPATIAL THEN
+                create_ddl := 'CREATE INDEX ' || idx.index_name || ' ON ' || idx.table_name || ' USING GIST (' || idx.attribute_name || ' gist_geometry_ops_nd)';
             ELSE
-                create_ddl := 'CREATE INDEX ' || (idx).index_name || ' ON ' || (idx).table_name || '(' || (idx).attribute_name || ')';
+                create_ddl := 'CREATE INDEX ' || idx.index_name || ' ON ' || idx.table_name || '(' || idx.attribute_name || ')';
             END IF;
 
             IF params != '' THEN
@@ -245,7 +237,7 @@ DECLARE
 BEGIN
     IF geodb_pkg.idx_index_status(idx) != 'DROPPED' THEN
         BEGIN    
-            EXECUTE 'DROP INDEX ' || (idx).index_name;
+            EXECUTE 'DROP INDEX ' || idx.index_name;
     
         EXCEPTION
             WHEN OTHERS THEN
