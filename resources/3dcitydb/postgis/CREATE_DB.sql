@@ -25,7 +25,7 @@
 --
 -- Version | Date       | Description                               | Author | Conversion
 -- 2.0.1     2008-06-28   versioning is enabled depending on var      TKol	   
--- 2.0.0     2011-12-11   release version                             TKol	   FKun
+-- 2.0.0     2011-12-11   PostGIS version                             TKol	   FKun
 --                                                                    GKoe
 --                                                                    CNag
 --                                                                    ASta
@@ -94,7 +94,7 @@ INSERT INTO DATABASE_SRS(SRID,GML_SRS_NAME) VALUES (3068,'urn:ogc:def:crs,crs:EP
 \i UTIL/CREATE_DB/IMPORT_PROCEDURES.sql
 \i UTIL/CREATE_DB/DUMMY_IMPORT.sql
 
---// create GEODB_PKG
+--// create GEODB_PKG schema
 CREATE SCHEMA geodb_pkg;
 
 CREATE PROCEDURAL LANGUAGE plpgsql;
@@ -104,6 +104,8 @@ SET search_path = public, pg_catalog;
 \i PL_SQL/GEODB_PKG/UTIL/UTIL.sql;
 \i PL_SQL/GEODB_PKG/INDEX/IDX.sql;
 \i PL_SQL/GEODB_PKG/STATISTICS/STAT.sql;
+\i PL_SQL/GEODB_PKG/DELETE/DELETE.sql;
+\i PL_SQL/GEODB_PKG/DELETE/DELETE_BY_LINEAGE.sql;
 
 /*--// (possibly) activate versioning
 BEGIN
@@ -120,11 +122,7 @@ END;
 column mc2 new_value VERSIONBATCHFILE2 print
 select :VERSIONBATCHFILE mc2 from dual;
 \i &VERSIONBATCHFILE2
-
---// CREATE TABLES & PROCEDURES OF THE PLANNINGMANAGER
-\i PL_SQL/MOSAIC/MOSAIC.sql;
-\i CREATE_PLANNING_MANAGER.sql
-
---// geodb packages
-\i CREATE_GEODB_PKG.sql
 */
+--// CREATE TABLES & PROCEDURES OF THE PLANNINGMANAGER
+--\i PL_SQL/MOSAIC/MOSAIC.sql;
+--\i CREATE_PLANNING_MANAGER.sql
