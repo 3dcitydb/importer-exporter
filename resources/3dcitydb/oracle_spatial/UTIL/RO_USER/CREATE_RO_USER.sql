@@ -3,7 +3,7 @@
 -- Authors:     Javier Herreruela <javier.herreruela@tu-berlin.de>
 --              Claus Nagel <claus.nagel@tu-berlin.de>
 --
--- Copyright:   (c) 2007-2010, Institute for Geodesy and Geoinformation Science,
+-- Copyright:   (c) 2007-2012, Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
@@ -20,6 +20,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description                               | Author
+-- 2.0.6     2010-06-03   bugfix for execute object rights in 2.0.6   JHer
 -- 2.0.3     2010-06-03   release version                             JHer
 --                                                                    CNag
 --
@@ -100,6 +101,8 @@ BEGIN
       EXECUTE IMMEDIATE 'grant select on ' || UPPER('&SCHEMA_OWNER') || '.CITY_MODEL_ASPECT to ' || v_role;
       EXECUTE IMMEDIATE 'grant select on ' || UPPER('&SCHEMA_OWNER') || '.CITY_MODEL_ASPECT_COMPONENT to ' || v_role;
       EXECUTE IMMEDIATE 'grant select on ' || UPPER('&SCHEMA_OWNER') || '.DATABASE_SRS to ' || v_role;
+      EXECUTE IMMEDIATE 'grant execute on ' || UPPER('&SCHEMA_OWNER') || '.DB_INFO_TABLE to ' || v_role;
+      EXECUTE IMMEDIATE 'grant execute on ' || UPPER('&SCHEMA_OWNER') || '.DB_INFO_OBJ to ' || v_role;
       EXECUTE IMMEDIATE 'grant select on ' || UPPER('&SCHEMA_OWNER') || '.EXTERNAL_REFERENCE to ' || v_role;
       EXECUTE IMMEDIATE 'grant select on ' || UPPER('&SCHEMA_OWNER') || '.GENERALIZATION to ' || v_role;
       EXECUTE IMMEDIATE 'grant select on ' || UPPER('&SCHEMA_OWNER') || '.GENERIC_CITYOBJECT to ' || v_role;
