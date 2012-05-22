@@ -6,22 +6,19 @@ Before you doubleclick it, you have to edit the file in a way that its suits to 
 
 set PGPORT = 5432 (this is the default port)
 
-set PGHOST = localhost (this is the default db-server-address)
+set PGHOST = your_host_address ('localhost' on local machine)
 
-set PGUSER = postgres (this is the default superuser of PostgreSQL)
-
-set PGPASSWORD = userPasswordHere
+set PGUSER = your_username ('postgres' is the default superuser)
 
 set THEDB = name of the empty database, you must have already created (e.g. with template_postgis20) in PGAdminIII or psql.  
 
-set FILES = absolute path to the folder where you have found this file
-
-set PGBIN= C:\Program Files\PostgreSQL\9.1\bin (or similar to this one)
+set PGBIN= path_to_psql.exe (e.g. 'C:\PostgreSQL\9.1\bin' or 'C:\pgAdmin III\1.14')
 
 
 Edit the DROP_DB.bat in the same way.
 The creation and dropping of the database should then run fast and correct.
-The Database SRID and GMLSRSNAME have to be set in the prompt.
+First you have to enter your user-password.
+Then the Database SRID and GMLSRSNAME have to be set in the prompt.
 To change it afterwards you can use the function util_change_db_srid found in the geodb_pkg.schema.
 To avoid any errors, loss of data or long waiting times this function should be run on an empty database. 
 

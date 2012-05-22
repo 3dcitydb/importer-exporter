@@ -1,11 +1,10 @@
 set PGPORT=5432
-set PGHOST=localhost
-set PGUSER=postgres
-set PGPASSWORD=your_password_here
+set PGHOST=your_host_address
+set PGUSER=your_username
 set THEDB=your_database_here
-set PGBIN=C:\Program Files (x86)\PostgreSQL\9.1\bin
+set PGBIN=path_to_psql.exe
 
-REM Create the 3DCityDB database
+REM creating 3DCityDB database
 "%PGBIN%\psql" -d "%THEDB%" -f "CREATE_DB.sql"
 
 pause
