@@ -25,7 +25,7 @@
 --
 -- Version | Date       | Description                               | Author | Conversion
 -- 2.0.1     2008-06-28   versioning is enabled depending on var      TKol	   
--- 2.0.0     2011-12-11   PostGIS version                             TKol	   FKun
+-- 2.0.0     2012-05-21   PostGIS version                             TKol     FKun
 --                                                                    GKoe
 --                                                                    CNag
 --                                                                    ASta
@@ -33,10 +33,17 @@
 
 -- This script is called from CREATE_DB.bat
 
-\i SCHEMA/TABLES/METADATA/DATABASE_SRS.sql
-INSERT INTO DATABASE_SRS(SRID,GML_SRS_NAME) VALUES (3068,'urn:ogc:def:crs,crs:EPSG:6.12:3068,crs:EPSG:6.12:5783');
 
---// create tables
+\prompt 'Please enter a valid SRID: ' SRS_NO
+\prompt 'Please enter the corresponding SRSName to be used in GML exports : ' GMLSRSNAME
+
+\set SRSNO :SRS_NO
+
+\i SCHEMA/TABLES/METADATA/DATABASE_SRS.sql
+INSERT INTO DATABASE_SRS(SRID,GML_SRS_NAME) VALUES (:SRS_NO,:'GMLSRSNAME');
+--e.g. Berlin: INSERT INTO DATABASE_SRS(SRID,GML_SRS_NAME) VALUES (3068,'urn:ogc:def:crs,crs:EPSG:6.12:3068,crs:EPSG:6.12:5783');
+
+--// create TABLES
 \i SCHEMA/TABLES/METADATA/OBJECTCLASS.sql
 \i SCHEMA/TABLES/CORE/CITYMODEL.sql
 \i SCHEMA/TABLES/CORE/CITYOBJECT.sql
@@ -86,7 +93,7 @@ INSERT INTO DATABASE_SRS(SRID,GML_SRS_NAME) VALUES (3068,'urn:ogc:def:crs,crs:EP
 --// activate constraints
 \i SCHEMA/CONSTRAINTS/CONSTRAINTS.sql
 
---// BUILD INDEXES
+--// build INDEXES
 \i SCHEMA/INDEXES/SIMPLE_INDEX.sql
 \i SCHEMA/INDEXES/SPATIAL_INDEX.sql
 
@@ -94,35 +101,9 @@ INSERT INTO DATABASE_SRS(SRID,GML_SRS_NAME) VALUES (3068,'urn:ogc:def:crs,crs:EP
 \i UTIL/CREATE_DB/IMPORT_PROCEDURES.sql
 \i UTIL/CREATE_DB/DUMMY_IMPORT.sql
 
---// create GEODB_PKG schema
-CREATE SCHEMA geodb_pkg;
+--// create GEODB_PKG (additional schema with PL_pgSQL-Functions)
+\i CREATE_GEODB_PKG.sql
 
-CREATE PROCEDURAL LANGUAGE plpgsql;
-ALTER PROCEDURAL LANGUAGE plpgsql OWNER TO postgres;
-SET search_path = public, pg_catalog;
-
-\i PL_SQL/GEODB_PKG/UTIL/UTIL.sql;
-\i PL_SQL/GEODB_PKG/INDEX/IDX.sql;
-\i PL_SQL/GEODB_PKG/STATISTICS/STAT.sql;
-\i PL_SQL/GEODB_PKG/DELETE/DELETE.sql;
-\i PL_SQL/GEODB_PKG/DELETE/DELETE_BY_LINEAGE.sql;
-
-/*--// (possibly) activate versioning
-BEGIN
-  :VERSIONBATCHFILE := 'UTIL/CREATE_DB/DO_NOTHING.sql';
-END;
-/
-BEGIN
-  IF ('&VERSIONING'='yes' OR '&VERSIONING'='YES' OR '&VERSIONING'='y' OR '&VERSIONING'='Y') THEN
-    :VERSIONBATCHFILE := 'ENABLE_VERSIONING.sql';
-  END IF;
-END;
-/
--- Transfer the value from the bind variable to the substitution variable
-column mc2 new_value VERSIONBATCHFILE2 print
-select :VERSIONBATCHFILE mc2 from dual;
-\i &VERSIONBATCHFILE2
-*/
 --// CREATE TABLES & PROCEDURES OF THE PLANNINGMANAGER
---\i PL_SQL/MOSAIC/MOSAIC.sql;
+--\i PL_pgSQL/MOSAIC/MOSAIC.sql;
 --\i CREATE_PLANNING_MANAGER.sql

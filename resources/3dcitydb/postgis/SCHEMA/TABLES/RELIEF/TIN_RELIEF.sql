@@ -6,9 +6,9 @@
 --              Alexandra Stadler <stadler@igg.tu-berlin.de>
 --
 -- Conversion:  Laure Fraysse <Laure.fraysse@etumel.univmed.fr>
---				Felix Kunde <felix-kunde@gmx.de>
+--              Felix Kunde <felix-kunde@gmx.de>
 --
--- Copyright:   (c) 2007-2011  Institute for Geodesy and Geoinformation Science,
+-- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
@@ -25,20 +25,18 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2011-12-09   PostGIS version    TKol	  LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
-
--- DROP TABLE "TIN_RELIEF" CASCADE CONSTRAINT PURGE;
-                                                            
+                                                          
 CREATE TABLE TIN_RELIEF (
-	ID 						SERIAL NOT NULL,
-	MAX_LENGTH 				DOUBLE PRECISION,
-	STOP_LINES				GEOMETRY(MultiCurveZ,3068),
-	BREAK_LINES				GEOMETRY(MultiCurveZ,3068),
-	CONTROL_POINTS			GEOMETRY(MultiPointZ,3068),
-	surface_geometry_id 	INTEGER
+	ID                        SERIAL NOT NULL,
+	MAX_LENGTH                DOUBLE PRECISION,
+	STOP_LINES                GEOMETRY(MultiCurveZ,:SRSNO),
+	BREAK_LINES               GEOMETRY(MultiCurveZ,:SRSNO),
+	CONTROL_POINTS            GEOMETRY(MultiPointZ,:SRSNO),
+	surface_geometry_id       INTEGER
 )
 ;
 

@@ -8,14 +8,14 @@
 --              Dr. Andreas Poth <poth@lat-lon.de>
 --
 -- Conversion:  Laure Fraysse <Laure.fraysse@etumel.univmed.fr>
---				Felix Kunde <felix-kunde@gmx.de>
+--              Felix Kunde <felix-kunde@gmx.de>
 --
 -- Copyright:   (c) 2004-2006, Institute for Cartography and Geoinformation,
 --                             Universität Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --              (c) 2005-2006, lat/lon GmbH, Germany
 --                             http://www.lat-lon.de
---   			(c) 2011	   Institute for Geodesy and Geoinformation Science,
+--   			(c) 2012       Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
@@ -32,23 +32,21 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description      | Author | Conversion
--- 1.0       2011-12-09   release version    LPlu	  LFra
---                                           TKol	  FKun
+-- 1.0       2012-05-21   PostGIS version    LPlu     LFra
+--                                           TKol     FKun
 --                                           GGro
 --                                           JSch
 --                                           VStr
 --                                           APot
 --
 
--- DROP TABLE "RASTER_RELIEF_IMP" CASCADE CONSTRAINT PURGE;
-
 CREATE TABLE RASTER_RELIEF_IMP (
-	ID 								SERIAL NOT NULL,
-	RASTERPROPERTY					RASTER,
-	RELIEF_ID 						INTEGER,
-	RASTER_RELIEF_ID				INTEGER,
-	FILENAME 						VARCHAR(4000),
-	FOOTPRINT						GEOMETRY(PolygonZ,3068)
+	ID                        SERIAL NOT NULL,
+	RASTERPROPERTY            RASTER,
+	RELIEF_ID                 INTEGER,
+	RASTER_RELIEF_ID          INTEGER,
+	FILENAME                  VARCHAR(4000),
+	FOOTPRINT                 GEOMETRY(PolygonZ,:SRSNO)
 )
 ;
 

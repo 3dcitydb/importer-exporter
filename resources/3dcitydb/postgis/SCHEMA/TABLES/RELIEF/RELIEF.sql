@@ -8,14 +8,14 @@
 --              Dr. Andreas Poth <poth@lat-lon.de>
 --
 -- Conversion:  Laure Fraysse <Laure.fraysse@etumel.univmed.fr>
---				Felix Kunde <felix-kunde@gmx.de>
+--              Felix Kunde <felix-kunde@gmx.de>
 --
 -- Copyright:   (c) 2004-2006, Institute for Cartography and Geoinformation,
 --                             Universität Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --              (c) 2005-2006, lat/lon GmbH, Germany
 --                             http://www.lat-lon.de
---   			(c) 2011	   Institute for Geodesy and Geoinformation Science,
+--   			(c) 2012       Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
@@ -32,20 +32,18 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description      | Author | Conversion
--- 1.0       2011-12-09   release version    LPlu	  LFra
---                                           TKol	  FKun
+-- 1.0       2012-05-21   PostGIS version    LPlu     LFra
+--                                           TKol     FKun
 --                                           GGro
 --                                           JSch
 --                                           VStr
 --                                           APot
 
--- DROP TABLE "RELIEF" CASCADE CONSTRAINT PURGE;
-
 CREATE TABLE RELIEF (
-	ID 									SERIAL NOT NULL,
-	NAME								VARCHAR(256),
-	TYPE								VARCHAR(256),
-	LODGROUP							NUMERIC(1,0) NOT NULL
+	ID                        SERIAL NOT NULL,
+	NAME                      VARCHAR(256),
+	TYPE                      VARCHAR(256),
+	LODGROUP                  NUMERIC(1,0) NOT NULL
 )
 ;
 

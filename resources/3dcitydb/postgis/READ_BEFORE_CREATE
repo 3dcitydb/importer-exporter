@@ -21,8 +21,8 @@ set PGBIN= C:\Program Files\PostgreSQL\9.1\bin (or similar to this one)
 
 Edit the DROP_DB.bat in the same way.
 The creation and dropping of the database should then run fast and correct.
-The Database SRID is the Soldner-RefSys for Berlin by default.
-To change it after the database has been created you can use the function util_change_db_srid found in the geodb_pkg-schema.
+The Database SRID and GMLSRSNAME have to be set in the prompt.
+To change it afterwards you can use the function util_change_db_srid found in the geodb_pkg.schema.
 To avoid any errors, loss of data or long waiting times this function should be run on an empty database. 
 
 Have fun!

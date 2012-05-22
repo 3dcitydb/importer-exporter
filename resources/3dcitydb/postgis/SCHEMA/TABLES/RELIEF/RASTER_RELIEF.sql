@@ -11,9 +11,9 @@
 --              Alexandra Stadler <stadler@igg.tu-berlin.de>
 --
 -- Conversion:  Laure Fraysse <Laure.fraysse@etumel.univmed.fr>
---				Felix Kunde <felix-kunde@gmx.de>
+--              Felix Kunde <felix-kunde@gmx.de>
 --
--- Copyright:   (c) 2007-2008  Institute for Geodesy and Geoinformation Science,
+-- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --              (c) 2004-2006, Institute for Cartography and Geoinformation,
@@ -35,8 +35,8 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description      | Author | Conversion
--- 2.0.0     2011-12-09   release version    LPlu	  LFra
---                                           TKol	  FKun
+-- 2.0.0     2012-05-21   PostGIS version    LPlu     LFra
+--                                           TKol     FKun
 --                                           GGro
 --                                           JSch
 --                                           VStr
@@ -45,19 +45,16 @@
 --                                           CNag
 --                                           ASta
 
--- DROP TABLE "RASTER_RELIEF" CASCADE CONSTRAINT PURGE;
-
 CREATE TABLE RASTER_RELIEF (
-	ID 					SERIAL NOT NULL,
---  "LOD" NUMBER (1) NOT NULL,
-	RASTERPROPERTY      RASTER
---  "RELIEF_ID" NUMBER NOT NULL,
---  "NAME" VARCHAR2 (256),
---  "TYPE" VARCHAR2 (256) 
+	ID                        SERIAL NOT NULL,
+--  LOD                       NUMERIC(1) NOT NULL,
+	RASTERPROPERTY            RASTER
+--  RELIEF_ID                 INTEGER NOT NULL,
+--  NAME                      VARCHAR(256),
+--  TYPE                      VARCHAR(256),
+--  EXTENT                    GEOMETRY(Polygon,:SRSNO)
 )
 ;
-
--- SELECT AddGeometryColumn('raster_relief', 'extent', 3068, 'GEOMETRY', 3);
 
 ALTER TABLE RASTER_RELIEF
 ADD CONSTRAINT RASTER_RLF_PK PRIMARY KEY
