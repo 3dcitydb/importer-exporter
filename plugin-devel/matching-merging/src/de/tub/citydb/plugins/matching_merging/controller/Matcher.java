@@ -147,7 +147,7 @@ public class Matcher implements EventHandler {
 				logController.info("Identifying candidate buildings.");				
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.match.dialog.identifyCand"), this));
 
-				cstmt = conn.prepareCall("{CALL geodb_match.collect_cand_building(?, ?)}");
+				cstmt = conn.prepareCall("{call geodb_pkg.match_collect_cand_building(?, ?)}");
 				cstmt.setInt(1, candLODProjection); //LOD candidate
 				cstmt.setString(2, lineage); //lineage
 				cstmt.executeUpdate();
@@ -169,7 +169,7 @@ public class Matcher implements EventHandler {
 				logController.info("Fetching LOD " + candLODProjection + " geometries of candidate buildings.");
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.match.dialog.collectGeomCand"), this));		
 
-				cstmt = conn.prepareCall("{CALL geodb_match.collect_geometry(?)}");
+				cstmt = conn.prepareCall("{call geodb_pkg.match_collect_geometry(?)}");
 				cstmt.setInt(1, candLODProjection); //Cand LOD
 				cstmt.executeUpdate();
 
@@ -180,12 +180,11 @@ public class Matcher implements EventHandler {
 				logController.info("Rectifying geometries of candidate buildings.");
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.match.dialog.rectGeomCand"), this));		
 
-				cstmt = conn.prepareCall("{CALL geodb_match.rectify_geometry(?)}");
-				cstmt.setDouble(1, tolerance); //tolerance
+				cstmt = conn.prepareCall("{call geodb_pkg.match_rectify_geometry()}");
 				cstmt.executeUpdate();
 
 				int geometries = 0;
-				result = stmt.executeQuery("select count(*) from match_collect_geom");
+				result = stmt.executeQuery("select count(*) from geodb_pkg.match_collect_geom");
 				if (result.next())
 					geometries = result.getInt(1);
 
@@ -201,10 +200,9 @@ public class Matcher implements EventHandler {
 				logController.info("Computing 2D projection of candidate buildings.");
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.match.dialog.unionCand"), this));		
 
-				cstmt = conn.prepareCall("{CALL geodb_match.aggregate_geometry(?, ?, ?)}");
-				cstmt.setString(1, "MATCH_CAND_PROJECTED");
-				cstmt.setDouble(2, tolerance); //tolerance
-				cstmt.setInt(3, 1); //aggregate building
+				cstmt = conn.prepareCall("{call geodb_pkg.match_aggregate_geometry(?, ?)}");
+				cstmt.setString(1, "geodb_pkg.MATCH_CAND_PROJECTED");
+				cstmt.setInt(2, 1); //aggregate building
 				cstmt.executeUpdate();
 
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(4, 9, this));
@@ -214,7 +212,7 @@ public class Matcher implements EventHandler {
 				logController.info("Identifying master buildings.");
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.match.dialog.identifyMaster"), this));				
 
-				cstmt = conn.prepareCall("{CALL geodb_match.collect_master_building(?, ?)}");
+				cstmt = conn.prepareCall("{call geodb_pkg.match_collect_master_building(?, ?)}");
 				cstmt.setInt(1, masterLODProjection); //Master LOD
 				cstmt.setString(2, lineage); //lineage
 				cstmt.executeUpdate();
@@ -236,7 +234,7 @@ public class Matcher implements EventHandler {
 				logController.info("Fetching LOD " + masterLODProjection + " geometries of master buildings.");
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.match.dialog.collectGeomMaster"), this));				
 
-				cstmt = conn.prepareCall("{CALL geodb_match.collect_geometry(?)}");
+				cstmt = conn.prepareCall("{call geodb_pkg.match_collect_geometry(?)}");
 				cstmt.setInt(1, masterLODProjection); //Master LOD
 				cstmt.executeUpdate();
 
@@ -247,12 +245,11 @@ public class Matcher implements EventHandler {
 				logController.info("Rectifying geometries of master buildings.");
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.match.dialog.rectGeomMaster"), this));				
 
-				cstmt = conn.prepareCall("{CALL geodb_match.rectify_geometry(?)}");
-				cstmt.setDouble(1, tolerance); //tolerance
+				cstmt = conn.prepareCall("{call geodb_pkg.match_rectify_geometry()}");
 				cstmt.executeUpdate();
 
 				int geometries = 0;
-				result = stmt.executeQuery("select count(*) from match_collect_geom");
+				result = stmt.executeQuery("select count(*) from geodb_pkg.match_collect_geom");
 				if (result.next())
 					geometries = result.getInt(1);
 
@@ -268,10 +265,9 @@ public class Matcher implements EventHandler {
 				logController.info("Computing 2D projection of master buildings.");
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.match.dialog.unionMaster"), this));				
 
-				cstmt = conn.prepareCall("{CALL geodb_match.aggregate_geometry(?, ?, ?)}");
-				cstmt.setString(1, "MATCH_MASTER_PROJECTED"); 
-				cstmt.setDouble(2, tolerance); //tolerance
-				cstmt.setInt(3, 1); //aggregate buildings
+				cstmt = conn.prepareCall("{call geodb_pkg.match_aggregate_geometry(?, ?)}");
+				cstmt.setString(1, "geodb_pkg.MATCH_MASTER_PROJECTED"); 
+				cstmt.setInt(2, 1); //aggregate buildings
 				cstmt.executeUpdate();
 
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(8, 10, this));
@@ -281,11 +277,10 @@ public class Matcher implements EventHandler {
 				logController.info("Computing overlaps between candidate and master buildings.");
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.match.dialog.overlap"), this));				
 
-				cstmt = conn.prepareCall("{CALL geodb_match.join_cand_master(?, ?, ?, ?)}"); 
+				cstmt = conn.prepareCall("{call geodb_pkg.match_join_cand_master(?, ?, ?)}"); 
 				cstmt.setInt(1, candLODProjection); //LOD candidate
 				cstmt.setString(2, lineage); //lineage
 				cstmt.setInt(3, masterLODProjection); //Master LOD
-				cstmt.setDouble(4, tolerance); //tolerance
 				cstmt.executeUpdate();
 
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(9, 10, this));
@@ -394,7 +389,7 @@ public class Matcher implements EventHandler {
 			float minMasterOverlap = 0f;
 			float maxMasterOverlap = 0f;
 
-			result = stmt.executeQuery("select count(*), min(area1_cov_by_area2), max(area1_cov_by_area2), min(area2_cov_by_area1), max(area2_cov_by_area1) from match_overlap_all");
+			result = stmt.executeQuery("select count(*), min(area1_cov_by_area2), max(area1_cov_by_area2), min(area2_cov_by_area1), max(area2_cov_by_area1) from geodb_pkg.match_overlap_all");
 			if (result.next()) {
 				overlaps = result.getInt(1);
 				minCandOverlap = (int)(result.getFloat(2) * 10000) / 100f;
@@ -415,12 +410,12 @@ public class Matcher implements EventHandler {
 			logController.info("Searching for 1:1 matches within the specified overlap thresholds.");
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.overlap.dialog.identifyMatch"), this));
 
-			cstmt = conn.prepareCall("{CALL geodb_match.create_relevant_matches(?, ?)}");
+			cstmt = conn.prepareCall("{call geodb_pkg.match_create_relevant_matches(?, ?)}");
 			cstmt.setDouble(1, candOverlap); //delta1
 			cstmt.setDouble(2, masterOverlap); //delta2
 			cstmt.executeUpdate();
 
-			result = stmt.executeQuery("select count(*) from match_overlap_relevant");
+			result = stmt.executeQuery("select count(*) from geodb_pkg.match_overlap_relevant");
 			if (result.next()) 
 				relevantMatches = result.getInt(1);
 
@@ -508,7 +503,7 @@ public class Matcher implements EventHandler {
 
 			stmt = conn.createStatement();
 			int candidates = 0;
-			result = stmt.executeQuery("select count(*) from match_overlap_relevant");
+			result = stmt.executeQuery("select count(*) from geodb_pkg.match_overlap_relevant");
 			if (result.next())
 				candidates = result.getInt(1);
 
@@ -520,11 +515,11 @@ public class Matcher implements EventHandler {
 			logController.info("Fetching LOD " + candLODGeometry + " geometries of the matched candidate buildings.");
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.merge.dialog.collectGeomCand"), this));				
 
-			cstmt = conn.prepareCall("{CALL geodb_merge.collect_all_geometry(?)}");
+			cstmt = conn.prepareCall("{call geodb_pkg.merge_collect_all_geometry(?)}");
 			cstmt.setInt(1, candLODGeometry); //candidate LOD
 			cstmt.executeUpdate();
 
-			cstmt = conn.prepareCall("{CALL geodb_merge.remove_geometry_from_cand(?)}");
+			cstmt = conn.prepareCall("{call geodb_pkg.merge_remove_geometry_from_cand(?)}");
 			cstmt.setInt(1, candLODGeometry); //candidate LOD
 			cstmt.executeUpdate();
 
@@ -532,27 +527,27 @@ public class Matcher implements EventHandler {
 			logController.info("Moving appearances to master buildings.");
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.merge.dialog.moveApp"), this));				
 
-			cstmt = conn.prepareCall("{CALL geodb_merge.create_and_put_container(?, ?, ?)}");
+			cstmt = conn.prepareCall("{call geodb_pkg.merge_create_and_put_container(?, ?, ?)}");
 			cstmt.setInt(1, masterLODGeometry); //master LOD
 			cstmt.setInt(2, gmlNameModeInt); //GmlNameMode
 			cstmt.setString(3, " --/\\-- "); //delimiter
 			cstmt.executeUpdate();
 
-			cstmt = conn.prepareCall("{CALL geodb_merge.move_appearance()}");
+			cstmt = conn.prepareCall("{call geodb_pkg.merge_move_appearance()}");
 			cstmt.executeUpdate();
 
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(2, 6, this));
 			logController.info("Moving geometries to LOD " + masterLODGeometry + " of master buildings.");
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.merge.dialog.moveGeom"), this));				
 
-			cstmt = conn.prepareCall("{CALL geodb_merge.move_geometry()}");
+			cstmt = conn.prepareCall("{call geodb_pkg.merge_move_geometry()}");
 			cstmt.executeUpdate();
 
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(3, 6, this));
 			logController.info("Removing geometries from candidate buildings.");
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.merge.dialog.delGeom"), this));				
 
-			cstmt = conn.prepareCall("{CALL geodb_merge.delete_head_of_merge_geometry()}");
+			cstmt = conn.prepareCall("{call geodb_pkg.merge_delete_head_of_merge_geometry()}");
 			cstmt.executeUpdate();
 
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(4, 6, this));
@@ -561,13 +556,13 @@ public class Matcher implements EventHandler {
 				logController.info("Deleting matched candidate buildings.");
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.merge.dialog.delCand"), this));				
 
-				cstmt = conn.prepareCall("{CALL geodb_merge.delete_relevant_candidates()}");
+				cstmt = conn.prepareCall("{call geodb_pkg.merge_delete_relevant_candidates()}");
 				cstmt.executeUpdate();
 			} else if (deleteModeInt == 2) {
 				logController.info("Changing lineage of matched candidate buildings.");
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.merge.dialog.changeCandLineage"), this));				
 
-				cstmt = conn.prepareCall("{CALL geodb_merge.update_lineage(?)}");
+				cstmt = conn.prepareCall("{call geodb_pkg.merge_update_lineage(?)}");
 				cstmt.setString(1, lineage); //lineage for renaming
 				cstmt.executeUpdate();
 			}
@@ -583,7 +578,7 @@ public class Matcher implements EventHandler {
 				logController.info("Cleaning matching results.");
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Util.I18N.getString("match.merge.dialog.clear"), this));				
 
-				cstmt = conn.prepareCall("{CALL geodb_match.clear_matching_tables()}");
+				cstmt = conn.prepareCall("{call geodb_pkg.match_clear_matching_tables()}");
 				cstmt.executeUpdate();				
 			}
 
@@ -664,7 +659,7 @@ public class Matcher implements EventHandler {
 			logController.info("Deleting " + bldgCount + " building(s).");
 
 			if (bldgCount > 0) {
-				cstmt = conn.prepareCall("{CALL geodb_delete_by_lineage.delete_buildings(?)}");
+				cstmt = conn.prepareCall("{call geodb_pkg.del_delete_buildings(?)}");
 				cstmt.setString(1, lineage);
 				cstmt.executeUpdate();
 			}

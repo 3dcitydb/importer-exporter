@@ -240,7 +240,7 @@ DECLARE
 BEGIN
     IF geodb_pkg.idx_index_status(idx) != 'DROPPED' THEN
         BEGIN    
-            EXECUTE 'DROP INDEX ' || idx.index_name;
+            EXECUTE 'DROP INDEX IF EXISTS ' || idx.index_name;
     
         EXCEPTION
             WHEN OTHERS THEN

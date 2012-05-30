@@ -14,21 +14,21 @@
 --              for more details.
 -------------------------------------------------------------------------------
 -- About:
--- Part of the geodb_pkg.schema and DELETE-"Package"
--- Therefore the function starts with "del_"-Prefix
+-- 
+--
 --
 -------------------------------------------------------------------------------
 --
 -- ChangeLog:
 --
 -- Version | Date       | Description                          | Author  | Conversion
--- 1.2.0     2012-05-11   PostGIS Version                                  FKun	
+-- 1.2.0     2012-05-30   PostGIS Version                                  FKun	
 -- 1.2.0     2012-02-22   minor changes                          CNag
 -- 1.1.0     2011-02-11   moved to new DELETE functionality      CNag
 -- 1.0.0     2008-09-10   release version                        ASta
 --
 
-CREATE OR REPLACE FUNCTION geodb_pkg.del_delete_buildings(lineage_value VARCHAR) RETURNS SETOF void AS
+CREATE OR REPLACE FUNCTION geodb_pkg.del_by_lin_delete_buildings(lineage_value VARCHAR) RETURNS SETOF void AS
 $$
 DECLARE
   building_cur CURSOR FOR
@@ -36,7 +36,7 @@ DECLARE
 BEGIN    
   FOR building_rec IN building_cur LOOP
     BEGIN  
-      PERFORM geodb_delete.delete_building(building_rec.id);
+      PERFORM geodb_pkg.delete_building(building_rec.id);
       
     EXCEPTION
       WHEN OTHERS THEN

@@ -22,7 +22,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description                     | Author  | Conversion
--- 1.1.0     2012-05-11   PostGIS Version                             FKun	
+-- 1.1.0     2012-05-30   PostGIS Version                             FKun	
 -- 1.1.0     2012-02-22   some performance improvements     CNag
 -- 1.0.0     2011-02-11   release version                   CNag
 --
@@ -188,15 +188,15 @@ LANGUAGE plpgsql;
 /*
 internal: DELETE FROM CITYMODEL
 */
-CREATE OR REPLACE FUNCTION geodb_pkg.del_pre_delete_citymodel(citymodel_id NUMERIC) RETURNS SETOF void AS
+CREATE OR REPLACE FUNCTION geodb_pkg.del_pre_delete_citymodel(citymodel_rec_id NUMERIC) RETURNS SETOF void AS
 $$
 DECLARE
   appearance_cur CURSOR FOR
-    SELECT * FROM appearance WHERE cityobject_id=citymodel_id;
+    SELECT * FROM appearance WHERE cityobject_id=citymodel_rec_id;
 BEGIN
 -- TODO
 -- delete contained cityobjects!
-  EXECUTE 'DELETE FROM cityobject_member WHERE citymodel_id=$1' USING citymodel_id;
+  EXECUTE 'DELETE FROM cityobject_member WHERE citymodel_id=$1' USING citymodel_rec_id;
 
   FOR rec IN appearance_cur LOOP
     PERFORM geodb_pkg.del_delete_row_appearance(rec.id);
@@ -204,7 +204,7 @@ BEGIN
 
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'pre_delete_citymodel (id: %): %', citymodel_id, SQLERRM;
+      RAISE NOTICE 'pre_delete_citymodel (id: %): %', citymodel_rec_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -218,7 +218,7 @@ BEGIN
 
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'delete_citymodel (id: %): %', citymodel_id, SQLERRM;
+      RAISE NOTICE 'delete_row_citymodel (id: %): %', citymodel_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -227,25 +227,25 @@ LANGUAGE plpgsql;
 /*
 internal: DELETE FROM APPEARANCE
 */
-CREATE OR REPLACE FUNCTION geodb_pkg.del_pre_delete_appearance(appearance_id NUMERIC) RETURNS SETOF void AS
+CREATE OR REPLACE FUNCTION geodb_pkg.del_pre_delete_appearance(appearance_rec_id NUMERIC) RETURNS SETOF void AS
 $$
 DECLARE
   surface_data_cur CURSOR FOR
     SELECT s.* from surface_data s, appear_to_surface_data ats
-      WHERE s.id=ats.surface_data_id and ats.appearance_id=appearance_id;
+      WHERE s.id=ats.surface_data_id and ats.appearance_id=appearance_rec_id;
 BEGIN
 -- delete surface data not being referenced by appearances any more
   FOR rec IN surface_data_cur LOOP
-    IF is_not_referenced('appear_to_surface_data', 'surface_data_id', rec.id, 'appearance_id', appearance_id) THEN
+    IF is_not_referenced('appear_to_surface_data', 'surface_data_id', rec.id, 'appearance_id', appearance_rec_id) THEN
       PERFORM geodb_pkg.del_delete_row_surface_data(rec.id);
     END IF;
   END LOOP;
 
-  EXECUTE 'DELETE FROM appear_to_surface_data WHERE appearance_id=$1' USING appearance_id;
+  EXECUTE 'DELETE FROM appear_to_surface_data WHERE appearance_id=$1' USING appearance_rec_id;
   
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'pre_delete_appearance (id: %): %', appearance_id, SQLERRM;
+      RAISE NOTICE 'pre_delete_appearance (id: %): %', appearance_rec_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -259,7 +259,7 @@ BEGIN
 
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'delete_appearance (id: %): %', appearance_id, SQLERRM;
+      RAISE NOTICE 'delete_row_appearance (id: %): %', appearance_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -290,7 +290,7 @@ BEGIN
 
   EXCEPTION
 	WHEN OTHERS THEN
-      RAISE NOTICE 'delete_surface_data (id: %): %', surface_data_id, SQLERRM;
+      RAISE NOTICE 'delete_row_surface_data (id: %): %', surface_data_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -321,7 +321,7 @@ BEGIN
 
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'delete_cityobjectgroup (id: %): %', cityobjectgroup_id, SQLERRM;
+      RAISE NOTICE 'delete_row_cityobjectgroup (id: %): %', cityobjectgroup_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -351,25 +351,25 @@ LANGUAGE plpgsql;
 /*
 internal: DELETE FROM THEMATIC_SURFACE
 */
-CREATE OR REPLACE FUNCTION geodb_pkg.del_pre_delete_thematic_surface(thematic_surface_id NUMERIC) RETURNS SETOF void AS
+CREATE OR REPLACE FUNCTION geodb_pkg.del_pre_delete_thematic_surface(thematic_surface_rec_id NUMERIC) RETURNS SETOF void AS
 $$
 DECLARE
   opening_cur CURSOR FOR
     SELECT o.* FROM	opening o, opening_to_them_surface otm 
-	  WHERE o.id=otm.opening_id AND otm.thematic_surface_id=thematic_surface_rec.id;
+	  WHERE o.id=otm.opening_id AND otm.thematic_surface_id=thematic_surface_rec_id;
 BEGIN
 -- delete openings not being referenced by a thematic surface any more
   FOR rec IN opening_cur LOOP
-    IF is_not_referenced('opening_to_them_surface', 'opening_id', rec.id, 'thematic_surface_id', thematic_surface_id) THEN
+    IF is_not_referenced('opening_to_them_surface', 'opening_id', rec.id, 'thematic_surface_id', thematic_surface_rec_id) THEN
       PERFORM geodb_pkg.del_delete_row_opening(rec.id);
     END IF;
   END LOOP;
 
-  EXECUTE 'DELETE FROM opening_to_them_surface WHERE thematic_surface_id=$1' USING thematic_surface_id;
+  EXECUTE 'DELETE FROM opening_to_them_surface WHERE thematic_surface_id=$1' USING thematic_surface_rec_id;
 
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'pre_delete_thematic_surface (id: %): %', thematic_surface_id, SQLERRM;
+      RAISE NOTICE 'pre_delete_thematic_surface (id: %): %', thematic_surface_rec_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -384,7 +384,7 @@ BEGIN
 
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'delete_thematic_surface (id: %): %', thematic_surface_id, SQLERRM;
+      RAISE NOTICE 'delete_row_thematic_surface (id: %): %', thematic_surface_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -435,30 +435,30 @@ $$
 LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION geodb_pkg.del_delete_row_opening(opening_id NUMERIC) RETURNS SETOF void AS
+CREATE OR REPLACE FUNCTION geodb_pkg.del_delete_row_opening(opening_rec_id NUMERIC, opening_rec_address_id NUMERIC) RETURNS SETOF void AS
 $$
 BEGIN
-  PERFORM geodb_pkg.del_pre_delete_opening(opening_id);
-  EXECUTE 'DELETE FROM opening WHERE id=$1' USING opening_id;
-  PERFORM geodb_pkg.del_post_delete_opening(opening_id);
+  PERFORM geodb_pkg.del_pre_delete_opening(opening_rec_id);
+  EXECUTE 'DELETE FROM opening WHERE id=$1' USING opening_rec_id;
+  PERFORM geodb_pkg.del_post_delete_opening(opening_rec_address_id);
 
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'delete_opening (id: %): %', opening_id, SQLERRM;
+      RAISE NOTICE 'delete_row_opening (id: %): %', opening_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION geodb_pkg.del_post_delete_opening(opening_id NUMERIC) RETURNS SETOF void AS
+CREATE OR REPLACE FUNCTION geodb_pkg.del_post_delete_opening(opening_rec_address_id NUMERIC) RETURNS SETOF void AS
 $$
 DECLARE
   opening_rec opening%ROWTYPE;
   address_cur CURSOR FOR
     SELECT a.id FROM address a LEFT OUTER JOIN address_to_building ab
-      ON a.id=ab.address_id WHERE a.id=opening_rec.address_id AND ab.address_id IS NULL;
+      ON a.id=ab.address_id WHERE a.id=opening_rec_address_id AND ab.address_id IS NULL;
 BEGIN
-  EXECUTE 'SELECT * FROM opening WHERE id=$1' INTO opening_rec USING opening_id;
+  EXECUTE 'SELECT * FROM opening WHERE id=$1' INTO opening_rec USING opening_rec_address_id;
   
   IF opening_rec.lod3_multi_surface_id IS NOT NULL THEN
     PERFORM geodb_pkg.del_intern_delete_surface_geometry(opening_rec.lod3_multi_surface_id);
@@ -470,16 +470,16 @@ BEGIN
 
 -- delete addresses not being referenced from buildings and openings any more
   FOR rec IN address_cur LOOP
-    IF is_not_referenced('opening', 'address_id', rec.id, 'id', opening_id) THEN
+    IF is_not_referenced('opening', 'address_id', rec.id, 'id', opening_rec.id) THEN
       PERFORM geodb_pkg.del_delete_address(rec.id);
     END IF;   
   END LOOP;
 
-  PERFORM geodb_pkg.del_intern_delete_cityobject(opening_id);
+  PERFORM geodb_pkg.del_intern_delete_cityobject(opening_rec.id);
  
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'post_delete_opening (id: %): %', opening_id, SQLERRM;
+      RAISE NOTICE 'post_delete_opening (id: %): %', opening_rec.id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -496,7 +496,7 @@ BEGIN
 
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'delete_building_installation (id: %): %', building_installation_id, SQLERRM;
+      RAISE NOTICE 'delete_row_building_installation (id: %): %', building_installation_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -534,17 +534,17 @@ LANGUAGE plpgsql;
 /*
 internal: DELETE FROM ROOM
 */
-CREATE OR REPLACE FUNCTION geodb_pkg.del_pre_delete_room(room_pid NUMERIC) RETURNS SETOF void AS
+CREATE OR REPLACE FUNCTION geodb_pkg.del_pre_delete_room(room_rec_id NUMERIC) RETURNS SETOF void AS
 $$
 DECLARE
   thematic_surface_cur CURSOR FOR
-    SELECT * FROM thematic_surface WHERE room_id=room_pid;
+    SELECT * FROM thematic_surface WHERE room_id=room_rec_id;
   
   building_installation_cur CURSOR FOR
-    SELECT * FROM building_installation WHERE room_id=room_pid;
+    SELECT * FROM building_installation WHERE room_id=room_rec_id;
   
   building_furniture_cur CURSOR FOR
-    SELECT * FROM building_furniture WHERE room_id=room_pid;
+    SELECT * FROM building_furniture WHERE room_id=room_rec_id;
 BEGIN
   FOR rec IN thematic_surface_cur LOOP
     PERFORM geodb_pkg.del_delete_row_thematic_surface(rec.id);
@@ -560,7 +560,7 @@ BEGIN
 
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'pre_delete_room (id: %): %', room_pid, SQLERRM;
+      RAISE NOTICE 'pre_delete_room (id: %): %', room_rec_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -575,7 +575,7 @@ BEGIN
   
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'delete_room (id: %): %', room_id, SQLERRM;
+      RAISE NOTICE 'delete_row_room (id: %): %', room_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -613,7 +613,7 @@ BEGIN
 
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'delete_building_furniture (id: %): %', building_furniture_id, SQLERRM;
+      RAISE NOTICE 'delete_row_building_furniture (id: %): %', building_furniture_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -647,23 +647,23 @@ LANGUAGE plpgsql;
 /*
 internal: DELETE FROM BUILDING
 */
-CREATE OR REPLACE FUNCTION geodb_pkg.del_pre_delete_building(building_id NUMERIC) RETURNS SETOF void AS
+CREATE OR REPLACE FUNCTION geodb_pkg.del_pre_delete_building(building_rec_id NUMERIC) RETURNS SETOF void AS
 $$
 DECLARE   
   building_part_cur CURSOR FOR
-    SELECT * FROM building WHERE id!=building_id and building_parent_id=building_id;
+    SELECT * FROM building WHERE id!=building_rec_id AND building_parent_id=building_rec_id;
 
   thematic_surface_cur CURSOR FOR
-    SELECT * FROM thematic_surface WHERE building_id=building_id;
+    SELECT * FROM thematic_surface WHERE building_id=building_rec_id;
 
   building_installation_cur CURSOR FOR
-    SELECT * FROM building_installation WHERE building_id=building_id;
+    SELECT * FROM building_installation WHERE building_id=building_rec_id;
   
   room_cur CURSOR FOR
-    SELECT * FROM room WHERE building_id=building_id;
+    SELECT * FROM room WHERE building_id=building_rec_id;
 
   address_cur CURSOR FOR
-    SELECT address_id from address_to_building WHERE building_id=building_id;
+    SELECT address_id FROM address_to_building WHERE building_id=building_rec_id;
 BEGIN
   FOR rec IN building_part_cur LOOP
     PERFORM geodb_pkg.del_delete_row_building(rec.id);
@@ -683,16 +683,18 @@ BEGIN
 	
 -- delete addresses being not referenced from buildings any more
   FOR rec IN address_cur LOOP
-    IF is_not_referenced('address_to_building', 'address_id', rec.address_id, 'building_id', building_id) THEN
+    IF is_not_referenced('address_to_building', 'address_id', rec.address_id, 'building_id', building_rec_id) THEN
       PERFORM geodb_pkg.del_delete_address(rec.address_id);
     END IF;
   END LOOP;
 
-  EXECUTE 'DELETE FROM address_to_building WHERE building_id=$1' USING building_id;
+  EXECUTE 'DELETE FROM address_to_building WHERE building_id=$1' USING building_rec_id;
 
+  
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'pre_delete_building (id: %): %', building_id, SQLERRM;
+      RAISE NOTICE 'pre_delete_building (id: %): %', building_rec_id, SQLERRM;
+	  
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -705,9 +707,11 @@ BEGIN
   EXECUTE 'DELETE FROM building WHERE id=$1' USING building_id;
   PERFORM geodb_pkg.del_post_delete_building(building_id);
 
+  /*
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'delete_building (id: %): %', building_id, SQLERRM;
+      RAISE NOTICE 'delete_row_building (id: %): %', building_id, SQLERRM;
+	  */
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -906,7 +910,7 @@ BEGIN
   EXECUTE 'SELECT * FROM opening WHERE id=$1'
     INTO opening_rec USING pid;
 
-  PERFORM geodb_pkg.del_delete_row_opening(opening_rec.id);
+  PERFORM geodb_pkg.del_delete_row_opening(opening_rec.id, opening_rec.address_id);
 
   EXCEPTION
     WHEN no_data_found THEN
@@ -998,12 +1002,12 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION geodb_pkg.del_delete_building(pid NUMERIC) RETURNS SETOF void AS
 $$
 DECLARE
-  building_rec building%ROWTYPE;    
+  building_rec_id NUMERIC;    
 BEGIN
   EXECUTE 'SELECT * FROM building WHERE id=$1'
-    INTO building_rec USING pid;
+    INTO building_rec_id USING pid;
 
-  PERFORM geodb_pkg.del_delete_row_building(building_rec.id);
+  PERFORM geodb_pkg.del_delete_row_building(building_rec_id);
 
   EXCEPTION
     WHEN no_data_found THEN
@@ -1081,8 +1085,8 @@ CREATE OR REPLACE FUNCTION geodb_pkg.del_cleanup_citymodels() RETURNS SETOF void
 $$
 DECLARE
   citymodel_cur CURSOR FOR
-  SELECT c.* FROM citymodel c LEFT OUTER JOIN cityobject_member cm
-    ON c.id=cm.citymodel_id WHERE cm.citymodel_id IS NULL;
+    SELECT c.* FROM citymodel c LEFT OUTER JOIN cityobject_member cm
+      ON c.id=cm.citymodel_id WHERE cm.citymodel_id IS NULL;
 BEGIN
   FOR rec IN citymodel_cur LOOP
     PERFORM geodb_pkg.del_delete_row_citymodel(rec.id);
