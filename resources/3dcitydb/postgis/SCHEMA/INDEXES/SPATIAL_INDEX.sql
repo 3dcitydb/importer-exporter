@@ -48,10 +48,6 @@ CREATE INDEX BREAKLINE_BREAK_SPX            ON BREAKLINE_RELIEF          USING G
 CREATE INDEX MASSPOINT_REL_SPX              ON MASSPOINT_RELIEF          USING GIST ( RELIEF_POINTS gist_geometry_ops_nd );
 
 
--- ORTHOPHOTO_IMP SPATIAL INDEX********************************************************************************************************
-CREATE INDEX ORTHOPHOTO_IMP_SPX             ON ORTHOPHOTO_IMP            USING GIST ( FOOTPRINT );
-
-
 -- TIN_RELIEF SPATIAL INDEX********************************************************************************************************
 CREATE INDEX TIN_RELF_STOP_SPX              ON TIN_RELIEF                USING GIST ( STOP_LINES gist_geometry_ops_nd );
 CREATE INDEX TIN_RELF_BREAK_SPX             ON TIN_RELIEF                USING GIST ( BREAK_LINES gist_geometry_ops_nd ); 
