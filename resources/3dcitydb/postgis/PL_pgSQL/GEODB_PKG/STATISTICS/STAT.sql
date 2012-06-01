@@ -143,14 +143,10 @@ CREATE OR REPLACE FUNCTION geodb_pkg.stat_table_contents() RETURNS text[] AS $$
     report := array_append(report, ('#MASSPOINT_RELIEF:\t\t' || cnt));
     SELECT COUNT(*) INTO cnt FROM raster_relief;
     report := array_append(report, ('#RASTER_RELIEF:\t\t\t' || cnt));
-    SELECT COUNT(*) INTO cnt FROM raster_relief_imp;
-    report := array_append(report, ('#RASTER_RELIEF_IMP:\t\t' || cnt));
     SELECT COUNT(*) INTO cnt FROM relief;
     report := array_append(report, ('#RELIEF:\t\t\t' || cnt));
     SELECT COUNT(*) INTO cnt FROM orthophoto;
     report := array_append(report, ('#ORTHOPHOTO:\t\t\t' || cnt));
-    SELECT COUNT(*) INTO cnt FROM orthophoto_imp;
-    report := array_append(report, ('#ORTHOPHOTO_IMP:\t\t' || cnt));
   
     -- Transportation
     SELECT COUNT(*) INTO cnt FROM transportation_complex;

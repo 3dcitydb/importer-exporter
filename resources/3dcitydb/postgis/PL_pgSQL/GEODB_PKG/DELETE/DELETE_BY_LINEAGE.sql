@@ -36,7 +36,7 @@ DECLARE
 BEGIN    
   FOR building_rec IN building_cur LOOP
     BEGIN  
-      PERFORM geodb_pkg.delete_building(building_rec.id);
+      PERFORM geodb_pkg.del_delete_building(building_rec.id);
       
     EXCEPTION
       WHEN OTHERS THEN

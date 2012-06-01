@@ -149,7 +149,7 @@ BEGIN
   -- rectify master geometry 
   PERFORM geodb_pkg.match_rectify_geometry();
 
-  -- aggregate master geometry   
+  -- aggregate master geometry
   PERFORM geodb_pkg.match_aggregate_geometry('geodb_pkg.MATCH_MASTER_PROJECTED', aggregate_building); 
 
   -- fill matching table
@@ -460,7 +460,7 @@ DECLARE
   srid INTEGER;
 BEGIN
   EXECUTE 'SELECT srid FROM database_srs' INTO srid;
-  EXECUTE 'SELECT ST_Envelope(geometry) FROM '||table_name||'' INTO aggr_mbr;
+  EXECUTE 'SELECT ST_Union(geometry) FROM '||table_name||'' INTO aggr_mbr;
   PERFORM ST_SetSRID(aggr_mbr, srid);
 
   RETURN aggr_mbr;

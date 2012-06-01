@@ -1,4 +1,4 @@
-﻿-- IDX.sql
+-- IDX.sql
 --
 -- Authors:     Claus Nagel <nagel@igg.tu-berlin.de>
 --
