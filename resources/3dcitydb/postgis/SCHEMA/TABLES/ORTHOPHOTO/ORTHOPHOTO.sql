@@ -24,15 +24,23 @@
 --              http://www.gnu.org/copyleft/lgpl.html
 --              for more details.
 -------------------------------------------------------------------------------
--- About:
+-- About: Rasterdata is imported via C-Loader raster2pgsql (executed in command line)
+-- e.g.
+-- raster2pgsql -f orthophotoproperty -s yourSRID -I -C -M -F -t 128x128 -l 2,4 yourRasterFiles.tif orthophoto > orthophoto.sql
+-- (see PostGIS-Manual for explanation: http://www.postgis.org/documentation/manual-svn/using_raster.xml.html)
 --
---
+-- After the orthophoto.sql is generated values for columns LOD and DATUM should be
+-- added to the INSERT-statement before execution. The parameter -F adds a column
+-- which includes the filename and type-ending. The geometric extent is calculated
+-- in the raster-columns view, if a srid was assigned to the raster. Pyramid-layer
+-- are additional raster-files managed in the raster_overviews view. They are created
+-- with the parameter -l level,level,...
 -------------------------------------------------------------------------------
 --
 -- ChangeLog:
 --
 -- Version | Date       | Description      | Author | Conversion
--- 2.0       2012-05-21   PostGIS version    LPlu     LFra
+-- 2.0       2012-01-06   PostGIS version    LPlu     LFra
 --                                           TKol	  FKun
 --                                           GGro
 --                                           JSch
@@ -43,8 +51,6 @@
 CREATE TABLE ORTHOPHOTO (
 	ID                        SERIAL NOT NULL,
 	LOD                       NUMERIC(1,0) NOT NULL,
-	NAME                      VARCHAR(256),
-	TYPE                      VARCHAR(256),
 	DATUM                     DATE,
 	ORTHOPHOTOPROPERTY        RASTER
 )

@@ -27,15 +27,23 @@
 --              http://www.gnu.org/copyleft/lgpl.html
 --              for more details.
 -------------------------------------------------------------------------------
--- About:
+-- About: Rasterdata is imported via C-Loader raster2pgsql (executed in command line)
+-- e.g.
+-- raster2pgsql -f rasterproperty -s yourSRID -I -C -M -F -t 128x128 -l 2,4 yourRasterFiles.tif raster_relief > rastrelief.sql
+-- (see PostGIS-Manual for explanation: http://www.postgis.org/documentation/manual-svn/using_raster.xml.html)
 --
---
+-- After the rastrelief.sql is generated values for columns LOD and RELIEF_ID should be
+-- added to the INSERT-statement before execution. The parameter -F adds a column
+-- which includes the filename and type-ending. The geometric extent is calculated
+-- in the raster-columns view, if a srid was assigned to the raster. Pyramid-layer
+-- are additional raster-files managed in the raster_overviews view. They are created
+-- with the parameter -l level,level,...
 -------------------------------------------------------------------------------
 --
 -- ChangeLog:
 --
 -- Version | Date       | Description      | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    LPlu     LFra
+-- 2.0.0     2012-06-01   PostGIS version    LPlu     LFra
 --                                           TKol     FKun
 --                                           GGro
 --                                           JSch
@@ -47,12 +55,9 @@
 
 CREATE TABLE RASTER_RELIEF (
 	ID                        SERIAL NOT NULL,
---  LOD                       NUMERIC(1) NOT NULL,
-	RASTERPROPERTY            RASTER
---  RELIEF_ID                 INTEGER NOT NULL,
---  NAME                      VARCHAR(256),
---  TYPE                      VARCHAR(256),
---  EXTENT                    GEOMETRY(Polygon,:SRSNO)
+    LOD                       NUMERIC(1) NOT NULL,
+	RASTERPROPERTY            RASTER,
+    RELIEF_ID                 INTEGER NOT NULL
 )
 ;
 
