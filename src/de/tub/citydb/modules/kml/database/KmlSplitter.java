@@ -271,12 +271,13 @@ public class KmlSplitter {
 			dbWorkerPool.addWork(splitter);
 			KmlExporter.getAlreadyExported().put(gmlId, cityObject4Json);
 
-			if (splitter.isCityObjectGroup()) { // recursion for recursive groups
+			if (splitter.isCityObjectGroup() &&
+					CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.size() > 1) { // not only groups must be exported
 				OracleResultSet rs = null;
 				PreparedStatement query = null;
 				try {
 					if (filterConfig.isSetComplexFilter() &&
-							 filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
+						filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
 
 						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS_IN_BBOX);
 						BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
@@ -307,7 +308,7 @@ public class KmlSplitter {
 					rs = (OracleResultSet)query.executeQuery();
 					
 					while (rs.next() && shouldRun) {
-						addWorkToQueue(rs.getString("gmlId"),
+						addWorkToQueue(rs.getString("gmlId"), // recursion for recursive groups
 									   Util.classId2cityObject(rs.getInt("class_id")), 
 									   row,
 									   column);
