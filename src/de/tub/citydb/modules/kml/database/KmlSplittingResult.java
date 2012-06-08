@@ -29,15 +29,19 @@
  */
 package de.tub.citydb.modules.kml.database;
 
-import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
+import org.citygml4j.model.citygml.CityGMLClass;
+import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 
 public class KmlSplittingResult {
-	private String gmlId;
-	private DisplayLevel displayLevel;
 
-	public KmlSplittingResult(String gmlId, DisplayLevel displayLevel) {
-		this.gmlId = gmlId;
-		this.setDisplayLevel(displayLevel);
+	private String gmlId;
+	private DisplayForm displayForm;
+	private CityGMLClass cityObjectType;
+
+	public KmlSplittingResult(String gmlId, CityGMLClass cityObjectType, DisplayForm displayForm) {
+		this.setGmlId(gmlId);
+		this.setCityObjectType(cityObjectType);
+		this.setDisplayForm(displayForm);
 	}
 
 	public void setGmlId(String gmlId) {
@@ -48,12 +52,27 @@ public class KmlSplittingResult {
 		return gmlId;
 	}
 
-	public void setDisplayLevel(DisplayLevel displayLevel) {
-		this.displayLevel = displayLevel;
+	public void setDisplayForm(DisplayForm displayForm) {
+		this.displayForm = displayForm;
 	}
 
-	public DisplayLevel getDisplayLevel() {
-		return displayLevel;
+	public DisplayForm getDisplayForm() {
+		return displayForm;
+	}
+
+	public CityGMLClass getCityObjectType() {
+		return cityObjectType;
+	}
+
+	public void setCityObjectType(CityGMLClass cityObjectType) {
+		this.cityObjectType = cityObjectType;
+	}
+	
+	public boolean isBuilding() {
+		return getCityObjectType().compareTo(CityGMLClass.BUILDING) == 0;
 	}
 		
+	public boolean isCityObjectGroup() {
+		return getCityObjectType().compareTo(CityGMLClass.CITY_OBJECT_GROUP) == 0;
+	}
 }

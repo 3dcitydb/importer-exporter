@@ -39,6 +39,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -50,8 +51,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.general.PathMode;
+import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
-import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -59,9 +60,14 @@ import de.tub.citydb.util.gui.GuiUtil;
 @SuppressWarnings("serial")
 public class BalloonPanel extends AbstractPreferencesComponent {
 
+	private static final String BUILDING = "Building";
+	private static final String CITY_OBJECT_GROUP = "CityObjectGroup";
+
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
 
+	private JLabel settingsApplyTo = new JLabel();
+	private JComboBox cityGMLObjects = new JComboBox();
 	private JCheckBox includeDescription = new JCheckBox();
 	private JPanel contentSourcePanel;
 	private JRadioButton genAttribRadioButton = new JRadioButton("");
@@ -72,6 +78,10 @@ public class BalloonPanel extends AbstractPreferencesComponent {
 	private JCheckBox contentInSeparateFile = new JCheckBox();
 	private JLabel warningLabel = new JLabel();
 
+	private Balloon internBuildingBalloon = new Balloon();
+	private Balloon internCityObjectGroupBalloon = new Balloon();
+	private Balloon lastBalloon;
+
 	public BalloonPanel(Config config) {
 		super(config);
 		initGui();
@@ -79,32 +89,19 @@ public class BalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public boolean isModified() {
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
-		if (includeDescription.isSelected() != kmlExporter.isIncludeDescription()) return true;
-
-		switch (kmlExporter.getBalloonContentMode()) {
-		case GEN_ATTRIB:
-			if (!genAttribRadioButton.isSelected())
-				return true;
-			break;
-		case FILE:
-			if (!fileRadioButton.isSelected())
-				return true;
-			break;
-		case GEN_ATTRIB_AND_FILE:
-			if (!genAttribAndFileRadioButton.isSelected())
-				return true;
-			break;
-		}
-
-		if (!kmlExporter.getBalloonContentTemplateFile().equals(browseText.getText().trim())) return true;
-		if (contentInSeparateFile.isSelected() != kmlExporter.isBalloonContentInSeparateFile()) return true;
-
+		setSettings(getCurrentBalloon());
+		if (!config.getProject().getKmlExporter().getBuildingBalloon().equals(internBuildingBalloon)) return true;
+		if (!config.getProject().getKmlExporter().getCityObjectGroupBalloon().equals(internCityObjectGroupBalloon)) return true;
 		return false;
 	}
 
 	private void initGui() {
 		setLayout(new GridBagLayout());
+
+		cityGMLObjects.addItem(BUILDING);
+		cityGMLObjects.addItem(CITY_OBJECT_GROUP);
+		add(settingsApplyTo, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,0));
+		add(cityGMLObjects, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,2));
 
 		ButtonGroup contentSourceRadioGroup = new ButtonGroup();
 		contentSourceRadioGroup.add(genAttribRadioButton);
@@ -112,12 +109,12 @@ public class BalloonPanel extends AbstractPreferencesComponent {
 		contentSourceRadioGroup.add(genAttribAndFileRadioButton);
 
 		includeDescription.setIconTextGap(10);
-		add(includeDescription, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
+		add(includeDescription, GuiUtil.setConstraints(0,1,2,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 
 		contentSourcePanel = new JPanel();
 		contentSourcePanel.setLayout(new GridBagLayout());
 		contentSourcePanel.setBorder(BorderFactory.createTitledBorder(""));
-		add(contentSourcePanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
+		add(contentSourcePanel, GuiUtil.setConstraints(0,2,2,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 
 		genAttribRadioButton.setIconTextGap(10);
 		fileRadioButton.setIconTextGap(10);
@@ -137,8 +134,8 @@ public class BalloonPanel extends AbstractPreferencesComponent {
 		contentSourcePanel.add(genAttribAndFileRadioButton, gaafrb);
 
 		contentInSeparateFile.setIconTextGap(10);
-		add(contentInSeparateFile, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,0,0));
-		add(warningLabel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,0,0));
+		add(contentInSeparateFile, GuiUtil.setConstraints(0,3,2,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,0,0));
+		add(warningLabel, GuiUtil.setConstraints(0,4,2,1,1.0,0.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS * 6,0,0));
 
 		PopupMenuDecorator.getInstance().decorate(browseText);
 
@@ -171,12 +168,21 @@ public class BalloonPanel extends AbstractPreferencesComponent {
 				setEnabledComponents();
 			}
 		});
+
+		cityGMLObjects.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (getLastBalloon() != null) setSettings(getLastBalloon()); // no balloon the first time
+				loadSettings(getCurrentBalloon());
+				setLastBalloon(getCurrentBalloon());
+			}
+		});
 	}
 
 	@Override
 	public void doTranslation() {
 		((TitledBorder)contentSourcePanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.balloon.contentSource.border"));	
 
+		settingsApplyTo.setText(Internal.I18N.getString("pref.kmlexport.label.settingsApplyTo"));
 		includeDescription.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.includeDescription"));
 		genAttribRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.genAttrib"));
 		fileRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.file"));
@@ -188,9 +194,18 @@ public class BalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
-		includeDescription.setSelected(kmlExporter.isIncludeDescription());
-		switch (kmlExporter.getBalloonContentMode()) {
+		Balloon configBuildingBalloon = config.getProject().getKmlExporter().getBuildingBalloon();
+		copyBalloonContents(configBuildingBalloon, internBuildingBalloon);
+		
+		Balloon configCityObjectGroupBalloon = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
+		copyBalloonContents(configCityObjectGroupBalloon, internCityObjectGroupBalloon);
+		
+		cityGMLObjects.setSelectedItem(BUILDING); // hard-coded start with building
+	}
+
+	private void loadSettings(Balloon balloonSetings) {
+		includeDescription.setSelected(balloonSetings.isIncludeDescription());
+		switch (balloonSetings.getBalloonContentMode()) {
 			case GEN_ATTRIB:
 				genAttribRadioButton.setSelected(true);
 				break;
@@ -201,27 +216,62 @@ public class BalloonPanel extends AbstractPreferencesComponent {
 				genAttribAndFileRadioButton.setSelected(true);
 				break;
 		}
-		browseText.setText(kmlExporter.getBalloonContentTemplateFile());
-		contentInSeparateFile.setSelected(kmlExporter.isBalloonContentInSeparateFile());
+		browseText.setText(balloonSetings.getBalloonContentTemplateFile());
+		contentInSeparateFile.setSelected(balloonSetings.isBalloonContentInSeparateFile());
 		setEnabledComponents();
+	}
+
+	private void setLastBalloon(Balloon lastBalloon) {
+		this.lastBalloon = lastBalloon;
+	}
+
+	private Balloon getLastBalloon() {
+		return lastBalloon;
+	}
+
+	private Balloon getCurrentBalloon() {
+		String cityGMLObject = cityGMLObjects.getSelectedItem().toString();
+		if (cityGMLObject.equals(BUILDING))
+			return internBuildingBalloon;
+		else
+			return internCityObjectGroupBalloon;
 	}
 
 	@Override
 	public void setSettings() {
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
-		kmlExporter.setIncludeDescription(includeDescription.isSelected());
+		setSettings(getCurrentBalloon());
+
+		Balloon configBuildingBalloon = config.getProject().getKmlExporter().getBuildingBalloon();
+		copyBalloonContents(internBuildingBalloon, configBuildingBalloon);
+		
+		Balloon configCityObjectGroupBalloon = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
+		copyBalloonContents(internCityObjectGroupBalloon, configCityObjectGroupBalloon);
+	}
+	
+	private void copyBalloonContents(Balloon sourceBalloon, Balloon targetBalloon) {
+		targetBalloon.setBalloonContentInSeparateFile(sourceBalloon.isBalloonContentInSeparateFile());
+		targetBalloon.setBalloonContentMode(sourceBalloon.getBalloonContentMode());
+		targetBalloon.setBalloonContentTemplateFile(sourceBalloon.getBalloonContentTemplateFile());
+		targetBalloon.setIncludeDescription(sourceBalloon.isIncludeDescription());
+		targetBalloon.getBalloonContentPath().setPathMode(sourceBalloon.getBalloonContentPath().getPathMode());
+		targetBalloon.getBalloonContentPath().setLastUsedPath(sourceBalloon.getBalloonContentPath().getLastUsedPath());
+		targetBalloon.getBalloonContentPath().setStandardPath(sourceBalloon.getBalloonContentPath().getStandardPath());
+	}
+	
+	private void setSettings(Balloon balloonSetings) {
+		balloonSetings.setIncludeDescription(includeDescription.isSelected());
 		if (genAttribRadioButton.isSelected()) {
-			kmlExporter.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB);
+			balloonSetings.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB);
 		}
 		else if (fileRadioButton.isSelected()) {
-			kmlExporter.setBalloonContentMode(BalloonContentMode.FILE);
+			balloonSetings.setBalloonContentMode(BalloonContentMode.FILE);
 		}
 		else if (genAttribAndFileRadioButton.isSelected()) {
-			kmlExporter.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB_AND_FILE);
+			balloonSetings.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB_AND_FILE);
 		}
-		kmlExporter.getBalloonContentPath().setLastUsedPath(browseText.getText().trim());
-		kmlExporter.setBalloonContentTemplateFile(browseText.getText().trim());
-		kmlExporter.setBalloonContentInSeparateFile(contentInSeparateFile.isSelected());
+		balloonSetings.getBalloonContentPath().setLastUsedPath(browseText.getText().trim());
+		balloonSetings.setBalloonContentTemplateFile(browseText.getText().trim());
+		balloonSetings.setBalloonContentInSeparateFile(contentInSeparateFile.isSelected());
 	}
 	
 	@Override
@@ -237,18 +287,18 @@ public class BalloonPanel extends AbstractPreferencesComponent {
 		fileChooser.addChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 		fileChooser.setFileFilter(filter);
 
-		if (config.getProject().getKmlExporter().getBalloonContentPath().isSetLastUsedMode()) {
-			fileChooser.setCurrentDirectory(new File(config.getProject().getKmlExporter().getBalloonContentPath().getLastUsedPath()));
+		if (getCurrentBalloon().getBalloonContentPath().isSetLastUsedMode()) {
+			fileChooser.setCurrentDirectory(new File(getCurrentBalloon().getBalloonContentPath().getLastUsedPath()));
 		} else {
-			fileChooser.setCurrentDirectory(new File(config.getProject().getKmlExporter().getBalloonContentPath().getStandardPath()));
+			fileChooser.setCurrentDirectory(new File(getCurrentBalloon().getBalloonContentPath().getStandardPath()));
 		}
 		int result = fileChooser.showSaveDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) return;
 		try {
 			String exportString = fileChooser.getSelectedFile().toString();
 			browseText.setText(exportString);
-			config.getProject().getKmlExporter().getBalloonContentPath().setLastUsedPath(fileChooser.getCurrentDirectory().getAbsolutePath());
-			config.getProject().getKmlExporter().getBalloonContentPath().setPathMode(PathMode.LASTUSED);
+			getCurrentBalloon().getBalloonContentPath().setLastUsedPath(fileChooser.getCurrentDirectory().getAbsolutePath());
+			getCurrentBalloon().getBalloonContentPath().setPathMode(PathMode.LASTUSED);
 		}
 		catch (Exception e) {
 			//

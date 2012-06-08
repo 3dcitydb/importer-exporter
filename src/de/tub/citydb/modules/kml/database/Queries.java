@@ -32,12 +32,12 @@ package de.tub.citydb.modules.kml.database;
 import java.util.HashMap;
 
 import de.tub.citydb.api.log.LogLevel;
-import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
+import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.log.Logger;
 
-public class TileQueries {
+public class Queries {
 
-	private static final String QUERY_FOOTPRINT_LOD4_GET_BUILDING_DATA =
+	private static final String BUILDING_FOOTPRINT_LOD4 =
 		"SELECT sg.geometry " +
 		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co " +
 		"WHERE " +
@@ -48,7 +48,7 @@ public class TileQueries {
 			"AND sg.geometry IS NOT NULL " +
 		"ORDER BY ts.building_id";
 
-	private static final String QUERY_GEOMETRY_LOD4_GET_BUILDING_DATA =
+	private static final String BUILDING_GEOMETRY_LOD4 =
 		"SELECT sg.geometry, ts.type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod4_multi_surface_id = sg.root_id " +
@@ -106,7 +106,7 @@ public class TileQueries {
 						"AND bi.room_id = r.id " +
 						"AND bi.lod4_geometry_id IS NOT NULL)";
 
-	private static final String QUERY_COLLADA_LOD4_GET_BUILDING_ROOT_SURFACES =
+	private static final String BUILDING_COLLADA_LOD4_ROOT_SURFACES =
 		"SELECT b.lod4_geometry_id " + 
 		"FROM CITYOBJECT co, BUILDING b " + 
 		"WHERE " +  
@@ -158,7 +158,7 @@ public class TileQueries {
 			"AND bi.room_id = r.id " +
 			"AND bi.lod4_geometry_id IS NOT NULL";
 			
-	private static final String QUERY_FOOTPRINT_LOD3_GET_BUILDING_DATA =
+	private static final String BUILDING_FOOTPRINT_LOD3 =
 		"SELECT sg.geometry " +
 		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co " +
 		"WHERE " +
@@ -169,7 +169,7 @@ public class TileQueries {
 			"AND sg.geometry IS NOT NULL " +
 		"ORDER BY ts.building_id";
 
-	private static final String QUERY_GEOMETRY_LOD3_GET_BUILDING_DATA =
+	private static final String BUILDING_GEOMETRY_LOD3 =
 		"SELECT sg.geometry, ts.type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod3_multi_surface_id = sg.root_id " +
@@ -199,7 +199,7 @@ public class TileQueries {
 					"AND bi.building_id = b.id " +
 					"AND bi.lod3_geometry_id IS NOT NULL)";
 
-	private static final String QUERY_COLLADA_LOD3_GET_BUILDING_ROOT_SURFACES =
+	private static final String BUILDING_COLLADA_LOD3_ROOT_SURFACES =
 		"SELECT b.lod3_geometry_id " + 
 		"FROM CITYOBJECT co, BUILDING b " + 
 		"WHERE " +  
@@ -223,7 +223,7 @@ public class TileQueries {
 			"AND bi.building_id = b.id " +
 			"AND bi.lod3_geometry_id IS NOT NULL";
 
-	private static final String QUERY_COLLADA_LOD2_GET_BUILDING_ROOT_SURFACES =
+	private static final String BUILDING_COLLADA_LOD2_ROOT_SURFACES =
 		"SELECT b.lod2_geometry_id " + 
 		"FROM CITYOBJECT co, BUILDING b " + 
 		"WHERE " +  
@@ -247,7 +247,7 @@ public class TileQueries {
 			"AND bi.building_id = b.id " +
 			"AND bi.lod2_geometry_id IS NOT NULL";
 
-	private static final String QUERY_COLLADA_GET_BUILDING_DATA =
+	private static final String BUILDING_COLLADA_GET_DATA_0 =
 		"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, " +
 				"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
 				"sd.tex_image_uri, sd.tex_image, tp.texture_coordinates, a.theme " +
@@ -261,12 +261,12 @@ public class TileQueries {
 //			"AND (a.theme = ? OR a.theme IS NULL) " +
 //			"ORDER BY sg.parent_id ASC"; // own root surfaces first
 
-	public static final String[] QUERIES_COLLADA_GET_BUILDING_DATA = new String[] {
-		QUERY_COLLADA_GET_BUILDING_DATA + "AND sg.geometry IS NULL", // parents
-		QUERY_COLLADA_GET_BUILDING_DATA + "AND sg.geometry IS NOT NULL" // elementary surfaces
+	public static final String[] BUILDING_COLLADA_GET_DATA = new String[] {
+		BUILDING_COLLADA_GET_DATA_0 + "AND sg.geometry IS NULL", // parents
+		BUILDING_COLLADA_GET_DATA_0 + "AND sg.geometry IS NOT NULL" // elementary surfaces
 	};
 
-	private static final String QUERY_GEOMETRY_LOD2_GET_BUILDING_DATA =
+	private static final String BUILDING_GEOMETRY_LOD2 =
 		"SELECT sg.geometry, ts.type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod2_multi_surface_id = sg.root_id " +
@@ -296,7 +296,7 @@ public class TileQueries {
 					"AND bi.building_id = b.id " +
 					"AND bi.lod2_geometry_id IS NOT NULL)";
 
-	private static final String QUERY_FOOTPRINT_LOD2_GET_BUILDING_DATA =
+	private static final String BUILDING_FOOTPRINT_LOD2 =
 		"SELECT sg.geometry " +
 		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co " +
 		"WHERE " +
@@ -307,7 +307,7 @@ public class TileQueries {
 			"AND sg.geometry IS NOT NULL " +
 		"ORDER BY ts.building_id";
 
-	private static final String QUERY_GEOMETRY_LOD1_GET_BUILDING_DATA =
+	private static final String BUILDING_GEOMETRY_LOD1 =
 		"SELECT sg.geometry, NULL as type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg, CITYOBJECT co, BUILDING b " +
 		"WHERE " +
@@ -317,7 +317,7 @@ public class TileQueries {
 			"AND sg.geometry IS NOT NULL " +
 		"ORDER BY b.id";
 
-	private static final String QUERY_FOOTPRINT_LOD1_GET_BUILDING_DATA =
+	private static final String BUILDING_FOOTPRINT_LOD1 =
 		"SELECT SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), " +
 				"MAX(b.building_root_id) AS building_id " +
 		"FROM SURFACE_GEOMETRY sg, BUILDING b, CITYOBJECT co " +
@@ -327,7 +327,7 @@ public class TileQueries {
 			"AND sg.root_id = b.lod1_geometry_id " +
 			"AND sg.geometry IS NOT NULL";
 
-	private static final String QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD1_GET_BUILDING_DATA =
+	private static final String BUILDING_GEOMETRY_HIGHLIGHTING_LOD1 =
 		"SELECT sg.geometry, sg.id " +
 		"FROM SURFACE_GEOMETRY sg, BUILDING b, CITYOBJECT co " +
 		"WHERE " +
@@ -336,7 +336,7 @@ public class TileQueries {
 			"AND sg.root_id = b.lod1_geometry_id " +
 			"AND sg.geometry IS NOT NULL ";
 
-	private static final String QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD2_GET_BUILDING_DATA =
+	private static final String BUILDING_GEOMETRY_HIGHLIGHTING_LOD2 =
 		"SELECT sg.geometry, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE " +
@@ -357,7 +357,7 @@ public class TileQueries {
 					"AND ts.building_id = b.id " +
 					"AND ts.lod2_multi_surface_id IS NOT NULL)";
 
-	private static final String QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD3_GET_BUILDING_DATA =
+	private static final String BUILDING_GEOMETRY_HIGHLIGHTING_LOD3 =
 		"SELECT sg.geometry, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE " +
@@ -379,7 +379,7 @@ public class TileQueries {
 					"AND ts.lod3_multi_surface_id IS NOT NULL)";
 	
 	
-	private static final String QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD4_GET_BUILDING_DATA =
+	private static final String BUILDING_GEOMETRY_HIGHLIGHTING_LOD4 =
 		"SELECT sg.geometry, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE " +
@@ -400,13 +400,13 @@ public class TileQueries {
 					"AND ts.building_id = b.id " +
 					"AND ts.lod4_multi_surface_id IS NOT NULL)";
 
-	public static final String QUERY_GET_STRVAL_GENERICATTRIB_FROM_GML_ID =
+	public static final String GET_STRVAL_GENERICATTRIB_FROM_GML_ID =
 		"SELECT coga.strval " +
 		"FROM CITYOBJECT co " + 
 			"LEFT JOIN CITYOBJECT_GENERICATTRIB coga ON (coga.cityobject_id = co.id AND coga.attrname = ?) " +
 		"WHERE co.gmlid = ?";
 
-	public static final String QUERY_INSERT_GE_ZOFFSET =
+	public static final String INSERT_GE_ZOFFSET =
 		"INSERT INTO CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) " +
 		"VALUES (CITYOBJECT_GENERICATT_SEQ.NEXTVAL, ?, 1, ?, (SELECT ID FROM CITYOBJECT WHERE gmlid = ?))";
 	
@@ -416,12 +416,12 @@ public class TileQueries {
 	public static final String TRANSFORM_GEOMETRY_TO_WGS84_3D =
 		"SELECT SDO_CS.TRANSFORM(?, 4329) FROM DUAL";
 
-	public static final String QUERY_GET_ENVELOPE_IN_WGS84_FROM_GML_ID =
+	public static final String GET_ENVELOPE_IN_WGS84_FROM_GML_ID =
 		"SELECT SDO_CS.TRANSFORM(co.envelope, 4326) " +
 		"FROM CITYOBJECT co " +
 		"WHERE co.gmlid = ?";
 
-	public static final String QUERY_GET_ENVELOPE_IN_WGS84_3D_FROM_GML_ID =
+	public static final String GET_ENVELOPE_IN_WGS84_3D_FROM_GML_ID =
 		"SELECT SDO_CS.TRANSFORM(co.envelope, 4329) " +
 		"FROM CITYOBJECT co " +
 		"WHERE co.gmlid = ?";
@@ -429,49 +429,49 @@ public class TileQueries {
 
 	private static final HashMap<Integer, String> singleBuildingQueriesLod4 = new HashMap<Integer, String>();
     static {
-    	singleBuildingQueriesLod4.put(DisplayLevel.FOOTPRINT, QUERY_FOOTPRINT_LOD4_GET_BUILDING_DATA);
-    	singleBuildingQueriesLod4.put(DisplayLevel.EXTRUDED, QUERY_FOOTPRINT_LOD4_GET_BUILDING_DATA);
-    	singleBuildingQueriesLod4.put(DisplayLevel.GEOMETRY, QUERY_GEOMETRY_LOD4_GET_BUILDING_DATA);
-    	singleBuildingQueriesLod4.put(DisplayLevel.COLLADA, QUERY_COLLADA_LOD4_GET_BUILDING_ROOT_SURFACES);
+    	singleBuildingQueriesLod4.put(DisplayForm.FOOTPRINT, BUILDING_FOOTPRINT_LOD4);
+    	singleBuildingQueriesLod4.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD4);
+    	singleBuildingQueriesLod4.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD4);
+    	singleBuildingQueriesLod4.put(DisplayForm.COLLADA, BUILDING_COLLADA_LOD4_ROOT_SURFACES);
     }
 
     private static final HashMap<Integer, String> singleBuildingQueriesLod3 = new HashMap<Integer, String>();
     static {
-    	singleBuildingQueriesLod3.put(DisplayLevel.FOOTPRINT, QUERY_FOOTPRINT_LOD3_GET_BUILDING_DATA);
-    	singleBuildingQueriesLod3.put(DisplayLevel.EXTRUDED, QUERY_FOOTPRINT_LOD3_GET_BUILDING_DATA);
-    	singleBuildingQueriesLod3.put(DisplayLevel.GEOMETRY, QUERY_GEOMETRY_LOD3_GET_BUILDING_DATA);
-    	singleBuildingQueriesLod3.put(DisplayLevel.COLLADA, QUERY_COLLADA_LOD3_GET_BUILDING_ROOT_SURFACES);
+    	singleBuildingQueriesLod3.put(DisplayForm.FOOTPRINT, BUILDING_FOOTPRINT_LOD3);
+    	singleBuildingQueriesLod3.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD3);
+    	singleBuildingQueriesLod3.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD3);
+    	singleBuildingQueriesLod3.put(DisplayForm.COLLADA, BUILDING_COLLADA_LOD3_ROOT_SURFACES);
     }
 
     private static final HashMap<Integer, String> singleBuildingQueriesLod2 = new HashMap<Integer, String>();
     static {
-    	singleBuildingQueriesLod2.put(DisplayLevel.FOOTPRINT, QUERY_FOOTPRINT_LOD2_GET_BUILDING_DATA);
-    	singleBuildingQueriesLod2.put(DisplayLevel.EXTRUDED, QUERY_FOOTPRINT_LOD2_GET_BUILDING_DATA);
-    	singleBuildingQueriesLod2.put(DisplayLevel.GEOMETRY, QUERY_GEOMETRY_LOD2_GET_BUILDING_DATA);
-    	singleBuildingQueriesLod2.put(DisplayLevel.COLLADA, QUERY_COLLADA_LOD2_GET_BUILDING_ROOT_SURFACES);
+    	singleBuildingQueriesLod2.put(DisplayForm.FOOTPRINT, BUILDING_FOOTPRINT_LOD2);
+    	singleBuildingQueriesLod2.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD2);
+    	singleBuildingQueriesLod2.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD2);
+    	singleBuildingQueriesLod2.put(DisplayForm.COLLADA, BUILDING_COLLADA_LOD2_ROOT_SURFACES);
     }
 
 	private static final HashMap<Integer, String> singleBuildingQueriesLod1 = new HashMap<Integer, String>();
     static {
-    	singleBuildingQueriesLod1.put(DisplayLevel.FOOTPRINT, QUERY_FOOTPRINT_LOD1_GET_BUILDING_DATA);
-    	singleBuildingQueriesLod1.put(DisplayLevel.EXTRUDED, QUERY_FOOTPRINT_LOD1_GET_BUILDING_DATA);
-    	singleBuildingQueriesLod1.put(DisplayLevel.GEOMETRY, QUERY_GEOMETRY_LOD1_GET_BUILDING_DATA);
+    	singleBuildingQueriesLod1.put(DisplayForm.FOOTPRINT, BUILDING_FOOTPRINT_LOD1);
+    	singleBuildingQueriesLod1.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD1);
+    	singleBuildingQueriesLod1.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD1);
     }
 
-    public static String getSingleBuildingQuery (int lodToExportFrom, DisplayLevel displayLevel) {
+    public static String getSingleBuildingQuery (int lodToExportFrom, DisplayForm displayForm) {
     	String query = null;
     	switch (lodToExportFrom) {
     		case 1:
-    	    	query = singleBuildingQueriesLod1.get(displayLevel.getLevel());
+    	    	query = singleBuildingQueriesLod1.get(displayForm.getForm());
     	    	break;
     		case 2:
-    	    	query = singleBuildingQueriesLod2.get(displayLevel.getLevel());
+    	    	query = singleBuildingQueriesLod2.get(displayForm.getForm());
     	    	break;
     		case 3:
-    	    	query = singleBuildingQueriesLod3.get(displayLevel.getLevel());
+    	    	query = singleBuildingQueriesLod3.get(displayForm.getForm());
     	    	break;
     		case 4:
-    	    	query = singleBuildingQueriesLod4.get(displayLevel.getLevel());
+    	    	query = singleBuildingQueriesLod4.get(displayForm.getForm());
     	    	break;
     	    default:
     	    	Logger.getInstance().log(LogLevel.INFO, "No single building query found for LoD" + lodToExportFrom);
@@ -485,16 +485,16 @@ public class TileQueries {
     	String query = null;
     	switch (lodToExportFrom) {
     		case 1:
-    			query = QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD1_GET_BUILDING_DATA;
+    			query = BUILDING_GEOMETRY_HIGHLIGHTING_LOD1;
     	    	break;
     		case 2:
-    			query = QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD2_GET_BUILDING_DATA;
+    			query = BUILDING_GEOMETRY_HIGHLIGHTING_LOD2;
     			break;
     		case 3:
-    			query = QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD3_GET_BUILDING_DATA;
+    			query = BUILDING_GEOMETRY_HIGHLIGHTING_LOD3;
     	    	break;
     		case 4:
-    			query = QUERY_GEOMETRY_FOR_HIGHLIGHTING_LOD4_GET_BUILDING_DATA;
+    			query = BUILDING_GEOMETRY_HIGHLIGHTING_LOD4;
     	    	break;
     	    default:
     	    	Logger.getInstance().log(LogLevel.INFO, "No single building highlighting query found for LoD" + lodToExportFrom);
@@ -504,17 +504,33 @@ public class TileQueries {
     	return query;
     }
 
-    public static final String QUERY_GET_GMLIDS =
-		"SELECT co.gmlid, co.class_id " +
-		"FROM CITYOBJECT co " +
+//    public static final String GET_GMLIDS =
+//    	"SELECT /*+ no_index(co cityobject_fkx) */ co.gmlid, co.class_id " +
+//		"FROM CITYOBJECT co " +
+//		"WHERE " +
+//		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
+//					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby+equal') ='TRUE' " +
+//		  "OR SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
+//					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
+//		"ORDER BY co.gmlid";
+
+    public static final String GET_GMLIDS =
+		"SELECT /*+ no_index(co cityobject_fkx) */ co.gmlid, co.class_id " +
+		"FROM (SELECT /*+ no_index(co cityobject_fkx) */ gmlid, class_id, envelope FROM CITYOBJECT WHERE class_id IN (<CLASS_ID_SET>)) co " +
 		"WHERE " +
 		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
 					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby+equal') ='TRUE' " +
 		  "OR SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
 					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
-		"ORDER BY co.gmlid";
+		"ORDER BY co.class_id";
+//		"ORDER BY co.gmlid";
 
-    public static final String QUERY_GET_AGGREGATE_GEOMETRIES_FOR_LOD =
+    public static final String GET_OBJECTCLASS =
+		"SELECT co.class_id " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+    public static final String BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD =
 		
 		"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
 		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
@@ -559,11 +575,48 @@ public class TileQueries {
 		"GROUP BY mod (rownum, <GROUP_BY_3>) " +
 		")";
 
-	public static final String QUERY_EXTRUDED_HEIGHTS =
+	public static final String GET_EXTRUDED_HEIGHT =
 		"SELECT " + // "b.measured_height, " +
 		"SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) - SDO_GEOM.SDO_MIN_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
 		"FROM CITYOBJECT co " + // ", BUILDING b " +
 		"WHERE " +
 			"co.gmlid = ?"; // + " AND b.building_root_id = co.id";
 
+	
+	// ----------------------------------------------------------------------
+	// GROUP QUERIES
+	// ----------------------------------------------------------------------
+	
+	public static final String CITYOBJECTGROUP_FOOTPRINT =
+		"SELECT sg.geometry " +
+		"FROM SURFACE_GEOMETRY sg, CITYOBJECTGROUP cog, CITYOBJECT co " +
+		"WHERE " +
+			"co.gmlid = ? " +
+			"AND cog.id = co.id " +
+			"AND sg.root_id = cog.surface_geometry_id " +
+			"AND sg.geometry IS NOT NULL ";
+
+	public static final String CITYOBJECTGROUP_MEMBERS = 
+		"SELECT co.gmlid, co.class_id " + 
+		"FROM cityobject co " +
+		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
+		                "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
+		                "WHERE co.gmlid = ? " + 
+		                "AND cog.ID = co.ID " +
+		                "AND g2co.cityobjectgroup_id = cog.ID) " +
+   		"ORDER BY co.class_id";
+
+	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX = 
+		"SELECT /*+ no_index(co cityobject_fkx) */ co.gmlid, co.class_id " + 
+		"FROM cityobject co " +
+		"WHERE co.ID IN (SELECT /*+ no_index(co cityobject_fkx) */ g2co.cityobject_id "+  
+		                "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
+		                "WHERE co.gmlid = ? " + 
+		                "AND cog.ID = co.ID " +
+		                "AND g2co.cityobjectgroup_id = cog.ID) " +
+		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
+					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby+equal') ='TRUE' " +
+			 "OR SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
+					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
+		"ORDER BY co.class_id";
 }

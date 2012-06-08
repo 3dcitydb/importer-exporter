@@ -44,7 +44,8 @@ import de.tub.citydb.config.project.system.System;
 		"path",
 		"filter",
 		"lodToExportFrom",
-		"displayLevels",
+		"buildingDisplayForms",
+		"cityObjectGroupDisplayForms",
 		"exportAsKmz",
 		"showBoundingBox",
 		"showTileBorders",
@@ -54,13 +55,8 @@ import de.tub.citydb.config.project.system.System;
 		"viewRefreshMode",
 		"viewRefreshTime",
 		"writeJSONFile",
-		"footprintHighlighting",
-		"geometryHighlighting",
-		"geometryHighlightingDistance",
 		"appearanceTheme",
 		"ignoreSurfaceOrientation",
-		"colladaHighlighting",
-		"colladaHighlightingDistance",
 		"generateTextureAtlases",
 		"packingAlgorithm",
 		"textureAtlasPots",
@@ -68,11 +64,8 @@ import de.tub.citydb.config.project.system.System;
 		"imageScaleFactor",
 		"groupBuildings",
 		"groupSize",
-		"includeDescription",
-		"balloonContentMode",
-		"balloonContentPath",
-		"balloonContentTemplateFile",
-		"balloonContentInSeparateFile",
+		"buildingBalloon",
+		"cityObjectGroupBalloon",
 		"altitudeMode",
 		"altitudeOffsetMode",
 		"altitudeOffsetValue",
@@ -84,9 +77,12 @@ public class KmlExporter {
 	private Path path;
 	private ExportFilterConfig filter;
 	private int lodToExportFrom;
-	@XmlElement(name="displayLevel", required=true)
-	@XmlElementWrapper(name="displayLevels")	
-	private List<DisplayLevel> displayLevels;
+	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="buildingDisplayForms")	
+	private List<DisplayForm> buildingDisplayForms;
+	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="cityObjectGroupDisplayForms")	
+	private List<DisplayForm> cityObjectGroupDisplayForms;
 	private boolean exportAsKmz;
 	private boolean showBoundingBox;
 	private boolean showTileBorders;
@@ -96,13 +92,8 @@ public class KmlExporter {
 	private String viewRefreshMode;
 	private double viewRefreshTime;
 	private boolean writeJSONFile;
-	private boolean footprintHighlighting;
-	private boolean geometryHighlighting;
-	private double geometryHighlightingDistance;
 	private String appearanceTheme;
 	private boolean ignoreSurfaceOrientation;
-	private boolean colladaHighlighting;
-	private double colladaHighlightingDistance;
 	private boolean generateTextureAtlases;
 	private int packingAlgorithm;
 	private boolean textureAtlasPots;
@@ -110,11 +101,8 @@ public class KmlExporter {
 	private double imageScaleFactor;
 	private boolean groupBuildings;
 	private int groupSize;
-	private boolean includeDescription;
-	private BalloonContentMode balloonContentMode;
-	private Path balloonContentPath;
-	private String balloonContentTemplateFile;
-	private boolean balloonContentInSeparateFile;
+	private Balloon buildingBalloon;
+	private Balloon cityObjectGroupBalloon;
 	private AltitudeMode altitudeMode;
 	private AltitudeOffsetMode altitudeOffsetMode;
 	private double altitudeOffsetValue;
@@ -128,7 +116,8 @@ public class KmlExporter {
 		path = new Path();
 		filter = new ExportFilterConfig();
 		lodToExportFrom = 2;
-		displayLevels = new ArrayList<DisplayLevel>();
+		buildingDisplayForms = new ArrayList<DisplayForm>();
+		cityObjectGroupDisplayForms = new ArrayList<DisplayForm>();
 		exportAsKmz = true;
 		showBoundingBox = true;
 		showTileBorders = true;
@@ -138,9 +127,6 @@ public class KmlExporter {
 		viewRefreshMode = "onRegion";
 		viewRefreshTime = 1;
 		writeJSONFile = false;
-		footprintHighlighting = false;
-		geometryHighlighting = false;
-		setGeometryHighlightingDistance(0.75);
 		setAppearanceTheme(THEME_NONE);
 		setIgnoreSurfaceOrientation(false);
 		generateTextureAtlases = true;
@@ -150,13 +136,8 @@ public class KmlExporter {
 		imageScaleFactor = 1.0;
 		groupBuildings = false;
 		groupSize = 1;
-		colladaHighlighting = true;
-		setColladaHighlightingDistance(0.75);
-		includeDescription = true;
-		setBalloonContentMode(BalloonContentMode.GEN_ATTRIB);
-		balloonContentPath = new Path();
-		balloonContentTemplateFile = "";
-		balloonContentInSeparateFile = false;
+		setBuildingBalloon(new Balloon());
+		setCityObjectGroupBalloon(new Balloon());
 		setAltitudeMode(AltitudeMode.ABSOLUTE);
 		setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
 		altitudeOffsetValue = 0;
@@ -200,18 +181,26 @@ public class KmlExporter {
 		return lodToExportFrom;
 	}
 
-	public void setDisplayLevels(List<DisplayLevel> displayLevels) {
-		this.displayLevels = displayLevels;
+	public void setBuildingDisplayForms(List<DisplayForm> buildingDisplayForms) {
+		this.buildingDisplayForms = buildingDisplayForms;
 	}
 
-	public List<DisplayLevel> getDisplayLevels() {
-		return displayLevels;
+	public List<DisplayForm> getBuildingDisplayForms() {
+		return buildingDisplayForms;
 	}
 
-	public int getActiveDisplayLevelAmount() {
+	public void setCityObjectGroupDisplayForms(List<DisplayForm> cityObjectGroupDisplayForms) {
+		this.cityObjectGroupDisplayForms = cityObjectGroupDisplayForms;
+	}
+
+	public List<DisplayForm> getCityObjectGroupDisplayForms() {
+		return cityObjectGroupDisplayForms;
+	}
+
+	public static int getActiveDisplayFormsAmount(List<DisplayForm> displayForms) {
 		int activeAmount = 0; 
-		for (DisplayLevel displayLevel : displayLevels) {
-			if (displayLevel.isActive()) activeAmount++;
+		for (DisplayForm displayForm : displayForms) {
+			if (displayForm.isActive()) activeAmount++;
 		}
 		return activeAmount;
 	}
@@ -264,14 +253,6 @@ public class KmlExporter {
 		return showTileBorders;
 	}
 
-	public void setIncludeDescription(boolean includeDescription) {
-		this.includeDescription = includeDescription;
-	}
-
-	public boolean isIncludeDescription() {
-		return includeDescription;
-	}
-
 	public void setScaleImages(boolean scaleImages) {
 		this.scaleImages = scaleImages;
 	}
@@ -288,30 +269,6 @@ public class KmlExporter {
 		return groupBuildings;
 	}
 
-	public void setFootprintHighlighting(boolean footprintHighlighting) {
-		this.footprintHighlighting = footprintHighlighting;
-	}
-
-	public boolean isFootprintHighlighting() {
-		return footprintHighlighting;
-	}
-
-	public void setGeometryHighlighting(boolean geometryHighlighting) {
-		this.geometryHighlighting = geometryHighlighting;
-	}
-
-	public boolean isGeometryHighlighting() {
-		return geometryHighlighting;
-	}
-
-	public void setGeometryHighlightingDistance(double geometryHighlightingDistance) {
-		this.geometryHighlightingDistance = geometryHighlightingDistance;
-	}
-
-	public double getGeometryHighlightingDistance() {
-		return geometryHighlightingDistance;
-	}
-
 	public void setAppearanceTheme(String appearanceTheme) {
 		this.appearanceTheme = appearanceTheme;
 	}
@@ -326,22 +283,6 @@ public class KmlExporter {
 
 	public boolean isIgnoreSurfaceOrientation() {
 		return ignoreSurfaceOrientation;
-	}
-
-	public void setColladaHighlighting(boolean colladaHighlighting) {
-		this.colladaHighlighting = colladaHighlighting;
-	}
-
-	public boolean isColladaHighlighting() {
-		return colladaHighlighting;
-	}
-
-	public void setColladaHighlightingDistance(double colladaHighlightingDistance) {
-		this.colladaHighlightingDistance = colladaHighlightingDistance;
-	}
-
-	public double getColladaHighlightingDistance() {
-		return colladaHighlightingDistance;
 	}
 
 	public void setAltitudeMode(AltitudeMode altitudeMode) {
@@ -368,23 +309,6 @@ public class KmlExporter {
 		return altitudeOffsetValue;
 	}
 
-	public void setBalloonContentMode(BalloonContentMode balloonContentMode) {
-		this.balloonContentMode = balloonContentMode;
-	}
-
-	public BalloonContentMode getBalloonContentMode() {
-		return balloonContentMode;
-	}
-
-	public Path getBalloonContentPath() {
-		return balloonContentPath;
-	}
-
-	public void setBalloonContentPath(Path balloonContentPath) {
-		if (balloonContentPath != null)
-			this.balloonContentPath = balloonContentPath;
-	}
-
 	public void setCallGElevationService(boolean callGElevationService) {
 		this.callGElevationService = callGElevationService;
 	}
@@ -407,22 +331,6 @@ public class KmlExporter {
 
 	public double getAutoTileSideLength() {
 		return autoTileSideLength;
-	}
-
-	public void setBalloonContentTemplateFile(String balloonContentTemplateFile) {
-		this.balloonContentTemplateFile = balloonContentTemplateFile;
-	}
-
-	public String getBalloonContentTemplateFile() {
-		return balloonContentTemplateFile;
-	}
-
-	public void setBalloonContentInSeparateFile(boolean balloonContentInSeparateFile) {
-		this.balloonContentInSeparateFile = balloonContentInSeparateFile;
-	}
-
-	public boolean isBalloonContentInSeparateFile() {
-		return balloonContentInSeparateFile;
 	}
 
 	public void setWriteJSONFile(boolean writeJSONFile) {
@@ -479,6 +387,22 @@ public class KmlExporter {
 
 	public boolean isUseOriginalZCoords() {
 		return useOriginalZCoords;
+	}
+
+	public void setBuildingBalloon(Balloon buildingBalloon) {
+		this.buildingBalloon = buildingBalloon;
+	}
+
+	public Balloon getBuildingBalloon() {
+		return buildingBalloon;
+	}
+
+	public void setCityObjectGroupBalloon(Balloon cityObjectGroupBalloon) {
+		this.cityObjectGroupBalloon = cityObjectGroupBalloon;
+	}
+
+	public Balloon getCityObjectGroupBalloon() {
+		return cityObjectGroupBalloon;
 	}
 
 }

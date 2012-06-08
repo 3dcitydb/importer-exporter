@@ -60,6 +60,8 @@ import net.opengis.kml._2.NetworkLinkType;
 import net.opengis.kml._2.ObjectFactory;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.RegionType;
+import net.opengis.kml._2.StyleType;
+import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 import oracle.ord.im.OrdImage;
 
@@ -67,7 +69,7 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
+import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
@@ -118,7 +120,9 @@ public class KmlExporterManager {
 	}
 
 
-	public void print(List<PlacemarkType> placemarkList) throws JAXBException {
+	public void print(List<PlacemarkType> placemarkList,
+					  KmlSplittingResult work,
+					  boolean balloonInSeparateFile) throws JAXBException {
 		SAXEventBuffer buffer = new SAXEventBuffer();
 		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
 		if (isBBoxActive && config.getProject().getKmlExporter().isOneFilePerObject()) {
@@ -142,7 +146,7 @@ public class KmlExporterManager {
         	for (PlacemarkType placemark: placemarkList) {
         		if (placemark != null) {
         			String placemarkDescription = placemark.getDescription();
-        			if (placemarkDescription != null && config.getProject().getKmlExporter().isBalloonContentInSeparateFile()) {
+        			if (placemarkDescription != null && balloonInSeparateFile) {
 
         				StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandlerImpl.parentFrameStart);
         				parentFrame.append(placemark.getName());
@@ -178,33 +182,19 @@ public class KmlExporterManager {
         			}
 
         			if (isBBoxActive && config.getProject().getKmlExporter().isOneFilePerObject()) {
-						String displayLevelName = null;
+						String displayFormName = work.getDisplayForm().getName();
         				if (gmlId == null) {
         					gmlId = placemark.getName();
 							String path = config.getInternal().getExportFileName().trim();
 							path = path.substring(0, path.lastIndexOf(File.separator));
 							String filename = null;
 
-							// currently active displayLevel unknown
-							// can be found out through placemark.getId() and placemark.getStyleUrl() 
-							if (placemark.getId().startsWith(DisplayLevel.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID)) {
-								displayLevelName = placemark.getStyleUrl().startsWith("#" + DisplayLevel.GEOMETRY_STR) ?
-												   DisplayLevel.GEOMETRY_STR: DisplayLevel.COLLADA_STR;
-								filename = gmlId + "_" + displayLevelName + "_" + DisplayLevel.HIGHLIGTHTED_STR;
+							filename = gmlId + "_" + displayFormName;
+							if (work.getDisplayForm().getForm() >= DisplayForm.GEOMETRY &&
+								work.getDisplayForm().isHighlightingEnabled()) {
+								filename = filename + "_" + DisplayForm.HIGHLIGTHTED_STR;
 							}
-							else if (placemark.getId().startsWith(DisplayLevel.GEOMETRY_PLACEMARK_ID)) {
-        						gmlId = gmlId.substring(0, gmlId.lastIndexOf("_")); // "_WallSurface", "_RoofSurface"
-        						displayLevelName = DisplayLevel.GEOMETRY_STR;
-								filename = gmlId + "_" + displayLevelName;
-							} 
-							else if (placemark.getId().startsWith(DisplayLevel.EXTRUDED_PLACEMARK_ID)) {
-        						displayLevelName = DisplayLevel.EXTRUDED_STR;
-								filename = gmlId + "_" + displayLevelName;
-							} 
-							else if (placemark.getId().startsWith(DisplayLevel.FOOTPRINT_PLACEMARK_ID)) {
-        						displayLevelName = DisplayLevel.FOOTPRINT_STR;
-								filename = gmlId + "_" + displayLevelName;
-							}
+							
 
 							File placemarkDirectory = new File(path + File.separator + gmlId);
 							if (!placemarkDirectory.exists()) {
@@ -235,7 +225,7 @@ public class KmlExporterManager {
 							
 							// the network link pointing to the file
 							NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
-							networkLinkType.setName(gmlId + " " + displayLevelName);
+							networkLinkType.setName(gmlId + " " + displayFormName);
 
 							RegionType regionType = kmlFactory.createRegionType();
 							
@@ -255,7 +245,7 @@ public class KmlExporterManager {
 							regionType.setLod(lodType);
 
 							LinkType linkType = kmlFactory.createLinkType();
-							linkType.setHref(gmlId + "/" + gmlId + "_" + displayLevelName + fileExtension);
+							linkType.setHref(gmlId + "/" + gmlId + "_" + displayFormName + fileExtension);
 							linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
 							linkType.setViewFormat("");
 							if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
@@ -269,14 +259,13 @@ public class KmlExporterManager {
 							kmlMarshaller.marshal(kmlFactory.createNetworkLink(networkLinkType), buffer);
 
 							// include highlighting if selected
-							if (config.getProject().getKmlExporter().isGeometryHighlighting() ||
-								config.getProject().getKmlExporter().isColladaHighlighting()) {
+							if (work.getDisplayForm().isHighlightingEnabled()) {
 								
 								NetworkLinkType hNetworkLinkType = kmlFactory.createNetworkLinkType();
-								hNetworkLinkType.setName(gmlId + " " + displayLevelName + " " + DisplayLevel.HIGHLIGTHTED_STR);
+								hNetworkLinkType.setName(gmlId + " " + displayFormName + " " + DisplayForm.HIGHLIGTHTED_STR);
 
 								LinkType hLinkType = kmlFactory.createLinkType();
-								hLinkType.setHref(gmlId + "/" + gmlId + "_" + displayLevelName + "_" + DisplayLevel.HIGHLIGTHTED_STR + fileExtension);
+								hLinkType.setHref(gmlId + "/" + gmlId + "_" + displayFormName + "_" + DisplayForm.HIGHLIGTHTED_STR + fileExtension);
 								hLinkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
 								hLinkType.setViewFormat("");
 								if (hLinkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
@@ -318,10 +307,10 @@ public class KmlExporterManager {
         }
 	}
 
-	public void print(ColladaBundle colladaBundle) throws JAXBException, 
-														  FileNotFoundException,
-														  IOException,
-														  SQLException {
+	public void print(ColladaBundle colladaBundle, boolean balloonInSeparateFile) throws JAXBException, 
+														  								 FileNotFoundException,
+														  								 IOException,
+														  								 SQLException {
 		ZipOutputStream zipOut = null;
 		OutputStreamWriter fileWriter = null;
 		SAXEventBuffer buffer = new SAXEventBuffer();
@@ -342,7 +331,7 @@ public class KmlExporterManager {
 		
 		if (placemark != null) {
 			String placemarkDescription = placemark.getDescription();
-			if (placemarkDescription != null && config.getProject().getKmlExporter().isBalloonContentInSeparateFile()) {
+			if (placemarkDescription != null && balloonInSeparateFile) {
 
 				StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandlerImpl.parentFrameStart);
 				parentFrame.append(colladaBundle.getBuildingId());
@@ -394,7 +383,7 @@ public class KmlExporterManager {
 
 				// the network link pointing to the file
 				NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
-				networkLinkType.setName(colladaBundle.getBuildingId() + " " + DisplayLevel.COLLADA_STR);
+				networkLinkType.setName(colladaBundle.getBuildingId() + " " + DisplayForm.COLLADA_STR);
 
 				RegionType regionType = kmlFactory.createRegionType();
 				
@@ -414,7 +403,7 @@ public class KmlExporterManager {
 				regionType.setLod(lodType);
 
 				LinkType linkType = kmlFactory.createLinkType();
-				linkType.setHref(colladaBundle.getBuildingId() + "/" + colladaBundle.getBuildingId() + "_" + DisplayLevel.COLLADA_STR + fileExtension);
+				linkType.setHref(colladaBundle.getBuildingId() + "/" + colladaBundle.getBuildingId() + "_" + DisplayForm.COLLADA_STR + fileExtension);
 				linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
 				linkType.setViewFormat("");
 				if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
@@ -566,4 +555,19 @@ public class KmlExporterManager {
 			}
 		}
 	}
+
+	public void print(StyleType styleType) throws JAXBException {
+		SAXEventBuffer buffer = new SAXEventBuffer();
+		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
+		kmlMarshaller.marshal(kmlFactory.createStyle(styleType), buffer);
+		ioWriterPool.addWork(buffer);
+	}
+
+	public void print(StyleMapType styleMapType) throws JAXBException {
+		SAXEventBuffer buffer = new SAXEventBuffer();
+		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
+		kmlMarshaller.marshal(kmlFactory.createStyleMap(styleMapType), buffer);
+		ioWriterPool.addWork(buffer);
+	}
 }
+

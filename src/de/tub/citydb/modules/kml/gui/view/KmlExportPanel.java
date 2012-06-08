@@ -61,6 +61,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import javax.xml.bind.JAXBContext;
 
 import de.tub.citydb.api.event.Event;
@@ -78,12 +80,15 @@ import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.filter.FilterMode;
 import de.tub.citydb.config.project.filter.TilingMode;
-import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
+import de.tub.citydb.config.project.general.FeatureClassMode;
+import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import de.tub.citydb.gui.components.ExportStatusDialog;
 import de.tub.citydb.gui.components.bbox.BoundingBoxPanelImpl;
+import de.tub.citydb.gui.components.checkboxtree.CheckboxTree;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.InterruptEnum;
@@ -163,6 +168,11 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private JLabel themeLabel = new JLabel();
 	private JComboBox themeComboBox = new JComboBox();
 	private JButton fetchThemesButton = new JButton(" ");
+
+	private CheckboxTree fcTree;
+	private DefaultMutableTreeNode cityObject;
+	private DefaultMutableTreeNode building;
+	private DefaultMutableTreeNode cityObjectGroup;
 
 	private JButton exportButton = new JButton("");
 
@@ -331,18 +341,37 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		exportAndDisplayPanel.add(Box.createRigidArea(new Dimension(BORDER_THICKNESS, 0)), GuiUtil.setConstraints(1,0,0,0,GridBagConstraints.NONE,0,0,0,0));
 		exportAndDisplayPanel.add(displayAsPanel, GuiUtil.setConstraints(2,0,0.7,0,GridBagConstraints.BOTH,0,0,0,0));
 
-		JPanel exportButtonPanel = new JPanel();
-		exportButtonPanel.add(exportButton);
+		cityObject = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECT);
+		building = new DefaultMutableTreeNode(FeatureClassMode.BUILDING);
+		cityObjectGroup = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECTGROUP);
+
+		cityObject.add(building);
+		cityObject.add(cityObjectGroup);
+
+		fcTree = new CheckboxTree(cityObject);
+		fcTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 4);		
+		fcTree.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), 
+				BorderFactory.createEmptyBorder(0,0,BORDER_THICKNESS,0)));
+		
+		// get rid of standard icons
+		DefaultCheckboxTreeCellRenderer renderer = (DefaultCheckboxTreeCellRenderer)fcTree.getCellRenderer();
+		renderer.setLeafIcon(null);
+		renderer.setOpenIcon(null);
+		renderer.setClosedIcon(null);
 
 		JPanel scrollView = new JPanel();
 		scrollView.setLayout(new GridBagLayout());
 		scrollView.add(versioningPanel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
-		scrollView.add(filterPanel, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
-		scrollView.add(exportAndDisplayPanel, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,0,5,0,5));
+		scrollView.add(filterPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
+		scrollView.add(exportAndDisplayPanel, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
+		scrollView.add(fcTree, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,7,0,7));
 		JScrollPane scrollPane = new JScrollPane(scrollView);
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
 		
+		JPanel exportButtonPanel = new JPanel();
+		exportButtonPanel.add(exportButton);
+
 		this.setLayout(new GridBagLayout());	
 		this.add(browsePanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,5,5));
 		this.add(scrollPane, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
@@ -447,6 +476,21 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			boundingBoxRadioButton.setSelected(true);
 		}
 
+		// this block should be under the former else block
+		if (kmlExporter.getFilter().getComplexFilter().getFeatureClass().isSetBuilding()) {
+			fcTree.getCheckingModel().addCheckingPath(new TreePath(building.getPath()));
+		}
+		else {
+			fcTree.getCheckingModel().removeCheckingPath(new TreePath(building.getPath()));
+		}
+		if (kmlExporter.getFilter().getComplexFilter().getFeatureClass().isSetCityObjectGroup()) {
+			fcTree.getCheckingModel().addCheckingPath(new TreePath(cityObjectGroup.getPath()));
+		}
+		else {
+			fcTree.getCheckingModel().removeCheckingPath(new TreePath(cityObjectGroup.getPath()));
+		}
+		// end of block
+
 		boolean isFirst = true;
 		String gmlIds = "";
 		for (String gmlId: kmlExporter.getFilter().getSimpleFilter().getGmlIdFilter().getGmlIds()) {
@@ -483,30 +527,30 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		lod = lod >= lodComboBox.getItemCount() ? lodComboBox.getItemCount() - 1: lod; 
 		lodComboBox.setSelectedIndex(lod);
 
-		for (DisplayLevel displayLevel : kmlExporter.getDisplayLevels()) {
-			switch (displayLevel.getLevel()) {
-			case DisplayLevel.FOOTPRINT:
-				if (displayLevel.isActive()) {
+		for (DisplayForm displayForm : kmlExporter.getBuildingDisplayForms()) {
+			switch (displayForm.getForm()) {
+			case DisplayForm.FOOTPRINT:
+				if (displayForm.isActive()) {
 					footprintCheckbox.setSelected(true);
-					footprintVisibleFromText.setText(String.valueOf(displayLevel.getVisibleFrom()));
+					footprintVisibleFromText.setText(String.valueOf(displayForm.getVisibleFrom()));
 				}
 				break;
-			case DisplayLevel.EXTRUDED:
-				if (displayLevel.isActive()) {
+			case DisplayForm.EXTRUDED:
+				if (displayForm.isActive()) {
 					extrudedCheckbox.setSelected(true);
-					extrudedVisibleFromText.setText(String.valueOf(displayLevel.getVisibleFrom()));
+					extrudedVisibleFromText.setText(String.valueOf(displayForm.getVisibleFrom()));
 				}
 				break;
-			case DisplayLevel.GEOMETRY:
-				if (displayLevel.isActive()) {
+			case DisplayForm.GEOMETRY:
+				if (displayForm.isActive()) {
 					geometryCheckbox.setSelected(true);
-					geometryVisibleFromText.setText(String.valueOf(displayLevel.getVisibleFrom()));
+					geometryVisibleFromText.setText(String.valueOf(displayForm.getVisibleFrom()));
 				}
 				break;
-			case DisplayLevel.COLLADA:
-				if (displayLevel.isActive()) {
+			case DisplayForm.COLLADA:
+				if (displayForm.isActive()) {
 					colladaCheckbox.setSelected(true);
-					colladaVisibleFromText.setText(String.valueOf(displayLevel.getVisibleFrom()));
+					colladaVisibleFromText.setText(String.valueOf(displayForm.getVisibleFrom()));
 				}
 				break;
 			}
@@ -594,13 +638,13 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		kmlExporter.setLodToExportFrom(lodComboBox.getSelectedIndex() + 1); // exclude LoD0 for the time being
 
 
-		DisplayLevel dl = new DisplayLevel(DisplayLevel.COLLADA, -1, -1);
-		int indexOfDl = kmlExporter.getDisplayLevels().indexOf(dl); 
-		if (indexOfDl != -1) {
-			dl = kmlExporter.getDisplayLevels().get(indexOfDl);
+		DisplayForm df = new DisplayForm(DisplayForm.COLLADA, -1, -1);
+		int indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+		if (indexOfDf != -1) {
+			df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
 		}
-		else {
-			kmlExporter.getDisplayLevels().add(dl);
+		else { // should never happen
+			kmlExporter.getBuildingDisplayForms().add(df);
 		}
 		if (colladaCheckbox.isSelected() && kmlExporter.getLodToExportFrom()>1) {
 			int levelVisibility = 0;
@@ -608,20 +652,20 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				levelVisibility = Integer.parseInt(colladaVisibleFromText.getText().trim());
 			}
 			catch (NumberFormatException nfe) {}
-			dl.setActive(true);
-			dl.setVisibleFrom(levelVisibility);
+			df.setActive(true);
+			df.setVisibleFrom(levelVisibility);
 		}
 		else {
-			dl.setActive(false);
+			df.setActive(false);
 		}
 
-		dl = new DisplayLevel(DisplayLevel.GEOMETRY, -1, -1);
-		indexOfDl = kmlExporter.getDisplayLevels().indexOf(dl); 
-		if (indexOfDl != -1) {
-			dl = kmlExporter.getDisplayLevels().get(indexOfDl);
+		df = new DisplayForm(DisplayForm.GEOMETRY, -1, -1);
+		indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+		if (indexOfDf != -1) {
+			df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
 		}
-		else {
-			kmlExporter.getDisplayLevels().add(dl);
+		else { // should never happen
+			kmlExporter.getBuildingDisplayForms().add(df);
 		}
 		if (geometryCheckbox.isSelected() && kmlExporter.getLodToExportFrom()>0) {
 			int levelVisibility = 0;
@@ -629,20 +673,20 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				levelVisibility = Integer.parseInt(geometryVisibleFromText.getText().trim());
 			}
 			catch (NumberFormatException nfe) {}
-			dl.setActive(true);
-			dl.setVisibleFrom(levelVisibility);
+			df.setActive(true);
+			df.setVisibleFrom(levelVisibility);
 		}
 		else {
-			dl.setActive(false);
+			df.setActive(false);
 		}
 
-		dl = new DisplayLevel(DisplayLevel.EXTRUDED, -1, -1);
-		indexOfDl = kmlExporter.getDisplayLevels().indexOf(dl); 
-		if (indexOfDl != -1) {
-			dl = kmlExporter.getDisplayLevels().get(indexOfDl);
+		df = new DisplayForm(DisplayForm.EXTRUDED, -1, -1);
+		indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+		if (indexOfDf != -1) {
+			df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
 		}
-		else {
-			kmlExporter.getDisplayLevels().add(dl);
+		else { // should never happen
+			kmlExporter.getBuildingDisplayForms().add(df);
 		}
 		if (extrudedCheckbox.isSelected() && kmlExporter.getLodToExportFrom()>0) {
 			int levelVisibility = 0;
@@ -650,20 +694,20 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				levelVisibility = Integer.parseInt(extrudedVisibleFromText.getText().trim());
 			}
 			catch (NumberFormatException nfe) {}
-			dl.setActive(true);
-			dl.setVisibleFrom(levelVisibility);
+			df.setActive(true);
+			df.setVisibleFrom(levelVisibility);
 		}
 		else {
-			dl.setActive(false);
+			df.setActive(false);
 		}
 
-		dl = new DisplayLevel(DisplayLevel.FOOTPRINT, -1, -1);
-		indexOfDl = kmlExporter.getDisplayLevels().indexOf(dl); 
-		if (indexOfDl != -1) {
-			dl = kmlExporter.getDisplayLevels().get(indexOfDl);
+		df = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
+		indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+		if (indexOfDf != -1) {
+			df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
 		}
-		else {
-			kmlExporter.getDisplayLevels().add(dl);
+		else { // should never happen
+			kmlExporter.getBuildingDisplayForms().add(df);
 		}
 		if (footprintCheckbox.isSelected()) {
 			int levelVisibility = 0;
@@ -671,16 +715,19 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				levelVisibility = Integer.parseInt(footprintVisibleFromText.getText().trim());
 			}
 			catch (NumberFormatException nfe) {}
-			dl.setActive(true);
-			dl.setVisibleFrom(levelVisibility);
+			df.setActive(true);
+			df.setVisibleFrom(levelVisibility);
 		}
 		else {
-			dl.setActive(false);
+			df.setActive(false);
 		}
 
 		//		if (themeComboBox.getItemCount() > 0) {
 		kmlExporter.setAppearanceTheme(themeComboBox.getSelectedItem().toString());
 		//		}
+
+		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setBuilding(fcTree.getCheckingModel().isPathChecked(new TreePath(building.getPath()))); 
+		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setCityObjectGroup(fcTree.getCheckingModel().isPathChecked(new TreePath(cityObjectGroup.getPath())));
 
 		config.getProject().setKmlExporter(kmlExporter);
 	}
@@ -792,9 +839,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				return;
 			}
 
-			// DisplayLevels
-			int activeDisplayLevelAmount = config.getProject().getKmlExporter().getActiveDisplayLevelAmount(); 
-			if (activeDisplayLevelAmount == 0) {
+			// DisplayForms
+			int activeDisplayFormsAmount =
+				KmlExporter.getActiveDisplayFormsAmount(config.getProject().getKmlExporter().getBuildingDisplayForms()); 
+			if (activeDisplayFormsAmount == 0) {
 				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
 						Internal.I18N.getString("kmlExport.dialog.error.incorrectData.displayForms"));
 				return;
@@ -839,7 +887,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					return;
 				}
 			}
-			tileAmount = tileAmount * activeDisplayLevelAmount;
+			tileAmount = tileAmount * activeDisplayFormsAmount;
 
 			mainView.setStatusText(Internal.I18N.getString("main.status.kmlExport.label"));
 			Logger.getInstance().info("Initializing database export...");
@@ -924,9 +972,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 	private void setVisibilityEnabledValues() {
 
-		extrudedCheckbox.setEnabled(DisplayLevel.isAchievableFromLoD(DisplayLevel.EXTRUDED, lodComboBox.getSelectedIndex() + 1));
-		geometryCheckbox.setEnabled(DisplayLevel.isAchievableFromLoD(DisplayLevel.GEOMETRY, lodComboBox.getSelectedIndex() + 1));
-		colladaCheckbox.setEnabled(DisplayLevel.isAchievableFromLoD(DisplayLevel.COLLADA, lodComboBox.getSelectedIndex() + 1));
+		extrudedCheckbox.setEnabled(DisplayForm.isAchievableFromLoD(DisplayForm.EXTRUDED, lodComboBox.getSelectedIndex() + 1));
+		geometryCheckbox.setEnabled(DisplayForm.isAchievableFromLoD(DisplayForm.GEOMETRY, lodComboBox.getSelectedIndex() + 1));
+		colladaCheckbox.setEnabled(DisplayForm.isAchievableFromLoD(DisplayForm.COLLADA, lodComboBox.getSelectedIndex() + 1));
 
 		visibleFromFootprintLabel.setEnabled(boundingBoxRadioButton.isSelected() && footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());
 		footprintVisibleFromText.setEnabled(boundingBoxRadioButton.isSelected() && footprintCheckbox.isEnabled() && footprintCheckbox.isSelected());

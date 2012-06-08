@@ -929,7 +929,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			String tableShortId;
 			boolean orderByColumnAllowed = true;
 
-			if (ADDRESS_TABLE .equalsIgnoreCase(table)) {
+			if (ADDRESS_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "a";
 				orderByColumnAllowed = (!columns.get(0).equals("MULTI_POINT") && !columns.get(0).equals("XAL_SOURCE"));
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(tableShortId, columns, ADDRESS_COLUMNS) + aggregateClosingString +
@@ -1010,10 +1010,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				tableShortId = "cog";
 				orderByColumnAllowed = (!columns.get(0).equals("GEOMETRY"));
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(tableShortId, columns, CITYOBJECTGROUP_COLUMNS) + aggregateClosingString +
-							   " FROM CITYOBJECT co, GROUP_TO_CITYOBJECT g2co, CITYOBJECTGROUP " + tableShortId +
+							   " FROM CITYOBJECT co, CITYOBJECTGROUP " + tableShortId +
 							   " WHERE co.gmlid = ?" +
-							   " AND g2co.cityobject_id = co.id" +
-							   " AND cog.id = g2co.cityobjectgroup_id";
+							   " AND cog.id = co.id";
 			}
 	 		else if (CITYOBJECT_MEMBER_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "com";

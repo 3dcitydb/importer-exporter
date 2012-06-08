@@ -32,8 +32,8 @@ package de.tub.citydb.config.project.kmlExporter;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="DisplayLevelType", propOrder={
-		"level",
+@XmlType(name="DisplayFormType", propOrder={
+		"form",
 		"active",
 		"visibleFrom",
 		"rgba0",
@@ -41,9 +41,11 @@ import javax.xml.bind.annotation.XmlType;
 		"rgba2",
 		"rgba3",
 		"rgba4",
-		"rgba5"
+		"rgba5",
+		"highlightingEnabled",
+		"highlightingDistance"
 })
-public class DisplayLevel {
+public class DisplayForm {
 
 	public static final int FOOTPRINT = 1;  
 	public static final int EXTRUDED = 2;  
@@ -74,7 +76,7 @@ public class DisplayLevel {
 	public static final int INVISIBLE_COLOR = 0x0100aaff;
 	public static final int DEFAULT_ALPHA_VALUE = 200; // 0xc8;
 
-	private int level;
+	private int form;
 	private boolean active = false;
 	private int visibleFrom = 0;
 	@XmlTransient
@@ -86,18 +88,21 @@ public class DisplayLevel {
 	private int rgba3 = -1;
 	private int rgba4 = -1;
 	private int rgba5 = -1;
-	
-	public DisplayLevel() {}
 
-	public DisplayLevel(int level, int visibleFrom, int visibleUpTo) {
-		this.level = level;
+	private boolean highlightingEnabled = false;
+	private double highlightingDistance = 0.75;
+	
+	public DisplayForm() {}
+
+	public DisplayForm(int form, int visibleFrom, int visibleUpTo) {
+		this.form = form;
 		this.setVisibleFrom(visibleFrom);
 		this.setVisibleUpTo(visibleUpTo);
 	}
 
-	public static boolean isAchievableFromLoD (int displayLevel, int lod) {
+	public static boolean isAchievableFromLoD (int displayForm, int lod) {
 		boolean achievable = true; // FOOTPRINT always achievable
-		switch (displayLevel) {
+		switch (displayForm) {
 		case EXTRUDED:
 		case GEOMETRY:
 			achievable = (lod > 0);
@@ -110,34 +115,34 @@ public class DisplayLevel {
 	}
 
 	public boolean isAchievableFromLoD (int lod) {
-		return isAchievableFromLoD(level, lod);
+		return isAchievableFromLoD(form, lod);
 	}
 
 	public String getName() {
-		String levelOfDetailByName = "unknown";
-		switch (level) {
+		String formByName = "unknown";
+		switch (form) {
 		case FOOTPRINT:
-			levelOfDetailByName = FOOTPRINT_STR;
+			formByName = FOOTPRINT_STR;
 			break;
 		case EXTRUDED:
-			levelOfDetailByName = EXTRUDED_STR;
+			formByName = EXTRUDED_STR;
 			break;
 		case GEOMETRY:
-			levelOfDetailByName = GEOMETRY_STR;
+			formByName = GEOMETRY_STR;
 			break;
 		case COLLADA:
-			levelOfDetailByName = COLLADA_STR;
+			formByName = COLLADA_STR;
 			break;
 		}
-		return levelOfDetailByName;
+		return formByName;
 	}
 
-	public int getLevel() {
-		return level;
+	public int getForm() {
+		return form;
 	}
 
-	public void setLevel(int level) {
-		this.level = level;
+	public void setForm(int form) {
+		this.form = form;
 	}
 
 	public void setVisibleFrom(int visibleFrom) {
@@ -236,12 +241,28 @@ public class DisplayLevel {
 		return active;
 	}
 
+	public void setHighlightingEnabled(boolean highlightingEnabled) {
+		this.highlightingEnabled = highlightingEnabled;
+	}
+
+	public boolean isHighlightingEnabled() {
+		return highlightingEnabled;
+	}
+
+	public void setHighlightingDistance(double highlightingDistance) {
+		this.highlightingDistance = highlightingDistance;
+	}
+
+	public double getHighlightingDistance() {
+		return highlightingDistance;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		boolean value = false;
-		if (obj instanceof DisplayLevel) {
-			DisplayLevel dl = (DisplayLevel)obj;
-			value = dl.getLevel() == this.getLevel();
+		if (obj instanceof DisplayForm) {
+			DisplayForm dl = (DisplayForm)obj;
+			value = dl.getForm() == this.getForm();
 		}
 		return value;
 	}
@@ -253,6 +274,24 @@ public class DisplayLevel {
 		String blue = rgbColor.substring(6);
 		bgrColor = rgbColor.substring(0, 2) + blue + rgbColor.substring(4, 6) + red; 
 		return bgrColor;
+	}
+
+	@Override
+	public DisplayForm clone() {
+		DisplayForm clonedDisplayForm = new DisplayForm();
+		clonedDisplayForm.setActive(this.isActive());
+		clonedDisplayForm.setForm(this.getForm());
+		clonedDisplayForm.setHighlightingDistance(this.getHighlightingDistance());
+		clonedDisplayForm.setHighlightingEnabled(this.isHighlightingEnabled());
+		clonedDisplayForm.setRgba0(this.getRgba0());
+		clonedDisplayForm.setRgba1(this.getRgba1());
+		clonedDisplayForm.setRgba2(this.getRgba2());
+		clonedDisplayForm.setRgba3(this.getRgba3());
+		clonedDisplayForm.setRgba4(this.getRgba4());
+		clonedDisplayForm.setRgba5(this.getRgba5());
+		clonedDisplayForm.setVisibleFrom(this.getVisibleFrom());
+		clonedDisplayForm.setVisibleUpTo(this.getVisibleUpTo());
+		return clonedDisplayForm;
 	}
 
 }
