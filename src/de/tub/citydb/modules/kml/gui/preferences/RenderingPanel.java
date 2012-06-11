@@ -824,34 +824,58 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 	@Override
 	public void setSettings() {
 		setObjectSettings(cityGMLObjects.getSelectedItem().toString());
+		KmlExporter kmlExporter = config.getProject().getKmlExporter();
 
-		if (config.getProject().getKmlExporter().getBuildingDisplayForms().isEmpty()) {
-			config.getProject().getKmlExporter().setBuildingDisplayForms(internBuildingDfs);
-		}
-		else {
-			for (DisplayForm internDf : internBuildingDfs) {
-				int indexOfConfigDf = config.getProject().getKmlExporter().getBuildingDisplayForms().indexOf(internDf); 
-				if (indexOfConfigDf != -1) {
-					DisplayForm configDf = config.getProject().getKmlExporter().getBuildingDisplayForms().get(indexOfConfigDf);
-					// clone cannot be used here because of isActive() and visibleFrom()
-					copyColorAndHighlightingValues(internDf, configDf);
-				}
-			}
-		}
-
-		if (config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().isEmpty()) {
-			config.getProject().getKmlExporter().setCityObjectGroupDisplayForms(internCityObjectGroupDfs);
+		if (kmlExporter.getCityObjectGroupDisplayForms().isEmpty()) {
+			kmlExporter.setCityObjectGroupDisplayForms(internCityObjectGroupDfs);
 		}
 		else {
 			for (DisplayForm internDf : internCityObjectGroupDfs) {
-				int indexOfConfigDf = config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().indexOf(internDf); 
+				int indexOfConfigDf = kmlExporter.getCityObjectGroupDisplayForms().indexOf(internDf); 
 				if (indexOfConfigDf != -1) {
-					DisplayForm configDf = config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().get(indexOfConfigDf);
+					DisplayForm configDf = kmlExporter.getCityObjectGroupDisplayForms().get(indexOfConfigDf);
 					// clone cannot be used here because of isActive() and visibleFrom()
 					copyColorAndHighlightingValues(internDf, configDf);
 				}
 			}
 		}
+		
+		if (kmlExporter.getBuildingDisplayForms().isEmpty()) {
+			kmlExporter.setBuildingDisplayForms(internBuildingDfs);
+		}
+		else {
+			for (DisplayForm internDf : internBuildingDfs) {
+				int indexOfConfigDf = kmlExporter.getBuildingDisplayForms().indexOf(internDf); 
+				if (indexOfConfigDf != -1) {
+					DisplayForm configDf = kmlExporter.getBuildingDisplayForms().get(indexOfConfigDf);
+					// clone cannot be used here because of isActive() and visibleFrom()
+					copyColorAndHighlightingValues(internDf, configDf);
+				}
+			}
+		}
+
+		kmlExporter.setIgnoreSurfaceOrientation(ignoreSurfaceOrientationCheckbox.isSelected());
+		kmlExporter.setGenerateTextureAtlases(textureAtlasCheckbox.isSelected());
+		kmlExporter.setTextureAtlasPots(textureAtlasPotsCheckbox.isSelected());
+		kmlExporter.setPackingAlgorithm(packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue()); 
+
+		kmlExporter.setScaleImages(scaleTexImagesCheckbox.isSelected());
+		try {
+			kmlExporter.setImageScaleFactor(Double.parseDouble(scaleFactorText.getText().trim()));
+			if (kmlExporter.getImageScaleFactor() <= 0 || kmlExporter.getImageScaleFactor() > 1) {
+				kmlExporter.setImageScaleFactor(1);
+			}
+		}
+		catch (NumberFormatException nfe) {}
+
+		kmlExporter.setGroupBuildings(groupBuildingsRButton.isSelected());
+		try {
+			kmlExporter.setGroupSize(Integer.parseInt(groupSizeText.getText().trim()));
+			if (kmlExporter.getGroupSize() < 2) {
+				kmlExporter.setGroupSize(1);
+			}
+		}
+		catch (NumberFormatException nfe) {}
 	}
 
 	private void copyColorAndHighlightingValues (DisplayForm original, DisplayForm copy) {
@@ -916,8 +940,6 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 
 	private void setBuildingSettings() {
 		
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
-
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.EXTRUDED; form++) {
 			DisplayForm df = new DisplayForm(form, -1, -1);
 			int indexOfDf = internBuildingDfs.indexOf(df); 
@@ -1017,29 +1039,6 @@ public class RenderingPanel extends AbstractPreferencesComponent {
 					DisplayForm.DEFAULT_ALPHA_VALUE);
 			df.setRgba5(rgba5.getRGB());
 		}
-
-		kmlExporter.setIgnoreSurfaceOrientation(ignoreSurfaceOrientationCheckbox.isSelected());
-		kmlExporter.setGenerateTextureAtlases(textureAtlasCheckbox.isSelected());
-		kmlExporter.setTextureAtlasPots(textureAtlasPotsCheckbox.isSelected());
-		kmlExporter.setPackingAlgorithm(packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue()); 
-
-		kmlExporter.setScaleImages(scaleTexImagesCheckbox.isSelected());
-		try {
-			kmlExporter.setImageScaleFactor(Double.parseDouble(scaleFactorText.getText().trim()));
-			if (kmlExporter.getImageScaleFactor() <= 0 || kmlExporter.getImageScaleFactor() > 1) {
-				kmlExporter.setImageScaleFactor(1);
-			}
-		}
-		catch (NumberFormatException nfe) {}
-
-		kmlExporter.setGroupBuildings(groupBuildingsRButton.isSelected());
-		try {
-			kmlExporter.setGroupSize(Integer.parseInt(groupSizeText.getText().trim()));
-			if (kmlExporter.getGroupSize() < 2) {
-				kmlExporter.setGroupSize(1);
-			}
-		}
-		catch (NumberFormatException nfe) {}
 
 	}
 
