@@ -2,10 +2,10 @@ package de.tub.citydb.plugins.matching_merging.util;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.text.SimpleDateFormat;
+//import java.text.SimpleDateFormat;
 import java.util.ResourceBundle;
 
-import de.tub.citydb.plugins.matching_merging.config.Workspace;
+//import de.tub.citydb.plugins.matching_merging.config.Workspace;
 
 public class Util {
 	public static ResourceBundle I18N;
@@ -22,6 +22,7 @@ public class Util {
 		return constraint;
 	}
 	
+	/*
 	public static boolean checkWorkspaceTimestamp(Workspace workspace) {
 		String timestamp = workspace.getTimestamp().trim();
 		boolean success = true;
@@ -39,4 +40,5 @@ public class Util {
 		workspace.setTimestamp(timestamp);
 		return success;
 	}
+	*/
 }

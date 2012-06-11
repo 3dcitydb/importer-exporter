@@ -5,7 +5,7 @@ import javax.xml.bind.annotation.XmlType;
 import de.tub.citydb.api.plugin.extension.config.PluginConfig;
 
 @XmlType(name="MatchingMegingConfigType", propOrder={
-		"workspace",
+//		"workspace",
 		"candidateBuildings",
 		"masterBuildings",		
 		"matching",
@@ -13,7 +13,7 @@ import de.tub.citydb.api.plugin.extension.config.PluginConfig;
 		"deleteBuildings"
 })
 public class ConfigImpl extends PluginConfig {
-	private Workspace workspace;
+//	private Workspace workspace;
 	private BuildingFilter candidateBuildings;
 	private BuildingFilter masterBuildings;
 	private Matching matching;
@@ -21,7 +21,7 @@ public class ConfigImpl extends PluginConfig {
 	private DeleteBuildingsByLineage deleteBuildings;
 
 	public ConfigImpl() {
-		workspace = new Workspace();
+//		workspace = new Workspace();
 		candidateBuildings = new BuildingFilter(3, 0.8f, 3);
 		masterBuildings = new BuildingFilter(2, 0.8f, 3);
 		matching = new Matching();
@@ -29,6 +29,7 @@ public class ConfigImpl extends PluginConfig {
 		deleteBuildings = new DeleteBuildingsByLineage();
 	}
 
+/*	
 	public Workspace getWorkspace() {
 		return workspace;
 	}
@@ -37,7 +38,7 @@ public class ConfigImpl extends PluginConfig {
 		if (workspace != null)
 			this.workspace = workspace;
 	}
-
+*/
 	public Matching getMatching() {
 		return matching;
 	}

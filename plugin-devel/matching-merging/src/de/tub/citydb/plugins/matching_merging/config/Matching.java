@@ -33,15 +33,16 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="MatchingType", propOrder={
-		"tolerance",
+//		"tolerance",
 		"lineage"
 })		
 public class Matching {
-	@XmlElement(required=true)
-	private double tolerance = 0.001;
+//	@XmlElement(required=true)
+//	private double tolerance = 0.001;
 	@XmlElement(required=true)
 	private String lineage = "";
 
+	/*
 	public double getTolerance() {
 		return tolerance;
 	}
@@ -49,6 +50,7 @@ public class Matching {
 	public void setTolerance(double tolerance) {
 		this.tolerance = tolerance;
 	}
+	*/
 
 	public String getLineage() {
 		return lineage;

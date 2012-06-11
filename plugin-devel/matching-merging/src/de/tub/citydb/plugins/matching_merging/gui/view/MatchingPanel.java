@@ -41,7 +41,7 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
+//import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -51,7 +51,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+//import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -91,7 +91,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 	private JFormattedTextField candOverlapText;
 	private JFormattedTextField masterOverlapText;
-	private JFormattedTextField matchToleranceText;
+//	private JFormattedTextField matchToleranceText;
 
 	private JComboBox masterMergeLODCombo;
 	private JComboBox candMergeLODCombo;
@@ -99,15 +99,17 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 	private JButton mergeButton;
 	private JLabel warningLabel;
 
+/*
 	private JLabel workspaceLabel;
 	private JLabel timestampLabel;
 	private JTextField workspaceText;
 	private JFormattedTextField timestampText;
+*/
 
 	private JTextField deleteLinageText;
 	private JButton deleteButton;
 
-	private JPanel workspacePanel;
+//	private JPanel workspacePanel;
 	private JPanel warning;
 	private JPanel refPanel;
 	private JPanel candPanel;
@@ -121,7 +123,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 	private JLabel candOverlapLabel;
 	private JLabel masterOverlapLabel;
 
-	private JLabel matchToleranceLabel;
+//	private JLabel matchToleranceLabel;
 	private JLabel masterMergeLODLabel;
 	private JLabel candMergeLODLabel;
 	private JLabel mergeLineageLabel;
@@ -154,8 +156,8 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		masterOverlapText = new JFormattedTextField(percentFormat);
 		candOverlapText.setColumns(3);
 		masterOverlapText.setColumns(3);
-		matchToleranceText = new JFormattedTextField(new DecimalFormat("###.##########", DecimalFormatSymbols.getInstance(Locale.ENGLISH)));
-		matchToleranceText.setColumns(14);
+//		matchToleranceText = new JFormattedTextField(new DecimalFormat("###.##########", DecimalFormatSymbols.getInstance(Locale.ENGLISH)));
+//		matchToleranceText.setColumns(14);
 		warningLabel = new JLabel();
 
 		masterMergeLODCombo = new JComboBox();
@@ -166,16 +168,18 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		deleteLinageText = new JTextField();
 		deleteButton = new JButton();
 
+		/*
 		workspaceText = new JTextField();
 		timestampText = new JFormattedTextField(new SimpleDateFormat("dd.MM.yyyy"));
 		timestampText.setFocusLostBehavior(JFormattedTextField.COMMIT);
 		timestampText.setColumns(10);
 		workspaceLabel = new JLabel();
 		timestampLabel = new JLabel();
+		*/
 
 		viewController.getComponentFactory().createPopupMenuDecorator().decorate(
-				matchLineageText, candOverlapText, masterOverlapText, matchToleranceText,
-				mergeLineageText, deleteLinageText, workspaceText, timestampText);
+				matchLineageText, candOverlapText, masterOverlapText, /*matchToleranceText,*/
+				mergeLineageText, deleteLinageText/*, workspaceText, timestampText*/);
 
 		for (int lod = 1; lod < 5; lod++) {
 			masterLODCombo.addItem("LOD " + lod);
@@ -247,6 +251,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		JPanel view = new JPanel();		
 		view.setLayout(new GridBagLayout());
 		{
+			/*
 			workspacePanel = new JPanel();
 			view.add(workspacePanel, Util.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,10,5,5,5));
 			workspacePanel.setBorder(BorderFactory.createTitledBorder(""));
@@ -258,9 +263,9 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 				workspacePanel.add(timestampText, Util.setConstraints(3,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 				timestampText.setMinimumSize(timestampText.getPreferredSize());
 			}
-
+			*/
 			JPanel buildings = new JPanel();
-			view.add(buildings, Util.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,5,5));
+			view.add(buildings, Util.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,15,5,5,5));
 			buildings.setBorder(BorderFactory.createEmptyBorder());
 			buildings.setLayout(new GridBagLayout());
 			{
@@ -302,17 +307,17 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			view.add(matchPanel, Util.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,5,5,5,5));
 			matchPanel.setBorder(BorderFactory.createTitledBorder(""));
 			matchPanel.setLayout(new GridBagLayout());
-			matchToleranceLabel = new JLabel();
+//			matchToleranceLabel = new JLabel();
 			matchLineageLabel = new JLabel();
 			{
-				matchPanel.add(matchToleranceLabel, Util.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+//				matchPanel.add(matchToleranceLabel, Util.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 				GridBagConstraints c = Util.setConstraints(1,0,0.0,0.0,GridBagConstraints.NONE,0,5,5,5);
 				c.anchor = GridBagConstraints.WEST;			
-				matchPanel.add(matchToleranceText, c);
+//				matchPanel.add(matchToleranceText, c);
 				matchPanel.add(matchLineageLabel, Util.setConstraints(0,1,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 				matchPanel.add(matchLineageText, Util.setConstraints(1,1,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-				matchToleranceText.setMinimumSize(matchToleranceText.getPreferredSize());
-
+//				matchToleranceText.setMinimumSize(matchToleranceText.getPreferredSize());
+				
 				warning = new JPanel();
 				warning.setBorder(BorderFactory.createEtchedBorder());
 				warning.setBackground(new Color(255, 255, 255));
@@ -398,10 +403,11 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 	}
 
 	public void switchLocale() {
+		/*
 		workspacePanel.setBorder(BorderFactory.createTitledBorder(Util.I18N.getString("common.border.versioning")));
 		workspaceLabel.setText(Util.I18N.getString("common.label.workspace"));
 		timestampLabel.setText(Util.I18N.getString("common.label.timestamp"));
-
+		*/
 		refPanel.setBorder(BorderFactory.createTitledBorder(Util.I18N.getString("match.reference.building.border")));
 		candPanel.setBorder(BorderFactory.createTitledBorder(Util.I18N.getString("match.candidate.building.border")));	
 		masterLODLabel.setText(Util.I18N.getString("match.common.lod"));
@@ -412,7 +418,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		candMergeLODLabel.setText(Util.I18N.getString("match.candidate.merge.lod"));
 
 		matchPanel.setBorder(BorderFactory.createTitledBorder(Util.I18N.getString("match.match.border")));
-		matchToleranceLabel.setText(Util.I18N.getString("match.match.tolerance.label"));
+//		matchToleranceLabel.setText(Util.I18N.getString("match.match.tolerance.label"));
 		matchLineageLabel.setText(Util.I18N.getString("match.match.lineage"));
 		warningLabel.setText(Util.I18N.getString("match.match.warning.label"));
 		matchButton.setText(Util.I18N.getString("match.match.button"));
@@ -467,8 +473,8 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 	}
 
 	public void loadSettings() {
-		workspaceText.setText(plugin.getConfig().getWorkspace().getName());
-		timestampText.setText(plugin.getConfig().getWorkspace().getTimestamp());
+//		workspaceText.setText(plugin.getConfig().getWorkspace().getName());
+//		timestampText.setText(plugin.getConfig().getWorkspace().getTimestamp());
 
 		masterLODCombo.setSelectedIndex(plugin.getConfig().getMasterBuildings().getLodProjection()-1);
 		masterOverlapText.setValue(plugin.getConfig().getMasterBuildings().getOverlap() * 100);
@@ -478,12 +484,13 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		candMergeLODCombo.setSelectedIndex(plugin.getConfig().getCandidateBuildings().getLodGeometry()-1);
 
 		matchLineageText.setText(plugin.getConfig().getMatching().getLineage());
-		matchToleranceText.setValue(new Double(plugin.getConfig().getMatching().getTolerance()));
+//		matchToleranceText.setValue(new Double(plugin.getConfig().getMatching().getTolerance()));
 		mergeLineageText.setText(plugin.getConfig().getMerging().getLineage());
 		deleteLinageText.setText(plugin.getConfig().getDeleteBuildingsByLineage().getLineage());
 	}
 
 	public void setSettings() {
+		/*
 		String workspace = workspaceText.getText().trim();
 		if (!workspace.equals("LIVE") && 
 				(workspace.length() == 0 || workspace.toUpperCase().equals("LIVE")))
@@ -491,7 +498,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 		plugin.getConfig().getWorkspace().setName(workspaceText.getText());
 		plugin.getConfig().getWorkspace().setTimestamp(timestampText.getText());
-
+		*/
 		plugin.getConfig().getMasterBuildings().setLodProjection(masterLODCombo.getSelectedIndex()+1);
 		plugin.getConfig().getMasterBuildings().setOverlap(((Number)masterOverlapText.getValue()).doubleValue() / 100);
 		plugin.getConfig().getMasterBuildings().setLodGeometry(masterMergeLODCombo.getSelectedIndex()+1);
@@ -500,7 +507,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		plugin.getConfig().getCandidateBuildings().setLodGeometry(candMergeLODCombo.getSelectedIndex()+1);
 
 		plugin.getConfig().getMatching().setLineage(matchLineageText.getText());
-		plugin.getConfig().getMatching().setTolerance(((Number)matchToleranceText.getValue()).doubleValue());
+//		plugin.getConfig().getMatching().setTolerance(((Number)matchToleranceText.getValue()).doubleValue());
 		plugin.getConfig().getMerging().setLineage(mergeLineageText.getText());
 		plugin.getConfig().getDeleteBuildingsByLineage().setLineage(deleteLinageText.getText());
 	}
@@ -514,11 +521,13 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 			viewController.clearConsole();
 
+			/*
 			if (!Util.checkWorkspaceTimestamp(plugin.getConfig().getWorkspace())) {
 				errorMessage(Util.I18N.getString("common.dialog.error.incorrectData"), 
 						Util.I18N.getString("common.dialog.error.incorrectData.date"));
 				return;
 			}
+			*/
 
 			if (!databaseController.isConnected()) {
 				try {
@@ -606,11 +615,13 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 			viewController.clearConsole();
 
+			/*
 			if (!Util.checkWorkspaceTimestamp(plugin.getConfig().getWorkspace())) {
 				errorMessage(Util.I18N.getString("common.dialog.error.incorrectData"), 
 						Util.I18N.getString("common.dialog.error.incorrectData.date"));
 				return;
 			}
+			*/
 
 			if (!databaseController.isConnected()) {
 				try {
@@ -756,12 +767,14 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			setSettings();
 
 			viewController.clearConsole();
-
+			
+			/*
 			if (!Util.checkWorkspaceTimestamp(plugin.getConfig().getWorkspace())) {
 				errorMessage(Util.I18N.getString("common.dialog.error.incorrectData"), 
 						Util.I18N.getString("common.dialog.error.incorrectData.date"));
 				return;
 			}
+			*/
 
 			if (!databaseController.isConnected()) {
 				try {
@@ -829,9 +842,11 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		}
 	}
 
+	/*
 	private void errorMessage(String title, String text) {
 		JOptionPane.showMessageDialog(viewController.getTopFrame(), text, title, JOptionPane.ERROR_MESSAGE);
 	}
+	*/
 
 	@Override
 	public void handleEvent(Event e) throws Exception {

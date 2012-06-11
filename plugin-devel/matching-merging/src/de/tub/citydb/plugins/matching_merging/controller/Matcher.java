@@ -45,7 +45,7 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.plugins.matching_merging.PluginImpl;
 import de.tub.citydb.plugins.matching_merging.config.ConfigImpl;
 import de.tub.citydb.plugins.matching_merging.config.Merging;
-import de.tub.citydb.plugins.matching_merging.config.Workspace;
+//import de.tub.citydb.plugins.matching_merging.config.Workspace;
 import de.tub.citydb.plugins.matching_merging.events.CounterEvent;
 import de.tub.citydb.plugins.matching_merging.events.EventType;
 import de.tub.citydb.plugins.matching_merging.events.InterruptEvent;
@@ -75,9 +75,10 @@ public class Matcher implements EventHandler {
 		eventDispatcher.removeEventHandler(this);
 	}
 
+	/*
 	private boolean checkWorkspace(Workspace workspace) {
 		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
-			/*boolean workspaceExists = databaseController.existsWorkspace(workspace.getName());
+			boolean workspaceExists = databaseController.existsWorkspace(workspace.getName());
 
 			String name = "'" + workspace.getName().trim() + "'";
 			String timestamp = workspace.getTimestamp().trim();
@@ -88,17 +89,18 @@ public class Matcher implements EventHandler {
 				logController.error("Database workspace " + name + " is not available.");
 				return false;
 			} else 
-				logController.info("Switching to database workspace " + name + '.');*/
+				logController.info("Switching to database workspace " + name + '.');
 		}
 
 		return true;
 	}
+	*/
 
 	public boolean match() {
 		// checking workspace... this should be improved in future...
-		Workspace workspace = plugin.getConfig().getWorkspace();
-		if (!checkWorkspace(workspace))
-			return false;
+//		Workspace workspace = plugin.getConfig().getWorkspace();
+//		if (!checkWorkspace(workspace))
+//			return false;
 
 		ConfigImpl matching = plugin.getConfig();
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
@@ -107,7 +109,7 @@ public class Matcher implements EventHandler {
 		int candLODProjection = matching.getCandidateBuildings().getLodProjection();
 		double masterOverlap = matching.getMasterBuildings().getOverlap();
 		double candOverlap = matching.getCandidateBuildings().getOverlap();
-		double tolerance = matching.getMatching().getTolerance();
+//		double tolerance = matching.getMatching().getTolerance();
 		String lineage = matching.getMatching().getLineage();
 
 		// check whether spatial indexes are enabled
@@ -464,9 +466,9 @@ public class Matcher implements EventHandler {
 
 	public boolean merge() {
 		// checking workspace... this should be improved in future...
-		Workspace workspace = plugin.getConfig().getWorkspace();
-		if (!checkWorkspace(workspace))
-			return false;
+//		Workspace workspace = plugin.getConfig().getWorkspace();
+//		if (!checkWorkspace(workspace))
+//			return false;
 
 		ConfigImpl config = plugin.getConfig();
 		Merging merging = config.getMerging();
@@ -632,9 +634,9 @@ public class Matcher implements EventHandler {
 
 	public boolean delete() {
 		// checking workspace... this should be improved in future...
-		Workspace workspace = plugin.getConfig().getWorkspace();
-		if (!checkWorkspace(workspace))
-			return false;
+//		Workspace workspace = plugin.getConfig().getWorkspace();
+//		if (!checkWorkspace(workspace))
+//			return false;
 
 		String lineage = plugin.getConfig().getDeleteBuildingsByLineage().getLineage().trim();
 
@@ -659,7 +661,7 @@ public class Matcher implements EventHandler {
 			logController.info("Deleting " + bldgCount + " building(s).");
 
 			if (bldgCount > 0) {
-				cstmt = conn.prepareCall("{call geodb_pkg.del_delete_buildings(?)}");
+				cstmt = conn.prepareCall("{call geodb_pkg.del_by_lin_delete_buildings(?)}");
 				cstmt.setString(1, lineage);
 				cstmt.executeUpdate();
 			}
