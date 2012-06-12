@@ -504,26 +504,25 @@ public class Queries {
     	return query;
     }
 
-//    public static final String GET_GMLIDS =
-//    	"SELECT /*+ no_index(co cityobject_fkx) */ co.gmlid, co.class_id " +
-//		"FROM CITYOBJECT co " +
-//		"WHERE " +
-//		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-//					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby+equal') ='TRUE' " +
-//		  "OR SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
-//					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
-//		"ORDER BY co.gmlid";
-
     public static final String GET_GMLIDS =
-		"SELECT /*+ no_index(co cityobject_fkx) */ co.gmlid, co.class_id " +
-		"FROM (SELECT /*+ no_index(co cityobject_fkx) */ gmlid, class_id, envelope FROM CITYOBJECT WHERE class_id IN (<CLASS_ID_SET>)) co " +
+    	"SELECT co.gmlid, co.class_id " +
+		"FROM CITYOBJECT co " +
+		"WHERE " +
+		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
+					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
+		"UNION ALL " +
+    	"SELECT co.gmlid, co.class_id " +
+		"FROM CITYOBJECT co " +
 		"WHERE " +
 		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby+equal') ='TRUE' " +
-		  "OR SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
-		"ORDER BY co.class_id";
-//		"ORDER BY co.gmlid";
+					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby') ='TRUE') " +
+		"UNION ALL " +
+    	"SELECT co.gmlid, co.class_id " +
+		"FROM CITYOBJECT co " +
+		"WHERE " +
+		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
+					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
+		"ORDER BY 2"; // ORDER BY co.class_id
 
     public static final String GET_OBJECTCLASS =
 		"SELECT co.class_id " +
@@ -607,16 +606,34 @@ public class Queries {
    		"ORDER BY co.class_id";
 
 	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX = 
-		"SELECT /*+ no_index(co cityobject_fkx) */ co.gmlid, co.class_id " + 
+		"SELECT co.gmlid, co.class_id " + 
 		"FROM cityobject co " +
-		"WHERE co.ID IN (SELECT /*+ no_index(co cityobject_fkx) */ g2co.cityobject_id "+  
+		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
+		                "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
+		                "WHERE co.gmlid = ? " + 
+		                "AND cog.ID = co.ID " +
+		                "AND g2co.cityobjectgroup_id = cog.ID) " +
+		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
+					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
+		"UNION ALL " +
+		"SELECT co.gmlid, co.class_id " + 
+		"FROM cityobject co " +
+		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
 		                "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
 		                "WHERE co.gmlid = ? " + 
 		                "AND cog.ID = co.ID " +
 		                "AND g2co.cityobjectgroup_id = cog.ID) " +
 		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby+equal') ='TRUE' " +
-			 "OR SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
-		"ORDER BY co.class_id";
+					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby') ='TRUE') " +
+		"UNION ALL " +
+		"SELECT co.gmlid, co.class_id " + 
+		"FROM cityobject co " +
+		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
+		                "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
+		                "WHERE co.gmlid = ? " + 
+		                "AND cog.ID = co.ID " +
+		                "AND g2co.cityobjectgroup_id = cog.ID) " +
+		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
+					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
+		"ORDER BY 2"; // ORDER BY co.class_id
 }

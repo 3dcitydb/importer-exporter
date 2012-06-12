@@ -44,12 +44,9 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.gui.BoundingBox;
-import de.tub.citydb.api.gui.BoundingBoxCorner;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
-import de.tub.citydb.config.project.database.Database.PredefinedSrsName;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
-import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
@@ -57,14 +54,8 @@ import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.util.Util;
-import de.tub.citydb.util.database.DBUtil;
 
 public class KmlSplitter {
-
-	private static final HashSet<CityGMLClass> ALL_ALLOWED_CITY_OBJECT_TYPES = new HashSet<CityGMLClass>() {{
-		add(CityGMLClass.BUILDING);
-		add(CityGMLClass.CITY_OBJECT_GROUP);
-	}};
 
 	private static HashSet<CityGMLClass> CURRENTLY_ALLOWED_CITY_OBJECT_TYPES = new HashSet<CityGMLClass>();
 	
@@ -167,20 +158,27 @@ public class KmlSplitter {
 				int srid = dbSrs.getSrid();
 
 				spatialQuery.setInt(1, srid);
-				// coordinates for inside
-				spatialQuery.setDouble(2, tile.getLowerLeftCorner().getX());
-				spatialQuery.setDouble(3, tile.getLowerLeftCorner().getY());
-				spatialQuery.setDouble(4, tile.getUpperRightCorner().getX());
-				spatialQuery.setDouble(5, tile.getUpperRightCorner().getY());
-
-				spatialQuery.setInt(6, srid);
 				// coordinates for overlapbdydisjoint
-				spatialQuery.setDouble(7, tile.getLowerLeftCorner().getX());
-				spatialQuery.setDouble(8, tile.getUpperRightCorner().getY());
+				spatialQuery.setDouble(2, tile.getLowerLeftCorner().getX());
+				spatialQuery.setDouble(3, tile.getUpperRightCorner().getY());
+				spatialQuery.setDouble(4, tile.getLowerLeftCorner().getX());
+				spatialQuery.setDouble(5, tile.getLowerLeftCorner().getY());
+				spatialQuery.setDouble(6, tile.getUpperRightCorner().getX());
+				spatialQuery.setDouble(7, tile.getLowerLeftCorner().getY());
+
+				spatialQuery.setInt(8, srid);
+				// coordinates for inside+coveredby
 				spatialQuery.setDouble(9, tile.getLowerLeftCorner().getX());
 				spatialQuery.setDouble(10, tile.getLowerLeftCorner().getY());
 				spatialQuery.setDouble(11, tile.getUpperRightCorner().getX());
-				spatialQuery.setDouble(12, tile.getLowerLeftCorner().getY());
+				spatialQuery.setDouble(12, tile.getUpperRightCorner().getY());
+
+				spatialQuery.setInt(13, srid);
+				// coordinates for equals
+				spatialQuery.setDouble(14, tile.getLowerLeftCorner().getX());
+				spatialQuery.setDouble(15, tile.getLowerLeftCorner().getY());
+				spatialQuery.setDouble(16, tile.getUpperRightCorner().getX());
+				spatialQuery.setDouble(17, tile.getUpperRightCorner().getY());
 
 				rs = (OracleResultSet)spatialQuery.executeQuery();
 /*
@@ -283,23 +281,37 @@ public class KmlSplitter {
 						BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
 						int srid = dbSrs.getSrid();
 
+						// group's gmlId
 						query.setString(1, gmlId);
 
 						query.setInt(2, srid);
-						// coordinates for inside
-						query.setDouble(3, tile.getLowerLeftCorner().getX());
-						query.setDouble(4, tile.getLowerLeftCorner().getY());
-						query.setDouble(5, tile.getUpperRightCorner().getX());
-						query.setDouble(6, tile.getUpperRightCorner().getY());
-
-						query.setInt(7, srid);
 						// coordinates for overlapbdydisjoint
-						query.setDouble(8, tile.getLowerLeftCorner().getX());
-						query.setDouble(9, tile.getUpperRightCorner().getY());
-						query.setDouble(10, tile.getLowerLeftCorner().getX());
-						query.setDouble(11, tile.getLowerLeftCorner().getY());
-						query.setDouble(12, tile.getUpperRightCorner().getX());
-						query.setDouble(13, tile.getLowerLeftCorner().getY());
+						query.setDouble(3, tile.getLowerLeftCorner().getX());
+						query.setDouble(4, tile.getUpperRightCorner().getY());
+						query.setDouble(5, tile.getLowerLeftCorner().getX());
+						query.setDouble(6, tile.getLowerLeftCorner().getY());
+						query.setDouble(7, tile.getUpperRightCorner().getX());
+						query.setDouble(8, tile.getLowerLeftCorner().getY());
+
+						// group's gmlId
+						query.setString(9, gmlId);
+
+						query.setInt(10, srid);
+						// coordinates for inside+coveredby
+						query.setDouble(11, tile.getLowerLeftCorner().getX());
+						query.setDouble(12, tile.getLowerLeftCorner().getY());
+						query.setDouble(13, tile.getUpperRightCorner().getX());
+						query.setDouble(14, tile.getUpperRightCorner().getY());
+
+						// group's gmlId
+						query.setString(15, gmlId);
+
+						query.setInt(16, srid);
+						// coordinates for equals
+						query.setDouble(17, tile.getLowerLeftCorner().getX());
+						query.setDouble(18, tile.getLowerLeftCorner().getY());
+						query.setDouble(19, tile.getUpperRightCorner().getX());
+						query.setDouble(20, tile.getUpperRightCorner().getY());
 					}
 					else {
 						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS);
