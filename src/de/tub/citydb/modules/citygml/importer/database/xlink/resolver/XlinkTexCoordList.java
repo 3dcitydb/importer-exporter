@@ -183,6 +183,11 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 
 			// step 5: sanity check
 			String texCoord = Util.collection2string(texCoordList, ";");
+			if (texCoord.length() > 4000) {
+				LOG.error("Texture coordinates exceed 4000 characters for target geometry object '" + parentGmlId + "'.");
+				return false;
+			}
+				
 			if (texCoord.contains(";;") || texCoord.endsWith(";"))
 				LOG.warn("Missing texture coordinates for target geometry object '" + parentGmlId + "'.");
 
