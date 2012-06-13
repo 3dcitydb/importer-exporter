@@ -1,10 +1,10 @@
 /*
  * This file is part of the 3D City Database Importer/Exporter.
- * Copyright (c) 2007 - 2011
+ * Copyright (c) 2007 - 2012
  * Institute for Geodesy and Geoinformation Science
  * Technische Universitaet Berlin, Germany
  * http://www.gis.tu-berlin.de/
- *
+ * 
  * The 3D City Database Importer/Exporter program is free software:
  * you can redistribute it and/or modify it under the terms of the
  * GNU Lesser General Public License as published by the Free
@@ -13,7 +13,7 @@
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
@@ -183,6 +183,11 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 
 			// step 5: sanity check
 			String texCoord = Util.collection2string(texCoordList, ";");
+			if (texCoord.length() > 4000) {
+				LOG.error("Texture coordinates exceed 4000 characters for target geometry object '" + parentGmlId + "'.");
+				return false;
+			}
+				
 			if (texCoord.contains(";;") || texCoord.endsWith(";"))
 				LOG.warn("Missing texture coordinates for target geometry object '" + parentGmlId + "'.");
 

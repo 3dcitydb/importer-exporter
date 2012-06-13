@@ -1,10 +1,10 @@
 /*
  * This file is part of the 3D City Database Importer/Exporter.
- * Copyright (c) 2007 - 2011
+ * Copyright (c) 2007 - 2012
  * Institute for Geodesy and Geoinformation Science
  * Technische Universitaet Berlin, Germany
  * http://www.gis.tu-berlin.de/
- *
+ * 
  * The 3D City Database Importer/Exporter program is free software:
  * you can redistribute it and/or modify it under the terms of the
  * GNU Lesser General Public License as published by the Free
@@ -13,7 +13,7 @@
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
@@ -29,15 +29,19 @@
  */
 package de.tub.citydb.modules.kml.database;
 
-import de.tub.citydb.config.project.kmlExporter.DisplayLevel;
+import org.citygml4j.model.citygml.CityGMLClass;
+import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 
 public class KmlSplittingResult {
-	private String gmlId;
-	private DisplayLevel displayLevel;
 
-	public KmlSplittingResult(String gmlId, DisplayLevel displayLevel) {
-		this.gmlId = gmlId;
-		this.setDisplayLevel(displayLevel);
+	private String gmlId;
+	private DisplayForm displayForm;
+	private CityGMLClass cityObjectType;
+
+	public KmlSplittingResult(String gmlId, CityGMLClass cityObjectType, DisplayForm displayForm) {
+		this.setGmlId(gmlId);
+		this.setCityObjectType(cityObjectType);
+		this.setDisplayForm(displayForm);
 	}
 
 	public void setGmlId(String gmlId) {
@@ -48,12 +52,27 @@ public class KmlSplittingResult {
 		return gmlId;
 	}
 
-	public void setDisplayLevel(DisplayLevel displayLevel) {
-		this.displayLevel = displayLevel;
+	public void setDisplayForm(DisplayForm displayForm) {
+		this.displayForm = displayForm;
 	}
 
-	public DisplayLevel getDisplayLevel() {
-		return displayLevel;
+	public DisplayForm getDisplayForm() {
+		return displayForm;
+	}
+
+	public CityGMLClass getCityObjectType() {
+		return cityObjectType;
+	}
+
+	public void setCityObjectType(CityGMLClass cityObjectType) {
+		this.cityObjectType = cityObjectType;
+	}
+	
+	public boolean isBuilding() {
+		return getCityObjectType().compareTo(CityGMLClass.BUILDING) == 0;
 	}
 		
+	public boolean isCityObjectGroup() {
+		return getCityObjectType().compareTo(CityGMLClass.CITY_OBJECT_GROUP) == 0;
+	}
 }

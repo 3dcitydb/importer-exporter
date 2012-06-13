@@ -1,10 +1,10 @@
 /*
  * This file is part of the 3D City Database Importer/Exporter.
- * Copyright (c) 2007 - 2011
+ * Copyright (c) 2007 - 2012
  * Institute for Geodesy and Geoinformation Science
  * Technische Universitaet Berlin, Germany
  * http://www.gis.tu-berlin.de/
- *
+ * 
  * The 3D City Database Importer/Exporter program is free software:
  * you can redistribute it and/or modify it under the terms of the
  * GNU Lesser General Public License as published by the Free
@@ -13,7 +13,7 @@
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
@@ -190,7 +190,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 			// interpret geometry tree as a single abstractGeometry
 			if (geomTree.root != 0)
-				return rebuildGeometry(geomTree.getNode(geomTree.root), false);
+				return rebuildGeometry(geomTree.getNode(geomTree.root), false, false);
 			else {
 				LOG.error("Failed to interpret geometry object.");
 				return null;
@@ -201,7 +201,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		}
 	}
 
-	private DBSurfaceGeometryResult rebuildGeometry(GeometryNode geomNode, boolean isSetOrientableSurface) throws SQLException {
+	private DBSurfaceGeometryResult rebuildGeometry(GeometryNode geomNode, boolean isSetOrientableSurface, boolean wasXlink) throws SQLException {
 		// try and determine the geometry type
 		GMLClass surfaceGeometryType = null;
 		if (geomNode.geometry != null) {
@@ -248,9 +248,6 @@ public class DBSurfaceGeometry implements DBExporter {
 				if (dbExporterManager.lookupAndPutGmlId(geomNode.gmlId, geomNode.id, CityGMLClass.ABSTRACT_GML_GEOMETRY)) {
 
 					if (useXLink) {
-						if (exportAppearance)
-							writeToAppearanceCache(geomNode);
-						
 						// check whether we have to embrace the geometry with an orientableSurface
 						if (geomNode.isReverse != isSetOrientableSurface) {
 							OrientableSurface orientableSurface = new OrientableSurfaceImpl();				
@@ -270,11 +267,12 @@ public class DBSurfaceGeometry implements DBExporter {
 							newGmlId += '-' + geomNode.gmlId;
 
 						geomNode.gmlId = newGmlId;
-						return rebuildGeometry(geomNode, isSetOrientableSurface);
+						return rebuildGeometry(geomNode, isSetOrientableSurface, true);
 					}
-
 				}
-			} else if (exportAppearance)
+			} 
+
+			if (exportAppearance && !wasXlink)
 				writeToAppearanceCache(geomNode);
 		}
 
@@ -376,7 +374,7 @@ public class DBSurfaceGeometry implements DBExporter {
 				compositeSurface.setId(geomNode.gmlId);
 
 			for (GeometryNode childNode : geomNode.childNodes) {
-				DBSurfaceGeometryResult geomMember = rebuildGeometry(childNode, isSetOrientableSurface);
+				DBSurfaceGeometryResult geomMember = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
 
 				if (geomMember != null) {
 					AbstractGeometry absGeom = geomMember.getAbstractGeometry();
@@ -428,7 +426,7 @@ public class DBSurfaceGeometry implements DBExporter {
 				compositeSolid.setId(geomNode.gmlId);
 
 			for (GeometryNode childNode : geomNode.childNodes) {
-				DBSurfaceGeometryResult geomMember = rebuildGeometry(childNode, isSetOrientableSurface);
+				DBSurfaceGeometryResult geomMember = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
 
 				if (geomMember != null) {
 					AbstractGeometry absGeom = geomMember.getAbstractGeometry();
@@ -468,7 +466,7 @@ public class DBSurfaceGeometry implements DBExporter {
 			// we strongly assume solids contain one single CompositeSurface
 			// as exterior. Nothing else is interpreted here...
 			if (geomNode.childNodes.size() == 1) {
-				DBSurfaceGeometryResult geomMember = rebuildGeometry(geomNode.childNodes.get(0), isSetOrientableSurface);
+				DBSurfaceGeometryResult geomMember = rebuildGeometry(geomNode.childNodes.get(0), isSetOrientableSurface, wasXlink);
 
 				if (geomMember != null) {
 					AbstractGeometry absGeom = geomMember.getAbstractGeometry();
@@ -506,7 +504,7 @@ public class DBSurfaceGeometry implements DBExporter {
 				multiSolid.setId(geomNode.gmlId);
 
 			for (GeometryNode childNode : geomNode.childNodes) {
-				DBSurfaceGeometryResult geomMember = rebuildGeometry(childNode, isSetOrientableSurface);
+				DBSurfaceGeometryResult geomMember = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
 
 				if (geomMember != null) {
 					AbstractGeometry absGeom = geomMember.getAbstractGeometry();
@@ -545,7 +543,7 @@ public class DBSurfaceGeometry implements DBExporter {
 				multiSurface.setId(geomNode.gmlId);
 
 			for (GeometryNode childNode : geomNode.childNodes) {
-				DBSurfaceGeometryResult geomMember = rebuildGeometry(childNode, isSetOrientableSurface);
+				DBSurfaceGeometryResult geomMember = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
 
 				if (geomMember != null) {
 					AbstractGeometry absGeom = geomMember.getAbstractGeometry();
@@ -586,7 +584,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 			TrianglePatchArrayProperty triangleArray = new TrianglePatchArrayPropertyImpl();
 			for (GeometryNode childNode : geomNode.childNodes) {
-				DBSurfaceGeometryResult geomMember = rebuildGeometry(childNode, isSetOrientableSurface);
+				DBSurfaceGeometryResult geomMember = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
 
 				if (geomMember != null) {
 					// we are only expecting polygons...

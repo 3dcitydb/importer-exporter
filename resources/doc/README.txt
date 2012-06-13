@@ -47,16 +47,19 @@ importing and exporting spatial data for a virtual 3D city model.
 
 Main characteristics:
 * Full support for CityGML version 1.0.0 and 0.4.0
+* Full support of 3D CRS and 3D coordinate transformations
 * Export of KML/COLLADA models
 * Generic KML information balloons
 * Reading/writing CityGML instance documents of arbitrary file size
 * Resolving of forward and backwards XLinks
 * User-defined Coordinate Reference System
 * Coordinate transformations for CityGML exports
+* Map window for graphical selection of bounding boxes
 * XML validation of CityGML instance documents
 * Multithreaded programming facilitating high-performance CityGML 
   processing
 * Matching/merging of building features within the database
+* Proxy support for HTTP, HTTPS, and SOCKS protocols
 
 The !impexp.name! is shipped with both a Graphical
 User Interface (GUI) for end-user interaction and a Command Line 
@@ -172,7 +175,7 @@ financially supported by the following cooperation partners:
 Claus Nagel <claus.nagel@tu-berlin.de>
 Javier Herreruela <javier.herreruela@tu-berlin.de>
 Alexandra Lorenz <lorenz@tu-berlin.de>
-Gerhard Koenig <gerhard.koenig@tu-berlin.de>
+Gerhard König <gerhard.koenig@tu-berlin.de>
 Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>
 
 

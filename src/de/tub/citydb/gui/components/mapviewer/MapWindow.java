@@ -1,3 +1,32 @@
+/*
+ * This file is part of the 3D City Database Importer/Exporter.
+ * Copyright (c) 2007 - 2012
+ * Institute for Geodesy and Geoinformation Science
+ * Technische Universitaet Berlin, Germany
+ * http://www.gis.tu-berlin.de/
+ * 
+ * The 3D City Database Importer/Exporter program is free software:
+ * you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program. If not, see 
+ * <http://www.gnu.org/licenses/>.
+ * 
+ * The development of the 3D City Database Importer/Exporter has 
+ * been financially supported by the following cooperation partners:
+ * 
+ * Business Location Center, Berlin <http://www.businesslocationcenter.de/>
+ * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
+ */
 package de.tub.citydb.gui.components.mapviewer;
 
 import java.awt.Color;
@@ -52,6 +81,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.text.html.HTMLDocument;
 
 import org.jdesktop.swingx.mapviewer.AbstractTileFactory;
@@ -234,10 +265,11 @@ public class MapWindow extends JDialog implements EventHandler {
 		// left components
 		left.setLayout(new GridBagLayout());
 		left.setBackground(Color.WHITE);
+		Border componentBorder = BorderFactory.createCompoundBorder(UIManager.getBorder("TitledBorder.border"), BorderFactory.createEmptyBorder(5, 5, 5, 5));		
 
 		// BBox
 		final JPanel bbox = new JPanel();
-		bbox.setBorder(BorderFactory.createTitledBorder(""));
+		bbox.setBorder(componentBorder);
 		bbox.setLayout(new GridBagLayout());	
 
 		bboxTitel = new JLabel();
@@ -321,7 +353,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		// Reverse geocoder
 		JPanel reverse = new JPanel();
-		reverse.setBorder(BorderFactory.createTitledBorder(""));
+		reverse.setBorder(componentBorder);
 		reverse.setLayout(new GridBagLayout());
 
 		reverseTitle = new JLabel();
@@ -352,7 +384,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		// Google maps
 		JPanel googleMaps = new JPanel();
-		googleMaps.setBorder(BorderFactory.createTitledBorder(""));
+		googleMaps.setBorder(componentBorder);
 		googleMaps.setLayout(new GridBagLayout());
 
 		googleMapsTitle = new JLabel();
@@ -367,7 +399,7 @@ public class MapWindow extends JDialog implements EventHandler {
 
 		// help
 		JPanel help = new JPanel();
-		help.setBorder(BorderFactory.createTitledBorder(""));
+		help.setBorder(componentBorder);
 		help.setLayout(new GridBagLayout());	
 
 		helpTitle = new JLabel();
