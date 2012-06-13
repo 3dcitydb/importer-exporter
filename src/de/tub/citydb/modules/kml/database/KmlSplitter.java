@@ -145,20 +145,12 @@ public class KmlSplitter {
 			OracleResultSet rs = null;
 			PreparedStatement spatialQuery = null;
 			try {
-				StringBuffer classIdSet = new StringBuffer();
-				Iterator<CityGMLClass> i = CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.iterator();
-				while (i.hasNext()) {
-					classIdSet.append(Util.cityObject2classId(i.next()));
-					if (i.hasNext()) {
-						classIdSet.append(",");
-					}
-				}
-				spatialQuery = connection.prepareStatement(Queries.GET_GMLIDS.replace("<CLASS_ID_SET>", classIdSet.toString()));
-
+				spatialQuery = connection.prepareStatement(Queries.GET_GMLIDS);
+				
 				int srid = dbSrs.getSrid();
 
 				spatialQuery.setInt(1, srid);
-				// coordinates for overlapbdydisjoint
+				// coordinates for overlapbydisjoint
 				spatialQuery.setDouble(2, tile.getLowerLeftCorner().getX());
 				spatialQuery.setDouble(3, tile.getUpperRightCorner().getY());
 				spatialQuery.setDouble(4, tile.getLowerLeftCorner().getX());
@@ -285,7 +277,7 @@ public class KmlSplitter {
 						query.setString(1, gmlId);
 
 						query.setInt(2, srid);
-						// coordinates for overlapbdydisjoint
+						// coordinates for overlapbydisjoint
 						query.setDouble(3, tile.getLowerLeftCorner().getX());
 						query.setDouble(4, tile.getUpperRightCorner().getY());
 						query.setDouble(5, tile.getLowerLeftCorner().getX());
