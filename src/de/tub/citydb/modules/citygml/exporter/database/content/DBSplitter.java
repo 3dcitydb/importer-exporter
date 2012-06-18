@@ -170,21 +170,18 @@ public class DBSplitter {
 					maskType.add("*T****FF*"); //5 - COVERS
 					maskType.add("***T**FF*"); //6 - COVERS
 					maskType.add("****T*FF*"); //7 - COVERS
-					maskType.add("T*F**F***"); //8 - COVEREDBY
-					maskType.add("*TF**F***"); //9 - COVEREDBY
-					maskType.add("**FT*F***"); //10 - COVEREDBY
-					maskType.add("**F*TF***"); //11 - COVEREDBY
-					maskType.add("T*T***T**"); //12 - OVERLAP
-					maskType.add("1*T***T**"); //13 - OVERLAP
+					maskType.add("*TF**F***"); //8 - COVEREDBY
+					maskType.add("**FT*F***"); //9 - COVEREDBY
+					maskType.add("**F*TF***"); //10 - COVEREDBY
+					maskType.add("T*T***T**"); //11 - OVERLAP
 				}
 				else
 				{
 					maskType.add("T*F**F***"); //1 - INSIDE
-					maskType.add("T*F**F***"); //2 - COVEREDBY
-					maskType.add("*TF**F***"); //3 - COVEREDBY
-					maskType.add("**FT*F***"); //4 - COVEREDBY
-					maskType.add("**F*TF***"); //5 - COVEREDBY
-					maskType.add("T*F**FFF*"); //6 - EQUAL
+					maskType.add("*TF**F***"); //2 - COVEREDBY
+					maskType.add("**FT*F***"); //3 - COVEREDBY
+					maskType.add("**F*TF***"); //4 - COVEREDBY
+					maskType.add("T*F**FFF*"); //5 - EQUAL
 				}
 
 				int dbSrid = dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem().getSrid();

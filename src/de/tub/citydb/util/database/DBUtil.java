@@ -683,7 +683,7 @@ public class DBUtil {
 		// at the moment the spatial_ref_sys-table does not hold 3D-SRIDs by default
 		// for proper INSERT-Statements check www.spatialreference.org
 		// unfortunately Geographic2D and Geographic3D are equally classified as GEOGCS
-		// so the function is3D() wouldn't detect Geographic3D until the INSERT-command is not changed
+		// so the function is3D() wouldn't detect Geographic3D unless the INSERT-command is not changed
 		// e.g. srtext: "GEOGCS["WGS 84 (3D)", ... to "GEOGCS3D["WGS 84 (3D)", ...
 		
 		if (!srs.is3D())
