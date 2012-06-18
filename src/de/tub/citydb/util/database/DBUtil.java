@@ -680,67 +680,80 @@ public class DBUtil {
 	}
 
 	public static int get2DSrid(DatabaseSrs srs) throws SQLException {
-//		if (!srs.is3D())
+		// at the moment the spatial_ref_sys-table does not hold 3D-SRIDs by default
+		// for proper INSERT-Statements check www.spatialreference.org
+		// unfortunately Geographic2D and Geographic3D are equally classified as GEOGCS
+		// so the function is3D() wouldn't detect Geographic3D until the INSERT-command is not changed
+		// e.g. srtext: "GEOGCS["WGS 84 (3D)", ... to "GEOGCS3D["WGS 84 (3D)", ...
+		
+		if (!srs.is3D())
 			return srs.getSrid();
 
-//		Connection conn = null;
-//		PreparedStatement psQuery = null;
-//		ResultSet rs = null;
-//
-//		try {
-//			conn = dbConnectionPool.getConnection();
-//			psQuery = conn.prepareStatement(srs.getType() == DatabaseSrsType.GEOGCS ? 
-//					"select min(crs2d.srid) from spatial_ref_sys crs3d, spatial_ref_sys crs2d where crs3d.srid = "
-//					+ srs.getSrid() + " and crs2d.srtext LIKE '%GEOGCS%'" : "");
-//					
-////					"select min(crs2d.srid) from sdo_coord_ref_sys crs3d, sdo_coord_ref_sys crs2d where crs3d.srid = "
-////					+ srs.getSrid() + " and crs2d.coord_ref_sys_kind = 'GEOGRAPHIC2D' and crs3d.datum_id = crs2d.datum_id" :
-////						"select cmpd_horiz_srid from sdo_coord_ref_sys where srid = " + srs.getSrid());
-//
-//			rs = psQuery.executeQuery();
-//			if (rs.next()) 
-//				return rs.getInt(1);
-//			else
-//				throw new SQLException("Failed to discover 2D equivalent for the 3D SRID " + srs.getSrid());
-//			
-//		} catch (SQLException sqlEx) {
-//			throw sqlEx;
-//		} finally {
-//			if (rs != null) {
-//				try {
-//					rs.close();
-//				} catch (SQLException sqlEx) {
-//					throw sqlEx;
-//				}
-//
-//				rs = null;
-//			}
-//
-//			if (psQuery != null) {
-//				try {
-//					psQuery.close();
-//				} catch (SQLException sqlEx) {
-//					throw sqlEx;
-//				}
-//
-//				psQuery = null;
-//			}
-//
-//			if (conn != null) {
-//				try {
-//					conn.close();
-//				} catch (SQLException sqlEx) {
-//					throw sqlEx;
-//				}
-//
-//				conn = null;
-//			}
-//		}
+		Connection conn = null;
+		PreparedStatement psQuery = null;
+		ResultSet rs = null;
+
+		try {
+			conn = dbConnectionPool.getConnection();
+			psQuery = conn.prepareStatement(srs.getType() == DatabaseSrsType.COMPOUND ?
+					// get id of compound-reference-system from srtext-field of spatial_ref_sys-table
+					"select split_part((split_part(srtext,'AUTHORITY[\"EPSG\",\"',5)),'\"',1) from spatial_ref_sys where auth_srid = " + srs.getSrid() :
+						// searching 2D equivalent for 3D SRID
+						"select min(crs2d.auth_srid) from spatial_ref_sys crs3d, spatial_ref_sys crs2d " +
+							"where (crs3d.auth_srid = " + srs.getSrid() + " " +
+							"and split_part(crs3d.srtext, '[', 1) LIKE 'GEOGCS' AND split_part(crs2d.srtext, '[', 1) LIKE 'GEOGCS' " +
+							//do they have the same Datum_ID?
+							"and split_part((split_part(crs3d.srtext,'AUTHORITY[\"EPSG\",\"',3)),'\"',1) = split_part((split_part(crs2d.srtext,'AUTHORITY[\"EPSG\",\"',3)),'\"',1)) OR " +
+							
+							// if srtext has been changed for Geographic3D
+							"(crs3d.auth_srid = " + srs.getSrid() + " " +
+							"and split_part(crs3d.srtext, '[', 1) LIKE 'GEOGCS3D' AND split_part(crs2d.srtext, '[', 1) LIKE 'GEOGCS' " +
+							//do they have the same Datum_ID?
+							"and split_part((split_part(crs3d.srtext,'AUTHORITY[\"EPSG\",\"',3)),'\"',1) = split_part((split_part(crs2d.srtext,'AUTHORITY[\"EPSG\",\"',3)),'\"',1))");
+
+			rs = psQuery.executeQuery();
+			if (rs.next()) 
+				return rs.getInt(1);
+			else
+				throw new SQLException("Failed to discover 2D equivalent for the 3D SRID " + srs.getSrid());
+			
+		} catch (SQLException sqlEx) {
+			throw sqlEx;
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				rs = null;
+			}
+
+			if (psQuery != null) {
+				try {
+					psQuery.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				psQuery = null;
+			}
+
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				conn = null;
+			}
+		}
 	}
 
 	public static List<String> getAppearanceThemeList() throws SQLException {
 		Connection conn = null;
-		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 		ArrayList<String> appearanceThemes = new ArrayList<String>();
 

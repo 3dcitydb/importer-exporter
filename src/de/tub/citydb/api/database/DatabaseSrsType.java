@@ -32,12 +32,12 @@ package de.tub.citydb.api.database;
 public enum DatabaseSrsType {
     PROJECTED("PROJCS", "Projected"),
 	GEOGRAPHIC2D("GEOGCS", "Geographic2D"),
-	GEOCENTRIC("n/a", "Geocentric"),
-	VERTICAL("n/a", "Vertical"),
-	ENGINEERING("n/a", "Engineering"),
-	COMPOUND("n/a", "Compound"),
+	GEOCENTRIC("GEOCCS", "Geocentric"),
+	VERTICAL("VERT_CS", "Vertical"),
+	ENGINEERING("LOCAL_CS", "Engineering"),
+	COMPOUND("COMPD_CS", "Compound"),
 	GEOGENTRIC("n/a", "Geogentric"),
-	GEOGRAPHIC3D("n/a", "Geographic3D"),
+	GEOGRAPHIC3D("GEOGCS3D", "Geographic3D"),
 	UNKNOWN("", "n/a");
 	
 	private final String dbName;

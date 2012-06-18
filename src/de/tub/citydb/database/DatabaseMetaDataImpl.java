@@ -133,7 +133,7 @@ public class DatabaseMetaDataImpl implements DatabaseMetaData {
 		LOG.all(LogLevel.INFO, "SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
 		LOG.all(LogLevel.INFO, "SRS: " + srs.getDatabaseSrsName());
 		LOG.all(LogLevel.INFO, "gml:srsName: " + srs.getGMLSrsName());
-		LOG.all(LogLevel.INFO, "Versioning: " + versioning);
+//		LOG.all(LogLevel.INFO, "Versioning: " + versioning);
 	}
 	
 	public enum Versioning {

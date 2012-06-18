@@ -229,15 +229,15 @@ public class Exporter implements EventHandler {
 		internalConfig.setTransformCoordinates(targetSRS.isSupported() && 
 				targetSRS.getSrid() != dbPool.getActiveConnectionMetaData().getReferenceSystem().getSrid());
 
-//		if (internalConfig.isTransformCoordinates()) {
-//			if (targetSRS.is3D() == dbPool.getActiveConnection().getMetaData().getReferenceSystem().is3D()) {
-//				LOG.info("Transforming geometry representation to reference system '" + targetSRS.getDescription() + "' (SRID: " + targetSRS.getSrid() + ").");
-//				LOG.warn("Transformation is NOT applied to height reference system.");
-//			} else {
-//				LOG.error("Dimensionality of reference system for geometry transformation does not match.");
-//				return false;
-//			}
-//		}
+		if (internalConfig.isTransformCoordinates()) {
+			if (targetSRS.is3D() == dbPool.getActiveConnectionMetaData().getReferenceSystem().is3D()) {
+				LOG.info("Transforming geometry representation to reference system '" + targetSRS.getDescription() + "' (SRID: " + targetSRS.getSrid() + ").");
+				LOG.warn("Transformation is NOT applied to height reference system.");
+			} else {
+				LOG.error("Dimensionality of reference system for geometry transformation does not match.");
+				return false;
+			}
+		}
 
 		// log index status
 		try {
