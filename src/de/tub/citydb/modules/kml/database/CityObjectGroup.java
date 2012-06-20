@@ -51,12 +51,16 @@ import net.opengis.kml._2.PolygonType;
 import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
-import oracle.jdbc.OracleResultSet;
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
+//import oracle.jdbc.OracleResultSet;
+//import oracle.spatial.geometry.JGeometry;
+//import oracle.sql.STRUCT;
 
 import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.util.xml.SAXEventBuffer;
+//import org.postgis.ComposedGeom;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
+import org.postgis.Polygon;
 
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.EventDispatcher;
@@ -104,7 +108,8 @@ public class CityObjectGroup extends KmlGenericObject{
 	public void read(KmlSplittingResult work) {
 
 		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
+//		OracleResultSet rs = null;
+		ResultSet rs = null;
 
 		try {
 			psQuery = getQueryForObjectType(work);
@@ -113,7 +118,8 @@ public class CityObjectGroup extends KmlGenericObject{
 				psQuery.setString(i, work.getGmlId());
 			}
 				
-			rs = (OracleResultSet)psQuery.executeQuery();
+//			rs = (OracleResultSet)psQuery.executeQuery();
+			rs = psQuery.executeQuery();
 			if (!rs.isBeforeFirst()) {
 				try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
 				rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
@@ -157,7 +163,8 @@ public class CityObjectGroup extends KmlGenericObject{
 		}
 	}
 	
-	protected List<PlacemarkType> createPlacemarksForFootprint(OracleResultSet rs, KmlSplittingResult work) throws SQLException {
+//	protected List<PlacemarkType> createPlacemarksForFootprint(OracleResultSet rs, KmlSplittingResult work) throws SQLException {
+	protected List<PlacemarkType> createPlacemarksForFootprint(ResultSet rs, KmlSplittingResult work) throws SQLException {
 
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
@@ -179,9 +186,11 @@ public class CityObjectGroup extends KmlGenericObject{
 
 		PolygonType polygon = null; 
 		while (rs.next()) {
-			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
+//			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1);
+			PGgeometry pgBuildingGeometry = (PGgeometry)rs.getObject(1); 
 
-			if (!rs.wasNull() && buildingGeometryObj != null) {
+//			if (!rs.wasNull() && buildingGeometryObj != null) {
+			if (!rs.wasNull() && pgBuildingGeometry != null) {
 				eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
 				polygon = kmlFactory.createPolygonType();
@@ -189,6 +198,50 @@ public class CityObjectGroup extends KmlGenericObject{
 				polygon.setExtrude(false);
 				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
 
+				Geometry groundSurface = convertToWGS84(pgBuildingGeometry.getGeometry());
+				int dim = groundSurface.getDimension();
+				
+				switch (groundSurface.getType()) {
+				case POLYGON:
+					Polygon polyGeom = (Polygon) groundSurface;											
+					for (int ring = 0; ring < polyGeom.numRings(); ring++){					
+						LinearRingType linearRing = kmlFactory.createLinearRingType();
+						BoundaryType boundary = kmlFactory.createBoundaryType();
+						boundary.setLinearRing(linearRing);
+						
+						double [] ordinatesArray = new double[polyGeom.getRing(ring).numPoints() * 3];
+						
+						for (int j=0, k=0; j < polyGeom.getRing(ring).numPoints(); j++, k+=3){
+							ordinatesArray[k] = polyGeom.getRing(ring).getPoint(j).x;
+							ordinatesArray[k+1] = polyGeom.getRing(ring).getPoint(j).y;
+							ordinatesArray[k+2] = polyGeom.getRing(ring).getPoint(j).z;
+						}
+						
+						// the first ring usually is the outer ring in a PostGIS-Polygon
+						// e.g. POLYGON((outerBoundary),(innerBoundary),(innerBoundary))
+						if (ring == 0){
+							polygon.setOuterBoundaryIs(boundary);
+							for (int j = 0; j < ordinatesArray.length; j+=dim) {
+								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
+							}
+						}
+						else {
+							polygon.getInnerBoundaryIs().add(boundary);
+							for (int j = ordinatesArray.length - dim; j >= 0; j-=dim) {
+								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
+							}	
+						}
+					}				
+					break;
+				case POINT:
+				case LINE_STRING:
+					continue;
+				default:
+					Logger.getInstance().warn("Unknown geometry for " + work.getGmlId());
+					continue;
+				}
+								
+				/*
 				JGeometry groundSurface = convertToWGS84(JGeometry.load(buildingGeometryObj));
 				int dim = groundSurface.getDimensions();
 				for (int i = 0; i < groundSurface.getElemInfo().length; i = i+3) {
@@ -218,7 +271,7 @@ public class CityObjectGroup extends KmlGenericObject{
 							for (int j = startNextGeometry - dim; j >= groundSurface.getElemInfo()[i] - 1; j = j-dim) {
 								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
 							}
-				}
+				}*/
 				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 			}
 		}

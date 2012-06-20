@@ -34,6 +34,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,9 +45,12 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import oracle.jdbc.OracleResultSet;
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
+import org.postgis.Geometry;
+import org.postgis.PGgeometry;
+
+//import oracle.jdbc.OracleResultSet;
+//import oracle.spatial.geometry.JGeometry;
+//import oracle.sql.STRUCT;
 
 import de.tub.citydb.api.database.BalloonTemplateHandler;
 import de.tub.citydb.log.Logger;
@@ -528,7 +532,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		String result = "";
 		if (statement != null) {
 			PreparedStatement preparedStatement = null;
-			OracleResultSet rs = null;
+//			OracleResultSet rs = null;
+			ResultSet rs = null;
 			try {
 				if (statement.isForeach()) {
 					return executeForeachStatement(statement, gmlId, lod);
@@ -601,18 +606,32 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				for (int i = 1; i <= preparedStatement.getParameterMetaData().getParameterCount(); i++) {
 					preparedStatement.setString(i, gmlId);
 				}
-				rs = (OracleResultSet)preparedStatement.executeQuery();
+//				rs = (OracleResultSet)preparedStatement.executeQuery();
+				rs = preparedStatement.executeQuery();
 				while (rs.next()) {
 					if (rs.getRow() > 1) {
 						result = result + ", ";
 					}
 					Object object = rs.getObject(1);
 					if (object != null) {
-						if (object instanceof STRUCT){
-							STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
-							JGeometry surface = JGeometry.load(buildingGeometryObj);
-							int dimensions = surface.getDimensions();
-							double[] ordinatesArray = surface.getOrdinatesArray();
+//						if (object instanceof STRUCT){
+//							STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
+//							JGeometry surface = JGeometry.load(buildingGeometryObj);
+//							int dimensions = surface.getDimensions();
+						if (object instanceof PGgeometry){
+							PGgeometry pgBuildingGeometry = (PGgeometry)rs.getObject(1); 
+							Geometry surface = pgBuildingGeometry.getGeometry();
+							int dimensions = surface.getDimension();
+//							double[] ordinatesArray = surface.getOrdinatesArray();
+							
+							double[] ordinatesArray = new double[surface.numPoints() * 3];
+							
+							for (int i=0, j=0; i<surface.numPoints(); i++, j+=3){
+								ordinatesArray[j] = surface.getPoint(i).x;
+								ordinatesArray[j+1] = surface.getPoint(i).y;
+								ordinatesArray[j+2] = surface.getPoint(i).z;
+							}
+							
 							result = result + "(";
 							for (int i = 0; i < ordinatesArray.length; i = i + dimensions) {
 								for (int j = 0; j < dimensions; j++) {
@@ -652,7 +671,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private String executeForeachStatement(BalloonStatement statement, String gmlId, int lod) {
 		String resultBody = "";
 		PreparedStatement preparedStatement = null;
-		OracleResultSet rs = null;
+//		OracleResultSet rs = null;
+		ResultSet rs = null;
 		try {
 			if (statement != null && statement.getProperSQLStatement(lod) != null) {
 				preparedStatement = connection.prepareStatement(statement.getProperSQLStatement(lod));
@@ -660,7 +680,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					preparedStatement.setString(i, gmlId);
 				}
 
-				rs = (OracleResultSet)preparedStatement.executeQuery();
+//				rs = (OracleResultSet)preparedStatement.executeQuery();
+				rs = preparedStatement.executeQuery();
 				while (rs.next()) {
 					String iterationBody = statement.getForeachBody();
 					for (int n = 0; n <= statement.getColumnAmount(); n++) {
@@ -671,11 +692,25 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						else {
 							Object object = rs.getObject(n);
 							if (object != null) {
-								if (object instanceof STRUCT){
-									STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
-									JGeometry surface = JGeometry.load(buildingGeometryObj);
-									int dimensions = surface.getDimensions();
-									double[] ordinatesArray = surface.getOrdinatesArray();
+//								if (object instanceof STRUCT){
+//									STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
+//									JGeometry surface = JGeometry.load(buildingGeometryObj);
+//									int dimensions = surface.getDimensions();
+								if (object instanceof PGgeometry){
+									PGgeometry pgBuildingGeometry = (PGgeometry)rs.getObject(1); 
+									Geometry surface = pgBuildingGeometry.getGeometry();
+									int dimensions = surface.getDimension();
+//									double[] ordinatesArray = surface.getOrdinatesArray();
+									
+									double[] ordinatesArray = new double[surface.numPoints() * 3];
+									
+									for (int i=0, j=0; i<surface.numPoints(); i++, j+=3){
+										ordinatesArray[j] = surface.getPoint(i).x;
+										ordinatesArray[j+1] = surface.getPoint(i).y;
+										ordinatesArray[j+2] = surface.getPoint(i).z;
+									}
+									
+									
 									columnValue = columnValue + "(";
 									for (int i = 0; i < ordinatesArray.length; i = i + dimensions) {
 										for (int j = 0; j < dimensions; j++) {
@@ -1114,7 +1149,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							   " AND ts.building_id = b.id" + 
 							   " AND sg.root_id = ts.lod" + lod + "_multi_surface_id";
 				}
-				sqlStatement = sqlStatement + ")";
+				sqlStatement = sqlStatement + ") AS subquery"; // PostgreSQL-Query needs an alias here
 			}
 			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "tp";
@@ -1136,7 +1171,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							   " AND ts.building_id = b.id" + 
 						   	   " AND sg.root_id = ts.lod" + lod + "_multi_surface_id";
 				}
-				sqlStatement = sqlStatement + ")";
+				sqlStatement = sqlStatement + ") AS subquery"; // PostgreSQL-Query needs an alias here
 			}
 			else if (THEMATIC_SURFACE_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "ts";
@@ -1160,22 +1195,55 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						sqlStatement = sqlStatement + " AND " + tableShortId + "." + condition;
 					}
 				}
-				if (orderByColumnAllowed) {
-					sqlStatement = sqlStatement + " ORDER by " + tableShortId + "." + columns.get(0);
+				
+				if (aggregateFunction == null) {
+					if (orderByColumnAllowed) {
+						sqlStatement = sqlStatement + " ORDER by " + tableShortId + "." + columns.get(0);
+					}
 				}
-			
-				if (rownum > 0) {
-					sqlStatement = "SELECT * FROM (SELECT a.*, ROWNUM rnum FROM (" + sqlStatement 
-								   + " ASC) a WHERE ROWNUM <= " + rownum + ") WHERE rnum >= " + rownum;
-				}
-				else if (FIRST.equalsIgnoreCase(aggregateFunction)) {
-					sqlStatement = "SELECT * FROM (" + sqlStatement + " ASC) WHERE ROWNUM = 1";
-				}
-				else if (LAST.equalsIgnoreCase(aggregateFunction)) {
-					sqlStatement = "SELECT * FROM (" + sqlStatement + " DESC) WHERE ROWNUM = 1";
-				} 
-			}
+				else {
+					if (rownum > 0) {
+//						sqlStatement = "SELECT * FROM (SELECT a.*, ROWNUM rnum FROM (" + sqlStatement 
+//									   + " ORDER by " + tableShortId + "." + columns.get(0)
+//									   + " ASC) a WHERE ROWNUM <= " + rownum + ") WHERE rnum >= " + rownum;
+						sqlStatement = "SELECT * FROM " +
+					              "(SELECT sqlstat.*, ROW_NUMBER() OVER(ORDER BY sqlstat.* ASC) AS rnum FROM " +
+					      	  	      "(" + sqlStatement + " ORDER BY " +
+					      	  	   		tableShortId + "." + columns.get(0) + " ASC) sqlstat) AS subq" +
+					      	  	   			" WHERE rnum = " + rownum;
+					}
 
+					/*
+					else if (FIRST.equalsIgnoreCase(aggregateFunction)) {
+						sqlStatement = "SELECT * FROM (" + sqlStatement
+									   + " ORDER by " + tableShortId + "." + columns.get(0)
+									   + " ASC) WHERE ROWNUM = 1";
+					}
+					else if (LAST.equalsIgnoreCase(aggregateFunction)) {
+						sqlStatement = "SELECT * FROM (" + sqlStatement
+									   + " ORDER by " + tableShortId + "." + columns.get(0)
+									   + " DESC) WHERE ROWNUM = 1";
+					}
+					*/
+					
+					else if (FIRST.equalsIgnoreCase(aggregateFunction)) {
+						sqlStatement = "SELECT * FROM " +
+					              "(SELECT sqlstat.*, ROW_NUMBER() OVER(ORDER BY sqlstat.* ASC) AS rnum FROM " +
+					      	  	      "(" + sqlStatement + " ORDER BY " +
+					      	  	   		tableShortId + "." + columns.get(0) + " ASC) sqlstat) AS subq" +
+					      	  	   			" WHERE rnum = 1";
+					}	
+					
+					else if (LAST.equalsIgnoreCase(aggregateFunction)) {
+						sqlStatement = "SELECT * FROM " +
+					              "(SELECT sqlstat.*, ROW_NUMBER() OVER(ORDER BY sqlstat.* ASC) AS rnum FROM " +
+					      	  	      "(" + sqlStatement + " ORDER BY " +
+					      	  	   		tableShortId + "." + columns.get(0) + " DESC) sqlstat) AS subq" +
+					      	  	   			" WHERE rnum = 1";
+					}
+					// no ORDER by for MAX, MIN, AVG, COUNT, SUM
+				}
+			}
 			setProperSQLStatement(sqlStatement);
 		}
 		

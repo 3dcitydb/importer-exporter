@@ -33,7 +33,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
 import net.opengis.kml._2.PlacemarkType;
-import oracle.ord.im.OrdImage;
+//import oracle.ord.im.OrdImage;
 
 import org.collada._2005._11.colladaschema.COLLADA;
 
@@ -41,7 +41,8 @@ public class ColladaBundle {
 	
 	// wrapped textures or images in unknown formats (like .rgb)
 	// they cannot be "atlased", this is why they must be stored separately
-	private HashMap<String, OrdImage> texOrdImages;
+//	private HashMap<String, OrdImage> texOrdImages;
+	private HashMap<String, byte[]> texBLOBImages;
 
 	// images or atlases in usual formats (like .jpg)
 	private HashMap<String, BufferedImage> texImages;
@@ -60,14 +61,22 @@ public class ColladaBundle {
 		return texImages;
 	}
 
-	public 	void setTexOrdImages(HashMap<String, OrdImage> texOrdImages) {
-		this.texOrdImages = texOrdImages;
+//	public 	void setTexOrdImages(HashMap<String, OrdImage> texOrdImages) {
+//		this.texOrdImages = texOrdImages;
+//	}
+//
+//	public 	HashMap<String, OrdImage> getTexOrdImages() {
+//		return texOrdImages;
+//	}
+
+	public 	void setTexBLOBImages(HashMap<String, byte[]> texByteaImages) {
+		this.texBLOBImages = texByteaImages;
 	}
 
-	public 	HashMap<String, OrdImage> getTexOrdImages() {
-		return texOrdImages;
-	}
-
+	public 	HashMap<String, byte[]> getTexBLOBImages() {
+		return texBLOBImages;
+	}	
+	
 	public void setCollada(COLLADA collada) {
 		this.collada = collada;
 	}

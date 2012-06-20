@@ -74,7 +74,7 @@ import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
-import oracle.ord.im.OrdImage;
+//import oracle.ord.im.OrdImage;
 
 import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -493,7 +493,7 @@ public class KmlExporter implements EventHandler {
 										}
 
 										// ----------------- image saving -----------------
-										if (colladaBundle.getTexOrdImages() != null) {
+										/*if (colladaBundle.getTexOrdImages() != null) {
 											Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
 											Iterator<String> iterator = keySet.iterator();
 											while (iterator.hasNext()) {
@@ -510,7 +510,7 @@ public class KmlExporter implements EventHandler {
 												
 												zipOut.closeEntry();
 											}
-										}
+										}*/
 
 										if (colladaBundle.getTexImages() != null) {
 											Set<String> keySet = colladaBundle.getTexImages().keySet();

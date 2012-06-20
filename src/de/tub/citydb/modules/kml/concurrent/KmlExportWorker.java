@@ -191,7 +191,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					ColladaBundle colladaBundle = new ColladaBundle();
 					colladaBundle.setCollada(objectGroup.generateColladaTree());
 					colladaBundle.setTexImages(objectGroup.getTexImages());
-					colladaBundle.setTexOrdImages(objectGroup.getTexOrdImages());
+//					colladaBundle.setTexOrdImages(objectGroup.getTexOrdImages());
 					colladaBundle.setPlacemark(singleObject.createPlacemarkFromGenericObject(objectGroup, work));
 					colladaBundle.setBuildingId(objectGroup.getId());
 					kmlExporterManager.print(colladaBundle, config.getProject().getKmlExporter().getBuildingBalloon().isBalloonContentInSeparateFile());
@@ -264,7 +264,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						ColladaBundle colladaBundle = new ColladaBundle();
 						colladaBundle.setCollada(objectGroup.generateColladaTree());
 						colladaBundle.setTexImages(objectGroup.getTexImages());
-						colladaBundle.setTexOrdImages(objectGroup.getTexOrdImages());
+//						colladaBundle.setTexOrdImages(objectGroup.getTexOrdImages());
 						colladaBundle.setPlacemark(singleObject.createPlacemarkFromGenericObject(objectGroup, work));
 						colladaBundle.setBuildingId(objectGroup.getId());
 						kmlExporterManager.print(colladaBundle, config.getProject().getKmlExporter().getBuildingBalloon().isBalloonContentInSeparateFile());

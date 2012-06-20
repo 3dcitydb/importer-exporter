@@ -45,24 +45,35 @@ public class AbstractPreferences implements Preferences {
 	}
 	
 	public final void doTranslation() {
-		root.doTranslation();
-		
-		for (PreferencesEntry childEntry : root.getChildEntries())
-			((DefaultPreferencesEntry)childEntry).doTranslation();
-	}
-	
-	public final void loadSettings() {
-		root.getViewComponent().loadSettings();
-		
-		for (PreferencesEntry childEntry : root.getChildEntries())
-			((DefaultPreferencesEntry)childEntry).getViewComponent().loadSettings();
-	}
-	
-	public final void setSettings() {
-		root.getViewComponent().setSettings();
-		
-		for (PreferencesEntry childEntry : root.getChildEntries())
-			((DefaultPreferencesEntry)childEntry).getViewComponent().setSettings();
+		doTranslation(root);
 	}
 
+	private void doTranslation(DefaultPreferencesEntry node) {
+		node.doTranslation();
+		
+		for (PreferencesEntry childEntry : node.getChildEntries())
+			doTranslation((DefaultPreferencesEntry)childEntry);
+	}
+
+	public final void loadSettings() {
+		loadSettings(root);
+	}
+
+	private void loadSettings(DefaultPreferencesEntry node) {
+		node.getViewComponent().loadSettings();
+		
+		for (PreferencesEntry childEntry : node.getChildEntries())
+			loadSettings((DefaultPreferencesEntry)childEntry);
+	}
+
+	public final void setSettings() {
+		setSettings(root);
+	}
+
+	private void setSettings(DefaultPreferencesEntry node) {
+		node.getViewComponent().setSettings();
+		
+		for (PreferencesEntry childEntry : node.getChildEntries())
+			setSettings((DefaultPreferencesEntry)childEntry);
+	}
 }

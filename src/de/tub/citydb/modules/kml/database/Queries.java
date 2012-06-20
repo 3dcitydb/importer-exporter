@@ -318,7 +318,7 @@ public class Queries {
 		"ORDER BY b.id";
 
 	private static final String BUILDING_FOOTPRINT_LOD1 =
-		"SELECT SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), " +
+		"SELECT ST_Union(sg.geometry)), " +
 				"MAX(b.building_root_id) AS building_id " +
 		"FROM SURFACE_GEOMETRY sg, BUILDING b, CITYOBJECT co " +
 		"WHERE " +
@@ -406,23 +406,43 @@ public class Queries {
 			"LEFT JOIN CITYOBJECT_GENERICATTRIB coga ON (coga.cityobject_id = co.id AND coga.attrname = ?) " +
 		"WHERE co.gmlid = ?";
 
+//	public static final String INSERT_GE_ZOFFSET =
+//		"INSERT INTO CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) " +
+//		"VALUES (CITYOBJECT_GENERICATT_SEQ.NEXTVAL, ?, 1, ?, (SELECT ID FROM CITYOBJECT WHERE gmlid = ?))";
+//	
+//	public static final String TRANSFORM_GEOMETRY_TO_WGS84 =
+//		"SELECT SDO_CS.TRANSFORM(?, 4326) FROM DUAL";
+//
+//	public static final String TRANSFORM_GEOMETRY_TO_WGS84_3D =
+//		"SELECT SDO_CS.TRANSFORM(?, 4329) FROM DUAL";
+//
+//	public static final String GET_ENVELOPE_IN_WGS84_FROM_GML_ID =
+//		"SELECT SDO_CS.TRANSFORM(co.envelope, 4326) " +
+//		"FROM CITYOBJECT co " +
+//		"WHERE co.gmlid = ?";
+//
+//	public static final String GET_ENVELOPE_IN_WGS84_3D_FROM_GML_ID =
+//		"SELECT SDO_CS.TRANSFORM(co.envelope, 4329) " +
+//		"FROM CITYOBJECT co " +
+//		"WHERE co.gmlid = ?";
+
 	public static final String INSERT_GE_ZOFFSET =
 		"INSERT INTO CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) " +
-		"VALUES (CITYOBJECT_GENERICATT_SEQ.NEXTVAL, ?, 1, ?, (SELECT ID FROM CITYOBJECT WHERE gmlid = ?))";
-	
+		"VALUES (nextval('CITYOBJECT_GENERICATTRIB_ID_SEQ'), ?, 1, ?, (SELECT ID FROM CITYOBJECT WHERE gmlid = ?))";
+
 	public static final String TRANSFORM_GEOMETRY_TO_WGS84 =
-		"SELECT SDO_CS.TRANSFORM(?, 4326) FROM DUAL";
+		"SELECT ST_Transform(?, 4326)";
 
 	public static final String TRANSFORM_GEOMETRY_TO_WGS84_3D =
-		"SELECT SDO_CS.TRANSFORM(?, 4329) FROM DUAL";
+		"SELECT ST_Transform(?, 94329)";
 
 	public static final String GET_ENVELOPE_IN_WGS84_FROM_GML_ID =
-		"SELECT SDO_CS.TRANSFORM(co.envelope, 4326) " +
+		"SELECT ST_Transform(co.envelope, 4326) " +
 		"FROM CITYOBJECT co " +
 		"WHERE co.gmlid = ?";
 
 	public static final String GET_ENVELOPE_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT SDO_CS.TRANSFORM(co.envelope, 4329) " +
+		"SELECT ST_Transform(co.envelope, 94329) " +
 		"FROM CITYOBJECT co " +
 		"WHERE co.gmlid = ?";
 
@@ -504,7 +524,7 @@ public class Queries {
     	return query;
     }
 
-    public static final String GET_GMLIDS =
+    /*public static final String GET_GMLIDS =
     	"SELECT co.gmlid, co.class_id " +
 		"FROM CITYOBJECT co " +
 		"WHERE " +
@@ -522,65 +542,90 @@ public class Queries {
 		"WHERE " +
 		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
 					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
-		"ORDER BY 2"; // ORDER BY co.class_id
+		"ORDER BY 2"; // ORDER BY co.class_id*/
 
+    
+    /* PostGIS-Version, but cannot be used as an PreparedStatement
+     
+       public static final String GET_GMLIDS =
+    	"SELECT co.gmlid, co.class_id " +
+    	"FROM CITYOBJECT co " +
+    	"WHERE " +
+    	  "ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;LINESTRING(? ? ?,? ? ?)'), 'T*T***T**') ='TRUE' " +					// overlap
+    	"UNION ALL " +
+        "SELECT co.gmlid, co.class_id " +
+    	"FROM CITYOBJECT co " +
+    	"WHERE " +
+    	  "(ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), 'T*F**F***') ='TRUE' OR " +			// inside and coveredby
+    	  		"ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), '*TF**F***') ='TRUE' OR " +	// coveredby
+    	  		"ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), '**FT*F***') ='TRUE' OR " +	// coveredby
+    	  		"ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), '**F*TF***') ='TRUE') " +		// coveredby
+    	"UNION ALL " +
+        "SELECT co.gmlid, co.class_id " +
+    	"FROM CITYOBJECT co " +
+    	"WHERE " +
+    	  "ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), 'T*F**FFF*') ='TRUE' " +			// equal
+    	"ORDER BY 2"; // ORDER BY co.class_id*/
+    
     public static final String GET_OBJECTCLASS =
 		"SELECT co.class_id " +
 		"FROM CITYOBJECT co " +
 		"WHERE co.gmlid = ?";
 
     public static final String BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD =
-		
-		"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
-		"FROM (" +
-
-		"SELECT * FROM (" +
-		"SELECT * FROM (" +
-		
-    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-//		"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
-//		"SELECT sg.geometry AS simple_geom " +
-		"FROM SURFACE_GEOMETRY sg " +
-		"WHERE " +
-		  "sg.root_id IN( " +
-		     "SELECT b.lod<LoD>_geometry_id " +
-		     "FROM CITYOBJECT co, BUILDING b " +
-		     "WHERE "+
-		       "co.gmlid = ? " +
-		       "AND b.building_root_id = co.id " +
-		       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
-		     "UNION " +
-		     "SELECT ts.lod<LoD>_multi_surface_id " +
-		     "FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts " +
-		     "WHERE "+
-		       "co.gmlid = ? " +
-		       "AND b.building_root_id = co.id " +
-		       "AND ts.building_id = b.id " +
-		       "AND ts.lod<LoD>_multi_surface_id IS NOT NULL "+
-		  ") " +
-		  "AND sg.geometry IS NOT NULL" +
-		
-		") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
-		") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
-		
-		") " +
-		"GROUP BY mod(rownum, <GROUP_BY_1>) " +
-		") " +
-		"GROUP BY mod (rownum, <GROUP_BY_2>) " +
-		") " +
-		"GROUP BY mod (rownum, <GROUP_BY_3>) " +
-		")";
+    	// No pyramid-aggregation possible in PostGIS
+//    	"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+//    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+//    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+//    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
+    	"SELECT ST_Union(get_valid_area.simple_geom) " +
+    	"FROM (" +
+    	"SELECT * FROM (" +
+    	"SELECT * FROM (" +
+    		
+//      "SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+//    	"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
+//    	"SELECT sg.geometry AS simple_geom " +
+    	"FROM SURFACE_GEOMETRY sg " +
+    	"WHERE " +
+    	  "sg.root_id IN( " +
+    	     "SELECT b.lod<LoD>_geometry_id " +
+    	     "FROM CITYOBJECT co, BUILDING b " +
+    	     "WHERE "+
+    	       "co.gmlid = ? " +
+    	       "AND b.building_root_id = co.id " +
+    	       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
+    	     "UNION " +
+    	     "SELECT ts.lod<LoD>_multi_surface_id " +
+    	     "FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts " +
+    	     "WHERE "+
+    	       "co.gmlid = ? " +
+    	       "AND b.building_root_id = co.id " +
+    	       "AND ts.building_id = b.id " +
+    	       "AND ts.lod<LoD>_multi_surface_id IS NOT NULL "+
+    	  ") " +
+    	  "AND sg.geometry IS NOT NULL) AS get_geoms " +
+    	
+//    	") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
+//    	") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
+    	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
+    	"WHERE ST_Area(get_valid_geoms.simple_geom) > <TOLERANCE>) AS get_valid_area";
+    	
+//    	") " +
+//    	"GROUP BY mod(rownum, <GROUP_BY_1>) " +
+//    	") " +
+//    	"GROUP BY mod (rownum, <GROUP_BY_2>) " +
+//    	") " +
+//    	"GROUP BY mod (rownum, <GROUP_BY_3>) " +
+//    	")";
 
 	public static final String GET_EXTRUDED_HEIGHT =
 		"SELECT " + // "b.measured_height, " +
-		"SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) - SDO_GEOM.SDO_MIN_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
+//		"SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) - SDO_GEOM.SDO_MIN_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
+		"ST_ZMax(Box3D(co.envelope)) - ST_ZMin(Box3D(co.envelope)) AS envelope_measured_height " +
 		"FROM CITYOBJECT co " + // ", BUILDING b " +
-		"WHERE " +
-			"co.gmlid = ?"; // + " AND b.building_root_id = co.id";
-
+		"WHERE co.gmlid = ?"; // + " AND b.building_root_id = co.id";
 	
 	// ----------------------------------------------------------------------
 	// GROUP QUERIES
@@ -605,6 +650,8 @@ public class Queries {
 		                "AND g2co.cityobjectgroup_id = cog.ID) " +
    		"ORDER BY co.class_id";
 
+    /* PostGIS-Version, but cannot be used as an PreparedStatement
+	
 	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX = 
 		"SELECT co.gmlid, co.class_id " + 
 		"FROM cityobject co " +
@@ -613,8 +660,9 @@ public class Queries {
 		                "WHERE co.gmlid = ? " + 
 		                "AND cog.ID = co.ID " +
 		                "AND g2co.cityobjectgroup_id = cog.ID) " +
-		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
+		"AND ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;LINESTRING(? ? ?,? ? ?)'), 'T*T***T**') ='TRUE' " +			// overlap
+//		"(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
+//					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
 		"UNION ALL " +
 		"SELECT co.gmlid, co.class_id " + 
 		"FROM cityobject co " +
@@ -623,8 +671,12 @@ public class Queries {
 		                "WHERE co.gmlid = ? " + 
 		                "AND cog.ID = co.ID " +
 		                "AND g2co.cityobjectgroup_id = cog.ID) " +
-		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby') ='TRUE') " +
+		"AND (ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), 'T*F**F***') ='TRUE' OR " +	// inside and coveredby
+    		"ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), '*TF**F***') ='TRUE' OR " +	// coveredby
+    		"ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), '**FT*F***') ='TRUE' OR " +	// coveredby
+    		"ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), '**F*TF***') ='TRUE') " +		// coveredby
+//		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
+//					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby') ='TRUE') " +
 		"UNION ALL " +
 		"SELECT co.gmlid, co.class_id " + 
 		"FROM cityobject co " +
@@ -633,7 +685,8 @@ public class Queries {
 		                "WHERE co.gmlid = ? " + 
 		                "AND cog.ID = co.ID " +
 		                "AND g2co.cityobjectgroup_id = cog.ID) " +
-		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
-		"ORDER BY 2"; // ORDER BY co.class_id
+		"AND ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), 'T*F**FFF*') ='TRUE' " +		// equal
+//		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
+//					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
+		"ORDER BY 2"; // ORDER BY co.class_id*/
 }

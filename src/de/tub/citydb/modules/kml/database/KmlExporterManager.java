@@ -63,7 +63,7 @@ import net.opengis.kml._2.RegionType;
 import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
-import oracle.ord.im.OrdImage;
+//import oracle.ord.im.OrdImage;
 
 import org.citygml4j.util.xml.SAXEventBuffer;
 
@@ -446,7 +446,7 @@ public class KmlExporterManager {
 				zipOut.closeEntry();
 
 				// ----------------- image saving -----------------
-				if (colladaBundle.getTexOrdImages() != null) {
+				/*if (colladaBundle.getTexOrdImages() != null) {
 					Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
 					Iterator<String> iterator = keySet.iterator();
 					while (iterator.hasNext()) {
@@ -461,7 +461,7 @@ public class KmlExporterManager {
 //						zipOut.write(ordImageBytes, 0, bytes_read);
 						zipOut.closeEntry();
 					}
-				}
+				}*/
 
 				if (colladaBundle.getTexImages() != null) {
 					Set<String> keySet = colladaBundle.getTexImages().keySet();
@@ -507,7 +507,7 @@ public class KmlExporterManager {
 			// ----------------- image saving -----------------
 
 			// first those wrapped textures or images in unknown formats (like .rgb)
-			if (colladaBundle.getTexOrdImages() != null) {
+			/*if (colladaBundle.getTexOrdImages() != null) {
 				Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
 				Iterator<String> iterator = keySet.iterator();
 				while (iterator.hasNext()) {
@@ -522,7 +522,7 @@ public class KmlExporterManager {
 						texOrdImage.close();
 					}
 				}
-			}
+			}*/
 
 			if (colladaBundle.getTexImages() != null) {
 				Set<String> keySet = colladaBundle.getTexImages().keySet();

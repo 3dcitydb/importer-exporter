@@ -41,7 +41,6 @@ import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 
