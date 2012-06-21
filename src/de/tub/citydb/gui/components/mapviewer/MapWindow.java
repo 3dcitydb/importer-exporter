@@ -498,10 +498,10 @@ public class MapWindow extends JDialog implements EventHandler {
 		final JPopupMenu popupMenu = new JPopupMenu();
 		bboxPopups = new BBoxPopupMenu[5];
 
-		bboxPopups[0] = new BBoxPopupMenu(popupMenuDecorator.decorate(minX), true);
-		bboxPopups[1] = new BBoxPopupMenu(popupMenuDecorator.decorate(minY), true);
-		bboxPopups[2] = new BBoxPopupMenu(popupMenuDecorator.decorate(maxX), true);
-		bboxPopups[3] = new BBoxPopupMenu(popupMenuDecorator.decorate(maxY), true);
+		bboxPopups[0] = new BBoxPopupMenu(popupMenuDecorator.decorateAndGet(minX), true);
+		bboxPopups[1] = new BBoxPopupMenu(popupMenuDecorator.decorateAndGet(minY), true);
+		bboxPopups[2] = new BBoxPopupMenu(popupMenuDecorator.decorateAndGet(maxX), true);
+		bboxPopups[3] = new BBoxPopupMenu(popupMenuDecorator.decorateAndGet(maxY), true);
 		bboxPopups[4] = new BBoxPopupMenu(popupMenu, false);
 
 		Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(new FlavorListener() {

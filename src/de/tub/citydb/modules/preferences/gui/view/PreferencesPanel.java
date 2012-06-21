@@ -60,6 +60,7 @@ import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.gui.ImpExpGui;
+import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.NullComponent;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.exporter.CityGMLExportPlugin;
@@ -200,7 +201,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 				scrollPane = new JScrollPane(col2panel);
 				scrollPane.setBorder(BorderFactory.createEmptyBorder());
 				scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
-				
+
 				col2.add(scrollPane, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
 
 				JPanel col2buttons = new JPanel();
@@ -216,7 +217,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 		resetPreferencesMenu();
 		for (int i = 0; i < menuTree.getRowCount(); i++)
-			menuTree.expandRow(i);
+			performActionOnNodes(menuTree.getPathForRow(i), true, true);
 
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setContinuousLayout(true);
@@ -231,7 +232,9 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 		menuTree.setSelectionPath(new TreePath(new Object[]{rootNode, initialNode}));
 		for (int i = 1; i < menuTree.getRowCount(); i++)
-			menuTree.collapseRow(i);
+			performActionOnNodes(menuTree.getPathForRow(i), false, true);
+
+		PopupMenuDecorator.getInstance().decorate(menuTree);
 	}
 
 	public void doTranslation() {
@@ -242,7 +245,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 		resetPreferencesMenu();
 		menuTree.repaint();
-		prefLabel.setText(((PreferencesTreeNode)menuTree.getLastSelectedPathComponent()).toString());		
+		prefLabel.setText(((PreferencesTreeNode)menuTree.getLastSelectedPathComponent()).toString());	
 	}
 
 	@Override
@@ -324,6 +327,19 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		model.nodeChanged(node);
 		for (int i = 0; i < node.getChildCount(); i++)
 			nodesChanged(model, node.getChildAt(i));
+	}
+
+	private void performActionOnNodes(TreePath parent, boolean expand, boolean recursive) {
+		TreeNode node = (TreeNode)parent.getLastPathComponent();
+
+		if (recursive)
+			for (int i = 0; i < node.getChildCount(); ++i)
+				performActionOnNodes(parent.pathByAddingChild(node.getChildAt(i)), expand, recursive);
+
+		if (expand)
+			menuTree.expandPath(parent);
+		else
+			menuTree.collapsePath(parent);
 	}
 
 	private final class PreferencesTreeNode extends DefaultMutableTreeNode {

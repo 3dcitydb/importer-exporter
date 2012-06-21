@@ -379,7 +379,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		PopupMenuDecorator.getInstance().decorate(browseText, workspaceText, timestampText, 
 				gmlIdText, rowsText, columnsText,
-				footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText);		
+				footprintVisibleFromText, extrudedVisibleFromText, geometryVisibleFromText, colladaVisibleFromText,
+				fcTree);		
 	}
 
 	// localized Labels und Strings

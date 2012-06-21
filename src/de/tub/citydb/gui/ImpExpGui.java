@@ -212,7 +212,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		consoleText.setFont(new Font(Font.MONOSPACED, 0, 11));
 		consoleText.setEditable(false);
 		consoleWindow = new ConsoleWindow(console, config, this);
-		consolePopup = new ConsolePopupMenuWrapper(PopupMenuDecorator.getInstance().decorate(consoleText));
+		consolePopup = new ConsolePopupMenuWrapper(PopupMenuDecorator.getInstance().decorateAndGet(consoleText));
 
 		statusText = new JLabel();
 		connectText = new JLabel();

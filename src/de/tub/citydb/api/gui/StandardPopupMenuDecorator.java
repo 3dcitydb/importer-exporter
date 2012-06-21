@@ -30,9 +30,12 @@
 package de.tub.citydb.api.gui;
 
 import javax.swing.JPopupMenu;
+import javax.swing.JTree;
 import javax.swing.text.JTextComponent;
 
-public interface StandardEditingPopupMenuDecorator {
+public interface StandardPopupMenuDecorator {
 	public void decorate(JTextComponent... components);
-	public JPopupMenu decorate(JTextComponent component);
+	public JPopupMenu decorateAndGet(JTextComponent component);
+	public void decorate(JTree... trees);
+	public JPopupMenu decorateAndGet(JTree tree);
 }
