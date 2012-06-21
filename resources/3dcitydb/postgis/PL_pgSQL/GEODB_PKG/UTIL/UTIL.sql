@@ -436,7 +436,7 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION geodb_pkg.util_update_constraints(action VARCHAR DEFAULT 'CASCADE') RETURNS SETOF void AS $$
 BEGIN
   IF action <> 'CASCADE' THEN
-    action := 'RESTRICT'
+    action := 'RESTRICT';
 	RAISE NOTICE 'Constraints are set to ON DELETE RESTRICT';
   END IF;
   

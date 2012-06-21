@@ -30,6 +30,8 @@
 --                                                                    ASta
 --
 
+SET client_min_messages TO WARNING;
+
 -- Disable versioning (if it was enabled before)
 --\i DISABLE_VERSIONING.sql
 

@@ -33,6 +33,7 @@
 
 -- This script is called from CREATE_DB.bat
 
+SET client_min_messages TO WARNING;
 
 \prompt 'Please enter a valid SRID: ' SRS_NO
 \prompt 'Please enter the corresponding SRSName to be used in GML exports : ' GMLSRSNAME
