@@ -1,9 +1,6 @@
 -- CREATE_RO_USER.sql
 --
--- Authors:     Javier Herreruela <javier.herreruela@tu-berlin.de>
---              Claus Nagel <claus.nagel@tu-berlin.de>
---
--- Conversion:  Felix Kunde <felix-kunde@gmx.de>
+-- Authors:     Felix Kunde <felix-kunde@gmx.de>
 --
 -- Copyright:   (c) 2007-2012, Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
@@ -21,15 +18,14 @@
 --
 -- ChangeLog:
 --
--- Version | Date       | Description     | Author | Conversion
--- 2.0.3     2010-06-03   PostGIS version   JHer     FKun
---                                          CNag
+-- Version | Date       | Description     | Author
+-- 1.0.0     2010-06-22   PostGIS version   FKun
 --
 
 -- the script has to be called by the psql-console
 -- use psql -h host -p 5432 -U Username -d database to login
 -- then execute the script: \i CREATE_RO_USER.sql
--- (it's even more easy to use the pgAdminIII for that) 
+-- (it's more easy to use the pgAdminIII for that) 
 
 \prompt 'Please enter a username for the read-only user: ' RO_USERNAME
 \prompt 'Please enter a password for the read-only user: ' RO_PASSWORD

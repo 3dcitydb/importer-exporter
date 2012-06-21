@@ -199,7 +199,7 @@ DECLARE
     create_ddl VARCHAR(1000);
     SPATIAL CONSTANT NUMERIC(1) := 1;
 BEGIN
-    IF geodb_pkg.idx_index_status(idx) != 'VALID' THEN
+    IF geodb_pkg.idx_index_status(idx) <> 'VALID' THEN
         PERFORM geodb_pkg.idx_drop_index(idx);
         
         BEGIN
@@ -238,7 +238,7 @@ CREATE OR REPLACE FUNCTION geodb_pkg.idx_drop_index(idx geodb_pkg.INDEX_OBJ) RET
 DECLARE
     index_name VARCHAR(100);
 BEGIN
-    IF geodb_pkg.idx_index_status(idx) != 'DROPPED' THEN
+    IF geodb_pkg.idx_index_status(idx) <> 'DROPPED' THEN
         BEGIN    
             EXECUTE 'DROP INDEX IF EXISTS ' || idx.index_name;
     
