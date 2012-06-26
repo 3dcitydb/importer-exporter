@@ -485,6 +485,7 @@ public class Exporter implements EventHandler {
 								dbPool,
 								dbWorkerPool,
 								exportFilter,
+								lookupServerManager.getLookupServer(CityGMLClass.ABSTRACT_CITY_OBJECT),
 								eventDispatcher,
 								config);
 

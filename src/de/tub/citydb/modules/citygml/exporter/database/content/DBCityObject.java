@@ -50,7 +50,6 @@ import org.citygml4j.impl.citygml.generics.StringAttributeImpl;
 import org.citygml4j.impl.citygml.generics.UriAttributeImpl;
 import org.citygml4j.impl.gml.feature.BoundingShapeImpl;
 import org.citygml4j.impl.gml.geometry.primitives.EnvelopeImpl;
-import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -343,8 +342,8 @@ public class DBCityObject implements DBExporter {
 				if (exportAppearance)
 					appearanceExporter.read(cityObject, parentId);
 
-				if (cityObject.getCityGMLClass() != CityGMLClass.CITY_OBJECT_GROUP)
-					dbExporterManager.updateFeatureCounter(cityObject.getCityGMLClass());
+				// update feature counter
+				dbExporterManager.updateFeatureCounter(cityObject.getCityGMLClass());
 			}
 
 			return true;

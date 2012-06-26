@@ -34,9 +34,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
@@ -52,6 +50,7 @@ import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;
 import de.tub.citydb.modules.common.event.StatusDialogMessage;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.BoundingBoxFilter;
@@ -68,6 +67,7 @@ public class DBSplitter {
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<DBSplittingResult> dbWorkerPool;
 	private final ExportFilter exportFilter;
+	private final GmlIdLookupServer featureGmlIdCache;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 	private volatile boolean shouldRun = true;
@@ -79,7 +79,7 @@ public class DBSplitter {
 	private Long lastElement;
 	private String gmlIdFilter;
 	private String gmlNameFilter;
-	private String bboxFilter;
+	private String[] bboxFilter;
 	private String optimizerHint;
 
 	private FeatureClassFilter featureClassFilter;
@@ -93,11 +93,13 @@ public class DBSplitter {
 	public DBSplitter(DatabaseConnectionPool dbConnectionPool, 
 			WorkerPool<DBSplittingResult> dbWorkerPool, 
 			ExportFilter exportFilter, 
+			GmlIdLookupServer featureGmlIdCache,
 			EventDispatcher eventDispatcher, 
 			Config config) throws SQLException {
 		this.dbConnectionPool = dbConnectionPool;
 		this.dbWorkerPool = dbWorkerPool;
 		this.exportFilter = exportFilter;
+		this.featureGmlIdCache = featureGmlIdCache;
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
 
@@ -127,7 +129,7 @@ public class DBSplitter {
 	private void initFilter() throws SQLException {
 		// do not use any optimizer hints per default
 		optimizerHint = "";
-		
+
 		// feature counter filter
 		List<Long> counterFilterState = featureCounterFilter.getFilterState();
 		firstElement = counterFilterState.get(0);
@@ -160,20 +162,24 @@ public class DBSplitter {
 				double maxX = bbox.getUpperRightCorner().getX();
 				double maxY = bbox.getUpperRightCorner().getY();
 
-				String mask = ((tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode())) ? 
-						"INSIDE+CONTAINS+EQUAL+COVERS+COVEREDBY+OVERLAPBDYINTERSECT" :
-							"INSIDE+COVEREDBY+EQUAL";
+				boolean overlap = tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode();
+				bboxFilter = new String[overlap ? 3 : 2];
 
-				bboxFilter = "SDO_RELATE(co.ENVELOPE, MDSYS.SDO_GEOMETRY(2003, " + bboxSrid + ", NULL, " +
-				"MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 3), " +
-				"MDSYS.SDO_ORDINATE_ARRAY(" + minX + ", " + minY + ", " + maxX + ", " + maxY + ")), " +
-				"'querytype=WINDOW mask=" + mask + "') = 'TRUE'";
+				String filter = "SDO_RELATE(co.ENVELOPE, MDSYS.SDO_GEOMETRY(2003, " + bboxSrid + ", NULL, " +
+						"MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 3), " +
+						"MDSYS.SDO_ORDINATE_ARRAY(" + minX + ", " + minY + ", " + maxX + ", " + maxY + ")), " +
+						"'mask=";
+
+				bboxFilter[0] = filter + "inside+coveredby') = 'TRUE'";
+				bboxFilter[1] = filter + "equal') = 'TRUE'";				
+				if (overlap)
+					bboxFilter[2] = filter + "overlapbdyintersect') = 'TRUE'";
 
 				// on Oracle 11g the query performance greatly benefits from setting
 				// a no_index hint for the class_id column
 				if (dbConnectionPool.getActiveConnectionMetaData().getDatabaseMajorVersion() == 11)
 					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
-				
+
 			} else {
 				LOG.error("Bounding box filter is enabled although spatial indexes are disabled.");
 				LOG.error("Filtering will not be performed using spatial database operations.");
@@ -243,7 +249,7 @@ public class DBSplitter {
 
 			for (CityGMLClass featureClass : featureClassFilter.getNotFilterState()) {
 				additionalWhere = null;
-				
+
 				switch (featureClass) {
 				case BUILDING:
 					tableName = TableEnum.BUILDING.toString();
@@ -283,15 +289,15 @@ public class DBSplitter {
 				}
 
 				StringBuilder query = new StringBuilder("select ").append(optimizerHint).append(" co.ID, co.CLASS_ID from CITYOBJECT co, ")
-				.append(tableName).append(" j where co.ID=j.ID and ");
-
-				if (bboxFilter != null)
-					query.append(bboxFilter).append(" and ");
-
-				if (additionalWhere != null)
-					query.append(additionalWhere).append(" and ");
+						.append(tableName).append(" j where co.ID=j.ID and ");
 
 				query.append("upper(j.NAME) like '%").append(gmlNameFilter).append("%' ");
+
+				if (additionalWhere != null)
+					query.append("and ").append(additionalWhere).append(" ");
+
+				if (bboxFilter != null)
+					query.append(appendSdoRelate(query.toString()));
 
 				if (featureCounterFilter.isActive())
 					query.append("order by co.ID");
@@ -326,7 +332,7 @@ public class DBSplitter {
 					query.append("co.CLASS_ID in (").append(classIdQuery).append(") "); 
 
 					if (bboxFilter != null)
-						query.append("and ").append(bboxFilter).append(" ");
+						query.append(appendSdoRelate(query.toString()));
 
 					if (featureCounterFilter.isActive())
 						query.append("order by ID");
@@ -395,47 +401,53 @@ public class DBSplitter {
 		if (!shouldRun)
 			return;
 
+		if (lastElement != null && elementCounter > lastElement)
+			return;
+
 		LOG.info("Processing CityObjectGroup features.");
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.group.msg"), this));
 
 		Statement stmt = null;
 		ResultSet rs = null;
 
-		StringBuilder query = new StringBuilder();
-		List<Integer> classIds = new ArrayList<Integer>();
+		StringBuilder groupQuery = new StringBuilder();
+		String classIdsString = "";
 
 		if (expFilterConfig.isSetSimpleFilter()) {
-			query.append("select co.ID from CITYOBJECT co where co.CLASS_ID=23 ");
+			groupQuery.append("select co.ID, co.GMLID from CITYOBJECT co where co.CLASS_ID=23 ");
 			if (gmlIdFilter != null)
-				query.append("and ").append(gmlIdFilter);
+				groupQuery.append("and ").append(gmlIdFilter);
 		} else {
-			query.append("select ").append(optimizerHint).append(" co.ID from CITYOBJECT co");
-			
+			groupQuery.append("select ").append(optimizerHint).append(" co.ID, co.GMLID from CITYOBJECT co");
+
 			if (gmlNameFilter != null)
-				query.append(", CITYOBJECTGROUP j where co.ID=j.ID ")
+				groupQuery.append(", CITYOBJECTGROUP j where co.ID=j.ID ")
 				.append("and upper(j.NAME) like '%").append(gmlNameFilter).append("%' ");
 			else
-				query.append(" where co.CLASS_ID=23 ");
+				groupQuery.append(" where co.CLASS_ID=23 ");
 
 			if (bboxFilter != null)
-				query.append("and ").append(bboxFilter);
+				groupQuery.append(appendSdoRelate(groupQuery.toString()));
 
-			List<CityGMLClass> allowedFeature = featureClassFilter.getNotFilterState();
-			for (CityGMLClass featureClass : allowedFeature) {
+			List<Integer> classIds = new ArrayList<Integer>();
+			for (CityGMLClass featureClass : featureClassFilter.getNotFilterState()) {
 				if (featureClass == CityGMLClass.CITY_OBJECT_GROUP)
 					continue;
 
 				classIds.add(Util.cityObject2classId(featureClass));
 			}
+
+			if (!classIds.isEmpty())
+				classIdsString = "and co.CLASS_ID in (" + Util.collection2string(classIds, ",") + ")";
 		}
 
 		try {
+			// first step: retrieve group ids
 			stmt = connection.createStatement();
-			rs = stmt.executeQuery(query.toString());
+			rs = stmt.executeQuery(groupQuery.toString());
 			List<Long> groupIds = new ArrayList<Long>();
 
 			while (rs.next() && shouldRun) {	
-				long groupId = rs.getLong(1);
 				elementCounter++;
 
 				if (firstElement != null && elementCounter < firstElement)
@@ -444,19 +456,77 @@ public class DBSplitter {
 				if (lastElement != null && elementCounter > lastElement)
 					break;
 
+				long groupId = rs.getLong(1);
+				String gmlId = rs.getString(2);
+
+				// register group in gml:id cache
+				if (gmlId.length() > 0)
+					featureGmlIdCache.put(gmlId, groupId, -1, false, null, CityGMLClass.CITY_OBJECT_GROUP);
 				groupIds.add(groupId);				
 			}
 
-			rs.close();
+			rs.close();	
+			stmt.close();
 
-			Set<Long> visited = new HashSet<Long>();
-			for (Long groupId : groupIds) {
-				if (visited.contains(groupId))
-					continue;
+			// second step: export group members
+			for (int i = 0; i < groupIds.size(); ++i) {
+				long groupId = groupIds.get(i);
+				stmt = connection.createStatement();
 
-				visited.add(groupId);
-				recursiveGroupMemberQuery(groupId, visited, classIds);				
+				StringBuilder memberQuery = new StringBuilder("select co.ID, co.CLASS_ID, co.GMLID from CITYOBJECT co ")
+				.append("where co.ID in (select co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co ")
+				.append("where gtc.CITYOBJECT_ID=co.ID ")
+				.append("and gtc.CITYOBJECTGROUP_ID=").append(groupId).append(" ")
+				.append(classIdsString).append(" ")
+				.append("union all ")
+				.append("select grp.PARENT_CITYOBJECT_ID from CITYOBJECTGROUP grp where grp.ID=").append(groupId).append(") ");
+
+				if (bboxFilter != null)
+					memberQuery.append(appendSdoRelate(memberQuery.toString()));
+
+				rs = stmt.executeQuery(memberQuery.toString());
+
+				while (rs.next() && shouldRun) {				
+					long memberId = rs.getLong(1);
+					int memberClassId = rs.getInt(2);
+					CityGMLClass cityObjectType = Util.classId2cityObject(memberClassId);
+
+					if (cityObjectType == CityGMLClass.CITY_OBJECT_GROUP) {						
+						// register group in gml:id cache
+						String gmlId = rs.getString(3);
+						if (gmlId.length() > 0)
+							featureGmlIdCache.put(gmlId, memberId, -1, false, null, CityGMLClass.CITY_OBJECT_GROUP);
+
+						if (!groupIds.contains(memberId))
+							groupIds.add(memberId);
+
+						continue;
+					}
+
+					// set initial context...
+					DBSplittingResult splitter = new DBSplittingResult(memberId, cityObjectType);
+					splitter.setCheckIfAlreadyExported(true);
+					dbWorkerPool.addWork(splitter);
+				} 
+
+				rs.close();
+				stmt.close();
+			}
+
+			// wait for jobs to be done...
+			try {
+				dbWorkerPool.join();
+			} catch (InterruptedException e) {
+				//
 			}			
+
+			// finally export groups themselves
+			// we assume that all group members have been exported and their gml:ids
+			// are registered in the gml:id cache - that's why we registered groups above
+			for (long groupId : groupIds) {
+				DBSplittingResult splitter = new DBSplittingResult(groupId, CityGMLClass.CITY_OBJECT_GROUP);
+				dbWorkerPool.addWork(splitter);
+			}
 
 		} catch (SQLException sqlEx) {
 			LOG.error("SQL error: " + sqlEx.getMessage());
@@ -484,134 +554,19 @@ public class DBSplitter {
 		}
 	}
 
-	private void recursiveGroupMemberQuery(long groupId, Set<Long> visited, List<Integer> classIds) throws SQLException {
-		if (!shouldRun)
-			return;
+	private String appendSdoRelate(String query) {
+		StringBuilder unionAll = new StringBuilder();
+		for (int i = 0; i < bboxFilter.length; ++i) {
+			if (i > 0)
+				unionAll.append(query);
 
-		Statement stmt = null;
-		ResultSet rs = null;
+			unionAll.append("and ").append(bboxFilter[i]).append(" ");
 
-		try {
-			stmt = connection.createStatement();
-
-			// first: check nested groups being group members
-			StringBuilder innerGroupQuery = new StringBuilder("select ").append(optimizerHint)
-			.append(" co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co where co.ID=gtc.CITYOBJECT_ID ")
-			.append("and gtc.CITYOBJECTGROUP_ID=").append(groupId).append(" and co.CLASS_ID=23 ");
-
-			if (bboxFilter != null)
-				innerGroupQuery.append("and ").append(bboxFilter);
-
-			rs = stmt.executeQuery(innerGroupQuery.toString());
-
-			List<Long> groupIds = new ArrayList<Long>();			
-			while (rs.next() && shouldRun) {
-				long innerGroupId = rs.getLong(1);				
-				groupIds.add(innerGroupId);
-			}
-
-			rs.close();
-
-			for (Long innerGroupId : groupIds) {
-				if (visited.contains(innerGroupId))
-					continue;
-
-				visited.add(innerGroupId);
-				recursiveGroupMemberQuery(innerGroupId, visited, classIds);
-			}
-
-			// classIds filter
-			String classIdsString = "";
-			if (!classIds.isEmpty())
-				classIdsString = "and co.CLASS_ID in (" + Util.collection2string(classIds, ",") + ")";
-
-			// second: work on groupMembers which are not groups
-			StringBuilder groupMemberQuery = new StringBuilder("select ").append(optimizerHint)
-			.append(" co.ID, co.CLASS_ID from CITYOBJECT co, GROUP_TO_CITYOBJECT gtc where gtc.CITYOBJECT_ID=co.ID ")
-			.append("and gtc.CITYOBJECTGROUP_ID=").append(groupId);
-
-			if (bboxFilter != null)
-				groupMemberQuery.append(" and ").append(bboxFilter);
-
-			groupMemberQuery.append(" and not co.CLASS_ID=23 ").append(classIdsString);
-
-			rs = stmt.executeQuery(groupMemberQuery.toString());
-
-			while (rs.next() && shouldRun) {				
-				long memberId = rs.getLong(1);
-				int memberClassId = rs.getInt(2);
-				CityGMLClass cityObjectType = Util.classId2cityObject(memberClassId);
-
-				// set initial context...
-				DBSplittingResult splitter = new DBSplittingResult(memberId, cityObjectType);
-				splitter.setCheckIfAlreadyExported(true);
-				dbWorkerPool.addWork(splitter);
-			} 
-
-			rs.close();
-
-			// third: work on parents which are not groups
-			StringBuilder parentQuery = new StringBuilder("select ").append(optimizerHint)
-			.append(" grp.PARENT_CITYOBJECT_ID, co.CLASS_ID from CITYOBJECTGROUP grp, CITYOBJECT co ")
-			.append("where co.ID=grp.PARENT_CITYOBJECT_ID and grp.ID=").append(groupId).append(" and not grp.PARENT_CITYOBJECT_ID is NULL");
-
-			if (bboxFilter != null)
-				parentQuery.append(" and ").append(bboxFilter);
-
-			parentQuery.append(" and not co.CLASS_ID=23 ").append(classIdsString);			
-
-			rs = stmt.executeQuery(parentQuery.toString());
-
-			while (rs.next() && shouldRun) {				
-				long memberId = rs.getLong(1);
-				int memberClassId = rs.getInt(2);
-				CityGMLClass cityObjectType = Util.classId2cityObject(memberClassId);
-
-				// set initial context...
-				DBSplittingResult splitter = new DBSplittingResult(memberId, cityObjectType);
-				splitter.setCheckIfAlreadyExported(true);
-				dbWorkerPool.addWork(splitter);
-			}
-
-			rs.close();
-
-			// wait for jobs to be done...
-			try {
-				dbWorkerPool.join();
-			} catch (InterruptedException e) {
-				//
-			}			
-
-			// finally export group itself
-			DBSplittingResult splitter = new DBSplittingResult(groupId, CityGMLClass.CITY_OBJECT_GROUP);
-			splitter.setCheckIfAlreadyExported(true);
-			dbWorkerPool.addWork(splitter);
-
-		} catch (SQLException sqlEx) {
-			LOG.error("SQL error: " + sqlEx.getMessage());
-			throw sqlEx;
-		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException sqlEx) {
-					throw sqlEx;
-				}
-
-				rs = null;
-			}
-
-			if (stmt != null) {
-				try {
-					stmt.close();
-				} catch (SQLException sqlEx) {
-					throw sqlEx;
-				}
-
-				stmt = null;
-			}
+			if (i < bboxFilter.length - 1)
+				unionAll.append("union all ");
 		}
 
+		return unionAll.toString();
 	}
 
 	private void queryGlobalAppearance() throws SQLException {
@@ -637,7 +592,7 @@ public class DBSplitter {
 
 				if (lastElement != null && elementCounter > lastElement)
 					break;
-				
+
 				long id = rs.getLong(1);
 
 				// set initial context

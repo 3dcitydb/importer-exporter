@@ -54,6 +54,7 @@ public class CacheTableGroupToCityObject extends CacheTableModel {
 		try {
 			stmt = conn.createStatement();	
 			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GROUP_ID) " + properties);
+			stmt.executeUpdate("create index idx1_" + tableName + " on " + tableName + " (IS_PARENT) " + properties);
 		} finally {
 			if (stmt != null) {
 				stmt.close();

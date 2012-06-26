@@ -49,12 +49,9 @@ import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
 public class DBCityObjectGroup implements DBExporter {
-	private final Logger LOG = Logger.getInstance();
-
 	private final DBExporterManager dbExporterManager;
 	private final Config config;
 	private final Connection connection;
@@ -81,15 +78,15 @@ public class DBCityObjectGroup implements DBExporter {
 		if (!transformCoords) {		
 			psCityObjectGroup = connection.prepareStatement("select grp.ID, grp.NAME, grp.NAME_CODESPACE, grp.DESCRIPTION, grp.CLASS, grp.FUNCTION, grp.USAGE, grp.GEOMETRY, grp.SURFACE_GEOMETRY_ID, grp.PARENT_CITYOBJECT_ID, " +
 					"gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp " +
-			"inner join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
+					"left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			
+
 			psCityObjectGroup = connection.prepareStatement("select grp.ID, grp.NAME, grp.NAME_CODESPACE, grp.DESCRIPTION, grp.CLASS, grp.FUNCTION, grp.USAGE, " +
 					"geodb_util.transform_or_null(grp.GEOMETRY, " + srid + ") AS GEOMETRY, " +
 					"grp.SURFACE_GEOMETRY_ID, grp.PARENT_CITYOBJECT_ID, " +
 					"gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp " +
-			"inner join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
+					"left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
 		}
 
 		psParentGmlId = connection.prepareStatement("select GMLID from CITYOBJECT where CLASS_ID=23 AND ID=?");
@@ -161,18 +158,10 @@ public class DBCityObjectGroup implements DBExporter {
 					if (!rs.wasNull() && parentId != 0) {
 						String gmlId = dbExporterManager.getGmlId(parentId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
-						// retrieve gml:id of parent cityobjectgroups directly from database and assign
-						// them. we traverse the group graph by groupMembers not by parents and thus
-						// it might be that a parent has not yet been written and thus cannot be retrieved
-						// by the lookupServer. however, this also means, that we could set a link to 
-						// a parent that will not be written at all...
-						if (gmlId == null)
-							gmlId = getParentGmlId(parentId);
-
 						if (gmlId != null) {
 							CityObjectGroupParent parent = new CityObjectGroupParentImpl();
 							parent.setHref("#" + gmlId);
-							cityObjectGroup.setParent(parent);
+							cityObjectGroup.setGroupParent(parent);
 						}
 					}
 
@@ -196,50 +185,12 @@ public class DBCityObjectGroup implements DBExporter {
 				}
 			}
 
-			if (cityObjectGroup.isSetGroupMember()) {
-				if (cityObjectGroup.isSetId())
-					dbExporterManager.putGmlId(cityObjectGroup.getId(), cityObjectGroupId, cityObjectGroup.getCityGMLClass());
-				dbExporterManager.updateFeatureCounter(cityObjectGroup.getCityGMLClass());
-				dbExporterManager.print(cityObjectGroup);
-				return true;
-			} 
-
-			return false;
+			dbExporterManager.print(cityObjectGroup);
+			return true;
 		} finally {
 			if (rs != null)
 				rs.close();
 		}
-	}
-
-	private String getParentGmlId(long id) {
-		String gmlId = null;
-		ResultSet rs = null;
-
-		try {
-			psParentGmlId.setLong(1, id);
-			rs = psParentGmlId.executeQuery();
-
-			if (rs.next()) {
-				gmlId = rs.getString(1);
-				return gmlId;
-			}
-
-		} catch (SQLException sqlEx) {
-			LOG.error("SQL error: " + sqlEx.getMessage());
-		} finally {
-
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException sqlEx) {
-					//
-				}
-
-				rs = null;
-			}
-		}
-
-		return null;
 	}
 
 	@Override
