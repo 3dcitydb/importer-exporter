@@ -55,6 +55,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.transform.stream.StreamResult;
 
+import net.opengis.kml._2.BalloonStyleType;
 import net.opengis.kml._2.DocumentType;
 import net.opengis.kml._2.FolderType;
 import net.opengis.kml._2.KmlType;
@@ -873,6 +874,9 @@ public class KmlExporter implements EventHandler {
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
+		BalloonStyleType balloonStyle = new BalloonStyleType();
+		balloonStyle.setText("$[description]");
+
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
@@ -906,7 +910,8 @@ public class KmlExporter implements EventHandler {
 			styleFootprintNormal.setId(displayForm.getName() + "Normal");
 			styleFootprintNormal.setLineStyle(lineStyleFootprintNormal);
 			styleFootprintNormal.setPolyStyle(polyStyleFootprintNormal);
-
+			styleFootprintNormal.setBalloonStyle(balloonStyle);
+			
 			marshaller.marshal(kmlFactory.createStyle(styleFootprintNormal), saxBuffer);
 
 			if (displayForm.isHighlightingEnabled()) {
@@ -919,6 +924,7 @@ public class KmlExporter implements EventHandler {
 				styleFootprintHighlight.setId(displayForm.getName() + "Highlight");
 				styleFootprintHighlight.setLineStyle(lineStyleFootprintHighlight);
 				styleFootprintHighlight.setPolyStyle(polyStyleFootprintHighlight);
+				styleFootprintHighlight.setBalloonStyle(balloonStyle);
 
 				PairType pairFootprintNormal = kmlFactory.createPairType();
 				pairFootprintNormal.setKey(StyleStateEnumType.NORMAL);
@@ -945,6 +951,7 @@ public class KmlExporter implements EventHandler {
 			StyleType styleGroundSurface = kmlFactory.createStyleType();
 			styleGroundSurface.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString() + "Style");
 			styleGroundSurface.setPolyStyle(polyStyleGroundSurface);
+			styleGroundSurface.setBalloonStyle(balloonStyle);
 
 			indexOfDf = config.getProject().getKmlExporter().getBuildingDisplayForms().indexOf(displayForm);
 			String wallFillColor = Integer.toHexString(DisplayForm.DEFAULT_WALL_FILL_COLOR);
@@ -975,6 +982,7 @@ public class KmlExporter implements EventHandler {
 			styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString() + "Normal");
 			styleWallNormal.setLineStyle(lineStyleWallNormal);
 			styleWallNormal.setPolyStyle(polyStyleWallNormal);
+			styleWallNormal.setBalloonStyle(balloonStyle);
 
 			LineStyleType lineStyleRoofNormal = kmlFactory.createLineStyleType();
 			lineStyleRoofNormal.setColor(hexStringToByteArray(roofLineColor));
@@ -984,6 +992,7 @@ public class KmlExporter implements EventHandler {
 			styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() + "Normal");
 			styleRoofNormal.setLineStyle(lineStyleRoofNormal);
 			styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
+			styleRoofNormal.setBalloonStyle(balloonStyle);
 
 			marshaller.marshal(kmlFactory.createStyle(styleGroundSurface), saxBuffer);
 			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxBuffer);
@@ -1012,7 +1021,8 @@ public class KmlExporter implements EventHandler {
 				styleGeometryInvisible.setId(displayForm.getName() + "StyleInvisible");
 				styleGeometryInvisible.setLineStyle(lineStyleGeometryInvisible);
 				styleGeometryInvisible.setPolyStyle(polyStyleGeometryInvisible);
-	
+				styleGeometryInvisible.setBalloonStyle(balloonStyle);
+
 				LineStyleType lineStyleGeometryHighlight = kmlFactory.createLineStyleType();
 				lineStyleGeometryHighlight.setColor(hexStringToByteArray(highlightLineColor));
 				PolyStyleType polyStyleGeometryHighlight = kmlFactory.createPolyStyleType();
@@ -1021,6 +1031,7 @@ public class KmlExporter implements EventHandler {
 				styleGeometryHighlight.setId(displayForm.getName() + "StyleHighlight");
 				styleGeometryHighlight.setLineStyle(lineStyleGeometryHighlight);
 				styleGeometryHighlight.setPolyStyle(polyStyleGeometryHighlight);
+				styleGeometryHighlight.setBalloonStyle(balloonStyle);
 	
 				PairType pairGeometryNormal = kmlFactory.createPairType();
 				pairGeometryNormal.setKey(StyleStateEnumType.NORMAL);
@@ -1067,7 +1078,8 @@ public class KmlExporter implements EventHandler {
 				styleColladaInvisible.setId(displayForm.getName() + "StyleInvisible");
 				styleColladaInvisible.setLineStyle(lineStyleColladaInvisible);
 				styleColladaInvisible.setPolyStyle(polyStyleColladaInvisible);
-	
+				styleColladaInvisible.setBalloonStyle(balloonStyle);
+				
 				LineStyleType lineStyleColladaHighlight = kmlFactory.createLineStyleType();
 				lineStyleColladaHighlight.setColor(hexStringToByteArray(highlightLineColor));
 				PolyStyleType polyStyleColladaHighlight = kmlFactory.createPolyStyleType();
@@ -1076,6 +1088,7 @@ public class KmlExporter implements EventHandler {
 				styleColladaHighlight.setId(displayForm.getName() + "StyleHighlight");
 				styleColladaHighlight.setLineStyle(lineStyleColladaHighlight);
 				styleColladaHighlight.setPolyStyle(polyStyleColladaHighlight);
+				styleColladaHighlight.setBalloonStyle(balloonStyle);
 	
 				PairType pairColladaNormal = kmlFactory.createPairType();
 				pairColladaNormal.setKey(StyleStateEnumType.NORMAL);

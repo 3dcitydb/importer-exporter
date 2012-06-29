@@ -1005,6 +1005,19 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							   " FROM CITYOBJECT co, CITYOBJECT_GENERICATTRIB " + tableShortId +
 							   " WHERE co.gmlid = ?" +
 							   " AND coga.cityobject_id = co.id";
+/*
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(tableShortId, columns, CITYOBJECT_GENERICATTRIB_COLUMNS) + aggregateClosingString +
+							   " FROM CITYOBJECT_GENERICATTRIB " + tableShortId +
+							   " WHERE coga.cityobject_id IN " +
+							   " (SELECT co.id FROM CITYOBJECT co WHERE co.gmlid = ?" +
+							   " UNION" +
+							   " SELECT ts.id" +
+							   " FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts" +
+							   " WHERE co.gmlid = ?" +
+							   " AND b.building_root_id = co.id" + 
+                               " AND ts.building_id = b.id" +
+                               ")";
+*/
 			}
 			else if (CITYOBJECTGROUP_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "cog";
@@ -1047,7 +1060,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(tableShortId, columns, GROUP_TO_CITYOBJECT_COLUMNS) + aggregateClosingString +
 							   " FROM CITYOBJECT co, GROUP_TO_CITYOBJECT " + tableShortId +
 							   " WHERE co.gmlid = ?" +
-							   " AND g2co.cityobject_id = co.id";
+							   " AND g2co.cityobjectgroup_id = co.id";
 			}
 			else if (OBJECTCLASS_TABLE.equalsIgnoreCase(table)) {
 				tableShortId = "oc";
@@ -1160,20 +1173,29 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						sqlStatement = sqlStatement + " AND " + tableShortId + "." + condition;
 					}
 				}
-				if (orderByColumnAllowed) {
-					sqlStatement = sqlStatement + " ORDER by " + tableShortId + "." + columns.get(0);
+				if (aggregateFunction == null) {
+					if (orderByColumnAllowed) {
+						sqlStatement = sqlStatement + " ORDER by " + tableShortId + "." + columns.get(0);
+					}
 				}
-			
-				if (rownum > 0) {
-					sqlStatement = "SELECT * FROM (SELECT a.*, ROWNUM rnum FROM (" + sqlStatement 
-								   + " ASC) a WHERE ROWNUM <= " + rownum + ") WHERE rnum >= " + rownum;
+				else {
+					if (rownum > 0) {
+						sqlStatement = "SELECT * FROM (SELECT a.*, ROWNUM rnum FROM (" + sqlStatement 
+									   + " ORDER by " + tableShortId + "." + columns.get(0)
+									   + " ASC) a WHERE ROWNUM <= " + rownum + ") WHERE rnum >= " + rownum;
+					}
+					else if (FIRST.equalsIgnoreCase(aggregateFunction)) {
+						sqlStatement = "SELECT * FROM (" + sqlStatement
+									   + " ORDER by " + tableShortId + "." + columns.get(0)
+									   + " ASC) WHERE ROWNUM = 1";
+					}
+					else if (LAST.equalsIgnoreCase(aggregateFunction)) {
+						sqlStatement = "SELECT * FROM (" + sqlStatement
+									   + " ORDER by " + tableShortId + "." + columns.get(0)
+									   + " DESC) WHERE ROWNUM = 1";
+					}
+					// no ORDER by for MAX, MIN, AVG, COUNT, SUM
 				}
-				else if (FIRST.equalsIgnoreCase(aggregateFunction)) {
-					sqlStatement = "SELECT * FROM (" + sqlStatement + " ASC) WHERE ROWNUM = 1";
-				}
-				else if (LAST.equalsIgnoreCase(aggregateFunction)) {
-					sqlStatement = "SELECT * FROM (" + sqlStatement + " DESC) WHERE ROWNUM = 1";
-				} 
 			}
 
 			setProperSQLStatement(sqlStatement);

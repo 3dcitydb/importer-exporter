@@ -1191,6 +1191,7 @@ public class KmlGenericObject {
 		int type = (texImages.get(inobih.get(0)).getTransparency() == Transparency.OPAQUE) ?
                 	BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
 		// draw texture atlas
+		if (maxWidth == 0 || accumulatedHeight == 0) return; // some buildings are that wrong
 		BufferedImage textureAtlas = new BufferedImage(maxWidth, accumulatedHeight, type);
 		Graphics2D g2d = textureAtlas.createGraphics();
 

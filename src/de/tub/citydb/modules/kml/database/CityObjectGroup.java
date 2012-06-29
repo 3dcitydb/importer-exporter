@@ -37,9 +37,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 
 import net.opengis.kml._2.AltitudeModeEnumType;
+import net.opengis.kml._2.BalloonStyleType;
 import net.opengis.kml._2.BoundaryType;
 import net.opengis.kml._2.LineStyleType;
 import net.opengis.kml._2.LinearRingType;
@@ -56,7 +56,6 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
 import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.util.xml.SAXEventBuffer;
 
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.EventDispatcher;
@@ -248,6 +247,9 @@ public class CityObjectGroup extends KmlGenericObject{
 			hlLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba5()));
 		}
 
+		BalloonStyleType balloonStyle = new BalloonStyleType();
+		balloonStyle.setText("$[description]");
+
 		LineStyleType lineStyleFootprintNormal = kmlFactory.createLineStyleType();
 		lineStyleFootprintNormal.setColor(hexStringToByteArray(lineColor));
 		lineStyleFootprintNormal.setWidth(1.5);
@@ -257,6 +259,7 @@ public class CityObjectGroup extends KmlGenericObject{
 		styleFootprintNormal.setId(STYLE_BASIS_NAME + "Normal");
 		styleFootprintNormal.setLineStyle(lineStyleFootprintNormal);
 		styleFootprintNormal.setPolyStyle(polyStyleFootprintNormal);
+		styleFootprintNormal.setBalloonStyle(balloonStyle);
 
 		kmlExporterManager.print(styleFootprintNormal);
 
@@ -270,6 +273,7 @@ public class CityObjectGroup extends KmlGenericObject{
 			styleFootprintHighlight.setId(STYLE_BASIS_NAME + "Highlight");
 			styleFootprintHighlight.setLineStyle(lineStyleFootprintHighlight);
 			styleFootprintHighlight.setPolyStyle(polyStyleFootprintHighlight);
+			styleFootprintHighlight.setBalloonStyle(balloonStyle);
 
 			PairType pairFootprintNormal = kmlFactory.createPairType();
 			pairFootprintNormal.setKey(StyleStateEnumType.NORMAL);
