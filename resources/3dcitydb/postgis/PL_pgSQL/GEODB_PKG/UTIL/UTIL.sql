@@ -191,7 +191,6 @@ BEGIN
   DROP INDEX BREAKLINE_RID_SPX;
   DROP INDEX BREAKLINE_BREAK_SPX;
   DROP INDEX MASSPOINT_REL_SPX;
-  DROP INDEX ORTHOPHOTO_IMP_SPX;
   DROP INDEX TIN_RELF_STOP_SPX;
   DROP INDEX TIN_RELF_BREAK_SPX;
   DROP INDEX TIN_RELF_CRTLPTS_SPX;
@@ -238,11 +237,9 @@ BEGIN
   PERFORM DropGeometryColumn('breakline_relief', 'ridge_or_valley_lines');
   PERFORM DropGeometryColumn('breakline_relief', 'break_lines');
   PERFORM DropGeometryColumn('masspoint_relief', 'relief_points');
-  PERFORM DropGeometryColumn('orthophoto_imp', 'footprint');
   PERFORM DropGeometryColumn('tin_relief', 'stop_lines');
   PERFORM DropGeometryColumn('tin_relief', 'break_lines');
   PERFORM DropGeometryColumn('tin_relief', 'control_points');
-  PERFORM DropGeometryColumn('raster_relief_imp', 'footprint');
   PERFORM DropGeometryColumn('cityobject_genericattrib', 'geomval');
   PERFORM DropGeometryColumn('generic_cityobject', 'lod0_terrain_intersection');
   PERFORM DropGeometryColumn('generic_cityobject', 'lod1_terrain_intersection');
@@ -292,11 +289,9 @@ BEGIN
   PERFORM AddGeometryColumn('breakline_relief', 'ridge_or_valley_lines', db_srid, 'MULTICURVE', 3);
   PERFORM AddGeometryColumn('breakline_relief', 'break_lines', db_srid, 'MULTICURVE', 3);
   PERFORM AddGeometryColumn('masspoint_relief', 'relief_points', db_srid, 'MULTIPOINT', 3);
-  PERFORM AddGeometryColumn('orthophoto_imp', 'footprint', db_srid, 'POLYGON', 3);
   PERFORM AddGeometryColumn('tin_relief', 'stop_lines', db_srid, 'MULTICURVE', 3);
   PERFORM AddGeometryColumn('tin_relief', 'break_lines', db_srid, 'MULTICURVE', 3);
   PERFORM AddGeometryColumn('tin_relief', 'control_points', db_srid, 'MULTIPOINT', 3);
-  PERFORM AddGeometryColumn('raster_relief_imp', 'footprint', db_srid, 'POLYGON', 3);
   PERFORM AddGeometryColumn('cityobject_genericattrib', 'geomval', db_srid, 'GEOMETRY', 3);
   PERFORM AddGeometryColumn('generic_cityobject', 'lod0_terrain_intersection', db_srid, 'GEOMETRY', 3);
   PERFORM AddGeometryColumn('generic_cityobject', 'lod1_terrain_intersection', db_srid, 'GEOMETRY', 3);
@@ -343,7 +338,6 @@ BEGIN
   CREATE INDEX BREAKLINE_RID_SPX              ON BREAKLINE_RELIEF         USING GIST ( RIDGE_OR_VALLEY_LINES gist_geometry_ops_nd );
   CREATE INDEX BREAKLINE_BREAK_SPX            ON BREAKLINE_RELIEF         USING GIST ( BREAK_LINES gist_geometry_ops_nd );
   CREATE INDEX MASSPOINT_REL_SPX              ON MASSPOINT_RELIEF         USING GIST ( RELIEF_POINTS gist_geometry_ops_nd );
-  CREATE INDEX ORTHOPHOTO_IMP_SPX             ON ORTHOPHOTO_IMP           USING GIST ( FOOTPRINT );
   CREATE INDEX TIN_RELF_STOP_SPX              ON TIN_RELIEF               USING GIST ( STOP_LINES gist_geometry_ops_nd );
   CREATE INDEX TIN_RELF_BREAK_SPX             ON TIN_RELIEF               USING GIST ( BREAK_LINES gist_geometry_ops_nd ); 
   CREATE INDEX TIN_RELF_CRTLPTS_SPX           ON TIN_RELIEF               USING GIST ( CONTROL_POINTS gist_geometry_ops_nd );
