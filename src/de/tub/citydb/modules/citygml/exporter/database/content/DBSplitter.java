@@ -164,16 +164,11 @@ public class DBSplitter {
 
 				if ((tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode())){				
 					maskType.add("T*F**F***"); //1 - INSIDE
-					maskType.add("T*****FF*"); //2 - CONTAINS
-					maskType.add("T*F**FFF*"); //3 - EQUAL
-					maskType.add("T*****FF*"); //4 - COVERS
-					maskType.add("*T****FF*"); //5 - COVERS
-					maskType.add("***T**FF*"); //6 - COVERS
-					maskType.add("****T*FF*"); //7 - COVERS
-					maskType.add("*TF**F***"); //8 - COVEREDBY
-					maskType.add("**FT*F***"); //9 - COVEREDBY
-					maskType.add("**F*TF***"); //10 - COVEREDBY
-					maskType.add("T*T***T**"); //11 - OVERLAP
+					maskType.add("T*F**FFF*"); //2 - EQUAL
+					maskType.add("*TF**F***"); //3 - COVEREDBY
+					maskType.add("**FT*F***"); //4 - COVEREDBY
+					maskType.add("**F*TF***"); //5 - COVEREDBY
+					maskType.add("T*T***T**"); //6 - OVERLAP
 				}
 				else
 				{

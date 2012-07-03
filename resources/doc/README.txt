@@ -72,7 +72,7 @@ programs.
 ----------------------
 
 * Java JRE or JDK >= 1.6.0_05
-* 3D City Database version 2.0.6 on an Oracle Spatial DBMS >= 10G R2
+* 3D City Database version 2.0.6 on an PostgreSQL DBMS >= 9.0 with PostGIS Extension >= 2.0
   
 The !impexp.name! can be run on any platform 
 providing appropriate Java support. It has been tested on the 
@@ -177,6 +177,7 @@ Javier Herreruela <javier.herreruela@tu-berlin.de>
 Alexandra Lorenz <lorenz@tu-berlin.de>
 Gerhard König <gerhard.koenig@tu-berlin.de>
 Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>
+Felix Kunde <felix-kunde@gmx.de>
 
 
 9. Contact
@@ -184,6 +185,7 @@ Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>
 
 claus.nagel@tu-berlin.de
 javier.herreruela@tu-berlin.de
+felix-kunde@gmx.de
 
 
 10. Websites
@@ -194,7 +196,6 @@ Official !impexp.name! website:
 
 Related websites:
 !vendor.homepage!
-http://www.gis.tu-berlin.de/software
 http://www.citygml.org/
 http://www.citygmlwiki.org/
 http://www.opengeospatial.org/standards/citygml

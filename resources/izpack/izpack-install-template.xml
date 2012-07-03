@@ -10,6 +10,7 @@
             <author name="Alexandra Lorenz" email="lorenz@tu-berlin.de"/>
             <author name="Gerhard König" email="gerhard.koenig@tu-berlin.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tu-berlin.de"/>
+            <author name="Felix Kunde" email="felix-kunde@gmx.de"/>
         </authors>
         <url>!impexp.homepage!</url>
         <uninstaller write="yes" path="$INSTALL_PATH/uninstaller"/>

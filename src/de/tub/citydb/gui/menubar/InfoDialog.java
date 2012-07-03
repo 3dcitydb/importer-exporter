@@ -146,7 +146,8 @@ public class InfoDialog extends JDialog {
 					"Javier Herreruela <javier.herreruela@tu-berlin.de>\n" +
 					"Alexandra Lorenz <lorenz@tu-berlin.de>\n" +
 					"Gerhard König <gerhard.koenig@tu-berlin.de>\n" +
-			"Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>");				
+					"Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>\n" + 
+			"Felix Kunde <felix-kunde@gmx.de>");				
 			general.add(authors, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,2,5,5,5));
 
 			JLabel copyHeader = new JLabel("Copyright");

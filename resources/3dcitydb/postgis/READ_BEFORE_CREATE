@@ -1,8 +1,17 @@
-Hello! Exited to work with the 3DCityDB in PostGIS 2.0?
+== 3D City Database for PostGIS ==      
+							   
+This is a short instruction you need to follow before creating the 3D City Database in PostGIS.
+This release only works correctly with an PostgreSQL DBMS >= 9.0 with PostGIS Extension >= 2.0.
 
 The creation of the database is handled by the psql-console of PostgreSQL.
-But no worries, you don't have to use the console directly as you can use a batch-file.
-Before you doubleclick it, you have to edit the file in a way that its suits to your environment:
+It can be done via command line with the following command:
+psql -h your_host_address -p 5432 -U your_username -d name_of_database -f "CREATE_DB.sql"
+
+But you can also edit the batchfile CREATE_DB.bat in a way that its suits to your environment
+to minimize the work with the command line. 
+YOU NEED TO CREATE AN EMPTY POSTGIS-DATABASE FIRST!
+
+Settings for batchfiles:
 
 set PGPORT = 5432 (this is the default port)
 
@@ -10,16 +19,16 @@ set PGHOST = your_host_address ('localhost' on local machine)
 
 set PGUSER = your_username ('postgres' is the default superuser)
 
-set THEDB = name of the empty database, you must have already created (e.g. with template_postgis20) in PGAdminIII or psql.  
+set CITYDB = name of the already existing empty PostGIS-database  
 
-set PGBIN= path_to_psql.exe (e.g. 'C:\PostgreSQL\9.1\bin' or 'C:\pgAdmin III\1.14')
+set PGBIN  = path_to_psql.exe (e.g. 'C:\PostgreSQL\9.1\bin' or 'C:\pgAdmin III\1.14')
 
-
-Edit the DROP_DB.bat in the same way.
+Edit DROP_DB.bat in the same way.
 The creation and dropping of the database should then run fast and correct.
-First you have to enter your user-password.
-Then the Database SRID and GMLSRSNAME have to be set in the prompt.
-To change it afterwards you can use the function util_change_db_srid found in the geodb_pkg.schema.
-To avoid any errors, loss of data or long waiting times this function should be run on an empty database. 
+(Note that DROP_DB only deletes all parts of the 3D City Database but not the database itself)
 
-Have fun!
+When running the batchfile, you are first asked for your user-password.
+Then the Database SRID and GMLSRSNAME have to be set in the prompt.
+If no numeric value is set for the SRID-variable spatial columns can't be created. 
+To change the reference system afterwards you can use the function util_change_db_srid found in the geodb_pkg.schema.
+To avoid any errors, loss of data or long waiting times this function should be run on an empty database.
