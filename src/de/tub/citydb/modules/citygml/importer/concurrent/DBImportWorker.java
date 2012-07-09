@@ -318,7 +318,7 @@ public class DBImportWorker implements Worker<CityGML> {
 							featureBoundingBoxFilter.filter(cityObject.getBoundedBy().getEnvelope()))
 						return;
 
-					// if the cityobject did pass all filters, let us furhter work on it
+					// if the cityobject did pass all filters, let us further work on it
 					switch (work.getCityGMLClass()) {
 					case BUILDING:
 						DBBuilding dbBuilding = (DBBuilding)dbImporterManager.getDBImporter(DBImporterEnum.BUILDING);
