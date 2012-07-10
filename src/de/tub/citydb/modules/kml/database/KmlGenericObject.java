@@ -2718,12 +2718,19 @@ public class KmlGenericObject {
 					coords[index++] = point3d.z / 100;
 				}
 //				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, dbSrs.getSrid());
-				String geomEWKT = "SRID=" + dbSrs.getSrid() + ";LINESTRING(";
-				for (int i = 0; i < coords.length; i += 3){
-					geomEWKT += coords[i] + " " + coords[i+1] + " " + coords[i+2] + ",";
+				String geomEWKT = "SRID=" + dbSrs.getSrid() + ";";
+				
+				if (coords.length == 3){
+					geomEWKT += "POINT(" +	coords[0] + " " + coords[1] + " " + coords[2] + ")";
 				}
-				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-				geomEWKT += ")";
+				else {
+					geomEWKT += "LINESTRING(";
+					for (int i = 0; i < coords.length; i += 3){
+						geomEWKT += coords[i] + " " + coords[i+1] + " " + coords[i+2] + ",";
+					}
+					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
+					geomEWKT += ")";
+				}
 							
 				Geometry geom = PGgeometry.geomFromString(geomEWKT);
 				Geometry convertedGeom = convertToWGS84(geom);
