@@ -35,14 +35,13 @@
 
 SET client_min_messages TO WARNING;
 
-\prompt 'Please enter a valid SRID: ' SRS_NO
-\prompt 'Please enter the corresponding SRSName to be used in GML exports : ' GMLSRSNAME
+\prompt 'Please enter a valid SRID (e.g. 4326 for WGS84): ' SRS_NO
+\prompt 'Please enter the corresponding SRSName to be used in GML exports (e.g. urn:ogc:def:crs:EPSG:4326 for WGS84): ' GMLSRSNAME
 
 \set SRSNO :SRS_NO
 
 \i SCHEMA/TABLES/METADATA/DATABASE_SRS.sql
 INSERT INTO DATABASE_SRS(SRID,GML_SRS_NAME) VALUES (:SRS_NO,:'GMLSRSNAME');
---e.g. Berlin: INSERT INTO DATABASE_SRS(SRID,GML_SRS_NAME) VALUES (3068,'urn:ogc:def:crs,crs:EPSG:6.12:3068,crs:EPSG:6.12:5783');
 
 --// create TABLES
 \i SCHEMA/TABLES/METADATA/OBJECTCLASS.sql

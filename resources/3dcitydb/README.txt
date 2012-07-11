@@ -1,6 +1,6 @@
-3D City Database version 2.0.6
+3D City Database version 2.0.6-postgis
 
-  The 3D City Database version 2.0.6 is free software and comes 
+  The 3D City Database version 2.0.6-postgis is free software and comes 
   WITHOUT ANY WARRANTY. See the DISCLAIMER at the end of this document
   for more details. 
 
@@ -25,7 +25,7 @@
 1. License
 ----------
 
-The 3D City Database version 2.0.6 is free software under the GNU Lesser 
+The 3D City Database version 2.0.6-postgis is free software under the GNU Lesser 
 General Public License Version 3.0. See the file LICENSE for more details. 
 For a copy of the GNU Lesser General Public License see the files 
 COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
@@ -34,10 +34,10 @@ COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
 2. Copyright
 ------------
 
-(c) 2007 - 2011
+(c) 2007 - 2012
 Institute for Geodesy and Geoinformation Science (IGG)
 Technische Universitaet Berlin, Germany
-http://www.gis.tu-berlin.de/
+http://www.igg.tu-berlin.de/
 
 
 3. About
@@ -52,18 +52,17 @@ is based on the City Geography Markup Language (CityGML), an international
 standard for representing and exchanging virtual 3D city models issued
 by the Open Geospatial Consortium (OGC).
 
-The 3D City Database has been realized as an Oracle 10G R2 Spatial relational
+The 3D City Database has been realized as an PostgreSQL / PostGIS relational
 database schema, supporting following key features:
 
     * Complex thematic modelling
     * Five different Levels of Detail (LODs)
     * Appearance data
-    * Complex digital terrain models (DTMs)
+    * Digital terrain models (DTMs)
     * Representation of generic and prototypical 3D objects
     * Free, also recursive aggregation of geo objects
     * Flexible 3D geometries
-    * Management of large aerial photographs
-    * Version and history management
+    * Aerial photographs
 
 The 3D City Database is shipped as a collection of SQL scripts which allow
 for creating and dropping database instances.
@@ -78,23 +77,56 @@ database at http://www.3dcitydb.net/.
 4. System requirements
 ----------------------
 
-* Oracle Spatial 10G R2
-* Oracle Spatial 11G R1
-* Oracle Spatial 11G R2 
+* PostgreSQL >= 8.4
+* PostGIS >= 2.0
 
 
 5. Database setup
 -----------------
 
-To create a new database instance of the 3D City Database call the SQL script 
-"CREATE_DB.sql" which can be found in the top-level SQL folder of the 
-distribution package. This script will start the setup procedure and invoke 
-further scripts in the background.
+To create a new database instance of the 3D City Database use the psql-console
+to call the SQL script "CREATE_DB.sql" which can be found in the top-level SQL 
+folder of the distribution package. This script will start the setup procedure 
+and invoke further scripts in the background. 
 
-The setup procedure requires three mandatory user inputs:
-1) Oracle Spatial Reference Identifier for newly created geometry objects (SRID),
-2) corresponding GML conformant URN encoding for gml:srsName attributes, and
-3) decision whether the database instance should be versioning enabled.
+It command can look like this:
+psql -h your_host_address -p 5432 -U your_username -d name_of_database 
+-f "CREATE_DB.sql"
+
+Note: 
+AN EMPTY POSTGIS-DATABASE HAS TO BE CREATED FIRST! THE SPECIFIED DATABASE
+MUST ALREADY EXIST ON THE POSTGRESQL DBMS SERVER!
+
+It also possible to fasten the setup by editing the batchfile CREATE_DB.bat in
+a way that it suits to the system environment. 
+
+Settings for batchfiles:
+
+set PGPORT  =  5432 (this is the default port)
+set PGHOST  =  your_host_address ('localhost' on local machine)
+set PGUSER  =  your_username ('postgres' is the default superuser)
+set CITYDB  =  name of the already existing empty PostGIS-database  
+set PGBIN   =  path_to_psql.exe (e.g. 'C:\PostgreSQL\9.1\bin' or 
+			   'C:\pgAdmin III\1.14')
+
+When executed the user is asked for his PostgreSQL login-password.
+
+The setup procedure requires two mandatory user inputs:
+1) Spatial Reference Identifier for newly created geometry objects (SRID),
+2) corresponding GML conformant URN encoding for gml:srsName attributes
+
+e.g. for Berlin these parameters are:
+Please enter a valid SRID (e.g. 4326 for WGS84): 3068
+Please enter the corresponding SRSName to be used in GML exports (e.g. 
+urn:ogc:def:crs:EPSG:4326 for WGS84): urn:ogc:def:crs,crs:EPSG:6.12:3068,
+crs:EPSG:6.12:5783
+
+Values for WGS84 are suggested in brackets BUT these are nor default-values!
+If no numeric value is set for the SRID-variable spatial columns can't be 
+created. To change the reference system afterwards the function 
+util_change_db_srid found in the geodb_pkg.schema can be used. To avoid any
+errors, loss of data or long waiting times this function should be executed
+on an empty database. 
 
 
 6. Database deletion
@@ -102,14 +134,18 @@ The setup procedure requires three mandatory user inputs:
 
 To drop an existing database instance of the 3D City Database call the SQL script
 "DROP_DB.sql" which can be found in the top-level SQL folder of the 
-distribution package.
+distribution package. The batchfile DROP_DB.bat can also be used in the same
+manner like CREATE_DB.bat. Note that DROP_DB only clears the primarily created
+PostGIS-database from the relational schema of the 3D City Database. The database
+itself is not dropped.
 
 
 7. Documentation
 ----------------
 
-A comprehensive documentation on the 3D City Database version 2.0.6 can be found
-on the project's website at http://www.igg.tu-berlin.de/software/. 
+A comprehensive documentation on the 3D City Database version 2.0.6 and on its
+porting to PostGIS can be found on the project's website at 
+http://www.igg.tu-berlin.de/software/. 
 
 
 8. Cooperation partners and supporters  
@@ -131,6 +167,7 @@ financially supported by the following cooperation partners:
 
 Claus Nagel <claus.nagel@tu-berlin.de>
 Javier Herreruela <javier.herreruela@tu-berlin.de>
+Felix Kunde <felix-kunde@gmx.de>
 Alexandra Lorenz <lorenz@tu-berlin.de>
 Gerhard Koenig <gerhard.koenig@tu-berlin.de>
 Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>
@@ -141,6 +178,7 @@ Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>
 
 claus.nagel@tu-berlin.de
 javier.herreruela@tu-berlin.de
+felix-kunde@gmx.de
 lorenz@tu-berlin.de
 gerhard.koenig@tu-berlin.de
 thomas.kolbe@tu-berlin.de
