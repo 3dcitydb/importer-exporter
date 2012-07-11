@@ -31,7 +31,6 @@ package de.tub.citydb.util;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -44,7 +43,6 @@ import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 
 import de.tub.citydb.config.internal.Internal;
-//import de.tub.citydb.config.project.database.Workspace;
 
 public class Util {
 
