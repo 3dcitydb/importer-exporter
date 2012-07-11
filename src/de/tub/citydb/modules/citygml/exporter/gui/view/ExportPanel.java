@@ -44,14 +44,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -67,7 +65,6 @@ import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DatabaseConnectionPool;
@@ -82,7 +79,6 @@ import de.tub.citydb.modules.citygml.common.gui.view.FilterPanel.FilterPanelType
 import de.tub.citydb.modules.citygml.exporter.controller.Exporter;
 import de.tub.citydb.modules.common.event.InterruptEnum;
 import de.tub.citydb.modules.common.event.InterruptEvent;
-import de.tub.citydb.util.Util;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -238,7 +234,7 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 			setSettings();
 
 			ExportFilterConfig filter = config.getProject().getExporter().getFilter();
-			Database db = config.getProject().getDatabase();
+			//Database db = config.getProject().getDatabase();
 
 			// check all input values...
 			if (config.getInternal().getExportFileName().trim().equals("")) {

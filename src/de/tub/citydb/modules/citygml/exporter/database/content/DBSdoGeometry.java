@@ -29,58 +29,6 @@
  */
 package de.tub.citydb.modules.citygml.exporter.database.content;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import oracle.spatial.geometry.JGeometry;
-
-import org.citygml4j.impl.gml.geometry.aggregates.MultiCurveImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiCurvePropertyImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiPointImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiPointPropertyImpl;
-import org.citygml4j.impl.gml.geometry.complexes.GeometricComplexImpl;
-import org.citygml4j.impl.gml.geometry.complexes.GeometricComplexPropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.ControlPointImpl;
-import org.citygml4j.impl.gml.geometry.primitives.CurvePropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.DirectPositionImpl;
-import org.citygml4j.impl.gml.geometry.primitives.DirectPositionListImpl;
-import org.citygml4j.impl.gml.geometry.primitives.ExteriorImpl;
-import org.citygml4j.impl.gml.geometry.primitives.GeometricPositionGroupImpl;
-import org.citygml4j.impl.gml.geometry.primitives.GeometricPrimitivePropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.InteriorImpl;
-import org.citygml4j.impl.gml.geometry.primitives.LineStringImpl;
-import org.citygml4j.impl.gml.geometry.primitives.LineStringSegmentArrayPropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.LineStringSegmentImpl;
-import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
-import org.citygml4j.impl.gml.geometry.primitives.PointImpl;
-import org.citygml4j.impl.gml.geometry.primitives.PointPropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.PolygonImpl;
-import org.citygml4j.impl.gml.geometry.primitives.PolygonPropertyImpl;
-import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
-import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiPoint;
-import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
-import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
-import org.citygml4j.model.gml.geometry.complexes.GeometricComplexProperty;
-import org.citygml4j.model.gml.geometry.primitives.ControlPoint;
-import org.citygml4j.model.gml.geometry.primitives.CurveProperty;
-import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
-import org.citygml4j.model.gml.geometry.primitives.DirectPositionList;
-import org.citygml4j.model.gml.geometry.primitives.Exterior;
-import org.citygml4j.model.gml.geometry.primitives.GeometricPositionGroup;
-import org.citygml4j.model.gml.geometry.primitives.GeometricPrimitiveProperty;
-import org.citygml4j.model.gml.geometry.primitives.Interior;
-import org.citygml4j.model.gml.geometry.primitives.LineString;
-import org.citygml4j.model.gml.geometry.primitives.LineStringSegment;
-import org.citygml4j.model.gml.geometry.primitives.LineStringSegmentArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.LinearRing;
-import org.citygml4j.model.gml.geometry.primitives.Point;
-import org.citygml4j.model.gml.geometry.primitives.PointProperty;
-import org.citygml4j.model.gml.geometry.primitives.Polygon;
-import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
-
-import de.tub.citydb.config.Config;
 
 /*public class DBSdoGeometry implements DBExporter {
 	private String gmlSrsName;

@@ -29,46 +29,6 @@
  */
 package de.tub.citydb.modules.citygml.importer.database.content;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import oracle.spatial.geometry.JGeometry;
-
-import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
-import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
-import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiPoint;
-import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
-import org.citygml4j.model.gml.geometry.complexes.CompositeCurve;
-import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
-import org.citygml4j.model.gml.geometry.primitives.AbstractCurve;
-import org.citygml4j.model.gml.geometry.primitives.AbstractCurveSegment;
-import org.citygml4j.model.gml.geometry.primitives.AbstractGeometricPrimitive;
-import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
-import org.citygml4j.model.gml.geometry.primitives.ControlPoint;
-import org.citygml4j.model.gml.geometry.primitives.Curve;
-import org.citygml4j.model.gml.geometry.primitives.CurveProperty;
-import org.citygml4j.model.gml.geometry.primitives.CurveSegmentArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.GeometricPositionGroup;
-import org.citygml4j.model.gml.geometry.primitives.GeometricPrimitiveProperty;
-import org.citygml4j.model.gml.geometry.primitives.LineString;
-import org.citygml4j.model.gml.geometry.primitives.LineStringSegment;
-import org.citygml4j.model.gml.geometry.primitives.LineStringSegmentArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.LinearRing;
-import org.citygml4j.model.gml.geometry.primitives.OrientableCurve;
-import org.citygml4j.model.gml.geometry.primitives.Point;
-import org.citygml4j.model.gml.geometry.primitives.PointArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.PointProperty;
-import org.citygml4j.model.gml.geometry.primitives.Polygon;
-import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
-
-import de.tub.citydb.config.Config;
-import de.tub.citydb.database.DatabaseConnectionPool;
-import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.Util;
 
 /*public class DBSdoGeometry implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
