@@ -426,9 +426,12 @@ public class Queries {
 //		"FROM CITYOBJECT co " +
 //		"WHERE co.gmlid = ?";
 
+	public static final String GET_ID_FROM_GMLID =
+		"SELECT ID FROM CITYOBJECT WHERE gmlid = ?";
+	
 	public static final String INSERT_GE_ZOFFSET =
 		"INSERT INTO CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) " +
-		"VALUES (nextval('CITYOBJECT_GENERICATTRIB_ID_SEQ'), ?, 1, ?, (SELECT ID FROM CITYOBJECT WHERE gmlid = ?))";
+		"VALUES (nextval('CITYOBJECT_GENERICATTRIB_ID_SEQ'), ?, 1, ?, ?)";
 
 	public static final String TRANSFORM_GEOMETRY_TO_WGS84 =
 		"SELECT ST_Transform(?, 4326)";

@@ -2705,10 +2705,12 @@ public class KmlGenericObject {
 		double zOffset = 0;
 
 		if (config.getProject().getKmlExporter().isCallGElevationService()) { // allowed to query
+			PreparedStatement checkQuery = null;
 			PreparedStatement insertQuery = null;
 //			OracleResultSet rs = null;
 			ResultSet rs = null;
-			try {
+			ResultSet rs2 = null;
+			try{
 				// convert candidate points to WGS84
 				double[] coords = new double[candidates.size()*3];
 				int index = 0;
@@ -2717,7 +2719,7 @@ public class KmlGenericObject {
 					coords[index++] = point3d.y / 100;
 					coords[index++] = point3d.z / 100;
 				}
-//				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, dbSrs.getSrid());
+	//				JGeometry jGeometry = JGeometry.createLinearLineString(coords, 3, dbSrs.getSrid());
 				String geomEWKT = "SRID=" + dbSrs.getSrid() + ";";
 				
 				if (coords.length == 3){
@@ -2731,10 +2733,10 @@ public class KmlGenericObject {
 					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
 					geomEWKT += ")";
 				}
-							
+				
 				Geometry geom = PGgeometry.geomFromString(geomEWKT);
 				Geometry convertedGeom = convertToWGS84(geom);
-//				coords = convertToWGS84(jGeometry).getOrdinatesArray();
+	//				coords = convertToWGS84(jGeometry).getOrdinatesArray();
 				coords = new double[geom.numPoints()*3];
 				
 				for (int i = 0, j = 0; i < convertedGeom.numPoints(); i++, j+=3){
@@ -2743,32 +2745,45 @@ public class KmlGenericObject {
 					coords[j+2] = convertedGeom.getPoint(i).z;
 				}
 
-				Logger.getInstance().info("Getting zOffset from Google's elevation API for " + gmlId + " with " + candidates.size() + " points.");
-				zOffset = elevationServiceHandler.getZOffset(coords);
-
-				// save result in DB for next time
-				String genericAttribName = "GE_LoD" + currentLod + "_zOffset";
-				insertQuery = connection.prepareStatement(Queries.INSERT_GE_ZOFFSET);
-				insertQuery.setString(1, genericAttribName);
-				String strVal = "Auto|" + zOffset + "|" + dateFormatter.format(new Date(System.currentTimeMillis()));
-				insertQuery.setString(2, strVal);
-				insertQuery.setString(3, gmlId);
-//				rs = (OracleResultSet)insertQuery.executeQuery();
-				rs = insertQuery.executeQuery();
-			}
-			catch (Exception e) {
-//				if (e.getMessage().startsWith("ORA-01427")) { // single-row subquery returns more than one row
-				if (e.getMessage().contains("21000")) { // more than one row returned by a subquery used as an expression
+				checkQuery = connection.prepareStatement(Queries.GET_ID_FROM_GMLID);
+				checkQuery.setString(1, gmlId);
+				rs = checkQuery.executeQuery();
+				rs.next();
+				long id = rs.getLong(1);
+				
+				if (rs.next()) {
 					Logger.getInstance().warn("gml:id value " + gmlId + " is used for more than one object in the 3DCityDB; zOffset was not stored.");
+			    }
+				else {
+					Logger.getInstance().info("Getting zOffset from Google's elevation API for " + gmlId + " with " + candidates.size() + " points.");
+					zOffset = elevationServiceHandler.getZOffset(coords);
+					// save result in DB for next time
+					String genericAttribName = "GE_LoD" + currentLod + "_zOffset";
+					insertQuery = connection.prepareStatement(Queries.INSERT_GE_ZOFFSET);
+					insertQuery.setString(1, genericAttribName);
+					String strVal = "Auto|" + zOffset + "|" + dateFormatter.format(new Date(System.currentTimeMillis()));
+					insertQuery.setString(2, strVal);
+					insertQuery.setLong(3, id);
+	//				rs = (OracleResultSet)insertQuery.executeQuery();
+					rs2 = insertQuery.executeQuery();		
 				}
 			}
+			catch (Exception e) {}
+//				if (e.getMessage().startsWith("ORA-01427")) { // single-row subquery returns more than one row
+//				if (e.getMessage().contains("21000")) { // more than one row returned by a subquery used as an expression
+//					
+//				}
+//			}
 			finally {
 				try {
 					if (rs != null) rs.close();
+					if (checkQuery != null) checkQuery.close();
+					if (rs2 != null) rs2.close();
 					if (insertQuery != null) insertQuery.close();
 				}
 				catch (Exception e2) {}
 			}
+		    
 		}
 
 		return zOffset;
@@ -2894,7 +2909,7 @@ public class KmlGenericObject {
 
 //		double[] originalCoords = jGeometry.getOrdinatesArray();
 		double[] originalCoords = new double[(geometry.numPoints()*3)];
-
+	
 		for (int i = 0, j = 0; i < geometry.numPoints(); i++, j+=3){
 			originalCoords[j] = geometry.getPoint(i).x;
 			originalCoords[j+1] = geometry.getPoint(i).y;
