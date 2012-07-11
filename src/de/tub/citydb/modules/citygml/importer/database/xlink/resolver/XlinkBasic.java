@@ -169,6 +169,7 @@ public class XlinkBasic implements DBXlinkResolver {
 		lock.lock();
 		try {
 			psUpdateSurfGeom.executeBatch();
+			batchConn.commit();
 			updateBatchCounter = 0;
 		} finally {
 			lock.unlock();

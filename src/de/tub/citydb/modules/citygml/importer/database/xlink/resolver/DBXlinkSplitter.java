@@ -334,6 +334,15 @@ public class DBXlinkSplitter {
 				rs.close();
 				stmt.close();
 			}
+			
+			// joining the threads is required to avoid
+			// deadlocks in PostgreSQL/PostGIS
+			try {
+				xlinkResolverPool.join();
+				tmpXlinkPool.join();
+			} catch (InterruptedException e) {
+				//
+			}
 
 			// second run: import texture images and world files
 			if (cacheManager.existsTemporaryCacheTable(CacheTableModelEnum.TEXTURE_FILE)) {		
