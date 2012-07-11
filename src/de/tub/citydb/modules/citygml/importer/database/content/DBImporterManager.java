@@ -48,7 +48,6 @@ import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 
 public class DBImporterManager {
 	private final Connection batchConn;
-	private final Connection commitConn;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
 	private final EventDispatcher eventDipatcher;
@@ -61,13 +60,11 @@ public class DBImporterManager {
 	private AffineTransformer affineTransformer;
 
 	public DBImporterManager(Connection batchConn,
-			Connection commitConn,
 			Config config,
 			WorkerPool<DBXlink> tmpXlinkPool,
 			DBGmlIdLookupServerManager lookupServerManager,
 			EventDispatcher eventDipatcher) throws SQLException {
 		this.batchConn = batchConn;
-		this.commitConn = commitConn;
 		this.config = config;
 		this.lookupServerManager = lookupServerManager;
 		this.tmpXlinkPool = tmpXlinkPool;
@@ -92,7 +89,7 @@ public class DBImporterManager {
 				dbImporter = new DBSurfaceGeometry(batchConn, config, this);
 				break;
 			case IMPLICIT_GEOMETRY:
-				dbImporter = new DBImplicitGeometry(batchConn, commitConn, config, this);
+				dbImporter = new DBImplicitGeometry(batchConn, config, this);
 				break;
 			case CITYOBJECT:
 				dbImporter = new DBCityObject(batchConn, config, this);

@@ -42,7 +42,6 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -54,7 +53,6 @@ public class DBImplicitGeometry implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 
 	private final Connection batchConn;
-	private final Connection commitConn;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psImplicitGeometry;
@@ -65,9 +63,8 @@ public class DBImplicitGeometry implements DBImporter {
 	private boolean affineTransformation;
 	private int batchCounter;
 
-	public DBImplicitGeometry(Connection batchConn, Connection commitConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBImplicitGeometry(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.commitConn = commitConn;
 		this.dbImporterManager = dbImporterManager;
 
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
@@ -75,7 +72,7 @@ public class DBImplicitGeometry implements DBImporter {
 	}
 
 	private void init() throws SQLException {
-		psImplicitGeometry = commitConn.prepareStatement("insert into IMPLICIT_GEOMETRY (ID, REFERENCE_TO_LIBRARY) values (?, ?)");
+		psImplicitGeometry = batchConn.prepareStatement("insert into IMPLICIT_GEOMETRY (ID, REFERENCE_TO_LIBRARY) values (?, ?)");
 		psUpdateImplicitGeometry = batchConn.prepareStatement("update IMPLICIT_GEOMETRY set MIME_TYPE=?, RELATIVE_GEOMETRY_ID=? where ID=?");
 		psSelectLibraryObject = batchConn.prepareStatement("select ID from IMPLICIT_GEOMETRY where REFERENCE_TO_LIBRARY=?");
 
@@ -128,8 +125,8 @@ public class DBImplicitGeometry implements DBImporter {
 				rs = psSelectLibraryObject.executeQuery();
 				if (rs.next())
 					implicitGeometryId = rs.getLong(1);
-				
-				updateTable = true;
+				else
+					updateTable = true;
 			} 
 
 			// check relative geometry reference
@@ -140,12 +137,59 @@ public class DBImplicitGeometry implements DBImporter {
 				implicitGeometryId = dbImporterManager.getDBId(DBSequencerEnum.IMPLICIT_GEOMETRY_ID_SEQ);
 				psImplicitGeometry.setLong(1, implicitGeometryId);
 				psImplicitGeometry.setString(2, libraryURI);
-				psImplicitGeometry.execute();
+				psImplicitGeometry.addBatch();
+				++batchCounter;
 
 				if (gmlId != null)
 					dbImporterManager.putGmlId(gmlId, implicitGeometryId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
 				dbImporterManager.updateFeatureCounter(CityGMLClass.IMPLICIT_GEOMETRY);
+			}
+
+			if (updateTable) {
+				psUpdateImplicitGeometry.setLong(3, implicitGeometryId);
+
+				if (libraryURI != null) {
+					// mimeType
+					if (implicitGeometry.isSetMimeType())
+						psUpdateImplicitGeometry.setString(1, implicitGeometry.getMimeType());
+					else
+						psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
+
+					// propagate the link to the library object
+					dbImporterManager.propagateXlink(new DBXlinkLibraryObject(
+							implicitGeometryId,
+							libraryURI
+							));
+				} else
+					psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
+
+				if (relativeGeometry != null) {
+					// if affine transformation is activated we apply the user-defined affine
+					// transformation to the transformation matrix associated with the implicit geometry.
+					// thus, we do not need to apply it to the coordinate values
+					if (affineTransformation)
+						surfaceGeometryImporter.setApplyAffineTransformation(false);
+
+					long surfaceGeometryId = surfaceGeometryImporter.insert(relativeGeometry, parentId);
+					if (surfaceGeometryId != 0)
+						psUpdateImplicitGeometry.setLong(2, surfaceGeometryId);
+					else
+						psUpdateImplicitGeometry.setNull(2, 0);
+
+					// re-activate affine transformation on surface geometry writer if necessary
+					if (affineTransformation)
+						surfaceGeometryImporter.setApplyAffineTransformation(true);
+				} else
+					psUpdateImplicitGeometry.setNull(2, 0);
+
+				psUpdateImplicitGeometry.addBatch();
+				++batchCounter;
+			}
+
+			if (batchCounter > 0) {
+				dbImporterManager.executeBatch(DBImporterEnum.IMPLICIT_GEOMETRY);
+				batchConn.commit();
 			}
 
 		} finally {
@@ -162,63 +206,21 @@ public class DBImplicitGeometry implements DBImporter {
 			lock.unlock();
 		}
 
-		// ok, the rest can be handled concurrently and as batch update...
-		if (updateTable) {
-			psUpdateImplicitGeometry.setLong(3, implicitGeometryId);
-
-			if (libraryURI != null) {
-				// mimeType
-				if (implicitGeometry.isSetMimeType())
-					psUpdateImplicitGeometry.setString(1, implicitGeometry.getMimeType());
-				else
-					psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
-
-				// propagate the link to the library object
-				dbImporterManager.propagateXlink(new DBXlinkLibraryObject(
-						implicitGeometryId,
-						libraryURI
-				));
-			} else
-				psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
-
-			if (relativeGeometry != null) {
-				// if affine transformation is activated we apply the user-defined affine
-				// transformation to the transformation matrix associated with the implicit geometry.
-				// thus, we do not need to apply it to the coordinate values
-				if (affineTransformation)
-					surfaceGeometryImporter.setApplyAffineTransformation(false);
-				
-				long surfaceGeometryId = surfaceGeometryImporter.insert(relativeGeometry, parentId);
-				if (surfaceGeometryId != 0)
-					psUpdateImplicitGeometry.setLong(2, surfaceGeometryId);
-				else
-					psUpdateImplicitGeometry.setNull(2, 0);
-				
-				// re-activate affine transformation on surface geometry writer if necessary
-				if (affineTransformation)
-					surfaceGeometryImporter.setApplyAffineTransformation(true);
-			} else
-				psUpdateImplicitGeometry.setNull(2, 0);
-
-			psUpdateImplicitGeometry.addBatch();
-			if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
-				dbImporterManager.executeBatch(DBImporterEnum.IMPLICIT_GEOMETRY);
-		}
-
-		if (isXLink && gmlId != null) {
+		if (isXLink) {
 			dbImporterManager.propagateXlink(new DBXlinkBasic(
 					implicitGeometryId, 
 					TableEnum.IMPLICIT_GEOMETRY, 
 					gmlId, 
 					TableEnum.SURFACE_GEOMETRY)
-			);
+					);
 		}
-		
+
 		return implicitGeometryId;
 	}
 
 	@Override
 	public void executeBatch() throws SQLException {
+		psImplicitGeometry.executeBatch();
 		psUpdateImplicitGeometry.executeBatch();
 		batchCounter = 0;
 	}

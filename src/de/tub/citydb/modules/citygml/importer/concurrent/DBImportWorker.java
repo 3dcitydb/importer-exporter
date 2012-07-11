@@ -101,7 +101,6 @@ public class DBImportWorker implements Worker<CityGML> {
 	private final EventDispatcher eventDispatcher;
 	private final ImportFilter importFilter;
 	private Connection batchConn;
-	private Connection commitConn;
 	private DBImporterManager dbImporterManager;
 	private int updateCounter = 0;
 	private int commitAfter = 20;
@@ -131,9 +130,6 @@ public class DBImportWorker implements Worker<CityGML> {
 		batchConn = dbConnectionPool.getConnection();
 		batchConn.setAutoCommit(false);
 
-		commitConn = dbConnectionPool.getConnection();
-		commitConn.setAutoCommit(true);
-
 		// try and change workspace for both connections if needed
 		Database database = config.getProject().getDatabase();
 //		Workspace workspace = database.getWorkspaces().getImportWorkspace();
@@ -147,7 +143,6 @@ public class DBImportWorker implements Worker<CityGML> {
 
 		dbImporterManager = new DBImporterManager(
 				batchConn,
-				commitConn,
 				config,
 				tmpXlinkPool,
 				lookupServerManager,
@@ -241,16 +236,6 @@ public class DBImportWorker implements Worker<CityGML> {
 				}
 
 				batchConn = null;
-			}
-
-			if (commitConn != null) {
-				try {
-					commitConn.close();
-				} catch (SQLException sqlEx) {
-					//
-				}
-
-				commitConn = null;
 			}
 		}
 	}
