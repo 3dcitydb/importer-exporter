@@ -88,7 +88,10 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			gmlIdCodespace = "null";
 
 		psSelectTmpSurfGeom = heapTable.getConnection().prepareStatement("select ID from " + heapTable.getTableName() + " where PARENT_ID=?");
-		psSelectSurfGeom = batchConn.prepareStatement("select sg.*, LEVEL from SURFACE_GEOMETRY sg start with sg.ID=? connect by prior sg.ID=sg.PARENT_ID");
+		psSelectSurfGeom = batchConn.prepareStatement("WITH RECURSIVE geometry (id, gmlid, gmlid_codespace, parent_id, root_id, is_solid, is_composite, is_triangulated, is_xlink, is_reverse, geometry, level) " +
+              " AS (SELECT sg.*, 1 AS level FROM surface_geometry sg WHERE sg.id=? UNION ALL " +
+              " SELECT sg.*, g.level + 1 AS level FROM surface_geometry sg, geometry g WHERE sg.parent_id=g.id)" + 
+              " SELECT * FROM geometry ORDER BY level asc");
 		psUpdateSurfGeom = batchConn.prepareStatement("update SURFACE_GEOMETRY set IS_XLINK=1 where ID=?");
 
 		psParentElem = batchConn.prepareStatement("insert into SURFACE_GEOMETRY (ID, GMLID, GMLID_CODESPACE, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY) values "
