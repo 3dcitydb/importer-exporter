@@ -41,6 +41,8 @@ import java.util.Iterator;
 //import oracle.spatial.geometry.JGeometry;
 //import oracle.sql.STRUCT;
 
+import oracle.jdbc.OracleResultSet;
+
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.postgis.Geometry;
 import org.postgis.PGgeometry;
@@ -150,93 +152,37 @@ public class KmlSplitter {
 			
 			BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
 //			OracleResultSet rs = null;
-//			PreparedStatement spatialQuery = null;
 			ResultSet rs = null;
-			Statement spatialQuery = null;
+			PreparedStatement spatialQuery = null;
+			String lineGeom = null;
+			String polyGeom = null;
+						
 			try {
-				spatialQuery = connection.createStatement();
+				spatialQuery = connection.prepareStatement(Queries.GET_GMLIDS);
+
 				int srid = dbSrs.getSrid();
 
-				/*
-				spatialQuery.setInt(1, srid);
-				// coordinates for overlapbdydisjoint
-				spatialQuery.setDouble(2, tile.getLowerLeftCorner().getX());
-				spatialQuery.setDouble(3, tile.getUpperRightCorner().getY());
-				spatialQuery.setDouble(4, tile.getLowerLeftCorner().getX());
-				spatialQuery.setDouble(5, tile.getLowerLeftCorner().getY());
-				spatialQuery.setDouble(6, tile.getUpperRightCorner().getX());
-				spatialQuery.setDouble(7, tile.getLowerLeftCorner().getY());
-
-				spatialQuery.setInt(8, srid);
-				// coordinates for inside+coveredby
-				spatialQuery.setDouble(9, tile.getLowerLeftCorner().getX());
-				spatialQuery.setDouble(10, tile.getLowerLeftCorner().getY());
-				spatialQuery.setDouble(11, tile.getUpperRightCorner().getX());
-				spatialQuery.setDouble(12, tile.getUpperRightCorner().getY());
-
-				spatialQuery.setInt(13, srid);
-				// coordinates for equals
-				spatialQuery.setDouble(14, tile.getLowerLeftCorner().getX());
-				spatialQuery.setDouble(15, tile.getLowerLeftCorner().getY());
-				spatialQuery.setDouble(16, tile.getUpperRightCorner().getX());
-				spatialQuery.setDouble(17, tile.getUpperRightCorner().getY());
-
-				rs = (OracleResultSet)spatialQuery.executeQuery();*/
-
-				String queryString = "SELECT co.gmlid, co.class_id " +
-	    		"FROM CITYOBJECT co " +
-	    		"WHERE " +
-				  "ST_RELATE(co.envelope, 'SRID=" + srid + ";LINESTRING(" +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-				  tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + 
-				  ")', 'T*T***T**') = 'TRUE' " +														// overlap
-	    		"UNION ALL " +
-	        	"SELECT co.gmlid, co.class_id " +
-	    		"FROM CITYOBJECT co " +
-	    		"WHERE " +
-				  "(ST_RELATE(co.envelope, 'SRID=" + srid + ";POLYGON((" +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-				  tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-				  tile.getUpperRightCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + 
-				  "))', 'T*F**F***') = 'TRUE' OR " + 													// inside
-				  "ST_RELATE(co.envelope, 'SRID=" + srid + ";POLYGON((" +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-				  tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-				  tile.getUpperRightCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + 
-				  "))', '*TF**F***') = 'TRUE' OR " +													// coveredby
-				  "ST_RELATE(co.envelope, 'SRID=" + srid + ";POLYGON((" +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-				  tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-				  tile.getUpperRightCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + 
-				  "))', '**FT*F***') = 'TRUE' OR " +													// coveredby	
-				  "ST_RELATE(co.envelope, 'SRID=" + srid + ";POLYGON((" +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-				  tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-				  tile.getUpperRightCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + 
-				  "))', '**F*TF***') = 'TRUE') " +														// coveredby
-	    		"UNION ALL " +
-	        	"SELECT co.gmlid, co.class_id " +
-	    		"FROM CITYOBJECT co " +
-	    		"WHERE " +
-				  "ST_RELATE(co.envelope, 'SRID=" + srid + ";POLYGON((" +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-				  tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-				  tile.getUpperRightCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-				  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + 
-				  "))', 'T*F**FFF*') = 'TRUE' "	+														// equal
-	    		"ORDER BY 2"; // ORDER BY co.class_id
-					
-				rs = spatialQuery.executeQuery(queryString);
+				lineGeom = "SRID=" + srid + ";LINESTRING(" +
+						tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
+						tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
+						tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + ")";
+				
+				polyGeom = "SRID=" + srid + ";POLYGON((" +
+						tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
+						tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
+						tile.getUpperRightCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
+						tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
+						tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "))";
+				
+				spatialQuery.setString(1, lineGeom);
+				spatialQuery.setString(2, polyGeom);
+				spatialQuery.setString(3, polyGeom);
+				spatialQuery.setString(4, polyGeom);
+				spatialQuery.setString(5, polyGeom);
+				spatialQuery.setString(6, polyGeom);
+				
+				rs = spatialQuery.executeQuery();
+				
 /*
 				String absolutePath = config.getInternal().getExportFileName().trim();
 				String filename = absolutePath.substring(absolutePath.lastIndexOf(File.separator) + 1,
@@ -330,123 +276,44 @@ public class KmlSplitter {
 //				OracleResultSet rs = null;
 				ResultSet rs = null;
 				PreparedStatement query = null;
-				Statement spatialQuery = null;
+				String lineGeom = null;
+				String polyGeom = null;
+				
 				try {
 					if (filterConfig.isSetComplexFilter() &&
 						filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
 
-//						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS_IN_BBOX);
-						spatialQuery = connection.createStatement();
+						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS_IN_BBOX);
 						BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
 						int srid = dbSrs.getSrid();
 						
-						/*
-						// group's gmlId
-						query.setString(1, gmlId);
-
-						query.setInt(2, srid);
-						// coordinates for overlapbdydisjoint
-						query.setDouble(3, tile.getLowerLeftCorner().getX());
-						query.setDouble(4, tile.getUpperRightCorner().getY());
-						query.setDouble(5, tile.getLowerLeftCorner().getX());
-						query.setDouble(6, tile.getLowerLeftCorner().getY());
-						query.setDouble(7, tile.getUpperRightCorner().getX());
-						query.setDouble(8, tile.getLowerLeftCorner().getY());
-
-						// group's gmlId
-						query.setString(9, gmlId);
-
-						query.setInt(10, srid);
-						// coordinates for inside+coveredby
-						query.setDouble(11, tile.getLowerLeftCorner().getX());
-						query.setDouble(12, tile.getLowerLeftCorner().getY());
-						query.setDouble(13, tile.getUpperRightCorner().getX());
-						query.setDouble(14, tile.getUpperRightCorner().getY());
-
-						// group's gmlId
-						query.setString(15, gmlId);
-
-						query.setInt(16, srid);
-						// coordinates for equals
-						query.setDouble(17, tile.getLowerLeftCorner().getX());
-						query.setDouble(18, tile.getLowerLeftCorner().getY());
-						query.setDouble(19, tile.getUpperRightCorner().getX());
-						query.setDouble(20, tile.getUpperRightCorner().getY());*/
+						lineGeom = "SRID=" + srid + ";LINESTRING(" +
+								tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
+								tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
+								tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + ")'";
 						
-						String queryString = "SELECT co.gmlid, co.class_id " + 
-						"FROM cityobject co " +
-						"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-						                "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
-						                "WHERE co.gmlid = ? " + 
-						                "AND cog.ID = co.ID " +
-						                "AND g2co.cityobjectgroup_id = cog.ID) " +
-						"AND (ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;LINESTRING(' +" +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-						  tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() +
-						")', 'T*T***T**') = 'TRUE' " +															// overlap
-						"UNION ALL " +
-						"SELECT co.gmlid, co.class_id " + 
-						"FROM cityobject co " +
-						"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-						                "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
-						                "WHERE co.gmlid = ? " + 
-						                "AND cog.ID = co.ID " +
-						                "AND g2co.cityobjectgroup_id = cog.ID) " +
-						"AND (ST_RELATE(co.envelope, 'SRID=" + srid + ";POLYGON((" +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-						  tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-						  tile.getUpperRightCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + 
-						  "))', 'T*F**F***') = 'TRUE' OR " + 													// inside
-						  "ST_RELATE(co.envelope, 'SRID=" + srid + ";POLYGON((" +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-						  tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-						  tile.getUpperRightCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + 
-						  "))', '*TF**F***') = 'TRUE' OR " +													// coveredby
-						  "ST_RELATE(co.envelope, 'SRID=" + srid + ";POLYGON((" +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-						  tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-						  tile.getUpperRightCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + 
-						  "))', '**FT*F***') = 'TRUE' OR " +													// coveredby	
-						  "ST_RELATE(co.envelope, 'SRID=" + srid + ";POLYGON((" +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-						  tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-						  tile.getUpperRightCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + 
-						  "))', '**F*TF***') = 'TRUE') " +														// coveredby	
-						"UNION ALL " +
-						"SELECT co.gmlid, co.class_id " + 
-						"FROM cityobject co " +
-						"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-						                "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
-						                "WHERE co.gmlid = ? " + 
-						                "AND cog.ID = co.ID " +
-						                "AND g2co.cityobjectgroup_id = cog.ID) " +
-						"AND " +
-						"ST_RELATE(co.envelope, 'SRID=" + srid + ";POLYGON((" +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-						  tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
-						  tile.getUpperRightCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
-						  tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + 
-						  "))', 'T*F**FFF*') = 'TRUE' "	+														// equal
-						"ORDER BY 2"; // ORDER BY co.class_id
-
-						rs = spatialQuery.executeQuery(queryString);
+						polyGeom = "SRID=" + srid + ";POLYGON((" +
+								tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
+								tile.getLowerLeftCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
+								tile.getUpperRightCorner().getX() + " " + tile.getUpperRightCorner().getY() + "," +
+								tile.getUpperRightCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "," +
+								tile.getLowerLeftCorner().getX() + " " + tile.getLowerLeftCorner().getY() + "))";
+						
+						query.setString(1, lineGeom);
+						query.setString(2, polyGeom);
+						query.setString(3, polyGeom);
+						query.setString(4, polyGeom);
+						query.setString(5, polyGeom);
+						query.setString(6, polyGeom);
+						
+						rs = query.executeQuery();
 					}
 					else {
 						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS);
 						query.setString(1, gmlId);
-						rs = query.executeQuery();
 					}
 //					rs = (OracleResultSet)query.executeQuery();
+					rs = query.executeQuery();
 					
 					while (rs.next() && shouldRun) {
 						addWorkToQueue(rs.getString("gmlId"), // recursion for recursive groups

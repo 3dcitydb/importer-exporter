@@ -546,28 +546,25 @@ public class Queries {
 		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
 					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
 		"ORDER BY 2"; // ORDER BY co.class_id*/
-
-    
-    /* PostGIS-Version, but cannot be used as an PreparedStatement
-     
+  
        public static final String GET_GMLIDS =
     	"SELECT co.gmlid, co.class_id " +
     	"FROM CITYOBJECT co " +
     	"WHERE " +
-    	  "ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;LINESTRING(? ? ?,? ? ?)'), 'T*T***T**') ='TRUE' " +					// overlap
+		  "ST_Relate(co.envelope, ST_GeomFromEWKT(?), 'T*T***T**') ='TRUE' " +		// overlap
+		  "UNION ALL " +
+        "SELECT co.gmlid, co.class_id " +
+    	"FROM CITYOBJECT co " +
+    	"WHERE " +
+    	"(ST_Relate(co.envelope, ST_GeomFromEWKT(?), 'T*F**F***') ='TRUE' OR " + 	// inside and coveredby
+  		 "ST_Relate(co.envelope, ST_GeomFromEWKT(?), '*TF**F***') ='TRUE' OR " + 	// coveredby
+  		 "ST_Relate(co.envelope, ST_GeomFromEWKT(?), '**FT*F***') ='TRUE' OR " + 	// coveredby
+  		 "ST_Relate(co.envelope, ST_GeomFromEWKT(?), '**F*TF***') ='TRUE') " +	 	// coveredby
     	"UNION ALL " +
         "SELECT co.gmlid, co.class_id " +
     	"FROM CITYOBJECT co " +
     	"WHERE " +
-    	  "(ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), 'T*F**F***') ='TRUE' OR " +			// inside and coveredby
-    	  		"ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), '*TF**F***') ='TRUE' OR " +	// coveredby
-    	  		"ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), '**FT*F***') ='TRUE' OR " +	// coveredby
-    	  		"ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), '**F*TF***') ='TRUE') " +		// coveredby
-    	"UNION ALL " +
-        "SELECT co.gmlid, co.class_id " +
-    	"FROM CITYOBJECT co " +
-    	"WHERE " +
-    	  "ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), 'T*F**FFF*') ='TRUE' " +			// equal
+    	  "ST_Relate(co.envelope, ST_GeomFromEWKT(?), 'T*F**FFF*') ='TRUE' " +	  	// equal
     	"ORDER BY 2"; // ORDER BY co.class_id*/
     
     public static final String GET_OBJECTCLASS =
@@ -652,8 +649,6 @@ public class Queries {
 		                "AND cog.ID = co.ID " +
 		                "AND g2co.cityobjectgroup_id = cog.ID) " +
    		"ORDER BY co.class_id";
-
-    /* PostGIS-Version, but cannot be used as an PreparedStatement
 	
 	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX = 
 		"SELECT co.gmlid, co.class_id " + 
@@ -663,8 +658,8 @@ public class Queries {
 		                "WHERE co.gmlid = ? " + 
 		                "AND cog.ID = co.ID " +
 		                "AND g2co.cityobjectgroup_id = cog.ID) " +
-		"AND ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;LINESTRING(? ? ?,? ? ?)'), 'T*T***T**') ='TRUE' " +			// overlap
-//		"(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
+		"AND ST_Relate(co.envelope, ST_GeomFromEWKT(?), 'T*T***T**') ='TRUE' " +		// overlap
+//		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
 //					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
 		"UNION ALL " +
 		"SELECT co.gmlid, co.class_id " + 
@@ -674,10 +669,10 @@ public class Queries {
 		                "WHERE co.gmlid = ? " + 
 		                "AND cog.ID = co.ID " +
 		                "AND g2co.cityobjectgroup_id = cog.ID) " +
-		"AND (ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), 'T*F**F***') ='TRUE' OR " +	// inside and coveredby
-    		"ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), '*TF**F***') ='TRUE' OR " +	// coveredby
-    		"ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), '**FT*F***') ='TRUE' OR " +	// coveredby
-    		"ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), '**F*TF***') ='TRUE') " +		// coveredby
+    	"AND (ST_Relate(co.envelope, ST_GeomFromEWKT(?), 'T*F**F***') ='TRUE' OR " + 	// inside and coveredby
+ 		     "ST_Relate(co.envelope, ST_GeomFromEWKT(?), '*TF**F***') ='TRUE' OR " + 	// coveredby
+ 		     "ST_Relate(co.envelope, ST_GeomFromEWKT(?), '**FT*F***') ='TRUE' OR " + 	// coveredby
+ 		     "ST_Relate(co.envelope, ST_GeomFromEWKT(?), '**F*TF***') ='TRUE') " +	 	// coveredby
 //		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
 //					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby') ='TRUE') " +
 		"UNION ALL " +
@@ -688,7 +683,7 @@ public class Queries {
 		                "WHERE co.gmlid = ? " + 
 		                "AND cog.ID = co.ID " +
 		                "AND g2co.cityobjectgroup_id = cog.ID) " +
-		"AND ST_Relate(co.envelope, ST_GeomFromEWKT('SRID=?;POLYGON((? ?,? ?,? ?,? ?,? ?)), 'T*F**FFF*') ='TRUE' " +		// equal
+        "AND ST_Relate(co.envelope, ST_GeomFromEWKT(?), 'T*F**FFF*') ='TRUE' " +	  	// equal
 //		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
 //					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
 		"ORDER BY 2"; // ORDER BY co.class_id*/

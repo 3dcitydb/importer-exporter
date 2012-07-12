@@ -614,8 +614,9 @@ public class DBUtil {
 
 	public static BoundingBox transformBBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException {
 		BoundingBox result = new BoundingBox(bbox);
-		Statement query = null;
+		PreparedStatement psQuery = null;
 		ResultSet rs = null;
+		String boxGeom = null;
 		Connection conn = null;
 
 		try {
@@ -623,15 +624,20 @@ public class DBUtil {
 			int targetSrid = get2DSrid(targetSrs);
 			
 			conn = dbConnectionPool.getConnection();
-			query = conn.createStatement();
-			rs = query.executeQuery("select ST_TRANSFORM(ST_GeomFromText('POLYGON((" + 
-			bbox.getLowerLeftCorner().getX() + " " + bbox.getLowerLeftCorner().getY() + "," +
-			bbox.getUpperRightCorner().getX() + " " + bbox.getLowerLeftCorner().getY() + "," +
-			bbox.getUpperRightCorner().getX() + " " + bbox.getUpperRightCorner().getY() + "," +
-			bbox.getLowerLeftCorner().getX() + " " + bbox.getUpperRightCorner().getY() + "," +
-			bbox.getLowerLeftCorner().getX() + " " + bbox.getLowerLeftCorner().getY() +
-			"))'," + sourceSrid + ")," + targetSrid + ")");
 
+			conn = dbConnectionPool.getConnection();
+			psQuery = conn.prepareStatement("select ST_Transform(ST_GeomFromEWKT(?), " + targetSrid + ")");
+
+			boxGeom = "SRID=" + sourceSrid + ";POLYGON((" +
+					bbox.getLowerLeftCorner().getX() + " " + bbox.getLowerLeftCorner().getY() + "," +
+					bbox.getLowerLeftCorner().getX() + " " + bbox.getUpperRightCorner().getY() + "," +
+					bbox.getUpperRightCorner().getX() + " " + bbox.getUpperRightCorner().getY() + "," +
+					bbox.getUpperRightCorner().getX() + " " + bbox.getLowerLeftCorner().getY() + "," +
+					bbox.getLowerLeftCorner().getX() + " " + bbox.getLowerLeftCorner().getY() + "))";
+			
+			psQuery.setString(1, boxGeom);
+
+			rs = psQuery.executeQuery();
 			if (rs.next()) {
 				PGgeometry pgGeom = (PGgeometry)rs.getObject(1);
 				if (!rs.wasNull() && pgGeom != null) {
@@ -655,14 +661,14 @@ public class DBUtil {
 				rs = null;
 			}
 
-			if (query != null) {
+			if (psQuery != null) {
 				try {
-					query.close();
+					psQuery.close();
 				} catch (SQLException sqlEx) {
 					throw sqlEx;
 				}
 
-				query = null;
+				psQuery = null;
 			}
 
 			if (conn != null) {
