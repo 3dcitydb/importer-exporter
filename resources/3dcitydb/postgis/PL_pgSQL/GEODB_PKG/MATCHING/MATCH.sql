@@ -22,7 +22,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description      | Author  | Conversion
--- 1.0.0     2012-05-30   PostGIS version    CNag      FKun
+-- 1.0.0     2012-07-12   PostGIS version    CNag      FKun
 --
 
 -------------------------------------------------------------------------------
@@ -361,6 +361,7 @@ BEGIN
   
   -- clean environment
   EXECUTE 'TRUNCATE TABLE geodb_pkg.match_overlap_all';
+  
   log := geodb_pkg.idx_drop_index(match_overlap_all_spx);
 
   EXECUTE 'INSERT INTO geodb_pkg.match_overlap_all 
@@ -400,6 +401,7 @@ BEGIN
   
   -- TRUNCATE TABLE
   EXECUTE 'TRUNCATE TABLE geodb_pkg.match_overlap_relevant';
+  
   log := geodb_pkg.idx_drop_index(match_result_spx);
 
   -- retrieve all match tupels with more than a user-specified percentage of area coverage
@@ -461,6 +463,7 @@ DECLARE
 BEGIN
   EXECUTE 'SELECT srid FROM database_srs' INTO srid;
   EXECUTE 'SELECT ST_Union(geometry) FROM '||table_name||'' INTO aggr_mbr;
+  
   PERFORM ST_SetSRID(aggr_mbr, srid);
 
   RETURN aggr_mbr;

@@ -23,7 +23,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description                     | Author | Conversion
--- 1.1       2012-05-30   PostGIS version                            FKun
+-- 1.1       2012-07-12   PostGIS version                            FKun
 -- 1.1       2011-02-13   bugfixes, e.g. appearance mover   CNag
 -- 1.0.0     2008-09-10   release version                   ASta
 --
@@ -105,7 +105,7 @@ BEGIN
   merge_geom_geometry_id_idx := geodb_pkg.idx_construct_normal('merge_geom_geometry_id_idx', 'merge_collect_geom', 'geometry_id');
   
   EXECUTE 'TRUNCATE TABLE merge_collect_geom';
-    
+  
   log := geodb_pkg.idx_drop_index(merge_geom_building_id_idx);
   log := geodb_pkg.idx_drop_index(merge_geom_geometry_id_idx);
 
@@ -321,6 +321,7 @@ BEGIN
   merge_cont_id_idx := geodb_pkg.idx_construct_normal('merge_cont_id_idx', 'geodb_pkg.merge_container_ids', 'container_id');
   
   EXECUTE 'TRUNCATE TABLE geodb_pkg.merge_container_ids';
+  
   log := geodb_pkg.idx_drop_index(merge_cont_building_id_idx);
   log := geodb_pkg.idx_drop_index(merge_cont_id_idx); 
 
@@ -391,14 +392,11 @@ DECLARE
   app_id INTEGER;
   seq_val NUMERIC;
   building_id INTEGER;
-  not_version_enabled BOOLEAN;
 	
   building_cur CURSOR FOR
     SELECT mcg.building_id, count(mcg.geometry_id) AS cnt_hierarchies FROM merge_collect_geom mcg 
       GROUP BY mcg.building_id;   
 BEGIN
-  not_version_enabled := geodb_pkg.util_versioning_table('APPEAR_TO_SURFACE_DATA') != 'ON';
-
   -- iterate through all building matches
   FOR building_rec IN building_cur LOOP
     DECLARE
@@ -435,25 +433,9 @@ BEGIN
         END IF;
 	   
         -- move existing surface data into the newly created appearance            
-        IF not_version_enabled THEN
-          -- if appear_to_surface_data is not version-enabled
-          -- a simple UPDATE does the job
-          EXECUTE 'UPDATE appear_to_surface_data SET appearance_id=$1
-            WHERE appearance_id=$2 AND surface_data_id=$3'
-              USING seq_val, app_rec.id, app_rec.sd_id;
-        ELSE
-          -- if appear_to_surface_data is version-enabled
-          -- updating is not possible since we are not allowed to change
-          -- primary keys. so remove existing entry... 
-          EXECUTE 'DELETE FROM appear_to_surface_data
-            WHERE appearance_id=$1 AND surface_data_id=$2'
-              USING app_rec.id, app_rec.sd_id;
-  
-          -- ...and re-create it
-          EXECUTE 'INSERT INTO appear_to_surface_data 
-            (appearance_id, surface_data_id) VALUES ($1, $2)'
-               USING seq_val, app_rec.sd_id;
-        END IF;
+        EXECUTE 'UPDATE appear_to_surface_data SET appearance_id=$1
+          WHERE appearance_id=$2 AND surface_data_id=$3'
+            USING seq_val, app_rec.id, app_rec.sd_id;
       END LOOP;
 			
       -- step 2: if any surface data of the appearance references the root element of the geometry
