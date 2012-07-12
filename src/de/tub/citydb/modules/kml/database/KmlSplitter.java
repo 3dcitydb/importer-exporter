@@ -88,12 +88,12 @@ public class KmlSplitter {
 
 		this.filterConfig = config.getProject().getKmlExporter().getFilter();
 		CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.clear();
-		if (filterConfig.getComplexFilter().getFeatureClass().isSetBuilding()) {
+//		if (filterConfig.getComplexFilter().getFeatureClass().isSetBuilding()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.BUILDING);
-		}
-		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityObjectGroup()) {
-			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
-		}
+//		}
+//		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityObjectGroup()) {
+//			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
+//		}
 			
 		connection = dbConnectionPool.getConnection();
 		connection.setAutoCommit(false);
