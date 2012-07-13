@@ -289,7 +289,6 @@ public class DBSurfaceGeometry implements DBExporter {
 			// try and interpret Geometry
 			Polygon polygon = new PolygonImpl();
 			boolean forceRingIds = false;
-			int dimensions = geomNode.geometry.getDimension();
 
 			if (geomNode.gmlId != null) {
 				polygon.setId(geomNode.gmlId);
@@ -301,18 +300,19 @@ public class DBSurfaceGeometry implements DBExporter {
 			for (int i = 0; i < polyGeom.numGeoms(); i++){
 				List<Double> values = new ArrayList<Double>();
 				
-				if (dimensions == 2)
-					for (int j = 0; j < polyGeom.getSubGeometry(i).numPoints(); j++){
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).x);
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).y);
-					}
-				
-				if (dimensions == 3)
+				if (!geomNode.isReverse) {
 					for (int j = 0; j < polyGeom.getSubGeometry(i).numPoints(); j++){
 						values.add(polyGeom.getSubGeometry(i).getPoint(j).x);
 						values.add(polyGeom.getSubGeometry(i).getPoint(j).y);
 						values.add(polyGeom.getSubGeometry(i).getPoint(j).z);
 					}
+				} else {
+					for (int j = polyGeom.getSubGeometry(i).numPoints() - 1; j >= 0; j--){
+						values.add(polyGeom.getSubGeometry(i).getPoint(j).x);
+						values.add(polyGeom.getSubGeometry(i).getPoint(j).y);
+						values.add(polyGeom.getSubGeometry(i).getPoint(j).z);
+					}
+				}
 				
 				//isExterior
 				if (i == 0) {
