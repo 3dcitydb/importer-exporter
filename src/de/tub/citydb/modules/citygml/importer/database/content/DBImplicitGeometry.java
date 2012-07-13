@@ -206,7 +206,7 @@ public class DBImplicitGeometry implements DBImporter {
 			lock.unlock();
 		}
 
-		if (isXLink) {
+		if (isXLink && !dbImporterManager.lookupAndPutGmlId("#xlink#" + gmlId, 1, CityGMLClass.IMPLICIT_GEOMETRY)) {
 			dbImporterManager.propagateXlink(new DBXlinkBasic(
 					implicitGeometryId, 
 					TableEnum.IMPLICIT_GEOMETRY, 

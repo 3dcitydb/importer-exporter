@@ -207,6 +207,15 @@ public class DBImporterManager {
 		putGmlId(gmlId, id, -1, false, null, type);
 	}
 	
+	public boolean lookupAndPutGmlId(String gmlId, long id, CityGMLClass type) {
+		GmlIdLookupServer lookupServer = lookupServerManager.getLookupServer(type);
+
+		if (lookupServer != null)
+			return lookupServer.lookupAndPut(gmlId, id, type);
+		else
+			return false;
+	}
+	
 	public long getDBId(String gmlId, CityGMLClass type) {
 		GmlIdLookupServer lookupServer = lookupServerManager.getLookupServer(type);
 
