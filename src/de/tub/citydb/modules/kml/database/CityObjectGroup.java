@@ -199,7 +199,6 @@ public class CityObjectGroup extends KmlGenericObject{
 				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
 
 				Geometry groundSurface = convertToWGS84(pgBuildingGeometry.getGeometry());
-				int dim = groundSurface.getDimension();
 				
 				switch (groundSurface.getType()) {
 				case POLYGON:
@@ -209,25 +208,24 @@ public class CityObjectGroup extends KmlGenericObject{
 						BoundaryType boundary = kmlFactory.createBoundaryType();
 						boundary.setLinearRing(linearRing);
 						
-						double [] ordinatesArray = new double[polyGeom.getRing(ring).numPoints() * 3];
+						double [] ordinatesArray = new double[polyGeom.getRing(ring).numPoints() * 2];
 						
-						for (int j=0, k=0; j < polyGeom.getRing(ring).numPoints(); j++, k+=3){
+						for (int j=polyGeom.getRing(ring).numPoints()-1, k=0; j >= 0; j--, k+=2){
 							ordinatesArray[k] = polyGeom.getRing(ring).getPoint(j).x;
 							ordinatesArray[k+1] = polyGeom.getRing(ring).getPoint(j).y;
-							ordinatesArray[k+2] = polyGeom.getRing(ring).getPoint(j).z;
 						}
 						
 						// the first ring usually is the outer ring in a PostGIS-Polygon
 						// e.g. POLYGON((outerBoundary),(innerBoundary),(innerBoundary))
 						if (ring == 0){
 							polygon.setOuterBoundaryIs(boundary);
-							for (int j = 0; j < ordinatesArray.length; j+=dim) {
+							for (int j = 0; j < ordinatesArray.length; j+=2) {
 								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
 							}
 						}
 						else {
 							polygon.getInnerBoundaryIs().add(boundary);
-							for (int j = ordinatesArray.length - dim; j >= 0; j-=dim) {
+							for (int j = ordinatesArray.length - 2; j >= 0; j-=2) {
 								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
 							}	
 						}
