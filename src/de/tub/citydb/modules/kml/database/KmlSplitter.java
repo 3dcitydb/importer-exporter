@@ -33,15 +33,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashSet;
-import java.util.Iterator;
-
-//import oracle.jdbc.OracleResultSet;
-//import oracle.spatial.geometry.JGeometry;
-//import oracle.sql.STRUCT;
-
-import oracle.jdbc.OracleResultSet;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.postgis.Geometry;
@@ -51,7 +43,6 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.gui.BoundingBox;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.database.DatabaseConnectionPool;
@@ -60,7 +51,6 @@ import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.util.Util;
-import de.tub.citydb.util.database.DBUtil;
 
 public class KmlSplitter {
 
