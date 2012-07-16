@@ -32,30 +32,32 @@ package de.tub.citydb.modules.citygml.exporter.database.content;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 public class DBSplittingResult {
-	private long primaryKey;
-	private CityGMLClass cityObjectType;
-	private boolean checkIfAlreadyExported;
+	private final long primaryKey;
+	private final CityGMLClass cityObjectType;
+	private final String gmlId;
+	
+	private boolean checkIfAlreadyExported = false;
 
 	public DBSplittingResult(long primaryKey, CityGMLClass cityObjectType) {
+		this(null, primaryKey, cityObjectType);
+	}
+	
+	public DBSplittingResult(String gmlId, long primaryKey, CityGMLClass cityObjectType) {
+		this.gmlId = gmlId;
 		this.primaryKey = primaryKey;
 		this.cityObjectType = cityObjectType;
-		checkIfAlreadyExported = false;
+	}
+
+	public String getGmlId() {
+		return gmlId;
 	}
 
 	public long getPrimaryKey() {
 		return primaryKey;
 	}
 
-	public void setPrimaryKey(long primaryKey) {
-		this.primaryKey = primaryKey;
-	}
-
 	public CityGMLClass getCityObjectType() {
 		return cityObjectType;
-	}
-
-	public void setCityObjectType(CityGMLClass cityObjectType) {
-		this.cityObjectType = cityObjectType;
 	}
 
 	public boolean isCheckIfAlreadyExported() {

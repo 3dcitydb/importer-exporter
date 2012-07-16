@@ -223,7 +223,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 				boolean success = false;
 
 				if (work.isCheckIfAlreadyExported())
-					if (dbExporterManager.getGmlId(work.getPrimaryKey(), work.getCityObjectType()) != null)
+					if (dbExporterManager.lookupAndPutGmlId(work.getGmlId(), work.getPrimaryKey(), work.getCityObjectType()))
 						return;						
 
 				switch (work.getCityObjectType()) {
