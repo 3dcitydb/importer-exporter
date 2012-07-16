@@ -14,8 +14,7 @@
 --              for more details.
 -------------------------------------------------------------------------------
 -- About:
--- Creates utility methods for creating/droping spatial/normal indexes 
--- on versioned/unversioned tables.
+-- Creates utility methods for creating/droping spatial/normal indexes.
 -- All functions are part of the geodb_pkg.schema and INDEX-"Package" 
 -- They start with the prefix "idx_" to guarantee a better overview 
 -- in the PGAdminIII-Tool.
@@ -24,7 +23,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description      | Author | Conversion
--- 1.0.0     2012-03-09   release version    CNag	  FKun
+-- 1.0.0     2012-07-16   PostGIS version    CNag	  FKun
 --
 
 /*****************************************************************
@@ -123,7 +122,7 @@ INSERT INTO geodb_pkg.index_table VALUES (6, geodb_pkg.idx_construct_normal('sur
 * 
 * @param idx index to retrieve status from
 * @return VARCHAR string represntation of status, may include
-*                  'DROPPED', 'VALID', 'FAILED', 'INVALID'
+*                  'DROPPED', 'VALID', 'INVALID', 'FAILED'
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_index_status(idx geodb_pkg.INDEX_OBJ) RETURNS VARCHAR AS $$
 DECLARE
@@ -153,12 +152,12 @@ $$
 LANGUAGE plpgsql;
   
 /*****************************************************************
-* index_status - There is no column_name in the pg_stat_user_indexes-view!
+* index_status
 * 
 * @param table_name table_name of index to retrieve status from
 * @param column_name column_name of index to retrieve status from
-* @return VARCHAR string represntation of status, may include
-*                  'DROPPED', 'VALID', 'FAILED', 'INVALID'
+* @return VARCHAR string representation of status, may include
+*                  'DROPPED', 'VALID', 'INVALID', 'FAILED'
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_index_status(table_name VARCHAR, column_name VARCHAR) RETURNS VARCHAR AS $$
 DECLARE
@@ -191,8 +190,8 @@ LANGUAGE plpgsql;
 * create_index
 * 
 * @param idx index to create
-* @param is_versioned TRUE IF database table is version-enabled
-* @return VARCHAR sql error code, 0 for no errors
+* @param params additional parameters for the index to be created
+* @return VARCHAR sql error code and message, 0 for no errors
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_create_index(idx geodb_pkg.INDEX_OBJ, params VARCHAR DEFAULT '') RETURNS VARCHAR AS $$
 DECLARE
@@ -209,7 +208,7 @@ BEGIN
                 create_ddl := 'CREATE INDEX ' || idx.index_name || ' ON ' || idx.table_name || '(' || idx.attribute_name || ')';
             END IF;
 
-            IF params != '' THEN
+            IF params <> '' THEN
                 create_ddl := create_ddl || ' ' || params;
             END IF;
 
@@ -217,7 +216,7 @@ BEGIN
         		
         EXCEPTION
             WHEN OTHERS THEN
-                    RETURN SQLSTATE || ' - ' || SQLERRM;
+                RETURN SQLSTATE || ' - ' || SQLERRM;
         END;
     END IF;
     
@@ -231,7 +230,7 @@ LANGUAGE plpgsql;
 * 
 * @param idx index to drop
 * @param is_versioned TRUE IF database table is version-enabled
-* @return VARCHAR sql error code, 0 for no errors
+* @return VARCHAR sql error code and message, 0 for no errors
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_drop_index(idx geodb_pkg.INDEX_OBJ) RETURNS VARCHAR AS $$
 DECLARE
@@ -243,7 +242,7 @@ BEGIN
     
         EXCEPTION
             WHEN OTHERS THEN
-                    RETURN SQLSTATE || ' - ' || SQLERRM;
+                RETURN SQLSTATE || ' - ' || SQLERRM;
         END;
     END IF;
     
@@ -257,13 +256,13 @@ LANGUAGE plpgsql;
 * private convience method for invoking create_index on indexes 
 * of same index type
 * 
-* @param type type of index, e.g. SPATIAL or NORMAL
+* @param type type of index, e.g. 1 for spatial, 0 for normal
 * @return ARRAY array of log message strings
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_create_indexes(type INTEGER) RETURNS text[] AS $$
 DECLARE
     log text[] := '{}';
-    sql_error_msg TEXT;
+    sql_error_msg VARCHAR;
     rec RECORD;
 BEGIN
     FOR rec IN select * from geodb_pkg.index_table LOOP
@@ -283,13 +282,13 @@ LANGUAGE plpgsql;
 * private convience method for invoking drop_index on indexes 
 * of same index type
 * 
-* @param type type of index, e.g. SPATIAL or NORMAL
+* @param type type of index, e.g. 1 for spatial, 0 for normal
 * @return ARRAY array of log message strings
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_drop_indexes(type INTEGER) RETURNS text[] AS $$
 DECLARE
     log text[] := '{}';
-    sql_error_msg TEXT;
+    sql_error_msg VARCHAR;
     rec RECORD;
 BEGIN
     FOR rec IN select * from geodb_pkg.index_table LOOP

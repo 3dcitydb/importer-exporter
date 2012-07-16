@@ -24,7 +24,7 @@
 --
 -- Version | Date       | Description      | Author | Conversion 
 -- 1.0.0     2008-09-10   release version    CNag
--- 1.1.0     2012-02-29   update to 2.0.6    CNag     FKun
+-- 1.1.0     2012-07-16   PostGIS version    CNag     FKun
 --
 
 /*****************************************************************
@@ -58,7 +58,6 @@ LANGUAGE plpgsql;
 *
 * @param srid database srid
 * @param srs database srs name
-* @param versioning database versioning
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.util_db_info(OUT srid DATABASE_SRS.SRID%TYPE, OUT srs DATABASE_SRS.GML_SRS_NAME%TYPE) RETURNS SETOF record AS $$
     SELECT srid, gml_srs_name FROM database_srs;
@@ -68,6 +67,7 @@ LANGUAGE sql;
 /******************************************************************
 * db_metadata
 *
+* @RETURN TABLE with columns SRID, GML_SRS_NAME, COORD_REF_SYS_NAME, COORD_REF_SYS_KIND
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.util_db_metadata() 
 RETURNS TABLE(srid INTEGER, gml_srs_name VARCHAR(1000), coord_ref_sys_name VARCHAR(2048), coord_ref_sys_kind VARCHAR(2048)) AS $$
@@ -85,7 +85,7 @@ LANGUAGE plpgsql;
 * error_msg
 *
 * @param err_code PostgreSQL error code, e.g. '06404'
-* @RETURN VARCHAR corresponding PostgreSQL error message                 
+* @RETURN TEXT corresponding PostgreSQL error message                 
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.util_error_msg(err_code VARCHAR) RETURNS TEXT AS $$
 BEGIN
@@ -180,6 +180,8 @@ LANGUAGE plpgsql;
 * changes the database-SRID, if wrong SRID was used for CREATE_DB
 * it should only be executed on an empty database to avoid any errors
 *
+* @param db_srid the SRID of the coordinate system to be further used in the database
+* @param db_gml_srs_name the GML_SRS_NAME of the coordinate system to be further used in the database
 *******************************************************************/
 
 CREATE OR REPLACE FUNCTION geodb_pkg.util_change_db_srid (db_srid INTEGER, db_gml_srs_name VARCHAR) RETURNS SETOF void AS $$
