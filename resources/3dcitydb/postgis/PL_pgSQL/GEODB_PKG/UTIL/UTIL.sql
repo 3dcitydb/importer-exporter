@@ -87,11 +87,10 @@ LANGUAGE plpgsql;
 * @param err_code PostgreSQL error code, e.g. '06404'
 * @RETURN VARCHAR corresponding PostgreSQL error message                 
 ******************************************************************/
-CREATE OR REPLACE FUNCTION geodb_pkg.util_error_msg(err_code VARCHAR) RETURNS VARCHAR AS $$
+CREATE OR REPLACE FUNCTION geodb_pkg.util_error_msg(err_code VARCHAR) RETURNS TEXT AS $$
 BEGIN
     BEGIN
         RAISE EXCEPTION USING ERRCODE = err_code;
-        RETURN err_code;
     EXCEPTION
         WHEN OTHERS THEN
             RETURN SQLERRM;

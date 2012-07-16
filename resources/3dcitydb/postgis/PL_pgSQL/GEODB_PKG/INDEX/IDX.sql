@@ -217,8 +217,7 @@ BEGIN
         		
         EXCEPTION
             WHEN OTHERS THEN
-                RAISE INFO 'Failed to create index';
-                RETURN SQLSTATE;
+                    RETURN SQLSTATE || ' - ' || SQLERRM;
         END;
     END IF;
     
@@ -244,8 +243,7 @@ BEGIN
     
         EXCEPTION
             WHEN OTHERS THEN
-                RAISE INFO 'Failed to drop index';
-                RETURN SQLSTATE;
+                    RETURN SQLSTATE || ' - ' || SQLERRM;
         END;
     END IF;
     
@@ -265,13 +263,13 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_create_indexes(type INTEGER) RETURNS text[] AS $$
 DECLARE
     log text[] := '{}';
-    sql_error_code VARCHAR(20);
+    sql_error_msg TEXT;
     rec RECORD;
 BEGIN
     FOR rec IN select * from geodb_pkg.index_table LOOP
         IF (rec.idx_obj).type = type THEN
-            sql_error_code := geodb_pkg.idx_create_index(rec.idx_obj);
-            log := array_append(log, geodb_pkg.idx_index_status(rec.idx_obj) || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name || ':' || sql_error_code);
+            sql_error_msg := geodb_pkg.idx_create_index(rec.idx_obj);
+            log := array_append(log, geodb_pkg.idx_index_status(rec.idx_obj) || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name || ':' || sql_error_msg);
         END IF;
     END LOOP;   
 
@@ -291,13 +289,13 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_drop_indexes(type INTEGER) RETURNS text[] AS $$
 DECLARE
     log text[] := '{}';
-    sql_error_code VARCHAR(20);
-	rec RECORD;
+    sql_error_msg TEXT;
+    rec RECORD;
 BEGIN
     FOR rec IN select * from geodb_pkg.index_table LOOP
         IF (rec.idx_obj).type = type THEN
-            sql_error_code := geodb_pkg.idx_drop_index(rec.idx_obj);
-            log := array_append(log, geodb_pkg.idx_index_status(rec.idx_obj) || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name || ':' || sql_error_code);
+            sql_error_msg := geodb_pkg.idx_drop_index(rec.idx_obj);
+            log := array_append(log, geodb_pkg.idx_index_status(rec.idx_obj) || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name || ':' || sql_error_msg);
         END IF;
     END LOOP;
 

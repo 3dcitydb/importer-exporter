@@ -29,7 +29,6 @@
  */
 package de.tub.citydb.util.database;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,11 +84,11 @@ public class IndexStatusInfo {
 					obj.column = parts[3];
 
 					if (parts.length > 4)
-						try {
-							obj.errorMessage = DBUtil.errorMessage(parts[4]);
-						} catch (SQLException e) {
-							obj.errorMessage = "PostgreSQL Error-Code: " + parts[4];
-						}
+//						try {
+//							obj.errorMessage = DBUtil.errorMessage(parts[4]);
+//						} catch (SQLException e) {
+							obj.errorMessage = parts[4];
+//						}
 					else
 						obj.errorMessage = "";
 					

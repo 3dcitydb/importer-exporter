@@ -560,7 +560,7 @@ public class DBUtil {
 		return getIndexStatus(IndexType.NORMAL);
 	}
 
-	public static String errorMessage(String errorCode) throws SQLException {
+/*	public static String errorMessage(String errorCode) throws SQLException {
 		String errorMessage = null;
 		Connection conn = null;
 
@@ -596,7 +596,7 @@ public class DBUtil {
 		}
 
 		return errorMessage;
-	}
+	}*/
 
 	public static void cancelOperation() {	
 		cancelled = true;
