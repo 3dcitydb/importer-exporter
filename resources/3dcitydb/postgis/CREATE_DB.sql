@@ -1,14 +1,14 @@
 -- CREATE_DB.sql
 --
 -- Authors:     Prof. Dr. Thomas H. Kolbe <kolbe@igg.tu-berlin.de>
---              Gerhard König <gerhard.koenig@tu-berlin.de>
+--              Gerhard Koenig <gerhard.koenig@tu-berlin.de>
 --              Claus Nagel <nagel@igg.tu-berlin.de>
 --              Alexandra Stadler <stroh@igg.tu-berlin.de>
 --
 -- Conversion:	Felix Kunde <felix-kunde@gmx.de>
 --
 -- Copyright:   (c) 2007-2012, Institute for Geodesy and Geoinformation Science,
---                             Technische Universität Berlin, Germany
+--                             Technische Universitaet Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 2.1.

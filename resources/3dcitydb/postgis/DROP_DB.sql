@@ -1,7 +1,7 @@
 -- DROP_DB.sql
 --
 -- Authors:     Prof. Dr. Thomas H. Kolbe <kolbe@igg.tu-berlin.de>
---              Gerhard König <gerhard.koenig@tu-berlin.de>
+--              Gerhard Koenig <gerhard.koenig@tu-berlin.de>
 --              Claus Nagel <nagel@igg.tu-berlin.de>
 --              Alexandra Stadler <stadler@igg.tu-berlin.de>
 --
