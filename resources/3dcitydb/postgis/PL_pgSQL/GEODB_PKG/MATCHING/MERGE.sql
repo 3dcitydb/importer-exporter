@@ -156,7 +156,7 @@ BEGIN
             AND b.building_root_id = m.id1
             AND r.lod4_geometry_id IS NOT NULL';
 
-    -- building furniture (in rooms) --bei lod r in f geändert
+    -- building furniture (in rooms) --if lod r is changed to f
     EXECUTE 'INSERT INTO merge_collect_geom
       SELECT b.building_root_id, f.lod4_geometry_id, f.id
         FROM geodb_pkg.match_overlap_relevant m, room r, building b, building_furniture f
@@ -256,7 +256,7 @@ BEGIN
         (SELECT b.id FROM geodb_pkg.match_overlap_relevant m, building b
            WHERE b.building_root_id = m.id1)';
 
-    -- building furniture (in rooms) --bei lod r in f geändert
+    -- building furniture (in rooms) --if lod r is changed to f
     EXECUTE 'UPDATE building_furniture SET lod4_geometry_id = null
       WHERE room_id IN
         (SELECT r.id FROM geodb_pkg.match_overlap_relevant m, room r, building b
@@ -591,7 +591,7 @@ BEGIN
            AND b.building_root_id = m.id1)'
              USING lineage;
 
-  -- building furniture (in rooms) --bei lod r in f geändert
+  -- building furniture (in rooms) --if lod r is changed to f
   EXECUTE 'UPDATE cityobject SET lineage = $1
     WHERE id IN 
       (SELECT f.id FROM building_furniture f, geodb_pkg.match_overlap_relevant m, room r, building b
