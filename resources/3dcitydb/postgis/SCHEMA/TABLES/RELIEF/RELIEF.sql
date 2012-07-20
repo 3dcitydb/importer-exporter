@@ -11,12 +11,12 @@
 --              Felix Kunde <felix-kunde@gmx.de>
 --
 -- Copyright:   (c) 2004-2006, Institute for Cartography and Geoinformation,
---                             Universität Bonn, Germany
+--                             Universitaet Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --              (c) 2005-2006, lat/lon GmbH, Germany
 --                             http://www.lat-lon.de
 --   			(c) 2012       Institute for Geodesy and Geoinformation Science,
---                             Technische Universität Berlin, Germany
+--                             Technische Universitaet Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 2.1.

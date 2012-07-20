@@ -5,7 +5,7 @@
 -- Conversion:  Felix Kunde <felix-kunde@gmx.de>
 --
 -- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
---                             Technische Universität Berlin, Germany
+--                             Technische Universitaet Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 3.0.

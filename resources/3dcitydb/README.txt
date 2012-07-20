@@ -89,7 +89,7 @@ to call the SQL script "CREATE_DB.sql" which can be found in the top-level SQL
 folder of the distribution package. This script will start the setup procedure 
 and invoke further scripts in the background. 
 
-It command can look like this:
+A corresponding command can look like this:
 psql -h your_host_address -p 5432 -U your_username -d name_of_database 
 -f "CREATE_DB.sql"
 
@@ -97,36 +97,54 @@ Note:
 AN EMPTY POSTGIS-DATABASE HAS TO BE CREATED FIRST! THE SPECIFIED DATABASE
 MUST ALREADY EXIST ON THE POSTGRESQL DBMS SERVER!
 
-It also possible to fasten the setup by editing the batchfile CREATE_DB.bat in
-a way that it suits to the system environment. 
+A more comfortable way is offered with the shell scripts CREATE_DB.bat for the 
+Microsoft Windows family or CREATE_DB.sh for UNIX/Linux and derivates as well
+as MacOS X. They have to be edited first in order to call the corresponding 
+CREATE_DB.sql SQL file
 
-Settings for batchfiles:
+Settings for the shell scripts are:
 
-set PGPORT  =  5432 (this is the default port)
-set PGHOST  =  your_host_address ('localhost' on local machine)
-set PGUSER  =  your_username ('postgres' is the default superuser)
-set CITYDB  =  name of the already existing empty PostGIS-database  
-set PGBIN   =  path_to_psql.exe (e.g. 'C:\PostgreSQL\9.1\bin' or 
-			   'C:\pgAdmin III\1.14')
+    PGPORT  =  5432 (this is the default port)
+    PGHOST  =  your_host_address ('localhost' for locally installed servers)
+    PGUSER  =  your_username ('postgres' is the default superuser)
+    CITYDB  =  name of the already existing empty PostGIS-database  
+    PGBIN   =  path_to_psql (e.g. 'C:\PostgreSQL\9.1\bin' on Windows or 
+			   '/usr/bin' on UNIX/Linux/MacOS X)
+			   
+On Windows machine, double-clicking the shell script is sufficient to run
+the process. On UNIX/Linux/MacOS X, you can run the CREATE_DB.sh script from
+within a shell environment. Please open your favorite shell and change to the
+"3dcitydb/postgis" subfolder within the installation directory of the 
+Importer/Exporter. Enter the following command to make the CREATE_DB.sh script
+executable for the owner of the file:
+   
+    chmod u+x CREATE_DB.sh
+     
+Afterwards, simply run the CREATE_DB.sh script by typing:
+   
+    ./CREATE_DB.sh
 
-When executed the user is asked for his PostgreSQL login-password.
-
-The setup procedure requires two mandatory user inputs:
+When executed the user might be asked for his PostgreSQL login password first.
+The setup procedure requires two more mandatory user inputs:
 1) Spatial Reference Identifier for newly created geometry objects (SRID),
 2) corresponding GML conformant URN encoding for gml:srsName attributes
 
 e.g. for Berlin these parameters are:
-Please enter a valid SRID (e.g. 4326 for WGS84): 3068
-Please enter the corresponding SRSName to be used in GML exports (e.g. 
-urn:ogc:def:crs:EPSG:4326 for WGS84): urn:ogc:def:crs,crs:EPSG:6.12:3068,
-crs:EPSG:6.12:5783
+SRID   : 3068
+SRSName: urn:ogc:def:crs,crs:EPSG::3068,crs:EPSG::5783
 
-Values for WGS84 are suggested in brackets BUT these are nor default-values!
-If no numeric value is set for the SRID-variable spatial columns can't be 
-created. To change the reference system afterwards the function 
-util_change_db_srid found in the geodb_pkg.schema can be used. To avoid any
-errors, loss of data or long waiting times this function should be executed
-on an empty database. 
+Make sure to only provide the numeric identifier of the spatial reference 
+system as SRID (e.g., the EPSG code). 
+
+When prompted for input, the values provided in parentheses are only examples
+but no default values! Thus, if you leave the SRID value blank then spatial 
+columns cannot be associated with a valid spatial reference system and hence
+will not be created. 
+
+To change the reference system after having set up an instance of the 3D City 
+Database, the SQL script util_change_db_srid found in the geodb_pkg.schema 
+can be used. To avoid any errors, loss of data or long waiting times this 
+function should be executed on an empty database. 
 
 
 6. Database deletion
@@ -134,10 +152,14 @@ on an empty database.
 
 To drop an existing database instance of the 3D City Database call the SQL script
 "DROP_DB.sql" which can be found in the top-level SQL folder of the 
-distribution package. The batchfile DROP_DB.bat can also be used in the same
-manner like CREATE_DB.bat. Note that DROP_DB only clears the primarily created
-PostGIS-database from the relational schema of the 3D City Database. The database
-itself is not dropped.
+distribution package. 
+
+Similar to the setup procedure, the convenience scripts DROP_DB.bat and DROP_DB.sh
+can be used instead. Please follow the above steps to enter your database details
+in these scripts and to run them on your machine.
+
+Note that DROP_DB.sqp only removes the relational schema of the 3D City Database as
+well as all PL/pgSQL functions and utilities. The database itself is not dropped.
 
 
 7. Documentation
