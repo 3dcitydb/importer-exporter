@@ -250,7 +250,7 @@ public class Queries {
 	private static final String BUILDING_COLLADA_GET_DATA_0 =
 		"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, " +
 				"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
-				"sd.tex_image_uri, sd.tex_image, tp.texture_coordinates, a.theme " +
+				"sd.tex_image_uri, sd.id as surface_data_id, tp.texture_coordinates, a.theme " +
 		"FROM SURFACE_GEOMETRY sg " +
 			"LEFT JOIN TEXTUREPARAM tp ON tp.surface_geometry_id = sg.id " + 
 			"LEFT JOIN SURFACE_DATA sd ON sd.id = tp.surface_data_id " +
@@ -448,6 +448,12 @@ public class Queries {
 		"SELECT ST_Transform(co.envelope, 94329) " +
 		"FROM CITYOBJECT co " +
 		"WHERE co.gmlid = ?";
+
+	public static final String GET_TEXIMAGE_FROM_SURFACE_DATA_ID =
+		"SELECT sd.tex_image " +
+		"FROM SURFACE_DATA sd " +
+		"WHERE " +
+			"sd.id = ?";
 
 
 	private static final HashMap<Integer, String> singleBuildingQueriesLod4 = new HashMap<Integer, String>();

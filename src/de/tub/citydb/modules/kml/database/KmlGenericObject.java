@@ -2148,26 +2148,37 @@ public class KmlGenericObject {
 						else {
 							texImageUri = rs2.getString("tex_image_uri");
 //							texImage = (OrdImage)rs2.getORAData("tex_image", OrdImage.getORADataFactory());
-							texImage = rs2.getBinaryStream("tex_image");
+//							texImage = rs2.getBinaryStream("tex_image");
 							String texCoords = rs2.getString("texture_coordinates");
 	
 							if (texImageUri != null && texImageUri.trim().length() != 0
 									&&  texCoords != null && texCoords.trim().length() != 0
-									&&	texImage != null) {
-	
-								texImageCounter++;
-								if (texImageCounter > 20) {
-									eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
-									texImageCounter = 0;
-								}
+									/* && texImage != null */) {
 	
 								int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
 								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
 	
 								addTexImageUri(surfaceId, texImageUri);
 //								if (getTexOrdImage(texImageUri) == null) { // not already marked as wrapping texture
-								
-								BufferedImage bufferedImage = null;
+								if (getTexImage(texImageUri) == null) { // not already read in
+									PreparedStatement psQuery3 = null;
+									ResultSet rs3 = null;
+									try {
+										psQuery3 = connection.prepareStatement(Queries.GET_TEXIMAGE_FROM_SURFACE_DATA_ID);
+										psQuery3.setLong(1, rs2.getLong("surface_data_id"));
+										rs3 = psQuery3.executeQuery();
+										while (rs3.next()) {
+											texImage = rs3.getBinaryStream("tex_image");
+										}
+									}
+									finally {
+										if (rs3 != null)
+											try { rs3.close(); } catch (SQLException e) {}
+										if (psQuery3 != null)
+											try { psQuery3.close(); } catch (SQLException e) {}
+									}
+
+									BufferedImage bufferedImage = null;
 									try {
 //										bufferedImage = ImageIO.read(texImage.getDataInStream());
 										bufferedImage = ImageIO.read(texImage);
@@ -2179,7 +2190,13 @@ public class KmlGenericObject {
 //									else {
 //										addTexOrdImage(texImageUri, texImage);
 //									}
-//								}
+
+									texImageCounter++;
+									if (texImageCounter > 20) {
+										eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
+										texImageCounter = 0;
+									}
+								}
 	
 								texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
 								texCoordsTokenized = new StringTokenizer(texCoords, " ");
@@ -2236,6 +2253,7 @@ public class KmlGenericObject {
 								if (texCoordsTokenized != null) {
 									double s = Double.parseDouble(texCoordsTokenized.nextToken());
 									double t = Double.parseDouble(texCoordsTokenized.nextToken());
+/*
 									if (s > 1.1 || s < -0.1 || t < -0.1 || t > 1.1) { // texture wrapping -- it conflicts with texture atlas
 										removeTexImage(texImageUri);
 										BufferedImage bufferedImage = null;
@@ -2245,6 +2263,7 @@ public class KmlGenericObject {
 										addTexImage(texImageUri, bufferedImage);
 //										addTexOrdImage(texImageUri, texImage);
 									}
+*/
 									texCoordsForThisSurface = new TexCoords(s, t);
 								}
 								setVertexInfoForXYZ(surfaceId,
@@ -2271,8 +2290,8 @@ public class KmlGenericObject {
 				finally {
 					if (rs2 != null)
 						try { rs2.close(); } catch (SQLException e) {}
-						if (psQuery != null)
-							try { psQuery.close(); } catch (SQLException e) {}
+					if (psQuery != null)
+						try { psQuery.close(); } catch (SQLException e) {}
 				}
 			}
 		}
