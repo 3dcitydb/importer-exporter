@@ -34,14 +34,17 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+//import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Blob;
+//import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+//import java.sql.ResultSet;
 import java.sql.SQLException;
+
+//import org.postgresql.largeobject.LargeObject;
+//import org.postgresql.largeobject.LargeObjectManager;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
@@ -53,6 +56,7 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 	private final Connection externalFileConn;
 	private final Config config;
 
+	private PreparedStatement psInsert;
 	private PreparedStatement psPrepare;
 	PreparedStatement psSelect;
 	private String localPath;
@@ -67,8 +71,10 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 	private void init() throws SQLException {
 		localPath = config.getInternal().getImportPath();
 
-		psPrepare = externalFileConn.prepareStatement("update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=empty_blob() where ID=?");
-		psSelect = externalFileConn.prepareStatement("select LIBRARY_OBJECT from IMPLICIT_GEOMETRY where ID=? for update");
+		// for large object (OID) -- did not work correctly
+//		psPrepare = externalFileConn.prepareStatement("update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=lo_create(-1) where ID=?");
+//		psSelect = externalFileConn.prepareStatement("select LIBRARY_OBJECT from IMPLICIT_GEOMETRY where ID=? for update");
+		psInsert = externalFileConn.prepareStatement("update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=? where ID=?");
 	}
 
 	public boolean insert(DBXlinkLibraryObject xlink) throws SQLException {
@@ -77,14 +83,13 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 		URL objectURL = null;
 		
 		try {
-			// first step: prepare BLOB
+/*			// first step: prepare BLOB
 			psPrepare.setLong(1, xlink.getId());
 			psPrepare.executeUpdate();
 
 			// second step: get prepared BLOB to fill it with contents
 			psSelect.setLong(1, xlink.getId());
-			ResultSet rs = (ResultSet)psSelect.executeQuery();
-//			OracleResultSet rs = (OracleResultSet)psSelect.executeQuery();
+			ResultSet rs = psSelect.executeQuery();
 			if (!rs.next()) {
 				LOG.error("Database error while importing library object: " + objectFileName);
 
@@ -93,11 +98,10 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 				return false;
 			}
 
-//			BLOB blob = rs.getBLOB(1);
-			Blob blob = (Blob)rs.getBlob(1);
-			rs.close();
-
-			// third step: try and upload library object data
+			Blob blob = rs.getBlob(1);
+			blob.truncate(1);
+*/		
+			// next step: try and upload library object data
 			try {
 				objectURL = new URL(objectFileName);
 				objectFileName = objectURL.toString();
@@ -117,7 +121,7 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 			} else {
 				in = new FileInputStream(objectFileName);
 			}
-
+		
 			if (in == null) {
 				LOG.error("Database error while importing library object: " + objectFileName);
 
@@ -125,20 +129,41 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 				return false;
 			}
 
-			OutputStream out = blob.setBinaryStream(1L);
+/*			// insert large object (OID) data type into database
 
-//			int size = blob.getBufferSize();
-			int size = (int)blob.length();
-			byte[] buffer = new byte[size];
-			int length = -1;
-
-			while ((length = in.read(buffer)) != -1)
-				out.write(buffer, 0, length);
+			// All LargeObject API calls must be within a transaction block
+			externalFileConn.setAutoCommit(false);
 		
-			in.close();
-			blob.free();
-//			blob.close();
-			out.close();
+			// Get the Large Object Manager to perform operations with
+			LargeObjectManager lobj = ((org.postgresql.PGConnection)externalFileConn).getLargeObjectAPI();
+
+			// Create a new large object
+			long oid = lobj.createLO(LargeObjectManager.READ | LargeObjectManager.WRITE);
+
+			// Open the large object for writing
+			LargeObject obj = lobj.open(oid, LargeObjectManager.WRITE);
+
+			// Copy the data from the file to the large object
+			byte buf[] = new byte[2048];
+			int s, tl = 0;
+
+			while ((s = in.read(buf, 0, 2048)) > 0)
+			{
+			obj.write(buf, 0, s);
+			tl = tl + s;
+			}
+
+			// Close the large object
+			obj.close();
+*/
+		
+			// insert bytea data type into database
+//			psInsert.setLong(1, oid); // for large object
+			psInsert.setBinaryStream(1, in, in.available());
+			psInsert.setLong(2, xlink.getId());
+			psInsert.execute();
+			
+			in.close();			
 			externalFileConn.commit();
 			return true;
 			
@@ -157,7 +182,7 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 
 			externalFileConn.rollback();
 			return false;
-		} 
+		}
 	}
 
 	@Override
