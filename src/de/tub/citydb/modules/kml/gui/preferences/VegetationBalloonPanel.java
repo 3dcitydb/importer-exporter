@@ -57,7 +57,7 @@ import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class CityObjectGroupBalloonPanel extends AbstractPreferencesComponent {
+public class VegetationBalloonPanel extends AbstractPreferencesComponent {
 
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
@@ -72,9 +72,9 @@ public class CityObjectGroupBalloonPanel extends AbstractPreferencesComponent {
 	private JCheckBox contentInSeparateFile = new JCheckBox();
 	private JLabel warningLabel = new JLabel();
 
-	private Balloon internCityObjectGroupBalloon = new Balloon();
+	private Balloon internVegetationBalloon = new Balloon();
 
-	public CityObjectGroupBalloonPanel(Config config) {
+	public VegetationBalloonPanel(Config config) {
 		super(config);
 		initGui();
 	}
@@ -82,7 +82,7 @@ public class CityObjectGroupBalloonPanel extends AbstractPreferencesComponent {
 	@Override
 	public boolean isModified() {
 		setInternBalloonValues();
-		if (!config.getProject().getKmlExporter().getCityObjectGroupBalloon().equals(internCityObjectGroupBalloon)) return true;
+		if (!config.getProject().getKmlExporter().getVegetationBalloon().equals(internVegetationBalloon)) return true;
 		return false;
 	}
 
@@ -171,11 +171,11 @@ public class CityObjectGroupBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		Balloon configCityObjectGroupBalloon = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
-		copyBalloonContents(configCityObjectGroupBalloon, internCityObjectGroupBalloon);
+		Balloon configVegetationBalloon = config.getProject().getKmlExporter().getVegetationBalloon();
+		copyBalloonContents(configVegetationBalloon, internVegetationBalloon);
 
-		includeDescription.setSelected(configCityObjectGroupBalloon.isIncludeDescription());
-		switch (configCityObjectGroupBalloon.getBalloonContentMode()) {
+		includeDescription.setSelected(configVegetationBalloon.isIncludeDescription());
+		switch (configVegetationBalloon.getBalloonContentMode()) {
 			case GEN_ATTRIB:
 				genAttribRadioButton.setSelected(true);
 				break;
@@ -186,37 +186,37 @@ public class CityObjectGroupBalloonPanel extends AbstractPreferencesComponent {
 				genAttribAndFileRadioButton.setSelected(true);
 				break;
 		}
-		browseText.setText(configCityObjectGroupBalloon.getBalloonContentTemplateFile());
-		contentInSeparateFile.setSelected(configCityObjectGroupBalloon.isBalloonContentInSeparateFile());
+		browseText.setText(configVegetationBalloon.getBalloonContentTemplateFile());
+		contentInSeparateFile.setSelected(configVegetationBalloon.isBalloonContentInSeparateFile());
 		setEnabledComponents();
 	}
 
 	private void setInternBalloonValues() {
-		internCityObjectGroupBalloon.setIncludeDescription(includeDescription.isSelected());
+		internVegetationBalloon.setIncludeDescription(includeDescription.isSelected());
 		if (genAttribRadioButton.isSelected()) {
-			internCityObjectGroupBalloon.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB);
+			internVegetationBalloon.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB);
 		}
 		else if (fileRadioButton.isSelected()) {
-			internCityObjectGroupBalloon.setBalloonContentMode(BalloonContentMode.FILE);
+			internVegetationBalloon.setBalloonContentMode(BalloonContentMode.FILE);
 		}
 		else if (genAttribAndFileRadioButton.isSelected()) {
-			internCityObjectGroupBalloon.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB_AND_FILE);
+			internVegetationBalloon.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB_AND_FILE);
 		}
-		internCityObjectGroupBalloon.getBalloonContentPath().setLastUsedPath(browseText.getText().trim());
-		internCityObjectGroupBalloon.setBalloonContentTemplateFile(browseText.getText().trim());
-		internCityObjectGroupBalloon.setBalloonContentInSeparateFile(contentInSeparateFile.isSelected());
+		internVegetationBalloon.getBalloonContentPath().setLastUsedPath(browseText.getText().trim());
+		internVegetationBalloon.setBalloonContentTemplateFile(browseText.getText().trim());
+		internVegetationBalloon.setBalloonContentInSeparateFile(contentInSeparateFile.isSelected());
 	}
 
 	@Override
 	public void setSettings() {
 		setInternBalloonValues();
-		Balloon configCityObjectGroupBalloon = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
-		copyBalloonContents(internCityObjectGroupBalloon, configCityObjectGroupBalloon);
+		Balloon configVegetationBalloon = config.getProject().getKmlExporter().getVegetationBalloon();
+		copyBalloonContents(internVegetationBalloon, configVegetationBalloon);
 	}
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.cityObjectGroupBalloon");
+		return Internal.I18N.getString("pref.tree.kmlExport.vegetationBalloon");
 	}
 
 	private void loadFile() {
@@ -227,18 +227,18 @@ public class CityObjectGroupBalloonPanel extends AbstractPreferencesComponent {
 		fileChooser.addChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 		fileChooser.setFileFilter(filter);
 
-		if (internCityObjectGroupBalloon.getBalloonContentPath().isSetLastUsedMode()) {
-			fileChooser.setCurrentDirectory(new File(internCityObjectGroupBalloon.getBalloonContentPath().getLastUsedPath()));
+		if (internVegetationBalloon.getBalloonContentPath().isSetLastUsedMode()) {
+			fileChooser.setCurrentDirectory(new File(internVegetationBalloon.getBalloonContentPath().getLastUsedPath()));
 		} else {
-			fileChooser.setCurrentDirectory(new File(internCityObjectGroupBalloon.getBalloonContentPath().getStandardPath()));
+			fileChooser.setCurrentDirectory(new File(internVegetationBalloon.getBalloonContentPath().getStandardPath()));
 		}
 		int result = fileChooser.showSaveDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) return;
 		try {
 			String exportString = fileChooser.getSelectedFile().toString();
 			browseText.setText(exportString);
-			internCityObjectGroupBalloon.getBalloonContentPath().setLastUsedPath(fileChooser.getCurrentDirectory().getAbsolutePath());
-			internCityObjectGroupBalloon.getBalloonContentPath().setPathMode(PathMode.LASTUSED);
+			internVegetationBalloon.getBalloonContentPath().setLastUsedPath(fileChooser.getCurrentDirectory().getAbsolutePath());
+			internVegetationBalloon.getBalloonContentPath().setPathMode(PathMode.LASTUSED);
 		}
 		catch (Exception e) {
 			//

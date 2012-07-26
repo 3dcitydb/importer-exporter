@@ -75,4 +75,10 @@ public class KmlSplittingResult {
 	public boolean isCityObjectGroup() {
 		return getCityObjectType().compareTo(CityGMLClass.CITY_OBJECT_GROUP) == 0;
 	}
+
+	public boolean isVegetation() {
+		return (getCityObjectType().compareTo(CityGMLClass.SOLITARY_VEGETATION_OBJECT) == 0 ||
+				getCityObjectType().compareTo(CityGMLClass.PLANT_COVER) == 0);
+	}
+
 }

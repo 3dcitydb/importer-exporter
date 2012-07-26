@@ -31,9 +31,7 @@ package de.tub.citydb.modules.kml.database;
 
 import java.math.BigDecimal;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 

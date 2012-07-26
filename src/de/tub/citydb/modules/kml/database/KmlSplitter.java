@@ -33,7 +33,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import oracle.jdbc.OracleResultSet;
 import oracle.spatial.geometry.JGeometry;
@@ -88,6 +87,10 @@ public class KmlSplitter {
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityObjectGroup()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetVegetation()) {
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.SOLITARY_VEGETATION_OBJECT);
+//			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.PLANT_COVER);
 		}
 			
 		connection = dbConnectionPool.getConnection();

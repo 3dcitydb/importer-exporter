@@ -65,12 +65,12 @@ import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class BuildingRenderingPanel extends AbstractPreferencesComponent {
+public class VegetationRenderingPanel extends AbstractPreferencesComponent {
 
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
 
-	private ArrayList<DisplayForm> internBuildingDfs = new ArrayList<DisplayForm>();
+	private ArrayList<DisplayForm> internVegetationDfs = new ArrayList<DisplayForm>();
 
 	private JPanel footprintPanel;
 	private JCheckBox footprintHighlightingCheckbox = new JCheckBox();
@@ -90,12 +90,16 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 	private JSpinner geometryAlphaSpinner;
 	private JLabel geometryWallFillColorLabel = new JLabel();
 	private JButton geometryWallFillColorButton = new JButton(" ");
+/*
 	private JLabel geometryRoofFillColorLabel = new JLabel();
 	private JButton geometryRoofFillColorButton = new JButton(" ");
+*/
 	private JLabel geometryWallLineColorLabel = new JLabel();
 	private JButton geometryWallLineColorButton = new JButton(" ");
+/*
 	private JLabel geometryRoofLineColorLabel = new JLabel();
 	private JButton geometryRoofLineColorButton = new JButton(" ");
+*/
 	private JCheckBox geometryHighlightingCheckbox = new JCheckBox();
 	private JLabel geometryHLSurfaceDistanceLabel = new JLabel();
 	private JTextField geometryHLSurfaceDistanceText = new JTextField("", 3);
@@ -123,7 +127,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 	private HashMap<String, Integer> packingAlgorithms = new HashMap<String, Integer>();  
 	private JComboBox packingAlgorithmsComboBox = new JComboBox();
 
-	public BuildingRenderingPanel(Config config) {
+	public VegetationRenderingPanel(Config config) {
 		super(config);
 		initGui();
 	}
@@ -132,18 +136,18 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 	public boolean isModified() {
 		setInternDisplayFormValues();
 		KmlExporter kmlExporter = config.getProject().getKmlExporter();
-		ColladaOptions colladaOptions = kmlExporter.getBuildingColladaOptions();
+		ColladaOptions colladaOptions = kmlExporter.getVegetationColladaOptions();
 
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.COLLADA; form++) {
 			DisplayForm configDf = new DisplayForm(form, -1, -1);
-			int indexOfConfigDf = kmlExporter.getBuildingDisplayForms().indexOf(configDf); 
+			int indexOfConfigDf = kmlExporter.getVegetationDisplayForms().indexOf(configDf); 
 			if (indexOfConfigDf != -1) {
-				configDf = kmlExporter.getBuildingDisplayForms().get(indexOfConfigDf);
+				configDf = kmlExporter.getVegetationDisplayForms().get(indexOfConfigDf);
 			}
 			DisplayForm internDf = new DisplayForm(form, -1, -1);
-			int indexOfInternDf = internBuildingDfs.indexOf(internDf); 
+			int indexOfInternDf = internVegetationDfs.indexOf(internDf); 
 			if (indexOfInternDf != -1) {
-				internDf = internBuildingDfs.get(indexOfInternDf);
+				internDf = internVegetationDfs.get(indexOfInternDf);
 			}
 
 			if (areDisplayFormsContentsDifferent(internDf, configDf)) return true;
@@ -278,7 +282,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		geometryWallLineColorButton.setContentAreaFilled(false);
 		geometryWallLineColorButton.setOpaque(true);
 		geometryPanel.add(geometryWallLineColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
-
+/*
 		GridBagConstraints grfcl = GuiUtil.setConstraints(0,2,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		grfcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryRoofFillColorLabel, grfcl);
@@ -298,13 +302,13 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		geometryRoofLineColorButton.setContentAreaFilled(false);
 		geometryRoofLineColorButton.setOpaque(true);
 		geometryPanel.add(geometryRoofLineColorButton, GuiUtil.setConstraints(3,2,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
-
+*/
 		geometryHighlightingCheckbox.setIconTextGap(10);
-		GridBagConstraints ghcb = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
+		GridBagConstraints ghcb = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		ghcb.gridwidth = 2;
 		geometryPanel.add(geometryHighlightingCheckbox, ghcb);
 
-		GridBagConstraints ghlfcl = GuiUtil.setConstraints(0,4,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints ghlfcl = GuiUtil.setConstraints(0,3,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghlfcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryHLFillColorLabel, ghlfcl);
 
@@ -312,9 +316,9 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		geometryHLFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		geometryHLFillColorButton.setContentAreaFilled(false);
 		geometryHLFillColorButton.setOpaque(true);
-		geometryPanel.add(geometryHLFillColorButton, GuiUtil.setConstraints(1,4,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0));
+		geometryPanel.add(geometryHLFillColorButton, GuiUtil.setConstraints(1,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0));
 
-		GridBagConstraints ghllcl = GuiUtil.setConstraints(2,4,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints ghllcl = GuiUtil.setConstraints(2,3,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghllcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryHLLineColorLabel, ghllcl);
 
@@ -322,13 +326,13 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		geometryHLLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		geometryHLLineColorButton.setContentAreaFilled(false);
 		geometryHLLineColorButton.setOpaque(true);
-		geometryPanel.add(geometryHLLineColorButton, GuiUtil.setConstraints(3,4,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		geometryPanel.add(geometryHLLineColorButton, GuiUtil.setConstraints(3,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
-		GridBagConstraints ghdl = GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.NONE,0,2*BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints ghdl = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.NONE,0,2*BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghdl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryHLSurfaceDistanceLabel, ghdl);
 
-		GridBagConstraints ghdt = GuiUtil.setConstraints(1,5,0.0,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0);
+		GridBagConstraints ghdt = GuiUtil.setConstraints(1,4,0.0,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0);
 		geometryPanel.add(geometryHLSurfaceDistanceText, ghdt);
 
 		colladaPanel = new JPanel();
@@ -490,7 +494,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 					geometryWallLineColorButton.setBackground(wallLineColor);
 			}
 		});
-
+/*
 		geometryRoofFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Color roofFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseRoofFillColor"),
@@ -508,7 +512,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 					geometryRoofLineColorButton.setBackground(roofLineColor);
 			}
 		});
-
+*/
 		geometryHighlightingCheckbox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setEnabledHighlighting();
@@ -588,10 +592,12 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		footprintHLLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 
 		geometryAlphaLabel.setText(Internal.I18N.getString("pref.kmlexport.label.alpha"));
-		geometryWallFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.wallFillColor"));
-		geometryWallLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.wallLineColor"));
+		geometryWallFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.fillColor"));
+		geometryWallLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.lineColor"));
+/*
 		geometryRoofFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.roofFillColor"));
 		geometryRoofLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.roofLineColor"));
+*/
 		geometryHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
 		geometryHLSurfaceDistanceLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightingDistance"));
 		geometryHLFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
@@ -610,19 +616,19 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		internBuildingDfs.clear();
+		internVegetationDfs.clear();
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.COLLADA; form++) {
 			DisplayForm configDf = new DisplayForm(form, -1, -1);
-			int indexOfConfigDf = config.getProject().getKmlExporter().getBuildingDisplayForms().indexOf(configDf); 
+			int indexOfConfigDf = config.getProject().getKmlExporter().getVegetationDisplayForms().indexOf(configDf); 
 			if (indexOfConfigDf != -1) {
-				configDf = config.getProject().getKmlExporter().getBuildingDisplayForms().get(indexOfConfigDf);
+				configDf = config.getProject().getKmlExporter().getVegetationDisplayForms().get(indexOfConfigDf);
 			}
-			DisplayForm internBuildingDf = configDf.clone();
-			internBuildingDfs.add(internBuildingDf);
+			DisplayForm internVegetationDf = configDf.clone();
+			internVegetationDfs.add(internVegetationDf);
 		}
 
 		KmlExporter kmlExporter = config.getProject().getKmlExporter();
-		ColladaOptions colladaOptions = kmlExporter.getBuildingColladaOptions();
+		ColladaOptions colladaOptions = kmlExporter.getVegetationColladaOptions();
 
 		geometryHLSurfaceDistanceLabel.setEnabled(false);
 		geometryHLSurfaceDistanceText.setEnabled(false);
@@ -630,7 +636,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		colladaHLSurfaceDistanceLabel.setEnabled(false);
 		colladaHLSurfaceDistanceText.setEnabled(false);
 
-		for (DisplayForm displayForm : internBuildingDfs) {
+		for (DisplayForm displayForm : internVegetationDfs) {
 			switch (displayForm.getForm()) {
 			case DisplayForm.FOOTPRINT:
 			case DisplayForm.EXTRUDED:
@@ -663,10 +669,12 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 				}
 				if (displayForm.isSetRgba1())
 					geometryWallLineColorButton.setBackground(new Color(displayForm.getRgba1()));
+/*
 				if (displayForm.isSetRgba2())
 					geometryRoofFillColorButton.setBackground(new Color(displayForm.getRgba2()));
 				if (displayForm.isSetRgba3())
 					geometryRoofLineColorButton.setBackground(new Color(displayForm.getRgba3()));
+*/
 				if (displayForm.isSetRgba4())
 					geometryHLFillColorButton.setBackground(new Color(displayForm.getRgba4()));
 				if (displayForm.isSetRgba5())
@@ -721,16 +729,16 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 	public void setSettings() {
 		setInternDisplayFormValues();
 		KmlExporter kmlExporter = config.getProject().getKmlExporter();
-		ColladaOptions colladaOptions = kmlExporter.getBuildingColladaOptions();
+		ColladaOptions colladaOptions = kmlExporter.getVegetationColladaOptions();
 
-		if (kmlExporter.getBuildingDisplayForms().isEmpty()) {
-			kmlExporter.setBuildingDisplayForms(internBuildingDfs);
+		if (kmlExporter.getVegetationDisplayForms().isEmpty()) {
+			kmlExporter.setVegetationDisplayForms(internVegetationDfs);
 		}
 		else {
-			for (DisplayForm internDf : internBuildingDfs) {
-				int indexOfConfigDf = kmlExporter.getBuildingDisplayForms().indexOf(internDf); 
+			for (DisplayForm internDf : internVegetationDfs) {
+				int indexOfConfigDf = kmlExporter.getVegetationDisplayForms().indexOf(internDf); 
 				if (indexOfConfigDf != -1) {
-					DisplayForm configDf = kmlExporter.getBuildingDisplayForms().get(indexOfConfigDf);
+					DisplayForm configDf = kmlExporter.getVegetationDisplayForms().get(indexOfConfigDf);
 					// clone cannot be used here because of isActive() and visibleFrom()
 					copyColorAndHighlightingValues(internDf, configDf);
 				}
@@ -765,9 +773,9 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 	private void setInternDisplayFormValues() {
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.EXTRUDED; form++) {
 			DisplayForm df = new DisplayForm(form, -1, -1);
-			int indexOfDf = internBuildingDfs.indexOf(df); 
+			int indexOfDf = internVegetationDfs.indexOf(df); 
 			if (indexOfDf != -1) {
-				df = internBuildingDfs.get(indexOfDf);
+				df = internVegetationDfs.get(indexOfDf);
 				df.setHighlightingEnabled(footprintHighlightingCheckbox.isSelected());
 
 				Color rgba0 = new Color(footprintFillColorButton.getBackground().getRed(),
@@ -794,9 +802,9 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		DisplayForm df = new DisplayForm(DisplayForm.GEOMETRY, -1, -1);
-		int indexOfDf = internBuildingDfs.indexOf(df); 
+		int indexOfDf = internVegetationDfs.indexOf(df); 
 		if (indexOfDf != -1) {
-			df = internBuildingDfs.get(indexOfDf);
+			df = internVegetationDfs.get(indexOfDf);
 			df.setHighlightingEnabled(geometryHighlightingCheckbox.isSelected());
 			try {
 				df.setHighlightingDistance(Double.parseDouble(geometryHLSurfaceDistanceText.getText().trim()));
@@ -816,6 +824,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 					geometryWallLineColorButton.getBackground().getBlue(),
 					((Integer)geometryAlphaSpinner.getValue()).intValue());
 			df.setRgba1(rgba1.getRGB());
+/*
 			Color rgba2 = new Color(geometryRoofFillColorButton.getBackground().getRed(),
 					geometryRoofFillColorButton.getBackground().getGreen(),
 					geometryRoofFillColorButton.getBackground().getBlue(),
@@ -826,6 +835,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 					geometryRoofLineColorButton.getBackground().getBlue(),
 					((Integer)geometryAlphaSpinner.getValue()).intValue());
 			df.setRgba3(rgba3.getRGB());
+*/
 			Color rgba4 = new Color(geometryHLFillColorButton.getBackground().getRed(),
 					geometryHLFillColorButton.getBackground().getGreen(),
 					geometryHLFillColorButton.getBackground().getBlue(),
@@ -839,9 +849,9 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		df = new DisplayForm(DisplayForm.COLLADA, -1, -1);
-		indexOfDf = internBuildingDfs.indexOf(df); 
+		indexOfDf = internVegetationDfs.indexOf(df); 
 		if (indexOfDf != -1) {
-			df = internBuildingDfs.get(indexOfDf);
+			df = internVegetationDfs.get(indexOfDf);
 			df.setHighlightingEnabled(colladaHighlightingRButton.isSelected());
 			try {
 				df.setHighlightingDistance(Double.parseDouble(colladaHLSurfaceDistanceText.getText().trim()));
@@ -868,13 +878,13 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 	@Override
 	public void resetSettings() {
 		KmlExporter kmlExporter = config.getProject().getKmlExporter();
-		ColladaOptions colladaOptions = kmlExporter.getBuildingColladaOptions();
+		ColladaOptions colladaOptions = kmlExporter.getVegetationColladaOptions();
 
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.EXTRUDED; form++) {
 			DisplayForm df = new DisplayForm(form, -1, -1);
-			int indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+			int indexOfDf = kmlExporter.getVegetationDisplayForms().indexOf(df); 
 			if (indexOfDf != -1) {
-				df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
+				df = kmlExporter.getVegetationDisplayForms().get(indexOfDf);
 				df.setHighlightingEnabled(false);
 
 				df.setRgba0(DisplayForm.DEFAULT_FILL_COLOR);
@@ -885,9 +895,9 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		DisplayForm df = new DisplayForm(DisplayForm.GEOMETRY, -1, -1);
-		int indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+		int indexOfDf = kmlExporter.getVegetationDisplayForms().indexOf(df); 
 		if (indexOfDf != -1) {
-			df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
+			df = kmlExporter.getVegetationDisplayForms().get(indexOfDf);
 			df.setHighlightingEnabled(false);
 			df.setHighlightingDistance(0.75);
 
@@ -900,9 +910,9 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		df = new DisplayForm(DisplayForm.COLLADA, -1, -1);
-		indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+		indexOfDf = kmlExporter.getVegetationDisplayForms().indexOf(df); 
 		if (indexOfDf != -1) {
-			df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
+			df = kmlExporter.getVegetationDisplayForms().get(indexOfDf);
 			df.setHighlightingEnabled(false);
 			df.setHighlightingDistance(0.75);
 			
@@ -926,7 +936,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.buildingRendering");
+		return Internal.I18N.getString("pref.tree.kmlExport.vegetationRendering");
 	}
 
 	private void setEnabledHighlighting() {

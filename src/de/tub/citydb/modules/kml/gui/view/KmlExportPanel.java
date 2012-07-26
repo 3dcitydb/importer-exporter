@@ -173,6 +173,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private DefaultMutableTreeNode cityObject;
 	private DefaultMutableTreeNode building;
 	private DefaultMutableTreeNode cityObjectGroup;
+	private DefaultMutableTreeNode vegetation;
 
 	private JButton exportButton = new JButton("");
 
@@ -344,8 +345,10 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		cityObject = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECT);
 		building = new DefaultMutableTreeNode(FeatureClassMode.BUILDING);
 		cityObjectGroup = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECTGROUP);
+		vegetation = new DefaultMutableTreeNode(FeatureClassMode.VEGETATION);
 
 		cityObject.add(building);
+		cityObject.add(vegetation);
 		cityObject.add(cityObjectGroup);
 
 		fcTree = new CheckboxTree(cityObject);
@@ -483,6 +486,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 		else {
 			fcTree.getCheckingModel().removeCheckingPath(new TreePath(building.getPath()));
+		}
+		if (kmlExporter.getFilter().getComplexFilter().getFeatureClass().isSetVegetation()) {
+			fcTree.getCheckingModel().addCheckingPath(new TreePath(vegetation.getPath()));
+		}
+		else {
+			fcTree.getCheckingModel().removeCheckingPath(new TreePath(vegetation.getPath()));
 		}
 		if (kmlExporter.getFilter().getComplexFilter().getFeatureClass().isSetCityObjectGroup()) {
 			fcTree.getCheckingModel().addCheckingPath(new TreePath(cityObjectGroup.getPath()));
@@ -728,6 +737,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		//		}
 
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setBuilding(fcTree.getCheckingModel().isPathChecked(new TreePath(building.getPath()))); 
+		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setVegetation(fcTree.getCheckingModel().isPathChecked(new TreePath(vegetation.getPath())));
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setCityObjectGroup(fcTree.getCheckingModel().isPathChecked(new TreePath(cityObjectGroup.getPath())));
 
 		config.getProject().setKmlExporter(kmlExporter);

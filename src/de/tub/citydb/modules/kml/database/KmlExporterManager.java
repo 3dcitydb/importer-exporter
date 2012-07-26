@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
@@ -87,6 +86,7 @@ public class KmlExporterManager {
 	private String mainFilename;
 	
 	private static final String ENCODING = "UTF-8";
+	private static final Charset CHARSET = Charset.forName(ENCODING);
 
 	public KmlExporterManager(JAXBContext jaxbKmlContext,
 							  JAXBContext jaxbColladaContext,
@@ -215,12 +215,11 @@ public class KmlExporterManager {
 								zipOut = new ZipOutputStream(new FileOutputStream(placemarkFile));
 								ZipEntry zipEntry = new ZipEntry("doc.kml");
 								zipOut.putNextEntry(zipEntry);
-								fileWriter = new OutputStreamWriter(zipOut);
+								fileWriter = new OutputStreamWriter(zipOut, CHARSET);
 							}
 							else {
 								File placemarkFile = new File(placemarkDirectory, filename + ".kml");
-								Charset charset = Charset.forName(ENCODING);
-								fileWriter = new OutputStreamWriter(new FileOutputStream(placemarkFile), charset);
+								fileWriter = new OutputStreamWriter(new FileOutputStream(placemarkFile), CHARSET);
 							}
 							
 							// the network link pointing to the file
@@ -365,14 +364,13 @@ public class KmlExporterManager {
 						zipOut = new ZipOutputStream(new FileOutputStream(placemarkFile));
 						ZipEntry zipEntry = new ZipEntry("doc.kml");
 						zipOut.putNextEntry(zipEntry);
-						fileWriter = new OutputStreamWriter(zipOut);
+						fileWriter = new OutputStreamWriter(zipOut, CHARSET);
 	    				kmlMarshaller.marshal(kmlFactory.createKml(kmlType), fileWriter);
 						zipOut.closeEntry();
 					}
 					else {
 						File placemarkFile = new File(placemarkDirectory, colladaBundle.getBuildingId() + "_collada.kml");
-						Charset charset = Charset.forName(ENCODING);
-						fileWriter = new OutputStreamWriter(new FileOutputStream(placemarkFile), charset);
+						fileWriter = new OutputStreamWriter(new FileOutputStream(placemarkFile), CHARSET);
 	    				kmlMarshaller.marshal(kmlFactory.createKml(kmlType), fileWriter);
 						fileWriter.close();
 					}
@@ -442,7 +440,7 @@ public class KmlExporterManager {
 				// ----------------- model saving -----------------
 				ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + ".dae");
 				zipOut.putNextEntry(zipEntry);
-				zipOut.write(colladaBundle.getColladaAsString().getBytes());
+				zipOut.write(colladaBundle.getColladaAsString().getBytes(CHARSET));
 				zipOut.closeEntry();
 
 				// ----------------- image saving -----------------
@@ -482,7 +480,7 @@ public class KmlExporterManager {
 				if (colladaBundle.getExternalBalloonFileContent() != null) {
 					zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + colladaBundle.getBuildingId() + ".html");
 					zipOut.putNextEntry(zipEntry);
-					zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes());
+					zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes(CHARSET));
 					zipOut.closeEntry();
 				}
 
@@ -546,7 +544,7 @@ public class KmlExporterManager {
 					}
 					File htmlFile = new File(balloonsDirectory, placemark.getName() + ".html");
 					FileOutputStream outputStream = new FileOutputStream(htmlFile);
-					outputStream.write(colladaBundle.getExternalBalloonFileContent().getBytes());
+					outputStream.write(colladaBundle.getExternalBalloonFileContent().getBytes(CHARSET));
 					outputStream.close();
 				}
 				catch (IOException ioe) {

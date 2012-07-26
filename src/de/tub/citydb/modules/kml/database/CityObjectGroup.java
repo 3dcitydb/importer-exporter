@@ -31,7 +31,6 @@ package de.tub.citydb.modules.kml.database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +68,7 @@ import de.tub.citydb.modules.common.event.GeometryCounterEvent;
 
 public class CityObjectGroup extends KmlGenericObject{
 
-	private static final String STYLE_BASIS_NAME = "Group";
+	public static final String STYLE_BASIS_NAME = "Group";
 
 	public CityObjectGroup(Connection connection,
 			KmlExporterManager kmlExporterManager,
@@ -88,16 +87,12 @@ public class CityObjectGroup extends KmlGenericObject{
 			  config);
 	}
 
-	protected PreparedStatement getQueryForObjectType (KmlSplittingResult work) throws SQLException {
-		PreparedStatement psQuery = connection.prepareStatement(Queries.CITYOBJECTGROUP_FOOTPRINT,
-				  												ResultSet.TYPE_SCROLL_INSENSITIVE,
-				  												ResultSet.CONCUR_READ_ONLY);
-
-		return psQuery;
-	}
-
 	protected Balloon getBalloonSetings() {
 		return config.getProject().getKmlExporter().getCityObjectGroupBalloon();
+	}
+
+	public String getStyleBasisName() {
+		return STYLE_BASIS_NAME;
 	}
 
 	public void read(KmlSplittingResult work) {
@@ -106,7 +101,8 @@ public class CityObjectGroup extends KmlGenericObject{
 		OracleResultSet rs = null;
 
 		try {
-			psQuery = getQueryForObjectType(work);
+//			psQuery = getQueryForObjectType(work);
+			psQuery = connection.prepareStatement(Queries.CITYOBJECTGROUP_FOOTPRINT);
 
 			for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 				psQuery.setString(i, work.getGmlId());
@@ -124,18 +120,15 @@ public class CityObjectGroup extends KmlGenericObject{
 			}
 			else { // result not empty
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
-
+/*
 				// get the proper displayForm (colors, highlighting) when not building
-				DisplayForm displayForm = null;
-				for (DisplayForm dl : config.getProject().getKmlExporter().getCityObjectGroupDisplayForms()) {
-					if (dl.getForm() == DisplayForm.FOOTPRINT) {
-						displayForm = dl;
-						break;
-					}
+				DisplayForm displayForm = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
+				int indexOfDf = config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().indexOf(displayForm);
+				if (indexOfDf != -1) {
+					work.setDisplayForm(config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().get(indexOfDf));
 				}
-
-				addGroupStyle(displayForm);
-				work.setDisplayForm(displayForm);
+*/
+				// hard-coded for groups
 				kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
 										 work,
 										 getBalloonSetings().isBalloonContentInSeparateFile());
@@ -156,158 +149,4 @@ public class CityObjectGroup extends KmlGenericObject{
 		}
 	}
 	
-	protected List<PlacemarkType> createPlacemarksForFootprint(OracleResultSet rs, KmlSplittingResult work) throws SQLException {
-
-		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
-		PlacemarkType placemark = kmlFactory.createPlacemarkType();
-		placemark.setName(work.getGmlId());
-		placemark.setId(DisplayForm.FOOTPRINT_PLACEMARK_ID + placemark.getName());
-
-		if (work.getDisplayForm().isHighlightingEnabled()) {
-			placemark.setStyleUrl("#" + STYLE_BASIS_NAME + "Style");
-		}
-		else {
-			placemark.setStyleUrl("#" + STYLE_BASIS_NAME + "Normal");
-		}
-
-		if (getBalloonSetings().isIncludeDescription()) {
-			addBalloonContents(placemark, work.getGmlId());
-		}
-		MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
-		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
-
-		PolygonType polygon = null; 
-		while (rs.next()) {
-			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
-
-			if (!rs.wasNull() && buildingGeometryObj != null) {
-				eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
-
-				polygon = kmlFactory.createPolygonType();
-				polygon.setTessellate(true);
-				polygon.setExtrude(false);
-				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
-
-				JGeometry groundSurface = convertToWGS84(JGeometry.load(buildingGeometryObj));
-				int dim = groundSurface.getDimensions();
-				for (int i = 0; i < groundSurface.getElemInfo().length; i = i+3) {
-					LinearRingType linearRing = kmlFactory.createLinearRingType();
-					BoundaryType boundary = kmlFactory.createBoundaryType();
-					boundary.setLinearRing(linearRing);
-					switch (groundSurface.getElemInfo()[i+1]) {
-					case EXTERIOR_POLYGON_RING:
-						polygon.setOuterBoundaryIs(boundary);
-						break;
-					case INTERIOR_POLYGON_RING:
-						polygon.getInnerBoundaryIs().add(boundary);
-						break;
-					case POINT:
-					case LINE_STRING:
-						continue;
-					default:
-						Logger.getInstance().warn("Unknown geometry for " + work.getGmlId());
-						continue;
-					}
-
-					double[] ordinatesArray = groundSurface.getOrdinatesArray();
-					int startNextGeometry = ((i+3) < groundSurface.getElemInfo().length) ? 
-							groundSurface.getElemInfo()[i+3] - 1: // still more geometries
-								ordinatesArray.length; // default
-							// order points counter-clockwise
-							for (int j = startNextGeometry - dim; j >= groundSurface.getElemInfo()[i] - 1; j = j-dim) {
-								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
-							}
-				}
-				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
-			}
-		}
-		if (polygon != null) { // if there is at least some content
-			placemarkList.add(placemark);
-		}
-		return placemarkList;
-	}
-
-	private void addGroupStyle(DisplayForm displayForm) throws JAXBException {
-
-		String fillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_COLOR);
-		String lineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_COLOR);
-		String hlFillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
-		String hlLineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
-
-		if (displayForm.isSetRgba0()) {
-			fillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba0()));
-		}
-		if (displayForm.isSetRgba1()) {
-			lineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba1()));
-		}
-		if (displayForm.isSetRgba4()) {
-			hlFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba4()));
-		}
-		if (displayForm.isSetRgba5()) {
-			hlLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba5()));
-		}
-
-		BalloonStyleType balloonStyle = new BalloonStyleType();
-		balloonStyle.setText("$[description]");
-
-		LineStyleType lineStyleFootprintNormal = kmlFactory.createLineStyleType();
-		lineStyleFootprintNormal.setColor(hexStringToByteArray(lineColor));
-		lineStyleFootprintNormal.setWidth(1.5);
-		PolyStyleType polyStyleFootprintNormal = kmlFactory.createPolyStyleType();
-		polyStyleFootprintNormal.setColor(hexStringToByteArray(fillColor));
-		StyleType styleFootprintNormal = kmlFactory.createStyleType();
-		styleFootprintNormal.setId(STYLE_BASIS_NAME + "Normal");
-		styleFootprintNormal.setLineStyle(lineStyleFootprintNormal);
-		styleFootprintNormal.setPolyStyle(polyStyleFootprintNormal);
-		styleFootprintNormal.setBalloonStyle(balloonStyle);
-
-		kmlExporterManager.print(styleFootprintNormal);
-
-		if (displayForm.isHighlightingEnabled()) {
-			LineStyleType lineStyleFootprintHighlight = kmlFactory.createLineStyleType();
-			lineStyleFootprintHighlight.setColor(hexStringToByteArray(hlLineColor));
-			lineStyleFootprintHighlight.setWidth(1.5);
-			PolyStyleType polyStyleFootprintHighlight = kmlFactory.createPolyStyleType();
-			polyStyleFootprintHighlight.setColor(hexStringToByteArray(hlFillColor));
-			StyleType styleFootprintHighlight = kmlFactory.createStyleType();
-			styleFootprintHighlight.setId(STYLE_BASIS_NAME + "Highlight");
-			styleFootprintHighlight.setLineStyle(lineStyleFootprintHighlight);
-			styleFootprintHighlight.setPolyStyle(polyStyleFootprintHighlight);
-			styleFootprintHighlight.setBalloonStyle(balloonStyle);
-
-			PairType pairFootprintNormal = kmlFactory.createPairType();
-			pairFootprintNormal.setKey(StyleStateEnumType.NORMAL);
-			pairFootprintNormal.setStyleUrl("#" + styleFootprintNormal.getId());
-			PairType pairFootprintHighlight = kmlFactory.createPairType();
-			pairFootprintHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
-			pairFootprintHighlight.setStyleUrl("#" + styleFootprintHighlight.getId());
-			StyleMapType styleMapFootprint = kmlFactory.createStyleMapType();
-			styleMapFootprint.setId(STYLE_BASIS_NAME + "Style");
-			styleMapFootprint.getPair().add(pairFootprintNormal);
-			styleMapFootprint.getPair().add(pairFootprintHighlight);
-
-			kmlExporterManager.print(styleFootprintHighlight);
-			kmlExporterManager.print(styleMapFootprint);
-		}
-	}
-
-	private byte[] hexStringToByteArray(String hex) {
-		// padding if needed
-		if (hex.length()/2 != (hex.length()+1)/2) {
-			hex = "0" + hex;
-		}
-			
-		byte[] bytes = new byte[hex.length()/2];
-		try {
-			for (int i = 0; i < bytes.length; i++) {
-				bytes[i] = (byte) Integer.parseInt(hex.substring(2*i, 2*i+2), 16);
-			}
-		} catch ( Exception e ) {
-			e.printStackTrace();
-			return null;
-		}
-		return bytes;
-	}
-
-
 }

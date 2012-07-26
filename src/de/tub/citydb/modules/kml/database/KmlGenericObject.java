@@ -55,7 +55,6 @@ import java.util.StringTokenizer;
 import javax.imageio.ImageIO;
 import javax.media.j3d.GeometryArray;
 import javax.vecmath.Point3d;
-import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
@@ -84,6 +83,7 @@ import org.citygml.textureAtlasAPI.TextureAtlasGenerator;
 import org.citygml.textureAtlasAPI.dataStructure.TexImage;
 import org.citygml.textureAtlasAPI.dataStructure.TexImageInfo;
 import org.citygml4j.factory.CityGMLFactory;
+import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
@@ -135,6 +135,7 @@ import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
+import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.database.TypeAttributeValueEnum;
@@ -143,9 +144,8 @@ import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.GeometryCounterEvent;
 import de.tub.citydb.util.Util;
-import de.tub.citydb.util.database.DBUtil;
 
-public class KmlGenericObject {
+public abstract class KmlGenericObject {
 	
 	protected static final int POINT = 1;
 	protected static final int LINE_STRING = 2;
@@ -181,17 +181,20 @@ public class KmlGenericObject {
 	
 	private String id;
 	private BigInteger vertexIdCounter = new BigInteger("-1");
-	private VertexInfo firstVertexInfo = null;
+	protected VertexInfo firstVertexInfo = null;
 	private VertexInfo lastVertexInfo = null;
 
+	// origin of the relative coordinates for the object
 	private double originX;
 	private double originY;
 	private double originZ;
 
-	private double zOffset;
-
+	// placemark location in WGS84
 	private double locationX;
 	private double locationY;
+	private double locationZ;
+
+	private double zOffset;
 
 	private boolean ignoreSurfaceOrientation = true;
 
@@ -249,6 +252,9 @@ public class KmlGenericObject {
 		defaultX3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
 	}
 
+	public abstract void read(KmlSplittingResult work);
+	public abstract String getStyleBasisName();
+	protected abstract Balloon getBalloonSetings();
 
 
 	public void setId(String id) {
@@ -258,53 +264,61 @@ public class KmlGenericObject {
 	public String getId() {
 		return id;
 	}
-/*
-	public void setOriginX(double originX) {
+
+	protected void setOriginX(double originX) {
 		this.originX = originX;
 	}
-*/
-	public double getOriginX() {
+
+	protected double getOriginX() {
 		return originX;
 	}
-/*
-	public void setOriginY(double originY) {
+
+	protected void setOriginY(double originY) {
 		this.originY = originY;
 	}
-*/
-	public double getOriginY() {
+
+	protected double getOriginY() {
 		return originY;
 	}
-/*
-	public void setOriginZ(double originZ) {
+
+	protected void setOriginZ(double originZ) {
 		this.originZ = originZ;
 	}
-*/
-	public double getOriginZ() {
+
+	protected double getOriginZ() {
 		return originZ;
 	}
 
-	public void setZOffset(double zOffset) {
+	protected void setZOffset(double zOffset) {
 		this.zOffset = zOffset;
 	}
 
-	public double getZOffset() {
+	protected double getZOffset() {
 		return zOffset;
 	}
 
-	public void setLocationX(double locationX) {
+	protected void setLocationX(double locationX) {
 		this.locationX = locationX;
 	}
 
-	public double getLocationX() {
+	protected double getLocationX() {
 		return locationX;
 	}
 
-	public void setLocationY(double locationY) {
+	protected void setLocationY(double locationY) {
 		this.locationY = locationY;
 	}
 
-	public double getLocationY() {
+	protected double getLocationY() {
 		return locationY;
+	}
+
+	protected void setLocationZ(double locationZ) {
+		this.locationZ = locationZ;
+	}
+
+	protected double getLocationZ() {
+		return locationZ;
 	}
 
 	public void setIgnoreSurfaceOrientation(boolean ignoreSurfaceOrientation) {
@@ -1384,7 +1398,7 @@ public class KmlGenericObject {
     	return name;
     }
 
-    public List<Point3d> setOrigins() {
+    protected List<Point3d> setOrigins() {
     	originZ = Double.MAX_VALUE;
 		List<Point3d> coords = new ArrayList<Point3d>();
 		VertexInfo vertexInfoIterator = firstVertexInfo;
@@ -1406,7 +1420,7 @@ public class KmlGenericObject {
 		return coords;
     }
     
-    private static double reducePrecisionForXorY (double originalValue) {
+    protected static double reducePrecisionForXorY (double originalValue) {
 		double newValue = originalValue; // + 0.00000005d;
 //		if (decimalDigits != 0) {
 //			double factor = Math.pow(10, decimalDigits);
@@ -1417,7 +1431,7 @@ public class KmlGenericObject {
 		return newValue;
 	}
 
-	private static double reducePrecisionForZ (double originalValue) {
+    protected static double reducePrecisionForZ (double originalValue) {
 		double newValue = originalValue; // + 0.0005d;
 //		if (decimalDigits != 0) {
 //			double factor = Math.pow(10, decimalDigits);
@@ -1428,198 +1442,6 @@ public class KmlGenericObject {
 		return newValue;
 	}
 
-	public void read(KmlSplittingResult work) {
-
-		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
-
-		boolean reversePointOrder = false;
-
-		try {
-			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
-			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
-			int minLod = lodToExportFrom == 5 ? 0: lodToExportFrom;
-
-			while (currentLod >= minLod) {
-				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
-
-				try {
-					psQuery = getQueryForObjectType(work);
-
-					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-						psQuery.setString(i, work.getGmlId());
-					}
-				
-					rs = (OracleResultSet)psQuery.executeQuery();
-					if (rs.isBeforeFirst()) {
-						break; // result set not empty
-					}
-					else {
-						try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
-						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
-						try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
-					}
-				}
-				catch (Exception e2) {
-					try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
-					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
-					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
-				}
-
-				// when for EXTRUDED or FOOTPRINT there is no ground surface modelled, try to find it out indirectly
-				if (rs == null && (work.getDisplayForm().getForm() <= DisplayForm.EXTRUDED)) {
-
-					reversePointOrder = true;
-
-					int groupBasis = 4;
-					try {
-						psQuery = connection.prepareStatement(Queries.
-								  	BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<TOLERANCE>", "0.001")
-								  										  	 .replace("<2D_SRID>", String.valueOf(DBUtil.get2DSrid(dbSrs)))
-								  										  	 .replace("<LoD>", String.valueOf(currentLod))
-								  										  	 .replace("<GROUP_BY_1>", String.valueOf(Math.pow(groupBasis, 4)))
-								  										  	 .replace("<GROUP_BY_2>", String.valueOf(Math.pow(groupBasis, 3)))
-								  										  	 .replace("<GROUP_BY_3>", String.valueOf(Math.pow(groupBasis, 2))),
-															  ResultSet.TYPE_SCROLL_INSENSITIVE,
-															  ResultSet.CONCUR_READ_ONLY);
-
-						for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-							psQuery.setString(i, work.getGmlId());
-						}
-						rs = (OracleResultSet)psQuery.executeQuery();
-						if (rs.isBeforeFirst()) {
-							rs.next();
-							if(rs.getObject(1) != null) {
-								rs.beforeFirst();
-								break; // result set not empty
-							}
-						}
-//						else {
-							try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
-							rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
-							try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
-//						}
-					}
-					catch (Exception e2) {
-						try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
-						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
-						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
-					}
-				}
-
-				currentLod--;
-				reversePointOrder = false;
-			}
-
-			if (rs == null) { // result empty, give up
-				String fromMessage = "";
-				if (work.isBuilding()) {
-					fromMessage = lodToExportFrom == 5 ? " from any LoD": " from LoD" + lodToExportFrom;
-				}
-				Logger.getInstance().info("Could not display object " + work.getGmlId() 
-						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
-			}
-			else { // result not empty
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
-
-				switch (work.getDisplayForm().getForm()) {
-				case DisplayForm.FOOTPRINT:
-					kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
-											 work,
-											 getBalloonSetings().isBalloonContentInSeparateFile());
-					break;
-				case DisplayForm.EXTRUDED:
-
-					PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT);
-					for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
-						psQuery2.setString(i, work.getGmlId());
-					}
-					OracleResultSet rs2 = (OracleResultSet)psQuery2.executeQuery();
-					rs2.next();
-					double measuredHeight = rs2.getDouble("envelope_measured_height");
-					try { rs2.close(); /* release cursor on DB */ } catch (SQLException e) {}
-					try { psQuery2.close(); /* release cursor on DB */ } catch (SQLException e) {}
-					
-					kmlExporterManager.print(createPlacemarksForExtruded(rs, work, measuredHeight, reversePointOrder),
-											 work,
-											 getBalloonSetings().isBalloonContentInSeparateFile());
-					break;
-				case DisplayForm.GEOMETRY:
-					if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter()) { // region
-						if (work.getDisplayForm().isHighlightingEnabled()) {
-							kmlExporterManager.print(createPlacemarksForHighlighting(work),
-													 work,
-													 getBalloonSetings().isBalloonContentInSeparateFile());
-						}
-						kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
-												 work,
-												 getBalloonSetings().isBalloonContentInSeparateFile());
-					}
-					else { // reverse order for single buildings
-						kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
-												 work,
-												 getBalloonSetings().isBalloonContentInSeparateFile());
-//							kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
-						if (work.getDisplayForm().isHighlightingEnabled()) {
-//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work.getGmlId(),
-//																								work.getDisplayForm()));
-							kmlExporterManager.print(createPlacemarksForHighlighting(work),
-													 work,
-													 getBalloonSetings().isBalloonContentInSeparateFile());
-						}
-					}
-					break;
-				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, work.getGmlId());
-					setIgnoreSurfaceOrientation(config.getProject().getKmlExporter().isIgnoreSurfaceOrientation());
-					try {
-						double imageScaleFactor = 1;
-						if (work.getDisplayForm().isHighlightingEnabled()) {
-//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work.getGmlId(),
-//									   															work.getDisplayForm()));
-							kmlExporterManager.print(createPlacemarksForHighlighting(work),
-													 work,
-													 getBalloonSetings().isBalloonContentInSeparateFile());
-						}
-						if (config.getProject().getKmlExporter().isGenerateTextureAtlases()) {
-//							eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.creatingAtlases")));
-							if (config.getProject().getKmlExporter().isScaleImages()) {
-								imageScaleFactor = config.getProject().getKmlExporter().getImageScaleFactor();
-							}
-							createTextureAtlas(config.getProject().getKmlExporter().getPackingAlgorithm(),
-											   imageScaleFactor,
-											   config.getProject().getKmlExporter().isTextureAtlasPots());
-						}
-						else if (config.getProject().getKmlExporter().isScaleImages()) {
-							imageScaleFactor = config.getProject().getKmlExporter().getImageScaleFactor();
-							if (imageScaleFactor < 1) {
-								resizeAllImagesByFactor(imageScaleFactor);
-							}
-						}
-					}
-					catch (IOException ioe) {
-						ioe.printStackTrace();
-					}
-
-					break;
-				}
-			}
-		}
-		catch (SQLException sqlEx) {
-			Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
-			return;
-		}
-		catch (JAXBException jaxbEx) {
-			return;
-		}
-		finally {
-			if (rs != null)
-				try { rs.close(); } catch (SQLException e) {}
-			if (psQuery != null)
-				try { psQuery.close(); } catch (SQLException e) {}
-		}
-	}
-
 	protected List<PlacemarkType> createPlacemarksForFootprint(OracleResultSet rs, KmlSplittingResult work) throws SQLException {
 
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
@@ -1628,10 +1450,10 @@ public class KmlGenericObject {
 		placemark.setId(DisplayForm.FOOTPRINT_PLACEMARK_ID + placemark.getName());
 
 		if (work.getDisplayForm().isHighlightingEnabled()) {
-			placemark.setStyleUrl("#" + DisplayForm.FOOTPRINT_STR + "Style");
+			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Style");
 		}
 		else {
-			placemark.setStyleUrl("#" + DisplayForm.FOOTPRINT_STR + "Normal");
+			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Normal");
 		}
 
 		if (getBalloonSetings().isIncludeDescription()) {
@@ -1691,7 +1513,7 @@ public class KmlGenericObject {
 		return placemarkList;
 	}
 
-	private List<PlacemarkType> createPlacemarksForExtruded(OracleResultSet rs,
+	protected List<PlacemarkType> createPlacemarksForExtruded(OracleResultSet rs,
 															KmlSplittingResult work,
 															double measuredHeight,
 															boolean reversePointOrder) throws SQLException {
@@ -1701,10 +1523,10 @@ public class KmlGenericObject {
 		placemark.setName(work.getGmlId());
 		placemark.setId(DisplayForm.EXTRUDED_PLACEMARK_ID + placemark.getName());
 		if (work.getDisplayForm().isHighlightingEnabled()) {
-			placemark.setStyleUrl("#" + DisplayForm.EXTRUDED_STR + "Style");
+			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.EXTRUDED_STR + "Style");
 		}
 		else {
-			placemark.setStyleUrl("#" + DisplayForm.EXTRUDED_STR + "Normal");
+			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.EXTRUDED_STR + "Normal");
 		}
 		if (getBalloonSetings().isIncludeDescription()) {
 			addBalloonContents(placemark, work.getGmlId());
@@ -1776,12 +1598,12 @@ public class KmlGenericObject {
 	}
 
 
-	private List<PlacemarkType> createPlacemarksForGeometry(OracleResultSet rs,
+	protected List<PlacemarkType> createPlacemarksForGeometry(OracleResultSet rs,
 															KmlSplittingResult work) throws SQLException{
 		return createPlacemarksForGeometry(rs, work, false, false);
 	}
 
-	private List<PlacemarkType> createPlacemarksForGeometry(OracleResultSet rs,
+	protected List<PlacemarkType> createPlacemarksForGeometry(OracleResultSet rs,
 			KmlSplittingResult work,
 			boolean includeGroundSurface,
 			boolean includeClosureSurface) throws SQLException {
@@ -1914,7 +1736,10 @@ public class KmlGenericObject {
 			PlacemarkType placemark = kmlFactory.createPlacemarkType();
 			placemark.setName(work.getGmlId() + "_" + surfaceType);
 			placemark.setId(DisplayForm.GEOMETRY_PLACEMARK_ID + placemark.getName());
-			placemark.setStyleUrl("#" + surfaceType + "Normal");
+			if (work.isBuilding())
+				placemark.setStyleUrl("#" + surfaceType + "Normal");
+			else
+				placemark.setStyleUrl(getStyleBasisName() + DisplayForm.GEOMETRY_STR + "Normal");
 			if (getBalloonSetings().isIncludeDescription() &&
 					!work.getDisplayForm().isHighlightingEnabled()) { // avoid double description
 				addBalloonContents(placemark, work.getGmlId());
@@ -1926,7 +1751,11 @@ public class KmlGenericObject {
 		return placemarkList;
 	}
 
-	private void fillGenericObjectForCollada(OracleResultSet rs, String gmlId) throws SQLException {
+	protected void fillGenericObjectForCollada(OracleResultSet rs, String gmlId) throws SQLException {
+		fillGenericObjectForCollada(rs, gmlId, null);
+	}
+
+	protected void fillGenericObjectForCollada(OracleResultSet rs, String gmlId, Matrix transformation) throws SQLException {
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
 
@@ -1936,7 +1765,7 @@ public class KmlGenericObject {
 
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
-			for (String colladaQuery: Queries.BUILDING_COLLADA_GET_DATA) { // parent surfaces come first
+			for (String colladaQuery: Queries.COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID) { // parent surfaces come first
 				PreparedStatement psQuery = null;
 				OracleResultSet rs2 = null;
 				try {
@@ -1986,17 +1815,12 @@ public class KmlGenericObject {
 									&&  texCoords != null && texCoords.trim().length() != 0
 									&&	texImage != null) {
 	
-								texImageCounter++;
-								if (texImageCounter > 20) {
-									eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
-									texImageCounter = 0;
-								}
-	
 								int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
 								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
 	
 								addTexImageUri(surfaceId, texImageUri);
-								if (getTexOrdImage(texImageUri) == null) { // not already marked as wrapping texture
+								if ((getTexOrdImage(texImageUri) == null) && (getTexImage(texImageUri) == null)) { 
+									// not already marked as wrapping texture && not already read in
 									BufferedImage bufferedImage = null;
 									try {
 										bufferedImage = ImageIO.read(texImage.getDataInStream());
@@ -2007,6 +1831,12 @@ public class KmlGenericObject {
 									}
 									else {
 										addTexOrdImage(texImageUri, texImage);
+									}
+
+									texImageCounter++;
+									if (texImageCounter > 20) {
+										eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
+										texImageCounter = 0;
 									}
 								}
 	
@@ -2040,10 +1870,20 @@ public class KmlGenericObject {
 							int startOfCurrentRing = surface.getElemInfo()[(currentContour-1)*3] - 1;
 							int startOfNextRing = (currentContour == contourCount) ? 
 									ordinatesArray.length: // last
-										surface.getElemInfo()[currentContour*3] - 1; // still holes to come
+									surface.getElemInfo()[currentContour*3] - 1; // still holes to come
 	
 							for (int j = startOfCurrentRing; j < startOfNextRing - 3; j = j+3) {
-	
+
+								if (transformation != null) { // for implicit geometries
+									double[] vals = new double[]{ordinatesArray[j], ordinatesArray[j+1], ordinatesArray[j+2], 1};
+									Matrix v = new Matrix(vals, 4);
+							
+									v = transformation.times(v);
+									ordinatesArray[j] =  v.get(0, 0);
+									ordinatesArray[j+1] = v.get(1, 0);
+									ordinatesArray[j+2] = v.get(2, 0);
+								}
+
 								giOrdinatesArray[(j-(currentContour-1)*3)] = ordinatesArray[j] * 100; // trick for very close coordinates
 								giOrdinatesArray[(j-(currentContour-1)*3)+1] = ordinatesArray[j+1] * 100;
 								giOrdinatesArray[(j-(currentContour-1)*3)+2] = ordinatesArray[j+2] * 100;
@@ -2087,13 +1927,6 @@ public class KmlGenericObject {
 				}
 			}
 		}
-
-		List<Point3d> anchorCandidates = setOrigins();
-		double zOffset = getZOffsetFromConfigOrDB(gmlId);
-		if (zOffset == Double.MAX_VALUE) {
-			zOffset = getZOffsetFromGEService(gmlId, anchorCandidates);
-		}
-		setZOffset(zOffset);
 	}
 
 	public PlacemarkType createPlacemarkFromGenericObject(KmlGenericObject kmlGenericObject,
@@ -2102,20 +1935,20 @@ public class KmlGenericObject {
 		placemark.setName(kmlGenericObject.getId());
 		placemark.setId(DisplayForm.COLLADA_PLACEMARK_ID + placemark.getName());
 
-		if (getBalloonSetings().isIncludeDescription() &&
-				!work.getDisplayForm().isHighlightingEnabled() && // avoid double description
-				(!config.getProject().getKmlExporter().isGroupBuildings() ||
-						config.getProject().getKmlExporter().getGroupSize() == 1)) {
-			addBalloonContents(placemark, kmlGenericObject.getId());
+		if (getBalloonSetings().isIncludeDescription() 
+				&& !work.getDisplayForm().isHighlightingEnabled()) { // avoid double description
+
+			ColladaOptions colladaOptions = null;
+			if (work.isBuilding()) colladaOptions = config.getProject().getKmlExporter().getBuildingColladaOptions();
+			else if (work.isVegetation()) colladaOptions = config.getProject().getKmlExporter().getVegetationColladaOptions();
+
+			if (!colladaOptions.isGroupObjects() || colladaOptions.getGroupSize() == 1) {
+				addBalloonContents(placemark, kmlGenericObject.getId());
+			}
 		}
 
 		ModelType model = kmlFactory.createModelType();
 		LocationType location = kmlFactory.createLocationType();
-
-		// undo trick for very close coordinates
-		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {kmlGenericObject.getOriginX()/100, kmlGenericObject.getOriginY()/100, kmlGenericObject.getOriginZ()/100});
-		kmlGenericObject.setLocationX(reducePrecisionForXorY(originInWGS84[0]));
-		kmlGenericObject.setLocationY(reducePrecisionForXorY(originInWGS84[1]));
 
 		switch (config.getProject().getKmlExporter().getAltitudeMode()) {
 		case ABSOLUTE:
@@ -2128,20 +1961,20 @@ public class KmlGenericObject {
 
 		location.setLatitude(kmlGenericObject.getLocationY());
 		location.setLongitude(kmlGenericObject.getLocationX());
-		location.setAltitude(reducePrecisionForZ(originInWGS84[2] + kmlGenericObject.getZOffset()));
+		location.setAltitude(kmlGenericObject.getLocationZ() + reducePrecisionForZ(kmlGenericObject.getZOffset()));
 		model.setLocation(location);
 
 		// correct heading value
-		double lat1 = originInWGS84[1];
+		double lat1 = kmlGenericObject.getLocationY();
 		// undo trick for very close coordinates
 		double[] dummy = convertPointCoordinatesToWGS84(new double[] {kmlGenericObject.getOriginX()/100, kmlGenericObject.getOriginY()/100 - 20, kmlGenericObject.getOriginZ()/100});
 		double lat2 = dummy[1];
-		double dLon = dummy[0] - originInWGS84[0];
+		double dLon = dummy[0] - kmlGenericObject.getLocationX();
 		double y = Math.sin(dLon) * Math.cos(lat2);
 		double x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
 		double bearing = Math.toDegrees(Math.atan2(y, x));
 		bearing = (bearing + 180) % 360;
-		if (originInWGS84[0] > 0) { // East
+		if (kmlGenericObject.getLocationX() > 0) { // East
 			bearing = -bearing;
 		}
 
@@ -2165,7 +1998,7 @@ public class KmlGenericObject {
 	}
 
 
-	private List<PlacemarkType> createPlacemarksForHighlighting(KmlSplittingResult work) throws SQLException {
+	protected List<PlacemarkType> createPlacemarksForHighlighting(KmlSplittingResult work) throws SQLException {
 
 		List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
 
@@ -2186,11 +2019,14 @@ public class KmlGenericObject {
 		OracleResultSet rs = null;
 
 		hlDistance = work.getDisplayForm().getHighlightingDistance();
+		String highlightingQuery = null;
+		if (work.isBuilding()) highlightingQuery = Queries.getSingleBuildingHighlightingQuery(currentLod);
+		else if (work.isVegetation()) highlightingQuery = Queries.getSolitaryVegetationObjectHighlightingQuery(currentLod);
 
 		try {
-			getGeometriesStmt = connection.prepareStatement(Queries.getSingleBuildingHighlightingQuery(currentLod),
-					ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY);
+			getGeometriesStmt = connection.prepareStatement(highlightingQuery,
+															ResultSet.TYPE_SCROLL_INSENSITIVE,
+															ResultSet.CONCUR_READ_ONLY);
 
 			for (int i = 1; i <= getGeometriesStmt.getParameterMetaData().getParameterCount(); i++) {
 				getGeometriesStmt.setString(i, work.getGmlId());
@@ -2396,7 +2232,7 @@ public class KmlGenericObject {
 		return color;
 	}
 
-	private double getZOffsetFromConfigOrDB (String gmlId) {
+	protected double getZOffsetFromConfigOrDB (String gmlId) {
 
 		double zOffset = Double.MAX_VALUE;;
 
@@ -2439,7 +2275,7 @@ public class KmlGenericObject {
 		return zOffset;
 	}
 
-	private double getZOffsetFromGEService (String gmlId, List<Point3d> candidates) {
+	protected double getZOffsetFromGEService (String gmlId, List<Point3d> candidates) {
 
 		double zOffset = 0;
 
@@ -2527,7 +2363,7 @@ public class KmlGenericObject {
 		return coords;
 	}
 
-	private double[] convertPointCoordinatesToWGS84(double[] coords) throws SQLException {
+	protected double[] convertPointCoordinatesToWGS84(double[] coords) throws SQLException {
 
 		double[] pointCoords = null; 
 		// createLinearLineString is a workaround for Oracle11g!
@@ -2540,9 +2376,7 @@ public class KmlGenericObject {
 	}
 
 	protected JGeometry convertToWGS84(JGeometry jGeometry) throws SQLException {
-
 		double[] originalCoords = jGeometry.getOrdinatesArray();
-
 		JGeometry convertedPointGeom = null;
 		PreparedStatement convertStmt = null;
 		OracleResultSet rs2 = null;
@@ -2583,7 +2417,7 @@ public class KmlGenericObject {
 		return convertedPointGeom;
 	}
 
-	private List<PlacemarkType> createPlacemarkForEachSurfaceGeometry(OracleResultSet rs,
+	protected List<PlacemarkType> createPlacemarkForEachSurfaceGeometry(OracleResultSet rs,
 			String gmlId,
 			boolean includeGroundSurface) throws SQLException {
 
@@ -2690,7 +2524,7 @@ public class KmlGenericObject {
 	}
 
 
-	private List<PlacemarkType> createPlacemarkForEachHighlingtingGeometry(KmlSplittingResult work) throws SQLException {
+	protected List<PlacemarkType> createPlacemarkForEachHighlingtingGeometry(KmlSplittingResult work) throws SQLException {
 
 		PlacemarkType highlightingPlacemark = null; 
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
@@ -2839,13 +2673,23 @@ public class KmlGenericObject {
 		return placemarkList;
 	}
 
-
-	protected PreparedStatement getQueryForObjectType (KmlSplittingResult work) throws SQLException {
-		return null;
-	}
-
-	protected Balloon getBalloonSetings () {
-		return null;
+	
+	protected static byte[] hexStringToByteArray(String hex) {
+		// padding if needed
+		if (hex.length()/2 != (hex.length()+1)/2) {
+			hex = "0" + hex;
+		}
+			
+		byte[] bytes = new byte[hex.length()/2];
+		try {
+			for (int i = 0; i < bytes.length; i++) {
+				bytes[i] = (byte) Integer.parseInt(hex.substring(2*i, 2*i+2), 16);
+			}
+		} catch ( Exception e ) {
+			e.printStackTrace();
+			return null;
+		}
+		return bytes;
 	}
 
 	private int roundUpPots(int t)
