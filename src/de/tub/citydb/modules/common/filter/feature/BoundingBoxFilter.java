@@ -228,7 +228,8 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 
 		activeBoundingBox = new BoundingBox(
 				new BoundingBoxCorner(lowerLeftX, lowerLeftY),
-				new BoundingBoxCorner(upperRightX, upperRightY)
+				new BoundingBoxCorner(upperRightX, upperRightY),
+				boundingBox.getSrs()
 		);
 	}
 

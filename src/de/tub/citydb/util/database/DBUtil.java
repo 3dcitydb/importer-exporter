@@ -646,6 +646,7 @@ public class DBUtil {
 					result.getLowerLeftCorner().setY(geom.getPoint(0).y);
 					result.getUpperRightCorner().setX(geom.getPoint(2).x);
 					result.getUpperRightCorner().setY(geom.getPoint(2).y);
+					result.setSrs(targetSrs);
 				}
 			}
 		} catch (SQLException sqlEx) {

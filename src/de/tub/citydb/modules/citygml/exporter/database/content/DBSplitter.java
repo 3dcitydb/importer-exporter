@@ -40,6 +40,7 @@ import java.util.List;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.gui.BoundingBox;
 import de.tub.citydb.config.Config;
@@ -155,8 +156,18 @@ public class DBSplitter {
 			// check whether spatial indexes are active
 			if (DBUtil.isIndexed("CITYOBJECT", "ENVELOPE")) {	
 				TiledBoundingBox tiledBBox = expFilterConfig.getComplexFilter().getTiledBoundingBox();
-				int bboxSrid = boundingBoxFilter.getSrid();
-
+				DatabaseSrs dbSrs = dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem();
+				
+				// we need to ensure that the srid of the bbox agrees 
+				// with that of the databse for st_relate
+				if (bbox.getSrs().getSrid() != dbSrs.getSrid())	{
+					try {
+						bbox = DBUtil.transformBBox(bbox, bbox.getSrs(), dbSrs);
+					} catch (SQLException e) {
+						throw new SQLException("Failed to transform bounding box filter", e);
+					}
+				}
+				
 				double minX = bbox.getLowerLeftCorner().getX();
 				double minY = bbox.getLowerLeftCorner().getY();
 				double maxX = bbox.getUpperRightCorner().getX();
@@ -166,7 +177,7 @@ public class DBSplitter {
 				bboxFilter = new String[overlap ? 3 : 2];
 				
 				String filter = "ST_Relate(co.ENVELOPE, " +
-						"ST_GeomFromEWKT('SRID=" + bboxSrid + ";POLYGON((" + 
+						"ST_GeomFromEWKT('SRID=" + dbSrs.getSrid() + ";POLYGON((" + 
 						minX + " " + minY + "," + 
 						minX + " " + maxY + "," + 
 						maxX + " " + maxY + "," + 
