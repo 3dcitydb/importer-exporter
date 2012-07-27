@@ -739,6 +739,7 @@ public class DBUtil {
 		Connection conn = null;
 		ResultSet rs = null;
 		ArrayList<String> appearanceThemes = new ArrayList<String>();
+		final String THEME_UNKNOWN = "<unknown>";
 
 		try {
 			boolean workspaceExists = dbConnectionPool.existsWorkspace(workspace);
@@ -756,7 +757,14 @@ public class DBUtil {
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery("select distinct theme from appearance order by theme");
 			while (rs.next()) {
-				appearanceThemes.add(rs.getString(1));
+				String thema = rs.getString(1);
+				if (thema != null) {
+					appearanceThemes.add(rs.getString(1));
+				}
+			}
+
+			if (appearanceThemes.size() == 0) {
+				appearanceThemes.add(THEME_UNKNOWN);
 			}
 
 		} catch (SQLException sqlEx) {

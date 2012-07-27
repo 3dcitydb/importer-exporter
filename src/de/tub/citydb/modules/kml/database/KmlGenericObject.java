@@ -1927,6 +1927,9 @@ public abstract class KmlGenericObject {
 				}
 			}
 		}
+
+		// count rest images
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
 	}
 
 	public PlacemarkType createPlacemarkFromGenericObject(KmlGenericObject kmlGenericObject,
