@@ -2296,6 +2296,9 @@ public class KmlGenericObject {
 			}
 		}
 
+		// count rest images
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
+		
 		List<Point3d> anchorCandidates = setOrigins();
 		double zOffset = getZOffsetFromConfigOrDB(gmlId);
 		if (zOffset == Double.MAX_VALUE) {
@@ -2998,6 +3001,9 @@ public class KmlGenericObject {
 		return convertedPointGeom;
 	}
 
+
+//	debug methods
+/*
 //	private List<PlacemarkType> createPlacemarkForEachSurfaceGeometry(OracleResultSet rs,
 	private List<PlacemarkType> createPlacemarkForEachSurfaceGeometry(ResultSet rs,
 			String gmlId,
@@ -3083,7 +3089,8 @@ public class KmlGenericObject {
 
 			boolean probablyRoof = true;
 
-			/*for (int i = 0; i < originalSurfaceWGS84.getElemInfo().length; i = i+3) {
+			for (int i = 0; i < originalSurfaceWGS84.getElemInfo().length; i = i+3) {
+
 				LinearRingType linearRing = kmlFactory.createLinearRingType();
 				BoundaryType boundary = kmlFactory.createBoundaryType();
 				boundary.setLinearRing(linearRing);
@@ -3115,7 +3122,7 @@ public class KmlGenericObject {
 									placemark.setStyleUrl("#" + likelySurfaceType + "Normal");
 						}
 
-			}*/
+			}
 			
 			for (int i = 0; i < originalSurfaceWGS84.numRings(); i++){
 				LinearRingType linearRing = kmlFactory.createLinearRingType();
@@ -3221,7 +3228,7 @@ public class KmlGenericObject {
 					continue;
 				}
 
-				/*
+
 				int contourCount = originalSurface.getElemInfo().length/3;
 				// remove normal-irrelevant points
 				int startContour1 = originalSurface.getElemInfo()[0] - 1;
@@ -3230,7 +3237,7 @@ public class KmlGenericObject {
 							originalSurface.getElemInfo()[3] - 1; // holes are irrelevant for normal calculation
 				// last point of polygons in gml is identical to first and useless for GeometryInfo
 				endContour1 = endContour1 - 3;
-				*/
+
 				
 				int contourCount = originalSurface.numRings();
 				// remove normal-irrelevant points
@@ -3310,7 +3317,7 @@ public class KmlGenericObject {
 				}
 				highlightingPlacemark.setAbstractGeometryGroup(kmlFactory.createPolygon(highlightingPolygon));
 
-				/*for (int i = 0; i < highlightingSurfaceWGS84.getElemInfo().length; i = i+3) {
+				for (int i = 0; i < highlightingSurfaceWGS84.getElemInfo().length; i = i+3) {
 					LinearRingType highlightingLinearRing = kmlFactory.createLinearRingType();
 					BoundaryType highlightingBoundary = kmlFactory.createBoundaryType();
 					highlightingBoundary.setLinearRing(highlightingLinearRing);
@@ -3332,7 +3339,7 @@ public class KmlGenericObject {
 										+ reducePrecisionForZ(highlightingOrdinatesArrayWGS84[j+2] + zOffset)));
 							}
 
-				}*/
+				}
 				
 				for (int i = 0; i < highlightingSurfaceWGS84.numRings(); i++){
 					LinearRingType highlightingLinearRing = kmlFactory.createLinearRingType();
@@ -3372,7 +3379,7 @@ public class KmlGenericObject {
 
 		return placemarkList;
 	}
-
+*/
 
 	protected PreparedStatement getQueryForObjectType (KmlSplittingResult work) throws SQLException {
 		return null;
