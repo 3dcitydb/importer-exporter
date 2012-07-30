@@ -761,10 +761,9 @@ public class DBUtil {
 				if (thema != null) {
 					appearanceThemes.add(rs.getString(1));
 				}
-			}
-
-			if (appearanceThemes.size() == 0) {
-				appearanceThemes.add(THEME_UNKNOWN);
+				else {
+					appearanceThemes.add(THEME_UNKNOWN);
+				}
 			}
 
 		} catch (SQLException sqlEx) {
