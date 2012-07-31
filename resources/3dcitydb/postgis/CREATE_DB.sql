@@ -39,6 +39,12 @@ SET client_min_messages TO WARNING;
 \prompt 'Please enter the corresponding SRSName to be used in GML exports (e.g., urn:ogc:def:crs,crs:EPSG::3068,crs:EPSG::5783): ' GMLSRSNAME
 
 \set SRSNO :SRS_NO
+\set ON_ERROR_STOP ON
+\echo
+
+--// checks if the chosen SRID is provided by the spatial_ref_sys table
+\i UTIL/CREATE_DB/CHECK_SRID.sql
+SELECT check_srid(:SRS_NO);
 
 \i SCHEMA/TABLES/METADATA/DATABASE_SRS.sql
 INSERT INTO DATABASE_SRS(SRID,GML_SRS_NAME) VALUES (:SRS_NO,:'GMLSRSNAME');
