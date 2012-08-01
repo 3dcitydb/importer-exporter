@@ -61,9 +61,11 @@ BEGIN
   LOOP 
     FETCH ref_cur INTO dummy;
     IF NOT FOUND THEN
+      is_not_referenced := true;
+    ELSE
       is_not_referenced := false;
-      EXIT;
     END IF;
+    EXIT;
   END LOOP;
 
   CLOSE ref_cur;
