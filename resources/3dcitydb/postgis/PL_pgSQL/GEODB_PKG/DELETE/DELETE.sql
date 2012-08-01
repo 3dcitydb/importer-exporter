@@ -59,7 +59,7 @@ BEGIN
   OPEN ref_cur FOR EXECUTE 'SELECT 1 from ' || table_name || ' WHERE ' || check_column || '=$1 and not ' || not_column || '=$2' USING check_id, not_id;
 
   LOOP 
-    FETCH ref_cur into dummy;
+    FETCH ref_cur INTO dummy;
     IF NOT FOUND THEN
       is_not_referenced := false;
       EXIT;
@@ -80,23 +80,23 @@ internal: DELETE FROM SURFACE_GEOMETRY
 CREATE OR REPLACE FUNCTION geodb_pkg.del_intern_delete_surface_geometry(pid NUMERIC) RETURNS SETOF void AS
 $$
 BEGIN
-  EXECUTE 'DELETE FROM textureparam WHERE surface_geometry_id IN (SELECT id FROM 
+  EXECUTE 'DELETE FROM textureparam WHERE surface_geometry_id IN 
             (WITH RECURSIVE recursive_query(id, parent_id, level) 
               AS (
                 SELECT id, parent_id, 1 AS level FROM surface_geometry WHERE id=$1
               UNION ALL
                 SELECT sg.id, sg.parent_id, rq.level + 1 AS level FROM surface_geometry sg, recursive_query rq WHERE sg.parent_id = rq.id
               )
-              SELECT id FROM recursive_query ORDER BY level DESC) AS cte)' USING pid; 
+              SELECT id FROM recursive_query ORDER BY level DESC)' USING pid; 
   
-  EXECUTE 'DELETE FROM surface_geometry WHERE id IN (SELECT id FROM 
+  EXECUTE 'DELETE FROM surface_geometry WHERE id IN
             (WITH RECURSIVE recursive_query(id, parent_id, level) 
               AS (
                 SELECT id, parent_id, 1 AS level FROM surface_geometry WHERE id=$1
               UNION ALL
                 SELECT sg.id, sg.parent_id, rq.level + 1 AS level FROM surface_geometry sg, recursive_query rq WHERE sg.parent_id = rq.id
               )
-              SELECT id FROM recursive_query ORDER BY level DESC) AS cte)' USING pid; 			  
+              SELECT id FROM recursive_query ORDER BY level DESC)' USING pid; 			  
 			 
   EXCEPTION
     WHEN OTHERS THEN
@@ -236,7 +236,7 @@ DECLARE
 BEGIN
 -- delete surface data not being referenced by appearances any more
   FOR rec IN surface_data_cur LOOP
-    IF is_not_referenced('appear_to_surface_data', 'surface_data_id', rec.id, 'appearance_id', appearance_rec_id) THEN
+    IF geodb_pkg.del_is_not_referenced('appear_to_surface_data', 'surface_data_id', rec.id, 'appearance_id', appearance_rec_id) THEN
       PERFORM geodb_pkg.del_delete_row_surface_data(rec.id);
     END IF;
   END LOOP;
@@ -360,8 +360,8 @@ DECLARE
 BEGIN
 -- delete openings not being referenced by a thematic surface any more
   FOR rec IN opening_cur LOOP
-    IF is_not_referenced('opening_to_them_surface', 'opening_id', rec.id, 'thematic_surface_id', thematic_surface_rec_id) THEN
-      PERFORM geodb_pkg.del_delete_row_opening(rec.id);
+    IF geodb_pkg.del_is_not_referenced('opening_to_them_surface', 'opening_id', rec.id, 'thematic_surface_id', thematic_surface_rec_id) THEN
+      PERFORM geodb_pkg.del_delete_row_opening(rec.id, rec.address_id);
     END IF;
   END LOOP;
 
@@ -440,7 +440,7 @@ $$
 BEGIN
   PERFORM geodb_pkg.del_pre_delete_opening(opening_rec_id);
   EXECUTE 'DELETE FROM opening WHERE id=$1' USING opening_rec_id;
-  PERFORM geodb_pkg.del_post_delete_opening(opening_rec_address_id);
+  PERFORM geodb_pkg.del_post_delete_opening(opening_rec_id, opening_rec_address_id);
 
   EXCEPTION
     WHEN OTHERS THEN
@@ -450,7 +450,7 @@ $$
 LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION geodb_pkg.del_post_delete_opening(opening_rec_address_id NUMERIC) RETURNS SETOF void AS
+CREATE OR REPLACE FUNCTION geodb_pkg.del_post_delete_opening(opening_rec_id NUMERIC, opening_rec_address_id NUMERIC) RETURNS SETOF void AS
 $$
 DECLARE
   opening_rec opening%ROWTYPE;
@@ -458,7 +458,7 @@ DECLARE
     SELECT a.id FROM address a LEFT OUTER JOIN address_to_building ab
       ON a.id=ab.address_id WHERE a.id=opening_rec_address_id AND ab.address_id IS NULL;
 BEGIN
-  EXECUTE 'SELECT * FROM opening WHERE id=$1' INTO opening_rec USING opening_rec_address_id;
+  EXECUTE 'SELECT * FROM opening WHERE id=$1' INTO opening_rec USING opening_rec_id;
   
   IF opening_rec.lod3_multi_surface_id IS NOT NULL THEN
     PERFORM geodb_pkg.del_intern_delete_surface_geometry(opening_rec.lod3_multi_surface_id);
@@ -470,16 +470,16 @@ BEGIN
 
 -- delete addresses not being referenced from buildings and openings any more
   FOR rec IN address_cur LOOP
-    IF is_not_referenced('opening', 'address_id', rec.id, 'id', opening_rec.id) THEN
+    IF geodb_pkg.del_is_not_referenced('opening', 'address_id', rec.id, 'id', opening_rec_id) THEN
       PERFORM geodb_pkg.del_delete_address(rec.id);
     END IF;   
   END LOOP;
 
-  PERFORM geodb_pkg.del_intern_delete_cityobject(opening_rec.id);
+  PERFORM geodb_pkg.del_intern_delete_cityobject(opening_rec_id);
  
   EXCEPTION
     WHEN OTHERS THEN
-      RAISE NOTICE 'post_delete_opening (id: %): %', opening_rec.id, SQLERRM;
+      RAISE NOTICE 'post_delete_opening (id: %): %', opening_rec_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -683,13 +683,12 @@ BEGIN
 	
 -- delete addresses being not referenced from buildings any more
   FOR rec IN address_cur LOOP
-    IF is_not_referenced('address_to_building', 'address_id', rec.address_id, 'building_id', building_rec_id) THEN
+    IF geodb_pkg.del_is_not_referenced('address_to_building', 'address_id', rec.address_id, 'building_id', building_rec_id) THEN
       PERFORM geodb_pkg.del_delete_address(rec.address_id);
     END IF;
   END LOOP;
 
   EXECUTE 'DELETE FROM address_to_building WHERE building_id=$1' USING building_rec_id;
-
   
   EXCEPTION
     WHEN OTHERS THEN
@@ -706,12 +705,11 @@ BEGIN
   PERFORM geodb_pkg.del_pre_delete_building(building_id);
   EXECUTE 'DELETE FROM building WHERE id=$1' USING building_id;
   PERFORM geodb_pkg.del_post_delete_building(building_id);
-
-  /*
+  
   EXCEPTION
     WHEN OTHERS THEN
       RAISE NOTICE 'delete_row_building (id: %): %', building_id, SQLERRM;
-	  */
+
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -758,7 +756,7 @@ $$
 BEGIN
   PERFORM geodb_pkg.del_intern_delete_surface_geometry(pid);
 
-  IF clean_apps != 0 THEN
+  IF clean_apps <> 0 THEN
     PERFORM geodb_pkg.del_cleanup_appearances(0);
   END IF;
 
