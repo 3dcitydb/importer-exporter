@@ -266,7 +266,7 @@ public class Queries {
 		"ORDER BY b.id";
 
 	private static final String BUILDING_FOOTPRINT_LOD1 =
-		"SELECT ST_Union(sg.geometry)), " +
+		"SELECT ST_Union(sg.geometry), " +
 				"MAX(b.building_root_id) AS building_id " +
 		"FROM SURFACE_GEOMETRY sg, BUILDING b, CITYOBJECT co " +
 		"WHERE " +
@@ -522,7 +522,7 @@ public class Queries {
 		"FROM CITYOBJECT co " +
 		"WHERE co.gmlid = ?";
 
-    public static final String BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD =
+    public static final String BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER =
     	// No pyramid-aggregation possible in PostGIS
 //    	"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
 //    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
@@ -570,6 +570,69 @@ public class Queries {
 //    	"GROUP BY mod (rownum, <GROUP_BY_3>) " +
 //    	")";
 
+    private static final String BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD1 =
+    	// No pyramid-aggregation possible in PostGIS
+//    	"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+//    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+//    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+//    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
+    	"SELECT ST_Union(get_valid_area.simple_geom) " +
+    	"FROM (" +
+    	"SELECT * FROM (" +
+    	"SELECT * FROM (" +
+    		
+//      "SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+//    	"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
+//    	"SELECT sg.geometry AS simple_geom " +
+    	"FROM SURFACE_GEOMETRY sg " +
+    	"WHERE " +
+    	  "sg.root_id IN( " +
+    	     "SELECT b.lod<LoD>_geometry_id " +
+    	     "FROM CITYOBJECT co, BUILDING b " +
+    	     "WHERE "+
+    	       "co.gmlid = ? " +
+    	       "AND b.building_root_id = co.id " +
+    	       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
+    	  ") " +
+    	  "AND sg.geometry IS NOT NULL) AS get_geoms " +
+    	
+//    	") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
+//    	") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
+    	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
+    	"WHERE ST_Area(get_valid_geoms.simple_geom) > <TOLERANCE>) AS get_valid_area";
+    	
+//    	") " +
+//    	"GROUP BY mod(rownum, <GROUP_BY_1>) " +
+//    	") " +
+//    	"GROUP BY mod (rownum, <GROUP_BY_2>) " +
+//    	") " +
+//    	"GROUP BY mod (rownum, <GROUP_BY_3>) " +
+//    	")";
+
+    public static String getBuildingAggregateGeometries (double tolerance,
+//    													 int srid2D,
+    													 int lodToExportFrom /*,
+    													 double groupBy1,
+    													 double groupBy2,
+    													 double groupBy3 */) {
+    	if (lodToExportFrom > 1) {
+    	   	return BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER.replace("<TOLERANCE>", String.valueOf(tolerance))
+//    	   															   .replace("<2D_SRID>", String.valueOf(srid2D))
+    	   															   .replace("<LoD>", String.valueOf(lodToExportFrom))
+    	   															/* .replace("<GROUP_BY_1>", String.valueOf(groupBy1))
+    	   															   .replace("<GROUP_BY_2>", String.valueOf(groupBy2))
+    	   															   .replace("<GROUP_BY_3>", String.valueOf(groupBy3)) */;
+    	}
+    	// else
+	   	return BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD1.replace("<TOLERANCE>", String.valueOf(tolerance))
+//		   												 .replace("<2D_SRID>", String.valueOf(srid2D))
+		   												 .replace("<LoD>", String.valueOf(lodToExportFrom))
+		   											  /* .replace("<GROUP_BY_1>", String.valueOf(groupBy1))
+		   												 .replace("<GROUP_BY_2>", String.valueOf(groupBy2))
+		   												 .replace("<GROUP_BY_3>", String.valueOf(groupBy3)) */;
+    }
+    
 	public static final String GET_EXTRUDED_HEIGHT =
 		"SELECT " + // "b.measured_height, " +
 //		"SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) - SDO_GEOM.SDO_MIN_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +

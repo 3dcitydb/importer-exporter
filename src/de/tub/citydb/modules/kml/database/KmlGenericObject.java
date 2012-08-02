@@ -149,10 +149,10 @@ import de.tub.citydb.modules.common.event.GeometryCounterEvent;
 import de.tub.citydb.util.Util;
 
 public class KmlGenericObject {
-	
-	protected static final int POINT = 1;
-	protected static final int LINE_STRING = 2;
-	protected static final int POLYGON = 3;	
+
+//	protected static final int POINT = 1;
+//	protected static final int LINE_STRING = 2;
+//	protected static final int POLYGON = 3;	
 //	private static final int EXTERIOR_POLYGON_RING = 1003;
 //	private static final int INTERIOR_POLYGON_RING = 2003;
 
@@ -777,10 +777,6 @@ public class KmlGenericObject {
 		}
 	}
 
-	private void removeTexImage(String texImageUri){
-		texImages.remove(texImageUri);
-	}
-
 	public HashMap<String, BufferedImage> getTexImages(){
 		return texImages;
 	}
@@ -794,6 +790,10 @@ public class KmlGenericObject {
 	}
 	
 	/*
+	private void removeTexImage(String texImageUri){
+		texImages.remove(texImageUri);
+	}
+
 	public void addTexOrdImage(String texImageUri, OrdImage texOrdImage){
 		if (texOrdImage == null) {
 			return;
@@ -1443,7 +1443,7 @@ public class KmlGenericObject {
 		try {
 			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
-			int minLod = lodToExportFrom == 5 ? 0: lodToExportFrom;
+			int minLod = lodToExportFrom == 5 ? 1: lodToExportFrom;
 
 			while (currentLod >= minLod) {
 				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
@@ -1470,6 +1470,7 @@ public class KmlGenericObject {
 					try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
 					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
+					try { connection.rollback(); } catch (SQLException sqle) {}
 				}
 
 				// when for EXTRUDED or FOOTPRINT there is no ground surface modelled, try to find it out indirectly
@@ -1479,13 +1480,7 @@ public class KmlGenericObject {
 
 //					int groupBasis = 4;
 					try {
-						psQuery = connection.prepareStatement(Queries.
-								  	BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<TOLERANCE>", "0.001")
-								  											 .replace("<LoD>", String.valueOf(currentLod)),
-//								  										  	 .replace("<2D_SRID>", String.valueOf(DBUtil.get2DSrid(dbSrs)))
-//								  										  	 .replace("<GROUP_BY_1>", String.valueOf(Math.pow(groupBasis, 4)))
-//								  										  	 .replace("<GROUP_BY_2>", String.valueOf(Math.pow(groupBasis, 3)))
-//								  										  	 .replace("<GROUP_BY_3>", String.valueOf(Math.pow(groupBasis, 2))),
+						psQuery = connection.prepareStatement(Queries.getBuildingAggregateGeometries(0.000, currentLod),
 															  ResultSet.TYPE_SCROLL_INSENSITIVE,
 															  ResultSet.CONCUR_READ_ONLY);
 
@@ -1669,7 +1664,7 @@ public class KmlGenericObject {
 				Geometry groundSurface = convertToWGS84(pgBuildingGeometry.getGeometry());
 				
 				switch (groundSurface.getType()) {
-				case POLYGON:
+				case Geometry.POLYGON:
 					Polygon polyGeom = (Polygon) groundSurface;
 										
 					for (int ring = 0; ring < polyGeom.numRings(); ring++){					
@@ -1700,8 +1695,8 @@ public class KmlGenericObject {
 						}
 					}				
 					break;
-				case POINT:
-				case LINE_STRING:
+				case Geometry.POINT:
+				case Geometry.LINESTRING:
 					continue;
 				default:
 					Logger.getInstance().warn("Unknown geometry for " + work.getGmlId());
@@ -1785,7 +1780,7 @@ public class KmlGenericObject {
 
 				//if (groundSurface.numGeoms() == 1) {
 				switch (groundSurface.getType()) {
-				case POLYGON:
+				case Geometry.POLYGON:
 					Polygon polyGeom = (Polygon) groundSurface;
 					for (int ring = 0; ring < polyGeom.numRings(); ring++){
 											
@@ -1824,8 +1819,8 @@ public class KmlGenericObject {
 						}
 					}				
 					break;
-				case POINT:
-				case LINE_STRING:
+				case Geometry.POINT:
+				case Geometry.LINESTRING:
 					continue;
 				default:
 					Logger.getInstance().warn("Unknown geometry for " + work.getGmlId());

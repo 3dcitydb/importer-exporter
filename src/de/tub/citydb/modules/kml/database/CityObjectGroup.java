@@ -201,7 +201,7 @@ public class CityObjectGroup extends KmlGenericObject{
 				Geometry groundSurface = convertToWGS84(pgBuildingGeometry.getGeometry());
 				
 				switch (groundSurface.getType()) {
-				case POLYGON:
+				case Geometry.POLYGON:
 					Polygon polyGeom = (Polygon) groundSurface;											
 					for (int ring = 0; ring < polyGeom.numRings(); ring++){					
 						LinearRingType linearRing = kmlFactory.createLinearRingType();
@@ -231,8 +231,8 @@ public class CityObjectGroup extends KmlGenericObject{
 						}
 					}				
 					break;
-				case POINT:
-				case LINE_STRING:
+				case Geometry.POINT:
+				case Geometry.LINESTRING:
 					continue;
 				default:
 					Logger.getInstance().warn("Unknown geometry for " + work.getGmlId());
