@@ -119,7 +119,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		try {
 			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
-			int minLod = lodToExportFrom == 5 ? 0: lodToExportFrom;
+			int minLod = lodToExportFrom == 5 ? 1: lodToExportFrom;
 
 			while (currentLod >= minLod) {
 				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;

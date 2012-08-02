@@ -94,7 +94,7 @@ public class Building extends KmlGenericObject{
 		try {
 			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
-			int minLod = lodToExportFrom == 5 ? 0: lodToExportFrom;
+			int minLod = lodToExportFrom == 5 ? 1: lodToExportFrom;
 
 			while (currentLod >= minLod) {
 				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
@@ -131,13 +131,12 @@ public class Building extends KmlGenericObject{
 
 					int groupBasis = 4;
 					try {
-						psQuery = connection.prepareStatement(Queries.
-								  	BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<TOLERANCE>", "0.001")
-								  										  	 .replace("<2D_SRID>", String.valueOf(DBUtil.get2DSrid(dbSrs)))
-								  										  	 .replace("<LoD>", String.valueOf(currentLod))
-								  										  	 .replace("<GROUP_BY_1>", String.valueOf(Math.pow(groupBasis, 4)))
-								  										  	 .replace("<GROUP_BY_2>", String.valueOf(Math.pow(groupBasis, 3)))
-								  										  	 .replace("<GROUP_BY_3>", String.valueOf(Math.pow(groupBasis, 2))),
+						psQuery = connection.prepareStatement(Queries.getBuildingAggregateGeometries(0.001,
+																									 DBUtil.get2DSrid(dbSrs),
+																									 currentLod,
+																									 Math.pow(groupBasis, 4),
+																									 Math.pow(groupBasis, 3),
+																									 Math.pow(groupBasis, 2)),
 															  ResultSet.TYPE_SCROLL_INSENSITIVE,
 															  ResultSet.CONCUR_READ_ONLY);
 
