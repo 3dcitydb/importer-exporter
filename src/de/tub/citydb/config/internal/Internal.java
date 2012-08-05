@@ -40,6 +40,7 @@ public class Internal {
 	public static final String ORACLE_DEFAULT_WORKSPACE = "LIVE";
 	public static final String GML_NAME_DELIMITER = " --/\\-- ";
 	public static final String GEOMETRY_XLINK = "isXlink";
+	public static final String GEOMETRY_ORIGINAL = "origGeom";
 
 	// language pack
 	public static ResourceBundle I18N;

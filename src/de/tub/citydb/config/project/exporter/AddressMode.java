@@ -27,45 +27,37 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.modules.citygml.exporter.database.content;
+package de.tub.citydb.config.project.exporter;
 
-import org.citygml4j.model.citygml.CityGMLClass;
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
 
-public class DBSplittingResult {
-	private final long primaryKey;
-	private final CityGMLClass cityObjectType;
-	private final String gmlId;
-	
-	private boolean checkIfAlreadyExported = false;
+@XmlType(name="AddressModeType")
+@XmlEnum
+public enum AddressMode {
+	@XmlEnumValue("db")
+	DB("db"),
+	@XmlEnumValue("xal")
+	XAL("xal");
 
-	public DBSplittingResult(long primaryKey, CityGMLClass cityObjectType) {
-		this(null, primaryKey, cityObjectType);
-	}
-	
-	public DBSplittingResult(String gmlId, long primaryKey, CityGMLClass cityObjectType) {
-		this.gmlId = gmlId;
-		this.primaryKey = primaryKey;
-		this.cityObjectType = cityObjectType;
-	}
+	private final String value;
 
-	public String getGmlId() {
-		return gmlId;
+	AddressMode(String v) {
+		value = v;
 	}
 
-	public long getPrimaryKey() {
-		return primaryKey;
+	public String value() {
+		return value;
 	}
 
-	public CityGMLClass getCityObjectType() {
-		return cityObjectType;
-	}
+	public static AddressMode fromValue(String v) {
+		for (AddressMode c: AddressMode.values()) {
+			if (c.value.equals(v)) {
+				return c;
+			}
+		}
 
-	public boolean isCheckIfAlreadyExported() {
-		return checkIfAlreadyExported;
+		return DB;
 	}
-
-	public void setCheckIfAlreadyExported(boolean checkIfAlreadyExported) {
-		this.checkIfAlreadyExported = checkIfAlreadyExported;
-	}
-		
 }

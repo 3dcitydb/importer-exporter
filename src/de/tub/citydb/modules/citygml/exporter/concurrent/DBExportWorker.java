@@ -36,6 +36,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerPool;
@@ -100,7 +101,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 			CacheManager cacheManager,
 			ExportFilter exportFilter,
 			Config config,
-			EventDispatcher eventDispatcher) throws SQLException {
+			EventDispatcher eventDispatcher) throws SQLException, SAXException {
 		this.dbConnectionPool = dbConnectionPool;
 		this.jaxbBuilder = jaxbBuilder;
 		this.ioWriterPool = ioWriterPool;
@@ -113,7 +114,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 		init();
 	}
 
-	private void init() throws SQLException {
+	private void init() throws SQLException, SAXException {
 		connection = dbConnectionPool.getConnection();
 		connection.setAutoCommit(false);
 
@@ -223,7 +224,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 				boolean success = false;
 
 				if (work.isCheckIfAlreadyExported())
-					if (dbExporterManager.getGmlId(work.getPrimaryKey(), work.getCityObjectType()) != null)
+					if (dbExporterManager.lookupAndPutGmlId(work.getGmlId(), work.getPrimaryKey(), work.getCityObjectType()))
 						return;						
 
 				switch (work.getCityObjectType()) {

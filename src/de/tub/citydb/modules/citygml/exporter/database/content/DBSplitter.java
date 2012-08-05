@@ -30,6 +30,7 @@
 package de.tub.citydb.modules.citygml.exporter.database.content;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -50,6 +51,9 @@ import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;
 import de.tub.citydb.modules.common.event.StatusDialogMessage;
 import de.tub.citydb.modules.common.filter.ExportFilter;
@@ -66,7 +70,6 @@ public class DBSplitter {
 
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<DBSplittingResult> dbWorkerPool;
-	private final ExportFilter exportFilter;
 	private final GmlIdLookupServer featureGmlIdCache;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -94,27 +97,37 @@ public class DBSplitter {
 			WorkerPool<DBSplittingResult> dbWorkerPool, 
 			ExportFilter exportFilter, 
 			GmlIdLookupServer featureGmlIdCache,
+			CacheManager cacheManager,
 			EventDispatcher eventDispatcher, 
 			Config config) throws SQLException {
 		this.dbConnectionPool = dbConnectionPool;
 		this.dbWorkerPool = dbWorkerPool;
-		this.exportFilter = exportFilter;
 		this.featureGmlIdCache = featureGmlIdCache;
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
 
-		init();
+		init(exportFilter, cacheManager);
 	}
 
-	private void init() throws SQLException {
+	private void init(ExportFilter exportFilter, CacheManager cacheManager) throws SQLException {
 		connection = dbConnectionPool.getConnection();
 		connection.setAutoCommit(false);
 
-		// try and change workspace for connection if needed
+		// try and change workspace for connection
 		Database database = config.getProject().getDatabase();
 		dbConnectionPool.gotoWorkspace(
 				connection, 
 				database.getWorkspaces().getExportWorkspace());
+		
+		// create temporary table for global appearances if needed
+		if (config.getInternal().isExportGlobalAppearances()) {
+			TemporaryCacheTable temp = cacheManager.createTemporaryCacheTableWithIndexes(CacheTableModelEnum.GLOBAL_APPEARANCE);
+
+			// try and change workspace for temporary table
+			dbConnectionPool.gotoWorkspace(
+					temp.getConnection(), 
+					config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
+		}
 
 		// set filter instances 
 		featureClassFilter = exportFilter.getFeatureClassFilter();
@@ -407,7 +420,8 @@ public class DBSplitter {
 		LOG.info("Processing CityObjectGroup features.");
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.group.msg"), this));
 
-		Statement stmt = null;
+		Statement groupStmt = null;
+		PreparedStatement memberStmt = null;
 		ResultSet rs = null;
 
 		StringBuilder groupQuery = new StringBuilder();
@@ -443,8 +457,8 @@ public class DBSplitter {
 
 		try {
 			// first step: retrieve group ids
-			stmt = connection.createStatement();
-			rs = stmt.executeQuery(groupQuery.toString());
+			groupStmt = connection.createStatement();
+			rs = groupStmt.executeQuery(groupQuery.toString());
 			List<Long> groupIds = new ArrayList<Long>();
 
 			while (rs.next() && shouldRun) {	
@@ -466,34 +480,39 @@ public class DBSplitter {
 			}
 
 			rs.close();	
-			stmt.close();
-
+			groupStmt.close();
+			
 			// second step: export group members
-			for (int i = 0; i < groupIds.size(); ++i) {
+			StringBuilder memberQuery = new StringBuilder("select co.ID, co.CLASS_ID, co.GMLID from CITYOBJECT co ")
+			.append("where co.ID in (select co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co ")
+			.append("where gtc.CITYOBJECT_ID=co.ID ")
+			.append("and gtc.CITYOBJECTGROUP_ID=? ")
+			.append(classIdsString).append(" ")
+			.append("union all ")
+			.append("select grp.PARENT_CITYOBJECT_ID from CITYOBJECTGROUP grp where grp.ID=?) ");
+
+			if (bboxFilter != null)
+				memberQuery.append(appendSdoRelate(memberQuery.toString()));
+			
+			memberStmt = connection.prepareStatement(memberQuery.toString());
+
+			for (int i = 0; shouldRun && i < groupIds.size(); ++i) {
 				long groupId = groupIds.get(i);
-				stmt = connection.createStatement();
 
-				StringBuilder memberQuery = new StringBuilder("select co.ID, co.CLASS_ID, co.GMLID from CITYOBJECT co ")
-				.append("where co.ID in (select co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co ")
-				.append("where gtc.CITYOBJECT_ID=co.ID ")
-				.append("and gtc.CITYOBJECTGROUP_ID=").append(groupId).append(" ")
-				.append(classIdsString).append(" ")
-				.append("union all ")
-				.append("select grp.PARENT_CITYOBJECT_ID from CITYOBJECTGROUP grp where grp.ID=").append(groupId).append(") ");
+				int params = bboxFilter == null ? 2 : bboxFilter.length * 2;
+				for (int j = 1; j <= params; ++j)
+					memberStmt.setLong(j, groupId);
 
-				if (bboxFilter != null)
-					memberQuery.append(appendSdoRelate(memberQuery.toString()));
-
-				rs = stmt.executeQuery(memberQuery.toString());
+				rs = memberStmt.executeQuery();
 
 				while (rs.next() && shouldRun) {				
 					long memberId = rs.getLong(1);
 					int memberClassId = rs.getInt(2);
+					String gmlId = rs.getString(3);
 					CityGMLClass cityObjectType = Util.classId2cityObject(memberClassId);
 
 					if (cityObjectType == CityGMLClass.CITY_OBJECT_GROUP) {						
 						// register group in gml:id cache
-						String gmlId = rs.getString(3);
 						if (gmlId.length() > 0)
 							featureGmlIdCache.put(gmlId, memberId, -1, false, null, CityGMLClass.CITY_OBJECT_GROUP);
 
@@ -504,14 +523,15 @@ public class DBSplitter {
 					}
 
 					// set initial context...
-					DBSplittingResult splitter = new DBSplittingResult(memberId, cityObjectType);
+					DBSplittingResult splitter = new DBSplittingResult(gmlId, memberId, cityObjectType);
 					splitter.setCheckIfAlreadyExported(true);
 					dbWorkerPool.addWork(splitter);
 				} 
 
 				rs.close();
-				stmt.close();
 			}
+			
+			memberStmt.close();
 
 			// wait for jobs to be done...
 			try {
@@ -524,6 +544,9 @@ public class DBSplitter {
 			// we assume that all group members have been exported and their gml:ids
 			// are registered in the gml:id cache - that's why we registered groups above
 			for (long groupId : groupIds) {
+				if (!shouldRun)
+					break;
+				
 				DBSplittingResult splitter = new DBSplittingResult(groupId, CityGMLClass.CITY_OBJECT_GROUP);
 				dbWorkerPool.addWork(splitter);
 			}
@@ -542,14 +565,24 @@ public class DBSplitter {
 				rs = null;
 			}
 
-			if (stmt != null) {
+			if (groupStmt != null) {
 				try {
-					stmt.close();
+					groupStmt.close();
 				} catch (SQLException sqlEx) {
 					throw sqlEx;
 				}
 
-				stmt = null;
+				groupStmt = null;
+			}
+			
+			if (memberStmt != null) {
+				try {
+					memberStmt.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				memberStmt = null;
 			}
 		}
 	}

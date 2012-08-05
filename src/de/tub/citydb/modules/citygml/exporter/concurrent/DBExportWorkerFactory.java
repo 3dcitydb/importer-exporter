@@ -33,6 +33,7 @@ import java.sql.SQLException;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.util.xml.SAXEventBuffer;
+import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerFactory;
@@ -94,6 +95,8 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 					config,
 					eventDispatcher);
 		} catch (SQLException sqlEx) {
+			// could not instantiate DBWorker
+		} catch (SAXException e) {
 			// could not instantiate DBWorker
 		}
 

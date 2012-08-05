@@ -128,8 +128,8 @@ public class DBImplicitGeometry implements DBImporter {
 				rs = psSelectLibraryObject.executeQuery();
 				if (rs.next())
 					implicitGeometryId = rs.getLong(1);
-				
-				updateTable = true;
+				else
+					updateTable = true;
 			} 
 
 			// check relative geometry reference
@@ -177,7 +177,7 @@ public class DBImplicitGeometry implements DBImporter {
 				dbImporterManager.propagateXlink(new DBXlinkLibraryObject(
 						implicitGeometryId,
 						libraryURI
-				));
+						));
 			} else
 				psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
 
@@ -187,13 +187,13 @@ public class DBImplicitGeometry implements DBImporter {
 				// thus, we do not need to apply it to the coordinate values
 				if (affineTransformation)
 					surfaceGeometryImporter.setApplyAffineTransformation(false);
-				
+
 				long surfaceGeometryId = surfaceGeometryImporter.insert(relativeGeometry, parentId);
 				if (surfaceGeometryId != 0)
 					psUpdateImplicitGeometry.setLong(2, surfaceGeometryId);
 				else
 					psUpdateImplicitGeometry.setNull(2, 0);
-				
+
 				// re-activate affine transformation on surface geometry writer if necessary
 				if (affineTransformation)
 					surfaceGeometryImporter.setApplyAffineTransformation(true);
@@ -205,15 +205,15 @@ public class DBImplicitGeometry implements DBImporter {
 				dbImporterManager.executeBatch(DBImporterEnum.IMPLICIT_GEOMETRY);
 		}
 
-		if (isXLink && gmlId != null) {
+		if (isXLink && !dbImporterManager.lookupAndPutGmlId("#xlink#" + gmlId, 1, CityGMLClass.IMPLICIT_GEOMETRY)) {
 			dbImporterManager.propagateXlink(new DBXlinkBasic(
 					implicitGeometryId, 
 					TableEnum.IMPLICIT_GEOMETRY, 
 					gmlId, 
 					TableEnum.SURFACE_GEOMETRY)
-			);
+					);
 		}
-		
+
 		return implicitGeometryId;
 	}
 

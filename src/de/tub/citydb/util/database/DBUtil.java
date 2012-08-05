@@ -641,6 +641,7 @@ public class DBUtil {
 					result.getLowerLeftCorner().setY(ordinatesArray[1]);
 					result.getUpperRightCorner().setX(ordinatesArray[2]);
 					result.getUpperRightCorner().setY(ordinatesArray[3]);
+					result.setSrs(targetSrs);
 				}
 			}
 		} catch (SQLException sqlEx) {

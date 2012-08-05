@@ -48,6 +48,7 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 
+import de.tub.citydb.config.Config;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 import de.tub.citydb.util.Util;
 
@@ -59,11 +60,13 @@ public class DBImplicitGeometry implements DBExporter {
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBSdoGeometry sdoGeometry;
+	private boolean transformCoords;
 
-	public DBImplicitGeometry(Connection connection, DBExporterManager dbExporterManager) throws SQLException {
+	public DBImplicitGeometry(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.dbExporterManager = dbExporterManager;
 
+		transformCoords = config.getInternal().isTransformCoordinates();
 		init();
 	}
 
@@ -110,7 +113,13 @@ public class DBImplicitGeometry implements DBExporter {
 				if (!rs.wasNull() && surfaceGeometryId != 0) {
 					isValid = true;
 
+					// if coordinate transformation is activated we need to ensure
+					// that the transformation is not applied to the prototype
+					if (transformCoords)
+						surfaceGeometryExporter.setApplyCoordinateTransformation(false);
+
 					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
+
 					if (geometry != null) {
 						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
 
@@ -121,6 +130,10 @@ public class DBImplicitGeometry implements DBExporter {
 
 						implicit.setRelativeGeometry(geometryProperty);
 					}
+
+					// re-activate coordinate transformation on surface geometry writer if necessary
+					if (transformCoords)
+						surfaceGeometryExporter.setApplyCoordinateTransformation(true);
 				}
 			}
 

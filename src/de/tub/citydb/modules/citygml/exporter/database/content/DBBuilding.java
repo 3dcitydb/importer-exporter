@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.modules.citygml.exporter.database.content;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -48,35 +49,18 @@ import oracle.sql.STRUCT;
 import org.citygml4j.impl.citygml.building.BuildingImpl;
 import org.citygml4j.impl.citygml.building.BuildingPartImpl;
 import org.citygml4j.impl.citygml.building.BuildingPartPropertyImpl;
-import org.citygml4j.impl.citygml.core.AddressImpl;
-import org.citygml4j.impl.citygml.core.AddressPropertyImpl;
-import org.citygml4j.impl.citygml.core.XalAddressPropertyImpl;
 import org.citygml4j.impl.gml.base.StringOrRefImpl;
 import org.citygml4j.impl.gml.basicTypes.DoubleOrNullImpl;
 import org.citygml4j.impl.gml.basicTypes.MeasureOrNullListImpl;
 import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfacePropertyImpl;
 import org.citygml4j.impl.gml.geometry.primitives.SolidPropertyImpl;
 import org.citygml4j.impl.gml.measures.LengthImpl;
-import org.citygml4j.impl.xal.AddressDetailsImpl;
-import org.citygml4j.impl.xal.CountryImpl;
-import org.citygml4j.impl.xal.CountryNameImpl;
-import org.citygml4j.impl.xal.LocalityImpl;
-import org.citygml4j.impl.xal.LocalityNameImpl;
-import org.citygml4j.impl.xal.PostBoxImpl;
-import org.citygml4j.impl.xal.PostBoxNumberImpl;
-import org.citygml4j.impl.xal.PostalCodeImpl;
-import org.citygml4j.impl.xal.PostalCodeNumberImpl;
-import org.citygml4j.impl.xal.ThoroughfareImpl;
-import org.citygml4j.impl.xal.ThoroughfareNameImpl;
-import org.citygml4j.impl.xal.ThoroughfareNumberImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.Building;
 import org.citygml4j.model.citygml.building.BuildingPart;
 import org.citygml4j.model.citygml.building.BuildingPartProperty;
-import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
-import org.citygml4j.model.citygml.core.XalAddressProperty;
 import org.citygml4j.model.gml.base.StringOrRef;
 import org.citygml4j.model.gml.basicTypes.DoubleOrNull;
 import org.citygml4j.model.gml.basicTypes.MeasureOrNullList;
@@ -88,20 +72,12 @@ import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.xal.AddressDetails;
-import org.citygml4j.model.xal.Country;
-import org.citygml4j.model.xal.CountryName;
-import org.citygml4j.model.xal.Locality;
-import org.citygml4j.model.xal.LocalityName;
-import org.citygml4j.model.xal.PostBox;
-import org.citygml4j.model.xal.PostBoxNumber;
-import org.citygml4j.model.xal.PostalCode;
-import org.citygml4j.model.xal.PostalCodeNumber;
-import org.citygml4j.model.xal.Thoroughfare;
-import org.citygml4j.model.xal.ThoroughfareName;
-import org.citygml4j.model.xal.ThoroughfareNumber;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.project.exporter.AddressMode;
+import de.tub.citydb.modules.citygml.common.xal.AddressExportFactory;
+import de.tub.citydb.modules.citygml.common.xal.AddressObject;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
@@ -141,8 +117,8 @@ public class DBBuilding implements DBExporter {
 					"b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_BELOW_GROUND, b.LOD1_GEOMETRY_ID, b.LOD2_GEOMETRY_ID, b.LOD3_GEOMETRY_ID, b.LOD4_GEOMETRY_ID, " +
 					"b.LOD1_TERRAIN_INTERSECTION, b.LOD2_TERRAIN_INTERSECTION, b.LOD3_TERRAIN_INTERSECTION, b.LOD4_TERRAIN_INTERSECTION, " +
 					"b.LOD2_MULTI_CURVE, b.LOD3_MULTI_CURVE, b.LOD4_MULTI_CURVE, " +
-					"a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT " +
-			"from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
+					"a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT, a.XAL_SOURCE " +
+					"from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 
@@ -157,8 +133,8 @@ public class DBBuilding implements DBExporter {
 					"geodb_util.transform_or_null(b.LOD3_MULTI_CURVE, " + srid + ") AS LOD3_MULTI_CURVE, " +
 					"geodb_util.transform_or_null(b.LOD4_MULTI_CURVE, " + srid + ") AS LOD4_MULTI_CURVE, " +
 					"a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, " +
-					"geodb_util.transform_or_null(a.MULTI_POINT, " + srid + ") AS MULTI_POINT " +
-			"from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
+					"geodb_util.transform_or_null(a.MULTI_POINT, " + srid + ") AS MULTI_POINT, a.XAL_SOURCE " +
+					"from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
 		}
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
@@ -257,104 +233,31 @@ public class DBBuilding implements DBExporter {
 				}
 
 				// address information
-				AddressProperty addressProperty = null;
-				long addressId = rs.getLong("ADDR_ID");
+				rs.getLong("ADDR_ID");
+				if (!rs.wasNull()) {
+					AddressExportFactory factory = dbExporterManager.getAddressExportFactory();					
+					AddressObject addressObject = factory.newAddressObject();
 
-				if (!rs.wasNull() && addressId > 0) {
-					String streetAttr = rs.getString("STREET");
-					String houseNoAttr = rs.getString("HOUSE_NUMBER");
-					String poBoxAttr = rs.getString("PO_BOX");
-					String zipCodeAttr = rs.getString("ZIP_CODE");
-					String cityAttr = rs.getString("CITY");
-					String countryAttr = rs.getString("COUNTRY");
+					fillAddressObject(addressObject, factory.getPrimaryMode(), rs);
+					if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
+						fillAddressObject(addressObject, factory.getFallbackMode(), rs);
 
-					if (streetAttr != null ||
-							poBoxAttr != null ||
-							zipCodeAttr != null ||
-							cityAttr != null ||
-							countryAttr != null) {
-
-						AddressDetails addressDetails = new AddressDetailsImpl();
-						Country country = new CountryImpl();
-
-						// country name
-						if (countryAttr != null) {
-							CountryName countryName = new CountryNameImpl();
-							countryName.setContent(countryAttr);
-							country.addCountryName(countryName);
-						}
-
-						Locality locality = new LocalityImpl();
-						locality.setType("Town");
-
-						if (cityAttr != null) {
-							LocalityName localityName = new LocalityNameImpl();
-							localityName.setContent(cityAttr);
-							locality.addLocalityName(localityName);
-						}
-
-						if (streetAttr != null) {
-							Thoroughfare thoroughfare = new ThoroughfareImpl();
-							thoroughfare.setType("Street");
-
-							ThoroughfareName name = new ThoroughfareNameImpl();
-							name.setContent(streetAttr);
-							thoroughfare.addThoroughfareName(name);
-
-							if (houseNoAttr != null) {
-								ThoroughfareNumber number = new ThoroughfareNumberImpl();
-								number.setContent(houseNoAttr);
-								thoroughfare.addThoroughfareNumber(number);
-							}
-
-							locality.setThoroughfare(thoroughfare);
-						}				
-
-						if (zipCodeAttr != null) {
-							PostalCode postalCode = new PostalCodeImpl();
-							PostalCodeNumber zipNumber = new PostalCodeNumberImpl();
-							zipNumber.setContent(zipCodeAttr);
-
-							postalCode.addPostalCodeNumber(zipNumber);
-							locality.setPostalCode(postalCode);
-						}
-
-						if (poBoxAttr != null) {
-							PostBox postBox = new PostBoxImpl();
-							PostBoxNumber postBoxNumber = new PostBoxNumberImpl();
-							postBoxNumber.setContent(poBoxAttr);
-
-							postBox.setPostBoxNumber(postBoxNumber);
-							locality.setPostBox(postBox);
-						}
-
-						country.setLocality(locality);
-						addressDetails.setCountry(country);
-
-						XalAddressProperty xalAddressProperty = new XalAddressPropertyImpl();
-						xalAddressProperty.setAddressDetails(addressDetails);
-
-						Address address = new AddressImpl();
-						address.setXalAddress(xalAddressProperty);
-
+					if (addressObject.canCreate()) {
 						// multiPointGeometry
 						STRUCT multiPointObj = (STRUCT)rs.getObject("MULTI_POINT");
 						if (!rs.wasNull() && multiPointObj != null) {
 							JGeometry multiPoint = JGeometry.load(multiPointObj);
-
 							MultiPointProperty multiPointProperty = sdoGeometry.getMultiPointProperty(multiPoint, false);
-							if (multiPointProperty != null) {
-								address.setMultiPoint(multiPointProperty);
-							}
-						}					
-
-						addressProperty = new AddressPropertyImpl();
-						addressProperty.setObject(address);
+							if (multiPointProperty != null)
+								addressObject.setMultiPointProperty(multiPointProperty);
+						}
+						
+						// create xAL address
+						AddressProperty addressProperty = factory.create(addressObject);
+						if (addressProperty != null)
+							buildingNode.addressProperty.add(addressProperty);
 					}
-				}
-
-				if (addressProperty != null)
-					buildingNode.addressProperty.add(addressProperty);			
+				}			
 			}
 
 			// interpret buildingTree as a single abstractBuilding
@@ -660,6 +563,25 @@ public class DBBuilding implements DBExporter {
 			multiCurve = new JGeometry[3];
 			addressProperty = new Vector<AddressProperty>();
 			childNodes = new Vector<BuildingNode>();
+		}
+	}
+
+	private void fillAddressObject(AddressObject addressObject, AddressMode mode, ResultSet rs) throws SQLException {
+		if (mode == AddressMode.DB) {
+			addressObject.setStreet(rs.getString("STREET"));
+			addressObject.setHouseNumber(rs.getString("HOUSE_NUMBER"));
+			addressObject.setPOBox(rs.getString("PO_BOX"));
+			addressObject.setZipCode(rs.getString("ZIP_CODE"));
+			addressObject.setCity(rs.getString("CITY"));
+			addressObject.setCountry(rs.getString("COUNTRY"));
+			addressObject.setState(rs.getString("STATE"));
+		} else {
+			Clob clob = rs.getClob("XAL_SOURCE");
+			if (!rs.wasNull()) {
+				Object object = dbExporterManager.unmarshal(clob.getCharacterStream());
+				if (object instanceof AddressDetails)
+					addressObject.setAddressDetails((AddressDetails)object);
+			}
 		}
 	}
 

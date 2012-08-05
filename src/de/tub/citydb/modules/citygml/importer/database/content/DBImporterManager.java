@@ -29,12 +29,26 @@
  */
 package de.tub.citydb.modules.citygml.importer.database.content;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamResult;
+
+import org.citygml4j.builder.jaxb.JAXBBuilder;
+import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
+import org.citygml4j.model.module.ModuleType;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
+import org.citygml4j.util.xml.SAXWriter;
+import org.citygml4j.xml.CityGMLNamespaceContext;
+import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
@@ -49,6 +63,7 @@ import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 public class DBImporterManager {
 	private final Connection batchConn;
 	private final Connection commitConn;
+	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
 	private final EventDispatcher eventDipatcher;
@@ -58,16 +73,22 @@ public class DBImporterManager {
 	private final HashMap<CityGMLClass, Long> featureCounterMap;
 	private final HashMap<GMLClass, Long> geometryCounterMap;
 	private final DBSequencer dbSequencer;
+	
 	private AffineTransformer affineTransformer;
+	private CityGMLVersion cityGMLVersion;
+	private JAXBMarshaller jaxbMarshaller;
+	private SAXWriter saxWriter;
 
 	public DBImporterManager(Connection batchConn,
 			Connection commitConn,
+			JAXBBuilder jaxbBuilder,
 			Config config,
 			WorkerPool<DBXlink> tmpXlinkPool,
 			DBGmlIdLookupServerManager lookupServerManager,
 			EventDispatcher eventDipatcher) throws SQLException {
 		this.batchConn = batchConn;
 		this.commitConn = commitConn;
+		this.jaxbBuilder = jaxbBuilder;
 		this.config = config;
 		this.lookupServerManager = lookupServerManager;
 		this.tmpXlinkPool = tmpXlinkPool;
@@ -77,9 +98,15 @@ public class DBImporterManager {
 		featureCounterMap = new HashMap<CityGMLClass, Long>();
 		geometryCounterMap = new HashMap<GMLClass, Long>();
 		dbSequencer = new DBSequencer(batchConn);
-		
+
 		if (config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation())
 			affineTransformer = config.getInternal().getAffineTransformer();
+
+		if (config.getProject().getImporter().getAddress().isSetImportXAL()) {
+			cityGMLVersion = CityGMLVersion.DEFAULT;
+			jaxbMarshaller = jaxbBuilder.createJAXBMarshaller(cityGMLVersion);
+			saxWriter = new SAXWriter();
+		}
 	}
 
 	public DBImporter getDBImporter(DBImporterEnum dbImporterType) throws SQLException {
@@ -125,7 +152,7 @@ public class DBImporterManager {
 				dbImporter = new DBOpeningToThemSurface(batchConn, this);
 				break;
 			case ADDRESS:
-				dbImporter = new DBAddress(batchConn, this);
+				dbImporter = new DBAddress(batchConn, config, this);
 				break;
 			case ADDRESS_TO_BUILDING:
 				dbImporter = new DBAddressToBuilding(batchConn, this);
@@ -210,6 +237,15 @@ public class DBImporterManager {
 		putGmlId(gmlId, id, -1, false, null, type);
 	}
 	
+	public boolean lookupAndPutGmlId(String gmlId, long id, CityGMLClass type) {
+		GmlIdLookupServer lookupServer = lookupServerManager.getLookupServer(type);
+
+		if (lookupServer != null)
+			return lookupServer.lookupAndPut(gmlId, id, type);
+		else
+			return false;
+	}
+
 	public long getDBId(String gmlId, CityGMLClass type) {
 		GmlIdLookupServer lookupServer = lookupServerManager.getLookupServer(type);
 
@@ -218,7 +254,7 @@ public class DBImporterManager {
 			if (entry != null && entry.getId() > 0)
 				return entry.getId();
 		}
-		
+
 		return 0;
 	}
 
@@ -241,7 +277,7 @@ public class DBImporterManager {
 	public AffineTransformer getAffineTransformer() {
 		return affineTransformer;
 	}
-	
+
 	public HashMap<CityGMLClass, Long> getFeatureCounter() {
 		return featureCounterMap;
 	}
@@ -258,6 +294,40 @@ public class DBImporterManager {
 		return geometryCounterMap;
 	}
 
+	public String marshal(Object object, ModuleType... moduleTypes) {
+		String result = null;
+
+		try {
+			CityGMLNamespaceContext ctx = new CityGMLNamespaceContext();
+			for (ModuleType moduleType : moduleTypes)
+				ctx.setPrefix(cityGMLVersion.getModule(moduleType));
+
+			ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
+			saxWriter.setOutput(new StreamResult(out));
+			saxWriter.setNamespaceContext(ctx);
+
+			Marshaller marshaller = jaxbBuilder.getJAXBContext().createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+			JAXBElement<?> jaxbElement = jaxbMarshaller.marshalJAXBElement(object);
+			if (jaxbElement != null)
+				marshaller.marshal(jaxbElement, saxWriter);
+
+			saxWriter.flush();
+			result = out.toString();
+			out.reset();
+		} catch (JAXBException e) {
+			//
+		} catch (IOException e) {
+			// 
+		} catch (SAXException e) {
+			//
+		} finally {
+			saxWriter.reset();
+		}
+
+		return result;
+	}
+
 	public void executeBatch(DBImporterEnum type) throws SQLException {
 		for (DBImporterEnum key : DBImporterEnum.getExecutionPlan(type)) {
 			DBImporter importer = dbImporterMap.get(key);
@@ -265,7 +335,7 @@ public class DBImporterManager {
 				importer.executeBatch();
 		}
 	}
-	
+
 	public void executeBatch() throws SQLException {
 		for (DBImporterEnum key : DBImporterEnum.EXECUTION_PLAN) {
 			DBImporter importer = dbImporterMap.get(key);
@@ -273,7 +343,7 @@ public class DBImporterManager {
 				importer.executeBatch();
 		}
 	}
-	
+
 	public void close() throws SQLException {
 		dbSequencer.close();
 

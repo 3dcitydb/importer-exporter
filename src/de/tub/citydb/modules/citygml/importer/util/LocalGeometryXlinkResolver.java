@@ -35,6 +35,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Stack;
 
+import org.citygml4j.builder.copy.CopyBuilder;
+import org.citygml4j.builder.copy.ShallowCopyBuilder;
 import org.citygml4j.model.citygml.ade.ADEComponent;
 import org.citygml4j.model.citygml.appearance.AppearanceModuleComponent;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
@@ -58,6 +60,7 @@ public class LocalGeometryXlinkResolver {
 	private HashMap<String, AbstractGeometry> geometries;
 	private ChildInfo childInfo;
 	private Stack<String> circularTargets;
+	private CopyBuilder copyBuilder = new ShallowCopyBuilder();
 
 	private enum ResolverState {
 		GET_XLINKS,
@@ -120,7 +123,7 @@ public class LocalGeometryXlinkResolver {
 		@SuppressWarnings("unchecked")
 		@Override
 		public <T extends AbstractGeometry> void visit(GeometryProperty<T> geometryProperty) {
-			if (!geometryProperty.isSetObject() && geometryProperty.isSetHref()) {
+			if (!geometryProperty.isSetGeometry() && geometryProperty.isSetHref()) {
 				if (state == ResolverState.RESOLVE_XLINKS) {
 					final String target = clipGMLId(geometryProperty.getHref());
 					final AbstractGeometry geometry = geometries.get(target);
@@ -155,9 +158,14 @@ public class LocalGeometryXlinkResolver {
 							addToVisited(geometry);
 
 							if (!hasCircularReference) {
-								// ok, we can replace the link by the object
-								geometryProperty.setGeometry((T)geometry);
-								geometryProperty.unsetHref();
+								// ok, we can replace the link by a shallow copy of the object
+								T copy = (T)geometry.copy(copyBuilder);
+								
+								geometryProperty.setGeometry(copy);
+								geometryProperty.unsetHref();								
+								copy.setLocalProperty(Internal.GEOMETRY_XLINK, true);
+								copy.setLocalProperty(Internal.GEOMETRY_ORIGINAL, geometry);
+								
 								geometry.setLocalProperty(Internal.GEOMETRY_XLINK, true);
 
 								for (int i = 0; i < parents; ++i)
@@ -204,7 +212,7 @@ public class LocalGeometryXlinkResolver {
 			// there could be an xlink reference to the reference point of a 
 			// GeoreferencedTexture. However, this is unlikely and thus is
 			// ruled out here.
-			if (featureProperty.isSetObject() && featureProperty.getObject() instanceof AppearanceModuleComponent)
+			if (featureProperty.isSetFeature() && featureProperty.getFeature() instanceof AppearanceModuleComponent)
 				return;
 
 			super.visit(featureProperty);

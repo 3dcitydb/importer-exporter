@@ -122,7 +122,7 @@ public class DBCityObject implements DBExporter {
 					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
 					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
 					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID " +
-			"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
+					"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 
@@ -132,11 +132,12 @@ public class DBCityObject implements DBExporter {
 					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
 					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
 					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID " +
-			"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
+					"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
 		}
 
-		appearanceExporter = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.APPEARANCE);
 		generalizesToExporter = (DBGeneralization)dbExporterManager.getDBExporter(DBExporterEnum.GENERALIZATION);
+		if (exportAppearance)
+			appearanceExporter = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.APPEARANCE);
 	}
 
 
@@ -161,7 +162,7 @@ public class DBCityObject implements DBExporter {
 				if (!rs.wasNull() && struct != null) {
 					JGeometry jGeom = JGeometry.load(struct);
 					double[] points = jGeom.getMBR();
-					
+
 					Envelope env = new EnvelopeImpl();
 					Point lower = null;
 					Point upper = null;
@@ -339,8 +340,12 @@ public class DBCityObject implements DBExporter {
 					generalizesToExporter.read(cityObject, parentId, generalizesToSet);
 
 				// get appearance information associated with the cityobject
-				if (exportAppearance)
+				if (exportAppearance) {
+					if (isTopLevelObject)
+						appearanceExporter.clearLocalCache();
+
 					appearanceExporter.read(cityObject, parentId);
+				}
 
 				// update feature counter
 				dbExporterManager.updateFeatureCounter(cityObject.getCityGMLClass());

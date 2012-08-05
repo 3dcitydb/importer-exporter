@@ -50,6 +50,11 @@ public class BoundingBox {
 		this.upperRight = upperRight;
 	}
 	
+	public BoundingBox(BoundingBoxCorner lowerleft, BoundingBoxCorner upperRight, DatabaseSrs srs) {
+		this(lowerleft, upperRight);
+		this.srs = srs;
+	}
+	
 	public BoundingBox() {
 		this(new BoundingBoxCorner(), new BoundingBoxCorner());
 	}

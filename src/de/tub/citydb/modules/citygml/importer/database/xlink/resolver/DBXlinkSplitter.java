@@ -306,27 +306,27 @@ public class DBXlinkSplitter {
 
 					int isTexPara = rs.getInt("IS_TEXTURE_PARAMETERIZATION");
 					if (!rs.wasNull())
-						((DBXlinkTextureParam)xlink).setTextureParameterization(isTexPara != 0);
+						xlink.setTextureParameterization(isTexPara != 0);
 
 					String texParamGmlId = rs.getString("TEXPARAM_GMLID");
 					if (!rs.wasNull())
-						((DBXlinkTextureParam)xlink).setTexParamGmlId(texParamGmlId);
+						xlink.setTexParamGmlId(texParamGmlId);
 
 					String worldToTexture = rs.getString("WORLD_TO_TEXTURE");
 					if (!rs.wasNull())
-						((DBXlinkTextureParam)xlink).setWorldToTexture(worldToTexture);
+						xlink.setWorldToTexture(worldToTexture);
 
 					String textureCoord = rs.getString("TEXTURE_COORDINATES");
 					if (!rs.wasNull())
-						((DBXlinkTextureParam)xlink).setTextureCoord(textureCoord);
+						xlink.setTextureCoord(textureCoord);
 
 					String targetURI = rs.getString("TARGET_URI");
 					if (!rs.wasNull())
-						((DBXlinkTextureParam)xlink).setTargetURI(targetURI);
+						xlink.setTargetURI(targetURI);
 
 					String texCoordListId = rs.getString("TEXCOORDLIST_ID");
 					if (!rs.wasNull())
-						((DBXlinkTextureParam)xlink).setTexCoordListId(texCoordListId);
+						xlink.setTexCoordListId(texCoordListId);
 
 					xlinkResolverPool.addWork(xlink);
 				}

@@ -35,6 +35,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import oracle.spatial.geometry.JGeometry;
@@ -97,6 +98,8 @@ public class DBAppearance implements DBExporter {
 	private String gmlIdPrefix;
 	private String pathSeparator;
 
+	private HashSet<String> textureNameCache;
+
 	public DBAppearance(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
 		this.config = config;
@@ -106,9 +109,10 @@ public class DBAppearance implements DBExporter {
 	}
 
 	private void init() throws SQLException {
+		textureNameCache = new HashSet<String>();
 		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
 		uniqueFileNames = config.getProject().getExporter().getAppearances().isSetUniqueTextureFileNames();
-		
+
 		texturePath = config.getInternal().getExportTextureFilePath();
 		pathSeparator = config.getProject().getExporter().getAppearances().isTexturePathAbsolute() ?
 				File.separator : "/";
@@ -126,7 +130,7 @@ public class DBAppearance implements DBExporter {
 					"sd.X3D_SHININESS, sd.X3D_TRANSPARENCY, sd.X3D_AMBIENT_INTENSITY, sd.X3D_SPECULAR_COLOR, sd.X3D_DIFFUSE_COLOR, sd.X3D_EMISSIVE_COLOR, sd.X3D_IS_SMOOTH, " +
 					"sd.TEX_IMAGE_URI, nvl(sd.TEX_IMAGE.getContentLength(), 0) as DB_TEX_IMAGE_SIZE, sd.TEX_IMAGE.getMimeType() as DB_TEX_IMAGE_MIME_TYPE, sd.TEX_MIME_TYPE, lower(sd.TEX_TEXTURE_TYPE) as TEX_TEXTURE_TYPE, lower(sd.TEX_WRAP_MODE) as TEX_WRAP_MODE, sd.TEX_BORDER_COLOR, " +
 					"sd.GT_PREFER_WORLDFILE, sd.GT_ORIENTATION, sd.GT_REFERENCE_POINT " +
-			"from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID where app.CITYOBJECT_ID=?");
+					"from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID where app.CITYOBJECT_ID=?");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 
@@ -136,7 +140,7 @@ public class DBAppearance implements DBExporter {
 					"sd.TEX_IMAGE_URI, nvl(sd.TEX_IMAGE.getContentLength(), 0) as DB_TEX_IMAGE_SIZE, sd.TEX_IMAGE.getMimeType() as DB_TEX_IMAGE_MIME_TYPE, sd.TEX_MIME_TYPE, lower(sd.TEX_TEXTURE_TYPE) as TEX_TEXTURE_TYPE, lower(sd.TEX_WRAP_MODE) as TEX_WRAP_MODE, sd.TEX_BORDER_COLOR, " +
 					"sd.GT_PREFER_WORLDFILE, sd.GT_ORIENTATION, " +
 					"geodb_util.transform_or_null(sd.GT_REFERENCE_POINT, " + srid + ") AS GT_REFERENCE_POINT " +
-			"from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID where app.CITYOBJECT_ID=?");
+					"from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID where app.CITYOBJECT_ID=?");
 		}
 
 		textureParamExporter = (DBTextureParam)dbExporterManager.getDBExporter(DBExporterEnum.TEXTUREPARAM);
@@ -324,7 +328,7 @@ public class DBAppearance implements DBExporter {
 							String extension = Util.getFileExtension(imageURI);
 							imageURI = "tex" + surfaceDataId + (extension != null ? "." + extension : "");
 						}
-						
+
 						File file = new File(imageURI);
 						String fileName = file.getName();
 						if (texturePath != null)
@@ -333,7 +337,7 @@ public class DBAppearance implements DBExporter {
 						absTex.setImageURI(fileName);
 
 						// export texture image from database
-						if (exportTextureImage) {
+						if (exportTextureImage && (uniqueFileNames || !textureNameCache.contains(imageURI))) {
 							if (dbImageSize > 0) {
 								DBXlinkTextureFile xlink = new DBXlinkTextureFile(
 										surfaceDataId,
@@ -347,9 +351,12 @@ public class DBAppearance implements DBExporter {
 								msg.append(": Skipping 0 byte texture file ' ");
 								msg.append(imageURI);
 								msg.append("'.");
-								
+
 								LOG.warn(msg.toString());
 							}
+
+							if (!uniqueFileNames)
+								textureNameCache.add(imageURI);
 						}
 					}
 
@@ -380,7 +387,8 @@ public class DBAppearance implements DBExporter {
 
 						if (colorList != null && colorList.size() >= 4) {
 							ColorPlusOpacity borderColor = new ColorPlusOpacityImpl(
-									colorList.get(0), colorList.get(1), colorList.get(2), colorList.get(3)							);
+									colorList.get(0), colorList.get(1), colorList.get(2), colorList.get(3)						
+									);
 
 							absTex.setBorderColor(borderColor);
 						} else {
@@ -445,6 +453,10 @@ public class DBAppearance implements DBExporter {
 			if (rs != null)
 				rs.close();
 		}
+	}
+
+	public void clearLocalCache() {
+		textureNameCache.clear();
 	}
 
 	@Override

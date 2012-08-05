@@ -39,6 +39,7 @@ import de.tub.citydb.config.project.system.System;
 		"continuation",
 		"path",
 		"gmlId",
+		"address",
 		"appearances",
 		"filter",
 		"affineTransformation",
@@ -50,6 +51,7 @@ public class Importer {
 	private Continuation continuation;
 	private Path path;
 	private ImportGmlId gmlId;
+	private ImportAddress address;
 	private ImportAppearance appearances;
 	private ImportFilterConfig filter;
 	private AffineTransformation affineTransformation;
@@ -61,6 +63,7 @@ public class Importer {
 		continuation = new Continuation();
 		path = new Path();
 		gmlId = new ImportGmlId();
+		address = new ImportAddress();
 		appearances = new ImportAppearance();
 		filter = new ImportFilterConfig();
 		affineTransformation = new AffineTransformation();
@@ -96,6 +99,15 @@ public class Importer {
 			this.gmlId = gmlId;
 	}
 
+	public ImportAddress getAddress() {
+		return address;
+	}
+
+	public void setAddress(ImportAddress address) {
+		if (address != null)
+			this.address = address;
+	}
+
 	public ImportAppearance getAppearances() {
 		return appearances;
 	}
@@ -113,7 +125,7 @@ public class Importer {
 		if (filter != null)
 			this.filter = filter;
 	}
-	
+
 	public Index getIndexes() {
 		return indexes;
 	}
@@ -135,7 +147,7 @@ public class Importer {
 	public AffineTransformation getAffineTransformation() {
 		return affineTransformation;
 	}
-	
+
 	public boolean isSetAffineTransformation() {
 		return false;
 	}

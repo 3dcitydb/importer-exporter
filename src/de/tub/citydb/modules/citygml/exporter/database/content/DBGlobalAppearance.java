@@ -34,6 +34,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import oracle.spatial.geometry.JGeometry;
@@ -97,12 +98,15 @@ public class DBGlobalAppearance implements DBExporter {
 
 	private PreparedStatement psAppearanceCityModel;
 	private boolean exportTextureImage;
+	private boolean uniqueFileNames;
 	private String texturePath;
 	private boolean useXLink;
 	private boolean appendOldGmlId;
 	private boolean transformCoords;
 	private String gmlIdPrefix;
 	private String pathSeparator;
+
+	private HashSet<String> textureNameCache;
 
 	public DBGlobalAppearance(TemporaryCacheTable drainTable, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
@@ -113,7 +117,10 @@ public class DBGlobalAppearance implements DBExporter {
 	}
 
 	private void init() throws SQLException {
+		textureNameCache = new HashSet<String>();
 		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
+		uniqueFileNames = config.getProject().getExporter().getAppearances().isSetUniqueTextureFileNames();
+
 		texturePath = config.getInternal().getExportTextureFilePath();
 		pathSeparator = config.getProject().getExporter().getAppearances().isTexturePathAbsolute() ?
 				File.separator : "/";
@@ -133,7 +140,7 @@ public class DBGlobalAppearance implements DBExporter {
 					"sd.GT_PREFER_WORLDFILE, sd.GT_ORIENTATION, sd.GT_REFERENCE_POINT, " +
 					"tp.WORLD_TO_TEXTURE, tp.TEXTURE_COORDINATES, tp.SURFACE_GEOMETRY_ID, " +
 					"drain.GMLID as SG_GMLID " +
-			"from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID inner join TEXTUREPARAM tp on tp.SURFACE_DATA_ID=sd.ID inner join " + drainTable.getTableName() + " drain on drain.id=tp.SURFACE_GEOMETRY_ID where app.ID=? order by sd.ID");
+					"from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID inner join TEXTUREPARAM tp on tp.SURFACE_DATA_ID=sd.ID inner join " + drainTable.getTableName() + " drain on drain.id=tp.SURFACE_GEOMETRY_ID where app.ID=? order by sd.ID");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 
@@ -145,7 +152,7 @@ public class DBGlobalAppearance implements DBExporter {
 					"geodb_util.transform_or_null(sd.GT_REFERENCE_POINT, " + srid + ") AS GT_REFERENCE_POINT, " +
 					"tp.WORLD_TO_TEXTURE, tp.TEXTURE_COORDINATES, tp.SURFACE_GEOMETRY_ID, " +
 					"drain.GMLID as SG_GMLID " +
-			"from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID inner join TEXTUREPARAM tp on tp.SURFACE_DATA_ID=sd.ID inner join " + drainTable.getTableName() + " drain on drain.id=tp.SURFACE_GEOMETRY_ID where app.ID=? order by sd.ID");
+					"from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID inner join TEXTUREPARAM tp on tp.SURFACE_DATA_ID=sd.ID inner join " + drainTable.getTableName() + " drain on drain.id=tp.SURFACE_GEOMETRY_ID where app.ID=? order by sd.ID");
 		}
 	}
 
@@ -187,6 +194,7 @@ public class DBGlobalAppearance implements DBExporter {
 					if (theme != null)
 						appearance.setTheme(theme);
 
+					textureNameCache.clear();
 					isInited = true;
 				}
 
@@ -326,6 +334,11 @@ public class DBGlobalAppearance implements DBExporter {
 						long dbImageSize = rs.getLong("DB_TEX_IMAGE_SIZE");
 						String imageURI = rs.getString("TEX_IMAGE_URI");
 						if (imageURI != null) {
+							if (uniqueFileNames) {
+								String extension = Util.getFileExtension(imageURI);
+								imageURI = "tex" + surfaceDataId + (extension != null ? "." + extension : "");
+							}
+
 							File file = new File(imageURI);
 							String fileName = file.getName();
 							if (texturePath != null)
@@ -333,8 +346,8 @@ public class DBGlobalAppearance implements DBExporter {
 
 							absTex.setImageURI(fileName);
 
-							if (exportTextureImage) {
-								// export texture image from database
+							// export texture image from database
+							if (exportTextureImage && (uniqueFileNames || !textureNameCache.contains(imageURI))) {
 								if (dbImageSize > 0) {
 									DBXlinkTextureFile xlink = new DBXlinkTextureFile(
 											surfaceDataId,
@@ -348,9 +361,12 @@ public class DBGlobalAppearance implements DBExporter {
 									msg.append(": Skipping 0 byte texture file ' ");
 									msg.append(imageURI);
 									msg.append("'.");
-									
+
 									LOG.warn(msg.toString());
 								}
+								
+								if (!uniqueFileNames)
+									textureNameCache.add(imageURI);
 							}
 						}
 
@@ -382,7 +398,7 @@ public class DBGlobalAppearance implements DBExporter {
 							if (colorList != null && colorList.size() >= 4) {
 								ColorPlusOpacity borderColor = new ColorPlusOpacityImpl(
 										colorList.get(0), colorList.get(1), colorList.get(2), colorList.get(3)
-								);
+										);
 
 								absTex.setBorderColor(borderColor);
 							} else {

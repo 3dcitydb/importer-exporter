@@ -31,6 +31,7 @@ package de.tub.citydb.modules.citygml.importer.concurrent;
 
 import java.sql.SQLException;
 
+import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.model.citygml.CityGML;
 
 import de.tub.citydb.api.concurrent.Worker;
@@ -45,6 +46,7 @@ import de.tub.citydb.modules.common.filter.ImportFilter;
 
 public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 	private final DatabaseConnectionPool dbConnectionPool;
+	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<DBXlink> xlinkWorkerPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
 	private final ImportFilter importFilter;
@@ -52,12 +54,14 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 	private final EventDispatcher eventDispatcher;
 
 	public DBImportWorkerFactory(DatabaseConnectionPool dbConnectionPool,
+			JAXBBuilder jaxbBuilder,
 			WorkerPool<DBXlink> xlinkWorkerPool,
 			DBGmlIdLookupServerManager lookupServerManager,
 			ImportFilter importFilter,
 			Config config,
 			EventDispatcher eventDispatcher) {
 		this.dbConnectionPool = dbConnectionPool;
+		this.jaxbBuilder = jaxbBuilder;
 		this.xlinkWorkerPool = xlinkWorkerPool;
 		this.lookupServerManager = lookupServerManager;
 		this.importFilter = importFilter;
@@ -70,7 +74,8 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 		DBImportWorker dbWorker = null;
 
 		try {
-			dbWorker = new DBImportWorker(dbConnectionPool, 
+			dbWorker = new DBImportWorker(dbConnectionPool,
+					jaxbBuilder,
 					xlinkWorkerPool, 
 					lookupServerManager,
 					importFilter,
