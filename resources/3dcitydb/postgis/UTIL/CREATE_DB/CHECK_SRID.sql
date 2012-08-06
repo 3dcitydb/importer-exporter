@@ -20,7 +20,7 @@
 -- Version | Date       | Description     | Author
 -- 1.0.0     2010-07-31   PostGIS version   FKun
 
-CREATE OR REPLACE FUNCTION check_srid(srid INTEGER) RETURNS VARCHAR AS
+CREATE OR REPLACE FUNCTION check_srid(srid INTEGER DEFAULT 0) RETURNS VARCHAR AS
 $$
 DECLARE
   dbsrid INTEGER;

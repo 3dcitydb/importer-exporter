@@ -158,7 +158,7 @@ Similar to the setup procedure, the convenience scripts DROP_DB.bat and DROP_DB.
 can be used instead. Please follow the above steps to enter your database details
 in these scripts and to run them on your machine.
 
-Note that DROP_DB.sqp only removes the relational schema of the 3D City Database as
+Note that DROP_DB.sql only removes the relational schema of the 3D City Database as
 well as all PL/pgSQL functions and utilities. The database itself is not dropped.
 
 
