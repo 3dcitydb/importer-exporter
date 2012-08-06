@@ -438,7 +438,7 @@ public class KmlExporterManager {
 			}
 			else {
 				// ----------------- model saving -----------------
-				ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + ".dae");
+				ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" + colladaBundle.getBuildingId() + ".dae");
 				zipOut.putNextEntry(zipEntry);
 				zipOut.write(colladaBundle.getColladaAsString().getBytes(CHARSET));
 				zipOut.closeEntry();
@@ -453,7 +453,10 @@ public class KmlExporterManager {
 //						byte[] ordImageBytes = texOrdImage.getDataInByteArray();
 						byte[] ordImageBytes = texOrdImage.getBlobContent().getBytes(1, (int)texOrdImage.getBlobContent().length());
 
-						zipEntry = new ZipEntry(imageFilename);
+//						zipEntry = new ZipEntry(imageFilename);
+						zipEntry = imageFilename.startsWith("..") ?
+								   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
+								   new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
 						zipOut.putNextEntry(zipEntry);
 						zipOut.write(ordImageBytes, 0, ordImageBytes.length);
 //						zipOut.write(ordImageBytes, 0, bytes_read);
@@ -469,7 +472,10 @@ public class KmlExporterManager {
 						BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename);
 						String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
-						zipEntry = new ZipEntry(imageFilename);
+//						zipEntry = new ZipEntry(imageFilename);
+						zipEntry = imageFilename.startsWith("..") ?
+								   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
+								   new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
 						zipOut.putNextEntry(zipEntry);
 						ImageIO.write(texImage, imageType, zipOut);
 						zipOut.closeEntry();
@@ -531,7 +537,8 @@ public class KmlExporterManager {
 					String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
 					File imageFile = new File(buildingDirectory, imageFilename);
-					ImageIO.write(texImage, imageType, imageFile);
+					if (!imageFile.exists()) // avoid overwriting and access conflicts
+						ImageIO.write(texImage, imageType, imageFile);
 				}
 			}
 			
@@ -554,6 +561,7 @@ public class KmlExporterManager {
 		}
 	}
 
+/*
 	public void print(StyleType styleType) throws JAXBException {
 		SAXEventBuffer buffer = new SAXEventBuffer();
 		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
@@ -567,5 +575,7 @@ public class KmlExporterManager {
 		kmlMarshaller.marshal(kmlFactory.createStyleMap(styleMapType), buffer);
 		ioWriterPool.addWork(buffer);
 	}
+*/
+
 }
 

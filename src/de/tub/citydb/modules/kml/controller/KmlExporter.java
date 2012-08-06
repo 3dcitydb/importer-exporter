@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
 import javax.imageio.ImageIO;
@@ -254,6 +255,7 @@ public class KmlExporter implements EventHandler {
 
 		if (!checkBalloonSettings(config.getProject().getKmlExporter().getBuildingBalloon())) return false;
 		if (!checkBalloonSettings(config.getProject().getKmlExporter().getCityObjectGroupBalloon())) return false;
+		if (!checkBalloonSettings(config.getProject().getKmlExporter().getVegetationBalloon())) return false;
 
 		// getting export filter
 		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
@@ -508,12 +510,16 @@ public class KmlExporter implements EventHandler {
 //												byte[] ordImageBytes = texOrdImage.getDataInByteArray();
 												byte[] ordImageBytes = texOrdImage.getBlobContent().getBytes(1, (int)texOrdImage.getBlobContent().length());
 
-												ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
-												zipOut.putNextEntry(zipEntry);
-//												zipOut.write(ordImageBytes, 0, bytes_read);
-												zipOut.write(ordImageBytes, 0, ordImageBytes.length);
-												
-												zipOut.closeEntry();
+												ZipEntry zipEntry = imageFilename.startsWith("..") ?
+																	new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
+																	new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
+												try {
+													zipOut.putNextEntry(zipEntry);
+//													zipOut.write(ordImageBytes, 0, bytes_read);
+													zipOut.write(ordImageBytes, 0, ordImageBytes.length);
+													zipOut.closeEntry();
+												}
+												catch (ZipException ze) {} // ignore repeated images
 											}
 										}
 
@@ -525,10 +531,15 @@ public class KmlExporter implements EventHandler {
 												BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename);
 												String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
-												ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
-												zipOut.putNextEntry(zipEntry);
-												ImageIO.write(texImage, imageType, zipOut);
-												zipOut.closeEntry();
+												ZipEntry zipEntry = imageFilename.startsWith("..") ?
+																    new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
+																    new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
+												try {
+													zipOut.putNextEntry(zipEntry);
+													ImageIO.write(texImage, imageType, zipOut);
+													zipOut.closeEntry();
+												}
+												catch (ZipException ze) {} // ignore repeated images
 											}
 										}
 										colladaBundle = buildingQueue.poll();

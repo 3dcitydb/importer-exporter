@@ -233,7 +233,7 @@ public class Building extends KmlGenericObject{
 					}
 					setZOffset(zOffset);
 
-					ColladaOptions colladaOptions = config.getProject().getKmlExporter().getVegetationColladaOptions();
+					ColladaOptions colladaOptions = config.getProject().getKmlExporter().getBuildingColladaOptions();
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						double imageScaleFactor = 1;

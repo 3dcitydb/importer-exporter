@@ -30,6 +30,7 @@
 package de.tub.citydb.modules.kml.database;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -234,7 +235,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 												 work,
 												 getBalloonSetings().isBalloonContentInSeparateFile());
 					}
-					else { // reverse order for single buildings
+					else { // reverse order for single objects
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
 												 work,
 												 getBalloonSetings().isBalloonContentInSeparateFile());
@@ -379,8 +380,11 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		// no heading value to correct
 
 		LinkType link = kmlFactory.createLinkType();
-		if (config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue() &&
-				config.getProject().getKmlExporter().isOneFilePerObject()) {
+
+		if (config.getProject().getKmlExporter().isOneFilePerObject() &&
+			!config.getProject().getKmlExporter().isExportAsKmz() &&
+			config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue())
+		{
 			link.setHref(kmlGenericObject.getId() + ".dae");
 		}
 		else {
@@ -477,7 +481,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 									&&	texImage != null) {
 	
 								int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
-								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
+								texImageUri = ".." + File.separator + "_" + texImageUri.substring(fileSeparatorIndex + 1);
 	
 								addTexImageUri(surfaceId, texImageUri);
 								if ((getTexOrdImage(texImageUri) == null) && (getTexImage(texImageUri) == null)) { 
@@ -713,7 +717,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			}
 		}
 		catch (Exception e) {
-			Logger.getInstance().warn("Exception when generating highlighting geometry of building " + work.getGmlId());
+			Logger.getInstance().warn("Exception when generating highlighting geometry of vegetation object " + work.getGmlId());
 			e.printStackTrace();
 		}
 		finally {

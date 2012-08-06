@@ -169,6 +169,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private JComboBox themeComboBox = new JComboBox();
 	private JButton fetchThemesButton = new JButton(" ");
 
+	private JLabel featureClassesLabel = new JLabel();
 	private CheckboxTree fcTree;
 	private DefaultMutableTreeNode cityObject;
 	private DefaultMutableTreeNode building;
@@ -367,7 +368,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		scrollView.add(versioningPanel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 		scrollView.add(filterPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
 		scrollView.add(exportAndDisplayPanel, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));
-		scrollView.add(fcTree, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,7,0,7));
+		scrollView.add(featureClassesLabel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.HORIZONTAL,5,8,0,0));
+		scrollView.add(fcTree, GuiUtil.setConstraints(0,4,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,7,0,7));
 		JScrollPane scrollPane = new JScrollPane(scrollView);
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
@@ -436,6 +438,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		themeLabel.setText(Internal.I18N.getString("pref.kmlexport.label.theme"));
 		fetchThemesButton.setText(Internal.I18N.getString("pref.kmlexport.label.fetchTheme"));
 
+		featureClassesLabel.setText(Internal.I18N.getString("filter.border.featureClass"));
+		
 		exportButton.setText(Internal.I18N.getString("export.button.export"));
 	}
 
