@@ -331,16 +331,6 @@ public class Queries {
 			"AND sg.geometry IS NOT NULL " +
 		"ORDER BY b.id";
 
-	private static final String BUILDING_FOOTPRINT_LOD1 =
-		"SELECT SDO_AGGR_UNION(SDOAGGRTYPE(sg.geometry, 0.05)), " +
-				"MAX(b.building_root_id) AS building_id " +
-		"FROM SURFACE_GEOMETRY sg, BUILDING b, CITYOBJECT co " +
-		"WHERE " +
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
-			"AND sg.root_id = b.lod1_geometry_id " +
-			"AND sg.geometry IS NOT NULL";
-
 	private static final String BUILDING_GEOMETRY_HIGHLIGHTING_LOD1 =
 		"SELECT sg.geometry, sg.id " +
 		"FROM SURFACE_GEOMETRY sg, BUILDING b, CITYOBJECT co " +
@@ -432,13 +422,6 @@ public class Queries {
     	singleBuildingQueriesLod2.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD2);
     	singleBuildingQueriesLod2.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD2);
     	singleBuildingQueriesLod2.put(DisplayForm.COLLADA, BUILDING_COLLADA_LOD2_ROOT_IDS);
-    }
-
-	private static final HashMap<Integer, String> singleBuildingQueriesLod1 = new HashMap<Integer, String>();
-    static {
-    	singleBuildingQueriesLod1.put(DisplayForm.FOOTPRINT, BUILDING_FOOTPRINT_LOD1);
-    	singleBuildingQueriesLod1.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD1);
-    	singleBuildingQueriesLod1.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD1);
     }
 
     public static String getSingleBuildingQuery (int lodToExportFrom, DisplayForm displayForm) {
@@ -590,6 +573,21 @@ public class Queries {
 		   												 .replace("<GROUP_BY_3>", String.valueOf(groupBy3));
     }
 
+	private static final String BUILDING_FOOTPRINT_LOD1 =
+		BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD1.replace("<TOLERANCE>", "0.001")
+					 							  .replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
+					 							  .replace("<LoD>", "1")
+					 							  .replace("<GROUP_BY_1>", "256")
+					 							  .replace("<GROUP_BY_2>", "64")
+					 							  .replace("<GROUP_BY_3>", "16");
+
+	private static final HashMap<Integer, String> singleBuildingQueriesLod1 = new HashMap<Integer, String>();
+    static {
+    	singleBuildingQueriesLod1.put(DisplayForm.FOOTPRINT, BUILDING_FOOTPRINT_LOD1);
+    	singleBuildingQueriesLod1.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD1);
+    	singleBuildingQueriesLod1.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD1);
+    }
+				
 	// ----------------------------------------------------------------------
 	// CITY OBJECT GROUP QUERIES
 	// ----------------------------------------------------------------------
