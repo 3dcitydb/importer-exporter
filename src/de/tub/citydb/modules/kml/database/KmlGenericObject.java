@@ -126,6 +126,7 @@ import org.collada._2005._11.colladaschema.UpAxisType;
 import org.collada._2005._11.colladaschema.Vertices;
 import org.collada._2005._11.colladaschema.VisualScene;
 import org.postgis.Geometry;											// collides with Collada-Geometry
+import org.postgis.MultiPolygon;
 import org.postgis.PGgeometry;
 import org.postgis.Polygon;
 import org.w3c.dom.Document;
@@ -150,9 +151,6 @@ import de.tub.citydb.util.Util;
 
 public class KmlGenericObject {
 
-//	protected static final int POINT = 1;
-//	protected static final int LINE_STRING = 2;
-//	protected static final int POLYGON = 3;	
 //	private static final int EXTERIOR_POLYGON_RING = 1003;
 //	private static final int INTERIOR_POLYGON_RING = 2003;
 
@@ -1461,9 +1459,11 @@ public class KmlGenericObject {
 						break; // result set not empty
 					}
 					else {
-						try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+						try { rs.close(); // release cursor on DB
+						} catch (SQLException sqle) {}
 						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
-						try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+						try { psQuery.close(); // release cursor on DB
+						} catch (SQLException sqle) {}
 					}
 				}
 				catch (Exception e2) {
@@ -1645,7 +1645,8 @@ public class KmlGenericObject {
 		MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
 		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
-		PolygonType polygon = null; 
+		PolygonType polygon = null;
+		PolygonType[] multiPolygon = null;
 		while (rs.next()) {
 //			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1);
 			PGgeometry pgBuildingGeometry = (PGgeometry)rs.getObject(1);
@@ -1695,8 +1696,52 @@ public class KmlGenericObject {
 						}
 					}				
 					break;
+					
+				case Geometry.MULTIPOLYGON:
+					MultiPolygon multiPolyGeom = (MultiPolygon) groundSurface;
+					multiPolygon = new PolygonType[multiPolyGeom.numPolygons()]; 
+					
+					for (int p = 0; p < multiPolyGeom.numPolygons(); p++){
+						Polygon subPolyGeom = multiPolyGeom.getPolygon(p);
+
+						multiPolygon[p] = kmlFactory.createPolygonType();
+						multiPolygon[p].setTessellate(true);
+						multiPolygon[p].setExtrude(true);
+						multiPolygon[p].setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+
+						for (int ring = 0; ring < subPolyGeom.numRings(); ring++){
+							LinearRingType linearRing = kmlFactory.createLinearRingType();
+							BoundaryType boundary = kmlFactory.createBoundaryType();
+							boundary.setLinearRing(linearRing);
+							
+							double [] ordinatesArray = new double[subPolyGeom.getRing(ring).numPoints() * 2];
+							
+							for (int j=subPolyGeom.getRing(ring).numPoints()-1, k=0; j >= 0; j--, k+=2){
+								ordinatesArray[k] = subPolyGeom.getRing(ring).getPoint(j).x;
+								ordinatesArray[k+1] = subPolyGeom.getRing(ring).getPoint(j).y;
+							}
+							
+							// the first ring usually is the outer ring in a PostGIS-Polygon
+							// e.g. POLYGON((outerBoundary),(innerBoundary),(innerBoundary))
+							if (ring == 0){
+								multiPolygon[p].setOuterBoundaryIs(boundary);
+								for (int j = 0; j < ordinatesArray.length; j+=2) {
+									linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
+								}
+							}
+							else {
+								multiPolygon[p].getInnerBoundaryIs().add(boundary);
+								for (int j = ordinatesArray.length - 2; j >= 0; j-=2) {
+									linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
+								}	
+							}
+						}
+					}
 				case Geometry.POINT:
 				case Geometry.LINESTRING:
+				case Geometry.MULTIPOINT:
+				case Geometry.MULTILINESTRING:
+				case Geometry.GEOMETRYCOLLECTION:
 					continue;
 				default:
 					Logger.getInstance().warn("Unknown geometry for " + work.getGmlId());
@@ -1731,7 +1776,15 @@ public class KmlGenericObject {
 								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
 							}
 					}*/
-				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+				if (polygon != null){
+					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+				}
+				
+				if (multiPolygon != null){
+					for (int p = 0; p < multiPolygon.length; p++){
+						multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(multiPolygon[p]));
+					}
+				}
 			}
 		}
 		if (polygon != null) { // if there is at least some content
@@ -1762,7 +1815,8 @@ public class KmlGenericObject {
 		MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
 		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
-		PolygonType polygon = null; 
+		PolygonType polygon = null;
+		PolygonType[] multiPolygon = null;
 		while (rs.next()) {
 //			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1);
 			PGgeometry pgBuildingGeometry = (PGgeometry)rs.getObject(1); 
@@ -1819,8 +1873,51 @@ public class KmlGenericObject {
 						}
 					}				
 					break;
+				case Geometry.MULTIPOLYGON:
+					MultiPolygon multiPolyGeom = (MultiPolygon) groundSurface;
+					multiPolygon = new PolygonType[multiPolyGeom.numPolygons()]; 
+					
+					for (int p = 0; p < multiPolyGeom.numPolygons(); p++){
+						Polygon subPolyGeom = multiPolyGeom.getPolygon(p);
+						
+						multiPolygon[p] = kmlFactory.createPolygonType();
+						multiPolygon[p].setTessellate(true);
+						multiPolygon[p].setExtrude(true);
+						multiPolygon[p].setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+
+						for (int ring = 0; ring < subPolyGeom.numRings(); ring++){
+							LinearRingType linearRing = kmlFactory.createLinearRingType();
+							BoundaryType boundary = kmlFactory.createBoundaryType();
+							boundary.setLinearRing(linearRing);
+							
+							double [] ordinatesArray = new double[subPolyGeom.getRing(ring).numPoints() * 2];
+							
+							for (int j=subPolyGeom.getRing(ring).numPoints()-1, k=0; j >= 0; j--, k+=2){
+								ordinatesArray[k] = subPolyGeom.getRing(ring).getPoint(j).x;
+								ordinatesArray[k+1] = subPolyGeom.getRing(ring).getPoint(j).y;
+							}
+							
+							// the first ring usually is the outer ring in a PostGIS-Polygon
+							// e.g. POLYGON((outerBoundary),(innerBoundary),(innerBoundary))
+							if (ring == 0){
+								multiPolygon[p].setOuterBoundaryIs(boundary);
+								for (int j = 0; j < ordinatesArray.length; j+=2) {
+									linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
+								}
+							}
+							else {
+								multiPolygon[p].getInnerBoundaryIs().add(boundary);
+								for (int j = ordinatesArray.length - 2; j >= 0; j-=2) {
+									linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
+								}	
+							}
+						}
+					}
 				case Geometry.POINT:
 				case Geometry.LINESTRING:
+				case Geometry.MULTIPOINT:
+				case Geometry.MULTILINESTRING:
+				case Geometry.GEOMETRYCOLLECTION:
 					continue;
 				default:
 					Logger.getInstance().warn("Unknown geometry for " + work.getGmlId());
@@ -1869,7 +1966,15 @@ public class KmlGenericObject {
 					}
 
 				}*/
-				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+				if (polygon != null){
+					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+				}
+				
+				if (multiPolygon != null){
+					for (int p = 0; p < multiPolygon.length; p++){
+						multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(multiPolygon[p]));
+					}
+				}
 			}
 		}
 		if (polygon != null) { // if there is at least some content
