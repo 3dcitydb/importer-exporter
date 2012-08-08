@@ -77,7 +77,6 @@ import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
-import org.postgis.ComposedGeom;
 import org.postgis.Geometry;
 import org.postgis.MultiLineString;
 
@@ -147,24 +146,24 @@ public class DBStGeometry implements DBExporter {
 			if (geom.getValue() == null)
 				return null;
 
-			ComposedGeom polyGeom = (ComposedGeom)geom;
+			org.postgis.Polygon polyGeom = (org.postgis.Polygon) geom;
 						
-			for (int i = 0; i < polyGeom.numGeoms(); i++){
+			for (int i = 0; i < polyGeom.numRings(); i++){
 				List<Double> values = new ArrayList<Double>();
 				
 				if (dimensions == 2)
-					for (int j = 0; j < polyGeom.getSubGeometry(i).numPoints(); j++){
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).x);
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).y);
+					for (int j = 0; j < polyGeom.getRing(i).numPoints(); j++){
+						values.add(polyGeom.getRing(i).getPoint(j).x);
+						values.add(polyGeom.getRing(i).getPoint(j).y);
 					}
 				
 				if (dimensions == 3)
-					for (int j = 0; j < polyGeom.getSubGeometry(i).numPoints(); j++){
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).x);
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).y);
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).z);
+					for (int j = 0; j < polyGeom.getRing(i).numPoints(); j++){
+						values.add(polyGeom.getRing(i).getPoint(j).x);
+						values.add(polyGeom.getRing(i).getPoint(j).y);
+						values.add(polyGeom.getRing(i).getPoint(j).z);
 					}
-				
+					
 				//isExterior
 				if (i == 0) {
 					LinearRing linearRing = new LinearRingImpl();
