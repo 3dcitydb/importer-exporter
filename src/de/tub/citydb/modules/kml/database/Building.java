@@ -63,6 +63,8 @@ public class Building extends KmlGenericObject{
 			KmlExporterManager kmlExporterManager,
 			CityGMLFactory cityGMLFactory,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
+			ElevationServiceHandler elevationServiceHandler,
+			BalloonTemplateHandlerImpl balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
 			DatabaseSrs dbSrs,
 			Config config) {
@@ -71,12 +73,14 @@ public class Building extends KmlGenericObject{
 			  kmlExporterManager,
 			  cityGMLFactory,
 			  kmlFactory,
+			  elevationServiceHandler,
+			  balloonTemplateHandler,
 			  eventDispatcher,
 			  dbSrs,
 			  config);
 	}
 
-	protected Balloon getBalloonSetings() {
+	protected Balloon getBalloonSettings() {
 		return config.getProject().getKmlExporter().getBuildingBalloon();
 	}
 	
@@ -180,7 +184,7 @@ public class Building extends KmlGenericObject{
 				case DisplayForm.FOOTPRINT:
 					kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
 											 work,
-											 getBalloonSetings().isBalloonContentInSeparateFile());
+											 getBalloonSettings().isBalloonContentInSeparateFile());
 					break;
 				case DisplayForm.EXTRUDED:
 
@@ -196,23 +200,23 @@ public class Building extends KmlGenericObject{
 					
 					kmlExporterManager.print(createPlacemarksForExtruded(rs, work, measuredHeight, reversePointOrder),
 											 work,
-											 getBalloonSetings().isBalloonContentInSeparateFile());
+											 getBalloonSettings().isBalloonContentInSeparateFile());
 					break;
 				case DisplayForm.GEOMETRY:
 					if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter()) { // region
 						if (work.getDisplayForm().isHighlightingEnabled()) {
 							kmlExporterManager.print(createPlacemarksForHighlighting(work),
 													 work,
-													 getBalloonSetings().isBalloonContentInSeparateFile());
+													 getBalloonSettings().isBalloonContentInSeparateFile());
 						}
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
 												 work,
-												 getBalloonSetings().isBalloonContentInSeparateFile());
+												 getBalloonSettings().isBalloonContentInSeparateFile());
 					}
 					else { // reverse order for single buildings
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
 												 work,
-												 getBalloonSetings().isBalloonContentInSeparateFile());
+												 getBalloonSettings().isBalloonContentInSeparateFile());
 //							kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
 						if (work.getDisplayForm().isHighlightingEnabled()) {
 //							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
@@ -220,7 +224,7 @@ public class Building extends KmlGenericObject{
 //							 						 getBalloonSetings().isBalloonContentInSeparateFile());
 							kmlExporterManager.print(createPlacemarksForHighlighting(work),
 													 work,
-													 getBalloonSetings().isBalloonContentInSeparateFile());
+													 getBalloonSettings().isBalloonContentInSeparateFile());
 						}
 					}
 					break;
@@ -243,7 +247,7 @@ public class Building extends KmlGenericObject{
 //													 getBalloonSetings().isBalloonContentInSeparateFile());
 							kmlExporterManager.print(createPlacemarksForHighlighting(work),
 													 work,
-													 getBalloonSetings().isBalloonContentInSeparateFile());
+													 getBalloonSettings().isBalloonContentInSeparateFile());
 						}
 						if (colladaOptions.isGenerateTextureAtlases()) {
 //							eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.creatingAtlases")));

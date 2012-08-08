@@ -32,27 +32,10 @@ package de.tub.citydb.modules.kml.database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
-import net.opengis.kml._2.AltitudeModeEnumType;
-import net.opengis.kml._2.BalloonStyleType;
-import net.opengis.kml._2.BoundaryType;
-import net.opengis.kml._2.LineStyleType;
-import net.opengis.kml._2.LinearRingType;
-import net.opengis.kml._2.MultiGeometryType;
-import net.opengis.kml._2.PairType;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PolyStyleType;
-import net.opengis.kml._2.PolygonType;
-import net.opengis.kml._2.StyleMapType;
-import net.opengis.kml._2.StyleStateEnumType;
-import net.opengis.kml._2.StyleType;
 import oracle.jdbc.OracleResultSet;
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
 
 import org.citygml4j.factory.CityGMLFactory;
 
@@ -60,11 +43,9 @@ import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
-import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
-import de.tub.citydb.modules.common.event.GeometryCounterEvent;
 
 public class CityObjectGroup extends KmlGenericObject{
 
@@ -74,6 +55,8 @@ public class CityObjectGroup extends KmlGenericObject{
 			KmlExporterManager kmlExporterManager,
 			CityGMLFactory cityGMLFactory,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
+			ElevationServiceHandler elevationServiceHandler,
+			BalloonTemplateHandlerImpl balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
 			DatabaseSrs dbSrs,
 			Config config) {
@@ -82,12 +65,14 @@ public class CityObjectGroup extends KmlGenericObject{
 			  kmlExporterManager,
 			  cityGMLFactory,
 			  kmlFactory,
+			  elevationServiceHandler,
+			  balloonTemplateHandler,
 			  eventDispatcher,
 			  dbSrs,
 			  config);
 	}
 
-	protected Balloon getBalloonSetings() {
+	protected Balloon getBalloonSettings() {
 		return config.getProject().getKmlExporter().getCityObjectGroupBalloon();
 	}
 
@@ -131,7 +116,7 @@ public class CityObjectGroup extends KmlGenericObject{
 				// hard-coded for groups
 				kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
 										 work,
-										 getBalloonSetings().isBalloonContentInSeparateFile());
+										 getBalloonSettings().isBalloonContentInSeparateFile());
 			}
 		}
 		catch (SQLException sqlEx) {

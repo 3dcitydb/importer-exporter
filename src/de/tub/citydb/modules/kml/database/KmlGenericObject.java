@@ -133,7 +133,6 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
-import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
@@ -201,6 +200,8 @@ public abstract class KmlGenericObject {
 	protected KmlExporterManager kmlExporterManager;
 	protected CityGMLFactory cityGMLFactory; 
 	protected net.opengis.kml._2.ObjectFactory kmlFactory;
+	protected ElevationServiceHandler elevationServiceHandler;
+	protected BalloonTemplateHandlerImpl balloonTemplateHandler;
 	protected DatabaseSrs dbSrs;
 	protected EventDispatcher eventDispatcher;
 	protected Config config;
@@ -208,37 +209,28 @@ public abstract class KmlGenericObject {
 	protected int currentLod;
 	protected X3DMaterial defaultX3dMaterial;
 
-	private BalloonTemplateHandlerImpl balloonTemplateHandler = null;
-
-	private ElevationServiceHandler elevationServiceHandler;
 	private SimpleDateFormat dateFormatter;
 //	private double hlDistance = 0.75; 
 
 	public KmlGenericObject(Connection connection,
-								KmlExporterManager kmlExporterManager,
-								CityGMLFactory cityGMLFactory,
-								net.opengis.kml._2.ObjectFactory kmlFactory,
-								EventDispatcher eventDispatcher,
-								DatabaseSrs dbSrs,
-								Config config) {
+							KmlExporterManager kmlExporterManager,
+							CityGMLFactory cityGMLFactory,
+							net.opengis.kml._2.ObjectFactory kmlFactory,
+							ElevationServiceHandler elevationServiceHandler,
+							BalloonTemplateHandlerImpl balloonTemplateHandler,
+							EventDispatcher eventDispatcher,
+							DatabaseSrs dbSrs,
+							Config config) {
+
 		this.connection = connection;
 		this.kmlExporterManager = kmlExporterManager;
 		this.cityGMLFactory = cityGMLFactory;
 		this.kmlFactory = kmlFactory;
+		this.elevationServiceHandler = elevationServiceHandler;
+		this.balloonTemplateHandler = balloonTemplateHandler;
 		this.eventDispatcher = eventDispatcher;
 		this.dbSrs = dbSrs;
 		this.config = config;
-
-
-		if (getBalloonSetings().isIncludeDescription() &&
-				getBalloonSetings().getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
-			String balloonTemplateFilename = getBalloonSetings().getBalloonContentTemplateFile();
-			if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
-				balloonTemplateHandler = new BalloonTemplateHandlerImpl(new File(balloonTemplateFilename), connection);
-			}
-		}
-
-		elevationServiceHandler = new ElevationServiceHandler();
 
 		dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
@@ -253,7 +245,7 @@ public abstract class KmlGenericObject {
 
 	public abstract void read(KmlSplittingResult work);
 	public abstract String getStyleBasisName();
-	protected abstract Balloon getBalloonSetings();
+	protected abstract Balloon getBalloonSettings();
 
 
 	public void setId(String id) {
@@ -1455,7 +1447,7 @@ public abstract class KmlGenericObject {
 			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Normal");
 		}
 
-		if (getBalloonSetings().isIncludeDescription()) {
+		if (getBalloonSettings().isIncludeDescription()) {
 			addBalloonContents(placemark, work.getGmlId());
 		}
 		MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
@@ -1527,7 +1519,7 @@ public abstract class KmlGenericObject {
 		else {
 			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.EXTRUDED_STR + "Normal");
 		}
-		if (getBalloonSetings().isIncludeDescription()) {
+		if (getBalloonSettings().isIncludeDescription()) {
 			addBalloonContents(placemark, work.getGmlId());
 		}
 		MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
@@ -1739,7 +1731,7 @@ public abstract class KmlGenericObject {
 				placemark.setStyleUrl("#" + surfaceType + "Normal");
 			else
 				placemark.setStyleUrl(getStyleBasisName() + DisplayForm.GEOMETRY_STR + "Normal");
-			if (getBalloonSetings().isIncludeDescription() &&
+			if (getBalloonSettings().isIncludeDescription() &&
 					!work.getDisplayForm().isHighlightingEnabled()) { // avoid double description
 				addBalloonContents(placemark, work.getGmlId());
 			}
@@ -1923,7 +1915,7 @@ public abstract class KmlGenericObject {
 		placemark.setName(kmlGenericObject.getId());
 		placemark.setId(DisplayForm.COLLADA_PLACEMARK_ID + placemark.getName());
 
-		if (getBalloonSetings().isIncludeDescription() 
+		if (getBalloonSettings().isIncludeDescription() 
 				&& !work.getDisplayForm().isHighlightingEnabled()) { // avoid double description
 
 			ColladaOptions colladaOptions = null;
@@ -1999,7 +1991,7 @@ public abstract class KmlGenericObject {
 		placemark.setId(DisplayForm.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID + placemark.getName());
 		placemarkList.add(placemark);
 
-		if (getBalloonSetings().isIncludeDescription()) {
+		if (getBalloonSettings().isIncludeDescription()) {
 			addBalloonContents(placemark, work.getGmlId());
 		}
 
@@ -2156,7 +2148,7 @@ public abstract class KmlGenericObject {
 
 	protected void addBalloonContents(PlacemarkType placemark, String gmlId) {
 		try {
-			switch (getBalloonSetings().getBalloonContentMode()) {
+			switch (getBalloonSettings().getBalloonContentMode()) {
 			case GEN_ATTRIB:
 				String balloonTemplate = getBalloonContentFromGenericAttribute(gmlId);
 				if (balloonTemplate != null) {
