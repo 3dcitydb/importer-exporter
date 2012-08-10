@@ -44,7 +44,6 @@ import oracle.jdbc.OracleResultSet;
 
 import org.citygml4j.factory.CityGMLFactory;
 
-import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
@@ -66,7 +65,6 @@ public class Building extends KmlGenericObject{
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
-			DatabaseSrs dbSrs,
 			Config config) {
 
 		super(connection,
@@ -76,7 +74,6 @@ public class Building extends KmlGenericObject{
 			  elevationServiceHandler,
 			  balloonTemplateHandler,
 			  eventDispatcher,
-			  dbSrs,
 			  config);
 	}
 

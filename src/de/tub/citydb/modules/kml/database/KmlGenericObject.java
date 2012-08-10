@@ -136,6 +136,7 @@ import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -202,15 +203,14 @@ public abstract class KmlGenericObject {
 	protected net.opengis.kml._2.ObjectFactory kmlFactory;
 	protected ElevationServiceHandler elevationServiceHandler;
 	protected BalloonTemplateHandlerImpl balloonTemplateHandler;
-	protected DatabaseSrs dbSrs;
 	protected EventDispatcher eventDispatcher;
 	protected Config config;
 	
 	protected int currentLod;
+	protected DatabaseSrs dbSrs;
 	protected X3DMaterial defaultX3dMaterial;
 
 	private SimpleDateFormat dateFormatter;
-//	private double hlDistance = 0.75; 
 
 	public KmlGenericObject(Connection connection,
 							KmlExporterManager kmlExporterManager,
@@ -219,7 +219,6 @@ public abstract class KmlGenericObject {
 							ElevationServiceHandler elevationServiceHandler,
 							BalloonTemplateHandlerImpl balloonTemplateHandler,
 							EventDispatcher eventDispatcher,
-							DatabaseSrs dbSrs,
 							Config config) {
 
 		this.connection = connection;
@@ -229,9 +228,10 @@ public abstract class KmlGenericObject {
 		this.elevationServiceHandler = elevationServiceHandler;
 		this.balloonTemplateHandler = balloonTemplateHandler;
 		this.eventDispatcher = eventDispatcher;
-		this.dbSrs = dbSrs;
 		this.config = config;
 
+		dbSrs = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem();
+		
 		dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 		defaultX3dMaterial = cityGMLFactory.createX3DMaterial();

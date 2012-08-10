@@ -76,13 +76,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private Thread workerThread = null;
 
 	// instance members needed to do work
-	private final JAXBContext jaxbKmlContext;
-	private final JAXBContext jaxbColladaContext;
-	private final DatabaseConnectionPool dbConnectionPool;
-	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final ObjectFactory kmlFactory; 
 	private final CityGMLFactory cityGMLFactory; 
-	private final ConcurrentLinkedQueue<ColladaBundle> buildingQueue;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
@@ -108,19 +103,14 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			ConcurrentLinkedQueue<ColladaBundle> buildingQueue,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
-		this.jaxbKmlContext = jaxbKmlContext;
-		this.jaxbColladaContext = jaxbColladaContext;
-		this.dbConnectionPool = dbConnectionPool;
-		this.ioWriterPool = ioWriterPool;
 		this.kmlFactory = kmlFactory;
 		this.cityGMLFactory = cityGMLFactory;
-		this.buildingQueue = buildingQueue;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
 		connection = dbConnectionPool.getConnection();
 		connection.setAutoCommit(false);
-		// try and change workspace for both connections if needed
+		// try and change workspace if needed
 		Database database = config.getProject().getDatabase();
 		dbConnectionPool.gotoWorkspace(connection, 
 				database.getWorkspaces().getKmlExportWorkspace());
@@ -261,7 +251,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												elevationServiceHandler,
 												getBalloonTemplateHandler(work.getCityObjectType()),
 												eventDispatcher,
-												dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem(),
 												config);
 					break;
 
@@ -273,7 +262,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												   	   elevationServiceHandler,
 												   	   getBalloonTemplateHandler(work.getCityObjectType()),
 												   	   eventDispatcher,
-												   	   dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem(),
 												   	   config);
 					break;
 
@@ -285,7 +273,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												   				elevationServiceHandler,
 																getBalloonTemplateHandler(work.getCityObjectType()),
 												   				eventDispatcher,
-												   				dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem(),
 												   				config);
 					break;
 			}

@@ -58,7 +58,6 @@ public class KmlSplitter {
 
 	private static HashSet<CityGMLClass> CURRENTLY_ALLOWED_CITY_OBJECT_TYPES = new HashSet<CityGMLClass>();
 	
-	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
 	private final DisplayForm displayForm;
 	private final ExportFilter exportFilter;
@@ -74,7 +73,6 @@ public class KmlSplitter {
 					   ExportFilter exportFilter, 
 					   DisplayForm displayForm,
 					   Config config) throws SQLException {
-		this.dbConnectionPool = dbConnectionPool;
 		this.dbWorkerPool = dbWorkerPool;
 		this.exportFilter = exportFilter;
 		this.displayForm = displayForm;

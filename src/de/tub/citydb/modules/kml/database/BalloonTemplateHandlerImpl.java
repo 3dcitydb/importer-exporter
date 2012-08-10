@@ -51,6 +51,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
 import de.tub.citydb.api.database.BalloonTemplateHandler;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
@@ -218,6 +219,12 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("BUILDING_ID");
 		add("GEOMETRY_ID");
 		add("CITYOBJECT_ID");
+	}};
+
+	private static final String DATABASE_SRS_TABLE = "DATABASE_SRS";
+	private static final LinkedHashSet<String> DATABASE_SRS_COLUMNS = new LinkedHashSet<String>() {{
+		add("SRID");
+		add("GML_SRS_NAME");
 	}};
 
 	private static final String EXTERNAL_REFERENCE_TABLE = "EXTERNAL_REFERENCE";
@@ -412,6 +419,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(CITYOBJECTGROUP_TABLE, CITYOBJECTGROUP_COLUMNS);
 		put(CITYOBJECT_MEMBER_TABLE,CITYOBJECT_MEMBER_COLUMNS );
 		put(COLLECT_GEOM_TABLE, COLLECT_GEOM_COLUMNS);
+		put(DATABASE_SRS_TABLE, DATABASE_SRS_COLUMNS);
 		put(EXTERNAL_REFERENCE_TABLE,EXTERNAL_REFERENCE_COLUMNS );
 		put(GENERALIZATION_TABLE,GENERALIZATION_COLUMNS );
 		put(GROUP_TO_CITYOBJECT_TABLE, GROUP_TO_CITYOBJECT_COLUMNS);
@@ -658,7 +666,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 							JGeometry surface = JGeometry.load(buildingGeometryObj);
 							int dimensions = surface.getDimensions();
-							double[] ordinatesArray = surface.getOrdinatesArray();
+							double[] ordinatesArray = surface.getType() == JGeometry.GTYPE_POINT ?
+													  surface.getPoint():
+													  surface.getOrdinatesArray();
 							result = result + "(";
 							for (int i = 0; i < ordinatesArray.length; i = i + dimensions) {
 								for (int j = 0; j < dimensions; j++) {
@@ -916,6 +926,13 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		}
 		
 		private void convertStatementToProperSQL(int lod) throws Exception {
+
+			String sqlStatement = checkForSpecialKeywords();
+			if (sqlStatement != null) {
+				setProperSQLStatement(sqlStatement);
+				return;
+			}
+
 			String table = null;
 			String aggregateFunction = null;
 			List<String> columns = null;
@@ -971,13 +988,13 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				condition = rawStatement.substring(index, rawStatement.indexOf(']', index)).trim();
 				try {
 					if (Integer.parseInt(condition) < 0) {
-						throw new Exception("Invalid condition \"" + condition +"\" in statement \"" + rawStatement);
+						throw new Exception("Invalid condition \"" + condition + "\" in statement \"" + rawStatement);
 					}
 				}
 				catch (NumberFormatException nfe) {
 					int indexOfEqual = condition.indexOf('=');
 					if (indexOfEqual < 1) {
-						throw new Exception("Invalid condition \"" + condition +"\" in statement \"" + rawStatement);
+						throw new Exception("Invalid condition \"" + condition + "\" in statement \"" + rawStatement);
 					}
 					String conditionColumnName = condition.substring(0, indexOfEqual);
 					if (!_3DCITYDB_TABLES_AND_COLUMNS.get(table).contains(conditionColumnName)) {
@@ -1015,8 +1032,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				}
 			}
 
-			String sqlStatement = null;
-			
 			switch (cityGMLClassForBalloonHandler) {
 				case SOLITARY_VEGETATION_OBJECT:
 					sqlStatement = sqlStatementForSolVegObj(table, columns, aggregateString, aggregateClosingString, lod);
@@ -1146,6 +1161,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							   " FROM CITYOBJECT co, COLLECT_GEOM cg" +
 							   " WHERE co.gmlid = ?" +
 							   " AND cg.cityobject_id = co.id";
+			}
+			else if (DATABASE_SRS_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+				" FROM DATABASE_SRS dbsrs"; // unrelated to object
 			}
 			else if (EXTERNAL_REFERENCE_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
@@ -1290,6 +1309,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				" WHERE co.gmlid = ?" +
 				" AND coga.cityobject_id = co.id";
 			}
+			else if (DATABASE_SRS_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+				" FROM DATABASE_SRS dbsrs"; // unrelated to object
+			}
 			else if (EXTERNAL_REFERENCE_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 				" FROM CITYOBJECT co, EXTERNAL_REFERENCE er" +
@@ -1417,6 +1440,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			else if (COLLECT_GEOM_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "cg";
 			}
+			else if (DATABASE_SRS_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "dbsrs";
+			}
 			else if (EXTERNAL_REFERENCE_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "er";
 			}
@@ -1488,6 +1514,16 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 //				columnsClause = columnsClause + ")";
 			}
 			return columnsClause;
+		}
+
+		private String checkForSpecialKeywords() throws Exception {
+			String query = null;
+			if (CENTROID_WGS84.equalsIgnoreCase(rawStatement)) {
+				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+						Queries.GET_CENTROID_IN_WGS84_3D_FROM_GML_ID:
+						Queries.GET_CENTROID_IN_WGS84_FROM_GML_ID;
+			}
+			return query;
 		}
 
 	}

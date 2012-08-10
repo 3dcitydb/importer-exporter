@@ -64,7 +64,6 @@ import org.citygml4j.model.citygml.appearance.X3DMaterial;
 
 import com.sun.j3d.utils.geometry.GeometryInfo;
 
-import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
@@ -95,7 +94,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
-			DatabaseSrs dbSrs,
 			Config config) {
 
 		super(connection,
@@ -105,7 +103,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			  elevationServiceHandler,
 			  balloonTemplateHandler,
 			  eventDispatcher,
-			  dbSrs,
 			  config);
 	}
 
@@ -181,7 +178,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						if (m != null && m.size() >= 16) {
 							transformation = new Matrix(4, 4);
 							transformation.setMatrix(m.subList(0, 16));
-							transformation = transformation.getMatrix(3, 4);
 						}
 					}
 				}
