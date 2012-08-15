@@ -61,7 +61,7 @@ public class KmlSplitter {
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
 	private final DisplayForm displayForm;
 	private final ExportFilter exportFilter;
-	private final Config config;
+//	private final Config config;
 	private ExportFilterConfig filterConfig;
 	private volatile boolean shouldRun = true;
 
@@ -76,7 +76,7 @@ public class KmlSplitter {
 		this.dbWorkerPool = dbWorkerPool;
 		this.exportFilter = exportFilter;
 		this.displayForm = displayForm;
-		this.config = config;
+//		this.config = config;
 
 		this.filterConfig = config.getProject().getKmlExporter().getFilter();
 		CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.clear();

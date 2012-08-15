@@ -59,8 +59,6 @@ import net.opengis.kml._2.NetworkLinkType;
 import net.opengis.kml._2.ObjectFactory;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.RegionType;
-import net.opengis.kml._2.StyleType;
-import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 import oracle.ord.im.OrdImage;
 
@@ -72,7 +70,6 @@ import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
-import de.tub.citydb.log.Logger;
 
 public class KmlExporterManager {
 	private final JAXBContext jaxbKmlContext;

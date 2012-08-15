@@ -55,6 +55,7 @@ import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
+@SuppressWarnings("serial")
 public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 
 	private static final String ADDRESS_TABLE = "ADDRESS";
@@ -406,6 +407,17 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		return AGGREGATION_FUNCTIONS;
 	}
 
+	private static final String SPECIAL_KEYWORDS = "SPECIAL_KEYWORDS";
+	private static final String CENTROID_WGS84 = "CENTROID_WGS84";
+	private static final String CENTROID_WGS84_LAT = "CENTROID_WGS84_LAT";
+	private static final String CENTROID_WGS84_LON = "CENTROID_WGS84_LON";
+
+	private static final LinkedHashSet<String> SPECIAL_KEYWORDS_SET = new LinkedHashSet<String>() {{
+		add(CENTROID_WGS84);
+		add(CENTROID_WGS84_LAT);
+		add(CENTROID_WGS84_LON);
+	}};
+	
 	private static HashMap<String, Set<String>> _3DCITYDB_TABLES_AND_COLUMNS = new HashMap<String, Set<String>>() {{
 		put(ADDRESS_TABLE, ADDRESS_COLUMNS);
 		put(ADDRESS_TO_BUILDING_TABLE, ADDRESS_TO_BUILDING_COLUMNS);
@@ -428,6 +440,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(OPENING_TO_THEM_SURFACE_TABLE, OPENING_TO_THEM_SURFACE_COLUMNS);
 		put(ROOM_TABLE, ROOM_COLUMNS);
 		put(SOLITARY_VEGETAT_OBJECT_TABLE, SOLITARY_VEGETAT_OBJECT_COLUMNS);
+		put(SPECIAL_KEYWORDS, SPECIAL_KEYWORDS_SET);
 		put(SURFACE_DATA_TABLE,SURFACE_DATA_COLUMNS );
 		put(SURFACE_GEOMETRY_TABLE, SURFACE_GEOMETRY_COLUMNS);
 		put(TEXTUREPARAM_TABLE,TEXTUREPARAM_COLUMNS );
@@ -438,6 +451,11 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		return _3DCITYDB_TABLES_AND_COLUMNS;
 	}
 
+/*
+	public Set<String> getSpecialKeywords() {
+		return SPECIAL_KEYWORDS;
+	}
+*/
 	public static final String balloonDirectoryName = "balloons";
 	public static final String parentFrameStart =
 		"<html>\n" +
@@ -927,12 +945,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		
 		private void convertStatementToProperSQL(int lod) throws Exception {
 
-			String sqlStatement = checkForSpecialKeywords();
-			if (sqlStatement != null) {
-				setProperSQLStatement(sqlStatement);
-				return;
-			}
-
+			String sqlStatement = null; 
 			String table = null;
 			String aggregateFunction = null;
 			List<String> columns = null;
@@ -949,8 +962,16 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			else {
 				table = rawStatement.substring(0, index).trim();
 			}
-			
+
 			index++;
+			if (SPECIAL_KEYWORDS.equalsIgnoreCase(table)) {
+				sqlStatement = checkForSpecialKeywords(rawStatement.substring(index));
+				if (sqlStatement != null) {
+					setProperSQLStatement(sqlStatement);
+					return;
+				}
+			}
+
 			if (index >= rawStatement.length()) {
 				throw new Exception("Invalid statement \"" + rawStatement + "\". Column name not set.");
 			}
@@ -1516,13 +1537,27 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			return columnsClause;
 		}
 
-		private String checkForSpecialKeywords() throws Exception {
+		private String checkForSpecialKeywords(String keyword) throws Exception {
 			String query = null;
-			if (CENTROID_WGS84.equalsIgnoreCase(rawStatement)) {
+			if (CENTROID_WGS84.equalsIgnoreCase(keyword)) {
 				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
 						Queries.GET_CENTROID_IN_WGS84_3D_FROM_GML_ID:
 						Queries.GET_CENTROID_IN_WGS84_FROM_GML_ID;
 			}
+			else if (CENTROID_WGS84_LAT.equalsIgnoreCase(keyword)) {
+				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+						Queries.GET_CENTROID_LAT_IN_WGS84_3D_FROM_GML_ID:
+						Queries.GET_CENTROID_LAT_IN_WGS84_FROM_GML_ID;
+			}
+			else if (CENTROID_WGS84_LON.equalsIgnoreCase(keyword)) {
+				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+						Queries.GET_CENTROID_LON_IN_WGS84_3D_FROM_GML_ID:
+						Queries.GET_CENTROID_LON_IN_WGS84_FROM_GML_ID;
+			}
+			else {
+				throw new Exception("Unsupported keyword \"" + keyword + "\" in statement \"" + rawStatement + "\"");
+			}
+
 			return query;
 		}
 

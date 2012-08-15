@@ -108,6 +108,30 @@ public class Queries {
 		"SELECT SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4329) " +
 		"FROM CITYOBJECT co " +
 		"WHERE co.gmlid = ?";
+	
+	public static final String GET_CENTROID_LAT_IN_WGS84_FROM_GML_ID =
+		"SELECT v.Y FROM TABLE(" +
+			"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4326)) " +
+			"FROM CITYOBJECT co " + 
+			"WHERE co.gmlid = ?) v";
+
+	public static final String GET_CENTROID_LAT_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT v.Y FROM TABLE(" +
+			"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4329)) " +
+			"FROM CITYOBJECT co " + 
+			"WHERE co.gmlid = ?) v";
+
+	public static final String GET_CENTROID_LON_IN_WGS84_FROM_GML_ID =
+		"SELECT v.X FROM TABLE(" +
+			"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4326)) " +
+			"FROM CITYOBJECT co " + 
+			"WHERE co.gmlid = ?) v";
+
+	public static final String GET_CENTROID_LON_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT v.X FROM TABLE(" +
+			"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4329)) " +
+			"FROM CITYOBJECT co " + 
+			"WHERE co.gmlid = ?) v";
 
 	// ----------------------------------------------------------------------
 	// 	BUILDING QUERIES

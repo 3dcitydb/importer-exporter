@@ -39,7 +39,6 @@ public interface BalloonTemplateHandler {
 	public static final String END_TAG = "</3DCityDB>";
 	public static final String FOREACH_TAG = "FOREACH";
 	public static final String END_FOREACH_TAG = "END FOREACH";
-	public static final String CENTROID_WGS84 = "CENTROID_WGS84";
 
 	public String getBalloonContent(String gmlId, int lod) throws Exception;	
 	public Set<String> getSupportedAggregationFunctions();

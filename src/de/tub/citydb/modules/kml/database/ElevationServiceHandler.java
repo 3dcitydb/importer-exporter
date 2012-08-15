@@ -139,7 +139,7 @@ public class ElevationServiceHandler {
 		try {
 			runLock.lock();
 			// pause interval: 100 millis should be enough, but experience says it is not!
-			Thread.currentThread().sleep(200);
+			Thread.sleep(200);
 		}
 		catch (Exception e) {}
 		finally {
