@@ -41,9 +41,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
-import org.postgis.ComposedGeom;
 import org.postgis.Geometry;
 import org.postgis.PGgeometry;
+import org.postgis.Polygon;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -283,19 +283,19 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			if (reverse) {
 				
 				String geomEWKT = "SRID=" + geomNode.geometry.getSrid() + ";POLYGON((";
-				ComposedGeom polyGeom = (ComposedGeom)geomNode.geometry;
+				Polygon polyGeom = (Polygon) geomNode.geometry;
 				int dimensions = geomNode.geometry.getDimension();
 				
-				for (int i = 0; i < polyGeom.numGeoms(); i++){
+				for (int i = 0; i < polyGeom.numRings(); i++){
 					
 					if (dimensions == 2)
-						for (int j = 0; j < polyGeom.getSubGeometry(i).numPoints(); j++){
-							geomEWKT += polyGeom.getSubGeometry(i).getPoint(j).x + " " + polyGeom.getSubGeometry(i).getPoint(j).y + ",";
+						for (int j = 0; j < polyGeom.getRing(i).numPoints(); j++){
+							geomEWKT += polyGeom.getRing(i).getPoint(j).x + " " + polyGeom.getRing(i).getPoint(j).y + ",";
 						}
 					
 					if (dimensions == 3)
-						for (int j = 0; j < polyGeom.getSubGeometry(i).numPoints(); j++){
-							geomEWKT += polyGeom.getSubGeometry(i).getPoint(j).x + " " + polyGeom.getSubGeometry(i).getPoint(j).y + " " + polyGeom.getSubGeometry(i).getPoint(j).z + ",";
+						for (int j = 0; j < polyGeom.getRing(i).numPoints(); j++){
+							geomEWKT += polyGeom.getRing(i).getPoint(j).x + " " + polyGeom.getRing(i).getPoint(j).y + " " + polyGeom.getRing(i).getPoint(j).z + ",";
 						}					
 					
 					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
