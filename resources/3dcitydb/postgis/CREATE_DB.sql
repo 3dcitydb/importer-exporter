@@ -106,3 +106,6 @@ INSERT INTO DATABASE_SRS(SRID,GML_SRS_NAME) VALUES (:SRS_NO,:'GMLSRSNAME');
 
 --// create GEODB_PKG (additional schema with PL_pgSQL-Functions)
 \i CREATE_GEODB_PKG.sql
+
+\echo
+\echo '3DCityDB creation complete!'

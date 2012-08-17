@@ -251,3 +251,6 @@ DROP TABLE WATERBOUNDARY_SURFACE CASCADE;
 --//DROP SCHEMA
 
 DROP SCHEMA GEODB_PKG CASCADE;
+
+\echo
+\echo '3DCityDB schema successfully removed!'
