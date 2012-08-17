@@ -245,8 +245,8 @@ public abstract class KmlGenericObject {
 
 	public abstract void read(KmlSplittingResult work);
 	public abstract String getStyleBasisName();
-	protected abstract Balloon getBalloonSettings();
-	protected abstract ColladaOptions getColladaOptions();
+	public abstract ColladaOptions getColladaOptions();
+	public abstract Balloon getBalloonSettings();
 	protected abstract List<DisplayForm> getDisplayForms();
 
 	
@@ -1028,10 +1028,10 @@ public abstract class KmlGenericObject {
 	}
 
 
-	protected void createTextureAtlas(int packingAlgorithm, double imageScaleFactor, boolean pots) throws SQLException, IOException {
+	public void createTextureAtlas(int packingAlgorithm, double imageScaleFactor, boolean pots) throws SQLException, IOException {
 
-		if (texImages.size() == 0 && texOrdImages == null) {
-			// building has no textures at all or they are in an unknown image format 
+		if (texImages.size() < 1 && texOrdImages == null) {
+			// building has not enough textures or they are in an unknown image format 
 			return;
 		}
 		
@@ -1145,8 +1145,8 @@ public abstract class KmlGenericObject {
 	
 	private void useInternalTAGenerator(double scaleFactor, boolean pots) throws SQLException, IOException {
 
-		if (texImages.size() == 0) {
-			// building has no textures at all or they are in an unknown image format 
+		if (texImages.size() < 1) {
+			// building has not enough textures or they are in an unknown image format 
 			return;
 		}
 		// imageNamesOrderedByImageHeight
@@ -1276,7 +1276,7 @@ public abstract class KmlGenericObject {
 	}
 	
 	
-	protected void resizeAllImagesByFactor (double factor) throws SQLException, IOException {
+	public void resizeAllImagesByFactor (double factor) throws SQLException, IOException {
 		if (texImages.size() == 0) { // building has no textures at all
 			return;
 		}

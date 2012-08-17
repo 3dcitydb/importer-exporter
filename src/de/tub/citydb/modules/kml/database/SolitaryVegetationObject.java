@@ -106,16 +106,16 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			  config);
 	}
 
-	protected Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getVegetationBalloon();
+	protected List<DisplayForm> getDisplayForms() {
+		return config.getProject().getKmlExporter().getVegetationDisplayForms();
 	}
 
-	protected ColladaOptions getColladaOptions() {
+	public ColladaOptions getColladaOptions() {
 		return config.getProject().getKmlExporter().getVegetationColladaOptions();
 	}
 
-	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getVegetationDisplayForms();
+	public Balloon getBalloonSettings() {
+		return config.getProject().getKmlExporter().getVegetationBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -271,10 +271,9 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					}
 					setZOffset(zOffset);
 
-					ColladaOptions colladaOptions = config.getProject().getKmlExporter().getVegetationColladaOptions();
+					ColladaOptions colladaOptions = getColladaOptions();
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
-						double imageScaleFactor = 1;
 						if (work.getDisplayForm().isHighlightingEnabled()) {
 //							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
 //													 work,
@@ -283,23 +282,8 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 													 work,
 													 getBalloonSettings().isBalloonContentInSeparateFile());
 						}
-						if (colladaOptions.isGenerateTextureAtlases()) {
-//							eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.creatingAtlases")));
-							if (colladaOptions.isScaleImages()) {
-								imageScaleFactor = colladaOptions.getImageScaleFactor();
-							}
-							createTextureAtlas(colladaOptions.getPackingAlgorithm(),
-											   imageScaleFactor,
-											   colladaOptions.isTextureAtlasPots());
-						}
-						else if (colladaOptions.isScaleImages()) {
-							imageScaleFactor = colladaOptions.getImageScaleFactor();
-							if (imageScaleFactor < 1) {
-								resizeAllImagesByFactor(imageScaleFactor);
-							}
-						}
 					}
-					catch (IOException ioe) {
+					catch (Exception ioe) {
 						ioe.printStackTrace();
 					}
 

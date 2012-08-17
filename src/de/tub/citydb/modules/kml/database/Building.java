@@ -29,7 +29,6 @@
  */
 package de.tub.citydb.modules.kml.database;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -77,18 +76,18 @@ public class Building extends KmlGenericObject{
 			  config);
 	}
 
-	protected Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getBuildingBalloon();
-	}
-
-	protected ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExporter().getBuildingColladaOptions();
-	}
-	
 	protected List<DisplayForm> getDisplayForms() {
 		return config.getProject().getKmlExporter().getBuildingDisplayForms();
 	}
 	
+	public ColladaOptions getColladaOptions() {
+		return config.getProject().getKmlExporter().getBuildingColladaOptions();
+	}
+	
+	public Balloon getBalloonSettings() {
+		return config.getProject().getKmlExporter().getBuildingBalloon();
+	}
+
 	public String getStyleBasisName() {
 		return STYLE_BASIS_NAME;
 	}
@@ -242,10 +241,9 @@ public class Building extends KmlGenericObject{
 					}
 					setZOffset(zOffset);
 
-					ColladaOptions colladaOptions = config.getProject().getKmlExporter().getBuildingColladaOptions();
+					ColladaOptions colladaOptions = getColladaOptions();
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
-						double imageScaleFactor = 1;
 						if (work.getDisplayForm().isHighlightingEnabled()) {
 //							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
 //													 work,
@@ -254,23 +252,8 @@ public class Building extends KmlGenericObject{
 													 work,
 													 getBalloonSettings().isBalloonContentInSeparateFile());
 						}
-						if (colladaOptions.isGenerateTextureAtlases()) {
-//							eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.creatingAtlases")));
-							if (colladaOptions.isScaleImages()) {
-								imageScaleFactor = colladaOptions.getImageScaleFactor();
-							}
-							createTextureAtlas(colladaOptions.getPackingAlgorithm(),
-											   imageScaleFactor,
-											   colladaOptions.isTextureAtlasPots());
-						}
-						else if (colladaOptions.isScaleImages()) {
-							imageScaleFactor = colladaOptions.getImageScaleFactor();
-							if (imageScaleFactor < 1) {
-								resizeAllImagesByFactor(imageScaleFactor);
-							}
-						}
 					}
-					catch (IOException ioe) {
+					catch (Exception ioe) {
 						ioe.printStackTrace();
 					}
 

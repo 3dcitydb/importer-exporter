@@ -72,16 +72,16 @@ public class CityObjectGroup extends KmlGenericObject{
 			  config);
 	}
 
-	protected Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getCityObjectGroupBalloon();
+	protected List<DisplayForm> getDisplayForms() {
+		return config.getProject().getKmlExporter().getCityObjectGroupDisplayForms();
 	}
 
-	protected ColladaOptions getColladaOptions() {
+	public ColladaOptions getColladaOptions() {
 		return null; // no COLLADA display form for CityObjectGroups
 	}
 
-	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getCityObjectGroupDisplayForms();
+	public Balloon getBalloonSettings() {
+		return config.getProject().getKmlExporter().getCityObjectGroupBalloon();
 	}
 
 	public String getStyleBasisName() {
