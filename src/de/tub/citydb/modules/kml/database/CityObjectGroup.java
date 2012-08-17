@@ -32,6 +32,7 @@ package de.tub.citydb.modules.kml.database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
@@ -42,6 +43,8 @@ import org.citygml4j.factory.CityGMLFactory;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
+import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
+import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -71,6 +74,14 @@ public class CityObjectGroup extends KmlGenericObject{
 
 	protected Balloon getBalloonSettings() {
 		return config.getProject().getKmlExporter().getCityObjectGroupBalloon();
+	}
+
+	protected ColladaOptions getColladaOptions() {
+		return null; // no COLLADA display form for CityObjectGroups
+	}
+
+	protected List<DisplayForm> getDisplayForms() {
+		return config.getProject().getKmlExporter().getCityObjectGroupDisplayForms();
 	}
 
 	public String getStyleBasisName() {

@@ -115,7 +115,15 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		dbConnectionPool.gotoWorkspace(connection, 
 				database.getWorkspaces().getKmlExportWorkspace());
 
-		
+		kmlExporterManager = new KmlExporterManager(jaxbKmlContext,
+													jaxbColladaContext,
+													ioWriterPool,
+													kmlFactory,
+													buildingQueue,
+													config);
+
+		elevationServiceHandler = new ElevationServiceHandler();
+
 		filterConfig = config.getProject().getKmlExporter().getFilter();
 		ColladaOptions colladaOptions = null; 
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetBuilding()) {
@@ -133,15 +141,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			objectGroup.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, null);
 		}
 		// CityGMLClass.CITY_OBJECT_GROUP is left out, it does not make sense to group it without COLLADA DisplayForm 
-
-		kmlExporterManager = new KmlExporterManager(jaxbKmlContext,
-													jaxbColladaContext,
-													ioWriterPool,
-													kmlFactory,
-													buildingQueue,
-													config);
-
-		elevationServiceHandler = new ElevationServiceHandler();
 	}
 
 
@@ -214,13 +213,16 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						colladaBundle.setCollada(currentObjectGroup.generateColladaTree());
 						colladaBundle.setTexImages(currentObjectGroup.getTexImages());
 						colladaBundle.setTexOrdImages(currentObjectGroup.getTexOrdImages());
-						colladaBundle.setPlacemark(singleObject.createPlacemarkFromGenericObject(currentObjectGroup, work));
+						colladaBundle.setPlacemark(currentObjectGroup.createPlacemarkForColladaModel());
 						colladaBundle.setBuildingId(currentObjectGroup.getId());
-						kmlExporterManager.print(colladaBundle, getBalloonSettings(work.getCityObjectType()).isBalloonContentInSeparateFile());
+						kmlExporterManager.print(colladaBundle, getBalloonSettings(cityObjectType).isBalloonContentInSeparateFile());
 					}
 					catch (Exception e) {
 						e.printStackTrace();
 					}
+					currentObjectGroup = null;
+					objectGroup.put(work.getCityObjectType(), currentObjectGroup);
+					objectGroupCounter.put(work.getCityObjectType(), 0);
 				}
 			}
 		}
@@ -285,7 +287,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 				KmlGenericObject currentObjectGroup = objectGroup.get(work.getCityObjectType());
 				if (currentObjectGroup == null) {
-					currentObjectGroup = singleObject; 
+					currentObjectGroup = singleObject;
+					objectGroup.put(work.getCityObjectType(), currentObjectGroup);
 				}
 				else {
 					currentObjectGroup.appendObject(singleObject);
@@ -298,7 +301,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						colladaBundle.setCollada(currentObjectGroup.generateColladaTree());
 						colladaBundle.setTexImages(currentObjectGroup.getTexImages());
 						colladaBundle.setTexOrdImages(currentObjectGroup.getTexOrdImages());
-						colladaBundle.setPlacemark(singleObject.createPlacemarkFromGenericObject(currentObjectGroup, work));
+						colladaBundle.setPlacemark(currentObjectGroup.createPlacemarkForColladaModel());
 						colladaBundle.setBuildingId(currentObjectGroup.getId());
 						kmlExporterManager.print(colladaBundle, getBalloonSettings(work.getCityObjectType()).isBalloonContentInSeparateFile());
 					}
@@ -306,6 +309,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						e.printStackTrace();
 					}
 					currentObjectGroup = null;
+					objectGroup.put(work.getCityObjectType(), currentObjectGroup);
 					objectGroupCounter.put(work.getCityObjectType(), 0);
 				}
 			}
@@ -350,4 +354,5 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		}
 		return balloonSettings;
 	}
+
 }

@@ -80,6 +80,14 @@ public class Building extends KmlGenericObject{
 	protected Balloon getBalloonSettings() {
 		return config.getProject().getKmlExporter().getBuildingBalloon();
 	}
+
+	protected ColladaOptions getColladaOptions() {
+		return config.getProject().getKmlExporter().getBuildingColladaOptions();
+	}
+	
+	protected List<DisplayForm> getDisplayForms() {
+		return config.getProject().getKmlExporter().getBuildingDisplayForms();
+	}
 	
 	public String getStyleBasisName() {
 		return STYLE_BASIS_NAME;
@@ -285,15 +293,14 @@ public class Building extends KmlGenericObject{
 		}
 	}
 
-	public PlacemarkType createPlacemarkFromGenericObject(KmlGenericObject kmlGenericObject,
-			  											  KmlSplittingResult work) throws SQLException {
+	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
 		// undo trick for very close coordinates
-		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {kmlGenericObject.getOriginX()/100, kmlGenericObject.getOriginY()/100, kmlGenericObject.getOriginZ()/100});
-		kmlGenericObject.setLocationX(reducePrecisionForXorY(originInWGS84[0]));
-		kmlGenericObject.setLocationY(reducePrecisionForXorY(originInWGS84[1]));
-		kmlGenericObject.setLocationZ(reducePrecisionForZ(originInWGS84[2]));
+		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOriginX()/100, getOriginY()/100, getOriginZ()/100});
+		setLocationX(reducePrecisionForXorY(originInWGS84[0]));
+		setLocationY(reducePrecisionForXorY(originInWGS84[1]));
+		setLocationZ(reducePrecisionForZ(originInWGS84[2]));
 
-		return super.createPlacemarkFromGenericObject(kmlGenericObject, work);
+		return super.createPlacemarkForColladaModel();
 	}
 
 }

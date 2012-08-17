@@ -110,6 +110,14 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		return config.getProject().getKmlExporter().getVegetationBalloon();
 	}
 
+	protected ColladaOptions getColladaOptions() {
+		return config.getProject().getKmlExporter().getVegetationColladaOptions();
+	}
+
+	protected List<DisplayForm> getDisplayForms() {
+		return config.getProject().getKmlExporter().getVegetationDisplayForms();
+	}
+
 	public String getStyleBasisName() {
 		return STYLE_BASIS_NAME;
 	}
@@ -334,29 +342,35 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		return super.convertToWGS84(applyTransformationMatrix(jGeometry));
 	}
 
-	public PlacemarkType createPlacemarkFromGenericObject(KmlGenericObject kmlGenericObject,
-			  KmlSplittingResult work) throws SQLException {
+	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
 
 		if (transformation == null) { // no implicit geometry
-			return super.createPlacemarkFromGenericObject(kmlGenericObject, work);
+			return super.createPlacemarkForColladaModel();
 		}
 
 		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {0, 0, 0}); // will be turned into refPointX,Y,Z by convertToWGS84
-		kmlGenericObject.setLocationX(reducePrecisionForXorY(originInWGS84[0]));
-		kmlGenericObject.setLocationY(reducePrecisionForXorY(originInWGS84[1]));
-		kmlGenericObject.setLocationZ(reducePrecisionForZ(originInWGS84[2]));
+		setLocationX(reducePrecisionForXorY(originInWGS84[0]));
+		setLocationY(reducePrecisionForXorY(originInWGS84[1]));
+		setLocationZ(reducePrecisionForZ(originInWGS84[2]));
 
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
-		placemark.setName(kmlGenericObject.getId());
+		placemark.setName(getId());
 		placemark.setId(DisplayForm.COLLADA_PLACEMARK_ID + placemark.getName());
 
+		DisplayForm colladaDisplayForm = null;
+		for (DisplayForm displayForm: getDisplayForms()) {
+			if (displayForm.getForm() == DisplayForm.COLLADA) {
+				colladaDisplayForm = displayForm;
+				break;
+			}
+		}
+
 		if (getBalloonSettings().isIncludeDescription() 
-				&& !work.getDisplayForm().isHighlightingEnabled()) { // avoid double description
+				&& !colladaDisplayForm.isHighlightingEnabled()) { // avoid double description
 
-			ColladaOptions colladaOptions = config.getProject().getKmlExporter().getVegetationColladaOptions();
-
+			ColladaOptions colladaOptions = getColladaOptions();
 			if (!colladaOptions.isGroupObjects() || colladaOptions.getGroupSize() == 1) {
-				addBalloonContents(placemark, kmlGenericObject.getId());
+				addBalloonContents(placemark, getId());
 			}
 		}
 
@@ -372,9 +386,9 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			break;
 		}
 
-		location.setLatitude(kmlGenericObject.getLocationY());
-		location.setLongitude(kmlGenericObject.getLocationX());
-		location.setAltitude(kmlGenericObject.getLocationZ() + reducePrecisionForZ(kmlGenericObject.getZOffset()));
+		location.setLatitude(getLocationY());
+		location.setLongitude(getLocationX());
+		location.setAltitude(getLocationZ() + reducePrecisionForZ(getZOffset()));
 		model.setLocation(location);
 
 		// no heading value to correct
@@ -385,11 +399,11 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			!config.getProject().getKmlExporter().isExportAsKmz() &&
 			config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue())
 		{
-			link.setHref(kmlGenericObject.getId() + ".dae");
+			link.setHref(getId() + ".dae");
 		}
 		else {
 			// File.separator would be wrong here, it MUST be "/"
-			link.setHref(kmlGenericObject.getId() + "/" + kmlGenericObject.getId() + ".dae");
+			link.setHref(getId() + "/" + getId() + ".dae");
 		}
 		model.setLink(link);
 
@@ -444,7 +458,10 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 	
 						buildingGeometryObj = (STRUCT)rs2.getObject(1); 
 						// surfaceId is the key to all Hashmaps in building
-						long surfaceId = rs2.getLong("id");
+						// for implicit geometries it must be randomized with
+						// gmlId.hashCode() in order to properly group objects
+						// otherwise surfaces with the same id would be overwritten
+						long surfaceId = rs2.getLong("id") + gmlId.hashCode();
 	
 						if (buildingGeometryObj == null) { // root or parent
 							if (selectedTheme.equalsIgnoreCase(theme)) {

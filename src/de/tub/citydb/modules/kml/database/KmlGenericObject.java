@@ -246,8 +246,10 @@ public abstract class KmlGenericObject {
 	public abstract void read(KmlSplittingResult work);
 	public abstract String getStyleBasisName();
 	protected abstract Balloon getBalloonSettings();
+	protected abstract ColladaOptions getColladaOptions();
+	protected abstract List<DisplayForm> getDisplayForms();
 
-
+	
 	public void setId(String id) {
 		this.id = id.replace(':', '_');
 	}
@@ -729,8 +731,8 @@ public abstract class KmlGenericObject {
 		}
 		return imageName + suffix;
 	}
-/*	
-	private HashMap<Object, String> getTexImageUris(){
+/*
+	protected HashMap<Object, String> getTexImageUris(){
 		return texImageUris;
 	}
 */
@@ -738,7 +740,7 @@ public abstract class KmlGenericObject {
 		geometryInfos.put(new Long(surfaceId), geometryInfo);
 	}
 /*
-	private GeometryInfo getGeometryInfo(long surfaceId){
+	protected GeometryInfo getGeometryInfo(long surfaceId){
 		return geometryInfos.get(new Long(surfaceId));
 	}
 */
@@ -1909,21 +1911,25 @@ public abstract class KmlGenericObject {
 		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
 	}
 
-	public PlacemarkType createPlacemarkFromGenericObject(KmlGenericObject kmlGenericObject,
-														  KmlSplittingResult work) throws SQLException {
+	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
-		placemark.setName(kmlGenericObject.getId());
+		placemark.setName(getId());
 		placemark.setId(DisplayForm.COLLADA_PLACEMARK_ID + placemark.getName());
 
+		DisplayForm colladaDisplayForm = null;
+		for (DisplayForm displayForm: getDisplayForms()) {
+			if (displayForm.getForm() == DisplayForm.COLLADA) {
+				colladaDisplayForm = displayForm;
+				break;
+			}
+		}
+
 		if (getBalloonSettings().isIncludeDescription() 
-				&& !work.getDisplayForm().isHighlightingEnabled()) { // avoid double description
+				&& !colladaDisplayForm.isHighlightingEnabled()) { // avoid double description
 
-			ColladaOptions colladaOptions = null;
-			if (work.isBuilding()) colladaOptions = config.getProject().getKmlExporter().getBuildingColladaOptions();
-			else if (work.isVegetation()) colladaOptions = config.getProject().getKmlExporter().getVegetationColladaOptions();
-
+			ColladaOptions colladaOptions = getColladaOptions();
 			if (!colladaOptions.isGroupObjects() || colladaOptions.getGroupSize() == 1) {
-				addBalloonContents(placemark, kmlGenericObject.getId());
+				addBalloonContents(placemark, getId());
 			}
 		}
 
@@ -1939,22 +1945,22 @@ public abstract class KmlGenericObject {
 			break;
 		}
 
-		location.setLatitude(kmlGenericObject.getLocationY());
-		location.setLongitude(kmlGenericObject.getLocationX());
-		location.setAltitude(kmlGenericObject.getLocationZ() + reducePrecisionForZ(kmlGenericObject.getZOffset()));
+		location.setLatitude(getLocationY());
+		location.setLongitude(getLocationX());
+		location.setAltitude(getLocationZ() + reducePrecisionForZ(getZOffset()));
 		model.setLocation(location);
 
 		// correct heading value
-		double lat1 = kmlGenericObject.getLocationY();
+		double lat1 = getLocationY();
 		// undo trick for very close coordinates
-		double[] dummy = convertPointCoordinatesToWGS84(new double[] {kmlGenericObject.getOriginX()/100, kmlGenericObject.getOriginY()/100 - 20, kmlGenericObject.getOriginZ()/100});
+		double[] dummy = convertPointCoordinatesToWGS84(new double[] {getOriginX()/100, getOriginY()/100 - 20, getOriginZ()/100});
 		double lat2 = dummy[1];
-		double dLon = dummy[0] - kmlGenericObject.getLocationX();
+		double dLon = dummy[0] - getLocationX();
 		double y = Math.sin(dLon) * Math.cos(lat2);
 		double x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
 		double bearing = Math.toDegrees(Math.atan2(y, x));
 		bearing = (bearing + 180) % 360;
-		if (kmlGenericObject.getLocationX() > 0) { // East
+		if (getLocationX() > 0) { // East
 			bearing = -bearing;
 		}
 
@@ -1968,11 +1974,11 @@ public abstract class KmlGenericObject {
 			!config.getProject().getKmlExporter().isExportAsKmz() &&
 			config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue())
 		{
-			link.setHref(kmlGenericObject.getId() + ".dae");
+			link.setHref(getId() + ".dae");
 		}
 		else {
 			// File.separator would be wrong here, it MUST be "/"
-			link.setHref(kmlGenericObject.getId() + "/" + kmlGenericObject.getId() + ".dae");
+			link.setHref(getId() + "/" + getId() + ".dae");
 		}
 		model.setLink(link);
 

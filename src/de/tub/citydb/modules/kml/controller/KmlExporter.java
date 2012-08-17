@@ -1098,13 +1098,13 @@ public class KmlExporter implements EventHandler {
 
 		case DisplayForm.COLLADA:
 			
-			if (currentDisplayForm.isHighlightingEnabled()) {
-				indexOfDf = displayFormsForObjectType.indexOf(currentDisplayForm);
-				String invisibleColor = Integer.toHexString(DisplayForm.INVISIBLE_COLOR);
-				String highlightFillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
-				String highlightLineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
-				if (indexOfDf != -1) {
-					currentDisplayForm = displayFormsForObjectType.get(indexOfDf);
+			indexOfDf = displayFormsForObjectType.indexOf(currentDisplayForm);
+			if (indexOfDf != -1) {
+				currentDisplayForm = displayFormsForObjectType.get(indexOfDf);
+				if (currentDisplayForm.isHighlightingEnabled()) {
+					String invisibleColor = Integer.toHexString(DisplayForm.INVISIBLE_COLOR);
+					String highlightFillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
+					String highlightLineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 					if (currentDisplayForm.isSetRgba4()) {
 						highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba4()));
 						invisibleColor = "01" + highlightFillColor.substring(2);
@@ -1112,43 +1112,43 @@ public class KmlExporter implements EventHandler {
 					if (currentDisplayForm.isSetRgba5()) {
 						highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba5()));
 					}
-				}
 
-				LineStyleType lineStyleColladaInvisible = kmlFactory.createLineStyleType();
-				lineStyleColladaInvisible.setColor(hexStringToByteArray(invisibleColor));
-				PolyStyleType polyStyleColladaInvisible = kmlFactory.createPolyStyleType();
-				polyStyleColladaInvisible.setColor(hexStringToByteArray(invisibleColor));
-				StyleType styleColladaInvisible = kmlFactory.createStyleType();
-				styleColladaInvisible.setId(styleBasisName + currentDisplayForm.getName() + "StyleInvisible");
-				styleColladaInvisible.setLineStyle(lineStyleColladaInvisible);
-				styleColladaInvisible.setPolyStyle(polyStyleColladaInvisible);
-				styleColladaInvisible.setBalloonStyle(balloonStyle);
-				
-				LineStyleType lineStyleColladaHighlight = kmlFactory.createLineStyleType();
-				lineStyleColladaHighlight.setColor(hexStringToByteArray(highlightLineColor));
-				PolyStyleType polyStyleColladaHighlight = kmlFactory.createPolyStyleType();
-				polyStyleColladaHighlight.setColor(hexStringToByteArray(highlightFillColor));
-				StyleType styleColladaHighlight = kmlFactory.createStyleType();
-				styleColladaHighlight.setId(styleBasisName + currentDisplayForm.getName() + "StyleHighlight");
-				styleColladaHighlight.setLineStyle(lineStyleColladaHighlight);
-				styleColladaHighlight.setPolyStyle(polyStyleColladaHighlight);
-				styleColladaHighlight.setBalloonStyle(balloonStyle);
-	
-				PairType pairColladaNormal = kmlFactory.createPairType();
-				pairColladaNormal.setKey(StyleStateEnumType.NORMAL);
-				pairColladaNormal.setStyleUrl("#" + styleColladaInvisible.getId());
-				PairType pairColladaHighlight = kmlFactory.createPairType();
-				pairColladaHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
-				pairColladaHighlight.setStyleUrl("#" + styleColladaHighlight.getId());
-				StyleMapType styleMapCollada = kmlFactory.createStyleMapType();
-				styleMapCollada.setId(styleBasisName + currentDisplayForm.getName() +"Style");
-				styleMapCollada.getPair().add(pairColladaNormal);
-				styleMapCollada.getPair().add(pairColladaHighlight);
-	
-				marshaller.marshal(kmlFactory.createStyle(styleColladaInvisible), saxBuffer);
-				marshaller.marshal(kmlFactory.createStyle(styleColladaHighlight), saxBuffer);
-				marshaller.marshal(kmlFactory.createStyleMap(styleMapCollada), saxBuffer);
-				ioWriterPool.addWork(saxBuffer);
+					LineStyleType lineStyleColladaInvisible = kmlFactory.createLineStyleType();
+					lineStyleColladaInvisible.setColor(hexStringToByteArray(invisibleColor));
+					PolyStyleType polyStyleColladaInvisible = kmlFactory.createPolyStyleType();
+					polyStyleColladaInvisible.setColor(hexStringToByteArray(invisibleColor));
+					StyleType styleColladaInvisible = kmlFactory.createStyleType();
+					styleColladaInvisible.setId(styleBasisName + currentDisplayForm.getName() + "StyleInvisible");
+					styleColladaInvisible.setLineStyle(lineStyleColladaInvisible);
+					styleColladaInvisible.setPolyStyle(polyStyleColladaInvisible);
+					styleColladaInvisible.setBalloonStyle(balloonStyle);
+					
+					LineStyleType lineStyleColladaHighlight = kmlFactory.createLineStyleType();
+					lineStyleColladaHighlight.setColor(hexStringToByteArray(highlightLineColor));
+					PolyStyleType polyStyleColladaHighlight = kmlFactory.createPolyStyleType();
+					polyStyleColladaHighlight.setColor(hexStringToByteArray(highlightFillColor));
+					StyleType styleColladaHighlight = kmlFactory.createStyleType();
+					styleColladaHighlight.setId(styleBasisName + currentDisplayForm.getName() + "StyleHighlight");
+					styleColladaHighlight.setLineStyle(lineStyleColladaHighlight);
+					styleColladaHighlight.setPolyStyle(polyStyleColladaHighlight);
+					styleColladaHighlight.setBalloonStyle(balloonStyle);
+		
+					PairType pairColladaNormal = kmlFactory.createPairType();
+					pairColladaNormal.setKey(StyleStateEnumType.NORMAL);
+					pairColladaNormal.setStyleUrl("#" + styleColladaInvisible.getId());
+					PairType pairColladaHighlight = kmlFactory.createPairType();
+					pairColladaHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
+					pairColladaHighlight.setStyleUrl("#" + styleColladaHighlight.getId());
+					StyleMapType styleMapCollada = kmlFactory.createStyleMapType();
+					styleMapCollada.setId(styleBasisName + currentDisplayForm.getName() +"Style");
+					styleMapCollada.getPair().add(pairColladaNormal);
+					styleMapCollada.getPair().add(pairColladaHighlight);
+		
+					marshaller.marshal(kmlFactory.createStyle(styleColladaInvisible), saxBuffer);
+					marshaller.marshal(kmlFactory.createStyle(styleColladaHighlight), saxBuffer);
+					marshaller.marshal(kmlFactory.createStyleMap(styleMapCollada), saxBuffer);
+					ioWriterPool.addWork(saxBuffer);
+				}
 			}
 			break;
 
