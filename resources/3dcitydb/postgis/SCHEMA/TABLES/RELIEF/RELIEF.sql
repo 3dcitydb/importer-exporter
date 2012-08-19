@@ -43,7 +43,7 @@ CREATE TABLE RELIEF (
 	ID                        SERIAL NOT NULL,
 	NAME                      VARCHAR(256),
 	TYPE                      VARCHAR(256),
-	LODGROUP                  NUMERIC(1,0) NOT NULL
+	LODGROUP                  NUMERIC(1) NOT NULL
 )
 ;
 

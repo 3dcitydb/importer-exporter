@@ -35,7 +35,7 @@ CREATE TABLE RELIEF_FEATURE (
 	NAME                      VARCHAR(1000),
 	NAME_CODESPACE            VARCHAR(4000),
 	DESCRIPTION               VARCHAR(4000),
-	LOD                       NUMERIC(1,0)
+	LOD                       NUMERIC(1)
 )
 ;
 

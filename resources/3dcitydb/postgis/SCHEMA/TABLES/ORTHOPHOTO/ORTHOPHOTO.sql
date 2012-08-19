@@ -50,7 +50,7 @@
 
 CREATE TABLE ORTHOPHOTO (
 	ID                        SERIAL NOT NULL,
-	LOD                       NUMERIC(1,0) NOT NULL,
+	LOD                       NUMERIC(1) NOT NULL,
 	DATUM                     DATE,
 	ORTHOPHOTOPROPERTY        RASTER
 )
