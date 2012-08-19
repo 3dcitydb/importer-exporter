@@ -54,9 +54,9 @@
 --                                           ASta
 
 CREATE TABLE RASTER_RELIEF (
-	ID                        SERIAL NOT NULL,
+    ID                        SERIAL NOT NULL,
     LOD                       NUMERIC(1) NOT NULL,
-	RASTERPROPERTY            RASTER NOT NULL,
+    RASTERPROPERTY            RASTER NOT NULL,
     RELIEF_ID                 INTEGER NOT NULL
 )
 ;
