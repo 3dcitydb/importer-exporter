@@ -1030,7 +1030,7 @@ public abstract class KmlGenericObject {
 
 	public void createTextureAtlas(int packingAlgorithm, double imageScaleFactor, boolean pots) throws SQLException, IOException {
 
-		if (texImages.size() < 1 && texOrdImages == null) {
+		if (texImages.size() < 2 && texOrdImages == null) {
 			// building has not enough textures or they are in an unknown image format 
 			return;
 		}
@@ -1145,7 +1145,7 @@ public abstract class KmlGenericObject {
 	
 	private void useInternalTAGenerator(double scaleFactor, boolean pots) throws SQLException, IOException {
 
-		if (texImages.size() < 1) {
+		if (texImages.size() < 2) {
 			// building has not enough textures or they are in an unknown image format 
 			return;
 		}
@@ -1257,7 +1257,7 @@ public abstract class KmlGenericObject {
 		} 
 
 		// redirect all non-wrapping, known-formatted texture images to texture atlas
-		String textureAtlasName = "textureAtlas_" + getId() + 
+		String textureAtlasName = "textureAtlas_BASIC_" + getId().hashCode() + "_" +
 								  inobih.get(0).substring(inobih.get(0).lastIndexOf('.'));
 		
 		Set<Object> surfaceIdSet = texImageUris.keySet();
