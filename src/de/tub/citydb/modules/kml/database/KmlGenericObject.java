@@ -1480,7 +1480,7 @@ public class KmlGenericObject {
 
 //					int groupBasis = 4;
 					try {
-						psQuery = connection.prepareStatement(Queries.getBuildingAggregateGeometries(0.000, currentLod),
+						psQuery = connection.prepareStatement(Queries.getBuildingAggregateGeometries(0.001, currentLod),
 															  ResultSet.TYPE_SCROLL_INSENSITIVE,
 															  ResultSet.CONCUR_READ_ONLY);
 

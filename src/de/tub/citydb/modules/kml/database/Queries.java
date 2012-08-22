@@ -560,7 +560,7 @@ public class Queries {
 //    	") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
 //    	") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
     	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
-    	"WHERE ST_Area(get_valid_geoms.simple_geom) > <TOLERANCE>) AS get_valid_area";
+    	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE> * 10) AS get_valid_area";
     	
 //    	") " +
 //    	"GROUP BY mod(rownum, <GROUP_BY_1>) " +
@@ -600,7 +600,7 @@ public class Queries {
 //    	") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
 //    	") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
     	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
-    	"WHERE ST_Area(get_valid_geoms.simple_geom) > <TOLERANCE>) AS get_valid_area";
+    	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE> * 1000) AS get_valid_area";
     	
 //    	") " +
 //    	"GROUP BY mod(rownum, <GROUP_BY_1>) " +
