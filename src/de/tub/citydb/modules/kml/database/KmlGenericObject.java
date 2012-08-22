@@ -2200,7 +2200,7 @@ public class KmlGenericObject {
 
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
-			for (String colladaQuery: Queries.BUILDING_COLLADA_GET_DATA) { // parent surfaces come first
+			for (String colladaQuery: Queries.COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID) { // parent surfaces come first
 				PreparedStatement psQuery = null;
 //				OracleResultSet rs2 = null;
 				ResultSet rs2 = null;
