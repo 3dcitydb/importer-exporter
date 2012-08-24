@@ -514,7 +514,7 @@ public class Queries {
 		"SELECT * FROM (" +
 		"SELECT * FROM (" +
 		
-    	"SELECT geodb_util.to_2d(sdo_util.rectify_geometry(sg.geometry, <TOLERANCE>), <2D_SRID>) AS simple_geom " +
+    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 //    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 //		"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
 //		"SELECT sg.geometry AS simple_geom " +
@@ -559,7 +559,7 @@ public class Queries {
 		"SELECT * FROM (" +
 		"SELECT * FROM (" +
 		
-    	"SELECT geodb_util.to_2d(sdo_util.rectify_geometry(sg.geometry, <TOLERANCE>), <2D_SRID>) AS simple_geom " +
+    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 //    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 //		"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
 //		"SELECT sg.geometry AS simple_geom " +
