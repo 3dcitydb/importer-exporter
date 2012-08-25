@@ -49,10 +49,10 @@
 --
 
 CREATE TABLE ORTHOPHOTO (
-	ID                        SERIAL NOT NULL,
-	LOD                       NUMERIC(1) NOT NULL,
-	DATUM                     DATE,
-	ORTHOPHOTOPROPERTY        RASTER
+ID                    SERIAL NOT NULL,
+LOD                   NUMERIC(1) NOT NULL,
+DATUM                 DATE,
+ORTHOPHOTOPROPERTY    RASTER
 )
 ;
 

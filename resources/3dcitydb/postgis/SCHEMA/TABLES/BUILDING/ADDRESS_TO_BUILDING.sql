@@ -25,14 +25,14 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE ADDRESS_TO_BUILDING (
-	BUILDING_ID               INTEGER NOT NULL,
-	ADDRESS_ID                INTEGER NOT NULL
+BUILDING_ID    INTEGER NOT NULL,
+ADDRESS_ID     INTEGER NOT NULL
 )
 ;
 

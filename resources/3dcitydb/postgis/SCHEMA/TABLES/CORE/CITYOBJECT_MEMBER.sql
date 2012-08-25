@@ -25,14 +25,14 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE CITYOBJECT_MEMBER (
-	CITYMODEL_ID              INTEGER NOT NULL,
-	CITYOBJECT_ID             INTEGER NOT NULL
+CITYMODEL_ID     INTEGER NOT NULL,
+CITYOBJECT_ID    INTEGER NOT NULL
 )
 ;
 

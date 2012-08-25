@@ -25,14 +25,14 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE APPEAR_TO_SURFACE_DATA (
-	SURFACE_DATA_ID           INTEGER NOT NULL,
-	APPEARANCE_ID             INTEGER NOT NULL
+SURFACE_DATA_ID   INTEGER NOT NULL,
+APPEARANCE_ID     INTEGER NOT NULL
 );
 
 ALTER TABLE APPEAR_TO_SURFACE_DATA

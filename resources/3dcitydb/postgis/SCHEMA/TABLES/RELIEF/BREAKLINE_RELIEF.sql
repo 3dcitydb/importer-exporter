@@ -25,15 +25,15 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE BREAKLINE_RELIEF (
-	ID                        SERIAL NOT NULL,
-	RIDGE_OR_VALLEY_LINES     GEOMETRY(MultiCurveZ,:SRSNO),
-	BREAK_LINES               GEOMETRY(MultiCurveZ,:SRSNO) 
+ID                        SERIAL NOT NULL,
+RIDGE_OR_VALLEY_LINES     GEOMETRY(MultiCurveZ,:SRSNO),
+BREAK_LINES               GEOMETRY(MultiCurveZ,:SRSNO) 
 )
 ;
 

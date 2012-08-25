@@ -25,25 +25,25 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE CITYMODEL (
-	ID                        SERIAL NOT NULL,
-	GMLID                     VARCHAR(256),
-	GMLID_CODESPACE           VARCHAR(1000),
-	NAME                      VARCHAR(1000),
-	NAME_CODESPACE            VARCHAR(4000),
-	DESCRIPTION               VARCHAR(4000),
-	ENVELOPE                  GEOMETRY(PolygonZ,:SRSNO),
-	CREATION_DATE             DATE,
-	TERMINATION_DATE          DATE,
-	LAST_MODIFICATION_DATE    DATE,
-	UPDATING_PERSON           VARCHAR(256),
-	REASON_FOR_UPDATE         VARCHAR(4000),
-	LINEAGE                   VARCHAR(256)
+ID                        SERIAL NOT NULL,
+GMLID                     VARCHAR(256),
+GMLID_CODESPACE           VARCHAR(1000),
+NAME                      VARCHAR(1000),
+NAME_CODESPACE            VARCHAR(4000),
+DESCRIPTION               VARCHAR(4000),
+ENVELOPE                  GEOMETRY(PolygonZ,:SRSNO),
+CREATION_DATE             DATE,
+TERMINATION_DATE          DATE,
+LAST_MODIFICATION_DATE    DATE,
+UPDATING_PERSON           VARCHAR(256),
+REASON_FOR_UPDATE         VARCHAR(4000),
+LINEAGE                   VARCHAR(256)
 )
 ;
 

@@ -25,14 +25,14 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE RELIEF_FEAT_TO_REL_COMP (
-	RELIEF_COMPONENT_ID       INTEGER NOT NULL,
-	RELIEF_FEATURE_ID         INTEGER NOT NULL
+RELIEF_COMPONENT_ID    INTEGER NOT NULL,
+RELIEF_FEATURE_ID      INTEGER NOT NULL
 )
 ;
 

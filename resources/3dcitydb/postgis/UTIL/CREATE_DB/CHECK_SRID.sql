@@ -41,7 +41,7 @@ BEGIN
     END;
   ELSE
     RAISE EXCEPTION 'Table spatial_ref_sys does not contain the SRID %. Insert commands for missing SRIDs can be found at spatialreference.org', srid;
-  END IF;  
+  END IF;
 END;
 $$
 LANGUAGE plpgsql;

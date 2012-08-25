@@ -33,11 +33,11 @@ $$
 DECLARE
   building_cur CURSOR FOR
     SELECT b.id FROM building b, cityobject c WHERE b.id = c.id AND c.lineage = lineage_value;
-BEGIN    
+BEGIN
   FOR building_rec IN building_cur LOOP
-    BEGIN  
+    BEGIN
       PERFORM geodb_pkg.del_delete_building(building_rec.id);
-      
+
     EXCEPTION
       WHEN OTHERS THEN
         RAISE NOTICE 'delete_buildings: deletion of building with ID % threw %', building_rec.id, SQLERRM;
@@ -48,7 +48,7 @@ BEGIN
   PERFORM geodb_pkg.del_cleanup_appearances(1);
   PERFORM geodb_pkg.del_cleanup_cityobjectgroups();
   PERFORM geodb_pkg.del_cleanup_citymodels();
-	
+
   EXCEPTION
     WHEN OTHERS THEN
       RAISE NOTICE 'delete_buildings: %', SQLERRM;

@@ -52,7 +52,7 @@ CREATE TABLE geodb_pkg.merge_container_ids (
   building_id INTEGER, 
   container_id INTEGER
 );
-   
+
 
 /*****************************************************************
 * FUNCTIONs for Merging
@@ -100,12 +100,12 @@ BEGIN
     geometry_id INTEGER, 
     cityobject_id INTEGER
     ) ON COMMIT PRESERVE ROWS';
-  
+
   merge_geom_building_id_idx := geodb_pkg.idx_construct_normal('merge_geom_building_id_idx', 'merge_collect_geom', 'building_id');
   merge_geom_geometry_id_idx := geodb_pkg.idx_construct_normal('merge_geom_geometry_id_idx', 'merge_collect_geom', 'geometry_id');
-  
+
   EXECUTE 'TRUNCATE TABLE merge_collect_geom';
-  
+
   log := geodb_pkg.idx_drop_index(merge_geom_building_id_idx);
   log := geodb_pkg.idx_drop_index(merge_geom_geometry_id_idx);
 
@@ -313,15 +313,15 @@ DECLARE
   log VARCHAR(4000);
   merge_cont_building_id_idx geodb_pkg.index_obj;
   merge_cont_id_idx geodb_pkg.index_obj;
-  
+
   building_id_cur CURSOR FOR
     SELECT id1 FROM geodb_pkg.match_overlap_relevant;
 BEGIN
   merge_cont_building_id_idx := geodb_pkg.idx_construct_normal('merge_cont_building_id_idx', 'geodb_pkg.merge_container_ids', 'building_id');
   merge_cont_id_idx := geodb_pkg.idx_construct_normal('merge_cont_id_idx', 'geodb_pkg.merge_container_ids', 'container_id');
-  
+
   EXECUTE 'TRUNCATE TABLE geodb_pkg.merge_container_ids';
-  
+
   log := geodb_pkg.idx_drop_index(merge_cont_building_id_idx);
   log := geodb_pkg.idx_drop_index(merge_cont_id_idx); 
 
@@ -331,22 +331,22 @@ BEGIN
     EXECUTE 'SELECT nextval(''surface_geometry_id_seq'')' INTO seq_val;
     EXECUTE 'INSERT INTO geodb_pkg.merge_container_ids (building_id, container_id) 
       VALUES ($1, $2)' USING building_id_rec.id1, seq_val;
-	
+
     -- retrieve and delete old geometry
     BEGIN
       EXECUTE 'SELECT b.lod'||lod||'_geometry_id FROM building b
         WHERE b.id = (SELECT id2 FROM geodb_pkg.match_overlap_relevant WHERE id1 = $1)'
           INTO old_geometry USING building_id_rec.id1;
-  
+
       EXCEPTION
         WHEN OTHERS THEN
           old_geometry := 0;
     END;
-  
+
     -- create new multisurface as root element of new merge geometry
     EXECUTE 'INSERT INTO surface_geometry (id, parent_id, root_id, is_solid, is_composite, is_triangulated, is_xlink, is_reverse, geometry)
       VALUES ($1, null, $2, 0, 0, 0, 0, 0, null)' USING seq_val, seq_val;
-	
+
     -- set building geometry to new multisurface and process name
     IF name_mode=1 THEN
       -- ignore cand name
@@ -366,7 +366,7 @@ BEGIN
           WHERE id = (SELECT id2 FROM geodb_pkg.match_overlap_relevant WHERE id1 = $5)'
             USING seq_val, delimiter, building_id_rec.id1, delimiter, building_id_rec.id1;
     END IF;
-  
+
     -- delete old geometry
     IF old_geometry > 0 THEN
       PERFORM geodb_pkg.del_delete_surface_geometry(old_geometry);
@@ -392,7 +392,7 @@ DECLARE
   app_id INTEGER;
   seq_val NUMERIC;
   building_id INTEGER;
-	
+
   building_cur CURSOR FOR
     SELECT mcg.building_id, count(mcg.geometry_id) AS cnt_hierarchies FROM merge_collect_geom mcg 
       GROUP BY mcg.building_id;   
@@ -408,7 +408,7 @@ BEGIN
               AND sd.id=asd.surface_data_id
               AND (SELECT count(*) FROM textureparam t WHERE t.surface_data_id=sd.id) > 0
                 ORDER BY a.id;
-		
+
       geom_cur CURSOR FOR
         SELECT DISTINCT tp.surface_geometry_id AS geometry_id, tp.surface_data_id AS sd_id, cg.geometry_id AS hierarchy_id
           FROM merge_collect_geom cg, textureparam tp 
@@ -416,28 +416,28 @@ BEGIN
               AND tp.surface_geometry_id=cg.geometry_id;
     BEGIN
       app_id := -1;
-   
+
       -- step 1: iterate through local appearances referencing a geometry that will be merged 
       -- into the newly created gml:MultiSurface of the reference building
       FOR app_rec IN app_cur LOOP
         IF app_rec.id != app_id THEN
           app_id := app_rec.id;
-		
+
           -- create a new appearance element for the reference building
           -- into which we are going to transfer the surface data
           EXECUTE 'SELECT nextval(''appearance_id_seq'')' INTO seq_val;
           EXECUTE 'SELECT id2 FROM geodb_pkg.match_overlap_relevant WHERE id1=$1' INTO building_id USING building_rec.building_id;
-				
+
           EXECUTE 'INSERT INTO appearance (id, name, name_codespace, description, theme, citymodel_id, cityobject_id)
             VALUES ($1, null, null, $2, $3, null, $4)' USING seq_val, app_rec.description, app_rec.theme, building_id;
         END IF;
-	   
+
         -- move existing surface data into the newly created appearance            
         EXECUTE 'UPDATE appear_to_surface_data SET appearance_id=$1
           WHERE appearance_id=$2 AND surface_data_id=$3'
             USING seq_val, app_rec.id, app_rec.sd_id;
       END LOOP;
-			
+
       -- step 2: if any surface data of the appearance references the root element of the geometry
       -- to be merged we need to apply further checks
       FOR geom_rec IN geom_cur LOOP          
@@ -449,14 +449,14 @@ BEGIN
               (SELECT mci.container_id FROM geodb_pkg.merge_container_ids mci WHERE mci.building_id=$1)
             WHERE surface_geometry_id=$2'
               USING building_rec.building_id, geom_rec.hierarchy_id;
-	
+
           -- copy gml:id to newly created root element - this is required
           -- for referencing the geometry from within the appearance
           EXECUTE 'UPDATE surface_geometry SET (gmlid, gmlid_codespace)=
               (SELECT s.gmlid, s.gmlid_codespace FROM surface_geometry s WHERE s.id=$1)
             WHERE id=(SELECT mci.container_id FROM geodb_pkg.merge_container_ids mci WHERE mci.building_id=$2)'
               USING geom_rec.hierarchy_id, building_rec.building_id;
-	  
+
           -- if more than one geometry hierarchy is merged into a single geometry hierarchy
           -- for the reference building, things are a bit more complicated
         ELSE
@@ -464,25 +464,25 @@ BEGIN
             counter NUMERIC;
             gmlid surface_geometry.gmlid%TYPE;
             gmlid_codespace surface_geometry.gmlid_codespace%TYPE;
-		  
+
             textureparam_cur CURSOR FOR
               SELECT * FROM textureparam WHERE surface_data_id=geom_rec.sd_id
                 AND surface_geometry_id=geom_rec.hierarchy_id;
-              
-			surface_geometry_cur CURSOR FOR
+
+            surface_geometry_cur CURSOR FOR
               SELECT * FROM surface_geometry WHERE parent_id=geom_rec.hierarchy_id;
 
           BEGIN
             BEGIN
               EXECUTE 'SELECT gmlid, gmlid_codespace FROM surface_geometry WHERE id=$1'
                 INTO gmlid, gmlid_codespace USING geom_rec.hierarchy_id;
- 
+
               EXCEPTION
                 WHEN OTHERS THEN
                   gmlid := 'ID';
                   gmlid_codespace := '';
             END;
-		
+
             -- first we need to iterate over all textureparam which point to the root of the geometry hierachy to be merged.
             -- second we identify all direct childs of this root element. for each of these childs we create a copy 
             -- of the original textureparam and let it point to the child.           
@@ -490,7 +490,7 @@ BEGIN
               counter := 0;
               FOR surface_geometry_rec IN surface_geometry_cur LOOP
                 counter := counter + 1;
-			
+
                 -- create a new textureparam and let it point to the child instead of the root
                 EXECUTE 'INSERT INTO textureparam (surface_geometry_id, surface_data_id, is_texture_parametrization, world_to_texture, texture_coordinates)
                   VALUES ($1, $2, $3, $4, $5)' USING surface_geometry_rec.id, geom_rec.sd_id, 
@@ -508,12 +508,12 @@ BEGIN
         END IF;
       END LOOP;
     END;
-  END LOOP;      
+  END LOOP;
 
   EXCEPTION
     WHEN OTHERS THEN
       RAISE NOTICE 'move_appearance: %', SQLERRM;
-	  
+
 END;
 $$ 
 LANGUAGE plpgsql;

@@ -25,17 +25,17 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol	  LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol	  LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE RELIEF_FEATURE (
-	ID                        SERIAL NOT NULL,
-	NAME                      VARCHAR(1000),
-	NAME_CODESPACE            VARCHAR(4000),
-	DESCRIPTION               VARCHAR(4000),
-	LOD                       NUMERIC(1)
+ID                 SERIAL NOT NULL,
+NAME               VARCHAR(1000),
+NAME_CODESPACE     VARCHAR(4000),
+DESCRIPTION        VARCHAR(4000),
+LOD                NUMERIC(1)
 )
 ;
 

@@ -25,41 +25,41 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE BUILDING
 (
-	ID                            SERIAL NOT NULL,
-	NAME                          VARCHAR(1000),
-	NAME_CODESPACE                VARCHAR(4000),
-	BUILDING_PARENT_ID            INTEGER,
-	BUILDING_ROOT_ID              INTEGER,
-	DESCRIPTION                   VARCHAR(4000),
-	CLASS                         VARCHAR(256),
-	FUNCTION                      VARCHAR(1000),
-	USAGE                         VARCHAR(1000),
-	YEAR_OF_CONSTRUCTION          DATE,
-	YEAR_OF_DEMOLITION            DATE,
-	ROOF_TYPE                     VARCHAR(256),
-	MEASURED_HEIGHT               DOUBLE PRECISION,
-	STOREYS_ABOVE_GROUND          NUMERIC(8),
-	STOREYS_BELOW_GROUND          NUMERIC(8),
-	STOREY_HEIGHTS_ABOVE_GROUND   VARCHAR(4000),
-	STOREY_HEIGHTS_BELOW_GROUND   VARCHAR(4000),
-	LOD1_TERRAIN_INTERSECTION     GEOMETRY(GeometryZ,:SRSNO),
-	LOD2_TERRAIN_INTERSECTION     GEOMETRY(GeometryZ,:SRSNO),
-	LOD3_TERRAIN_INTERSECTION     GEOMETRY(GeometryZ,:SRSNO),
-	LOD4_TERRAIN_INTERSECTION     GEOMETRY(GeometryZ,:SRSNO),
-	LOD2_MULTI_CURVE              GEOMETRY(MultiCurveZ,:SRSNO),
-	LOD3_MULTI_CURVE              GEOMETRY(MultiCurveZ,:SRSNO),
-	LOD4_MULTI_CURVE              GEOMETRY(MultiCurveZ,:SRSNO),
-	LOD1_GEOMETRY_ID              INTEGER,
-	LOD2_GEOMETRY_ID              INTEGER,
-	LOD3_GEOMETRY_ID              INTEGER,
-	LOD4_GEOMETRY_ID              INTEGER
+ID                            SERIAL NOT NULL,
+NAME                          VARCHAR(1000),
+NAME_CODESPACE                VARCHAR(4000),
+BUILDING_PARENT_ID            INTEGER,
+BUILDING_ROOT_ID              INTEGER,
+DESCRIPTION                   VARCHAR(4000),
+CLASS                         VARCHAR(256),
+FUNCTION                      VARCHAR(1000),
+USAGE                         VARCHAR(1000),
+YEAR_OF_CONSTRUCTION          DATE,
+YEAR_OF_DEMOLITION            DATE,
+ROOF_TYPE                     VARCHAR(256),
+MEASURED_HEIGHT               DOUBLE PRECISION,
+STOREYS_ABOVE_GROUND          NUMERIC(8),
+STOREYS_BELOW_GROUND          NUMERIC(8),
+STOREY_HEIGHTS_ABOVE_GROUND   VARCHAR(4000),
+STOREY_HEIGHTS_BELOW_GROUND   VARCHAR(4000),
+LOD1_TERRAIN_INTERSECTION     GEOMETRY(GeometryZ,:SRSNO),
+LOD2_TERRAIN_INTERSECTION     GEOMETRY(GeometryZ,:SRSNO),
+LOD3_TERRAIN_INTERSECTION     GEOMETRY(GeometryZ,:SRSNO),
+LOD4_TERRAIN_INTERSECTION     GEOMETRY(GeometryZ,:SRSNO),
+LOD2_MULTI_CURVE              GEOMETRY(MultiCurveZ,:SRSNO),
+LOD3_MULTI_CURVE              GEOMETRY(MultiCurveZ,:SRSNO),
+LOD4_MULTI_CURVE              GEOMETRY(MultiCurveZ,:SRSNO),
+LOD1_GEOMETRY_ID              INTEGER,
+LOD2_GEOMETRY_ID              INTEGER,
+LOD3_GEOMETRY_ID              INTEGER,
+LOD4_GEOMETRY_ID              INTEGER
 );
 
 ALTER TABLE BUILDING

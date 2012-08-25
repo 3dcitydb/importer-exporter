@@ -22,7 +22,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description                     | Author  | Conversion
--- 1.1.0     2012-08-02   PostGIS Version                             FKun	
+-- 1.1.0     2012-08-02   PostGIS Version                             FKun
 -- 1.1.0     2012-02-22   some performance improvements     CNag
 -- 1.0.0     2011-02-11   release version                   CNag
 --
@@ -140,7 +140,7 @@ $$
 DECLARE
   appearance_cur CURSOR FOR
     SELECT * FROM appearance WHERE cityobject_id=pid;      
-BEGIN   
+BEGIN
   EXECUTE 'DELETE FROM cityobject_member WHERE cityobject_id=$1' USING pid;
   EXECUTE 'DELETE FROM group_to_cityobject WHERE cityobject_id=$1' USING pid;
   EXECUTE 'DELETE FROM generalization WHERE generalizes_to_id=$1' USING pid;
@@ -184,8 +184,8 @@ DECLARE
   appearance_cur CURSOR FOR
     SELECT * FROM appearance WHERE cityobject_id=citymodel_row_id;
 BEGIN
--- TODO
--- delete contained cityobjects!
+  -- TODO
+  -- delete contained cityobjects!
   EXECUTE 'DELETE FROM cityobject_member WHERE citymodel_id=$1' USING citymodel_row_id;
 
   FOR rec IN appearance_cur LOOP
@@ -224,7 +224,7 @@ DECLARE
     SELECT s.* from surface_data s, appear_to_surface_data ats
       WHERE s.id=ats.surface_data_id and ats.appearance_id=appearance_row_id;
 BEGIN
--- delete surface data not being referenced by appearances any more
+  -- delete surface data not being referenced by appearances any more
   FOR rec IN surface_data_cur LOOP
     IF geodb_pkg.del_is_not_referenced('appear_to_surface_data', 'surface_data_id', rec.id, 'appearance_id', appearance_row_id) THEN
       PERFORM geodb_pkg.del_delete_row_surface_data(rec.id);
@@ -326,7 +326,7 @@ CREATE OR REPLACE FUNCTION geodb_pkg.del_post_delete_cityobjectgroup(
   surface_geometry_id NUMERIC)
 RETURNS SETOF void AS
 $$
-BEGIN 
+BEGIN
   IF surface_geometry_id IS NOT NULL THEN
     PERFORM geodb_pkg.del_intern_delete_surface_geometry(surface_geometry_id);
   END IF;
@@ -351,7 +351,7 @@ DECLARE
     SELECT o.* FROM	opening o, opening_to_them_surface otm 
       WHERE o.id=otm.opening_id AND otm.thematic_surface_id=thematic_surface_row_id;
 BEGIN
--- delete openings not being referenced by a thematic surface any more
+  -- delete openings not being referenced by a thematic surface any more
   FOR rec IN opening_cur LOOP
     IF geodb_pkg.del_is_not_referenced('opening_to_them_surface', 'opening_id', rec.id, 'thematic_surface_id', thematic_surface_row_id) THEN
       PERFORM geodb_pkg.del_delete_row_opening(rec.id);
@@ -472,7 +472,7 @@ BEGIN
     PERFORM geodb_pkg.del_intern_delete_surface_geometry(opening_lod4_multi_surface_id);
   END IF;
 
--- delete addresses not being referenced from buildings and openings any more
+  -- delete addresses not being referenced from buildings and openings any more
   FOR rec IN address_cur LOOP
     IF geodb_pkg.del_is_not_referenced('opening', 'address_id', rec.id, 'id', opening_id) THEN
       PERFORM geodb_pkg.del_delete_address(rec.id);
@@ -665,7 +665,7 @@ internal: DELETE FROM BUILDING
 */
 CREATE OR REPLACE FUNCTION geodb_pkg.del_pre_delete_building(building_row_id NUMERIC) RETURNS SETOF void AS
 $$
-DECLARE   
+DECLARE
   building_part_cur CURSOR FOR
     SELECT * FROM building WHERE id != building_row_id AND building_parent_id=building_row_id;
 
@@ -697,7 +697,7 @@ BEGIN
     PERFORM geodb_pkg.del_delete_row_room(rec.id);
   END LOOP;
 	
--- delete addresses being not referenced from buildings any more
+  -- delete addresses being not referenced from buildings any more
   FOR rec IN address_cur LOOP
     IF geodb_pkg.del_is_not_referenced('address_to_building', 'address_id', rec.address_id, 'building_id', building_row_id) THEN
       PERFORM geodb_pkg.del_delete_address(rec.address_id);
@@ -709,7 +709,7 @@ BEGIN
   EXCEPTION
     WHEN OTHERS THEN
       RAISE NOTICE 'pre_delete_building (id: %): %', building_row_id, SQLERRM;
-	  
+
 END; 
 $$ 
 LANGUAGE plpgsql;
@@ -1054,16 +1054,16 @@ DECLARE
     SELECT a.* FROM appearance a LEFT OUTER JOIN appear_to_surface_data asd
       ON a.id=asd.appearance_id WHERE a.cityobject_id IS NULL and asd.appearance_id IS NULL;
 BEGIN
--- global appearances are not related to a cityobject.
--- however, we assume that all surface geometries of a cityobject
--- have been deleted at this stage. thus, we can check and delete
--- surface data which does not have a valid texture parameterization
--- any more.
+  -- global appearances are not related to a cityobject.
+  -- however, we assume that all surface geometries of a cityobject
+  -- have been deleted at this stage. thus, we can check and delete
+  -- surface data which does not have a valid texture parameterization
+  -- any more.
   FOR rec IN surface_data_global_cur LOOP
     PERFORM geodb_pkg.del_delete_row_surface_data(rec.id);
   END LOOP;
 
--- delete appearances which does not have surface data any more
+  -- delete appearances which does not have surface data any more
   IF only_global=1 THEN
     FOR rec IN appearance_global_cur LOOP
       PERFORM geodb_pkg.del_delete_row_appearance(rec.id);

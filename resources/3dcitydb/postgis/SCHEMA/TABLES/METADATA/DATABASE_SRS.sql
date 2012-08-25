@@ -25,14 +25,14 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE DATABASE_SRS (
-	SRID                      INTEGER NOT NULL,
-	GML_SRS_NAME              VARCHAR(1000)
+SRID            INTEGER NOT NULL,
+GML_SRS_NAME    VARCHAR(1000)
 )
 ;
 

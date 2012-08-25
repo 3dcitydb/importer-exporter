@@ -25,14 +25,14 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE generalization (
-	CITYOBJECT_ID             INTEGER NOT NULL,
-	GENERALIZES_TO_ID         INTEGER NOT NULL
+CITYOBJECT_ID        INTEGER NOT NULL,
+GENERALIZES_TO_ID    INTEGER NOT NULL
 )
 ;
 
