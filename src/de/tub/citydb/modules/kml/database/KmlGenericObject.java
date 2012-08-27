@@ -34,6 +34,7 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+// import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -129,6 +130,8 @@ import org.postgis.Geometry;											// collides with Collada-Geometry
 import org.postgis.MultiPolygon;
 import org.postgis.PGgeometry;
 import org.postgis.Polygon;
+// import org.postgresql.largeobject.LargeObject;
+// import org.postgresql.largeobject.LargeObjectManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -2236,6 +2239,7 @@ public class KmlGenericObject {
 						String texImageUri = null;
 //						OrdImage texImage = null;
 						InputStream texImage = null;
+//						byte buf[] = null;
 						StringTokenizer texCoordsTokenized = null;
 	
 						if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
@@ -2248,7 +2252,6 @@ public class KmlGenericObject {
 						else {
 							texImageUri = rs2.getString("tex_image_uri");
 //							texImage = (OrdImage)rs2.getORAData("tex_image", OrdImage.getORADataFactory());
-//							texImage = rs2.getBinaryStream("tex_image");
 							String texCoords = rs2.getString("texture_coordinates");
 	
 							if (texImageUri != null && texImageUri.trim().length() != 0
@@ -2268,6 +2271,23 @@ public class KmlGenericObject {
 										psQuery3.setLong(1, rs2.getLong("surface_data_id"));
 										rs3 = psQuery3.executeQuery();
 										while (rs3.next()) {
+/*
+											// read large object (OID) data type from database
+											// Get the Large Object Manager to perform operations with
+											LargeObjectManager lobj = ((org.postgresql.PGConnection)connection).getLargeObjectAPI();
+
+											// Open the large object for reading
+											long oid = rs3.getLong("tex_image");
+											if (oid == 0) {
+												Logger.getInstance().error("Database error while reading library object: " + texImageUri);
+											}
+											LargeObject obj = lobj.open(oid, LargeObjectManager.READ);
+
+											// Read the data
+											buf = new byte[obj.size()];
+											obj.read(buf, 0, obj.size());
+*/
+											// read bytea data type from database
 											texImage = rs3.getBinaryStream("tex_image");
 										}
 									}
@@ -2280,10 +2300,13 @@ public class KmlGenericObject {
 
 									BufferedImage bufferedImage = null;
 									try {
+//										texImage = new ByteArrayInputStream(buf); // for Large Objects
+										
 //										bufferedImage = ImageIO.read(texImage.getDataInStream());
 										bufferedImage = ImageIO.read(texImage);
 									}
 									catch (IOException ioe) {}
+
 									if (bufferedImage != null) { // image in JPEG, PNG or another usual format
 										addTexImage(texImageUri, bufferedImage);
 									}
