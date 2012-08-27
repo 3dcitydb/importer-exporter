@@ -40,11 +40,13 @@ import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
 import javax.imageio.ImageIO;
@@ -55,6 +57,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.transform.stream.StreamResult;
 
+import net.opengis.kml._2.BalloonStyleType;
 import net.opengis.kml._2.DocumentType;
 import net.opengis.kml._2.FolderType;
 import net.opengis.kml._2.KmlType;
@@ -74,7 +77,7 @@ import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
-//import oracle.ord.im.OrdImage;
+// import oracle.ord.im.OrdImage;
 
 import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -94,6 +97,8 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Database.PredefinedSrsName;
+// import de.tub.citydb.config.project.database.Workspace;
+import de.tub.citydb.config.project.filter.FeatureClass;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
@@ -119,6 +124,7 @@ import de.tub.citydb.modules.kml.database.CityObjectGroup;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
+import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.modules.kml.util.KMLHeaderWriter;
 import de.tub.citydb.util.database.DBUtil;
@@ -142,6 +148,7 @@ public class KmlExporter implements EventHandler {
 	private static final double BORDER_GAP = 0.000001;
 
 	private static final String ENCODING = "UTF-8";
+	private static final Charset CHARSET = Charset.forName(ENCODING);
 
 	private final DatabaseSrs WGS84_2D = Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D);
 
@@ -195,9 +202,9 @@ public class KmlExporter implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-
+/*
 		// checking workspace...
-		/*Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
+		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
 		if (!workspace.getName().toUpperCase().equals("LIVE")) {
 			boolean workspaceExists = dbPool.existsWorkspace(workspace);
 
@@ -211,8 +218,8 @@ public class KmlExporter implements EventHandler {
 				return false;
 			} else 
 				Logger.getInstance().info("Switching to database workspace " + name + '.');
-		}*/
-		
+		}
+*/
 		// check whether spatial indexes are enabled
 		Logger.getInstance().info("Checking for spatial indexes on geometry columns of involved tables...");
 		try {
@@ -248,6 +255,7 @@ public class KmlExporter implements EventHandler {
 
 		if (!checkBalloonSettings(config.getProject().getKmlExporter().getBuildingBalloon())) return false;
 		if (!checkBalloonSettings(config.getProject().getKmlExporter().getCityObjectGroupBalloon())) return false;
+		if (!checkBalloonSettings(config.getProject().getKmlExporter().getVegetationBalloon())) return false;
 
 		// getting export filter
 		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
@@ -345,15 +353,14 @@ public class KmlExporter implements EventHandler {
 								zipOut = new ZipOutputStream(new FileOutputStream(file));
 								ZipEntry zipEntry = new ZipEntry("doc.kml");
 								zipOut.putNextEntry(zipEntry);
-								fileWriter = new OutputStreamWriter(zipOut);
+								fileWriter = new OutputStreamWriter(zipOut, CHARSET);
 							}
 							else {
-								Charset charset = Charset.forName(ENCODING);
-								fileWriter = new OutputStreamWriter(new FileOutputStream(file), charset);
+								fileWriter = new OutputStreamWriter(new FileOutputStream(file), CHARSET);
 							}
 								
 							// set output for SAXWriter
-							saxWriter.setOutput(new StreamResult(fileWriter));	
+							saxWriter.setOutput(new StreamResult(fileWriter), ENCODING);	
 						} catch (IOException ioE) {
 							Logger.getInstance().error("Failed to open file '" + file.getName() + "' for writing: " + ioE.getMessage());
 							return false;
@@ -480,7 +487,7 @@ public class KmlExporter implements EventHandler {
 											ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" 
 													+ colladaBundle.getBuildingId() + ".dae");
 											zipOut.putNextEntry(zipEntry);
-											zipOut.write(colladaBundle.getColladaAsString().getBytes());
+											zipOut.write(colladaBundle.getColladaAsString().getBytes(CHARSET));
 											zipOut.closeEntry();
 										}
 
@@ -488,12 +495,13 @@ public class KmlExporter implements EventHandler {
 										if (colladaBundle.getExternalBalloonFileContent() != null) {
 											ZipEntry zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + colladaBundle.getBuildingId() + ".html");
 											zipOut.putNextEntry(zipEntry);
-											zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes());
+											zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes(CHARSET));
 											zipOut.closeEntry();
 										}
 
 										// ----------------- image saving -----------------
-										/*if (colladaBundle.getTexOrdImages() != null) {
+/*
+										if (colladaBundle.getTexOrdImages() != null) {
 											Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
 											Iterator<String> iterator = keySet.iterator();
 											while (iterator.hasNext()) {
@@ -503,15 +511,19 @@ public class KmlExporter implements EventHandler {
 //												byte[] ordImageBytes = texOrdImage.getDataInByteArray();
 												byte[] ordImageBytes = texOrdImage.getBlobContent().getBytes(1, (int)texOrdImage.getBlobContent().length());
 
-												ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
-												zipOut.putNextEntry(zipEntry);
-//												zipOut.write(ordImageBytes, 0, bytes_read);
-												zipOut.write(ordImageBytes, 0, ordImageBytes.length);
-												
-												zipOut.closeEntry();
+												ZipEntry zipEntry = imageFilename.startsWith("..") ?
+																	new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
+																	new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
+												try {
+													zipOut.putNextEntry(zipEntry);
+//													zipOut.write(ordImageBytes, 0, bytes_read);
+													zipOut.write(ordImageBytes, 0, ordImageBytes.length);
+													zipOut.closeEntry();
+												}
+												catch (ZipException ze) {} // ignore repeated images
 											}
-										}*/
-
+										}
+*/
 										if (colladaBundle.getTexImages() != null) {
 											Set<String> keySet = colladaBundle.getTexImages().keySet();
 											Iterator<String> iterator = keySet.iterator();
@@ -520,10 +532,15 @@ public class KmlExporter implements EventHandler {
 												BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename);
 												String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
-												ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
-												zipOut.putNextEntry(zipEntry);
-												ImageIO.write(texImage, imageType, zipOut);
-												zipOut.closeEntry();
+												ZipEntry zipEntry = imageFilename.startsWith("..") ?
+																    new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
+																    new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
+												try {
+													zipOut.putNextEntry(zipEntry);
+													ImageIO.write(texImage, imageType, zipOut);
+													zipOut.closeEntry();
+												}
+												catch (ZipException ze) {} // ignore repeated images
 											}
 										}
 										colladaBundle = buildingQueue.poll();
@@ -587,19 +604,19 @@ public class KmlExporter implements EventHandler {
 				Logger.getInstance().info("Writing file: " + filename + ".json");
 				File jsonFile = new File(path + File.separator + filename + ".json");
 				FileOutputStream outputStream = new FileOutputStream(jsonFile);
-				outputStream.write("{\n".getBytes());
+				outputStream.write("{\n".getBytes(CHARSET));
 
 				Iterator<String> iterator = alreadyExported.keySet().iterator();
 				while (iterator.hasNext()) {
 					String gmlId = iterator.next();
-					outputStream.write(("\t\"" + gmlId + "\": {").toString().getBytes());
-					outputStream.write(alreadyExported.get(gmlId).toString().getBytes());
+					outputStream.write(("\t\"" + gmlId + "\": {").toString().getBytes(CHARSET));
+					outputStream.write(alreadyExported.get(gmlId).toString().getBytes(CHARSET));
 					if (iterator.hasNext()) {
-						outputStream.write(",\n".getBytes());
+						outputStream.write(",\n".getBytes(CHARSET));
 					}
 				}
 
-				outputStream.write("\n}\n".getBytes());
+				outputStream.write("\n}\n".getBytes(CHARSET));
 				outputStream.close();
 			}
 			catch (IOException ioe) {
@@ -706,7 +723,7 @@ public class KmlExporter implements EventHandler {
 		try {
 			File mainFile = new File(path + File.separator + filename + ".kml");
 			FileOutputStream outputStream = new FileOutputStream(mainFile);
-			saxWriter.setOutput(new StreamResult(outputStream));	
+			saxWriter.setOutput(new StreamResult(outputStream), ENCODING);	
 
 			ioWriterPool = new SingleWorkerPool<SAXEventBuffer>(
 					new IOWriterWorkerFactory(saxWriter),
@@ -738,9 +755,7 @@ public class KmlExporter implements EventHandler {
 				kmlHeader.startRootElement();
 				if (config.getProject().getKmlExporter().isOneFilePerObject()) {
 					for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
-						if (displayForm.isActive()) {
-							addStyle(displayForm);
-						}
+						addStyle(displayForm);
 					}
 				}
 				// make sure header has been written
@@ -867,32 +882,59 @@ public class KmlExporter implements EventHandler {
 		
 	}
 
-	private void addStyle(DisplayForm displayForm) throws JAXBException {
+	private void addStyle(DisplayForm currentDisplayForm) throws JAXBException {
+		if (!currentDisplayForm.isActive()) return;
+		FeatureClass featureFilter = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass();
+
+		if (featureFilter.isSetVegetation()) {
+			addStyle(currentDisplayForm,
+					 config.getProject().getKmlExporter().getVegetationDisplayForms(),
+					 SolitaryVegetationObject.STYLE_BASIS_NAME);
+		}
+		if (featureFilter.isSetCityObjectGroup()) {
+			addStyle(config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().get(0), // hard-coded for groups
+					 config.getProject().getKmlExporter().getCityObjectGroupDisplayForms(),
+					 CityObjectGroup.STYLE_BASIS_NAME);
+		}
+		if (featureFilter.isSetBuilding()) {
+			addStyle(currentDisplayForm,
+					 config.getProject().getKmlExporter().getBuildingDisplayForms(),
+					 Building.STYLE_BASIS_NAME);
+		}
+	}
+
+	private void addStyle(DisplayForm currentDisplayForm,
+						  List<DisplayForm> displayFormsForObjectType,
+						  String styleBasisName) throws JAXBException {
+
 		SAXEventBuffer saxBuffer = new SAXEventBuffer();
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
-		switch (displayForm.getForm()) {
+		BalloonStyleType balloonStyle = new BalloonStyleType();
+		balloonStyle.setText("$[description]");
+
+		switch (currentDisplayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
-			int indexOfDf = config.getProject().getKmlExporter().getBuildingDisplayForms().indexOf(displayForm);
+			int indexOfDf = displayFormsForObjectType.indexOf(currentDisplayForm);
 			String fillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_COLOR);
 			String lineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_COLOR);
 			String hlFillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
 			String hlLineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 			if (indexOfDf != -1) {
-				displayForm = config.getProject().getKmlExporter().getBuildingDisplayForms().get(indexOfDf);
-				if (displayForm.isSetRgba0()) {
-					fillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba0()));
+				currentDisplayForm = displayFormsForObjectType.get(indexOfDf);
+				if (currentDisplayForm.isSetRgba0()) {
+					fillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba0()));
 				}
-				if (displayForm.isSetRgba1()) {
-					lineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba1()));
+				if (currentDisplayForm.isSetRgba1()) {
+					lineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba1()));
 				}
-				if (displayForm.isSetRgba4()) {
-					hlFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba4()));
+				if (currentDisplayForm.isSetRgba4()) {
+					hlFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba4()));
 				}
-				if (displayForm.isSetRgba5()) {
-					hlLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba5()));
+				if (currentDisplayForm.isSetRgba5()) {
+					hlLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba5()));
 				}
 			}
 
@@ -902,22 +944,24 @@ public class KmlExporter implements EventHandler {
 			PolyStyleType polyStyleFootprintNormal = kmlFactory.createPolyStyleType();
 			polyStyleFootprintNormal.setColor(hexStringToByteArray(fillColor));
 			StyleType styleFootprintNormal = kmlFactory.createStyleType();
-			styleFootprintNormal.setId(displayForm.getName() + "Normal");
+			styleFootprintNormal.setId(styleBasisName + currentDisplayForm.getName() + "Normal");
 			styleFootprintNormal.setLineStyle(lineStyleFootprintNormal);
 			styleFootprintNormal.setPolyStyle(polyStyleFootprintNormal);
-
+			styleFootprintNormal.setBalloonStyle(balloonStyle);
+			
 			marshaller.marshal(kmlFactory.createStyle(styleFootprintNormal), saxBuffer);
 
-			if (displayForm.isHighlightingEnabled()) {
+			if (currentDisplayForm.isHighlightingEnabled()) {
 				LineStyleType lineStyleFootprintHighlight = kmlFactory.createLineStyleType();
 				lineStyleFootprintHighlight.setColor(hexStringToByteArray(hlLineColor));
 				lineStyleFootprintHighlight.setWidth(1.5);
 				PolyStyleType polyStyleFootprintHighlight = kmlFactory.createPolyStyleType();
 				polyStyleFootprintHighlight.setColor(hexStringToByteArray(hlFillColor));
 				StyleType styleFootprintHighlight = kmlFactory.createStyleType();
-				styleFootprintHighlight.setId(displayForm.getName() + "Highlight");
+				styleFootprintHighlight.setId(styleBasisName + currentDisplayForm.getName() + "Highlight");
 				styleFootprintHighlight.setLineStyle(lineStyleFootprintHighlight);
 				styleFootprintHighlight.setPolyStyle(polyStyleFootprintHighlight);
+				styleFootprintHighlight.setBalloonStyle(balloonStyle);
 
 				PairType pairFootprintNormal = kmlFactory.createPairType();
 				pairFootprintNormal.setKey(StyleStateEnumType.NORMAL);
@@ -926,7 +970,7 @@ public class KmlExporter implements EventHandler {
 				pairFootprintHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
 				pairFootprintHighlight.setStyleUrl("#" + styleFootprintHighlight.getId());
 				StyleMapType styleMapFootprint = kmlFactory.createStyleMapType();
-				styleMapFootprint.setId(displayForm.getName() + "Style");
+				styleMapFootprint.setId(styleBasisName + currentDisplayForm.getName() + "Style");
 				styleMapFootprint.getPair().add(pairFootprintNormal);
 				styleMapFootprint.getPair().add(pairFootprintHighlight);
 
@@ -939,30 +983,26 @@ public class KmlExporter implements EventHandler {
 
 		case DisplayForm.GEOMETRY:
 
-			PolyStyleType polyStyleGroundSurface = kmlFactory.createPolyStyleType();
-			polyStyleGroundSurface.setColor(hexStringToByteArray("ff00aa00"));
-			StyleType styleGroundSurface = kmlFactory.createStyleType();
-			styleGroundSurface.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString() + "Style");
-			styleGroundSurface.setPolyStyle(polyStyleGroundSurface);
+			boolean isBuilding = Building.STYLE_BASIS_NAME.equals(styleBasisName); // buildings are most complex
 
-			indexOfDf = config.getProject().getKmlExporter().getBuildingDisplayForms().indexOf(displayForm);
+			indexOfDf = displayFormsForObjectType.indexOf(currentDisplayForm);
 			String wallFillColor = Integer.toHexString(DisplayForm.DEFAULT_WALL_FILL_COLOR);
 			String wallLineColor = Integer.toHexString(DisplayForm.DEFAULT_WALL_LINE_COLOR);
 			String roofFillColor = Integer.toHexString(DisplayForm.DEFAULT_ROOF_FILL_COLOR);
 			String roofLineColor = Integer.toHexString(DisplayForm.DEFAULT_ROOF_LINE_COLOR);
 			if (indexOfDf != -1) {
-				displayForm = config.getProject().getKmlExporter().getBuildingDisplayForms().get(indexOfDf);
-				if (displayForm.isSetRgba0()) {
-					wallFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba0()));
+				currentDisplayForm = displayFormsForObjectType.get(indexOfDf);
+				if (currentDisplayForm.isSetRgba0()) {
+					wallFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba0()));
 				}
-				if (displayForm.isSetRgba1()) {
-					wallLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba1()));
+				if (currentDisplayForm.isSetRgba1()) {
+					wallLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba1()));
 				}
-				if (displayForm.isSetRgba2()) {
-					roofFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba2()));
+				if (currentDisplayForm.isSetRgba2()) {
+					roofFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba2()));
 				}
-				if (displayForm.isSetRgba3()) {
-					roofLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba3()));
+				if (currentDisplayForm.isSetRgba3()) {
+					roofLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba3()));
 				}
 			}
 
@@ -971,55 +1011,73 @@ public class KmlExporter implements EventHandler {
 			PolyStyleType polyStyleWallNormal = kmlFactory.createPolyStyleType();
 			polyStyleWallNormal.setColor(hexStringToByteArray(wallFillColor));
 			StyleType styleWallNormal = kmlFactory.createStyleType();
-			styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString() + "Normal");
 			styleWallNormal.setLineStyle(lineStyleWallNormal);
 			styleWallNormal.setPolyStyle(polyStyleWallNormal);
-
-			LineStyleType lineStyleRoofNormal = kmlFactory.createLineStyleType();
-			lineStyleRoofNormal.setColor(hexStringToByteArray(roofLineColor));
-			PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
-			polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
-			StyleType styleRoofNormal = kmlFactory.createStyleType();
-			styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() + "Normal");
-			styleRoofNormal.setLineStyle(lineStyleRoofNormal);
-			styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
-
-			marshaller.marshal(kmlFactory.createStyle(styleGroundSurface), saxBuffer);
+			styleWallNormal.setBalloonStyle(balloonStyle);
+			if (isBuilding)
+				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString() + "Normal");
+			else
+				styleWallNormal.setId(styleBasisName + currentDisplayForm.getName() + "Normal");
 			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxBuffer);
-			marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxBuffer);
 
-			if (displayForm.isHighlightingEnabled()) {
+			if (isBuilding) {
+				PolyStyleType polyStyleGroundSurface = kmlFactory.createPolyStyleType();
+				polyStyleGroundSurface.setColor(hexStringToByteArray("ff00aa00"));
+				StyleType styleGroundSurface = kmlFactory.createStyleType();
+				styleGroundSurface.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString() + "Style");
+				styleGroundSurface.setPolyStyle(polyStyleGroundSurface);
+				styleGroundSurface.setBalloonStyle(balloonStyle);
+				marshaller.marshal(kmlFactory.createStyle(styleGroundSurface), saxBuffer);
+
+				LineStyleType lineStyleRoofNormal = kmlFactory.createLineStyleType();
+				lineStyleRoofNormal.setColor(hexStringToByteArray(roofLineColor));
+				PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
+				polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
+				StyleType styleRoofNormal = kmlFactory.createStyleType();
+				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() + "Normal");
+				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
+				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
+				styleRoofNormal.setBalloonStyle(balloonStyle);
+				marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxBuffer);
+			}
+
+			if (currentDisplayForm.isHighlightingEnabled()) {
 				String invisibleColor = Integer.toHexString(DisplayForm.INVISIBLE_COLOR);
 				String highlightFillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
 				String highlightLineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+/*
 				if (indexOfDf != -1) {
-					displayForm = config.getProject().getKmlExporter().getBuildingDisplayForms().get(indexOfDf);
-					if (displayForm.isSetRgba4()) {
-						highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba4()));
+					currentDisplayForm = displayFormsForObjectType.get(indexOfDf);
+*/
+					if (currentDisplayForm.isSetRgba4()) {
+						highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba4()));
 						invisibleColor = "01" + highlightFillColor.substring(2);
 					}
-					if (displayForm.isSetRgba5()) {
-						highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba5()));
+					if (currentDisplayForm.isSetRgba5()) {
+						highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba5()));
 					}
+/*
 				}
-
+*/
 				LineStyleType lineStyleGeometryInvisible = kmlFactory.createLineStyleType();
 				lineStyleGeometryInvisible.setColor(hexStringToByteArray(invisibleColor));
 				PolyStyleType polyStyleGeometryInvisible = kmlFactory.createPolyStyleType();
 				polyStyleGeometryInvisible.setColor(hexStringToByteArray(invisibleColor));
 				StyleType styleGeometryInvisible = kmlFactory.createStyleType();
-				styleGeometryInvisible.setId(displayForm.getName() + "StyleInvisible");
+				styleGeometryInvisible.setId(styleBasisName + currentDisplayForm.getName() + "StyleInvisible");
 				styleGeometryInvisible.setLineStyle(lineStyleGeometryInvisible);
 				styleGeometryInvisible.setPolyStyle(polyStyleGeometryInvisible);
-	
+				styleGeometryInvisible.setBalloonStyle(balloonStyle);
+
 				LineStyleType lineStyleGeometryHighlight = kmlFactory.createLineStyleType();
 				lineStyleGeometryHighlight.setColor(hexStringToByteArray(highlightLineColor));
 				PolyStyleType polyStyleGeometryHighlight = kmlFactory.createPolyStyleType();
 				polyStyleGeometryHighlight.setColor(hexStringToByteArray(highlightFillColor));
 				StyleType styleGeometryHighlight = kmlFactory.createStyleType();
-				styleGeometryHighlight.setId(displayForm.getName() + "StyleHighlight");
+				styleGeometryHighlight.setId(styleBasisName + currentDisplayForm.getName() + "StyleHighlight");
 				styleGeometryHighlight.setLineStyle(lineStyleGeometryHighlight);
 				styleGeometryHighlight.setPolyStyle(polyStyleGeometryHighlight);
+				styleGeometryHighlight.setBalloonStyle(balloonStyle);
 	
 				PairType pairGeometryNormal = kmlFactory.createPairType();
 				pairGeometryNormal.setKey(StyleStateEnumType.NORMAL);
@@ -1028,7 +1086,7 @@ public class KmlExporter implements EventHandler {
 				pairGeometryHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
 				pairGeometryHighlight.setStyleUrl("#" + styleGeometryHighlight.getId());
 				StyleMapType styleMapGeometry = kmlFactory.createStyleMapType();
-				styleMapGeometry.setId(displayForm.getName() +"Style");
+				styleMapGeometry.setId(styleBasisName + currentDisplayForm.getName() +"Style");
 				styleMapGeometry.getPair().add(pairGeometryNormal);
 				styleMapGeometry.getPair().add(pairGeometryHighlight);
 	
@@ -1042,55 +1100,57 @@ public class KmlExporter implements EventHandler {
 
 		case DisplayForm.COLLADA:
 			
-			if (displayForm.isHighlightingEnabled()) {
-				indexOfDf = config.getProject().getKmlExporter().getBuildingDisplayForms().indexOf(displayForm);
-				String invisibleColor = Integer.toHexString(DisplayForm.INVISIBLE_COLOR);
-				String highlightFillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
-				String highlightLineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
-				if (indexOfDf != -1) {
-					displayForm = config.getProject().getKmlExporter().getBuildingDisplayForms().get(indexOfDf);
-					if (displayForm.isSetRgba4()) {
-						highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba4()));
+			indexOfDf = displayFormsForObjectType.indexOf(currentDisplayForm);
+			if (indexOfDf != -1) {
+				currentDisplayForm = displayFormsForObjectType.get(indexOfDf);
+				if (currentDisplayForm.isHighlightingEnabled()) {
+					String invisibleColor = Integer.toHexString(DisplayForm.INVISIBLE_COLOR);
+					String highlightFillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
+					String highlightLineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+					if (currentDisplayForm.isSetRgba4()) {
+						highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba4()));
 						invisibleColor = "01" + highlightFillColor.substring(2);
 					}
-					if (displayForm.isSetRgba5()) {
-						highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(displayForm.getRgba5()));
+					if (currentDisplayForm.isSetRgba5()) {
+						highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba5()));
 					}
-				}
 
-				LineStyleType lineStyleColladaInvisible = kmlFactory.createLineStyleType();
-				lineStyleColladaInvisible.setColor(hexStringToByteArray(invisibleColor));
-				PolyStyleType polyStyleColladaInvisible = kmlFactory.createPolyStyleType();
-				polyStyleColladaInvisible.setColor(hexStringToByteArray(invisibleColor));
-				StyleType styleColladaInvisible = kmlFactory.createStyleType();
-				styleColladaInvisible.setId(displayForm.getName() + "StyleInvisible");
-				styleColladaInvisible.setLineStyle(lineStyleColladaInvisible);
-				styleColladaInvisible.setPolyStyle(polyStyleColladaInvisible);
-	
-				LineStyleType lineStyleColladaHighlight = kmlFactory.createLineStyleType();
-				lineStyleColladaHighlight.setColor(hexStringToByteArray(highlightLineColor));
-				PolyStyleType polyStyleColladaHighlight = kmlFactory.createPolyStyleType();
-				polyStyleColladaHighlight.setColor(hexStringToByteArray(highlightFillColor));
-				StyleType styleColladaHighlight = kmlFactory.createStyleType();
-				styleColladaHighlight.setId(displayForm.getName() + "StyleHighlight");
-				styleColladaHighlight.setLineStyle(lineStyleColladaHighlight);
-				styleColladaHighlight.setPolyStyle(polyStyleColladaHighlight);
-	
-				PairType pairColladaNormal = kmlFactory.createPairType();
-				pairColladaNormal.setKey(StyleStateEnumType.NORMAL);
-				pairColladaNormal.setStyleUrl("#" + styleColladaInvisible.getId());
-				PairType pairColladaHighlight = kmlFactory.createPairType();
-				pairColladaHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
-				pairColladaHighlight.setStyleUrl("#" + styleColladaHighlight.getId());
-				StyleMapType styleMapCollada = kmlFactory.createStyleMapType();
-				styleMapCollada.setId(displayForm.getName() +"Style");
-				styleMapCollada.getPair().add(pairColladaNormal);
-				styleMapCollada.getPair().add(pairColladaHighlight);
-	
-				marshaller.marshal(kmlFactory.createStyle(styleColladaInvisible), saxBuffer);
-				marshaller.marshal(kmlFactory.createStyle(styleColladaHighlight), saxBuffer);
-				marshaller.marshal(kmlFactory.createStyleMap(styleMapCollada), saxBuffer);
-				ioWriterPool.addWork(saxBuffer);
+					LineStyleType lineStyleColladaInvisible = kmlFactory.createLineStyleType();
+					lineStyleColladaInvisible.setColor(hexStringToByteArray(invisibleColor));
+					PolyStyleType polyStyleColladaInvisible = kmlFactory.createPolyStyleType();
+					polyStyleColladaInvisible.setColor(hexStringToByteArray(invisibleColor));
+					StyleType styleColladaInvisible = kmlFactory.createStyleType();
+					styleColladaInvisible.setId(styleBasisName + currentDisplayForm.getName() + "StyleInvisible");
+					styleColladaInvisible.setLineStyle(lineStyleColladaInvisible);
+					styleColladaInvisible.setPolyStyle(polyStyleColladaInvisible);
+					styleColladaInvisible.setBalloonStyle(balloonStyle);
+					
+					LineStyleType lineStyleColladaHighlight = kmlFactory.createLineStyleType();
+					lineStyleColladaHighlight.setColor(hexStringToByteArray(highlightLineColor));
+					PolyStyleType polyStyleColladaHighlight = kmlFactory.createPolyStyleType();
+					polyStyleColladaHighlight.setColor(hexStringToByteArray(highlightFillColor));
+					StyleType styleColladaHighlight = kmlFactory.createStyleType();
+					styleColladaHighlight.setId(styleBasisName + currentDisplayForm.getName() + "StyleHighlight");
+					styleColladaHighlight.setLineStyle(lineStyleColladaHighlight);
+					styleColladaHighlight.setPolyStyle(polyStyleColladaHighlight);
+					styleColladaHighlight.setBalloonStyle(balloonStyle);
+		
+					PairType pairColladaNormal = kmlFactory.createPairType();
+					pairColladaNormal.setKey(StyleStateEnumType.NORMAL);
+					pairColladaNormal.setStyleUrl("#" + styleColladaInvisible.getId());
+					PairType pairColladaHighlight = kmlFactory.createPairType();
+					pairColladaHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
+					pairColladaHighlight.setStyleUrl("#" + styleColladaHighlight.getId());
+					StyleMapType styleMapCollada = kmlFactory.createStyleMapType();
+					styleMapCollada.setId(styleBasisName + currentDisplayForm.getName() +"Style");
+					styleMapCollada.getPair().add(pairColladaNormal);
+					styleMapCollada.getPair().add(pairColladaHighlight);
+		
+					marshaller.marshal(kmlFactory.createStyle(styleColladaInvisible), saxBuffer);
+					marshaller.marshal(kmlFactory.createStyle(styleColladaHighlight), saxBuffer);
+					marshaller.marshal(kmlFactory.createStyleMap(styleMapCollada), saxBuffer);
+					ioWriterPool.addWork(saxBuffer);
+				}
 			}
 			break;
 
@@ -1179,6 +1239,9 @@ public class KmlExporter implements EventHandler {
 			}
 			else if (kmlExportObject instanceof CityObjectGroup) {
 				type = CityGMLClass.CITY_OBJECT_GROUP;
+			}
+			else if (kmlExportObject instanceof SolitaryVegetationObject) {
+				type = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
 			}
 
 			Long counter = featureCounterMap.get(type);

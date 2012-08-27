@@ -45,7 +45,10 @@ import de.tub.citydb.config.project.system.System;
 		"filter",
 		"lodToExportFrom",
 		"buildingDisplayForms",
+		"buildingColladaOptions",
 		"cityObjectGroupDisplayForms",
+		"vegetationDisplayForms",
+		"vegetationColladaOptions",
 		"exportAsKmz",
 		"showBoundingBox",
 		"showTileBorders",
@@ -56,16 +59,9 @@ import de.tub.citydb.config.project.system.System;
 		"viewRefreshTime",
 		"writeJSONFile",
 		"appearanceTheme",
-		"ignoreSurfaceOrientation",
-		"generateTextureAtlases",
-		"packingAlgorithm",
-		"textureAtlasPots",
-		"scaleImages",
-		"imageScaleFactor",
-		"groupBuildings",
-		"groupSize",
 		"buildingBalloon",
 		"cityObjectGroupBalloon",
+		"vegetationBalloon",
 		"altitudeMode",
 		"altitudeOffsetMode",
 		"altitudeOffsetValue",
@@ -80,9 +76,14 @@ public class KmlExporter {
 	@XmlElement(name="displayForm", required=true)
 	@XmlElementWrapper(name="buildingDisplayForms")	
 	private List<DisplayForm> buildingDisplayForms;
+	private ColladaOptions buildingColladaOptions;
 	@XmlElement(name="displayForm", required=true)
 	@XmlElementWrapper(name="cityObjectGroupDisplayForms")	
 	private List<DisplayForm> cityObjectGroupDisplayForms;
+	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="vegetationDisplayForms")	
+	private List<DisplayForm> vegetationDisplayForms;
+	private ColladaOptions vegetationColladaOptions;
 	private boolean exportAsKmz;
 	private boolean showBoundingBox;
 	private boolean showTileBorders;
@@ -93,16 +94,9 @@ public class KmlExporter {
 	private double viewRefreshTime;
 	private boolean writeJSONFile;
 	private String appearanceTheme;
-	private boolean ignoreSurfaceOrientation;
-	private boolean generateTextureAtlases;
-	private int packingAlgorithm;
-	private boolean textureAtlasPots;
-	private boolean scaleImages;
-	private double imageScaleFactor;
-	private boolean groupBuildings;
-	private int groupSize;
 	private Balloon buildingBalloon;
 	private Balloon cityObjectGroupBalloon;
+	private Balloon vegetationBalloon;
 	private AltitudeMode altitudeMode;
 	private AltitudeOffsetMode altitudeOffsetMode;
 	private double altitudeOffsetValue;
@@ -117,7 +111,10 @@ public class KmlExporter {
 		filter = new ExportFilterConfig();
 		lodToExportFrom = 2;
 		buildingDisplayForms = new ArrayList<DisplayForm>();
+		buildingColladaOptions = new ColladaOptions();
 		cityObjectGroupDisplayForms = new ArrayList<DisplayForm>();
+		vegetationDisplayForms = new ArrayList<DisplayForm>();
+		vegetationColladaOptions = new ColladaOptions();
 		exportAsKmz = true;
 		showBoundingBox = true;
 		showTileBorders = true;
@@ -128,16 +125,9 @@ public class KmlExporter {
 		viewRefreshTime = 1;
 		writeJSONFile = false;
 		setAppearanceTheme(THEME_NONE);
-		setIgnoreSurfaceOrientation(false);
-		generateTextureAtlases = true;
-		packingAlgorithm = 5; // TextureAtlasGenerator.TPIM
-		setTextureAtlasPots(true);
-		scaleImages = false;
-		imageScaleFactor = 1.0;
-		groupBuildings = false;
-		groupSize = 1;
 		setBuildingBalloon(new Balloon());
 		setCityObjectGroupBalloon(new Balloon());
+		setVegetationBalloon(new Balloon());
 		setAltitudeMode(AltitudeMode.ABSOLUTE);
 		setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
 		altitudeOffsetValue = 0;
@@ -189,12 +179,36 @@ public class KmlExporter {
 		return buildingDisplayForms;
 	}
 
+	public void setBuildingColladaOptions(ColladaOptions buildingColladaOptions) {
+		this.buildingColladaOptions = buildingColladaOptions;
+	}
+
+	public ColladaOptions getBuildingColladaOptions() {
+		return buildingColladaOptions;
+	}
+
 	public void setCityObjectGroupDisplayForms(List<DisplayForm> cityObjectGroupDisplayForms) {
 		this.cityObjectGroupDisplayForms = cityObjectGroupDisplayForms;
 	}
 
 	public List<DisplayForm> getCityObjectGroupDisplayForms() {
 		return cityObjectGroupDisplayForms;
+	}
+
+	public void setVegetationDisplayForms(List<DisplayForm> vegetationDisplayForms) {
+		this.vegetationDisplayForms = vegetationDisplayForms;
+	}
+
+	public List<DisplayForm> getVegetationDisplayForms() {
+		return vegetationDisplayForms;
+	}
+
+	public void setVegetationColladaOptions(ColladaOptions vegetationColladaOptions) {
+		this.vegetationColladaOptions = vegetationColladaOptions;
+	}
+
+	public ColladaOptions getVegetationColladaOptions() {
+		return vegetationColladaOptions;
 	}
 
 	public static int getActiveDisplayFormsAmount(List<DisplayForm> displayForms) {
@@ -213,30 +227,6 @@ public class KmlExporter {
 		return exportAsKmz;
 	}
 
-	public void setGenerateTextureAtlases(boolean generateTextureAtlases) {
-		this.generateTextureAtlases = generateTextureAtlases;
-	}
-
-	public boolean isGenerateTextureAtlases() {
-		return generateTextureAtlases;
-	}
-
-	public void setImageScaleFactor(double imageScaleFactor) {
-		this.imageScaleFactor = imageScaleFactor;
-	}
-
-	public double getImageScaleFactor() {
-		return imageScaleFactor;
-	}
-
-	public void setGroupSize(int groupSize) {
-		this.groupSize = groupSize;
-	}
-
-	public int getGroupSize() {
-		return groupSize;
-	}
-
 	public void setShowBoundingBox(boolean showBoundingBox) {
 		this.showBoundingBox = showBoundingBox;
 	}
@@ -253,36 +243,12 @@ public class KmlExporter {
 		return showTileBorders;
 	}
 
-	public void setScaleImages(boolean scaleImages) {
-		this.scaleImages = scaleImages;
-	}
-
-	public boolean isScaleImages() {
-		return scaleImages;
-	}
-
-	public void setGroupBuildings(boolean groupBuildings) {
-		this.groupBuildings = groupBuildings;
-	}
-
-	public boolean isGroupBuildings() {
-		return groupBuildings;
-	}
-
 	public void setAppearanceTheme(String appearanceTheme) {
 		this.appearanceTheme = appearanceTheme;
 	}
 
 	public String getAppearanceTheme() {
 		return appearanceTheme;
-	}
-
-	public void setIgnoreSurfaceOrientation(boolean ignoreSurfaceOrientation) {
-		this.ignoreSurfaceOrientation = ignoreSurfaceOrientation;
-	}
-
-	public boolean isIgnoreSurfaceOrientation() {
-		return ignoreSurfaceOrientation;
 	}
 
 	public void setAltitudeMode(AltitudeMode altitudeMode) {
@@ -315,14 +281,6 @@ public class KmlExporter {
 
 	public boolean isCallGElevationService() {
 		return callGElevationService;
-	}
-
-	public void setPackingAlgorithm(int packingAlgorithm) {
-		this.packingAlgorithm = packingAlgorithm;
-	}
-
-	public int getPackingAlgorithm() {
-		return packingAlgorithm;
 	}
 
 	public void setAutoTileSideLength(double autoTileSideLength) {
@@ -373,14 +331,6 @@ public class KmlExporter {
 		return viewRefreshTime;
 	}
 
-	public void setTextureAtlasPots(boolean textureAtlasPots) {
-		this.textureAtlasPots = textureAtlasPots;
-	}
-
-	public boolean isTextureAtlasPots() {
-		return textureAtlasPots;
-	}
-
 	public void setUseOriginalZCoords(boolean useOriginalZCoords) {
 		this.useOriginalZCoords = useOriginalZCoords;
 	}
@@ -403,6 +353,14 @@ public class KmlExporter {
 
 	public Balloon getCityObjectGroupBalloon() {
 		return cityObjectGroupBalloon;
+	}
+
+	public void setVegetationBalloon(Balloon vegetationBalloon) {
+		this.vegetationBalloon = vegetationBalloon;
+	}
+
+	public Balloon getVegetationBalloon() {
+		return vegetationBalloon;
 	}
 
 }

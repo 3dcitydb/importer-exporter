@@ -31,9 +31,7 @@ package de.tub.citydb.modules.kml.database;
 
 import java.math.BigDecimal;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -141,7 +139,7 @@ public class ElevationServiceHandler {
 		try {
 			runLock.lock();
 			// pause interval: 100 millis should be enough, but experience says it is not!
-			Thread.currentThread().sleep(200);
+			Thread.sleep(200);
 		}
 		catch (Exception e) {}
 		finally {

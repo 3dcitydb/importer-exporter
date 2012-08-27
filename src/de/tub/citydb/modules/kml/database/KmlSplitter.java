@@ -56,11 +56,10 @@ public class KmlSplitter {
 
 	private static HashSet<CityGMLClass> CURRENTLY_ALLOWED_CITY_OBJECT_TYPES = new HashSet<CityGMLClass>();
 	
-	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
 	private final DisplayForm displayForm;
 	private final ExportFilter exportFilter;
-	private final Config config;
+//	private final Config config;
 	private ExportFilterConfig filterConfig;
 	private volatile boolean shouldRun = true;
 
@@ -72,20 +71,23 @@ public class KmlSplitter {
 					   ExportFilter exportFilter, 
 					   DisplayForm displayForm,
 					   Config config) throws SQLException {
-		this.dbConnectionPool = dbConnectionPool;
 		this.dbWorkerPool = dbWorkerPool;
 		this.exportFilter = exportFilter;
 		this.displayForm = displayForm;
-		this.config = config;
+//		this.config = config;
 
 		this.filterConfig = config.getProject().getKmlExporter().getFilter();
 		CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.clear();
-//		if (filterConfig.getComplexFilter().getFeatureClass().isSetBuilding()) {
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetBuilding()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.BUILDING);
-//		}
-//		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityObjectGroup()) {
-//			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
-//		}
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityObjectGroup()) {
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetVegetation()) {
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.SOLITARY_VEGETATION_OBJECT);
+//			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.PLANT_COVER);
+		}
 			
 		connection = dbConnectionPool.getConnection();
 		connection.setAutoCommit(false);

@@ -33,43 +33,252 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+
+import javax.vecmath.Point3d;
+import javax.xml.bind.JAXBException;
+
+import net.opengis.kml._2.PlacemarkType;
 
 import org.citygml4j.factory.CityGMLFactory;
 
-import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
+import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
+import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.log.Logger;
+import de.tub.citydb.modules.common.event.CounterEvent;
+import de.tub.citydb.modules.common.event.CounterType;
 
 public class Building extends KmlGenericObject{
 
+	public static final String STYLE_BASIS_NAME = ""; // "Building"
 
 	public Building(Connection connection,
 			KmlExporterManager kmlExporterManager,
 			CityGMLFactory cityGMLFactory,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
+			ElevationServiceHandler elevationServiceHandler,
+			BalloonTemplateHandlerImpl balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
-			DatabaseSrs dbSrs,
 			Config config) {
 
 		super(connection,
 			  kmlExporterManager,
 			  cityGMLFactory,
 			  kmlFactory,
+			  elevationServiceHandler,
+			  balloonTemplateHandler,
 			  eventDispatcher,
-			  dbSrs,
 			  config);
 	}
 
-	protected PreparedStatement getQueryForObjectType (KmlSplittingResult work) throws SQLException {
-		PreparedStatement psQuery = connection.prepareStatement(
-				Queries.getSingleBuildingQuery(currentLod, work.getDisplayForm()),
-											   ResultSet.TYPE_SCROLL_INSENSITIVE,
-											   ResultSet.CONCUR_READ_ONLY);
-		return psQuery;
+	protected List<DisplayForm> getDisplayForms() {
+		return config.getProject().getKmlExporter().getBuildingDisplayForms();
 	}
-
-	protected Balloon getBalloonSetings() {
+	
+	public ColladaOptions getColladaOptions() {
+		return config.getProject().getKmlExporter().getBuildingColladaOptions();
+	}
+	
+	public Balloon getBalloonSettings() {
 		return config.getProject().getKmlExporter().getBuildingBalloon();
 	}
+
+	public String getStyleBasisName() {
+		return STYLE_BASIS_NAME;
+	}
+
+	public void read(KmlSplittingResult work) {
+
+		PreparedStatement psQuery = null;
+		ResultSet rs = null;
+
+		boolean reversePointOrder = false;
+
+		try {
+			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
+			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
+			int minLod = lodToExportFrom == 5 ? 1: lodToExportFrom;
+
+			while (currentLod >= minLod) {
+				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
+
+				try {
+					psQuery = connection.prepareStatement(Queries.getSingleBuildingQuery(currentLod, work.getDisplayForm()),
+							   							  ResultSet.TYPE_SCROLL_INSENSITIVE,
+							   							  ResultSet.CONCUR_READ_ONLY);
+
+					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
+						psQuery.setString(i, work.getGmlId());
+					}
+				
+					rs = psQuery.executeQuery();
+					if (rs.isBeforeFirst()) {
+						break; // result set not empty
+					}
+					else {
+						try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
+						try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+					}
+				}
+				catch (Exception e2) {
+					try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
+					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
+					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
+					try { connection.rollback(); } catch (SQLException sqle) {}
+				}
+
+				// when for EXTRUDED or FOOTPRINT there is no ground surface modelled, try to find it out indirectly
+				if (rs == null && (work.getDisplayForm().getForm() <= DisplayForm.EXTRUDED)) {
+
+					reversePointOrder = true;
+
+//					int groupBasis = 4;
+					try {
+						psQuery = connection.prepareStatement(Queries.getBuildingAggregateGeometries(0.001, currentLod),
+								  							  ResultSet.TYPE_SCROLL_INSENSITIVE,
+								  							  ResultSet.CONCUR_READ_ONLY);
+
+						for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
+							psQuery.setString(i, work.getGmlId());
+						}
+						rs = psQuery.executeQuery();
+						if (rs.isBeforeFirst()) {
+							rs.next();
+							if(rs.getObject(1) != null) {
+								rs.beforeFirst();
+								break; // result set not empty
+							}
+						}
+//						else {
+							try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+							rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
+							try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+//						}
+					}
+					catch (Exception e2) {
+						try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
+						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
+						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
+						try { connection.rollback(); } catch (SQLException sqle) {}
+					}
+				}
+
+				currentLod--;
+				reversePointOrder = false;
+			}
+
+			if (rs == null) { // result empty, give up
+				String fromMessage = lodToExportFrom == 5 ? " from any LoD": " from LoD" + lodToExportFrom;
+				Logger.getInstance().info("Could not display object " + work.getGmlId() 
+						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
+			}
+			else { // result not empty
+				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
+
+				switch (work.getDisplayForm().getForm()) {
+				case DisplayForm.FOOTPRINT:
+					kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
+											 work,
+											 getBalloonSettings().isBalloonContentInSeparateFile());
+					break;
+				case DisplayForm.EXTRUDED:
+
+					PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT);
+					for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
+						psQuery2.setString(i, work.getGmlId());
+					}
+					ResultSet rs2 = psQuery2.executeQuery();
+					rs2.next();
+					double measuredHeight = rs2.getDouble("envelope_measured_height");
+					try { rs2.close(); /* release cursor on DB */ } catch (SQLException e) {}
+					try { psQuery2.close(); /* release cursor on DB */ } catch (SQLException e) {}
+					
+					kmlExporterManager.print(createPlacemarksForExtruded(rs, work, measuredHeight, reversePointOrder),
+											 work,
+											 getBalloonSettings().isBalloonContentInSeparateFile());
+					break;
+				case DisplayForm.GEOMETRY:
+					if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter()) { // region
+						if (work.getDisplayForm().isHighlightingEnabled()) {
+							kmlExporterManager.print(createPlacemarksForHighlighting(work),
+													 work,
+													 getBalloonSettings().isBalloonContentInSeparateFile());
+						}
+						kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
+												 work,
+												 getBalloonSettings().isBalloonContentInSeparateFile());
+					}
+					else { // reverse order for single buildings
+						kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
+												 work,
+												 getBalloonSettings().isBalloonContentInSeparateFile());
+//							kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
+						if (work.getDisplayForm().isHighlightingEnabled()) {
+//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
+//							 						 work,
+//							 						 getBalloonSetings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(work),
+													 work,
+													 getBalloonSettings().isBalloonContentInSeparateFile());
+						}
+					}
+					break;
+				case DisplayForm.COLLADA:
+					fillGenericObjectForCollada(rs, work.getGmlId());
+					List<Point3d> anchorCandidates = setOrigins(); // setOrigins() called mainly for the side-effect
+					double zOffset = getZOffsetFromConfigOrDB(work.getGmlId());
+					if (zOffset == Double.MAX_VALUE) {
+						zOffset = getZOffsetFromGEService(work.getGmlId(), anchorCandidates);
+					}
+					setZOffset(zOffset);
+
+					ColladaOptions colladaOptions = getColladaOptions();
+					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
+					try {
+						if (work.getDisplayForm().isHighlightingEnabled()) {
+//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
+//													 work,
+//													 getBalloonSetings().isBalloonContentInSeparateFile());
+							kmlExporterManager.print(createPlacemarksForHighlighting(work),
+													 work,
+													 getBalloonSettings().isBalloonContentInSeparateFile());
+						}
+					}
+					catch (Exception ioe) {
+						ioe.printStackTrace();
+					}
+
+					break;
+				}
+			}
+		}
+		catch (SQLException sqlEx) {
+			Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+			return;
+		}
+		catch (JAXBException jaxbEx) {
+			return;
+		}
+		finally {
+			if (rs != null)
+				try { rs.close(); } catch (SQLException e) {}
+			if (psQuery != null)
+				try { psQuery.close(); } catch (SQLException e) {}
+		}
+	}
+
+	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
+		// undo trick for very close coordinates
+		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOriginX()/100, getOriginY()/100, getOriginZ()/100});
+		setLocationX(reducePrecisionForXorY(originInWGS84[0]));
+		setLocationY(reducePrecisionForXorY(originInWGS84[1]));
+		setLocationZ(reducePrecisionForZ(originInWGS84[2]));
+
+		return super.createPlacemarkForColladaModel();
+	}
+
 }

@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
@@ -60,8 +59,6 @@ import net.opengis.kml._2.NetworkLinkType;
 import net.opengis.kml._2.ObjectFactory;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.RegionType;
-import net.opengis.kml._2.StyleType;
-import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 //import oracle.ord.im.OrdImage;
 
@@ -73,7 +70,6 @@ import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
-import de.tub.citydb.log.Logger;
 
 public class KmlExporterManager {
 	private final JAXBContext jaxbKmlContext;
@@ -87,6 +83,7 @@ public class KmlExporterManager {
 	private String mainFilename;
 	
 	private static final String ENCODING = "UTF-8";
+	private static final Charset CHARSET = Charset.forName(ENCODING);
 
 	public KmlExporterManager(JAXBContext jaxbKmlContext,
 							  JAXBContext jaxbColladaContext,
@@ -215,12 +212,11 @@ public class KmlExporterManager {
 								zipOut = new ZipOutputStream(new FileOutputStream(placemarkFile));
 								ZipEntry zipEntry = new ZipEntry("doc.kml");
 								zipOut.putNextEntry(zipEntry);
-								fileWriter = new OutputStreamWriter(zipOut);
+								fileWriter = new OutputStreamWriter(zipOut, CHARSET);
 							}
 							else {
 								File placemarkFile = new File(placemarkDirectory, filename + ".kml");
-								Charset charset = Charset.forName(ENCODING);
-								fileWriter = new OutputStreamWriter(new FileOutputStream(placemarkFile), charset);
+								fileWriter = new OutputStreamWriter(new FileOutputStream(placemarkFile), CHARSET);
 							}
 							
 							// the network link pointing to the file
@@ -365,14 +361,13 @@ public class KmlExporterManager {
 						zipOut = new ZipOutputStream(new FileOutputStream(placemarkFile));
 						ZipEntry zipEntry = new ZipEntry("doc.kml");
 						zipOut.putNextEntry(zipEntry);
-						fileWriter = new OutputStreamWriter(zipOut);
+						fileWriter = new OutputStreamWriter(zipOut, CHARSET);
 	    				kmlMarshaller.marshal(kmlFactory.createKml(kmlType), fileWriter);
 						zipOut.closeEntry();
 					}
 					else {
 						File placemarkFile = new File(placemarkDirectory, colladaBundle.getBuildingId() + "_collada.kml");
-						Charset charset = Charset.forName(ENCODING);
-						fileWriter = new OutputStreamWriter(new FileOutputStream(placemarkFile), charset);
+						fileWriter = new OutputStreamWriter(new FileOutputStream(placemarkFile), CHARSET);
 	    				kmlMarshaller.marshal(kmlFactory.createKml(kmlType), fileWriter);
 						fileWriter.close();
 					}
@@ -440,13 +435,14 @@ public class KmlExporterManager {
 			}
 			else {
 				// ----------------- model saving -----------------
-				ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + ".dae");
+				ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" + colladaBundle.getBuildingId() + ".dae");
 				zipOut.putNextEntry(zipEntry);
-				zipOut.write(colladaBundle.getColladaAsString().getBytes());
+				zipOut.write(colladaBundle.getColladaAsString().getBytes(CHARSET));
 				zipOut.closeEntry();
 
 				// ----------------- image saving -----------------
-				/*if (colladaBundle.getTexOrdImages() != null) {
+/*
+				if (colladaBundle.getTexOrdImages() != null) {
 					Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
 					Iterator<String> iterator = keySet.iterator();
 					while (iterator.hasNext()) {
@@ -455,14 +451,17 @@ public class KmlExporterManager {
 //						byte[] ordImageBytes = texOrdImage.getDataInByteArray();
 						byte[] ordImageBytes = texOrdImage.getBlobContent().getBytes(1, (int)texOrdImage.getBlobContent().length());
 
-						zipEntry = new ZipEntry(imageFilename);
+//						zipEntry = new ZipEntry(imageFilename);
+						zipEntry = imageFilename.startsWith("..") ?
+								   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
+								   new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
 						zipOut.putNextEntry(zipEntry);
 						zipOut.write(ordImageBytes, 0, ordImageBytes.length);
 //						zipOut.write(ordImageBytes, 0, bytes_read);
 						zipOut.closeEntry();
 					}
-				}*/
-
+				}
+*/
 				if (colladaBundle.getTexImages() != null) {
 					Set<String> keySet = colladaBundle.getTexImages().keySet();
 					Iterator<String> iterator = keySet.iterator();
@@ -471,7 +470,10 @@ public class KmlExporterManager {
 						BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename);
 						String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
-						zipEntry = new ZipEntry(imageFilename);
+//						zipEntry = new ZipEntry(imageFilename);
+						zipEntry = imageFilename.startsWith("..") ?
+								   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
+								   new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
 						zipOut.putNextEntry(zipEntry);
 						ImageIO.write(texImage, imageType, zipOut);
 						zipOut.closeEntry();
@@ -482,7 +484,7 @@ public class KmlExporterManager {
 				if (colladaBundle.getExternalBalloonFileContent() != null) {
 					zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + colladaBundle.getBuildingId() + ".html");
 					zipOut.putNextEntry(zipEntry);
-					zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes());
+					zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes(CHARSET));
 					zipOut.closeEntry();
 				}
 
@@ -505,9 +507,9 @@ public class KmlExporterManager {
 	        fos.close();
 
 			// ----------------- image saving -----------------
-
+/*
 			// first those wrapped textures or images in unknown formats (like .rgb)
-			/*if (colladaBundle.getTexOrdImages() != null) {
+			if (colladaBundle.getTexOrdImages() != null) {
 				Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
 				Iterator<String> iterator = keySet.iterator();
 				while (iterator.hasNext()) {
@@ -522,8 +524,8 @@ public class KmlExporterManager {
 						texOrdImage.close();
 					}
 				}
-			}*/
-
+			}
+*/
 			if (colladaBundle.getTexImages() != null) {
 				Set<String> keySet = colladaBundle.getTexImages().keySet();
 				Iterator<String> iterator = keySet.iterator();
@@ -533,7 +535,8 @@ public class KmlExporterManager {
 					String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
 					File imageFile = new File(buildingDirectory, imageFilename);
-					ImageIO.write(texImage, imageType, imageFile);
+					if (!imageFile.exists()) // avoid overwriting and access conflicts
+						ImageIO.write(texImage, imageType, imageFile);
 				}
 			}
 			
@@ -546,7 +549,7 @@ public class KmlExporterManager {
 					}
 					File htmlFile = new File(balloonsDirectory, placemark.getName() + ".html");
 					FileOutputStream outputStream = new FileOutputStream(htmlFile);
-					outputStream.write(colladaBundle.getExternalBalloonFileContent().getBytes());
+					outputStream.write(colladaBundle.getExternalBalloonFileContent().getBytes(CHARSET));
 					outputStream.close();
 				}
 				catch (IOException ioe) {
@@ -556,6 +559,7 @@ public class KmlExporterManager {
 		}
 	}
 
+/*
 	public void print(StyleType styleType) throws JAXBException {
 		SAXEventBuffer buffer = new SAXEventBuffer();
 		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
@@ -569,5 +573,7 @@ public class KmlExporterManager {
 		kmlMarshaller.marshal(kmlFactory.createStyleMap(styleMapType), buffer);
 		ioWriterPool.addWork(buffer);
 	}
+*/
+
 }
 
