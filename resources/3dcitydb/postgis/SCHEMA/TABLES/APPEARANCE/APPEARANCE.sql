@@ -25,21 +25,21 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE APPEARANCE (
-	ID                        SERIAL NOT NULL,
-	GMLID                     VARCHAR(256),
-	GMLID_CODESPACE           VARCHAR(1000),
-	NAME                      VARCHAR(1000),
-	NAME_CODESPACE            VARCHAR(4000),
-	DESCRIPTION               VARCHAR(4000),
-	THEME                     VARCHAR(256),
-	CITYMODEL_ID              INTEGER,
-	CITYOBJECT_ID             INTEGER
+ID                SERIAL NOT NULL,
+GMLID             VARCHAR(256),
+GMLID_CODESPACE   VARCHAR(1000),
+NAME              VARCHAR(1000),
+NAME_CODESPACE    VARCHAR(4000),
+DESCRIPTION       VARCHAR(4000),
+THEME             VARCHAR(256),
+CITYMODEL_ID      INTEGER,
+CITYOBJECT_ID     INTEGER
 )
 ;
 

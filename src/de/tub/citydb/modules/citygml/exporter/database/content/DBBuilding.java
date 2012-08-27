@@ -216,14 +216,14 @@ public class DBBuilding implements DBExporter {
 						if (!rs.wasNull() && lodSurfaceGeometryId != 0)
 							lodGeometryId[lod - 1] = lodSurfaceGeometryId;
 						
-						PGgeometry[] pgTerrainIntersection =(PGgeometry[])rs.getObject("LOD" + lod + "_TERRAIN_INTERSECTION");
+						PGgeometry pgTerrainIntersection = (PGgeometry)rs.getObject("LOD" + lod + "_TERRAIN_INTERSECTION");
 						if (!rs.wasNull() && pgTerrainIntersection != null)
-							terrainIntersection[lod - 1] = pgTerrainIntersection[lod - 1].getGeometry();
+							terrainIntersection[lod - 1] = pgTerrainIntersection.getGeometry();
 
 						if (lod >= 2) {
-							PGgeometry[] pgMultiCurve = (PGgeometry[])rs.getObject("LOD" + lod + "_MULTI_CURVE");
+							PGgeometry pgMultiCurve = (PGgeometry)rs.getObject("LOD" + lod + "_MULTI_CURVE");
 							if (!rs.wasNull() && pgMultiCurve != null)
-								multiCurve[lod - 2] = pgMultiCurve[lod - 2].getGeometry();
+								multiCurve[lod - 2] = pgMultiCurve.getGeometry();
 						}
 						
 					}

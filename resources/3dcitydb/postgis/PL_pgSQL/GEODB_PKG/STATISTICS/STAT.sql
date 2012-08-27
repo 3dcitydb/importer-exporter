@@ -17,7 +17,7 @@
 --                             Universitaet Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --              (c) 2005-2006, lat/lon GmbH, Germany
---                             http://www.lat-lon.de--              
+--                             http://www.lat-lon.de--
 --
 --              This skript is free software under the LGPL Version 2.1.
 --              See the GNU Lesser General Public License at
@@ -54,7 +54,7 @@ BEGIN
   report := array_append(report, '===================================================================');
 
   PERFORM array_append(report, '');
-  
+
   SELECT COUNT(*) INTO cnt FROM citymodel;
   report := array_append(report, ('#CITYMODEL:\t\t\t' || cnt));
   SELECT COUNT(*) INTO cnt FROM cityobject_member;
@@ -125,13 +125,13 @@ BEGIN
   report := array_append(report, ('#RELIEF:\t\t\t' || cnt));
   SELECT COUNT(*) INTO cnt FROM orthophoto;
   report := array_append(report, ('#ORTHOPHOTO:\t\t\t' || cnt));
-  
+
   -- Transportation
   SELECT COUNT(*) INTO cnt FROM transportation_complex;
   report := array_append(report, ('#TRANSPORTATION_COMPLEX:\t' || cnt));
   SELECT COUNT(*) INTO cnt FROM traffic_area;
   report := array_append(report, ('#TRAFFIC_AREA:\t\t\t' || cnt));
-   
+
   -- Vegetation
   SELECT COUNT(*) INTO cnt FROM plant_cover;
   report := array_append(report, ('#PLANT_COVER:\t\t\t' || cnt));
@@ -145,13 +145,13 @@ BEGIN
   report := array_append(report, ('#WATERBOUNDARY_SURFACE:\t\t' || cnt));
   SELECT COUNT(*) INTO cnt FROM waterbod_to_waterbnd_srf;
   report := array_append(report, ('#WATERBOD_TO_WATERBND_SRF:\t' || cnt));
-    
+
   -- GenericCityObject
   SELECT COUNT(*) INTO cnt FROM generic_cityobject;
   report := array_append(report, ('#GENERIC_CITYOBJECT:\t\t' || cnt));
   SELECT COUNT(*) INTO cnt FROM cityobject_genericattrib;
   report := array_append(report, ('#CITYOBJECT_GENERICATTRIB:\t' || cnt));
- 
+
   -- Appearance
   SELECT COUNT(*) INTO cnt FROM appearance;
   report := array_append(report, ('#APPEARANCE:\t\t\t' || cnt));
@@ -161,7 +161,7 @@ BEGIN
   report := array_append(report, ('#APPEAR_TO_SURFACE_DATA:\t' || cnt));
   SELECT COUNT(*) INTO cnt FROM textureparam;
   report := array_append(report, ('#TEXTUREPARAM:\t\t\t' || cnt));  
- 
+
   RETURN report;
 END; 
 $$

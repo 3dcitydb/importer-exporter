@@ -25,23 +25,23 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE SURFACE_GEOMETRY(
-	ID                        SERIAL NOT NULL,
-	GMLID                     VARCHAR(256),
-	GMLID_CODESPACE           VARCHAR(1000),
-	PARENT_ID                 INTEGER,
-	ROOT_ID                   INTEGER,
-	IS_SOLID                  NUMERIC(1, 0),
-	IS_COMPOSITE              NUMERIC(1, 0),
-	IS_TRIANGULATED           NUMERIC(1, 0),
-	IS_XLINK                  NUMERIC(1, 0),
-	IS_REVERSE                NUMERIC(1, 0),
-	GEOMETRY                  GEOMETRY(PolygonZ,:SRSNO)
+ID                  SERIAL NOT NULL,
+GMLID               VARCHAR(256),
+GMLID_CODESPACE     VARCHAR(1000),
+PARENT_ID           INTEGER,
+ROOT_ID             INTEGER,
+IS_SOLID            NUMERIC(1, 0),
+IS_COMPOSITE        NUMERIC(1, 0),
+IS_TRIANGULATED     NUMERIC(1, 0),
+IS_XLINK            NUMERIC(1, 0),
+IS_REVERSE          NUMERIC(1, 0),
+GEOMETRY            GEOMETRY(PolygonZ,:SRSNO)
 )
 ;
 

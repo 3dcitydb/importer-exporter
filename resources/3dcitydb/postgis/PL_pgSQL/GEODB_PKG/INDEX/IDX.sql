@@ -56,7 +56,7 @@ BEGIN
     idx.type := 1;
     idx.srid := srid;
     idx.is_3d := 1;
-    
+
     RETURN idx;
 END; 
 $$
@@ -176,7 +176,7 @@ BEGIN
     ELSE
         status := 'INVALID';
     END IF;
-    
+
     RETURN status;
 
 EXCEPTION
@@ -200,7 +200,7 @@ DECLARE
 BEGIN
     IF geodb_pkg.idx_index_status(idx) <> 'VALID' THEN
         PERFORM geodb_pkg.idx_drop_index(idx);
-        
+
         BEGIN
             IF idx.type = SPATIAL THEN
                 create_ddl := 'CREATE INDEX ' || idx.index_name || ' ON ' || idx.table_name || ' USING GIST (' || idx.attribute_name || ' gist_geometry_ops_nd)';
@@ -213,13 +213,13 @@ BEGIN
             END IF;
 
             EXECUTE create_ddl;
-        		
+
         EXCEPTION
             WHEN OTHERS THEN
                 RETURN SQLSTATE || ' - ' || SQLERRM;
         END;
     END IF;
-    
+
     RETURN '0';
 END;
 $$
@@ -237,15 +237,15 @@ DECLARE
     index_name VARCHAR(100);
 BEGIN
     IF geodb_pkg.idx_index_status(idx) <> 'DROPPED' THEN
-        BEGIN    
+        BEGIN
             EXECUTE 'DROP INDEX IF EXISTS ' || idx.index_name;
-    
+
         EXCEPTION
             WHEN OTHERS THEN
                 RETURN SQLSTATE || ' - ' || SQLERRM;
         END;
     END IF;
-    
+
     RETURN '0';
 END;
 $$
@@ -270,9 +270,9 @@ BEGIN
             sql_error_msg := geodb_pkg.idx_create_index(rec.idx_obj);
             log := array_append(log, geodb_pkg.idx_index_status(rec.idx_obj) || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name || ':' || sql_error_msg);
         END IF;
-    END LOOP;   
+    END LOOP;
 
-    RETURN log;     
+    RETURN log;
   END;
 $$
 LANGUAGE plpgsql;
@@ -342,7 +342,7 @@ BEGIN
             status := geodb_pkg.idx_index_status(rec.idx_obj);
             log := array_append(log, status || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name);
         END IF;
-    END LOOP;      
+    END LOOP;
 
     RETURN log;
 END;
@@ -358,7 +358,7 @@ LANGUAGE plpgsql;
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_create_spatial_indexes() RETURNS text[] AS $$
 BEGIN
-	RETURN geodb_pkg.idx_create_indexes(1);
+    RETURN geodb_pkg.idx_create_indexes(1);
 END;
 $$
 LANGUAGE plpgsql;
@@ -376,7 +376,7 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
-  
+
 /******************************************************************
 * create_normal_indexes
 * convience method for invoking create_index on all normal 
@@ -401,7 +401,7 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_drop_normal_indexes() RETURNS text[] AS $$
 BEGIN
     RETURN geodb_pkg.idx_drop_indexes(0);
-END;  
+END; 
 $$
 LANGUAGE plpgsql;
 
@@ -418,13 +418,13 @@ CREATE OR REPLACE FUNCTION geodb_pkg.idx_get_index(table_name VARCHAR, column_na
 DECLARE
     idx geodb_pkg.INDEX_OBJ;
     rec RECORD;
-BEGIN    
+BEGIN
     FOR rec IN select * from geodb_pkg.index_table LOOP
         IF (rec.idx_obj).attribute_name = column_name AND (rec.idx_obj).table_name = table_name THEN
             idx := rec.idx_obj;
         END IF;
-    END LOOP;  
-    
+    END LOOP;
+
     RETURN idx;
 END;
 $$

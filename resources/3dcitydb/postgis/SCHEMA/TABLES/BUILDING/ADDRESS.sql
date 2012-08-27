@@ -25,22 +25,22 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE ADDRESS (
-	ID 	                      SERIAL NOT NULL,
-	STREET 	                  VARCHAR(1000),
-	HOUSE_NUMBER              VARCHAR(256),
-	PO_BOX 	                  VARCHAR(256),
-	ZIP_CODE                  VARCHAR(256),
-	CITY                      VARCHAR(256),
-	STATE                     VARCHAR(256),
-	COUNTRY                   VARCHAR(256),
-	MULTI_POINT	              GEOMETRY(MultiPointZ,:SRSNO),	
-	XAL_SOURCE                TEXT
+ID 	             SERIAL NOT NULL,
+STREET 	         VARCHAR(1000),
+HOUSE_NUMBER     VARCHAR(256),
+PO_BOX 	         VARCHAR(256),
+ZIP_CODE         VARCHAR(256),
+CITY             VARCHAR(256),
+STATE            VARCHAR(256),
+COUNTRY          VARCHAR(256),
+MULTI_POINT	     GEOMETRY(MultiPointZ,:SRSNO),	
+XAL_SOURCE       TEXT
 );
 
 ALTER TABLE ADDRESS

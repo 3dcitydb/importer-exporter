@@ -79,7 +79,7 @@ BEGIN
     RETURN NEXT;
 END;
 $$
-LANGUAGE plpgsql;  
+LANGUAGE plpgsql;
   
 /******************************************************************
 * error_msg
@@ -94,7 +94,7 @@ BEGIN
     EXCEPTION
         WHEN OTHERS THEN
             RETURN SQLERRM;
-   END;
+    END;
 END;
 $$
 LANGUAGE plpgsql;
@@ -134,7 +134,7 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
-    
+
 /******************************************************************
 * is_coord_ref_sys_3d
 *
@@ -145,15 +145,14 @@ LANGUAGE plpgsql;
 * @param srid the SRID of the coordinate system to be checked
 * @RETURN NUMERIC the boolean result encoded as NUMERIC: 0 = false, 1 = true                
 ******************************************************************/
-
 CREATE OR REPLACE FUNCTION geodb_pkg.util_is_coord_ref_sys_3d(srid INTEGER) RETURNS INTEGER AS $$
-  DECLARE
-	is_3d INTEGER := 0;
-  BEGIN
-	EXECUTE 'SELECT count(*) FROM spatial_ref_sys WHERE auth_srid=$1 AND srtext LIKE ''%UP]%''' INTO is_3d USING srid;
-    
+DECLARE
+    is_3d INTEGER := 0;
+BEGIN
+    EXECUTE 'SELECT count(*) FROM spatial_ref_sys WHERE auth_srid=$1 AND srtext LIKE ''%UP]%''' INTO is_3d USING srid;
+
     RETURN is_3d;
-  END;
+END;
 $$
 LANGUAGE plpgsql;
  
@@ -162,14 +161,13 @@ LANGUAGE plpgsql;
 *
 * @RETURN NUMERIC the boolean result encoded as NUMERIC: 0 = false, 1 = true                
 ******************************************************************/
-
 CREATE OR REPLACE FUNCTION geodb_pkg.util_is_db_coord_ref_sys_3d() RETURNS INTEGER AS $$
-  DECLARE
+DECLARE
     srid INTEGER;
-  BEGIN
+BEGIN
     EXECUTE 'SELECT srid from DATABASE_SRS' INTO srid;
     RETURN geodb_pkg.util_is_coord_ref_sys_3d(srid);
-  END;
+END;
 $$
 LANGUAGE plpgsql;
 
@@ -177,16 +175,16 @@ LANGUAGE plpgsql;
 /*******************************************************************
 * change_db_srid
 *
-* changes the database-SRID, if wrong SRID was used for CREATE_DB
-* it should only be executed on an empty database to avoid any errors
+* Changes the database-SRID, if wrong SRID was used for CREATE_DB.
+* Also helpful if using an instance of the 3DCityDB as a template database.
+* It should only be executed on an empty database to avoid any errors.
 *
 * @param db_srid the SRID of the coordinate system to be further used in the database
 * @param db_gml_srs_name the GML_SRS_NAME of the coordinate system to be further used in the database
 *******************************************************************/
-
 CREATE OR REPLACE FUNCTION geodb_pkg.util_change_db_srid (db_srid INTEGER, db_gml_srs_name VARCHAR) RETURNS SETOF void AS $$
 BEGIN
--- Drop spatial indexes
+  -- Drop spatial indexes
   DROP INDEX CITYOBJECT_SPX;
   DROP INDEX SURFACE_GEOM_SPX;
   DROP INDEX BREAKLINE_RID_SPX;
@@ -232,7 +230,7 @@ BEGIN
   DROP INDEX WATERBODY_LOD0MULTI_SPX;
   DROP INDEX WATERBODY_LOD1MULTI_SPX;
 	
--- Drop geometry columns from tables and geometry_columns-view
+  -- Drop geometry columns from tables and geometry_columns-view
   PERFORM DropGeometryColumn('cityobject', 'envelope');
   PERFORM DropGeometryColumn('surface_geometry', 'geometry');
   PERFORM DropGeometryColumn('breakline_relief', 'ridge_or_valley_lines');
@@ -281,10 +279,10 @@ BEGIN
   PERFORM DropGeometryColumn('waterbody', 'lod0_multi_curve');
   PERFORM DropGeometryColumn('waterbody', 'lod1_multi_curve');
 
--- Update entry in DATABASE_SRS-table
+  -- Update entry in DATABASE_SRS-table
   UPDATE DATABASE_SRS SET SRID=db_srid, GML_SRS_NAME=db_gml_srs_name;
-	
--- Create geometry columns in associted tables and add them to geometry_columns-view again
+
+  -- Create geometry columns in associted tables and add them to geometry_columns-view again
   PERFORM AddGeometryColumn('cityobject', 'envelope', db_srid, 'POLYGON', 3);
   PERFORM AddGeometryColumn('surface_geometry', 'geometry', db_srid, 'POLYGON', 3);
   PERFORM AddGeometryColumn('breakline_relief', 'ridge_or_valley_lines', db_srid, 'MULTICURVE', 3);
@@ -333,7 +331,7 @@ BEGIN
   PERFORM AddGeometryColumn('waterbody', 'lod0_multi_curve', db_srid, 'MULTICURVE', 3);
   PERFORM AddGeometryColumn('waterbody', 'lod1_multi_curve', db_srid, 'MULTICURVE', 3);
 
--- Create spatial indexes
+  -- Create spatial indexes
   CREATE INDEX CITYOBJECT_SPX                 ON CITYOBJECT               USING GIST ( ENVELOPE gist_geometry_ops_nd );
   CREATE INDEX SURFACE_GEOM_SPX               ON SURFACE_GEOMETRY         USING GIST ( GEOMETRY gist_geometry_ops_nd );
   CREATE INDEX BREAKLINE_RID_SPX              ON BREAKLINE_RELIEF         USING GIST ( RIDGE_OR_VALLEY_LINES gist_geometry_ops_nd );
@@ -396,7 +394,6 @@ LANGUAGE plpgsql;
 * @param ref_column
 * @param action whether CASCADE (default) or RESTRICT            
 ******************************************************************/
-
 CREATE OR REPLACE FUNCTION geodb_pkg.util_on_delete_action(
   table_name VARCHAR, 
   fkey_name VARCHAR,
@@ -408,10 +405,10 @@ RETURNS SETOF void AS
 $$
 BEGIN
   EXECUTE 'ALTER TABLE ' || table_name || ' DROP CONSTRAINT ' || fkey_name || 
-	         ', ADD CONSTRAINT ' || fkey_name || ' FOREIGN KEY (' || column_name || ') ' ||
+             ', ADD CONSTRAINT ' || fkey_name || ' FOREIGN KEY (' || column_name || ') ' ||
                   'REFERENCES ' || ref_table || '(' || ref_column || ') ' ||
                      'ON UPDATE CASCADE ON DELETE ' || action;
-					 
+
   EXCEPTION
     WHEN OTHERS THEN
       RAISE NOTICE 'Error on constraint %: %', fkey_name, SQLERRM;
@@ -427,14 +424,13 @@ LANGUAGE plpgsql;
 *
 * @param action whether CASCADE (default) or RESTRICT           
 ******************************************************************/
-
 CREATE OR REPLACE FUNCTION geodb_pkg.util_update_constraints(action VARCHAR DEFAULT 'CASCADE') RETURNS SETOF void AS $$
 BEGIN
   IF action <> 'CASCADE' THEN
     action := 'RESTRICT';
-	RAISE NOTICE 'Constraints are set to ON DELETE RESTRICT';
+    RAISE NOTICE 'Constraints are set to ON DELETE RESTRICT';
   END IF;
-  
+
   PERFORM geodb_pkg.util_on_delete_action('ADDRESS_TO_BUILDING','ADDRESS_TO_BUILDING_FK','BUILDING_ID','BUILDING','ID',action);
   PERFORM geodb_pkg.util_on_delete_action('ADDRESS_TO_BUILDING','ADDRESS_TO_BUILDING_ADDRESS_FK','ADDRESS_ID','ADDRESS','ID',action);
   PERFORM geodb_pkg.util_on_delete_action('APPEARANCE','APPEARANCE_CITYMODEL_FK','CITYMODEL_ID','CITYMODEL','ID',action);

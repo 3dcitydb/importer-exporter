@@ -40,6 +40,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+//import org.postgresql.largeobject.LargeObject;
+//import org.postgresql.largeobject.LargeObjectManager;
+
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
@@ -137,7 +140,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 
 		xlinkExporterManager.propagateEvent(counter);
 
-		// read image data type, 1st way
+		// read bytea data type
 		byte[] imgBytes = rs.getBytes(1);
 		try {
 			FileOutputStream fos = new FileOutputStream(fileURI);
@@ -149,31 +152,67 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
         	LOG.error("Failed to write texture file " + fileName + ": " + ioEx.getMessage());
         	return false;
 		}           
-		
-		// 2nd possibilty read image data type, 
-		
-//		InputStream imageStream = rs.getBinaryStream(1);
-//			
-//		if (imageStream == null) {
-//           	LOG.error("Database error while reading texture file: " + fileName);
-//           	return false;
-//        }
-//			
-//		try {
-//			byte[] imgBuffer = new byte[1024];
-//			FileOutputStream fos = new FileOutputStream(fileURI);
-//			int l;
-//			while ((l = imageStream.read(imgBuffer)) > 0) {
-//                fos.write(imgBuffer, 0, l);
-//            }
-//			fos.close();			
-//		} catch (FileNotFoundException fnfEx) {
-//			LOG.error("File not found " + fileName + ": " + fnfEx.getMessage());
-//		} catch (IOException ioEx) {
-//           	LOG.error("Failed to write texture file " + fileName + ": " + ioEx.getMessage());
-//           	return false;
-//		}           
 
+/*		// read bytea data type, alternative way 
+		
+		InputStream imageStream = rs.getBinaryStream(1);
+			
+		if (imageStream == null) {
+           	LOG.error("Database error while reading texture file: " + fileName);
+           	return false;
+        }
+			
+		try {
+			byte[] imgBuffer = new byte[2048];
+			FileOutputStream fos = new FileOutputStream(fileURI);
+			int l;
+			while ((l = imageStream.read(imgBuffer)) > 0) {
+                fos.write(imgBuffer, 0, l);
+            }
+			fos.close();			
+		} catch (FileNotFoundException fnfEx) {
+			LOG.error("File not found " + fileName + ": " + fnfEx.getMessage());
+		} catch (IOException ioEx) {
+           	LOG.error("Failed to write texture file " + fileName + ": " + ioEx.getMessage());
+           	return false;
+		}           
+*/
+/*		// read large object (OID) data type from database
+		// export of large objects requires length function for OID in PostgreSQL
+		
+		// All LargeObject API calls must be within a transaction block
+		connection.setAutoCommit(false);
+
+		// Get the Large Object Manager to perform operations with
+		LargeObjectManager lobj = ((org.postgresql.PGConnection)connection).getLargeObjectAPI();
+
+		// Open the large object for reading
+		long oid = rs.getLong(1);
+		if (oid == 0) {
+			LOG.error("Database error while reading library object: " + fileName);
+			return false;
+		}
+		LargeObject obj = lobj.open(oid, LargeObjectManager.READ);
+
+		// Read the data
+		byte buf[] = new byte[obj.size()];
+		obj.read(buf, 0, obj.size());
+		
+		// Write the data
+		try {
+			FileOutputStream fos = new FileOutputStream(fileURI);
+			fos.write(buf, 0, obj.size());
+			obj.close();
+			fos.close();
+		} catch (FileNotFoundException fnfEx) {
+			LOG.error("File not found " + fileName + ": " + fnfEx.getMessage());
+		} catch (IOException ioEx) {
+           	LOG.error("Failed to write texture file " + fileName + ": " + ioEx.getMessage());
+           	return false;
+		}   	
+		
+		connection.commit();
+*/
 		rs.close();
 		return true;
 	}

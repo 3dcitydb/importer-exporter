@@ -137,9 +137,10 @@ Make sure to only provide the numeric identifier of the spatial reference
 system as SRID (e.g., the EPSG code). 
 
 When prompted for input, the values provided in parentheses are only examples
-but no default values! Thus, if you leave the SRID value blank then spatial 
-columns cannot be associated with a valid spatial reference system and hence
-will not be created. 
+but no default values! The SRID will be checked for its existence in the 
+spatial_ref_sys table of PostGIS and if it's appropriate for spatial functions.
+If the SRID is accepted the user is given the feedback “SRID ok”. 
+Otherwise an error will occur which forces the setup to stop. 
 
 To change the reference system after having set up an instance of the 3D City 
 Database, the SQL script util_change_db_srid found in the geodb_pkg.schema 
@@ -158,7 +159,7 @@ Similar to the setup procedure, the convenience scripts DROP_DB.bat and DROP_DB.
 can be used instead. Please follow the above steps to enter your database details
 in these scripts and to run them on your machine.
 
-Note that DROP_DB.sqp only removes the relational schema of the 3D City Database as
+Note that DROP_DB.sql only removes the relational schema of the 3D City Database as
 well as all PL/pgSQL functions and utilities. The database itself is not dropped.
 
 

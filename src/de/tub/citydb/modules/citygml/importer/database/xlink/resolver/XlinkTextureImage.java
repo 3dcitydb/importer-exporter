@@ -40,6 +40,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+//import org.postgresql.largeobject.LargeObject;
+//import org.postgresql.largeobject.LargeObjectManager;
+
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
@@ -109,24 +112,61 @@ public class XlinkTextureImage implements DBXlinkResolver {
 				
 
 			}
-		
-			//set FileInputStream for retrieving image-files
-			FileInputStream fis = new FileInputStream(imageFile);
 			
 			// next step: try and upload image data
 			LOG.debug("Importing texture file: " + imageFileName);
 			resolverManager.propagateEvent(counter);
-							    		
+			
+			InputStream in = null;
+
 			if (isRemote) {
-				InputStream stream = imageURL.openStream();
-				psInsert.setBinaryStream(1, stream);
+				in = imageURL.openStream();
 			} else {
-				psInsert.setBinaryStream(1, fis, (int)imageFile.length());
+				in = new FileInputStream(imageFile);
+			}
+		
+			if (in == null) {
+				LOG.error("Database error while importing texture file: " + imageFileName);
+
+				externalFileConn.rollback();
+				return false;
 			}
 
-			psInsert.setLong(2, xlink.getId());
-			psInsert.execute();
+/*			// insert large object (OID) data type into database
 			
+			// All LargeObject API calls must be within a transaction block
+			externalFileConn.setAutoCommit(false);
+		
+			// Get the Large Object Manager to perform operations with
+			LargeObjectManager lobj = ((org.postgresql.PGConnection)externalFileConn).getLargeObjectAPI();
+
+			// Create a new large object
+			long oid = lobj.createLO(LargeObjectManager.READ | LargeObjectManager.WRITE);
+
+			// Open the large object for writing
+			LargeObject obj = lobj.open(oid, LargeObjectManager.WRITE);
+
+			// Copy the data from the file to the large object
+			byte buf[] = new byte[2048];
+			int s, tl = 0;
+
+			while ((s = in.read(buf, 0, 2048)) > 0)
+			{
+			obj.write(buf, 0, s);
+			tl = tl + s;
+			}
+
+			// Close the large object
+			obj.close();
+*/
+			
+			// Now insert the row into SURFACE_DATA
+//			psInsert.setLong(1, oid); // for large object
+			psInsert.setBinaryStream(1, in, in.available()); // for bytea
+			psInsert.setLong(2, xlink.getId());
+			psInsert.execute();		
+
+			in.close();
 			externalFileConn.commit();
 			return true;
 			

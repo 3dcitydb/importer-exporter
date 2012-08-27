@@ -25,17 +25,17 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE EXTERNAL_REFERENCE (
-	ID 	                      SERIAL NOT NULL,
-	INFOSYS                   VARCHAR(4000),
-	NAME                      VARCHAR(4000),
-	URI                       VARCHAR(4000),
-	CITYOBJECT_ID             INTEGER NOT NULL
+ID 	              SERIAL NOT NULL,
+INFOSYS           VARCHAR(4000),
+NAME              VARCHAR(4000),
+URI               VARCHAR(4000),
+CITYOBJECT_ID     INTEGER NOT NULL
 )
 ;
 

@@ -25,23 +25,23 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE PLANT_COVER (
-	ID                        SERIAL NOT NULL,
-	NAME                      VARCHAR(1000),
-	NAME_CODESPACE            VARCHAR(4000),
-	DESCRIPTION               VARCHAR(4000),
-	CLASS                     VARCHAR(256),
-	FUNCTION                  VARCHAR(1000),
-	AVERAGE_HEIGHT            DOUBLE PRECISION,
-	LOD1_GEOMETRY_ID          INTEGER,
-	LOD2_GEOMETRY_ID          INTEGER,
-	LOD3_GEOMETRY_ID          INTEGER,
-	LOD4_GEOMETRY_ID          INTEGER
+ID                   SERIAL NOT NULL,
+NAME                 VARCHAR(1000),
+NAME_CODESPACE       VARCHAR(4000),
+DESCRIPTION          VARCHAR(4000),
+CLASS                VARCHAR(256),
+FUNCTION             VARCHAR(1000),
+AVERAGE_HEIGHT       DOUBLE PRECISION,
+LOD1_GEOMETRY_ID     INTEGER,
+LOD2_GEOMETRY_ID     INTEGER,
+LOD3_GEOMETRY_ID     INTEGER,
+LOD4_GEOMETRY_ID     INTEGER
 )
 ;
 

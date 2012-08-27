@@ -25,18 +25,18 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
                                                           
 CREATE TABLE TIN_RELIEF (
-	ID                        SERIAL NOT NULL,
-	MAX_LENGTH                DOUBLE PRECISION,
-	STOP_LINES                GEOMETRY(MultiCurveZ,:SRSNO),
-	BREAK_LINES               GEOMETRY(MultiCurveZ,:SRSNO),
-	CONTROL_POINTS            GEOMETRY(MultiPointZ,:SRSNO),
-	surface_geometry_id       INTEGER
+ID                      SERIAL NOT NULL,
+MAX_LENGTH              DOUBLE PRECISION,
+STOP_LINES              GEOMETRY(MultiCurveZ,:SRSNO),
+BREAK_LINES             GEOMETRY(MultiCurveZ,:SRSNO),
+CONTROL_POINTS          GEOMETRY(MultiPointZ,:SRSNO),
+surface_geometry_id     INTEGER
 )
 ;
 

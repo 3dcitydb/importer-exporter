@@ -34,6 +34,7 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+// import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -126,8 +127,11 @@ import org.collada._2005._11.colladaschema.UpAxisType;
 import org.collada._2005._11.colladaschema.Vertices;
 import org.collada._2005._11.colladaschema.VisualScene;
 import org.postgis.Geometry;											// collides with Collada-Geometry
+import org.postgis.MultiPolygon;
 import org.postgis.PGgeometry;
 import org.postgis.Polygon;
+// import org.postgresql.largeobject.LargeObject;
+// import org.postgresql.largeobject.LargeObjectManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -149,10 +153,7 @@ import de.tub.citydb.modules.common.event.GeometryCounterEvent;
 import de.tub.citydb.util.Util;
 
 public class KmlGenericObject {
-	
-	protected static final int POINT = 1;
-	protected static final int LINE_STRING = 2;
-	protected static final int POLYGON = 3;	
+
 //	private static final int EXTERIOR_POLYGON_RING = 1003;
 //	private static final int INTERIOR_POLYGON_RING = 2003;
 
@@ -777,10 +778,6 @@ public class KmlGenericObject {
 		}
 	}
 
-	private void removeTexImage(String texImageUri){
-		texImages.remove(texImageUri);
-	}
-
 	public HashMap<String, BufferedImage> getTexImages(){
 		return texImages;
 	}
@@ -794,6 +791,10 @@ public class KmlGenericObject {
 	}
 	
 	/*
+	private void removeTexImage(String texImageUri){
+		texImages.remove(texImageUri);
+	}
+
 	public void addTexOrdImage(String texImageUri, OrdImage texOrdImage){
 		if (texOrdImage == null) {
 			return;
@@ -1443,7 +1444,7 @@ public class KmlGenericObject {
 		try {
 			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
-			int minLod = lodToExportFrom == 5 ? 0: lodToExportFrom;
+			int minLod = lodToExportFrom == 5 ? 1: lodToExportFrom;
 
 			while (currentLod >= minLod) {
 				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
@@ -1461,15 +1462,18 @@ public class KmlGenericObject {
 						break; // result set not empty
 					}
 					else {
-						try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+						try { rs.close(); // release cursor on DB
+						} catch (SQLException sqle) {}
 						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
-						try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+						try { psQuery.close(); // release cursor on DB
+						} catch (SQLException sqle) {}
 					}
 				}
 				catch (Exception e2) {
 					try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
 					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
+					try { connection.rollback(); } catch (SQLException sqle) {}
 				}
 
 				// when for EXTRUDED or FOOTPRINT there is no ground surface modelled, try to find it out indirectly
@@ -1479,13 +1483,7 @@ public class KmlGenericObject {
 
 //					int groupBasis = 4;
 					try {
-						psQuery = connection.prepareStatement(Queries.
-								  	BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD.replace("<TOLERANCE>", "0.001")
-								  											 .replace("<LoD>", String.valueOf(currentLod)),
-//								  										  	 .replace("<2D_SRID>", String.valueOf(DBUtil.get2DSrid(dbSrs)))
-//								  										  	 .replace("<GROUP_BY_1>", String.valueOf(Math.pow(groupBasis, 4)))
-//								  										  	 .replace("<GROUP_BY_2>", String.valueOf(Math.pow(groupBasis, 3)))
-//								  										  	 .replace("<GROUP_BY_3>", String.valueOf(Math.pow(groupBasis, 2))),
+						psQuery = connection.prepareStatement(Queries.getBuildingAggregateGeometries(0.001, currentLod),
 															  ResultSet.TYPE_SCROLL_INSENSITIVE,
 															  ResultSet.CONCUR_READ_ONLY);
 
@@ -1650,7 +1648,8 @@ public class KmlGenericObject {
 		MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
 		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
-		PolygonType polygon = null; 
+		PolygonType polygon = null;
+		PolygonType[] multiPolygon = null;
 		while (rs.next()) {
 //			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1);
 			PGgeometry pgBuildingGeometry = (PGgeometry)rs.getObject(1);
@@ -1669,7 +1668,7 @@ public class KmlGenericObject {
 				Geometry groundSurface = convertToWGS84(pgBuildingGeometry.getGeometry());
 				
 				switch (groundSurface.getType()) {
-				case POLYGON:
+				case Geometry.POLYGON:
 					Polygon polyGeom = (Polygon) groundSurface;
 										
 					for (int ring = 0; ring < polyGeom.numRings(); ring++){					
@@ -1700,8 +1699,52 @@ public class KmlGenericObject {
 						}
 					}				
 					break;
-				case POINT:
-				case LINE_STRING:
+					
+				case Geometry.MULTIPOLYGON:
+					MultiPolygon multiPolyGeom = (MultiPolygon) groundSurface;
+					multiPolygon = new PolygonType[multiPolyGeom.numPolygons()]; 
+					
+					for (int p = 0; p < multiPolyGeom.numPolygons(); p++){
+						Polygon subPolyGeom = multiPolyGeom.getPolygon(p);
+
+						multiPolygon[p] = kmlFactory.createPolygonType();
+						multiPolygon[p].setTessellate(true);
+						multiPolygon[p].setExtrude(true);
+						multiPolygon[p].setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+
+						for (int ring = 0; ring < subPolyGeom.numRings(); ring++){
+							LinearRingType linearRing = kmlFactory.createLinearRingType();
+							BoundaryType boundary = kmlFactory.createBoundaryType();
+							boundary.setLinearRing(linearRing);
+							
+							double [] ordinatesArray = new double[subPolyGeom.getRing(ring).numPoints() * 2];
+							
+							for (int j=subPolyGeom.getRing(ring).numPoints()-1, k=0; j >= 0; j--, k+=2){
+								ordinatesArray[k] = subPolyGeom.getRing(ring).getPoint(j).x;
+								ordinatesArray[k+1] = subPolyGeom.getRing(ring).getPoint(j).y;
+							}
+							
+							// the first ring usually is the outer ring in a PostGIS-Polygon
+							// e.g. POLYGON((outerBoundary),(innerBoundary),(innerBoundary))
+							if (ring == 0){
+								multiPolygon[p].setOuterBoundaryIs(boundary);
+								for (int j = 0; j < ordinatesArray.length; j+=2) {
+									linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
+								}
+							}
+							else {
+								multiPolygon[p].getInnerBoundaryIs().add(boundary);
+								for (int j = ordinatesArray.length - 2; j >= 0; j-=2) {
+									linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
+								}	
+							}
+						}
+					}
+				case Geometry.POINT:
+				case Geometry.LINESTRING:
+				case Geometry.MULTIPOINT:
+				case Geometry.MULTILINESTRING:
+				case Geometry.GEOMETRYCOLLECTION:
 					continue;
 				default:
 					Logger.getInstance().warn("Unknown geometry for " + work.getGmlId());
@@ -1736,7 +1779,15 @@ public class KmlGenericObject {
 								linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
 							}
 					}*/
-				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+				if (polygon != null){
+					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+				}
+				
+				if (multiPolygon != null){
+					for (int p = 0; p < multiPolygon.length; p++){
+						multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(multiPolygon[p]));
+					}
+				}
 			}
 		}
 		if (polygon != null) { // if there is at least some content
@@ -1767,7 +1818,8 @@ public class KmlGenericObject {
 		MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
 		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
-		PolygonType polygon = null; 
+		PolygonType polygon = null;
+		PolygonType[] multiPolygon = null;
 		while (rs.next()) {
 //			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1);
 			PGgeometry pgBuildingGeometry = (PGgeometry)rs.getObject(1); 
@@ -1785,7 +1837,7 @@ public class KmlGenericObject {
 
 				//if (groundSurface.numGeoms() == 1) {
 				switch (groundSurface.getType()) {
-				case POLYGON:
+				case Geometry.POLYGON:
 					Polygon polyGeom = (Polygon) groundSurface;
 					for (int ring = 0; ring < polyGeom.numRings(); ring++){
 											
@@ -1824,8 +1876,51 @@ public class KmlGenericObject {
 						}
 					}				
 					break;
-				case POINT:
-				case LINE_STRING:
+				case Geometry.MULTIPOLYGON:
+					MultiPolygon multiPolyGeom = (MultiPolygon) groundSurface;
+					multiPolygon = new PolygonType[multiPolyGeom.numPolygons()]; 
+					
+					for (int p = 0; p < multiPolyGeom.numPolygons(); p++){
+						Polygon subPolyGeom = multiPolyGeom.getPolygon(p);
+						
+						multiPolygon[p] = kmlFactory.createPolygonType();
+						multiPolygon[p].setTessellate(true);
+						multiPolygon[p].setExtrude(true);
+						multiPolygon[p].setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+
+						for (int ring = 0; ring < subPolyGeom.numRings(); ring++){
+							LinearRingType linearRing = kmlFactory.createLinearRingType();
+							BoundaryType boundary = kmlFactory.createBoundaryType();
+							boundary.setLinearRing(linearRing);
+							
+							double [] ordinatesArray = new double[subPolyGeom.getRing(ring).numPoints() * 2];
+							
+							for (int j=subPolyGeom.getRing(ring).numPoints()-1, k=0; j >= 0; j--, k+=2){
+								ordinatesArray[k] = subPolyGeom.getRing(ring).getPoint(j).x;
+								ordinatesArray[k+1] = subPolyGeom.getRing(ring).getPoint(j).y;
+							}
+							
+							// the first ring usually is the outer ring in a PostGIS-Polygon
+							// e.g. POLYGON((outerBoundary),(innerBoundary),(innerBoundary))
+							if (ring == 0){
+								multiPolygon[p].setOuterBoundaryIs(boundary);
+								for (int j = 0; j < ordinatesArray.length; j+=2) {
+									linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
+								}
+							}
+							else {
+								multiPolygon[p].getInnerBoundaryIs().add(boundary);
+								for (int j = ordinatesArray.length - 2; j >= 0; j-=2) {
+									linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
+								}	
+							}
+						}
+					}
+				case Geometry.POINT:
+				case Geometry.LINESTRING:
+				case Geometry.MULTIPOINT:
+				case Geometry.MULTILINESTRING:
+				case Geometry.GEOMETRYCOLLECTION:
 					continue;
 				default:
 					Logger.getInstance().warn("Unknown geometry for " + work.getGmlId());
@@ -1874,7 +1969,15 @@ public class KmlGenericObject {
 					}
 
 				}*/
-				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+				if (polygon != null){
+					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+				}
+				
+				if (multiPolygon != null){
+					for (int p = 0; p < multiPolygon.length; p++){
+						multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(multiPolygon[p]));
+					}
+				}
 			}
 		}
 		if (polygon != null) { // if there is at least some content
@@ -2100,7 +2203,7 @@ public class KmlGenericObject {
 
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
-			for (String colladaQuery: Queries.BUILDING_COLLADA_GET_DATA) { // parent surfaces come first
+			for (String colladaQuery: Queries.COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID) { // parent surfaces come first
 				PreparedStatement psQuery = null;
 //				OracleResultSet rs2 = null;
 				ResultSet rs2 = null;
@@ -2136,6 +2239,7 @@ public class KmlGenericObject {
 						String texImageUri = null;
 //						OrdImage texImage = null;
 						InputStream texImage = null;
+//						byte buf[] = null;
 						StringTokenizer texCoordsTokenized = null;
 	
 						if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
@@ -2148,38 +2252,74 @@ public class KmlGenericObject {
 						else {
 							texImageUri = rs2.getString("tex_image_uri");
 //							texImage = (OrdImage)rs2.getORAData("tex_image", OrdImage.getORADataFactory());
-							texImage = rs2.getBinaryStream("tex_image");
 							String texCoords = rs2.getString("texture_coordinates");
 	
 							if (texImageUri != null && texImageUri.trim().length() != 0
 									&&  texCoords != null && texCoords.trim().length() != 0
-									&&	texImage != null) {
-	
-								texImageCounter++;
-								if (texImageCounter > 20) {
-									eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
-									texImageCounter = 0;
-								}
+									/* && texImage != null */) {
 	
 								int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
 								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
 	
 								addTexImageUri(surfaceId, texImageUri);
 //								if (getTexOrdImage(texImageUri) == null) { // not already marked as wrapping texture
-								
-								BufferedImage bufferedImage = null;
+								if (getTexImage(texImageUri) == null) { // not already read in
+									PreparedStatement psQuery3 = null;
+									ResultSet rs3 = null;
 									try {
+										psQuery3 = connection.prepareStatement(Queries.GET_TEXIMAGE_FROM_SURFACE_DATA_ID);
+										psQuery3.setLong(1, rs2.getLong("surface_data_id"));
+										rs3 = psQuery3.executeQuery();
+										while (rs3.next()) {
+/*
+											// read large object (OID) data type from database
+											// Get the Large Object Manager to perform operations with
+											LargeObjectManager lobj = ((org.postgresql.PGConnection)connection).getLargeObjectAPI();
+
+											// Open the large object for reading
+											long oid = rs3.getLong("tex_image");
+											if (oid == 0) {
+												Logger.getInstance().error("Database error while reading library object: " + texImageUri);
+											}
+											LargeObject obj = lobj.open(oid, LargeObjectManager.READ);
+
+											// Read the data
+											buf = new byte[obj.size()];
+											obj.read(buf, 0, obj.size());
+*/
+											// read bytea data type from database
+											texImage = rs3.getBinaryStream("tex_image");
+										}
+									}
+									finally {
+										if (rs3 != null)
+											try { rs3.close(); } catch (SQLException e) {}
+										if (psQuery3 != null)
+											try { psQuery3.close(); } catch (SQLException e) {}
+									}
+
+									BufferedImage bufferedImage = null;
+									try {
+//										texImage = new ByteArrayInputStream(buf); // for Large Objects
+										
 //										bufferedImage = ImageIO.read(texImage.getDataInStream());
 										bufferedImage = ImageIO.read(texImage);
 									}
 									catch (IOException ioe) {}
+
 									if (bufferedImage != null) { // image in JPEG, PNG or another usual format
 										addTexImage(texImageUri, bufferedImage);
 									}
 //									else {
 //										addTexOrdImage(texImageUri, texImage);
 //									}
-//								}
+
+									texImageCounter++;
+									if (texImageCounter > 20) {
+										eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
+										texImageCounter = 0;
+									}
+								}
 	
 								texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
 								texCoordsTokenized = new StringTokenizer(texCoords, " ");
@@ -2236,6 +2376,7 @@ public class KmlGenericObject {
 								if (texCoordsTokenized != null) {
 									double s = Double.parseDouble(texCoordsTokenized.nextToken());
 									double t = Double.parseDouble(texCoordsTokenized.nextToken());
+/*
 									if (s > 1.1 || s < -0.1 || t < -0.1 || t > 1.1) { // texture wrapping -- it conflicts with texture atlas
 										removeTexImage(texImageUri);
 										BufferedImage bufferedImage = null;
@@ -2245,6 +2386,7 @@ public class KmlGenericObject {
 										addTexImage(texImageUri, bufferedImage);
 //										addTexOrdImage(texImageUri, texImage);
 									}
+*/
 									texCoordsForThisSurface = new TexCoords(s, t);
 								}
 								setVertexInfoForXYZ(surfaceId,
@@ -2271,12 +2413,15 @@ public class KmlGenericObject {
 				finally {
 					if (rs2 != null)
 						try { rs2.close(); } catch (SQLException e) {}
-						if (psQuery != null)
-							try { psQuery.close(); } catch (SQLException e) {}
+					if (psQuery != null)
+						try { psQuery.close(); } catch (SQLException e) {}
 				}
 			}
 		}
 
+		// count rest images
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
+		
 		List<Point3d> anchorCandidates = setOrigins();
 		double zOffset = getZOffsetFromConfigOrDB(gmlId);
 		if (zOffset == Double.MAX_VALUE) {
@@ -2979,6 +3124,9 @@ public class KmlGenericObject {
 		return convertedPointGeom;
 	}
 
+
+//	debug methods
+/*
 //	private List<PlacemarkType> createPlacemarkForEachSurfaceGeometry(OracleResultSet rs,
 	private List<PlacemarkType> createPlacemarkForEachSurfaceGeometry(ResultSet rs,
 			String gmlId,
@@ -3064,7 +3212,8 @@ public class KmlGenericObject {
 
 			boolean probablyRoof = true;
 
-			/*for (int i = 0; i < originalSurfaceWGS84.getElemInfo().length; i = i+3) {
+			for (int i = 0; i < originalSurfaceWGS84.getElemInfo().length; i = i+3) {
+
 				LinearRingType linearRing = kmlFactory.createLinearRingType();
 				BoundaryType boundary = kmlFactory.createBoundaryType();
 				boundary.setLinearRing(linearRing);
@@ -3096,7 +3245,7 @@ public class KmlGenericObject {
 									placemark.setStyleUrl("#" + likelySurfaceType + "Normal");
 						}
 
-			}*/
+			}
 			
 			for (int i = 0; i < originalSurfaceWGS84.numRings(); i++){
 				LinearRingType linearRing = kmlFactory.createLinearRingType();
@@ -3202,7 +3351,7 @@ public class KmlGenericObject {
 					continue;
 				}
 
-				/*
+
 				int contourCount = originalSurface.getElemInfo().length/3;
 				// remove normal-irrelevant points
 				int startContour1 = originalSurface.getElemInfo()[0] - 1;
@@ -3211,7 +3360,7 @@ public class KmlGenericObject {
 							originalSurface.getElemInfo()[3] - 1; // holes are irrelevant for normal calculation
 				// last point of polygons in gml is identical to first and useless for GeometryInfo
 				endContour1 = endContour1 - 3;
-				*/
+
 				
 				int contourCount = originalSurface.numRings();
 				// remove normal-irrelevant points
@@ -3291,7 +3440,7 @@ public class KmlGenericObject {
 				}
 				highlightingPlacemark.setAbstractGeometryGroup(kmlFactory.createPolygon(highlightingPolygon));
 
-				/*for (int i = 0; i < highlightingSurfaceWGS84.getElemInfo().length; i = i+3) {
+				for (int i = 0; i < highlightingSurfaceWGS84.getElemInfo().length; i = i+3) {
 					LinearRingType highlightingLinearRing = kmlFactory.createLinearRingType();
 					BoundaryType highlightingBoundary = kmlFactory.createBoundaryType();
 					highlightingBoundary.setLinearRing(highlightingLinearRing);
@@ -3313,7 +3462,7 @@ public class KmlGenericObject {
 										+ reducePrecisionForZ(highlightingOrdinatesArrayWGS84[j+2] + zOffset)));
 							}
 
-				}*/
+				}
 				
 				for (int i = 0; i < highlightingSurfaceWGS84.numRings(); i++){
 					LinearRingType highlightingLinearRing = kmlFactory.createLinearRingType();
@@ -3353,7 +3502,7 @@ public class KmlGenericObject {
 
 		return placemarkList;
 	}
-
+*/
 
 	protected PreparedStatement getQueryForObjectType (KmlSplittingResult work) throws SQLException {
 		return null;

@@ -25,15 +25,15 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE OBJECTCLASS (
-	ID                        SERIAL NOT NULL,
-	CLASSNAME                 VARCHAR(256),
-	SUPERCLASS_ID             INTEGER
+ID               SERIAL NOT NULL,
+CLASSNAME        VARCHAR(256),
+SUPERCLASS_ID    INTEGER
 )
 ;
 

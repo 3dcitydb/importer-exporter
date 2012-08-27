@@ -25,17 +25,17 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol	  LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol	  LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE TEXTUREPARAM (
-	SURFACE_GEOMETRY_ID           SERIAL NOT NULL,
-	IS_TEXTURE_PARAMETRIZATION    NUMERIC(1, 0),
-	WORLD_TO_TEXTURE              VARCHAR(1000),
-	TEXTURE_COORDINATES           VARCHAR(4000),
-	SURFACE_DATA_ID               INTEGER NOT NULL
+SURFACE_GEOMETRY_ID           SERIAL NOT NULL,
+IS_TEXTURE_PARAMETRIZATION    NUMERIC(1, 0),
+WORLD_TO_TEXTURE              VARCHAR(1000),
+TEXTURE_COORDINATES           VARCHAR(4000),
+SURFACE_DATA_ID               INTEGER NOT NULL
 )
 ;
 

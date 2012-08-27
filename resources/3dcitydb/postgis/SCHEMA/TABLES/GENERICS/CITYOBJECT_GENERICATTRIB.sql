@@ -25,24 +25,24 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE CITYOBJECT_GENERICATTRIB (
-	ID                        SERIAL NOT NULL,
-	ATTRNAME                  VARCHAR(256) NOT NULL,
-	DATATYPE                  NUMERIC(1),
-	STRVAL                    VARCHAR(4000),
-	INTVAL                    NUMERIC,
-	REALVAL                   NUMERIC,
-	URIVAL                    VARCHAR(4000),
-	DATEVAL                   DATE,
-	GEOMVAL                   GEOMETRY(GeometryZ,:SRSNO),
-	BLOBVAL                   BYTEA,
-	CITYOBJECT_ID             INTEGER NOT NULL,
-	SURFACE_GEOMETRY_ID       INTEGER
+ID                      SERIAL NOT NULL,
+ATTRNAME                VARCHAR(256) NOT NULL,
+DATATYPE                NUMERIC(1),
+STRVAL                  VARCHAR(4000),
+INTVAL                  NUMERIC,
+REALVAL                 NUMERIC,
+URIVAL                  VARCHAR(4000),
+DATEVAL                 DATE,
+GEOMVAL                 GEOMETRY(GeometryZ,:SRSNO),
+BLOBVAL                 BYTEA,
+CITYOBJECT_ID           INTEGER NOT NULL,
+SURFACE_GEOMETRY_ID     INTEGER
 )
 ;
 

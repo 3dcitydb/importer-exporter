@@ -25,15 +25,15 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author | Conversion
--- 2.0.0     2012-05-21   PostGIS version    TKol     LFra	
+-- 2.0.0     2012-05-21   PostGIS version    TKol     LFra
 --                                           GKoe     FKun
 --                                           CNag
 --                                           ASta
 --
 CREATE TABLE GROUP_TO_CITYOBJECT (
-	CITYOBJECT_ID             SERIAL NOT NULL,
-	CITYOBJECTGROUP_ID        INTEGER NOT NULL,
-	ROLE                      VARCHAR(256)
+CITYOBJECT_ID          SERIAL NOT NULL,
+CITYOBJECTGROUP_ID     INTEGER NOT NULL,
+ROLE                   VARCHAR(256)
 )
 ;
 

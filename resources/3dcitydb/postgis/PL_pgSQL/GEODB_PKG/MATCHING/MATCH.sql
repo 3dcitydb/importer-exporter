@@ -63,7 +63,6 @@ CREATE TABLE geodb_pkg.match_overlap_all(
   area2_cov_by_area1 NUMERIC
 );
 
-      
 DROP TABLE IF EXISTS geodb_pkg.match_overlap_relevant;
 CREATE TABLE geodb_pkg.match_overlap_relevant(
   id1 INTEGER,
@@ -83,7 +82,6 @@ CREATE TABLE geodb_pkg.match_overlap_relevant(
   area2_cov_by_area1 NUMERIC
 );
 
-
 DROP TABLE IF EXISTS geodb_pkg.MATCH_MASTER_PROJECTED;
 CREATE TABLE geodb_pkg.match_master_projected(
   id INTEGER,
@@ -91,7 +89,7 @@ CREATE TABLE geodb_pkg.match_master_projected(
   root_id INTEGER,
   geometry GEOMETRY
 );
-     
+
 DROP TABLE IF EXISTS geodb_pkg.MATCH_CAND_PROJECTED;
 CREATE TABLE geodb_pkg.match_cand_projected(
   id INTEGER,
@@ -99,7 +97,7 @@ CREATE TABLE geodb_pkg.match_cand_projected(
   root_id INTEGER,
   geometry GEOMETRY
 );
-      
+
 DROP TABLE IF EXISTS geodb_pkg.match_collect_geom;
 CREATE TABLE geodb_pkg.match_collect_geom(
   id INTEGER,
@@ -175,7 +173,7 @@ BEGIN
     root_id INTEGER,
     geometry_id INTEGER
     ) ON COMMIT PRESERVE ROWS';
-  
+
   -- retrieve all building tupels belonging to the specified lineage
   EXECUTE 'INSERT INTO match_tmp_building 
     SELECT b.id, b.building_parent_id parent_id, b.building_root_id root_id, b.lod'||lod||'_geometry_id geometry_id
@@ -261,7 +259,7 @@ $$
 BEGIN
   -- first, remove invalid geometries 
   EXECUTE 'DELETE FROM geodb_pkg.match_collect_geom WHERE ST_IsValid(geometry) != ''TRUE'''; --USING tolerance; --no tolerance in PostGIS-function
-	   
+
   -- second, DELETE vertical surfaces
   EXECUTE 'DELETE FROM geodb_pkg.match_collect_geom WHERE ST_Area(geometry) <= 0.001';
 
@@ -302,10 +300,10 @@ BEGIN
     DECLARE
       root_id_cur CURSOR FOR
         SELECT DISTINCT root_id FROM match_tmp_building;
-	  
+
     BEGIN
       log := geodb_pkg.idx_create_index(match_collect_root_id_idx);
-  
+
       FOR root_id_rec IN root_id_cur LOOP
         EXECUTE 'INSERT INTO '||table_name||' (id, parent_id, root_id, geometry)
           VALUES ($1, null, $2, $3)' 
@@ -317,10 +315,10 @@ BEGIN
     DECLARE
       id_cur CURSOR FOR
         SELECT DISTINCT id, parent_id, root_id FROM match_tmp_building;
-	  
+
     BEGIN
       log := geodb_pkg.idx_create_index(match_collect_id_idx);
-  
+
       FOR id_rec IN id_cur LOOP
         EXECUTE 'INSERT INTO '||table_name||' (id, parent_id, root_id, geometry)
           VALUES ($1, $2, $3, $4)' 
@@ -358,10 +356,10 @@ DECLARE
 
 BEGIN
   match_overlap_all_spx := geodb_pkg.idx_construct_spatial_2d('match_overlap_all_spx', 'geodb_pkg.match_overlap_all', 'intersection_geometry');
-  
+
   -- clean environment
   EXECUTE 'TRUNCATE TABLE geodb_pkg.match_overlap_all';
-  
+
   log := geodb_pkg.idx_drop_index(match_overlap_all_spx);
 
   EXECUTE 'INSERT INTO geodb_pkg.match_overlap_all 
@@ -371,7 +369,7 @@ BEGIN
       m.id AS id2, m.parent_id AS parent_id2, m.root_id AS root_id2, ST_Area(m.geometry) AS area2, $3, ST_Intersection(c.geometry, m.geometry)
         FROM geodb_pkg.MATCH_CAND_PROJECTED c, geodb_pkg.MATCH_MASTER_PROJECTED m' 
           USING lod_cand, lineage, lod_master;
-		
+
   EXECUTE 'UPDATE geodb_pkg.match_overlap_all SET intersection_area = ST_Area(intersection_geometry)';
   EXECUTE 'DELETE FROM geodb_pkg.match_overlap_all WHERE intersection_area = 0';
   EXECUTE 'UPDATE geodb_pkg.match_overlap_all SET area1_cov_by_area2 = geodb_pkg.util_min(intersection_area / area1, 1.0), 
@@ -398,17 +396,17 @@ DECLARE
     SELECT id1, count(id2) AS cnt_ref FROM geodb_pkg.match_overlap_relevant GROUP BY id1;
 BEGIN
   match_result_spx := geodb_pkg.idx_construct_spatial_2d('match_overlap_relevant_spx', 'geodb_pkg.match_overlap_relevant', 'intersection_geometry');
-  
+
   -- TRUNCATE TABLE
   EXECUTE 'TRUNCATE TABLE geodb_pkg.match_overlap_relevant';
-  
+
   log := geodb_pkg.idx_drop_index(match_result_spx);
 
   -- retrieve all match tupels with more than a user-specified percentage of area coverage
   EXECUTE 'INSERT INTO geodb_pkg.match_overlap_relevant 
     SELECT * FROM geodb_pkg.match_overlap_all
       WHERE area1_cov_by_area2 >= $1 AND area2_cov_by_area1 >= $2' USING delta_cand, delta_master;
-		  
+
   -- enforce 1:1 matches between candidates and reference buildings
   FOR ref_to_cand_rec IN ref_to_cand_cur LOOP
     IF ref_to_cand_rec.cnt_cand > 1 THEN
@@ -446,7 +444,7 @@ BEGIN
   EXECUTE 'TRUNCATE TABLE match_tmp_building';
   EXECUTE 'TRUNCATE TABLE geodb_pkg.merge_collect_geom';
   EXECUTE 'TRUNCATE TABLE geodb_pkg.merge_container_ids';
-  
+
   EXCEPTION
     WHEN OTHERS THEN
       RAISE NOTICE 'clean_matching_tables: %', SQLERRM;
@@ -463,7 +461,7 @@ DECLARE
 BEGIN
   EXECUTE 'SELECT srid FROM database_srs' INTO srid;
   EXECUTE 'SELECT ST_Union(geometry) FROM '||table_name||'' INTO aggr_mbr;
-  
+
   PERFORM ST_SetSRID(aggr_mbr, srid);
 
   RETURN aggr_mbr;
@@ -495,7 +493,7 @@ BEGIN
 
   EXECUTE 'SELECT ST_Union(geometry) FROM geodb_pkg.match_collect_geom 
              WHERE '||attr||'=$1' INTO aggr_geom USING id;
- 
+
   RETURN aggr_geom;
 
   EXCEPTION

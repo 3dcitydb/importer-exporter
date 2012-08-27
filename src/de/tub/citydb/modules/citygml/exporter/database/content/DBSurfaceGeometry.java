@@ -75,7 +75,6 @@ import org.citygml4j.model.gml.geometry.primitives.Triangle;
 import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
-import org.postgis.ComposedGeom;
 import org.postgis.Geometry;
 import org.postgis.PGgeometry;
 
@@ -295,22 +294,22 @@ public class DBSurfaceGeometry implements DBExporter {
 				forceRingIds = true;
 			}
 
-			ComposedGeom polyGeom = (ComposedGeom)geomNode.geometry;
+			org.postgis.Polygon polyGeom = (org.postgis.Polygon) geomNode.geometry;
 			
-			for (int i = 0; i < polyGeom.numGeoms(); i++){
+			for (int i = 0; i < polyGeom.numRings(); i++){
 				List<Double> values = new ArrayList<Double>();
 				
 				if (!geomNode.isReverse) {
-					for (int j = 0; j < polyGeom.getSubGeometry(i).numPoints(); j++){
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).x);
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).y);
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).z);
+					for (int j = 0; j < polyGeom.getRing(i).numPoints(); j++){
+						values.add(polyGeom.getRing(i).getPoint(j).x);
+						values.add(polyGeom.getRing(i).getPoint(j).y);
+						values.add(polyGeom.getRing(i).getPoint(j).z);
 					}
 				} else {
-					for (int j = polyGeom.getSubGeometry(i).numPoints() - 1; j >= 0; j--){
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).x);
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).y);
-						values.add(polyGeom.getSubGeometry(i).getPoint(j).z);
+					for (int j = polyGeom.getRing(i).numPoints() - 1; j >= 0; j--){
+						values.add(polyGeom.getRing(i).getPoint(j).x);
+						values.add(polyGeom.getRing(i).getPoint(j).y);
+						values.add(polyGeom.getRing(i).getPoint(j).z);
 					}
 				}
 				
