@@ -72,17 +72,26 @@ public class VegetationBalloonPanel extends AbstractPreferencesComponent {
 	private JCheckBox contentInSeparateFile = new JCheckBox();
 	private JLabel warningLabel = new JLabel();
 
-	private Balloon internVegetationBalloon = new Balloon();
+	private Balloon internalBalloon = new Balloon();
 
 	public VegetationBalloonPanel(Config config) {
 		super(config);
 		initGui();
 	}
 
+	private Balloon getConfigBalloon() {
+		return config.getProject().getKmlExporter().getVegetationBalloon();
+	}
+
+	@Override
+	public String getTitle() {
+		return Internal.I18N.getString("pref.tree.kmlExport.vegetationBalloon");
+	}
+
 	@Override
 	public boolean isModified() {
-		setInternBalloonValues();
-		if (!config.getProject().getKmlExporter().getVegetationBalloon().equals(internVegetationBalloon)) return true;
+		setInternalBalloonValues();
+		if (!getConfigBalloon().equals(internalBalloon)) return true;
 		return false;
 	}
 
@@ -171,11 +180,11 @@ public class VegetationBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		Balloon configVegetationBalloon = config.getProject().getKmlExporter().getVegetationBalloon();
-		copyBalloonContents(configVegetationBalloon, internVegetationBalloon);
+		Balloon configBalloon = getConfigBalloon();
+		copyBalloonContents(configBalloon, internalBalloon);
 
-		includeDescription.setSelected(configVegetationBalloon.isIncludeDescription());
-		switch (configVegetationBalloon.getBalloonContentMode()) {
+		includeDescription.setSelected(configBalloon.isIncludeDescription());
+		switch (configBalloon.getBalloonContentMode()) {
 			case GEN_ATTRIB:
 				genAttribRadioButton.setSelected(true);
 				break;
@@ -186,37 +195,32 @@ public class VegetationBalloonPanel extends AbstractPreferencesComponent {
 				genAttribAndFileRadioButton.setSelected(true);
 				break;
 		}
-		browseText.setText(configVegetationBalloon.getBalloonContentTemplateFile());
-		contentInSeparateFile.setSelected(configVegetationBalloon.isBalloonContentInSeparateFile());
+		browseText.setText(configBalloon.getBalloonContentTemplateFile());
+		contentInSeparateFile.setSelected(configBalloon.isBalloonContentInSeparateFile());
 		setEnabledComponents();
 	}
 
-	private void setInternBalloonValues() {
-		internVegetationBalloon.setIncludeDescription(includeDescription.isSelected());
+	private void setInternalBalloonValues() {
+		internalBalloon.setIncludeDescription(includeDescription.isSelected());
 		if (genAttribRadioButton.isSelected()) {
-			internVegetationBalloon.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB);
+			internalBalloon.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB);
 		}
 		else if (fileRadioButton.isSelected()) {
-			internVegetationBalloon.setBalloonContentMode(BalloonContentMode.FILE);
+			internalBalloon.setBalloonContentMode(BalloonContentMode.FILE);
 		}
 		else if (genAttribAndFileRadioButton.isSelected()) {
-			internVegetationBalloon.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB_AND_FILE);
+			internalBalloon.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB_AND_FILE);
 		}
-		internVegetationBalloon.getBalloonContentPath().setLastUsedPath(browseText.getText().trim());
-		internVegetationBalloon.setBalloonContentTemplateFile(browseText.getText().trim());
-		internVegetationBalloon.setBalloonContentInSeparateFile(contentInSeparateFile.isSelected());
+		internalBalloon.getBalloonContentPath().setLastUsedPath(browseText.getText().trim());
+		internalBalloon.setBalloonContentTemplateFile(browseText.getText().trim());
+		internalBalloon.setBalloonContentInSeparateFile(contentInSeparateFile.isSelected());
 	}
 
 	@Override
 	public void setSettings() {
-		setInternBalloonValues();
-		Balloon configVegetationBalloon = config.getProject().getKmlExporter().getVegetationBalloon();
-		copyBalloonContents(internVegetationBalloon, configVegetationBalloon);
-	}
-
-	@Override
-	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.vegetationBalloon");
+		setInternalBalloonValues();
+		Balloon configBalloon = getConfigBalloon();
+		copyBalloonContents(internalBalloon, configBalloon);
 	}
 
 	private void loadFile() {
@@ -227,18 +231,18 @@ public class VegetationBalloonPanel extends AbstractPreferencesComponent {
 		fileChooser.addChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 		fileChooser.setFileFilter(filter);
 
-		if (internVegetationBalloon.getBalloonContentPath().isSetLastUsedMode()) {
-			fileChooser.setCurrentDirectory(new File(internVegetationBalloon.getBalloonContentPath().getLastUsedPath()));
+		if (internalBalloon.getBalloonContentPath().isSetLastUsedMode()) {
+			fileChooser.setCurrentDirectory(new File(internalBalloon.getBalloonContentPath().getLastUsedPath()));
 		} else {
-			fileChooser.setCurrentDirectory(new File(internVegetationBalloon.getBalloonContentPath().getStandardPath()));
+			fileChooser.setCurrentDirectory(new File(internalBalloon.getBalloonContentPath().getStandardPath()));
 		}
 		int result = fileChooser.showSaveDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) return;
 		try {
 			String exportString = fileChooser.getSelectedFile().toString();
 			browseText.setText(exportString);
-			internVegetationBalloon.getBalloonContentPath().setLastUsedPath(fileChooser.getCurrentDirectory().getAbsolutePath());
-			internVegetationBalloon.getBalloonContentPath().setPathMode(PathMode.LASTUSED);
+			internalBalloon.getBalloonContentPath().setLastUsedPath(fileChooser.getCurrentDirectory().getAbsolutePath());
+			internalBalloon.getBalloonContentPath().setPathMode(PathMode.LASTUSED);
 		}
 		catch (Exception e) {
 			//

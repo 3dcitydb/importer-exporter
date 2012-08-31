@@ -92,6 +92,10 @@ public class Building extends KmlGenericObject{
 		return STYLE_BASIS_NAME;
 	}
 
+	protected String getHighlightingQuery() {
+		return Queries.getSingleBuildingHighlightingQuery(currentLod);
+	}
+
 	public void read(KmlSplittingResult work) {
 
 		PreparedStatement psQuery = null;

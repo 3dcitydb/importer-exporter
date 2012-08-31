@@ -83,12 +83,15 @@ public class KmlSplitter {
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetBuilding()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.BUILDING);
 		}
-		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityObjectGroup()) {
-			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
-		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetVegetation()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.SOLITARY_VEGETATION_OBJECT);
 //			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.PLANT_COVER);
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetGenericCityObject()) {
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.GENERIC_CITY_OBJECT);
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityObjectGroup()) {
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
 		}
 			
 		connection = dbConnectionPool.getConnection();

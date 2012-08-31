@@ -57,7 +57,7 @@ import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class BuildingBalloonPanel extends AbstractPreferencesComponent {
+public class GenericCityObjectBalloonPanel extends AbstractPreferencesComponent {
 
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
@@ -74,23 +74,23 @@ public class BuildingBalloonPanel extends AbstractPreferencesComponent {
 
 	private Balloon internalBalloon = new Balloon();
 
-	public BuildingBalloonPanel(Config config) {
+	public GenericCityObjectBalloonPanel(Config config) {
 		super(config);
 		initGui();
 	}
 
 	private Balloon getConfigBalloon() {
-		return config.getProject().getKmlExporter().getBuildingBalloon();
+		return config.getProject().getKmlExporter().getGenericCityObjectBalloon();
 	}
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.buildingBalloon");
+		return Internal.I18N.getString("pref.tree.kmlExport.genericCityObjectBalloon");
 	}
 
 	@Override
 	public boolean isModified() {
-		setInternBalloonValues();
+		setInternalBalloonValues();
 		if (!getConfigBalloon().equals(internalBalloon)) return true;
 		return false;
 	}
@@ -200,7 +200,7 @@ public class BuildingBalloonPanel extends AbstractPreferencesComponent {
 		setEnabledComponents();
 	}
 
-	private void setInternBalloonValues() {
+	private void setInternalBalloonValues() {
 		internalBalloon.setIncludeDescription(includeDescription.isSelected());
 		if (genAttribRadioButton.isSelected()) {
 			internalBalloon.setBalloonContentMode(BalloonContentMode.GEN_ATTRIB);
@@ -218,7 +218,7 @@ public class BuildingBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		setInternBalloonValues();
+		setInternalBalloonValues();
 		Balloon configBalloon = getConfigBalloon();
 		copyBalloonContents(internalBalloon, configBalloon);
 	}

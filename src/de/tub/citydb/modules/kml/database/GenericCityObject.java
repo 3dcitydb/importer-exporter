@@ -76,9 +76,9 @@ import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.GeometryCounterEvent;
 import de.tub.citydb.util.Util;
 
-public class SolitaryVegetationObject extends KmlGenericObject{
+public class GenericCityObject extends KmlGenericObject{
 
-	public static final String STYLE_BASIS_NAME = "Vegetation";
+	public static final String STYLE_BASIS_NAME = "Generic";
 
 	private long sgRootId;
 	private Matrix transformation;
@@ -87,7 +87,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 	private double refPointY;
 	private double refPointZ;
 
-	public SolitaryVegetationObject(Connection connection,
+	public GenericCityObject(Connection connection,
 			KmlExporterManager kmlExporterManager,
 			CityGMLFactory cityGMLFactory,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
@@ -107,15 +107,15 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getVegetationDisplayForms();
+		return config.getProject().getKmlExporter().getGenericCityObjectDisplayForms();
 	}
-
+	
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExporter().getVegetationColladaOptions();
+		return config.getProject().getKmlExporter().getGenericCityObjectColladaOptions();
 	}
-
+	
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getVegetationBalloon();
+		return config.getProject().getKmlExporter().getGenericCityObjectBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -123,7 +123,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 	}
 
 	protected String getHighlightingQuery() {
-		return Queries.getSolitaryVegetationObjectHighlightingQuery(currentLod);
+		return Queries.getGenericCityObjectHighlightingQuery(currentLod);
 	}
 
 	public void read(KmlSplittingResult work) {
@@ -139,7 +139,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
 
 				try {
-					psQuery = connection.prepareStatement(Queries.getSolitaryVegetationObjectBasisData(currentLod));
+					psQuery = connection.prepareStatement(Queries.getGenericCityObjectBasisData(currentLod));
 
 					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 						psQuery.setString(i, work.getGmlId());
@@ -203,7 +203,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 				try { psQuery.close(); // release cursor on DB
 			 	} catch (SQLException sqle) {}
 
-				psQuery = connection.prepareStatement(Queries.getSolitaryVegetationObjectGeometryContents(work.getDisplayForm()),
+				psQuery = connection.prepareStatement(Queries.getGenericCityObjectGeometryContents(work.getDisplayForm()),
 						   							  ResultSet.TYPE_SCROLL_INSENSITIVE,
 						   							  ResultSet.CONCUR_READ_ONLY);
 				psQuery.setLong(1, sgRootId);
@@ -308,8 +308,8 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		finally {
 			if (rs != null)
 				try { rs.close(); } catch (SQLException e) {}
-				if (psQuery != null)
-					try { psQuery.close(); } catch (SQLException e) {}
+			if (psQuery != null)
+				try { psQuery.close(); } catch (SQLException e) {}
 		}
 	}
 	
@@ -729,7 +729,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			}
 		}
 		catch (Exception e) {
-			Logger.getInstance().warn("Exception when generating highlighting geometry of vegetation object " + work.getGmlId());
+			Logger.getInstance().warn("Exception when generating highlighting geometry of GenericCityObject " + work.getGmlId());
 			e.printStackTrace();
 		}
 		finally {

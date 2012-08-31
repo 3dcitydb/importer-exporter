@@ -88,6 +88,10 @@ public class CityObjectGroup extends KmlGenericObject{
 		return STYLE_BASIS_NAME;
 	}
 
+	protected String getHighlightingQuery() {
+		return null;  // no COLLADA or Geometry display form for CityObjectGroups
+	}
+
 	public void read(KmlSplittingResult work) {
 
 		PreparedStatement psQuery = null;
@@ -116,9 +120,9 @@ public class CityObjectGroup extends KmlGenericObject{
 /*
 				// get the proper displayForm (colors, highlighting) when not building
 				DisplayForm displayForm = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
-				int indexOfDf = config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().indexOf(displayForm);
+				int indexOfDf = getDisplayForms().indexOf(displayForm);
 				if (indexOfDf != -1) {
-					work.setDisplayForm(config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().get(indexOfDf));
+					work.setDisplayForm(getDisplayForms().get(indexOfDf));
 				}
 */
 				// hard-coded for groups

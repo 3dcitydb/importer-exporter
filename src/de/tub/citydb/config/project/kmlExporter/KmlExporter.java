@@ -44,11 +44,19 @@ import de.tub.citydb.config.project.system.System;
 		"path",
 		"filter",
 		"lodToExportFrom",
+
 		"buildingDisplayForms",
 		"buildingColladaOptions",
-		"cityObjectGroupDisplayForms",
+		"buildingBalloon",
 		"vegetationDisplayForms",
 		"vegetationColladaOptions",
+		"vegetationBalloon",
+		"genericCityObjectDisplayForms",
+		"genericCityObjectColladaOptions",
+		"genericCityObjectBalloon",
+		"cityObjectGroupDisplayForms",
+		"cityObjectGroupBalloon",
+
 		"exportAsKmz",
 		"showBoundingBox",
 		"showTileBorders",
@@ -59,9 +67,6 @@ import de.tub.citydb.config.project.system.System;
 		"viewRefreshTime",
 		"writeJSONFile",
 		"appearanceTheme",
-		"buildingBalloon",
-		"cityObjectGroupBalloon",
-		"vegetationBalloon",
 		"altitudeMode",
 		"altitudeOffsetMode",
 		"altitudeOffsetValue",
@@ -73,17 +78,27 @@ public class KmlExporter {
 	private Path path;
 	private ExportFilterConfig filter;
 	private int lodToExportFrom;
+
 	@XmlElement(name="displayForm", required=true)
 	@XmlElementWrapper(name="buildingDisplayForms")	
 	private List<DisplayForm> buildingDisplayForms;
 	private ColladaOptions buildingColladaOptions;
-	@XmlElement(name="displayForm", required=true)
-	@XmlElementWrapper(name="cityObjectGroupDisplayForms")	
-	private List<DisplayForm> cityObjectGroupDisplayForms;
+	private Balloon buildingBalloon;
 	@XmlElement(name="displayForm", required=true)
 	@XmlElementWrapper(name="vegetationDisplayForms")	
 	private List<DisplayForm> vegetationDisplayForms;
 	private ColladaOptions vegetationColladaOptions;
+	private Balloon vegetationBalloon;
+	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="genericCityObjectDisplayForms")	
+	private List<DisplayForm> genericCityObjectDisplayForms;
+	private ColladaOptions genericCityObjectColladaOptions;
+	private Balloon genericCityObjectBalloon;
+	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="cityObjectGroupDisplayForms")	
+	private List<DisplayForm> cityObjectGroupDisplayForms;
+	private Balloon cityObjectGroupBalloon;
+
 	private boolean exportAsKmz;
 	private boolean showBoundingBox;
 	private boolean showTileBorders;
@@ -94,9 +109,6 @@ public class KmlExporter {
 	private double viewRefreshTime;
 	private boolean writeJSONFile;
 	private String appearanceTheme;
-	private Balloon buildingBalloon;
-	private Balloon cityObjectGroupBalloon;
-	private Balloon vegetationBalloon;
 	private AltitudeMode altitudeMode;
 	private AltitudeOffsetMode altitudeOffsetMode;
 	private double altitudeOffsetValue;
@@ -110,11 +122,19 @@ public class KmlExporter {
 		path = new Path();
 		filter = new ExportFilterConfig();
 		lodToExportFrom = 2;
+
 		buildingDisplayForms = new ArrayList<DisplayForm>();
 		buildingColladaOptions = new ColladaOptions();
-		cityObjectGroupDisplayForms = new ArrayList<DisplayForm>();
+		setBuildingBalloon(new Balloon());
 		vegetationDisplayForms = new ArrayList<DisplayForm>();
 		vegetationColladaOptions = new ColladaOptions();
+		setVegetationBalloon(new Balloon());
+		setGenericCityObjectDisplayForms(new ArrayList<DisplayForm>());
+		setGenericCityObjectColladaOptions(new ColladaOptions());
+		setGenericCityObjectBalloon(new Balloon());
+		cityObjectGroupDisplayForms = new ArrayList<DisplayForm>();
+		setCityObjectGroupBalloon(new Balloon());
+
 		exportAsKmz = true;
 		showBoundingBox = true;
 		showTileBorders = true;
@@ -125,9 +145,6 @@ public class KmlExporter {
 		viewRefreshTime = 1;
 		writeJSONFile = false;
 		setAppearanceTheme(THEME_NONE);
-		setBuildingBalloon(new Balloon());
-		setCityObjectGroupBalloon(new Balloon());
-		setVegetationBalloon(new Balloon());
 		setAltitudeMode(AltitudeMode.ABSOLUTE);
 		setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
 		altitudeOffsetValue = 0;
@@ -361,6 +378,32 @@ public class KmlExporter {
 
 	public Balloon getVegetationBalloon() {
 		return vegetationBalloon;
+	}
+
+	public void setGenericCityObjectDisplayForms(
+			List<DisplayForm> genericCityObjectDisplayForms) {
+		this.genericCityObjectDisplayForms = genericCityObjectDisplayForms;
+	}
+
+	public List<DisplayForm> getGenericCityObjectDisplayForms() {
+		return genericCityObjectDisplayForms;
+	}
+
+	public void setGenericCityObjectColladaOptions(
+			ColladaOptions genericCityObjectColladaOptions) {
+		this.genericCityObjectColladaOptions = genericCityObjectColladaOptions;
+	}
+
+	public ColladaOptions getGenericCityObjectColladaOptions() {
+		return genericCityObjectColladaOptions;
+	}
+
+	public void setGenericCityObjectBalloon(Balloon genericCityObjectBalloon) {
+		this.genericCityObjectBalloon = genericCityObjectBalloon;
+	}
+
+	public Balloon getGenericCityObjectBalloon() {
+		return genericCityObjectBalloon;
 	}
 
 }

@@ -65,7 +65,7 @@ import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class VegetationRenderingPanel extends AbstractPreferencesComponent {
+public class GenericCityObjectRenderingPanel extends AbstractPreferencesComponent {
 
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
@@ -127,26 +127,26 @@ public class VegetationRenderingPanel extends AbstractPreferencesComponent {
 	private HashMap<String, Integer> packingAlgorithms = new HashMap<String, Integer>();  
 	private JComboBox packingAlgorithmsComboBox = new JComboBox();
 
-	public VegetationRenderingPanel(Config config) {
+	public GenericCityObjectRenderingPanel(Config config) {
 		super(config);
 		initGui();
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return config.getProject().getKmlExporter().getVegetationColladaOptions();
+		return config.getProject().getKmlExporter().getGenericCityObjectColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExporter().getVegetationDisplayForms();
+		return config.getProject().getKmlExporter().getGenericCityObjectDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExporter().setVegetationDisplayForms(displayForms);
+		config.getProject().getKmlExporter().setGenericCityObjectDisplayForms(displayForms);
 	}
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.vegetationRendering");
+		return Internal.I18N.getString("pref.tree.kmlExport.genericCityObjectRendering");
 	}
 
 	@Override

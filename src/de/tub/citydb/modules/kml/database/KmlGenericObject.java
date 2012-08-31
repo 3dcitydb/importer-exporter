@@ -248,6 +248,7 @@ public abstract class KmlGenericObject {
 	public abstract ColladaOptions getColladaOptions();
 	public abstract Balloon getBalloonSettings();
 	protected abstract List<DisplayForm> getDisplayForms();
+	protected abstract String getHighlightingQuery();
 
 	
 	public void setId(String id) {
@@ -1901,8 +1902,8 @@ public abstract class KmlGenericObject {
 				finally {
 					if (rs2 != null)
 						try { rs2.close(); } catch (SQLException e) {}
-						if (psQuery != null)
-							try { psQuery.close(); } catch (SQLException e) {}
+					if (psQuery != null)
+						try { psQuery.close(); } catch (SQLException e) {}
 				}
 			}
 		}
@@ -2008,12 +2009,9 @@ public abstract class KmlGenericObject {
 		OracleResultSet rs = null;
 
 		double hlDistance = work.getDisplayForm().getHighlightingDistance();
-		String highlightingQuery = null;
-		if (work.isBuilding()) highlightingQuery = Queries.getSingleBuildingHighlightingQuery(currentLod);
-		else if (work.isVegetation()) highlightingQuery = Queries.getSolitaryVegetationObjectHighlightingQuery(currentLod);
 
 		try {
-			getGeometriesStmt = connection.prepareStatement(highlightingQuery,
+			getGeometriesStmt = connection.prepareStatement(getHighlightingQuery(),
 															ResultSet.TYPE_SCROLL_INSENSITIVE,
 															ResultSet.CONCUR_READ_ONLY);
 

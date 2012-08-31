@@ -85,10 +85,10 @@ import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
-import de.tub.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import de.tub.citydb.gui.components.ExportStatusDialog;
 import de.tub.citydb.gui.components.bbox.BoundingBoxPanelImpl;
 import de.tub.citydb.gui.components.checkboxtree.CheckboxTree;
+import de.tub.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.InterruptEnum;
@@ -173,8 +173,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private CheckboxTree fcTree;
 	private DefaultMutableTreeNode cityObject;
 	private DefaultMutableTreeNode building;
-	private DefaultMutableTreeNode cityObjectGroup;
 	private DefaultMutableTreeNode vegetation;
+	private DefaultMutableTreeNode genericCityObject;
+	private DefaultMutableTreeNode cityObjectGroup;
 
 	private JButton exportButton = new JButton("");
 
@@ -345,11 +346,13 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		cityObject = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECT);
 		building = new DefaultMutableTreeNode(FeatureClassMode.BUILDING);
-		cityObjectGroup = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECTGROUP);
 		vegetation = new DefaultMutableTreeNode(FeatureClassMode.VEGETATION);
+		genericCityObject = new DefaultMutableTreeNode(FeatureClassMode.GENERICCITYOBJECT);
+		cityObjectGroup = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECTGROUP);
 
 		cityObject.add(building);
 		cityObject.add(vegetation);
+		cityObject.add(genericCityObject);
 		cityObject.add(cityObjectGroup);
 
 		fcTree = new CheckboxTree(cityObject);
@@ -496,6 +499,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 		else {
 			fcTree.getCheckingModel().removeCheckingPath(new TreePath(vegetation.getPath()));
+		}
+		if (kmlExporter.getFilter().getComplexFilter().getFeatureClass().isSetGenericCityObject()) {
+			fcTree.getCheckingModel().addCheckingPath(new TreePath(genericCityObject.getPath()));
+		}
+		else {
+			fcTree.getCheckingModel().removeCheckingPath(new TreePath(genericCityObject.getPath()));
 		}
 		if (kmlExporter.getFilter().getComplexFilter().getFeatureClass().isSetCityObjectGroup()) {
 			fcTree.getCheckingModel().addCheckingPath(new TreePath(cityObjectGroup.getPath()));
@@ -742,6 +751,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setBuilding(fcTree.getCheckingModel().isPathChecked(new TreePath(building.getPath()))); 
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setVegetation(fcTree.getCheckingModel().isPathChecked(new TreePath(vegetation.getPath())));
+		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setGenericCityObject(fcTree.getCheckingModel().isPathChecked(new TreePath(genericCityObject.getPath())));
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setCityObjectGroup(fcTree.getCheckingModel().isPathChecked(new TreePath(cityObjectGroup.getPath())));
 
 		config.getProject().setKmlExporter(kmlExporter);

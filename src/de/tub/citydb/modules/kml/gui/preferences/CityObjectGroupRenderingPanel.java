@@ -35,6 +35,7 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -50,7 +51,6 @@ import javax.swing.border.TitledBorder;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
-import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -60,7 +60,7 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
 
-	private ArrayList<DisplayForm> internCityObjectGroupDfs = new ArrayList<DisplayForm>();
+	private ArrayList<DisplayForm> internalDfs = new ArrayList<DisplayForm>();
 
 	private JPanel footprintPanel;
 	private JCheckBox footprintHighlightingCheckbox = new JCheckBox();
@@ -81,23 +81,36 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 		initGui();
 	}
 
+	private List<DisplayForm> getConfigDisplayForms() {
+		return config.getProject().getKmlExporter().getCityObjectGroupDisplayForms();
+	}
+
+	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
+		config.getProject().getKmlExporter().setCityObjectGroupDisplayForms(displayForms);
+	}
+
+	@Override
+	public String getTitle() {
+		return Internal.I18N.getString("pref.tree.kmlExport.cityObjectGroupRendering");
+	}
+
 	@Override
 	public boolean isModified() {
-		setInternDisplayFormValues();
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
+		setInternalDisplayFormValues();
+		List<DisplayForm> configDfs = getConfigDisplayForms();
 
 		DisplayForm configDf = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
-		int indexOfConfigDf = kmlExporter.getCityObjectGroupDisplayForms().indexOf(configDf); 
+		int indexOfConfigDf = configDfs.indexOf(configDf); 
 		if (indexOfConfigDf != -1) {
-			configDf = kmlExporter.getCityObjectGroupDisplayForms().get(indexOfConfigDf);
+			configDf = configDfs.get(indexOfConfigDf);
 		}
-		DisplayForm internDf = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
-		int indexOfInternDf = internCityObjectGroupDfs.indexOf(internDf); 
-		if (indexOfInternDf != -1) {
-			internDf = internCityObjectGroupDfs.get(indexOfInternDf);
+		DisplayForm internalDf = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
+		int indexOfInternalDf = internalDfs.indexOf(internalDf); 
+		if (indexOfInternalDf != -1) {
+			internalDf = internalDfs.get(indexOfInternalDf);
 		}
 
-		return areDisplayFormsContentsDifferent(internDf, configDf);
+		return areDisplayFormsContentsDifferent(internalDf, configDf);
 	}
 	
 
@@ -233,18 +246,20 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 
 	@Override
 	public void loadSettings() {
-		internCityObjectGroupDfs.clear();
+		internalDfs.clear();
+		List<DisplayForm> configDfs = getConfigDisplayForms();
+
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.FOOTPRINT; form++) {
 			DisplayForm configDf = new DisplayForm(form, -1, -1);
-			int indexOfConfigDf = config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().indexOf(configDf); 
+			int indexOfConfigDf = configDfs.indexOf(configDf); 
 			if (indexOfConfigDf != -1) {
-				configDf = config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().get(indexOfConfigDf);
+				configDf = configDfs.get(indexOfConfigDf);
 			}
-			DisplayForm internCityObjectGroupDf = configDf.clone();
-			internCityObjectGroupDfs.add(internCityObjectGroupDf);
+			DisplayForm internalDf = configDf.clone();
+			internalDfs.add(internalDf);
 		}
 
-		for (DisplayForm displayForm : internCityObjectGroupDfs) {
+		for (DisplayForm displayForm : internalDfs) {
 			switch (displayForm.getForm()) {
 			case DisplayForm.FOOTPRINT:
 				footprintHighlightingCheckbox.setSelected(displayForm.isHighlightingEnabled());
@@ -268,30 +283,30 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 
 	@Override
 	public void setSettings() {
-		setInternDisplayFormValues();
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
+		setInternalDisplayFormValues();
+		List<DisplayForm> configDfs = getConfigDisplayForms();
 
-		if (kmlExporter.getCityObjectGroupDisplayForms().isEmpty()) {
-			kmlExporter.setCityObjectGroupDisplayForms(internCityObjectGroupDfs);
+		if (configDfs.isEmpty()) {
+			setConfigDisplayForms(internalDfs);
 		}
 		else {
-			for (DisplayForm internDf : internCityObjectGroupDfs) {
-				int indexOfConfigDf = kmlExporter.getCityObjectGroupDisplayForms().indexOf(internDf); 
+			for (DisplayForm internalDf : internalDfs) {
+				int indexOfConfigDf = configDfs.indexOf(internalDf); 
 				if (indexOfConfigDf != -1) {
-					DisplayForm configDf = kmlExporter.getCityObjectGroupDisplayForms().get(indexOfConfigDf);
+					DisplayForm configDf = configDfs.get(indexOfConfigDf);
 					// clone cannot be used here because of isActive() and visibleFrom()
-					copyColorAndHighlightingValues(internDf, configDf);
+					copyColorAndHighlightingValues(internalDf, configDf);
 				}
 			}
 		}
 	}
 
 
-	private void setInternDisplayFormValues() {
+	private void setInternalDisplayFormValues() {
 		DisplayForm df = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
-		int indexOfDf = internCityObjectGroupDfs.indexOf(df); 
+		int indexOfDf = internalDfs.indexOf(df); 
 		if (indexOfDf != -1) {
-			df = internCityObjectGroupDfs.get(indexOfDf);
+			df = internalDfs.get(indexOfDf);
 			df.setHighlightingEnabled(footprintHighlightingCheckbox.isSelected());
 
 			Color rgba0 = new Color(footprintFillColorButton.getBackground().getRed(),
@@ -320,12 +335,12 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 
 	@Override
 	public void resetSettings() {
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
+		List<DisplayForm> configDfs = getConfigDisplayForms();
 
 		DisplayForm df = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
-		int indexOfDf = kmlExporter.getCityObjectGroupDisplayForms().indexOf(df); 
+		int indexOfDf = configDfs.indexOf(df); 
 		if (indexOfDf != -1) {
-			df = kmlExporter.getCityObjectGroupDisplayForms().get(indexOfDf);
+			df = configDfs.get(indexOfDf);
 			df.setHighlightingEnabled(false);
 
 			df.setRgba0(DisplayForm.DEFAULT_FILL_COLOR);
@@ -334,12 +349,6 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 			df.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 		}
 		loadSettings(); // update GUI
-	}
-
-
-	@Override
-	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.cityObjectGroupRendering");
 	}
 
 	private void setEnabledHighlighting() {

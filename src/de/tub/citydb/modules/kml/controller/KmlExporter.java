@@ -122,6 +122,7 @@ import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.database.Building;
 import de.tub.citydb.modules.kml.database.CityObjectGroup;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
+import de.tub.citydb.modules.kml.database.GenericCityObject;
 import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
 import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
@@ -253,9 +254,10 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 
-		if (!checkBalloonSettings(config.getProject().getKmlExporter().getBuildingBalloon())) return false;
-		if (!checkBalloonSettings(config.getProject().getKmlExporter().getCityObjectGroupBalloon())) return false;
-		if (!checkBalloonSettings(config.getProject().getKmlExporter().getVegetationBalloon())) return false;
+		if (!checkBalloonSettings(CityGMLClass.BUILDING)) return false;
+		if (!checkBalloonSettings(CityGMLClass.SOLITARY_VEGETATION_OBJECT)) return false;
+		if (!checkBalloonSettings(CityGMLClass.GENERIC_CITY_OBJECT)) return false;
+		if (!checkBalloonSettings(CityGMLClass.CITY_OBJECT_GROUP)) return false;
 
 		// getting export filter
 		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
@@ -894,7 +896,12 @@ public class KmlExporter implements EventHandler {
 					 config.getProject().getKmlExporter().getCityObjectGroupDisplayForms(),
 					 CityObjectGroup.STYLE_BASIS_NAME);
 		}
-		if (featureFilter.isSetBuilding()) {
+		if (featureFilter.isSetGenericCityObject()) {
+			addStyle(currentDisplayForm,
+					 config.getProject().getKmlExporter().getGenericCityObjectDisplayForms(),
+					 GenericCityObject.STYLE_BASIS_NAME);
+		}
+		if (featureFilter.isSetBuilding()) { // must be last
 			addStyle(currentDisplayForm,
 					 config.getProject().getKmlExporter().getBuildingDisplayForms(),
 					 Building.STYLE_BASIS_NAME);
@@ -1207,9 +1214,32 @@ public class KmlExporter implements EventHandler {
 		return bytes;
 	}
 
-	private boolean checkBalloonSettings (Balloon balloonSettings) {
+	private boolean checkBalloonSettings (CityGMLClass cityObjectType) {
+		Balloon balloonSettings = null;
+		boolean settingsMustBeChecked = false;
+		switch (cityObjectType) {
+			case BUILDING:
+				balloonSettings = config.getProject().getKmlExporter().getBuildingBalloon();
+				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetBuilding();
+				break;
+			case SOLITARY_VEGETATION_OBJECT:
+				balloonSettings = config.getProject().getKmlExporter().getVegetationBalloon();
+				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetVegetation();
+				break;
+			case GENERIC_CITY_OBJECT:
+				balloonSettings = config.getProject().getKmlExporter().getGenericCityObjectBalloon();
+				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetGenericCityObject();
+				break;
+			case CITY_OBJECT_GROUP:
+				balloonSettings = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
+				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetCityObjectGroup();
+				break;
+			default:
+				return false;
+		}
 		
-		if (balloonSettings.isIncludeDescription() &&
+		if (settingsMustBeChecked &&
+			balloonSettings.isIncludeDescription() &&
 			balloonSettings.getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
 			String balloonTemplateFilename = balloonSettings.getBalloonContentTemplateFile();
 			if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
@@ -1240,6 +1270,9 @@ public class KmlExporter implements EventHandler {
 			}
 			else if (kmlExportObject instanceof SolitaryVegetationObject) {
 				type = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
+			}
+			else if (kmlExportObject instanceof GenericCityObject) {
+				type = CityGMLClass.GENERIC_CITY_OBJECT;
 			}
 
 			Long counter = featureCounterMap.get(type);

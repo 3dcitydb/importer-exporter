@@ -37,6 +37,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -59,7 +60,6 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
-import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -70,7 +70,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
 
-	private ArrayList<DisplayForm> internBuildingDfs = new ArrayList<DisplayForm>();
+	private ArrayList<DisplayForm> internalDfs = new ArrayList<DisplayForm>();
 
 	private JPanel footprintPanel;
 	private JCheckBox footprintHighlightingCheckbox = new JCheckBox();
@@ -128,25 +128,42 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		initGui();
 	}
 
+	private ColladaOptions getConfigColladaOptions() {
+		return config.getProject().getKmlExporter().getBuildingColladaOptions();
+	}
+
+	private List<DisplayForm> getConfigDisplayForms() {
+		return config.getProject().getKmlExporter().getBuildingDisplayForms();
+	}
+
+	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
+		config.getProject().getKmlExporter().setBuildingDisplayForms(displayForms);
+	}
+
+	@Override
+	public String getTitle() {
+		return Internal.I18N.getString("pref.tree.kmlExport.buildingRendering");
+	}
+
 	@Override
 	public boolean isModified() {
-		setInternDisplayFormValues();
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
-		ColladaOptions colladaOptions = kmlExporter.getBuildingColladaOptions();
+		setInternalDisplayFormValues();
+		ColladaOptions colladaOptions = getConfigColladaOptions();
+		List<DisplayForm> configDfs = getConfigDisplayForms();
 
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.COLLADA; form++) {
 			DisplayForm configDf = new DisplayForm(form, -1, -1);
-			int indexOfConfigDf = kmlExporter.getBuildingDisplayForms().indexOf(configDf); 
+			int indexOfConfigDf = configDfs.indexOf(configDf); 
 			if (indexOfConfigDf != -1) {
-				configDf = kmlExporter.getBuildingDisplayForms().get(indexOfConfigDf);
+				configDf = configDfs.get(indexOfConfigDf);
 			}
-			DisplayForm internDf = new DisplayForm(form, -1, -1);
-			int indexOfInternDf = internBuildingDfs.indexOf(internDf); 
-			if (indexOfInternDf != -1) {
-				internDf = internBuildingDfs.get(indexOfInternDf);
+			DisplayForm internalDf = new DisplayForm(form, -1, -1);
+			int indexOfInternalDf = internalDfs.indexOf(internalDf); 
+			if (indexOfInternalDf != -1) {
+				internalDf = internalDfs.get(indexOfInternalDf);
 			}
 
-			if (areDisplayFormsContentsDifferent(internDf, configDf)) return true;
+			if (areDisplayFormsContentsDifferent(internalDf, configDf)) return true;
 		}
 
 		if (ignoreSurfaceOrientationCheckbox.isSelected() != colladaOptions.isIgnoreSurfaceOrientation()) return true;
@@ -610,19 +627,19 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void loadSettings() {
-		internBuildingDfs.clear();
+		internalDfs.clear();
+		List<DisplayForm> configDfs = getConfigDisplayForms();
+		ColladaOptions colladaOptions = getConfigColladaOptions();
+
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.COLLADA; form++) {
 			DisplayForm configDf = new DisplayForm(form, -1, -1);
-			int indexOfConfigDf = config.getProject().getKmlExporter().getBuildingDisplayForms().indexOf(configDf); 
+			int indexOfConfigDf = configDfs.indexOf(configDf); 
 			if (indexOfConfigDf != -1) {
-				configDf = config.getProject().getKmlExporter().getBuildingDisplayForms().get(indexOfConfigDf);
+				configDf = configDfs.get(indexOfConfigDf);
 			}
-			DisplayForm internBuildingDf = configDf.clone();
-			internBuildingDfs.add(internBuildingDf);
+			DisplayForm internalDf = configDf.clone();
+			internalDfs.add(internalDf);
 		}
-
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
-		ColladaOptions colladaOptions = kmlExporter.getBuildingColladaOptions();
 
 		geometryHLSurfaceDistanceLabel.setEnabled(false);
 		geometryHLSurfaceDistanceText.setEnabled(false);
@@ -630,7 +647,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		colladaHLSurfaceDistanceLabel.setEnabled(false);
 		colladaHLSurfaceDistanceText.setEnabled(false);
 
-		for (DisplayForm displayForm : internBuildingDfs) {
+		for (DisplayForm displayForm : internalDfs) {
 			switch (displayForm.getForm()) {
 			case DisplayForm.FOOTPRINT:
 			case DisplayForm.EXTRUDED:
@@ -719,20 +736,20 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void setSettings() {
-		setInternDisplayFormValues();
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
-		ColladaOptions colladaOptions = kmlExporter.getBuildingColladaOptions();
+		setInternalDisplayFormValues();
+		ColladaOptions colladaOptions = getConfigColladaOptions();
+		List<DisplayForm> configDfs = getConfigDisplayForms();
 
-		if (kmlExporter.getBuildingDisplayForms().isEmpty()) {
-			kmlExporter.setBuildingDisplayForms(internBuildingDfs);
+		if (configDfs.isEmpty()) {
+			setConfigDisplayForms(internalDfs);
 		}
 		else {
-			for (DisplayForm internDf : internBuildingDfs) {
-				int indexOfConfigDf = kmlExporter.getBuildingDisplayForms().indexOf(internDf); 
+			for (DisplayForm internalDf : internalDfs) {
+				int indexOfConfigDf = configDfs.indexOf(internalDf); 
 				if (indexOfConfigDf != -1) {
-					DisplayForm configDf = kmlExporter.getBuildingDisplayForms().get(indexOfConfigDf);
+					DisplayForm configDf = configDfs.get(indexOfConfigDf);
 					// clone cannot be used here because of isActive() and visibleFrom()
-					copyColorAndHighlightingValues(internDf, configDf);
+					copyColorAndHighlightingValues(internalDf, configDf);
 				}
 			}
 		}
@@ -762,12 +779,12 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 
-	private void setInternDisplayFormValues() {
+	private void setInternalDisplayFormValues() {
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.EXTRUDED; form++) {
 			DisplayForm df = new DisplayForm(form, -1, -1);
-			int indexOfDf = internBuildingDfs.indexOf(df); 
+			int indexOfDf = internalDfs.indexOf(df); 
 			if (indexOfDf != -1) {
-				df = internBuildingDfs.get(indexOfDf);
+				df = internalDfs.get(indexOfDf);
 				df.setHighlightingEnabled(footprintHighlightingCheckbox.isSelected());
 
 				Color rgba0 = new Color(footprintFillColorButton.getBackground().getRed(),
@@ -794,9 +811,9 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		DisplayForm df = new DisplayForm(DisplayForm.GEOMETRY, -1, -1);
-		int indexOfDf = internBuildingDfs.indexOf(df); 
+		int indexOfDf = internalDfs.indexOf(df); 
 		if (indexOfDf != -1) {
-			df = internBuildingDfs.get(indexOfDf);
+			df = internalDfs.get(indexOfDf);
 			df.setHighlightingEnabled(geometryHighlightingCheckbox.isSelected());
 			try {
 				df.setHighlightingDistance(Double.parseDouble(geometryHLSurfaceDistanceText.getText().trim()));
@@ -839,9 +856,9 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		df = new DisplayForm(DisplayForm.COLLADA, -1, -1);
-		indexOfDf = internBuildingDfs.indexOf(df); 
+		indexOfDf = internalDfs.indexOf(df); 
 		if (indexOfDf != -1) {
-			df = internBuildingDfs.get(indexOfDf);
+			df = internalDfs.get(indexOfDf);
 			df.setHighlightingEnabled(colladaHighlightingRButton.isSelected());
 			try {
 				df.setHighlightingDistance(Double.parseDouble(colladaHLSurfaceDistanceText.getText().trim()));
@@ -867,14 +884,14 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void resetSettings() {
-		KmlExporter kmlExporter = config.getProject().getKmlExporter();
-		ColladaOptions colladaOptions = kmlExporter.getBuildingColladaOptions();
+		ColladaOptions colladaOptions = getConfigColladaOptions();
+		List<DisplayForm> configDfs = getConfigDisplayForms();
 
 		for (int form = DisplayForm.FOOTPRINT; form <= DisplayForm.EXTRUDED; form++) {
 			DisplayForm df = new DisplayForm(form, -1, -1);
-			int indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+			int indexOfDf = configDfs.indexOf(df); 
 			if (indexOfDf != -1) {
-				df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
+				df = configDfs.get(indexOfDf);
 				df.setHighlightingEnabled(false);
 
 				df.setRgba0(DisplayForm.DEFAULT_FILL_COLOR);
@@ -885,9 +902,9 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		DisplayForm df = new DisplayForm(DisplayForm.GEOMETRY, -1, -1);
-		int indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+		int indexOfDf = configDfs.indexOf(df); 
 		if (indexOfDf != -1) {
-			df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
+			df = configDfs.get(indexOfDf);
 			df.setHighlightingEnabled(false);
 			df.setHighlightingDistance(0.75);
 
@@ -900,9 +917,9 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		}
 
 		df = new DisplayForm(DisplayForm.COLLADA, -1, -1);
-		indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+		indexOfDf = configDfs.indexOf(df); 
 		if (indexOfDf != -1) {
-			df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
+			df = configDfs.get(indexOfDf);
 			df.setHighlightingEnabled(false);
 			df.setHighlightingDistance(0.75);
 			
@@ -922,11 +939,6 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		colladaOptions.setGroupSize(1);
 
 		loadSettings(); // update GUI
-	}
-
-	@Override
-	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.buildingRendering");
 	}
 
 	private void setEnabledHighlighting() {

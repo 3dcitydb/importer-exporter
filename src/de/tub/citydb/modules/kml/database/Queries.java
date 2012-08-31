@@ -686,11 +686,11 @@ public class Queries {
 	private static final String SOLITARY_VEGETATION_OBJECT_BASIS_DATA =
 		"SELECT ig.relative_geometry_id, svo.lod<LoD>_implicit_ref_point, " +
 			   "svo.lod<LoD>_implicit_transformation, svo.lod<LoD>_geometry_id " +
-		"FROM CITYOBJECT co, SOLITARY_VEGETAT_OBJECT svo, IMPLICIT_GEOMETRY ig " + 
+		"FROM CITYOBJECT co, SOLITARY_VEGETAT_OBJECT svo " + 
+		"LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = svo.lod<LoD>_implicit_rep_id " + 
 		"WHERE " +  
 			"co.gmlid = ? " +
-			"AND svo.id = co.id " +
-			"AND ig.id = svo.lod<LoD>_implicit_rep_id";
+			"AND svo.id = co.id";
 
     public static String getSolitaryVegetationObjectBasisData (int lodToExportFrom) {
     	return SOLITARY_VEGETATION_OBJECT_BASIS_DATA.replace("<LoD>", String.valueOf(lodToExportFrom));
@@ -745,4 +745,72 @@ public class Queries {
     public static String getSolitaryVegetationObjectHighlightingQuery (int lodToExportFrom) {
     	return SOLITARY_VEGETATION_OBJECT_GEOMETRY_HIGHLIGHTING.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
+
+	// ----------------------------------------------------------------------
+	// GENERIC CITY OBJECT QUERIES
+	// ----------------------------------------------------------------------
+	
+	private static final String GENERIC_CITYOBJECT_BASIS_DATA =
+		"SELECT ig.relative_geometry_id, gco.lod<LoD>_implicit_ref_point, " +
+			   "gco.lod<LoD>_implicit_transformation, gco.lod<LoD>_geometry_id " +
+		"FROM CITYOBJECT co, GENERIC_CITYOBJECT gco " +
+		"LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = gco.lod<LoD>_implicit_rep_id " + 
+		"WHERE " +  
+			"co.gmlid = ? " +
+			"AND gco.id = co.id";
+
+    public static String getGenericCityObjectBasisData (int lodToExportFrom) {
+    	return GENERIC_CITYOBJECT_BASIS_DATA.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
+	private static final String GENERIC_CITYOBJECT_FOOTPRINT_EXTRUDED_GEOMETRY =
+		"SELECT sg.geometry, 'Generic' as type, sg.id " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"WHERE sg.root_id = ? " + 
+		"AND sg.geometry IS NOT NULL";
+	
+	private static final String GENERIC_CITYOBJECT_COLLADA_ROOT_IDS =
+		"SELECT ? FROM DUAL "; // dummy
+
+    public static String getGenericCityObjectGeometryContents (DisplayForm displayForm) {
+    	String query = null;
+    	switch (displayForm.getForm()) {
+    		case DisplayForm.FOOTPRINT:
+    		case DisplayForm.EXTRUDED:
+    		case DisplayForm.GEOMETRY:
+    			query = GENERIC_CITYOBJECT_FOOTPRINT_EXTRUDED_GEOMETRY;
+    	    	break;
+    		case DisplayForm.COLLADA:
+    			query = GENERIC_CITYOBJECT_COLLADA_ROOT_IDS;
+    	    	break;
+    	    default:
+    	    	Logger.getInstance().log(LogLevel.INFO, "No GenericCityObject query found");
+    	}
+    	
+//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
+    	return query;
+    }
+
+    private static final String GENERIC_CITYOBJECT_GEOMETRY_HIGHLIGHTING =
+		"SELECT sg.geometry, sg.id " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"WHERE sg.root_id IN ( " +
+			"SELECT ig.relative_geometry_id " + 
+			"FROM CITYOBJECT co, GENERIC_CITYOBJECT gco, IMPLICIT_GEOMETRY ig " + 
+			"WHERE " +  
+				"co.gmlid = ? " +
+				"AND gco.id = co.id " +
+				"AND ig.id = gco.lod<LoD>_implicit_rep_id " +
+			"UNION " +
+			"SELECT gco.lod<LoD>_geometry_id " +
+			"FROM CITYOBJECT co, GENERIC_CITYOBJECT gco " + 
+			"WHERE " +  
+				"co.gmlid = ? " +
+				"AND gco.id = co.id) " +
+		"AND sg.geometry IS NOT NULL";
+
+    public static String getGenericCityObjectHighlightingQuery (int lodToExportFrom) {
+    	return GENERIC_CITYOBJECT_GEOMETRY_HIGHLIGHTING.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
 }
