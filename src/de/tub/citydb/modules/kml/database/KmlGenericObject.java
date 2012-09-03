@@ -254,6 +254,7 @@ public abstract class KmlGenericObject {
 	public abstract ColladaOptions getColladaOptions();
 	public abstract Balloon getBalloonSettings();
 	protected abstract List<DisplayForm> getDisplayForms();
+	protected abstract String getHighlightingQuery();
 
 	public void setId(String id) {
 		this.id = id.replace(':', '_');
@@ -2526,7 +2527,7 @@ public abstract class KmlGenericObject {
 		List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
 
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
-		placemark.setStyleUrl("#" + work.getDisplayForm().getName() + "Style");
+		placemark.setStyleUrl("#" + getStyleBasisName() + work.getDisplayForm().getName() + "Style");
 		placemark.setName(work.getGmlId());
 		placemark.setId(DisplayForm.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID + placemark.getName());
 		placemarkList.add(placemark);
@@ -2543,12 +2544,9 @@ public abstract class KmlGenericObject {
 		ResultSet rs = null;
 
 		double hlDistance = work.getDisplayForm().getHighlightingDistance();
-		String highlightingQuery = null;
-		if (work.isBuilding()) highlightingQuery = Queries.getSingleBuildingHighlightingQuery(currentLod);
-		else if (work.isVegetation()) highlightingQuery = Queries.getSolitaryVegetationObjectHighlightingQuery(currentLod);
 
 		try {
-			getGeometriesStmt = connection.prepareStatement(highlightingQuery,
+			getGeometriesStmt = connection.prepareStatement(getHighlightingQuery(),
 															ResultSet.TYPE_SCROLL_INSENSITIVE,
 															ResultSet.CONCUR_READ_ONLY);
 

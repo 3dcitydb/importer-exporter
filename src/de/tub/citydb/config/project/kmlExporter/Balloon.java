@@ -39,7 +39,7 @@ import de.tub.citydb.config.project.general.Path;
 		"balloonContentMode",
 		"balloonContentPath",
 		"balloonContentTemplateFile",
-		"balloonContentInSeparateFile",
+		"balloonContentInSeparateFile"
 })
 public class Balloon {
 	private boolean includeDescription;
@@ -47,8 +47,6 @@ public class Balloon {
 	private Path balloonContentPath;
 	private String balloonContentTemplateFile;
 	private boolean balloonContentInSeparateFile;
-
-	public static final String THEME_NONE = "none";
 
 	public Balloon() {
 		includeDescription = true;

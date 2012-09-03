@@ -81,4 +81,7 @@ public class KmlSplittingResult {
 				getCityObjectType().compareTo(CityGMLClass.PLANT_COVER) == 0);
 	}
 
+	public boolean isGenericCityObject() {
+		return getCityObjectType().compareTo(CityGMLClass.GENERIC_CITY_OBJECT) == 0;
+	}
 }

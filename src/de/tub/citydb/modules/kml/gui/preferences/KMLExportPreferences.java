@@ -42,18 +42,18 @@ public class KMLExportPreferences extends AbstractPreferences {
 		DefaultPreferencesEntry renderingNode = new RenderingPanel();
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BuildingRenderingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new VegetationRenderingPanel(config)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new GenericCityObjectRenderingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupRenderingPanel(config)));
 
 		DefaultPreferencesEntry balloonNode = new BalloonPanel();
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BuildingBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new VegetationBalloonPanel(config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new GenericCityObjectBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupBalloonPanel(config)));
 
 		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));
 		root.addChildEntry(renderingNode);
-//		root.addChildEntry(new DefaultPreferencesEntry(new BuildingRenderingPanel(config)));
 		root.addChildEntry(balloonNode);
-//		root.addChildEntry(new DefaultPreferencesEntry(new BuildingBalloonPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new AltitudePanel(config)));
 	}
 

@@ -49,6 +49,7 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
+// import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
@@ -60,6 +61,7 @@ import de.tub.citydb.modules.kml.database.Building;
 import de.tub.citydb.modules.kml.database.CityObjectGroup;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.ElevationServiceHandler;
+import de.tub.citydb.modules.kml.database.GenericCityObject;
 import de.tub.citydb.modules.kml.database.KmlExporterManager;
 import de.tub.citydb.modules.kml.database.KmlGenericObject;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
@@ -140,6 +142,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 													   					 colladaOptions.getGroupSize(): 1);
 			objectGroup.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, null);
 		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetGenericCityObject()) {
+			objectGroupCounter.put(CityGMLClass.GENERIC_CITY_OBJECT, 0);
+			colladaOptions = config.getProject().getKmlExporter().getGenericCityObjectColladaOptions();
+			objectGroupSize.put(CityGMLClass.GENERIC_CITY_OBJECT, colladaOptions.isGroupObjects() ? 
+																  colladaOptions.getGroupSize(): 1);
+			objectGroup.put(CityGMLClass.GENERIC_CITY_OBJECT, null);
+		}
 		// CityGMLClass.CITY_OBJECT_GROUP is left out, it does not make sense to group it without COLLADA DisplayForm 
 	}
 
@@ -210,8 +219,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					if (currentObjectGroup == null || currentObjectGroup.getId() == null) continue;
 					sendGroupToFile(currentObjectGroup);
 					currentObjectGroup = null;
-					objectGroup.put(work.getCityObjectType(), currentObjectGroup);
-					objectGroupCounter.put(work.getCityObjectType(), 0);
+					objectGroup.put(cityObjectType, currentObjectGroup);
+					objectGroupCounter.put(cityObjectType, 0);
 				}
 			}
 		}
@@ -245,6 +254,28 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												config);
 					break;
 
+				case SOLITARY_VEGETATION_OBJECT:
+					singleObject = new SolitaryVegetationObject(connection,
+												   				kmlExporterManager,
+												   				cityGMLFactory,
+												   				kmlFactory,
+												   				elevationServiceHandler,
+																getBalloonTemplateHandler(work.getCityObjectType()),
+												   				eventDispatcher,
+												   				config);
+					break;
+
+				case GENERIC_CITY_OBJECT:
+					singleObject = new GenericCityObject(connection,
+												   	   	 kmlExporterManager,
+												   	   	 cityGMLFactory,
+												   	   	 kmlFactory,
+												   	   	 elevationServiceHandler,
+												   	   	 getBalloonTemplateHandler(work.getCityObjectType()),
+												   	   	 eventDispatcher,
+												   	   	 config);
+					break;
+
 				case CITY_OBJECT_GROUP:
 					singleObject = new CityObjectGroup(connection,
 												   	   kmlExporterManager,
@@ -256,16 +287,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												   	   config);
 					break;
 
-				case SOLITARY_VEGETATION_OBJECT:
-					singleObject = new SolitaryVegetationObject(connection,
-												   				kmlExporterManager,
-												   				cityGMLFactory,
-												   				kmlFactory,
-												   				elevationServiceHandler,
-																getBalloonTemplateHandler(work.getCityObjectType()),
-												   				eventDispatcher,
-												   				config);
-					break;
 			}
 
 			singleObject.read(work);
@@ -355,11 +376,14 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			case BUILDING:
 				balloonSettings = config.getProject().getKmlExporter().getBuildingBalloon();
 				break;
-			case CITY_OBJECT_GROUP:
-				balloonSettings = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
-				break;
 			case SOLITARY_VEGETATION_OBJECT:
 				balloonSettings = config.getProject().getKmlExporter().getVegetationBalloon();
+				break;
+			case GENERIC_CITY_OBJECT:
+				balloonSettings = config.getProject().getKmlExporter().getGenericCityObjectBalloon();
+				break;
+			case CITY_OBJECT_GROUP:
+				balloonSettings = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
 				break;
 			default:
 				return null;
