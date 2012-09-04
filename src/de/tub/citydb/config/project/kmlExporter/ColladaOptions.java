@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlType;
 		"scaleImages",
 		"imageScaleFactor",
 		"groupObjects",
-		"groupSize",
+		"groupSize"
 })
 public class ColladaOptions {
 	private boolean ignoreSurfaceOrientation;

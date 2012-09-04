@@ -133,6 +133,66 @@ public class Queries {
 			"FROM CITYOBJECT co " + 
 			"WHERE co.gmlid = ?) v";
 
+	public static final String GET_ENVELOPE_LAT_MIN_IN_WGS84_FROM_GML_ID =
+		"SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 2) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LAT_MIN_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 2) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LAT_MAX_IN_WGS84_FROM_GML_ID =
+		"SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 2) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LAT_MAX_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 2) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LON_MIN_IN_WGS84_FROM_GML_ID =
+		"SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 1) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LON_MIN_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 1) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LON_MAX_IN_WGS84_FROM_GML_ID =
+		"SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 1) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LON_MAX_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 1) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_FROM_GML_ID =
+		"SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 3) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 3) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_FROM_GML_ID =
+		"SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 3) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 3) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
 	// ----------------------------------------------------------------------
 	// 	BUILDING QUERIES
 	// ----------------------------------------------------------------------
