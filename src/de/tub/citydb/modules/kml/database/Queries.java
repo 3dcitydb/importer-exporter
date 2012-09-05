@@ -217,6 +217,66 @@ public class Queries {
 			"FROM CITYOBJECT co " + 
 			"WHERE co.gmlid = ?";	
 	
+	public static final String GET_ENVELOPE_LAT_MIN_IN_WGS84_FROM_GML_ID =
+		"SELECT ST_YMin(Box3D(ST_Transform(co.envelope, 4326))) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LAT_MIN_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT ST_YMin(Box3D(ST_Transform(co.envelope, 4329))) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LAT_MAX_IN_WGS84_FROM_GML_ID =
+		"SELECT ST_YMax(Box3D(ST_Transform(co.envelope, 4326))) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LAT_MAX_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT ST_YMax(Box3D(ST_Transform(co.envelope, 4329))) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LON_MIN_IN_WGS84_FROM_GML_ID =
+		"SELECT ST_XMin(Box3D(ST_Transform(co.envelope, 4326))) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LON_MIN_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT ST_XMin(Box3D(ST_Transform(co.envelope, 432)))) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LON_MAX_IN_WGS84_FROM_GML_ID =
+		"SELECT ST_XMax(Box3D(ST_Transform(co.envelope, 4326))) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_LON_MAX_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT ST_XMax(Box3D(ST_Transform(co.envelope, 4329))) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_FROM_GML_ID =
+		"SELECT ST_ZMin(Box3D(ST_Transform(co.envelope, 4326))) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT ST_ZMin(Box3D(ST_Transform(co.envelope, 4329))) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_FROM_GML_ID =
+		"SELECT ST_ZMax(Box3D(ST_Transform(co.envelope, 4326))) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
+	public static final String GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_3D_FROM_GML_ID =
+		"SELECT ST_ZMax(Box3D(ST_Transform(co.envelope, 4329))) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.gmlid = ?";
+
 	// ----------------------------------------------------------------------
 	// 	BUILDING QUERIES
 	// ----------------------------------------------------------------------
