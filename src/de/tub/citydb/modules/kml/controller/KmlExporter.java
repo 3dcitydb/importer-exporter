@@ -125,6 +125,7 @@ import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.GenericCityObject;
 import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
+import de.tub.citydb.modules.kml.database.PlantCover;
 import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.modules.kml.util.KMLHeaderWriter;
@@ -1270,6 +1271,9 @@ public class KmlExporter implements EventHandler {
 			}
 			else if (kmlExportObject instanceof SolitaryVegetationObject) {
 				type = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
+			}
+			else if (kmlExportObject instanceof PlantCover) {
+				type = CityGMLClass.PLANT_COVER;
 			}
 			else if (kmlExportObject instanceof GenericCityObject) {
 				type = CityGMLClass.GENERIC_CITY_OBJECT;

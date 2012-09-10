@@ -807,6 +807,47 @@ public class Queries {
     }
 
 	// ----------------------------------------------------------------------
+	// PLANT COVER QUERIES
+	// ----------------------------------------------------------------------
+	
+	private static final String PLANT_COVER_FOOTPRINT_EXTRUDED_GEOMETRY =
+		"SELECT sg.geometry, 'Vegetation' as type, sg.id " +
+		"FROM SURFACE_GEOMETRY sg, PLANT_COVER pc, CITYOBJECT co " + 
+		"WHERE co.gmlid = ? " +
+			"AND pc.id = co.id " +
+			"AND sg.root_id = pc.lod<LoD>_geometry_id " + 
+			"AND sg.geometry IS NOT NULL";
+	
+	private static final String PLANT_COVER_COLLADA_ROOT_IDS =
+		"SELECT pc.lod<LoD>_geometry_id " +
+		"FROM PLANT_COVER pc, CITYOBJECT co " + 
+		"WHERE co.gmlid = ? " +
+			"AND pc.id = co.id";
+
+    public static String getPlantCoverQuery (int lodToExportFrom, DisplayForm displayForm) {
+    	String query = null;
+    	switch (displayForm.getForm()) {
+    		case DisplayForm.FOOTPRINT:
+    		case DisplayForm.EXTRUDED:
+    		case DisplayForm.GEOMETRY:
+    			query = PLANT_COVER_FOOTPRINT_EXTRUDED_GEOMETRY;
+    	    	break;
+    		case DisplayForm.COLLADA:
+    			query = PLANT_COVER_COLLADA_ROOT_IDS;
+    	    	break;
+    	    default:
+    	    	Logger.getInstance().log(LogLevel.INFO, "No plant cover object query found");
+    	}
+    	
+//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
+    	return query.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
+    public static String getPlantCoverHighlightingQuery (int lodToExportFrom) {
+    	return PLANT_COVER_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
+	// ----------------------------------------------------------------------
 	// GENERIC CITY OBJECT QUERIES
 	// ----------------------------------------------------------------------
 	

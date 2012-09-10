@@ -306,6 +306,21 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("THEMATIC_SURFACE_ID");
 	}};
 
+	private static final String PLANT_COVER_TABLE = "PLANT_COVER";
+	private static final LinkedHashSet<String> PLANT_COVER_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("CLASS");
+		add("FUNCTION");
+		add("AVERAGE_HEIGHT");
+		add("LOD1_GEOMETRY_ID");
+		add("LOD2_GEOMETRY_ID");
+		add("LOD3_GEOMETRY_ID");
+		add("LOD4_GEOMETRY_ID");
+	}};
+
 	private static final String ROOM_TABLE = "ROOM";
 	private static final LinkedHashSet<String> ROOM_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
@@ -486,6 +501,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(OBJECTCLASS_TABLE, OBJECTCLASS_COLUMNS);
 		put(OPENING_TABLE, OPENING_COLUMNS);
 		put(OPENING_TO_THEM_SURFACE_TABLE, OPENING_TO_THEM_SURFACE_COLUMNS);
+		put(PLANT_COVER_TABLE, PLANT_COVER_COLUMNS);
 		put(ROOM_TABLE, ROOM_COLUMNS);
 		put(SOLITARY_VEGETAT_OBJECT_TABLE, SOLITARY_VEGETAT_OBJECT_COLUMNS);
 		put(SPECIAL_KEYWORDS, SPECIAL_KEYWORDS_SET);
@@ -1102,6 +1118,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 
 			switch (cityGMLClassForBalloonHandler) {
+				case PLANT_COVER:
+					sqlStatement = sqlStatementForPlantCover(table, columns, aggregateString, aggregateClosingString, lod);
+					break;
 				case SOLITARY_VEGETATION_OBJECT:
 					sqlStatement = sqlStatementForSolVegObj(table, columns, aggregateString, aggregateClosingString, lod);
 					break;
@@ -1331,6 +1350,53 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							   " AND svo.id = co.id)" +
 							   " AND sg.geometry IS NOT NULL)";
 			}
+			else if (PLANT_COVER_TABLE.equalsIgnoreCase(table)) { } // tolerate but do nothing
+			else {
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
+			}
+
+			return sqlStatement; 
+		}
+
+		private String sqlStatementForPlantCover(String table,
+												 List<String> columns,
+												 String aggregateString,
+												 String aggregateClosingString,
+												 int lod) throws Exception {
+			String sqlStatement = null; 
+
+			if (PLANT_COVER_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, PLANT_COVER pc" +
+							   " WHERE co.gmlid = ?" +
+							   " AND pc.id = co.id";
+			}
+			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
+							   " WHERE co.gmlid = ?" +
+							   " AND a.cityobject_id = co.id" +
+							   " AND a2sd.appearance_id = a.id" +
+							   " AND sd.id = a2sd.surface_data_id";
+			}
+			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM SURFACE_GEOMETRY sg, PLANT_COVER pc, CITYOBJECT co" + 
+							   " WHERE co.gmlid = ? " +
+							   " AND pc.id = co.id " +
+							   " AND sg.root_id = pc.lod" + lod + "_geometry_id " + 
+							   " AND sg.geometry IS NOT NULL";
+			}
+			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM TEXTUREPARAM tp, SURFACE_GEOMETRY sg, PLANT_COVER pc, CITYOBJECT co" +
+							   " WHERE co.gmlid = ? " +
+							   " AND pc.id = co.id " +
+							   " AND sg.root_id = pc.lod" + lod + "_geometry_id " + 
+							   " AND sg.geometry IS NOT NULL " + 
+							   " AND tp.surface_geometry_id = sg.id";
+			}
+			else if (SOLITARY_VEGETAT_OBJECT_TABLE.equalsIgnoreCase(table)) { } // tolerate but do nothing
 			else {
 				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
 			}
@@ -1580,6 +1646,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 			else if (OPENING_TO_THEM_SURFACE_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "o2ts";
+			}
+			else if (PLANT_COVER_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "pc";
 			}
 			else if (ROOM_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "r";
