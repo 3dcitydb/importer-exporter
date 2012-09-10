@@ -65,6 +65,7 @@ import de.tub.citydb.modules.kml.database.GenericCityObject;
 import de.tub.citydb.modules.kml.database.KmlExporterManager;
 import de.tub.citydb.modules.kml.database.KmlGenericObject;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
+import de.tub.citydb.modules.kml.database.PlantCover;
 import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
 
 public class KmlExportWorker implements Worker<KmlSplittingResult> {
@@ -241,15 +242,16 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		final ReentrantLock runLock = this.runLock;
 		runLock.lock();
 
+		CityGMLClass featureClass = work.getCityObjectType();
 		try {
-			switch (work.getCityObjectType()) {
+			switch (featureClass) {
 				case BUILDING:
 					singleObject = new Building(connection,
 												kmlExporterManager,
 												cityGMLFactory,
 												kmlFactory,
 												elevationServiceHandler,
-												getBalloonTemplateHandler(work.getCityObjectType()),
+												getBalloonTemplateHandler(featureClass),
 												eventDispatcher,
 												config);
 					break;
@@ -260,9 +262,20 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												   				cityGMLFactory,
 												   				kmlFactory,
 												   				elevationServiceHandler,
-																getBalloonTemplateHandler(work.getCityObjectType()),
+																getBalloonTemplateHandler(featureClass),
 												   				eventDispatcher,
 												   				config);
+					break;
+
+				case PLANT_COVER:
+					singleObject = new PlantCover(connection,
+												  kmlExporterManager,
+												  cityGMLFactory,
+												  kmlFactory,
+												  elevationServiceHandler,
+												  getBalloonTemplateHandler(featureClass),
+												  eventDispatcher,
+												  config);
 					break;
 
 				case GENERIC_CITY_OBJECT:
@@ -271,7 +284,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												   	   	 cityGMLFactory,
 												   	   	 kmlFactory,
 												   	   	 elevationServiceHandler,
-												   	   	 getBalloonTemplateHandler(work.getCityObjectType()),
+												   	   	 getBalloonTemplateHandler(featureClass),
 												   	   	 eventDispatcher,
 												   	   	 config);
 					break;
@@ -282,7 +295,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												   	   cityGMLFactory,
 												   	   kmlFactory,
 												   	   elevationServiceHandler,
-												   	   getBalloonTemplateHandler(work.getCityObjectType()),
+												   	   getBalloonTemplateHandler(featureClass),
 												   	   eventDispatcher,
 												   	   config);
 					break;
@@ -295,21 +308,24 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				work.getDisplayForm().getForm() == DisplayForm.COLLADA &&
 				singleObject.getId() != null) { // object is filled
 
-				KmlGenericObject currentObjectGroup = objectGroup.get(work.getCityObjectType());
+				// correction for some CityGML Types exported together
+				if (featureClass == CityGMLClass.PLANT_COVER) featureClass = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
+				
+				KmlGenericObject currentObjectGroup = objectGroup.get(featureClass);
 				if (currentObjectGroup == null) {
 					currentObjectGroup = singleObject;
-					objectGroup.put(work.getCityObjectType(), currentObjectGroup);
+					objectGroup.put(featureClass, currentObjectGroup);
 				}
 				else {
 					currentObjectGroup.appendObject(singleObject);
 				}
 
-				objectGroupCounter.put(work.getCityObjectType(), objectGroupCounter.get(work.getCityObjectType()).intValue() + 1);
-				if (objectGroupCounter.get(work.getCityObjectType()).intValue() == objectGroupSize.get(work.getCityObjectType()).intValue()) {
+				objectGroupCounter.put(featureClass, objectGroupCounter.get(featureClass).intValue() + 1);
+				if (objectGroupCounter.get(featureClass).intValue() == objectGroupSize.get(featureClass).intValue()) {
 					sendGroupToFile(currentObjectGroup);
 					currentObjectGroup = null;
-					objectGroup.put(work.getCityObjectType(), currentObjectGroup);
-					objectGroupCounter.put(work.getCityObjectType(), 0);
+					objectGroup.put(featureClass, currentObjectGroup);
+					objectGroupCounter.put(featureClass, 0);
 				}
 			}
 		}
@@ -377,6 +393,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				balloonSettings = config.getProject().getKmlExporter().getBuildingBalloon();
 				break;
 			case SOLITARY_VEGETATION_OBJECT:
+			case PLANT_COVER:
 				balloonSettings = config.getProject().getKmlExporter().getVegetationBalloon();
 				break;
 			case GENERIC_CITY_OBJECT:
