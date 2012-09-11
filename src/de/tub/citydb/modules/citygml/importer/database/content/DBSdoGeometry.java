@@ -47,6 +47,7 @@ import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
 import org.citygml4j.model.gml.geometry.primitives.AbstractCurve;
 import org.citygml4j.model.gml.geometry.primitives.AbstractCurveSegment;
 import org.citygml4j.model.gml.geometry.primitives.AbstractGeometricPrimitive;
+import org.citygml4j.model.gml.geometry.primitives.AbstractRing;
 import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
 import org.citygml4j.model.gml.geometry.primitives.ControlPoint;
 import org.citygml4j.model.gml.geometry.primitives.Curve;
@@ -73,13 +74,13 @@ import de.tub.citydb.util.Util;
 public class DBSdoGeometry implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 	private final DBImporterManager dbImporterManager;
-	
+
 	private int dbSrid;
 	private boolean affineTransformation;
-	
+
 	public DBSdoGeometry(Config config, DBImporterManager dbImporterManager) {
 		this.dbImporterManager = dbImporterManager;
-		
+
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().getSrid();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 	}
@@ -94,9 +95,9 @@ public class DBSdoGeometry implements DBImporter {
 			if (values != null && !values.isEmpty()) {
 				if (affineTransformation)
 					dbImporterManager.getAffineTransformer().transformCoordinates(values);
-				
+
 				double[] coords = new double[values.size()];
-				
+
 				int i = 0;
 				for (Double value : values)
 					coords[i++] = value.doubleValue();
@@ -132,7 +133,7 @@ public class DBSdoGeometry implements DBImporter {
 				for (List<Double> coordsList : pointList) {
 					if (affineTransformation)
 						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
-					
+
 					double[] coords = new double[3];
 
 					coords[0] = coordsList.get(0).doubleValue();
@@ -181,7 +182,7 @@ public class DBSdoGeometry implements DBImporter {
 				for (List<Double> coordsList : pointList) {
 					if (affineTransformation)
 						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
-					
+
 					double[] coords = new double[3];
 
 					coords[0] = coordsList.get(0).doubleValue();
@@ -226,7 +227,7 @@ public class DBSdoGeometry implements DBImporter {
 					for (List<Double> coordsList : pointList) {
 						if (affineTransformation)
 							dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
-						
+
 						double[] coords = new double[coordsList.size()];
 
 						int j = 0;
@@ -274,7 +275,7 @@ public class DBSdoGeometry implements DBImporter {
 				for (List<Double> coordsList : pointList) {
 					if (affineTransformation)
 						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
-					
+
 					double[] coords = new double[coordsList.size()];
 
 					int j = 0;
@@ -378,7 +379,7 @@ public class DBSdoGeometry implements DBImporter {
 				for (List<Double> coordsList : pointList) {
 					if (affineTransformation)
 						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
-					
+
 					double[] coords = new double[coordsList.size()];
 
 					int j = 0;
@@ -398,11 +399,11 @@ public class DBSdoGeometry implements DBImporter {
 	public JGeometry get2DPolygon(PolygonProperty polygonProperty) {
 		return getPolygon(polygonProperty, true);
 	}
-	
+
 	public JGeometry getPolygon(PolygonProperty polygonProperty) {
 		return getPolygon(polygonProperty, false);
 	}
-	
+
 	private JGeometry getPolygon(PolygonProperty polygonProperty, boolean is2d) {
 		JGeometry polygonGeom = null;
 
@@ -411,10 +412,10 @@ public class DBSdoGeometry implements DBImporter {
 
 			// exterior
 			if (polygon.isSetExterior()) {
-				LinearRing exteriorLinearRing = (LinearRing)polygon.getExterior().getRing();
 				List<List<Double>> pointList = new ArrayList<List<Double>>();
-
-				if (exteriorLinearRing != null) {
+				AbstractRing exteriorAbstractRing = polygon.getExterior().getRing();
+				if (exteriorAbstractRing instanceof LinearRing) {
+					LinearRing exteriorLinearRing = (LinearRing)exteriorAbstractRing;
 					List<Double> points = ((LinearRingImpl)exteriorLinearRing).toList3d();
 
 					if (points != null && !points.isEmpty()) {
@@ -422,7 +423,7 @@ public class DBSdoGeometry implements DBImporter {
 						Double y = points.get(1);
 						Double z = points.get(2);
 						int nrOfPoints = points.size();
-						
+
 						if (!x.equals(points.get(nrOfPoints - 3)) ||
 								!y.equals(points.get(nrOfPoints - 2)) ||
 								!z.equals(points.get(nrOfPoints - 1))) {
@@ -432,13 +433,13 @@ public class DBSdoGeometry implements DBImporter {
 									polygon.getId()));
 							msg.append(": Exterior ring is not closed. Appending first coordinate to fix it.");
 							LOG.warn(msg.toString());
-							
+
 							points.add(x);
 							points.add(y);
 							points.add(z);
 							++nrOfPoints;
 						}
-						
+
 						if (nrOfPoints < 4) {
 							// invalid ring...
 							StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
@@ -448,54 +449,56 @@ public class DBSdoGeometry implements DBImporter {
 							LOG.error(msg.toString());
 							return null;
 						}
-						
+
 						if (affineTransformation)
 							dbImporterManager.getAffineTransformer().transformCoordinates(points);
-						
+
 						pointList.add(points);
 
-						if (polygon.getInterior() != null) {
-							List<AbstractRingProperty> abstractRingPropertyList = polygon.getInterior();
-							for (AbstractRingProperty abstractRingProperty : abstractRingPropertyList) {
-								LinearRing interiorLinearRing = (LinearRing)abstractRingProperty.getRing();
-								List<Double> interiorPoints = ((LinearRingImpl)interiorLinearRing).toList3d();
+						if (polygon.isSetInterior()) {
+							for (AbstractRingProperty abstractRingProperty : polygon.getInterior()) {
+								AbstractRing interiorAbstractRing = abstractRingProperty.getRing();
+								if (interiorAbstractRing instanceof LinearRing) {
+									LinearRing interiorLinearRing = (LinearRing)interiorAbstractRing;
+									List<Double> interiorPoints = ((LinearRingImpl)interiorLinearRing).toList3d();
 
-								if (interiorPoints != null && !interiorPoints.isEmpty()) {
-									x = interiorPoints.get(0);
-									y = interiorPoints.get(1);
-									z = interiorPoints.get(2);
-									nrOfPoints = interiorPoints.size();
-									
-									if (!x.equals(interiorPoints.get(nrOfPoints - 3)) ||
-											!y.equals(interiorPoints.get(nrOfPoints - 2)) ||
-											!z.equals(interiorPoints.get(nrOfPoints - 1))) {
-										// repair unclosed ring because sdoapi fails to do its job...
-										StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
-												interiorLinearRing.getGMLClass(), 
-												polygon.getId()));
-										msg.append(": Interior ring is not closed. Appending first coordinate to fix it.");
-										LOG.warn(msg.toString());
-										
-										interiorPoints.add(x);
-										interiorPoints.add(y);
-										interiorPoints.add(z);
-										++nrOfPoints;
-									}	
-									
-									if (nrOfPoints < 4) {
-										// invalid ring...
-										StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
-												interiorLinearRing.getGMLClass(), 
-												polygon.getId()));
-										msg.append(": Interior ring contains less than 4 coordinates. Skipping invalid ring.");
-										LOG.error(msg.toString());
-										return null;
+									if (interiorPoints != null && !interiorPoints.isEmpty()) {
+										x = interiorPoints.get(0);
+										y = interiorPoints.get(1);
+										z = interiorPoints.get(2);
+										nrOfPoints = interiorPoints.size();
+
+										if (!x.equals(interiorPoints.get(nrOfPoints - 3)) ||
+												!y.equals(interiorPoints.get(nrOfPoints - 2)) ||
+												!z.equals(interiorPoints.get(nrOfPoints - 1))) {
+											// repair unclosed ring because sdoapi fails to do its job...
+											StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
+													interiorLinearRing.getGMLClass(), 
+													polygon.getId()));
+											msg.append(": Interior ring is not closed. Appending first coordinate to fix it.");
+											LOG.warn(msg.toString());
+
+											interiorPoints.add(x);
+											interiorPoints.add(y);
+											interiorPoints.add(z);
+											++nrOfPoints;
+										}	
+
+										if (nrOfPoints < 4) {
+											// invalid ring...
+											StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
+													interiorLinearRing.getGMLClass(), 
+													polygon.getId()));
+											msg.append(": Interior ring contains less than 4 coordinates. Skipping invalid ring.");
+											LOG.error(msg.toString());
+											return null;
+										}
+
+										if (affineTransformation)
+											dbImporterManager.getAffineTransformer().transformCoordinates(interiorPoints);
+
+										pointList.add(interiorPoints);			
 									}
-									
-									if (affineTransformation)
-										dbImporterManager.getAffineTransformer().transformCoordinates(interiorPoints);
-									
-									pointList.add(interiorPoints);			
 								}
 							}
 						}
@@ -505,17 +508,17 @@ public class DBSdoGeometry implements DBImporter {
 				if (!pointList.isEmpty()) {
 					Object[] pointArray = new Object[pointList.size()];
 					int dim = is2d ? 2 : 3;
-					
+
 					// if we have to return a 2d polygon we first have to correct the
 					// double lists we retrieved from citygml4j as they are always 3d
 					if (is2d) {
 						for (List<Double> coordsList : pointList) {							
 							Iterator<Double> iter = coordsList.iterator();
-							
+
 							int count = 0;							
 							while (iter.hasNext()) {
 								iter.next();
-								
+
 								if (count++ == 2) {
 									count = 0;	
 									iter.remove();
@@ -523,7 +526,7 @@ public class DBSdoGeometry implements DBImporter {
 							}
 						}						
 					}					
-					
+
 					int i = 0;
 					for (List<Double> coordsList : pointList) {
 						double[] coords = new double[coordsList.size()];
@@ -542,7 +545,7 @@ public class DBSdoGeometry implements DBImporter {
 
 		return polygonGeom;
 	}
-	
+
 	@Override
 	public void executeBatch() throws SQLException {
 		// nothing to do here

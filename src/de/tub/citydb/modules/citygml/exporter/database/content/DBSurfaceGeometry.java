@@ -124,7 +124,7 @@ public class DBSurfaceGeometry implements DBExporter {
 				commitAfter = commitAfterProp;
 
 			psImportGmlId = tempTable.getConnection().prepareStatement(
-					"insert first when (select SURFACE_GEOMETRY_ID from TEXTUREPARAM where SURFACE_GEOMETRY_ID = ?) is not null " +
+					"insert first when (select distinct SURFACE_GEOMETRY_ID from TEXTUREPARAM where SURFACE_GEOMETRY_ID = ?) is not null " +
 							" then into " + tempTable.getTableName() +
 							" select ?, ? from dual "
 					);

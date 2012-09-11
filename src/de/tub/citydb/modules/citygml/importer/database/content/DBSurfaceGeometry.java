@@ -131,8 +131,27 @@ public class DBSurfaceGeometry implements DBImporter {
 	}
 
 	public long insert(AbstractGeometry surfaceGeometry, long cityObjectId) throws SQLException {
+		switch (surfaceGeometry.getGMLClass()) {
+		case LINEAR_RING:
+		case POLYGON:
+		case ORIENTABLE_SURFACE:
+		case _TEXTURED_SURFACE:
+		case COMPOSITE_SURFACE:
+		case SURFACE:
+		case TRIANGULATED_SURFACE:
+		case TIN:
+		case SOLID:
+		case COMPOSITE_SOLID:
+		case MULTI_POLYGON:
+		case MULTI_SURFACE:
+		case MULTI_SOLID:
+		case GEOMETRIC_COMPLEX:
+			break;
+		default:
+			return 0;
+		}
+		
 		long surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
-
 		if (surfaceGeometryId != 0)
 			insert(surfaceGeometry, surfaceGeometryId, 0, surfaceGeometryId, false, false, false, cityObjectId);
 
@@ -918,7 +937,7 @@ public class DBSurfaceGeometry implements DBImporter {
 		}
 
 		// CompositeSolid
-		else if (surfaceGeometryType ==GMLClass.COMPOSITE_SOLID) {
+		else if (surfaceGeometryType == GMLClass.COMPOSITE_SOLID) {
 			CompositeSolid compositeSolid = (CompositeSolid)surfaceGeometry;
 
 			if (origGmlId != null && !isCopy)
