@@ -748,8 +748,7 @@ public class Queries {
 			   "svo.lod<LoD>_implicit_transformation, svo.lod<LoD>_geometry_id " +
 		"FROM CITYOBJECT co, SOLITARY_VEGETAT_OBJECT svo " + 
 		"LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = svo.lod<LoD>_implicit_rep_id " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
+		"WHERE co.gmlid = ? " +
 			"AND svo.id = co.id";
 
     public static String getSolitaryVegetationObjectBasisData (int lodToExportFrom) {
@@ -790,15 +789,13 @@ public class Queries {
 		"WHERE sg.root_id IN ( " +
 			"SELECT ig.relative_geometry_id " + 
 			"FROM CITYOBJECT co, SOLITARY_VEGETAT_OBJECT svo, IMPLICIT_GEOMETRY ig " + 
-			"WHERE " +  
-				"co.gmlid = ? " +
+			"WHERE co.gmlid = ? " +
 				"AND svo.id = co.id " +
 				"AND ig.id = svo.lod<LoD>_implicit_rep_id " +
 			"UNION " +
 			"SELECT svo.lod<LoD>_geometry_id " +
 			"FROM CITYOBJECT co, SOLITARY_VEGETAT_OBJECT svo " + 
-			"WHERE " +  
-				"co.gmlid = ? " +
+			"WHERE co.gmlid = ? " +
 				"AND svo.id = co.id) " +
 		"AND sg.geometry IS NOT NULL";
 
@@ -856,8 +853,7 @@ public class Queries {
 			   "gco.lod<LoD>_implicit_transformation, gco.lod<LoD>_geometry_id " +
 		"FROM CITYOBJECT co, GENERIC_CITYOBJECT gco " +
 		"LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = gco.lod<LoD>_implicit_rep_id " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
+		"WHERE co.gmlid = ? " +
 			"AND gco.id = co.id";
 
     public static String getGenericCityObjectBasisData (int lodToExportFrom) {
@@ -898,20 +894,82 @@ public class Queries {
 		"WHERE sg.root_id IN ( " +
 			"SELECT ig.relative_geometry_id " + 
 			"FROM CITYOBJECT co, GENERIC_CITYOBJECT gco, IMPLICIT_GEOMETRY ig " + 
-			"WHERE " +  
-				"co.gmlid = ? " +
+			"WHERE co.gmlid = ? " +
 				"AND gco.id = co.id " +
 				"AND ig.id = gco.lod<LoD>_implicit_rep_id " +
 			"UNION " +
 			"SELECT gco.lod<LoD>_geometry_id " +
 			"FROM CITYOBJECT co, GENERIC_CITYOBJECT gco " + 
-			"WHERE " +  
-				"co.gmlid = ? " +
+			"WHERE co.gmlid = ? " +
 				"AND gco.id = co.id) " +
 		"AND sg.geometry IS NOT NULL";
 
     public static String getGenericCityObjectHighlightingQuery (int lodToExportFrom) {
     	return GENERIC_CITYOBJECT_GEOMETRY_HIGHLIGHTING.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
+	// ----------------------------------------------------------------------
+	// CITY FURNITURE QUERIES
+	// ----------------------------------------------------------------------
+	
+	private static final String CITY_FURNITURE_BASIS_DATA =
+		"SELECT ig.relative_geometry_id, cf.lod<LoD>_implicit_ref_point, " +
+			   "cf.lod<LoD>_implicit_transformation, cf.lod<LoD>_geometry_id " +
+		"FROM CITYOBJECT co, CITY_FURNITURE cf " + 
+		"LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = cf.lod<LoD>_implicit_rep_id " + 
+		"WHERE co.gmlid = ? " +
+			"AND cf.id = co.id";
+
+    public static String getCityFurnitureBasisData (int lodToExportFrom) {
+    	return CITY_FURNITURE_BASIS_DATA.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
+	private static final String CITY_FURNITURE_FOOTPRINT_EXTRUDED_GEOMETRY =
+		"SELECT sg.geometry, 'Furniture' as type, sg.id " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"WHERE sg.root_id = ? " + 
+		"AND sg.geometry IS NOT NULL";
+	
+	private static final String CITY_FURNITURE_COLLADA_ROOT_IDS =
+		"SELECT ? FROM DUAL "; // dummy
+
+    public static String getCityFurnitureGeometryContents (DisplayForm displayForm) {
+    	String query = null;
+    	switch (displayForm.getForm()) {
+    		case DisplayForm.FOOTPRINT:
+    		case DisplayForm.EXTRUDED:
+    		case DisplayForm.GEOMETRY:
+    			query = CITY_FURNITURE_FOOTPRINT_EXTRUDED_GEOMETRY;
+    	    	break;
+    		case DisplayForm.COLLADA:
+    			query = CITY_FURNITURE_COLLADA_ROOT_IDS;
+    	    	break;
+    	    default:
+    	    	Logger.getInstance().log(LogLevel.INFO, "No city furniture query found");
+    	}
+    	
+//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
+    	return query;
+    }
+
+    private static final String CITY_FURNITURE_GEOMETRY_HIGHLIGHTING =
+		"SELECT sg.geometry, sg.id " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"WHERE sg.root_id IN ( " +
+			"SELECT ig.relative_geometry_id " + 
+			"FROM CITYOBJECT co, CITY_FURNITURE cf, IMPLICIT_GEOMETRY ig " + 
+			"WHERE co.gmlid = ? " +
+				"AND cf.id = co.id " +
+				"AND ig.id = cf.lod<LoD>_implicit_rep_id " +
+			"UNION " +
+			"SELECT cf.lod<LoD>_geometry_id " +
+			"FROM CITYOBJECT co, CITY_FURNITURE cf " + 
+			"WHERE co.gmlid = ? " +
+				"AND cf.id = co.id) " +
+		"AND sg.geometry IS NOT NULL";
+
+    public static String getCityFurnitureHighlightingQuery (int lodToExportFrom) {
+    	return CITY_FURNITURE_GEOMETRY_HIGHLIGHTING.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
 
 }

@@ -73,6 +73,7 @@ public class KmlSplitter {
 					   ExportFilter exportFilter, 
 					   DisplayForm displayForm,
 					   Config config) throws SQLException {
+
 		this.dbWorkerPool = dbWorkerPool;
 		this.exportFilter = exportFilter;
 		this.displayForm = displayForm;
@@ -89,6 +90,9 @@ public class KmlSplitter {
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetGenericCityObject()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.GENERIC_CITY_OBJECT);
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityFurniture()) {
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_FURNITURE);
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityObjectGroup()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);

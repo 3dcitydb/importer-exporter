@@ -84,4 +84,8 @@ public class KmlSplittingResult {
 	public boolean isGenericCityObject() {
 		return getCityObjectType().compareTo(CityGMLClass.GENERIC_CITY_OBJECT) == 0;
 	}
+
+	public boolean isCityFurniture() {
+		return getCityObjectType().compareTo(CityGMLClass.CITY_FURNITURE) == 0;
+	}
 }

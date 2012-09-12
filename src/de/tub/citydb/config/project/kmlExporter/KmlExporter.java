@@ -51,6 +51,9 @@ import de.tub.citydb.config.project.system.System;
 		"vegetationDisplayForms",
 		"vegetationColladaOptions",
 		"vegetationBalloon",
+		"cityFurnitureDisplayForms",
+		"cityFurnitureColladaOptions",
+		"cityFurnitureBalloon",
 		"genericCityObjectDisplayForms",
 		"genericCityObjectColladaOptions",
 		"genericCityObjectBalloon",
@@ -90,6 +93,11 @@ public class KmlExporter {
 	private ColladaOptions vegetationColladaOptions;
 	private Balloon vegetationBalloon;
 	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="cityFurnitureDisplayForms")	
+	private List<DisplayForm> cityFurnitureDisplayForms;
+	private ColladaOptions cityFurnitureColladaOptions;
+	private Balloon cityFurnitureBalloon;
+	@XmlElement(name="displayForm", required=true)
 	@XmlElementWrapper(name="genericCityObjectDisplayForms")	
 	private List<DisplayForm> genericCityObjectDisplayForms;
 	private ColladaOptions genericCityObjectColladaOptions;
@@ -123,16 +131,19 @@ public class KmlExporter {
 		filter = new ExportFilterConfig();
 		lodToExportFrom = 2;
 
-		buildingDisplayForms = new ArrayList<DisplayForm>();
-		buildingColladaOptions = new ColladaOptions();
+		setBuildingDisplayForms(new ArrayList<DisplayForm>());
+		setBuildingColladaOptions(new ColladaOptions());
 		setBuildingBalloon(new Balloon());
-		vegetationDisplayForms = new ArrayList<DisplayForm>();
-		vegetationColladaOptions = new ColladaOptions();
+		setVegetationDisplayForms(new ArrayList<DisplayForm>());
+		setVegetationColladaOptions(new ColladaOptions());
 		setVegetationBalloon(new Balloon());
+		setCityFurnitureDisplayForms(new ArrayList<DisplayForm>());
+		setCityFurnitureColladaOptions(new ColladaOptions());
+		setCityFurnitureBalloon(new Balloon());
 		setGenericCityObjectDisplayForms(new ArrayList<DisplayForm>());
 		setGenericCityObjectColladaOptions(new ColladaOptions());
 		setGenericCityObjectBalloon(new Balloon());
-		cityObjectGroupDisplayForms = new ArrayList<DisplayForm>();
+		setCityObjectGroupDisplayForms(new ArrayList<DisplayForm>());
 		setCityObjectGroupBalloon(new Balloon());
 
 		exportAsKmz = true;
@@ -404,6 +415,32 @@ public class KmlExporter {
 
 	public Balloon getGenericCityObjectBalloon() {
 		return genericCityObjectBalloon;
+	}
+
+	public void setCityFurnitureDisplayForms(
+			List<DisplayForm> cityFurnitureDisplayForms) {
+		this.cityFurnitureDisplayForms = cityFurnitureDisplayForms;
+	}
+
+	public List<DisplayForm> getCityFurnitureDisplayForms() {
+		return cityFurnitureDisplayForms;
+	}
+
+	public void setCityFurnitureColladaOptions(
+			ColladaOptions cityFurnitureColladaOptions) {
+		this.cityFurnitureColladaOptions = cityFurnitureColladaOptions;
+	}
+
+	public ColladaOptions getCityFurnitureColladaOptions() {
+		return cityFurnitureColladaOptions;
+	}
+
+	public void setCityFurnitureBalloon(Balloon cityFurnitureBalloon) {
+		this.cityFurnitureBalloon = cityFurnitureBalloon;
+	}
+
+	public Balloon getCityFurnitureBalloon() {
+		return cityFurnitureBalloon;
 	}
 
 }

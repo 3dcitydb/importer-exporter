@@ -120,6 +120,7 @@ import de.tub.citydb.modules.common.filter.FilterMode;
 import de.tub.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
 import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.database.Building;
+import de.tub.citydb.modules.kml.database.CityFurniture;
 import de.tub.citydb.modules.kml.database.CityObjectGroup;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.GenericCityObject;
@@ -257,6 +258,7 @@ public class KmlExporter implements EventHandler {
 
 		if (!checkBalloonSettings(CityGMLClass.BUILDING)) return false;
 		if (!checkBalloonSettings(CityGMLClass.SOLITARY_VEGETATION_OBJECT)) return false;
+		if (!checkBalloonSettings(CityGMLClass.CITY_FURNITURE)) return false;
 		if (!checkBalloonSettings(CityGMLClass.GENERIC_CITY_OBJECT)) return false;
 		if (!checkBalloonSettings(CityGMLClass.CITY_OBJECT_GROUP)) return false;
 
@@ -413,7 +415,7 @@ public class KmlExporter implements EventHandler {
 						else {
 							document.setName(filename + "_" + displayForm.getName());
 						}
-						document.setOpen(true);
+						document.setOpen(false);
 						kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
 
 						try {
@@ -897,6 +899,11 @@ public class KmlExporter implements EventHandler {
 					 config.getProject().getKmlExporter().getCityObjectGroupDisplayForms(),
 					 CityObjectGroup.STYLE_BASIS_NAME);
 		}
+		if (featureFilter.isSetCityFurniture()) {
+			addStyle(currentDisplayForm,
+					 config.getProject().getKmlExporter().getCityFurnitureDisplayForms(),
+					 CityFurniture.STYLE_BASIS_NAME);
+		}
 		if (featureFilter.isSetGenericCityObject()) {
 			addStyle(currentDisplayForm,
 					 config.getProject().getKmlExporter().getGenericCityObjectDisplayForms(),
@@ -1227,6 +1234,10 @@ public class KmlExporter implements EventHandler {
 				balloonSettings = config.getProject().getKmlExporter().getVegetationBalloon();
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetVegetation();
 				break;
+			case CITY_FURNITURE:
+				balloonSettings = config.getProject().getKmlExporter().getCityFurnitureBalloon();
+				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetCityFurniture();
+				break;
 			case GENERIC_CITY_OBJECT:
 				balloonSettings = config.getProject().getKmlExporter().getGenericCityObjectBalloon();
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetGenericCityObject();
@@ -1277,6 +1288,9 @@ public class KmlExporter implements EventHandler {
 			}
 			else if (kmlExportObject instanceof GenericCityObject) {
 				type = CityGMLClass.GENERIC_CITY_OBJECT;
+			}
+			else if (kmlExportObject instanceof CityFurniture) {
+				type = CityGMLClass.CITY_FURNITURE;
 			}
 
 			Long counter = featureCounterMap.get(type);

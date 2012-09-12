@@ -146,6 +146,36 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("LOD4_GEOMETRY_ID");
 	}};
 
+	private static final String CITY_FURNITURE_TABLE = "CITY_FURNITURE";
+	private static final LinkedHashSet<String> CITY_FURNITURE_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("CLASS");
+		add("FUNCTION");
+		add("LOD1_TERRAIN_INTERSECTION");
+		add("LOD2_TERRAIN_INTERSECTION");
+		add("LOD3_TERRAIN_INTERSECTION");
+		add("LOD4_TERRAIN_INTERSECTION");
+		add("LOD1_GEOMETRY_ID");
+		add("LOD2_GEOMETRY_ID");
+		add("LOD3_GEOMETRY_ID");
+		add("LOD4_GEOMETRY_ID");
+		add("LOD1_IMPLICIT_REP_ID");
+		add("LOD2_IMPLICIT_REP_ID");
+		add("LOD3_IMPLICIT_REP_ID");
+		add("LOD4_IMPLICIT_REP_ID");
+		add("LOD1_IMPLICIT_REF_POINT");
+		add("LOD2_IMPLICIT_REF_POINT");
+		add("LOD3_IMPLICIT_REF_POINT");
+		add("LOD4_IMPLICIT_REF_POINT");
+		add("LOD1_IMPLICIT_TRANSFORMATION");
+		add("LOD2_IMPLICIT_TRANSFORMATION");
+		add("LOD3_IMPLICIT_TRANSFORMATION");
+		add("LOD4_IMPLICIT_TRANSFORMATION");
+	}};
+
 	private static final String CITYMODEL_TABLE = "CITYMODEL";
 	private static final LinkedHashSet<String> CITYMODEL_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
@@ -483,20 +513,21 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static HashMap<String, Set<String>> _3DCITYDB_TABLES_AND_COLUMNS = new HashMap<String, Set<String>>() {{
 		put(ADDRESS_TABLE, ADDRESS_COLUMNS);
 		put(ADDRESS_TO_BUILDING_TABLE, ADDRESS_TO_BUILDING_COLUMNS);
-		put(APPEAR_TO_SURFACE_DATA_TABLE,APPEAR_TO_SURFACE_DATA_COLUMNS);
+		put(APPEAR_TO_SURFACE_DATA_TABLE, APPEAR_TO_SURFACE_DATA_COLUMNS);
 		put(APPEARANCE_TABLE, APPEARANCE_COLUMNS);
 		put(BUILDING_TABLE, BUILDING_COLUMNS);
-		put(BUILDING_INSTALLATION_TABLE,BUILDING_INSTALLATION_COLUMNS);
-		put(CITYMODEL_TABLE,CITYMODEL_COLUMNS);
+		put(BUILDING_INSTALLATION_TABLE, BUILDING_INSTALLATION_COLUMNS);
+		put(CITY_FURNITURE_TABLE, CITY_FURNITURE_COLUMNS);
+		put(CITYMODEL_TABLE, CITYMODEL_COLUMNS);
 		put(CITYOBJECT_TABLE, CITYOBJECT_COLUMNS);
-		put(CITYOBJECT_GENERICATTRIB_TABLE,CITYOBJECT_GENERICATTRIB_COLUMNS);
+		put(CITYOBJECT_GENERICATTRIB_TABLE, CITYOBJECT_GENERICATTRIB_COLUMNS);
 		put(CITYOBJECTGROUP_TABLE, CITYOBJECTGROUP_COLUMNS);
-		put(CITYOBJECT_MEMBER_TABLE,CITYOBJECT_MEMBER_COLUMNS);
+		put(CITYOBJECT_MEMBER_TABLE, CITYOBJECT_MEMBER_COLUMNS);
 		put(COLLECT_GEOM_TABLE, COLLECT_GEOM_COLUMNS);
 		put(DATABASE_SRS_TABLE, DATABASE_SRS_COLUMNS);
-		put(EXTERNAL_REFERENCE_TABLE,EXTERNAL_REFERENCE_COLUMNS);
-		put(GENERALIZATION_TABLE,GENERALIZATION_COLUMNS);
-		put(GENERIC_CITYOBJECT_TABLE,GENERIC_CITYOBJECT_COLUMNS);
+		put(EXTERNAL_REFERENCE_TABLE, EXTERNAL_REFERENCE_COLUMNS);
+		put(GENERALIZATION_TABLE, GENERALIZATION_COLUMNS);
+		put(GENERIC_CITYOBJECT_TABLE, GENERIC_CITYOBJECT_COLUMNS);
 		put(GROUP_TO_CITYOBJECT_TABLE, GROUP_TO_CITYOBJECT_COLUMNS);
 		put(OBJECTCLASS_TABLE, OBJECTCLASS_COLUMNS);
 		put(OPENING_TABLE, OPENING_COLUMNS);
@@ -505,10 +536,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(ROOM_TABLE, ROOM_COLUMNS);
 		put(SOLITARY_VEGETAT_OBJECT_TABLE, SOLITARY_VEGETAT_OBJECT_COLUMNS);
 		put(SPECIAL_KEYWORDS, SPECIAL_KEYWORDS_SET);
-		put(SURFACE_DATA_TABLE,SURFACE_DATA_COLUMNS);
+		put(SURFACE_DATA_TABLE, SURFACE_DATA_COLUMNS);
 		put(SURFACE_GEOMETRY_TABLE, SURFACE_GEOMETRY_COLUMNS);
-		put(TEXTUREPARAM_TABLE,TEXTUREPARAM_COLUMNS);
-		put(THEMATIC_SURFACE_TABLE,THEMATIC_SURFACE_COLUMNS);
+		put(TEXTUREPARAM_TABLE, TEXTUREPARAM_COLUMNS);
+		put(THEMATIC_SURFACE_TABLE, THEMATIC_SURFACE_COLUMNS);
 	}};
 
 	public HashMap<String, Set<String>> getSupportedTablesAndColumns() {
@@ -1118,6 +1149,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 
 			switch (cityGMLClassForBalloonHandler) {
+				case CITY_FURNITURE:
+					sqlStatement = sqlStatementForCityFurniture(table, columns, aggregateString, aggregateClosingString, lod);
+					break;
 				case PLANT_COVER:
 					sqlStatement = sqlStatementForPlantCover(table, columns, aggregateString, aggregateClosingString, lod);
 					break;
@@ -1435,7 +1469,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							   " AND gco.id = co.id" +
 							   " AND ig.id = gco.lod" + lod + "_implicit_rep_id" +
 							   " UNION " +
-							   "SELECT svo.lod" + lod + "_geometry_id" +
+							   "SELECT gco.lod" + lod + "_geometry_id" +
 							   " FROM CITYOBJECT co, GENERIC_CITYOBJECT gco" + 
 							   " WHERE co.gmlid = ?" +
 							   " AND gco.id = co.id)" +
@@ -1458,6 +1492,69 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							   " FROM CITYOBJECT co, GENERIC_CITYOBJECT gco" + 
 							   " WHERE co.gmlid = ?" +
 							   " AND gco.id = co.id)" +
+							   " AND sg.geometry IS NOT NULL)";
+			}
+			else {
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
+			}
+
+			return sqlStatement; 
+		}
+
+		private String sqlStatementForCityFurniture(String table,
+				 									List<String> columns,
+				 									String aggregateString,
+				 									String aggregateClosingString,
+				 									int lod) throws Exception {
+			String sqlStatement = null;
+
+			if (CITY_FURNITURE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+				               " FROM CITYOBJECT co, CITY_FURNITURE cf" +
+				               " WHERE co.gmlid = ?" +
+				               " AND cf.id = co.id";
+			}
+			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
+							   " WHERE co.gmlid = ?" +
+							   " AND a.cityobject_id = co.id" +
+							   " AND a2sd.appearance_id = a.id" +
+							   " AND sd.id = a2sd.surface_data_id";
+			}
+			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM SURFACE_GEOMETRY sg" +
+							   " WHERE sg.root_id IN" +
+							   " (SELECT ig.relative_geometry_id" + 
+							   " FROM CITYOBJECT co, CITY_FURNITURE cf, IMPLICIT_GEOMETRY ig" + 
+							   " WHERE co.gmlid = ?" +
+							   " AND cf.id = co.id" +
+							   " AND ig.id = cf.lod" + lod + "_implicit_rep_id" +
+							   " UNION " +
+							   "SELECT cf.lod" + lod + "_geometry_id" +
+							   " FROM CITYOBJECT co, CITY_FURNITURE cf" + 
+							   " WHERE co.gmlid = ?" +
+							   " AND cf.id = co.id)" +
+							   " AND sg.geometry IS NOT NULL";
+			}
+			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM TEXTUREPARAM tp" +
+							   " WHERE tp.surface_geometry_id IN" +
+							   " (SELECT sg.id" + 
+							   " FROM SURFACE_GEOMETRY sg" +
+							   " WHERE sg.root_id IN" +
+							   " (SELECT ig.relative_geometry_id" + 
+							   " FROM CITYOBJECT co, CITY_FURNITURE cf, IMPLICIT_GEOMETRY ig" + 
+							   " WHERE co.gmlid = ?" +
+							   " AND cf.id = co.id" +
+							   " AND ig.id = cf.lod" + lod + "_implicit_rep_id" +
+							   " UNION " +
+							   "SELECT cf.lod" + lod + "_geometry_id" +
+							   " FROM CITYOBJECT co, CITY_FURNITURE cf" + 
+							   " WHERE co.gmlid = ?" +
+							   " AND cf.id = co.id)" +
 							   " AND sg.geometry IS NOT NULL)";
 			}
 			else {
@@ -1592,6 +1689,17 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 			else if (BUILDING_INSTALLATION_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "bi";
+			}
+			else if (CITY_FURNITURE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "cf";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD1_TERRAIN_INTERSECTION") &&
+										!columns.get(0).equals("LOD2_TERRAIN_INTERSECTION") &&
+										!columns.get(0).equals("LOD3_TERRAIN_INTERSECTION") &&
+										!columns.get(0).equals("LOD4_TERRAIN_INTERSECTION") &&
+										!columns.get(0).equals("LOD1_IMPLICIT_REF_POINT") &&
+										!columns.get(0).equals("LOD2_IMPLICIT_REF_POINT") &&
+										!columns.get(0).equals("LOD3_IMPLICIT_REF_POINT") &&
+										!columns.get(0).equals("LOD4_IMPLICIT_REF_POINT"));
 			}
 			else if (CITYMODEL_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "cm";

@@ -58,6 +58,7 @@ import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.database.Building;
+import de.tub.citydb.modules.kml.database.CityFurniture;
 import de.tub.citydb.modules.kml.database.CityObjectGroup;
 import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.ElevationServiceHandler;
@@ -148,6 +149,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			objectGroupSize.put(CityGMLClass.GENERIC_CITY_OBJECT, colladaOptions.isGroupObjects() ? 
 																  colladaOptions.getGroupSize(): 1);
 			objectGroup.put(CityGMLClass.GENERIC_CITY_OBJECT, null);
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityFurniture()) {
+			objectGroupCounter.put(CityGMLClass.CITY_FURNITURE, 0);
+			colladaOptions = config.getProject().getKmlExporter().getCityFurnitureColladaOptions();
+			objectGroupSize.put(CityGMLClass.CITY_FURNITURE, colladaOptions.isGroupObjects() ? 
+															 colladaOptions.getGroupSize(): 1);
+			objectGroup.put(CityGMLClass.CITY_FURNITURE, null);
 		}
 		// CityGMLClass.CITY_OBJECT_GROUP is left out, it does not make sense to group it without COLLADA DisplayForm 
 	}
@@ -288,6 +296,17 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												   	   	 config);
 					break;
 
+				case CITY_FURNITURE:
+					singleObject = new CityFurniture(connection,
+												   	 kmlExporterManager,
+												   	 cityGMLFactory,
+											   	   	 kmlFactory,
+											   	   	 elevationServiceHandler,
+											   	   	 getBalloonTemplateHandler(featureClass),
+											   	   	 eventDispatcher,
+											   	   	 config);
+					break;
+
 				case CITY_OBJECT_GROUP:
 					singleObject = new CityObjectGroup(connection,
 												   	   kmlExporterManager,
@@ -397,6 +416,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				break;
 			case GENERIC_CITY_OBJECT:
 				balloonSettings = config.getProject().getKmlExporter().getGenericCityObjectBalloon();
+				break;
+			case CITY_FURNITURE:
+				balloonSettings = config.getProject().getKmlExporter().getCityFurnitureBalloon();
 				break;
 			case CITY_OBJECT_GROUP:
 				balloonSettings = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
