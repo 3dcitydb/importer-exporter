@@ -34,6 +34,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import oracle.spatial.geometry.JGeometry;
@@ -54,16 +55,19 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.config.Config;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
 
 public class DBGenericCityObject implements DBExporter {
+	private final Logger LOG = Logger.getInstance();
 	private final DBExporterManager dbExporterManager;
 	private final Config config;
 	private final Connection connection;
 
 	private PreparedStatement psGenericCityObject;
+	private PreparedStatement psGenericGeometryAttribute;
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
@@ -87,9 +91,10 @@ public class DBGenericCityObject implements DBExporter {
 
 		if (!transformCoords) {
 			psGenericCityObject = connection.prepareStatement("select * from GENERIC_CITYOBJECT where ID = ?");
+			psGenericGeometryAttribute = connection.prepareStatement("select ATTRNAME, GEOMVAL from CITYOBJECT_GENERICATTRIB where CITYOBJECT_ID = ? and DATATYPE = 6");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			
+
 			psGenericCityObject = connection.prepareStatement("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
 					"geodb_util.transform_or_null(LOD0_TERRAIN_INTERSECTION, " + srid + ") AS LOD0_TERRAIN_INTERSECTION, " +
 					"geodb_util.transform_or_null(LOD1_TERRAIN_INTERSECTION, " + srid + ") AS LOD1_TERRAIN_INTERSECTION, " +
@@ -103,9 +108,11 @@ public class DBGenericCityObject implements DBExporter {
 					"geodb_util.transform_or_null(LOD2_IMPLICIT_REF_POINT, " + srid + ") AS LOD2_IMPLICIT_REF_POINT, " +
 					"geodb_util.transform_or_null(LOD3_IMPLICIT_REF_POINT, " + srid + ") AS LOD3_IMPLICIT_REF_POINT, " +
 					"geodb_util.transform_or_null(LOD4_IMPLICIT_REF_POINT, " + srid + ") AS LOD4_IMPLICIT_REF_POINT, " +
-			"LOD0_IMPLICIT_TRANSFORMATION, LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION from GENERIC_CITYOBJECT where ID = ?");					
+					"LOD0_IMPLICIT_TRANSFORMATION, LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION from GENERIC_CITYOBJECT where ID = ?");					
+
+			psGenericGeometryAttribute = connection.prepareStatement("select ATTRNAME, geodb_util.transform_or_null(GEOMVAL, " + srid + ") AS GEOMVAL from CITYOBJECT_GENERICATTRIB where CITYOBJECT_ID = ? and DATATYPE = 6");
 		}
-		
+
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 		implicitGeometryExporter = (DBImplicitGeometry)dbExporterManager.getDBExporter(DBExporterEnum.IMPLICIT_GEOMETRY);
@@ -266,6 +273,82 @@ public class DBGenericCityObject implements DBExporter {
 				}
 			}
 
+			rs.close();
+
+			// read point or curve geometries from generic attributes
+			psGenericGeometryAttribute.setLong(1, genericCityObjectId);
+			rs = psGenericGeometryAttribute.executeQuery();
+
+			while (rs.next()) {
+				String attributeName = rs.getString("ATTRNAME");
+				if (!rs.wasNull() && attributeName != null) {
+					Pattern p = Pattern.compile("^LOD[0-4]_Geometry$", Pattern.CASE_INSENSITIVE);
+					Matcher m = p.matcher(attributeName);
+					if (m.find()) {
+						int lod = Integer.parseInt(attributeName.substring(3, 4));
+						boolean hasGeometry = false;
+
+						switch (lod) {
+						case 0:
+							hasGeometry = genericCityObject.isSetLod0Geometry();
+							break;
+						case 1:
+							hasGeometry = genericCityObject.isSetLod1Geometry();
+							break;
+						case 2:
+							hasGeometry = genericCityObject.isSetLod2Geometry();
+							break;
+						case 3:
+							hasGeometry = genericCityObject.isSetLod3Geometry();
+							break;
+						case 4:
+							hasGeometry = genericCityObject.isSetLod4Geometry();
+							break;
+						}
+
+						if (!hasGeometry) {
+							STRUCT struct = (STRUCT)rs.getObject("GEOMVAL");
+							if (!rs.wasNull() && struct != null) {
+								JGeometry geom = JGeometry.load(struct);
+								GeometryProperty<? extends AbstractGeometry> property = sdoGeometry.getPointOrCurveGeometryProperty(geom, false);
+								if (property != null) {
+									switch (lod) {
+									case 0:
+										genericCityObject.setLod0Geometry(property);
+										break;
+									case 1:
+										genericCityObject.setLod1Geometry(property);
+										break;
+									case 2:
+										genericCityObject.setLod2Geometry(property);
+										break;
+									case 3:
+										genericCityObject.setLod3Geometry(property);
+										break;
+									case 4:
+										genericCityObject.setLod4Geometry(property);
+										break;
+									}
+								}
+							}
+						} else {
+							StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+									genericCityObject.getCityGMLClass(), 
+									genericCityObject.getId()));
+							msg.append(": Found multiple geometries for LOD").append(lod).append('.');
+							LOG.error(msg.toString());
+						}
+
+					} else {
+						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+								genericCityObject.getCityGMLClass(), 
+								genericCityObject.getId()));
+						msg.append(": Failed to interpret generic geometry attribute '").append(attributeName).append("'.");
+						LOG.error(msg.toString());
+					}
+				}
+			}
+
 			if (genericCityObject.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
 				dbExporterManager.putGmlId(genericCityObject.getId(), genericCityObjectId, genericCityObject.getCityGMLClass());
 			dbExporterManager.print(genericCityObject);
@@ -279,6 +362,7 @@ public class DBGenericCityObject implements DBExporter {
 	@Override
 	public void close() throws SQLException {
 		psGenericCityObject.close();
+		psGenericGeometryAttribute.close();
 	}
 
 	@Override

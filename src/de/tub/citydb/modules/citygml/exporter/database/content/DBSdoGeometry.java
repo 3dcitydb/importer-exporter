@@ -35,6 +35,7 @@ import java.util.List;
 
 import oracle.spatial.geometry.JGeometry;
 
+import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.impl.gml.geometry.aggregates.MultiCurveImpl;
 import org.citygml4j.impl.gml.geometry.aggregates.MultiCurvePropertyImpl;
 import org.citygml4j.impl.gml.geometry.aggregates.MultiPointImpl;
@@ -57,6 +58,8 @@ import org.citygml4j.impl.gml.geometry.primitives.PointImpl;
 import org.citygml4j.impl.gml.geometry.primitives.PointPropertyImpl;
 import org.citygml4j.impl.gml.geometry.primitives.PolygonImpl;
 import org.citygml4j.impl.gml.geometry.primitives.PolygonPropertyImpl;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPoint;
@@ -89,17 +92,15 @@ public class DBSdoGeometry implements DBExporter {
 		gmlSrsName = config.getInternal().getExportTargetSRS().getGMLSrsName();
 	}
 
-	public PointProperty getPoint(JGeometry geom, boolean setSrsName) {
-		PointProperty pointProperty = null;
+	public Point getPoint(JGeometry geom, boolean setSrsName) {
+		Point point = null;
 
 		if (geom != null && geom.getType() == JGeometry.GTYPE_POINT) {
-			pointProperty = new PointPropertyImpl();
 			int dimensions = geom.getDimensions();
-
 			double[] pointCoord = geom.getPoint();
 
 			if (pointCoord != null && pointCoord.length >= dimensions) {
-				Point point = new PointImpl();
+				point = new PointImpl();
 
 				List<Double> value = new ArrayList<Double>();
 				for (int i = 0; i < dimensions; i++)
@@ -111,86 +112,29 @@ public class DBSdoGeometry implements DBExporter {
 				if (setSrsName)
 					pos.setSrsName(gmlSrsName);
 				point.setPos(pos);
-
-				pointProperty.setPoint(point);
 			}
+		}
+
+		return point;
+	}
+
+	public PointProperty getPointProperty(JGeometry geom, boolean setSrsName) {
+		PointProperty pointProperty = null;
+
+		Point point = getPoint(geom, setSrsName);
+		if (point != null) {
+			pointProperty = new PointPropertyImpl();
+			pointProperty.setPoint(point);
 		}
 
 		return pointProperty;
 	}
-	
-	public PolygonProperty getPolygon(JGeometry geom, boolean setSrsName) {
-		PolygonProperty polygonProperty = null;
-		
-		if (geom != null && geom.getType() == JGeometry.GTYPE_POLYGON) {
-			polygonProperty = new PolygonPropertyImpl();
-			Polygon polygon = new PolygonImpl();
-			int dimensions = geom.getDimensions();
-			
-			int[] elemInfoArray = geom.getElemInfo();
-			double[] ordinatesArray = geom.getOrdinatesArray();
 
-			if (elemInfoArray.length < 3 || ordinatesArray.length == 0)
-				return null;
-			
-			List<Integer> ringLimits = new ArrayList<Integer>();
-			for (int i = 3; i < elemInfoArray.length; i += 3)
-				ringLimits.add(elemInfoArray[i] - 1);
-
-			ringLimits.add(ordinatesArray.length);
-			
-			boolean isExterior = elemInfoArray[1] == 1003;
-			int ringElem = 0;
-			for (Integer curveLimit : ringLimits) {
-				List<Double> values = new ArrayList<Double>();
-
-				for ( ; ringElem < curveLimit; ringElem++)
-					values.add(ordinatesArray[ringElem]);
-				
-				if (isExterior) {
-					LinearRing linearRing = new LinearRingImpl();
-					DirectPositionList directPositionList = new DirectPositionListImpl();
-
-					directPositionList.setValue(values);
-					directPositionList.setSrsDimension(dimensions);
-					if (setSrsName)
-						directPositionList.setSrsName(gmlSrsName);
-					linearRing.setPosList(directPositionList);				
-
-					Exterior exterior = new ExteriorImpl();
-					exterior.setRing(linearRing);
-					polygon.setExterior(exterior);
-
-					isExterior = false;
-				} else {
-					LinearRing linearRing = new LinearRingImpl();
-					DirectPositionList directPositionList = new DirectPositionListImpl();
-
-					directPositionList.setValue(values);
-					directPositionList.setSrsDimension(dimensions);
-					if (setSrsName)
-						directPositionList.setSrsName(gmlSrsName);
-					linearRing.setPosList(directPositionList);
-
-					Interior interior = new InteriorImpl();
-					interior.setRing(linearRing);
-					polygon.addInterior(interior);
-				}
-			}
-			
-			if (polygon.isSetExterior() || polygon.isSetInterior())
-				polygonProperty.setPolygon(polygon);
-		}
-		
-		return polygonProperty;
-	}
-	
-	public MultiPointProperty getMultiPointProperty(JGeometry geom, boolean setSrsName) {
-		MultiPointProperty multiPointProperty = null;
+	public MultiPoint getMultiPoint(JGeometry geom, boolean setSrsName) {
+		MultiPoint multiPoint = null;
 
 		if (geom != null) {
-			multiPointProperty = new MultiPointPropertyImpl();
-			MultiPoint multiPoint = new MultiPointImpl();
+			multiPoint = new MultiPointImpl();
 			int dimensions = geom.getDimensions();
 
 			if (geom.getType() == JGeometry.GTYPE_MULTIPOINT) {								
@@ -216,96 +160,108 @@ public class DBSdoGeometry implements DBExporter {
 
 					multiPoint.addPointMember(pointProperty);
 				}
-			} else if (geom.getType() == JGeometry.GTYPE_POINT) {
-				double[] pointCoord = geom.getPoint();
+			} 
 
-				if (pointCoord != null && pointCoord.length >= dimensions) {
-					Point point = new PointImpl();
-
-					List<Double> value = new ArrayList<Double>();
-					for (int i = 0; i < dimensions; i++)
-						value.add(pointCoord[i]);
-
-					DirectPosition pos = new DirectPositionImpl();
-					pos.setValue(value);
-					pos.setSrsDimension(dimensions);
-					if (setSrsName)
-						pos.setSrsName(gmlSrsName);
-					point.setPos(pos);
-
+			else if (geom.getType() == JGeometry.GTYPE_POINT) {
+				Point point = getPoint(geom, setSrsName);
+				if (point != null) {
 					PointProperty pointProperty = new PointPropertyImpl();
 					pointProperty.setPoint(point);
-
 					multiPoint.addPointMember(pointProperty);
 				}
 			}
 
-			if (multiPoint.isSetPointMember())
-				multiPointProperty.setMultiPoint(multiPoint);
+			if (!multiPoint.isSetPointMember())
+				multiPoint = null;
 		} 
+
+		return multiPoint;
+	}
+
+	public MultiPointProperty getMultiPointProperty(JGeometry geom, boolean setSrsName) {
+		MultiPointProperty multiPointProperty = null;
+
+		MultiPoint multiPoint = getMultiPoint(geom, setSrsName);
+		if (multiPoint != null) {
+			multiPointProperty = new MultiPointPropertyImpl();
+			multiPointProperty.setMultiPoint(multiPoint);
+		}
 
 		return multiPointProperty;
 	} 
 
 	public ControlPoint getControlPoint(JGeometry geom, boolean setSrsName) {
 		ControlPoint controlPoint = null;
-		
+
 		if (geom != null) {
 			controlPoint = new ControlPointImpl();
-			int dimensions = geom.getDimensions();
-			
-			if (geom.getType() == JGeometry.GTYPE_MULTIPOINT) {								
-				double[] ordinates = geom.getOrdinatesArray();
 
-				for (int i = 0; i < ordinates.length; i += dimensions) {			
-					List<Double> value = new ArrayList<Double>();
-
-					for (int j = 0; j < dimensions; j++)
-						value.add(ordinates[i + j]);
-
-					DirectPosition pos = new DirectPositionImpl();
-					pos.setValue(value);
-					pos.setSrsDimension(dimensions);
-					if (setSrsName)
-						pos.setSrsName(gmlSrsName);
-					
-					GeometricPositionGroup group = new GeometricPositionGroupImpl(pos);
-					controlPoint.addGeometricPositionGroup(group);
+			if (geom.getType() == JGeometry.GTYPE_MULTIPOINT) {	
+				MultiPoint multiPoint = getMultiPoint(geom, setSrsName);
+				if (multiPoint != null) {
+					for (PointProperty pointProperty : multiPoint.getPointMember()) {
+						GeometricPositionGroup group = new GeometricPositionGroupImpl(pointProperty.getPoint().getPos());
+						controlPoint.addGeometricPositionGroup(group);
+					}
 				}
 			}
-			
+
 			else if (geom.getType() == JGeometry.GTYPE_POINT) {
-				double[] pointCoord = geom.getPoint();
-
-				if (pointCoord != null && pointCoord.length >= dimensions) {
-					List<Double> value = new ArrayList<Double>();
-					for (int i = 0; i < dimensions; i++)
-						value.add(pointCoord[i]);
-
-					DirectPosition pos = new DirectPositionImpl();
-					pos.setValue(value);
-					pos.setSrsDimension(dimensions);
-					if (setSrsName)
-						pos.setSrsName(gmlSrsName);
-					
-					GeometricPositionGroup group = new GeometricPositionGroupImpl(pos);
+				Point point = getPoint(geom, setSrsName);
+				if (point != null) {
+					GeometricPositionGroup group = new GeometricPositionGroupImpl(point.getPos());
 					controlPoint.addGeometricPositionGroup(group);
 				}
 			}
-			
+
 			if (!controlPoint.isSetGeometricPositionGroup())
 				controlPoint = null;
 		}
-		
+
 		return controlPoint;
 	}
-	
-	public MultiCurveProperty getMultiCurveProperty(JGeometry geom, boolean setSrsName) {
-		MultiCurveProperty multiCurveProperty = null;
+
+	public LineString getLineString(JGeometry geom, boolean setSrsName) {
+		LineString lineString = null;
+
+		if (geom != null && geom.getType() == JGeometry.GTYPE_CURVE) {
+			int dimensions = geom.getDimensions();
+			double[] ordinatesArray = geom.getOrdinatesArray();
+
+			List<Double> value = new ArrayList<Double>();
+			for (int i = 0; i < ordinatesArray.length; i++)
+				value.add(ordinatesArray[i]);
+
+			lineString = new LineStringImpl();
+			DirectPositionList directPositionList = new DirectPositionListImpl();
+
+			directPositionList.setValue(value);
+			directPositionList.setSrsDimension(dimensions);
+			if (setSrsName)
+				directPositionList.setSrsName(gmlSrsName);
+			lineString.setPosList(directPositionList);			
+		}
+
+		return lineString;
+	}
+
+	public CurveProperty getCurveProperty(JGeometry geom, boolean setSrsName) {
+		CurveProperty curveProperty = null;
+
+		LineString lineString = getLineString(geom, setSrsName);
+		if (lineString != null) {
+			curveProperty = new CurvePropertyImpl();
+			curveProperty.setCurve(lineString);
+		}
+
+		return curveProperty;
+	}
+
+	public MultiCurve getMultiCurve(JGeometry geom, boolean setSrsName) {
+		MultiCurve multiCurve = null;
 
 		if (geom != null) {
-			multiCurveProperty = new MultiCurvePropertyImpl();
-			MultiCurve multiCurve = new MultiCurveImpl();
+			multiCurve = new MultiCurveImpl();
 			int dimensions = geom.getDimensions();
 
 			if (geom.getType() == JGeometry.GTYPE_MULTICURVE) {
@@ -346,177 +302,240 @@ public class DBSdoGeometry implements DBExporter {
 			}
 
 			else if (geom.getType() == JGeometry.GTYPE_CURVE) {
-				double[] ordinatesArray = geom.getOrdinatesArray();
-				List<Double> value = new ArrayList<Double>();
-
-				for (int i = 0; i < ordinatesArray.length; i++)
-					value.add(ordinatesArray[i]);
-
-				LineString lineString = new LineStringImpl();
-				DirectPositionList directPositionList = new DirectPositionListImpl();
-
-				directPositionList.setValue(value);
-				directPositionList.setSrsDimension(dimensions);
-				if (setSrsName)
-					directPositionList.setSrsName(gmlSrsName);
-				lineString.setPosList(directPositionList);
-
-				CurveProperty curveProperty = new CurvePropertyImpl();
-				curveProperty.setCurve(lineString);				
-				multiCurve.addCurveMember(curveProperty);				
+				LineString lineString = getLineString(geom, setSrsName);
+				if (lineString != null) {
+					CurveProperty curveProperty = new CurvePropertyImpl();
+					curveProperty.setCurve(lineString);				
+					multiCurve.addCurveMember(curveProperty);
+				}			
 			}
 
-			if (multiCurve.isSetCurveMember())
-				multiCurveProperty.setMultiCurve(multiCurve);
+			if (!multiCurve.isSetCurveMember())
+				multiCurve = null;
+		}
+
+		return multiCurve;
+	}
+
+	public MultiCurveProperty getMultiCurveProperty(JGeometry geom, boolean setSrsName) {
+		MultiCurveProperty multiCurveProperty = null;
+
+		MultiCurve multiCurve = getMultiCurve(geom, setSrsName);
+		if (multiCurve != null) {
+			multiCurveProperty = new MultiCurvePropertyImpl();
+			multiCurveProperty.setMultiCurve(multiCurve);
 		}
 
 		return multiCurveProperty;
 	}
 
 	public List<LineStringSegmentArrayProperty> getListOfLineStringSegmentArrayProperty(JGeometry geom, boolean setSrsName) {
-		List<LineStringSegmentArrayProperty> arrayPropertyList = new ArrayList<LineStringSegmentArrayProperty>();
-		
+		List<LineStringSegmentArrayProperty> arrayPropertyList = null;
+
 		if (geom != null) {
-			int dimensions = geom.getDimensions();
-			
+			arrayPropertyList = new ArrayList<LineStringSegmentArrayProperty>();
+
 			if (geom.getType() == JGeometry.GTYPE_MULTICURVE) {
-				int[] elemInfoArray = geom.getElemInfo();
-				double[] ordinatesArray = geom.getOrdinatesArray();
+				MultiCurve multiCurve = getMultiCurve(geom, setSrsName);
+				if (multiCurve != null) {
+					for (CurveProperty curveProperty : multiCurve.getCurveMember()) {
+						LineStringSegment lineStringSegment = new LineStringSegmentImpl();
+						lineStringSegment.setPosList(((LineString)curveProperty.getCurve()).getPosList());
 
-				if (elemInfoArray.length < 3 || ordinatesArray.length == 0)
-					return null;
+						LineStringSegmentArrayProperty arrayProperty = new LineStringSegmentArrayPropertyImpl();
+						arrayProperty.addLineStringSegment(lineStringSegment);
+						arrayPropertyList.add(arrayProperty);
+					}
+				}
+			}
 
-				List<Integer> curveLimits = new ArrayList<Integer>();
-				for (int i = 3; i < elemInfoArray.length; i += 3)
-					curveLimits.add(elemInfoArray[i] - 1);
-
-				curveLimits.add(ordinatesArray.length);
-				
-				int curveElem = 0;
-				for (Integer curveLimit : curveLimits) {
-					List<Double> values = new ArrayList<Double>();
-
-					for ( ; curveElem < curveLimit; curveElem++)
-						values.add(ordinatesArray[curveElem]);
-
+			else if (geom.getType() == JGeometry.GTYPE_CURVE) {
+				LineString lineString = getLineString(geom, setSrsName);
+				if (lineString != null) {
 					LineStringSegment lineStringSegment = new LineStringSegmentImpl();
-					DirectPositionList directPositionList = new DirectPositionListImpl();
+					lineStringSegment.setPosList(lineString.getPosList());
 
-					directPositionList.setValue(values);
-					directPositionList.setSrsDimension(dimensions);
-					if (setSrsName)
-						directPositionList.setSrsName(gmlSrsName);
-					lineStringSegment.setPosList(directPositionList);
-					
 					LineStringSegmentArrayProperty arrayProperty = new LineStringSegmentArrayPropertyImpl();
 					arrayProperty.addLineStringSegment(lineStringSegment);
 					arrayPropertyList.add(arrayProperty);
-										
-					curveElem = curveLimit;
+				}			
+			}
+
+			if (arrayPropertyList.isEmpty())
+				arrayPropertyList = null;
+		}
+
+		return arrayPropertyList;
+	}
+
+	public GeometricComplex getPointOrCurveComplex(JGeometry geom, boolean setSrsName) {
+		GeometricComplex complex = null;
+
+		if (geom != null) {
+			complex = new GeometricComplexImpl();
+
+			if (geom.getType() == JGeometry.GTYPE_MULTICURVE) {
+				MultiCurve multiCurve = getMultiCurve(geom, setSrsName);
+				if (multiCurve != null) {
+					for (CurveProperty curveProperty : multiCurve.getCurveMember()) {
+						GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitivePropertyImpl();
+						primitiveProperty.setGeometricPrimitive((LineString)curveProperty.getCurve());					
+						complex.addElement(primitiveProperty);
+					}
 				}
 			}
-			
+
 			else if (geom.getType() == JGeometry.GTYPE_CURVE) {
-				double[] ordinatesArray = geom.getOrdinatesArray();
-				List<Double> value = new ArrayList<Double>();
+				LineString lineString = getLineString(geom, setSrsName);
+				if (lineString != null) {
+					GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitivePropertyImpl();
+					primitiveProperty.setGeometricPrimitive(lineString);					
+					complex.addElement(primitiveProperty);		
+				}			
+			}
 
-				for (int i = 0; i < ordinatesArray.length; i++)
-					value.add(ordinatesArray[i]);
+			else if (geom.getType() == JGeometry.GTYPE_MULTIPOINT) {
+				MultiPoint multiPoint = getMultiPoint(geom, setSrsName);
+				if (multiPoint != null) {
+					for (PointProperty pointProperty : multiPoint.getPointMember()) {
+						GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitivePropertyImpl();
+						primitiveProperty.setGeometricPrimitive(pointProperty.getPoint());					
+						complex.addElement(primitiveProperty);	
+					}
+				}
+			}
 
-				LineStringSegment lineStringSegment = new LineStringSegmentImpl();
-				DirectPositionList directPositionList = new DirectPositionListImpl();
+			else if (geom.getType() == JGeometry.GTYPE_POINT) {
+				Point point = getPoint(geom, setSrsName);
+				if (point != null) {
+					GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitivePropertyImpl();
+					primitiveProperty.setGeometricPrimitive(point);					
+					complex.addElement(primitiveProperty);	
+				}
+			}
 
-				directPositionList.setValue(value);
-				directPositionList.setSrsDimension(dimensions);
-				if (setSrsName)
-					directPositionList.setSrsName(gmlSrsName);
-				lineStringSegment.setPosList(directPositionList);
+			if (!complex.isSetElement())
+				complex = null;
+		}
 
-				LineStringSegmentArrayProperty arrayProperty = new LineStringSegmentArrayPropertyImpl();
-				arrayProperty.addLineStringSegment(lineStringSegment);
-				arrayPropertyList.add(arrayProperty);			
+		return complex;
+	}
+
+	public GeometricComplexProperty getPointOrCurveComplexProperty(JGeometry geom, boolean setSrsName) {
+		GeometricComplexProperty complexProperty = null;
+		
+		GeometricComplex complex = getPointOrCurveComplex(geom, setSrsName);
+		if (complex != null) {
+			complexProperty = new GeometricComplexPropertyImpl();
+			complexProperty.setGeometricComplex(complex);
+		}
+
+		return complexProperty;
+	}
+	
+	public AbstractGeometry getPointOrCurveGeometry(JGeometry geom, boolean setSrsName) {
+		if (geom != null) {
+			switch (geom.getType()) {
+			case JGeometry.GTYPE_MULTICURVE:
+				return getMultiCurve(geom, setSrsName);
+			case JGeometry.GTYPE_CURVE:
+				return getLineString(geom, setSrsName);
+			case JGeometry.GTYPE_MULTIPOINT:
+				return getMultiPoint(geom, setSrsName);
+			case JGeometry.GTYPE_POINT:
+				return getPoint(geom, setSrsName);
 			}
 		}
-				
-		if (!arrayPropertyList.isEmpty())
-			return arrayPropertyList;
-		
+
 		return null;
 	}
 	
-	public GeometricComplexProperty getGeometricComplexPropertyOfCurves(JGeometry geom, boolean setSrsName) {
-		GeometricComplexProperty complexProperty = null;
+	public GeometryProperty<? extends AbstractGeometry> getPointOrCurveGeometryProperty(JGeometry geom, boolean setSrsName) {
+		GeometryProperty<AbstractGeometry> geometryProperty = null;
 		
-		if (geom != null) {
-			complexProperty = new GeometricComplexPropertyImpl();
-			GeometricComplex complex = new GeometricComplexImpl();
+		AbstractGeometry geometry = getPointOrCurveGeometry(geom, setSrsName);
+		if (geometry != null) {
+			geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
+			geometryProperty.setGeometry(geometry);
+		}
+		
+		return geometryProperty;
+	}
+
+	public Polygon getPolygon(JGeometry geom, boolean setSrsName) {
+		Polygon polygon = null;
+
+		if (geom != null && geom.getType() == JGeometry.GTYPE_POLYGON) {
+			polygon = new PolygonImpl();
 			int dimensions = geom.getDimensions();
-			
-			if (geom.getType() == JGeometry.GTYPE_MULTICURVE) {
-				int[] elemInfoArray = geom.getElemInfo();
-				double[] ordinatesArray = geom.getOrdinatesArray();
 
-				if (elemInfoArray.length < 3 || ordinatesArray.length == 0)
-					return null;
+			int[] elemInfoArray = geom.getElemInfo();
+			double[] ordinatesArray = geom.getOrdinatesArray();
 
-				List<Integer> curveLimits = new ArrayList<Integer>();
-				for (int i = 3; i < elemInfoArray.length; i += 3)
-					curveLimits.add(elemInfoArray[i] - 1);
+			if (elemInfoArray.length < 3 || ordinatesArray.length == 0)
+				return null;
 
-				curveLimits.add(ordinatesArray.length);
+			List<Integer> ringLimits = new ArrayList<Integer>();
+			for (int i = 3; i < elemInfoArray.length; i += 3)
+				ringLimits.add(elemInfoArray[i] - 1);
 
-				int curveElem = 0;
-				for (Integer curveLimit : curveLimits) {
-					List<Double> values = new ArrayList<Double>();
+			ringLimits.add(ordinatesArray.length);
 
-					for ( ; curveElem < curveLimit; curveElem++)
-						values.add(ordinatesArray[curveElem]);
+			boolean isExterior = elemInfoArray[1] == 1003;
+			int ringElem = 0;
+			for (Integer curveLimit : ringLimits) {
+				List<Double> values = new ArrayList<Double>();
 
-					LineString lineString = new LineStringImpl();
+				for ( ; ringElem < curveLimit; ringElem++)
+					values.add(ordinatesArray[ringElem]);
+
+				if (isExterior) {
+					LinearRing linearRing = new LinearRingImpl();
 					DirectPositionList directPositionList = new DirectPositionListImpl();
 
 					directPositionList.setValue(values);
 					directPositionList.setSrsDimension(dimensions);
 					if (setSrsName)
 						directPositionList.setSrsName(gmlSrsName);
-					lineString.setPosList(directPositionList);
+					linearRing.setPosList(directPositionList);				
 
-					GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitivePropertyImpl();
-					primitiveProperty.setGeometricPrimitive(lineString);					
-					complex.addElement(primitiveProperty);
+					Exterior exterior = new ExteriorImpl();
+					exterior.setRing(linearRing);
+					polygon.setExterior(exterior);
 
-					curveElem = curveLimit;
+					isExterior = false;
+				} else {
+					LinearRing linearRing = new LinearRingImpl();
+					DirectPositionList directPositionList = new DirectPositionListImpl();
+
+					directPositionList.setValue(values);
+					directPositionList.setSrsDimension(dimensions);
+					if (setSrsName)
+						directPositionList.setSrsName(gmlSrsName);
+					linearRing.setPosList(directPositionList);
+
+					Interior interior = new InteriorImpl();
+					interior.setRing(linearRing);
+					polygon.addInterior(interior);
 				}
 			}
-			
-			else if (geom.getType() == JGeometry.GTYPE_CURVE) {
-				double[] ordinatesArray = geom.getOrdinatesArray();
-				List<Double> value = new ArrayList<Double>();
-
-				for (int i = 0; i < ordinatesArray.length; i++)
-					value.add(ordinatesArray[i]);
-
-				LineString lineString = new LineStringImpl();
-				DirectPositionList directPositionList = new DirectPositionListImpl();
-
-				directPositionList.setValue(value);
-				directPositionList.setSrsDimension(dimensions);
-				if (setSrsName)
-					directPositionList.setSrsName(gmlSrsName);
-				lineString.setPosList(directPositionList);
-
-				GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitivePropertyImpl();
-				primitiveProperty.setGeometricPrimitive(lineString);					
-				complex.addElement(primitiveProperty);				
-			}
-			
-			if (complex.isSetElement())
-				complexProperty.setGeometricComplex(complex);
 		}
-		
-		return complexProperty;
+
+		return polygon;
 	}
-	
+
+	public PolygonProperty getPolygonProperty(JGeometry geom, boolean setSrsName) {
+		PolygonProperty polygonProperty = null;
+
+		Polygon polygon = getPolygon(geom, setSrsName);
+		if (polygon != null && (polygon.isSetExterior() || polygon.isSetInterior())) {
+			polygonProperty = new PolygonPropertyImpl();
+			polygonProperty.setPolygon(polygon);
+		}
+
+		return polygonProperty;
+	}
+
 	@Override
 	public void close() throws SQLException {
 		// nothing to do here

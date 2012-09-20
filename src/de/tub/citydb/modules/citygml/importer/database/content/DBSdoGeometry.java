@@ -38,12 +38,14 @@ import oracle.spatial.geometry.JGeometry;
 
 import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
 import org.citygml4j.model.gml.GMLClass;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPoint;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
 import org.citygml4j.model.gml.geometry.complexes.CompositeCurve;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
+import org.citygml4j.model.gml.geometry.complexes.GeometricComplexProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractCurve;
 import org.citygml4j.model.gml.geometry.primitives.AbstractCurveSegment;
 import org.citygml4j.model.gml.geometry.primitives.AbstractGeometricPrimitive;
@@ -51,6 +53,7 @@ import org.citygml4j.model.gml.geometry.primitives.AbstractRing;
 import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
 import org.citygml4j.model.gml.geometry.primitives.ControlPoint;
 import org.citygml4j.model.gml.geometry.primitives.Curve;
+import org.citygml4j.model.gml.geometry.primitives.CurveArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.CurveProperty;
 import org.citygml4j.model.gml.geometry.primitives.CurveSegmentArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.GeometricPositionGroup;
@@ -85,35 +88,48 @@ public class DBSdoGeometry implements DBImporter {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 	}
 
-	public JGeometry getPoint(PointProperty pointProperty) {
+	public JGeometry getPoint(Point point) {
 		JGeometry pointGeom = null;
 
-		if (pointProperty != null && pointProperty.isSetPoint()) {
-			Point point = pointProperty.getPoint();
+		if (point != null) {
 			List<Double> values = point.toList3d();
+			if (values != null && !values.isEmpty())
+				pointGeom = JGeometry.createPoint(toArray(values), 3, dbSrid);
+		}
 
-			if (values != null && !values.isEmpty()) {
-				if (affineTransformation)
-					dbImporterManager.getAffineTransformer().transformCoordinates(values);
+		return pointGeom;
+	}
 
-				double[] coords = new double[values.size()];
+	public JGeometry getPointGeometry(GeometricComplex geometricComplex) {
+		JGeometry pointGeom = null;
 
-				int i = 0;
-				for (Double value : values)
-					coords[i++] = value.doubleValue();
+		if (geometricComplex != null && geometricComplex.isSetElement()) {
+			List<List<Double>> pointList = new ArrayList<List<Double>>();
 
-				pointGeom = JGeometry.createPoint(coords, 3, dbSrid);
+			for (GeometricPrimitiveProperty primitiveProperty : geometricComplex.getElement()) {
+				if (primitiveProperty.isSetGeometricPrimitive()) {
+					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
+					if (primitive.getGMLClass() == GMLClass.POINT)
+						pointList.add(((Point)primitive).toList3d());					
+				}
+			}
+
+			if (!pointList.isEmpty()) {				
+				Object[] pointArray = toObjectArray(pointList);
+				if (pointList.size() > 1)				
+					pointGeom = JGeometry.createMultiPoint(pointArray, 3, dbSrid);
+				else
+					pointGeom = JGeometry.createPoint((double[])pointArray[0], 3, dbSrid);
 			}
 		}
 
 		return pointGeom;
 	}
 
-	public JGeometry getMultiPoint(MultiPointProperty multiPointProperty) {
+	public JGeometry getMultiPoint(MultiPoint multiPoint) {
 		JGeometry multiPointGeom = null;
 
-		if (multiPointProperty != null && multiPointProperty.isSetMultiPoint()) {
-			MultiPoint multiPoint = multiPointProperty.getMultiPoint();
+		if (multiPoint != null) {
 			List<List<Double>> pointList = new ArrayList<List<Double>>();
 
 			if (multiPoint.isSetPointMember()) {
@@ -127,24 +143,8 @@ public class DBSdoGeometry implements DBImporter {
 					pointList.add(point.toList3d());
 			}
 
-			if (!pointList.isEmpty()) {				
-				Object[] pointArray = new Object[pointList.size()];
-				int i = 0;
-				for (List<Double> coordsList : pointList) {
-					if (affineTransformation)
-						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
-
-					double[] coords = new double[3];
-
-					coords[0] = coordsList.get(0).doubleValue();
-					coords[1] = coordsList.get(1).doubleValue();
-					coords[2] = coordsList.get(2).doubleValue();
-
-					pointArray[i++] = coords;					
-				}
-
-				multiPointGeom = JGeometry.createMultiPoint(pointArray, 3, dbSrid);
-			}
+			if (!pointList.isEmpty())
+				multiPointGeom = JGeometry.createMultiPoint(toObjectArray(pointList), 3, dbSrid);
 		}
 
 		return multiPointGeom;
@@ -158,13 +158,11 @@ public class DBSdoGeometry implements DBImporter {
 
 			if (controlPoint.isSetPosList()) {
 				List<Double> posList = controlPoint.getPosList().toList3d();
-
 				if (posList != null && !posList.isEmpty())
 					for (int i = 0; i < posList.size(); i += 3)
 						pointList.add(posList.subList(i, i + 3));
 
 			} else if (controlPoint.isSetGeometricPositionGroup()) {					
-
 				for (GeometricPositionGroup posGroup : controlPoint.getGeometricPositionGroup()) {
 					if (posGroup.isSetPos())
 						pointList.add(posGroup.getPos().toList3d()); 
@@ -176,38 +174,33 @@ public class DBSdoGeometry implements DBImporter {
 				}
 			}
 
-			if (!pointList.isEmpty()) {
-				Object[] pointArray = new Object[pointList.size()];
-				int i = 0;
-				for (List<Double> coordsList : pointList) {
-					if (affineTransformation)
-						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
-
-					double[] coords = new double[3];
-
-					coords[0] = coordsList.get(0).doubleValue();
-					coords[1] = coordsList.get(1).doubleValue();
-					coords[2] = coordsList.get(2).doubleValue();
-
-					pointArray[i++] = coords;					
-				}
-
-				multiPointGeom = JGeometry.createMultiPoint(pointArray, 3, dbSrid);
-			}
+			if (!pointList.isEmpty())
+				multiPointGeom = JGeometry.createMultiPoint(toObjectArray(pointList), 3, dbSrid);
 		}
 
 		return multiPointGeom;
 	}
 
-	public JGeometry getMultiCurve(MultiCurveProperty multiCurveProperty) {
+	public JGeometry getCurve(AbstractCurve curve) {
+		JGeometry curveGeom = null;
+
+		if (curve != null) {
+			List<Double> pointList = new ArrayList<Double>();
+			generatePointList(curve, pointList, false);
+			if (!pointList.isEmpty())
+				curveGeom = JGeometry.createLinearLineString(toArray(pointList), 3, dbSrid);
+		}
+
+		return curveGeom;
+	}
+
+	public JGeometry getMultiCurve(MultiCurve multiCurve) {
 		JGeometry multiCurveGeom = null;
 
-		if (multiCurveProperty != null && multiCurveProperty.isSetMultiCurve()) {
-			MultiCurve multiCurve = multiCurveProperty.getMultiCurve();
+		if (multiCurve != null) {
+			List<List<Double>> pointList = new ArrayList<List<Double>>();
 
 			if (multiCurve.isSetCurveMember()) {
-				List<List<Double>> pointList = new ArrayList<List<Double>>();
-
 				for (CurveProperty curveProperty : multiCurve.getCurveMember()) {
 					if (curveProperty.isSetCurve()) {
 						AbstractCurve curve = curveProperty.getCurve();
@@ -216,37 +209,28 @@ public class DBSdoGeometry implements DBImporter {
 
 						if (!points.isEmpty())
 							pointList.add(points);
-					} else {
-						// xlinks are not allowed here...
 					}
 				}
+			} else if (multiCurve.isSetCurveMembers()) {
+				CurveArrayProperty curveArrayProperty = multiCurve.getCurveMembers();
+				for (AbstractCurve curve : curveArrayProperty.getCurve()) {
+					List<Double> points = new ArrayList<Double>(); 
+					generatePointList(curve, points, false);
 
-				if (!pointList.isEmpty()) {
-					Object[] pointArray = new Object[pointList.size()];
-					int i = 0;
-					for (List<Double> coordsList : pointList) {
-						if (affineTransformation)
-							dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
-
-						double[] coords = new double[coordsList.size()];
-
-						int j = 0;
-						for (Double coord : coordsList)
-							coords[j++] = coord.doubleValue();
-
-						pointArray[i++] = coords;					
-					}
-
-					multiCurveGeom = JGeometry.createLinearMultiLineString(pointArray, 3, dbSrid);
+					if (!points.isEmpty())
+						pointList.add(points);
 				}
 			}
+
+			if (!pointList.isEmpty())
+				multiCurveGeom = JGeometry.createLinearMultiLineString(toObjectArray(pointList), 3, dbSrid);
 		}
 
 		return multiCurveGeom;
 	}
 
-	public JGeometry getMultiCurve(GeometricComplex geometricComplex) {
-		JGeometry multiCurveGeom = null;
+	public JGeometry getCurveGeometry(GeometricComplex geometricComplex) {
+		JGeometry curveGeom = null;
 
 		if (geometricComplex != null && geometricComplex.isSetElement()) {
 			List<List<Double>> pointList = new ArrayList<List<Double>>();
@@ -270,30 +254,92 @@ public class DBSdoGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty()) {
-				Object[] pointArray = new Object[pointList.size()];
-				int i = 0;
-				for (List<Double> coordsList : pointList) {
-					if (affineTransformation)
-						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
-
-					double[] coords = new double[coordsList.size()];
-
-					int j = 0;
-					for (Double coord : coordsList)
-						coords[j++] = coord.doubleValue();
-
-					pointArray[i++] = coords;					
-				}
-
-				multiCurveGeom = JGeometry.createLinearMultiLineString(pointArray, 3, dbSrid);
+				Object[] pointArray = toObjectArray(pointList);
+				if (pointList.size() > 1)
+					curveGeom = JGeometry.createLinearMultiLineString(pointArray, 3, dbSrid);
+				else
+					curveGeom = JGeometry.createLinearLineString((double[])pointArray[0], 3, dbSrid);
 			}
+		}
+
+		return curveGeom;
+	}
+
+	public JGeometry getMultiCurve(List<LineStringSegmentArrayProperty> propertyList) {
+		JGeometry multiCurveGeom = null;
+
+		if (propertyList != null && !propertyList.isEmpty()) {
+			List<List<Double>> pointList = new ArrayList<List<Double>>();
+
+			for (LineStringSegmentArrayProperty property : propertyList) {
+				if (property.isSetLineStringSegment()) {
+					List<Double> points = new ArrayList<Double>();
+
+					for (LineStringSegment segment : property.getLineStringSegment())
+						points.addAll(segment.toList3d());
+
+					if (!points.isEmpty())
+						pointList.add(points);
+				}
+			}
+
+			if (!pointList.isEmpty())
+				multiCurveGeom = JGeometry.createLinearMultiLineString(toObjectArray(pointList), 3, dbSrid);
 		}
 
 		return multiCurveGeom;
 	}
 
-	private void generatePointList(AbstractCurve abstractCurve, List<Double> pointList, boolean reverse) {
+	public JGeometry getPoint(PointProperty pointProperty) {
+		return pointProperty != null ? getPoint(pointProperty.getPoint()) : null;
+	}
 
+	public JGeometry getMultiPoint(MultiPointProperty multiPointProperty) {
+		return multiPointProperty != null ? getMultiPoint(multiPointProperty.getMultiPoint()) : null;
+	}
+
+	public JGeometry getPointGeometry(GeometricComplexProperty complexProperty) {
+		return (complexProperty != null && complexProperty.isSetGeometricComplex()) ? 
+				getPointGeometry(complexProperty.getGeometricComplex()) : null;
+	}
+
+	public JGeometry getCurve(CurveProperty curveProperty) {
+		return curveProperty != null ? getCurve(curveProperty.getCurve()) : null;
+	}
+
+	public JGeometry getMultiCurve(MultiCurveProperty multiCurveProperty) {
+		return multiCurveProperty != null ? getMultiCurve(multiCurveProperty.getMultiCurve()) : null;
+	}
+	
+	public JGeometry getCurveGeometry(GeometricComplexProperty complexProperty) {
+		return (complexProperty != null && complexProperty.isSetGeometricComplex()) ? 
+				getCurveGeometry(complexProperty.getGeometricComplex()) : null;
+	}
+	
+	public JGeometry getPointOrCurveGeometry(AbstractGeometry abstractGeometry) {
+		switch (abstractGeometry.getGMLClass()) {
+		case POINT:
+			return getPoint((Point)abstractGeometry);
+		case MULTI_POINT:
+			return getMultiPoint((MultiPoint)abstractGeometry);
+		case LINE_STRING:
+		case CURVE:
+		case COMPOSITE_CURVE:
+		case ORIENTABLE_CURVE:
+			return getCurve((AbstractCurve)abstractGeometry);
+		case MULTI_CURVE:
+			return getMultiCurve((MultiCurve)abstractGeometry);
+		case GEOMETRIC_COMPLEX:
+			JGeometry geometry = getPointGeometry((GeometricComplex)abstractGeometry);
+			if (geometry == null)
+				geometry = getCurveGeometry((GeometricComplex)abstractGeometry);
+			return geometry;
+		default:
+			return null;
+		}
+	}
+
+	private void generatePointList(AbstractCurve abstractCurve, List<Double> pointList, boolean reverse) {
 		if (abstractCurve.getGMLClass() == GMLClass.LINE_STRING) {	
 			LineString lineString = (LineString)abstractCurve;
 			List<Double> points = lineString.toList3d(reverse);
@@ -353,47 +399,38 @@ public class DBSdoGeometry implements DBImporter {
 				}				
 			}
 		}
-	}	
+	}
+	
+	private double[] toArray(List<Double> pointList) {
+		if (affineTransformation)
+			dbImporterManager.getAffineTransformer().transformCoordinates(pointList);
 
-	public JGeometry getMultiCurve(List<LineStringSegmentArrayProperty> propertyList) {
-		JGeometry multiCurveGeom = null;
+		double[] result = new double[pointList.size()];
 
-		if (propertyList != null && !propertyList.isEmpty()) {
-			List<List<Double>> pointList = new ArrayList<List<Double>>();
+		int i = 0;
+		for (Double point : pointList)
+			result[i++] = point.doubleValue();
+			
+		return result;
+	}
+	
+	private Object[] toObjectArray(List<List<Double>> pointList) {
+		Object[] result = new Object[pointList.size()];
+		int i = 0;
+		for (List<Double> points : pointList) {
+			if (affineTransformation)
+				dbImporterManager.getAffineTransformer().transformCoordinates(points);
 
-			for (LineStringSegmentArrayProperty property : propertyList) {
-				if (property.isSetLineStringSegment()) {
-					List<Double> points = new ArrayList<Double>();
+			double[] coords = new double[points.size()];
 
-					for (LineStringSegment segment : property.getLineStringSegment())
-						points.addAll(segment.toList3d());
+			int j = 0;
+			for (Double coord : points)
+				coords[j++] = coord.doubleValue();
 
-					if (!points.isEmpty())
-						pointList.add(points);
-				}
-			}
-
-			if (!pointList.isEmpty()) {
-				Object[] pointArray = new Object[pointList.size()];
-				int i = 0;
-				for (List<Double> coordsList : pointList) {
-					if (affineTransformation)
-						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
-
-					double[] coords = new double[coordsList.size()];
-
-					int j = 0;
-					for (Double coord : coordsList)
-						coords[j++] = coord.doubleValue();
-
-					pointArray[i++] = coords;					
-				}
-
-				multiCurveGeom = JGeometry.createLinearMultiLineString(pointArray, 3, dbSrid);
-			}
+			result[i++] = coords;					
 		}
-
-		return multiCurveGeom;
+		
+		return result;
 	}
 
 	public JGeometry get2DPolygon(PolygonProperty polygonProperty) {

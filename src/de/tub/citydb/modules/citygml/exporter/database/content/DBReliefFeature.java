@@ -278,7 +278,7 @@ public class DBReliefFeature implements DBExporter {
 				if (!rs.wasNull() && extentObj != null) {
 					extent = JGeometry.load(extentObj);
 
-					PolygonProperty polygonProperty = sdoGeometry.getPolygon(extent, false);
+					PolygonProperty polygonProperty = sdoGeometry.getPolygonProperty(extent, false);
 					if (polygonProperty != null)
 						reliefComponent.setExtent(polygonProperty);
 				}

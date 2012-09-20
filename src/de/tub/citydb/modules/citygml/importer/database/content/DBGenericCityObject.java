@@ -61,6 +61,7 @@ public class DBGenericCityObject implements DBImporter {
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
 	private DBSdoGeometry sdoGeometry;
+	private DBCityObjectGenericAttrib genericAttributeImporter;
 
 	private boolean affineTransformation;
 	private int batchCounter;
@@ -86,6 +87,7 @@ public class DBGenericCityObject implements DBImporter {
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		implicitGeometryImporter = (DBImplicitGeometry)dbImporterManager.getDBImporter(DBImporterEnum.IMPLICIT_GEOMETRY);
 		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		genericAttributeImporter = (DBCityObjectGenericAttrib)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
 	}
 	
 	public long insert(GenericCityObject genericCityObject) throws SQLException {
@@ -179,7 +181,13 @@ public class DBGenericCityObject implements DBImporter {
 
     		if (geometryProperty != null) {
     			if (geometryProperty.isSetGeometry()) {
-    				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), genericCityObjectId);
+    				
+    				JGeometry geom = sdoGeometry.getPointOrCurveGeometry(geometryProperty.getGeometry());
+    				if (geom != null) {
+    					genericAttributeImporter.insert("LOD" + lod + "_Geometry", geom, genericCityObjectId);
+    				} else
+    					geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), genericCityObjectId);
+    			
     			} else {
     				// xlink
 					String href = geometryProperty.getHref();

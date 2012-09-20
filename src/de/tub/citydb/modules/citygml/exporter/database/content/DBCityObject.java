@@ -121,7 +121,7 @@ public class DBCityObject implements DBExporter {
 			psCityObject = connection.prepareStatement("select co.GMLID, co.ENVELOPE, co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
 					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
 					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
-					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID " +
+					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID and ga.DATATYPE < 6 " +
 					"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
@@ -131,7 +131,7 @@ public class DBCityObject implements DBExporter {
 					"co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
 					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
 					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
-					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID " +
+					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID and ga.DATATYPE < 6 " +
 					"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
 		}
 

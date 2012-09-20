@@ -142,7 +142,7 @@ public class DBImplicitGeometry implements DBExporter {
 
 			// referencePoint
 			if (referencePoint != null) {
-				PointProperty pointProperty = sdoGeometry.getPoint(referencePoint, false);
+				PointProperty pointProperty = sdoGeometry.getPointProperty(referencePoint, false);
 
 				if (pointProperty != null)
 					implicit.setReferencePoint(pointProperty);

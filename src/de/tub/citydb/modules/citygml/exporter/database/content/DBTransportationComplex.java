@@ -218,7 +218,7 @@ public class DBTransportationComplex implements DBExporter {
 					if (!rs.wasNull() && struct != null) {
 						JGeometry lod0Network = JGeometry.load(struct);
 
-						GeometricComplexProperty complexProperty = sdoGeometry.getGeometricComplexPropertyOfCurves(lod0Network, false);
+						GeometricComplexProperty complexProperty = sdoGeometry.getPointOrCurveComplexProperty(lod0Network, false);
 						transComplex.addLod0Network(complexProperty);
 					}
 
