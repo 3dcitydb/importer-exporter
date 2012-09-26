@@ -42,6 +42,7 @@ import net.opengis.kml._2.PlacemarkType;
 import oracle.jdbc.OracleResultSet;
 
 import org.citygml4j.factory.CityGMLFactory;
+import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
@@ -52,11 +53,12 @@ import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 
-public class PlantCover extends KmlGenericObject{
+public class WaterBody extends KmlGenericObject{
 
-	public static final String STYLE_BASIS_NAME = "Vegetation";
+	public static final String STYLE_BASIS_NAME = "Water";
+	private boolean isSurface = false;
 
-	public PlantCover(Connection connection,
+	public WaterBody(Connection connection,
 			KmlExporterManager kmlExporterManager,
 			CityGMLFactory cityGMLFactory,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
@@ -76,15 +78,15 @@ public class PlantCover extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getVegetationDisplayForms();
+		return config.getProject().getKmlExporter().getWaterBodyDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExporter().getVegetationColladaOptions();
+		return config.getProject().getKmlExporter().getWaterBodyColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getVegetationBalloon();
+		return config.getProject().getKmlExporter().getWaterBodyBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -92,14 +94,15 @@ public class PlantCover extends KmlGenericObject{
 	}
 
 	protected String getHighlightingQuery() {
-		return Queries.getPlantCoverHighlightingQuery(currentLod);
+		return Queries.getWaterBodyHighlightingQuery(currentLod, isSurface);
 	}
 
 	public void read(KmlSplittingResult work) {
 
 		PreparedStatement psQuery = null;
 		OracleResultSet rs = null;
-
+		
+		isSurface = work.getCityObjectType() != CityGMLClass.WATER_BODY; 
 		boolean reversePointOrder = false;
 
 		try {
@@ -111,7 +114,7 @@ public class PlantCover extends KmlGenericObject{
 				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
 
 				try {
-					psQuery = connection.prepareStatement(Queries.getPlantCoverQuery(currentLod, work.getDisplayForm()),
+					psQuery = connection.prepareStatement(Queries.getWaterBodyQuery(currentLod, work.getDisplayForm(), isSurface),
 							   							  ResultSet.TYPE_SCROLL_INSENSITIVE,
 							   							  ResultSet.CONCUR_READ_ONLY);
 

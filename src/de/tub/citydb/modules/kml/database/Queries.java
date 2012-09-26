@@ -971,5 +971,109 @@ public class Queries {
     public static String getCityFurnitureHighlightingQuery (int lodToExportFrom) {
     	return CITY_FURNITURE_GEOMETRY_HIGHLIGHTING.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
+    
+	// ----------------------------------------------------------------------
+	// WATER BODY QUERIES
+	// ----------------------------------------------------------------------
+	
+	private static final String WATERBOUNDARY_SURFACE_ROOT_IDS =
+		"SELECT wbs.lod<LoD>_surface_id " +
+		"FROM WATERBOUNDARY_SURFACE wbs, CITYOBJECT co " +
+		"WHERE co.gmlid = ? " +
+			"AND wbs.id = co.id " +
+		"UNION " +
+		"SELECT wb.lod<LoD>_solid_id " +
+		"FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb " +
+		"WHERE co.gmlid = ? " +
+			"AND wb2wbs.waterboundary_surface_id = co.id " +
+			"AND wb.id = wb2wbs.waterbody_id ";
+	
+	private static final String WATERBOUNDARY_SURFACE_FOOTPRINT_EXTRUDED_GEOMETRY =
+		"SELECT sg.geometry, 'Water' as type, sg.id " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"WHERE sg.root_id IN (" + WATERBOUNDARY_SURFACE_ROOT_IDS +
+			") AND sg.geometry IS NOT NULL";
+	
+	private static final String WATERBODY_ROOT_IDS =
+		"SELECT wb.lod<LoD>_solid_id " +
+		"FROM CITYOBJECT co, WATERBODY wb " +
+		"WHERE co.gmlid = ? " +
+			"AND wb.id = co.id " +
+		"UNION " +
+		"SELECT wbs.lod<LoD>_surface_id " +
+		"FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs " +
+		"WHERE co.gmlid = ? " +
+			"AND wb2wbs.waterbody_id = co.id " +
+			"AND wbs.id = wb2wbs.waterboundary_surface_id ";
+
+	private static final String WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY =
+		"SELECT sg.geometry, 'Water' as type, sg.id " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"WHERE sg.root_id IN (" + WATERBODY_ROOT_IDS +
+			") AND sg.geometry IS NOT NULL";
+	
+	private static final String WATERBOUNDARY_SURFACE_ROOT_IDS_LOD1 =
+		"SELECT wb.lod<LoD>_solid_id " +
+		"FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb " +
+		"WHERE co.gmlid = ? " +
+			"AND wb2wbs.waterboundary_surface_id = co.id " +
+			"AND wb.id = wb2wbs.waterbody_id ";
+	
+	private static final String WATERBOUNDARY_SURFACE_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1 =
+		"SELECT sg.geometry, 'Water' as type, sg.id " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"WHERE sg.root_id IN (" + WATERBOUNDARY_SURFACE_ROOT_IDS_LOD1 +
+			") AND sg.geometry IS NOT NULL";
+	
+	private static final String WATERBODY_ROOT_IDS_LOD1 =
+		"SELECT wb.lod<LoD>_solid_id " +
+		"FROM CITYOBJECT co, WATERBODY wb " +
+		"WHERE co.gmlid = ? " +
+			"AND wb.id = co.id ";
+
+	private static final String WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1 =
+		"SELECT sg.geometry, 'Water' as type, sg.id " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"WHERE sg.root_id IN (" + WATERBODY_ROOT_IDS_LOD1 +
+			") AND sg.geometry IS NOT NULL";
+	
+    public static String getWaterBodyQuery (int lodToExportFrom, DisplayForm displayForm, boolean isSurface) {
+    	String query = null;
+    	switch (displayForm.getForm()) {
+    		case DisplayForm.FOOTPRINT:
+    		case DisplayForm.EXTRUDED:
+    		case DisplayForm.GEOMETRY:
+    			if (isSurface) {
+    				if (lodToExportFrom > 1)
+    	    			query = WATERBOUNDARY_SURFACE_FOOTPRINT_EXTRUDED_GEOMETRY;
+    				else
+    	    			query = WATERBOUNDARY_SURFACE_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1;
+    			}
+    			else {
+    				if (lodToExportFrom > 1)
+    	    			query = WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY;
+    				else
+    	    			query = WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1;
+    			}
+    	    	break;
+
+    		case DisplayForm.COLLADA: // collada can only be achieved from LoD2 upwards
+    			query = isSurface ? 
+    					WATERBOUNDARY_SURFACE_ROOT_IDS:
+    					WATERBODY_ROOT_IDS;
+    	    	break;
+    	    default:
+    	    	Logger.getInstance().log(LogLevel.INFO, "No water body object query found");
+    	}
+    	
+//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
+    	return query.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
+    public static String getWaterBodyHighlightingQuery (int lodToExportFrom, boolean isSurface) {
+    	return isSurface ? 
+    		   WATERBOUNDARY_SURFACE_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom)):
+    		   WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
 
 }

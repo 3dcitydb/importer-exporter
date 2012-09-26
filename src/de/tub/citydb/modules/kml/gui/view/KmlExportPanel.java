@@ -173,6 +173,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private CheckboxTree fcTree;
 	private DefaultMutableTreeNode cityObject;
 	private DefaultMutableTreeNode building;
+	private DefaultMutableTreeNode waterBody;
 	private DefaultMutableTreeNode vegetation;
 	private DefaultMutableTreeNode cityFurniture;
 	private DefaultMutableTreeNode genericCityObject;
@@ -347,12 +348,14 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		cityObject = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECT);
 		building = new DefaultMutableTreeNode(FeatureClassMode.BUILDING);
+		waterBody = new DefaultMutableTreeNode(FeatureClassMode.WATERBODY);
 		vegetation = new DefaultMutableTreeNode(FeatureClassMode.VEGETATION);
 		cityFurniture = new DefaultMutableTreeNode(FeatureClassMode.CITYFURNITURE);
 		genericCityObject = new DefaultMutableTreeNode(FeatureClassMode.GENERICCITYOBJECT);
 		cityObjectGroup = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECTGROUP);
 
 		cityObject.add(building);
+		cityObject.add(waterBody);
 		cityObject.add(vegetation);
 		cityObject.add(cityFurniture);
 		cityObject.add(genericCityObject);
@@ -496,6 +499,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 		else {
 			fcTree.getCheckingModel().removeCheckingPath(new TreePath(building.getPath()));
+		}
+		if (kmlExporter.getFilter().getComplexFilter().getFeatureClass().isSetWaterBody()) {
+			fcTree.getCheckingModel().addCheckingPath(new TreePath(waterBody.getPath()));
+		}
+		else {
+			fcTree.getCheckingModel().removeCheckingPath(new TreePath(waterBody.getPath()));
 		}
 		if (kmlExporter.getFilter().getComplexFilter().getFeatureClass().isSetVegetation()) {
 			fcTree.getCheckingModel().addCheckingPath(new TreePath(vegetation.getPath()));
@@ -759,6 +768,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		//		}
 
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setBuilding(fcTree.getCheckingModel().isPathChecked(new TreePath(building.getPath()))); 
+		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setWaterBody(fcTree.getCheckingModel().isPathChecked(new TreePath(waterBody.getPath()))); 
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setVegetation(fcTree.getCheckingModel().isPathChecked(new TreePath(vegetation.getPath())));
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setCityFurniture(fcTree.getCheckingModel().isPathChecked(new TreePath(cityFurniture.getPath())));
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setGenericCityObject(fcTree.getCheckingModel().isPathChecked(new TreePath(genericCityObject.getPath())));

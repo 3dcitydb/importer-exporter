@@ -128,6 +128,7 @@ import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
 import de.tub.citydb.modules.kml.database.PlantCover;
 import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
+import de.tub.citydb.modules.kml.database.WaterBody;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.modules.kml.util.KMLHeaderWriter;
 import de.tub.citydb.util.database.DBUtil;
@@ -257,6 +258,7 @@ public class KmlExporter implements EventHandler {
 		}
 
 		if (!checkBalloonSettings(CityGMLClass.BUILDING)) return false;
+		if (!checkBalloonSettings(CityGMLClass.WATER_BODY)) return false;
 		if (!checkBalloonSettings(CityGMLClass.SOLITARY_VEGETATION_OBJECT)) return false;
 		if (!checkBalloonSettings(CityGMLClass.CITY_FURNITURE)) return false;
 		if (!checkBalloonSettings(CityGMLClass.GENERIC_CITY_OBJECT)) return false;
@@ -909,6 +911,11 @@ public class KmlExporter implements EventHandler {
 					 config.getProject().getKmlExporter().getGenericCityObjectDisplayForms(),
 					 GenericCityObject.STYLE_BASIS_NAME);
 		}
+		if (featureFilter.isSetWaterBody()) {
+			addStyle(currentDisplayForm,
+					 config.getProject().getKmlExporter().getWaterBodyDisplayForms(),
+					 WaterBody.STYLE_BASIS_NAME);
+		}
 		if (featureFilter.isSetBuilding()) { // must be last
 			addStyle(currentDisplayForm,
 					 config.getProject().getKmlExporter().getBuildingDisplayForms(),
@@ -1230,6 +1237,10 @@ public class KmlExporter implements EventHandler {
 				balloonSettings = config.getProject().getKmlExporter().getBuildingBalloon();
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetBuilding();
 				break;
+			case WATER_BODY:
+				balloonSettings = config.getProject().getKmlExporter().getWaterBodyBalloon();
+				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetWaterBody();
+				break;
 			case SOLITARY_VEGETATION_OBJECT:
 				balloonSettings = config.getProject().getKmlExporter().getVegetationBalloon();
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetVegetation();
@@ -1276,6 +1287,9 @@ public class KmlExporter implements EventHandler {
 
 			if (kmlExportObject instanceof Building) {
 				type = CityGMLClass.BUILDING;
+			}
+			else if (kmlExportObject instanceof WaterBody) {
+				type = CityGMLClass.WATER_BODY;
 			}
 			else if (kmlExportObject instanceof CityObjectGroup) {
 				type = CityGMLClass.CITY_OBJECT_GROUP;

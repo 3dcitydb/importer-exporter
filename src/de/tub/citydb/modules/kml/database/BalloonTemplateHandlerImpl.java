@@ -460,7 +460,44 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("LOD4_MULTI_SURFACE_ID");
 	}};
 
-	
+	private static final String WATERBODY_TO_WATERBOUNDARY_SURFACE_TABLE = "WATERBOD_TO_WATERBND_SRF";
+	private static final LinkedHashSet<String> WATERBODY_TO_WATERBOUNDARY_SURFACE_COLUMNS = new LinkedHashSet<String>() {{
+		add("WATERBOUNDARY_SURFACE_ID");
+		add("WATERBODY_ID");
+	}};
+
+	private static final String WATERBODY_TABLE = "WATERBODY";
+	private static final LinkedHashSet<String> WATERBODY_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("CLASS");
+		add("FUNCTION");
+		add("USAGE");
+		add("LOD0_MULTI_CURVE");
+		add("LOD1_MULTI_CURVE");
+		add("LOD1_SOLID_ID");
+		add("LOD2_SOLID_ID");
+		add("LOD3_SOLID_ID");
+		add("LOD4_SOLID_ID");
+		add("LOD0_MULTI_SURFACE_ID");
+		add("LOD1_MULTI_SURFACE_ID");
+	}};
+
+	private static final String WATERBOUNDARY_SURFACE_TABLE = "WATERBOUNDARY_SURFACE";
+	private static final LinkedHashSet<String> WATERBOUNDARY_SURFACE_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("TYPE");
+		add("WATER_LEVEL");
+		add("LOD2_SURFACE_ID");
+		add("LOD3_SURFACE_ID");
+		add("LOD4_SURFACE_ID");
+	}};
+
 	private static final String MAX = "MAX";
 	private static final String MIN = "MIN";
 	private static final String AVG = "AVG";
@@ -540,6 +577,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(SURFACE_GEOMETRY_TABLE, SURFACE_GEOMETRY_COLUMNS);
 		put(TEXTUREPARAM_TABLE, TEXTUREPARAM_COLUMNS);
 		put(THEMATIC_SURFACE_TABLE, THEMATIC_SURFACE_COLUMNS);
+		put(WATERBODY_TO_WATERBOUNDARY_SURFACE_TABLE, WATERBODY_TO_WATERBOUNDARY_SURFACE_COLUMNS);
+		put(WATERBODY_TABLE, WATERBODY_COLUMNS);
+		put(WATERBOUNDARY_SURFACE_TABLE, WATERBOUNDARY_SURFACE_COLUMNS);
 	}};
 
 	public HashMap<String, Set<String>> getSupportedTablesAndColumns() {
@@ -1158,6 +1198,14 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				case SOLITARY_VEGETATION_OBJECT:
 					sqlStatement = sqlStatementForSolVegObj(table, columns, aggregateString, aggregateClosingString, lod);
 					break;
+				case WATER_BODY:
+					sqlStatement = sqlStatementForWaterBody(table, columns, aggregateString, aggregateClosingString, lod);
+					break;
+				case WATER_CLOSURE_SURFACE:
+				case WATER_GROUND_SURFACE:
+				case WATER_SURFACE:
+					sqlStatement = sqlStatementForWaterSurface(table, columns, aggregateString, aggregateClosingString, lod);
+					break;
 				case GENERIC_CITY_OBJECT:
 					sqlStatement = sqlStatementForGenCityObj(table, columns, aggregateString, aggregateClosingString, lod);
 					break;
@@ -1393,10 +1441,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		}
 
 		private String sqlStatementForPlantCover(String table,
-												 List<String> columns,
-												 String aggregateString,
-												 String aggregateClosingString,
-												 int lod) throws Exception {
+				 								 List<String> columns,
+				 								 String aggregateString,
+				 								 String aggregateClosingString,
+				 								 int lod) throws Exception {
 			String sqlStatement = null; 
 
 			if (PLANT_COVER_TABLE.equalsIgnoreCase(table)) {
@@ -1431,6 +1479,188 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							   " AND tp.surface_geometry_id = sg.id";
 			}
 			else if (SOLITARY_VEGETAT_OBJECT_TABLE.equalsIgnoreCase(table)) { } // tolerate but do nothing
+			else {
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
+			}
+
+			return sqlStatement; 
+		}
+
+		private String sqlStatementForWaterBody(String table,
+												List<String> columns,
+												String aggregateString,
+												String aggregateClosingString,
+												int lod) throws Exception {
+			String sqlStatement = null; 
+
+			if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
+							   " WHERE co.gmlid = ?" +
+							   " AND a.cityobject_id = co.id" +
+							   " AND a2sd.appearance_id = a.id" +
+							   " AND sd.id = a2sd.surface_data_id";
+			}
+			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM SURFACE_GEOMETRY sg" +
+							   " WHERE sg.id IN" +
+							   "(SELECT sg.id" +
+							   " FROM CITYOBJECT co, WATERBODY wb, SURFACE_GEOMETRY sg" +
+							   " WHERE co.gmlid = ?" +
+							   " AND sg.root_id = wb.lod" + lod + "_solid_id";
+				if (lod < 2) {
+					sqlStatement = sqlStatement +
+							   " UNION " +
+							   "SELECT sg.id" +
+							   " FROM CITYOBJECT co, WATERBODY wb, SURFACE_GEOMETRY sg" +
+							   " WHERE co.gmlid = ?" +
+							   " AND sg.root_id = wb.lod" + lod + "_multi_surface_id";
+				}
+				else {
+					sqlStatement = sqlStatement +
+					   " UNION " +
+					   "SELECT sg.id" +
+					   " FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs, SURFACE_GEOMETRY sg" +
+					   " WHERE co.gmlid = ?" +
+					   " AND wb2wbs.waterbody_id = co.id" +
+					   " AND wbs.id = wb2wbs.waterboundary_surface_id" +
+					   " AND sg.root_id = wbs.lod" + lod + "_surface_id";
+				}
+				sqlStatement = sqlStatement + ")";
+			}
+			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM TEXTUREPARAM tp" +
+							   " WHERE tp.surface_geometry_id IN" +
+							   "(SELECT sg.id" +
+							   " FROM CITYOBJECT co, WATERBODY wb, SURFACE_GEOMETRY sg" +
+							   " WHERE co.gmlid = ?" +
+							   " AND sg.root_id = wb.lod" + lod + "_solid_id";
+				if (lod < 2) {
+					sqlStatement = sqlStatement +
+							   " UNION " +
+							   "SELECT sg.id" +
+							   " FROM CITYOBJECT co, WATERBODY wb, SURFACE_GEOMETRY sg" +
+							   " WHERE co.gmlid = ?" +
+							   " AND sg.root_id = wb.lod" + lod + "_multi_surface_id";
+				}
+				else {
+					sqlStatement = sqlStatement +
+					   " UNION " +
+					   "SELECT sg.id" +
+					   " FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs, SURFACE_GEOMETRY sg" +
+					   " WHERE co.gmlid = ?" +
+					   " AND wb2wbs.waterbody_id = co.id" +
+					   " AND wbs.id = wb2wbs.waterboundary_surface_id" +
+					   " AND sg.root_id = wbs.lod" + lod + "_surface_id";
+				}
+				sqlStatement = sqlStatement + ")";
+			}
+			else if (WATERBODY_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, WATERBODY wb" +
+							   " WHERE co.gmlid = ?" +
+							   " AND wb.id = co.id";
+			}
+			else if (WATERBOUNDARY_SURFACE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+				   			   " FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs" +
+				   			   " WHERE co.gmlid = ?" +
+				   			   " AND wb2wbs.waterbody_id = co.id" +
+				   			   " AND wbs.id = wb2wbs.waterboundary_surface_id";
+			}
+			else {
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
+			}
+
+			return sqlStatement; 
+		}
+
+		private String sqlStatementForWaterSurface(String table,
+												   List<String> columns,
+												   String aggregateString,
+												   String aggregateClosingString,
+												   int lod) throws Exception {
+			String sqlStatement = null; 
+
+			if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
+							   " WHERE co.gmlid = ?" +
+							   " AND a.cityobject_id = co.id" +
+							   " AND a2sd.appearance_id = a.id" +
+							   " AND sd.id = a2sd.surface_data_id";
+			}
+			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM SURFACE_GEOMETRY sg" +
+							   " WHERE sg.id IN";
+				if (lod > 1) {
+					sqlStatement = sqlStatement +
+							   "(SELECT sg.id" +
+							   " FROM CITYOBJECT co, WATERBOUNDARY_SURFACE wbs, SURFACE_GEOMETRY sg" +
+							   " WHERE co.gmlid = ?" +
+							   " AND sg.root_id = wbs.lod" + lod + "_surface_id" +
+							   " UNION " +
+							   "SELECT sg.id" +
+							   " FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb, SURFACE_GEOMETRY sg" +
+							   " WHERE co.gmlid = ?" +
+							   " AND co.id = wb2wbs.waterboundary_surface_id" +
+							   " AND wb2wbs.waterbody_id = wb.id" +
+							   " AND sg.root_id = wb.lod" + lod + "_solid_id)";
+				}
+				else {
+					sqlStatement = sqlStatement +
+							   "(SELECT sg.id" +
+							   " FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb, SURFACE_GEOMETRY sg" +
+							   " WHERE co.gmlid = ?" +
+							   " AND co.id = wb2wbs.waterboundary_surface_id" +
+							   " AND wb2wbs.waterbody_id = wb.id" +
+							   " AND sg.root_id = wb.lod" + lod + "_multi_surface_id)";
+				}
+			}
+			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM TEXTUREPARAM tp" +
+							   " WHERE tp.surface_geometry_id IN";
+				if (lod > 1) {
+					sqlStatement = sqlStatement +
+							   "(SELECT sg.id" +
+							   " FROM CITYOBJECT co, WATERBOUNDARY_SURFACE wbs, SURFACE_GEOMETRY sg" +
+							   " WHERE co.gmlid = ?" +
+							   " AND sg.root_id = wbs.lod" + lod + "_surface_id" +
+							   " UNION " +
+							   "SELECT sg.id" +
+							   " FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb, SURFACE_GEOMETRY sg" +
+							   " WHERE co.gmlid = ?" +
+							   " AND co.id = wb2wbs.waterboundary_surface_id" +
+							   " AND wb2wbs.waterbody_id = wb.id" +
+							   " AND sg.root_id = wb.lod" + lod + "_solid_id)";
+				}
+				else {
+					sqlStatement = sqlStatement +
+							   "(SELECT sg.id" +
+							   " FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb, SURFACE_GEOMETRY sg" +
+							   " WHERE co.gmlid = ?" +
+							   " AND co.id = wb2wbs.waterboundary_surface_id" +
+							   " AND wb2wbs.waterbody_id = wb.id" +
+							   " AND sg.root_id = wb.lod" + lod + "_multi_surface_id)";
+				}
+			}
+			else if (WATERBODY_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb" +
+							   " WHERE co.gmlid = ?" +
+							   " AND co.id = wb2wbs.waterboundary_surface_id" +
+							   " AND wb2wbs.waterbody_id = wb.id";
+			}
+			else if (WATERBOUNDARY_SURFACE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, WATERBOUNDARY_SURFACE wbs" +
+							   " WHERE co.gmlid = ?" +
+							   " AND wbs.id = co.id";
+			}
 			else {
 				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
 			}
@@ -1781,6 +2011,17 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 			else if (THEMATIC_SURFACE_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "ts";
+			}
+			else if (WATERBODY_TO_WATERBOUNDARY_SURFACE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "wb2wbs";
+			}
+			else if (WATERBODY_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "wb";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD0_MULTI_CURVE") &&
+										!columns.get(0).equals("LOD1_MULTI_CURVE"));
+			}
+			else if (WATERBOUNDARY_SURFACE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "wbs";
 			}
 			else {
 				throw new Exception("Unsupported table \"" + tablename + "\" in statement \"" + rawStatement + "\"");
