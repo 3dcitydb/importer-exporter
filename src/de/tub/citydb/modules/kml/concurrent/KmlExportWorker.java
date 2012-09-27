@@ -68,6 +68,7 @@ import de.tub.citydb.modules.kml.database.KmlGenericObject;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
 import de.tub.citydb.modules.kml.database.PlantCover;
 import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
+import de.tub.citydb.modules.kml.database.WaterBody;
 
 public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
@@ -157,6 +158,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			objectGroupSize.put(CityGMLClass.CITY_FURNITURE, colladaOptions.isGroupObjects() ? 
 															 colladaOptions.getGroupSize(): 1);
 			objectGroup.put(CityGMLClass.CITY_FURNITURE, null);
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetWaterBody()) {
+			objectGroupCounter.put(CityGMLClass.WATER_BODY, 0);
+			colladaOptions = config.getProject().getKmlExporter().getWaterBodyColladaOptions();
+			objectGroupSize.put(CityGMLClass.WATER_BODY, colladaOptions.isGroupObjects() ? 
+														 colladaOptions.getGroupSize(): 1);
+			objectGroup.put(CityGMLClass.WATER_BODY, null);
 		}
 		// CityGMLClass.CITY_OBJECT_GROUP is left out, it does not make sense to group it without COLLADA DisplayForm 
 	}
@@ -262,6 +270,20 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												getBalloonTemplateHandler(featureClass),
 												eventDispatcher,
 												config);
+					break;
+
+				case WATER_BODY:
+				case WATER_CLOSURE_SURFACE:
+				case WATER_GROUND_SURFACE:
+				case WATER_SURFACE:
+					singleObject = new WaterBody(connection,
+												 kmlExporterManager,
+												 cityGMLFactory,
+												 kmlFactory,
+												 elevationServiceHandler,
+												 getBalloonTemplateHandler(featureClass),
+												 eventDispatcher,
+												 config);
 					break;
 
 				case SOLITARY_VEGETATION_OBJECT:
@@ -410,6 +432,12 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		switch (cityObjectType) {
 			case BUILDING:
 				balloonSettings = config.getProject().getKmlExporter().getBuildingBalloon();
+				break;
+			case WATER_BODY:
+			case WATER_CLOSURE_SURFACE:
+			case WATER_GROUND_SURFACE:
+			case WATER_SURFACE:
+				balloonSettings = config.getProject().getKmlExporter().getWaterBodyBalloon();
 				break;
 			case SOLITARY_VEGETATION_OBJECT:
 			case PLANT_COVER:

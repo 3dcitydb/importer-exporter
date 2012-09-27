@@ -88,4 +88,11 @@ public class KmlSplittingResult {
 	public boolean isCityFurniture() {
 		return getCityObjectType().compareTo(CityGMLClass.CITY_FURNITURE) == 0;
 	}
+
+	public boolean isWaterBody() {
+		return (getCityObjectType().compareTo(CityGMLClass.WATER_BODY) == 0 ||
+				getCityObjectType().compareTo(CityGMLClass.WATER_CLOSURE_SURFACE) == 0 ||
+				getCityObjectType().compareTo(CityGMLClass.WATER_GROUND_SURFACE) == 0 ||
+				getCityObjectType().compareTo(CityGMLClass.WATER_SURFACE) == 0);
+	}
 }
