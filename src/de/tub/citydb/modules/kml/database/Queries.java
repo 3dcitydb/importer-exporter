@@ -1076,4 +1076,45 @@ public class Queries {
     		   WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
 
+	// ----------------------------------------------------------------------
+	// LAND USE QUERIES
+	// ----------------------------------------------------------------------
+	
+	private static final String LAND_USE_FOOTPRINT_EXTRUDED_GEOMETRY =
+		"SELECT sg.geometry, 'LandUse' as type, sg.id " +
+		"FROM SURFACE_GEOMETRY sg, LAND_USE lu, CITYOBJECT co " + 
+		"WHERE co.gmlid = ? " +
+			"AND lu.id = co.id " +
+			"AND sg.root_id = lu.lod<LoD>_multi_surface_id " + 
+			"AND sg.geometry IS NOT NULL";
+	
+	private static final String LAND_USE_COLLADA_ROOT_IDS =
+		"SELECT lu.lod<LoD>_multi_surface_id " +
+		"FROM LAND_USE lu, CITYOBJECT co " + 
+		"WHERE co.gmlid = ? " +
+			"AND lu.id = co.id";
+
+    public static String getLandUseQuery (int lodToExportFrom, DisplayForm displayForm) {
+    	String query = null;
+    	switch (displayForm.getForm()) {
+    		case DisplayForm.FOOTPRINT:
+    		case DisplayForm.EXTRUDED:
+    		case DisplayForm.GEOMETRY:
+    			query = LAND_USE_FOOTPRINT_EXTRUDED_GEOMETRY;
+    	    	break;
+    		case DisplayForm.COLLADA:
+    			query = LAND_USE_COLLADA_ROOT_IDS;
+    	    	break;
+    	    default:
+    	    	Logger.getInstance().log(LogLevel.INFO, "No land use object query found");
+    	}
+    	
+//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
+    	return query.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
+    public static String getLandUseHighlightingQuery (int lodToExportFrom) {
+    	return LAND_USE_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
 }

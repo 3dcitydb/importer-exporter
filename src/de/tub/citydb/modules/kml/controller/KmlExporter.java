@@ -126,6 +126,7 @@ import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.GenericCityObject;
 import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
+import de.tub.citydb.modules.kml.database.LandUse;
 import de.tub.citydb.modules.kml.database.PlantCover;
 import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
 import de.tub.citydb.modules.kml.database.WaterBody;
@@ -259,6 +260,7 @@ public class KmlExporter implements EventHandler {
 
 		if (!checkBalloonSettings(CityGMLClass.BUILDING)) return false;
 		if (!checkBalloonSettings(CityGMLClass.WATER_BODY)) return false;
+		if (!checkBalloonSettings(CityGMLClass.LAND_USE)) return false;
 		if (!checkBalloonSettings(CityGMLClass.SOLITARY_VEGETATION_OBJECT)) return false;
 		if (!checkBalloonSettings(CityGMLClass.CITY_FURNITURE)) return false;
 		if (!checkBalloonSettings(CityGMLClass.GENERIC_CITY_OBJECT)) return false;
@@ -911,6 +913,11 @@ public class KmlExporter implements EventHandler {
 					 config.getProject().getKmlExporter().getGenericCityObjectDisplayForms(),
 					 GenericCityObject.STYLE_BASIS_NAME);
 		}
+		if (featureFilter.isSetLandUse()) {
+			addStyle(currentDisplayForm,
+					 config.getProject().getKmlExporter().getLandUseDisplayForms(),
+					 LandUse.STYLE_BASIS_NAME);
+		}
 		if (featureFilter.isSetWaterBody()) {
 			addStyle(currentDisplayForm,
 					 config.getProject().getKmlExporter().getWaterBodyDisplayForms(),
@@ -1241,6 +1248,10 @@ public class KmlExporter implements EventHandler {
 				balloonSettings = config.getProject().getKmlExporter().getWaterBodyBalloon();
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetWaterBody();
 				break;
+			case LAND_USE:
+				balloonSettings = config.getProject().getKmlExporter().getLandUseBalloon();
+				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetLandUse();
+				break;
 			case SOLITARY_VEGETATION_OBJECT:
 				balloonSettings = config.getProject().getKmlExporter().getVegetationBalloon();
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetVegetation();
@@ -1290,6 +1301,9 @@ public class KmlExporter implements EventHandler {
 			}
 			else if (kmlExportObject instanceof WaterBody) {
 				type = CityGMLClass.WATER_BODY;
+			}
+			else if (kmlExportObject instanceof LandUse) {
+				type = CityGMLClass.LAND_USE;
 			}
 			else if (kmlExportObject instanceof CityObjectGroup) {
 				type = CityGMLClass.CITY_OBJECT_GROUP;

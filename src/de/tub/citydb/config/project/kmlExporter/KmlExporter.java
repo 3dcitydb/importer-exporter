@@ -51,6 +51,9 @@ import de.tub.citydb.config.project.system.System;
 		"waterBodyDisplayForms",
 		"waterBodyColladaOptions",
 		"waterBodyBalloon",
+		"landUseDisplayForms",
+		"landUseColladaOptions",
+		"landUseBalloon",
 		"vegetationDisplayForms",
 		"vegetationColladaOptions",
 		"vegetationBalloon",
@@ -95,6 +98,11 @@ public class KmlExporter {
 	private List<DisplayForm> waterBodyDisplayForms;
 	private ColladaOptions waterBodyColladaOptions;
 	private Balloon waterBodyBalloon;
+	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="landUseDisplayForms")	
+	private List<DisplayForm> landUseDisplayForms;
+	private ColladaOptions landUseColladaOptions;
+	private Balloon landUseBalloon;
 	@XmlElement(name="displayForm", required=true)
 	@XmlElementWrapper(name="vegetationDisplayForms")	
 	private List<DisplayForm> vegetationDisplayForms;
@@ -145,6 +153,9 @@ public class KmlExporter {
 		setWaterBodyDisplayForms(new ArrayList<DisplayForm>());
 		setWaterBodyColladaOptions(new ColladaOptions());
 		setWaterBodyBalloon(new Balloon());
+		setLandUseDisplayForms(new ArrayList<DisplayForm>());
+		setLandUseColladaOptions(new ColladaOptions());
+		setLandUseBalloon(new Balloon());
 		setVegetationDisplayForms(new ArrayList<DisplayForm>());
 		setVegetationColladaOptions(new ColladaOptions());
 		setVegetationBalloon(new Balloon());
@@ -240,6 +251,22 @@ public class KmlExporter {
 
 	public ColladaOptions getWaterBodyColladaOptions() {
 		return waterBodyColladaOptions;
+	}
+
+	public void setLandUseDisplayForms(List<DisplayForm> landUseDisplayForms) {
+		this.landUseDisplayForms = landUseDisplayForms;
+	}
+
+	public List<DisplayForm> getLandUseDisplayForms() {
+		return landUseDisplayForms;
+	}
+
+	public void setLandUseColladaOptions(ColladaOptions landUseColladaOptions) {
+		this.landUseColladaOptions = landUseColladaOptions;
+	}
+
+	public ColladaOptions getLandUseColladaOptions() {
+		return landUseColladaOptions;
 	}
 
 	public void setCityObjectGroupDisplayForms(List<DisplayForm> cityObjectGroupDisplayForms) {
@@ -408,6 +435,14 @@ public class KmlExporter {
 
 	public Balloon getWaterBodyBalloon() {
 		return waterBodyBalloon;
+	}
+
+	public void setLandUseBalloon(Balloon landUseBalloon) {
+		this.landUseBalloon = landUseBalloon;
+	}
+
+	public Balloon getLandUseBalloon() {
+		return landUseBalloon;
 	}
 
 	public void setCityObjectGroupBalloon(Balloon cityObjectGroupBalloon) {

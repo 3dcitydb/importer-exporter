@@ -66,6 +66,7 @@ import de.tub.citydb.modules.kml.database.GenericCityObject;
 import de.tub.citydb.modules.kml.database.KmlExporterManager;
 import de.tub.citydb.modules.kml.database.KmlGenericObject;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
+import de.tub.citydb.modules.kml.database.LandUse;
 import de.tub.citydb.modules.kml.database.PlantCover;
 import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
 import de.tub.citydb.modules.kml.database.WaterBody;
@@ -137,6 +138,20 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 													   colladaOptions.getGroupSize(): 1);
 			objectGroup.put(CityGMLClass.BUILDING, null);
 		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetWaterBody()) {
+			objectGroupCounter.put(CityGMLClass.WATER_BODY, 0);
+			colladaOptions = config.getProject().getKmlExporter().getWaterBodyColladaOptions();
+			objectGroupSize.put(CityGMLClass.WATER_BODY, colladaOptions.isGroupObjects() ? 
+														 colladaOptions.getGroupSize(): 1);
+			objectGroup.put(CityGMLClass.WATER_BODY, null);
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetLandUse()) {
+			objectGroupCounter.put(CityGMLClass.LAND_USE, 0);
+			colladaOptions = config.getProject().getKmlExporter().getLandUseColladaOptions();
+			objectGroupSize.put(CityGMLClass.LAND_USE, colladaOptions.isGroupObjects() ? 
+														 colladaOptions.getGroupSize(): 1);
+			objectGroup.put(CityGMLClass.LAND_USE, null);
+		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetVegetation()) {
 			objectGroupCounter.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, 0);
 			colladaOptions = config.getProject().getKmlExporter().getVegetationColladaOptions();
@@ -157,13 +172,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			objectGroupSize.put(CityGMLClass.CITY_FURNITURE, colladaOptions.isGroupObjects() ? 
 															 colladaOptions.getGroupSize(): 1);
 			objectGroup.put(CityGMLClass.CITY_FURNITURE, null);
-		}
-		if (filterConfig.getComplexFilter().getFeatureClass().isSetWaterBody()) {
-			objectGroupCounter.put(CityGMLClass.WATER_BODY, 0);
-			colladaOptions = config.getProject().getKmlExporter().getWaterBodyColladaOptions();
-			objectGroupSize.put(CityGMLClass.WATER_BODY, colladaOptions.isGroupObjects() ? 
-														 colladaOptions.getGroupSize(): 1);
-			objectGroup.put(CityGMLClass.WATER_BODY, null);
 		}
 		// CityGMLClass.CITY_OBJECT_GROUP is left out, it does not make sense to group it without COLLADA DisplayForm 
 	}
@@ -283,6 +291,17 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												 getBalloonTemplateHandler(featureClass),
 												 eventDispatcher,
 												 config);
+					break;
+
+				case LAND_USE:
+					singleObject = new LandUse(connection,
+											   kmlExporterManager,
+											   cityGMLFactory,
+											   kmlFactory,
+											   elevationServiceHandler,
+											   getBalloonTemplateHandler(featureClass),
+											   eventDispatcher,
+											   config);
 					break;
 
 				case SOLITARY_VEGETATION_OBJECT:
@@ -431,6 +450,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		switch (cityObjectType) {
 			case BUILDING:
 				balloonSettings = config.getProject().getKmlExporter().getBuildingBalloon();
+				break;
+			case LAND_USE:
+				balloonSettings = config.getProject().getKmlExporter().getLandUseBalloon();
 				break;
 			case WATER_BODY:
 			case WATER_CLOSURE_SURFACE:

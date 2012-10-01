@@ -311,6 +311,22 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("ROLE");
 	}};
 
+	private static final String LAND_USE_TABLE = "LAND_USE";
+	private static final LinkedHashSet<String> LAND_USE_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("CLASS");
+		add("FUNCTION");
+		add("USAGE");
+		add("LOD0_MULTI_SURFACE_ID");
+		add("LOD1_MULTI_SURFACE_ID");
+		add("LOD2_MULTI_SURFACE_ID");
+		add("LOD3_MULTI_SURFACE_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+	}};
+
 	private static final String OBJECTCLASS_TABLE = "OBJECTCLASS";
 	private static final LinkedHashSet<String> OBJECTCLASS_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
@@ -566,6 +582,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(GENERALIZATION_TABLE, GENERALIZATION_COLUMNS);
 		put(GENERIC_CITYOBJECT_TABLE, GENERIC_CITYOBJECT_COLUMNS);
 		put(GROUP_TO_CITYOBJECT_TABLE, GROUP_TO_CITYOBJECT_COLUMNS);
+		put(LAND_USE_TABLE, LAND_USE_COLUMNS);
 		put(OBJECTCLASS_TABLE, OBJECTCLASS_COLUMNS);
 		put(OPENING_TABLE, OPENING_COLUMNS);
 		put(OPENING_TO_THEM_SURFACE_TABLE, OPENING_TO_THEM_SURFACE_COLUMNS);
@@ -1198,6 +1215,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				case SOLITARY_VEGETATION_OBJECT:
 					sqlStatement = sqlStatementForSolVegObj(table, columns, aggregateString, aggregateClosingString, lod);
 					break;
+				case LAND_USE:
+					sqlStatement = sqlStatementForLandUse(table, columns, aggregateString, aggregateClosingString, lod);
+					break;
 				case WATER_BODY:
 					sqlStatement = sqlStatementForWaterBody(table, columns, aggregateString, aggregateClosingString, lod);
 					break;
@@ -1376,6 +1396,51 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			return sqlStatement; 
 		}
 
+		private String sqlStatementForLandUse(String table,
+				 							  List<String> columns,
+				 							  String aggregateString,
+				 							  String aggregateClosingString,
+				 							  int lod) throws Exception {
+			String sqlStatement = null; 
+
+			if (LAND_USE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, LAND_USE lu" +
+							   " WHERE co.gmlid = ?" +
+							   " AND lu.id = co.id";
+			}
+			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
+							   " WHERE co.gmlid = ?" +
+							   " AND a.cityobject_id = co.id" +
+							   " AND a2sd.appearance_id = a.id" +
+							   " AND sd.id = a2sd.surface_data_id";
+			}
+			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM SURFACE_GEOMETRY sg, LAND_USE lu, CITYOBJECT co" + 
+							   " WHERE co.gmlid = ?" +
+							   " AND lu.id = co.id" +
+							   " AND sg.root_id = lu.lod" + lod + "_multi_surface_id" + 
+							   " AND sg.geometry IS NOT NULL";
+			}
+			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM TEXTUREPARAM tp, SURFACE_GEOMETRY sg, LAND_USE lu, CITYOBJECT co" +
+							   " WHERE co.gmlid = ?" +
+							   " AND lu.id = co.id" +
+							   " AND sg.root_id = lu.lod" + lod + "_multi_surface_id" + 
+							   " AND sg.geometry IS NOT NULL" + 
+							   " AND tp.surface_geometry_id = sg.id";
+			}
+			else {
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
+			}
+
+			return sqlStatement; 
+		}
+
 		private String sqlStatementForSolVegObj(String table,
 												List<String> columns,
 												String aggregateString,
@@ -1464,18 +1529,18 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM SURFACE_GEOMETRY sg, PLANT_COVER pc, CITYOBJECT co" + 
-							   " WHERE co.gmlid = ? " +
-							   " AND pc.id = co.id " +
-							   " AND sg.root_id = pc.lod" + lod + "_geometry_id " + 
+							   " WHERE co.gmlid = ?" +
+							   " AND pc.id = co.id" +
+							   " AND sg.root_id = pc.lod" + lod + "_geometry_id" + 
 							   " AND sg.geometry IS NOT NULL";
 			}
 			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM TEXTUREPARAM tp, SURFACE_GEOMETRY sg, PLANT_COVER pc, CITYOBJECT co" +
-							   " WHERE co.gmlid = ? " +
-							   " AND pc.id = co.id " +
-							   " AND sg.root_id = pc.lod" + lod + "_geometry_id " + 
-							   " AND sg.geometry IS NOT NULL " + 
+							   " WHERE co.gmlid = ?" +
+							   " AND pc.id = co.id" +
+							   " AND sg.root_id = pc.lod" + lod + "_geometry_id" + 
+							   " AND sg.geometry IS NOT NULL" + 
 							   " AND tp.surface_geometry_id = sg.id";
 			}
 			else if (SOLITARY_VEGETAT_OBJECT_TABLE.equalsIgnoreCase(table)) { } // tolerate but do nothing
@@ -1975,6 +2040,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 			else if (GROUP_TO_CITYOBJECT_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "g2co";
+			}
+			else if (LAND_USE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "lu";
 			}
 			else if (OBJECTCLASS_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "oc";
