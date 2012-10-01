@@ -95,4 +95,8 @@ public class KmlSplittingResult {
 				getCityObjectType().compareTo(CityGMLClass.WATER_GROUND_SURFACE) == 0 ||
 				getCityObjectType().compareTo(CityGMLClass.WATER_SURFACE) == 0);
 	}
+
+	public boolean isLandUse() {
+		return getCityObjectType().compareTo(CityGMLClass.LAND_USE) == 0;
+	}
 }
