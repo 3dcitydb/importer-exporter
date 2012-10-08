@@ -251,6 +251,14 @@ public abstract class KmlGenericObject {
 	protected abstract String getHighlightingQuery();
 
 	
+	protected BalloonTemplateHandlerImpl getBalloonTemplateHandler() {
+		return balloonTemplateHandler;
+	}
+
+	protected void setBalloonTemplateHandler(BalloonTemplateHandlerImpl balloonTemplateHandler) {
+		this.balloonTemplateHandler = balloonTemplateHandler;
+	}
+
 	public void setId(String id) {
 		this.id = id.replace(':', '_');
 	}
@@ -1597,10 +1605,10 @@ public abstract class KmlGenericObject {
 		return createPlacemarksForGeometry(rs, work, false, false);
 	}
 
-	protected List<PlacemarkType> createPlacemarksForGeometry(OracleResultSet rs,
-			KmlSplittingResult work,
-			boolean includeGroundSurface,
-			boolean includeClosureSurface) throws SQLException {
+	private List<PlacemarkType> createPlacemarksForGeometry(OracleResultSet rs,
+															KmlSplittingResult work,
+															boolean includeGroundSurface,
+															boolean includeClosureSurface) throws SQLException {
 
 		HashMap<String, MultiGeometryType> multiGeometries = new HashMap<String, MultiGeometryType>();
 		MultiGeometryType multiGeometry = null;
@@ -2156,21 +2164,21 @@ public abstract class KmlGenericObject {
 			case GEN_ATTRIB:
 				String balloonTemplate = getBalloonContentFromGenericAttribute(gmlId);
 				if (balloonTemplate != null) {
-					if (balloonTemplateHandler == null) { // just in case
-						balloonTemplateHandler = new BalloonTemplateHandlerImpl((File) null, connection);
+					if (getBalloonTemplateHandler() == null) { // just in case
+						setBalloonTemplateHandler(new BalloonTemplateHandlerImpl((File) null, connection));
 					}
-					placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, currentLod));
+					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(balloonTemplate, gmlId, currentLod));
 				}
 				break;
 			case GEN_ATTRIB_AND_FILE:
 				balloonTemplate = getBalloonContentFromGenericAttribute(gmlId);
 				if (balloonTemplate != null) {
-					placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, gmlId, currentLod));
+					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(balloonTemplate, gmlId, currentLod));
 					break;
 				}
 			case FILE :
-				if (balloonTemplateHandler != null) {
-					placemark.setDescription(balloonTemplateHandler.getBalloonContent(gmlId, currentLod));
+				if (getBalloonTemplateHandler() != null) {
+					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(gmlId, currentLod));
 				}
 				break;
 			}
@@ -2269,6 +2277,10 @@ public abstract class KmlGenericObject {
 		if (config.getProject().getKmlExporter().isCallGElevationService()) { // allowed to query
 			PreparedStatement insertQuery = null;
 			OracleResultSet rs = null;
+
+			PreparedStatement checkQuery = null;
+			ResultSet rs2 = null;
+
 			try {
 				// convert candidate points to WGS84
 				double[] coords = new double[candidates.size()*3];
@@ -2284,24 +2296,37 @@ public abstract class KmlGenericObject {
 				Logger.getInstance().info("Getting zOffset from Google's elevation API for " + gmlId + " with " + candidates.size() + " points.");
 				zOffset = elevationServiceHandler.getZOffset(coords);
 
-				// save result in DB for next time
-				String genericAttribName = "GE_LoD" + currentLod + "_zOffset";
-				insertQuery = connection.prepareStatement(Queries.INSERT_GE_ZOFFSET);
-				insertQuery.setString(1, genericAttribName);
-				String strVal = "Auto|" + zOffset + "|" + dateFormatter.format(new Date(System.currentTimeMillis()));
-				insertQuery.setString(2, strVal);
-				insertQuery.setString(3, gmlId);
-				rs = (OracleResultSet)insertQuery.executeQuery();
+				checkQuery = connection.prepareStatement(Queries.GET_ID_FROM_GMLID);
+				checkQuery.setString(1, gmlId);
+				rs2 = checkQuery.executeQuery();
+				rs2.next();
+				long id = rs2.getLong(1);
+				
+				if (rs2.next()) {
+					Logger.getInstance().warn("gml:id value " + gmlId + " is used for more than one object in the 3DCityDB; zOffset was not stored.");
+			    }
+				else {
+					// save result in DB for next time
+					String genericAttribName = "GE_LoD" + currentLod + "_zOffset";
+					insertQuery = connection.prepareStatement(Queries.INSERT_GE_ZOFFSET);
+					insertQuery.setString(1, genericAttribName);
+					String strVal = "Auto|" + zOffset + "|" + dateFormatter.format(new Date(System.currentTimeMillis()));
+					insertQuery.setString(2, strVal);
+					insertQuery.setLong(3, id);
+					rs = (OracleResultSet)insertQuery.executeQuery();
+				}
 			}
 			catch (Exception e) {
-				if (e.getMessage().startsWith("ORA-01427")) { // single-row subquery returns more than one row 
-					Logger.getInstance().warn("gml:id value " + gmlId + " is used for more than one object in the 3DCityDB; zOffset was not stored.");
-				}
+//				if (e.getMessage().startsWith("ORA-01427")) { // single-row subquery returns more than one row 
+//					Logger.getInstance().warn("gml:id value " + gmlId + " is used for more than one object in the 3DCityDB; zOffset was not stored.");
+//				}
 			}
 			finally {
 				try {
 					if (rs != null) rs.close();
 					if (insertQuery != null) insertQuery.close();
+					if (rs2 != null) rs2.close();
+					if (checkQuery != null) checkQuery.close();
 				}
 				catch (Exception e2) {}
 			}
@@ -2317,8 +2342,9 @@ public abstract class KmlGenericObject {
 		rs.next();
 		STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
 		JGeometry surface = JGeometry.load(buildingGeometryObj);
-		double[] ordinatesArray = surface.getOrdinatesArray();
-
+		double[] ordinatesArray = surface.isPoint() ?
+								  surface.getPoint():
+								  surface.getOrdinatesArray();
 		do {
 			// we are only interested in the z coordinate 
 			for (int j = 2; j < ordinatesArray.length; j = j+3) {

@@ -79,9 +79,12 @@ public class Queries {
 			"LEFT JOIN CITYOBJECT_GENERICATTRIB coga ON (coga.cityobject_id = co.id AND coga.attrname = ?) " +
 		"WHERE co.gmlid = ?";
 
+	public static final String GET_ID_FROM_GMLID =
+		"SELECT ID FROM CITYOBJECT WHERE gmlid = ?";
+
 	public static final String INSERT_GE_ZOFFSET =
 		"INSERT INTO CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) " +
-		"VALUES (CITYOBJECT_GENERICATT_SEQ.NEXTVAL, ?, 1, ?, (SELECT ID FROM CITYOBJECT WHERE gmlid = ?))";
+		"VALUES (CITYOBJECT_GENERICATT_SEQ.NEXTVAL, ?, 1, ?, ?)";
 	
 	public static final String TRANSFORM_GEOMETRY_TO_WGS84 =
 		"SELECT SDO_CS.TRANSFORM(?, 4326) FROM DUAL";
