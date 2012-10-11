@@ -258,13 +258,14 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 
-		if (!checkBalloonSettings(CityGMLClass.BUILDING)) return false;
-		if (!checkBalloonSettings(CityGMLClass.WATER_BODY)) return false;
-		if (!checkBalloonSettings(CityGMLClass.LAND_USE)) return false;
-		if (!checkBalloonSettings(CityGMLClass.SOLITARY_VEGETATION_OBJECT)) return false;
-		if (!checkBalloonSettings(CityGMLClass.CITY_FURNITURE)) return false;
-		if (!checkBalloonSettings(CityGMLClass.GENERIC_CITY_OBJECT)) return false;
-		if (!checkBalloonSettings(CityGMLClass.CITY_OBJECT_GROUP)) return false;
+		boolean balloonCheck = checkBalloonSettings(CityGMLClass.BUILDING);
+		balloonCheck = checkBalloonSettings(CityGMLClass.WATER_BODY) && balloonCheck;
+		balloonCheck = checkBalloonSettings(CityGMLClass.LAND_USE) && balloonCheck;
+		balloonCheck = checkBalloonSettings(CityGMLClass.SOLITARY_VEGETATION_OBJECT) && balloonCheck;
+		balloonCheck = checkBalloonSettings(CityGMLClass.CITY_FURNITURE) && balloonCheck;
+		balloonCheck = checkBalloonSettings(CityGMLClass.GENERIC_CITY_OBJECT) && balloonCheck;
+		balloonCheck = checkBalloonSettings(CityGMLClass.CITY_OBJECT_GROUP) && balloonCheck;
+		if (!balloonCheck) return false;
 
 		// getting export filter
 		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
@@ -1320,6 +1321,8 @@ public class KmlExporter implements EventHandler {
 			else if (kmlExportObject instanceof CityFurniture) {
 				type = CityGMLClass.CITY_FURNITURE;
 			}
+			else
+				return;
 
 			Long counter = featureCounterMap.get(type);
 			Long update = ((CounterEvent)e).getCounter();
