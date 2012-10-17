@@ -57,6 +57,9 @@ import de.tub.citydb.config.project.system.System;
 		"vegetationDisplayForms",
 		"vegetationColladaOptions",
 		"vegetationBalloon",
+		"transportationDisplayForms",
+		"transportationColladaOptions",
+		"transportationBalloon",
 		"cityFurnitureDisplayForms",
 		"cityFurnitureColladaOptions",
 		"cityFurnitureBalloon",
@@ -109,6 +112,11 @@ public class KmlExporter {
 	private ColladaOptions vegetationColladaOptions;
 	private Balloon vegetationBalloon;
 	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="transportationDisplayForms")	
+	private List<DisplayForm> transportationDisplayForms;
+	private ColladaOptions transportationColladaOptions;
+	private Balloon transportationBalloon;
+	@XmlElement(name="displayForm", required=true)
 	@XmlElementWrapper(name="cityFurnitureDisplayForms")	
 	private List<DisplayForm> cityFurnitureDisplayForms;
 	private ColladaOptions cityFurnitureColladaOptions;
@@ -159,6 +167,9 @@ public class KmlExporter {
 		setVegetationDisplayForms(new ArrayList<DisplayForm>());
 		setVegetationColladaOptions(new ColladaOptions());
 		setVegetationBalloon(new Balloon());
+		setTransportationDisplayForms(new ArrayList<DisplayForm>());
+		setTransportationColladaOptions(new ColladaOptions());
+		setTransportationBalloon(new Balloon());
 		setCityFurnitureDisplayForms(new ArrayList<DisplayForm>());
 		setCityFurnitureColladaOptions(new ColladaOptions());
 		setCityFurnitureBalloon(new Balloon());
@@ -511,6 +522,30 @@ public class KmlExporter {
 
 	public Balloon getCityFurnitureBalloon() {
 		return cityFurnitureBalloon;
+	}
+
+	public void setTransportationDisplayForms(List<DisplayForm> transportationDisplayForms) {
+		this.transportationDisplayForms = transportationDisplayForms;
+	}
+
+	public List<DisplayForm> getTransportationDisplayForms() {
+		return transportationDisplayForms;
+	}
+
+	public void setTransportationColladaOptions(ColladaOptions transportationColladaOptions) {
+		this.transportationColladaOptions = transportationColladaOptions;
+	}
+
+	public ColladaOptions getTransportationColladaOptions() {
+		return transportationColladaOptions;
+	}
+
+	public void setTransportationBalloon(Balloon transportationBalloon) {
+		this.transportationBalloon = transportationBalloon;
+	}
+
+	public Balloon getTransportationBalloon() {
+		return transportationBalloon;
 	}
 
 }

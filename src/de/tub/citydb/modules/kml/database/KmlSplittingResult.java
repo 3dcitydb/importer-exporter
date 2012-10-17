@@ -99,4 +99,21 @@ public class KmlSplittingResult {
 	public boolean isLandUse() {
 		return getCityObjectType().compareTo(CityGMLClass.LAND_USE) == 0;
 	}
+
+	public boolean isTransportation() {
+		return (isTrafficArea() || isTransportationComplex());
+	}
+
+	public boolean isTrafficArea() {
+		return (getCityObjectType().compareTo(CityGMLClass.TRAFFIC_AREA) == 0 ||
+				getCityObjectType().compareTo(CityGMLClass.AUXILIARY_TRAFFIC_AREA) == 0);
+	}
+
+	public boolean isTransportationComplex() {
+		return (getCityObjectType().compareTo(CityGMLClass.TRANSPORTATION_COMPLEX) == 0 ||
+				getCityObjectType().compareTo(CityGMLClass.TRACK) == 0 ||
+				getCityObjectType().compareTo(CityGMLClass.RAILWAY) == 0 ||
+				getCityObjectType().compareTo(CityGMLClass.ROAD) == 0 ||
+				getCityObjectType().compareTo(CityGMLClass.SQUARE) == 0);
+	}
 }

@@ -1120,4 +1120,110 @@ public class Queries {
     	return LAND_USE_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
 
+	// ----------------------------------------------------------------------
+	// TRANSPORTATION QUERIES
+	// ----------------------------------------------------------------------
+	
+	private static final String TRAFFIC_AREA_ROOT_IDS =
+		"SELECT tc.lod<LoD>_multi_surface_id " +
+		"FROM CITYOBJECT co, TRAFFIC_AREA ta, TRANSPORTATION_COMPLEX tc " +
+		"WHERE co.gmlid = ? " +
+			"AND ta.id = co.id " +
+			"AND tc.id = ta.transportation_complex_id " +
+		"UNION " +
+		"SELECT ta.lod<LoD>_multi_surface_id " +
+		"FROM CITYOBJECT co, TRAFFIC_AREA ta " +
+		"WHERE co.gmlid = ? " +
+			"AND ta.id = co.id ";
+	
+	private static final String TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY =
+		"SELECT sg.geometry, 'Transportation' as type, sg.id " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"WHERE sg.root_id IN (" + TRAFFIC_AREA_ROOT_IDS +
+			") AND sg.geometry IS NOT NULL";
+	
+	private static final String TRANSPORTATION_COMPLEX_ROOT_IDS =
+		"SELECT tc.lod<LoD>_multi_surface_id " +
+		"FROM CITYOBJECT co, TRANSPORTATION_COMPLEX tc " +
+		"WHERE co.gmlid = ? " +
+			"AND tc.id = co.id ";
+
+	private static final String TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY =
+		"SELECT sg.geometry, 'Transportation' as type, sg.id " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"WHERE sg.root_id IN (" + TRANSPORTATION_COMPLEX_ROOT_IDS +
+			") AND sg.geometry IS NOT NULL";
+	
+	private static final String TRAFFIC_AREA_ROOT_IDS_LOD1 =
+		"SELECT tc.lod<LoD>_multi_surface_id " +
+		"FROM CITYOBJECT co, TRAFFIC_AREA ta, TRANSPORTATION_COMPLEX tc " +
+		"WHERE co.gmlid = ? " +
+			"AND ta.id = co.id " +
+			"AND tc.id = ta.transportation_complex_id";
+	
+	private static final String TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1 =
+		"SELECT sg.geometry, 'Transportation' as type, sg.id " +
+		"FROM SURFACE_GEOMETRY sg " +
+		"WHERE sg.root_id IN (" + TRAFFIC_AREA_ROOT_IDS_LOD1 +
+			") AND sg.geometry IS NOT NULL";
+	
+	private static final String TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0 =
+		"SELECT tc.lod0_network " +
+		"FROM CITYOBJECT co, TRAFFIC_AREA ta, TRANSPORTATION_COMPLEX tc " +
+		"WHERE co.gmlid = ? " +
+			"AND ta.id = co.id " +
+			"AND tc.id = ta.transportation_complex_id ";
+
+	private static final String TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0 =
+		"SELECT tc.lod0_network " +
+		"FROM CITYOBJECT co, TRANSPORTATION_COMPLEX tc " +
+		"WHERE co.gmlid = ? " +
+			"AND tc.id = co.id ";
+	
+    public static String getTransportationQuery (int lodToExportFrom, DisplayForm displayForm, boolean isComplex) {
+    	String query = null;
+    	switch (displayForm.getForm()) {
+    		case DisplayForm.FOOTPRINT:
+    		case DisplayForm.EXTRUDED:
+    		case DisplayForm.GEOMETRY:
+    			switch (lodToExportFrom) {
+					case 2:
+					case 3:
+					case 4:
+		    			query = isComplex ? 
+		    					TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY:
+		    					TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY;
+		    	    	break;
+					case 1:
+		    			query = isComplex ? 
+		    					TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY:
+		    					TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1;
+		    	    	break;
+					case 0:
+		    			query = isComplex ? 
+		    					TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0:
+		    					TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0;
+		    	    	break;
+    			}
+    	    	break;
+
+    		case DisplayForm.COLLADA: // collada can only be achieved from LoD2 upwards
+    			query = isComplex ? 
+    					TRANSPORTATION_COMPLEX_ROOT_IDS:
+    					TRAFFIC_AREA_ROOT_IDS;
+    	    	break;
+    	    default:
+    	    	Logger.getInstance().log(LogLevel.INFO, "No transportation object query found");
+    	}
+    	
+//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
+    	return query.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
+    public static String getTransportationHighlightingQuery (int lodToExportFrom, boolean isComplex) {
+    	return isComplex ? 
+    		   TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom)):
+    		   TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
 }

@@ -1741,7 +1741,7 @@ public abstract class KmlGenericObject {
 			if (work.isBuilding())
 				placemark.setStyleUrl("#" + surfaceType + "Normal");
 			else
-				placemark.setStyleUrl(getStyleBasisName() + DisplayForm.GEOMETRY_STR + "Normal");
+				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.GEOMETRY_STR + "Normal");
 			if (getBalloonSettings().isIncludeDescription() &&
 					!work.getDisplayForm().isHighlightingEnabled()) { // avoid double description
 				addBalloonContents(placemark, work.getGmlId());

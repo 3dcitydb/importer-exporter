@@ -44,6 +44,7 @@ public class KMLExportPreferences extends AbstractPreferences {
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new WaterBodyRenderingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new LandUseRenderingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new VegetationRenderingPanel(config)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new TransportationRenderingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new CityFurnitureRenderingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new GenericCityObjectRenderingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupRenderingPanel(config)));
@@ -53,6 +54,7 @@ public class KMLExportPreferences extends AbstractPreferences {
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new WaterBodyBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new LandUseBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new VegetationBalloonPanel(config)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new TransportationBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new CityFurnitureBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new GenericCityObjectBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupBalloonPanel(config)));

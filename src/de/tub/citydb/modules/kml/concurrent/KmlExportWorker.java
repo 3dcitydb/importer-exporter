@@ -69,6 +69,7 @@ import de.tub.citydb.modules.kml.database.KmlSplittingResult;
 import de.tub.citydb.modules.kml.database.LandUse;
 import de.tub.citydb.modules.kml.database.PlantCover;
 import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
+import de.tub.citydb.modules.kml.database.Transportation;
 import de.tub.citydb.modules.kml.database.WaterBody;
 
 public class KmlExportWorker implements Worker<KmlSplittingResult> {
@@ -158,6 +159,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			objectGroupSize.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, colladaOptions.isGroupObjects() ? 
 													   					 colladaOptions.getGroupSize(): 1);
 			objectGroup.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, null);
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetTransportation()) {
+			objectGroupCounter.put(CityGMLClass.TRANSPORTATION_COMPLEX, 0);
+			colladaOptions = config.getProject().getKmlExporter().getTransportationColladaOptions();
+			objectGroupSize.put(CityGMLClass.TRANSPORTATION_COMPLEX, colladaOptions.isGroupObjects() ? 
+													   	   colladaOptions.getGroupSize(): 1);
+			objectGroup.put(CityGMLClass.TRANSPORTATION_COMPLEX, null);
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetGenericCityObject()) {
 			objectGroupCounter.put(CityGMLClass.GENERIC_CITY_OBJECT, 0);
@@ -326,6 +334,23 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												  config);
 					break;
 
+				case TRAFFIC_AREA:
+				case AUXILIARY_TRAFFIC_AREA:
+				case TRANSPORTATION_COMPLEX:
+				case TRACK:
+				case RAILWAY:
+				case ROAD:
+				case SQUARE:
+					singleObject = new Transportation(connection,
+												   	  kmlExporterManager,
+												   	  cityGMLFactory,
+												   	  kmlFactory,
+												   	  elevationServiceHandler,
+												   	  getBalloonTemplateHandler(featureClass),
+												   	  eventDispatcher,
+												   	  config);
+					break;
+
 				case GENERIC_CITY_OBJECT:
 					singleObject = new GenericCityObject(connection,
 												   	   	 kmlExporterManager,
@@ -463,6 +488,15 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			case SOLITARY_VEGETATION_OBJECT:
 			case PLANT_COVER:
 				balloonSettings = config.getProject().getKmlExporter().getVegetationBalloon();
+				break;
+			case TRAFFIC_AREA:
+			case AUXILIARY_TRAFFIC_AREA:
+			case TRANSPORTATION_COMPLEX:
+			case TRACK:
+			case RAILWAY:
+			case ROAD:
+			case SQUARE:
+				balloonSettings = config.getProject().getKmlExporter().getTransportationBalloon();
 				break;
 			case GENERIC_CITY_OBJECT:
 				balloonSettings = config.getProject().getKmlExporter().getGenericCityObjectBalloon();
