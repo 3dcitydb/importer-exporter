@@ -1617,8 +1617,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							   " WHERE sg.id IN" +
 							   "(SELECT sg.id" +
 							   " FROM CITYOBJECT co, WATERBODY wb, SURFACE_GEOMETRY sg" +
-							   " AND wb.id = co.id" +
 							   " WHERE co.gmlid = ?" +
+							   " AND wb.id = co.id" +
 							   " AND sg.root_id = wb.lod" + lod + "_solid_id";
 				if (lod < 2) {
 					sqlStatement = sqlStatement +
