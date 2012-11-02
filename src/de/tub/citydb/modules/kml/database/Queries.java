@@ -70,27 +70,18 @@ public class Queries {
 	  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
 				  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
 	"ORDER BY 2"; // ORDER BY co.class_id*/
-
 	
 	public static final String GET_GMLIDS =
- 	"SELECT co.gmlid, co.class_id " +
- 	"FROM CITYOBJECT co " +
- 	"WHERE " +
-		  "ST_Relate(co.envelope, ST_GeomFromEWKT(?), 'T*T***T**') ='TRUE' " +		// overlap
-		  "UNION ALL " +
-     "SELECT co.gmlid, co.class_id " +
- 	"FROM CITYOBJECT co " +
- 	"WHERE " +
- 	"(ST_Relate(co.envelope, ST_GeomFromEWKT(?), 'T*F**F***') ='TRUE' OR " + 	// inside and coveredby
-		 "ST_Relate(co.envelope, ST_GeomFromEWKT(?), '*TF**F***') ='TRUE' OR " + 	// coveredby
-		 "ST_Relate(co.envelope, ST_GeomFromEWKT(?), '**FT*F***') ='TRUE' OR " + 	// coveredby
-		 "ST_Relate(co.envelope, ST_GeomFromEWKT(?), '**F*TF***') ='TRUE') " +	 	// coveredby
- 	"UNION ALL " +
-     "SELECT co.gmlid, co.class_id " +
- 	"FROM CITYOBJECT co " +
- 	"WHERE " +
- 	  "ST_Relate(co.envelope, ST_GeomFromEWKT(?), 'T*F**FFF*') ='TRUE' " +	  	// equal
- 	"ORDER BY 2"; // ORDER BY co.class_id*/
+	 	"SELECT co.gmlid, co.class_id " +
+	 	"FROM CITYOBJECT co " +
+	 	"WHERE " +
+			"ST_Intersects(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
+		"UNION ALL " +
+			"SELECT co.gmlid, co.class_id " +
+		 	"FROM CITYOBJECT co " +
+		 	"WHERE " +
+			  "ST_CoveredBy(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
+	 	"ORDER BY 2"; // ORDER BY co.class_id*/
  
     public static final String GET_OBJECTCLASS =
 		"SELECT co.class_id " +
@@ -799,42 +790,25 @@ public class Queries {
    		"ORDER BY co.class_id";
 	
 	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX = 
-		"SELECT co.gmlid, co.class_id " + 
-		"FROM cityobject co " +
-		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-		                "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
-		                "WHERE co.gmlid = ? " + 
-		                "AND cog.ID = co.ID " +
-		                "AND g2co.cityobjectgroup_id = cog.ID) " +
-		"AND ST_Relate(co.envelope, ST_GeomFromEWKT(?), 'T*T***T**') ='TRUE' " +		// overlap
-//		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
-//					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
+	 	"SELECT co.gmlid, co.class_id " +
+		 	"FROM CITYOBJECT co " +
+			"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
+						    "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
+						    "WHERE co.gmlid = ? " + 
+						    "AND cog.ID = co.ID " +
+						    "AND g2co.cityobjectgroup_id = cog.ID) " +
+							  "ST_Intersects(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
 		"UNION ALL " +
-		"SELECT co.gmlid, co.class_id " + 
-		"FROM cityobject co " +
-		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-		                "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
-		                "WHERE co.gmlid = ? " + 
-		                "AND cog.ID = co.ID " +
-		                "AND g2co.cityobjectgroup_id = cog.ID) " +
-    	"AND (ST_Relate(co.envelope, ST_GeomFromEWKT(?), 'T*F**F***') ='TRUE' OR " + 	// inside and coveredby
- 		     "ST_Relate(co.envelope, ST_GeomFromEWKT(?), '*TF**F***') ='TRUE' OR " + 	// coveredby
- 		     "ST_Relate(co.envelope, ST_GeomFromEWKT(?), '**FT*F***') ='TRUE' OR " + 	// coveredby
- 		     "ST_Relate(co.envelope, ST_GeomFromEWKT(?), '**F*TF***') ='TRUE') " +	 	// coveredby
-//		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-//					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby') ='TRUE') " +
-		"UNION ALL " +
-		"SELECT co.gmlid, co.class_id " + 
-		"FROM cityobject co " +
-		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-		                "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
-		                "WHERE co.gmlid = ? " + 
-		                "AND cog.ID = co.ID " +
-		                "AND g2co.cityobjectgroup_id = cog.ID) " +
-        "AND ST_Relate(co.envelope, ST_GeomFromEWKT(?), 'T*F**FFF*') ='TRUE' " +	  	// equal
-//		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-//					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
+			"SELECT co.gmlid, co.class_id " +
+		 	"FROM CITYOBJECT co " +
+			"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
+					        "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
+					        "WHERE co.gmlid = ? " + 
+					        "AND cog.ID = co.ID " +
+					        "AND g2co.cityobjectgroup_id = cog.ID) " +
+							  "ST_CoveredBy(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
 		"ORDER BY 2"; // ORDER BY co.class_id*/
+	
 
 	// ----------------------------------------------------------------------
 	// SOLITARY VEGETATION OBJECT QUERIES

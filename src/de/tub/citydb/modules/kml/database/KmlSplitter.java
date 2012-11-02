@@ -193,10 +193,6 @@ public class KmlSplitter {
 				
 				spatialQuery.setString(1, lineGeom);
 				spatialQuery.setString(2, polyGeom);
-				spatialQuery.setString(3, polyGeom);
-				spatialQuery.setString(4, polyGeom);
-				spatialQuery.setString(5, polyGeom);
-				spatialQuery.setString(6, polyGeom);
 				
 				rs = spatialQuery.executeQuery();
 				
@@ -318,10 +314,6 @@ public class KmlSplitter {
 						
 						query.setString(1, lineGeom);
 						query.setString(2, polyGeom);
-						query.setString(3, polyGeom);
-						query.setString(4, polyGeom);
-						query.setString(5, polyGeom);
-						query.setString(6, polyGeom);
 						
 						rs = query.executeQuery();
 					}

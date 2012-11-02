@@ -174,25 +174,21 @@ public class DBSplitter {
 				double maxY = bbox.getUpperRightCorner().getY();
 
 				boolean overlap = tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode();
-				bboxFilter = new String[overlap ? 3 : 2];
 				
-				String filter = "ST_Relate(co.ENVELOPE, " +
+				bboxFilter = new String[overlap ? 2 : 1];
+						
+				String geomAgeomB = "(co.ENVELOPE, " +
 						"ST_GeomFromEWKT('SRID=" + dbSrs.getSrid() + ";POLYGON((" + 
 						minX + " " + minY + "," + 
 						minX + " " + maxY + "," + 
 						maxX + " " + maxY + "," + 
 						maxX + " " + minY + "," + 
-						minX + " " + minY + "))'), ";
+						minX + " " + minY + "))'))";
 				
-				bboxFilter[0] = "(" + 
-						filter + "'T*F**F***') = 'TRUE' or " +		// inside & coveredby
-						filter + "'*TF**F***') = 'TRUE' or " +		// coveredby
-						filter + "'**FT*F***') = 'TRUE' or " +		// coveredby
-						filter + "'**F*TF***') = 'TRUE')";			// coveredby
-				bboxFilter[1] = filter + "'T*F**FFF*') = 'TRUE'"; 	// equal				
+				bboxFilter[0] = "ST_CoveredBy" + geomAgeomB + " = 'TRUE'";
 				
 				if (overlap)
-					bboxFilter[2] = filter + "'T*T***T**') = 'TRUE'"; //overlapbdyintersect
+					bboxFilter[0] = "ST_Intersects" + geomAgeomB + " = 'TRUE'";
 				
 //				if (dbConnectionPool.getActiveConnectionMetaData().getDatabaseMajorVersion() == 11)
 //					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
@@ -306,7 +302,7 @@ public class DBSplitter {
 					continue;
 				}
 
-				StringBuilder query = new StringBuilder("select ")/*.append(optimizerHint)*/.append(" co.ID, co.CLASS_ID from CITYOBJECT co, ")
+				StringBuilder query = new StringBuilder("select")/*.append(optimizerHint)*/.append(" co.ID, co.CLASS_ID from CITYOBJECT co, ")
 						.append(tableName).append(" j where co.ID=j.ID and ");
 
 				query.append("upper(j.NAME) like '%").append(gmlNameFilter).append("%' ");
