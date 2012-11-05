@@ -76,17 +76,11 @@ public class CityObject4JSON {
 
 	public void setEnvelope (double[] ordinatesArray) {
 		if (ordinatesArray == null) return;
-		envelopeXmin = ordinatesArray[0];
-		envelopeYmin = ordinatesArray[1];
-		if (ordinatesArray.length == 6) {
-			envelopeXmax = ordinatesArray[3];
-			envelopeYmax = ordinatesArray[4];
-			return;
-		}
-		if (ordinatesArray.length == 15) {
-			envelopeXmax = ordinatesArray[6];
-			envelopeYmax = ordinatesArray[7];
-		}
+		// different from Oracle version
+		envelopeXmin = Math.min(ordinatesArray[0], ordinatesArray[3]); 
+		envelopeYmin = Math.min(ordinatesArray[1], ordinatesArray[4]);
+		envelopeXmax = Math.max(ordinatesArray[0], ordinatesArray[3]);
+		envelopeYmax = Math.max(ordinatesArray[1], ordinatesArray[4]);
 	}
 	
 	public void setEnvelopeXmin(double envelopeXmin) {

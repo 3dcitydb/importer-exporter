@@ -181,17 +181,15 @@ public class KmlExporterManager {
         			if (isBBoxActive && config.getProject().getKmlExporter().isOneFilePerObject()) {
 						String displayFormName = work.getDisplayForm().getName();
         				if (gmlId == null) {
-        					gmlId = placemark.getName();
+        					gmlId = work.getGmlId();
 							String path = config.getInternal().getExportFileName().trim();
 							path = path.substring(0, path.lastIndexOf(File.separator));
 							String filename = null;
 
 							filename = gmlId + "_" + displayFormName;
-							if (work.getDisplayForm().getForm() >= DisplayForm.GEOMETRY &&
-								work.getDisplayForm().isHighlightingEnabled()) {
+							if (placemark.getId().startsWith(DisplayForm.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID)) {
 								filename = filename + "_" + DisplayForm.HIGHLIGTHTED_STR;
 							}
-							
 
 							File placemarkDirectory = new File(path + File.separator + gmlId);
 							if (!placemarkDirectory.exists()) {
