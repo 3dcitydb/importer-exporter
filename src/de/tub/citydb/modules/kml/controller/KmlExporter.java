@@ -906,7 +906,7 @@ public class KmlExporter implements EventHandler {
 					 config.getProject().getKmlExporter().getTransportationDisplayForms(),
 					 Transportation.STYLE_BASIS_NAME);
 		}
-		if (featureFilter.isSetCityObjectGroup()) {
+		if (featureFilter.isSetCityObjectGroup() && config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().size() > 0) {
 			addStyle(config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().get(0), // hard-coded for groups
 					 config.getProject().getKmlExporter().getCityObjectGroupDisplayForms(),
 					 CityObjectGroup.STYLE_BASIS_NAME);
