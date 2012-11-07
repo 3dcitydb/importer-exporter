@@ -177,6 +177,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	private DefaultMutableTreeNode landUse;
 	private DefaultMutableTreeNode vegetation;
 	private DefaultMutableTreeNode transportation;
+	private DefaultMutableTreeNode relief;
 	private DefaultMutableTreeNode cityFurniture;
 	private DefaultMutableTreeNode genericCityObject;
 	private DefaultMutableTreeNode cityObjectGroup;
@@ -354,6 +355,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		landUse = new DefaultMutableTreeNode(FeatureClassMode.LANDUSE);
 		vegetation = new DefaultMutableTreeNode(FeatureClassMode.VEGETATION);
 		transportation = new DefaultMutableTreeNode(FeatureClassMode.TRANSPORTATION);
+		relief = new DefaultMutableTreeNode(FeatureClassMode.RELIEFFEATURE);
 		cityFurniture = new DefaultMutableTreeNode(FeatureClassMode.CITYFURNITURE);
 		genericCityObject = new DefaultMutableTreeNode(FeatureClassMode.GENERICCITYOBJECT);
 		cityObjectGroup = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECTGROUP);
@@ -363,6 +365,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		cityObject.add(landUse);
 		cityObject.add(vegetation);
 		cityObject.add(transportation);
+		cityObject.add(relief);
 		cityObject.add(cityFurniture);
 		cityObject.add(genericCityObject);
 		cityObject.add(cityObjectGroup);
@@ -529,6 +532,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 		else {
 			fcTree.getCheckingModel().removeCheckingPath(new TreePath(transportation.getPath()));
+		}
+		if (kmlExporter.getFilter().getComplexFilter().getFeatureClass().isSetReliefFeature()) {
+			fcTree.getCheckingModel().addCheckingPath(new TreePath(relief.getPath()));
+		}
+		else {
+			fcTree.getCheckingModel().removeCheckingPath(new TreePath(relief.getPath()));
 		}
 		if (kmlExporter.getFilter().getComplexFilter().getFeatureClass().isSetCityFurniture()) {
 			fcTree.getCheckingModel().addCheckingPath(new TreePath(cityFurniture.getPath()));
@@ -790,6 +799,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setLandUse(fcTree.getCheckingModel().isPathChecked(new TreePath(landUse.getPath()))); 
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setVegetation(fcTree.getCheckingModel().isPathChecked(new TreePath(vegetation.getPath())));
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setTransportation(fcTree.getCheckingModel().isPathChecked(new TreePath(transportation.getPath())));
+		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setReliefFeature(fcTree.getCheckingModel().isPathChecked(new TreePath(relief.getPath())));
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setCityFurniture(fcTree.getCheckingModel().isPathChecked(new TreePath(cityFurniture.getPath())));
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setGenericCityObject(fcTree.getCheckingModel().isPathChecked(new TreePath(genericCityObject.getPath())));
 		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setCityObjectGroup(fcTree.getCheckingModel().isPathChecked(new TreePath(cityObjectGroup.getPath())));

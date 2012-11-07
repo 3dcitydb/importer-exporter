@@ -128,6 +128,7 @@ import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
 import de.tub.citydb.modules.kml.database.LandUse;
 import de.tub.citydb.modules.kml.database.PlantCover;
+import de.tub.citydb.modules.kml.database.Relief;
 import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
 import de.tub.citydb.modules.kml.database.Transportation;
 import de.tub.citydb.modules.kml.database.WaterBody;
@@ -264,6 +265,7 @@ public class KmlExporter implements EventHandler {
 		balloonCheck = checkBalloonSettings(CityGMLClass.LAND_USE) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.SOLITARY_VEGETATION_OBJECT) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.TRANSPORTATION_COMPLEX) && balloonCheck;
+		balloonCheck = checkBalloonSettings(CityGMLClass.RELIEF_FEATURE) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.CITY_FURNITURE) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.GENERIC_CITY_OBJECT) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.CITY_OBJECT_GROUP) && balloonCheck;
@@ -906,6 +908,11 @@ public class KmlExporter implements EventHandler {
 					 config.getProject().getKmlExporter().getTransportationDisplayForms(),
 					 Transportation.STYLE_BASIS_NAME);
 		}
+		if (featureFilter.isSetReliefFeature()) {
+			addStyle(currentDisplayForm,
+					 config.getProject().getKmlExporter().getReliefDisplayForms(),
+					 Relief.STYLE_BASIS_NAME);
+		}
 		if (featureFilter.isSetCityObjectGroup() && config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().size() > 0) {
 			addStyle(config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().get(0), // hard-coded for groups
 					 config.getProject().getKmlExporter().getCityObjectGroupDisplayForms(),
@@ -1268,6 +1275,10 @@ public class KmlExporter implements EventHandler {
 				balloonSettings = config.getProject().getKmlExporter().getTransportationBalloon();
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetTransportation();
 				break;
+			case RELIEF_FEATURE:
+				balloonSettings = config.getProject().getKmlExporter().getReliefBalloon();
+				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetReliefFeature();
+				break;
 			case CITY_FURNITURE:
 				balloonSettings = config.getProject().getKmlExporter().getCityFurnitureBalloon();
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetCityFurniture();
@@ -1322,6 +1333,9 @@ public class KmlExporter implements EventHandler {
 			}
 			else if (kmlExportObject instanceof Transportation) {
 				type = CityGMLClass.TRANSPORTATION_COMPLEX;
+			}
+			else if (kmlExportObject instanceof Relief) {
+				type = CityGMLClass.RELIEF_FEATURE;
 			}
 			else if (kmlExportObject instanceof SolitaryVegetationObject) {
 				type = CityGMLClass.SOLITARY_VEGETATION_OBJECT;

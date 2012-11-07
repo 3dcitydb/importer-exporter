@@ -96,7 +96,14 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("CITYMODEL_ID");
 		add("CITYOBJECT_ID");
 	}};
-
+/*
+	private static final String BREAKLINE_RELIEF_TABLE = "BREAKLINE_RELIEF";
+	private static final LinkedHashSet<String> BREAKLINE_RELIEF_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("RIDGE_OR_VALLEY_LINES");
+		add("BREAK_LINES");
+	}};
+*/
 	private static final String BUILDING_TABLE = "BUILDING";
 	private static final LinkedHashSet<String> BUILDING_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
@@ -326,7 +333,13 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("LOD3_MULTI_SURFACE_ID");
 		add("LOD4_MULTI_SURFACE_ID");
 	}};
-
+/*
+	private static final String MASSPOINT_RELIEF_TABLE = "MASSPOINT_RELIEF";
+	private static final LinkedHashSet<String> MASSPOINT_RELIEF_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("RELIEF_POINTS");
+	}};
+*/
 	private static final String OBJECTCLASS_TABLE = "OBJECTCLASS";
 	private static final LinkedHashSet<String> OBJECTCLASS_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
@@ -365,6 +378,47 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("LOD2_GEOMETRY_ID");
 		add("LOD3_GEOMETRY_ID");
 		add("LOD4_GEOMETRY_ID");
+	}};
+/*
+	private static final String RASTER_RELIEF_TABLE = "RASTER_RELIEF";
+	private static final LinkedHashSet<String> RASTER_RELIEF_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("RASTERPROPERTY");
+	}};
+*/
+	private static final String RASTER_RELIEF_IMP_TABLE = "RASTER_RELIEF_IMP";
+	private static final LinkedHashSet<String> RASTER_RELIEF_IMP_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("RASTERPROPERTY");
+		add("RELIEF_ID");
+		add("RASTER_RELIEF_ID");
+		add("FILENAME");
+		add("FOOTPRINT");
+	}};
+
+	private static final String RELIEF_COMPONENT_TABLE = "RELIEF_COMPONENT";
+	private static final LinkedHashSet<String> RELIEF_COMPONENT_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("LOD");
+		add("EXTENT");
+	}};
+/*
+	private static final String RELIEF_FEAT_TO_REL_COMP_TABLE = "RELIEF_FEAT_TO_REL_COMP";
+	private static final LinkedHashSet<String> RELIEF_FEAT_TO_REL_COMP_COLUMNS = new LinkedHashSet<String>() {{
+		add("RELIEF_COMPONENT_ID");
+		add("RELIEF_FEATURE_ID");
+	}};
+*/
+	private static final String RELIEF_FEATURE_TABLE = "RELIEF_FEATURE";
+	private static final LinkedHashSet<String> RELIEF_FEATURE_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
+		add("LOD");
 	}};
 
 	private static final String ROOM_TABLE = "ROOM";
@@ -475,7 +529,17 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("LOD3_MULTI_SURFACE_ID");
 		add("LOD4_MULTI_SURFACE_ID");
 	}};
-
+/*
+	private static final String TIN_RELIEF_TABLE = "TIN_RELIEF";
+	private static final LinkedHashSet<String> TIN_RELIEF_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("MAX_LENGTH");
+		add("STOP_LINES");
+		add("BREAK_LINES");
+		add("CONTROL_POINTS");
+		add("SURFACE_GEOMETRY_ID");
+	}};
+*/
 	private static final String TRAFFIC_AREA_TABLE = "TRAFFIC_AREA";
 	private static final LinkedHashSet<String> TRAFFIC_AREA_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
@@ -600,6 +664,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(ADDRESS_TO_BUILDING_TABLE, ADDRESS_TO_BUILDING_COLUMNS);
 		put(APPEAR_TO_SURFACE_DATA_TABLE, APPEAR_TO_SURFACE_DATA_COLUMNS);
 		put(APPEARANCE_TABLE, APPEARANCE_COLUMNS);
+//		put(BREAKLINE_RELIEF_TABLE, BREAKLINE_RELIEF_COLUMNS);
 		put(BUILDING_TABLE, BUILDING_COLUMNS);
 		put(BUILDING_INSTALLATION_TABLE, BUILDING_INSTALLATION_COLUMNS);
 		put(CITY_FURNITURE_TABLE, CITY_FURNITURE_COLUMNS);
@@ -615,10 +680,16 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(GENERIC_CITYOBJECT_TABLE, GENERIC_CITYOBJECT_COLUMNS);
 		put(GROUP_TO_CITYOBJECT_TABLE, GROUP_TO_CITYOBJECT_COLUMNS);
 		put(LAND_USE_TABLE, LAND_USE_COLUMNS);
+//		put(MASSPOINT_RELIEF_TABLE, MASSPOINT_RELIEF_COLUMNS);
 		put(OBJECTCLASS_TABLE, OBJECTCLASS_COLUMNS);
 		put(OPENING_TABLE, OPENING_COLUMNS);
 		put(OPENING_TO_THEM_SURFACE_TABLE, OPENING_TO_THEM_SURFACE_COLUMNS);
 		put(PLANT_COVER_TABLE, PLANT_COVER_COLUMNS);
+//		put(RASTER_RELIEF_TABLE, RASTER_RELIEF_COLUMNS);
+		put(RASTER_RELIEF_IMP_TABLE, RASTER_RELIEF_IMP_COLUMNS);
+		put(RELIEF_COMPONENT_TABLE, RELIEF_COMPONENT_COLUMNS);
+		put(RELIEF_FEATURE_TABLE, RELIEF_FEATURE_COLUMNS);
+//		put(RELIEF_FEAT_TO_REL_COMP_TABLE, RELIEF_FEAT_TO_REL_COMP_COLUMNS);
 		put(ROOM_TABLE, ROOM_COLUMNS);
 		put(SOLITARY_VEGETAT_OBJECT_TABLE, SOLITARY_VEGETAT_OBJECT_COLUMNS);
 		put(SPECIAL_KEYWORDS, SPECIAL_KEYWORDS_SET);
@@ -626,6 +697,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(SURFACE_GEOMETRY_TABLE, SURFACE_GEOMETRY_COLUMNS);
 		put(TEXTUREPARAM_TABLE, TEXTUREPARAM_COLUMNS);
 		put(THEMATIC_SURFACE_TABLE, THEMATIC_SURFACE_COLUMNS);
+//		put(TIN_RELIEF_TABLE, TIN_RELIEF_COLUMNS);
 		put(TRAFFIC_AREA_TABLE, TRAFFIC_AREA_COLUMNS);
 		put(TRANSPORTATION_COMPLEX_TABLE, TRANSPORTATION_COMPLEX_COLUMNS);
 		put(WATERBODY_TO_WATERBOUNDARY_SURFACE_TABLE, WATERBODY_TO_WATERBOUNDARY_SURFACE_COLUMNS);
@@ -1263,6 +1335,15 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				case LAND_USE:
 					sqlStatement = sqlStatementForLandUse(table, columns, aggregateString, aggregateClosingString, lod);
 					break;
+/*
+				case RASTER_RELIEF:
+				case MASSPOINT_RELIEF:
+				case BREAKLINE_RELIEF:
+				case TIN_RELIEF:
+*/
+				case RELIEF_FEATURE:
+					sqlStatement = sqlStatementForRelief(table, columns, aggregateString, aggregateClosingString, lod);
+					break;
 				case WATER_BODY:
 					sqlStatement = sqlStatementForWaterBody(table, columns, aggregateString, aggregateClosingString, lod);
 					break;
@@ -1389,7 +1470,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM SURFACE_GEOMETRY sg" +
 							   " WHERE sg.id IN" +
-							   "(SELECT sg.id" +
+							   " (SELECT sg.id" +
 							   " FROM CITYOBJECT co, BUILDING b, SURFACE_GEOMETRY sg" +
 							   " WHERE co.gmlid = ?" +
 							   " AND b.building_root_id = co.id" +
@@ -1615,7 +1696,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM SURFACE_GEOMETRY sg" +
 							   " WHERE sg.id IN" +
-							   "(SELECT sg.id" +
+							   " (SELECT sg.id" +
 							   " FROM CITYOBJECT co, WATERBODY wb, SURFACE_GEOMETRY sg" +
 							   " WHERE co.gmlid = ?" +
 							   " AND wb.id = co.id" +
@@ -1645,7 +1726,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM TEXTUREPARAM tp" +
 							   " WHERE tp.surface_geometry_id IN" +
-							   "(SELECT sg.id" +
+							   " (SELECT sg.id" +
 							   " FROM CITYOBJECT co, WATERBODY wb, SURFACE_GEOMETRY sg" +
 							   " WHERE co.gmlid = ?" +
 							   " AND wb.id = co.id" +
@@ -1709,7 +1790,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.id IN";
+							   " WHERE sg.id IN ";
 				if (lod > 1) {
 					sqlStatement = sqlStatement +
 							   "(SELECT sg.id" +
@@ -1738,7 +1819,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM TEXTUREPARAM tp" +
-							   " WHERE tp.surface_geometry_id IN";
+							   " WHERE tp.surface_geometry_id IN ";
 				if (lod > 1) {
 					sqlStatement = sqlStatement +
 							   "(SELECT sg.id" +
@@ -1803,7 +1884,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM SURFACE_GEOMETRY sg" +
 							   " WHERE sg.id IN" +
-							   "(SELECT sg.id" +
+							   " (SELECT sg.id" +
 							   " FROM CITYOBJECT co, TRAFFIC_AREA ta, TRANSPORTATION_COMPLEX tc, SURFACE_GEOMETRY sg" +
 							   " WHERE co.gmlid = ?" +
 							   " AND ta.id = co.id" +
@@ -1824,7 +1905,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM TEXTUREPARAM tp" +
 							   " WHERE tp.surface_geometry_id IN" +
-							   "(SELECT sg.id" +
+							   " (SELECT sg.id" +
 							   " FROM CITYOBJECT co, TRAFFIC_AREA ta, TRANSPORTATION_COMPLEX tc, SURFACE_GEOMETRY sg" +
 							   " WHERE co.gmlid = ?" +
 							   " AND ta.id = co.id" +
@@ -1879,7 +1960,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.id IN" +
+							   " WHERE sg.id IN " +
 							   "(SELECT sg.id" +
 							   " FROM CITYOBJECT co, TRANSPORTATION_COMPLEX tc, SURFACE_GEOMETRY sg" +
 							   " WHERE co.gmlid = ?" +
@@ -1889,7 +1970,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM TEXTUREPARAM tp" +
-							   " WHERE tp.surface_geometry_id IN" +
+							   " WHERE tp.surface_geometry_id IN " +
 							   "(SELECT sg.id" +
 							   " FROM CITYOBJECT co, TRANSPORTATION_COMPLEX tc, SURFACE_GEOMETRY sg" +
 							   " WHERE co.gmlid = ?" +
@@ -1903,6 +1984,82 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				" WHERE co.gmlid = ?" +
 				" AND tc.id = co.id";
 			}
+			else {
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
+			}
+
+			return sqlStatement; 
+		}
+
+		private String sqlStatementForRelief(String table,
+											 List<String> columns,
+											 String aggregateString,
+											 String aggregateClosingString,
+											 int lod) throws Exception {
+			String sqlStatement = null; 
+
+			if (RASTER_RELIEF_IMP_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, RASTER_RELIEF_IMP rri" +
+							   " WHERE co.gmlid = ?" +
+							   " AND rri.id = co.id";
+			}
+			else if (RELIEF_COMPONENT_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = /* "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, RELIEF_COMPONENT rc" +
+							   " WHERE co.gmlid = ?" +
+							   " AND rc.id = co.id" +
+							   " UNION " + */
+							   "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, RELIEF_COMPONENT rc" +
+							   " WHERE co.gmlid = ?" +
+							   " AND rf.id = co.id" +
+							   " AND rf.lod = " + lod +
+							   " AND rf2rc.relief_feature_id = rf.id" +
+							   " AND rc.id = rf2rc.relief_component_id";
+			}
+			else if (RELIEF_FEATURE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, RELIEF_FEATURE rf" +
+							   " WHERE co.gmlid = ?" +
+							   " AND rf.id = co.id";
+			}
+			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
+							   " WHERE co.gmlid = ?" +
+							   " AND a.cityobject_id = co.id" +
+							   " AND a2sd.appearance_id = a.id" +
+							   " AND sd.id = a2sd.surface_data_id";
+			}
+			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM SURFACE_GEOMETRY sg" +
+							   " WHERE sg.id IN " +
+							   "(SELECT sg.id" +
+							   " FROM CITYOBJECT co, TIN_RELIEF tr, SURFACE_GEOMETRY sg" +
+							   " WHERE co.gmlid = ?" +
+							   " AND tr.id = co.id" +
+							   " AND sg.root_id = tr.surface_geometry_id)";
+			}
+			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM TEXTUREPARAM tp" +
+							   " WHERE tp.surface_geometry_id IN " +
+							   "(SELECT sg.id" +
+							   " FROM CITYOBJECT co, TIN_RELIEF tr, SURFACE_GEOMETRY sg" +
+							   " WHERE co.gmlid = ?" +
+							   " AND tr.id = co.id" +
+							   " AND sg.root_id = tr.surface_geometry_id)";
+			}
+/*
+			else if (TIN_RELIEF_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							   " FROM CITYOBJECT co, TIN_RELIEF tr" +
+							   " WHERE co.gmlid = ?" +
+							   " AND tr.id = co.id";
+			}
+*/
 			else {
 				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
 			}
@@ -2233,6 +2390,17 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			else if (PLANT_COVER_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "pc";
 			}
+			else if (RASTER_RELIEF_IMP_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "rri";
+				orderByColumnAllowed = (!columns.get(0).equals("RASTERPROPERTY") && !columns.get(0).equals("FOOTPRINT"));
+			}
+			else if (RELIEF_COMPONENT_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "rc";
+				orderByColumnAllowed = (!columns.get(0).equals("EXTENT"));
+			}
+			else if (RELIEF_FEATURE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "rf";
+			}
 			else if (ROOM_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "r";
 			}
@@ -2257,6 +2425,14 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			else if (THEMATIC_SURFACE_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "ts";
 			}
+/*
+			else if (TIN_RELIEF_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "tr";
+				orderByColumnAllowed = (!columns.get(0).equals("STOP_LINES") &&
+										!columns.get(0).equals("BREAK_LINES") &&
+										!columns.get(0).equals("CONTROL_POINTS"));
+			}
+*/
 			else if (TRAFFIC_AREA_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "ta";
 			}

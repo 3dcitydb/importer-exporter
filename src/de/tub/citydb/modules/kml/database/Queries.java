@@ -1226,4 +1226,100 @@ public class Queries {
     		   TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
 
+	// ----------------------------------------------------------------------
+	// RELIEF QUERIES
+	// ----------------------------------------------------------------------
+	
+	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY =
+		"SELECT sg.geometry, 'Relief' as type, sg.id " +
+		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr, SURFACE_GEOMETRY sg " +
+		"WHERE co.gmlid = ? " +
+	   		"AND rf.id = co.id " +
+	   		"AND rf.lod = <LoD> " +
+	   		"AND rf2rc.relief_feature_id = rf.id " +
+	   		"AND tr.id = rf2rc.relief_component_id " +
+			"AND sg.root_id = tr.surface_geometry_id " + 
+			"AND sg.geometry IS NOT NULL "; /*  +
+		"UNION ALL " +
+		"SELECT tr.break_lines, 'Relief' as type, -1 " +
+		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
+		"WHERE co.gmlid = ? " +
+			"AND rf.id = co.id " +
+			"AND rf.lod = <LoD> " +
+			"AND rf2rc.relief_feature_id = rf.id " +
+			"AND tr.id = rf2rc.relief_component_id " +
+		"UNION ALL " +
+		"SELECT tr.stop_lines, 'Relief' as type, -1 " +
+		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
+		"WHERE co.gmlid = ? " +
+			"AND rf.id = co.id " +
+			"AND rf.lod = <LoD> " +
+			"AND rf2rc.relief_feature_id = rf.id " +
+			"AND tr.id = rf2rc.relief_component_id " +
+		"UNION ALL " +
+		"SELECT tr.control_points, 'Relief' as type, -1 " +
+		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
+		"WHERE co.gmlid = ? " +
+			"AND rf.id = co.id " +
+			"AND rf.lod = <LoD> " +
+			"AND rf2rc.relief_feature_id = rf.id " +
+			"AND tr.id = rf2rc.relief_component_id " +
+		"UNION ALL " +
+		"SELECT br.break_lines, 'Relief' as type, -1 " +
+		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, BREAKLINE_RELIEF br " +
+		"WHERE co.gmlid = ? " +
+			"AND rf.id = co.id " +
+			"AND rf.lod = <LoD> " +
+			"AND rf2rc.relief_feature_id = rf.id " +
+			"AND br.id = rf2rc.relief_component_id " +
+		"UNION ALL " +
+		"SELECT br.ridge_or_valley_lines, 'Relief' as type, -1 " +
+		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, BREAKLINE_RELIEF br " +
+		"WHERE co.gmlid = ? " +
+			"AND rf.id = co.id " +
+			"AND rf.lod = <LoD> " +
+			"AND rf2rc.relief_feature_id = rf.id " +
+			"AND br.id = rf2rc.relief_component_id " +
+		"UNION ALL " +
+		"SELECT mr.relief_points, 'Relief' as type, -1 " +
+		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, MASSPOINT_RELIEF mr " +
+		"WHERE co.gmlid = ? " +
+			"AND rf.id = co.id " +
+			"AND rf.lod = <LoD> " +
+			"AND rf2rc.relief_feature_id = rf.id " +
+			"AND mr.id = rf2rc.relief_component_id "; */
+
+	private static final String RELIEF_COLLADA_ROOT_IDS =
+		"SELECT tr.surface_geometry_id " +
+		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
+		"WHERE co.gmlid = ? " +
+			"AND rf.id = co.id " +
+			"AND rf.lod = <LoD> " +
+			"AND rf2rc.relief_feature_id = rf.id " +
+			"AND tr.id = rf2rc.relief_component_id";
+
+    public static String getReliefQuery (int lodToExportFrom, DisplayForm displayForm) {
+    	String query = null;
+    	switch (displayForm.getForm()) {
+    		case DisplayForm.FOOTPRINT:
+    		case DisplayForm.EXTRUDED:
+    		case DisplayForm.GEOMETRY:
+    			query = RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY;
+    	    	break;
+    		case DisplayForm.COLLADA:
+    			query = RELIEF_COLLADA_ROOT_IDS;
+    	    	break;
+    	    default:
+    	    	Logger.getInstance().log(LogLevel.INFO, "No relief object query found");
+    	}
+    	
+//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
+    	return query.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
+    public static String getReliefHighlightingQuery (int lodToExportFrom) {
+    	return RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
+
+
 }

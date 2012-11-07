@@ -68,6 +68,7 @@ import de.tub.citydb.modules.kml.database.KmlGenericObject;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
 import de.tub.citydb.modules.kml.database.LandUse;
 import de.tub.citydb.modules.kml.database.PlantCover;
+import de.tub.citydb.modules.kml.database.Relief;
 import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
 import de.tub.citydb.modules.kml.database.Transportation;
 import de.tub.citydb.modules.kml.database.WaterBody;
@@ -166,6 +167,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			objectGroupSize.put(CityGMLClass.TRANSPORTATION_COMPLEX, colladaOptions.isGroupObjects() ? 
 													   	   colladaOptions.getGroupSize(): 1);
 			objectGroup.put(CityGMLClass.TRANSPORTATION_COMPLEX, null);
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetReliefFeature()) {
+			objectGroupCounter.put(CityGMLClass.RELIEF_FEATURE, 0);
+			colladaOptions = config.getProject().getKmlExporter().getReliefColladaOptions();
+			objectGroupSize.put(CityGMLClass.RELIEF_FEATURE, colladaOptions.isGroupObjects() ? 
+															 colladaOptions.getGroupSize(): 1);
+			objectGroup.put(CityGMLClass.RELIEF_FEATURE, null);
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetGenericCityObject()) {
 			objectGroupCounter.put(CityGMLClass.GENERIC_CITY_OBJECT, 0);
@@ -350,6 +358,22 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 												   	  eventDispatcher,
 												   	  config);
 					break;
+/*
+				case RASTER_RELIEF:
+				case MASSPOINT_RELIEF:
+				case BREAKLINE_RELIEF:
+				case TIN_RELIEF:
+*/
+				case RELIEF_FEATURE:
+					singleObject = new Relief(connection,
+											  kmlExporterManager,
+											  cityGMLFactory,
+											  kmlFactory,
+											  elevationServiceHandler,
+											  getBalloonTemplateHandler(featureClass),
+											  eventDispatcher,
+											  config);
+					break;
 
 				case GENERIC_CITY_OBJECT:
 					singleObject = new GenericCityObject(connection,
@@ -497,6 +521,15 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			case ROAD:
 			case SQUARE:
 				balloonSettings = config.getProject().getKmlExporter().getTransportationBalloon();
+				break;
+/*
+			case RASTER_RELIEF:
+			case MASSPOINT_RELIEF:
+			case BREAKLINE_RELIEF:
+			case TIN_RELIEF:
+*/
+			case RELIEF_FEATURE:
+				balloonSettings = config.getProject().getKmlExporter().getReliefBalloon();
 				break;
 			case GENERIC_CITY_OBJECT:
 				balloonSettings = config.getProject().getKmlExporter().getGenericCityObjectBalloon();

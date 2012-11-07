@@ -60,6 +60,9 @@ import de.tub.citydb.config.project.system.System;
 		"transportationDisplayForms",
 		"transportationColladaOptions",
 		"transportationBalloon",
+		"reliefDisplayForms",
+		"reliefColladaOptions",
+		"reliefBalloon",
 		"cityFurnitureDisplayForms",
 		"cityFurnitureColladaOptions",
 		"cityFurnitureBalloon",
@@ -117,6 +120,11 @@ public class KmlExporter {
 	private ColladaOptions transportationColladaOptions;
 	private Balloon transportationBalloon;
 	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="reliefDisplayForms")	
+	private List<DisplayForm> reliefDisplayForms;
+	private ColladaOptions reliefColladaOptions;
+	private Balloon reliefBalloon;
+	@XmlElement(name="displayForm", required=true)
 	@XmlElementWrapper(name="cityFurnitureDisplayForms")	
 	private List<DisplayForm> cityFurnitureDisplayForms;
 	private ColladaOptions cityFurnitureColladaOptions;
@@ -170,6 +178,9 @@ public class KmlExporter {
 		setTransportationDisplayForms(new ArrayList<DisplayForm>());
 		setTransportationColladaOptions(new ColladaOptions());
 		setTransportationBalloon(new Balloon());
+		setReliefDisplayForms(new ArrayList<DisplayForm>());
+		setReliefColladaOptions(new ColladaOptions());
+		setReliefBalloon(new Balloon());
 		setCityFurnitureDisplayForms(new ArrayList<DisplayForm>());
 		setCityFurnitureColladaOptions(new ColladaOptions());
 		setCityFurnitureBalloon(new Balloon());
@@ -546,6 +557,30 @@ public class KmlExporter {
 
 	public Balloon getTransportationBalloon() {
 		return transportationBalloon;
+	}
+
+	public List<DisplayForm> getReliefDisplayForms() {
+		return reliefDisplayForms;
+	}
+
+	public void setReliefDisplayForms(List<DisplayForm> reliefDisplayForms) {
+		this.reliefDisplayForms = reliefDisplayForms;
+	}
+
+	public ColladaOptions getReliefColladaOptions() {
+		return reliefColladaOptions;
+	}
+
+	public void setReliefColladaOptions(ColladaOptions reliefColladaOptions) {
+		this.reliefColladaOptions = reliefColladaOptions;
+	}
+
+	public Balloon getReliefBalloon() {
+		return reliefBalloon;
+	}
+
+	public void setReliefBalloon(Balloon reliefBalloon) {
+		this.reliefBalloon = reliefBalloon;
 	}
 
 }

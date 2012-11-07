@@ -106,6 +106,15 @@ public class KmlSplitter {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.ROAD);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.SQUARE);
 		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetReliefFeature()) {
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.RELIEF_FEATURE);
+/*
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.RASTER_RELIEF);
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.MASSPOINT_RELIEF);
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.BREAKLINE_RELIEF);
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.TIN_RELIEF);
+*/
+		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetGenericCityObject()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.GENERIC_CITY_OBJECT);
 		}

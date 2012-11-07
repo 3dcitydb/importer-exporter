@@ -116,4 +116,12 @@ public class KmlSplittingResult {
 				getCityObjectType().compareTo(CityGMLClass.ROAD) == 0 ||
 				getCityObjectType().compareTo(CityGMLClass.SQUARE) == 0);
 	}
+
+	public boolean isRelief() {
+		return (getCityObjectType().compareTo(CityGMLClass.RELIEF_FEATURE) == 0 /* ||
+				getCityObjectType().compareTo(CityGMLClass.RASTER_RELIEF) == 0 ||
+				getCityObjectType().compareTo(CityGMLClass.MASSPOINT_RELIEF) == 0 ||
+				getCityObjectType().compareTo(CityGMLClass.BREAKLINE_RELIEF) == 0 ||
+				getCityObjectType().compareTo(CityGMLClass.TIN_RELIEF) == 0 */);
+	}
 }
