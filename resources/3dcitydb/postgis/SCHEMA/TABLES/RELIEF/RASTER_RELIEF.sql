@@ -29,21 +29,23 @@
 -------------------------------------------------------------------------------
 -- About: Rasterdata is imported via C-Loader raster2pgsql (executed in command line)
 -- e.g.
--- raster2pgsql -f rasterproperty -s yourSRID -I -C -M -F -t 128x128 -l 2,4 yourRasterFiles.tif raster_relief > rastrelief.sql
+-- raster2pgsql -a -f rasterproperty -s yourSRID -I -M -F -t 128x128 yourRasterFiles.tif raster_relief > rastrelief.sql
 -- (see PostGIS-Manual for explanation: http://www.postgis.org/documentation/manual-svn/using_raster.xml.html)
 --
--- After the rastrelief.sql is generated values for columns LOD and RELIEF_ID should be
--- added to the INSERT-statement before execution. The parameter -F adds a column
--- which includes the filename and type-ending. The geometric extent is calculated
--- in the raster-columns view, if a srid was assigned to the raster. Pyramid-layer
--- are additional raster-files managed in the raster_overviews view. They are created
--- with the parameter -l level,level,...
+-- The geometric extent is calculated in the raster_columns view, if a srid was 
+-- assigned to the raster. Pyramidlayers for raster files can be added with the 
+-- operator -l 2,4,... in the raster2pgsql command. They will be handled as 
+-- additional raster-files and managed in their own tables and in the the 
+-- raster_overviews view as well. 
+-- Attention: Tables for raster_overviews will not yet be created when appending 
+-- a raster to a table. You have to leave out the -a operator and delete the
+-- table RASTER_RELIEF first in order to execute the generated SQL file by raster2pgsql.
 -------------------------------------------------------------------------------
 --
 -- ChangeLog:
 --
 -- Version | Date       | Description      | Author | Conversion
--- 2.0.0     2012-06-01   PostGIS version    LPlu     LFra
+-- 2.0.0     2012-11-09   PostGIS version    LPlu     LFra
 --                                           TKol     FKun
 --                                           GGro
 --                                           JSch
@@ -55,9 +57,9 @@
 
 CREATE TABLE RASTER_RELIEF (
 ID                SERIAL NOT NULL,
-LOD               NUMERIC(1) NOT NULL,
-RASTERPROPERTY    RASTER NOT NULL,
-RELIEF_ID         INTEGER NOT NULL
+FILENAME          TEXT,
+RASTERPROPERTY    RASTER
+--RELIEF_ID         INTEGER NOT NULL
 )
 ;
 
