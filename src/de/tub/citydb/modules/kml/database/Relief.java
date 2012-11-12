@@ -55,6 +55,10 @@ import de.tub.citydb.modules.common.event.CounterType;
 public class Relief extends KmlGenericObject{
 
 	public static final String STYLE_BASIS_NAME = "Relief";
+	private static final int FIRST_RELIEF_QUERY = Queries.RELIEF_TIN_QUERY;
+	private static final int LAST_RELIEF_QUERY = Queries.RELIEF_BREAK_RIDGE_OR_VALLEY_LINES_QUERY;
+	private int currentReliefQuery = FIRST_RELIEF_QUERY;
+	private boolean alreadyCounted = false;
 
 	public Relief(Connection connection,
 			KmlExporterManager kmlExporterManager,
@@ -92,10 +96,25 @@ public class Relief extends KmlGenericObject{
 	}
 
 	protected String getHighlightingQuery() {
-		return Queries.getReliefHighlightingQuery(currentLod);
+		return Queries.getReliefHighlightingQuery(currentLod, currentReliefQuery);
 	}
 
 	public void read(KmlSplittingResult work) {
+		alreadyCounted = false;
+		boolean resultNotEmpty = false;
+		for (currentReliefQuery = FIRST_RELIEF_QUERY; currentReliefQuery <= LAST_RELIEF_QUERY; currentReliefQuery++) {
+			resultNotEmpty = read(work, currentReliefQuery) || resultNotEmpty;
+		}
+
+		if (!resultNotEmpty) { // result IS empty
+			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
+			String fromMessage = lodToExportFrom == 5 ? " from any LoD": " from LoD" + lodToExportFrom;
+			Logger.getInstance().info("Could not display object " + work.getGmlId() 
+									+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
+		}
+	}
+
+	public boolean read(KmlSplittingResult work, int reliefQueryNumber) {
 
 		PreparedStatement psQuery = null;
 		OracleResultSet rs = null;
@@ -111,7 +130,7 @@ public class Relief extends KmlGenericObject{
 				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
 
 				try {
-					psQuery = connection.prepareStatement(Queries.getReliefQuery(currentLod, work.getDisplayForm()),
+					psQuery = connection.prepareStatement(Queries.getReliefQuery(currentLod, work.getDisplayForm(), reliefQueryNumber),
 							   							  ResultSet.TYPE_SCROLL_INSENSITIVE,
 							   							  ResultSet.CONCUR_READ_ONLY);
 
@@ -139,12 +158,13 @@ public class Relief extends KmlGenericObject{
 			}
 
 			if (rs == null) { // result empty, give up
-				String fromMessage = lodToExportFrom == 5 ? " from any LoD": " from LoD" + lodToExportFrom;
-				Logger.getInstance().info("Could not display object " + work.getGmlId() 
-						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
+				return false;
 			}
 			else { // result not empty
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
+				if (!alreadyCounted) { // in order to display it immediately
+					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
+					alreadyCounted = true;
+				}
 
 				// get the proper displayForm (for highlighting)
 				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
@@ -201,40 +221,41 @@ public class Relief extends KmlGenericObject{
 					}
 					break;
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, work.getGmlId());
-					List<Point3d> anchorCandidates = setOrigins(); // setOrigins() called mainly for the side-effect
-					double zOffset = getZOffsetFromConfigOrDB(work.getGmlId());
-					if (zOffset == Double.MAX_VALUE) {
-						zOffset = getZOffsetFromGEService(work.getGmlId(), anchorCandidates);
-					}
-					setZOffset(zOffset);
-
-					ColladaOptions colladaOptions = getColladaOptions();
-					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
-					try {
-						if (work.getDisplayForm().isHighlightingEnabled()) {
-//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
-//													 work,
-//													 getBalloonSetings().isBalloonContentInSeparateFile());
-							kmlExporterManager.print(createPlacemarksForHighlighting(work),
-													 work,
-													 getBalloonSettings().isBalloonContentInSeparateFile());
+					if (reliefQueryNumber == Queries.RELIEF_TIN_QUERY) { // all others not supported since they have no texture
+						fillGenericObjectForCollada(rs, work.getGmlId());
+						List<Point3d> anchorCandidates = setOrigins(); // setOrigins() called mainly for the side-effect
+						double zOffset = getZOffsetFromConfigOrDB(work.getGmlId());
+						if (zOffset == Double.MAX_VALUE) {
+							zOffset = getZOffsetFromGEService(work.getGmlId(), anchorCandidates);
+						}
+						setZOffset(zOffset);
+	
+						ColladaOptions colladaOptions = getColladaOptions();
+						setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
+						try {
+							if (work.getDisplayForm().isHighlightingEnabled()) {
+	//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
+	//													 work,
+	//													 getBalloonSetings().isBalloonContentInSeparateFile());
+								kmlExporterManager.print(createPlacemarksForHighlighting(work),
+														 work,
+														 getBalloonSettings().isBalloonContentInSeparateFile());
+							}
+						}
+						catch (Exception ioe) {
+							ioe.printStackTrace();
 						}
 					}
-					catch (Exception ioe) {
-						ioe.printStackTrace();
-					}
-
 					break;
 				}
 			}
 		}
 		catch (SQLException sqlEx) {
 			Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
-			return;
+			return false;
 		}
 		catch (JAXBException jaxbEx) {
-			return;
+			return false;
 		}
 		finally {
 			if (rs != null)
@@ -242,6 +263,7 @@ public class Relief extends KmlGenericObject{
 			if (psQuery != null)
 				try { psQuery.close(); } catch (SQLException e) {}
 		}
+		return true;
 	}
 
 	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {

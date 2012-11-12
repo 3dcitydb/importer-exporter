@@ -1230,7 +1230,8 @@ public class Queries {
 	// RELIEF QUERIES
 	// ----------------------------------------------------------------------
 	
-	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY =
+	public static final int RELIEF_TIN_QUERY = 0;
+	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN =
 		"SELECT sg.geometry, 'Relief' as type, sg.id " +
 		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr, SURFACE_GEOMETRY sg " +
 		"WHERE co.gmlid = ? " +
@@ -1239,8 +1240,10 @@ public class Queries {
 	   		"AND rf2rc.relief_feature_id = rf.id " +
 	   		"AND tr.id = rf2rc.relief_component_id " +
 			"AND sg.root_id = tr.surface_geometry_id " + 
-			"AND sg.geometry IS NOT NULL "; /*  +
-		"UNION ALL " +
+			"AND sg.geometry IS NOT NULL";
+	
+	public static final int RELIEF_TIN_BREAK_LINES_QUERY = 1;
+	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN_BREAK_LINES =
 		"SELECT tr.break_lines, 'Relief' as type, -1 " +
 		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
 		"WHERE co.gmlid = ? " +
@@ -1248,7 +1251,10 @@ public class Queries {
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
 			"AND tr.id = rf2rc.relief_component_id " +
-		"UNION ALL " +
+			"AND tr.break_lines IS NOT NULL";
+
+	public static final int RELIEF_TIN_STOP_LINES_QUERY = 2;
+	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN_STOP_LINES =
 		"SELECT tr.stop_lines, 'Relief' as type, -1 " +
 		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
 		"WHERE co.gmlid = ? " +
@@ -1256,15 +1262,20 @@ public class Queries {
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
 			"AND tr.id = rf2rc.relief_component_id " +
-		"UNION ALL " +
+			"AND tr.stop_lines IS NOT NULL";
+/*
+	public static final int RELIEF_TIN_CONTROL_POINTS_QUERY = 2;
+	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN_CONTROL_POINTS =
 		"SELECT tr.control_points, 'Relief' as type, -1 " +
 		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
 		"WHERE co.gmlid = ? " +
 			"AND rf.id = co.id " +
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
-			"AND tr.id = rf2rc.relief_component_id " +
-		"UNION ALL " +
+			"AND tr.id = rf2rc.relief_component_id";
+*/
+	public static final int RELIEF_BREAK_BREAK_LINES_QUERY = 3;
+	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_BREAK_BREAK_LINES =
 		"SELECT br.break_lines, 'Relief' as type, -1 " +
 		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, BREAKLINE_RELIEF br " +
 		"WHERE co.gmlid = ? " +
@@ -1272,7 +1283,10 @@ public class Queries {
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
 			"AND br.id = rf2rc.relief_component_id " +
-		"UNION ALL " +
+			"AND br.break_lines IS NOT NULL";
+
+	public static final int RELIEF_BREAK_RIDGE_OR_VALLEY_LINES_QUERY = 4;
+	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_BREAK_RIDGE_OR_VALLEY_LINES =
 		"SELECT br.ridge_or_valley_lines, 'Relief' as type, -1 " +
 		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, BREAKLINE_RELIEF br " +
 		"WHERE co.gmlid = ? " +
@@ -1280,15 +1294,18 @@ public class Queries {
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
 			"AND br.id = rf2rc.relief_component_id " +
-		"UNION ALL " +
+			"AND br.ridge_or_valley_lines IS NOT NULL";
+/*
+	public static final int RELIEF_MASSPOINT_QUERY = 4;
+	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_MASSPOINT =
 		"SELECT mr.relief_points, 'Relief' as type, -1 " +
 		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, MASSPOINT_RELIEF mr " +
 		"WHERE co.gmlid = ? " +
 			"AND rf.id = co.id " +
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
-			"AND mr.id = rf2rc.relief_component_id "; */
-
+			"AND mr.id = rf2rc.relief_component_id";
+*/
 	private static final String RELIEF_COLLADA_ROOT_IDS =
 		"SELECT tr.surface_geometry_id " +
 		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
@@ -1298,17 +1315,33 @@ public class Queries {
 			"AND rf2rc.relief_feature_id = rf.id " +
 			"AND tr.id = rf2rc.relief_component_id";
 
-    public static String getReliefQuery (int lodToExportFrom, DisplayForm displayForm) {
+    public static String getReliefQuery (int lodToExportFrom, DisplayForm displayForm, int queryNumber) {
     	String query = null;
-    	switch (displayForm.getForm()) {
-    		case DisplayForm.FOOTPRINT:
-    		case DisplayForm.EXTRUDED:
-    		case DisplayForm.GEOMETRY:
-    			query = RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY;
-    	    	break;
-    		case DisplayForm.COLLADA:
-    			query = RELIEF_COLLADA_ROOT_IDS;
-    	    	break;
+		switch (queryNumber) {
+			case RELIEF_TIN_QUERY:
+		    	switch (displayForm.getForm()) {
+	    			case DisplayForm.FOOTPRINT:
+	    			case DisplayForm.EXTRUDED:
+	    			case DisplayForm.GEOMETRY:
+	    				query = RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN;
+		    			break;
+	        		case DisplayForm.COLLADA:
+	        			query = RELIEF_COLLADA_ROOT_IDS;
+	        	    	break;
+		    	}
+		    	break;
+    		case RELIEF_TIN_BREAK_LINES_QUERY:
+    	    	query = RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN_BREAK_LINES;
+    	       	break;
+    		case RELIEF_TIN_STOP_LINES_QUERY:
+    	    	query = RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN_STOP_LINES;
+    	       	break;
+    		case RELIEF_BREAK_BREAK_LINES_QUERY:
+    	    	query = RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_BREAK_BREAK_LINES;
+    	       	break;
+    		case RELIEF_BREAK_RIDGE_OR_VALLEY_LINES_QUERY:
+    	    	query = RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_BREAK_RIDGE_OR_VALLEY_LINES;
+    	       	break;
     	    default:
     	    	Logger.getInstance().log(LogLevel.INFO, "No relief object query found");
     	}
@@ -1317,9 +1350,28 @@ public class Queries {
     	return query.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
 
-    public static String getReliefHighlightingQuery (int lodToExportFrom) {
-    	return RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
+    public static String getReliefHighlightingQuery (int lodToExportFrom, int queryNumber) {
+    	String query = null;
+		switch (queryNumber) {
+			case RELIEF_TIN_QUERY:
+				query = RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN;
+	    		break;
+			case RELIEF_TIN_BREAK_LINES_QUERY:
+				query = RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN_BREAK_LINES;
+				break;
+			case RELIEF_TIN_STOP_LINES_QUERY:
+				query = RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN_STOP_LINES;
+				break;
+			case RELIEF_BREAK_BREAK_LINES_QUERY:
+				query = RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_BREAK_BREAK_LINES;
+				break;
+			case RELIEF_BREAK_RIDGE_OR_VALLEY_LINES_QUERY:
+				query = RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_BREAK_RIDGE_OR_VALLEY_LINES;
+				break;
+			default:
+				Logger.getInstance().log(LogLevel.INFO, "No relief object query found");
+		}
+    	return query.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
-
 
 }
