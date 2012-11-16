@@ -22,5 +22,6 @@
 	<classpathentry kind="lib" path="lib/citygml4j.jar"/>
 	<classpathentry kind="lib" path="lib/swingx-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/swingx-ws.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-xjc.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
