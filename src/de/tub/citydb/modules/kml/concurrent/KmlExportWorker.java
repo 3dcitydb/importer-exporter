@@ -256,7 +256,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			for (CityGMLClass cityObjectType: objectGroup.keySet()) {
 				if (objectGroupCounter.get(cityObjectType) != 0) {  // group is not empty
 					KmlGenericObject currentObjectGroup = objectGroup.get(cityObjectType);
-					if (currentObjectGroup == null || currentObjectGroup.getId() == null) continue;
+					if (currentObjectGroup == null || currentObjectGroup.getGmlId() == null) continue;
 					sendGroupToFile(currentObjectGroup);
 					currentObjectGroup = null;
 					objectGroup.put(cityObjectType, currentObjectGroup);
@@ -414,10 +414,21 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			
 			if (!work.isCityObjectGroup() && 
 				work.getDisplayForm().getForm() == DisplayForm.COLLADA &&
-				singleObject.getId() != null) { // object is filled
+				singleObject.getGmlId() != null) { // object is filled
 
 				// correction for some CityGML Types exported together
 				if (featureClass == CityGMLClass.PLANT_COVER) featureClass = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
+
+				if (featureClass == CityGMLClass.WATER_CLOSURE_SURFACE ||
+					featureClass == CityGMLClass.WATER_GROUND_SURFACE ||
+					featureClass == CityGMLClass.WATER_SURFACE) featureClass = CityGMLClass.WATER_BODY;
+			
+				if (featureClass == CityGMLClass.TRAFFIC_AREA ||
+					featureClass == CityGMLClass.AUXILIARY_TRAFFIC_AREA ||
+					featureClass == CityGMLClass.TRACK ||
+					featureClass == CityGMLClass.RAILWAY ||
+					featureClass == CityGMLClass.ROAD ||
+					featureClass == CityGMLClass.SQUARE) featureClass = CityGMLClass.TRANSPORTATION_COMPLEX;
 				
 				KmlGenericObject currentObjectGroup = objectGroup.get(featureClass);
 				if (currentObjectGroup == null) {
@@ -467,7 +478,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			colladaBundle.setTexImages(objectGroup.getTexImages());
 			colladaBundle.setTexOrdImages(objectGroup.getTexOrdImages());
 			colladaBundle.setPlacemark(objectGroup.createPlacemarkForColladaModel());
-			colladaBundle.setBuildingId(objectGroup.getId());
+			colladaBundle.setGmlId(objectGroup.getGmlId());
 
 			kmlExporterManager.print(colladaBundle, objectGroup.getBalloonSettings().isBalloonContentInSeparateFile());
 		}

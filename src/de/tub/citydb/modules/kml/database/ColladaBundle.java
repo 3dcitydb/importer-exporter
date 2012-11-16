@@ -49,7 +49,7 @@ public class ColladaBundle {
 	private COLLADA collada;
 	private String colladaAsString;
 	private PlacemarkType placemark;
-	private String buildingId;
+	private String gmlId;
 	private String externalBalloonFileContent;
 
 	public void setTexImages(HashMap<String, BufferedImage> texImages) {
@@ -84,12 +84,12 @@ public class ColladaBundle {
 		return placemark;
 	}
 
-	public void setBuildingId(String buildingId) {
-		this.buildingId = buildingId;
+	public void setGmlId(String gmlId) {
+		this.gmlId = gmlId;
 	}
 
-	public String getBuildingId() {
-		return buildingId;
+	public String getGmlId() {
+		return gmlId;
 	}
 
 	public void setColladaAsString(String colladaAsString) {

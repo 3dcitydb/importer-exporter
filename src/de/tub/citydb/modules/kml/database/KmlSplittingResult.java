@@ -34,14 +34,24 @@ import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 
 public class KmlSplittingResult {
 
+	private long id;
 	private String gmlId;
 	private DisplayForm displayForm;
 	private CityGMLClass cityObjectType;
 
-	public KmlSplittingResult(String gmlId, CityGMLClass cityObjectType, DisplayForm displayForm) {
+	public KmlSplittingResult(long id, String gmlId, CityGMLClass cityObjectType, DisplayForm displayForm) {
+		this.setId(id);
 		this.setGmlId(gmlId);
 		this.setCityObjectType(cityObjectType);
 		this.setDisplayForm(displayForm);
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	public void setGmlId(String gmlId) {

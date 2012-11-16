@@ -116,7 +116,7 @@ public class LandUse extends KmlGenericObject{
 							   							  ResultSet.CONCUR_READ_ONLY);
 
 					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-						psQuery.setString(i, work.getGmlId());
+						psQuery.setLong(i, work.getId());
 					}
 				
 					rs = (OracleResultSet)psQuery.executeQuery();
@@ -162,7 +162,7 @@ public class LandUse extends KmlGenericObject{
 
 					PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT);
 					for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
-						psQuery2.setString(i, work.getGmlId());
+						psQuery2.setLong(i, work.getId());
 					}
 					OracleResultSet rs2 = (OracleResultSet)psQuery2.executeQuery();
 					rs2.next();
@@ -175,6 +175,8 @@ public class LandUse extends KmlGenericObject{
 											 getBalloonSettings().isBalloonContentInSeparateFile());
 					break;
 				case DisplayForm.GEOMETRY:
+					setGmlId(work.getGmlId());
+					setId(work.getId());
 					if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter()) { // region
 						if (work.getDisplayForm().isHighlightingEnabled()) {
 							kmlExporterManager.print(createPlacemarksForHighlighting(work),
@@ -201,11 +203,13 @@ public class LandUse extends KmlGenericObject{
 					}
 					break;
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, work.getGmlId());
+					fillGenericObjectForCollada(rs);
+					setGmlId(work.getGmlId());
+					setId(work.getId());
 					List<Point3d> anchorCandidates = setOrigins(); // setOrigins() called mainly for the side-effect
-					double zOffset = getZOffsetFromConfigOrDB(work.getGmlId());
+					double zOffset = getZOffsetFromConfigOrDB(work.getId());
 					if (zOffset == Double.MAX_VALUE) {
-						zOffset = getZOffsetFromGEService(work.getGmlId(), anchorCandidates);
+						zOffset = getZOffsetFromGEService(work.getId(), anchorCandidates);
 					}
 					setZOffset(zOffset);
 

@@ -148,13 +148,14 @@ public class KmlSplitter {
 				OracleResultSet rs = null;
 				PreparedStatement query = null;
 				try {
-					query = connection.prepareStatement(Queries.GET_OBJECTCLASS);
+					query = connection.prepareStatement(Queries.GET_ID_AND_OBJECTCLASS_FROM_GMLID);
 					query.setString(1, gmlId);
 					rs = (OracleResultSet)query.executeQuery();
 					
 					if (rs.next()) {
+						long id = rs.getLong("id");
 						CityGMLClass cityObjectType = Util.classId2cityObject(rs.getInt("class_id"));
-						addWorkToQueue(gmlId, cityObjectType, 0, 0);
+						addWorkToQueue(id, gmlId, cityObjectType, 0, 0);
 					}
 				}
 				catch (SQLException sqlEx) {
@@ -180,7 +181,7 @@ public class KmlSplitter {
 			OracleResultSet rs = null;
 			PreparedStatement spatialQuery = null;
 			try {
-				spatialQuery = connection.prepareStatement(Queries.GET_GMLIDS);
+				spatialQuery = connection.prepareStatement(Queries.GET_IDS);
 				
 				int srid = dbSrs.getSrid();
 
@@ -223,9 +224,10 @@ public class KmlSplitter {
 				int objectCount = 0;
 
 				while (rs.next() && shouldRun) {
+					long id = rs.getLong("id");
 					String gmlId = rs.getString("gmlId");
 					CityGMLClass cityObjectType = Util.classId2cityObject(rs.getInt("class_id"));
-					addWorkToQueue(gmlId, cityObjectType, 
+					addWorkToQueue(id, gmlId, cityObjectType, 
 								   exportFilter.getBoundingBoxFilter().getTileRow(),
 								   exportFilter.getBoundingBoxFilter().getTileColumn());
 
@@ -281,20 +283,20 @@ public class KmlSplitter {
 		shouldRun = false;
 	}
 
-	private void addWorkToQueue(String gmlId, CityGMLClass cityObjectType, int row, int column) throws SQLException {
+	private void addWorkToQueue(long id, String gmlId, CityGMLClass cityObjectType, int row, int column) throws SQLException {
 
 		if (CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType) &&
-			!KmlExporter.getAlreadyExported().containsKey(gmlId)) {
+			!KmlExporter.getAlreadyExported().containsKey(id)) {
 
 			CityObject4JSON cityObject4Json = new CityObject4JSON();
 			cityObject4Json.setTileRow(row);
 			cityObject4Json.setTileColumn(column);
-			double[] ordinatesArray = getEnvelopeInWGS84(gmlId);
+			double[] ordinatesArray = getEnvelopeInWGS84(id);
 			cityObject4Json.setEnvelope(ordinatesArray);
 
-			KmlSplittingResult splitter = new KmlSplittingResult(gmlId, cityObjectType, displayForm);
+			KmlSplittingResult splitter = new KmlSplittingResult(id, gmlId, cityObjectType, displayForm);
 			dbWorkerPool.addWork(splitter);
-			KmlExporter.getAlreadyExported().put(gmlId, cityObject4Json);
+			KmlExporter.getAlreadyExported().put(id, cityObject4Json);
 
 			if (splitter.isCityObjectGroup() &&
 					CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.size() > 1) { // not only groups must be exported
@@ -308,8 +310,8 @@ public class KmlSplitter {
 						BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
 						int srid = dbSrs.getSrid();
 
-						// group's gmlId
-						query.setString(1, gmlId);
+						// group's id
+						query.setLong(1, id);
 
 						query.setInt(2, srid);
 						// coordinates for overlapbydisjoint
@@ -320,8 +322,8 @@ public class KmlSplitter {
 						query.setDouble(7, tile.getUpperRightCorner().getX());
 						query.setDouble(8, tile.getLowerLeftCorner().getY());
 
-						// group's gmlId
-						query.setString(9, gmlId);
+						// group's id
+						query.setLong(9, id);
 
 						query.setInt(10, srid);
 						// coordinates for inside+coveredby
@@ -330,8 +332,8 @@ public class KmlSplitter {
 						query.setDouble(13, tile.getUpperRightCorner().getX());
 						query.setDouble(14, tile.getUpperRightCorner().getY());
 
-						// group's gmlId
-						query.setString(15, gmlId);
+						// group's id
+						query.setLong(15, id);
 
 						query.setInt(16, srid);
 						// coordinates for equals
@@ -342,12 +344,13 @@ public class KmlSplitter {
 					}
 					else {
 						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS);
-						query.setString(1, gmlId);
+						query.setLong(1, id);
 					}
 					rs = (OracleResultSet)query.executeQuery();
 					
 					while (rs.next() && shouldRun) {
-						addWorkToQueue(rs.getString("gmlId"), // recursion for recursive groups
+						addWorkToQueue(rs.getLong("id"), // recursion for recursive groups
+									   rs.getString("gmlId"),
 									   Util.classId2cityObject(rs.getInt("class_id")), 
 									   row,
 									   column);
@@ -371,17 +374,17 @@ public class KmlSplitter {
 		}
 	}
 	
-	private double[] getEnvelopeInWGS84(String gmlId) {
+	private double[] getEnvelopeInWGS84(long id) {
 		double[] ordinatesArray = null;
 		PreparedStatement psQuery = null;
 		OracleResultSet rs = null;
 
 		try {
 			psQuery = dbSrs.is3D() ? 
-					  connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_3D_FROM_GML_ID):
-					  connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_FROM_GML_ID);
+					  connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_3D_FROM_ID):
+					  connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_FROM_ID);
 						  
-			psQuery.setString(1, gmlId);
+			psQuery.setLong(1, id);
 
 			rs = (OracleResultSet)psQuery.executeQuery();
 			if (rs.next()) {

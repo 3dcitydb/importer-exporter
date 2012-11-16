@@ -174,7 +174,7 @@ public class KmlExporter implements EventHandler {
 	private EnumMap<CityGMLClass, Long>featureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
 	private long geometryCounter;
 
-	private static HashMap<String, CityObject4JSON> alreadyExported;
+	private static HashMap<Long, CityObject4JSON> alreadyExported;
 
 	public KmlExporter (JAXBContext jaxbKmlContext,
 						JAXBContext jaxbColladaContext,
@@ -333,7 +333,7 @@ public class KmlExporter implements EventHandler {
 		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 			if (!displayForm.isActive()) continue;
 
-			alreadyExported = new HashMap<String, CityObject4JSON>();
+			alreadyExported = new HashMap<Long, CityObject4JSON>();
 
 			for (int i = 0; shouldRun && i < rows; i++) {
 				for (int j = 0; shouldRun && j < columns; j++) {
@@ -498,8 +498,8 @@ public class KmlExporter implements EventHandler {
 										// ----------------- model saving -----------------
 										if (colladaBundle.getColladaAsString() != null) {
 											// File.separator would be wrong here, it MUST be "/"
-											ZipEntry zipEntry = new ZipEntry(colladaBundle.getBuildingId() + "/" 
-													+ colladaBundle.getBuildingId() + ".dae");
+											ZipEntry zipEntry = new ZipEntry(colladaBundle.getGmlId() + "/" 
+													+ colladaBundle.getGmlId() + ".dae");
 											zipOut.putNextEntry(zipEntry);
 											zipOut.write(colladaBundle.getColladaAsString().getBytes(CHARSET));
 											zipOut.closeEntry();
@@ -507,7 +507,7 @@ public class KmlExporter implements EventHandler {
 
 										// ----------------- balloon saving -----------------
 										if (colladaBundle.getExternalBalloonFileContent() != null) {
-											ZipEntry zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + colladaBundle.getBuildingId() + ".html");
+											ZipEntry zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + colladaBundle.getGmlId() + ".html");
 											zipOut.putNextEntry(zipEntry);
 											zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes(CHARSET));
 											zipOut.closeEntry();
@@ -526,7 +526,7 @@ public class KmlExporter implements EventHandler {
 
 												ZipEntry zipEntry = imageFilename.startsWith("..") ?
 																	new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
-																	new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
+																	new ZipEntry(colladaBundle.getGmlId() + "/" + imageFilename);
 												try {
 													zipOut.putNextEntry(zipEntry);
 //													zipOut.write(ordImageBytes, 0, bytes_read);
@@ -547,7 +547,7 @@ public class KmlExporter implements EventHandler {
 
 												ZipEntry zipEntry = imageFilename.startsWith("..") ?
 																    new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
-																    new ZipEntry(colladaBundle.getBuildingId() + "/" + imageFilename);
+																    new ZipEntry(colladaBundle.getGmlId() + "/" + imageFilename);
 												try {
 													zipOut.putNextEntry(zipEntry);
 													ImageIO.write(texImage, imageType, zipOut);
@@ -619,11 +619,11 @@ public class KmlExporter implements EventHandler {
 				FileOutputStream outputStream = new FileOutputStream(jsonFile);
 				outputStream.write("{\n".getBytes(CHARSET));
 
-				Iterator<String> iterator = alreadyExported.keySet().iterator();
+				Iterator<Long> iterator = alreadyExported.keySet().iterator();
 				while (iterator.hasNext()) {
-					String gmlId = iterator.next();
-					outputStream.write(("\t\"" + gmlId + "\": {").toString().getBytes(CHARSET));
-					outputStream.write(alreadyExported.get(gmlId).toString().getBytes(CHARSET));
+					Long id = iterator.next();
+					outputStream.write(("\t\"" + id + "\": {").toString().getBytes(CHARSET));
+					outputStream.write(alreadyExported.get(id).toString().getBytes(CHARSET));
 					if (iterator.hasNext()) {
 						outputStream.write(",\n".getBytes(CHARSET));
 					}
@@ -1381,7 +1381,7 @@ public class KmlExporter implements EventHandler {
 		}
 	}
 
-	public static HashMap<String, CityObject4JSON> getAlreadyExported() {
+	public static HashMap<Long, CityObject4JSON> getAlreadyExported() {
 		return alreadyExported;
 	}
 
