@@ -635,7 +635,7 @@ public class CityFurniture extends KmlGenericObject{
 															ResultSet.CONCUR_READ_ONLY);
 
 			for (int i = 1; i <= getGeometriesStmt.getParameterMetaData().getParameterCount(); i++) {
-				getGeometriesStmt.setString(i, work.getGmlId());
+				getGeometriesStmt.setLong(i, work.getId());
 			}
 			rs = (OracleResultSet)getGeometriesStmt.executeQuery();
 
