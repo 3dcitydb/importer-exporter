@@ -42,9 +42,15 @@ public class Queries {
 	// ----------------------------------------------------------------------
 
 	public static final String GET_ID_FROM_GMLID =
-			"SELECT ID FROM CITYOBJECT WHERE gmlid = ?";
+			"SELECT id FROM CITYOBJECT WHERE gmlid = ?";
 	
-	public static final String GET_TEXIMAGE_FROM_SURFACE_DATA_ID =
+    public static final String GET_ID_AND_OBJECTCLASS_FROM_GMLID =
+		"SELECT id, class_id FROM CITYOBJECT WHERE gmlid = ?";
+
+    public static final String GET_GMLID_AND_OBJECTCLASS_FROM_ID =
+		"SELECT gmlid, class_id FROM CITYOBJECT WHERE id = ?";
+
+    public static final String GET_TEXIMAGE_FROM_SURFACE_DATA_ID =
 			"SELECT sd.tex_image " +
 			"FROM SURFACE_DATA sd " +
 			"WHERE " +
@@ -71,35 +77,29 @@ public class Queries {
 				  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
 	"ORDER BY 2"; // ORDER BY co.class_id*/
 	
-	public static final String GET_GMLIDS =
-	 	"SELECT co.gmlid, co.class_id " +
+	public static final String GET_IDS =
+	 	"SELECT co.id, co.gmlid, co.class_id " +
 	 	"FROM CITYOBJECT co " +
 	 	"WHERE " +
 			"ST_Intersects(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
 		"UNION ALL " +
-			"SELECT co.gmlid, co.class_id " +
+			"SELECT co.id, co.gmlid, co.class_id " +
 		 	"FROM CITYOBJECT co " +
 		 	"WHERE " +
 			  "ST_CoveredBy(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
-	 	"ORDER BY 2"; // ORDER BY co.class_id*/
+	 	"ORDER BY 3"; // ORDER BY co.class_id*/
  
-    public static final String GET_OBJECTCLASS =
-		"SELECT co.class_id " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
-
 	public static final String GET_EXTRUDED_HEIGHT =
 			"SELECT " + // "b.measured_height, " +
 //			"SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) - SDO_GEOM.SDO_MIN_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
 			"ST_ZMax(Box3D(co.envelope)) - ST_ZMin(Box3D(co.envelope)) AS envelope_measured_height " +
 			"FROM CITYOBJECT co " + // ", BUILDING b " +
-			"WHERE co.gmlid = ?"; // + " AND b.building_root_id = co.id";
+			"WHERE co.id = ?"; // + " AND b.building_root_id = co.id";
 
-	public static final String GET_STRVAL_GENERICATTRIB_FROM_GML_ID =
+	public static final String GET_STRVAL_GENERICATTRIB_FROM_ID =
 			"SELECT coga.strval " +
-			"FROM CITYOBJECT co " + 
-				"LEFT JOIN CITYOBJECT_GENERICATTRIB coga ON (coga.cityobject_id = co.id AND coga.attrname = ?) " +
-			"WHERE co.gmlid = ?";
+			"FROM CITYOBJECT_GENERICATTRIB coga " + 
+			"WHERE coga.cityobject_id = ? AND coga.attrname = ? ";
 	
 		
     /* Oracle Version
@@ -133,15 +133,15 @@ public class Queries {
 	public static final String TRANSFORM_GEOMETRY_TO_WGS84_3D =
 		"SELECT ST_Transform(?, 94329)";
 
-	public static final String GET_ENVELOPE_IN_WGS84_FROM_GML_ID =
+	public static final String GET_ENVELOPE_IN_WGS84_FROM_ID =
 		"SELECT ST_Transform(co.envelope, 4326) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
-	public static final String GET_ENVELOPE_IN_WGS84_3D_FROM_GML_ID =
+	public static final String GET_ENVELOPE_IN_WGS84_3D_FROM_ID =
 		"SELECT ST_Transform(co.envelope, 94329) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
 	/* Oracle Version
 	public static final String GET_CENTROID_IN_WGS84_FROM_GML_ID =
@@ -178,95 +178,95 @@ public class Queries {
 			"FROM CITYOBJECT co " + 
 			"WHERE co.gmlid = ?) v";*/
 
-	public static final String GET_CENTROID_IN_WGS84_FROM_GML_ID =
-			"SELECT ST_Transform(ST_Centroid(co.envelope), 4326) " +
-			"FROM CITYOBJECT co " +
-			"WHERE co.gmlid = ?";
-	
-	public static final String GET_CENTROID_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT ST_Transform(ST_Centroid(co.envelope), 4329) " +
+	public static final String GET_CENTROID_IN_WGS84_FROM_ID =
+		"SELECT ST_Transform(ST_Centroid(co.envelope), 4326) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
+
+	public static final String GET_CENTROID_IN_WGS84_3D_FROM_ID =
+		"SELECT ST_Transform(ST_Centroid(co.envelope), 94329) " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.id = ?";
 	
-	public static final String GET_CENTROID_LAT_IN_WGS84_FROM_GML_ID =
+	public static final String GET_CENTROID_LAT_IN_WGS84_FROM_ID =
 		"SELECT ST_Y(ST_Transform(ST_Centroid(co.envelope), 4326)) " +
-			"FROM CITYOBJECT co " + 
-			"WHERE co.gmlid = ?";
+		"FROM CITYOBJECT co " + 
+		"WHERE co.id = ?";
 
-	public static final String GET_CENTROID_LAT_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT ST_Y(ST_Transform(ST_Centroid(co.envelope), 4329)) " +
-			"FROM CITYOBJECT co " + 
-			"WHERE co.gmlid = ?";
+	public static final String GET_CENTROID_LAT_IN_WGS84_3D_FROM_ID =
+		"SELECT ST_Y(ST_Transform(ST_Centroid(co.envelope), 94329)) " +
+		"FROM CITYOBJECT co " + 
+		"WHERE co.id = ?";
 
-	public static final String GET_CENTROID_LON_IN_WGS84_FROM_GML_ID =
+	public static final String GET_CENTROID_LON_IN_WGS84_FROM_ID =
 		"SELECT ST_X(ST_Transform(ST_Centroid(co.envelope), 4326)) " +
-			"FROM CITYOBJECT co " + 
-			"WHERE co.gmlid = ?";
+		"FROM CITYOBJECT co " + 
+		"WHERE co.id = ?";
 
-	public static final String GET_CENTROID_LON_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT ST_X(ST_Transform(ST_Centroid(co.envelope), 4329)) " +
-			"FROM CITYOBJECT co " + 
-			"WHERE co.gmlid = ?";	
+	public static final String GET_CENTROID_LON_IN_WGS84_3D_FROM_ID =
+		"SELECT ST_X(ST_Transform(ST_Centroid(co.envelope), 94329)) " +
+		"FROM CITYOBJECT co " + 
+		"WHERE co.id = ?";	
 	
-	public static final String GET_ENVELOPE_LAT_MIN_IN_WGS84_FROM_GML_ID =
+	public static final String GET_ENVELOPE_LAT_MIN_IN_WGS84_FROM_ID =
 		"SELECT ST_YMin(Box3D(ST_Transform(co.envelope, 4326))) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
-	public static final String GET_ENVELOPE_LAT_MIN_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT ST_YMin(Box3D(ST_Transform(co.envelope, 4329))) " +
+	public static final String GET_ENVELOPE_LAT_MIN_IN_WGS84_3D_FROM_ID =
+		"SELECT ST_YMin(Box3D(ST_Transform(co.envelope, 94329))) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
-	public static final String GET_ENVELOPE_LAT_MAX_IN_WGS84_FROM_GML_ID =
+	public static final String GET_ENVELOPE_LAT_MAX_IN_WGS84_FROM_ID =
 		"SELECT ST_YMax(Box3D(ST_Transform(co.envelope, 4326))) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
-	public static final String GET_ENVELOPE_LAT_MAX_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT ST_YMax(Box3D(ST_Transform(co.envelope, 4329))) " +
+	public static final String GET_ENVELOPE_LAT_MAX_IN_WGS84_3D_FROM_ID =
+		"SELECT ST_YMax(Box3D(ST_Transform(co.envelope, 94329))) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
-	public static final String GET_ENVELOPE_LON_MIN_IN_WGS84_FROM_GML_ID =
+	public static final String GET_ENVELOPE_LON_MIN_IN_WGS84_FROM_ID =
 		"SELECT ST_XMin(Box3D(ST_Transform(co.envelope, 4326))) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
-	public static final String GET_ENVELOPE_LON_MIN_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT ST_XMin(Box3D(ST_Transform(co.envelope, 432)))) " +
+	public static final String GET_ENVELOPE_LON_MIN_IN_WGS84_3D_FROM_ID =
+		"SELECT ST_XMin(Box3D(ST_Transform(co.envelope, 94329)))) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
-	public static final String GET_ENVELOPE_LON_MAX_IN_WGS84_FROM_GML_ID =
+	public static final String GET_ENVELOPE_LON_MAX_IN_WGS84_FROM_ID =
 		"SELECT ST_XMax(Box3D(ST_Transform(co.envelope, 4326))) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
-	public static final String GET_ENVELOPE_LON_MAX_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT ST_XMax(Box3D(ST_Transform(co.envelope, 4329))) " +
+	public static final String GET_ENVELOPE_LON_MAX_IN_WGS84_3D_FROM_ID =
+		"SELECT ST_XMax(Box3D(ST_Transform(co.envelope, 94329))) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
-	public static final String GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_FROM_GML_ID =
+	public static final String GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_FROM_ID =
 		"SELECT ST_ZMin(Box3D(ST_Transform(co.envelope, 4326))) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
-	public static final String GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT ST_ZMin(Box3D(ST_Transform(co.envelope, 4329))) " +
+	public static final String GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_3D_FROM_ID =
+		"SELECT ST_ZMin(Box3D(ST_Transform(co.envelope, 94329))) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
-	public static final String GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_FROM_GML_ID =
+	public static final String GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_FROM_ID =
 		"SELECT ST_ZMax(Box3D(ST_Transform(co.envelope, 4326))) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
-	public static final String GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT ST_ZMax(Box3D(ST_Transform(co.envelope, 4329))) " +
+	public static final String GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_3D_FROM_ID =
+		"SELECT ST_ZMax(Box3D(ST_Transform(co.envelope, 94329))) " +
 		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
+		"WHERE co.id = ?";
 
 	// ----------------------------------------------------------------------
 	// 	BUILDING QUERIES
@@ -274,72 +274,56 @@ public class Queries {
     
 	private static final String BUILDING_FOOTPRINT_LOD4 =
 		"SELECT sg.geometry " +
-		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co " +
-		"WHERE " +
-			"co.gmlid = ? " +
-			"AND ts.building_id = co.id " +
+		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
+		"WHERE ts.building_id = ? " +
 			"AND ts.type = 'GroundSurface' " +
 			"AND sg.root_id = ts.lod4_multi_surface_id " +
 			"AND sg.geometry IS NOT NULL " +
 		"ORDER BY ts.building_id";
 
-	private static final String BUILDING_COLLADA_LOD4_ROOT_SURFACES =
+	private static final String BUILDING_COLLADA_LOD4_ROOT_IDS =
 		"SELECT b.lod4_geometry_id " + 
-		"FROM CITYOBJECT co, BUILDING b " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b " + 
+		"WHERE b.building_root_id = ? " +
 			"AND b.lod4_geometry_id IS NOT NULL " +
 		"UNION " + 
 		"SELECT ts.lod4_multi_surface_id " + 
-		"FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b, THEMATIC_SURFACE ts " + 
+		"WHERE b.building_root_id = ? " +
 			"AND ts.building_id = b.id " +
 			"AND ts.lod4_multi_surface_id IS NOT NULL " +
 		"UNION " + 
 /*
 		"SELECT r.lod4_geometry_id " + 
-		"FROM CITYOBJECT co, BUILDING b, ROOM r " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-  			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b, ROOM r " + 
+		"WHERE b.building_root_id = ? " +
 			"AND r.building_id = b.id " +
 			"AND r.lod4_geometry_id IS NOT NULL " +
 */
 		"SELECT ts.lod4_multi_surface_id " + 
-		"FROM CITYOBJECT co, BUILDING b, ROOM r, THEMATIC_SURFACE ts " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-  			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b, ROOM r, THEMATIC_SURFACE ts " + 
+		"WHERE b.building_root_id = ? " +
 			"AND r.building_id = b.id " +
 			"AND ts.room_id = r.id " +
 			"AND ts.lod4_multi_surface_id IS NOT NULL " +
 		"UNION " + 
 		"SELECT bf.lod4_geometry_id " + 
-		"FROM CITYOBJECT co, BUILDING b, ROOM r, BUILDING_FURNITURE bf " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b, ROOM r, BUILDING_FURNITURE bf " + 
+		"WHERE b.building_root_id = ? " +
 			"AND r.building_id = b.id " +
 			"AND bf.room_id = r.id " +
 			"AND bf.lod4_geometry_id IS NOT NULL " +
 		"UNION " + 
 		"SELECT bi.lod4_geometry_id " + 
-		"FROM CITYOBJECT co, BUILDING b, ROOM r, BUILDING_INSTALLATION bi " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b, ROOM r, BUILDING_INSTALLATION bi " + 
+		"WHERE b.building_root_id = ? " +
 			"AND r.building_id = b.id " +
 			"AND bi.room_id = r.id " +
 			"AND bi.lod4_geometry_id IS NOT NULL " +
 		"UNION " + 
 		"SELECT o.lod4_multi_surface_id " + 
-		"FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
+		"WHERE b.building_root_id = ? " +
 			"AND ts.building_id = b.id " +
 			"AND ts.lod4_multi_surface_id IS NOT NULL " +
 			"AND o2ts.thematic_surface_id = ts.id " +
@@ -351,48 +335,38 @@ public class Queries {
 		"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod4_multi_surface_id = sg.root_id " +
 		"WHERE " +
 			"sg.geometry IS NOT NULL " +
-			"AND sg.root_id IN (" + BUILDING_COLLADA_LOD4_ROOT_SURFACES + ")";
+			"AND sg.root_id IN (" + BUILDING_COLLADA_LOD4_ROOT_IDS + ")";
 
 	private static final String BUILDING_FOOTPRINT_LOD3 =
 		"SELECT sg.geometry " +
-		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co " +
-		"WHERE " +
-			"co.gmlid = ? " +
-			"AND ts.building_id = co.id " +
+		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
+		"WHERE ts.building_id = ? " +
 			"AND ts.type = 'GroundSurface' " +
 			"AND sg.root_id = ts.lod3_multi_surface_id " +
 			"AND sg.geometry IS NOT NULL " +
 		"ORDER BY ts.building_id";
 
-	private static final String BUILDING_COLLADA_LOD3_ROOT_SURFACES =
+	private static final String BUILDING_COLLADA_LOD3_ROOT_IDS =
 		"SELECT b.lod3_geometry_id " + 
-		"FROM CITYOBJECT co, BUILDING b " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b " + 
+		"WHERE b.building_root_id = ? " +
 			"AND b.lod3_geometry_id IS NOT NULL " +
 		"UNION " + 
 		"SELECT ts.lod3_multi_surface_id " + 
-		"FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b, THEMATIC_SURFACE ts " + 
+		"WHERE b.building_root_id = ? " +
 			"AND ts.building_id = b.id " +
 			"AND ts.lod3_multi_surface_id IS NOT NULL " +
 		"UNION " + 
 		"SELECT bi.lod3_geometry_id " + 
-		"FROM CITYOBJECT co, BUILDING b, BUILDING_INSTALLATION bi " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-  			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b, BUILDING_INSTALLATION bi " + 
+		"WHERE b.building_root_id = ? " +
 			"AND bi.building_id = b.id " +
 			"AND bi.lod3_geometry_id IS NOT NULL " +
 		"UNION " + 
 		"SELECT o.lod3_multi_surface_id " + 
-		"FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
+		"WHERE b.building_root_id = ? " +
 			"AND ts.building_id = b.id " +
 			"AND ts.lod3_multi_surface_id IS NOT NULL " +
 			"AND o2ts.thematic_surface_id = ts.id " +
@@ -404,29 +378,23 @@ public class Queries {
 		"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod3_multi_surface_id = sg.root_id " +
 		"WHERE " +
 			"sg.geometry IS NOT NULL " +
-			"AND sg.root_id IN (" + BUILDING_COLLADA_LOD3_ROOT_SURFACES +")";
+			"AND sg.root_id IN (" + BUILDING_COLLADA_LOD3_ROOT_IDS +")";
 
 	private static final String BUILDING_COLLADA_LOD2_ROOT_IDS =
 		"SELECT b.lod2_geometry_id " + 
-		"FROM CITYOBJECT co, BUILDING b " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b " + 
+		"WHERE b.building_root_id = ? " +
 			"AND b.lod2_geometry_id IS NOT NULL " +
 		"UNION " + 
 		"SELECT ts.lod2_multi_surface_id " + 
-		"FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b, THEMATIC_SURFACE ts " + 
+		"WHERE b.building_root_id = ? " +
 			"AND ts.building_id = b.id " +
 			"AND ts.lod2_multi_surface_id IS NOT NULL " +
 		"UNION " + 
 		"SELECT bi.lod2_geometry_id " + 
-		"FROM CITYOBJECT co, BUILDING b, BUILDING_INSTALLATION bi " + 
-		"WHERE " +  
-			"co.gmlid = ? " +
-  			"AND b.building_root_id = co.id " +
+		"FROM BUILDING b, BUILDING_INSTALLATION bi " + 
+		"WHERE b.building_root_id = ? " +
 			"AND bi.building_id = b.id " +
 			"AND bi.lod2_geometry_id IS NOT NULL";
 
@@ -457,34 +425,26 @@ public class Queries {
 			"sg.geometry IS NOT NULL " +
 			"AND sg.root_id IN (" +
 				"SELECT b.lod2_geometry_id " + 
-				"FROM CITYOBJECT co, BUILDING b " + 
-				"WHERE " +  
-					"co.gmlid = ? " +
-					"AND b.building_root_id = co.id " +
+				"FROM BUILDING b " + 
+				"WHERE b.building_root_id = ? " +
 					"AND b.lod2_geometry_id IS NOT NULL " +
 				"UNION " + 
 				"SELECT ts.lod2_multi_surface_id " + 
-				"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " + 
-				"WHERE " +  
-					"co.gmlid = ? " +
-		  			"AND b.building_root_id = co.id " +
+				"FROM THEMATIC_SURFACE ts, BUILDING b " + 
+				"WHERE b.building_root_id = ? " +
 					"AND ts.building_id = b.id " +
 					"AND ts.lod2_multi_surface_id IS NOT NULL " +
 				"UNION " + 
 				"SELECT bi.lod2_geometry_id " + 
-				"FROM CITYOBJECT co, BUILDING b, BUILDING_INSTALLATION bi " + 
-				"WHERE " +  
-					"co.gmlid = ? " +
-					"AND b.building_root_id = co.id " +
+				"FROM BUILDING b, BUILDING_INSTALLATION bi " + 
+				"WHERE b.building_root_id = ? " +
 					"AND bi.building_id = b.id " +
 					"AND bi.lod2_geometry_id IS NOT NULL)";
 
 	private static final String BUILDING_FOOTPRINT_LOD2 =
 		"SELECT sg.geometry " +
-		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts, CITYOBJECT co " +
-		"WHERE " +
-			"co.gmlid = ? " +
-			"AND ts.building_id = co.id " +
+		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
+		"WHERE ts.building_id = ? " +
 			"AND ts.type = 'GroundSurface' " +
 			"AND sg.root_id = ts.lod2_multi_surface_id " +
 			"AND sg.geometry IS NOT NULL " +
@@ -492,20 +452,16 @@ public class Queries {
 
 	private static final String BUILDING_GEOMETRY_LOD1 =
 		"SELECT sg.geometry, NULL as type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg, CITYOBJECT co, BUILDING b " +
-		"WHERE " +
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
+		"FROM SURFACE_GEOMETRY sg, BUILDING b " +
+		"WHERE b.building_root_id = ? " +
 			"AND sg.root_id = b.lod1_geometry_id " +
 			"AND sg.geometry IS NOT NULL " +
 		"ORDER BY b.id";
 
 	private static final String BUILDING_GEOMETRY_HIGHLIGHTING_LOD1 =
 		"SELECT sg.geometry, sg.id " +
-		"FROM SURFACE_GEOMETRY sg, BUILDING b, CITYOBJECT co " +
-		"WHERE " +
-			"co.gmlid = ? " +
-			"AND b.building_root_id = co.id " +
+		"FROM SURFACE_GEOMETRY sg, BUILDING b " +
+		"WHERE b.building_root_id = ? " +
 			"AND sg.root_id = b.lod1_geometry_id " +
 			"AND sg.geometry IS NOT NULL ";
 
@@ -516,17 +472,13 @@ public class Queries {
 			"sg.geometry IS NOT NULL " +
 			"AND sg.root_id IN (" +
 				"SELECT b.lod2_geometry_id " + 
-				"FROM CITYOBJECT co, BUILDING b " + 
-				"WHERE " +  
-					"co.gmlid = ? " +
-					"AND b.building_root_id = co.id " +
+				"FROM BUILDING b " + 
+				"WHERE b.building_root_id = ? " +
 					"AND b.lod2_geometry_id IS NOT NULL " +
 				"UNION " + 
 				"SELECT ts.lod2_multi_surface_id " + 
-				"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " + 
-				"WHERE " +  
-					"co.gmlid = ? " +
-					"AND b.building_root_id = co.id " +
+				"FROM THEMATIC_SURFACE ts, BUILDING b " + 
+				"WHERE b.building_root_id = ? " +
 					"AND ts.building_id = b.id " +
 					"AND ts.lod2_multi_surface_id IS NOT NULL)";
 
@@ -535,7 +487,7 @@ public class Queries {
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE " +
 			"sg.geometry IS NOT NULL " +
-			"AND sg.root_id IN (" + BUILDING_COLLADA_LOD3_ROOT_SURFACES + ")";
+			"AND sg.root_id IN (" + BUILDING_COLLADA_LOD3_ROOT_IDS + ")";
 	
 	
 	private static final String BUILDING_GEOMETRY_HIGHLIGHTING_LOD4 =
@@ -545,25 +497,19 @@ public class Queries {
 			"sg.geometry IS NOT NULL " +
 			"AND sg.root_id IN (" +
 				"SELECT b.lod4_geometry_id " + 
-				"FROM CITYOBJECT co, BUILDING b " + 
-				"WHERE " +  
-					"co.gmlid = ? " +
-					"AND b.building_root_id = co.id " +
+				"FROM BUILDING b " + 
+				"WHERE b.building_root_id = ? " +
 					"AND b.lod4_geometry_id IS NOT NULL " +
 				"UNION " + 
 				"SELECT ts.lod4_multi_surface_id " + 
-				"FROM CITYOBJECT co, THEMATIC_SURFACE ts, BUILDING b " + 
-				"WHERE " +  
-					"co.gmlid = ? " +
-					"AND b.building_root_id = co.id " +
+				"FROM THEMATIC_SURFACE ts, BUILDING b " + 
+				"WHERE b.building_root_id = ? " +
 					"AND ts.building_id = b.id " +
 					"AND ts.lod4_multi_surface_id IS NOT NULL" +
 				"UNION " + 
 				"SELECT o.lod4_multi_surface_id " + 
-				"FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
-				"WHERE " +  
-					"co.gmlid = ? " +
-					"AND b.building_root_id = co.id " +
+				"FROM BUILDING b, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
+				"WHERE b.building_root_id = ? " +
 					"AND ts.building_id = b.id " +
 					"AND ts.lod4_multi_surface_id IS NOT NULL " +
 					"AND o2ts.thematic_surface_id = ts.id " +
@@ -574,7 +520,7 @@ public class Queries {
     	singleBuildingQueriesLod4.put(DisplayForm.FOOTPRINT, BUILDING_FOOTPRINT_LOD4);
     	singleBuildingQueriesLod4.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD4);
     	singleBuildingQueriesLod4.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD4);
-    	singleBuildingQueriesLod4.put(DisplayForm.COLLADA, BUILDING_COLLADA_LOD4_ROOT_SURFACES);
+    	singleBuildingQueriesLod4.put(DisplayForm.COLLADA, BUILDING_COLLADA_LOD4_ROOT_IDS);
     }
 
     private static final HashMap<Integer, String> singleBuildingQueriesLod3 = new HashMap<Integer, String>();
@@ -582,7 +528,7 @@ public class Queries {
     	singleBuildingQueriesLod3.put(DisplayForm.FOOTPRINT, BUILDING_FOOTPRINT_LOD3);
     	singleBuildingQueriesLod3.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD3);
     	singleBuildingQueriesLod3.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD3);
-    	singleBuildingQueriesLod3.put(DisplayForm.COLLADA, BUILDING_COLLADA_LOD3_ROOT_SURFACES);
+    	singleBuildingQueriesLod3.put(DisplayForm.COLLADA, BUILDING_COLLADA_LOD3_ROOT_IDS);
     }
 
     private static final HashMap<Integer, String> singleBuildingQueriesLod2 = new HashMap<Integer, String>();
@@ -658,17 +604,13 @@ public class Queries {
     	"WHERE " +
     	  "sg.root_id IN( " +
     	     "SELECT b.lod<LoD>_geometry_id " +
-    	     "FROM CITYOBJECT co, BUILDING b " +
-    	     "WHERE "+
-    	       "co.gmlid = ? " +
-    	       "AND b.building_root_id = co.id " +
+    	     "FROM BUILDING b " +
+    	     "WHERE b.building_root_id = ? " +
     	       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
     	     "UNION " +
     	     "SELECT ts.lod<LoD>_multi_surface_id " +
-    	     "FROM CITYOBJECT co, BUILDING b, THEMATIC_SURFACE ts " +
-    	     "WHERE "+
-    	       "co.gmlid = ? " +
-    	       "AND b.building_root_id = co.id " +
+    	     "FROM BUILDING b, THEMATIC_SURFACE ts " +
+    	     "WHERE b.building_root_id = ? " +
     	       "AND ts.building_id = b.id " +
     	       "AND ts.lod<LoD>_multi_surface_id IS NOT NULL "+
     	  ") " +
@@ -706,10 +648,8 @@ public class Queries {
     	"WHERE " +
     	  "sg.root_id IN( " +
     	     "SELECT b.lod<LoD>_geometry_id " +
-    	     "FROM CITYOBJECT co, BUILDING b " +
-    	     "WHERE "+
-    	       "co.gmlid = ? " +
-    	       "AND b.building_root_id = co.id " +
+    	     "FROM BUILDING b " +
+    	     "WHERE b.building_root_id = ? " +
     	       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
     	  ") " +
     	  "AND sg.geometry IS NOT NULL) AS get_geoms " +
@@ -772,42 +712,34 @@ public class Queries {
 	
 	public static final String CITYOBJECTGROUP_FOOTPRINT =
 		"SELECT sg.geometry " +
-		"FROM SURFACE_GEOMETRY sg, CITYOBJECTGROUP cog, CITYOBJECT co " +
-		"WHERE " +
-			"co.gmlid = ? " +
-			"AND cog.id = co.id " +
+		"FROM SURFACE_GEOMETRY sg, CITYOBJECTGROUP cog " +
+		"WHERE cog.id = ? " +
 			"AND sg.root_id = cog.surface_geometry_id " +
 			"AND sg.geometry IS NOT NULL ";
 
 	public static final String CITYOBJECTGROUP_MEMBERS = 
-		"SELECT co.gmlid, co.class_id " + 
+		"SELECT co.id, co.gmlid, co.class_id " + 
 		"FROM cityobject co " +
-		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-		                "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
-		                "WHERE co.gmlid = ? " + 
-		                "AND cog.ID = co.ID " +
-		                "AND g2co.cityobjectgroup_id = cog.ID) " +
+		"WHERE co.ID IN (SELECT g2co.cityobject_id " +  
+		                "FROM group_to_cityobject g2co " + 
+		                "WHERE g2co.cityobjectgroup_id = ?) " +
    		"ORDER BY co.class_id";
 	
 	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX = 
-	 	"SELECT co.gmlid, co.class_id " +
-		 	"FROM CITYOBJECT co " +
-			"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-						    "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
-						    "WHERE co.gmlid = ? " + 
-						    "AND cog.ID = co.ID " +
-						    "AND g2co.cityobjectgroup_id = cog.ID) " +
-							  "ST_Intersects(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
+	 	"SELECT co.id, co.gmlid, co.class_id " +
+		"FROM cityobject co " +
+		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
+        				"FROM group_to_cityobject g2co " + 
+        				"WHERE g2co.cityobjectgroup_id = ?) " +
+						"AND ST_Intersects(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
 		"UNION ALL " +
-			"SELECT co.gmlid, co.class_id " +
-		 	"FROM CITYOBJECT co " +
-			"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-					        "FROM group_to_cityobject g2co, cityobjectgroup cog, cityobject co "+ 
-					        "WHERE co.gmlid = ? " + 
-					        "AND cog.ID = co.ID " +
-					        "AND g2co.cityobjectgroup_id = cog.ID) " +
-							  "ST_CoveredBy(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
-		"ORDER BY 2"; // ORDER BY co.class_id*/
+	 	"SELECT co.id, co.gmlid, co.class_id " +
+		"FROM CITYOBJECT co " +
+		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
+						"FROM group_to_cityobject g2co " + 
+						"WHERE g2co.cityobjectgroup_id = ?) " +
+						"AND ST_CoveredBy(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
+		"ORDER BY 3"; // ORDER BY co.class_id*/
 	
 
 	// ----------------------------------------------------------------------
@@ -817,10 +749,9 @@ public class Queries {
 	private static final String SOLITARY_VEGETATION_OBJECT_BASIS_DATA =
 		"SELECT ig.relative_geometry_id, svo.lod<LoD>_implicit_ref_point, " +
 		   	   "svo.lod<LoD>_implicit_transformation, svo.lod<LoD>_geometry_id " +
-		"FROM CITYOBJECT co, SOLITARY_VEGETAT_OBJECT svo " + 
+		"FROM SOLITARY_VEGETAT_OBJECT svo " + 
 		"LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = svo.lod<LoD>_implicit_rep_id " + 
-		"WHERE co.gmlid = ? " +
-			"AND svo.id = co.id";
+		"WHERE svo.id = ?";
 
     public static String getSolitaryVegetationObjectBasisData (int lodToExportFrom) {
     	return SOLITARY_VEGETATION_OBJECT_BASIS_DATA.replace("<LoD>", String.valueOf(lodToExportFrom));
@@ -860,15 +791,13 @@ public class Queries {
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE sg.root_id IN ( " +
 			"SELECT ig.relative_geometry_id " + 
-			"FROM CITYOBJECT co, SOLITARY_VEGETAT_OBJECT svo, IMPLICIT_GEOMETRY ig " + 
-			"WHERE co.gmlid = ? " +
-				"AND svo.id = co.id " +
+			"FROM SOLITARY_VEGETAT_OBJECT svo, IMPLICIT_GEOMETRY ig " + 
+			"WHERE svo.id = ? " +
 				"AND ig.id = svo.lod<LoD>_implicit_rep_id " +
 			"UNION " +
 			"SELECT svo.lod<LoD>_geometry_id " +
-			"FROM CITYOBJECT co, SOLITARY_VEGETAT_OBJECT svo " + 
-			"WHERE co.gmlid = ? " +
-				"AND svo.id = co.id) " +
+			"FROM SOLITARY_VEGETAT_OBJECT svo " + 
+			"WHERE svo.id = ?) " +
 		"AND sg.geometry IS NOT NULL";
 
     public static String getSolitaryVegetationObjectHighlightingQuery (int lodToExportFrom) {
@@ -881,17 +810,15 @@ public class Queries {
 	
 	private static final String PLANT_COVER_FOOTPRINT_EXTRUDED_GEOMETRY =
 		"SELECT sg.geometry, 'Vegetation' as type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg, PLANT_COVER pc, CITYOBJECT co " + 
-		"WHERE co.gmlid = ? " +
-			"AND pc.id = co.id " +
+		"FROM SURFACE_GEOMETRY sg, PLANT_COVER pc " + 
+		"WHERE pc.id = ? " +
 			"AND sg.root_id = pc.lod<LoD>_geometry_id " + 
 			"AND sg.geometry IS NOT NULL";
 	
 	private static final String PLANT_COVER_COLLADA_ROOT_IDS =
 		"SELECT pc.lod<LoD>_geometry_id " +
-		"FROM PLANT_COVER pc, CITYOBJECT co " + 
-		"WHERE co.gmlid = ? " +
-			"AND pc.id = co.id";
+		"FROM PLANT_COVER pc " + 
+		"WHERE pc.id = ?";
 
     public static String getPlantCoverQuery (int lodToExportFrom, DisplayForm displayForm) {
     	String query = null;
@@ -923,10 +850,9 @@ public class Queries {
 	private static final String GENERIC_CITYOBJECT_BASIS_DATA =
 		"SELECT ig.relative_geometry_id, gco.lod<LoD>_implicit_ref_point, " +
 			   "gco.lod<LoD>_implicit_transformation, gco.lod<LoD>_geometry_id " +
-		"FROM CITYOBJECT co, GENERIC_CITYOBJECT gco " +
+		"FROM GENERIC_CITYOBJECT gco " +
 		"LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = gco.lod<LoD>_implicit_rep_id " + 
-		"WHERE co.gmlid = ? " +
-			"AND gco.id = co.id";
+		"WHERE gco.id = ?";
 
     public static String getGenericCityObjectBasisData (int lodToExportFrom) {
     	return GENERIC_CITYOBJECT_BASIS_DATA.replace("<LoD>", String.valueOf(lodToExportFrom));
@@ -966,15 +892,13 @@ public class Queries {
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE sg.root_id IN ( " +
 			"SELECT ig.relative_geometry_id " + 
-			"FROM CITYOBJECT co, GENERIC_CITYOBJECT gco, IMPLICIT_GEOMETRY ig " + 
-			"WHERE co.gmlid = ? " +
-				"AND gco.id = co.id " +
+			"FROM GENERIC_CITYOBJECT gco, IMPLICIT_GEOMETRY ig " + 
+			"WHERE gco.id = ? " +
 				"AND ig.id = gco.lod<LoD>_implicit_rep_id " +
 			"UNION " +
 			"SELECT gco.lod<LoD>_geometry_id " +
-			"FROM CITYOBJECT co, GENERIC_CITYOBJECT gco " + 
-			"WHERE co.gmlid = ? " +
-				"AND gco.id = co.id) " +
+			"FROM GENERIC_CITYOBJECT gco " + 
+			"WHERE gco.id = ?) " +
 		"AND sg.geometry IS NOT NULL";
 
     public static String getGenericCityObjectHighlightingQuery (int lodToExportFrom) {
@@ -988,10 +912,9 @@ public class Queries {
 	private static final String CITY_FURNITURE_BASIS_DATA =
 		"SELECT ig.relative_geometry_id, cf.lod<LoD>_implicit_ref_point, " +
 			   "cf.lod<LoD>_implicit_transformation, cf.lod<LoD>_geometry_id " +
-		"FROM CITYOBJECT co, CITY_FURNITURE cf " + 
+		"FROM CITY_FURNITURE cf " + 
 		"LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = cf.lod<LoD>_implicit_rep_id " + 
-		"WHERE co.gmlid = ? " +
-			"AND cf.id = co.id";
+		"WHERE cf.id = ?";
 
     public static String getCityFurnitureBasisData (int lodToExportFrom) {
     	return CITY_FURNITURE_BASIS_DATA.replace("<LoD>", String.valueOf(lodToExportFrom));
@@ -1031,15 +954,13 @@ public class Queries {
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE sg.root_id IN ( " +
 			"SELECT ig.relative_geometry_id " + 
-			"FROM CITYOBJECT co, CITY_FURNITURE cf, IMPLICIT_GEOMETRY ig " + 
-			"WHERE co.gmlid = ? " +
-				"AND cf.id = co.id " +
+			"FROM CITY_FURNITURE cf, IMPLICIT_GEOMETRY ig " + 
+			"WHERE cf.id = ? " +
 				"AND ig.id = cf.lod<LoD>_implicit_rep_id " +
 			"UNION " +
 			"SELECT cf.lod<LoD>_geometry_id " +
-			"FROM CITYOBJECT co, CITY_FURNITURE cf " + 
-			"WHERE co.gmlid = ? " +
-				"AND cf.id = co.id) " +
+			"FROM CITY_FURNITURE cf " + 
+			"WHERE cf.id = ?) " +
 		"AND sg.geometry IS NOT NULL";
 
     public static String getCityFurnitureHighlightingQuery (int lodToExportFrom) {
@@ -1050,35 +971,17 @@ public class Queries {
 	// WATER BODY QUERIES
 	// ----------------------------------------------------------------------
 	
-	private static final String WATERBOUNDARY_SURFACE_ROOT_IDS =
-		"SELECT wbs.lod<LoD>_surface_id " +
-		"FROM WATERBOUNDARY_SURFACE wbs, CITYOBJECT co " +
-		"WHERE co.gmlid = ? " +
-			"AND wbs.id = co.id " +
-		"UNION " +
-		"SELECT wb.lod<LoD>_solid_id " +
-		"FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb " +
-		"WHERE co.gmlid = ? " +
-			"AND wb2wbs.waterboundary_surface_id = co.id " +
-			"AND wb.id = wb2wbs.waterbody_id ";
-	
-	private static final String WATERBOUNDARY_SURFACE_FOOTPRINT_EXTRUDED_GEOMETRY =
-		"SELECT sg.geometry, 'Water' as type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg " +
-		"WHERE sg.root_id IN (" + WATERBOUNDARY_SURFACE_ROOT_IDS +
-			") AND sg.geometry IS NOT NULL";
-	
 	private static final String WATERBODY_ROOT_IDS =
 		"SELECT wb.lod<LoD>_solid_id " +
-		"FROM CITYOBJECT co, WATERBODY wb " +
-		"WHERE co.gmlid = ? " +
-			"AND wb.id = co.id " +
+		"FROM WATERBODY wb " +
+		"WHERE wb.id = ? " +
+			"AND wb.lod<LoD>_solid_id IS NOT NULL " +
 		"UNION " +
 		"SELECT wbs.lod<LoD>_surface_id " +
-		"FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs " +
-		"WHERE co.gmlid = ? " +
-			"AND wb2wbs.waterbody_id = co.id " +
-			"AND wbs.id = wb2wbs.waterboundary_surface_id ";
+		"FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs " +
+		"WHERE wb2wbs.waterbody_id = ? " +
+			"AND wbs.id = wb2wbs.waterboundary_surface_id " +
+			"AND wbs.lod<LoD>_surface_id IS NOT NULL";
 
 	private static final String WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY =
 		"SELECT sg.geometry, 'Water' as type, sg.id " +
@@ -1086,55 +989,49 @@ public class Queries {
 		"WHERE sg.root_id IN (" + WATERBODY_ROOT_IDS +
 			") AND sg.geometry IS NOT NULL";
 	
-	private static final String WATERBOUNDARY_SURFACE_ROOT_IDS_LOD1 =
-		"SELECT wb.lod<LoD>_solid_id " +
-		"FROM CITYOBJECT co, WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb " +
-		"WHERE co.gmlid = ? " +
-			"AND wb2wbs.waterboundary_surface_id = co.id " +
-			"AND wb.id = wb2wbs.waterbody_id ";
-	
-	private static final String WATERBOUNDARY_SURFACE_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1 =
-		"SELECT sg.geometry, 'Water' as type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg " +
-		"WHERE sg.root_id IN (" + WATERBOUNDARY_SURFACE_ROOT_IDS_LOD1 +
-			") AND sg.geometry IS NOT NULL";
-	
-	private static final String WATERBODY_ROOT_IDS_LOD1 =
-		"SELECT wb.lod<LoD>_solid_id " +
-		"FROM CITYOBJECT co, WATERBODY wb " +
-		"WHERE co.gmlid = ? " +
-			"AND wb.id = co.id ";
-
 	private static final String WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1 =
 		"SELECT sg.geometry, 'Water' as type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
-		"WHERE sg.root_id IN (" + WATERBODY_ROOT_IDS_LOD1 +
-			") AND sg.geometry IS NOT NULL";
+		"WHERE sg.root_id IN (" +
+			"SELECT wb.lod1_solid_id, wb.lod1_multi_surface_id " +
+			"FROM WATERBODY wb " +
+			"WHERE wb.id = ? "+
+		") AND sg.geometry IS NOT NULL " +
+		"UNION " +
+		"SELECT wb.lod1_multi_curve " +
+		"FROM WATERBODY wb " +
+		"WHERE wb.id = ? ";
 	
-    public static String getWaterBodyQuery (int lodToExportFrom, DisplayForm displayForm, boolean isSurface) {
+	private static final String WATERBODY_FOOTPRINT_LOD0 =
+		"SELECT sg.geometry, 'Water' as type, sg.id " +
+		"FROM SURFACE_GEOMETRY sg, WATERBODY wb " +
+		"WHERE wb.id = ? "+
+			"AND sg.root_id = wb.lod0_multi_surface_id " +
+			"AND sg.geometry IS NOT NULL " +
+		"UNION " +
+		"SELECT wb.lod0_multi_curve, 'Water' as type, -1 " +
+		"FROM WATERBODY wb " +
+		"WHERE wb.id = ? ";
+		
+    public static String getWaterBodyQuery (int lodToExportFrom, DisplayForm displayForm) {
     	String query = null;
     	switch (displayForm.getForm()) {
     		case DisplayForm.FOOTPRINT:
     		case DisplayForm.EXTRUDED:
     		case DisplayForm.GEOMETRY:
-    			if (isSurface) {
-    				if (lodToExportFrom > 1)
-    	    			query = WATERBOUNDARY_SURFACE_FOOTPRINT_EXTRUDED_GEOMETRY;
-    				else
-    	    			query = WATERBOUNDARY_SURFACE_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1;
+   				if (lodToExportFrom > 1) {
+   	    			query = WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY;
+    			}
+    			else if (lodToExportFrom == 1) {
+    	    		query = WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1;
     			}
     			else {
-    				if (lodToExportFrom > 1)
-    	    			query = WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY;
-    				else
-    	    			query = WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1;
+    	    		query = WATERBODY_FOOTPRINT_LOD0;
     			}
     	    	break;
 
     		case DisplayForm.COLLADA: // collada can only be achieved from LoD2 upwards
-    			query = isSurface ? 
-    					WATERBOUNDARY_SURFACE_ROOT_IDS:
-    					WATERBODY_ROOT_IDS;
+    			query = WATERBODY_ROOT_IDS;
     	    	break;
     	    default:
     	    	Logger.getInstance().log(LogLevel.INFO, "No water body object query found");
@@ -1144,10 +1041,8 @@ public class Queries {
     	return query.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
 
-    public static String getWaterBodyHighlightingQuery (int lodToExportFrom, boolean isSurface) {
-    	return isSurface ? 
-    		   WATERBOUNDARY_SURFACE_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom)):
-    		   WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
+    public static String getWaterBodyHighlightingQuery (int lodToExportFrom) {
+    	return WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
 
 	// ----------------------------------------------------------------------
@@ -1156,17 +1051,16 @@ public class Queries {
 	
 	private static final String LAND_USE_FOOTPRINT_EXTRUDED_GEOMETRY =
 		"SELECT sg.geometry, 'LandUse' as type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg, LAND_USE lu, CITYOBJECT co " + 
-		"WHERE co.gmlid = ? " +
-			"AND lu.id = co.id " +
+		"FROM SURFACE_GEOMETRY sg, LAND_USE lu " + 
+		"WHERE lu.id = ? " +
 			"AND sg.root_id = lu.lod<LoD>_multi_surface_id " + 
 			"AND sg.geometry IS NOT NULL";
 	
 	private static final String LAND_USE_COLLADA_ROOT_IDS =
 		"SELECT lu.lod<LoD>_multi_surface_id " +
-		"FROM LAND_USE lu, CITYOBJECT co " + 
-		"WHERE co.gmlid = ? " +
-			"AND lu.id = co.id";
+		"FROM LAND_USE lu " +
+		"WHERE lu.id = ? " +
+		"AND lu.lod<LoD>_multi_surface_id IS NOT NULL";
 
     public static String getLandUseQuery (int lodToExportFrom, DisplayForm displayForm) {
     	String query = null;
@@ -1195,63 +1089,39 @@ public class Queries {
 	// TRANSPORTATION QUERIES
 	// ----------------------------------------------------------------------
 	
-	private static final String TRAFFIC_AREA_ROOT_IDS =
-		"SELECT tc.lod<LoD>_multi_surface_id " +
-		"FROM CITYOBJECT co, TRAFFIC_AREA ta, TRANSPORTATION_COMPLEX tc " +
-		"WHERE co.gmlid = ? " +
-			"AND ta.id = co.id " +
-			"AND tc.id = ta.transportation_complex_id " +
-		"UNION " +
-		"SELECT ta.lod<LoD>_multi_surface_id " +
-		"FROM CITYOBJECT co, TRAFFIC_AREA ta " +
-		"WHERE co.gmlid = ? " +
-			"AND ta.id = co.id ";
-	
-	private static final String TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY =
-		"SELECT sg.geometry, 'Transportation' as type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg " +
-		"WHERE sg.root_id IN (" + TRAFFIC_AREA_ROOT_IDS +
-			") AND sg.geometry IS NOT NULL";
-	
 	private static final String TRANSPORTATION_COMPLEX_ROOT_IDS =
 		"SELECT tc.lod<LoD>_multi_surface_id " +
-		"FROM CITYOBJECT co, TRANSPORTATION_COMPLEX tc " +
-		"WHERE co.gmlid = ? " +
-			"AND tc.id = co.id ";
+		"FROM TRANSPORTATION_COMPLEX tc " +
+		"WHERE tc.id = ? " +
+			"AND tc.lod<LoD>_multi_surface_id IS NOT NULL " +
+		"UNION " +
+		"SELECT ta.lod<LoD>_multi_surface_id " +
+		"FROM TRAFFIC_AREA ta " +
+		"WHERE ta.transportation_complex_id = ? " +
+			"AND ta.lod<LoD>_multi_surface_id IS NOT NULL";
 
 	private static final String TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY =
 		"SELECT sg.geometry, 'Transportation' as type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE sg.root_id IN (" + TRANSPORTATION_COMPLEX_ROOT_IDS +
 			") AND sg.geometry IS NOT NULL";
-	
-	private static final String TRAFFIC_AREA_ROOT_IDS_LOD1 =
-		"SELECT tc.lod<LoD>_multi_surface_id " +
-		"FROM CITYOBJECT co, TRAFFIC_AREA ta, TRANSPORTATION_COMPLEX tc " +
-		"WHERE co.gmlid = ? " +
-			"AND ta.id = co.id " +
-			"AND tc.id = ta.transportation_complex_id";
-	
-	private static final String TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1 =
+		
+	private static final String TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1 =
 		"SELECT sg.geometry, 'Transportation' as type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
-		"WHERE sg.root_id IN (" + TRAFFIC_AREA_ROOT_IDS_LOD1 +
-			") AND sg.geometry IS NOT NULL";
-	
-	private static final String TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0 =
-		"SELECT tc.lod0_network " +
-		"FROM CITYOBJECT co, TRAFFIC_AREA ta, TRANSPORTATION_COMPLEX tc " +
-		"WHERE co.gmlid = ? " +
-			"AND ta.id = co.id " +
-			"AND tc.id = ta.transportation_complex_id ";
+		"WHERE sg.root_id IN (" +
+			"SELECT tc.lod1_multi_surface_id " +
+			"FROM TRANSPORTATION_COMPLEX tc " +
+			"WHERE tc.id = ? " +
+				"AND tc.lod1_multi_surface_id IS NOT NULL" +
+		") AND sg.geometry IS NOT NULL";
 
 	private static final String TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0 =
 		"SELECT tc.lod0_network " +
-		"FROM CITYOBJECT co, TRANSPORTATION_COMPLEX tc " +
-		"WHERE co.gmlid = ? " +
-			"AND tc.id = co.id ";
+		"FROM TRANSPORTATION_COMPLEX tc " +
+		"WHERE tc.id = ?";
 	
-    public static String getTransportationQuery (int lodToExportFrom, DisplayForm displayForm, boolean isComplex) {
+    public static String getTransportationQuery (int lodToExportFrom, DisplayForm displayForm) {
     	String query = null;
     	switch (displayForm.getForm()) {
     		case DisplayForm.FOOTPRINT:
@@ -1261,27 +1131,19 @@ public class Queries {
 					case 2:
 					case 3:
 					case 4:
-		    			query = isComplex ? 
-		    					TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY:
-		    					TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY;
+    					query = TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY;
 		    	    	break;
 					case 1:
-		    			query = isComplex ? 
-		    					TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY:
-		    					TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1;
+						query = TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1;
 		    	    	break;
 					case 0:
-		    			query = isComplex ? 
-		    					TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0:
-		    					TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0;
+						query = TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0;
 		    	    	break;
     			}
     	    	break;
 
     		case DisplayForm.COLLADA: // collada can only be achieved from LoD2 upwards
-    			query = isComplex ? 
-    					TRANSPORTATION_COMPLEX_ROOT_IDS:
-    					TRAFFIC_AREA_ROOT_IDS;
+    			query = TRANSPORTATION_COMPLEX_ROOT_IDS;
     	    	break;
     	    default:
     	    	Logger.getInstance().log(LogLevel.INFO, "No transportation object query found");
@@ -1291,10 +1153,8 @@ public class Queries {
     	return query.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
 
-    public static String getTransportationHighlightingQuery (int lodToExportFrom, boolean isComplex) {
-    	return isComplex ? 
-    		   TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom)):
-    		   TRAFFIC_AREA_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
+    public static String getTransportationHighlightingQuery (int lodToExportFrom) {
+    	return TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
 
 	// ----------------------------------------------------------------------
@@ -1304,9 +1164,8 @@ public class Queries {
 	public static final int RELIEF_TIN_QUERY = 0;
 	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN =
 		"SELECT sg.geometry, 'Relief' as type, sg.id " +
-		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr, SURFACE_GEOMETRY sg " +
-		"WHERE co.gmlid = ? " +
-	   		"AND rf.id = co.id " +
+		"FROM RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr, SURFACE_GEOMETRY sg " +
+		"WHERE rf.id = ? " +
 	   		"AND rf.lod = <LoD> " +
 	   		"AND rf2rc.relief_feature_id = rf.id " +
 	   		"AND tr.id = rf2rc.relief_component_id " +
@@ -1316,9 +1175,8 @@ public class Queries {
 	public static final int RELIEF_TIN_BREAK_LINES_QUERY = 1;
 	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN_BREAK_LINES =
 		"SELECT tr.break_lines, 'Relief' as type, -1 " +
-		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
-		"WHERE co.gmlid = ? " +
-			"AND rf.id = co.id " +
+		"FROM RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
+		"WHERE rf.id = ? " +
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
 			"AND tr.id = rf2rc.relief_component_id " +
@@ -1327,9 +1185,8 @@ public class Queries {
 	public static final int RELIEF_TIN_STOP_LINES_QUERY = 2;
 	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN_STOP_LINES =
 		"SELECT tr.stop_lines, 'Relief' as type, -1 " +
-		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
-		"WHERE co.gmlid = ? " +
-			"AND rf.id = co.id " +
+		"FROM RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
+		"WHERE rf.id = ? " +
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
 			"AND tr.id = rf2rc.relief_component_id " +
@@ -1338,9 +1195,8 @@ public class Queries {
 	public static final int RELIEF_TIN_CONTROL_POINTS_QUERY = 2;
 	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_TIN_CONTROL_POINTS =
 		"SELECT tr.control_points, 'Relief' as type, -1 " +
-		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
-		"WHERE co.gmlid = ? " +
-			"AND rf.id = co.id " +
+		"FROM RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
+		"WHERE rf.id = ? " +
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
 			"AND tr.id = rf2rc.relief_component_id";
@@ -1348,9 +1204,8 @@ public class Queries {
 	public static final int RELIEF_BREAK_BREAK_LINES_QUERY = 3;
 	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_BREAK_BREAK_LINES =
 		"SELECT br.break_lines, 'Relief' as type, -1 " +
-		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, BREAKLINE_RELIEF br " +
-		"WHERE co.gmlid = ? " +
-			"AND rf.id = co.id " +
+		"FROM RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, BREAKLINE_RELIEF br " +
+		"WHERE rf.id = ? " +
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
 			"AND br.id = rf2rc.relief_component_id " +
@@ -1359,9 +1214,8 @@ public class Queries {
 	public static final int RELIEF_BREAK_RIDGE_OR_VALLEY_LINES_QUERY = 4;
 	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_BREAK_RIDGE_OR_VALLEY_LINES =
 		"SELECT br.ridge_or_valley_lines, 'Relief' as type, -1 " +
-		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, BREAKLINE_RELIEF br " +
-		"WHERE co.gmlid = ? " +
-			"AND rf.id = co.id " +
+		"FROM RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, BREAKLINE_RELIEF br " +
+		"WHERE rf.id = ? " +
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
 			"AND br.id = rf2rc.relief_component_id " +
@@ -1370,18 +1224,16 @@ public class Queries {
 	public static final int RELIEF_MASSPOINT_QUERY = 4;
 	private static final String RELIEF_FOOTPRINT_EXTRUDED_GEOMETRY_MASSPOINT =
 		"SELECT mr.relief_points, 'Relief' as type, -1 " +
-		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, MASSPOINT_RELIEF mr " +
-		"WHERE co.gmlid = ? " +
-			"AND rf.id = co.id " +
+		"FROM RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, MASSPOINT_RELIEF mr " +
+		"WHERE rf.id = ? " +
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
 			"AND mr.id = rf2rc.relief_component_id";
 */
 	private static final String RELIEF_COLLADA_ROOT_IDS =
 		"SELECT tr.surface_geometry_id " +
-		"FROM CITYOBJECT co, RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
-		"WHERE co.gmlid = ? " +
-			"AND rf.id = co.id " +
+		"FROM RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, TIN_RELIEF tr " +
+		"WHERE rf.id = ? " +
 			"AND rf.lod = <LoD> " +
 			"AND rf2rc.relief_feature_id = rf.id " +
 			"AND tr.id = rf2rc.relief_component_id";

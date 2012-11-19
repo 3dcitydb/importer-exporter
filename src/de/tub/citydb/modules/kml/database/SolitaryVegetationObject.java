@@ -150,7 +150,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					psQuery = connection.prepareStatement(Queries.getSolitaryVegetationObjectBasisData(currentLod));
 
 					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-						psQuery.setString(i, work.getGmlId());
+						psQuery.setLong(i, work.getId());
 					}
 
 //					rs = (OracleResultSet)psQuery.executeQuery();
@@ -240,7 +240,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 
 					PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT);
 					for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
-						psQuery2.setString(i, work.getGmlId());
+						psQuery2.setLong(i, work.getId());
 					}
 //					OracleResultSet rs2 = (OracleResultSet)psQuery2.executeQuery();
 					ResultSet rs2 = psQuery2.executeQuery();
@@ -256,6 +256,8 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 											 getBalloonSettings().isBalloonContentInSeparateFile());
 					break;
 				case DisplayForm.GEOMETRY:
+					setGmlId(work.getGmlId());
+					setId(work.getId());
 					if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter()) { // region
 						if (work.getDisplayForm().isHighlightingEnabled()) {
 							kmlExporterManager.print(createPlacemarksForHighlighting(work),
@@ -282,15 +284,17 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					}
 					break;
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, work.getGmlId());
+					setGmlId(work.getGmlId()); // must be set before fillGenericObjectForCollada
+					setId(work.getId());	   // due to implicit geometries randomized with gmlId.hashCode()
+					fillGenericObjectForCollada(rs);
 					List<Point3d> anchorCandidates = setOrigins(); // setOrigins() called mainly for the side-effect
-					double zOffset = getZOffsetFromConfigOrDB(work.getGmlId());
+					double zOffset = getZOffsetFromConfigOrDB(work.getId());
 					if (zOffset == Double.MAX_VALUE) {
 						if (transformation != null) {
 							anchorCandidates.clear();
 							anchorCandidates.add(new Point3d(0,0,0)); // will be turned into refPointX,Y,Z by convertToWGS84
 						}
-						zOffset = getZOffsetFromGEService(work.getGmlId(), anchorCandidates);
+						zOffset = getZOffsetFromGEService(work.getId(), anchorCandidates);
 					}
 					setZOffset(zOffset);
 
@@ -383,7 +387,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		setLocationZ(reducePrecisionForZ(originInWGS84[2]));
 
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
-		placemark.setName(getId());
+		placemark.setName(getGmlId());
 		placemark.setId(DisplayForm.COLLADA_PLACEMARK_ID + placemark.getName());
 
 		DisplayForm colladaDisplayForm = null;
@@ -428,11 +432,11 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			!config.getProject().getKmlExporter().isExportAsKmz() &&
 			config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue())
 		{
-			link.setHref(getId() + ".dae");
+			link.setHref(getGmlId() + ".dae");
 		}
 		else {
 			// File.separator would be wrong here, it MUST be "/"
-			link.setHref(getId() + "/" + getId() + ".dae");
+			link.setHref(getGmlId() + "/" + getGmlId() + ".dae");
 		}
 		model.setLink(link);
 
@@ -459,16 +463,15 @@ public class SolitaryVegetationObject extends KmlGenericObject{
     }
     
 //	protected void fillGenericObjectForCollada(OracleResultSet rs, String gmlId) throws SQLException {
-    protected void fillGenericObjectForCollada(ResultSet rs, String gmlId) throws SQLException {
+    protected void fillGenericObjectForCollada(ResultSet rs) throws SQLException {
     
 		if (transformation == null) { // no implicit geometry
-			super.fillGenericObjectForCollada(rs, gmlId);
+			super.fillGenericObjectForCollada(rs);
 			return;
 		}
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
 
-		setId(gmlId);
 		int texImageCounter = 0;
 //		STRUCT buildingGeometryObj = null;
 		PGgeometry pgBuildingGeometry = null;
@@ -497,7 +500,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						// for implicit geometries it must be randomized with
 						// gmlId.hashCode() in order to properly group objects
 						// otherwise surfaces with the same id would be overwritten
-						long surfaceId = rs2.getLong("id") + gmlId.hashCode();
+						long surfaceId = rs2.getLong("id") + getGmlId().hashCode();
 	
 //						if (buildingGeometryObj == null) { // root or parent
 						if (pgBuildingGeometry == null) { // root or parent	
@@ -719,7 +722,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		placemarkList.add(placemark);
 
 		if (getBalloonSettings().isIncludeDescription()) {
-			addBalloonContents(placemark, work.getGmlId());
+			addBalloonContents(placemark, work.getId());
 		}
 
 		MultiGeometryType multiGeometry =  kmlFactory.createMultiGeometryType();
@@ -737,17 +740,17 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 															ResultSet.CONCUR_READ_ONLY);
 
 			for (int i = 1; i <= getGeometriesStmt.getParameterMetaData().getParameterCount(); i++) {
-				getGeometriesStmt.setString(i, work.getGmlId());
+				getGeometriesStmt.setLong(i, work.getId());
 			}
 //			rs = (OracleResultSet)getGeometriesStmt.executeQuery();
 			rs = getGeometriesStmt.executeQuery();
 
-			double zOffset = getZOffsetFromConfigOrDB(work.getGmlId());
+			double zOffset = getZOffsetFromConfigOrDB(work.getId());
 			if (zOffset == Double.MAX_VALUE) {
 				List<Point3d> anchorCandidates = new ArrayList<Point3d>();
 				anchorCandidates.clear();
 				anchorCandidates.add(new Point3d(0,0,0)); // will be turned into refPointX,Y,Z by convertToWGS84
-				zOffset = getZOffsetFromGEService(work.getGmlId(), anchorCandidates);
+				zOffset = getZOffsetFromGEService(work.getId(), anchorCandidates);
 			}
 
 			while (rs.next()) {

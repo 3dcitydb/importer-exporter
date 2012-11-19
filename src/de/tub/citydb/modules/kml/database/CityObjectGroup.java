@@ -101,7 +101,7 @@ public class CityObjectGroup extends KmlGenericObject{
 			psQuery = connection.prepareStatement(Queries.CITYOBJECTGROUP_FOOTPRINT);
 
 			for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-				psQuery.setString(i, work.getGmlId());
+				psQuery.setLong(i, work.getId());
 			}
 				
 			rs = psQuery.executeQuery();
@@ -116,14 +116,14 @@ public class CityObjectGroup extends KmlGenericObject{
 			}
 			else { // result not empty
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
-/*
+
 				// get the proper displayForm (colors, highlighting) when not building
 				DisplayForm displayForm = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
 				int indexOfDf = getDisplayForms().indexOf(displayForm);
 				if (indexOfDf != -1) {
 					work.setDisplayForm(getDisplayForms().get(indexOfDf));
 				}
-*/
+
 				// hard-coded for groups
 				kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
 										 work,

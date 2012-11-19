@@ -41,7 +41,6 @@ import javax.xml.bind.JAXBException;
 import net.opengis.kml._2.PlacemarkType;
 
 import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
@@ -55,7 +54,6 @@ import de.tub.citydb.modules.common.event.CounterType;
 public class WaterBody extends KmlGenericObject{
 
 	public static final String STYLE_BASIS_NAME = "Water";
-	private boolean isSurface = false;
 
 	public WaterBody(Connection connection,
 			KmlExporterManager kmlExporterManager,
@@ -93,7 +91,7 @@ public class WaterBody extends KmlGenericObject{
 	}
 
 	protected String getHighlightingQuery() {
-		return Queries.getWaterBodyHighlightingQuery(currentLod, isSurface);
+		return Queries.getWaterBodyHighlightingQuery(currentLod);
 	}
 
 	public void read(KmlSplittingResult work) {
@@ -101,7 +99,6 @@ public class WaterBody extends KmlGenericObject{
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 
-		isSurface = work.getCityObjectType() != CityGMLClass.WATER_BODY; 
 		boolean reversePointOrder = false;
 
 		try {
@@ -113,12 +110,12 @@ public class WaterBody extends KmlGenericObject{
 				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
 
 				try {
-					psQuery = connection.prepareStatement(Queries.getWaterBodyQuery(currentLod, work.getDisplayForm(), isSurface),
+					psQuery = connection.prepareStatement(Queries.getWaterBodyQuery(currentLod, work.getDisplayForm()),
 							   							  ResultSet.TYPE_SCROLL_INSENSITIVE,
 							   							  ResultSet.CONCUR_READ_ONLY);
 
 					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-						psQuery.setString(i, work.getGmlId());
+						psQuery.setLong(i, work.getId());
 					}
 				
 					rs = psQuery.executeQuery();
@@ -164,7 +161,7 @@ public class WaterBody extends KmlGenericObject{
 
 					PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT);
 					for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
-						psQuery2.setString(i, work.getGmlId());
+						psQuery2.setLong(i, work.getId());
 					}
 					ResultSet rs2 = psQuery2.executeQuery();
 					rs2.next();
@@ -177,6 +174,8 @@ public class WaterBody extends KmlGenericObject{
 											 getBalloonSettings().isBalloonContentInSeparateFile());
 					break;
 				case DisplayForm.GEOMETRY:
+					setGmlId(work.getGmlId());
+					setId(work.getId());
 					if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter()) { // region
 						if (work.getDisplayForm().isHighlightingEnabled()) {
 							kmlExporterManager.print(createPlacemarksForHighlighting(work),
@@ -203,11 +202,13 @@ public class WaterBody extends KmlGenericObject{
 					}
 					break;
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs, work.getGmlId());
+					fillGenericObjectForCollada(rs);
+					setGmlId(work.getGmlId());
+					setId(work.getId());
 					List<Point3d> anchorCandidates = setOrigins(); // setOrigins() called mainly for the side-effect
-					double zOffset = getZOffsetFromConfigOrDB(work.getGmlId());
+					double zOffset = getZOffsetFromConfigOrDB(work.getId());
 					if (zOffset == Double.MAX_VALUE) {
-						zOffset = getZOffsetFromGEService(work.getGmlId(), anchorCandidates);
+						zOffset = getZOffsetFromGEService(work.getId(), anchorCandidates);
 					}
 					setZOffset(zOffset);
 
