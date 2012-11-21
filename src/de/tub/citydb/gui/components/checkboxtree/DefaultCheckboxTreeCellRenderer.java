@@ -110,6 +110,7 @@ public class DefaultCheckboxTreeCellRenderer extends JPanel implements CheckboxT
 	    TreeCheckingModel checkingModel = ((CheckboxTree) tree).getCheckingModel();
 	    TreePath path = tree.getPathForRow(row);
 	    this.checkBox.setEnabled(checkingModel.isPathEnabled(path));
+	    this.label.setEnabled(this.checkBox.isEnabled());
 	    boolean checked = checkingModel.isPathChecked(path);
 	    boolean greyed = checkingModel.isPathGreyed(path);
 	    if (checked && !greyed) {

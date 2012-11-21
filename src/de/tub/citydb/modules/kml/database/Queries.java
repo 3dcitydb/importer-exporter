@@ -1000,7 +1000,17 @@ public class Queries {
     }
 
     public static String getWaterBodyHighlightingQuery (int lodToExportFrom) {
-    	return WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
+    	String query = null;
+		if (lodToExportFrom > 1) {
+   			query = WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY;
+		}
+		else if (lodToExportFrom == 1) {
+    		query = WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1;
+		}
+		else {
+    		query = WATERBODY_FOOTPRINT_LOD0;
+		}
+		return query.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
 
 	// ----------------------------------------------------------------------
@@ -1112,7 +1122,17 @@ public class Queries {
     }
 
     public static String getTransportationHighlightingQuery (int lodToExportFrom) {
-    	return TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY.replace("<LoD>", String.valueOf(lodToExportFrom));
+    	String query = null;
+		if (lodToExportFrom > 1) {
+   			query = TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY;
+		}
+		else if (lodToExportFrom == 1) {
+    		query = TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1;
+		}
+		else {
+    		query = TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0;
+		}
+		return query.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
 
 	// ----------------------------------------------------------------------
