@@ -1011,7 +1011,8 @@ public class Queries {
 		"UNION " +
 		"SELECT wb.lod0_multi_curve, 'Water' as type, -1 " +
 		"FROM WATERBODY wb " +
-		"WHERE wb.id = ? ";
+		"WHERE wb.id = ? " + 
+		"AND wb.lod0_multi_curve IS NOT NULL";
 		
     public static String getWaterBodyQuery (int lodToExportFrom, DisplayForm displayForm) {
     	String query = null;
@@ -1126,11 +1127,12 @@ public class Queries {
 				"AND tc.lod1_multi_surface_id IS NOT NULL" +
 		") AND sg.geometry IS NOT NULL";
 
-	private static final String TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0 =
-		"SELECT tc.lod0_network " +
-		"FROM TRANSPORTATION_COMPLEX tc " +
-		"WHERE tc.id = ?";
-	
+	private static final String TRANSPORTATION_COMPLEX_FOOTPRINT_LOD0 =
+			"SELECT tc.lod0_network " +
+			"FROM TRANSPORTATION_COMPLEX tc " +
+			"WHERE tc.id = ? " +
+			"AND tc.lod0_network IS NOT NULL";
+
     public static String getTransportationQuery (int lodToExportFrom, DisplayForm displayForm) {
     	String query = null;
     	switch (displayForm.getForm()) {
@@ -1147,7 +1149,7 @@ public class Queries {
 						query = TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1;
 		    	    	break;
 					case 0:
-						query = TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0;
+						query = TRANSPORTATION_COMPLEX_FOOTPRINT_LOD0;
 		    	    	break;
     			}
     	    	break;
@@ -1172,7 +1174,7 @@ public class Queries {
     		query = TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD1;
 		}
 		else {
-    		query = TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY_LOD0;
+    		query = TRANSPORTATION_COMPLEX_FOOTPRINT_LOD0;
 		}
 		return query.replace("<LoD>", String.valueOf(lodToExportFrom));
     }
