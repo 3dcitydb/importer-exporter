@@ -81,7 +81,8 @@ public class KmlSplitter {
 
 		this.filterConfig = config.getProject().getKmlExporter().getFilter();
 		CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.clear();
-		if (filterConfig.getComplexFilter().getFeatureClass().isSetBuilding()) {
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetBuilding() 
+				&& config.getProject().getKmlExporter().getLodToExportFrom() > 0) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.BUILDING);
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetWaterBody()) {
@@ -95,7 +96,8 @@ public class KmlSplitter {
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetLandUse()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.LAND_USE);
 		}
-		if (filterConfig.getComplexFilter().getFeatureClass().isSetVegetation()) {
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetVegetation()
+				&& config.getProject().getKmlExporter().getLodToExportFrom() > 0) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.SOLITARY_VEGETATION_OBJECT);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.PLANT_COVER);
 		}
@@ -110,7 +112,8 @@ public class KmlSplitter {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.ROAD);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.SQUARE);
 		}
-		if (filterConfig.getComplexFilter().getFeatureClass().isSetReliefFeature()) {
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetReliefFeature()
+				&& config.getProject().getKmlExporter().getLodToExportFrom() > 0) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.RELIEF_FEATURE);
 /*
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.RASTER_RELIEF);
@@ -122,10 +125,12 @@ public class KmlSplitter {
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetGenericCityObject()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.GENERIC_CITY_OBJECT);
 		}
-		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityFurniture()) {
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityFurniture()
+				&& config.getProject().getKmlExporter().getLodToExportFrom() > 0) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_FURNITURE);
 		}
-		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityObjectGroup()) {
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityObjectGroup()
+				&& config.getProject().getKmlExporter().getLodToExportFrom() > 0) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
 		}
 			
