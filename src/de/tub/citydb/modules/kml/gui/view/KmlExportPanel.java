@@ -942,6 +942,21 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				}
 			}
 
+			// Feature classes check
+			if(!filter.getComplexFilter().getFeatureClass().isSetBuilding() &&
+			   !filter.getComplexFilter().getFeatureClass().isSetCityFurniture() &&
+			   !filter.getComplexFilter().getFeatureClass().isSetCityObjectGroup() &&
+			   !filter.getComplexFilter().getFeatureClass().isSetGenericCityObject() &&
+			   !filter.getComplexFilter().getFeatureClass().isSetLandUse() &&
+			   !filter.getComplexFilter().getFeatureClass().isSetReliefFeature() &&
+			   !filter.getComplexFilter().getFeatureClass().isSetTransportation() &&
+			   !filter.getComplexFilter().getFeatureClass().isSetVegetation() &&
+			   !filter.getComplexFilter().getFeatureClass().isSetWaterBody()) {
+				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"),
+						Internal.I18N.getString("kmlExport.dialog.error.incorrectData.featureClass"));
+				return;
+			}
+			
 			if (!dbPool.isConnected()) {
 				mainView.connectToDatabase();
 

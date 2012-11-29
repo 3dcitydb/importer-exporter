@@ -56,7 +56,7 @@ public class Relief extends KmlGenericObject{
 
 	public static final String STYLE_BASIS_NAME = "Relief";
 	private static final int FIRST_RELIEF_QUERY = Queries.RELIEF_TIN_QUERY;
-	private static final int LAST_RELIEF_QUERY = Queries.RELIEF_BREAK_RIDGE_OR_VALLEY_LINES_QUERY;
+	private static final int LAST_RELIEF_QUERY = Queries.RELIEF_TIN_QUERY;
 	private int currentReliefQuery = FIRST_RELIEF_QUERY;
 	private boolean alreadyCounted = false;
 
