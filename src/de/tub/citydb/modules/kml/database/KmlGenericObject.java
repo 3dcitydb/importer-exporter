@@ -2515,8 +2515,10 @@ public abstract class KmlGenericObject {
 		model.setOrientation(orientation);
 
 		LinkType link = kmlFactory.createLinkType();
-		if (config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue() &&
-				config.getProject().getKmlExporter().isOneFilePerObject()) {
+		if (config.getProject().getKmlExporter().isOneFilePerObject() &&
+				!config.getProject().getKmlExporter().isExportAsKmz() &&
+				config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue())
+		{
 			link.setHref(getGmlId() + ".dae");
 		}
 		else {
