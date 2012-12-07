@@ -115,20 +115,22 @@ public class DatabaseControllerImpl implements DatabaseController {
 		return DBUtil.isIndexed(tableName, columnName);
 	}
 
-//	@Override
-//	public boolean existsWorkspace(String workspaceName) {
+	@Override
+	public boolean existsWorkspace(String workspaceName) {
 //		return dbPool.existsWorkspace(new Workspace(workspaceName));
-//	}
-//
-//	@Override
-//	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) throws SQLException {
+		return false;
+	}
+
+	@Override
+	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) throws SQLException {
 //		return dbPool.gotoWorkspace(conn, new Workspace(workspaceName, timestamp));
-//	}
-//
-//	@Override
-//	public boolean gotoWorkspace(Connection conn, String workspaceName) throws SQLException {
-//		return gotoWorkspace(conn, workspaceName, null);
-//	}
+		return false;
+	}
+
+	@Override
+	public boolean gotoWorkspace(Connection conn, String workspaceName) throws SQLException {
+		return gotoWorkspace(conn, workspaceName, null);
+	}
 
 	@Override
 	public DatabaseConnectionDetails getActiveConnectionDetails() {

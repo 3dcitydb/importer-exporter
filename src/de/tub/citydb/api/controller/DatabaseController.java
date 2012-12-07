@@ -53,9 +53,9 @@ public interface DatabaseController {
 	public Connection getConnection() throws SQLException;
 	public boolean isIndexEnabled(String tableName, String columnName) throws SQLException;
 	
-//	public boolean existsWorkspace(String workspaceName);
-//	public boolean gotoWorkspace(Connection conn, String workspaceName) throws SQLException;
-//	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) throws SQLException;
+	public boolean existsWorkspace(String workspaceName);
+	public boolean gotoWorkspace(Connection conn, String workspaceName) throws SQLException;
+	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) throws SQLException;
 
 	public BalloonTemplateFactory getBalloonTemplateFactory();
 }
