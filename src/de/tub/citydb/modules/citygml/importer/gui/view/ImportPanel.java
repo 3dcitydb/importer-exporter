@@ -71,6 +71,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -140,7 +142,7 @@ public class ImportPanel extends JPanel {
 		fileList.setModel(fileListModel);
 		fileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		fileList.setTransferHandler(handler);
-		
+
 		DropTarget dropTarget = new DropTarget(fileList, handler);
 		fileList.setDropTarget(dropTarget);
 		setDropTarget(dropTarget);
@@ -174,6 +176,7 @@ public class ImportPanel extends JPanel {
 					a.actionPerformed(new ActionEvent(fileList, ActionEvent.ACTION_PERFORMED, null));
 			}
 		});
+		removeButton.setEnabled(false);
 
 		importButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -199,6 +202,13 @@ public class ImportPanel extends JPanel {
 			}
 		});
 
+		fileList.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) {
+				if (!e.getValueIsAdjusting())
+					removeButton.setEnabled(true);
+			}
+		});
+
 		setLayout(new GridBagLayout());
 
 		JPanel filePanel = new JPanel();
@@ -207,7 +217,7 @@ public class ImportPanel extends JPanel {
 		filePanel.setLayout(new GridBagLayout());
 		JScrollPane fileScroll = new JScrollPane(fileList);
 		fileScroll.setPreferredSize(fileScroll.getPreferredSize());
-		
+
 		filePanel.add(fileScroll, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 		filePanel.add(fileButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
 		fileButton.setLayout(new GridBagLayout());
@@ -230,7 +240,7 @@ public class ImportPanel extends JPanel {
 		workspacePanel.add(workspaceText, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,5,5));
 
 		view.add(filterPanel, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,0,5,0,5));
-		
+
 		JPanel buttonPanel = new JPanel();
 		add(buttonPanel, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));	
 		buttonPanel.setLayout(new GridBagLayout());
@@ -596,16 +606,21 @@ public class ImportPanel extends JPanel {
 			if (action != MOVE)
 				return;
 
-			int[] indices = fileList.getSelectedIndices();
-			int first = indices[0];		
+			if (!fileList.isSelectionEmpty()) {
+				int[] indices = fileList.getSelectedIndices();
+				int first = indices[0];		
 
-			for (int i = indices.length - 1; i >= 0; i--)
-				fileListModel.remove(indices[i]);
+				for (int i = indices.length - 1; i >= 0; i--)
+					fileListModel.remove(indices[i]);
 
-			if (first > fileListModel.size() - 1)
-				first = fileListModel.size() - 1;
+				if (first > fileListModel.size() - 1)
+					first = fileListModel.size() - 1;
 
-			fileList.setSelectedIndex(first);
+				if (fileListModel.isEmpty())
+					removeButton.setEnabled(false);
+				else
+					fileList.setSelectedIndex(first);
+			}
 		}
 
 		@Override
