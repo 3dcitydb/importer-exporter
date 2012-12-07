@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=windows-1250">
+    <style type="text/css">
+      body {color:#000000;
+         font-family: Tahoma,Arial;
+      }
+    </style>
+    <script type="text/javascript">
+      function showInMaps()
+      {
+        var longitude = <3DCityDB>SPECIAL_KEYWORDS/CENTROID_WGS84_LON</3DCityDB>;
+        var latitude = <3DCityDB>SPECIAL_KEYWORDS/CENTROID_WGS84_LAT</3DCityDB>;
+
+        var linkToBeChanged = document.getElementById("googleMapsLink");
+        linkToBeChanged.href = "http://maps.google.com/maps?q=" + latitude + "," + longitude;
+
+        linkToBeChanged = document.getElementById("openStreetMapLink");
+        linkToBeChanged.href = "http://www.openstreetmap.org/index.html?lat=" + latitude + "&lon=" + longitude +"&zoom=17" + "&mlat=" + latitude + "&mlon=" + longitude;
+      }
+    </script>
+    </script>
+    <title><3DCityDB>CITYOBJECT/GMLID</3DCityDB></title>
+  </head>
+  <body onload="showInMaps()">
+    <hr style="border:solid #55759b 1px; background-color:#55759b; height:6px;">
+    <table width=392>
+    <tr><td><b>Address:</b></td>
+        <td rowspan=3 align=right><img src="http://www.gis.tu-berlin.de/fileadmin/fg227/Bilder/Projekte/3DCityDB/3dcitydb_logo.png"></td>
+    </tr>
+    <tr><td><3DCityDB>ADDRESS/[FIRST]STREET</3DCityDB> <3DCityDB>ADDRESS/[FIRST]HOUSE_NUMBER</3DCityDB></td></tr>
+    <tr><td valign=top><3DCityDB>ADDRESS/[FIRST]CITY</3DCityDB></td></tr>
+    </table>
+    <hr style="color:#000000;">
+    <table width=385>
+    <tr><td align="right"><b>Location coordinates:</b></td></tr>
+    <tr><td align="right"><3DCityDB>SPECIAL_KEYWORDS/CENTROID_WGS84_LAT</3DCityDB>, <3DCityDB>SPECIAL_KEYWORDS/CENTROID_WGS84_LON</3DCityDB><br><br></td></tr>
+    <tr><td align="right"><a id="googleMapsLink" href="#">See Location in <b>Google Maps</b></a></td></tr>
+    <tr><td align="right"><a id="openStreetMapLink" href="#">See Location in <b>OpenStreetMap</b></a></td></tr>
+    </table>
+    <hr style="border:solid #55759b 1px; background-color:#55759b; height:6px;">
+  </body>
+</html>
