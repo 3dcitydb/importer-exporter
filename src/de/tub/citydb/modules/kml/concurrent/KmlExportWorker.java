@@ -480,7 +480,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			colladaBundle.setPlacemark(objectGroup.createPlacemarkForColladaModel());
 			colladaBundle.setGmlId(objectGroup.getGmlId());
 
-			kmlExporterManager.print(colladaBundle, objectGroup.getBalloonSettings().isBalloonContentInSeparateFile());
+			kmlExporterManager.print(colladaBundle,
+									 objectGroup.getId(),					
+									 objectGroup.getBalloonSettings().isBalloonContentInSeparateFile());
 		}
 		catch (Exception e) {
 			e.printStackTrace();

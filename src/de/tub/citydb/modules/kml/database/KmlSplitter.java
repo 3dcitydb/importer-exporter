@@ -152,7 +152,6 @@ public class KmlSplitter {
 		if (filterConfig.isSetSimpleFilter()) {
 			for (String gmlId: filterConfig.getSimpleFilter().getGmlIdFilter().getGmlIds()) {
 				if (!shouldRun) break;
-				if (KmlExporter.getAlreadyExported().containsKey(gmlId)) continue;
 
 				OracleResultSet rs = null;
 				PreparedStatement query = null;
@@ -163,6 +162,7 @@ public class KmlSplitter {
 					
 					if (rs.next()) {
 						long id = rs.getLong("id");
+						if (KmlExporter.getAlreadyExported().containsKey(id)) continue;
 						CityGMLClass cityObjectType = Util.classId2cityObject(rs.getInt("class_id"));
 						addWorkToQueue(id, gmlId, cityObjectType, 0, 0);
 					}

@@ -224,7 +224,7 @@ public class KmlExporterManager {
 							RegionType regionType = kmlFactory.createRegionType();
 							
 							LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
-							CityObject4JSON cityObject4JSON = KmlExporter.getAlreadyExported().get(gmlId);
+							CityObject4JSON cityObject4JSON = KmlExporter.getAlreadyExported().get(work.getId());
 							if (cityObject4JSON != null) { // avoid NPE when aborting large KML/COLLADA exports
 								latLonAltBoxType.setNorth(cityObject4JSON.getEnvelopeYmax());
 								latLonAltBoxType.setSouth(cityObject4JSON.getEnvelopeYmin());
@@ -301,10 +301,12 @@ public class KmlExporterManager {
         }
 	}
 
-	public void print(ColladaBundle colladaBundle, boolean balloonInSeparateFile) throws JAXBException, 
-														  								 FileNotFoundException,
-														  								 IOException,
-														  								 SQLException {
+	public void print(ColladaBundle colladaBundle,
+					  long id,
+					  boolean balloonInSeparateFile) throws JAXBException, 
+														  	FileNotFoundException,
+														  	IOException,
+														  	SQLException {
 		ZipOutputStream zipOut = null;
 		OutputStreamWriter fileWriter = null;
 		SAXEventBuffer buffer = new SAXEventBuffer();
@@ -381,7 +383,7 @@ public class KmlExporterManager {
 				RegionType regionType = kmlFactory.createRegionType();
 				
 				LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
-				CityObject4JSON cityObject4JSON = KmlExporter.getAlreadyExported().get(colladaBundle.getGmlId());
+				CityObject4JSON cityObject4JSON = KmlExporter.getAlreadyExported().get(id);
 				if (cityObject4JSON != null) { // avoid NPE when aborting large KML/COLLADA exports
 					latLonAltBoxType.setNorth(cityObject4JSON.getEnvelopeYmax());
 					latLonAltBoxType.setSouth(cityObject4JSON.getEnvelopeYmin());
