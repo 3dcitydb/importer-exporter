@@ -623,7 +623,7 @@ public class KmlExporter implements EventHandler {
 				Iterator<Long> iterator = alreadyExported.keySet().iterator();
 				while (iterator.hasNext()) {
 					Long id = iterator.next();
-					outputStream.write(("\t\"" + id + "\": {").toString().getBytes(CHARSET));
+//					outputStream.write(("\t\"" + id + "\": {").toString().getBytes(CHARSET));
 					outputStream.write(alreadyExported.get(id).toString().getBytes(CHARSET));
 					if (iterator.hasNext()) {
 						outputStream.write(",\n".getBytes(CHARSET));
