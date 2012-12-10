@@ -31,7 +31,7 @@ package de.tub.citydb.modules.kml.util;
 
 public class CityObject4JSON {
 
-//	private String gmlId;
+	private String gmlId;
 
 	private double envelopeXmin;
 	private double envelopeXmax;
@@ -40,20 +40,21 @@ public class CityObject4JSON {
 
 	private int tileRow = 0;
 	private int tileColumn = 0;
-/*	
+	
 	public CityObject4JSON (String gmlId) {
 		this.gmlId = gmlId;
 	}
-*/
+
 	@Override
 	public String toString() {
+
+		return "\t\"" + gmlId + "\": {" +
+			   "\n\t\"envelope\": [" + envelopeXmin + ", " + envelopeYmin + ", " + envelopeXmax + ", " + envelopeYmax +
+			   "],\n\t\"tile\": [" + tileRow + ", " + tileColumn + "]}";
 /*
-		return "\t{\"gmlId\": \"" + gmlId +
-			   "\",\n\t\"envelope\": [" + envelopeXmin + ", " + envelopeYmin + ", " + envelopeXmax + ", " + envelopeYmax +
-			   "],\n\t\"tile\": [" + tileRow + ", " + tileColumn + "]}\n";
-*/
 		return "\n\t\"envelope\": [" + envelopeXmin + ", " + envelopeYmin + ", " + envelopeXmax + ", " + envelopeYmax +
 		   	   "],\n\t\"tile\": [" + tileRow + ", " + tileColumn + "]}";
+*/
 	}
 
 /*

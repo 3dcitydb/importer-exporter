@@ -297,7 +297,7 @@ public class KmlSplitter {
 		if (CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType) &&
 			!KmlExporter.getAlreadyExported().containsKey(id)) {
 
-			CityObject4JSON cityObject4Json = new CityObject4JSON();
+			CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
 			cityObject4Json.setTileRow(row);
 			cityObject4Json.setTileColumn(column);
 			double[] ordinatesArray = getEnvelopeInWGS84(id);
