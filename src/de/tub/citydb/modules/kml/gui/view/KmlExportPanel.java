@@ -41,6 +41,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -89,6 +90,7 @@ import de.tub.citydb.gui.components.ExportStatusDialog;
 import de.tub.citydb.gui.components.bbox.BoundingBoxPanelImpl;
 import de.tub.citydb.gui.components.checkboxtree.CheckboxTree;
 import de.tub.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
+import de.tub.citydb.gui.components.checkboxtree.DefaultTreeCheckingModel;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.InterruptEnum;
@@ -661,60 +663,88 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace().setTimestamp(timestampText.getText().trim());
 
 		KmlExporter kmlExporter = config.getProject().getKmlExporter();
+		ExportFilterConfig kmlExportFilter = kmlExporter.getFilter();
 
-		kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().setActive(!singleBuildingRadioButton.isSelected());
+		kmlExportFilter.getComplexFilter().getTiledBoundingBox().setActive(!singleBuildingRadioButton.isSelected());
 		if (singleBuildingRadioButton.isSelected()) {
-			kmlExporter.getFilter().setMode(FilterMode.SIMPLE);
+			kmlExportFilter.setMode(FilterMode.SIMPLE);
 		}
 		else {
-			kmlExporter.getFilter().setMode(FilterMode.COMPLEX);
+			kmlExportFilter.setMode(FilterMode.COMPLEX);
 
 			if (noTilingRadioButton.isSelected()) {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setMode(TilingMode.NO_TILING);
+				kmlExportFilter.getComplexFilter().getTiledBoundingBox().getTiling().setMode(TilingMode.NO_TILING);
 			}
 			else if (automaticTilingRadioButton.isSelected()) {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setMode(TilingMode.AUTOMATIC);
+				kmlExportFilter.getComplexFilter().getTiledBoundingBox().getTiling().setMode(TilingMode.AUTOMATIC);
 			}
 			else {
-				kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setMode(TilingMode.MANUAL);
+				kmlExportFilter.getComplexFilter().getTiledBoundingBox().getTiling().setMode(TilingMode.MANUAL);
 			}
 		}
 
-		kmlExporter.getFilter().getSimpleFilter().getGmlIdFilter().getGmlIds().clear();
+		kmlExportFilter.getSimpleFilter().getGmlIdFilter().getGmlIds().clear();
 		StringTokenizer st = new StringTokenizer(gmlIdText.getText().trim(), ",");
 		while (st.hasMoreTokens()) {
-			kmlExporter.getFilter().getSimpleFilter().getGmlIdFilter().addGmlId(st.nextToken().trim());
+			kmlExportFilter.getSimpleFilter().getGmlIdFilter().addGmlId(st.nextToken().trim());
 		}
 
-		kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().copyFrom(bboxComponent.getBoundingBox());
+		kmlExportFilter.getComplexFilter().getTiledBoundingBox().copyFrom(bboxComponent.getBoundingBox());
 
 		try {
-			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
+			kmlExportFilter.getComplexFilter().getTiledBoundingBox().
 			getTiling().setRows(Integer.parseInt(rowsText.getText().trim()));
 		}
 		catch (NumberFormatException nfe) {
-			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setRows(1);
+			kmlExportFilter.getComplexFilter().getTiledBoundingBox().getTiling().setRows(1);
 		}
 		try {
-			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().
+			kmlExportFilter.getComplexFilter().getTiledBoundingBox().
 			getTiling().setColumns(Integer.parseInt(columnsText.getText().trim()));
 		}
 		catch (NumberFormatException nfe) {
-			kmlExporter.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().setColumns(1);
+			kmlExportFilter.getComplexFilter().getTiledBoundingBox().getTiling().setColumns(1);
 		}
 
 		kmlExporter.setLodToExportFrom(lodComboBox.getSelectedIndex());
 
+		setDisplayFormSettings(kmlExporter.getBuildingDisplayForms());
+		setDisplayFormSettings(kmlExporter.getWaterBodyDisplayForms());
+		setDisplayFormSettings(kmlExporter.getLandUseDisplayForms());
+		setDisplayFormSettings(kmlExporter.getVegetationDisplayForms());
+		setDisplayFormSettings(kmlExporter.getTransportationDisplayForms());
+		setDisplayFormSettings(kmlExporter.getReliefDisplayForms());
+		setDisplayFormSettings(kmlExporter.getCityFurnitureDisplayForms());
+		setDisplayFormSettings(kmlExporter.getGenericCityObjectDisplayForms());
+		setDisplayFormSettings(kmlExporter.getCityObjectGroupDisplayForms());
 
+//		if (themeComboBox.getItemCount() > 0) {
+		kmlExporter.setAppearanceTheme(themeComboBox.getSelectedItem().toString());
+//		}
+
+		kmlExportFilter.getComplexFilter().getFeatureClass().setBuilding(fcTree.getCheckingModel().isPathChecked(new TreePath(building.getPath()))); 
+		kmlExportFilter.getComplexFilter().getFeatureClass().setWaterBody(fcTree.getCheckingModel().isPathChecked(new TreePath(waterBody.getPath()))); 
+		kmlExportFilter.getComplexFilter().getFeatureClass().setLandUse(fcTree.getCheckingModel().isPathChecked(new TreePath(landUse.getPath()))); 
+		kmlExportFilter.getComplexFilter().getFeatureClass().setVegetation(fcTree.getCheckingModel().isPathChecked(new TreePath(vegetation.getPath())));
+		kmlExportFilter.getComplexFilter().getFeatureClass().setTransportation(fcTree.getCheckingModel().isPathChecked(new TreePath(transportation.getPath())));
+		kmlExportFilter.getComplexFilter().getFeatureClass().setReliefFeature(fcTree.getCheckingModel().isPathChecked(new TreePath(relief.getPath())));
+		kmlExportFilter.getComplexFilter().getFeatureClass().setCityFurniture(fcTree.getCheckingModel().isPathChecked(new TreePath(cityFurniture.getPath())));
+		kmlExportFilter.getComplexFilter().getFeatureClass().setGenericCityObject(fcTree.getCheckingModel().isPathChecked(new TreePath(genericCityObject.getPath())));
+		kmlExportFilter.getComplexFilter().getFeatureClass().setCityObjectGroup(fcTree.getCheckingModel().isPathChecked(new TreePath(cityObjectGroup.getPath())));
+
+		config.getProject().setKmlExporter(kmlExporter);
+	}
+	
+	private void setDisplayFormSettings(List<DisplayForm> displayForms) {
 		DisplayForm df = new DisplayForm(DisplayForm.COLLADA, -1, -1);
-		int indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+		int indexOfDf = displayForms.indexOf(df); 
 		if (indexOfDf != -1) {
-			df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
+			df = displayForms.get(indexOfDf);
 		}
 		else { // should never happen
-			kmlExporter.getBuildingDisplayForms().add(df);
+			displayForms.add(df);
 		}
-		if (colladaCheckbox.isSelected() && kmlExporter.getLodToExportFrom()>1) {
+		if (colladaCheckbox.isSelected() && config.getProject().getKmlExporter().getLodToExportFrom()>1) {
 			int levelVisibility = 0;
 			try {
 				levelVisibility = Integer.parseInt(colladaVisibleFromText.getText().trim());
@@ -728,14 +758,14 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 
 		df = new DisplayForm(DisplayForm.GEOMETRY, -1, -1);
-		indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+		indexOfDf = displayForms.indexOf(df); 
 		if (indexOfDf != -1) {
-			df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
+			df = displayForms.get(indexOfDf);
 		}
 		else { // should never happen
-			kmlExporter.getBuildingDisplayForms().add(df);
+			displayForms.add(df);
 		}
-		if (geometryCheckbox.isSelected() && kmlExporter.getLodToExportFrom()>0) {
+		if (geometryCheckbox.isSelected() && config.getProject().getKmlExporter().getLodToExportFrom()>0) {
 			int levelVisibility = 0;
 			try {
 				levelVisibility = Integer.parseInt(geometryVisibleFromText.getText().trim());
@@ -749,14 +779,14 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 
 		df = new DisplayForm(DisplayForm.EXTRUDED, -1, -1);
-		indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+		indexOfDf = displayForms.indexOf(df); 
 		if (indexOfDf != -1) {
-			df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
+			df = displayForms.get(indexOfDf);
 		}
 		else { // should never happen
-			kmlExporter.getBuildingDisplayForms().add(df);
+			displayForms.add(df);
 		}
-		if (extrudedCheckbox.isSelected() && kmlExporter.getLodToExportFrom()>0) {
+		if (extrudedCheckbox.isSelected() && config.getProject().getKmlExporter().getLodToExportFrom()>0) {
 			int levelVisibility = 0;
 			try {
 				levelVisibility = Integer.parseInt(extrudedVisibleFromText.getText().trim());
@@ -770,12 +800,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		}
 
 		df = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
-		indexOfDf = kmlExporter.getBuildingDisplayForms().indexOf(df); 
+		indexOfDf = displayForms.indexOf(df); 
 		if (indexOfDf != -1) {
-			df = kmlExporter.getBuildingDisplayForms().get(indexOfDf);
+			df = displayForms.get(indexOfDf);
 		}
 		else { // should never happen
-			kmlExporter.getBuildingDisplayForms().add(df);
+			displayForms.add(df);
 		}
 		if (footprintCheckbox.isSelected()) {
 			int levelVisibility = 0;
@@ -789,22 +819,6 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		else {
 			df.setActive(false);
 		}
-
-		//		if (themeComboBox.getItemCount() > 0) {
-		kmlExporter.setAppearanceTheme(themeComboBox.getSelectedItem().toString());
-		//		}
-
-		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setBuilding(fcTree.getCheckingModel().isPathChecked(new TreePath(building.getPath()))); 
-		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setWaterBody(fcTree.getCheckingModel().isPathChecked(new TreePath(waterBody.getPath()))); 
-		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setLandUse(fcTree.getCheckingModel().isPathChecked(new TreePath(landUse.getPath()))); 
-		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setVegetation(fcTree.getCheckingModel().isPathChecked(new TreePath(vegetation.getPath())));
-		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setTransportation(fcTree.getCheckingModel().isPathChecked(new TreePath(transportation.getPath())));
-		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setReliefFeature(fcTree.getCheckingModel().isPathChecked(new TreePath(relief.getPath())));
-		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setCityFurniture(fcTree.getCheckingModel().isPathChecked(new TreePath(cityFurniture.getPath())));
-		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setGenericCityObject(fcTree.getCheckingModel().isPathChecked(new TreePath(genericCityObject.getPath())));
-		kmlExporter.getFilter().getComplexFilter().getFeatureClass().setCityObjectGroup(fcTree.getCheckingModel().isPathChecked(new TreePath(cityObjectGroup.getPath())));
-
-		config.getProject().setKmlExporter(kmlExporter);
 	}
 
 	private void addListeners() {
@@ -943,7 +957,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			}
 
 			// Feature classes check
-			if(!filter.getComplexFilter().getFeatureClass().isSetBuilding() &&
+			if (filter.isSetComplexFilter() &&
+			   !filter.getComplexFilter().getFeatureClass().isSetBuilding() &&
 			   !filter.getComplexFilter().getFeatureClass().isSetCityFurniture() &&
 			   !filter.getComplexFilter().getFeatureClass().isSetCityObjectGroup() &&
 			   !filter.getComplexFilter().getFeatureClass().isSetGenericCityObject() &&
@@ -1043,6 +1058,19 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 		bboxComponent.setEnabled(boundingBoxRadioButton.isSelected());
 
+		DefaultTreeCheckingModel model = (DefaultTreeCheckingModel)fcTree.getCheckingModel();
+		model.setPathEnabled(new TreePath(cityObject), boundingBoxRadioButton.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, building}), boundingBoxRadioButton.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, waterBody}), boundingBoxRadioButton.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, landUse}), boundingBoxRadioButton.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, vegetation}), boundingBoxRadioButton.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, transportation}), boundingBoxRadioButton.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, relief}), boundingBoxRadioButton.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, cityFurniture}), boundingBoxRadioButton.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, genericCityObject}), boundingBoxRadioButton.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, cityObjectGroup}), boundingBoxRadioButton.isSelected());
+		fcTree.repaint();
+
 		noTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());
 		automaticTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());
 		manualTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());
@@ -1086,11 +1114,11 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		themeComboBox.setEnabled(dbPool.isConnected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 		fetchThemesButton.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
-		fcTree.getCheckingModel().setPathEnabled(new TreePath(building.getPath()), (lodComboBox.getSelectedIndex() > 0));
-		fcTree.getCheckingModel().setPathEnabled(new TreePath(vegetation.getPath()), (lodComboBox.getSelectedIndex() > 0));
-		fcTree.getCheckingModel().setPathEnabled(new TreePath(relief.getPath()), (lodComboBox.getSelectedIndex() > 0));
-		fcTree.getCheckingModel().setPathEnabled(new TreePath(cityFurniture.getPath()), (lodComboBox.getSelectedIndex() > 0));
-		fcTree.getCheckingModel().setPathEnabled(new TreePath(cityObjectGroup.getPath()), (lodComboBox.getSelectedIndex() > 0));
+		fcTree.getCheckingModel().setPathEnabled(new TreePath(building.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
+		fcTree.getCheckingModel().setPathEnabled(new TreePath(vegetation.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
+		fcTree.getCheckingModel().setPathEnabled(new TreePath(relief.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
+		fcTree.getCheckingModel().setPathEnabled(new TreePath(cityFurniture.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
+		fcTree.getCheckingModel().setPathEnabled(new TreePath(cityObjectGroup.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
 		fcTree.repaint();
 
 	}

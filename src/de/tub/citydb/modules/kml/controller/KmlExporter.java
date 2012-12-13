@@ -434,10 +434,6 @@ public class KmlExporter implements EventHandler {
 							// make sure header has been written
 							saxWriter.flush();
 
-							if (!config.getProject().getKmlExporter().isOneFilePerObject() ||
-								config.getProject().getKmlExporter().getFilter().isSetSimpleFilter()) {
-								addStyle(displayForm);
-							}
 							if (isBBoxActive &&	tiling.getMode() != TilingMode.NO_TILING) {
 								addBorder(i, j);
 							}
@@ -470,9 +466,21 @@ public class KmlExporter implements EventHandler {
 							if (shouldRun)
 								kmlWorkerPool.shutdownAndWait();
 
+							if (!featureCounterMap.isEmpty() &&
+									(!config.getProject().getKmlExporter().isOneFilePerObject() ||
+									  config.getProject().getKmlExporter().getFilter().isSetSimpleFilter())) {
+								for (CityGMLClass type : featureCounterMap.keySet()) {
+									if (featureCounterMap.get(type) > 0)
+										addStyle(displayForm, type);
+								}
+							}
+
 							ioWriterPool.shutdownAndWait();
 						} catch (InterruptedException e) {
 							System.out.println(e.getMessage());
+						} catch (JAXBException jaxBE) {
+							Logger.getInstance().error("I/O error: " + jaxBE.getMessage());
+							return false;
 						}
 
 						// write footer element
@@ -669,14 +677,17 @@ public class KmlExporter implements EventHandler {
 										new BoundingBoxCorner(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY()));
 
 		DatabaseSrs dbSrs = dbPool.getActiveConnectionMetaData().getReferenceSystem();
-
-		if (bbox.getSrs() == null) {
-			throw new SQLException("Unknown BoundingBox srs");
+		DatabaseSrs bboxSrs = bbox.getSrs();
+		
+		if (bboxSrs == null) {
+			Logger.getInstance().warn("Could not read bbox reference system. DB reference system will be assumed.");
+			bboxSrs = dbPool.getActiveConnectionMetaData().getReferenceSystem();
+//			throw new SQLException("Unknown BoundingBox srs");
 		}
 
-		if (bbox.getSrs().getSrid() != 0 && bbox.getSrs().getSrid() != dbSrs.getSrid()) {
-			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSrs(), WGS84_2D);
-			tileMatrix = DBUtil.transformBBox(tileMatrix, bbox.getSrs(), dbSrs);
+		if (bboxSrs.getSrid() != 0 && bboxSrs.getSrid() != dbSrs.getSrid()) {
+			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, bboxSrs, WGS84_2D);
+			tileMatrix = DBUtil.transformBBox(tileMatrix, bboxSrs, dbSrs);
 		}
 		else {
 			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, dbSrs, WGS84_2D);
@@ -767,8 +778,51 @@ public class KmlExporter implements EventHandler {
 				kmlHeader.setRootElement(kml, jaxbKmlContext, props);
 				kmlHeader.startRootElement();
 				if (config.getProject().getKmlExporter().isOneFilePerObject()) {
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
-						addStyle(displayForm);
+					FeatureClass featureFilter = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass();
+					if (featureFilter.isSetBuilding()) {
+						for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
+							addStyle(displayForm, CityGMLClass.BUILDING);
+						}
+					}
+					if (featureFilter.isSetCityFurniture()) {
+						for (DisplayForm displayForm : config.getProject().getKmlExporter().getCityFurnitureDisplayForms()) {
+							addStyle(displayForm, CityGMLClass.CITY_FURNITURE);
+						}
+					}
+					if (featureFilter.isSetCityObjectGroup()) {
+						for (DisplayForm displayForm : config.getProject().getKmlExporter().getCityObjectGroupDisplayForms()) {
+							addStyle(displayForm, CityGMLClass.CITY_OBJECT_GROUP);
+						}
+					}
+					if (featureFilter.isSetGenericCityObject()) {
+						for (DisplayForm displayForm : config.getProject().getKmlExporter().getGenericCityObjectDisplayForms()) {
+							addStyle(displayForm, CityGMLClass.GENERIC_CITY_OBJECT);
+						}
+					}
+					if (featureFilter.isSetLandUse()) {
+						for (DisplayForm displayForm : config.getProject().getKmlExporter().getLandUseDisplayForms()) {
+							addStyle(displayForm, CityGMLClass.LAND_USE);
+						}
+					}
+					if (featureFilter.isSetReliefFeature()) {
+						for (DisplayForm displayForm : config.getProject().getKmlExporter().getReliefDisplayForms()) {
+							addStyle(displayForm, CityGMLClass.RELIEF_FEATURE);
+						}
+					}
+					if (featureFilter.isSetTransportation()) {
+						for (DisplayForm displayForm : config.getProject().getKmlExporter().getTransportationDisplayForms()) {
+							addStyle(displayForm, CityGMLClass.TRANSPORTATION_COMPLEX);
+						}
+					}
+					if (featureFilter.isSetVegetation()) {
+						for (DisplayForm displayForm : config.getProject().getKmlExporter().getVegetationDisplayForms()) {
+							addStyle(displayForm, CityGMLClass.SOLITARY_VEGETATION_OBJECT);
+						}
+					}
+					if (featureFilter.isSetWaterBody()) {
+						for (DisplayForm displayForm : config.getProject().getKmlExporter().getWaterBodyDisplayForms()) {
+							addStyle(displayForm, CityGMLClass.WATER_BODY);
+						}
 					}
 				}
 				// make sure header has been written
@@ -895,53 +949,78 @@ public class KmlExporter implements EventHandler {
 		
 	}
 
-	private void addStyle(DisplayForm currentDisplayForm) throws JAXBException {
+	private void addStyle(DisplayForm currentDisplayForm, CityGMLClass featureClass) throws JAXBException {
 		if (!currentDisplayForm.isActive()) return;
-		FeatureClass featureFilter = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass();
-		if (featureFilter.isSetVegetation()) {
-			addStyle(currentDisplayForm,
-					 config.getProject().getKmlExporter().getVegetationDisplayForms(),
-					 SolitaryVegetationObject.STYLE_BASIS_NAME);
-		}
-		if (featureFilter.isSetTransportation()) {
-			addStyle(currentDisplayForm,
-					 config.getProject().getKmlExporter().getTransportationDisplayForms(),
-					 Transportation.STYLE_BASIS_NAME);
-		}
-		if (featureFilter.isSetReliefFeature()) {
-			addStyle(currentDisplayForm,
-					 config.getProject().getKmlExporter().getReliefDisplayForms(),
-					 Relief.STYLE_BASIS_NAME);
-		}
-		if (featureFilter.isSetCityObjectGroup() && config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().size() > 0) {
-			addStyle(config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().get(0), // hard-coded for groups
-					 config.getProject().getKmlExporter().getCityObjectGroupDisplayForms(),
-					 CityObjectGroup.STYLE_BASIS_NAME);
-		}
-		if (featureFilter.isSetCityFurniture()) {
-			addStyle(currentDisplayForm,
-					 config.getProject().getKmlExporter().getCityFurnitureDisplayForms(),
-					 CityFurniture.STYLE_BASIS_NAME);
-		}
-		if (featureFilter.isSetGenericCityObject()) {
-			addStyle(currentDisplayForm,
-					 config.getProject().getKmlExporter().getGenericCityObjectDisplayForms(),
-					 GenericCityObject.STYLE_BASIS_NAME);
-		}
-		if (featureFilter.isSetLandUse()) {
-			addStyle(currentDisplayForm,
-					 config.getProject().getKmlExporter().getLandUseDisplayForms(),
-					 LandUse.STYLE_BASIS_NAME);
-		}
-		if (featureFilter.isSetWaterBody()) {
-			addStyle(currentDisplayForm,
-					 config.getProject().getKmlExporter().getWaterBodyDisplayForms(),
-					 WaterBody.STYLE_BASIS_NAME);
-		}
-		if (featureFilter.isSetBuilding()) { // must be last
-			addStyle(currentDisplayForm,
-					 config.getProject().getKmlExporter().getBuildingDisplayForms(),
-					 Building.STYLE_BASIS_NAME);
+//		FeatureClass featureFilter = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass();
+		switch (featureClass) {
+			case SOLITARY_VEGETATION_OBJECT:
+			case PLANT_COVER:
+				addStyle(currentDisplayForm,
+						 config.getProject().getKmlExporter().getVegetationDisplayForms(),
+						 SolitaryVegetationObject.STYLE_BASIS_NAME);
+				break;
+
+			case TRAFFIC_AREA:
+			case AUXILIARY_TRAFFIC_AREA:
+			case TRANSPORTATION_COMPLEX:
+			case TRACK:
+			case RAILWAY:
+			case ROAD:
+			case SQUARE:
+				addStyle(currentDisplayForm,
+						 config.getProject().getKmlExporter().getTransportationDisplayForms(),
+						 Transportation.STYLE_BASIS_NAME);
+				break;
+
+/*
+			case RASTER_RELIEF:
+			case MASSPOINT_RELIEF:
+			case BREAKLINE_RELIEF:
+			case TIN_RELIEF:
+*/
+			case RELIEF_FEATURE:
+				addStyle(currentDisplayForm,
+						 config.getProject().getKmlExporter().getReliefDisplayForms(),
+						 Relief.STYLE_BASIS_NAME);
+				break;
+
+			case CITY_OBJECT_GROUP:
+				addStyle(config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().get(0), // hard-coded for groups
+						 config.getProject().getKmlExporter().getCityObjectGroupDisplayForms(),
+						 CityObjectGroup.STYLE_BASIS_NAME);
+				break;
+
+			case CITY_FURNITURE:
+				addStyle(currentDisplayForm,
+						 config.getProject().getKmlExporter().getCityFurnitureDisplayForms(),
+						 CityFurniture.STYLE_BASIS_NAME);
+				break;
+
+			case GENERIC_CITY_OBJECT:
+				addStyle(currentDisplayForm,
+						 config.getProject().getKmlExporter().getGenericCityObjectDisplayForms(),
+						 GenericCityObject.STYLE_BASIS_NAME);
+				break;
+
+			case LAND_USE:
+				addStyle(currentDisplayForm,
+						 config.getProject().getKmlExporter().getLandUseDisplayForms(),
+						 LandUse.STYLE_BASIS_NAME);
+				break;
+
+			case WATER_BODY:
+			case WATER_CLOSURE_SURFACE:
+			case WATER_GROUND_SURFACE:
+			case WATER_SURFACE:
+				addStyle(currentDisplayForm,
+						 config.getProject().getKmlExporter().getWaterBodyDisplayForms(),
+						 WaterBody.STYLE_BASIS_NAME);
+				break;
+
+			case BUILDING: // must be last
+				addStyle(currentDisplayForm,
+						 config.getProject().getKmlExporter().getBuildingDisplayForms(),
+						 Building.STYLE_BASIS_NAME);
 		}
 	}
 

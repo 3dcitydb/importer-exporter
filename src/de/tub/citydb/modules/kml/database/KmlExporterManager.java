@@ -185,10 +185,12 @@ public class KmlExporterManager {
 							String path = config.getInternal().getExportFileName().trim();
 							path = path.substring(0, path.lastIndexOf(File.separator));
 							String filename = null;
+							boolean isHighlighting = false;
 
 							filename = gmlId + "_" + displayFormName;
 							if (placemark.getId().startsWith(DisplayForm.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID)) {
 								filename = filename + "_" + DisplayForm.HIGHLIGTHTED_STR;
+								isHighlighting = true;
 							}
 
 							File placemarkDirectory = new File(path + File.separator + gmlId);
@@ -219,10 +221,23 @@ public class KmlExporterManager {
 							
 							// the network link pointing to the file
 							NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
-							networkLinkType.setName(gmlId + " " + displayFormName);
+							LinkType linkType = kmlFactory.createLinkType();
 
-							RegionType regionType = kmlFactory.createRegionType();
-							
+							if (isHighlighting) {
+								networkLinkType.setName(gmlId + " " + displayFormName + " " + DisplayForm.HIGHLIGTHTED_STR);
+								linkType.setHref(gmlId + "/" + gmlId + "_" + displayFormName + "_" + DisplayForm.HIGHLIGTHTED_STR + fileExtension);
+							}
+							else { // actual placemark, non-highlighting
+								networkLinkType.setName(gmlId + " " + displayFormName);
+								linkType.setHref(gmlId + "/" + gmlId + "_" + displayFormName + fileExtension);
+							}
+
+							linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
+							linkType.setViewFormat("");
+							if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
+								linkType.setViewRefreshTime(config.getProject().getKmlExporter().getViewRefreshTime());
+							}
+
 							LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
 							CityObject4JSON cityObject4JSON = KmlExporter.getAlreadyExported().get(work.getId());
 							if (cityObject4JSON != null) { // avoid NPE when aborting large KML/COLLADA exports
@@ -235,44 +250,15 @@ public class KmlExporterManager {
 							LodType lodType = kmlFactory.createLodType();
 							lodType.setMinLodPixels(config.getProject().getKmlExporter().getSingleObjectRegionSize());
 							
+							RegionType regionType = kmlFactory.createRegionType();
 							regionType.setLatLonAltBox(latLonAltBoxType);
 							regionType.setLod(lodType);
-
-							LinkType linkType = kmlFactory.createLinkType();
-							linkType.setHref(gmlId + "/" + gmlId + "_" + displayFormName + fileExtension);
-							linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
-							linkType.setViewFormat("");
-							if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
-								linkType.setViewRefreshTime(config.getProject().getKmlExporter().getViewRefreshTime());
-							}
 
 							// confusion between atom:link and kml:Link in ogckml22.xsd
 							networkLinkType.getRest().add(kmlFactory.createLink(linkType));
 							networkLinkType.setRegion(regionType);
 
 							kmlMarshaller.marshal(kmlFactory.createNetworkLink(networkLinkType), buffer);
-
-							// include highlighting if selected
-							if (work.getDisplayForm().isHighlightingEnabled()) {
-								
-								NetworkLinkType hNetworkLinkType = kmlFactory.createNetworkLinkType();
-								hNetworkLinkType.setName(gmlId + " " + displayFormName + " " + DisplayForm.HIGHLIGTHTED_STR);
-
-								LinkType hLinkType = kmlFactory.createLinkType();
-								hLinkType.setHref(gmlId + "/" + gmlId + "_" + displayFormName + "_" + DisplayForm.HIGHLIGTHTED_STR + fileExtension);
-								hLinkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
-								hLinkType.setViewFormat("");
-								if (hLinkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
-									hLinkType.setViewRefreshTime(config.getProject().getKmlExporter().getViewRefreshTime());
-								}
-
-								// confusion between atom:link and kml:Link in ogckml22.xsd
-								hNetworkLinkType.getRest().add(kmlFactory.createLink(hLinkType));
-								hNetworkLinkType.setRegion(regionType);
-
-								kmlMarshaller.marshal(kmlFactory.createNetworkLink(hNetworkLinkType), buffer);
-							}
-
         				}
        					placemark.setStyleUrl(".." + File.separator + mainFilename + placemark.getStyleUrl());
         				document.getAbstractFeatureGroup().add(kmlFactory.createPlacemark(placemark));
