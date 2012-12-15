@@ -168,7 +168,7 @@ public class DBSplitter {
 			// check whether spatial indexes are active
 			if (DBUtil.isIndexed("CITYOBJECT", "ENVELOPE")) {			
 				TiledBoundingBox tiledBBox = expFilterConfig.getComplexFilter().getTiledBoundingBox();
-				int bboxSrid = boundingBoxFilter.getSrid();
+				int bboxSrid = bbox.getSrs().getSrid();
 
 				double minX = bbox.getLowerLeftCorner().getX();
 				double minY = bbox.getLowerLeftCorner().getY();
@@ -194,8 +194,8 @@ public class DBSplitter {
 					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
 
 			} else {
-				LOG.error("Bounding box filter is enabled although spatial indexes are disabled.");
-				LOG.error("Filtering will not be performed using spatial database operations.");
+				LOG.warn("Bounding box filter is enabled although spatial indexes are disabled.");
+				LOG.warn("Filtering will not be performed using spatial database operations.");
 				config.getInternal().setUseInternalBBoxFilter(true);
 			}
 		}
