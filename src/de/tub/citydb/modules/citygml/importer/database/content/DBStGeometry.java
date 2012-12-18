@@ -36,12 +36,14 @@ import java.util.List;
 
 import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
 import org.citygml4j.model.gml.GMLClass;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPoint;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
 import org.citygml4j.model.gml.geometry.complexes.CompositeCurve;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
+import org.citygml4j.model.gml.geometry.complexes.GeometricComplexProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractCurve;
 import org.citygml4j.model.gml.geometry.primitives.AbstractCurveSegment;
 import org.citygml4j.model.gml.geometry.primitives.AbstractGeometricPrimitive;
@@ -62,7 +64,6 @@ import org.citygml4j.model.gml.geometry.primitives.PointArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
-import org.postgis.Geometry;
 import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
@@ -84,29 +85,63 @@ public class DBStGeometry implements DBImporter {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 	}
 
-	public PGgeometry getPoint(PointProperty pointProperty) throws SQLException {
-		Geometry pointGeom = null;
+	public PGgeometry getPoint(Point point) throws SQLException {
+		PGgeometry pointGeom = null;
 
-		if (pointProperty != null && pointProperty.isSetPoint()) {
-			Point point = pointProperty.getPoint();
+		if (point != null) {
 			List<Double> values = point.toList3d();
 
 			if (values != null && !values.isEmpty()) {
 				if (affineTransformation)
 					dbImporterManager.getAffineTransformer().transformCoordinates(values);
 
-				pointGeom = PGgeometry.geomFromString("SRID=" + dbSrid + ";POINT(" + values.get(0) + " " + values.get(1) + " " + values.get(2) + ")");
+				pointGeom = new PGgeometry(PGgeometry.geomFromString("SRID=" + dbSrid + ";POINT(" + 
+						values.get(0) + " " + values.get(1) + " " + values.get(2) + ")"));
 			}
 		}
-		PGgeometry pgPointGeom = new PGgeometry(pointGeom);
-		return pgPointGeom;
+		return pointGeom;
 	}
 
-	public PGgeometry getMultiPoint(MultiPointProperty multiPointProperty) throws SQLException {
-		Geometry multiPointGeom = null;
+	public PGgeometry getPointGeometry(GeometricComplex geometricComplex) throws SQLException {
+		PGgeometry pointGeom = null;
 
-		if (multiPointProperty != null && multiPointProperty.isSetMultiPoint()) {
-			MultiPoint multiPoint = multiPointProperty.getMultiPoint();
+		if (geometricComplex != null && geometricComplex.isSetElement()) {
+			List<List<Double>> pointList = new ArrayList<List<Double>>();
+
+			for (GeometricPrimitiveProperty primitiveProperty : geometricComplex.getElement()) {
+				if (primitiveProperty.isSetGeometricPrimitive()) {
+					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
+					if (primitive.getGMLClass() == GMLClass.POINT)
+						pointList.add(((Point)primitive).toList3d());					
+				}
+			}
+
+			if (!pointList.isEmpty()) {				
+				if (pointList.size() > 1) {
+					String geomEWKT = "SRID=" + dbSrid + ";MULTIPOINT(";
+					for (List<Double> coordsList : pointList){	
+						
+						if (affineTransformation)
+							dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
+
+						geomEWKT += coordsList.get(0) + " " + coordsList.get(1) + " " + coordsList.get(2) + ",";
+					}
+					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
+					geomEWKT += ")";
+				
+					pointGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT));
+				} else
+					pointGeom = new PGgeometry(PGgeometry.geomFromString("SRID=" + dbSrid + ";POINT(" + 
+							pointList.get(0).get(0) + " " + pointList.get(0).get(1)+ " " +  pointList.get(0).get(2) + ")"));
+			}
+		}
+		return pointGeom;
+	}
+	
+	public PGgeometry getMultiPoint(MultiPoint multiPoint) throws SQLException {
+		PGgeometry multiPointGeom = null;
+
+		if (multiPoint != null); {
 			List<List<Double>> pointList = new ArrayList<List<Double>>();
 
 			if (multiPoint.isSetPointMember()) {
@@ -134,15 +169,14 @@ public class DBStGeometry implements DBImporter {
 				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
 				geomEWKT += ")";				
 								
-				multiPointGeom = PGgeometry.geomFromString(geomEWKT);
+				multiPointGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT));
 			}
 		}
-		PGgeometry pgMultiPointGeom = new PGgeometry(multiPointGeom);
-		return pgMultiPointGeom;
+		return multiPointGeom;
 	}
 
 	public PGgeometry getMultiPoint(ControlPoint controlPoint) throws SQLException {
-		Geometry multiPointGeom = null;
+		PGgeometry multiPointGeom = null;
 
 		if (controlPoint != null) {
 			List<List<Double>> pointList = new ArrayList<List<Double>>();
@@ -180,18 +214,36 @@ public class DBStGeometry implements DBImporter {
 				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
 				geomEWKT += ")";				
 				
-				multiPointGeom = PGgeometry.geomFromString(geomEWKT);
+				multiPointGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT));
 			}
 		}
-		PGgeometry pgMultiPointGeom = new PGgeometry(multiPointGeom);
-		return pgMultiPointGeom;
+		return multiPointGeom;
 	}
 
-	public PGgeometry getMultiCurve(MultiCurveProperty multiCurveProperty) throws SQLException {
-		Geometry multiCurveGeom = null;
+	public PGgeometry getCurve(AbstractCurve curve) throws SQLException {
+		PGgeometry curveGeom = null;
 
-		if (multiCurveProperty != null && multiCurveProperty.isSetMultiCurve()) {
-			MultiCurve multiCurve = multiCurveProperty.getMultiCurve();
+		if (curve != null) {
+			List<Double> pointList = new ArrayList<Double>();
+			generatePointList(curve, pointList, false);
+			if (!pointList.isEmpty()) {
+				String geomEWKT = "SRID=" + dbSrid + ";LINESTRING(";
+				
+				for (int i=0; i<pointList.size(); i+=3){
+					geomEWKT += pointList.get(i) + " " + pointList.get(i+1) + " " + pointList.get(i+2) + ",";
+				}
+				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
+				geomEWKT += ")";
+				curveGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT));
+			}
+		}
+		return curveGeom;
+	}
+	
+	public PGgeometry getMultiCurve(MultiCurve multiCurve) throws SQLException {
+		PGgeometry multiCurveGeom = null;
+
+		if (multiCurve != null) {
 
 			if (multiCurve.isSetCurveMember()) {
 				List<List<Double>> pointList = new ArrayList<List<Double>>();
@@ -227,19 +279,19 @@ public class DBStGeometry implements DBImporter {
 
 					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 2);
 					geomEWKT += ")";
-					multiCurveGeom = PGgeometry.geomFromString(geomEWKT);
+					multiCurveGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT));
 				}
 			}
 		}
-		PGgeometry pgMultiCurveGeom = new PGgeometry(multiCurveGeom);
-		return pgMultiCurveGeom;
+		return multiCurveGeom;
 	}
 
-	public PGgeometry getMultiCurve(GeometricComplex geometricComplex) throws SQLException {
-		Geometry multiCurveGeom = null;
+	public PGgeometry getCurveGeometry(GeometricComplex geometricComplex) throws SQLException {
+		PGgeometry curveGeom = null;
 
 		if (geometricComplex != null && geometricComplex.isSetElement()) {
 			List<List<Double>> pointList = new ArrayList<List<Double>>();
+			String geomEWKT = null;
 
 			for (GeometricPrimitiveProperty primitiveProperty : geometricComplex.getElement()) {
 				if (primitiveProperty.isSetGeometricPrimitive()) {
@@ -260,29 +312,129 @@ public class DBStGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty()) {
+				if (pointList.size() > 1) {
+					geomEWKT = "SRID=" + dbSrid + ";MULTILINESTRING((";
+					
+					for (List<Double> coordsList : pointList) {
+						if (affineTransformation)
+							dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
+						
+						for (int i=0; i<coordsList.size(); i+=3){
+							geomEWKT += coordsList.get(i) + " " + coordsList.get(i+1) + " " + coordsList.get(i+2) + ",";
+						}
+						
+						geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
+						geomEWKT += "),(";					
+					}
+	
+					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 2);
+					geomEWKT += ")";
+					curveGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT));
+				} else {
+					geomEWKT = "SRID=" + dbSrid + ";LINESTRING(";
+					
+					for (int i=0; i<pointList.size(); i+=3){
+						geomEWKT += pointList.get(0).get(i) + " " + pointList.get(0).get(i+1) + " " + pointList.get(0).get(i+2) + ",";
+					}
+					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
+					geomEWKT += ")";
+					curveGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT));
+				}
+			}
+		}
+		return curveGeom;
+	}
+
+	public PGgeometry getMultiCurve(List<LineStringSegmentArrayProperty> propertyList) throws SQLException {
+		PGgeometry multiCurveGeom = null;
+
+		if (propertyList != null && !propertyList.isEmpty()) {
+			List<List<Double>> pointList = new ArrayList<List<Double>>();
+
+			for (LineStringSegmentArrayProperty property : propertyList) {
+				if (property.isSetLineStringSegment()) {
+					List<Double> points = new ArrayList<Double>();
+
+					for (LineStringSegment segment : property.getLineStringSegment())
+						points.addAll(segment.toList3d());
+
+					if (!points.isEmpty())
+						pointList.add(points);
+				}
+			}
+
+			if (!pointList.isEmpty()) {
 				String geomEWKT = "SRID=" + dbSrid + ";MULTILINESTRING((";
-				
+
 				for (List<Double> coordsList : pointList) {
 					if (affineTransformation)
 						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
-					
+										
 					for (int i=0; i<coordsList.size(); i+=3){
 						geomEWKT += coordsList.get(i) + " " + coordsList.get(i+1) + " " + coordsList.get(i+2) + ",";
 					}
-					
+						
 					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
 					geomEWKT += "),(";					
 				}
 
 				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 2);
 				geomEWKT += ")";
-				multiCurveGeom = PGgeometry.geomFromString(geomEWKT);
-			}
+				multiCurveGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT));
+			}	
 		}
-		PGgeometry pgMultiCurveGeom = new PGgeometry(multiCurveGeom);
-		return pgMultiCurveGeom;
+		return multiCurveGeom;
+	}
+	
+	public PGgeometry getPoint(PointProperty pointProperty) throws SQLException {
+		return pointProperty != null ? getPoint(pointProperty.getPoint()) : null;
 	}
 
+	public PGgeometry getMultiPoint(MultiPointProperty multiPointProperty) throws SQLException {
+		return multiPointProperty != null ? getMultiPoint(multiPointProperty.getMultiPoint()) : null;
+	}
+
+	public PGgeometry getPointGeometry(GeometricComplexProperty complexProperty) throws SQLException {
+		return (complexProperty != null && complexProperty.isSetGeometricComplex()) ? 
+				getPointGeometry(complexProperty.getGeometricComplex()) : null;
+	}
+
+	public PGgeometry getCurve(CurveProperty curveProperty) throws SQLException {
+		return curveProperty != null ? getCurve(curveProperty.getCurve()) : null;
+	}
+
+	public PGgeometry getMultiCurve(MultiCurveProperty multiCurveProperty) throws SQLException {
+		return multiCurveProperty != null ? getMultiCurve(multiCurveProperty.getMultiCurve()) : null;
+	}
+	
+	public PGgeometry getCurveGeometry(GeometricComplexProperty complexProperty) throws SQLException {
+		return (complexProperty != null && complexProperty.isSetGeometricComplex()) ? 
+				getCurveGeometry(complexProperty.getGeometricComplex()) : null;
+	}
+	
+	public PGgeometry getPointOrCurveGeometry(AbstractGeometry abstractGeometry) throws SQLException {
+		switch (abstractGeometry.getGMLClass()) {
+		case POINT:
+			return getPoint((Point)abstractGeometry);
+		case MULTI_POINT:
+			return getMultiPoint((MultiPoint)abstractGeometry);
+		case LINE_STRING:
+		case CURVE:
+		case COMPOSITE_CURVE:
+		case ORIENTABLE_CURVE:
+			return getCurve((AbstractCurve)abstractGeometry);
+		case MULTI_CURVE:
+			return getMultiCurve((MultiCurve)abstractGeometry);
+		case GEOMETRIC_COMPLEX:
+			PGgeometry geometry = getPointGeometry((GeometricComplex)abstractGeometry);
+			if (geometry == null)
+				geometry = getCurveGeometry((GeometricComplex)abstractGeometry);
+			return geometry;
+		default:
+			return null;
+		}
+	}
+	
 	private void generatePointList(AbstractCurve abstractCurve, List<Double> pointList, boolean reverse) {
 
 		if (abstractCurve.getGMLClass() == GMLClass.LINE_STRING) {	
@@ -346,48 +498,6 @@ public class DBStGeometry implements DBImporter {
 		}
 	}	
 
-	public PGgeometry getMultiCurve(List<LineStringSegmentArrayProperty> propertyList) throws SQLException {
-		Geometry multiCurveGeom = null;
-
-		if (propertyList != null && !propertyList.isEmpty()) {
-			List<List<Double>> pointList = new ArrayList<List<Double>>();
-
-			for (LineStringSegmentArrayProperty property : propertyList) {
-				if (property.isSetLineStringSegment()) {
-					List<Double> points = new ArrayList<Double>();
-
-					for (LineStringSegment segment : property.getLineStringSegment())
-						points.addAll(segment.toList3d());
-
-					if (!points.isEmpty())
-						pointList.add(points);
-				}
-			}
-
-			if (!pointList.isEmpty()) {
-				String geomEWKT = "SRID=" + dbSrid + ";MULTILINESTRING((";
-
-				for (List<Double> coordsList : pointList) {
-					if (affineTransformation)
-						dbImporterManager.getAffineTransformer().transformCoordinates(coordsList);
-										
-					for (int i=0; i<coordsList.size(); i+=3){
-						geomEWKT += coordsList.get(i) + " " + coordsList.get(i+1) + " " + coordsList.get(i+2) + ",";
-					}
-						
-					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-					geomEWKT += "),(";					
-				}
-
-				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 2);
-				geomEWKT += ")";
-				multiCurveGeom = PGgeometry.geomFromString(geomEWKT);
-			}	
-		}
-		PGgeometry pgMultiCurveGeom = new PGgeometry(multiCurveGeom);
-		return pgMultiCurveGeom;
-	}
-
 	public PGgeometry get2DPolygon(PolygonProperty polygonProperty) throws SQLException {
 		return getPolygon(polygonProperty, true);
 	}
@@ -397,7 +507,7 @@ public class DBStGeometry implements DBImporter {
 	}
 	
 	private PGgeometry getPolygon(PolygonProperty polygonProperty, boolean is2d) throws SQLException {
-		Geometry polygonGeom = null;
+		PGgeometry polygonGeom = null;
 
 		if (polygonProperty != null && polygonProperty.isSetPolygon()) {
 			Polygon polygon = polygonProperty.getPolygon();
@@ -529,12 +639,11 @@ public class DBStGeometry implements DBImporter {
 					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 2);
 					geomEWKT = geomEWKT + ")";
 
-					polygonGeom = PGgeometry.geomFromString(geomEWKT);
+					polygonGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT));
 				}
 			}
 		}
-		PGgeometry pgPolygonGeom = new PGgeometry(polygonGeom);
-		return pgPolygonGeom;
+		return polygonGeom;
 	}
 	
 	@Override

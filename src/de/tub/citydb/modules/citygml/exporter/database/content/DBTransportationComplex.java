@@ -217,7 +217,7 @@ public class DBTransportationComplex implements DBExporter {
 					if (!rs.wasNull() && pgLod0Network != null) {
 						Geometry lod0Network = pgLod0Network.getGeometry();
 
-						GeometricComplexProperty complexProperty = stGeometry.getGeometricComplexPropertyOfCurves(lod0Network, false);
+						GeometricComplexProperty complexProperty = stGeometry.getPointOrCurveComplexProperty(lod0Network, false);
 						transComplex.addLod0Network(complexProperty);
 					}
 

@@ -32,7 +32,7 @@ package de.tub.citydb.gui.factory;
 import de.tub.citydb.api.gui.BoundingBoxPanel;
 import de.tub.citydb.api.gui.ComponentFactory;
 import de.tub.citydb.api.gui.DatabaseSrsComboBox;
-import de.tub.citydb.api.gui.StandardEditingPopupMenuDecorator;
+import de.tub.citydb.api.gui.StandardPopupMenuDecorator;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.gui.components.bbox.BoundingBoxPanelImpl;
 
@@ -57,7 +57,7 @@ public class DefaultComponentFactory implements ComponentFactory {
 	}
 
 	@Override
-	public StandardEditingPopupMenuDecorator createPopupMenuDecorator() {
+	public StandardPopupMenuDecorator createPopupMenuDecorator() {
 		return PopupMenuDecorator.getInstance();
 	}
 

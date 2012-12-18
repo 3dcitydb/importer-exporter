@@ -41,6 +41,7 @@ import org.citygml4j.model.citygml.generics.DoubleAttribute;
 import org.citygml4j.model.citygml.generics.IntAttribute;
 import org.citygml4j.model.citygml.generics.StringAttribute;
 import org.citygml4j.model.citygml.generics.UriAttribute;
+import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.internal.Internal;
 
@@ -60,14 +61,14 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 
 	private void init() throws SQLException {
 		psGenericAttribute = batchConn.prepareStatement("insert into CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, INTVAL, REALVAL, URIVAL, DATEVAL, GEOMVAL, BLOBVAL, CITYOBJECT_ID, SURFACE_GEOMETRY_ID) values " +
-			"(nextval('CITYOBJECT_GENERICATTRIB_ID_SEQ'), ?, ?, ?, ?, ?, ?, ?, null, null, ?, null)");
+				"(nextval('CITYOBJECT_GENERICATTRIB_ID_SEQ'), ?, ?, ?, ?, ?, ?, ?, ?, null, ?, null)");
 	}
 
 	public void insert(AbstractGenericAttribute genericAttribute, long cityObjectId) throws SQLException {
 		// attribute name may not be null
 		if (!genericAttribute.isSetName())
 			return;
-			
+
 		psGenericAttribute.setString(1, genericAttribute.getName());
 
 		switch (genericAttribute.getCityGMLClass()) {
@@ -145,9 +146,28 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 			psGenericAttribute.setNull(2, Types.NUMERIC);
 		}
 
-		// cityobjectId
-		psGenericAttribute.setLong(8, cityObjectId);
+		psGenericAttribute.setNull(8, Types.OTHER, "ST_GEOMETRY");
+		psGenericAttribute.setLong(9, cityObjectId);
 
+		psGenericAttribute.addBatch();
+		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
+			dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
+	}
+
+	public void insert(String attributeName, PGgeometry geometry, long cityObjectId) throws SQLException {
+		if (attributeName == null || attributeName.length() == 0)
+			return;
+
+		psGenericAttribute.setString(1, attributeName);
+		psGenericAttribute.setInt(2, 6);
+		psGenericAttribute.setNull(3, Types.VARCHAR);
+		psGenericAttribute.setNull(4, 0);
+		psGenericAttribute.setNull(5, 0);
+		psGenericAttribute.setNull(6, Types.VARCHAR);
+		psGenericAttribute.setNull(7, Types.DATE);
+		psGenericAttribute.setObject(8, geometry);
+		psGenericAttribute.setLong(9, cityObjectId);
+		
 		psGenericAttribute.addBatch();
 		if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)
 			dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECT_GENERICATTRIB);

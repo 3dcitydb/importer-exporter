@@ -27,10 +27,37 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.api.gui;
+package de.tub.citydb.config.project.exporter;
 
-public interface ComponentFactory {
-	public DatabaseSrsComboBox createDatabaseSrsComboBox();
-	public StandardPopupMenuDecorator createPopupMenuDecorator();
-	public BoundingBoxPanel createBoundingBoxPanel();
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
+
+@XmlType(name="AddressModeType")
+@XmlEnum
+public enum AddressMode {
+	@XmlEnumValue("db")
+	DB("db"),
+	@XmlEnumValue("xal")
+	XAL("xal");
+
+	private final String value;
+
+	AddressMode(String v) {
+		value = v;
+	}
+
+	public String value() {
+		return value;
+	}
+
+	public static AddressMode fromValue(String v) {
+		for (AddressMode c: AddressMode.values()) {
+			if (c.value.equals(v)) {
+				return c;
+			}
+		}
+
+		return DB;
+	}
 }

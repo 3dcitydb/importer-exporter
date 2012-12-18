@@ -51,6 +51,9 @@ import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;
 import de.tub.citydb.modules.common.event.StatusDialogMessage;
 import de.tub.citydb.modules.common.filter.ExportFilter;
@@ -67,7 +70,6 @@ public class DBSplitter {
 
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<DBSplittingResult> dbWorkerPool;
-	private final ExportFilter exportFilter;
 	private final GmlIdLookupServer featureGmlIdCache;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -81,7 +83,7 @@ public class DBSplitter {
 	private String gmlIdFilter;
 	private String gmlNameFilter;
 	private String[] bboxFilter;
-	//	private String optimizerHint;
+	//private String optimizerHint;
 
 	private FeatureClassFilter featureClassFilter;
 	private FeatureCounterFilter featureCounterFilter;
@@ -95,27 +97,37 @@ public class DBSplitter {
 			WorkerPool<DBSplittingResult> dbWorkerPool, 
 			ExportFilter exportFilter,
 			GmlIdLookupServer featureGmlIdCache,
+			CacheManager cacheManager,
 			EventDispatcher eventDispatcher, 
 			Config config) throws SQLException {
 		this.dbConnectionPool = dbConnectionPool;
 		this.dbWorkerPool = dbWorkerPool;
-		this.exportFilter = exportFilter;
 		this.featureGmlIdCache = featureGmlIdCache;
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
 
-		init();
+		init(exportFilter, cacheManager);
 	}
 
-	private void init() throws SQLException {
+	private void init(ExportFilter exportFilter, CacheManager cacheManager) throws SQLException {
 		connection = dbConnectionPool.getConnection();
 		connection.setAutoCommit(false);
 
-		// try and change workspace for connection if needed
+		// try and change workspace for connection
 		//		Database database = config.getProject().getDatabase();
 		//		dbConnectionPool.gotoWorkspace(
 		//				connection, 
 		//				database.getWorkspaces().getExportWorkspace());
+		
+		// create temporary table for global appearances if needed
+		if (config.getInternal().isExportGlobalAppearances()) {
+			TemporaryCacheTable temp = cacheManager.createTemporaryCacheTableWithIndexes(CacheTableModelEnum.GLOBAL_APPEARANCE);
+
+			// try and change workspace for temporary table
+/*			dbConnectionPool.gotoWorkspace(
+					temp.getConnection(), 
+					config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
+*/		}
 
 		// set filter instances 
 		featureClassFilter = exportFilter.getFeatureClassFilter();
@@ -194,8 +206,8 @@ public class DBSplitter {
 //					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
 
 			} else {
-				LOG.error("Bounding box filter is enabled although spatial indexes are disabled.");
-				LOG.error("Filtering will not be performed using spatial database operations.");
+				LOG.warn("Bounding box filter is enabled although spatial indexes are disabled.");
+				LOG.warn("Filtering will not be performed using spatial database operations.");
 				config.getInternal().setUseInternalBBoxFilter(true);
 			}
 		}
@@ -427,7 +439,7 @@ public class DBSplitter {
 
 		StringBuilder groupQuery = new StringBuilder();
 		String classIdsString = "";
-		
+
 		if (expFilterConfig.isSetSimpleFilter()) {
 			groupQuery.append("select co.ID, co.GMLID from CITYOBJECT co where co.CLASS_ID=23 ");
 			if (gmlIdFilter != null)
@@ -502,6 +514,8 @@ public class DBSplitter {
 				int params = bboxFilter == null ? 2 : bboxFilter.length * 2;
 				for (int j = 1; j <= params; ++j)
 					memberStmt.setLong(j, groupId);
+			
+			memberStmt.close();
 
 				rs = memberStmt.executeQuery();
 
@@ -550,7 +564,7 @@ public class DBSplitter {
 				DBSplittingResult splitter = new DBSplittingResult(groupId, CityGMLClass.CITY_OBJECT_GROUP);
 				dbWorkerPool.addWork(splitter);
 			}
-		
+
 		} catch (SQLException sqlEx) {
 			LOG.error("SQL error: " + sqlEx.getMessage());
 			throw sqlEx;

@@ -314,6 +314,8 @@ public class FilterPanel extends JPanel {
 		cityObjectFilter.addActionListener(countListener);
 		boundingBoxFilter.addActionListener(bboxListener);
 		featureClassFilter.addActionListener(classListener);
+		
+		PopupMenuDecorator.getInstance().decorate(fcTree);
 	}
 
 	private void setEnabledFilterSettings() {

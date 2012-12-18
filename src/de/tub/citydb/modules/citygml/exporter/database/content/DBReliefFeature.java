@@ -277,7 +277,7 @@ public class DBReliefFeature implements DBExporter {
 				if (!rs.wasNull() && pgExtent != null) {
 					extent = pgExtent.getGeometry();
 
-					PolygonProperty polygonProperty = stGeometry.getPolygon(extent, false);
+					PolygonProperty polygonProperty = stGeometry.getPolygonProperty(extent, false);
 					if (polygonProperty != null)
 						reliefComponent.setExtent(polygonProperty);
 				}

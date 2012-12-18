@@ -38,9 +38,11 @@ import java.util.List;
 
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.XalAddressProperty;
+import org.citygml4j.model.module.xal.XALModuleType;
 import org.citygml4j.model.xal.AddressDetails;
 import org.citygml4j.model.xal.Country;
 import org.citygml4j.model.xal.CountryName;
+import org.citygml4j.model.xal.DependentLocality;
 import org.citygml4j.model.xal.Locality;
 import org.citygml4j.model.xal.LocalityName;
 import org.citygml4j.model.xal.PostBox;
@@ -51,6 +53,7 @@ import org.citygml4j.model.xal.ThoroughfareName;
 import org.citygml4j.model.xal.ThoroughfareNumberOrRange;
 import org.postgis.PGgeometry;
 
+import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.util.Util;
 
@@ -83,6 +86,7 @@ import de.tub.citydb.util.Util;
 
 public class DBAddress implements DBImporter {	
 	private final Connection batchConn;
+	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psAddress;
@@ -90,16 +94,21 @@ public class DBAddress implements DBImporter {
 	private DBStGeometry stGeometry;
 	private int batchCounter;
 
-	public DBAddress(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
+	private boolean importXalSource;
+
+	public DBAddress(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
+		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 
 		init();
 	}
 
 	private void init() throws SQLException {
-		psAddress = batchConn.prepareStatement("insert into ADDRESS (ID, STREET, HOUSE_NUMBER, PO_BOX, ZIP_CODE, CITY, COUNTRY, MULTI_POINT) values "+
-				"(?, ?, ?, ?, ?, ?, ?, ?)");
+		importXalSource = config.getProject().getImporter().getAddress().isSetImportXAL();
+		
+		psAddress = batchConn.prepareStatement("insert into ADDRESS (ID, STREET, HOUSE_NUMBER, PO_BOX, ZIP_CODE, CITY, COUNTRY, MULTI_POINT, XAL_SOURCE) values "+
+				"(?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 		addressToBuildingImporter = (DBAddressToBuilding)dbImporterManager.getDBImporter(DBImporterEnum.ADDRESS_TO_BUILDING);
 		stGeometry = (DBStGeometry)dbImporterManager.getDBImporter(DBImporterEnum.ST_GEOMETRY);
@@ -124,9 +133,10 @@ public class DBAddress implements DBImporter {
 		// we just interpret addresses having a <country> child element
 		if (addressDetails.isSetCountry()) {
 			// this is the information we need...
-			String streetAttr, houseNoAttr, poBoxAttr, zipCodeAttr, cityAttr, countryAttr;
-			streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = null;
+			String streetAttr, houseNoAttr, poBoxAttr, zipCodeAttr, cityAttr, countryAttr, xalSource;
+			streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = xalSource = null;
 			PGgeometry multiPoint = null;
+
 			Country country = addressDetails.getCountry();
 
 			// country name
@@ -187,6 +197,39 @@ public class DBAddress implements DBImporter {
 						}
 					}
 
+					// dependent locality
+					if (streetAttr == null && houseNoAttr == null && locality.isSetDependentLocality()) {
+						DependentLocality dependentLocality = locality.getDependentLocality();
+
+						if (dependentLocality.isSetType() && 
+								dependentLocality.getType().toUpperCase().equals("DISTRICT")) {
+
+							if (dependentLocality.isSetThoroughfare()) {
+								Thoroughfare thoroughfare = dependentLocality.getThoroughfare();
+
+								// street name
+								if (streetAttr == null && thoroughfare.isSetThoroughfareName()) {
+									List<String> fareName = new ArrayList<String>();								
+									for (ThoroughfareName name : thoroughfare.getThoroughfareName())
+										fareName.add(name.getContent());
+
+									streetAttr = Util.collection2string(fareName, ",");
+								}
+
+								// house number - we do not support number ranges so far...						
+								if (houseNoAttr == null && thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange()) {
+									List<String> houseNumber = new ArrayList<String>();								
+									for (ThoroughfareNumberOrRange number : thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange()) {
+										if (number.isSetThoroughfareNumber())
+											houseNumber.add(number.getThoroughfareNumber().getContent());
+									}
+
+									houseNoAttr = Util.collection2string(houseNumber, ",");
+								}
+							}
+						}
+					}
+
 					// postal code
 					if (locality.isSetPostalCode()) {
 						PostalCode postalCode = locality.getPostalCode();
@@ -216,6 +259,10 @@ public class DBAddress implements DBImporter {
 			if (address.isSetMultiPoint())
 				multiPoint = stGeometry.getMultiPoint(address.getMultiPoint());
 			
+			// get XML representation of <xal:AddressDetails>
+			if (importXalSource)
+				xalSource = dbImporterManager.marshal(addressDetails, XALModuleType.CORE);
+
 			psAddress.setLong(1, addressId);
 			psAddress.setString(2, streetAttr);
 			psAddress.setString(3, houseNoAttr);
@@ -228,6 +275,11 @@ public class DBAddress implements DBImporter {
 				psAddress.setObject(8, multiPoint);
 			} else
 				psAddress.setNull(8, Types.OTHER, "ST_GEOMETRY");
+
+			if (xalSource != null)
+				psAddress.setString(9, xalSource);
+			else
+				psAddress.setNull(9, Types.CLOB);
 
 			psAddress.addBatch();
 			if (++batchCounter == Internal.POSTGRESQL_MAX_BATCH_SIZE)

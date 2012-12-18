@@ -33,6 +33,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Appearance;
@@ -95,6 +96,7 @@ public class DBImportWorker implements Worker<CityGML> {
 
 	// instance members needed to do work
 	private final DatabaseConnectionPool dbConnectionPool;
+	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
 	private final Config config;
@@ -111,12 +113,14 @@ public class DBImportWorker implements Worker<CityGML> {
 	private GmlNameFilter featureGmlNameFilter;
 
 	public DBImportWorker(DatabaseConnectionPool dbConnectionPool,
+			JAXBBuilder jaxbBuilder,
 			WorkerPool<DBXlink> tmpXlinkPool,
 			DBGmlIdLookupServerManager lookupServerManager,
 			ImportFilter importFilter,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.dbConnectionPool = dbConnectionPool;
+		this.jaxbBuilder = jaxbBuilder;
 		this.tmpXlinkPool = tmpXlinkPool;
 		this.lookupServerManager = lookupServerManager;
 		this.importFilter = importFilter;
@@ -143,6 +147,7 @@ public class DBImportWorker implements Worker<CityGML> {
 
 		dbImporterManager = new DBImporterManager(
 				batchConn,
+				jaxbBuilder,
 				config,
 				tmpXlinkPool,
 				lookupServerManager,

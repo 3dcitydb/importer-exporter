@@ -92,12 +92,14 @@ public class DBSurfaceGeometry implements DBExporter {
 	private final Config config;
 
 	private PreparedStatement psSurfaceGeometry;
+	private PreparedStatement psTransformSurfaceGeometry;
 	private PreparedStatement psImportGmlId;
 
 	private boolean exportAppearance;
 	private boolean useXLink;
 	private boolean appendOldGmlId;
-	private boolean transformCoords;
+	private boolean useTransformation;
+	private boolean applyTransformation;
 	private String gmlIdPrefix;
 
 	private int commitAfter = 1000;
@@ -124,7 +126,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					"insert into " + tempTable.getTableName() + 
 					" select ?, ? as dual " +
 					" where exists (select SURFACE_GEOMETRY_ID from TEXTUREPARAM where SURFACE_GEOMETRY_ID = ?)"
-			);
+				);
 		}
 
 		useXLink = config.getProject().getExporter().getXlink().getGeometry().isModeXLink();
@@ -133,24 +135,34 @@ public class DBSurfaceGeometry implements DBExporter {
 			gmlIdPrefix = config.getProject().getExporter().getXlink().getGeometry().getIdPrefix();
 		}	
 
-		transformCoords = config.getInternal().isTransformCoordinates();
-		if (!transformCoords) {
-			psSurfaceGeometry = connection.prepareStatement("select * from SURFACE_GEOMETRY where ROOT_ID = ?");
-		} else {	
+		psSurfaceGeometry = connection.prepareStatement("select * from SURFACE_GEOMETRY where ROOT_ID = ?");
+		useTransformation = applyTransformation = config.getInternal().isTransformCoordinates();
+		if (useTransformation) {	
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 
-			psSurfaceGeometry = connection.prepareStatement("select ID, GMLID, PARENT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, " +
+			psTransformSurfaceGeometry = connection.prepareStatement("select ID, GMLID, PARENT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, " +
 					"geodb_pkg.util_transform_or_null(GEOMETRY, " + srid + ") AS GEOMETRY " +
-			"from SURFACE_GEOMETRY where ROOT_ID = ?");
+					"from SURFACE_GEOMETRY where ROOT_ID = ?");
 		}
+	}
+
+	public void setApplyCoordinateTransformation(boolean applyTransformation) {
+		if (useTransformation)
+			this.applyTransformation = applyTransformation;
 	}
 
 	public DBSurfaceGeometryResult read(long rootId) throws SQLException {
 		ResultSet rs = null;
 
 		try {
-			psSurfaceGeometry.setLong(1, rootId);
-			rs = psSurfaceGeometry.executeQuery();
+			if (!useTransformation || !applyTransformation) {
+				psSurfaceGeometry.setLong(1, rootId);
+				rs = psSurfaceGeometry.executeQuery();
+			} else {
+				psTransformSurfaceGeometry.setLong(1, rootId);
+				rs = psTransformSurfaceGeometry.executeQuery();
+			}
+
 			GeometryTree geomTree = new GeometryTree();
 
 			// firstly, read the geometry entries into a
@@ -295,10 +307,10 @@ public class DBSurfaceGeometry implements DBExporter {
 			}
 
 			org.postgis.Polygon polyGeom = (org.postgis.Polygon) geomNode.geometry;
-			
+
 			for (int i = 0; i < polyGeom.numRings(); i++){
 				List<Double> values = new ArrayList<Double>();
-				
+
 				if (!geomNode.isReverse) {
 					for (int j = 0; j < polyGeom.getRing(i).numPoints(); j++){
 						values.add(polyGeom.getRing(i).getPoint(j).x);
@@ -312,7 +324,7 @@ public class DBSurfaceGeometry implements DBExporter {
 						values.add(polyGeom.getRing(i).getPoint(j).z);
 					}
 				}
-				
+
 				//isExterior
 				if (i == 0) {
 					LinearRing linearRing = new LinearRingImpl();
@@ -332,7 +344,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					dbExporterManager.updateGeometryCounter(GMLClass.LINEAR_RING);
 
 				} else {
-				//isInterior
+					//isInterior
 					LinearRing linearRing = new LinearRingImpl();
 					DirectPositionList directPositionList = new DirectPositionListImpl();
 
@@ -630,10 +642,10 @@ public class DBSurfaceGeometry implements DBExporter {
 
 		return null;
 	}
-	
+
 	private void writeToAppearanceCache(GeometryNode geomNode) throws SQLException {
-		psImportGmlId.setString(1, geomNode.gmlId);
-		psImportGmlId.setLong(2, geomNode.id);
+		psImportGmlId.setLong(1, geomNode.id);
+		psImportGmlId.setString(2, geomNode.gmlId);
 		psImportGmlId.setLong(3, geomNode.id);
 		psImportGmlId.addBatch();
 		batchCounter++;
@@ -647,6 +659,10 @@ public class DBSurfaceGeometry implements DBExporter {
 	@Override
 	public void close() throws SQLException {
 		psSurfaceGeometry.close();
+
+		if (psTransformSurfaceGeometry != null)
+			psTransformSurfaceGeometry.close();
+
 		if (psImportGmlId != null) {
 			psImportGmlId.executeBatch();
 			psImportGmlId.close();

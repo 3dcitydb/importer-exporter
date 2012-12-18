@@ -69,7 +69,6 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	private int columns = 1;
 	private int activeRow = 0;
 	private int activeColumn = 0;
-	private DatabaseSrs srs;
 
 	public BoundingBoxFilter(Config config, FilterMode mode) {
 		this.mode = mode;
@@ -99,22 +98,24 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 					boundingBoxConfig.getUpperRightCorner().getX() != null && 
 					boundingBoxConfig.getUpperRightCorner().getY() != null) {
 				boundingBox = new BoundingBox(boundingBoxConfig);
+				if (boundingBox.getSrs() == null) {
+					boundingBox.setSrs(DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem());
+					LOG.warn("SRS on bounding box filter not set. Choosing database SRS '" + boundingBox.getSrs().getDatabaseSrsName() + "' instead.");
+				}
 
-				// check whether we have to transform coordinate values of bounding box
-				DatabaseSrs bboxSrs = boundingBoxConfig.getSrs();
-				srs = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem();
+				// check whether we have to transform the bounding box
+				DatabaseSrs targetSrs = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem();
 
-				// target db srid differs if another coordinate transformation is
-				// applied to the CityGML export
+				// targetSrs differs if a coordinate transformation is applied to the CityGML export
 				if (mode == FilterMode.EXPORT) {
-					DatabaseSrs targetSRS = config.getProject().getExporter().getTargetSRS();
-					if (targetSRS.isSupported() && targetSRS.getSrid() != srs.getSrid())
-						srs = targetSRS;
+					DatabaseSrs tmp = config.getProject().getExporter().getTargetSRS();
+					if (tmp.isSupported() && tmp.getSrid() != targetSrs.getSrid())
+						targetSrs = tmp;
 				}
 				
-				if (bboxSrs != null && bboxSrs.isSupported() && bboxSrs.getSrid() != srs.getSrid()) {			
+				if (boundingBox.getSrs().isSupported() && boundingBox.getSrs().getSrid() != targetSrs.getSrid()) {			
 					try {
-						boundingBox = DBUtil.transformBBox(boundingBox, bboxSrs, srs);
+						boundingBox = DBUtil.transformBBox(boundingBox, boundingBox.getSrs(), targetSrs);
 					} catch (SQLException sqlEx) {
 						LOG.error("Failed to initialize bounding box filter.");
 					}
@@ -129,8 +130,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 					rowHeight = (boundingBox.getUpperRightCorner().getY() - boundingBox.getLowerLeftCorner().getY()) / rows;  
 					columnWidth = (boundingBox.getUpperRightCorner().getX() - boundingBox.getLowerLeftCorner().getX()) / columns;
 				}
-			} 
-			else
+			} else
 				isActive = false;
 		}
 	}
@@ -208,10 +208,6 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 		return activeBoundingBox;
 	}
 
-	public int getSrid() {
-		return srs.getSrid();
-	}
-	
 	public void setActiveTile(int activeRow, int activeColumn) {
 		if (!useTiling || 
 				activeRow < 0 || activeRow > rows ||

@@ -383,6 +383,7 @@ public class Importer implements EventHandler {
 						minThreads,
 						maxThreads,
 						new DBImportWorkerFactory(dbPool, 
+								jaxbBuilder,
 								tmpXlinkPool, 
 								lookupServerManager, 
 								importFilter,

@@ -39,6 +39,7 @@ import de.tub.citydb.config.project.system.System;
 @XmlType(name="ExportType", propOrder={
 		"path",
 		"targetSRS",
+		"address",
 		"appearances",
 		"filter",
 		"cityGMLVersion",
@@ -49,6 +50,7 @@ public class Exporter {
 	private Path path;
 	@XmlIDREF
 	private DatabaseSrs targetSRS = DatabaseSrs.createDefaultSrs();
+	private ExportAddress address;
 	private ExportAppearance appearances;
 	private ExportFilterConfig filter;
 	private CityGMLVersionType cityGMLVersion = CityGMLVersionType.v1_0_0;
@@ -57,6 +59,7 @@ public class Exporter {
 
 	public Exporter() {
 		path = new Path();
+		address = new ExportAddress();
 		appearances = new ExportAppearance();
 		filter = new ExportFilterConfig();
 		xlink = new XLink();
@@ -79,6 +82,15 @@ public class Exporter {
 	public void setTargetSRS(DatabaseSrs targetSRS) {
 		if (targetSRS != null)
 			this.targetSRS = targetSRS;
+	}
+
+	public ExportAddress getAddress() {
+		return address;
+	}
+
+	public void setAddress(ExportAddress address) {
+		if (address != null)
+			this.address = address;
 	}
 
 	public ExportAppearance getAppearances() {

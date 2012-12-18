@@ -255,6 +255,9 @@ public class DBTransportationComplex implements DBImporter {
         						case ORIENTABLE_CURVE:
         							aggregateComplex.addElement(primitiveProperty);
         							break;
+        						case CURVE:
+        							aggregateComplex.addElement(primitiveProperty);
+        							break;
         						default:
         							// geometry type not supported by lod0Network
         						}
@@ -275,7 +278,7 @@ public class DBTransportationComplex implements DBImporter {
         	}
         	
         	if (aggregateComplex.isSetElement() && !aggregateComplex.getElement().isEmpty())      		
-        		multiCurveGeom = stGeometry.getMultiCurve(aggregateComplex);
+        		multiCurveGeom = stGeometry.getCurveGeometry(aggregateComplex);
         	
         	if (multiCurveGeom != null) {
 				psTransComplex.setObject(12, multiCurveGeom);

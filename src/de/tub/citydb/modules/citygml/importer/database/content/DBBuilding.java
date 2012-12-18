@@ -418,7 +418,6 @@ public class DBBuilding implements DBImporter {
 
 		// lodXTerrainIntersectionCurve
 		for (int lod = 1; lod < 5; lod++) {
-
 			MultiCurveProperty multiCurveProperty = null;
 			PGgeometry multiLine = null;
 

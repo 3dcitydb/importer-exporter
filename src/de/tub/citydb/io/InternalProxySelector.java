@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.Authenticator;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
@@ -86,6 +87,10 @@ public class InternalProxySelector extends ProxySelector {
 		List<Proxy> proxies = new ArrayList<Proxy>();
 		ProxyConfigImpl proxy = config.getProject().getGlobal().getProxies().getProxyForProtocol(uri.getScheme());
 
+		/*System.out.println(uri.getHost());
+		InetSocketAddress a = new InetSocketAddress(uri.getHost(), 0);
+		System.out.println(a.getHostName());*/
+		
 		if (proxy != null && proxy.isEnabled() && proxy.hasValidProxySettings())		
 			proxies.add(proxy.toProxy());
 		else if (parent != null)

@@ -30,36 +30,25 @@
 package de.tub.citydb.gui.factory;
 
 import java.awt.Component;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JList;
-import javax.swing.JMenuItem;
-import javax.swing.JPasswordField;
 import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
-import javax.swing.TransferHandler;
+import javax.swing.JTree;
 import javax.swing.text.JTextComponent;
+import javax.swing.tree.TreePath;
 
-import de.tub.citydb.api.event.Event;
-import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.global.GlobalEvents;
-import de.tub.citydb.api.gui.StandardEditingPopupMenuDecorator;
-import de.tub.citydb.api.registry.ObjectRegistry;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.api.gui.StandardPopupMenuDecorator;
+import de.tub.citydb.gui.factory.popup.AbstractStandardPopupMenu;
+import de.tub.citydb.gui.factory.popup.StandardEditingPopupMenu;
+import de.tub.citydb.gui.factory.popup.StandardTreePopupMenu;
 
-@SuppressWarnings("serial")
-public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
+public class PopupMenuDecorator implements StandardPopupMenuDecorator {
 	private static PopupMenuDecorator instance;
-	private static HashMap<Class<? extends Component>, StandardEditingPopupMenu> popupMenus = new HashMap<Class<? extends Component>, StandardEditingPopupMenu>();
+	private static HashMap<Class<? extends Component>, AbstractStandardPopupMenu> popupMenus = new HashMap<Class<? extends Component>, AbstractStandardPopupMenu>();
 
 	private PopupMenuDecorator() {
 		// just to thwart instantiation
@@ -72,7 +61,7 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 		return instance;
 	}
 
-	private void decorate(final JComponent component, final StandardEditingPopupMenu popupMenu) {
+	private void decorate(final JComponent component, final AbstractStandardPopupMenu popupMenu) {
 		component.addMouseListener(new MouseAdapter() {
 			private void processMouseEvent(MouseEvent e) {
 				if (e.isPopupTrigger()) {
@@ -81,8 +70,16 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 
 					if (e.getComponent() instanceof JTextComponent) {
 						boolean isEditable = ((JTextComponent)e.getComponent()).isEditable();
-						popupMenu.cut.setEnabled(isEditable);
-						popupMenu.paste.setEnabled(isEditable);
+						((StandardEditingPopupMenu)popupMenu).prepare(isEditable);
+					}
+
+					else if (e.getComponent() instanceof JTree) {
+						Point point = e.getPoint();
+						TreePath path = ((JTree)e.getComponent()).getPathForLocation(point.x, point.y);
+						if (path == null)
+							return;
+
+						((StandardTreePopupMenu)popupMenu).prepare((JTree)e.getComponent(), path);
 					}
 
 					popupMenu.show(e.getComponent(), e.getX(), e.getY());
@@ -112,9 +109,9 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 	public void decorate(JTextComponent... components) {
 		decorate((JComponent[])components);
 	}
-	
+
 	@Override
-	public JPopupMenu decorate(JTextComponent component) {
+	public JPopupMenu decorateAndGet(JTextComponent component) {
 		StandardEditingPopupMenu popupMenu = new StandardEditingPopupMenu();
 		popupMenu.init(component);
 		popupMenu.doTranslation();
@@ -123,114 +120,38 @@ public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 		return popupMenu;
 	}
 
-	private StandardEditingPopupMenu getStandardEditingPopupMenu(JComponent component) {
-		StandardEditingPopupMenu popupMenu = popupMenus.get(component.getClass());
+	@Override
+	public void decorate(JTree... trees) {
+		decorate((JComponent[])trees);
+	}
 
-		if (popupMenu == null) {
-			popupMenu = new StandardEditingPopupMenu();
-			popupMenu.init(component);
-			popupMenus.put(component.getClass(), popupMenu);
-		}
-
+	@Override
+	public JPopupMenu decorateAndGet(JTree tree) {
+		StandardTreePopupMenu popupMenu = new StandardTreePopupMenu();
+		popupMenu.init();
 		popupMenu.doTranslation();
+		decorate(tree, popupMenu);
+
 		return popupMenu;
 	}
 
-	private static class StandardEditingPopupMenu extends JPopupMenu implements EventHandler {
-		private JMenuItem cut;
-		private JMenuItem copy;
-		private JMenuItem paste;
-		private JMenuItem selectAll;
+	private AbstractStandardPopupMenu getStandardEditingPopupMenu(JComponent component) {
+		AbstractStandardPopupMenu popupMenu = popupMenus.get(component.getClass());
 
-		private StandardEditingPopupMenu() {
-			ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);
-		}
-
-		private void init(Component component) {
-			cut = new JMenuItem();
-			copy = new JMenuItem();		
-			paste = new JMenuItem();
-			selectAll = new JMenuItem();
-
-			cut.setActionCommand((String)TransferHandler.getCutAction().getValue(Action.NAME));
-			copy.setActionCommand((String)TransferHandler.getCopyAction().getValue(Action.NAME));
-			paste.setActionCommand((String)TransferHandler.getPasteAction().getValue(Action.NAME));
-
-			cut.addActionListener(new TransferActionListener());
-			copy.addActionListener(new TransferActionListener());
-			paste.addActionListener(new TransferActionListener());
-
-			if (component instanceof JTextComponent) {
-				selectAll.setAction(new TextSelectAllAction());
-
-				if (component instanceof JPasswordField) {
-					cut.setEnabled(false);
-					copy.setEnabled(false);
-				}
-			} else if (component instanceof JList)
-				selectAll.setAction(new ListSelectAllAction());		
-
-			cut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-			copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-			paste.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-			selectAll.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-
-			add(cut);
-			add(copy);
-			add(paste);
-			addSeparator();
-			add(selectAll);
-		}
-
-		public void doTranslation() {
-			cut.setText(Internal.I18N.getString("common.popup.textfield.cut"));		
-			copy.setText(Internal.I18N.getString("common.popup.textfield.copy"));		
-			paste.setText(Internal.I18N.getString("common.popup.textfield.paste"));		
-			selectAll.setText(Internal.I18N.getString("common.popup.textfield.selectAll"));		
-		}
-
-		private final class TextSelectAllAction extends AbstractAction {
-			public void actionPerformed(ActionEvent e) {
-				final Component c = getInvoker();
-				if (c instanceof JTextComponent) {
-					JTextComponent text = (JTextComponent)c;
-					text.requestFocus();
-					text.setText(text.getText());
-					text.selectAll();
-				}
+		if (popupMenu == null) {
+			if (component instanceof JTree) {
+				popupMenu = new StandardTreePopupMenu();
+				((StandardTreePopupMenu)popupMenu).init();				
+			} else {
+				popupMenu = new StandardEditingPopupMenu();
+				((StandardEditingPopupMenu)popupMenu).init(component);
 			}
+
+			popupMenu.doTranslation();
+			popupMenus.put(component.getClass(), popupMenu);
 		}
 
-		private final class ListSelectAllAction extends AbstractAction {
-			public void actionPerformed(ActionEvent e) {
-				final Component c = getInvoker();
-				if (c instanceof JList) {
-					JList list = (JList)c;
-					int end = list.getModel().getSize() - 1;
-					if (end >= 0)
-						list.setSelectionInterval(0, end);
-				}
-			}
-		}
-
-		private final class TransferActionListener implements ActionListener {
-			public void actionPerformed(ActionEvent e) {
-				final Component c = getInvoker();
-				if (c instanceof JComponent) {
-					JComponent invoker = (JComponent)c;				
-					String action = (String)e.getActionCommand();
-					Action a = invoker.getActionMap().get(action);
-					if (a != null)
-						a.actionPerformed(new ActionEvent(invoker, ActionEvent.ACTION_PERFORMED, null));
-				}
-			}
-		}
-
-		@Override
-		public void handleEvent(Event event) throws Exception {
-			doTranslation();
-		}
-
+		return popupMenu;
 	}
 
 }

@@ -47,7 +47,6 @@ import org.citygml4j.impl.citygml.generics.StringAttributeImpl;
 import org.citygml4j.impl.citygml.generics.UriAttributeImpl;
 import org.citygml4j.impl.gml.feature.BoundingShapeImpl;
 import org.citygml4j.impl.gml.geometry.primitives.EnvelopeImpl;
-import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -121,8 +120,8 @@ public class DBCityObject implements DBExporter {
 			psCityObject = connection.prepareStatement("select co.GMLID, co.ENVELOPE, co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
 					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
 					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
-					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID " +
-			"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
+					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID and ga.DATATYPE < 6 " +
+					"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 
@@ -131,12 +130,13 @@ public class DBCityObject implements DBExporter {
 					"co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
 					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
 					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
-					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID " +
-			"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
+					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID and ga.DATATYPE < 6 " +
+					"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
 		}
 
-		appearanceExporter = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.APPEARANCE);
 		generalizesToExporter = (DBGeneralization)dbExporterManager.getDBExporter(DBExporterEnum.GENERALIZATION);
+		if (exportAppearance)
+			appearanceExporter = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.APPEARANCE);
 	}
 
 
@@ -161,7 +161,7 @@ public class DBCityObject implements DBExporter {
 				if (!rs.wasNull() && pgGeom != null) {
 					Geometry geom = pgGeom.getGeometry();
 //					double[] points = geom.getMBR();
-					
+
 					Envelope env = new EnvelopeImpl();
 					Point lower = null;
 					Point upper = null;
@@ -339,11 +339,15 @@ public class DBCityObject implements DBExporter {
 					generalizesToExporter.read(cityObject, parentId, generalizesToSet);
 
 				// get appearance information associated with the cityobject
-				if (exportAppearance)
-					appearanceExporter.read(cityObject, parentId);
+				if (exportAppearance) {
+					if (isTopLevelObject)
+						appearanceExporter.clearLocalCache();
 
-				if (cityObject.getCityGMLClass() != CityGMLClass.CITY_OBJECT_GROUP)
-					dbExporterManager.updateFeatureCounter(cityObject.getCityGMLClass());
+					appearanceExporter.read(cityObject, parentId);
+				}
+
+				// update feature counter
+				dbExporterManager.updateFeatureCounter(cityObject.getCityGMLClass());
 			}
 
 			return true;

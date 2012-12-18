@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.modules.citygml.exporter.database.content;
 
+import java.io.Reader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.EnumMap;
@@ -37,9 +38,11 @@ import java.util.HashMap;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
+import org.citygml4j.builder.jaxb.unmarshal.JAXBUnmarshaller;
 import org.citygml4j.impl.citygml.appearance.AppearanceMemberImpl;
 import org.citygml4j.impl.citygml.core.CityObjectMemberImpl;
 import org.citygml4j.impl.gml.feature.FeatureMemberImpl;
@@ -52,10 +55,11 @@ import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.FeatureMember;
 import org.citygml4j.model.gml.feature.FeatureProperty;
-import org.citygml4j.model.module.ModuleContext;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 import org.citygml4j.util.xml.SAXEventBuffer;
+import org.citygml4j.xml.io.reader.MissingADESchemaException;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
@@ -67,6 +71,7 @@ import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModel
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
+import de.tub.citydb.modules.citygml.common.xal.AddressExportFactory;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 
 public class DBExporterManager {
@@ -81,6 +86,8 @@ public class DBExporterManager {
 	private final EventDispatcher eventDispatcher;
 
 	private final JAXBMarshaller jaxbMarshaller;
+	private final JAXBUnmarshaller jaxbUnmarshaller;
+	private AddressExportFactory addressExportFactory;
 	private EnumMap<DBExporterEnum, DBExporter> dbExporterMap;
 	private HashMap<CityGMLClass, Long> featureCounterMap;
 	private HashMap<GMLClass, Long> geometryCounterMap;
@@ -93,7 +100,7 @@ public class DBExporterManager {
 			CacheManager cacheManager,
 			ExportFilter exportFilter,
 			Config config,
-			EventDispatcher eventDispatcher) {
+			EventDispatcher eventDispatcher) throws SAXException {
 		this.connection = connection;
 		this.jaxbBuilder = jaxbBuilder;
 		this.ioWriterPool = ioWriterPool;
@@ -109,8 +116,10 @@ public class DBExporterManager {
 		geometryCounterMap = new HashMap<GMLClass, Long>();
 
 		CityGMLVersion version = config.getProject().getExporter().getCityGMLVersion().toCityGMLVersion();
-		ModuleContext moduleContext = new ModuleContext(version);
-		jaxbMarshaller = jaxbBuilder.createJAXBMarshaller(moduleContext);
+		jaxbMarshaller = jaxbBuilder.createJAXBMarshaller(version);
+		jaxbUnmarshaller = jaxbBuilder.createJAXBUnmarshaller();
+		jaxbUnmarshaller.setThrowMissingADESchema(false);
+		jaxbUnmarshaller.setParseSchema(false);
 	}
 
 	public DBExporter getDBExporter(DBExporterEnum dbExporterType) throws SQLException {
@@ -120,13 +129,13 @@ public class DBExporterManager {
 		if (dbExporter == null) {
 			switch (dbExporterType) {
 			case SURFACE_GEOMETRY:
-				if (config.getInternal().isExportGlobalAppearances()) 
-					globalAppTempTable = cacheManager.createTemporaryCacheTableWithIndexes(CacheTableModelEnum.GLOBAL_APPEARANCE);
+				if (config.getInternal().isExportGlobalAppearances())
+					globalAppTempTable = (TemporaryCacheTable)cacheManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
 
 				dbExporter = new DBSurfaceGeometry(connection, globalAppTempTable, config, this);
 				break;
 			case IMPLICIT_GEOMETRY:
-				dbExporter = new DBImplicitGeometry(connection, this);
+				dbExporter = new DBImplicitGeometry(connection, config, this);
 				break;
 			case CITYOBJECT:
 				dbExporter = new DBCityObject(connection, exportFilter, config, this);
@@ -236,6 +245,13 @@ public class DBExporterManager {
 		xlinkExporterPool.addWork(xlink);
 	}
 
+	public AddressExportFactory getAddressExportFactory() {
+		if (addressExportFactory == null)
+			addressExportFactory = new AddressExportFactory(config);
+
+		return addressExportFactory;
+	}
+
 	public void updateFeatureCounter(CityGMLClass featureType) {
 		Long counter = featureCounterMap.get(featureType);
 		if (counter == null)
@@ -300,5 +316,22 @@ public class DBExporterManager {
 				throw new CityGMLWriteException("Caused by: ", e);
 			}
 		}		
+	}
+
+	public Object unmarshal(Reader reader) {
+		Object object = null;
+
+		try {
+			Unmarshaller unmarshaller = jaxbBuilder.getJAXBContext().createUnmarshaller();
+			object = unmarshaller.unmarshal(reader);
+			if (object != null)
+				object = jaxbUnmarshaller.unmarshal(object);
+		} catch (JAXBException e) {
+			object = null;
+		} catch (MissingADESchemaException e) {
+			object = null;
+		}
+
+		return object;
 	}
 }

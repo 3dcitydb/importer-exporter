@@ -172,10 +172,10 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		PopupMenuDecorator popupMenuDecorator = PopupMenuDecorator.getInstance();
 		bboxPopups = new BBoxPopupMenuWrapper[4];
 
-		bboxPopups[0] = new BBoxPopupMenuWrapper(popupMenuDecorator.decorate(xmin));
-		bboxPopups[1] = new BBoxPopupMenuWrapper(popupMenuDecorator.decorate(ymin));
-		bboxPopups[2] = new BBoxPopupMenuWrapper(popupMenuDecorator.decorate(xmax));
-		bboxPopups[3] = new BBoxPopupMenuWrapper(popupMenuDecorator.decorate(ymax));
+		bboxPopups[0] = new BBoxPopupMenuWrapper(popupMenuDecorator.decorateAndGet(xmin));
+		bboxPopups[1] = new BBoxPopupMenuWrapper(popupMenuDecorator.decorateAndGet(ymin));
+		bboxPopups[2] = new BBoxPopupMenuWrapper(popupMenuDecorator.decorateAndGet(xmax));
+		bboxPopups[3] = new BBoxPopupMenuWrapper(popupMenuDecorator.decorateAndGet(ymax));
 
 		// button actions
 		map.addActionListener(new ActionListener() {
