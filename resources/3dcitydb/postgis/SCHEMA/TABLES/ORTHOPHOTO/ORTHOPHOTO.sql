@@ -44,7 +44,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description      | Author | Conversion
--- 2.0       2012-11-09   PostGIS version    LPlu     LFra
+-- 2.0       2012-01-06   PostGIS version    LPlu     LFra
 --                                           TKol     FKun
 --                                           GGro
 --                                           JSch
@@ -54,7 +54,7 @@
 
 CREATE TABLE ORTHOPHOTO (
 ID                    SERIAL NOT NULL,
-LOD                   NUMERIC(1) NOT NULL,
+LOD                   NUMERIC(1,0) NOT NULL,
 DATUM                 DATE,
 ORTHOPHOTOPROPERTY    RASTER
 )
