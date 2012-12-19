@@ -26,24 +26,26 @@
 -------------------------------------------------------------------------------
 -- About: Rasterdata is imported via C-Loader raster2pgsql (executed in command line)
 -- e.g.
--- raster2pgsql -a -f orthophotoproperty -s yourSRID -I -M -F -t 128x128 yourRasterFiles.tif orthophoto > orthophoto.sql
+-- raster2pgsql -a -f orthophotoproperty -s yourSRID -I -M -t 128x128 yourRasterFiles.tif orthophoto > orthophoto.sql
 -- (see PostGIS-Manual for explanation: http://www.postgis.org/documentation/manual-svn/using_raster.xml.html)
 --
+-- Before executing the generated sql file it has to be edited! 
+-- The INSERT statements do not assign a value for the LOD column, which
+-- is necessary due to its constraint.
+--
+-- Edited example:
+-- INSERT INTO "orthophoto" ("lod", "orthophotoproperty") VALUES (2,'01000001...
+-- INSERT INTO "orthophoto" ... (multiple inserts when tiling the raster)
+--
 -- The geometric extent is calculated in the raster_columns view, if a srid was 
--- assigned to the raster. Pyramidlayers for raster files can be added with the 
--- operator -l 2,4,... in the raster2pgsql command. They will be handled as 
--- additional raster-files and managed in their own tables and in the the 
--- raster_overviews view as well. 
--- Attention: Tables for raster_overviews will not yet be created when appending 
--- a raster to a table. You have to leave out the -a operator and delete the
--- table ORTHOPHOTO first in order to execute the generated SQL file by raster2pgsql.
+-- assigned to the raster.
 -------------------------------------------------------------------------------
 --
 -- ChangeLog:
 --
 -- Version | Date       | Description      | Author | Conversion
 -- 2.0       2012-11-09   PostGIS version    LPlu     LFra
---                                           TKol	  FKun
+--                                           TKol     FKun
 --                                           GGro
 --                                           JSch
 --                                           VStr
@@ -52,7 +54,8 @@
 
 CREATE TABLE ORTHOPHOTO (
 ID                    SERIAL NOT NULL,
-FILENAME              TEXT,
+LOD                   NUMERIC(1) NOT NULL,
+DATUM                 DATE,
 ORTHOPHOTOPROPERTY    RASTER
 )
 ;

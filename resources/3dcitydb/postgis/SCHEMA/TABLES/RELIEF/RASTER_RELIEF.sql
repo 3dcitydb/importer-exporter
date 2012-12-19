@@ -29,17 +29,23 @@
 -------------------------------------------------------------------------------
 -- About: Rasterdata is imported via C-Loader raster2pgsql (executed in command line)
 -- e.g.
--- raster2pgsql -a -f rasterproperty -s yourSRID -I -M -F -t 128x128 yourRasterFiles.tif raster_relief > rastrelief.sql
+-- raster2pgsql -a -f rasterproperty -s yourSRID -I -M -t 128x128 yourRasterFiles.tif raster_relief > rastrelief.sql
 -- (see PostGIS-Manual for explanation: http://www.postgis.org/documentation/manual-svn/using_raster.xml.html)
 --
+-- Before executing the generated sql file it has to be edited! 
+-- The INSERT statements do not assign a value for the RELIEF_ID column, which
+-- is necessary due to its constraint. Thus an additional entry in the RELIEF table
+-- is needed.
+--
+-- Edited example:
+-- INSERT INTO "relief" ("name", "type", "lodgroup") VALUES ('NameOfRelief', 'TypeOfRelief', 2);
+-- SELECT nextval('RELIEF_ID_SEQ');
+-- INSERT INTO "raster_relief" ("lod", "rasterproperty", "relief_id") 
+--                VALUES (2,'01000001...', (select currval('RELIEF_ID_SEQ'))-1);
+-- INSERT INTO "raster_relief" ... (multiple inserts when tiling the raster) 
+-- 
 -- The geometric extent is calculated in the raster_columns view, if a srid was 
--- assigned to the raster. Pyramidlayers for raster files can be added with the 
--- operator -l 2,4,... in the raster2pgsql command. They will be handled as 
--- additional raster-files and managed in their own tables and in the the 
--- raster_overviews view as well. 
--- Attention: Tables for raster_overviews will not yet be created when appending 
--- a raster to a table. You have to leave out the -a operator and delete the
--- table RASTER_RELIEF first in order to execute the generated SQL file by raster2pgsql.
+-- assigned to the raster.
 -------------------------------------------------------------------------------
 --
 -- ChangeLog:
@@ -57,9 +63,9 @@
 
 CREATE TABLE RASTER_RELIEF (
 ID                SERIAL NOT NULL,
-FILENAME          TEXT,
-RASTERPROPERTY    RASTER
---RELIEF_ID         INTEGER NOT NULL
+LOD               NUMERIC(1),
+RASTERPROPERTY    RASTER NOT NULL,
+RELIEF_ID         INTEGER NOT NULL
 )
 ;
 

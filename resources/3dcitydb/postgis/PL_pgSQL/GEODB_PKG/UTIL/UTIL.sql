@@ -508,7 +508,7 @@ BEGIN
   PERFORM geodb_pkg.util_on_delete_action('PLANT_COVER','PLANT_COVER_FK2','LOD3_GEOMETRY_ID','SURFACE_GEOMETRY','ID',action);
   PERFORM geodb_pkg.util_on_delete_action('PLANT_COVER','PLANT_COVER_FK3','LOD4_GEOMETRY_ID','SURFACE_GEOMETRY','ID',action);
   PERFORM geodb_pkg.util_on_delete_action('PLANT_COVER','PLANT_COVER_CITYOBJECT_FK','ID','CITYOBJECT','ID',action);
-  --PERFORM geodb_pkg.util_on_delete_action('RASTER_RELIEF','RASTER_RELIEF_FK','RELIEF_ID','RELIEF','ID',action);
+  PERFORM geodb_pkg.util_on_delete_action('RASTER_RELIEF','RASTER_RELIEF_FK','RELIEF_ID','RELIEF','ID',action);
   PERFORM geodb_pkg.util_on_delete_action('RELIEF_COMPONENT','RELIEF_COMPONENT_CITYOBJECT_FK','ID','CITYOBJECT','ID',action);
   PERFORM geodb_pkg.util_on_delete_action('RELIEF_FEATURE','RELIEF_FEATURE_CITYOBJECT_FK','ID','CITYOBJECT','ID',action);
   PERFORM geodb_pkg.util_on_delete_action('RELIEF_FEAT_TO_REL_COMP','RELIEF_FEAT_TO_REL_COMP_FK','RELIEF_COMPONENT_ID','RELIEF_COMPONENT','ID',action);
