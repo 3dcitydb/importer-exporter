@@ -244,8 +244,9 @@ public class DBBuilding implements DBExporter {
 
 					if (addressObject.canCreate()) {
 						// multiPointGeometry
-						Geometry multiPoint = (Geometry)rs.getObject("MULTI_POINT");
-						if (!rs.wasNull() && multiPoint != null) {
+						PGgeometry multiPointObj = (PGgeometry)rs.getObject("MULTI_POINT");
+						if (!rs.wasNull() && multiPointObj != null) {
+							Geometry multiPoint = multiPointObj.getGeometry();
 							MultiPointProperty multiPointProperty = stGeometry.getMultiPointProperty(multiPoint, false);
 							if (multiPointProperty != null)
 								addressObject.setMultiPointProperty(multiPointProperty);
