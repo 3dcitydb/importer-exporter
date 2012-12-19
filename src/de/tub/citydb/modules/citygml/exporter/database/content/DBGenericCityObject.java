@@ -109,7 +109,7 @@ public class DBGenericCityObject implements DBExporter {
 					"geodb_pkg.util_transform_or_null(LOD4_IMPLICIT_REF_POINT, " + srid + ") AS LOD4_IMPLICIT_REF_POINT, " +
 					"LOD0_IMPLICIT_TRANSFORMATION, LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION from GENERIC_CITYOBJECT where ID = ?");					
 
-			psGenericGeometryAttribute = connection.prepareStatement("select ATTRNAME, geodb_util.transform_or_null(GEOMVAL, " + srid + ") AS GEOMVAL from CITYOBJECT_GENERICATTRIB where CITYOBJECT_ID = ? and DATATYPE = 6");
+			psGenericGeometryAttribute = connection.prepareStatement("select ATTRNAME, geodb_pkg.util_transform_or_null(GEOMVAL, " + srid + ") AS GEOMVAL from CITYOBJECT_GENERICATTRIB where CITYOBJECT_ID = ? and DATATYPE = 6");
 		}
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);

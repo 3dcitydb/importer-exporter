@@ -132,7 +132,7 @@ public class DBBuilding implements DBExporter {
 					"geodb_pkg.util_transform_or_null(b.LOD3_MULTI_CURVE, " + srid + ") AS LOD3_MULTI_CURVE, " +
 					"geodb_pkg.util_transform_or_null(b.LOD4_MULTI_CURVE, " + srid + ") AS LOD4_MULTI_CURVE, " +
 					"a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, " +
-					"geodb_util.transform_or_null(a.MULTI_POINT, " + srid + ") AS MULTI_POINT, a.XAL_SOURCE " +
+					"geodb_pkg.util_transform_or_null(a.MULTI_POINT, " + srid + ") AS MULTI_POINT, a.XAL_SOURCE " +
 					"from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
 		}
 
