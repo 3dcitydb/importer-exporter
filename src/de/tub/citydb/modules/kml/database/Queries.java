@@ -259,7 +259,7 @@ public class Queries {
 		"SELECT o.lod4_multi_surface_id " + 
 		"FROM BUILDING b, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
 		"WHERE " +  
-			"b.building_root_id = co.id " +
+			"b.building_root_id = ? " +
 			"AND ts.building_id = b.id " +
 			"AND ts.lod4_multi_surface_id IS NOT NULL " +
 			"AND o2ts.thematic_surface_id = ts.id " +
