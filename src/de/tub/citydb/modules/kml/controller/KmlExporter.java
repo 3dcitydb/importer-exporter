@@ -951,7 +951,6 @@ public class KmlExporter implements EventHandler {
 
 	private void addStyle(DisplayForm currentDisplayForm, CityGMLClass featureClass) throws JAXBException {
 		if (!currentDisplayForm.isActive()) return;
-//		FeatureClass featureFilter = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass();
 		switch (featureClass) {
 			case SOLITARY_VEGETATION_OBJECT:
 			case PLANT_COVER:
@@ -1018,6 +1017,7 @@ public class KmlExporter implements EventHandler {
 				break;
 
 			case BUILDING: // must be last
+			default:
 				addStyle(currentDisplayForm,
 						 config.getProject().getKmlExporter().getBuildingDisplayForms(),
 						 Building.STYLE_BASIS_NAME);
