@@ -124,7 +124,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 			psImportGmlId = tempTable.getConnection().prepareStatement(
 					"insert into " + tempTable.getTableName() + 
-					" select ?, ? as dual " +
+					" select ?, ? " +
 					" where exists (select SURFACE_GEOMETRY_ID from TEXTUREPARAM where SURFACE_GEOMETRY_ID = ?)"
 				);
 		}
@@ -644,8 +644,8 @@ public class DBSurfaceGeometry implements DBExporter {
 	}
 
 	private void writeToAppearanceCache(GeometryNode geomNode) throws SQLException {
-		psImportGmlId.setLong(1, geomNode.id);
-		psImportGmlId.setString(2, geomNode.gmlId);
+		psImportGmlId.setString(1, geomNode.gmlId);
+		psImportGmlId.setLong(2, geomNode.id);
 		psImportGmlId.setLong(3, geomNode.id);
 		psImportGmlId.addBatch();
 		batchCounter++;
