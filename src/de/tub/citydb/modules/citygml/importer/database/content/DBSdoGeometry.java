@@ -330,10 +330,13 @@ public class DBSdoGeometry implements DBImporter {
 		case MULTI_CURVE:
 			return getMultiCurve((MultiCurve)abstractGeometry);
 		case GEOMETRIC_COMPLEX:
-			JGeometry geometry = getPointGeometry((GeometricComplex)abstractGeometry);
-			if (geometry == null)
-				geometry = getCurveGeometry((GeometricComplex)abstractGeometry);
-			return geometry;
+			GeometricComplex complex = (GeometricComplex)abstractGeometry;
+			if (containsPointPrimitives(complex, true))
+				return getPointGeometry((GeometricComplex)abstractGeometry);
+			else if (containsCurvePrimitives(complex, true))
+				return getCurveGeometry((GeometricComplex)abstractGeometry);
+			else 
+				return null;
 		default:
 			return null;
 		}
@@ -581,6 +584,55 @@ public class DBSdoGeometry implements DBImporter {
 		}
 
 		return polygonGeom;
+	}
+	
+	private boolean containsPointPrimitives(GeometricComplex geometricComplex, boolean exclusive) {
+		if (geometricComplex != null && geometricComplex.isSetElement()) {
+			for (GeometricPrimitiveProperty primitiveProperty : geometricComplex.getElement()) {
+				if (primitiveProperty.isSetGeometricPrimitive()) {
+					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
+					
+					switch (primitive.getGMLClass()) {
+					case POINT:
+						if (!exclusive)
+							return true;
+						else 
+							break;
+					default:
+						if (!exclusive)
+							return false;
+					}
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	private boolean containsCurvePrimitives(GeometricComplex geometricComplex, boolean exclusive) {
+		if (geometricComplex != null && geometricComplex.isSetElement()) {
+			for (GeometricPrimitiveProperty primitiveProperty : geometricComplex.getElement()) {
+				if (primitiveProperty.isSetGeometricPrimitive()) {
+					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
+					
+					switch (primitive.getGMLClass()) {
+					case LINE_STRING:
+					case CURVE:
+					case COMPOSITE_CURVE:
+					case ORIENTABLE_CURVE:
+						if (!exclusive)
+							return true;
+						else 
+							break;
+					default:
+						if (exclusive)
+							return false;
+					}
+				}
+			}
+		}
+		
+		return true;
 	}
 
 	@Override
