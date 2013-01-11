@@ -73,7 +73,6 @@ public class DisplayForm {
 	public static final int DEFAULT_ROOF_FILL_COLOR = 0xc8ff3333;
 	public static final int DEFAULT_ROOF_LINE_COLOR = 0xc8990000;
 
-	public static final int INVISIBLE_COLOR = 0x0100aaff;
 	public static final int DEFAULT_ALPHA_VALUE = 200; // 0xc8;
 
 	private int form;

@@ -1163,7 +1163,6 @@ public class KmlExporter implements EventHandler {
 			}
 
 			if (currentDisplayForm.isHighlightingEnabled()) {
-				String invisibleColor = Integer.toHexString(DisplayForm.INVISIBLE_COLOR);
 				String highlightFillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
 				String highlightLineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 /*
@@ -1172,7 +1171,6 @@ public class KmlExporter implements EventHandler {
 */
 					if (currentDisplayForm.isSetRgba4()) {
 						highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba4()));
-						invisibleColor = "01" + highlightFillColor.substring(2);
 					}
 					if (currentDisplayForm.isSetRgba5()) {
 						highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba5()));
@@ -1181,9 +1179,9 @@ public class KmlExporter implements EventHandler {
 				}
 */
 				LineStyleType lineStyleGeometryInvisible = kmlFactory.createLineStyleType();
-				lineStyleGeometryInvisible.setColor(hexStringToByteArray(invisibleColor));
+				lineStyleGeometryInvisible.setColor(hexStringToByteArray("01" + highlightLineColor.substring(2)));
 				PolyStyleType polyStyleGeometryInvisible = kmlFactory.createPolyStyleType();
-				polyStyleGeometryInvisible.setColor(hexStringToByteArray(invisibleColor));
+				polyStyleGeometryInvisible.setColor(hexStringToByteArray("00" + highlightFillColor.substring(2)));
 				StyleType styleGeometryInvisible = kmlFactory.createStyleType();
 				styleGeometryInvisible.setId(styleBasisName + currentDisplayForm.getName() + "StyleInvisible");
 				styleGeometryInvisible.setLineStyle(lineStyleGeometryInvisible);
@@ -1225,21 +1223,19 @@ public class KmlExporter implements EventHandler {
 			if (indexOfDf != -1) {
 				currentDisplayForm = displayFormsForObjectType.get(indexOfDf);
 				if (currentDisplayForm.isHighlightingEnabled()) {
-					String invisibleColor = Integer.toHexString(DisplayForm.INVISIBLE_COLOR);
 					String highlightFillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
 					String highlightLineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 					if (currentDisplayForm.isSetRgba4()) {
 						highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba4()));
-						invisibleColor = "01" + highlightFillColor.substring(2);
 					}
 					if (currentDisplayForm.isSetRgba5()) {
 						highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba5()));
 					}
 
 					LineStyleType lineStyleColladaInvisible = kmlFactory.createLineStyleType();
-					lineStyleColladaInvisible.setColor(hexStringToByteArray(invisibleColor));
+					lineStyleColladaInvisible.setColor(hexStringToByteArray("01" + highlightLineColor.substring(2)));
 					PolyStyleType polyStyleColladaInvisible = kmlFactory.createPolyStyleType();
-					polyStyleColladaInvisible.setColor(hexStringToByteArray(invisibleColor));
+					polyStyleColladaInvisible.setColor(hexStringToByteArray("00" + highlightFillColor.substring(2)));
 					StyleType styleColladaInvisible = kmlFactory.createStyleType();
 					styleColladaInvisible.setId(styleBasisName + currentDisplayForm.getName() + "StyleInvisible");
 					styleColladaInvisible.setLineStyle(lineStyleColladaInvisible);
