@@ -147,7 +147,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		generalPanel.add(showTileBordersCheckbox, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
 		
 		autoTileSideLengthText = new JFormattedTextField(threeIntFormat);
-		generalPanel.add(autoTileSideLengthLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
+		generalPanel.add(autoTileSideLengthLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
 		generalPanel.add(autoTileSideLengthText, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		GridBagConstraints ml = GuiUtil.setConstraints(2,3,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		ml.anchor = GridBagConstraints.WEST;
