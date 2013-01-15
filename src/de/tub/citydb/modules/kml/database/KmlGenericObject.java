@@ -2127,7 +2127,7 @@ public abstract class KmlGenericObject {
 			}
 		}
 		catch (Exception e) {
-			Logger.getInstance().warn("Exception when generating highlighting geometry of building " + work.getGmlId());
+			Logger.getInstance().warn("Exception when generating highlighting geometry of object " + work.getGmlId());
 			e.printStackTrace();
 		}
 		finally {

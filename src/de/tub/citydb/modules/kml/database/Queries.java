@@ -200,463 +200,450 @@ public class Queries {
 	// 	BUILDING QUERIES
 	// ----------------------------------------------------------------------
 
-	private static final String BUILDING_FOOTPRINT_LOD4 =
-		"SELECT sg.geometry " +
-		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
-		"WHERE " +
-			"ts.building_id = ? " +
-			"AND ts.type = 'GroundSurface' " +
-			"AND sg.root_id = ts.lod4_multi_surface_id " +
-			"AND sg.geometry IS NOT NULL " +
-		"ORDER BY ts.building_id";
-
-	private static final String BUILDING_COLLADA_LOD4_ROOT_IDS =
-		"SELECT b.lod4_geometry_id " + 
-		"FROM BUILDING b " + 
-		"WHERE " +  
-			"b.building_root_id = ? " +
-			"AND b.lod4_geometry_id IS NOT NULL " +
-		"UNION " + 
-		"SELECT ts.lod4_multi_surface_id " + 
-		"FROM BUILDING b, THEMATIC_SURFACE ts " + 
-		"WHERE " +  
-			"b.building_root_id = ? " +
-			"AND ts.building_id = b.id " +
-			"AND ts.lod4_multi_surface_id IS NOT NULL " +
-		"UNION " + 
-/*
-		"SELECT r.lod4_geometry_id " + 
-		"FROM BUILDING b, ROOM r " + 
-		"WHERE " +  
-  			"b.building_root_id = ? " +
-			"AND r.building_id = b.id " +
-			"AND r.lod4_geometry_id IS NOT NULL " +
-*/
-		"SELECT ts.lod4_multi_surface_id " + 
-		"FROM BUILDING b, ROOM r, THEMATIC_SURFACE ts " + 
-		"WHERE " +  
-  			"b.building_root_id = ? " +
-			"AND r.building_id = b.id " +
-			"AND ts.room_id = r.id " +
-			"AND ts.lod4_multi_surface_id IS NOT NULL " +
-		"UNION " + 
-		"SELECT bf.lod4_geometry_id " + 
-		"FROM BUILDING b, ROOM r, BUILDING_FURNITURE bf " + 
-		"WHERE " +  
-			"b.building_root_id = ? " +
-			"AND r.building_id = b.id " +
-			"AND bf.room_id = r.id " +
-			"AND bf.lod4_geometry_id IS NOT NULL " +
-		"UNION " + 
-		"SELECT bi.lod4_geometry_id " + 
-		"FROM BUILDING b, ROOM r, BUILDING_INSTALLATION bi " + 
-		"WHERE " +  
-			"b.building_root_id = ? " +
-			"AND r.building_id = b.id " +
-			"AND bi.room_id = r.id " +
-			"AND bi.lod4_geometry_id IS NOT NULL " +
-		"UNION " + 
-		"SELECT o.lod4_multi_surface_id " + 
-		"FROM BUILDING b, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
-		"WHERE " +  
-			"b.building_root_id = ? " +
-			"AND ts.building_id = b.id " +
-			"AND ts.lod4_multi_surface_id IS NOT NULL " +
-			"AND o2ts.thematic_surface_id = ts.id " +
-			"AND o.id = o2ts.opening_id";
-			
-	private static final String BUILDING_GEOMETRY_LOD4 =
-		"SELECT sg.geometry, ts.type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg " +
-		"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod4_multi_surface_id = sg.root_id " +
-		"WHERE " +
-			"sg.geometry IS NOT NULL " +
-			"AND sg.root_id IN (" + BUILDING_COLLADA_LOD4_ROOT_IDS + ")";
-
-	private static final String BUILDING_FOOTPRINT_LOD3 =
-		"SELECT sg.geometry " +
-		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
-		"WHERE " +
-			"ts.building_id = ? " +
-			"AND ts.type = 'GroundSurface' " +
-			"AND sg.root_id = ts.lod3_multi_surface_id " +
-			"AND sg.geometry IS NOT NULL " +
-		"ORDER BY ts.building_id";
-
-	private static final String BUILDING_COLLADA_LOD3_ROOT_IDS =
-		"SELECT b.lod3_geometry_id " + 
-		"FROM BUILDING b " + 
-		"WHERE " +  
-			"b.building_root_id = ? " +
-			"AND b.lod3_geometry_id IS NOT NULL " +
-		"UNION " + 
-		"SELECT ts.lod3_multi_surface_id " + 
-		"FROM BUILDING b, THEMATIC_SURFACE ts " + 
-		"WHERE " +  
-			"b.building_root_id = ? " +
-			"AND ts.building_id = b.id " +
-			"AND ts.lod3_multi_surface_id IS NOT NULL " +
-		"UNION " + 
-		"SELECT bi.lod3_geometry_id " + 
-		"FROM BUILDING b, BUILDING_INSTALLATION bi " + 
-		"WHERE " +  
-  			"b.building_root_id = ? " +
-			"AND bi.building_id = b.id " +
-			"AND bi.lod3_geometry_id IS NOT NULL " +
-		"UNION " + 
-		"SELECT o.lod3_multi_surface_id " + 
-		"FROM BUILDING b, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
-		"WHERE " +  
-			"b.building_root_id = ? " +
-			"AND ts.building_id = b.id " +
-			"AND ts.lod3_multi_surface_id IS NOT NULL " +
-			"AND o2ts.thematic_surface_id = ts.id " +
-			"AND o.id = o2ts.opening_id";
-
-	private static final String BUILDING_GEOMETRY_LOD3 =
-		"SELECT sg.geometry, ts.type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg " +
-		"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod3_multi_surface_id = sg.root_id " +
-		"WHERE " +
-			"sg.geometry IS NOT NULL " +
-			"AND sg.root_id IN (" + BUILDING_COLLADA_LOD3_ROOT_IDS	+ ")";
-
-	private static final String BUILDING_COLLADA_LOD2_ROOT_IDS =
-		"SELECT b.lod2_geometry_id " + 
-		"FROM BUILDING b " + 
-		"WHERE " +  
-			"b.building_root_id = ? " +
-			"AND b.lod2_geometry_id IS NOT NULL " +
-		"UNION " + 
-		"SELECT ts.lod2_multi_surface_id " + 
-		"FROM BUILDING b, THEMATIC_SURFACE ts " + 
-		"WHERE " +  
-			"b.building_root_id = ? " +
-			"AND ts.building_id = b.id " +
-			"AND ts.lod2_multi_surface_id IS NOT NULL " +
-		"UNION " + 
-		"SELECT bi.lod2_geometry_id " + 
-		"FROM BUILDING b, BUILDING_INSTALLATION bi " + 
-		"WHERE " +  
-  			"b.building_root_id = ? " +
-			"AND bi.building_id = b.id " +
-			"AND bi.lod2_geometry_id IS NOT NULL";
-
-	private static final String COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 =
-		"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, " +
-				"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
-				"sd.tex_image_uri, sd.tex_image, tp.texture_coordinates, a.theme " +
-		"FROM SURFACE_GEOMETRY sg " +
-			"LEFT JOIN TEXTUREPARAM tp ON tp.surface_geometry_id = sg.id " + 
-			"LEFT JOIN SURFACE_DATA sd ON sd.id = tp.surface_data_id " +
-			"LEFT JOIN APPEAR_TO_SURFACE_DATA a2sd ON a2sd.surface_data_id = sd.id " +
-			"LEFT JOIN APPEARANCE a ON a2sd.appearance_id = a.id " +
-		"WHERE " +
-			"sg.root_id = ? "; // +
-//			"AND (a.theme = ? OR a.theme IS NULL) " +
-//			"ORDER BY sg.parent_id ASC"; // own root surfaces first
-
-	public static final String[] COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID = new String[] {
-		COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NULL", // parents
-		COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NOT NULL" // elementary surfaces
-	};
-
-	private static final String BUILDING_GEOMETRY_LOD2 =
-		"SELECT sg.geometry, ts.type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg " +
-		"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod2_multi_surface_id = sg.root_id " +
-		"WHERE " +
-			"sg.geometry IS NOT NULL " +
-			"AND sg.root_id IN (" +
-				"SELECT b.lod2_geometry_id " + 
-				"FROM BUILDING b " + 
-				"WHERE " +  
-					"b.building_root_id = ? " +
-					"AND b.lod2_geometry_id IS NOT NULL " +
-				"UNION " + 
-				"SELECT ts.lod2_multi_surface_id " + 
-				"FROM THEMATIC_SURFACE ts, BUILDING b " + 
-				"WHERE " +  
-		  			"b.building_root_id = ? " +
-					"AND ts.building_id = b.id " +
-					"AND ts.lod2_multi_surface_id IS NOT NULL " +
-				"UNION " + 
-				"SELECT bi.lod2_geometry_id " + 
-				"FROM BUILDING b, BUILDING_INSTALLATION bi " + 
-				"WHERE " +  
-					"b.building_root_id = ? " +
-					"AND bi.building_id = b.id " +
-					"AND bi.lod2_geometry_id IS NOT NULL)";
-
-	private static final String BUILDING_FOOTPRINT_LOD2 =
-		"SELECT sg.geometry " +
-		"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
-		"WHERE " +
-			"ts.building_id = ? " +
-			"AND ts.type = 'GroundSurface' " +
-			"AND sg.root_id = ts.lod2_multi_surface_id " +
-			"AND sg.geometry IS NOT NULL " +
-		"ORDER BY ts.building_id";
-
-	private static final String BUILDING_GEOMETRY_LOD1 =
-		"SELECT sg.geometry, NULL as type, sg.id " +
-		"FROM SURFACE_GEOMETRY sg, BUILDING b " +
-		"WHERE " +
-			"b.building_root_id = ? " +
-			"AND sg.root_id = b.lod1_geometry_id " +
-			"AND sg.geometry IS NOT NULL " +
-		"ORDER BY b.id";
-
-	private static final String BUILDING_GEOMETRY_HIGHLIGHTING_LOD1 =
-		"SELECT sg.geometry, sg.id " +
-		"FROM SURFACE_GEOMETRY sg, BUILDING b " +
-		"WHERE " +
-			"b.building_root_id = ? " +
-			"AND sg.root_id = b.lod1_geometry_id " +
-			"AND sg.geometry IS NOT NULL ";
-
-	private static final String BUILDING_GEOMETRY_HIGHLIGHTING_LOD2 =
-		"SELECT sg.geometry, sg.id " +
-		"FROM SURFACE_GEOMETRY sg " +
-		"WHERE " +
-			"sg.geometry IS NOT NULL " +
-			"AND sg.root_id IN (" +
-				"SELECT b.lod2_geometry_id " + 
-				"FROM BUILDING b " + 
-				"WHERE " +  
-					"b.building_root_id = ? " +
-					"AND b.lod2_geometry_id IS NOT NULL " +
-				"UNION " + 
-				"SELECT ts.lod2_multi_surface_id " + 
-				"FROM THEMATIC_SURFACE ts, BUILDING b " + 
-				"WHERE " +  
-					"b.building_root_id = ? " +
-					"AND ts.building_id = b.id " +
-					"AND ts.lod2_multi_surface_id IS NOT NULL)";
-
-	private static final String BUILDING_GEOMETRY_HIGHLIGHTING_LOD3 =
-		"SELECT sg.geometry, sg.id " +
-		"FROM SURFACE_GEOMETRY sg " +
-		"WHERE " +
-			"sg.geometry IS NOT NULL " +
-			"AND sg.root_id IN (" + BUILDING_COLLADA_LOD3_ROOT_IDS + ")";
+	public static final String BUILDING_PARTS_FROM_BUILDING =
+			"SELECT id FROM BUILDING WHERE building_root_id = ?";
 	
-	
-	private static final String BUILDING_GEOMETRY_HIGHLIGHTING_LOD4 =
-		"SELECT sg.geometry, sg.id " +
-		"FROM SURFACE_GEOMETRY sg " +
-		"WHERE " +
-			"sg.geometry IS NOT NULL " +
-			"AND sg.root_id IN (" +
-				"SELECT b.lod4_geometry_id " + 
-				"FROM BUILDING b " + 
-				"WHERE " +  
-					"b.building_root_id = ? " +
-					"AND b.lod4_geometry_id IS NOT NULL " +
-				"UNION " + 
-				"SELECT ts.lod4_multi_surface_id " + 
-				"FROM THEMATIC_SURFACE ts, BUILDING b " + 
-				"WHERE " +  
-					"b.building_root_id = ? " +
-					"AND ts.building_id = b.id " +
-					"AND ts.lod4_multi_surface_id IS NOT NULL " +
-				"UNION " + 
-				"SELECT o.lod4_multi_surface_id " + 
-				"FROM BUILDING b, THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
-				"WHERE " +  
-					"b.building_root_id = ? " +
-					"AND ts.building_id = b.id " +
-					"AND ts.lod4_multi_surface_id IS NOT NULL " +
-					"AND o2ts.thematic_surface_id = ts.id " +
-					"AND o.id = o2ts.opening_id)";
+	private static final String BUILDING_PART_FOOTPRINT_LOD4 =
+			"SELECT sg.geometry " +
+			"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
+			"WHERE " +
+				"ts.building_id = ? " +
+				"AND ts.type = 'GroundSurface' " +
+				"AND sg.root_id = ts.lod4_multi_surface_id " +
+				"AND sg.geometry IS NOT NULL "; // +
+//			"ORDER BY ts.building_id";
 
-	private static final HashMap<Integer, String> singleBuildingQueriesLod4 = new HashMap<Integer, String>();
-    static {
-    	singleBuildingQueriesLod4.put(DisplayForm.FOOTPRINT, BUILDING_FOOTPRINT_LOD4);
-    	singleBuildingQueriesLod4.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD4);
-    	singleBuildingQueriesLod4.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD4);
-    	singleBuildingQueriesLod4.put(DisplayForm.COLLADA, BUILDING_COLLADA_LOD4_ROOT_IDS);
-    }
-
-    private static final HashMap<Integer, String> singleBuildingQueriesLod3 = new HashMap<Integer, String>();
-    static {
-    	singleBuildingQueriesLod3.put(DisplayForm.FOOTPRINT, BUILDING_FOOTPRINT_LOD3);
-    	singleBuildingQueriesLod3.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD3);
-    	singleBuildingQueriesLod3.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD3);
-    	singleBuildingQueriesLod3.put(DisplayForm.COLLADA, BUILDING_COLLADA_LOD3_ROOT_IDS);
-    }
-
-    private static final HashMap<Integer, String> singleBuildingQueriesLod2 = new HashMap<Integer, String>();
-    static {
-    	singleBuildingQueriesLod2.put(DisplayForm.FOOTPRINT, BUILDING_FOOTPRINT_LOD2);
-    	singleBuildingQueriesLod2.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD2);
-    	singleBuildingQueriesLod2.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD2);
-    	singleBuildingQueriesLod2.put(DisplayForm.COLLADA, BUILDING_COLLADA_LOD2_ROOT_IDS);
-    }
-
-    public static String getSingleBuildingQuery (int lodToExportFrom, DisplayForm displayForm) {
-    	String query = null;
-    	switch (lodToExportFrom) {
-    		case 1:
-    	    	query = singleBuildingQueriesLod1.get(displayForm.getForm());
-    	    	break;
-    		case 2:
-    	    	query = singleBuildingQueriesLod2.get(displayForm.getForm());
-    	    	break;
-    		case 3:
-    	    	query = singleBuildingQueriesLod3.get(displayForm.getForm());
-    	    	break;
-    		case 4:
-    	    	query = singleBuildingQueriesLod4.get(displayForm.getForm());
-    	    	break;
-    	    default:
-    	    	Logger.getInstance().log(LogLevel.INFO, "No single building query found for LoD" + lodToExportFrom);
-    	}
-    	
-//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
-    	return query;
-    }
-
-    public static String getSingleBuildingHighlightingQuery (int lodToExportFrom) {
-    	String query = null;
-    	switch (lodToExportFrom) {
-    		case 1:
-    			query = BUILDING_GEOMETRY_HIGHLIGHTING_LOD1;
-    	    	break;
-    		case 2:
-    			query = BUILDING_GEOMETRY_HIGHLIGHTING_LOD2;
-    			break;
-    		case 3:
-    			query = BUILDING_GEOMETRY_HIGHLIGHTING_LOD3;
-    	    	break;
-    		case 4:
-    			query = BUILDING_GEOMETRY_HIGHLIGHTING_LOD4;
-    	    	break;
-    	    default:
-    	    	Logger.getInstance().log(LogLevel.INFO, "No single building highlighting query found for LoD" + lodToExportFrom);
-    	}
-    	
-//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
-    	return query;
-    }
-
-    private static final String BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER =
-		"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
-		"FROM (" +
-
-		"SELECT * FROM (" +
-		"SELECT * FROM (" +
-		
-    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-//    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-//		"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
-//		"SELECT sg.geometry AS simple_geom " +
-		"FROM SURFACE_GEOMETRY sg " +
-		"WHERE " +
-		  "sg.root_id IN( " +
-		     "SELECT b.lod<LoD>_geometry_id " +
-		     "FROM BUILDING b " +
-		     "WHERE "+
-		       "b.building_root_id = ? " +
-		       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
-		     "UNION " +
-		     "SELECT ts.lod<LoD>_multi_surface_id " +
-		     "FROM BUILDING b, THEMATIC_SURFACE ts " +
-		     "WHERE "+
-		       "b.building_root_id = ? " +
-		       "AND ts.building_id = b.id " +
-		       "AND ts.lod<LoD>_multi_surface_id IS NOT NULL "+
-		  ") " +
-		  "AND sg.geometry IS NOT NULL" +
-		
-		") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
-		") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
-		
-		") " +
-		"GROUP BY mod(rownum, <GROUP_BY_1>) " +
-		") " +
-		"GROUP BY mod (rownum, <GROUP_BY_2>) " +
-		") " +
-		"GROUP BY mod (rownum, <GROUP_BY_3>) " +
-		")";
-
-    private static final String BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD1 =
-		"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-		"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
-		"FROM (" +
-
-		"SELECT * FROM (" +
-		"SELECT * FROM (" +
-		
-    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-//    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-//		"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
-//		"SELECT sg.geometry AS simple_geom " +
-		"FROM SURFACE_GEOMETRY sg " +
-		"WHERE " +
-		  "sg.root_id IN( " +
-		     "SELECT b.lod<LoD>_geometry_id " +
-		     "FROM BUILDING b " +
-		     "WHERE "+
-		       "b.building_root_id = ? " +
-		       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
-		  ") " +
-		  "AND sg.geometry IS NOT NULL" +
-		
-		") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
-		") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
-		
-		") " +
-		"GROUP BY mod(rownum, <GROUP_BY_1>) " +
-		") " +
-		"GROUP BY mod (rownum, <GROUP_BY_2>) " +
-		") " +
-		"GROUP BY mod (rownum, <GROUP_BY_3>) " +
-		")";
-
-    public static String getBuildingAggregateGeometries (double tolerance,
-    													 int srid2D,
-    													 int lodToExportFrom,
-    													 double groupBy1,
-    													 double groupBy2,
-    													 double groupBy3) {
-    	if (lodToExportFrom > 1) {
-    	   	return BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER.replace("<TOLERANCE>", String.valueOf(tolerance))
-    	   															   .replace("<2D_SRID>", String.valueOf(srid2D))
-    	   															   .replace("<LoD>", String.valueOf(lodToExportFrom))
-    	   															   .replace("<GROUP_BY_1>", String.valueOf(groupBy1))
-    	   															   .replace("<GROUP_BY_2>", String.valueOf(groupBy2))
-    	   															   .replace("<GROUP_BY_3>", String.valueOf(groupBy3));
-    	}
-    	// else
-	   	return BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD1.replace("<TOLERANCE>", String.valueOf(tolerance))
-		   												 .replace("<2D_SRID>", String.valueOf(srid2D))
-		   												 .replace("<LoD>", String.valueOf(lodToExportFrom))
-		   												 .replace("<GROUP_BY_1>", String.valueOf(groupBy1))
-		   												 .replace("<GROUP_BY_2>", String.valueOf(groupBy2))
-		   												 .replace("<GROUP_BY_3>", String.valueOf(groupBy3));
-    }
-
-	private static final String BUILDING_FOOTPRINT_LOD1 =
-		BUILDING_GET_AGGREGATE_GEOMETRIES_FOR_LOD1.replace("<TOLERANCE>", "0.001")
-					 							  .replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
-					 							  .replace("<LoD>", "1")
-					 							  .replace("<GROUP_BY_1>", "256")
-					 							  .replace("<GROUP_BY_2>", "64")
-					 							  .replace("<GROUP_BY_3>", "16");
-
-	private static final HashMap<Integer, String> singleBuildingQueriesLod1 = new HashMap<Integer, String>();
-    static {
-    	singleBuildingQueriesLod1.put(DisplayForm.FOOTPRINT, BUILDING_FOOTPRINT_LOD1);
-    	singleBuildingQueriesLod1.put(DisplayForm.EXTRUDED, BUILDING_FOOTPRINT_LOD1);
-    	singleBuildingQueriesLod1.put(DisplayForm.GEOMETRY, BUILDING_GEOMETRY_LOD1);
-    }
+		private static final String BUILDING_PART_COLLADA_LOD4_ROOT_IDS =
+			"SELECT b.lod4_geometry_id " + 
+			"FROM BUILDING b " + 
+			"WHERE " +  
+				"b.id = ? " +
+				"AND b.lod4_geometry_id IS NOT NULL " +
+			"UNION " + 
+			"SELECT ts.lod4_multi_surface_id " + 
+			"FROM THEMATIC_SURFACE ts " + 
+			"WHERE " +  
+				"ts.building_id = ? " +
+				"AND ts.lod4_multi_surface_id IS NOT NULL " +
+			"UNION " + 
+	/*
+			"SELECT r.lod4_geometry_id " + 
+			"FROM ROOM r " + 
+			"WHERE " +  
+	  			"r.building_id = ? " +
+				"AND r.lod4_geometry_id IS NOT NULL " +
+	*/
+			"SELECT ts.lod4_multi_surface_id " + 
+			"FROM ROOM r, THEMATIC_SURFACE ts " + 
+			"WHERE " +  
+	  			"r.building_id = ? " +
+				"AND ts.room_id = r.id " +
+				"AND ts.lod4_multi_surface_id IS NOT NULL " +
+			"UNION " + 
+			"SELECT bf.lod4_geometry_id " + 
+			"FROM ROOM r, BUILDING_FURNITURE bf " + 
+			"WHERE " +  
+				"r.building_id = ? " +
+				"AND bf.room_id = r.id " +
+				"AND bf.lod4_geometry_id IS NOT NULL " +
+			"UNION " + 
+			"SELECT bi.lod4_geometry_id " + 
+			"FROM ROOM r, BUILDING_INSTALLATION bi " + 
+			"WHERE " +  
+				"r.building_id = ? " +
+				"AND bi.room_id = r.id " +
+				"AND bi.lod4_geometry_id IS NOT NULL " +
+			"UNION " + 
+			"SELECT o.lod4_multi_surface_id " + 
+			"FROM THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
+			"WHERE " +  
+				"ts.building_id = ? " +
+				"AND ts.lod4_multi_surface_id IS NOT NULL " +
+				"AND o2ts.thematic_surface_id = ts.id " +
+				"AND o.id = o2ts.opening_id";
 				
+		private static final String BUILDING_PART_GEOMETRY_LOD4 =
+			"SELECT sg.geometry, ts.type, sg.id " +
+			"FROM SURFACE_GEOMETRY sg " +
+			"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod4_multi_surface_id = sg.root_id " +
+			"WHERE " +
+				"sg.geometry IS NOT NULL " +
+				"AND sg.root_id IN (" + BUILDING_PART_COLLADA_LOD4_ROOT_IDS + ")";
+
+		private static final String BUILDING_PART_FOOTPRINT_LOD3 =
+			"SELECT sg.geometry " +
+			"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
+			"WHERE " +
+				"ts.building_id = ? " +
+				"AND ts.type = 'GroundSurface' " +
+				"AND sg.root_id = ts.lod3_multi_surface_id " +
+				"AND sg.geometry IS NOT NULL "; // +
+//			"ORDER BY ts.building_id";
+
+		private static final String BUILDING_PART_COLLADA_LOD3_ROOT_IDS =
+			"SELECT b.lod3_geometry_id " + 
+			"FROM BUILDING b " + 
+			"WHERE " +  
+				"b.id = ? " +
+				"AND b.lod3_geometry_id IS NOT NULL " +
+			"UNION " + 
+			"SELECT ts.lod3_multi_surface_id " + 
+			"FROM THEMATIC_SURFACE ts " + 
+			"WHERE " +  
+				"ts.building_id = ? " +
+				"AND ts.lod3_multi_surface_id IS NOT NULL " +
+			"UNION " + 
+			"SELECT bi.lod3_geometry_id " + 
+			"FROM BUILDING_INSTALLATION bi " + 
+			"WHERE " +  
+	  			"bi.building_id = ? " +
+				"AND bi.lod3_geometry_id IS NOT NULL " +
+			"UNION " + 
+			"SELECT o.lod3_multi_surface_id " + 
+			"FROM THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
+			"WHERE " +  
+				"ts.building_id = ? " +
+				"AND ts.lod3_multi_surface_id IS NOT NULL " +
+				"AND o2ts.thematic_surface_id = ts.id " +
+				"AND o.id = o2ts.opening_id";
+
+		private static final String BUILDING_PART_GEOMETRY_LOD3 =
+			"SELECT sg.geometry, ts.type, sg.id " +
+			"FROM SURFACE_GEOMETRY sg " +
+			"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod3_multi_surface_id = sg.root_id " +
+			"WHERE " +
+				"sg.geometry IS NOT NULL " +
+				"AND sg.root_id IN (" + BUILDING_PART_COLLADA_LOD3_ROOT_IDS	+ ")";
+
+		private static final String BUILDING_PART_COLLADA_LOD2_ROOT_IDS =
+			"SELECT b.lod2_geometry_id " + 
+			"FROM BUILDING b " + 
+			"WHERE " +  
+				"b.id = ? " +
+				"AND b.lod2_geometry_id IS NOT NULL " +
+			"UNION " + 
+			"SELECT ts.lod2_multi_surface_id " + 
+			"FROM THEMATIC_SURFACE ts " + 
+			"WHERE " +  
+				"ts.building_id = ? " +
+				"AND ts.lod2_multi_surface_id IS NOT NULL " +
+			"UNION " + 
+			"SELECT bi.lod2_geometry_id " + 
+			"FROM BUILDING_INSTALLATION bi " + 
+			"WHERE " +  
+	  			"bi.building_id = ? " +
+				"AND bi.lod2_geometry_id IS NOT NULL";
+
+		private static final String COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 =
+			"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, " +
+					"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
+					"sd.tex_image_uri, sd.tex_image, tp.texture_coordinates, a.theme " +
+			"FROM SURFACE_GEOMETRY sg " +
+				"LEFT JOIN TEXTUREPARAM tp ON tp.surface_geometry_id = sg.id " + 
+				"LEFT JOIN SURFACE_DATA sd ON sd.id = tp.surface_data_id " +
+				"LEFT JOIN APPEAR_TO_SURFACE_DATA a2sd ON a2sd.surface_data_id = sd.id " +
+				"LEFT JOIN APPEARANCE a ON a2sd.appearance_id = a.id " +
+			"WHERE " +
+				"sg.root_id = ? "; // +
+//				"AND (a.theme = ? OR a.theme IS NULL) " +
+//				"ORDER BY sg.parent_id ASC"; // own root surfaces first
+
+		public static final String[] COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID = new String[] {
+			COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NULL", // parents
+			COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NOT NULL" // elementary surfaces
+		};
+
+		private static final String BUILDING_PART_GEOMETRY_LOD2 =
+			"SELECT sg.geometry, ts.type, sg.id " +
+			"FROM SURFACE_GEOMETRY sg " +
+			"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod2_multi_surface_id = sg.root_id " +
+			"WHERE " +
+				"sg.geometry IS NOT NULL " +
+				"AND sg.root_id IN (" +
+					"SELECT b.lod2_geometry_id " + 
+					"FROM BUILDING b " + 
+					"WHERE " +  
+						"b.id = ? " +
+						"AND b.lod2_geometry_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT ts.lod2_multi_surface_id " + 
+					"FROM THEMATIC_SURFACE ts " + 
+					"WHERE " +  
+			  			"ts.building_id = ? " +
+						"AND ts.lod2_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT bi.lod2_geometry_id " + 
+					"FROM BUILDING_INSTALLATION bi " + 
+					"WHERE " +  
+						"bi.building_id = ? " +
+						"AND bi.lod2_geometry_id IS NOT NULL)";
+
+		private static final String BUILDING_PART_FOOTPRINT_LOD2 =
+			"SELECT sg.geometry " +
+			"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
+			"WHERE " +
+				"ts.building_id = ? " +
+				"AND ts.type = 'GroundSurface' " +
+				"AND sg.root_id = ts.lod2_multi_surface_id " +
+				"AND sg.geometry IS NOT NULL " +
+			"ORDER BY ts.building_id";
+
+		private static final String BUILDING_PART_GEOMETRY_LOD1 =
+			"SELECT sg.geometry, NULL as type, sg.id " +
+			"FROM SURFACE_GEOMETRY sg, BUILDING b " +
+			"WHERE " +
+				"b.id = ? " +
+				"AND sg.root_id = b.lod1_geometry_id " +
+				"AND sg.geometry IS NOT NULL "; // +
+//			"ORDER BY b.id";
+
+		private static final String BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD1 =
+			"SELECT sg.geometry, sg.id " +
+			"FROM SURFACE_GEOMETRY sg, BUILDING b " +
+			"WHERE " +
+				"b.id = ? " +
+				"AND sg.root_id = b.lod1_geometry_id " +
+				"AND sg.geometry IS NOT NULL ";
+
+		private static final String BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD2 =
+			"SELECT sg.geometry, sg.id " +
+			"FROM SURFACE_GEOMETRY sg " +
+			"WHERE " +
+				"sg.geometry IS NOT NULL " +
+				"AND sg.root_id IN (" +
+					"SELECT b.lod2_geometry_id " + 
+					"FROM BUILDING b " + 
+					"WHERE " +  
+						"b.id = ? " +
+						"AND b.lod2_geometry_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT ts.lod2_multi_surface_id " + 
+					"FROM THEMATIC_SURFACE ts " + 
+					"WHERE " +  
+						"ts.building_id = ? " +
+						"AND ts.lod2_multi_surface_id IS NOT NULL)";
+
+		private static final String BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD3 =
+			"SELECT sg.geometry, sg.id " +
+			"FROM SURFACE_GEOMETRY sg " +
+			"WHERE " +
+				"sg.geometry IS NOT NULL " +
+				"AND sg.root_id IN (" + BUILDING_PART_COLLADA_LOD3_ROOT_IDS + ")";
+		
+		
+		private static final String BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD4 =
+			"SELECT sg.geometry, sg.id " +
+			"FROM SURFACE_GEOMETRY sg " +
+			"WHERE " +
+				"sg.geometry IS NOT NULL " +
+				"AND sg.root_id IN (" +
+					"SELECT b.lod4_geometry_id " + 
+					"FROM BUILDING b " + 
+					"WHERE " +  
+						"b.id = ? " +
+						"AND b.lod4_geometry_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT ts.lod4_multi_surface_id " + 
+					"FROM THEMATIC_SURFACE ts " + 
+					"WHERE " +  
+						"ts.building_id = ? " +
+						"AND ts.lod4_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT o.lod4_multi_surface_id " + 
+					"FROM THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
+					"WHERE " +  
+						"ts.building_id = ? " +
+						"AND ts.lod4_multi_surface_id IS NOT NULL " +
+						"AND o2ts.thematic_surface_id = ts.id " +
+						"AND o.id = o2ts.opening_id)";
+
+
+	    private static final String BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER =
+			"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (" +
+
+			"SELECT * FROM (" +
+			"SELECT * FROM (" +
+			
+	    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+//	    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+//			"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
+//			"SELECT sg.geometry AS simple_geom " +
+			"FROM SURFACE_GEOMETRY sg " +
+			"WHERE " +
+			  "sg.root_id IN( " +
+			     "SELECT b.lod<LoD>_geometry_id " +
+			     "FROM BUILDING b " +
+			     "WHERE "+
+			       "b.id = ? " +
+			       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
+			     "UNION " +
+			     "SELECT ts.lod<LoD>_multi_surface_id " +
+			     "FROM THEMATIC_SURFACE ts " +
+			     "WHERE "+
+			       "ts.building_id = ? " +
+			       "AND ts.lod<LoD>_multi_surface_id IS NOT NULL "+
+			  ") " +
+			  "AND sg.geometry IS NOT NULL" +
+			
+			") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
+			") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
+			
+			") " +
+			"GROUP BY mod(rownum, <GROUP_BY_1>) " +
+			") " +
+			"GROUP BY mod (rownum, <GROUP_BY_2>) " +
+			") " +
+			"GROUP BY mod (rownum, <GROUP_BY_3>) " +
+			")";
+
+	    private static final String BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1 =
+			"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (" +
+
+			"SELECT * FROM (" +
+			"SELECT * FROM (" +
+			
+	    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+//	    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+//			"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
+//			"SELECT sg.geometry AS simple_geom " +
+			"FROM SURFACE_GEOMETRY sg " +
+			"WHERE " +
+			  "sg.root_id IN( " +
+			     "SELECT b.lod<LoD>_geometry_id " +
+			     "FROM BUILDING b " +
+			     "WHERE "+
+			       "b.id = ? " +
+			       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
+			  ") " +
+			  "AND sg.geometry IS NOT NULL" +
+			
+			") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
+			") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
+			
+			") " +
+			"GROUP BY mod(rownum, <GROUP_BY_1>) " +
+			") " +
+			"GROUP BY mod (rownum, <GROUP_BY_2>) " +
+			") " +
+			"GROUP BY mod (rownum, <GROUP_BY_3>) " +
+			")";
+
+	    public static String getBuildingPartAggregateGeometries (double tolerance,
+	    													 int srid2D,
+	    													 int lodToExportFrom,
+	    													 double groupBy1,
+	    													 double groupBy2,
+	    													 double groupBy3) {
+	    	if (lodToExportFrom > 1) {
+	    	   	return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER.replace("<TOLERANCE>", String.valueOf(tolerance))
+	    	   															   .replace("<2D_SRID>", String.valueOf(srid2D))
+	    	   															   .replace("<LoD>", String.valueOf(lodToExportFrom))
+	    	   															   .replace("<GROUP_BY_1>", String.valueOf(groupBy1))
+	    	   															   .replace("<GROUP_BY_2>", String.valueOf(groupBy2))
+	    	   															   .replace("<GROUP_BY_3>", String.valueOf(groupBy3));
+	    	}
+	    	// else
+		   	return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1.replace("<TOLERANCE>", String.valueOf(tolerance))
+			   												 .replace("<2D_SRID>", String.valueOf(srid2D))
+			   												 .replace("<LoD>", String.valueOf(lodToExportFrom))
+			   												 .replace("<GROUP_BY_1>", String.valueOf(groupBy1))
+			   												 .replace("<GROUP_BY_2>", String.valueOf(groupBy2))
+			   												 .replace("<GROUP_BY_3>", String.valueOf(groupBy3));
+	    }
+
+		private static final String BUILDING_PART_FOOTPRINT_LOD1 =
+			BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1.replace("<TOLERANCE>", "0.001")
+						 							  .replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
+						 							  .replace("<LoD>", "1")
+						 							  .replace("<GROUP_BY_1>", "256")
+						 							  .replace("<GROUP_BY_2>", "64")
+						 							  .replace("<GROUP_BY_3>", "16");
+
+		private static final HashMap<Integer, String> buildingPartQueriesLod4 = new HashMap<Integer, String>();
+	    static {
+	    	buildingPartQueriesLod4.put(DisplayForm.FOOTPRINT, BUILDING_PART_FOOTPRINT_LOD4);
+	    	buildingPartQueriesLod4.put(DisplayForm.EXTRUDED, BUILDING_PART_FOOTPRINT_LOD4);
+	    	buildingPartQueriesLod4.put(DisplayForm.GEOMETRY, BUILDING_PART_GEOMETRY_LOD4);
+	    	buildingPartQueriesLod4.put(DisplayForm.COLLADA, BUILDING_PART_COLLADA_LOD4_ROOT_IDS);
+	    }
+
+	    private static final HashMap<Integer, String> buildingPartQueriesLod3 = new HashMap<Integer, String>();
+	    static {
+	    	buildingPartQueriesLod3.put(DisplayForm.FOOTPRINT, BUILDING_PART_FOOTPRINT_LOD3);
+	    	buildingPartQueriesLod3.put(DisplayForm.EXTRUDED, BUILDING_PART_FOOTPRINT_LOD3);
+	    	buildingPartQueriesLod3.put(DisplayForm.GEOMETRY, BUILDING_PART_GEOMETRY_LOD3);
+	    	buildingPartQueriesLod3.put(DisplayForm.COLLADA, BUILDING_PART_COLLADA_LOD3_ROOT_IDS);
+	    }
+
+	    private static final HashMap<Integer, String> buildingPartQueriesLod2 = new HashMap<Integer, String>();
+	    static {
+	    	buildingPartQueriesLod2.put(DisplayForm.FOOTPRINT, BUILDING_PART_FOOTPRINT_LOD2);
+	    	buildingPartQueriesLod2.put(DisplayForm.EXTRUDED, BUILDING_PART_FOOTPRINT_LOD2);
+	    	buildingPartQueriesLod2.put(DisplayForm.GEOMETRY, BUILDING_PART_GEOMETRY_LOD2);
+	    	buildingPartQueriesLod2.put(DisplayForm.COLLADA, BUILDING_PART_COLLADA_LOD2_ROOT_IDS);
+	    }
+
+		private static final HashMap<Integer, String> buildingPartQueriesLod1 = new HashMap<Integer, String>();
+	    static {
+	    	buildingPartQueriesLod1.put(DisplayForm.FOOTPRINT, BUILDING_PART_FOOTPRINT_LOD1);
+	    	buildingPartQueriesLod1.put(DisplayForm.EXTRUDED, BUILDING_PART_FOOTPRINT_LOD1);
+	    	buildingPartQueriesLod1.put(DisplayForm.GEOMETRY, BUILDING_PART_GEOMETRY_LOD1);
+	    }
+
+	    public static String getBuildingPartQuery (int lodToExportFrom, DisplayForm displayForm) {
+	    	String query = null;
+	    	switch (lodToExportFrom) {
+	    		case 1:
+	    	    	query = buildingPartQueriesLod1.get(displayForm.getForm());
+	    	    	break;
+	    		case 2:
+	    	    	query = buildingPartQueriesLod2.get(displayForm.getForm());
+	    	    	break;
+	    		case 3:
+	    	    	query = buildingPartQueriesLod3.get(displayForm.getForm());
+	    	    	break;
+	    		case 4:
+	    	    	query = buildingPartQueriesLod4.get(displayForm.getForm());
+	    	    	break;
+	    	    default:
+	    	    	Logger.getInstance().log(LogLevel.INFO, "No BuildingPart query found for LoD" + lodToExportFrom);
+	    	}
+	    	
+//	    	Logger.getInstance().log(LogLevelType.DEBUG, query);
+	    	return query;
+	    }
+
+	    public static String getBuildingPartHighlightingQuery (int lodToExportFrom) {
+	    	String query = null;
+	    	switch (lodToExportFrom) {
+	    		case 1:
+	    			query = BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD1;
+	    	    	break;
+	    		case 2:
+	    			query = BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD2;
+	    			break;
+	    		case 3:
+	    			query = BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD3;
+	    	    	break;
+	    		case 4:
+	    			query = BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD4;
+	    	    	break;
+	    	    default:
+	    	    	Logger.getInstance().log(LogLevel.INFO, "No BuildingPart highlighting query found for LoD" + lodToExportFrom);
+	    	}
+	    	
+//	    	Logger.getInstance().log(LogLevelType.DEBUG, query);
+	    	return query;
+	    }
+
 	// ----------------------------------------------------------------------
 	// CITY OBJECT GROUP QUERIES
 	// ----------------------------------------------------------------------
