@@ -248,7 +248,6 @@ public class DBSplitter {
 		} finally {
 			if (connection != null) {
 				try {
-					connection.commit();
 					connection.close();
 				} catch (SQLException sqlEx) {
 					//
@@ -514,8 +513,6 @@ public class DBSplitter {
 				int params = bboxFilter == null ? 2 : bboxFilter.length * 2;
 				for (int j = 1; j <= params; ++j)
 					memberStmt.setLong(j, groupId);
-			
-			memberStmt.close();
 
 				rs = memberStmt.executeQuery();
 
