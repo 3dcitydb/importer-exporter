@@ -240,11 +240,11 @@ public class Building extends KmlGenericObject{
 								break; // result set not empty
 							}
 						}
-//						else {
-							try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
-							rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
-							try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
-//						}
+
+						try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
+						try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+
 					}
 					catch (Exception e2) {
 						try { if (rs != null) rs.close(); } catch (SQLException sqle) {}

@@ -146,7 +146,13 @@ public class Transportation extends KmlGenericObject{
 			}
 
 			if (rs == null) { // result empty, give up
-				String fromMessage = lodToExportFrom == 5 ? " from any LoD": " from LoD" + lodToExportFrom;
+				String fromMessage = " from LoD" + lodToExportFrom;
+				if (lodToExportFrom == 5) {
+					if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
+						fromMessage = ". LoD2 or higher required";
+					else
+						fromMessage = " from any LoD";
+				}
 				Logger.getInstance().info("Could not display object " + work.getGmlId() 
 						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
 			}
