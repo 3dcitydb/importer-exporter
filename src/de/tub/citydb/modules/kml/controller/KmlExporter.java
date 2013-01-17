@@ -626,7 +626,10 @@ public class KmlExporter implements EventHandler {
 				Logger.getInstance().info("Writing file: " + filename + ".json");
 				File jsonFile = new File(path + File.separator + filename + ".json");
 				FileOutputStream outputStream = new FileOutputStream(jsonFile);
-				outputStream.write("{\n".getBytes(CHARSET));
+				if (config.getProject().getKmlExporter().isWriteJSONPFile())
+					outputStream.write((config.getProject().getKmlExporter().getCallbackNameJSONP() + "({\n").getBytes(CHARSET));
+				else
+					outputStream.write("{\n".getBytes(CHARSET));
 
 				Iterator<Long> iterator = alreadyExported.keySet().iterator();
 				while (iterator.hasNext()) {
@@ -638,7 +641,10 @@ public class KmlExporter implements EventHandler {
 					}
 				}
 
-				outputStream.write("\n}\n".getBytes(CHARSET));
+				if (config.getProject().getKmlExporter().isWriteJSONPFile())
+					outputStream.write("\n});\n".getBytes(CHARSET));
+				else
+					outputStream.write("\n}\n".getBytes(CHARSET));
 				outputStream.close();
 			}
 			catch (IOException ioe) {

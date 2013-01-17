@@ -41,6 +41,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 
@@ -67,12 +68,15 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private JFormattedTextField visibleFromText;
 	private JLabel pixelsLabel = new JLabel();
 	private JLabel mLabel = new JLabel("m.");
-	private JCheckBox writeJSONCheckbox = new JCheckBox();
 	private JLabel viewRefreshModeLabel = new JLabel();
 	private JComboBox viewRefreshModeComboBox = new JComboBox();
 	private JLabel viewRefreshTimeLabel = new JLabel();
 	private JLabel sLabel = new JLabel("s.");
 	private JFormattedTextField viewRefreshTimeText;
+	private JCheckBox writeJSONCheckbox = new JCheckBox();
+	private JCheckBox writeJSONPCheckbox = new JCheckBox();
+	private JLabel callbackNameJSONPLabel = new JLabel("s.");
+	private JTextField callbackNameJSONPText = new JTextField();
 	
 	
 	public GeneralPanel(Config config) {
@@ -120,6 +124,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (viewRefreshTime != kmlExporter.getViewRefreshTime()) return true;
 
 		if (writeJSONCheckbox.isSelected() != kmlExporter.isWriteJSONFile()) return true;
+		if (writeJSONPCheckbox.isSelected() != kmlExporter.isWriteJSONPFile()) return true;
+		if (!callbackNameJSONPText.getText().trim().equals(kmlExporter.getCallbackNameJSONP())) return true;
 
 		return false;
 	}
@@ -139,6 +145,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		showTileBordersCheckbox.setIconTextGap(10);
 		oneFilePerObjectCheckbox.setIconTextGap(10);
 		writeJSONCheckbox.setIconTextGap(10);
+		writeJSONPCheckbox.setIconTextGap(10);
 
 		generalPanel.add(kmzCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
 
@@ -147,20 +154,20 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		generalPanel.add(showTileBordersCheckbox, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
 		
 		autoTileSideLengthText = new JFormattedTextField(threeIntFormat);
-		generalPanel.add(autoTileSideLengthLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
+		generalPanel.add(autoTileSideLengthLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.WEST,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
 		generalPanel.add(autoTileSideLengthText, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		GridBagConstraints ml = GuiUtil.setConstraints(2,3,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		ml.anchor = GridBagConstraints.WEST;
 		generalPanel.add(mLabel, ml);
 
-		generalPanel.add(oneFilePerObjectCheckbox, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		generalPanel.add(oneFilePerObjectCheckbox, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,0));
 
 		visibleFromText = new JFormattedTextField(threeIntFormat);
-		GridBagConstraints vfl = GuiUtil.setConstraints(0,5,1.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
+		GridBagConstraints vfl = GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
 		vfl.anchor = GridBagConstraints.EAST;
 		generalPanel.add(visibleFromLabel, vfl);
 		generalPanel.add(visibleFromText, GuiUtil.setConstraints(1,5,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		GridBagConstraints pl = GuiUtil.setConstraints(2,5,1.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		GridBagConstraints pl = GuiUtil.setConstraints(2,5,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		pl.anchor = GridBagConstraints.WEST;
 		generalPanel.add(pixelsLabel, pl);
 
@@ -181,9 +188,12 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		sl.anchor = GridBagConstraints.WEST;
 		generalPanel.add(sLabel, sl);
 
-		generalPanel.add(writeJSONCheckbox, GuiUtil.setConstraints(0,8,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
+		generalPanel.add(writeJSONCheckbox, GuiUtil.setConstraints(0,8,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,0));
+		generalPanel.add(writeJSONPCheckbox, GuiUtil.setConstraints(0,9,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,0,0,1));
+		generalPanel.add(callbackNameJSONPLabel, GuiUtil.setConstraints(0,10,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		generalPanel.add(callbackNameJSONPText, GuiUtil.setConstraints(1,10,1.0,0.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
-		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, visibleFromText, viewRefreshTimeText);
+		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, visibleFromText, viewRefreshTimeText, callbackNameJSONPText);
 
 		oneFilePerObjectCheckbox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -192,6 +202,18 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		});
 
 		viewRefreshModeComboBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setEnabledComponents();
+			}
+		});
+
+		writeJSONCheckbox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setEnabledComponents();
+			}
+		});
+
+		writeJSONPCheckbox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setEnabledComponents();
 			}
@@ -210,6 +232,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		viewRefreshModeLabel.setText(Internal.I18N.getString("kmlExport.label.viewRefreshMode"));
 		viewRefreshTimeLabel.setText(Internal.I18N.getString("kmlExport.label.viewRefreshTime"));
 		writeJSONCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.writeJSONFile"));
+		writeJSONPCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.writeJSONPFile"));
+		callbackNameJSONPLabel.setText(Internal.I18N.getString("pref.kmlexport.label.callbackNameJSONP"));
 	}
 
 	@Override
@@ -225,6 +249,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		viewRefreshModeComboBox.setSelectedItem(kmlExporter.getViewRefreshMode());
 		viewRefreshTimeText.setText(String.valueOf(kmlExporter.getViewRefreshTime()));
 		writeJSONCheckbox.setSelected(kmlExporter.isWriteJSONFile());
+		writeJSONPCheckbox.setSelected(kmlExporter.isWriteJSONPFile());
+		callbackNameJSONPText.setText(kmlExporter.getCallbackNameJSONP());
 
 		setEnabledComponents();
 	}
@@ -258,6 +284,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		catch (NumberFormatException nfe) {}
 
 		kmlExporter.setWriteJSONFile(writeJSONCheckbox.isSelected());
+		kmlExporter.setWriteJSONPFile(writeJSONPCheckbox.isSelected());
+		kmlExporter.setCallbackNameJSONP(callbackNameJSONPText.getText().trim());
 	}
 
 	private void setEnabledComponents() {
@@ -271,6 +299,10 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		viewRefreshTimeLabel.setEnabled(oneFilePerObjectCheckbox.isSelected() && ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshModeComboBox.getSelectedItem()));
 		viewRefreshTimeText.setEnabled(oneFilePerObjectCheckbox.isSelected() && ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshModeComboBox.getSelectedItem()));
 		sLabel.setEnabled(oneFilePerObjectCheckbox.isSelected() && ViewRefreshModeEnumType.ON_STOP.value().equals(viewRefreshModeComboBox.getSelectedItem()));
+
+		writeJSONPCheckbox.setEnabled(writeJSONCheckbox.isSelected());
+		callbackNameJSONPLabel.setEnabled(writeJSONPCheckbox.isEnabled() && writeJSONPCheckbox.isSelected());
+		callbackNameJSONPText.setEnabled(writeJSONPCheckbox.isEnabled() && writeJSONPCheckbox.isSelected());
 	}
 
 	@Override

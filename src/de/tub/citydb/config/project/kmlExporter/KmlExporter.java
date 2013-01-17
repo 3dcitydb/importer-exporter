@@ -81,6 +81,8 @@ import de.tub.citydb.config.project.system.System;
 		"viewRefreshMode",
 		"viewRefreshTime",
 		"writeJSONFile",
+		"writeJSONPFile",
+		"callbackNameJSONP",
 		"appearanceTheme",
 		"altitudeMode",
 		"altitudeOffsetMode",
@@ -148,6 +150,8 @@ public class KmlExporter {
 	private String viewRefreshMode;
 	private double viewRefreshTime;
 	private boolean writeJSONFile;
+	private boolean writeJSONPFile;
+	private String callbackNameJSONP;
 	private String appearanceTheme;
 	private AltitudeMode altitudeMode;
 	private AltitudeOffsetMode altitudeOffsetMode;
@@ -199,6 +203,8 @@ public class KmlExporter {
 		viewRefreshMode = "onRegion";
 		viewRefreshTime = 1;
 		writeJSONFile = false;
+		writeJSONPFile = false;
+		callbackNameJSONP = "";
 		setAppearanceTheme(THEME_NONE);
 		setAltitudeMode(AltitudeMode.ABSOLUTE);
 		setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
@@ -581,6 +587,22 @@ public class KmlExporter {
 
 	public void setReliefBalloon(Balloon reliefBalloon) {
 		this.reliefBalloon = reliefBalloon;
+	}
+
+	public boolean isWriteJSONPFile() {
+		return writeJSONPFile;
+	}
+
+	public void setWriteJSONPFile(boolean writeJSONPFile) {
+		this.writeJSONPFile = writeJSONPFile;
+	}
+
+	public String getCallbackNameJSONP() {
+		return callbackNameJSONP;
+	}
+
+	public void setCallbackNameJSONP(String callbackNameJSONP) {
+		this.callbackNameJSONP = callbackNameJSONP;
 	}
 
 }
