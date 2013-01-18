@@ -1340,9 +1340,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					indexOfPossibleSeparators.add(condition.indexOf("<>"));
 					indexOfPossibleSeparators.add(condition.indexOf('<'));
 					indexOfPossibleSeparators.add(condition.indexOf('>'));
-					indexOfPossibleSeparators.add(condition.indexOf(" LIKE "));
-					indexOfPossibleSeparators.add(condition.indexOf(" IS NULL "));
-					indexOfPossibleSeparators.add(condition.indexOf(" IS NOT NULL "));
+					indexOfPossibleSeparators.add(condition.toUpperCase().indexOf(" IS NULL "));
+					indexOfPossibleSeparators.add(condition.toUpperCase().indexOf(" IS NOT NULL "));
+					indexOfPossibleSeparators.add(condition.toUpperCase().indexOf(" LIKE "));
 
 					int indexOfSeparator = Collections.max(indexOfPossibleSeparators);
 
