@@ -37,6 +37,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Iterator;
@@ -796,6 +797,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			fillStatementAndHtmlChunkList(templateString);
 		}
 		catch (Exception e) {
+//			Logger.getInstance().warn("Problem in BalloonTemplateHandler");
 			Logger.getInstance().warn(e.getMessage());
 		}
 	}
@@ -1042,11 +1044,12 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							int dimensions = surface.getDimension();
 //							double[] ordinatesArray = surface.getOrdinatesArray();
 							
-							double[] ordinatesArray = new double[surface.numPoints() * 3];
+							double[] ordinatesArray = new double[surface.numPoints() * dimensions];
 							
-							for (int i=0, j=0; i<surface.numPoints(); i++, j+=3){
+							for (int i=0, j=0; i<surface.numPoints(); i++, j+=dimensions){
 								ordinatesArray[j] = surface.getPoint(i).x;
 								ordinatesArray[j+1] = surface.getPoint(i).y;
+								if (dimensions < 3) continue;
 								ordinatesArray[j+2] = surface.getPoint(i).z;
 							}
 							
@@ -1071,8 +1074,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				}
 			}
 			catch (Exception e) {
-				Logger.getInstance().warn(e.getMessage());
 //				Logger.getInstance().warn("Exception when executing balloon statement: " + statement + "\n");
+				Logger.getInstance().warn(e.getMessage());
 //				e.printStackTrace();
 			}
 			finally {
@@ -1155,6 +1158,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 		}
 		catch (Exception e) {
+//			Logger.getInstance().warn("Exception when executing balloon statement: " + statement + "\n");
 			Logger.getInstance().warn(e.getMessage());
 		}
 		finally {
@@ -1364,11 +1368,23 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					}
 				}
 				catch (NumberFormatException nfe) {
-					int indexOfEqual = condition.indexOf('=');
-					if (indexOfEqual < 1) {
+					ArrayList<Integer> indexOfPossibleSeparators = new ArrayList<Integer>();
+					indexOfPossibleSeparators.add(condition.indexOf('='));
+					indexOfPossibleSeparators.add(condition.indexOf("!="));
+					indexOfPossibleSeparators.add(condition.indexOf("<>"));
+					indexOfPossibleSeparators.add(condition.indexOf('<'));
+					indexOfPossibleSeparators.add(condition.indexOf('>'));
+					indexOfPossibleSeparators.add(condition.indexOf(" LIKE "));
+					indexOfPossibleSeparators.add(condition.indexOf(" IS NULL "));
+					indexOfPossibleSeparators.add(condition.indexOf(" IS NOT NULL "));
+
+					int indexOfSeparator = Collections.max(indexOfPossibleSeparators);
+
+					if (indexOfSeparator < 1) {
 						throw new Exception("Invalid condition \"" + condition + "\" in statement \"" + rawStatement);
 					}
-					String conditionColumnName = condition.substring(0, indexOfEqual).trim();
+
+					String conditionColumnName = condition.substring(0, indexOfSeparator).trim();
 					if (!_3DCITYDB_TABLES_AND_COLUMNS.get(table).contains(conditionColumnName)) {
 						throw new Exception("Unsupported column \"" + conditionColumnName + "\" in statement \"" + rawStatement + "\"");
 					}
