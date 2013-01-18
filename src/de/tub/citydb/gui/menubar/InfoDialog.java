@@ -146,7 +146,7 @@ public class InfoDialog extends JDialog {
 					"Javier Herreruela <javier.herreruela@tu-berlin.de>\n" +
 					"Alexandra Lorenz <lorenz@tu-berlin.de>\n" +
 					"Gerhard König <gerhard.koenig@tu-berlin.de>\n" +
-			"Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>");				
+			"Thomas H. Kolbe <thomas.kolbe@tum.de>");				
 			general.add(authors, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,2,5,5,5));
 
 			JLabel copyHeader = new JLabel("Copyright");
@@ -156,7 +156,7 @@ public class InfoDialog extends JDialog {
 			copy.setEditable(false);
 			copy.setBackground(new Color(255, 255, 255));
 			copy.setFont(authorsHeader.getFont());
-			copy.setText("(c) 2007 - 2012\n" +
+			copy.setText("(c) 2007 - 2013\n" +
 					"Institute for Geodesy and Geoinformation Science (IGG)\n" +
 					"Technische Universität Berlin, Germany\n" +
 					"http://www.igg.tu-berlin.de/\n\n" +

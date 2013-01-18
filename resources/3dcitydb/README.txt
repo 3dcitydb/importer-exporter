@@ -133,7 +133,7 @@ Claus Nagel <claus.nagel@tu-berlin.de>
 Javier Herreruela <javier.herreruela@tu-berlin.de>
 Alexandra Lorenz <lorenz@tu-berlin.de>
 Gerhard Koenig <gerhard.koenig@tu-berlin.de>
-Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>
+Thomas H. Kolbe <thomas.kolbe@tum.de>
 
 
 10. Contact
@@ -143,7 +143,7 @@ claus.nagel@tu-berlin.de
 javier.herreruela@tu-berlin.de
 lorenz@tu-berlin.de
 gerhard.koenig@tu-berlin.de
-thomas.kolbe@tu-berlin.de
+thomas.kolbe@tum.de
 
 
 11. Websites
