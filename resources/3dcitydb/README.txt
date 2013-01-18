@@ -139,7 +139,7 @@ system as SRID (e.g., the EPSG code).
 When prompted for input, the values provided in parentheses are only examples
 but no default values! The SRID will be checked for its existence in the 
 spatial_ref_sys table of PostGIS and if it's appropriate for spatial functions.
-If the SRID is accepted the user is given the feedback “SRID ok”. 
+If the SRID is accepted the user is given the feedback ï¿½SRID okï¿½. 
 Otherwise an error will occur which forces the setup to stop. 
 
 To change the reference system after having set up an instance of the 3D City 
@@ -193,7 +193,7 @@ Javier Herreruela <javier.herreruela@tu-berlin.de>
 Felix Kunde <felix-kunde@gmx.de>
 Alexandra Lorenz <lorenz@tu-berlin.de>
 Gerhard Koenig <gerhard.koenig@tu-berlin.de>
-Thomas H. Kolbe <thomas.kolbe@tu-berlin.de>
+Thomas H. Kolbe <thomas.kolbe@tum.de>
 
 
 10. Contact
