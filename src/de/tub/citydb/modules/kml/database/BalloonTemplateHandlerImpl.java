@@ -36,6 +36,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Iterator;
@@ -1333,11 +1334,22 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					}
 				}
 				catch (NumberFormatException nfe) {
-					int indexOfEqual = condition.indexOf('=');
-					if (indexOfEqual < 1) {
+					ArrayList<Integer> indexOfPossibleSeparators = new ArrayList<Integer>();
+					indexOfPossibleSeparators.add(condition.indexOf('='));
+					indexOfPossibleSeparators.add(condition.indexOf("!="));
+					indexOfPossibleSeparators.add(condition.indexOf("<>"));
+					indexOfPossibleSeparators.add(condition.indexOf('<'));
+					indexOfPossibleSeparators.add(condition.indexOf('>'));
+					indexOfPossibleSeparators.add(condition.indexOf(" LIKE "));
+					indexOfPossibleSeparators.add(condition.indexOf(" IS NULL "));
+					indexOfPossibleSeparators.add(condition.indexOf(" IS NOT NULL "));
+
+					int indexOfSeparator = Collections.max(indexOfPossibleSeparators);
+
+					if (indexOfSeparator < 1) {
 						throw new Exception("Invalid condition \"" + condition + "\" in statement \"" + rawStatement);
 					}
-					String conditionColumnName = condition.substring(0, indexOfEqual).trim();
+					String conditionColumnName = condition.substring(0, indexOfSeparator).trim();
 					if (!_3DCITYDB_TABLES_AND_COLUMNS.get(table).contains(conditionColumnName)) {
 						throw new Exception("Unsupported column \"" + conditionColumnName + "\" in statement \"" + rawStatement + "\"");
 					}
