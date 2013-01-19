@@ -135,7 +135,6 @@ public class CityFurniture extends KmlGenericObject{
 
 	public void read(KmlSplittingResult work) {
 		PreparedStatement psQuery = null;
-//		OracleResultSet rs = null;
 		ResultSet rs = null;
 
 		try {
@@ -153,7 +152,6 @@ public class CityFurniture extends KmlGenericObject{
 						psQuery.setLong(i, work.getId());
 					}
 
-//					rs = (OracleResultSet)psQuery.executeQuery();
 					rs = psQuery.executeQuery();
 					if (rs.isBeforeFirst()) {
 						rs.next();
@@ -196,10 +194,6 @@ public class CityFurniture extends KmlGenericObject{
 				if (sgRootId == 0) {
 					sgRootId = rs.getLong(1);
 					if (sgRootId != 0) {
-//						double[] ordinatesArray = (JGeometry.load((STRUCT)rs.getObject(2))).getPoint();
-//						refPointX = ordinatesArray[0];
-//						refPointY = ordinatesArray[1];
-//						refPointZ = ordinatesArray[2];
 						PGgeometry pgRefPoint = (PGgeometry)rs.getObject(2);
 						Geometry refPoint = pgRefPoint.getGeometry();
 						refPointX = refPoint.getPoint(0).x;
@@ -227,7 +221,6 @@ public class CityFurniture extends KmlGenericObject{
 						   							  ResultSet.TYPE_SCROLL_INSENSITIVE,
 						   							  ResultSet.CONCUR_READ_ONLY);
 				psQuery.setLong(1, sgRootId);
-//				rs = (OracleResultSet)psQuery.executeQuery();
 				rs = psQuery.executeQuery();
 			 	
 				// get the proper displayForm (for highlighting)
@@ -248,7 +241,6 @@ public class CityFurniture extends KmlGenericObject{
 					for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
 						psQuery2.setLong(i, work.getId());
 					}
-//					OracleResultSet rs2 = (OracleResultSet)psQuery2.executeQuery();
 					ResultSet rs2 = psQuery2.executeQuery();
 					rs2.next();
 					double measuredHeight = rs2.getDouble("envelope_measured_height");
@@ -339,21 +331,6 @@ public class CityFurniture extends KmlGenericObject{
 		}
 	}
 	
-//	protected JGeometry applyTransformationMatrix(JGeometry jGeometry) throws SQLException {
-//		if (transformation != null) {
-//			double[] originalCoords = jGeometry.getOrdinatesArray();
-//			for (int i = 0; i < originalCoords.length; i += 3) {
-//				double[] vals = new double[]{originalCoords[i], originalCoords[i+1], originalCoords[i+2], 1};
-//				Matrix v = new Matrix(vals, 4);
-//		
-//				v = transformation.times(v);
-//				originalCoords[i] = v.get(0, 0) + refPointX;
-//				originalCoords[i+1] = v.get(1, 0) + refPointY;
-//				originalCoords[i+2] = v.get(2, 0) + refPointZ;
-//			}
-//		}
-//		return jGeometry;
-//	}
 	protected Geometry applyTransformationMatrix(Geometry geometry) throws SQLException {
 		if (transformation != null) {
 			for (int i = 0; i < geometry.numPoints(); i++) {
@@ -369,9 +346,6 @@ public class CityFurniture extends KmlGenericObject{
 		return geometry;
 	}
 	
-//	protected JGeometry convertToWGS84(JGeometry jGeometry) throws SQLException {
-//		return super.convertToWGS84(applyTransformationMatrix(jGeometry));
-//	}
 	protected Geometry convertToWGS84(Geometry geom) throws SQLException {
 		return super.convertToWGS84(applyTransformationMatrix(geom));
 	}
@@ -468,7 +442,6 @@ public class CityFurniture extends KmlGenericObject{
 		return coords;
     }
     
-//	protected void fillGenericObjectForCollada(OracleResultSet rs, String gmlId) throws SQLException {
     protected void fillGenericObjectForCollada(ResultSet rs) throws SQLException {
     
 		if (transformation == null) { // no implicit geometry
@@ -479,28 +452,24 @@ public class CityFurniture extends KmlGenericObject{
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
 
 		int texImageCounter = 0;
-//		STRUCT buildingGeometryObj = null;
 		PGgeometry pgBuildingGeometry = null;
 
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
 			for (String colladaQuery: Queries.COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID) { // parent surfaces come first
 				PreparedStatement psQuery = null;
-//				OracleResultSet rs2 = null;
 				ResultSet rs2 = null;
 				
 				try {
 					psQuery = connection.prepareStatement(colladaQuery);
 					psQuery.setLong(1, surfaceRootId);
 //					psQuery.setString(2, selectedTheme);
-//					rs2 = (OracleResultSet)psQuery.executeQuery();
 					rs2 = psQuery.executeQuery();
 					
 	
 					while (rs2.next()) {
 						String theme = rs2.getString("theme");
 	
-//						buildingGeometryObj = (STRUCT)rs2.getObject(1);
 						pgBuildingGeometry = (PGgeometry)rs2.getObject(1);
 						// surfaceId is the key to all Hashmaps in building
 						// for implicit geometries it must be randomized with

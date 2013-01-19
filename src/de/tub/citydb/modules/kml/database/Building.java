@@ -355,7 +355,6 @@ public class Building extends KmlGenericObject{
 		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
 		PreparedStatement getGeometriesStmt = null;
-//		OracleResultSet rs = null;
 		ResultSet rs = null;
 
 		double hlDistance = work.getDisplayForm().getHighlightingDistance();
@@ -369,7 +368,6 @@ public class Building extends KmlGenericObject{
 				// this is THE LINE
 				getGeometriesStmt.setLong(i, buildingPartId);
 			}
-//			rs = (OracleResultSet)getGeometriesStmt.executeQuery();
 			rs = getGeometriesStmt.executeQuery();
 
 			double zOffset = getZOffsetFromConfigOrDB(work.getId());
@@ -379,35 +377,16 @@ public class Building extends KmlGenericObject{
 				zOffset = getZOffsetFromGEService(work.getId(), lowestPointCandidates);
 			}
 
-			while (rs.next()) {
-//				STRUCT unconverted = (STRUCT)rs.getObject(1);
-//				JGeometry unconvertedSurface = JGeometry.load(unconverted);
-//				double[] ordinatesArray = unconvertedSurface.getOrdinatesArray();
-				
+			while (rs.next()) {	
 				PGgeometry unconverted = (PGgeometry)rs.getObject(1);
 				Polygon unconvertedSurface = (Polygon)unconverted.getGeometry();
 				double[] ordinatesArray = new double[unconvertedSurface.numPoints()*3];
-
-//				if (ordinatesArray == null) {
-//					continue;
-//				}
 				
 				for (int i = 0, j = 0; i < unconvertedSurface.numPoints(); i++, j+=3){
 					ordinatesArray[j] = unconvertedSurface.getPoint(i).x;
 					ordinatesArray[j+1] = unconvertedSurface.getPoint(i).y;
 					ordinatesArray[j+2] = unconvertedSurface.getPoint(i).z;
 				}		
-
-				/*
-				int contourCount = unconvertedSurface.getElemInfo().length/3;
-				// remove normal-irrelevant points
-				int startContour1 = unconvertedSurface.getElemInfo()[0] - 1;
-				int endContour1 = (contourCount == 1) ? 
-						ordinatesArray.length: // last
-							unconvertedSurface.getElemInfo()[3] - 1; // holes are irrelevant for normal calculation
-				// last point of polygons in gml is identical to first and useless for GeometryInfo
-				endContour1 = endContour1 - 3;
-				*/
 
 				int contourCount = unconvertedSurface.numRings();
 				// remove normal-irrelevant points
@@ -443,35 +422,16 @@ public class Building extends KmlGenericObject{
 					unconvertedSurface.getPoint(i).x = ordinatesArray[j] + hlDistance * nx;
 					unconvertedSurface.getPoint(i).y = ordinatesArray[j+1] + hlDistance * ny;
 					unconvertedSurface.getPoint(i).z = ordinatesArray[j+2] + zOffset + hlDistance * nz;
-				}	
+				}
 				
-				/*for (int i = 0; i < ordinatesArray.length; i = i + 3) {
-					// coordinates = coordinates + hlDistance * (dot product of normal vector and unity vector)
-					ordinatesArray[i] = ordinatesArray[i] + hlDistance * nx;
-					ordinatesArray[i+1] = ordinatesArray[i+1] + hlDistance * ny;
-					ordinatesArray[i+2] = ordinatesArray[i+2] + zOffset + hlDistance * nz;
-				}*/
-
 				// now convert to WGS84
-//				JGeometry surface = convertToWGS84(unconvertedSurface);
-//				ordinatesArray = surface.getOrdinatesArray();
 				Polygon surface = (Polygon)convertToWGS84(unconvertedSurface);
 				
 				for (int i = 0, j = 0; i < surface.numPoints(); i++, j+=3){
 					ordinatesArray[j] = surface.getPoint(i).x;
 					ordinatesArray[j+1] = surface.getPoint(i).y;
 					ordinatesArray[j+2] = surface.getPoint(i).z;
-				}
-				
-				/*
-				double[] ordinatesArrayConverted = new double[surface.numPoints()*3];
-				
-				for (int i = 0, j = 0; i < surface.numPoints(); i++, j+=3){
-					ordinatesArrayConverted[j] = surface.getPoint(i).x;
-					ordinatesArrayConverted[j+1] = surface.getPoint(i).y;
-					ordinatesArrayConverted[j+2] = surface.getPoint(i).z;
-				}*/
-				
+				}				
 
 				PolygonType polygon = kmlFactory.createPolygonType();
 				switch (config.getProject().getKmlExporter().getAltitudeMode()) {
@@ -483,38 +443,15 @@ public class Building extends KmlGenericObject{
 					break;
 				}
 				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
-
-				/*for (int i = 0; i < surface.getElemInfo().length; i = i+3) {
-					LinearRingType linearRing = kmlFactory.createLinearRingType();
-					BoundaryType boundary = kmlFactory.createBoundaryType();
-					boundary.setLinearRing(linearRing);
-					if (surface.getElemInfo()[i+1] == EXTERIOR_POLYGON_RING) {
-						polygon.setOuterBoundaryIs(boundary);
-					}
-					else { // INTERIOR_POLYGON_RING
-						polygon.getInnerBoundaryIs().add(boundary);
-					}
-
-					int startNextRing = ((i+3) < surface.getElemInfo().length) ? 
-							surface.getElemInfo()[i+3] - 1: // still holes to come
-								ordinatesArray.length; // default
-
-							// order points clockwise
-							for (int j = surface.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
-								linearRing.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + "," 
-										+ reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-										+ reducePrecisionForZ(ordinatesArray[j+2])));
-							}
-				}*/
 				
 				for (int i = 0; i < surface.numRings(); i++){
 					LinearRingType linearRing = kmlFactory.createLinearRingType();
 					BoundaryType boundary = kmlFactory.createBoundaryType();
 					boundary.setLinearRing(linearRing);
-					if (i == 0) {
+					if (i == 0) { // EXTERIOR_POLYGON_RING
 						polygon.setOuterBoundaryIs(boundary);
 					}
-					else {
+					else { // INTERIOR_POLYGON_RING
 						polygon.getInnerBoundaryIs().add(boundary);
 					}
 					

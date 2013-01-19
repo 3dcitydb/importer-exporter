@@ -41,42 +41,6 @@ public class Queries {
 	// 	GENERIC PURPOSE QUERIES
 	// ----------------------------------------------------------------------
 
-	public static final String GET_ID_FROM_GMLID =
-			"SELECT id FROM CITYOBJECT WHERE gmlid = ?";
-	
-    public static final String GET_ID_AND_OBJECTCLASS_FROM_GMLID =
-		"SELECT id, class_id FROM CITYOBJECT WHERE gmlid = ?";
-
-    public static final String GET_GMLID_AND_OBJECTCLASS_FROM_ID =
-		"SELECT gmlid, class_id FROM CITYOBJECT WHERE id = ?";
-
-    public static final String GET_TEXIMAGE_FROM_SURFACE_DATA_ID =
-			"SELECT sd.tex_image " +
-			"FROM SURFACE_DATA sd " +
-			"WHERE " +
-				"sd.id = ?";
-	
-    /* Oracle Version
-    public static final String GET_GMLIDS =
-	"SELECT co.gmlid, co.class_id " +
-	"FROM CITYOBJECT co " +
-	"WHERE " +
-	  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
-				  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
-	"UNION ALL " +
-	"SELECT co.gmlid, co.class_id " +
-	"FROM CITYOBJECT co " +
-	"WHERE " +
-	  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-				  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby') ='TRUE') " +
-	"UNION ALL " +
-	"SELECT co.gmlid, co.class_id " +
-	"FROM CITYOBJECT co " +
-	"WHERE " +
-	  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-				  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
-	"ORDER BY 2"; // ORDER BY co.class_id*/
-	
 	public static final String GET_IDS =
 	 	"SELECT co.id, co.gmlid, co.class_id " +
 	 	"FROM CITYOBJECT co " +
@@ -91,7 +55,6 @@ public class Queries {
  
 	public static final String GET_EXTRUDED_HEIGHT =
 			"SELECT " + // "b.measured_height, " +
-//			"SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) - SDO_GEOM.SDO_MIN_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
 			"ST_ZMax(Box3D(co.envelope)) - ST_ZMin(Box3D(co.envelope)) AS envelope_measured_height " +
 			"FROM CITYOBJECT co " + // ", BUILDING b " +
 			"WHERE co.id = ?"; // + " AND b.building_root_id = co.id";
@@ -100,28 +63,21 @@ public class Queries {
 			"SELECT coga.strval " +
 			"FROM CITYOBJECT_GENERICATTRIB coga " + 
 			"WHERE coga.cityobject_id = ? AND coga.attrname = ? ";
+
+	public static final String GET_ID_FROM_GMLID =
+			"SELECT id FROM CITYOBJECT WHERE gmlid = ?";
 	
-		
-    /* Oracle Version
-	public static final String INSERT_GE_ZOFFSET =
-		"INSERT INTO CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) " +
-		"VALUES (CITYOBJECT_GENERICATT_SEQ.NEXTVAL, ?, 1, ?, (SELECT ID FROM CITYOBJECT WHERE gmlid = ?))";
-	
-	public static final String TRANSFORM_GEOMETRY_TO_WGS84 =
-		"SELECT SDO_CS.TRANSFORM(?, 4326) FROM DUAL";
-	
-	public static final String TRANSFORM_GEOMETRY_TO_WGS84_3D =
-		"SELECT SDO_CS.TRANSFORM(?, 4329) FROM DUAL";
-	
-	public static final String GET_ENVELOPE_IN_WGS84_FROM_GML_ID =
-		"SELECT SDO_CS.TRANSFORM(co.envelope, 4326) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";
-	
-	public static final String GET_ENVELOPE_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT SDO_CS.TRANSFORM(co.envelope, 4329) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.gmlid = ?";*/
+    public static final String GET_ID_AND_OBJECTCLASS_FROM_GMLID =
+		"SELECT id, class_id FROM CITYOBJECT WHERE gmlid = ?";
+
+    public static final String GET_GMLID_AND_OBJECTCLASS_FROM_ID =
+		"SELECT gmlid, class_id FROM CITYOBJECT WHERE id = ?";
+
+    public static final String GET_TEXIMAGE_FROM_SURFACE_DATA_ID =
+			"SELECT sd.tex_image " +
+			"FROM SURFACE_DATA sd " +
+			"WHERE " +
+				"sd.id = ?";
 	
 	public static final String INSERT_GE_ZOFFSET =
 			"INSERT INTO CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) " +
@@ -142,41 +98,6 @@ public class Queries {
 		"SELECT ST_Transform(co.envelope, 94329) " +
 		"FROM CITYOBJECT co " +
 		"WHERE co.id = ?";
-
-	/* Oracle Version
-	public static final String GET_CENTROID_IN_WGS84_FROM_GML_ID =
-			"SELECT SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4326) " +
-			"FROM CITYOBJECT co " +
-			"WHERE co.gmlid = ?";
-
-	public static final String GET_CENTROID_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4329) " +
-			"FROM CITYOBJECT co " +
-			"WHERE co.gmlid = ?";
-	
-	public static final String GET_CENTROID_LAT_IN_WGS84_FROM_GML_ID =
-		"SELECT v.Y FROM TABLE(" +
-			"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4326)) " +
-			"FROM CITYOBJECT co " + 
-			"WHERE co.gmlid = ?) v";
-
-	public static final String GET_CENTROID_LAT_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT v.Y FROM TABLE(" +
-			"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4329)) " +
-			"FROM CITYOBJECT co " + 
-			"WHERE co.gmlid = ?) v";
-
-	public static final String GET_CENTROID_LON_IN_WGS84_FROM_GML_ID =
-		"SELECT v.X FROM TABLE(" +
-			"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4326)) " +
-			"FROM CITYOBJECT co " + 
-			"WHERE co.gmlid = ?) v";
-
-	public static final String GET_CENTROID_LON_IN_WGS84_3D_FROM_GML_ID =
-		"SELECT v.X FROM TABLE(" +
-			"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4329)) " +
-			"FROM CITYOBJECT co " + 
-			"WHERE co.gmlid = ?) v";*/
 
 	public static final String GET_CENTROID_IN_WGS84_FROM_ID =
 		"SELECT ST_Transform(ST_Centroid(co.envelope), 4326) " +
@@ -531,20 +452,12 @@ public class Queries {
 
 		
     public static final String BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER =
-    	// No pyramid-aggregation possible in PostGIS
-//    	"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-//    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-//    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-//    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
     	"SELECT ST_Union(get_valid_area.simple_geom) " +
     	"FROM (" +
     	"SELECT * FROM (" +
     	"SELECT * FROM (" +
     		
-//      "SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
         "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
-//    	"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
-//    	"SELECT sg.geometry AS simple_geom " +
     	"FROM SURFACE_GEOMETRY sg " +
     	"WHERE " +
     	  "sg.root_id IN( " +
@@ -560,34 +473,17 @@ public class Queries {
     	  ") " +
     	  "AND sg.geometry IS NOT NULL) AS get_geoms " +
     	
-//    	") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
-//    	") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
     	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
+    	// ST_Area for WGS84 only works correctly if the geometry is a geography data type
     	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE>) AS get_valid_area";
-    	
-//    	") " +
-//    	"GROUP BY mod(rownum, <GROUP_BY_1>) " +
-//    	") " +
-//    	"GROUP BY mod (rownum, <GROUP_BY_2>) " +
-//    	") " +
-//    	"GROUP BY mod (rownum, <GROUP_BY_3>) " +
-//    	")";
 
     private static final String BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1 =
-    	// No pyramid-aggregation possible in PostGIS
-//    	"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-//    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-//    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-//    	"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
     	"SELECT ST_Union(get_valid_area.simple_geom) " +
     	"FROM (" +
     	"SELECT * FROM (" +
     	"SELECT * FROM (" +
     		
-//      "SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
         "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
-//    	"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
-//    	"SELECT sg.geometry AS simple_geom " +
     	"FROM SURFACE_GEOMETRY sg " +
     	"WHERE " +
     	  "sg.root_id IN( " +
@@ -598,49 +494,24 @@ public class Queries {
     	  ") " +
     	  "AND sg.geometry IS NOT NULL) AS get_geoms " +
     	
-//    	") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
-//    	") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
     	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
+    	// ST_Area for WGS84 only works correctly if the geometry is a geography data type
     	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE>) AS get_valid_area";
     	
-//    	") " +
-//    	"GROUP BY mod(rownum, <GROUP_BY_1>) " +
-//    	") " +
-//    	"GROUP BY mod (rownum, <GROUP_BY_2>) " +
-//    	") " +
-//    	"GROUP BY mod (rownum, <GROUP_BY_3>) " +
-//    	")";
+    public static String getBuildingPartAggregateGeometries (double tolerance, int lodToExportFrom) {
 
-    public static String getBuildingPartAggregateGeometries (double tolerance,
-//    													 int srid2D,
-    													 int lodToExportFrom /*,
-    													 double groupBy1,
-    													 double groupBy2,
-    													 double groupBy3 */) {
     	if (lodToExportFrom > 1) {
     	   	return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER.replace("<TOLERANCE>", String.valueOf(tolerance))
-//    	   															   .replace("<2D_SRID>", String.valueOf(srid2D))
-    	   															   .replace("<LoD>", String.valueOf(lodToExportFrom))
-    	   															/* .replace("<GROUP_BY_1>", String.valueOf(groupBy1))
-    	   															   .replace("<GROUP_BY_2>", String.valueOf(groupBy2))
-    	   															   .replace("<GROUP_BY_3>", String.valueOf(groupBy3)) */;
+    	   															   .replace("<LoD>", String.valueOf(lodToExportFrom));
     	}
     	// else
 	   	return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1.replace("<TOLERANCE>", String.valueOf(tolerance))
-//		   												 .replace("<2D_SRID>", String.valueOf(srid2D))
-		   												 .replace("<LoD>", String.valueOf(lodToExportFrom))
-		   											  /* .replace("<GROUP_BY_1>", String.valueOf(groupBy1))
-		   												 .replace("<GROUP_BY_2>", String.valueOf(groupBy2))
-		   												 .replace("<GROUP_BY_3>", String.valueOf(groupBy3)) */;
+		   												 .replace("<LoD>", String.valueOf(lodToExportFrom));
     }
     
 	private static final String BUILDING_PART_FOOTPRINT_LOD1 =
 		BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1.replace("<TOLERANCE>", "0.001")
-//						 						  .replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
-						 						  .replace("<LoD>", "1")
-						 						  /*.replace("<GROUP_BY_1>", "256")
-						 						  .replace("<GROUP_BY_2>", "64")
-						 						  .replace("<GROUP_BY_3>", "16")*/;
+						 						  .replace("<LoD>", "1");
     
 	private static final HashMap<Integer, String> buildingPartQueriesLod4 = new HashMap<Integer, String>();
     static {
@@ -778,7 +649,6 @@ public class Queries {
 		"AND sg.geometry IS NOT NULL";
 	
 	private static final String SOLITARY_VEGETATION_OBJECT_COLLADA_ROOT_IDS =
-//		"SELECT ? FROM DUAL "; // dummy
 		"SELECT ?"; // dummy
 
     public static String getSolitaryVegetationObjectGeometryContents (DisplayForm displayForm) {
@@ -879,7 +749,6 @@ public class Queries {
 		"AND sg.geometry IS NOT NULL";
 	
 	private static final String GENERIC_CITYOBJECT_COLLADA_ROOT_IDS =
-//		"SELECT ? FROM DUAL "; // dummy
 		"SELECT ?"; // dummy
 
     public static String getGenericCityObjectGeometryContents (DisplayForm displayForm) {
@@ -941,7 +810,6 @@ public class Queries {
 		"AND sg.geometry IS NOT NULL";
 	
 	private static final String CITY_FURNITURE_COLLADA_ROOT_IDS =
-//		"SELECT ? FROM DUAL "; // dummy
 		"SELECT ?"; // dummy
 
     public static String getCityFurnitureGeometryContents (DisplayForm displayForm) {

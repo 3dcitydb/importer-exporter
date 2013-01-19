@@ -135,7 +135,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 
 	public void read(KmlSplittingResult work) {
 		PreparedStatement psQuery = null;
-//		OracleResultSet rs = null;
 		ResultSet rs = null;
 
 		try {
@@ -153,7 +152,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						psQuery.setLong(i, work.getId());
 					}
 
-//					rs = (OracleResultSet)psQuery.executeQuery();
 					rs = psQuery.executeQuery();
 					if (rs.isBeforeFirst()) {
 						rs.next();
@@ -196,10 +194,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 				if (sgRootId == 0) {
 					sgRootId = rs.getLong(1);
 					if (sgRootId != 0) {
-//						double[] ordinatesArray = (JGeometry.load((STRUCT)rs.getObject(2))).getPoint();
-//						refPointX = ordinatesArray[0];
-//						refPointY = ordinatesArray[1];
-//						refPointZ = ordinatesArray[2];
 						PGgeometry pgRefPoint = (PGgeometry)rs.getObject(2);
 						Geometry refPoint = pgRefPoint.getGeometry();
 						refPointX = refPoint.getPoint(0).x;
@@ -227,7 +221,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						   							  ResultSet.TYPE_SCROLL_INSENSITIVE,
 						   							  ResultSet.CONCUR_READ_ONLY);
 				psQuery.setLong(1, sgRootId);
-//				rs = (OracleResultSet)psQuery.executeQuery();
 				rs = psQuery.executeQuery();
 			 	
 				// get the proper displayForm (for highlighting)
@@ -248,7 +241,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
 						psQuery2.setLong(i, work.getId());
 					}
-//					OracleResultSet rs2 = (OracleResultSet)psQuery2.executeQuery();
 					ResultSet rs2 = psQuery2.executeQuery();
 					rs2.next();
 					double measuredHeight = rs2.getDouble("envelope_measured_height");
@@ -339,21 +331,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		}
 	}
 	
-//	protected JGeometry applyTransformationMatrix(JGeometry jGeometry) throws SQLException {
-//		if (transformation != null) {
-//			double[] originalCoords = jGeometry.getOrdinatesArray();
-//			for (int i = 0; i < originalCoords.length; i += 3) {
-//				double[] vals = new double[]{originalCoords[i], originalCoords[i+1], originalCoords[i+2], 1};
-//				Matrix v = new Matrix(vals, 4);
-//		
-//				v = transformation.times(v);
-//				originalCoords[i] = v.get(0, 0) + refPointX;
-//				originalCoords[i+1] = v.get(1, 0) + refPointY;
-//				originalCoords[i+2] = v.get(2, 0) + refPointZ;
-//			}
-//		}
-//		return jGeometry;
-//	}
 	protected Geometry applyTransformationMatrix(Geometry geometry) throws SQLException {
 		if (transformation != null) {
 			for (int i = 0; i < geometry.numPoints(); i++) {
@@ -369,9 +346,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		return geometry;
 	}
 	
-//	protected JGeometry convertToWGS84(JGeometry jGeometry) throws SQLException {
-//		return super.convertToWGS84(applyTransformationMatrix(jGeometry));
-//	}
 	protected Geometry convertToWGS84(Geometry geom) throws SQLException {
 		return super.convertToWGS84(applyTransformationMatrix(geom));
 	}
@@ -468,7 +442,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		return coords;
     }
     
-//	protected void fillGenericObjectForCollada(OracleResultSet rs, String gmlId) throws SQLException {
     protected void fillGenericObjectForCollada(ResultSet rs) throws SQLException {
     
 		if (transformation == null) { // no implicit geometry
@@ -479,28 +452,24 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
 
 		int texImageCounter = 0;
-//		STRUCT buildingGeometryObj = null;
 		PGgeometry pgBuildingGeometry = null;
 
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
 			for (String colladaQuery: Queries.COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID) { // parent surfaces come first
 				PreparedStatement psQuery = null;
-//				OracleResultSet rs2 = null;
 				ResultSet rs2 = null;
 				
 				try {
 					psQuery = connection.prepareStatement(colladaQuery);
 					psQuery.setLong(1, surfaceRootId);
-//					psQuery.setString(2, selectedTheme);
-//					rs2 = (OracleResultSet)psQuery.executeQuery();
+//					psQuery.setString(2, selectedTheme);;
 					rs2 = psQuery.executeQuery();
 					
 	
 					while (rs2.next()) {
 						String theme = rs2.getString("theme");
 	
-//						buildingGeometryObj = (STRUCT)rs2.getObject(1);
 						pgBuildingGeometry = (PGgeometry)rs2.getObject(1);
 						// surfaceId is the key to all Hashmaps in building
 						// for implicit geometries it must be randomized with
@@ -623,9 +592,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 							}
 						}
 	
-//						JGeometry surface = JGeometry.load(buildingGeometryObj);
-//						surface = applyTransformationMatrix(surface);
-//						double[] ordinatesArray = surface.getOrdinatesArray();
 						Geometry surface = pgBuildingGeometry.getGeometry();
 						surface = applyTransformationMatrix(surface);
 						double[] ordinatesArray = new double[surface.numPoints()*3];
@@ -637,7 +603,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						
 						Polygon surfacePolygon = (Polygon) surface;
 						GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
-//						int contourCount = surface.getElemInfo().length/3;
 						int contourCount = surfacePolygon.numRings();
 						int cellCount = 0;
 						// last point of polygons in gml is identical to first and useless for GeometryInfo
@@ -646,11 +611,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						int[] stripCountArray = new int[contourCount];
 						int[] countourCountArray = {contourCount};
 	
-//						for (int currentContour = 1; currentContour <= contourCount; currentContour++) {
-//							int startOfCurrentRing = surface.getElemInfo()[(currentContour-1)*3] - 1;
-//							int startOfNextRing = (currentContour == contourCount) ? 
-//									ordinatesArray.length: // last
-//									surface.getElemInfo()[currentContour*3] - 1; // still holes to come
 						for (int currentContour = 1; currentContour <= contourCount; currentContour++) {
 							int startOfCurrentRing = cellCount;
 							cellCount += (surfacePolygon.getRing(currentContour-1).numPoints()*3);
@@ -735,7 +695,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
 		PreparedStatement getGeometriesStmt = null;
-//		OracleResultSet rs = null;
 		ResultSet rs = null;
 
 		double hlDistance = work.getDisplayForm().getHighlightingDistance();
@@ -748,7 +707,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			for (int i = 1; i <= getGeometriesStmt.getParameterMetaData().getParameterCount(); i++) {
 				getGeometriesStmt.setLong(i, work.getId());
 			}
-//			rs = (OracleResultSet)getGeometriesStmt.executeQuery();
 			rs = getGeometriesStmt.executeQuery();
 
 			double zOffset = getZOffsetFromConfigOrDB(work.getId());
@@ -760,13 +718,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			}
 
 			while (rs.next()) {
-//				STRUCT unconverted = (STRUCT)rs.getObject(1);
-//				JGeometry unconvertedSurface = JGeometry.load(unconverted);
-//				unconvertedSurface = applyTransformationMatrix(unconvertedSurface);
-//				double[] ordinatesArray = unconvertedSurface.getOrdinatesArray();
-//				if (ordinatesArray == null) {
-//					continue;
-//				}
 				PGgeometry unconverted = (PGgeometry)rs.getObject(1);
 //				Polygon unconvertedSurface = (Polygon)unconverted.getGeometry();
 				Geometry unconvertedSurface = unconverted.getGeometry();
@@ -777,16 +728,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					ordinatesArray[j] = unconvertedSurface.getPoint(i).x;
 					ordinatesArray[j+1] = unconvertedSurface.getPoint(i).y;
 					ordinatesArray[j+2] = unconvertedSurface.getPoint(i).z;
-				}		
-
-//				int contourCount = unconvertedSurface.getElemInfo().length/3;
-//				// remove normal-irrelevant points
-//				int startContour1 = unconvertedSurface.getElemInfo()[0] - 1;
-//				int endContour1 = (contourCount == 1) ? 
-//						ordinatesArray.length: // last
-//							unconvertedSurface.getElemInfo()[3] - 1; // holes are irrelevant for normal calculation
-//				// last point of polygons in gml is identical to first and useless for GeometryInfo
-//				endContour1 = endContour1 - 3;
+				}
 				
 				int contourCount = ((Polygon)unconvertedSurface).numRings();
 				// remove normal-irrelevant points
@@ -825,8 +767,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 				}
 
 				// now convert to WGS84 without applying transformation matrix (already done)
-//				JGeometry surface = super.convertToWGS84(unconvertedSurface);
-//				ordinatesArray = surface.getOrdinatesArray();
 				Polygon surface = (Polygon)super.convertToWGS84(unconvertedSurface);
 				
 				for (int i = 0, j = 0; i < surface.numPoints(); i++, j+=3){
@@ -846,28 +786,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 				}
 				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 
-//				for (int i = 0; i < surface.getElemInfo().length; i = i+3) {
-//					LinearRingType linearRing = kmlFactory.createLinearRingType();
-//					BoundaryType boundary = kmlFactory.createBoundaryType();
-//					boundary.setLinearRing(linearRing);
-//					if (surface.getElemInfo()[i+1] == EXTERIOR_POLYGON_RING) {
-//						polygon.setOuterBoundaryIs(boundary);
-//					}
-//					else { // INTERIOR_POLYGON_RING
-//						polygon.getInnerBoundaryIs().add(boundary);
-//					}
-//
-//					int startNextRing = ((i+3) < surface.getElemInfo().length) ? 
-//							surface.getElemInfo()[i+3] - 1: // still holes to come
-//								ordinatesArray.length; // default
-//
-//							// order points clockwise
-//							for (int j = surface.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
-//								linearRing.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + "," 
-//										+ reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-//										+ reducePrecisionForZ(ordinatesArray[j+2])));
-//							}
-//				}
 				for (int i = 0; i < surface.numRings(); i++){
 					LinearRingType linearRing = kmlFactory.createLinearRingType();
 					BoundaryType boundary = kmlFactory.createBoundaryType();

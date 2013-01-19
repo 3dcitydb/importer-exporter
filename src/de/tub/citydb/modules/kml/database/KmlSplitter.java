@@ -151,13 +151,11 @@ public class KmlSplitter {
 			for (String gmlId: filterConfig.getSimpleFilter().getGmlIdFilter().getGmlIds()) {
 				if (!shouldRun) break;
 
-//				OracleResultSet rs = null;
 				ResultSet rs = null;
 				PreparedStatement query = null;
 				try {
 					query = connection.prepareStatement(Queries.GET_ID_AND_OBJECTCLASS_FROM_GMLID);
 					query.setString(1, gmlId);
-//					rs = (OracleResultSet)query.executeQuery();
 					rs = query.executeQuery();
 					
 					if (rs.next()) {
@@ -187,7 +185,6 @@ public class KmlSplitter {
 				 filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
 			
 			BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
-//			OracleResultSet rs = null;
 			ResultSet rs = null;
 			PreparedStatement spatialQuery = null;
 			String lineGeom = null;
@@ -306,7 +303,6 @@ public class KmlSplitter {
 
 			if (splitter.isCityObjectGroup() &&
 					CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.size() > 1) { // not only groups must be exported
-//				OracleResultSet rs = null;
 				ResultSet rs = null;
 				PreparedStatement query = null;
 				String lineGeom = null;
@@ -343,7 +339,6 @@ public class KmlSplitter {
 						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS);
 						query.setLong(1, id);
 					}
-//					rs = (OracleResultSet)query.executeQuery();
 					rs = query.executeQuery();
 					
 					while (rs.next() && shouldRun) {
@@ -375,7 +370,6 @@ public class KmlSplitter {
 	private double[] getEnvelopeInWGS84(long id) {
 		double[] ordinatesArray = null;
 		PreparedStatement psQuery = null;
-//		OracleResultSet rs = null;
 		ResultSet rs = null;
 
 		try {
@@ -385,14 +379,6 @@ public class KmlSplitter {
 						  
 			psQuery.setLong(1, id);
 
-//			rs = (OracleResultSet)psQuery.executeQuery();
-//			if (rs.next()) {
-//				STRUCT struct = (STRUCT)rs.getObject(1); 
-//				if (!rs.wasNull() && struct != null) {
-//					JGeometry geom = JGeometry.load(struct);
-//					ordinatesArray = geom.getOrdinatesArray();
-//				}
-//			}
 			rs = psQuery.executeQuery();
 			if (rs.next()) {
 				PGgeometry pgGeom = (PGgeometry)rs.getObject(1); 

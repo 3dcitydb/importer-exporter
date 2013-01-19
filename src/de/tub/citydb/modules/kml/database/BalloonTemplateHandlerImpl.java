@@ -952,7 +952,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		String result = "";
 		if (statement != null) {
 			PreparedStatement preparedStatement = null;
-//			OracleResultSet rs = null;
 			ResultSet rs = null;
 			try {
 				if (statement.isForeach()) {
@@ -1026,7 +1025,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				for (int i = 1; i <= preparedStatement.getParameterMetaData().getParameterCount(); i++) {
 					preparedStatement.setLong(i, id);
 				}
-//				rs = (OracleResultSet)preparedStatement.executeQuery();
 				rs = preparedStatement.executeQuery();
 				while (rs.next()) {
 					if (rs.getRow() > 1) {
@@ -1034,15 +1032,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					}
 					Object object = rs.getObject(1);
 					if (object != null) {
-//						if (object instanceof STRUCT){
-//							STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
-//							JGeometry surface = JGeometry.load(buildingGeometryObj);
-//							int dimensions = surface.getDimensions();
 						if (object instanceof PGgeometry){
 							PGgeometry pgBuildingGeometry = (PGgeometry)rs.getObject(1); 
 							Geometry surface = pgBuildingGeometry.getGeometry();
 							int dimensions = surface.getDimension();
-//							double[] ordinatesArray = surface.getOrdinatesArray();
 							
 							double[] ordinatesArray = new double[surface.numPoints() * dimensions];
 							
@@ -1092,7 +1085,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private String executeForeachStatement(BalloonStatement statement, long id, int lod) {
 		String resultBody = "";
 		PreparedStatement preparedStatement = null;
-//		OracleResultSet rs = null;
 		ResultSet rs = null;
 		try {
 			if (statement != null && statement.getProperSQLStatement(lod) != null) {
@@ -1101,7 +1093,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					preparedStatement.setLong(i, id);
 				}
 
-//				rs = (OracleResultSet)preparedStatement.executeQuery();
 				rs = preparedStatement.executeQuery();
 				while (rs.next()) {
 					String iterationBody = statement.getForeachBody();
@@ -1113,15 +1104,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						else {
 							Object object = rs.getObject(n);
 							if (object != null) {
-//								if (object instanceof STRUCT){
-//									STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
-//									JGeometry surface = JGeometry.load(buildingGeometryObj);
-//									int dimensions = surface.getDimensions();
 								if (object instanceof PGgeometry){
 									PGgeometry pgBuildingGeometry = (PGgeometry)rs.getObject(1); 
 									Geometry surface = pgBuildingGeometry.getGeometry();
 									int dimensions = surface.getDimension();
-//									double[] ordinatesArray = surface.getOrdinatesArray();
 									
 									double[] ordinatesArray = new double[surface.numPoints() * 3];
 									
@@ -1489,28 +1475,12 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				}
 				else {
 					if (rownum > 0) {
-//						sqlStatement = "SELECT * FROM (SELECT a.*, ROWNUM rnum FROM (" + sqlStatement 
-//									   + " ORDER by " + tableShortId + "." + columns.get(0)
-//									   + " ASC) a WHERE ROWNUM <= " + rownum + ") WHERE rnum >= " + rownum;
 						sqlStatement = "SELECT * FROM " +
 					              "(SELECT sqlstat.*, ROW_NUMBER() OVER(ORDER BY sqlstat.* ASC) AS rnum FROM " +
 					      	  	      "(" + sqlStatement + " ORDER BY " +
 					      	  	   		tableShortId + "." + columns.get(0) + " ASC) sqlstat) AS subq" +
 					      	  	   			" WHERE rnum = " + rownum;
 					}
-
-					/*
-					else if (FIRST.equalsIgnoreCase(aggregateFunction)) {
-						sqlStatement = "SELECT * FROM (" + sqlStatement
-									   + " ORDER by " + tableShortId + "." + columns.get(0)
-									   + " ASC) WHERE ROWNUM = 1";
-					}
-					else if (LAST.equalsIgnoreCase(aggregateFunction)) {
-						sqlStatement = "SELECT * FROM (" + sqlStatement
-									   + " ORDER by " + tableShortId + "." + columns.get(0)
-									   + " DESC) WHERE ROWNUM = 1";
-					}
-					*/
 					
 					else if (FIRST.equalsIgnoreCase(aggregateFunction)) {
 						sqlStatement = "SELECT * FROM " +
