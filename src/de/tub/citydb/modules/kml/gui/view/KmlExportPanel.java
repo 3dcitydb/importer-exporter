@@ -819,6 +819,19 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		else {
 			df.setActive(false);
 		}
+
+		int upperLevelVisibility = -1; 
+		for (int i = DisplayForm.COLLADA; i >= DisplayForm.FOOTPRINT; i--) {
+			df = new DisplayForm(i, -1, -1);
+			indexOfDf = displayForms.indexOf(df); 
+			df = displayForms.get(indexOfDf);
+
+			if (df.isActive()) {
+				df.setVisibleUpTo(upperLevelVisibility);
+				upperLevelVisibility = df.getVisibleFrom();
+			}
+		}
+		
 	}
 
 	private void addListeners() {

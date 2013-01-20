@@ -134,6 +134,7 @@ public class KmlExporterManager {
 		boolean balloonExtracted = false;
 		
         String gmlId = null;
+		String placemarkDescription = null;
 		KmlType kmlType = null;
 		DocumentType document = null;
 		ZipOutputStream zipOut = null;
@@ -142,22 +143,32 @@ public class KmlExporterManager {
         try {
         	for (PlacemarkType placemark: placemarkList) {
         		if (placemark != null) {
-        			String placemarkDescription = placemark.getDescription();
-        			if (placemarkDescription != null && balloonInSeparateFile) {
+					String displayFormName = work.getDisplayForm().getName();
 
-        				StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandlerImpl.parentFrameStart);
-        				parentFrame.append(placemark.getName());
+					if (placemark.getDescription() != null && balloonInSeparateFile) {
+						StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandlerImpl.parentFrameStart);
+	        			if (isBBoxActive && 
+	        				config.getProject().getKmlExporter().isOneFilePerObject() &&
+	        				!config.getProject().getKmlExporter().isExportAsKmz())
+	        				parentFrame.append(".."); // one up
+	        			else
+	        				parentFrame.append('.'); // same folder
+
+        				parentFrame.append('/').append(BalloonTemplateHandlerImpl.balloonDirectoryName);
+        				parentFrame.append('/').append(work.getGmlId());
         				parentFrame.append(BalloonTemplateHandlerImpl.parentFrameEnd);
-        				placemark.setDescription(parentFrame.toString());
 
         				if (!balloonExtracted) {
+        					placemarkDescription = placemark.getDescription();
         					if (config.getProject().getKmlExporter().isExportAsKmz()) {
-        						ColladaBundle colladaBundle = new ColladaBundle();
-        						colladaBundle.setGmlId(placemark.getName());
-        						colladaBundle.setExternalBalloonFileContent(placemarkDescription);
-        						buildingQueue.add(colladaBundle);
-        					}
-        					else {
+        						if (!isBBoxActive || !config.getProject().getKmlExporter().isOneFilePerObject()) {
+            						ColladaBundle colladaBundle = new ColladaBundle();
+            						colladaBundle.setGmlId(work.getGmlId());
+            						colladaBundle.setExternalBalloonFileContent(placemarkDescription);
+            						buildingQueue.add(colladaBundle);
+        						}
+        					}	
+        					else { // kml
         						String path = config.getInternal().getExportFileName().trim();
         						path = path.substring(0, path.lastIndexOf(File.separator));
         						try {
@@ -165,7 +176,7 @@ public class KmlExporterManager {
         							if (!balloonsDirectory.exists()) {
         								balloonsDirectory.mkdir();
         							}
-        							File htmlFile = new File(balloonsDirectory, placemark.getName() + ".html");
+        							File htmlFile = new File(balloonsDirectory, work.getGmlId() + ".html");
         							FileOutputStream outputStream = new FileOutputStream(htmlFile);
         							outputStream.write(placemarkDescription.getBytes());
         							outputStream.close();
@@ -176,18 +187,17 @@ public class KmlExporterManager {
         					}
         					balloonExtracted = true;
         				}
+        				placemark.setDescription(parentFrame.toString());
         			}
 
         			if (isBBoxActive && config.getProject().getKmlExporter().isOneFilePerObject()) {
-						String displayFormName = work.getDisplayForm().getName();
         				if (gmlId == null) {
         					gmlId = work.getGmlId();
 							String path = config.getInternal().getExportFileName().trim();
 							path = path.substring(0, path.lastIndexOf(File.separator));
-							String filename = null;
 							boolean isHighlighting = false;
 
-							filename = gmlId + "_" + displayFormName;
+							String filename = gmlId + "_" + displayFormName;
 							if (placemark.getId().startsWith(DisplayForm.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID)) {
 								filename = filename + "_" + DisplayForm.HIGHLIGTHTED_STR;
 								isHighlighting = true;
@@ -249,6 +259,10 @@ public class KmlExporterManager {
 
 							LodType lodType = kmlFactory.createLodType();
 							lodType.setMinLodPixels(config.getProject().getKmlExporter().getSingleObjectRegionSize());
+							if (work.getDisplayForm().getVisibleUpTo() == -1)
+								lodType.setMaxLodPixels(-1.0);
+							else
+								lodType.setMaxLodPixels((double)work.getDisplayForm().getVisibleUpTo() * (lodType.getMinLodPixels()/work.getDisplayForm().getVisibleFrom()));
 							
 							RegionType regionType = kmlFactory.createRegionType();
 							regionType.setLatLonAltBox(latLonAltBoxType);
@@ -266,12 +280,29 @@ public class KmlExporterManager {
         			else {
         				kmlMarshaller.marshal(kmlFactory.createPlacemark(placemark), buffer);
         			}
+
         		}
         	}
-			if (isBBoxActive && config.getProject().getKmlExporter().isOneFilePerObject() && kmlType != null) { // some Placemarks ARE null
+
+        	if (isBBoxActive && config.getProject().getKmlExporter().isOneFilePerObject() && kmlType != null) { // some Placemarks ARE null
 				if (config.getProject().getKmlExporter().isExportAsKmz()) {
     				kmlMarshaller.marshal(kmlFactory.createKml(kmlType), fileWriter);
 					zipOut.closeEntry();
+
+					if (balloonInSeparateFile) {
+						for (PlacemarkType placemark: placemarkList) {
+							if (placemark != null) {
+								ZipEntry zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + work.getGmlId() + ".html");
+								if (placemarkDescription != null) {
+									zipOut.putNextEntry(zipEntry);
+									zipOut.write(placemarkDescription.getBytes(CHARSET));
+									zipOut.closeEntry();
+									break; // only once since gmlId is the same for all placemarks
+								}
+							}
+						}
+					}
+
 					zipOut.close();
 				}
 				else {
@@ -316,7 +347,14 @@ public class KmlExporterManager {
 			if (placemarkDescription != null && balloonInSeparateFile) {
 
 				StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandlerImpl.parentFrameStart);
-				parentFrame.append(colladaBundle.getGmlId());
+    			if (isBBoxActive && 
+       				config.getProject().getKmlExporter().isOneFilePerObject() &&
+       				!config.getProject().getKmlExporter().isExportAsKmz())
+    				parentFrame.append(".."); // one up
+    			else
+    				parentFrame.append("."); // same folder
+				parentFrame.append('/').append(BalloonTemplateHandlerImpl.balloonDirectoryName);
+				parentFrame.append('/').append(colladaBundle.getGmlId());
 				parentFrame.append(BalloonTemplateHandlerImpl.parentFrameEnd);
 				placemark.setDescription(parentFrame.toString());
 				colladaBundle.setExternalBalloonFileContent(placemarkDescription);
@@ -379,7 +417,12 @@ public class KmlExporterManager {
 
 				LodType lodType = kmlFactory.createLodType();
 				lodType.setMinLodPixels(config.getProject().getKmlExporter().getSingleObjectRegionSize());
-				
+/*
+				if (work.getDisplayForm().getVisibleUpTo() == -1)
+					lodType.setMaxLodPixels(-1.0);
+				else
+					lodType.setMaxLodPixels((double)work.getDisplayForm().getVisibleUpTo() * (lodType.getMinLodPixels()/work.getDisplayForm().getVisibleFrom()));
+*/
 				regionType.setLatLonAltBox(latLonAltBoxType);
 				regionType.setLod(lodType);
 

@@ -310,6 +310,10 @@ public class Building extends KmlGenericObject{
 						if (work.getDisplayForm().isHighlightingEnabled()) {
 							return createPlacemarksForHighlighting(buildingPartId, work);
 						}
+						// just COLLADA, no KML
+						List<PlacemarkType> dummy = new ArrayList<PlacemarkType>();
+						dummy.add(null);
+						return dummy;
 					}
 					catch (Exception ioe) {
 						ioe.printStackTrace();

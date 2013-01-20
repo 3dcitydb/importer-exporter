@@ -725,7 +725,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		"        f.style.width = (f.contentWindow.document.body.scrollWidth + 20) + \"px\";\n" +
       	"      }\n" +
       	"    </script>\n" +
-      	"    <iframe frameborder=0 border=0 src=\"./" + balloonDirectoryName + "/";
+      	"    <iframe frameborder=0 border=0 src=\"";
 
 	public static final String parentFrameEnd = ".html\" id=\"childframe\"></iframe>\n" +
 		"  </body>\n" +
