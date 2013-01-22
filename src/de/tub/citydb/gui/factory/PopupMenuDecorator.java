@@ -41,12 +41,12 @@ import javax.swing.JTree;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreePath;
 
-import de.tub.citydb.api.gui.StandardPopupMenuDecorator;
+import de.tub.citydb.api.gui.StandardEditingPopupMenuDecorator;
 import de.tub.citydb.gui.factory.popup.AbstractStandardPopupMenu;
 import de.tub.citydb.gui.factory.popup.StandardEditingPopupMenu;
 import de.tub.citydb.gui.factory.popup.StandardTreePopupMenu;
 
-public class PopupMenuDecorator implements StandardPopupMenuDecorator {
+public class PopupMenuDecorator implements StandardEditingPopupMenuDecorator {
 	private static PopupMenuDecorator instance;
 	private static HashMap<Class<? extends Component>, AbstractStandardPopupMenu> popupMenus = new HashMap<Class<? extends Component>, AbstractStandardPopupMenu>();
 
