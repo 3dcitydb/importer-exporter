@@ -41,7 +41,7 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
+// import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -76,7 +76,6 @@ public class KmlExporterManager {
 	private final JAXBContext jaxbColladaContext;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final ObjectFactory kmlFactory; 
-	private final ConcurrentLinkedQueue<ColladaBundle> buildingQueue;
 	private final Config config;
 	
 	private boolean isBBoxActive;
@@ -84,18 +83,17 @@ public class KmlExporterManager {
 	
 	private static final String ENCODING = "UTF-8";
 	private static final Charset CHARSET = Charset.forName(ENCODING);
+	private static final String TEMP_FOLDER = "__temp";
 
 	public KmlExporterManager(JAXBContext jaxbKmlContext,
 							  JAXBContext jaxbColladaContext,
 							  WorkerPool<SAXEventBuffer> ioWriterPool,
 							  ObjectFactory kmlFactory,
-							  ConcurrentLinkedQueue<ColladaBundle> buildingQueue,
 							  Config config) {
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.ioWriterPool = ioWriterPool;
 		this.kmlFactory = kmlFactory;
-		this.buildingQueue = buildingQueue;
 		this.config = config;
 
 		isBBoxActive = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue();
@@ -147,11 +145,13 @@ public class KmlExporterManager {
 
 					if (placemark.getDescription() != null && balloonInSeparateFile) {
 						StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandlerImpl.parentFrameStart);
-	        			if (isBBoxActive && 
+/*
+						if (isBBoxActive && 
 	        				config.getProject().getKmlExporter().isOneFilePerObject() &&
 	        				!config.getProject().getKmlExporter().isExportAsKmz())
 	        				parentFrame.append(".."); // one up
 	        			else
+*/
 	        				parentFrame.append('.'); // same folder
 
         				parentFrame.append('/').append(BalloonTemplateHandlerImpl.balloonDirectoryName);
@@ -160,31 +160,46 @@ public class KmlExporterManager {
 
         				if (!balloonExtracted) {
         					placemarkDescription = placemark.getDescription();
-        					if (config.getProject().getKmlExporter().isExportAsKmz()) {
-        						if (!isBBoxActive || !config.getProject().getKmlExporter().isOneFilePerObject()) {
-            						ColladaBundle colladaBundle = new ColladaBundle();
-            						colladaBundle.setGmlId(work.getGmlId());
-            						colladaBundle.setExternalBalloonFileContent(placemarkDescription);
-            						buildingQueue.add(colladaBundle);
-        						}
-        					}	
-        					else { // kml
-        						String path = config.getInternal().getExportFileName().trim();
-        						path = path.substring(0, path.lastIndexOf(File.separator));
-        						try {
-        							File balloonsDirectory = new File(path + File.separator + BalloonTemplateHandlerImpl.balloonDirectoryName);
-        							if (!balloonsDirectory.exists()) {
-        								balloonsDirectory.mkdir();
-        							}
-        							File htmlFile = new File(balloonsDirectory, work.getGmlId() + ".html");
-        							FileOutputStream outputStream = new FileOutputStream(htmlFile);
-        							outputStream.write(placemarkDescription.getBytes());
-        							outputStream.close();
-        						}
-        						catch (IOException ioe) {
-        							ioe.printStackTrace();
-        						}
-        					}
+
+        					// --------------- create subfolder ---------------
+    						String path = config.getInternal().getExportFileName().trim();
+    						path = path.substring(0, path.lastIndexOf(File.separator));
+    						File directory =  new File(path);
+
+							if (config.getProject().getKmlExporter().isExportAsKmz()) {
+								if (!isBBoxActive || !config.getProject().getKmlExporter().isOneFilePerObject()) {
+        							// export temporarily as kml, it will be later added to kmz if needed
+    								directory = new File(path, TEMP_FOLDER);
+    								if (!directory.exists()) {
+    									directory.mkdir();
+    								}
+    							}
+							}
+							else { // export as kml
+								if (config.getProject().getKmlExporter().isOneFilePerObject()) {
+									directory = new File(path, work.getGmlId());
+		        					if (!directory.exists()) {
+		        						directory.mkdir();
+		        					}
+    							}
+    						}
+
+    						if (!config.getProject().getKmlExporter().isOneFilePerObject() || !config.getProject().getKmlExporter().isExportAsKmz()) {
+	       						try {
+	       							File balloonsDirectory = new File(directory, BalloonTemplateHandlerImpl.balloonDirectoryName);
+	       							if (!balloonsDirectory.exists()) {
+	       								balloonsDirectory.mkdir();
+	       							}
+	       							File htmlFile = new File(balloonsDirectory, placemark.getName() + ".html");
+	       							FileOutputStream outputStream = new FileOutputStream(htmlFile);
+	       							outputStream.write(placemarkDescription.getBytes(CHARSET));
+	       							outputStream.close();
+	       						}
+	       						catch (IOException ioe) {
+	       							ioe.printStackTrace();
+	       						}
+    						}
+
         					balloonExtracted = true;
         				}
         				placemark.setDescription(parentFrame.toString());
@@ -450,80 +465,83 @@ public class KmlExporterManager {
 
 		// so much for the placemark, now model, images and balloon...
 
-		if (config.getProject().getKmlExporter().isExportAsKmz()) {
+		if (config.getProject().getKmlExporter().isExportAsKmz() &&	isBBoxActive
+				&& config.getProject().getKmlExporter().isOneFilePerObject()) {
 			// marshalling in parallel threads should save some time
 	        StringWriter sw = new StringWriter();
 	        colladaMarshaller.marshal(colladaBundle.getCollada(), sw);
 	        colladaBundle.setColladaAsString(sw.toString());
 	        colladaBundle.setCollada(null); // free heap space
 
-	        // list will be used at KmlExporter since ZipOutputStream
-	        // must be accessed sequentially and is not thread-safe
-			if (!isBBoxActive || !config.getProject().getKmlExporter().isOneFilePerObject()) {
-				buildingQueue.add(colladaBundle);
-			}
-			else {
-				// ----------------- model saving -----------------
-				ZipEntry zipEntry = new ZipEntry(colladaBundle.getGmlId() + "/" + colladaBundle.getGmlId() + ".dae");
-				zipOut.putNextEntry(zipEntry);
-				zipOut.write(colladaBundle.getColladaAsString().getBytes(CHARSET));
-				zipOut.closeEntry();
+	        // ----------------- model saving -----------------
+	        ZipEntry zipEntry = new ZipEntry(colladaBundle.getGmlId() + "/" + colladaBundle.getGmlId() + ".dae");
+	        zipOut.putNextEntry(zipEntry);
+	        zipOut.write(colladaBundle.getColladaAsString().getBytes(CHARSET));
+	        zipOut.closeEntry();
 
-				// ----------------- image saving -----------------
-				if (colladaBundle.getTexOrdImages() != null) {
-					Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
-					Iterator<String> iterator = keySet.iterator();
-					while (iterator.hasNext()) {
-						String imageFilename = iterator.next();
-						OrdImage texOrdImage = colladaBundle.getTexOrdImages().get(imageFilename);
-//						byte[] ordImageBytes = texOrdImage.getDataInByteArray();
-						byte[] ordImageBytes = texOrdImage.getBlobContent().getBytes(1, (int)texOrdImage.getBlobContent().length());
+	        // ----------------- image saving -----------------
+	        if (colladaBundle.getTexOrdImages() != null) {
+	        	Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
+	        	Iterator<String> iterator = keySet.iterator();
+	        	while (iterator.hasNext()) {
+	        		String imageFilename = iterator.next();
+	        		OrdImage texOrdImage = colladaBundle.getTexOrdImages().get(imageFilename);
+//					byte[] ordImageBytes = texOrdImage.getDataInByteArray();
+	        		byte[] ordImageBytes = texOrdImage.getBlobContent().getBytes(1, (int)texOrdImage.getBlobContent().length());
 
-//						zipEntry = new ZipEntry(imageFilename);
-						zipEntry = imageFilename.startsWith("..") ?
-								   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
-								   new ZipEntry(colladaBundle.getGmlId() + "/" + imageFilename);
-						zipOut.putNextEntry(zipEntry);
-						zipOut.write(ordImageBytes, 0, ordImageBytes.length);
-//						zipOut.write(ordImageBytes, 0, bytes_read);
-						zipOut.closeEntry();
-					}
-				}
+//					zipEntry = new ZipEntry(imageFilename);
+	        		zipEntry = imageFilename.startsWith("..") ?
+	        				   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
+	        				   new ZipEntry(colladaBundle.getGmlId() + "/" + imageFilename);
+	        		zipOut.putNextEntry(zipEntry);
+	        		zipOut.write(ordImageBytes, 0, ordImageBytes.length);
+//					zipOut.write(ordImageBytes, 0, bytes_read);
+	        		zipOut.closeEntry();
+	        	}
+	        }
 
-				if (colladaBundle.getTexImages() != null) {
-					Set<String> keySet = colladaBundle.getTexImages().keySet();
-					Iterator<String> iterator = keySet.iterator();
-					while (iterator.hasNext()) {
-						String imageFilename = iterator.next();
-						BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename);
-						String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
+	        if (colladaBundle.getTexImages() != null) {
+	        	Set<String> keySet = colladaBundle.getTexImages().keySet();
+	        	Iterator<String> iterator = keySet.iterator();
+	        	while (iterator.hasNext()) {
+	        		String imageFilename = iterator.next();
+	        		BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename);
+	        		String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
-//						zipEntry = new ZipEntry(imageFilename);
-						zipEntry = imageFilename.startsWith("..") ?
-								   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
-								   new ZipEntry(colladaBundle.getGmlId() + "/" + imageFilename);
-						zipOut.putNextEntry(zipEntry);
-						ImageIO.write(texImage, imageType, zipOut);
-						zipOut.closeEntry();
-					}
-				}
-
-				// ----------------- balloon saving -----------------
-				if (colladaBundle.getExternalBalloonFileContent() != null) {
-					zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + colladaBundle.getGmlId() + ".html");
+//					zipEntry = new ZipEntry(imageFilename);
+					zipEntry = imageFilename.startsWith("..") ?
+							   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
+							   new ZipEntry(colladaBundle.getGmlId() + "/" + imageFilename);
 					zipOut.putNextEntry(zipEntry);
-					zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes(CHARSET));
+					ImageIO.write(texImage, imageType, zipOut);
 					zipOut.closeEntry();
-				}
-
-				zipOut.close();
+	        	}
 			}
+
+			// ----------------- balloon saving -----------------
+			if (colladaBundle.getExternalBalloonFileContent() != null) {
+				zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + colladaBundle.getGmlId() + ".html");
+				zipOut.putNextEntry(zipEntry);
+				zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes(CHARSET));
+				zipOut.closeEntry();
+			}
+
+			zipOut.close();
 		}
-		else { // export as kml
-			// --------------- create subfolder ---------------
+		else {
 			String path = config.getInternal().getExportFileName().trim();
 			path = path.substring(0, path.lastIndexOf(File.separator));
-			File buildingDirectory = new File(path + File.separator + colladaBundle.getGmlId());
+			if (config.getProject().getKmlExporter().isExportAsKmz()) {
+				// export temporarily as kml, it will be later added to kmz if needed
+				File tempFolder = new File(path, TEMP_FOLDER);
+				if (!tempFolder.exists()) {
+					tempFolder.mkdir();
+				}
+				path = path + File.separator + TEMP_FOLDER;
+			}
+
+			// --------------- create subfolder ---------------
+			File buildingDirectory = new File(path, colladaBundle.getGmlId());
 			if (!buildingDirectory.exists()) {
 				buildingDirectory.mkdir();
 			}

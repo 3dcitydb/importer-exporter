@@ -33,7 +33,6 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.EnumMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.xml.bind.JAXBContext;
@@ -107,7 +106,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			WorkerPool<SAXEventBuffer> ioWriterPool,
 			ObjectFactory kmlFactory,
 			CityGMLFactory cityGMLFactory,
-			ConcurrentLinkedQueue<ColladaBundle> buildingQueue,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.kmlFactory = kmlFactory;
@@ -126,7 +124,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 													jaxbColladaContext,
 													ioWriterPool,
 													kmlFactory,
-													buildingQueue,
 													config);
 
 		elevationServiceHandler = new ElevationServiceHandler();

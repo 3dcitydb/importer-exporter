@@ -29,27 +29,25 @@
  */
 package de.tub.citydb.modules.kml.controller;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
-import javax.imageio.ImageIO;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -77,7 +75,6 @@ import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
-import oracle.ord.im.OrdImage;
 
 import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -118,11 +115,9 @@ import de.tub.citydb.modules.common.event.StatusDialogTitle;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.FilterMode;
 import de.tub.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
-import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.database.Building;
 import de.tub.citydb.modules.kml.database.CityFurniture;
 import de.tub.citydb.modules.kml.database.CityObjectGroup;
-import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.GenericCityObject;
 import de.tub.citydb.modules.kml.database.KmlSplitter;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
@@ -156,6 +151,7 @@ public class KmlExporter implements EventHandler {
 
 	private static final String ENCODING = "UTF-8";
 	private static final Charset CHARSET = Charset.forName(ENCODING);
+	private static final String TEMP_FOLDER = "__temp";
 
 	private final DatabaseSrs WGS84_2D = Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D);
 
@@ -174,6 +170,7 @@ public class KmlExporter implements EventHandler {
 	private EnumMap<CityGMLClass, Long>featureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
 	private long geometryCounter;
 
+	private File lastTempFolder;
 	private static HashMap<Long, CityObject4JSON> alreadyExported;
 
 	public KmlExporter (JAXBContext jaxbKmlContext,
@@ -338,12 +335,6 @@ public class KmlExporter implements EventHandler {
 			for (int i = 0; shouldRun && i < rows; i++) {
 				for (int j = 0; shouldRun && j < columns; j++) {
 
-					ConcurrentLinkedQueue<ColladaBundle> buildingQueue = null;
-					if (displayForm.getForm() >= DisplayForm.COLLADA ||
-							config.getProject().getKmlExporter().getBuildingBalloon().isBalloonContentInSeparateFile()) {
-						buildingQueue = new ConcurrentLinkedQueue<ColladaBundle>(); 
-					}
-					
 					File file = null;
 					OutputStreamWriter fileWriter = null;
 					ZipOutputStream zipOut = null;
@@ -397,7 +388,6 @@ public class KmlExporter implements EventHandler {
 										ioWriterPool,
 										kmlFactory,
 										cityGMLFactory,
-										buildingQueue,
 										config,
 										eventDispatcher),
 										300,
@@ -499,75 +489,32 @@ public class KmlExporter implements EventHandler {
 							if (config.getProject().getKmlExporter().isExportAsKmz()) { 
 								zipOut.closeEntry();
 
-								// ZipOutputStream must be accessed sequentially and is not thread-safe
-								if (buildingQueue != null) {
-									ColladaBundle colladaBundle = buildingQueue.poll();
-									while (colladaBundle != null) {
-										// ----------------- model saving -----------------
-										if (colladaBundle.getColladaAsString() != null) {
-											// File.separator would be wrong here, it MUST be "/"
-											ZipEntry zipEntry = new ZipEntry(colladaBundle.getGmlId() + "/" 
-													+ colladaBundle.getGmlId() + ".dae");
+								List<File> filesToZip = new ArrayList<File>();
+								File tempFolder = new File(path, TEMP_FOLDER);
+								lastTempFolder = tempFolder;
+								int indexOfZipFilePath = tempFolder.getCanonicalPath().length() + 1;
+
+								if (tempFolder.exists()) { // !config.getProject().getKmlExporter().isOneFilePerObject()
+									getAllFiles(tempFolder, filesToZip);
+									for (File fileToZip : filesToZip) {
+										if (!fileToZip.isDirectory()) {
+											FileInputStream inputStream = new FileInputStream(fileToZip);
+											String zipEntryName = fileToZip.getCanonicalPath().substring(indexOfZipFilePath);
+											zipEntryName = zipEntryName.replace(File.separator, "/"); // MUST
+											ZipEntry zipEntry = new ZipEntry(zipEntryName);
 											zipOut.putNextEntry(zipEntry);
-											zipOut.write(colladaBundle.getColladaAsString().getBytes(CHARSET));
+	
+											byte[] bytes = new byte[64*1024]; // 64K should be enough for most
+											int length;
+											while ((length = inputStream.read(bytes)) >= 0) {
+												zipOut.write(bytes, 0, length);
+											}
+											inputStream.close();
 											zipOut.closeEntry();
 										}
-
-										// ----------------- balloon saving -----------------
-										if (colladaBundle.getExternalBalloonFileContent() != null) {
-											ZipEntry zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + colladaBundle.getGmlId() + ".html");
-											zipOut.putNextEntry(zipEntry);
-											zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes(CHARSET));
-											zipOut.closeEntry();
-										}
-
-										// ----------------- image saving -----------------
-										if (colladaBundle.getTexOrdImages() != null) {
-											Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
-											Iterator<String> iterator = keySet.iterator();
-											while (iterator.hasNext()) {
-												String imageFilename = iterator.next();
-												OrdImage texOrdImage = colladaBundle.getTexOrdImages().get(imageFilename);
-												if (texOrdImage.getContentLength() < 1) continue;
-//												byte[] ordImageBytes = texOrdImage.getDataInByteArray();
-												byte[] ordImageBytes = texOrdImage.getBlobContent().getBytes(1, (int)texOrdImage.getBlobContent().length());
-
-												ZipEntry zipEntry = imageFilename.startsWith("..") ?
-																	new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
-																	new ZipEntry(colladaBundle.getGmlId() + "/" + imageFilename);
-												try {
-													zipOut.putNextEntry(zipEntry);
-//													zipOut.write(ordImageBytes, 0, bytes_read);
-													zipOut.write(ordImageBytes, 0, ordImageBytes.length);
-													zipOut.closeEntry();
-												}
-												catch (ZipException ze) {} // ignore repeated images
-											}
-										}
-
-										if (colladaBundle.getTexImages() != null) {
-											Set<String> keySet = colladaBundle.getTexImages().keySet();
-											Iterator<String> iterator = keySet.iterator();
-											while (iterator.hasNext()) {
-												String imageFilename = iterator.next();
-												BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename);
-												String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
-
-												ZipEntry zipEntry = imageFilename.startsWith("..") ?
-																    new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
-																    new ZipEntry(colladaBundle.getGmlId() + "/" + imageFilename);
-												try {
-													zipOut.putNextEntry(zipEntry);
-													ImageIO.write(texImage, imageType, zipOut);
-													zipOut.closeEntry();
-												}
-												catch (ZipException ze) {} // ignore repeated images
-											}
-										}
-										colladaBundle = buildingQueue.poll();
 									}
+									deleteFolder(tempFolder);
 								}
-
 								zipOut.close();
 							}
 							fileWriter.close();
@@ -653,16 +600,7 @@ public class KmlExporter implements EventHandler {
 		}
 		
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.finish.msg"), this));
-/*
-		Logger.getInstance().info("Exported CityGML features:");
-		int appearances = 0;
-		for (DisplayForm displayForm : config.getProject().getKmlExporter().getDisplayLevels()) {
-			if (displayForm.isActive() && DisplayForm.COLLADA == displayForm.getLevel()) {
-				appearances = de.tub.citydb.config.project.kmlExporter.KmlExporter.THEME_NONE.equals(selectedTheme)? 0 : 1;
-				break;
-			}
-		}
-*/
+
 		// show exported features
 		if (!featureCounterMap.isEmpty()) {
 			Logger.getInstance().info("Exported CityGML features:");
@@ -671,6 +609,8 @@ public class KmlExporter implements EventHandler {
 		}
 		Logger.getInstance().info("Processed geometry objects: " + geometryCounter);
 
+		if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
+		
 		return shouldRun;
 	}
 
@@ -978,7 +918,7 @@ public class KmlExporter implements EventHandler {
 				break;
 
 			case CITY_OBJECT_GROUP:
-				addStyle(config.getProject().getKmlExporter().getCityObjectGroupDisplayForms().get(0), // hard-coded for groups
+				addStyle(new DisplayForm(DisplayForm.FOOTPRINT, -1, -1), // hard-coded for groups
 						 config.getProject().getKmlExporter().getCityObjectGroupDisplayForms(),
 						 CityObjectGroup.STYLE_BASIS_NAME);
 				break;
@@ -1379,6 +1319,29 @@ public class KmlExporter implements EventHandler {
 		return true;
 	}
 
+	private static void getAllFiles(File startFolder, List<File> fileList) {
+		File[] files = startFolder.listFiles();
+		for (File file : files) {
+			fileList.add(file);
+			if (file.isDirectory())
+				getAllFiles(file, fileList);
+		}
+	}
+
+	private static void deleteFolder(File folder) {
+	    if (folder == null) return;
+	    File[] files = folder.listFiles();
+	    if (files != null) {
+	        for (File f: files) {
+	            if (f.isDirectory())
+	                deleteFolder(f);
+	            else
+	                f.delete();
+	        }
+	    }
+	    folder.delete();
+	}
+
 	@Override
 	public void handleEvent(Event e) throws Exception {
 
@@ -1446,6 +1409,8 @@ public class KmlExporter implements EventHandler {
 				if (kmlWorkerPool != null) {
 					kmlWorkerPool.shutdownNow();
 				}
+
+				if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
 			}
 		}
 	}
