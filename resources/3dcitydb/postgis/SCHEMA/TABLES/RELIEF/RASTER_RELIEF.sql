@@ -1,17 +1,17 @@
 -- RASTER_RELIEF.sql
 --
 -- Authors:     Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
---              Prof. Dr. Thomas H. Kolbe <kolbe@igg.tu-berlin.de>
+--              Prof. Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Dr. Gerhard Groeger <groeger@ikg.uni-bonn.de>
 --              Joerg Schmittwilken <schmittwilken@ikg.uni-bonn.de>
 --              Viktor Stroh <stroh@ikg.uni-bonn.de>
 --              Dr. Andreas Poth <poth@lat-lon.de>
 --              Gerhard Koenig <gerhard.koenig@tu-berlin.de>
---              Claus Nagel <nagel@igg.tu-berlin.de>
+--              Claus Nagel <claus.nagel@tu-berlin.de>
 --              Alexandra Stadler <stadler@igg.tu-berlin.de>
 --
 -- Conversion:  Laure Fraysse <Laure.fraysse@etumel.univmed.fr>
---              Felix Kunde <felix-kunde@gmx.de>
+--              Felix Kunde <fkunde@virtualcitysystems.de>
 --
 -- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universitaet Berlin, Germany

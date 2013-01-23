@@ -1,6 +1,6 @@
 -- ORTHOPHOTO.sql
 --
--- Authors:     Prof. Dr. Thomas H. Kolbe <kolbe@igg.tu-berlin.de>
+-- Authors:     Prof. Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
 --              Dr. Gerhard Groeger <groeger@ikg.uni-bonn.de>
 --              Joerg Schmittwilken <schmittwilken@ikg.uni-bonn.de>
@@ -8,7 +8,7 @@
 --              Dr. Andreas Poth <poth@lat-lon.de>
 --
 -- Conversion:  Laure Fraysse <Laure.fraysse@etumel.univmed.fr>
---              Felix Kunde <felix-kunde@gmx.de>
+--              Felix Kunde <fkunde@virtualcitysystems.de>
 --
 -- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universitaet Berlin, Germany

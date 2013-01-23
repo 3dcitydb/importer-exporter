@@ -177,7 +177,7 @@ Javier Herreruela <javier.herreruela@tu-berlin.de>
 Alexandra Lorenz <lorenz@tu-berlin.de>
 Gerhard König <gerhard.koenig@tu-berlin.de>
 Thomas H. Kolbe <thomas.kolbe@tum.de>
-Felix Kunde <felix-kunde@gmx.de>
+Felix Kunde <fkunde@virtualcitysystems.de>
 
 
 9. Contact
@@ -185,7 +185,7 @@ Felix Kunde <felix-kunde@gmx.de>
 
 claus.nagel@tu-berlin.de
 javier.herreruela@tu-berlin.de
-felix-kunde@gmx.de
+fkunde@virtualcitysystems.de
 
 
 10. Websites

@@ -1,6 +1,6 @@
 -- VACUUM_SPATIAL_COLUMNS.sql
 --
--- Authors:     Felix Kunde <felix-kunde@gmx.de>
+-- Authors:     Felix Kunde <fkunde@virtualcitysystems.de>
 --
 -- Copyright:   (c) 2007-2012, Institute for Geodesy and Geoinformation Science,
 --                             Technische Universitaet Berlin, Germany

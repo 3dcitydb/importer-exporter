@@ -1,8 +1,8 @@
 -- MATCH.sql
 --
--- Authors:     Claus Nagel <nagel@igg.tu-berlin.de>
+-- Authors:     Claus Nagel <claus.nagel@tu-berlin.de>
 --
--- Conversion:  Felix Kunde <felix-kunde@gmx.de>
+-- Conversion:  Felix Kunde <fkunde@virtualcitysystems.de>
 --
 -- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universitaet Berlin, Germany

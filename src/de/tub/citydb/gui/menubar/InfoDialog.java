@@ -1,6 +1,6 @@
 /*
  * This file is part of the 3D City Database Importer/Exporter.
- * Copyright (c) 2007 - 2012
+ * Copyright (c) 2007 - 2013
  * Institute for Geodesy and Geoinformation Science
  * Technische Universitaet Berlin, Germany
  * http://www.gis.tu-berlin.de/
@@ -144,7 +144,7 @@ public class InfoDialog extends JDialog {
 
 			authors.setText("Claus Nagel <claus.nagel@tu-berlin.de>\n" +
 					"Javier Herreruela <javier.herreruela@tu-berlin.de>\n" +
-					"Felix Kunde <felix-kunde@gmx.de>\n" +
+					"Felix Kunde <fkunde@virtualcitysystems.de>\n" +
 					"Alexandra Lorenz <lorenz@tu-berlin.de>\n" +
 					"Gerhard König <gerhard.koenig@tu-berlin.de>\n" +
 			"Thomas H. Kolbe <thomas.kolbe@tum.de>"); 				

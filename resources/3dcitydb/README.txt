@@ -190,7 +190,7 @@ financially supported by the following cooperation partners:
 
 Claus Nagel <claus.nagel@tu-berlin.de>
 Javier Herreruela <javier.herreruela@tu-berlin.de>
-Felix Kunde <felix-kunde@gmx.de>
+Felix Kunde <fkunde@virtualcitysystems.de>
 Alexandra Lorenz <lorenz@tu-berlin.de>
 Gerhard Koenig <gerhard.koenig@tu-berlin.de>
 Thomas H. Kolbe <thomas.kolbe@tum.de>
@@ -201,10 +201,10 @@ Thomas H. Kolbe <thomas.kolbe@tum.de>
 
 claus.nagel@tu-berlin.de
 javier.herreruela@tu-berlin.de
-felix-kunde@gmx.de
+fkunde@virtualcitysystems.de
 lorenz@tu-berlin.de
 gerhard.koenig@tu-berlin.de
-thomas.kolbe@tu-berlin.de
+thomas.kolbe@tum.de
 
 
 11. Websites
