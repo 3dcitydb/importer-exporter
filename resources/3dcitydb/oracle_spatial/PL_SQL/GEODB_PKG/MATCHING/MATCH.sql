@@ -1,6 +1,6 @@
 -- MATCH.sql
 --
--- Authors:     Claus Nagel <nagel@igg.tu-berlin.de>
+-- Authors:     Claus Nagel <claus.nagel@tu-berlin.de>
 --
 -- Copyright:   (c) 2007-2008  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany

@@ -1,13 +1,13 @@
 -- CREATE_PLANNING_PROCEDURES.sql
 --
 -- Authors:     Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
---              Dr. Thomas H. Kolbe <kolbe@ikg.uni-bonn.de>
+--              Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Dr. Gerhard Groeger <groeger@ikg.uni-bonn.de>
 --              Joerg Schmittwilken <schmittwilken@ikg.uni-bonn.de>
 --              Viktor Stroh <stroh@ikg.uni-bonn.de>
 --
 -- Copyright:   (c) 2004-2006, Institute for Cartography and Geoinformation,
---                             Universität Bonn, Germany
+--                             Universitï¿½t Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -117,7 +117,7 @@ IS
 BEGIN
   AcceptPlanningBdy(planningId, acceptedAlternativeId, status, message);
   IF status = 1 THEN
-    DBMS_OUTPUT.put_line('Planung übernommen');
+    DBMS_OUTPUT.put_line('Planung ï¿½bernommen');
   ELSE
     DBMS_OUTPUT.put_line('Fehler: ' || message);
   END IF;

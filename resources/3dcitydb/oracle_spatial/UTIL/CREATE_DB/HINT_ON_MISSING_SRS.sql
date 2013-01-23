@@ -1,14 +1,14 @@
 -- HINT_ON_MISSING_SRS.sql
 --
 -- Authors:     Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
---              Dr. Thomas H. Kolbe <kolbe@ikg.uni-bonn.de>
+--              Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Dr. Gerhard Groeger <groeger@ikg.uni-bonn.de>
 --              Joerg Schmittwilken <schmittwilken@ikg.uni-bonn.de>
 --              Viktor Stroh <stroh@ikg.uni-bonn.de>
 --              Dr. Andreas Poth <poth@lat-lon.de>
 --
 -- Copyright:   (c) 2004-2007, Institute for Cartography and Geoinformation,
---                             Universität Bonn, Germany
+--                             Universitï¿½t Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --              (c) 2005-2007, lat/lon GmbH, Germany
 --                             http://www.lat-lon.de

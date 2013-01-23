@@ -1,21 +1,20 @@
 -- CREATE_PLANNINGALTERNATIVE_PROCEDUREBODYS.sql
 --
--- Authors:     Prof. Dr. Thomas H. Kolbe <kolbe@igg.tu-berlin.de>
---              Gerhard König <gerhard.koenig@tu-berlin.de>
---              Claus Nagel <nagel@igg.tu-berlin.de>
+-- Authors:     Prof. Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
+--              Gerhard KÃ¶nig <gerhard.koenig@tu-berlin.de>
+--              Claus Nagel <claus.nagel@tu-berlin.de>
 --              Alexandra Stadler <stadler@igg.tu-berlin.de>
 --
---     		Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
---              Dr. Thomas H. Kolbe <kolbe@ikg.uni-bonn.de>
+--	     		Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
 --              Dr. Gerhard Groeger <groeger@ikg.uni-bonn.de>
 --              Joerg Schmittwilken <schmittwilken@ikg.uni-bonn.de>
 --              Viktor Stroh <stroh@ikg.uni-bonn.de>
 --
 -- Copyright:   (c) 2007-2008  Institute for Geodesy and Geoinformation Science,
---                             Technische Universität Berlin, Germany
+--                             Technische Universitï¿½t Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --  		(c) 2004-2006, Institute for Cartography and Geoinformation,
---                             Universität Bonn, Germany
+--                             Universitï¿½t Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -56,14 +55,14 @@
  * und erzeugt einen Workspace. Der Workspacename setzt sich aus der Kennung
  * 'PA', dem Benutzernamen,der ID der Planung und der ID der Planungsalternative
  * zusammen (PID_PAID) und wird aus dem Workspace LIVE abgeleitet.
- * Workspacenamen dürfen max. 30 Zeichen lang sein. Ist der Benutzername länger als
- * 15 Zeichen, so werden die ersten zehn und die letzten fünf Zeichen des Namens
- * verwendet. So bleibt im Workspacenamen jeweils fünf Zeichen für PlanungsId und
+ * Workspacenamen dï¿½rfen max. 30 Zeichen lang sein. Ist der Benutzername lï¿½nger als
+ * 15 Zeichen, so werden die ersten zehn und die letzten fï¿½nf Zeichen des Namens
+ * verwendet. So bleibt im Workspacenamen jeweils fï¿½nf Zeichen fï¿½r PlanungsId und
  * ID der Planungsalternative, was 99.999 Planungen und ebenso vielen Alternativen
  * entspricht.
- * Die Prozedur wird nur ausgeführt, wenn die angegebene Planung noch aktiv ist.
+ * Die Prozedur wird nur ausgefï¿½hrt, wenn die angegebene Planung noch aktiv ist.
  *
- * @param planningId Name der Planung, der eine Alternative hinzugefügt werden
+ * @param planningId Name der Planung, der eine Alternative hinzugefï¿½gt werden
  *        soll
  * @param title Kurzbezeichnung der anzulegenden Alternative
  * @param description Kurze Beschreibung der anzulegenden Alternative
@@ -72,7 +71,7 @@
  * @param fatherWorkspaceName Name des Workspace, aus dem der Workspace der
  *        Alternative abgeleitet werden soll
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return Workspacename der Planungsalternative oder Fehlermeldung
  */
 
@@ -105,7 +104,7 @@ BEGIN
   IF planningCount = 1 THEN   -- Planung existiert
     IF planningStatus = 1 THEN  -- Planung noch aktiv
 
-      -- den nächsten Zähler der Sequenz abholen
+      -- den nï¿½chsten Zï¿½hler der Sequenz abholen
       SELECT planning_alternative_seq.nextval INTO sequenceGeneratedId
       FROM dual;
 
@@ -121,7 +120,7 @@ BEGIN
       -- Workspacename festlegen
       workspaceName := 'PA_' || userName || '_' || TO_CHAR(planningId) || '_' || TO_CHAR(sequenceGeneratedId);
 
-      -- Tupel einfügen
+      -- Tupel einfï¿½gen
       INSERT INTO planning_alternative
       VALUES(
         sequenceGeneratedId,
@@ -171,17 +170,17 @@ END;
 
 
 /* 2
- * Die Prozedur ändert die Parameter Titel, Beschreibung,
+ * Die Prozedur ï¿½ndert die Parameter Titel, Beschreibung,
  * Datenbankerzeuger und Planer einer aktiven Planungsalternative.
- * Alle existierenden Einträge werden überschrieben.
+ * Alle existierenden Eintrï¿½ge werden ï¿½berschrieben.
  *
  * @param id ID der Planungsalternative
  * @param title Kurzbezeichnung Planung
  * @param description Kurze Beschreibung der Planung
- * @param generator derjenige, der den Datensatz in die DB einfügt
+ * @param generator derjenige, der den Datensatz in die DB einfï¿½gt
  * @param planner Planer
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return null oder Fehlermeldung
  */
 
@@ -208,7 +207,7 @@ BEGIN
 
   IF paCount = 1 THEN   -- Planungsalternative existiert
     IF paStatus = 1 THEN  -- Planungsalternative noch aktiv
-      -- Ändern eines bestehenden Tupels
+      -- ï¿½ndern eines bestehenden Tupels
       UPDATE planning_alternative
       SET
         title = newTitle,
@@ -248,13 +247,13 @@ END;
 /* 3
  * Die Prozedur beendet einen Datensatz in der Tabelle PLANNING_ALTERNATIVE
  * indem ein Terminierungsdatum gesetzt wird.
- * Der zugehörige Workspace wird nicht gelöscht. Es wird lediglich ein Savepoint
+ * Der zugehï¿½rige Workspace wird nicht gelï¿½scht. Es wird lediglich ein Savepoint
  * mit dem Namen "terminated" gesetzt.
- * Die Prozedur wird nur ausgeführt, wenn die Planung noch nicht beendet wurde.
+ * Die Prozedur wird nur ausgefï¿½hrt, wenn die Planung noch nicht beendet wurde.
  *
  * @param planningAlternativeId ID der zu beendenden Planungsalternative
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return null oder Fehlermeldung
  */
 
@@ -319,18 +318,18 @@ END;
 
 
 /* 4 warn
- * TODO: Übergabe der PlanungsalternativenID oder des Workspacenamen?
+ * TODO: ï¿½bergabe der PlanungsalternativenID oder des Workspacenamen?
  *
- * Die Prozedur gibt die Gesamtzahl der Tupel zurück, die im Workspace LIVE
+ * Die Prozedur gibt die Gesamtzahl der Tupel zurï¿½ck, die im Workspace LIVE
  * und dem angegebenen Workspace in unterschiedlichen Versionen vorliegen.
- * Zur Berechnung wird die Summe der Differenzen über alle versionierten
+ * Zur Berechnung wird die Summe der Differenzen ï¿½ber alle versionierten
  * Tabellen (z.B. BUILDINGS, CITYOBJECT usw.) gebildet.
- * Diese Zahl ist einerseits ein Indikator für den Umfang der in der
- * Planungsalternativen durchgeführten Änderungen am 3D-Stadtmodell.
- * Andererseits gibt er Aufschluss über die Komplexität der Übernahme einer
+ * Diese Zahl ist einerseits ein Indikator fï¿½r den Umfang der in der
+ * Planungsalternativen durchgefï¿½hrten ï¿½nderungen am 3D-Stadtmodell.
+ * Andererseits gibt er Aufschluss ï¿½ber die Komplexitï¿½t der ï¿½bernahme einer
  * Planungsalternative in den LIVE Workspace.
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return Anzahl der Differenzen oder Fehlermeldung
  */
 
@@ -367,7 +366,7 @@ BEGIN
 	    -- Differenzen zu LIVE auswerten lassen
 	    dbms_wm.SetDiffVersions('LIVE', ws);
 
-      -- Differenzen zählen 
+      -- Differenzen zï¿½hlen 
       for versioned_tables_rec in versioned_tables_cur loop
         execute immediate 'SELECT (COUNT(WM_CODE) / 3) FROM ' || versioned_tables_rec.table_name || '_DIFF' into c;
         diff := diff + c;
@@ -399,11 +398,11 @@ END;
 
 
 /* 5 warn
- * Ähnlich der Prozedur GetDiff (s.o.) wird die Summe der Differenzen
+ * ï¿½hnlich der Prozedur GetDiff (s.o.) wird die Summe der Differenzen
  * zwischen LIVE und allen Workspaces der nicht beendeten Planungsalternativen
- * zurückgegeben.
+ * zurï¿½ckgegeben.
  *
- * @return Summe der Differenzen oder "0 + Fehlercode" falls beim Ausführen der
+ * @return Summe der Differenzen oder "0 + Fehlercode" falls beim Ausfï¿½hren der
  *         Prozedur Fehler auftreten
  */
 
@@ -419,7 +418,7 @@ IS
   message VARCHAR(256);
   diff NUMBER;
   GetDiffException EXCEPTION;
-  CURSOR planningAlternatives IS  -- enthält alle Workspacenamen
+  CURSOR planningAlternatives IS  -- enthï¿½lt alle Workspacenamen
     SELECT id
     FROM planning_alternative
     WHERE termination_date IS NULL;
@@ -459,20 +458,20 @@ END;
 
 
 /* 6 warn
- * Die Prozedur gibt die Gesamtzahl der Tupel zurück, die sowohl im Workspace
- * LIVE, als auch im angegebenen Workspace geändert wurden. Zur Berechnung wird
- * die Summe der Konflikte über alle versionierten Tabellen (z.B. BUILDINGS,
+ * Die Prozedur gibt die Gesamtzahl der Tupel zurï¿½ck, die sowohl im Workspace
+ * LIVE, als auch im angegebenen Workspace geï¿½ndert wurden. Zur Berechnung wird
+ * die Summe der Konflikte ï¿½ber alle versionierten Tabellen (z.B. BUILDINGS,
  * CITYOBJECT usw.) gebildet.
- * Die Funktion zeigt also an, ob eine Übernahme der Planungsalternative in den
- * LIVE Workspace (Merge) oder ein „Erneuern“ des Originaldatenbestandes in
- * einer Planungsalterna-tive (Refresh) möglich ist. Merge und Refresh können
- * nur für Workspaces durchgeführt wer-den, zwischen denen keine Konflikte
+ * Die Funktion zeigt also an, ob eine ï¿½bernahme der Planungsalternative in den
+ * LIVE Workspace (Merge) oder ein ï¿½Erneuernï¿½ des Originaldatenbestandes in
+ * einer Planungsalterna-tive (Refresh) mï¿½glich ist. Merge und Refresh kï¿½nnen
+ * nur fï¿½r Workspaces durchgefï¿½hrt wer-den, zwischen denen keine Konflikte
  * bestehen.
  *
- * @param workspace Name des Workspaces, dessen Konflikte mit LIVE gezählt
+ * @param workspace Name des Workspaces, dessen Konflikte mit LIVE gezï¿½hlt
  *        werden sollen
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return Anzahl der Konflikte oder Fehlermeldung
  */
 
@@ -510,7 +509,7 @@ BEGIN
       -- Differenzen zu LIVE auswerten lassen
       dbms_wm.SetConflictWorkspace(ws);
 
-      -- Differenzen zählen 
+      -- Differenzen zï¿½hlen 
       for versioned_tables_rec in versioned_tables_cur loop
         execute immediate 'SELECT (COUNT(WM_DELETED) / 3) FROM ' || versioned_tables_rec.table_name || '_DIFF' into c;
         conf := conf + c;
@@ -545,7 +544,7 @@ END;
  * TODO: Kann die Prozedur entfallen?
  *
  * Die Prozedur gibt die Anzahl der Konflikte zwischen LIVE und allen
- * existierenden Workspaces von Planungsalternativen zurück
+ * existierenden Workspaces von Planungsalternativen zurï¿½ck
  */
 
 
@@ -561,7 +560,7 @@ IS
   message VARCHAR(256);
   conf NUMBER;
   GetConfException EXCEPTION;
-  CURSOR planningAlternatives IS  -- enthält alle Workspacenamen
+  CURSOR planningAlternatives IS  -- enthï¿½lt alle Workspacenamen
     SELECT id
     FROM planning_alternative
     WHERE termination_date IS NULL;
@@ -608,23 +607,23 @@ END;
  * Die Prozedur aktualisiert die Daten des Workspaces der angegebenen
  * Planungsalternative mit denen des LIVE Workspaces. Dies ist notwendig, wenn
  * sich der Datenbestand in LIVE seit em Anlegen der Planungsalternative
- * geändert hat. Diese ist beispielsweise dann der Fall, wenn eine anderen
- * Planungsalternative in den LIVE Workspace übernommen wurde. Ände-rungen im
+ * geï¿½ndert hat. Diese ist beispielsweise dann der Fall, wenn eine anderen
+ * Planungsalternative in den LIVE Workspace ï¿½bernommen wurde. ï¿½nde-rungen im
  * LIVE Workspace werden nicht automatisch in alle Kind-Workspaces
- * (Planungsal-ternativen) übernommen!
- * Der Aufruf dieser Prozedur ist nur dann möglich, wenn keine Konflikte
+ * (Planungsal-ternativen) ï¿½bernommen!
+ * Der Aufruf dieser Prozedur ist nur dann mï¿½glich, wenn keine Konflikte
  * zwischen dem LIVE Workspace und dem Workspace der angegebenen
  * Planungsalternative existieren. Es werden durch den Aufruf nur die Tupel der
- * versionierten Tabellen geändert, die in LIVE jünger sind, als im Workspace
+ * versionierten Tabellen geï¿½ndert, die in LIVE jï¿½nger sind, als im Workspace
  * der Planungsalternative. Die Anzahl dieser Tupel kann mit der Prozedur
  * GetDiff vorab analysiert werden.
  * Vor der Aktualisierung des Workspaces wird ein Savepoint mit dem Namen
- * "refreshed" gesetzt (ggf. überschrieben), der es ermöglicht, das Datum des
+ * "refreshed" gesetzt (ggf. ï¿½berschrieben), der es ermï¿½glicht, das Datum des
  * letzten Aufrufens der Prozedur zu speichern.
  *
  * @param planningAlternativeId ID der Planungsalternative
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return null oder Fehlermeldung
  */
 
@@ -657,7 +656,7 @@ BEGIN
       FROM planning_alternative
       WHERE id = planningAlternativeId;
 
-      -- Prüfen ob Savepoint schon existiert
+      -- Prï¿½fen ob Savepoint schon existiert
       SELECT count(savepoint) INTO isRefreshed
       FROM all_workspace_savepoints
       WHERE workspace = workspacename AND savepoint LIKE 'refreshed';
@@ -669,7 +668,7 @@ BEGIN
 
       DBMS_WM.CreateSavepoint(workspacename, 'refreshed');
 
-      -- Ausführen des Refresh
+      -- Ausfï¿½hren des Refresh
       DBMS_WM.RefreshWorkspace(workspacename);
 
 	    setOutParameter(1, NULL, outStatus, outMessage);
@@ -700,13 +699,13 @@ END;
 
 /* 9
  * Die Prozedur gibt das Datum der letzten Aktualisierung des Workspaces einer
- * Planungsalternative zurück. Wurde die Planungsalternative noch nicht
- * expliziet aktualisiert, so wird das Datum zurückgegeben, an dem der Workspace
+ * Planungsalternative zurï¿½ck. Wurde die Planungsalternative noch nicht
+ * expliziet aktualisiert, so wird das Datum zurï¿½ckgegeben, an dem der Workspace
  * angelegt wurde.
  *
  * @param planningAlternativeID ID der Planungsalternative
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return Refresh-Datum oder Fehlermeldung
  */
 
@@ -768,15 +767,15 @@ END;
 
 
 /* 10
- * Die Prozedur löscht alle in der Tabelle planning_alternative vermerkten
+ * Die Prozedur lï¿½scht alle in der Tabelle planning_alternative vermerkten
  * Workspaces (Spalte 'workspace_name') und die entsprechenden Tupel in der
  * Tabelle. Es werden somit alle Planungsalternativen und ihre Workspaces
- * gelöscht!
- * Achtung: Dies Prozedur löscht sämtliche Daten der Workspaces unwiderrufbar
- * und dient lediglich dem Optimieren der Systemperformance oder dem Löschen des
+ * gelï¿½scht!
+ * Achtung: Dies Prozedur lï¿½scht sï¿½mtliche Daten der Workspaces unwiderrufbar
+ * und dient lediglich dem Optimieren der Systemperformance oder dem Lï¿½schen des
  * Datenbankschemas!
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return null oder Fehlermeldung
  */
 
@@ -790,12 +789,12 @@ IS
   -- lokale Variablen
   planningAlternativeId NUMBER;
   workspacename VARCHAR2(30);
-  CURSOR workspaces IS  -- enthält alle Workspacenamen
+  CURSOR workspaces IS  -- enthï¿½lt alle Workspacenamen
     SELECT workspace_name
     FROM planning_alternative;
 
 BEGIN
-  -- Cursor durchlaufen und jeweiligen Workspace löschen
+  -- Cursor durchlaufen und jeweiligen Workspace lï¿½schen
   OPEN workspaces;
     LOOP
       FETCH workspaces INTO workspacename;
@@ -810,7 +809,7 @@ BEGIN
       DELETE planning_alternative
       WHERE id = planningAlternativeId;
 
-      DBMS_OUTPUT.PUT_LINE(planningAlternativeId || ' gelöscht');
+      DBMS_OUTPUT.PUT_LINE(planningAlternativeId || ' gelï¿½scht');
 
     END LOOP;
   CLOSE workspaces;
@@ -832,15 +831,15 @@ END;
 
 
 /* 11
- * Die Prozedur löscht alle terminierten und in der Tabelle planning_alternative
+ * Die Prozedur lï¿½scht alle terminierten und in der Tabelle planning_alternative
  * vermerkten Workspaces (Spalte 'workspace_name') und die entsprechenden Tupel
  * in der Tabelle. Es werden somit alle beendeten Planungsalternativen und ihre
- * Workspaces gelöscht!
- * Achtung: Dies Prozedur löscht sämtliche Daten der Workspaces unwiderrufbar
- * und dient lediglich dem Optimieren der Systemperformance oder dem Löschen des
+ * Workspaces gelï¿½scht!
+ * Achtung: Dies Prozedur lï¿½scht sï¿½mtliche Daten der Workspaces unwiderrufbar
+ * und dient lediglich dem Optimieren der Systemperformance oder dem Lï¿½schen des
  * Datenbankschemas!
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return null oder Fehlermeldung
  */
 
@@ -853,13 +852,13 @@ IS
   -- lokale Variablen
   planningAlternativeId NUMBER;
   workspacename VARCHAR2(30);
-  CURSOR workspaces IS  -- enthält die Workspacenamen aller beendeten Planungsalternativen
+  CURSOR workspaces IS  -- enthï¿½lt die Workspacenamen aller beendeten Planungsalternativen
     SELECT workspace_name
     FROM planning_alternative
     WHERE termination_date IS NOT NULL;
 
 BEGIN
-  -- Cursor durchlaufen und jeweiligen Workspace löschen
+  -- Cursor durchlaufen und jeweiligen Workspace lï¿½schen
   OPEN workspaces;
     LOOP
       FETCH workspaces INTO workspacename;
@@ -872,7 +871,7 @@ BEGIN
       DBMS_WM.RemoveWorkspace(workspacename);
       DELETE planning_alternative WHERE id = planningAlternativeId;
 
-      DBMS_OUTPUT.PUT_LINE(planningAlternativeId || ' gelöscht');
+      DBMS_OUTPUT.PUT_LINE(planningAlternativeId || ' gelï¿½scht');
     END LOOP;
   CLOSE workspaces;
 

@@ -1,6 +1,6 @@
 -- ORTHOPHOTO_RDT_ID_TRIGGER.sql
 --
--- Authors:     Prof. Dr. Thomas H. Kolbe <kolbe@igg.tu-berlin.de>
+-- Authors:     Prof. Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
 --              Dr. Gerhard Groeger <groeger@ikg.uni-bonn.de>
 --              Joerg Schmittwilken <schmittwilken@ikg.uni-bonn.de>
@@ -8,10 +8,10 @@
 --              Dr. Andreas Poth <poth@lat-lon.de>
 --
 -- Copyright:   (c) 2007,      Institute for Geodesy and Geoinformation Science,
---                             Technische Universität Berlin, Germany
+--                             Technische Universitï¿½t Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --              (c) 2004-2006, Institute for Cartography and Geoinformation,
---                             Universität Bonn, Germany
+--                             Universitï¿½t Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --              (c) 2005-2006, lat/lon GmbH, Germany
 --                             http://www.lat-lon.de

@@ -1,13 +1,13 @@
 -- CREATE_PLANNING_PROCEDUREBODYS.sql
 --
 -- Authors:     Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
---              Dr. Thomas H. Kolbe <kolbe@ikg.uni-bonn.de>
+--              Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Dr. Gerhard Groeger <groeger@ikg.uni-bonn.de>
 --              Joerg Schmittwilken <schmittwilken@ikg.uni-bonn.de>
 --              Viktor Stroh <stroh@ikg.uni-bonn.de>
 --
 -- Copyright:   (c) 2004-2006, Institute for Cartography and Geoinformation,
---                             Universität Bonn, Germany
+--                             Universitï¿½t Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -39,15 +39,15 @@
 
 /* Die Prozedur beginnt eine Planung indem ein Datensatz
  * in der Tabelle PLANNING angelegt wird.
- * Soll zu der Planung keine räumliche Begrenzung gespeichert werden,
+ * Soll zu der Planung keine rï¿½umliche Begrenzung gespeichert werden,
  * so ist der Parameter mit NULL anzugeben.
  *
  * @param title Kurzbezeichnung Planung
  * @param description Kurze Beschreibung der Planung
- * @param executive Verantwortliche Person/Stelle für das Anlegen der Planung
- * @param spatialExtent räumliche Begrenzung des Planungsgebiets
+ * @param executive Verantwortliche Person/Stelle fï¿½r das Anlegen der Planung
+ * @param spatialExtent rï¿½umliche Begrenzung des Planungsgebiets
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return ID der Planung oder Fehlermeldung
  */
 
@@ -65,7 +65,7 @@ IS
   sequenceGeneratedId NUMBER;
 
 BEGIN
-  -- den nächsten Zähler der Sequenz abholen
+  -- den nï¿½chsten Zï¿½hler der Sequenz abholen
   SELECT planning_seq.nextval INTO sequenceGeneratedId
   FROM dual;
 
@@ -97,19 +97,19 @@ END;
 
 
 
-/* TODO: können Metadaten beendeter Planungen aktualisiert werden?
+/* TODO: kï¿½nnen Metadaten beendeter Planungen aktualisiert werden?
  *
- * Die Prozedur ändert die Parameter Titel, Beschreibung,
- * Verantwortliche Stelle und räumliche Begrenzung einer
- * bestehenden Planung. Alle existierenden Einträge werden überschrieben.
+ * Die Prozedur ï¿½ndert die Parameter Titel, Beschreibung,
+ * Verantwortliche Stelle und rï¿½umliche Begrenzung einer
+ * bestehenden Planung. Alle existierenden Eintrï¿½ge werden ï¿½berschrieben.
  *
- * @param id Id der Planung, deren Metadaten geändert werden sollen
+ * @param id Id der Planung, deren Metadaten geï¿½ndert werden sollen
  * @param title neue Kurzbezeichnung der Planung
  * @param description neue Beschreibung der Planung
- * @param executive neue verantwortliche Person/Stelle für das Anlegen der Planung
- * @param spatialExtent neue räumliche Begrenzung des Planungsgebiets
+ * @param executive neue verantwortliche Person/Stelle fï¿½r das Anlegen der Planung
+ * @param spatialExtent neue rï¿½umliche Begrenzung des Planungsgebiets
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return null oder Fehlermeldung
  */
 
@@ -175,16 +175,16 @@ END;
 
 
 
-/* Die Prozedur beendet eine Planung indem für alle Alternativen und für
+/* Die Prozedur beendet eine Planung indem fï¿½r alle Alternativen und fï¿½r
  * die Planung selber ein Terminierungsdatum gesetzt wird.
- * Für die Workspaces der Alternativen werden Savepoints mit dem Namen
- * "termination" gestzt. Die Workspaces werden nicht gelöscht.
- * Die Prozedur wird nur ausgeführt, wenn die Planung noch aktiv ist.
+ * Fï¿½r die Workspaces der Alternativen werden Savepoints mit dem Namen
+ * "termination" gestzt. Die Workspaces werden nicht gelï¿½scht.
+ * Die Prozedur wird nur ausgefï¿½hrt, wenn die Planung noch aktiv ist.
  * Es werden nur aktive Planungsalternativen beendet.
  *
  * @param planningId ID der zu beendenden Planung
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return null oder Fehlermeldung
  */
 
@@ -213,12 +213,12 @@ BEGIN
 
   IF planningCount = 1 THEN   -- Planung existiert
     IF planningStatus = 1 THEN  -- kein Terminierungsdatum
-      -- Terminierungsdatum für die Planung setzen
+      -- Terminierungsdatum fï¿½r die Planung setzen
       UPDATE planning
       SET termination_date = CURRENT_TIMESTAMP
       WHERE id = planningId;
 
-      -- Terminierungsdatum für die zugenordneten Alternativen setzen
+      -- Terminierungsdatum fï¿½r die zugenordneten Alternativen setzen
       OPEN planningAlternatives;
         LOOP
           FETCH planningAlternatives INTO planningAlternativeId;
@@ -257,18 +257,18 @@ END;
 
 
 /* Die Prozedur beendet eine Planung.
- * Die ausgewählte Planungsalternative wird in den Elternworkspace überführt.
- * Anschließend werden für alle Alternativen und die Planung selber
+ * Die ausgewï¿½hlte Planungsalternative wird in den Elternworkspace ï¿½berfï¿½hrt.
+ * Anschlieï¿½end werden fï¿½r alle Alternativen und die Planung selber
  * ein Terminierungsdatum gesetzt.
- * Für die Workspaces der Alternativen werden Savepoints mit dem Namen
+ * Fï¿½r die Workspaces der Alternativen werden Savepoints mit dem Namen
  * "termination" gestzt.
- * Die Prozedur wird nur dann ausgeführt, wenn die Planung und die
+ * Die Prozedur wird nur dann ausgefï¿½hrt, wenn die Planung und die
  * Planungsalternative noch aktive sind.
  *
  * @param planningId ID der zu beendenden Planung
- * @param acceptedAlternativeId ID der zu übernehmenden Planungsalternative
+ * @param acceptedAlternativeId ID der zu ï¿½bernehmenden Planungsalternative
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return null oder Fehlermeldung
  */
 
@@ -295,7 +295,7 @@ BEGIN
   -- Abragen der Existenz und des Status der Planung
   checkPlanning(planningId, planningCount, planningStatus);
 
-  -- Prüfen, ob die angegeben Planungsalternative zu dieser Planung gehört und
+  -- Prï¿½fen, ob die angegeben Planungsalternative zu dieser Planung gehï¿½rt und
   -- noch nicht beendet ist.
   SELECT COUNT(id) INTO isValidPlanningalternative
   FROM planning_alternative
@@ -303,13 +303,13 @@ BEGIN
 
   IF planningCount = 1 THEN   -- Planung existiert
     IF planningStatus = 1 THEN  -- Planung noch aktiv
-      IF isValidPlanningalternative = 1 THEN   -- Planungsalternative gültig
+      IF isValidPlanningalternative = 1 THEN   -- Planungsalternative gï¿½ltig
         -- Abfragen des Workspacenamen der akzeptierten Alternative
         SELECT workspace_name INTO workspaceName
         FROM planning_alternative
         WHERE id = acceptedAlternativeId;
 
-        -- Konflikte müssen in einem Anwendungsprogramm gelöst werden!
+        -- Konflikte mï¿½ssen in einem Anwendungsprogramm gelï¿½st werden!
         DBMS_WM.MergeWorkspace(workspaceName);
 
         -- die Planung und ihre Alternativen beenden
@@ -322,7 +322,7 @@ BEGIN
           RAISE planningDiscardException;
         END IF;
 
-      ELSE   -- Alternative ungültig
+      ELSE   -- Alternative ungï¿½ltig
         RAISE invalidAlternativeException;
       END IF;
 
@@ -338,7 +338,7 @@ EXCEPTION
   WHEN planningDiscardException THEN
     setOutParameter(0, '3D-Geo-DB: Planung fehlerhaft beendet', outStatus, outMessage);
   WHEN invalidAlternativeException THEN
-    setOutParameter(0, '3D-Geo-DB: Planungsalternative ungültig', outStatus, outMessage);
+    setOutParameter(0, '3D-Geo-DB: Planungsalternative ungï¿½ltig', outStatus, outMessage);
   WHEN planningCountException THEN
     setOutParameter(0, '3D-Geo-DB: Planung existiert nicht', outStatus, outMessage);
   WHEN planningStatusException THEN

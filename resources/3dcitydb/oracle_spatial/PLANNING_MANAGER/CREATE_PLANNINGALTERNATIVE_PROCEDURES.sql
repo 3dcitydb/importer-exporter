@@ -1,13 +1,13 @@
 -- CREATE_PLANNINGALTERNATIVE_PROCEDURES.sql
 --
 -- Authors:     Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
---              Dr. Thomas H. Kolbe <kolbe@ikg.uni-bonn.de>
+--              Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Dr. Gerhard Groeger <groeger@ikg.uni-bonn.de>
 --              Joerg Schmittwilken <schmittwilken@ikg.uni-bonn.de>
 --              Viktor Stroh <stroh@ikg.uni-bonn.de>
 --
 -- Copyright:   (c) 2004-2006, Institute for Cartography and Geoinformation,
---                             Universität Bonn, Germany
+--                             Universitï¿½t Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -17,8 +17,8 @@
 -------------------------------------------------------------------------------
 -- About:
 --
--- Dieses Skript erzeugt für jede *Bdy Porzedur eine entsprechende PL/SQL
--- Prozedur, die aus SQL*PLUS o.ä. angesprochen werden kann. Es wird zusätzlich
+-- Dieses Skript erzeugt fï¿½r jede *Bdy Porzedur eine entsprechende PL/SQL
+-- Prozedur, die aus SQL*PLUS o.ï¿½. angesprochen werden kann. Es wird zusï¿½tzlich
 -- eine Bildschimausgabe generiert.
 -------------------------------------------------------------------------------
 --
@@ -268,7 +268,7 @@ IS
 BEGIN
   DelAllPlanningAlternativesBdy(status, message);
   IF status = 1 THEN
-    DBMS_OUTPUT.put_line('Alle Planungsalternativen gelöscht');
+    DBMS_OUTPUT.put_line('Alle Planungsalternativen gelï¿½scht');
   ELSE
     DBMS_OUTPUT.put_line('Fehler: ' || message);
   END IF;
@@ -291,7 +291,7 @@ IS
 BEGIN
   DelTermPlanningAlternativesBdy(status, message);
   IF status = 1 THEN
-    DBMS_OUTPUT.put_line('Alle beendeten Planungsalternativen gelöscht');
+    DBMS_OUTPUT.put_line('Alle beendeten Planungsalternativen gelï¿½scht');
   ELSE
     DBMS_OUTPUT.put_line('Fehler: ' || message);
   END IF;

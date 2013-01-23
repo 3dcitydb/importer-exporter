@@ -1,13 +1,13 @@
 -- CREATE_CITYMODELASPECT_PROCEDUREBODYS.sql
 --
 -- Authors:     Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
---              Dr. Thomas H. Kolbe <kolbe@ikg.uni-bonn.de>
+--              Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Dr. Gerhard Groeger <groeger@ikg.uni-bonn.de>
 --              Joerg Schmittwilken <schmittwilken@ikg.uni-bonn.de>
 --              Viktor Stroh <stroh@ikg.uni-bonn.de>
 --
 -- Copyright:   (c) 2004-2006, Institute for Cartography and Geoinformation,
---                             Universität Bonn, Germany
+--                             Universitï¿½t Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -42,19 +42,19 @@
  * in die entspre-chende Tabelle und erzeugt einen neuen Workspace. Der Name des
  * Workspaces setzt sich aus der Kennung 'CMA', dem Benutzernamen und der ID des
  * CityModelAspect zusammen (CMA_ CMAID).
- * Workspacenamen dürfen max. 30 Zeichen lang sein. Ist der Benutzername länger als
- * 15 Zeichen, so werden die ersten zehn und die letzten fünf Zeichen des Namens
- * verwendet. Es bleiben im Workspacenamen 10 Zeichen für die ID des
+ * Workspacenamen dï¿½rfen max. 30 Zeichen lang sein. Ist der Benutzername lï¿½nger als
+ * 15 Zeichen, so werden die ersten zehn und die letzten fï¿½nf Zeichen des Namens
+ * verwendet. Es bleiben im Workspacenamen 10 Zeichen fï¿½r die ID des
  * CityModelAspects.
  * CityModelAspects dienen lediglich der gleichzeitigen Betrachtung mehrerer
- * Planungsalternativen und sind somit temporärer Natur.
+ * Planungsalternativen und sind somit temporï¿½rer Natur.
  *
  * @param title Kurzbezeichnung Planung
  * @param description Kurze Beschreibung der Planung
  * @param generator Name desjenigen, der die Alternative anlegt hat
  * @param planningAlternativeId ID der darzustellenden Planungsalternative
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return Workspacename des CityModelAspects oder Fehlermeldung
  */
 
@@ -87,7 +87,7 @@ BEGIN
     FROM planning_alternative
     WHERE id = planningAlternativeId;
 
-    -- den nächsten Zähler der Sequenz abholen
+    -- den nï¿½chsten Zï¿½hler der Sequenz abholen
     SELECT city_model_aspect_seq.nextval INTO sequenceGeneratedId
     FROM dual;
 
@@ -103,7 +103,7 @@ BEGIN
       -- Workspacenamen festlegen
       workspaceName := 'CMA_' || userName || '_' || TO_CHAR(sequenceGeneratedId);
 
-    -- Tupel einfügen
+    -- Tupel einfï¿½gen
     INSERT INTO city_model_aspect
     VALUES(
       sequenceGeneratedId,
@@ -147,13 +147,13 @@ END;
 /*
  * Die Prozedur entfernt einen CityModelAspect. Die Tupel in den entsprechenden
  * Metadatentabellen (CITY_MODEL_ASPECT und CITY_MODEL_ASPECT_COMPONENT) werden
- * ebenso gelöscht, wie der zugeordnete Workspace. Da CityModelApekts als
- * temporär definierte Sichten konzipiert sind, werden die Daten unwiderrufbar
- * gelöscht.
+ * ebenso gelï¿½scht, wie der zugeordnete Workspace. Da CityModelApekts als
+ * temporï¿½r definierte Sichten konzipiert sind, werden die Daten unwiderrufbar
+ * gelï¿½scht.
  *
  * @param cityModelAspectId ID des zu entferndenden CityModelAspekt
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return null oder Fehlermeldung
  */
 
@@ -180,15 +180,15 @@ BEGIN
     FROM city_model_aspect
     WHERE id = cityModelAspectId;
 
-    -- Tupel in der Zuordnungstabelle löschen
+    -- Tupel in der Zuordnungstabelle lï¿½schen
     DELETE city_model_aspect_component
     WHERE city_model_aspect_id = cityModelAspectId;
 
-    -- Tupel in der Tabelle löschen
+    -- Tupel in der Tabelle lï¿½schen
     DELETE city_model_aspect
     WHERE id = cityModelAspectId;
 
-    -- Workspace löschen
+    -- Workspace lï¿½schen
     DBMS_WM.GoToWorkspace('LIVE');
     DBMS_WM.RemoveWorkspace(workspaceName);
 
@@ -215,13 +215,13 @@ END;
 /*
  * TODO: Bisher ist lediglich ein Eintrag in die Metadaten realisiert!
  *
- * Die Prozedur fügt eine Planungsalternative zu einem CityModelAspekt hinzu.
+ * Die Prozedur fï¿½gt eine Planungsalternative zu einem CityModelAspekt hinzu.
  *
  * @param cityModelAspectId ID des CityModelAspekt, das die Alternative anzeigen
  *        soll
  * @param planningAlternativeId ID der anzuzeigenden Alternative
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return null oder Fehlermeldung
  */
 
@@ -252,12 +252,12 @@ BEGIN
   IF cmaCount = 1 THEN   --  CityModelAspect existiert
     IF paCount = 1 THEN   -- Planungsalternative existiert
 
-      -- Suchen der zugehörigen Planung der Planungsalternative
+      -- Suchen der zugehï¿½rigen Planung der Planungsalternative
       SELECT planning_id INTO planningId
       FROM planning_alternative
       WHERE id = planningAlternativeId;
 
-      -- Prüfen wieviele Alternativen aus der entsprechenden Planung
+      -- Prï¿½fen wieviele Alternativen aus der entsprechenden Planung
       -- dem CityModelAspect bereits zugeordnet sind
       SELECT COUNT(c.planning_alternative_id) INTO numb
       FROM city_model_aspect_component c, planning_alternative p
@@ -289,7 +289,7 @@ BEGIN
 
 EXCEPTION
   WHEN planningException THEN
-    setOutParameter(0, '3D-Geo-DB: CityModelAspect enthält bereits eine Planungsalternative dieser Planung', outStatus, outMessage);
+    setOutParameter(0, '3D-Geo-DB: CityModelAspect enthï¿½lt bereits eine Planungsalternative dieser Planung', outStatus, outMessage);
   WHEN paCountException THEN
     setOutParameter(0, '3D-Geo-DB: Planungsalternative existiert nicht', outStatus, outMessage);
   WHEN cmaCountException THEN
@@ -310,9 +310,9 @@ END;
  * @param cityModelAspectId ID des CityModelAspekt, das die Alternative anzeigt
  * @param planningAlternativeId ID der zu entfernenden Alternative
  *
- * @return Status der Ausführung:
+ * @return Status der Ausfï¿½hrung:
            1 = fehlerfrei,
-           2 = CMA gelöscht, da letzte Planungsalternative entfernt wurde,
+           2 = CMA gelï¿½scht, da letzte Planungsalternative entfernt wurde,
            0 = fehlerhaft
  * @return null oder Fehlermeldung
  */
@@ -346,25 +346,25 @@ BEGIN
   IF cmaCount = 1 THEN   --  CityModelAspect existiert
     IF paCount = 1 THEN   -- Planungsalternative existiert
 
-      -- Zählen der Planungsalternativen des CityModelAspects
+      -- Zï¿½hlen der Planungsalternativen des CityModelAspects
       SELECT COUNT(city_model_aspect_id) INTO memberCount
       FROM city_model_aspect_component
       WHERE city_model_aspect_id = cityModelAspectId;
 
       IF memberCount > 1 THEN   -- es bleibt mind. eine Planungsalternative
-        -- Löschen des entsprechenden Tupels der Verknüpfungstabelle
+        -- Lï¿½schen des entsprechenden Tupels der Verknï¿½pfungstabelle
         DELETE city_model_aspect_component
         WHERE city_model_aspect_id = cityModelAspectId AND planning_alternative_id = planningAlternativeId;
 
         COMMIT;
         setOutParameter(1, NULL, outStatus, outMessage);
 
-      ELSE   -- die letzte Planungsalternative soll entfernt werden => CMA löschen
+      ELSE   -- die letzte Planungsalternative soll entfernt werden => CMA lï¿½schen
         DeleteCityModelAspectBdy(cityModelAspectId, status, message);
-        IF status = 1 THEN   -- fehlerfrei gelöscht
+        IF status = 1 THEN   -- fehlerfrei gelï¿½scht
           COMMIT;
           setOutParameter(2, NULL, outStatus, outMessage);
-        ELSE   -- Fehler beim Löschen
+        ELSE   -- Fehler beim Lï¿½schen
           setOutParameter(0, message, outStatus, outMessage);
         END IF;
 
@@ -395,11 +395,11 @@ END;
 
 
 /*
- * Die Prozedur löscht alle in der Tabelle city_model_aspect
+ * Die Prozedur lï¿½scht alle in der Tabelle city_model_aspect
  * vermerkten Workspaces (Spalte 'workspace_name') und die Metadaten der Tabelle
  * city_model_aspect_component
  *
- * @return Status der Ausführung: 1 = fehlerfrei, 0 = fehlerhaft
+ * @return Status der Ausfï¿½hrung: 1 = fehlerfrei, 0 = fehlerhaft
  * @return null oder Fehlermeldung
  */
 
@@ -412,12 +412,12 @@ IS
   -- lokale Variablen
   workspacename VARCHAR2(30);
   cmaId NUMBER;
-  CURSOR workspaces IS -- enthält alle Workspacenamen
+  CURSOR workspaces IS -- enthï¿½lt alle Workspacenamen
   SELECT workspace_name
   FROM city_model_aspect;
 
 BEGIN
-  -- Cursor durchlaufen und jeweiligen Workspace löschen
+  -- Cursor durchlaufen und jeweiligen Workspace lï¿½schen
   OPEN workspaces;
     LOOP
       FETCH workspaces INTO workspacename;
@@ -428,17 +428,17 @@ BEGIN
       FROM city_model_aspect
       WHERE workspace_name LIKE workspacename ;
 
-      -- Workspace löschen
+      -- Workspace lï¿½schen
       DBMS_WM.RemoveWorkspace(workspacename);
 
-      -- Tupel löschen
+      -- Tupel lï¿½schen
       DELETE city_model_aspect_component
       WHERE city_model_aspect_id = cmaId;
 
       DELETE city_model_aspect
       WHERE id = cmaId;
 
-      DBMS_OUTPUT.PUT_LINE(cmaId || ' gelöscht');
+      DBMS_OUTPUT.PUT_LINE(cmaId || ' gelï¿½scht');
     END LOOP;
   CLOSE workspaces;
 

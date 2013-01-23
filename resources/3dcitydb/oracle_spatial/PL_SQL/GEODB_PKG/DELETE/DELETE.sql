@@ -1,9 +1,9 @@
 -- DELETE.sql
 --
--- Authors:     Claus Nagel <nagel@igg.tu-berlin.de>
+-- Authors:     Claus Nagel <claus.nagel@tu-berlin.de>
 --
 -- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
---                             Technische Universität Berlin, Germany
+--                             Technische Universitï¿½t Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 3.0.

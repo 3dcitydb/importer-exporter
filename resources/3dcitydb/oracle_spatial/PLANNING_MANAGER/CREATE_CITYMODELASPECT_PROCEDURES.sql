@@ -1,13 +1,13 @@
 -- CREATE_CITYMODELASPECT_PROCEDURES.sql
 --
 -- Authors:     Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
---              Dr. Thomas H. Kolbe <kolbe@ikg.uni-bonn.de>
+--              Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Dr. Gerhard Groeger <groeger@ikg.uni-bonn.de>
 --              Joerg Schmittwilken <schmittwilken@ikg.uni-bonn.de>
 --              Viktor Stroh <stroh@ikg.uni-bonn.de>
 --
 -- Copyright:   (c) 2004-2006, Institute for Cartography and Geoinformation,
---                             Universität Bonn, Germany
+--                             Universitï¿½t Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -66,7 +66,7 @@ IS
 BEGIN
   DeleteCityModelAspectBdy(cityModelAspectId, status, message);
   IF status = 1 THEN
-    DBMS_OUTPUT.put_line('CityModelAspect gelöscht');
+    DBMS_OUTPUT.put_line('CityModelAspect gelï¿½scht');
   ELSE
     DBMS_OUTPUT.put_line('Fehler: ' || message);
   END IF;
@@ -92,7 +92,7 @@ IS
 BEGIN
   AddPAtoCMABdy(cityModelAspectId, planningAlternativeId, status, message);
   IF status = 1 THEN
-    DBMS_OUTPUT.put_line('Planungsalternative zum CityModelAspect hinzugefügt');
+    DBMS_OUTPUT.put_line('Planungsalternative zum CityModelAspect hinzugefï¿½gt');
   ELSE
     DBMS_OUTPUT.put_line('Fehler: ' || message);
   END IF;
@@ -121,7 +121,7 @@ BEGIN
   IF status = 1 THEN
     DBMS_OUTPUT.put_line('Planungsalternative vom CityModelAspect entfernt');
   ELSIF status = 2 THEN
-    DBMS_OUTPUT.put_line('Letzte Planungsalternative entfernt und CityModelAspect gelöscht');
+    DBMS_OUTPUT.put_line('Letzte Planungsalternative entfernt und CityModelAspect gelï¿½scht');
   ELSE
     DBMS_OUTPUT.put_line('Fehler: ' || message);
   END IF;
@@ -144,7 +144,7 @@ IS
 BEGIN
   DelAllCityModelAspectsBdy(status, message);
   IF status = 1 THEN
-    DBMS_OUTPUT.put_line('Alle CityModelAspects gelöscht');
+    DBMS_OUTPUT.put_line('Alle CityModelAspects gelï¿½scht');
   ELSE
     DBMS_OUTPUT.put_line('Fehler: ' || message);
   END IF;

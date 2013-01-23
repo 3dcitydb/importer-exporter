@@ -1,13 +1,13 @@
 -- CREATE_UTIL_PROCEDURES.sql
 --
 -- Authors:     Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>
---              Dr. Thomas H. Kolbe <kolbe@ikg.uni-bonn.de>
+--              Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Dr. Gerhard Groeger <groeger@ikg.uni-bonn.de>
 --              Joerg Schmittwilken <schmittwilken@ikg.uni-bonn.de>
 --              Viktor Stroh <stroh@ikg.uni-bonn.de>
 --
 -- Copyright:   (c) 2004-2006, Institute for Cartography and Geoinformation,
---                             Universität Bonn, Germany
+--                             Universitï¿½t Bonn, Germany
 --                             http://www.ikg.uni-bonn.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -64,7 +64,7 @@ END;
 
 
 /*
- * Die Prozedur prüft, ob die Planungen mit der gegeben ID existiert, und ob sie
+ * Die Prozedur prï¿½ft, ob die Planungen mit der gegeben ID existiert, und ob sie
  * beendet ist.
  *
  * @param ID der Planung
@@ -109,7 +109,7 @@ END;
 
 
 /*
- * Die Prozedur prüft, ob die Planungsalternative mit der gegeben ID existiert,
+ * Die Prozedur prï¿½ft, ob die Planungsalternative mit der gegeben ID existiert,
  * und ob sie beendet ist.
  *
  * @param ID der Planungsalternative
@@ -154,7 +154,7 @@ END;
 
 
 /*
- * Die Prozedur prüft, ob der CityModelAspect mit der gegeben ID existiert
+ * Die Prozedur prï¿½ft, ob der CityModelAspect mit der gegeben ID existiert
  *
  * @param cmaId ID der Planungsalternative
  *
