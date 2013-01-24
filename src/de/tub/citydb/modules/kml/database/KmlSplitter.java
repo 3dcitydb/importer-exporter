@@ -307,8 +307,8 @@ public class KmlSplitter {
 			dbWorkerPool.addWork(splitter);
 			KmlExporter.getAlreadyExported().put(id, cityObject4Json);
 
-			if (splitter.isCityObjectGroup() &&
-					CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.size() > 1) { // not only groups must be exported
+			if (splitter.isCityObjectGroup() && 
+					(filterConfig.isSetSimpleFilter() || CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.size() > 1)) {
 				OracleResultSet rs = null;
 				PreparedStatement query = null;
 				try {
