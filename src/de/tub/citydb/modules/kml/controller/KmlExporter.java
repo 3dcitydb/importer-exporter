@@ -1403,6 +1403,8 @@ public class KmlExporter implements EventHandler {
 				if (log != null)
 					Logger.getInstance().log(((InterruptEvent)e).getLogLevelType(), log);
 
+				Logger.getInstance().info("Waiting for objects being currently processed to end...");
+
 				if (kmlSplitter != null)
 					kmlSplitter.shutdown();
 
