@@ -144,7 +144,7 @@ public class InfoDialog extends JDialog {
 
 			authors.setText("Claus Nagel <claus.nagel@tu-berlin.de>\n" +
 					"Javier Herreruela <javier.herreruela@tu-berlin.de>\n" +
-					"Alexandra Lorenz <lorenz@tu-berlin.de>\n" +
+					"Alexandra Lorenz <alexandra.lorenz@tu-berlin.de>\n" +
 					"Gerhard König <gerhard.koenig@tu-berlin.de>\n" +
 			"Thomas H. Kolbe <thomas.kolbe@tum.de>");				
 			general.add(authors, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,2,5,5,5));

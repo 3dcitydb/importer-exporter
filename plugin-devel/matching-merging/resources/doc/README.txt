@@ -79,7 +79,7 @@ contents.
 
 Claus Nagel <claus.nagel@tu-berlin.de>
 Javier Herreruela <javier.herreruela@tu-berlin.de>
-Alexandra Lorenz <lorenz@tu-berlin.de>
+Alexandra Lorenz <alexandra.lorenz@tu-berlin.de>
 Gerhard Koenig <gerhard.koenig@tu-berlin.de>
 Thomas H. Kolbe <thomas.kolbe@tum.de>
 
