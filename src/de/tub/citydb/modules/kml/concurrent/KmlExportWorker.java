@@ -130,61 +130,85 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 		filterConfig = config.getProject().getKmlExporter().getFilter();
 		ColladaOptions colladaOptions = null; 
+
+		objectGroupCounter.put(CityGMLClass.BUILDING, 0);
+		objectGroupSize.put(CityGMLClass.BUILDING, 1);
+		objectGroup.put(CityGMLClass.BUILDING, null);
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetBuilding()) {
-			objectGroupCounter.put(CityGMLClass.BUILDING, 0);
 			colladaOptions = config.getProject().getKmlExporter().getBuildingColladaOptions();
-			objectGroupSize.put(CityGMLClass.BUILDING, colladaOptions.isGroupObjects() ? 
-													   colladaOptions.getGroupSize(): 1);
-			objectGroup.put(CityGMLClass.BUILDING, null);
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.BUILDING, colladaOptions.getGroupSize());
+			}
 		}
+
+		objectGroupCounter.put(CityGMLClass.WATER_BODY, 0);
+		objectGroupSize.put(CityGMLClass.WATER_BODY, 1);
+		objectGroup.put(CityGMLClass.WATER_BODY, null);
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetWaterBody()) {
-			objectGroupCounter.put(CityGMLClass.WATER_BODY, 0);
 			colladaOptions = config.getProject().getKmlExporter().getWaterBodyColladaOptions();
-			objectGroupSize.put(CityGMLClass.WATER_BODY, colladaOptions.isGroupObjects() ? 
-														 colladaOptions.getGroupSize(): 1);
-			objectGroup.put(CityGMLClass.WATER_BODY, null);
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.WATER_BODY, colladaOptions.getGroupSize());
+			}
 		}
+
+		objectGroupCounter.put(CityGMLClass.LAND_USE, 0);
+		objectGroupSize.put(CityGMLClass.LAND_USE, 1);
+		objectGroup.put(CityGMLClass.LAND_USE, null);
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetLandUse()) {
-			objectGroupCounter.put(CityGMLClass.LAND_USE, 0);
 			colladaOptions = config.getProject().getKmlExporter().getLandUseColladaOptions();
-			objectGroupSize.put(CityGMLClass.LAND_USE, colladaOptions.isGroupObjects() ? 
-														 colladaOptions.getGroupSize(): 1);
-			objectGroup.put(CityGMLClass.LAND_USE, null);
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.LAND_USE, colladaOptions.getGroupSize());
+			}
 		}
+
+		objectGroupCounter.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, 0);
+		objectGroupSize.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, 1);
+		objectGroup.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, null);
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetVegetation()) {
-			objectGroupCounter.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, 0);
 			colladaOptions = config.getProject().getKmlExporter().getVegetationColladaOptions();
-			objectGroupSize.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, colladaOptions.isGroupObjects() ? 
-													   					 colladaOptions.getGroupSize(): 1);
-			objectGroup.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, null);
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, colladaOptions.getGroupSize());
+			}
 		}
+
+		objectGroupCounter.put(CityGMLClass.TRANSPORTATION_COMPLEX, 0);
+		objectGroupSize.put(CityGMLClass.TRANSPORTATION_COMPLEX, 1);
+		objectGroup.put(CityGMLClass.TRANSPORTATION_COMPLEX, null);
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetTransportation()) {
-			objectGroupCounter.put(CityGMLClass.TRANSPORTATION_COMPLEX, 0);
 			colladaOptions = config.getProject().getKmlExporter().getTransportationColladaOptions();
-			objectGroupSize.put(CityGMLClass.TRANSPORTATION_COMPLEX, colladaOptions.isGroupObjects() ? 
-													   	   colladaOptions.getGroupSize(): 1);
-			objectGroup.put(CityGMLClass.TRANSPORTATION_COMPLEX, null);
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.TRANSPORTATION_COMPLEX, colladaOptions.getGroupSize());
+			}
 		}
+
+		objectGroupCounter.put(CityGMLClass.RELIEF_FEATURE, 0);
+		objectGroupSize.put(CityGMLClass.RELIEF_FEATURE, 1);
+		objectGroup.put(CityGMLClass.RELIEF_FEATURE, null);
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetReliefFeature()) {
-			objectGroupCounter.put(CityGMLClass.RELIEF_FEATURE, 0);
 			colladaOptions = config.getProject().getKmlExporter().getReliefColladaOptions();
-			objectGroupSize.put(CityGMLClass.RELIEF_FEATURE, colladaOptions.isGroupObjects() ? 
-															 colladaOptions.getGroupSize(): 1);
-			objectGroup.put(CityGMLClass.RELIEF_FEATURE, null);
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.RELIEF_FEATURE, colladaOptions.getGroupSize());
+			}
 		}
+
+		objectGroupCounter.put(CityGMLClass.GENERIC_CITY_OBJECT, 0);
+		objectGroupSize.put(CityGMLClass.GENERIC_CITY_OBJECT, 1);
+		objectGroup.put(CityGMLClass.GENERIC_CITY_OBJECT, null);
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetGenericCityObject()) {
-			objectGroupCounter.put(CityGMLClass.GENERIC_CITY_OBJECT, 0);
 			colladaOptions = config.getProject().getKmlExporter().getGenericCityObjectColladaOptions();
-			objectGroupSize.put(CityGMLClass.GENERIC_CITY_OBJECT, colladaOptions.isGroupObjects() ? 
-																  colladaOptions.getGroupSize(): 1);
-			objectGroup.put(CityGMLClass.GENERIC_CITY_OBJECT, null);
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.GENERIC_CITY_OBJECT, colladaOptions.getGroupSize());
+			}
 		}
+
+		objectGroupCounter.put(CityGMLClass.CITY_FURNITURE, 0);
+		objectGroupSize.put(CityGMLClass.CITY_FURNITURE, 1);
+		objectGroup.put(CityGMLClass.CITY_FURNITURE, null);
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityFurniture()) {
-			objectGroupCounter.put(CityGMLClass.CITY_FURNITURE, 0);
 			colladaOptions = config.getProject().getKmlExporter().getCityFurnitureColladaOptions();
-			objectGroupSize.put(CityGMLClass.CITY_FURNITURE, colladaOptions.isGroupObjects() ? 
-															 colladaOptions.getGroupSize(): 1);
-			objectGroup.put(CityGMLClass.CITY_FURNITURE, null);
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.CITY_FURNITURE, colladaOptions.getGroupSize());
+			}
 		}
 		// CityGMLClass.CITY_OBJECT_GROUP is left out, it does not make sense to group it without COLLADA DisplayForm 
 	}

@@ -151,6 +151,8 @@ public abstract class KmlGenericObject {
 	protected static final int EXTERIOR_POLYGON_RING = 1003;
 	protected static final int INTERIOR_POLYGON_RING = 2003;
 
+	protected static final int GEOMETRY_AMOUNT_WARNING = 10000;
+
 	/** Tolerance after triangulation must be bigger than before triangulation since some points
 	 * may deviate 0.00999999 before and 0.01000001 after. Using a single bigger tolerance value
 	 * does not help since the effect repeats itself (0.01999999 vs. 0.0200001).
@@ -756,6 +758,10 @@ public abstract class KmlGenericObject {
 */
 	protected void addGeometryInfo(long surfaceId, GeometryInfo geometryInfo){
 		geometryInfos.put(new Long(surfaceId), geometryInfo);
+	}
+
+	protected int getGeometryAmount(){
+		return geometryInfos.size();
 	}
 /*
 	protected GeometryInfo getGeometryInfo(long surfaceId){
