@@ -335,6 +335,8 @@ public class KmlExporter implements EventHandler {
 			for (int i = 0; shouldRun && i < rows; i++) {
 				for (int j = 0; shouldRun && j < columns; j++) {
 
+					if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
+
 					File file = null;
 					OutputStreamWriter fileWriter = null;
 					ZipOutputStream zipOut = null;
@@ -495,6 +497,7 @@ public class KmlExporter implements EventHandler {
 								int indexOfZipFilePath = tempFolder.getCanonicalPath().length() + 1;
 
 								if (tempFolder.exists()) { // !config.getProject().getKmlExporter().isOneFilePerObject()
+									Logger.getInstance().info("Zipping to kmz archive from temporary folder...");
 									getAllFiles(tempFolder, filesToZip);
 									for (File fileToZip : filesToZip) {
 										if (!fileToZip.isDirectory()) {
@@ -513,6 +516,7 @@ public class KmlExporter implements EventHandler {
 											zipOut.closeEntry();
 										}
 									}
+									Logger.getInstance().info("Removing temporary folder...");
 									deleteFolder(tempFolder);
 								}
 								zipOut.close();

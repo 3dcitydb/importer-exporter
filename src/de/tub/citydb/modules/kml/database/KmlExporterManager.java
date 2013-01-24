@@ -67,6 +67,7 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
@@ -171,6 +172,7 @@ public class KmlExporterManager {
         							// export temporarily as kml, it will be later added to kmz if needed
     								directory = new File(path, TEMP_FOLDER);
     								if (!directory.exists()) {
+    									Logger.getInstance().info("Creating temporary folder...");
     									directory.mkdir();
     								}
     							}
@@ -535,6 +537,7 @@ public class KmlExporterManager {
 				// export temporarily as kml, it will be later added to kmz if needed
 				File tempFolder = new File(path, TEMP_FOLDER);
 				if (!tempFolder.exists()) {
+					Logger.getInstance().info("Creating temporary folder...");
 					tempFolder.mkdir();
 				}
 				path = path + File.separator + TEMP_FOLDER;
