@@ -149,6 +149,8 @@ import de.tub.citydb.util.Util;
 
 public abstract class KmlGenericObject {
 
+	protected static final int GEOMETRY_AMOUNT_WARNING = 10000;
+
 	/** Tolerance after triangulation must be bigger than before triangulation since some points
 	 * may deviate 0.00999999 before and 0.01000001 after. Using a single bigger tolerance value
 	 * does not help since the effect repeats itself (0.01999999 vs. 0.0200001).
@@ -745,6 +747,10 @@ public abstract class KmlGenericObject {
 	
 	public void addGeometryInfo(long surfaceId, GeometryInfo geometryInfo){
 		geometryInfos.put(new Long(surfaceId), geometryInfo);
+	}
+
+	protected int getGeometryAmount(){
+		return geometryInfos.size();
 	}
 
 	public GeometryInfo getGeometryInfo(long surfaceId){

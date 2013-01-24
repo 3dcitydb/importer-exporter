@@ -55,7 +55,6 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final ObjectFactory kmlFactory;
 	private final CityGMLFactory cityGMLFactory;
-	private final ConcurrentLinkedQueue<ColladaBundle> buildingQueue;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
@@ -66,7 +65,6 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 			WorkerPool<SAXEventBuffer> ioWriterPool,
 			ObjectFactory kmlFactory,
 			CityGMLFactory cityGMLFactory,
-			ConcurrentLinkedQueue<ColladaBundle> buildingQueue,
 			Config config,
 			EventDispatcher eventDispatcher) {
 		this.jaxbKmlContext = jaxbKmlContext;
@@ -75,7 +73,6 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 		this.ioWriterPool = ioWriterPool;
 		this.kmlFactory = kmlFactory;
 		this.cityGMLFactory = cityGMLFactory;
-		this.buildingQueue = buildingQueue;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
@@ -92,7 +89,6 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 					ioWriterPool,
 					kmlFactory,
 					cityGMLFactory,
-					buildingQueue,
 					config,
 					eventDispatcher);
 		} catch (SQLException sqlEx) {
