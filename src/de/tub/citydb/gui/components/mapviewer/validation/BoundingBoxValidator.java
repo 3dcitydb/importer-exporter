@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
 
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
+import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.gui.BoundingBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
@@ -69,8 +70,11 @@ public class BoundingBoxValidator {
 
 	public enum ValidationResult {
 		CANCEL,
+		SKIP,
 		VALID,
-		INVALID
+		OUT_OF_RANGE,
+		NO_AREA,
+		INVISIBLE
 	}
 
 	private enum ValidatorDialogAction {
@@ -95,7 +99,7 @@ public class BoundingBoxValidator {
 				bbox.getLowerLeftCorner().getY() == null ||
 				bbox.getUpperRightCorner().getX() == null ||
 				bbox.getUpperRightCorner().getY() == null)
-			return ValidationResult.INVALID;
+			return ValidationResult.SKIP;
 
 		// unknown srs
 		else if (!bbox.isSetSrs()) {
@@ -113,7 +117,7 @@ public class BoundingBoxValidator {
 				bbox.setSrs(validator.srsComboBox.getSelectedItem());
 				return transformBoundingBox(bbox);
 			case SKIP:
-				return ValidationResult.INVALID;
+				return ValidationResult.SKIP;
 			case CLOSE:
 				return ValidationResult.CANCEL;
 			}			
@@ -137,13 +141,13 @@ public class BoundingBoxValidator {
 				case TRANSFORM:
 					return transformBoundingBox(bbox);
 				case SKIP:
-					return ValidationResult.INVALID;
+					return ValidationResult.SKIP;
 				case CLOSE:
 					return ValidationResult.CANCEL;
 				}				
 			}
 
-			return ValidationResult.INVALID;
+			return ValidationResult.SKIP;
 		}
 
 		// srs is wgs84...
@@ -165,9 +169,42 @@ public class BoundingBoxValidator {
 				case CLOSE:
 					return ValidationResult.CANCEL;
 				default:
-					return ValidationResult.INVALID;
+					return ValidationResult.OUT_OF_RANGE;
 				}	
-			}	
+			}
+			
+			// ...but coordinate values are invalid
+			else if (bbox.getLowerLeftCorner().getX() >= bbox.getUpperRightCorner().getX() ||
+					bbox.getLowerLeftCorner().getY() >= bbox.getUpperRightCorner().getY()) {
+				ValidatorDialog validator = new ValidatorDialog(bbox, Internal.I18N.getString("map.dialog.title.error"), config);
+				validator.addErrorMessage(Internal.I18N.getString("map.dialog.label.error.noArea"));
+				validator.addBoundingBox();
+				validator.addOkButton();
+				validator.showDialog();
+				
+				switch (validator.result) {
+				case CLOSE:
+					return ValidationResult.CANCEL;
+				default:
+					return ValidationResult.NO_AREA;
+				}
+			}
+
+			// ...but bounding box is not visible on screen
+			else if (!map.isBoundingBoxVisible(bbox)) {
+				ValidatorDialog validator = new ValidatorDialog(bbox, Internal.I18N.getString("map.dialog.title.error"), config);
+				validator.addErrorMessage(Internal.I18N.getString("map.dialog.label.error.notVisible"));
+				validator.addBoundingBox();
+				validator.addOkButton();
+				validator.showDialog();
+				
+				switch (validator.result) {
+				case CLOSE:
+					return ValidationResult.CANCEL;
+				default:
+					return ValidationResult.INVISIBLE;
+				}
+			}
 		}
 
 		return ValidationResult.VALID;
@@ -200,15 +237,23 @@ public class BoundingBoxValidator {
 			});
 
 			if (bbox.getSrs().isSupported()) {
-				bbox.copyFrom(DBUtil.transformBBox(bbox, bbox.getSrs(), Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D)));
-
+				DatabaseSrs wgs84 = Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D);
+				for (DatabaseSrs srs : config.getProject().getDatabase().getReferenceSystems()) {
+					if (srs.getSrid() == Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
+						wgs84 = srs;
+						break;
+					}
+				}
+				
+				bbox.copyFrom(DBUtil.transformBBox(bbox, bbox.getSrs(), wgs84));
+				
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						transform.dispose();
 					}
 				});
 
-				return ValidationResult.VALID;
+				return validate(bbox);
 			} else
 				throw new SQLException("The spatial reference system '" + bbox.getSrs().getDescription() + "' is not supported.");
 
@@ -227,7 +272,7 @@ public class BoundingBoxValidator {
 			});
 		}
 
-		return ValidationResult.INVALID;
+		return ValidationResult.SKIP;
 	}
 
 	@SuppressWarnings("serial")
