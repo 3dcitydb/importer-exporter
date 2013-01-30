@@ -13,8 +13,8 @@
         <createForPack name="core"/>
     </shortcut>
 
-    <shortcut name="${3DCITYDB_SHORTNAME} SQL Scripts for Oracle Spatial" target="$INSTALL_PATH\3dcitydb" commandLine="" workingDirectory="$INSTALL_PATH\3dcitydb"
-        description="${3DCITYDB_NAME} ${3DCITYDB_VER} SQL scripts for Oracle Spatial 10G and 11G" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
+    <shortcut name="${3DCITYDB_SHORTNAME} SQL Scripts for PostgreSQL/PostGIS" target="$INSTALL_PATH\3dcitydb" commandLine="" workingDirectory="$INSTALL_PATH\3dcitydb"
+        description="${3DCITYDB_NAME} ${3DCITYDB_VER} SQL scripts for PostgreSQL 8.4+ with PostGIS 2.0+" programGroup="yes" desktop="no " applications="no" startMenu="no" startup="no">
         <createForPack name="3dcitydb"/>
     </shortcut>
 

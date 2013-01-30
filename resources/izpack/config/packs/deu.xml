@@ -4,7 +4,7 @@
     <str id="core.description" txt="Die erforderlichen Anwendungsdaten des ${APP_NAME}"/>
             
     <str id="3dcitydb" txt="3D City Database"/>
-    <str id="3dcitydb.description" txt="SQL Skripte der ${3DCITYDB_NAME} ${3DCITYDB_VER} für Oracle Spatial 10G und 11G"/>
+    <str id="3dcitydb.description" txt="SQL Skripte der ${3DCITYDB_NAME} ${3DCITYDB_VER} für PostgreSQL 8.4+ mit PostGIS 2.0+"/>
     
     <str id="manual" txt="Dokumentation"/>
     <str id="manual.description" txt="Die Dokumentation der ${3DCITYDB_NAME} und des ${APP_NAME}"/>
