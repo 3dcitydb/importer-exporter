@@ -2138,11 +2138,6 @@ public abstract class KmlGenericObject {
 		ModelType model = kmlFactory.createModelType();
 		LocationType location = kmlFactory.createLocationType();
 
-		// undo trick for very close coordinates
-		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOriginX()/100, getOriginY()/100, getOriginZ()/100});
-		setLocationX(reducePrecisionForXorY(originInWGS84[0]));
-		setLocationY(reducePrecisionForXorY(originInWGS84[1]));
-
 		switch (config.getProject().getKmlExporter().getAltitudeMode()) {
 		case ABSOLUTE:
 			model.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
@@ -2154,22 +2149,19 @@ public abstract class KmlGenericObject {
 
 		location.setLatitude(getLocationY());
 		location.setLongitude(getLocationX());
-		location.setAltitude(reducePrecisionForZ(originInWGS84[2] + getZOffset()));
+		location.setAltitude(getLocationZ() + reducePrecisionForZ(getZOffset()));
 		model.setLocation(location);
 
 		// correct heading value
-		double lat1 = originInWGS84[1];
+		double lat1 = Math.toRadians(getLocationY());
 		// undo trick for very close coordinates
 		double[] dummy = convertPointCoordinatesToWGS84(new double[] {getOriginX()/100, getOriginY()/100 - 20, getOriginZ()/100});
-		double lat2 = dummy[1];
-		double dLon = dummy[0] - originInWGS84[0];
+		double lat2 = Math.toRadians(dummy[1]);
+		double dLon = Math.toRadians(dummy[0] - getLocationX());
 		double y = Math.sin(dLon) * Math.cos(lat2);
 		double x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
 		double bearing = Math.toDegrees(Math.atan2(y, x));
 		bearing = (bearing + 180) % 360;
-		if (originInWGS84[0] > 0) { // East
-			bearing = -bearing;
-		}
 
 		OrientationType orientation = kmlFactory.createOrientationType();
 		orientation.setHeading(reducePrecisionForZ(bearing));
