@@ -1974,25 +1974,21 @@ public abstract class KmlGenericObject {
 		model.setLocation(location);
 
 		// correct heading value
-		double lat1 = getLocationY();
+		double lat1 = Math.toRadians(getLocationY());
 		// undo trick for very close coordinates
 		double[] dummy = convertPointCoordinatesToWGS84(new double[] {getOriginX()/100, getOriginY()/100 - 20, getOriginZ()/100});
-		double lat2 = dummy[1];
-		double dLon = dummy[0] - getLocationX();
+		double lat2 = Math.toRadians(dummy[1]);
+		double dLon = Math.toRadians(dummy[0] - getLocationX());
 		double y = Math.sin(dLon) * Math.cos(lat2);
 		double x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
 		double bearing = Math.toDegrees(Math.atan2(y, x));
 		bearing = (bearing + 180) % 360;
-		if (getLocationX() > 0) { // East
-			bearing = -bearing;
-		}
 
 		OrientationType orientation = kmlFactory.createOrientationType();
 		orientation.setHeading(reducePrecisionForZ(bearing));
 		model.setOrientation(orientation);
 
 		LinkType link = kmlFactory.createLinkType();
-
 		if (config.getProject().getKmlExporter().isOneFilePerObject() &&
 			!config.getProject().getKmlExporter().isExportAsKmz() &&
 			config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue())
