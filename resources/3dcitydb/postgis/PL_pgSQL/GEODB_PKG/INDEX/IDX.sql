@@ -4,7 +4,7 @@
 --
 -- Conversion:	Felix Kunde <fkunde@virtualcitysystems.de>
 --
--- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
+-- Copyright:   (c) 2007-2013  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universitaet Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
@@ -23,7 +23,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description      | Author | Conversion
--- 1.0.0     2012-07-16   PostGIS version    CNag	  FKun
+-- 1.0.0     2013-02-22   PostGIS version    CNag	  FKun
 --
 
 /*****************************************************************
@@ -46,15 +46,15 @@ CREATE TYPE geodb_pkg.INDEX_OBJ AS (
 * 
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_construct_spatial_3d
-    (index_name VARCHAR, table_name VARCHAR, attribute_name VARCHAR, srid INTEGER DEFAULT 0) RETURNS geodb_pkg.INDEX_OBJ AS $$
+    (ind_name VARCHAR, tab_name VARCHAR, att_name VARCHAR, crs INTEGER DEFAULT 0) RETURNS geodb_pkg.INDEX_OBJ AS $$
 DECLARE
     idx geodb_pkg.INDEX_OBJ;
 BEGIN
-    idx.index_name := index_name;
-    idx.table_name := table_name;
-    idx.attribute_name := attribute_name;
+    idx.index_name := ind_name;
+    idx.table_name := tab_name;
+    idx.attribute_name := att_name;
     idx.type := 1;
-    idx.srid := srid;
+    idx.srid := crs;
     idx.is_3d := 1;
 
     RETURN idx;
@@ -63,15 +63,15 @@ $$
 LANGUAGE 'plpgsql' IMMUTABLE STRICT;
 
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_construct_spatial_2d
-    (index_name VARCHAR, table_name VARCHAR, attribute_name VARCHAR, srid INTEGER DEFAULT 0) RETURNS geodb_pkg.INDEX_OBJ AS $$
+    (ind_name VARCHAR, tab_name VARCHAR, att_name VARCHAR, crs INTEGER DEFAULT 0) RETURNS geodb_pkg.INDEX_OBJ AS $$
 DECLARE
     idx geodb_pkg.INDEX_OBJ;
 BEGIN
-    idx.index_name := index_name;   
-    idx.table_name := table_name;
-    idx.attribute_name := attribute_name;
+    idx.index_name := ind_name;   
+    idx.table_name := tab_name;
+    idx.attribute_name := att_name;
     idx.type := 1;
-    idx.srid := srid;
+    idx.srid := crs;
     idx.is_3d := 0;
 
     RETURN idx;
@@ -80,15 +80,15 @@ $$
 LANGUAGE 'plpgsql' IMMUTABLE STRICT;
 
 CREATE OR REPLACE FUNCTION geodb_pkg.idx_construct_normal
-    (index_name VARCHAR, table_name VARCHAR, attribute_name VARCHAR, srid INTEGER DEFAULT 0) RETURNS geodb_pkg.INDEX_OBJ AS $$
+    (ind_name VARCHAR, tab_name VARCHAR, att_name VARCHAR, crs INTEGER DEFAULT 0) RETURNS geodb_pkg.INDEX_OBJ AS $$
 DECLARE
     idx geodb_pkg.INDEX_OBJ;
 BEGIN
-    idx.index_name := index_name;
-    idx.table_name := table_name;
-    idx.attribute_name := attribute_name;
+    idx.index_name := ind_name;
+    idx.table_name := tab_name;
+    idx.attribute_name := att_name;
     idx.type := 0;
-    idx.srid := srid;
+    idx.srid := crs;
     idx.is_3d := 0;
 
     RETURN idx;
@@ -265,7 +265,7 @@ DECLARE
     sql_error_msg VARCHAR;
     rec RECORD;
 BEGIN
-    FOR rec IN select * from geodb_pkg.index_table LOOP
+    FOR rec IN SELECT * FROM geodb_pkg.index_table LOOP
         IF (rec.idx_obj).type = type THEN
             sql_error_msg := geodb_pkg.idx_create_index(rec.idx_obj);
             log := array_append(log, geodb_pkg.idx_index_status(rec.idx_obj) || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name || ':' || sql_error_msg);
@@ -291,7 +291,7 @@ DECLARE
     sql_error_msg VARCHAR;
     rec RECORD;
 BEGIN
-    FOR rec IN select * from geodb_pkg.index_table LOOP
+    FOR rec IN SELECT * FROM geodb_pkg.index_table LOOP
         IF (rec.idx_obj).type = type THEN
             sql_error_msg := geodb_pkg.idx_drop_index(rec.idx_obj);
             log := array_append(log, geodb_pkg.idx_index_status(rec.idx_obj) || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name || ':' || sql_error_msg);
@@ -314,7 +314,7 @@ DECLARE
     status VARCHAR(20);
     rec RECORD;
 BEGIN
-    FOR rec IN select * from geodb_pkg.index_table LOOP
+    FOR rec IN SELECT * FROM geodb_pkg.index_table LOOP
         IF (rec.idx_obj).type = 1 THEN
             status := geodb_pkg.idx_index_status(rec.idx_obj);
             log := array_append(log, status || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name);
@@ -337,7 +337,7 @@ DECLARE
     status VARCHAR(20);
     rec RECORD;
 BEGIN
-    FOR rec IN select * from geodb_pkg.index_table LOOP
+    FOR rec IN SELECT * FROM geodb_pkg.index_table LOOP
         IF (rec.idx_obj).type = 0 THEN
             status := geodb_pkg.idx_index_status(rec.idx_obj);
             log := array_append(log, status || ':' || (rec.idx_obj).index_name || ':' || (rec.idx_obj).table_name || ':' || (rec.idx_obj).attribute_name);
@@ -414,13 +414,13 @@ LANGUAGE plpgsql;
 * @param attribute_name
 * @return INDEX_OBJ
 ******************************************************************/
-CREATE OR REPLACE FUNCTION geodb_pkg.idx_get_index(table_name VARCHAR, column_name VARCHAR) RETURNS geodb_pkg.INDEX_OBJ AS $$
+CREATE OR REPLACE FUNCTION geodb_pkg.idx_get_index(tab_name VARCHAR, column_name VARCHAR) RETURNS geodb_pkg.INDEX_OBJ AS $$
 DECLARE
     idx geodb_pkg.INDEX_OBJ;
     rec RECORD;
 BEGIN
-    FOR rec IN select * from geodb_pkg.index_table LOOP
-        IF (rec.idx_obj).attribute_name = column_name AND (rec.idx_obj).table_name = table_name THEN
+    FOR rec IN SELECT * FROM geodb_pkg.index_table LOOP
+        IF (rec.idx_obj).attribute_name = column_name AND (rec.idx_obj).table_name = tab_name THEN
             idx := rec.idx_obj;
         END IF;
     END LOOP;

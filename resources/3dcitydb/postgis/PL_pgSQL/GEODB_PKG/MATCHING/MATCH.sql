@@ -4,7 +4,7 @@
 --
 -- Conversion:  Felix Kunde <fkunde@virtualcitysystems.de>
 --
--- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
+-- Copyright:   (c) 2007-2013  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universitaet Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
@@ -22,7 +22,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description      | Author  | Conversion
--- 1.0.0     2012-07-12   PostGIS version    CNag      FKun
+-- 1.0.0     2013-02-22   PostGIS version    CNag      FKun
 --
 
 -------------------------------------------------------------------------------
@@ -271,7 +271,7 @@ $$
 LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION geodb_pkg.match_aggregate_geometry(table_name VARCHAR, aggregate_building INTEGER DEFAULT 1)
+CREATE OR REPLACE FUNCTION geodb_pkg.match_aggregate_geometry(tab_name VARCHAR, aggregate_building INTEGER DEFAULT 1)
 RETURNS SETOF void AS
 $$
 DECLARE
@@ -287,10 +287,10 @@ BEGIN
   match_collect_root_id_idx := geodb_pkg.idx_construct_normal('match_collect_root_id_idx', 'geodb_pkg.match_collect_geom', 'root_id');
   
   -- TRUNCATE TABLE
-  EXECUTE 'TRUNCATE TABLE '||table_name;
+  EXECUTE 'TRUNCATE TABLE '||tab_name;
 
   -- drop spatial indexes   
-  IF (match_cand_projected_spx).table_name = table_name THEN
+  IF (match_cand_projected_spx).table_name = tab_name THEN
     log := geodb_pkg.idx_drop_index(match_cand_projected_spx);
   ELSE
     log := geodb_pkg.idx_drop_index(match_master_projected_spx);
@@ -305,7 +305,7 @@ BEGIN
       log := geodb_pkg.idx_create_index(match_collect_root_id_idx);
 
       FOR root_id_rec IN root_id_cur LOOP
-        EXECUTE 'INSERT INTO '||table_name||' (id, parent_id, root_id, geometry)
+        EXECUTE 'INSERT INTO '||tab_name||' (id, parent_id, root_id, geometry)
           VALUES ($1, null, $2, $3)' 
           USING root_id_rec.root_id, root_id_rec.root_id, 
             (geodb_pkg.match_aggregate_geometry_by_id(root_id_rec.root_id, 1));          
@@ -320,7 +320,7 @@ BEGIN
       log := geodb_pkg.idx_create_index(match_collect_id_idx);
 
       FOR id_rec IN id_cur LOOP
-        EXECUTE 'INSERT INTO '||table_name||' (id, parent_id, root_id, geometry)
+        EXECUTE 'INSERT INTO '||tab_name||' (id, parent_id, root_id, geometry)
           VALUES ($1, $2, $3, $4)' 
           USING id_rec.id, id_rec.parent_id, id_rec.root_id, 
               (geodb_pkg.match_aggregate_geometry_by_id(id_rec.id, 0));          
@@ -329,10 +329,10 @@ BEGIN
   END IF;
 
   -- clean up aggregate table
-  EXECUTE 'DELETE FROM '||table_name||' WHERE geometry IS NULL';
+  EXECUTE 'DELETE FROM '||tab_name||' WHERE geometry IS NULL';
 
   -- create spatial index
-  IF match_cand_projected_spx.table_name = table_name THEN
+  IF match_cand_projected_spx.table_name = tab_name THEN
     match_cand_projected_spx.srid := geodb_pkg.match_get_2d_srid();
     log := geodb_pkg.idx_create_index(match_cand_projected_spx);
   ELSE
