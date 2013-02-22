@@ -50,8 +50,8 @@ DECLARE
   
 BEGIN
   reportDate := NOW();  
-  report := array_append(report, E'Database Report on 3D City Model - Report date: ' || TO_CHAR(reportDate, 'DD.MM.YYYY HH24:MI:SS'));
-  report := array_append(report, E'===================================================================');
+  report := array_append(report, 'Database Report on 3D City Model - Report date: ' || TO_CHAR(reportDate, 'DD.MM.YYYY HH24:MI:SS'));
+  report := array_append(report, '===================================================================');
 
   PERFORM array_append(report, '');
 
