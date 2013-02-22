@@ -18,7 +18,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description     | Author
--- 1.0.0     2010-07-31   PostGIS version   FKun
+-- 1.0.0     2013-02-22   PostGIS version   FKun
 
 CREATE OR REPLACE FUNCTION check_srid(srid INTEGER DEFAULT 0) RETURNS VARCHAR AS
 $$
@@ -30,7 +30,7 @@ BEGIN
 
   IF dbsrid <> 0 THEN
     BEGIN
-      PERFORM ST_Transform(ST_GeomFromEWKT('SRID=4326;POINT(1 1 1)'),dbsrid);
+      PERFORM ST_Transform(ST_GeomFromEWKT('SRID='||dbsrid||';POINT(1 1 1)'),4326);
 
 	  RETURN validation;
 
