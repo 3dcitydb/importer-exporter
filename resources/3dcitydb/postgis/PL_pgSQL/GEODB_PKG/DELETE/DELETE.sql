@@ -67,41 +67,37 @@ LANGUAGE plpgsql;
 /*
 internal: DELETE FROM SURFACE_GEOMETRY
 */
-CREATE OR REPLACE FUNCTION geodb_pkg.del_intern_delete_surface_geometry(pid numeric) RETURNS SETOF void AS
+CREATE OR REPLACE FUNCTION geodb_pkg.del_intern_delete_surface_geometry(pid NUMERIC) RETURNS SETOF void AS
 $$
 DECLARE
   textureparam_rec INTEGER;
   surface_geometry_rec INTEGER;
 BEGIN
-  FOR textureparam_rec IN EXECUTE 'SELECT FROM textureparam WHERE surface_geometry_id IN 
-            (WITH RECURSIVE recursive_query(id, parent_id, level) 
-              AS (
-                SELECT id, parent_id, 1 AS level FROM surface_geometry WHERE id=$1
+  FOR textureparam_rec IN EXECUTE 'SELECT id FROM textureparam WHERE surface_geometry_id IN
+             (WITH RECURSIVE geometry(id, parent_id, level) AS (
+                SELECT sg.id, sg.parent_id, 1 AS level FROM surface_geometry sg WHERE id=$1
               UNION ALL
-                SELECT sg.id, sg.parent_id, rq.level + 1 AS level FROM surface_geometry sg, recursive_query rq WHERE sg.parent_id = rq.id
+                SELECT sg.id, sg.parent_id, g.level + 1 AS level FROM surface_geometry sg, geometry g WHERE sg.parent_id = g.id
               )
-              SELECT id FROM recursive_query ORDER BY level DESC)' USING pid LOOP
+              SELECT id FROM geometry ORDER BY level DESC)' USING pid LOOP
     EXECUTE 'DELETE FROM textureparam WHERE id = $1' USING textureparam_rec;
   END LOOP;
   
-  FOR surface_geometry_rec IN EXECUTE 'SELECT FROM surface_geometry WHERE id IN
-            (WITH RECURSIVE recursive_query(id, parent_id, level) 
-              AS (
-                SELECT id, parent_id, 1 AS level FROM surface_geometry WHERE id=$1
+  FOR surface_geometry_rec IN EXECUTE 'WITH RECURSIVE geometry(id, parent_id, level) AS (
+                SELECT sg.id, sg.parent_id, 1 AS level FROM surface_geometry sg WHERE id=$1
               UNION ALL
-                SELECT sg.id, sg.parent_id, rq.level + 1 AS level FROM surface_geometry sg, recursive_query rq WHERE sg.parent_id = rq.id
+                SELECT sg.id, sg.parent_id, g.level + 1 AS level FROM surface_geometry sg, geometry g WHERE sg.parent_id = g.id
               )
-              SELECT id FROM recursive_query ORDER BY level DESC)' USING pid LOOP 			  
+              SELECT id FROM geometry ORDER BY level DESC' USING pid LOOP 			  
     EXECUTE 'DELETE FROM surface_geometry WHERE id = $1' USING surface_geometry_rec;
   END LOOP;
 	 
   EXCEPTION
     WHEN OTHERS THEN
       RAISE NOTICE 'intern_delete_surface_geometry (id: %): %', pid, SQLERRM;
-END; 
+END;
 $$
 LANGUAGE plpgsql;
-
 
 
 /*
