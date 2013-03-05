@@ -73,9 +73,9 @@ DECLARE
   textureparam_rec INTEGER;
   surface_geometry_rec INTEGER;
 BEGIN
-  FOR textureparam_rec IN EXECUTE 'SELECT id FROM textureparam WHERE surface_geometry_id IN
+  FOR textureparam_rec IN EXECUTE 'SELECT surface_geometry_id FROM textureparam WHERE surface_geometry_id IN
              (WITH RECURSIVE geometry(id, parent_id, level) AS (
-                SELECT sg.id, sg.parent_id, 1 AS level FROM surface_geometry sg WHERE id=$1
+                SELECT sg.id, sg.parent_id, 1 AS level FROM surface_geometry sg WHERE sg.id=$1
               UNION ALL
                 SELECT sg.id, sg.parent_id, g.level + 1 AS level FROM surface_geometry sg, geometry g WHERE sg.parent_id = g.id
               )
@@ -84,7 +84,7 @@ BEGIN
   END LOOP;
   
   FOR surface_geometry_rec IN EXECUTE 'WITH RECURSIVE geometry(id, parent_id, level) AS (
-                SELECT sg.id, sg.parent_id, 1 AS level FROM surface_geometry sg WHERE id=$1
+                SELECT sg.id, sg.parent_id, 1 AS level FROM surface_geometry sg WHERE sg.id=$1
               UNION ALL
                 SELECT sg.id, sg.parent_id, g.level + 1 AS level FROM surface_geometry sg, geometry g WHERE sg.parent_id = g.id
               )
