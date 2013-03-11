@@ -80,7 +80,7 @@ BEGIN
                 SELECT sg.id, sg.parent_id, g.level + 1 AS level FROM surface_geometry sg, geometry g WHERE sg.parent_id = g.id
               )
               SELECT id FROM geometry ORDER BY level DESC)' USING pid LOOP
-    EXECUTE 'DELETE FROM textureparam WHERE id = $1' USING textureparam_rec;
+    EXECUTE 'DELETE FROM textureparam WHERE surface_geometry_id = $1' USING textureparam_rec;
   END LOOP;
   
   FOR surface_geometry_rec IN EXECUTE 'WITH RECURSIVE geometry(id, parent_id, level) AS (
