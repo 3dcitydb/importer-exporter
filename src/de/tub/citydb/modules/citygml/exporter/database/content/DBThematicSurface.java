@@ -124,8 +124,8 @@ public class DBThematicSurface implements DBExporter {
 					"a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT, a.XAL_SOURCE " +
 					"from THEMATIC_SURFACE ts left join OPENING_TO_THEM_SURFACE o2t on ts.ID = o2t.THEMATIC_SURFACE_ID left join OPENING op on op.ID = o2t.OPENING_ID left join ADDRESS a on op.ADDRESS_ID=a.ID where ";
 
-			psBuildingThematicSurface = connection.prepareStatement(query += "ts.BUILDING_ID = ?");
-			psRoomThematicSurface = connection.prepareStatement(query += "ts.ROOM_ID = ?");
+			psBuildingThematicSurface = connection.prepareStatement(query + "ts.BUILDING_ID = ?");
+			psRoomThematicSurface = connection.prepareStatement(query + "ts.ROOM_ID = ?");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			String query = "select ts.ID as TSID, ts.NAME, ts.NAME_CODESPACE, ts.DESCRIPTION, upper(ts.TYPE) as TYPE, ts.LOD2_MULTI_SURFACE_ID, ts.LOD3_MULTI_SURFACE_ID, ts.LOD4_MULTI_SURFACE_ID, "+
@@ -134,8 +134,8 @@ public class DBThematicSurface implements DBExporter {
 					"geodb_util.transform_or_null(a.MULTI_POINT, " + srid + ") AS MULTI_POINT, a.XAL_SOURCE " +
 					"from THEMATIC_SURFACE ts left join OPENING_TO_THEM_SURFACE o2t on ts.ID = o2t.THEMATIC_SURFACE_ID left join OPENING op on op.ID = o2t.OPENING_ID left join ADDRESS a on op.ADDRESS_ID=a.ID where ";
 
-			psBuildingThematicSurface = connection.prepareStatement(query += "ts.BUILDING_ID = ?");
-			psRoomThematicSurface = connection.prepareStatement(query += "ts.ROOM_ID = ?");
+			psBuildingThematicSurface = connection.prepareStatement(query + "ts.BUILDING_ID = ?");
+			psRoomThematicSurface = connection.prepareStatement(query + "ts.ROOM_ID = ?");
 		}
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
