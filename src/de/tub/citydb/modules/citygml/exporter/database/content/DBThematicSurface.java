@@ -34,6 +34,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
@@ -152,6 +154,7 @@ public class DBThematicSurface implements DBExporter {
 	}
 
 	private void read(AbstractCityObject cityObject, long parentId, boolean isBuilding) throws SQLException {
+		final List<Long> boundarySurfaceIds = new ArrayList<Long>();
 		ResultSet rs = null;
 
 		try {
@@ -172,80 +175,90 @@ public class DBThematicSurface implements DBExporter {
 
 				if (boundarySurfaceId != currentBoundarySurfaceId) {
 					currentBoundarySurfaceId = boundarySurfaceId;
+					
+					int index = boundarySurfaceIds.indexOf(boundarySurfaceId);
+					if (index == -1) {
+						String type = rs.getString("TYPE");
+						if (rs.wasNull() || type == null || type.length() == 0)
+							continue;
 
-					String type = rs.getString("TYPE");
-					if (rs.wasNull() || type == null || type.length() == 0)
-						continue;
+						if (type.equals(TypeAttributeValueEnum.WALL_SURFACE.toString().toUpperCase()))
+							boundarySurface = new WallSurfaceImpl();
+						else if (type.equals(TypeAttributeValueEnum.ROOF_SURFACE.toString().toUpperCase()))
+							boundarySurface = new RoofSurfaceImpl();
+						else if (type.equals(TypeAttributeValueEnum.INTERIOR_WALL_SURFACE.toString().toUpperCase()))
+							boundarySurface = new InteriorWallSurfaceImpl();
+						else if (type.equals(TypeAttributeValueEnum.GROUND_SURFACE.toString().toUpperCase()))
+							boundarySurface = new GroundSurfaceImpl();
+						else if (type.equals(TypeAttributeValueEnum.FLOOR_SURFACE.toString().toUpperCase()))
+							boundarySurface = new FloorSurfaceImpl();
+						else if (type.equals(TypeAttributeValueEnum.CLOSURE_SURFACE.toString().toUpperCase()))
+							boundarySurface = new ClosureSurfaceImpl();
+						else if (type.equals(TypeAttributeValueEnum.CEILING_SURFACE.toString().toUpperCase()))
+							boundarySurface = new CeilingSurfaceImpl();
 
-					if (type.equals(TypeAttributeValueEnum.WALL_SURFACE.toString().toUpperCase()))
-						boundarySurface = new WallSurfaceImpl();
-					else if (type.equals(TypeAttributeValueEnum.ROOF_SURFACE.toString().toUpperCase()))
-						boundarySurface = new RoofSurfaceImpl();
-					else if (type.equals(TypeAttributeValueEnum.INTERIOR_WALL_SURFACE.toString().toUpperCase()))
-						boundarySurface = new InteriorWallSurfaceImpl();
-					else if (type.equals(TypeAttributeValueEnum.GROUND_SURFACE.toString().toUpperCase()))
-						boundarySurface = new GroundSurfaceImpl();
-					else if (type.equals(TypeAttributeValueEnum.FLOOR_SURFACE.toString().toUpperCase()))
-						boundarySurface = new FloorSurfaceImpl();
-					else if (type.equals(TypeAttributeValueEnum.CLOSURE_SURFACE.toString().toUpperCase()))
-						boundarySurface = new ClosureSurfaceImpl();
-					else if (type.equals(TypeAttributeValueEnum.CEILING_SURFACE.toString().toUpperCase()))
-						boundarySurface = new CeilingSurfaceImpl();
+						if (boundarySurface == null)
+							continue;
 
-					if (boundarySurface == null)
-						continue;
+						String gmlName = rs.getString("NAME");
+						String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-					String gmlName = rs.getString("NAME");
-					String gmlNameCodespace = rs.getString("NAME_CODESPACE");
+						Util.dbGmlName2featureName(boundarySurface, gmlName, gmlNameCodespace);
 
-					Util.dbGmlName2featureName(boundarySurface, gmlName, gmlNameCodespace);
+						String description = rs.getString("DESCRIPTION");
+						if (description != null) {
+							StringOrRef stringOrRef = new StringOrRefImpl();
+							stringOrRef.setValue(description);
+							boundarySurface.setDescription(stringOrRef);
+						}
 
-					String description = rs.getString("DESCRIPTION");
-					if (description != null) {
-						StringOrRef stringOrRef = new StringOrRefImpl();
-						stringOrRef.setValue(description);
-						boundarySurface.setDescription(stringOrRef);
-					}
+						for (int lod = 2; lod < 5 ; lod++) {
+							long lodMultiSurfaceId = rs.getLong("LOD" + lod + "_MULTI_SURFACE_ID");
 
-					for (int lod = 2; lod < 5 ; lod++) {
-						long lodMultiSurfaceId = rs.getLong("LOD" + lod + "_MULTI_SURFACE_ID");
+							if (!rs.wasNull() && lodMultiSurfaceId != 0) {
+								DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodMultiSurfaceId);
 
-						if (!rs.wasNull() && lodMultiSurfaceId != 0) {
-							DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodMultiSurfaceId);
+								if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
+									MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
 
-							if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
+									if (geometry.getAbstractGeometry() != null)
+										multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
+									else
+										multiSurfaceProperty.setHref(geometry.getTarget());
 
-								if (geometry.getAbstractGeometry() != null)
-									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
-								else
-									multiSurfaceProperty.setHref(geometry.getTarget());
-
-								switch (lod) {
-								case 2:
-									boundarySurface.setLod2MultiSurface(multiSurfaceProperty);
-									break;
-								case 3:
-									boundarySurface.setLod3MultiSurface(multiSurfaceProperty);
-									break;
-								case 4:
-									boundarySurface.setLod4MultiSurface(multiSurfaceProperty);
-									break;
+									switch (lod) {
+									case 2:
+										boundarySurface.setLod2MultiSurface(multiSurfaceProperty);
+										break;
+									case 3:
+										boundarySurface.setLod3MultiSurface(multiSurfaceProperty);
+										break;
+									case 4:
+										boundarySurface.setLod4MultiSurface(multiSurfaceProperty);
+										break;
+									}
 								}
 							}
 						}
+
+						// cityobject stuff
+						cityObjectExporter.read(boundarySurface, boundarySurfaceId);
+
+						BoundarySurfaceProperty boundarySurfaceProperty = new BoundarySurfacePropertyImpl();
+						boundarySurfaceProperty.setObject(boundarySurface);
+
+						if (isBuilding)
+							((AbstractBuilding)cityObject).addBoundedBySurface(boundarySurfaceProperty);
+						else
+							((Room)cityObject).addBoundedBySurface(boundarySurfaceProperty);
+						
+						boundarySurfaceIds.add(boundarySurfaceId);
+					} else {
+						if (isBuilding)
+							boundarySurface = ((AbstractBuilding)cityObject).getBoundedBySurface().get(index).getBoundarySurface();
+						else
+							boundarySurface = ((Room)cityObject).getBoundedBySurface().get(index).getBoundarySurface();							
 					}
-
-					// cityobject stuff
-					cityObjectExporter.read(boundarySurface, boundarySurfaceId);
-
-					BoundarySurfaceProperty boundarySurfaceProperty = new BoundarySurfacePropertyImpl();
-					boundarySurfaceProperty.setObject(boundarySurface);
-
-					if (isBuilding)
-						((AbstractBuilding)cityObject).addBoundedBySurface(boundarySurfaceProperty);
-					else
-						((Room)cityObject).addBoundedBySurface(boundarySurfaceProperty);
 				}
 
 				// continue if we could not interpret the boundary surface
