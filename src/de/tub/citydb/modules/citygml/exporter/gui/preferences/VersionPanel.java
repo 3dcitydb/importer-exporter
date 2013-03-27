@@ -59,7 +59,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 	@Override
 	public boolean isModified() {
 		CityGMLVersionType version = config.getProject().getExporter().getCityGMLVersion();
-		
+
 		for (int i = 0; i < CityGMLVersionType.values().length; i++)
 			if (cityGMLVersionBox[i].isSelected())
 				return version != CityGMLVersionType.fromValue(cityGMLVersionBox[i].getText());
@@ -76,7 +76,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 			cityGMLVersionBox[i].setText(CityGMLVersionType.values()[i].toString());
 			cityGMLVersionBox[i].setIconTextGap(10);
 			group.add(cityGMLVersionBox[i]);
-			
+
 			if (CityGMLVersionType.values()[i].toCityGMLVersion() == CityGMLVersion.DEFAULT)
 				cityGMLVersionBox[i].setSelected(true);
 		}
@@ -100,12 +100,15 @@ public class VersionPanel extends AbstractPreferencesComponent {
 	@Override
 	public void loadSettings() {
 		CityGMLVersionType version = config.getProject().getExporter().getCityGMLVersion();
-		for (int i = 0; i < CityGMLVersionType.values().length; i++) {
-			if (CityGMLVersionType.values()[i].toCityGMLVersion() == version.toCityGMLVersion()) {
-				cityGMLVersionBox[i].setSelected(true);
-				break;
+		if (version != null) {
+			for (int i = 0; i < CityGMLVersionType.values().length; i++) {
+				if (CityGMLVersionType.values()[i].toCityGMLVersion() == version.toCityGMLVersion()) {
+					cityGMLVersionBox[i].setSelected(true);
+					break;
+				}
 			}
-		}
+		} else
+			cityGMLVersionBox[0].setSelected(true);
 	}
 
 	@Override
@@ -117,7 +120,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 			}
 		}
 	}
-	
+
 	@Override
 	public String getTitle() {
 		return Internal.I18N.getString("pref.tree.export.version");
