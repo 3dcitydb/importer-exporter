@@ -134,6 +134,7 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 		
 			in.close();
 			out.close();
+			blob.free();
 			externalFileConn.commit();
 			return true;
 			
