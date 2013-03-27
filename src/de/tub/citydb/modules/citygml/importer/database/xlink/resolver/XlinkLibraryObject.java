@@ -133,7 +133,6 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 				out.write(buffer, 0, length);
 		
 			in.close();
-			blob.close();
 			out.close();
 			externalFileConn.commit();
 			return true;

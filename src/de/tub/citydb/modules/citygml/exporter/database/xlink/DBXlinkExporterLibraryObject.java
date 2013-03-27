@@ -70,7 +70,7 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 
 	public boolean export(DBXlinkLibraryObject xlink) throws SQLException {
 		String fileName = xlink.getFileURI();
-		boolean isReomte = false;
+		boolean isRemote = false;
 
 		if (fileName == null || fileName.length() == 0) {
 			LOG.error("Database error while exporting a library object: Attribute REFERENCE_TO_LIBRARY is empty.");
@@ -80,7 +80,7 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 		// check whether we deal with a remote image uri
 		if (Util.isRemoteXlink(fileName)) {
 			URL url = null;
-			isReomte = true;
+			isRemote = true;
 
 			try {
 				url = new URL(fileName);
@@ -110,7 +110,7 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 		psLibraryObject.setLong(1, xlink.getId());
 		OracleResultSet rs = (OracleResultSet)psLibraryObject.executeQuery();
 		if (!rs.next()) {
-			if (!isReomte) {
+			if (!isRemote) {
 				// we could not read from database. if we deal with a remote
 				// image uri, we do not really care. but if the texture image should
 				// be provided by us, then this is serious...
@@ -120,8 +120,6 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 			rs.close();
 			return false;
 		}
-
-		LOG.info("Exporting library object: " + fileName);
 
 		// read oracle image data type
 		BLOB blob = rs.getBLOB(1);
@@ -148,8 +146,6 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 			LOG.error("Failed to write library object file " + fileName + ": " + ioEx.getMessage());
 			return false;
 		} finally {
-			blob.close();
-
 			if (in != null) {
 				try {
 					in.close();
