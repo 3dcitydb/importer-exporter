@@ -40,6 +40,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
+import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.XalAddressProperty;
 import org.citygml4j.model.module.xal.XALModuleType;
@@ -58,6 +59,7 @@ import org.citygml4j.model.xal.ThoroughfareNumberOrRange;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
 /*
@@ -88,6 +90,7 @@ import de.tub.citydb.util.Util;
  */
 
 public class DBAddress implements DBImporter {	
+	private final Logger LOG = Logger.getInstance();
 	private final Connection batchConn;
 	private final Config config;
 	private final DBImporterManager dbImporterManager;
@@ -109,7 +112,7 @@ public class DBAddress implements DBImporter {
 
 	private void init() throws SQLException {
 		importXalSource = config.getProject().getImporter().getAddress().isSetImportXAL();
-		
+
 		psAddress = batchConn.prepareStatement("insert into ADDRESS (ID, STREET, HOUSE_NUMBER, PO_BOX, ZIP_CODE, CITY, COUNTRY, MULTI_POINT, XAL_SOURCE) values "+
 				"(?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
@@ -129,17 +132,13 @@ public class DBAddress implements DBImporter {
 		if (addressId == 0)
 			return 0;
 
-		// propagate gml:id
-		if (address.isSetId())
-			dbImporterManager.putGmlId(address.getId(), addressId, address.getCityGMLClass());
+		boolean success = false;
+		String streetAttr, houseNoAttr, poBoxAttr, zipCodeAttr, cityAttr, countryAttr, xalSource;
+		streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = xalSource = null;
+		JGeometry multiPoint = null;		
 
-		// we just interpret addresses having a <country> child element
+		// try and interpret <country> child element
 		if (addressDetails.isSetCountry()) {
-			// this is the information we need...
-			String streetAttr, houseNoAttr, poBoxAttr, zipCodeAttr, cityAttr, countryAttr, xalSource;
-			streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = xalSource = null;
-			JGeometry multiPoint = null;
-
 			Country country = addressDetails.getCountry();
 
 			// country name
@@ -261,11 +260,24 @@ public class DBAddress implements DBImporter {
 			// multiPoint geometry
 			if (address.isSetMultiPoint())
 				multiPoint = sdoGeometry.getMultiPoint(address.getMultiPoint());
+		
+			success = true;
+		} else {
+			StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+					address.getCityGMLClass(), 
+					address.getId()));
+			msg.append(": Failed to interpret xAL address element.");
+			LOG.error(msg.toString());
+		}
 
-			// get XML representation of <xal:AddressDetails>
-			if (importXalSource)
-				xalSource = dbImporterManager.marshal(addressDetails, XALModuleType.CORE);
-
+		// get XML representation of <xal:AddressDetails>
+		if (importXalSource) {
+			xalSource = dbImporterManager.marshal(addressDetails, XALModuleType.CORE);
+			if (xalSource != null && xalSource.length() > 0)
+				success = true;
+		}		
+		
+		if (success) {		
 			psAddress.setLong(1, addressId);
 			psAddress.setString(2, streetAttr);
 			psAddress.setString(3, houseNoAttr);
@@ -292,8 +304,9 @@ public class DBAddress implements DBImporter {
 			// enable xlinks
 			if (address.isSetId())
 				dbImporterManager.putGmlId(address.getId(), addressId, address.getCityGMLClass());
-		}	
-
+		} else
+			addressId = 0;		
+		
 		return addressId;
 	}
 
