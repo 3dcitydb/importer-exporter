@@ -260,8 +260,10 @@ public class DBCityObject implements DBExporter {
 						switch (dataType) {
 						case 1:
 							String strVal = rs.getString("STRVAL");
-							genericAttrib = new StringAttributeImpl();
-							((StringAttribute)genericAttrib).setValue(strVal);
+							if (!rs.wasNull()) {
+								genericAttrib = new StringAttributeImpl();
+								((StringAttribute)genericAttrib).setValue(strVal);
+							}
 							break;
 						case 2:
 							Integer intVal = rs.getInt("INTVAL");
@@ -279,12 +281,14 @@ public class DBCityObject implements DBExporter {
 							break;
 						case 4:
 							String uriVal = rs.getString("URIVAL");
-							genericAttrib = new UriAttributeImpl();
-							((UriAttribute)genericAttrib).setValue(uriVal);
+							if (!rs.wasNull()) {
+								genericAttrib = new UriAttributeImpl();
+								((UriAttribute)genericAttrib).setValue(uriVal);
+							}
 							break;
 						case 5:
 							Date dateVal = rs.getDate("DATEVAL");
-							if (dateVal != null) {
+							if (!rs.wasNull()) {
 								genericAttrib = new DateAttributeImpl();
 								GregorianCalendar gregDate = new GregorianCalendar();
 								gregDate.setTime(dateVal);	
