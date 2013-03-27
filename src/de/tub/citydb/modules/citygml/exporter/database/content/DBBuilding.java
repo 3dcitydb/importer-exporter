@@ -40,7 +40,6 @@ import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Vector;
 import java.util.regex.Pattern;
 
 import oracle.spatial.geometry.JGeometry;
@@ -154,15 +153,11 @@ public class DBBuilding implements DBExporter {
 			rs = psBuilding.executeQuery();
 			BuildingTree buildingTree = new BuildingTree();
 
-			long currentBuildingId = 0;				
-
 			while (rs.next()) {
-				BuildingNode buildingNode = null;
 				long id = rs.getLong("ID");
+				BuildingNode buildingNode = buildingTree.getNode(id);
 
-				if (currentBuildingId != id) {
-					currentBuildingId = id;
-
+				if (buildingNode == null) {
 					long parentId = rs.getLong("BUILDING_PARENT_ID");
 					String gmlName = rs.getString("NAME");
 					String gmlNameCodeSpace = rs.getString("NAME_CODESPACE");
@@ -228,8 +223,6 @@ public class DBBuilding implements DBExporter {
 
 					// put it into buildingTree
 					buildingTree.insertNode(buildingNode, parentId);
-				} else {
-					buildingNode = buildingTree.getNode(id);
 				}
 
 				// address information
@@ -554,15 +547,15 @@ public class DBBuilding implements DBExporter {
 		protected long[] lodGeometryId;
 		protected JGeometry[] terrainIntersection;
 		protected JGeometry[] multiCurve;
-		protected Vector<AddressProperty> addressProperty;
-		protected Vector<BuildingNode> childNodes;
+		protected List<AddressProperty> addressProperty;
+		protected List<BuildingNode> childNodes;
 
 		public BuildingNode() {
 			lodGeometryId = new long[4];
 			terrainIntersection = new JGeometry[4];
 			multiCurve = new JGeometry[3];
-			addressProperty = new Vector<AddressProperty>();
-			childNodes = new Vector<BuildingNode>();
+			addressProperty = new ArrayList<AddressProperty>();
+			childNodes = new ArrayList<BuildingNode>();
 		}
 	}
 
@@ -643,7 +636,8 @@ public class DBBuilding implements DBExporter {
 		}
 
 		public BuildingNode getNode(long entryId) {
-			return buildingTree.get(entryId);
+			BuildingNode node = buildingTree.get(entryId);
+			return (node != null && node.id != 0) ? node : null;
 		}
 	}
 
