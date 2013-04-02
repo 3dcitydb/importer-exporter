@@ -1068,7 +1068,7 @@ DECLARE
   cityobjectgroup_rec INTEGER;
 BEGIN
   FOR cityobjectgroup_rec IN SELECT g.id FROM cityobjectgroup g LEFT OUTER JOIN group_to_cityobject gtc
-               ON g.id=gtc.cityobject_id WHERE gtc.cityobject_id IS NULL LOOP
+               ON g.id=gtc.cityobjectgroup_id WHERE gtc.cityobject_id IS NULL LOOP
     PERFORM geodb_pkg.del_delete_row_cityobjectgroup(cityobjectgroup_rec);
   END LOOP;
   
@@ -1086,7 +1086,7 @@ DECLARE
   citymodel_rec INTEGER;
 BEGIN
   FOR citymodel_rec IN SELECT c.id FROM citymodel c LEFT OUTER JOIN cityobject_member cm
-               ON c.id=cm.citymodel_id WHERE cm.citymodel_id IS NULL LOOP
+               ON c.id=cm.citymodel_id WHERE cm.cityobject_id IS NULL LOOP
     PERFORM geodb_pkg.del_delete_row_citymodel(citymodel_rec);
   END LOOP;
 
