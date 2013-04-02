@@ -109,9 +109,13 @@ AS
   */
   procedure intern_delete_surface_geometry(pid number)
   is
+    cursor geom_cur is
+      select id from surface_geometry start with id=pid connect by prior id=parent_id order by level desc;
   begin
-    execute immediate 'delete from textureparam where surface_geometry_id in (select id from (select id from surface_geometry start with id=:1 connect by prior id=parent_id order by level desc))' using pid;
-    execute immediate 'delete from surface_geometry where id in (select id from (select id from surface_geometry start with id=:1 connect by prior id=parent_id order by level desc))' using pid; 
+    for rec in geom_cur loop
+      execute immediate 'delete from textureparam where surface_geometry_id=:1' using rec.id;
+      execute immediate 'delete from surface_geometry where id=:1' using rec.id; 
+    end loop;
   exception
     when others then
       dbms_output.put_line('intern_delete_surface_geometry (id: ' || pid || '): ' || SQLERRM);
@@ -855,7 +859,7 @@ AS
   is
     cursor group_cur is
       select g.* from cityobjectgroup g left outer join group_to_cityobject gtc
-        on g.id=gtc.cityobject_id where gtc.cityobject_id is null;
+        on g.id=gtc.cityobjectgroup_id where gtc.cityobject_id is null;
   begin
     for rec in group_cur loop
       delete_cityobjectgroup(rec);
@@ -869,7 +873,7 @@ AS
   is
     cursor citymodel_cur is
       select c.* from citymodel c left outer join cityobject_member cm
-        on c.id=cm.citymodel_id where cm.citymodel_id is null;
+        on c.id=cm.citymodel_id where cm.cityobject_id is null;
   begin
     for rec in citymodel_cur loop
       delete_citymodel(rec);
