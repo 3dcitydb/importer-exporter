@@ -33,6 +33,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.HashSet;
 import java.util.List;
 
 import oracle.spatial.geometry.JGeometry;
@@ -69,7 +70,7 @@ import de.tub.citydb.util.Util;
 
 public class DBSurfaceData implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
-	
+
 	private final Connection batchConn;
 	private final Config config;
 	private final DBImporterManager dbImporterManager;
@@ -253,15 +254,30 @@ public class DBSurfaceData implements DBImporter {
 				dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
 			if (material.isSetTarget()) {
+				HashSet<String> targets = new HashSet<String>(material.getTarget().size());
+
 				for (String target : material.getTarget()) {
-					// xlink
 					if (target != null && target.length() != 0) {
+						
+						// check for duplicate targets
+						if (!targets.add(target.replaceAll("^#", ""))) {
+							StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+									abstractSurfData.getCityGMLClass(), 
+									abstractSurfData.getId()));
+
+							msg.append(": Skipping duplicate target '" + target + "'.");
+							LOG.debug(msg.toString());
+							continue;
+						}
+
 						dbImporterManager.propagateXlink(new DBXlinkTextureParam(
 								surfaceDataId,
 								target,
 								DBXlinkTextureParamEnum.X3DMATERIAL));
 					}
 				}
+
+				targets.clear();
 			}
 		}
 
@@ -278,7 +294,7 @@ public class DBSurfaceData implements DBImporter {
 							surfaceDataId,
 							imageURI,
 							DBXlinkTextureFileEnum.TEXTURE_IMAGE
-					));
+							));
 				}
 
 			} else
@@ -303,181 +319,215 @@ public class DBSurfaceData implements DBImporter {
 				psSurfaceData.setString(12, Util.collection2string(absTex.getBorderColor().toList(), " "));
 			else
 				psSurfaceData.setNull(12, Types.VARCHAR);
-		}
 
-		if (abstractSurfData.getCityGMLClass() == CityGMLClass.PARAMETERIZED_TEXTURE) {
-			psSurfaceData.addBatch();
-			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
-				dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
+			// ParameterizedTexture
+			if (abstractSurfData.getCityGMLClass() == CityGMLClass.PARAMETERIZED_TEXTURE) {
+				psSurfaceData.addBatch();
+				if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+					dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
-			//xlink
-			ParameterizedTexture paraTex = (ParameterizedTexture)abstractSurfData;
-			if (paraTex.isSetTarget()) {
-				long targetId = 0;
+				// xlink
+				ParameterizedTexture paraTex = (ParameterizedTexture)abstractSurfData;
+				if (paraTex.isSetTarget()) {
+					HashSet<String> targetURIs = new HashSet<String>(paraTex.getTarget().size());					
+					long targetId = 0;
 
-				for (TextureAssociation target : paraTex.getTarget()) {
-					String targetURI = target.getUri();
+					for (TextureAssociation target : paraTex.getTarget()) {
+						String targetURI = target.getUri();
+						
+						if (targetURI != null && targetURI.length() != 0) {
+							
+							// check for duplicate targets
+							if (!targetURIs.add(targetURI.replaceAll("^#", ""))) {
+								StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+										abstractSurfData.getCityGMLClass(), 
+										abstractSurfData.getId()));
 
-					if (target.isSetTextureParameterization()) {
-						AbstractTextureParameterization texPara = target.getTextureParameterization();
-						String texParamGmlId = texPara.getId();
-
-						switch (texPara.getCityGMLClass()) {
-						case TEX_COORD_GEN:
-							TexCoordGen texCoordGen = (TexCoordGen)texPara;
-
-							if (texCoordGen.isSetWorldToTexture()) {
-								Matrix worldToTexture = texCoordGen.getWorldToTexture().getMatrix();
-								if (affineTransformation)
-									worldToTexture = dbImporterManager.getAffineTransformer().transformWorldToTexture(worldToTexture);
-								
-								String worldToTextureString = Util.collection2string(worldToTexture.toRowPackedList(), " ");
-
-								DBXlinkTextureParam xlink = new DBXlinkTextureParam(
-										surfaceDataId,
-										targetURI,
-										DBXlinkTextureParamEnum.TEXCOORDGEN);
-
-								xlink.setTextureParameterization(true);
-								xlink.setTexParamGmlId(texParamGmlId);
-								xlink.setWorldToTexture(worldToTextureString);
-
-								dbImporterManager.propagateXlink(xlink);
+								msg.append(": Skipping duplicate target '" + targetURI + "'.");
+								LOG.debug(msg.toString());
+								continue;
 							}
 
-							break;
-						case TEX_COORD_LIST:
-							TexCoordList texCoordList = (TexCoordList)texPara;
-							targetId++;
+							if (target.isSetTextureParameterization()) {
+								AbstractTextureParameterization texPara = target.getTextureParameterization();
+								String texParamGmlId = texPara.getId();
 
-							if (texCoordList.isSetTextureCoordinates()) {
-								for (TextureCoordinates texCoord : texCoordList.getTextureCoordinates()) {
-									String ring = texCoord.getRing();
+								switch (texPara.getCityGMLClass()) {
+								case TEX_COORD_GEN:
+									TexCoordGen texCoordGen = (TexCoordGen)texPara;
 
-									if (ring != null && ring.length() != 0 && texCoord.isSetValue()) {
-										
-										// check for even number of texture coordinates
-										if ((texCoord.getValue().size() & 1) == 1) {
-											texCoord.addValue(0.0);
-											
-											StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-													abstractSurfData.getCityGMLClass(), 
-													abstractSurfData.getId()));
-											
-											msg.append(": Odd number of texture coordinates found. Adding 0.0 to fix this.");
-											LOG.error(msg.toString());
-										}
-										
-										String coords = Util.collection2string(texCoord.getValue(), " ");
+									if (texCoordGen.isSetWorldToTexture()) {
+										Matrix worldToTexture = texCoordGen.getWorldToTexture().getMatrix();
+										if (affineTransformation)
+											worldToTexture = dbImporterManager.getAffineTransformer().transformWorldToTexture(worldToTexture);
+
+										String worldToTextureString = Util.collection2string(worldToTexture.toRowPackedList(), " ");
 
 										DBXlinkTextureParam xlink = new DBXlinkTextureParam(
 												surfaceDataId,
-												ring,
-												DBXlinkTextureParamEnum.TEXCOORDLIST);
+												targetURI,
+												DBXlinkTextureParamEnum.TEXCOORDGEN);
 
 										xlink.setTextureParameterization(true);
 										xlink.setTexParamGmlId(texParamGmlId);
-										xlink.setTextureCoord(coords);
-										xlink.setTargetURI(targetURI);
-										xlink.setTexCoordListId(surfaceDataId + "_" + targetId);
+										xlink.setWorldToTexture(worldToTextureString);
 
 										dbImporterManager.propagateXlink(xlink);
 									}
+
+									break;
+								case TEX_COORD_LIST:
+									TexCoordList texCoordList = (TexCoordList)texPara;
+									targetId++;
+
+									if (texCoordList.isSetTextureCoordinates()) {
+										for (TextureCoordinates texCoord : texCoordList.getTextureCoordinates()) {
+											String ring = texCoord.getRing();
+
+											if (ring != null && ring.length() != 0 && texCoord.isSetValue()) {
+
+												// check for even number of texture coordinates
+												if ((texCoord.getValue().size() & 1) == 1) {
+													texCoord.addValue(0.0);
+
+													StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+															abstractSurfData.getCityGMLClass(), 
+															abstractSurfData.getId()));
+
+													msg.append(": Odd number of texture coordinates found. Adding 0.0 to fix this.");
+													LOG.error(msg.toString());
+												}
+
+												String coords = Util.collection2string(texCoord.getValue(), " ");
+
+												DBXlinkTextureParam xlink = new DBXlinkTextureParam(
+														surfaceDataId,
+														ring,
+														DBXlinkTextureParamEnum.TEXCOORDLIST);
+
+												xlink.setTextureParameterization(true);
+												xlink.setTexParamGmlId(texParamGmlId);
+												xlink.setTextureCoord(coords);
+												xlink.setTargetURI(targetURI);
+												xlink.setTexCoordListId(surfaceDataId + "_" + targetId);
+
+												dbImporterManager.propagateXlink(xlink);
+											}
+										}
+									}
+
+									break;
+								}
+							} else {
+								String href = target.getHref();
+
+								if (href != null && href.length() != 0) {
+									DBXlinkTextureParam xlink = new DBXlinkTextureParam(
+											surfaceDataId,
+											href,
+											DBXlinkTextureParamEnum.XLINK_TEXTUREASSOCIATION
+											);
+
+									xlink.setTargetURI(targetURI);
+									dbImporterManager.propagateXlink(xlink);
 								}
 							}
-
-							break;
 						}
+					}
+
+					targetURIs.clear();
+				}
+			}
+
+			// GeoreferencedTexture
+			else if (abstractSurfData.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE) {
+				GeoreferencedTexture geoTex = (GeoreferencedTexture)abstractSurfData;
+
+				if (geoTex.isSetPreferWorldFile() && !geoTex.getPreferWorldFile())
+					psSurfaceData.setInt(13, 0);
+				else
+					psSurfaceData.setInt(13, 1);
+
+				if (geoTex.isSetOrientation()) {
+					Matrix orientation = geoTex.getOrientation().getMatrix();
+					if (affineTransformation)
+						orientation = dbImporterManager.getAffineTransformer().transformGeoreferencedTextureOrientation(orientation);
+
+					psSurfaceData.setString(14, Util.collection2string(orientation.toRowPackedList(), " "));
+				} else
+					psSurfaceData.setNull(14, Types.VARCHAR);
+
+				if (geoTex.isSetReferencePoint()) {
+					PointProperty pointProp = geoTex.getReferencePoint();
+
+					// the CityGML spec states that referencePoint shall be 2d only
+					if (pointProp.isSetPoint()) {
+						Point point = pointProp.getPoint();
+						List<Double> coords = point.toList3d();
+
+						if (coords != null && !coords.isEmpty()) {
+							if (affineTransformation)
+								dbImporterManager.getAffineTransformer().transformCoordinates(coords);
+
+							JGeometry geom = new JGeometry(coords.get(0), coords.get(1), dbSrid);
+							STRUCT obj = SyncJGeometry.syncStore(geom, batchConn);
+
+							psSurfaceData.setObject(15, obj);
+						} else
+							psSurfaceData.setNull(15, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+
 					} else {
-						String href = target.getHref();
+						// xlink is not supported...	
+						String href = pointProp.getHref();
 
 						if (href != null && href.length() != 0) {
-							DBXlinkTextureParam xlink = new DBXlinkTextureParam(
-									surfaceDataId,
-									href,
-									DBXlinkTextureParamEnum.XLINK_TEXTUREASSOCIATION
-							);
-
-							xlink.setTargetURI(targetURI);
-							dbImporterManager.propagateXlink(xlink);
+							LOG.error("XLink reference '" + href + "' to reference point is not supported.");
 						}
 					}
+				} else
+					psSurfaceData.setNull(15, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+
+				// do we have a world file?!
+				if (geoTex.isSetImageURI() && !geoTex.isSetOrientation() && !geoTex.isSetReferencePoint()) {
+					DBXlinkTextureFile xlink = new DBXlinkTextureFile(
+							surfaceDataId,
+							geoTex.getImageURI(),
+							DBXlinkTextureFileEnum.WORLD_FILE
+							);
+
+					dbImporterManager.propagateXlink(xlink);
 				}
-			}
-		}
 
-		else if (abstractSurfData.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE) {
-			GeoreferencedTexture geoTex = (GeoreferencedTexture)abstractSurfData;
+				psSurfaceData.addBatch();
+				if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+					dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
-			if (geoTex.isSetPreferWorldFile() && !geoTex.getPreferWorldFile())
-				psSurfaceData.setInt(13, 0);
-			else
-				psSurfaceData.setInt(13, 1);
+				if (geoTex.isSetTarget()) {
+					HashSet<String> targets = new HashSet<String>(geoTex.getTarget().size());
 
-			if (geoTex.isSetOrientation()) {
-				Matrix orientation = geoTex.getOrientation().getMatrix();
-				if (affineTransformation)
-					orientation = dbImporterManager.getAffineTransformer().transformGeoreferencedTextureOrientation(orientation);
+					for (String target : geoTex.getTarget()) {
+						if (target != null && target.length() != 0) {
+							
+							// check for duplicate targets
+							if (!targets.add(target.replaceAll("^#", ""))) {
+								StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+										abstractSurfData.getCityGMLClass(), 
+										abstractSurfData.getId()));
 
-				psSurfaceData.setString(14, Util.collection2string(orientation.toRowPackedList(), " "));
-			} else
-				psSurfaceData.setNull(14, Types.VARCHAR);
+								msg.append(": Skipping duplicate target '" + target + "'.");
+								LOG.debug(msg.toString());
+								continue;
+							}
 
-			if (geoTex.isSetReferencePoint()) {
-				PointProperty pointProp = geoTex.getReferencePoint();
-
-				// the CityGML spec states that referencePoint shall be 2d only
-				if (pointProp.isSetPoint()) {
-					Point point = pointProp.getPoint();
-					List<Double> coords = point.toList3d();
-
-					if (coords != null && !coords.isEmpty()) {
-						if (affineTransformation)
-							dbImporterManager.getAffineTransformer().transformCoordinates(coords);
-
-						JGeometry geom = new JGeometry(coords.get(0), coords.get(1), dbSrid);
-						STRUCT obj = SyncJGeometry.syncStore(geom, batchConn);
-
-						psSurfaceData.setObject(15, obj);
-					} else
-						psSurfaceData.setNull(15, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
-
-				} else {
-					// xlink is not supported...	
-					String href = pointProp.getHref();
-
-					if (href != null && href.length() != 0) {
-						LOG.error("XLink reference '" + href + "' to reference point is not supported.");
+							dbImporterManager.propagateXlink(new DBXlinkTextureParam(
+									surfaceDataId,
+									target,
+									DBXlinkTextureParamEnum.GEOREFERENCEDTEXTURE
+									));
+						}
 					}
-				}
-			} else
-				psSurfaceData.setNull(15, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
 
-			// do we have a world file?!
-			if (geoTex.isSetImageURI() && !geoTex.isSetOrientation() && !geoTex.isSetReferencePoint()) {
-				DBXlinkTextureFile xlink = new DBXlinkTextureFile(
-						surfaceDataId,
-						geoTex.getImageURI(),
-						DBXlinkTextureFileEnum.WORLD_FILE
-				);
-
-				dbImporterManager.propagateXlink(xlink);
-			}
-
-			psSurfaceData.addBatch();
-			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
-				dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
-
-			if (geoTex.isSetTarget()) {
-				for (String target : geoTex.getTarget()) {
-					// xlink
-					if (target != null && target.length() != 0) {
-						dbImporterManager.propagateXlink(new DBXlinkTextureParam(
-								surfaceDataId,
-								target,
-								DBXlinkTextureParamEnum.GEOREFERENCEDTEXTURE
-						));
-					}
+					targets.clear();
 				}
 			}
 		}

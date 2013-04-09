@@ -152,7 +152,12 @@ public class XlinkTextureImage implements DBXlinkResolver {
 						imgProxy.setMimeType("image/rgb");
 						imgProxy.setFormat("RGB");
 						imgProxy.setContentLength(1);
-
+						letDBdetermineProperties = false;
+						
+					} else if (extension.toUpperCase().equals("RGBA")) {
+						imgProxy.setMimeType("image/rgbA");
+						imgProxy.setFormat("RGBA");
+						imgProxy.setContentLength(1);
 						letDBdetermineProperties = false;
 					}
 				}
