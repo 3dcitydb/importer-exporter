@@ -607,6 +607,7 @@ public class DBStGeometry implements DBImporter {
 						Double y = points.get(1);
 						Double z = points.get(2);
 						int nrOfPoints = points.size();
+						int nrOfCoordinates = points.size() / 3;
 
 						if (!x.equals(points.get(nrOfPoints - 3))
 								|| !y.equals(points.get(nrOfPoints - 2))
@@ -623,10 +624,10 @@ public class DBStGeometry implements DBImporter {
 							points.add(x);
 							points.add(y);
 							points.add(z);
-							++nrOfPoints;
+							++nrOfCoordinates;
 						}
 
-						if (nrOfPoints < 4) {
+						if (nrOfCoordinates < 4) {
 							// invalid ring...
 							StringBuilder msg = new StringBuilder(
 									Util.getGeometrySignature(
@@ -658,6 +659,7 @@ public class DBStGeometry implements DBImporter {
 									y = interiorPoints.get(1);
 									z = interiorPoints.get(2);
 									nrOfPoints = interiorPoints.size();
+									nrOfCoordinates = interiorPoints.size() / 3;
 
 									if (!x.equals(interiorPoints
 											.get(nrOfPoints - 3))
@@ -678,10 +680,10 @@ public class DBStGeometry implements DBImporter {
 										interiorPoints.add(x);
 										interiorPoints.add(y);
 										interiorPoints.add(z);
-										++nrOfPoints;
+										++nrOfCoordinates;
 									}
 
-									if (nrOfPoints < 4) {
+									if (nrOfCoordinates < 4) {
 										// invalid ring...
 										StringBuilder msg = new StringBuilder(
 												Util.getGeometrySignature(
