@@ -381,7 +381,7 @@ public class DBStGeometry implements DBImporter {
 				} else {
 					geomEWKT = "SRID=" + dbSrid + ";LINESTRING(";
 
-					for (int i = 0; i < pointList.size(); i += 3) {
+					for (int i = 0; i < pointList.get(0).size(); i += 3) {
 						geomEWKT += pointList.get(0).get(i) + " "
 								+ pointList.get(0).get(i + 1) + " "
 								+ pointList.get(0).get(i + 2) + ",";
