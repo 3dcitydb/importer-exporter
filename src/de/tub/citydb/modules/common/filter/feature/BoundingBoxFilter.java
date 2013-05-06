@@ -189,8 +189,8 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 				}
 			}
 			else { // manual tiling
-				double centroidX = (minX + maxX) / 2;
-				double centroidY = (minY + maxY) / 2;
+				double centroidX = minX + (maxX - minX) / 2;
+				double centroidY = minY + (maxY - minY) / 2;
 				if (centroidX >= activeBoundingBox.getLowerLeftCorner().getX() &&
 						centroidY > activeBoundingBox.getLowerLeftCorner().getY() &&
 						centroidX < activeBoundingBox.getUpperRightCorner().getX() &&
