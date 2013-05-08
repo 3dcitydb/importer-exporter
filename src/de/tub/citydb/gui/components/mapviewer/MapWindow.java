@@ -514,27 +514,37 @@ public class MapWindow extends JDialog implements EventHandler {
 			}
 		});
 
-		PropertyChangeListener commitListener = new PropertyChangeListener() {
+		PropertyChangeListener valueChangedListener = new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				if (evt.getPropertyName().equals("value")) {
+				if (evt.getPropertyName().equals("value")) {					
+					if (evt.getOldValue() instanceof Number && evt.getNewValue() instanceof Number) {
+						String oldValue = LAT_LON_FORMATTER.format(((Number)evt.getOldValue()).doubleValue());
+						String newValue = LAT_LON_FORMATTER.format(((Number)evt.getNewValue()).doubleValue());
+						if (oldValue.equals(newValue))
+							return;
+					}
+
 					try {
 						minX.commitEdit();
 						minY.commitEdit();
 						maxX.commitEdit();
 						maxY.commitEdit();
 
-						setEnabledApplyBoundingBox(true);
-					} catch (ParseException e1) {
+						GeoPosition southWest = new GeoPosition(((Number)minY.getValue()).doubleValue(), ((Number)minX.getValue()).doubleValue());
+						GeoPosition northEast = new GeoPosition(((Number)maxY.getValue()).doubleValue(), ((Number)maxX.getValue()).doubleValue());
+
+						setEnabledApplyBoundingBox(map.getSelectionPainter().isVisibleOnScreen(southWest, northEast));
+					} catch (ParseException e) {
 						//
 					}
 				}
 			}
 		};
 
-		minX.addPropertyChangeListener(commitListener);
-		minY.addPropertyChangeListener(commitListener);
-		maxX.addPropertyChangeListener(commitListener);
-		maxY.addPropertyChangeListener(commitListener);
+		minX.addPropertyChangeListener(valueChangedListener);
+		minY.addPropertyChangeListener(valueChangedListener);
+		maxX.addPropertyChangeListener(valueChangedListener);
+		maxY.addPropertyChangeListener(valueChangedListener);
 
 		bbox.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
@@ -627,14 +637,14 @@ public class MapWindow extends JDialog implements EventHandler {
 
 				if (searchBox.getSelectedItem() instanceof Location) {
 					String query = ((Location)searchBox.getSelectedItem()).getFormattedAddress();
-					
+
 					try {
 						url.append("&q=").append(URLEncoder.encode(query, "UTF-8"));
 					} catch (UnsupportedEncodingException e1) {
 						// 
 					}
 				}
-				
+
 				url.append("&ll=").append(centerPoint.getLatitude()).append(",").append(centerPoint.getLongitude());
 				url.append("&spn=").append((northEast.getLatitude() - southWest.getLatitude()) / 2).append(",").append((northEast.getLongitude() - southWest.getLongitude()) / 2);
 				url.append("&sspn=").append(northEast.getLatitude() - southWest.getLatitude()).append(",").append(northEast.getLongitude() - southWest.getLongitude());
@@ -667,8 +677,14 @@ public class MapWindow extends JDialog implements EventHandler {
 					case CANCEL:
 						dispose();
 						break;
-					case INVALID:
+					case SKIP:
+					case OUT_OF_RANGE:
+					case NO_AREA:
 						clearBoundingBox();
+						break;
+					case INVISIBLE:
+						clearBoundingBox();
+						indicateInvisibleBoundingBox(bbox);
 						break;
 					default:
 						minX.setValue(bbox.getLowerLeftCorner().getX());
@@ -684,6 +700,13 @@ public class MapWindow extends JDialog implements EventHandler {
 				}
 			}
 		}.execute();
+	}
+
+	public boolean isBoundingBoxVisible(BoundingBox bbox) {
+		GeoPosition southWest = new GeoPosition(bbox.getLowerLeftCorner().getY().doubleValue(), bbox.getLowerLeftCorner().getX().doubleValue());
+		GeoPosition northEast = new GeoPosition(bbox.getUpperRightCorner().getY().doubleValue(), bbox.getUpperRightCorner().getX().doubleValue());
+
+		return map.getSelectionPainter().isVisibleOnScreen(southWest, northEast);
 	}
 
 	private void copyBoundingBoxToClipboard() {
@@ -726,24 +749,37 @@ public class MapWindow extends JDialog implements EventHandler {
 			GeoPosition southWest = new GeoPosition(((Number)minY.getValue()).doubleValue(), ((Number)minX.getValue()).doubleValue());
 			GeoPosition northEast = new GeoPosition(((Number)maxY.getValue()).doubleValue(), ((Number)maxX.getValue()).doubleValue());
 
-			map.getSelectionPainter().setSelectedArea(southWest, northEast);
-			HashSet<GeoPosition> positions = new HashSet<GeoPosition>();
-			positions.add(southWest);
-			positions.add(northEast);
-			map.getMapKit().setZoom(1);
-			map.getMapKit().getMainMap().calculateZoomFrom(positions);
-		} catch (ParseException e1) {
+			if (map.getSelectionPainter().setBoundingBox(southWest, northEast)) {
+				HashSet<GeoPosition> positions = new HashSet<GeoPosition>();
+				positions.add(southWest);
+				positions.add(northEast);
+				map.getMapKit().setZoom(1);
+				map.getMapKit().getMainMap().calculateZoomFrom(positions);
+			} else
+				map.getSelectionPainter().clearBoundingBox();
+		} catch (ParseException e) {
 			//
 		}
 	}
+	
+	private void indicateInvisibleBoundingBox(BoundingBox bbox) {
+		double x = bbox.getLowerLeftCorner().getX() + (bbox.getUpperRightCorner().getX() - bbox.getLowerLeftCorner().getX()) / 2;
+		double y = bbox.getLowerLeftCorner().getY() + (bbox.getUpperRightCorner().getY() - bbox.getLowerLeftCorner().getY()) / 2;
+
+		GeoPosition pos = new GeoPosition(y, x);
+		map.getWaypointPainter().clearWaypoints();
+		map.getWaypointPainter().showWaypoints(new DefaultWaypoint(pos, WaypointType.PRECISE));
+
+		map.getMapKit().setZoom(map.getMapKit().getMainMap().getTileFactory().getInfo().getMinimumZoomLevel());
+		map.getMapKit().setCenterPosition(pos);
+	}
 
 	private void clearBoundingBox() {
-		map.getSelectionPainter().clearSelectedArea();
-		minX.setText("");
-		maxX.setText("");
-		minY.setText("");
-		maxY.setText("");
-
+		map.getSelectionPainter().clearBoundingBox();
+		minX.setValue(null);
+		maxX.setValue(null);
+		minY.setValue(null);
+		maxY.setValue(null);
 		setEnabledApplyBoundingBox(false);
 	}
 
@@ -893,10 +929,14 @@ public class MapWindow extends JDialog implements EventHandler {
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
+					// avoid property listener on text fields to be fired
+					// before setting the last value
+					maxY.setValue(null);
+
 					minX.setValue(bbox[0].getLatitude());
 					minY.setValue(bbox[0].getLongitude());
 					maxX.setValue(bbox[1].getLatitude());
-					maxY.setValue(bbox[1].getLongitude());				
+					maxY.setValue(bbox[1].getLongitude());	
 				}
 			});
 		}
@@ -907,11 +947,15 @@ public class MapWindow extends JDialog implements EventHandler {
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
+					// avoid property listener on text fields to be fired
+					// before setting the last value
+					maxY.setValue(null);
+
 					minX.setValue(bbox[0].getLongitude());
 					minY.setValue(bbox[0].getLatitude());
 					maxX.setValue(bbox[1].getLongitude());
 					maxY.setValue(bbox[1].getLatitude());
-					map.getSelectionPainter().setSelectedArea(bbox[0], bbox[1]);				
+					map.getSelectionPainter().setBoundingBox(bbox[0], bbox[1]);	
 				}
 			});	
 		}

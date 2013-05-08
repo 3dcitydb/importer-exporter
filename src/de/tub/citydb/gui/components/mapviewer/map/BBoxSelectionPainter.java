@@ -67,12 +67,12 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 	public BBoxSelectionPainter(JXMapViewer map) {
 		this.map = map;
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		
+
 		map.addMouseListener(this);
 		map.addMouseMotionListener(this);
 	}
 
-	public GeoPosition[] getSelectedArea() {
+	public GeoPosition[] getBoundingBox() {
 		GeoPosition[] bounds = null;
 		if (selectedArea != null) {
 			bounds = new GeoPosition[2];
@@ -83,19 +83,27 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 		return bounds;
 	}
 
-	public void setSelectedArea(GeoPosition southWest, GeoPosition northEast) {
-		selectedArea = new Rectangle2D.Double(southWest.getLatitude(), southWest.getLongitude(), 0, 0);
-		selectedArea = selectedArea.createUnion(new Rectangle2D.Double(northEast.getLatitude(), northEast.getLongitude(), 0, 0));
-		map.repaint();
-
-		final GeoPosition[] bounds = getSelectedArea();
-		if (bounds != null)
-			eventDispatcher.triggerEvent(new BoundingBoxSelectionEvent(bounds, this));	
+	public boolean setBoundingBox(GeoPosition southWest, GeoPosition northEast) {
+		if (isVisibleOnScreen(southWest, northEast)) {
+			selectedArea = createGeoRectangle(southWest, northEast);
+			map.repaint();
+			return true;
+		}
+		
+		return false;
 	}
 
-	public void clearSelectedArea() {
+	public void clearBoundingBox() {
 		start = selectedArea = null;
 		map.repaint();
+	}
+
+	public boolean isVisibleOnScreen(GeoPosition southWest, GeoPosition northEast) {
+		return isVisibleOnScreen(createGeoRectangle(southWest, northEast));
+	}
+
+	private boolean isVisibleOnScreen(Rectangle2D bbox) {
+		return bbox != null ? !createDrawArea(bbox, map.getTileFactory().getInfo().getMinimumZoomLevel()).isEmpty() : false;		
 	}
 
 	@Override
@@ -107,7 +115,7 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 	@Override
 	public void mousePressed(MouseEvent e) {
 		if (SwingUtilities.isLeftMouseButton(e) && e.isAltDown()) {
-			start = createGeoRectangle2D(e.getPoint());
+			start = createGeoRectangle(e.getPoint());
 			map.setPanEnabled(false);
 		} else
 			start = null;
@@ -119,7 +127,7 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 	public void mouseDragged(final MouseEvent e) {
 		if (start != null) {
 			mouseDragged = true;
-			end = createGeoRectangle2D(e.getPoint());
+			end = createGeoRectangle(e.getPoint());
 			selectedArea = start.createUnion(end);
 			checkOutOfBounds(e.getPoint());
 
@@ -151,7 +159,7 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 									center.getX() + offsetX * scale,
 									center.getY() + offsetY * scale));
 
-							end = createGeoRectangle2D(outOfBoundsPoint);
+							end = createGeoRectangle(outOfBoundsPoint);
 							selectedArea = start.createUnion(end);
 
 							map.repaint();
@@ -172,16 +180,16 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 	public void mouseReleased(MouseEvent e) {
 		if (start != null) {
 			outOfBounds = false;
+			selectedArea = null;
 
 			if (mouseDragged) {
-				end = createGeoRectangle2D(e.getPoint());
-				selectedArea = start.createUnion(end);
-
-				final GeoPosition[] bounds = getSelectedArea();
-				if (bounds != null)
-					eventDispatcher.triggerEvent(new BoundingBoxSelectionEvent(bounds, this));
-			} else 
-				selectedArea = null;
+				end = createGeoRectangle(e.getPoint());
+				Rectangle2D tmp = start.createUnion(end);
+				if (isVisibleOnScreen(tmp)) {
+					selectedArea = tmp;
+					eventDispatcher.triggerEvent(new BoundingBoxSelectionEvent(getBoundingBox(), this));
+				}
+			}
 
 			mouseDragged = false;
 			start = null;
@@ -193,7 +201,7 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 	@Override
 	public void paint(Graphics2D gd, JXMapViewer t, int i, int i1) {
 		if (selectedArea != null) {
-			Rectangle drawArea = createSelectionArea(selectedArea);
+			Rectangle drawArea = createDrawArea(selectedArea, map.getZoom());
 
 			if (!drawArea.isEmpty()) {
 				if (drawArea.contains(map.getBounds()))
@@ -217,14 +225,21 @@ public class BBoxSelectionPainter extends MouseAdapter implements Painter<JXMapV
 			outOfBoundsPoint = point;
 	}
 
-	private Rectangle2D createGeoRectangle2D(Point point) {
+	private Rectangle2D createGeoRectangle(GeoPosition southWest, GeoPosition northEast) {
+		Rectangle2D tmp = new Rectangle2D.Double(southWest.getLatitude(), southWest.getLongitude(), 0, 0);
+		tmp = tmp.createUnion(new Rectangle2D.Double(northEast.getLatitude(), northEast.getLongitude(), 0, 0));
+
+		return tmp;
+	}
+
+	private Rectangle2D createGeoRectangle(Point point) {
 		GeoPosition pos = map.convertPointToGeoPosition(point);	
 		return new Rectangle2D.Double(pos.getLatitude(), pos.getLongitude(), 0, 0);
 	}
 
-	private Rectangle createSelectionArea(Rectangle2D geo) {		
-		Point2D southWest = map.convertGeoPositionToPoint(new GeoPosition(geo.getMinX(), geo.getMinY()));
-		Point2D northEast = map.convertGeoPositionToPoint(new GeoPosition(geo.getMaxX(), geo.getMaxY()));
+	private Rectangle createDrawArea(Rectangle2D geo, int zoom) {		
+		Point2D southWest = map.convertGeoPositionToPoint(new GeoPosition(geo.getMinX(), geo.getMinY()), zoom);
+		Point2D northEast = map.convertGeoPositionToPoint(new GeoPosition(geo.getMaxX(), geo.getMaxY()), zoom);
 
 		Rectangle drawArea = new Rectangle((int)southWest.getX(), (int)southWest.getY(), 0, 0);
 		return drawArea.union(new Rectangle((int)northEast.getX(), (int)northEast.getY(), 0, 0));
