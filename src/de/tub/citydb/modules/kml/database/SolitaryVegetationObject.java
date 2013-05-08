@@ -172,7 +172,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 				String fromMessage = " from LoD" + lodToExportFrom;
 				if (lodToExportFrom == 5) {
 					if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
-						fromMessage = ". LoD2 or higher required";
+						fromMessage = ". LoD1 or higher required";
 					else
 						fromMessage = " from any LoD";
 				}
@@ -472,6 +472,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						// gmlId.hashCode() in order to properly group objects
 						// otherwise surfaces with the same id would be overwritten
 						long surfaceId = rs2.getLong("id") + getGmlId().hashCode();
+						long parentId = rs2.getLong("parent_id");
 	
 						if (buildingGeometryObj == null) { // root or parent
 							if (selectedTheme.equalsIgnoreCase(theme)) {
@@ -480,12 +481,16 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 								// x3dMaterial will only added if not all x3dMaterial members are null
 								addX3dMaterial(surfaceId, x3dMaterial);
 							}
-							continue; 
+							else if (theme == null) { // no theme for this parent surface
+								if (getX3dMaterial(parentId) != null) { // material for parent's parent known
+									addX3dMaterial(surfaceId, getX3dMaterial(parentId));
+								}
+							}
+							continue;
 						}
 	
 						// from hier on it is a surfaceMember
 						eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
-						long parentId = rs2.getLong("parent_id");
 	
 						String texImageUri = null;
 						OrdImage texImage = null;

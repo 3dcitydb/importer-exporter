@@ -744,7 +744,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		else { // should never happen
 			displayForms.add(df);
 		}
-		if (colladaCheckbox.isSelected() && config.getProject().getKmlExporter().getLodToExportFrom()>1) {
+		if (colladaCheckbox.isSelected() && config.getProject().getKmlExporter().getLodToExportFrom()>0) {
 			int levelVisibility = 0;
 			try {
 				levelVisibility = Integer.parseInt(colladaVisibleFromText.getText().trim());

@@ -104,10 +104,8 @@ public class DisplayForm {
 		switch (displayForm) {
 		case EXTRUDED:
 		case GEOMETRY:
-			achievable = (lod > 0);
-			break;
 		case COLLADA:
-			achievable = (lod > 1);
+			achievable = (lod > 0);
 			break;
 		}
 		return achievable;

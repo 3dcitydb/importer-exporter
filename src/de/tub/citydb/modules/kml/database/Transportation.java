@@ -149,7 +149,7 @@ public class Transportation extends KmlGenericObject{
 				String fromMessage = " from LoD" + lodToExportFrom;
 				if (lodToExportFrom == 5) {
 					if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
-						fromMessage = ". LoD2 or higher required";
+						fromMessage = ". LoD1 or higher required";
 					else
 						fromMessage = " from any LoD";
 				}

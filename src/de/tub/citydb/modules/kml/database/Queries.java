@@ -334,6 +334,14 @@ public class Queries {
 	  			"bi.building_id = ? " +
 				"AND bi.lod2_geometry_id IS NOT NULL";
 
+		
+		private static final String BUILDING_PART_COLLADA_LOD1_ROOT_IDS =
+			"SELECT b.lod1_geometry_id " +
+			"FROM BUILDING b " +
+			"WHERE " +
+				"b.id = ? " +
+				"AND b.lod1_geometry_id IS NOT NULL";
+
 		private static final String COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 =
 			"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, " +
 					"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
@@ -349,7 +357,7 @@ public class Queries {
 //				"ORDER BY sg.parent_id ASC"; // own root surfaces first
 
 		public static final String[] COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID = new String[] {
-			COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NULL", // parents
+			COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NULL ORDER BY sg.id", // parents
 			COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NOT NULL" // elementary surfaces
 		};
 
@@ -596,6 +604,7 @@ public class Queries {
 	    	buildingPartQueriesLod1.put(DisplayForm.FOOTPRINT, BUILDING_PART_FOOTPRINT_LOD1);
 	    	buildingPartQueriesLod1.put(DisplayForm.EXTRUDED, BUILDING_PART_FOOTPRINT_LOD1);
 	    	buildingPartQueriesLod1.put(DisplayForm.GEOMETRY, BUILDING_PART_GEOMETRY_LOD1);
+	    	buildingPartQueriesLod1.put(DisplayForm.COLLADA, BUILDING_PART_COLLADA_LOD1_ROOT_IDS);
 	    }
 
 	    public static String getBuildingPartQuery (int lodToExportFrom, DisplayForm displayForm) {
@@ -916,17 +925,20 @@ public class Queries {
 	// WATER BODY QUERIES
 	// ----------------------------------------------------------------------
 	
+	private static final String WATERBODY_LOD1_ROOT_IDS =
+			"SELECT wb.lod<LoD>_solid_id " +
+			"FROM WATERBODY wb " +
+			"WHERE wb.id = ? " +
+				"AND wb.lod<LoD>_solid_id IS NOT NULL";
+
 	private static final String WATERBODY_ROOT_IDS =
-		"SELECT wb.lod<LoD>_solid_id " +
-		"FROM WATERBODY wb " +
-		"WHERE wb.id = ? " +
-			"AND wb.lod<LoD>_solid_id IS NOT NULL " +
-		"UNION " +
-		"SELECT wbs.lod<LoD>_surface_id " +
-		"FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs " +
-		"WHERE wb2wbs.waterbody_id = ? " +
-			"AND wbs.id = wb2wbs.waterboundary_surface_id " +
-			"AND wbs.lod<LoD>_surface_id IS NOT NULL";
+			WATERBODY_LOD1_ROOT_IDS +
+			" UNION " +
+			"SELECT wbs.lod<LoD>_surface_id " + // min lod value here is 2
+			"FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs " +
+			"WHERE wb2wbs.waterbody_id = ? " +
+				"AND wbs.id = wb2wbs.waterboundary_surface_id " +
+				"AND wbs.lod<LoD>_surface_id IS NOT NULL";
 
 	private static final String WATERBODY_FOOTPRINT_EXTRUDED_GEOMETRY =
 		"SELECT sg.geometry, 'Water' as type, sg.id " +
@@ -938,9 +950,13 @@ public class Queries {
 		"SELECT sg.geometry, 'Water' as type, sg.id " +
 		"FROM SURFACE_GEOMETRY sg " +
 		"WHERE sg.root_id IN (" +
-			"SELECT wb.lod1_solid_id, wb.lod1_multi_surface_id " +
+			"SELECT wb.lod1_solid_id " +
 			"FROM WATERBODY wb " +
-			"WHERE wb.id = ? "+
+			"WHERE wb.id = ? " +
+			"UNION " +
+			"SELECT wb.lod1_multi_surface_id " +
+			"FROM WATERBODY wb " +
+			"WHERE wb.id = ? " +
 		") AND sg.geometry IS NOT NULL " +
 		"UNION " +
 		"SELECT wb.lod1_multi_curve " +
@@ -976,8 +992,13 @@ public class Queries {
     			}
     	    	break;
 
-    		case DisplayForm.COLLADA: // collada can only be achieved from LoD2 upwards
-    			query = WATERBODY_ROOT_IDS;
+    		case DisplayForm.COLLADA:
+    			if (lodToExportFrom == 1) {
+    	    		query = WATERBODY_LOD1_ROOT_IDS;
+    			}
+    			else {
+    				query = WATERBODY_ROOT_IDS;
+    			}
     	    	break;
     	    default:
     	    	Logger.getInstance().log(LogLevel.INFO, "No water body object query found");
@@ -1045,16 +1066,19 @@ public class Queries {
 	// TRANSPORTATION QUERIES
 	// ----------------------------------------------------------------------
 	
+	private static final String TRANSPORTATION_COMPLEX_LOD1_ROOT_IDS =
+			"SELECT tc.lod<LoD>_multi_surface_id " +
+			"FROM TRANSPORTATION_COMPLEX tc " +
+			"WHERE tc.id = ? " +
+				"AND tc.lod<LoD>_multi_surface_id IS NOT NULL";
+
 	private static final String TRANSPORTATION_COMPLEX_ROOT_IDS =
-		"SELECT tc.lod<LoD>_multi_surface_id " +
-		"FROM TRANSPORTATION_COMPLEX tc " +
-		"WHERE tc.id = ? " +
-			"AND tc.lod<LoD>_multi_surface_id IS NOT NULL " +
-		"UNION " +
-		"SELECT ta.lod<LoD>_multi_surface_id " +
-		"FROM TRAFFIC_AREA ta " +
-		"WHERE ta.transportation_complex_id = ? " +
-			"AND ta.lod<LoD>_multi_surface_id IS NOT NULL";
+			TRANSPORTATION_COMPLEX_LOD1_ROOT_IDS +
+			" UNION " +
+			"SELECT ta.lod<LoD>_multi_surface_id " + // min lod value here is 2
+			"FROM TRAFFIC_AREA ta " +
+			"WHERE ta.transportation_complex_id = ? " +
+				"AND ta.lod<LoD>_multi_surface_id IS NOT NULL";
 
 	private static final String TRANSPORTATION_COMPLEX_FOOTPRINT_EXTRUDED_GEOMETRY =
 		"SELECT sg.geometry, 'Transportation' as type, sg.id " +
@@ -1099,8 +1123,13 @@ public class Queries {
     			}
     	    	break;
 
-    		case DisplayForm.COLLADA: // collada can only be achieved from LoD2 upwards
-    			query = TRANSPORTATION_COMPLEX_ROOT_IDS;
+    		case DisplayForm.COLLADA:
+    			if (lodToExportFrom == 1) {
+    	    		query = TRANSPORTATION_COMPLEX_LOD1_ROOT_IDS;
+    			}
+    			else {
+    				query = TRANSPORTATION_COMPLEX_ROOT_IDS;
+    			}
     	    	break;
     	    default:
     	    	Logger.getInstance().log(LogLevel.INFO, "No transportation object query found");
