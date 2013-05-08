@@ -1915,8 +1915,9 @@ public abstract class KmlGenericObject {
 					while (rs2.next()) {
 						String theme = rs2.getString("theme");
 						pgBuildingGeometry = (PGgeometry)rs2.getObject(1);
-						// surfaceId is the key to all Hashmaps in building
+						// surfaceId is the key to all Hashmaps in object
 						long surfaceId = rs2.getLong("id");
+						long parentId = rs2.getLong("parent_id");
 	
 						if (pgBuildingGeometry == null) { // root or parent
 							if (selectedTheme.equalsIgnoreCase(theme)) {
@@ -1925,12 +1926,16 @@ public abstract class KmlGenericObject {
 								// x3dMaterial will only added if not all x3dMaterial members are null
 								addX3dMaterial(surfaceId, x3dMaterial);
 							}
+							else if (theme == null) { // no theme for this parent surface
+								if (getX3dMaterial(parentId) != null) { // material for parent's parent known
+									addX3dMaterial(surfaceId, getX3dMaterial(parentId));
+								}
+							}
 							continue; 
 						}
 	
 						// from here on it is a surfaceMember
 						eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
-						long parentId = rs2.getLong("parent_id");
 	
 						String texImageUri = null;
 //						OrdImage texImage = null;
