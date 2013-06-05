@@ -678,7 +678,7 @@ BEGIN
     PERFORM geodb_pkg.del_delete_row_building_inst(bi_id);
   END LOOP;
 
-  FOR room_id IN EXECUTE 'SELECT address_id FROM address_to_building WHERE building_id=$1' USING building_row_id LOOP
+  FOR room_id IN EXECUTE 'SELECT id FROM room WHERE building_id=$1' USING building_row_id LOOP
     PERFORM geodb_pkg.del_delete_row_room(room_id);
   END LOOP;
 	
