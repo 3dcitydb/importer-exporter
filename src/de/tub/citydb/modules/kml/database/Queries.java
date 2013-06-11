@@ -214,12 +214,6 @@ public class Queries {
 //			"ORDER BY ts.building_id";
 
 		private static final String BUILDING_PART_COLLADA_LOD4_ROOT_IDS =
-			"SELECT b.lod4_geometry_id " + 
-			"FROM BUILDING b " + 
-			"WHERE " +  
-				"b.id = ? " +
-				"AND b.lod4_geometry_id IS NOT NULL " +
-			"UNION " + 
 			"SELECT ts.lod4_multi_surface_id " + 
 			"FROM THEMATIC_SURFACE ts " + 
 			"WHERE " +  
@@ -260,7 +254,15 @@ public class Queries {
 				"ts.building_id = ? " +
 				"AND ts.lod4_multi_surface_id IS NOT NULL " +
 				"AND o2ts.thematic_surface_id = ts.id " +
-				"AND o.id = o2ts.opening_id";
+				"AND o.id = o2ts.opening_id " +
+			"UNION " + 
+			"SELECT b.lod4_geometry_id " + 
+			"FROM BUILDING b, THEMATIC_SURFACE ts " + 
+			"WHERE " +  
+				"b.id = ? " +
+				"AND ts.building_id = b.id " +
+				"AND b.lod4_geometry_id IS NOT NULL " +
+				"AND ts.lod4_multi_surface_id IS NULL";
 				
 		private static final String BUILDING_PART_GEOMETRY_LOD4 =
 			"SELECT sg.geometry, ts.type, sg.id " +
@@ -281,12 +283,6 @@ public class Queries {
 //			"ORDER BY ts.building_id";
 
 		private static final String BUILDING_PART_COLLADA_LOD3_ROOT_IDS =
-			"SELECT b.lod3_geometry_id " + 
-			"FROM BUILDING b " + 
-			"WHERE " +  
-				"b.id = ? " +
-				"AND b.lod3_geometry_id IS NOT NULL " +
-			"UNION " + 
 			"SELECT ts.lod3_multi_surface_id " + 
 			"FROM THEMATIC_SURFACE ts " + 
 			"WHERE " +  
@@ -305,7 +301,15 @@ public class Queries {
 				"ts.building_id = ? " +
 				"AND ts.lod3_multi_surface_id IS NOT NULL " +
 				"AND o2ts.thematic_surface_id = ts.id " +
-				"AND o.id = o2ts.opening_id";
+				"AND o.id = o2ts.opening_id " +
+			"UNION " + 
+			"SELECT b.lod3_geometry_id " + 
+			"FROM BUILDING b, THEMATIC_SURFACE ts " + 
+			"WHERE " +  
+				"b.id = ? " +
+				"AND ts.building_id = b.id " +
+				"AND b.lod3_geometry_id IS NOT NULL " +
+				"AND ts.lod3_multi_surface_id IS NULL";
 
 		private static final String BUILDING_PART_GEOMETRY_LOD3 =
 			"SELECT sg.geometry, ts.type, sg.id " +
@@ -316,12 +320,6 @@ public class Queries {
 				"AND sg.root_id IN (" + BUILDING_PART_COLLADA_LOD3_ROOT_IDS	+ ")";
 
 		private static final String BUILDING_PART_COLLADA_LOD2_ROOT_IDS =
-			"SELECT b.lod2_geometry_id " + 
-			"FROM BUILDING b " + 
-			"WHERE " +  
-				"b.id = ? " +
-				"AND b.lod2_geometry_id IS NOT NULL " +
-			"UNION " + 
 			"SELECT ts.lod2_multi_surface_id " + 
 			"FROM THEMATIC_SURFACE ts " + 
 			"WHERE " +  
@@ -332,8 +330,15 @@ public class Queries {
 			"FROM BUILDING_INSTALLATION bi " + 
 			"WHERE " +  
 	  			"bi.building_id = ? " +
-				"AND bi.lod2_geometry_id IS NOT NULL";
-
+				"AND bi.lod2_geometry_id IS NOT NULL " +
+			"UNION " + 
+			"SELECT b.lod2_geometry_id " + 
+			"FROM BUILDING b, THEMATIC_SURFACE ts " + 
+			"WHERE " +  
+				"b.id = ? " +
+				"AND ts.building_id = b.id " +
+				"AND b.lod2_geometry_id IS NOT NULL " +
+				"AND ts.lod2_multi_surface_id IS NULL";
 		
 		private static final String BUILDING_PART_COLLADA_LOD1_ROOT_IDS =
 			"SELECT b.lod1_geometry_id " +
@@ -367,24 +372,7 @@ public class Queries {
 			"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod2_multi_surface_id = sg.root_id " +
 			"WHERE " +
 				"sg.geometry IS NOT NULL " +
-				"AND sg.root_id IN (" +
-					"SELECT b.lod2_geometry_id " + 
-					"FROM BUILDING b " + 
-					"WHERE " +  
-						"b.id = ? " +
-						"AND b.lod2_geometry_id IS NOT NULL " +
-					"UNION " + 
-					"SELECT ts.lod2_multi_surface_id " + 
-					"FROM THEMATIC_SURFACE ts " + 
-					"WHERE " +  
-			  			"ts.building_id = ? " +
-						"AND ts.lod2_multi_surface_id IS NOT NULL " +
-					"UNION " + 
-					"SELECT bi.lod2_geometry_id " + 
-					"FROM BUILDING_INSTALLATION bi " + 
-					"WHERE " +  
-						"bi.building_id = ? " +
-						"AND bi.lod2_geometry_id IS NOT NULL)";
+				"AND sg.root_id IN (" + BUILDING_PART_COLLADA_LOD2_ROOT_IDS	+ ")";
 
 		private static final String BUILDING_PART_FOOTPRINT_LOD2 =
 			"SELECT sg.geometry " +
@@ -418,18 +406,7 @@ public class Queries {
 			"FROM SURFACE_GEOMETRY sg " +
 			"WHERE " +
 				"sg.geometry IS NOT NULL " +
-				"AND sg.root_id IN (" +
-					"SELECT b.lod2_geometry_id " + 
-					"FROM BUILDING b " + 
-					"WHERE " +  
-						"b.id = ? " +
-						"AND b.lod2_geometry_id IS NOT NULL " +
-					"UNION " + 
-					"SELECT ts.lod2_multi_surface_id " + 
-					"FROM THEMATIC_SURFACE ts " + 
-					"WHERE " +  
-						"ts.building_id = ? " +
-						"AND ts.lod2_multi_surface_id IS NOT NULL)";
+				"AND sg.root_id IN (" + BUILDING_PART_COLLADA_LOD2_ROOT_IDS	+ ")";
 
 		private static final String BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD3 =
 			"SELECT sg.geometry, sg.id " +
@@ -438,19 +415,12 @@ public class Queries {
 				"sg.geometry IS NOT NULL " +
 				"AND sg.root_id IN (" + BUILDING_PART_COLLADA_LOD3_ROOT_IDS + ")";
 		
-		
 		private static final String BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD4 =
 			"SELECT sg.geometry, sg.id " +
 			"FROM SURFACE_GEOMETRY sg " +
 			"WHERE " +
 				"sg.geometry IS NOT NULL " +
 				"AND sg.root_id IN (" +
-					"SELECT b.lod4_geometry_id " + 
-					"FROM BUILDING b " + 
-					"WHERE " +  
-						"b.id = ? " +
-						"AND b.lod4_geometry_id IS NOT NULL " +
-					"UNION " + 
 					"SELECT ts.lod4_multi_surface_id " + 
 					"FROM THEMATIC_SURFACE ts " + 
 					"WHERE " +  
@@ -463,7 +433,15 @@ public class Queries {
 						"ts.building_id = ? " +
 						"AND ts.lod4_multi_surface_id IS NOT NULL " +
 						"AND o2ts.thematic_surface_id = ts.id " +
-						"AND o.id = o2ts.opening_id)";
+						"AND o.id = o2ts.opening_id " +
+					"UNION " + 
+					"SELECT b.lod4_geometry_id " + 
+					"FROM BUILDING b, THEMATIC_SURFACE ts " + 
+					"WHERE " +  
+						"b.id = ? " +
+						"AND ts.building_id = b.id " +
+						"AND b.lod4_geometry_id IS NOT NULL " +
+						"AND ts.lod4_multi_surface_id IS NULL)";
 
 
 	    private static final String BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER =
