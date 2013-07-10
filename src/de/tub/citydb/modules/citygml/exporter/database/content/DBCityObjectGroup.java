@@ -57,8 +57,7 @@ public class DBCityObjectGroup implements DBExporter {
 	private final Connection connection;
 
 	private PreparedStatement psCityObjectGroup;
-	private PreparedStatement psParentGmlId;
-
+	
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 
@@ -88,8 +87,6 @@ public class DBCityObjectGroup implements DBExporter {
 					"gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp " +
 					"left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
 		}
-
-		psParentGmlId = connection.prepareStatement("select GMLID from CITYOBJECT where CLASS_ID=23 AND ID=?");
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
@@ -196,7 +193,6 @@ public class DBCityObjectGroup implements DBExporter {
 	@Override
 	public void close() throws SQLException {
 		psCityObjectGroup.close();
-		psParentGmlId.close();
 	}
 
 	@Override
