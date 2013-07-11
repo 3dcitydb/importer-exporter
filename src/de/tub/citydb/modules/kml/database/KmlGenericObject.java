@@ -1906,6 +1906,7 @@ public abstract class KmlGenericObject {
 			for (String colladaQuery: Queries.COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID) { // parent surfaces come first
 				PreparedStatement psQuery = null;
 				ResultSet rs2 = null;
+
 				try {
 					psQuery = connection.prepareStatement(colladaQuery);
 					psQuery.setLong(1, surfaceRootId);
@@ -2023,7 +2024,7 @@ public abstract class KmlGenericObject {
 								}
 	
 								texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
-								texCoordsTokenized = new StringTokenizer(texCoords, " ");
+								texCoordsTokenized = new StringTokenizer(texCoords.trim(), " ");
 							}
 							else {
 								X3DMaterial x3dMaterial = cityGMLFactory.createX3DMaterial();
@@ -2068,7 +2069,7 @@ public abstract class KmlGenericObject {
 								giOrdinatesArray[(j-(currentContour-1)*3)+2] = ordinatesArray[j+2] * 100;
 	
 								TexCoords texCoordsForThisSurface = null;
-								if (texCoordsTokenized != null) {
+								if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
 									double s = Double.parseDouble(texCoordsTokenized.nextToken());
 									double t = Double.parseDouble(texCoordsTokenized.nextToken());
 
@@ -2091,7 +2092,7 @@ public abstract class KmlGenericObject {
 										texCoordsForThisSurface);
 							}
 							stripCountArray[currentContour-1] = (startOfNextRing -3 - startOfCurrentRing)/3;
-							if (texCoordsTokenized != null) {
+							if (texCoordsTokenized != null  && texCoordsTokenized.hasMoreTokens()) {
 								texCoordsTokenized.nextToken(); // geometryInfo ignores last point in a polygon
 								texCoordsTokenized.nextToken(); // keep texture coordinates in sync
 							}
