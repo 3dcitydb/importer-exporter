@@ -86,7 +86,7 @@ import de.tub.citydb.util.Util;
  * 				</xAL:AddressDetails>
  * 			</xalAddress>
  * 		</Address>		
- * Additionally, <PostBox> elements are interpreted, iff being modelled as child element of <Locality>
+ * Additionally, <PostBox> elements are interpreted, if being modelled as child element of <Locality>
  */
 
 public class DBAddress implements DBImporter {	
