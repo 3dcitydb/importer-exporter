@@ -381,11 +381,24 @@ public class DBSurfaceData implements DBImporter {
 									targetId++;
 
 									if (texCoordList.isSetTextureCoordinates()) {
+										HashSet<String> rings = new HashSet<String>(texCoordList.getTextureCoordinates().size());
+										
 										for (TextureCoordinates texCoord : texCoordList.getTextureCoordinates()) {
 											String ring = texCoord.getRing();
 
 											if (ring != null && ring.length() != 0 && texCoord.isSetValue()) {
 
+												// check for duplicate rings
+												if (!rings.add(ring.replaceAll("^#", ""))) {
+													StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+															abstractSurfData.getCityGMLClass(), 
+															abstractSurfData.getId()));
+
+													msg.append(": Skipping duplicate target ring '" + ring + "'.");
+													LOG.debug(msg.toString());
+													continue;
+												}
+												
 												// check for even number of texture coordinates
 												if ((texCoord.getValue().size() & 1) == 1) {
 													texCoord.addValue(0.0);
