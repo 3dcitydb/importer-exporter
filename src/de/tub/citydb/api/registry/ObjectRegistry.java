@@ -31,6 +31,8 @@ package de.tub.citydb.api.registry;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.citygml4j.builder.CityGMLBuilder;
+
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.controller.IOController;
 import de.tub.citydb.api.controller.LogController;
@@ -48,6 +50,7 @@ public class ObjectRegistry {
 	private LogController logController;
 	private PluginConfigController pluginConfigController;
 	private IOController ioController;
+	private CityGMLBuilder cityGMLBuilder;
 	
 	private ObjectRegistry() {
 		// just to thwart instantiation
@@ -136,6 +139,17 @@ public class ObjectRegistry {
 			throw new IllegalArgumentException("I/O controller is already registered with the object registry.");
 
 		this.ioController = ioController;
+	}
+
+	public CityGMLBuilder getCityGMLBuilder() {
+		return cityGMLBuilder;
+	}
+
+	public void setCityGMLBuilder(CityGMLBuilder cityGMLBuilder) {
+		if (this.cityGMLBuilder != null)
+			throw new IllegalArgumentException("CityGML Builder is already registered with the object registry.");
+		
+		this.cityGMLBuilder = cityGMLBuilder;
 	}
 
 }

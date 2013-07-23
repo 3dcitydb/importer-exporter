@@ -304,7 +304,10 @@ public class ImpExp {
 
 		// create JAXB contexts
 		try {
+			// create citygml4j builder and register in object registry
 			jaxbBuilder = new JAXBBuilder();
+			registry.setCityGMLBuilder(jaxbBuilder);
+			
 			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", Thread.currentThread().getContextClassLoader());
 			colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", Thread.currentThread().getContextClassLoader());
 			projectContext = JAXBContext.newInstance(projectConfigClasses.toArray(new Class<?>[]{}));
