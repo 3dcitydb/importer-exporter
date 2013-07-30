@@ -257,10 +257,9 @@ public class Queries {
 				"AND o.id = o2ts.opening_id " +
 			"UNION " + 
 			"SELECT b.lod4_geometry_id " + 
-			"FROM BUILDING b, THEMATIC_SURFACE ts " + 
+			"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
 			"WHERE " +  
 				"b.id = ? " +
-				"AND ts.building_id = b.id " +
 				"AND b.lod4_geometry_id IS NOT NULL " +
 				"AND ts.lod4_multi_surface_id IS NULL";
 				
@@ -304,10 +303,9 @@ public class Queries {
 				"AND o.id = o2ts.opening_id " +
 			"UNION " + 
 			"SELECT b.lod3_geometry_id " + 
-			"FROM BUILDING b, THEMATIC_SURFACE ts " + 
+			"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
 			"WHERE " +  
 				"b.id = ? " +
-				"AND ts.building_id = b.id " +
 				"AND b.lod3_geometry_id IS NOT NULL " +
 				"AND ts.lod3_multi_surface_id IS NULL";
 
@@ -333,10 +331,9 @@ public class Queries {
 				"AND bi.lod2_geometry_id IS NOT NULL " +
 			"UNION " + 
 			"SELECT b.lod2_geometry_id " + 
-			"FROM BUILDING b, THEMATIC_SURFACE ts " + 
+			"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
 			"WHERE " +  
 				"b.id = ? " +
-				"AND ts.building_id = b.id " +
 				"AND b.lod2_geometry_id IS NOT NULL " +
 				"AND ts.lod2_multi_surface_id IS NULL";
 		
@@ -436,10 +433,9 @@ public class Queries {
 						"AND o.id = o2ts.opening_id " +
 					"UNION " + 
 					"SELECT b.lod4_geometry_id " + 
-					"FROM BUILDING b, THEMATIC_SURFACE ts " + 
+					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
 					"WHERE " +  
 						"b.id = ? " +
-						"AND ts.building_id = b.id " +
 						"AND b.lod4_geometry_id IS NOT NULL " +
 						"AND ts.lod4_multi_surface_id IS NULL)";
 
