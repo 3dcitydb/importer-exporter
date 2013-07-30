@@ -70,7 +70,6 @@ import org.citygml4j.model.gml.geometry.primitives.Triangle;
 import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
-import org.postgis.Geometry;
 import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
@@ -245,14 +244,21 @@ public class DBSurfaceGeometry implements DBImporter {
 				if (applyTransformation)
 					dbImporterManager.getAffineTransformer().transformCoordinates(points);
 				
-				String geomEWKT = "SRID=" + dbSrid + ";POLYGON((";
+				StringBuilder geomEWKT = new StringBuilder("");
+				String coordComma = "";
+				
+				geomEWKT.append("SRID=").append(dbSrid).append(";POLYGON((");
 				
 				for (int i=0; i<points.size(); i+=3){
-					geomEWKT += points.get(i) + " " + points.get(i+1) + " " + points.get(i+2) + ",";
+					geomEWKT.append(coordComma)
+							.append(points.get(i)).append(" ")
+							.append(points.get(i+1)).append(" ")
+							.append(points.get(i+2));
+					
+					coordComma = ",";
 				}				
 
-				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-				geomEWKT += "))";
+				geomEWKT.append("))");
 
 				if (importAppearance && !isCopy) {
 					if (origGmlId == null)
@@ -265,8 +271,7 @@ public class DBSurfaceGeometry implements DBImporter {
 								0));
 				}
 
-				Geometry geom = PGgeometry.geomFromString(geomEWKT);
-				PGgeometry pgGeom = new PGgeometry(geom);
+				PGgeometry pgGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
 
 				if (parentId == 0 && rootId == surfaceGeometryId) {
 					if (origGmlId != null && !isCopy)
@@ -441,21 +446,33 @@ public class DBSurfaceGeometry implements DBImporter {
 										ringNo));
 						}
 
-						String geomEWKT = "SRID=" + dbSrid + ";POLYGON((";
+						StringBuilder geomEWKT = new StringBuilder("");
+						String geomComma = "";
+						
+						geomEWKT.append("SRID=").append(dbSrid).append(";POLYGON((");
 						
 						for (List<Double> coordsList : pointList) {
-							for (int i=0; i<coordsList.size(); i+=3){
-								geomEWKT += coordsList.get(i) + " " + coordsList.get(i+1) + " " + coordsList.get(i+2) + ",";
+							
+							geomEWKT.append(geomComma);
+							
+							String coordComma = "";
+							
+							for (int i = 0; i < coordsList.size(); i += 3){
+								geomEWKT.append(coordComma)
+										.append(coordsList.get(i)).append(" ")
+										.append(coordsList.get(i + 1)).append(" ")
+										.append(coordsList.get(i + 2));
+						
+								coordComma = ",";
 							}
-							geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-							geomEWKT += "),(";
+								
+							geomEWKT.append(")");
+							geomComma = ",(";
 						}
 
-						geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 2);
-						geomEWKT += ")";
+						geomEWKT.append(")");
 						
-						Geometry geom = PGgeometry.geomFromString(geomEWKT);
-						PGgeometry pgGeom = new PGgeometry(geom);
+						PGgeometry pgGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
 
 						if (parentId == 0 && rootId == surfaceGeometryId) {
 							if (origGmlId != null && !isCopy)

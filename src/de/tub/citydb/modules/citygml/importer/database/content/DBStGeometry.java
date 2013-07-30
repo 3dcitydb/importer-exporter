@@ -96,13 +96,18 @@ public class DBStGeometry implements DBImporter {
 			List<Double> values = point.toList3d();
 
 			if (values != null && !values.isEmpty()) {
+				StringBuilder geomEWKT = new StringBuilder("");
+				
 				if (affineTransformation)
 					dbImporterManager.getAffineTransformer()
 					.transformCoordinates(values);
 
-				pointGeom = new PGgeometry(PGgeometry.geomFromString("SRID="
-						+ dbSrid + ";POINT(" + values.get(0) + " "
-						+ values.get(1) + " " + values.get(2) + ")"));
+				geomEWKT.append("SRID=").append(dbSrid).append(";POINT(")
+						.append(values.get(0)).append(" ")
+						.append(values.get(1)).append(" ")
+						.append(values.get(2)).append(")");
+				
+				pointGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString())); 
 			}
 		}
 		return pointGeom;
@@ -126,28 +131,38 @@ public class DBStGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty()) {
-				if (pointList.size() > 1) {
-					String geomEWKT = "SRID=" + dbSrid + ";MULTIPOINT(";
+				StringBuilder geomEWKT = new StringBuilder("");
+				
+				if (pointList.size() > 1) {					
+					String geomComma = ""; 
+
+					geomEWKT.append("SRID=").append(dbSrid).append(";MULTIPOINT(");
+					
 					for (List<Double> coordsList : pointList) {
 
 						if (affineTransformation)
 							dbImporterManager.getAffineTransformer()
 							.transformCoordinates(coordsList);
 
-						geomEWKT += coordsList.get(0) + " " + coordsList.get(1)
-								+ " " + coordsList.get(2) + ",";
+						geomEWKT.append(geomComma)
+								.append(coordsList.get(0)).append(" ")
+								.append(coordsList.get(1)).append(" ")
+								.append(coordsList.get(2));
+						
+						geomComma = ",";
 					}
-					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-					geomEWKT += ")";
+					
+					geomEWKT.append(")");
 
-					pointGeom = new PGgeometry(
-							PGgeometry.geomFromString(geomEWKT));
-				} else
-					pointGeom = new PGgeometry(
-							PGgeometry.geomFromString("SRID=" + dbSrid
-									+ ";POINT(" + pointList.get(0).get(0) + " "
-									+ pointList.get(0).get(1) + " "
-									+ pointList.get(0).get(2) + ")"));
+					pointGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
+				} else {
+					geomEWKT.append("SRID=").append(dbSrid).append(";POINT(")
+							.append(pointList.get(0).get(0)).append(" ")
+							.append(pointList.get(0).get(1)).append(" ")
+							.append(pointList.get(0).get(2)).append(")");
+			
+					pointGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
+				}
 			}
 		}
 		return pointGeom;
@@ -156,9 +171,7 @@ public class DBStGeometry implements DBImporter {
 	public PGgeometry getMultiPoint(MultiPoint multiPoint) throws SQLException {
 		PGgeometry multiPointGeom = null;
 
-		if (multiPoint != null)
-			;
-		{
+		if (multiPoint != null) {
 			List<List<Double>> pointList = new ArrayList<List<Double>>();
 
 			if (multiPoint.isSetPointMember()) {
@@ -174,23 +187,28 @@ public class DBStGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty()) {
-				String geomEWKT = "SRID=" + dbSrid + ";MULTIPOINT(";
+				StringBuilder geomEWKT = new StringBuilder("");
+				String geomComma = ""; 
 
+				geomEWKT.append("SRID=").append(dbSrid).append(";MULTIPOINT(");
+				
 				for (List<Double> coordsList : pointList) {
 
 					if (affineTransformation)
 						dbImporterManager.getAffineTransformer()
 						.transformCoordinates(coordsList);
 
-					geomEWKT += coordsList.get(0) + " " + coordsList.get(1)
-							+ " " + coordsList.get(2) + ",";
+					geomEWKT.append(geomComma)
+							.append(coordsList.get(0)).append(" ")
+							.append(coordsList.get(1)).append(" ")
+							.append(coordsList.get(2));
+					
+					geomComma = ",";
 				}
+				
+				geomEWKT.append(")");
 
-				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-				geomEWKT += ")";
-
-				multiPointGeom = new PGgeometry(
-						PGgeometry.geomFromString(geomEWKT));
+				multiPointGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
 			}
 		}
 		return multiPointGeom;
@@ -226,22 +244,27 @@ public class DBStGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty()) {
-				String geomEWKT = "SRID=" + dbSrid + ";MULTIPOINT(";
+				StringBuilder geomEWKT = new StringBuilder("");
+				String geomComma = "";
+				
+				geomEWKT.append("SRID=").append(dbSrid).append(";MULTIPOINT(");
 
 				for (List<Double> coordsList : pointList) {
 					if (affineTransformation)
 						dbImporterManager.getAffineTransformer()
 						.transformCoordinates(coordsList);
 
-					geomEWKT += coordsList.get(0) + " " + coordsList.get(1)
-							+ " " + coordsList.get(2) + ",";
+					geomEWKT.append(geomComma)
+							.append(coordsList.get(0)).append(" ")
+							.append(coordsList.get(1)).append(" ")
+							.append(coordsList.get(2));
+					
+					geomComma = ",";
 				}
 
-				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-				geomEWKT += ")";
+				geomEWKT.append(")");
 
-				multiPointGeom = new PGgeometry(
-						PGgeometry.geomFromString(geomEWKT));
+				multiPointGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
 			}
 		}
 		return multiPointGeom;
@@ -254,15 +277,23 @@ public class DBStGeometry implements DBImporter {
 			List<Double> pointList = new ArrayList<Double>();
 			generatePointList(curve, pointList, false);
 			if (!pointList.isEmpty()) {
-				String geomEWKT = "SRID=" + dbSrid + ";LINESTRING(";
+				StringBuilder geomEWKT = new StringBuilder("");
+				String coordComma = "";
+				
+				geomEWKT.append("SRID=").append(dbSrid).append(";LINESTRING(");
 
 				for (int i = 0; i < pointList.size(); i += 3) {
-					geomEWKT += pointList.get(i) + " " + pointList.get(i + 1)
-							+ " " + pointList.get(i + 2) + ",";
+					geomEWKT.append(coordComma)
+							.append(pointList.get(i)).append(" ")
+							.append(pointList.get(i + 1)).append(" ")
+							.append(pointList.get(i + 2));
+					
+					coordComma = ",";
 				}
-				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-				geomEWKT += ")";
-				curveGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT));
+
+				geomEWKT.append(")");
+				
+				curveGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
 			}
 		}
 		return curveGeom;
@@ -298,28 +329,35 @@ public class DBStGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty()) {
-				String geomEWKT = "SRID=" + dbSrid + ";MULTILINESTRING((";
+				StringBuilder geomEWKT = new StringBuilder("");
+				String geomComma = "";
+				
+				geomEWKT.append("SRID=").append(dbSrid).append(";MULTILINESTRING((");
 
 				for (List<Double> coordsList : pointList) {
 					if (affineTransformation)
 						dbImporterManager.getAffineTransformer()
 						.transformCoordinates(coordsList);
 
+					geomEWKT.append(geomComma);
+					
+					String coordComma = "";
+					
 					for (int i = 0; i < coordsList.size(); i += 3) {
-						geomEWKT += coordsList.get(i) + " "
-								+ coordsList.get(i + 1) + " "
-								+ coordsList.get(i + 2) + ",";
+						geomEWKT.append(coordComma)
+								.append(coordsList.get(i)).append(" ")
+								.append(coordsList.get(i + 1)).append(" ")
+								.append(coordsList.get(i + 2));
+						
+						coordComma = ",";
 					}
 
-					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-					geomEWKT += "),(";
-
+					geomEWKT.append(")");
+					geomComma = ",(";
 				}
 
-				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 2);
-				geomEWKT += ")";
-				multiCurveGeom = new PGgeometry(
-						PGgeometry.geomFromString(geomEWKT));
+				geomEWKT.append(")");
+				multiCurveGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
 			}
 		}
 
@@ -332,7 +370,6 @@ public class DBStGeometry implements DBImporter {
 
 		if (geometricComplex != null && geometricComplex.isSetElement()) {
 			List<List<Double>> pointList = new ArrayList<List<Double>>();
-			String geomEWKT = null;
 
 			for (GeometricPrimitiveProperty primitiveProperty : geometricComplex
 					.getElement()) {
@@ -356,40 +393,53 @@ public class DBStGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty()) {
+				StringBuilder geomEWKT = new StringBuilder("");
+				String geomComma = "";
+				
 				if (pointList.size() > 1) {
-					geomEWKT = "SRID=" + dbSrid + ";MULTILINESTRING((";
+					geomEWKT.append("SRID=").append(dbSrid).append(";MULTILINESTRING((");
 
 					for (List<Double> coordsList : pointList) {
 						if (affineTransformation)
 							dbImporterManager.getAffineTransformer()
 							.transformCoordinates(coordsList);
 
+						geomEWKT.append(geomComma);
+						
+						String coordComma = "";
+						
 						for (int i = 0; i < coordsList.size(); i += 3) {
-							geomEWKT += coordsList.get(i) + " "
-									+ coordsList.get(i + 1) + " "
-									+ coordsList.get(i + 2) + ",";
+							geomEWKT.append(coordComma)
+									.append(coordsList.get(i)).append(" ")
+									.append(coordsList.get(i + 1)).append(" ")
+									.append(coordsList.get(i + 2));
+							
+							coordComma = ",";
 						}
 
-						geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-						geomEWKT += "),(";
+						geomEWKT.append(")");
+						geomComma = ",(";
 					}
 
-					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 2);
-					geomEWKT += ")";
-					curveGeom = new PGgeometry(
-							PGgeometry.geomFromString(geomEWKT));
+					geomEWKT.append(")");
+					curveGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
 				} else {
-					geomEWKT = "SRID=" + dbSrid + ";LINESTRING(";
+					String coordComma = "";
+					
+					geomEWKT.append("SRID=").append(dbSrid).append(";LINESTRING(");
 
-					for (int i = 0; i < pointList.get(0).size(); i += 3) {
-						geomEWKT += pointList.get(0).get(i) + " "
-								+ pointList.get(0).get(i + 1) + " "
-								+ pointList.get(0).get(i + 2) + ",";
+					for (int i = 0; i < pointList.size(); i += 3) {
+						geomEWKT.append(coordComma)
+								.append(pointList.get(i)).append(" ")
+								.append(pointList.get(i + 1)).append(" ")
+								.append(pointList.get(i + 2));
+						
+						coordComma = ",";
 					}
-					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-					geomEWKT += ")";
-					curveGeom = new PGgeometry(
-							PGgeometry.geomFromString(geomEWKT));
+
+					geomEWKT.append(")");
+					
+					curveGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
 				}
 			}
 		}
@@ -418,27 +468,35 @@ public class DBStGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty()) {
-				String geomEWKT = "SRID=" + dbSrid + ";MULTILINESTRING((";
+				StringBuilder geomEWKT = new StringBuilder("");
+				String geomComma = "";
+				
+				geomEWKT.append("SRID=").append(dbSrid).append(";MULTILINESTRING((");
 
 				for (List<Double> coordsList : pointList) {
 					if (affineTransformation)
 						dbImporterManager.getAffineTransformer()
 						.transformCoordinates(coordsList);
 
+					geomEWKT.append(geomComma);
+					
+					String coordComma = "";
+					
 					for (int i = 0; i < coordsList.size(); i += 3) {
-						geomEWKT += coordsList.get(i) + " "
-								+ coordsList.get(i + 1) + " "
-								+ coordsList.get(i + 2) + ",";
+						geomEWKT.append(coordComma)
+								.append(coordsList.get(i)).append(" ")
+								.append(coordsList.get(i + 1)).append(" ")
+								.append(coordsList.get(i + 2));
+						
+						coordComma = ",";
 					}
 
-					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-					geomEWKT += "),(";
+					geomEWKT.append(")");
+					geomComma = ",(";
 				}
 
-				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 2);
-				geomEWKT += ")";
-				multiCurveGeom = new PGgeometry(
-						PGgeometry.geomFromString(geomEWKT));
+				geomEWKT.append(")");
+				multiCurveGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
 			}
 		}
 		return multiCurveGeom;
@@ -709,7 +767,10 @@ public class DBStGeometry implements DBImporter {
 				}
 
 				if (!pointList.isEmpty()) {
-					String geomEWKT = "SRID=" + dbSrid + ";POLYGON((";
+					StringBuilder geomEWKT = new StringBuilder("");
+					String geomComma = "";
+					
+					geomEWKT.append("SRID=").append(dbSrid).append(";POLYGON((");
 
 					// int dim = is2d ? 2 : 3;
 
@@ -734,20 +795,27 @@ public class DBStGeometry implements DBImporter {
 					}
 
 					for (List<Double> coordsList : pointList) {
+						
+						geomEWKT.append(geomComma);
+						
+						String coordComma = "";
+												
 						for (int i = 0; i < coordsList.size(); i += 3) {
-							geomEWKT = geomEWKT + coordsList.get(i) + " "
-									+ coordsList.get(i + 1) + " "
-									+ coordsList.get(i + 2) + ",";
+							geomEWKT.append(coordComma)
+									.append(coordsList.get(i)).append(" ")
+									.append(coordsList.get(i + 1)).append(" ")
+									.append(coordsList.get(i + 2));
+							
+							coordComma = ",";
 						}
-						geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-						geomEWKT = geomEWKT + "),(";
+						
+						geomEWKT.append(")");
+						geomComma = ",(";
 					}
 
-					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 2);
-					geomEWKT = geomEWKT + ")";
+					geomEWKT.append(")");
 
-					polygonGeom = new PGgeometry(
-							PGgeometry.geomFromString(geomEWKT));
+					polygonGeom = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
 				}
 			}
 		}

@@ -47,7 +47,6 @@ import org.citygml4j.model.citygml.core.GeneralizationRelation;
 import org.citygml4j.model.citygml.generics.AbstractGenericAttribute;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
-import org.postgis.Geometry;
 import org.postgis.PGgeometry;
 
 import de.tub.citydb.config.Config;
@@ -211,17 +210,23 @@ public class DBCityObject implements DBImporter {
 			if (affineTransformation)
 				dbImporterManager.getAffineTransformer().transformCoordinates(points);
 
-			String geomEWKT = "SRID=" + dbSrid + ";POLYGON((";
+			StringBuilder geomEWKT = new StringBuilder("");
+			String coordComma = "";
+			
+			geomEWKT.append("SRID=").append(dbSrid).append(";POLYGON((");
 			
 			for (int i=0; i<points.size(); i+=3){
-				geomEWKT += points.get(i) + " " + points.get(i+1) + " " + points.get(i+2) + ",";
+				geomEWKT.append(coordComma)
+						.append(points.get(i)).append(" ")
+						.append(points.get(i+1)).append(" ")
+						.append(points.get(i+2));
+				
+				coordComma = ",";
 			}				
 
-			geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-			geomEWKT += "))";
-
-			Geometry boundedBy = PGgeometry.geomFromString(geomEWKT);
-			PGgeometry pgBoundedBy = new PGgeometry(boundedBy);
+			geomEWKT.append("))");
+			
+			PGgeometry pgBoundedBy = new PGgeometry(PGgeometry.geomFromString(geomEWKT.toString()));
 
 			psCityObject.setObject(4, pgBoundedBy);
 		} else {

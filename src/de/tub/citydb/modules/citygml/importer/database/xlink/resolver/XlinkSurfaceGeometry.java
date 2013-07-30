@@ -282,30 +282,46 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			// reverse order of geometry instance if necessary
 			if (reverse) {
 				
-				String geomEWKT = "SRID=" + geomNode.geometry.getSrid() + ";POLYGON((";
 				Polygon polyGeom = (Polygon) geomNode.geometry;
 				int dimensions = geomNode.geometry.getDimension();
 				
+				StringBuilder geomEWKT = new StringBuilder("");
+				String geomComma = "";
+				
+				geomEWKT.append("SRID=").append(geomNode.geometry.getSrid()).append(";POLYGON((");
+				
 				for (int i = 0; i < polyGeom.numRings(); i++){
+					
+					geomEWKT.append(geomComma);
+					
+					String coordComma = "";
 					
 					if (dimensions == 2)
 						for (int j = 0; j < polyGeom.getRing(i).numPoints(); j++){
-							geomEWKT += polyGeom.getRing(i).getPoint(j).x + " " + polyGeom.getRing(i).getPoint(j).y + ",";
+							geomEWKT.append(coordComma)
+									.append(polyGeom.getRing(i).getPoint(j).x).append(" ")
+									.append(polyGeom.getRing(i).getPoint(j).y);
+							
+							coordComma = ",";
 						}
 					
 					if (dimensions == 3)
 						for (int j = 0; j < polyGeom.getRing(i).numPoints(); j++){
-							geomEWKT += polyGeom.getRing(i).getPoint(j).x + " " + polyGeom.getRing(i).getPoint(j).y + " " + polyGeom.getRing(i).getPoint(j).z + ",";
+							geomEWKT.append(coordComma)
+									.append(polyGeom.getRing(i).getPoint(j).x).append(" ")
+									.append(polyGeom.getRing(i).getPoint(j).y).append(" ")
+									.append(polyGeom.getRing(i).getPoint(j).z);
+							
+							coordComma = ",";
 						}					
 					
-					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-					geomEWKT += "),(";				
+					geomEWKT.append(")");
+					geomComma = ",(";			
 				}
 				
-				geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 2);
-				geomEWKT += ")";
+				geomEWKT.append(")");
 							
-				Geometry geom = PGgeometry.geomFromString(geomEWKT);
+				Geometry geom = PGgeometry.geomFromString(geomEWKT.toString());
 				geomNode.geometry = geom;
 			}
 

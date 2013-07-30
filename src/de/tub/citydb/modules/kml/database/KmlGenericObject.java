@@ -2492,22 +2492,36 @@ public abstract class KmlGenericObject {
 					coords[index++] = point3d.y / 100;
 					coords[index++] = point3d.z / 100;
 				}
-				String geomEWKT = "SRID=" + dbSrs.getSrid() + ";";
+				
+				StringBuilder geomEWKT = new StringBuilder("");
+				String coordComma = "";
+				
+				geomEWKT.append("SRID=").append(dbSrs.getSrid()).append(";");
 				
 				if (coords.length == 3){
-					geomEWKT += "POINT(" +	coords[0] + " " + coords[1] + " " + coords[2] + ")";
+					geomEWKT.append("POINT(")
+							.append(coords[0]).append(" ")
+							.append(coords[1]).append(" ")
+							.append(coords[2]);
 				}
 				else {
-					geomEWKT += "LINESTRING(";
+					geomEWKT.append("LINESTRING(");
+					
 					for (int i = 0; i < coords.length; i += 3){
-						geomEWKT += coords[i] + " " + coords[i+1] + " " + coords[i+2] + ",";
+						geomEWKT.append(coordComma)
+						.append(coords[0]).append(" ")
+						.append(coords[1]).append(" ")
+						.append(coords[2]);
+						
+						coordComma = ",";
 					}
-					geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-					geomEWKT += ")";
 				}
-				
-				Geometry geom = PGgeometry.geomFromString(geomEWKT);
+					
+				geomEWKT.append(")");
+								
+				Geometry geom = PGgeometry.geomFromString(geomEWKT.toString());
 				Geometry convertedGeom = convertToWGS84(geom);
+				
 				coords = new double[geom.numPoints()*3];
 				
 				for (int i = 0, j = 0; i < convertedGeom.numPoints(); i++, j+=3){
@@ -2619,22 +2633,35 @@ public abstract class KmlGenericObject {
 
 		double[] pointCoords = null; 
 		
-		String geomEWKT = "SRID=" + dbSrs.getSrid() + ";";
+		StringBuilder geomEWKT = new StringBuilder("");
+		String coordComma = "";
+		
+		geomEWKT.append("SRID=").append(dbSrs.getSrid()).append(";");
 		
 		if (coords.length == 3){
-			geomEWKT += "POINT(" +	coords[0] + " " + coords[1] + " " + coords[2] + ")";
+			geomEWKT.append("POINT(")
+					.append(coords[0]).append(" ")
+					.append(coords[1]).append(" ")
+					.append(coords[2]);
 		}
 		else {
-			geomEWKT += "LINESTRING(";
+			geomEWKT.append("LINESTRING(");
+			
 			for (int i = 0; i < coords.length; i += 3){
-				geomEWKT += coords[i] + " " + coords[i+1] + " " + coords[i+2] + ",";
+				geomEWKT.append(coordComma)
+				.append(coords[0]).append(" ")
+				.append(coords[1]).append(" ")
+				.append(coords[2]);
+				
+				coordComma = ",";
 			}
-			geomEWKT = geomEWKT.substring(0, geomEWKT.length() - 1);
-			geomEWKT += ")";
 		}
-		
-		Geometry geom = PGgeometry.geomFromString(geomEWKT);
+			
+		geomEWKT.append(")");
+								
+		Geometry geom = PGgeometry.geomFromString(geomEWKT.toString());
 		Geometry convertedPointGeom = convertToWGS84(geom);
+		
 		if (convertedPointGeom != null) {
 			pointCoords = new double[3];
 			pointCoords[0] = convertedPointGeom.getFirstPoint().x;
