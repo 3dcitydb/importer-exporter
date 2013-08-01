@@ -428,11 +428,11 @@ public class DBStGeometry implements DBImporter {
 					
 					geomEWKT.append("SRID=").append(dbSrid).append(";LINESTRING(");
 
-					for (int i = 0; i < pointList.size(); i += 3) {
+					for (int i = 0; i < pointList.get(0).size(); i += 3) {
 						geomEWKT.append(coordComma)
-								.append(pointList.get(i)).append(" ")
-								.append(pointList.get(i + 1)).append(" ")
-								.append(pointList.get(i + 2));
+								.append(pointList.get(0).get(i)).append(" ")
+								.append(pointList.get(0).get(i + 1)).append(" ")
+								.append(pointList.get(0).get(i + 2));
 						
 						coordComma = ",";
 					}
