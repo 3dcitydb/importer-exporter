@@ -117,7 +117,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 			psPrepare.setLong(1, xlink.getId());
 			psPrepare.executeUpdate();
 
-			// thirs step: get prepared ORDIMAGE to fill it with contents
+			// third step: get prepared ORDIMAGE to fill it with contents
 			psSelect.setLong(1, xlink.getId());
 			OracleResultSet rs = (OracleResultSet)psSelect.executeQuery();
 			if (!rs.next()) {
