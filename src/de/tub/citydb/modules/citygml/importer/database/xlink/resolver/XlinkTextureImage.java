@@ -81,7 +81,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 		String imageFileName = xlink.getFileURI();
 		boolean isRemote = true;
 		URL imageURL = null;
-		File imageFile = new File(imageFileName);
+		File imageFile = null;
 		
 		try {
 			// first step: check whether we deal with a local or remote texture file
@@ -95,7 +95,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 				if (replacePathSeparator)
 					imageFileName = imageFileName.replace("\\", "/");
 				
-//				File imageFile = new File(imageFileName);
+				imageFile = new File(imageFileName);
 				if (!imageFile.isAbsolute()) {
 					imageFileName = localPath + File.separator + imageFile.getPath();
 					imageFile = new File(imageFileName);
@@ -109,8 +109,6 @@ public class XlinkTextureImage implements DBXlinkResolver {
 					LOG.error("Skipping 0 byte texture file '" + imageFileName + "'.");
 					return false;
 				}
-				
-
 			}
 			
 			// next step: try and upload image data
@@ -185,8 +183,7 @@ public class XlinkTextureImage implements DBXlinkResolver {
 
 			externalFileConn.rollback();
 			return false;
-		} 
-		
+		}
 	}
 
 	@Override

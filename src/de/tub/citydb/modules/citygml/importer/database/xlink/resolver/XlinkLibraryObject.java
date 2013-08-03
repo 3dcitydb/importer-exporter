@@ -57,9 +57,8 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 	private final Config config;
 
 	private PreparedStatement psInsert;
-	private PreparedStatement psPrepare;
-	PreparedStatement psSelect;
 	private String localPath;
+	private boolean replacePathSeparator;
 
 	public XlinkLibraryObject(Connection textureImageConn, Config config) throws SQLException {
 		this.externalFileConn = textureImageConn;
@@ -70,10 +69,8 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 
 	private void init() throws SQLException {
 		localPath = config.getInternal().getImportPath();
-
-		// for large object (OID) -- did not work correctly
-//		psPrepare = externalFileConn.prepareStatement("update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=lo_create(-1) where ID=?");
-//		psSelect = externalFileConn.prepareStatement("select LIBRARY_OBJECT from IMPLICIT_GEOMETRY where ID=? for update");
+		replacePathSeparator = File.separatorChar == '/';
+		
 		psInsert = externalFileConn.prepareStatement("update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=? where ID=?");
 	}
 
@@ -81,37 +78,37 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 		String objectFileName = xlink.getFileURI();
 		boolean isRemote = true;
 		URL objectURL = null;
+		File objectFile = null;
 		
 		try {
-/*			// first step: prepare BLOB
-			psPrepare.setLong(1, xlink.getId());
-			psPrepare.executeUpdate();
-
-			// second step: get prepared BLOB to fill it with contents
-			psSelect.setLong(1, xlink.getId());
-			ResultSet rs = psSelect.executeQuery();
-			if (!rs.next()) {
-				LOG.error("Database error while importing library object: " + objectFileName);
-
-				rs.close();
-				externalFileConn.rollback();
-				return false;
-			}
-
-			Blob blob = rs.getBlob(1);
-			blob.truncate(1);
-*/		
-			// next step: try and upload library object data
+			// first step: check whether we deal with a local or remote library object file
 			try {
 				objectURL = new URL(objectFileName);
 				objectFileName = objectURL.toString();
 
 			} catch (MalformedURLException malURL) {
 				isRemote = false;
-				File objectFile = new File(objectFileName);
-				objectFileName = localPath + File.separator + objectFile.getPath();
+				
+				if (replacePathSeparator)
+					objectFileName = objectFileName.replace("\\", "/");
+				
+				objectFile = new File(objectFileName);
+				if (!objectFile.isAbsolute()) {
+					objectFileName = localPath + File.separator + objectFile.getPath();
+					objectFile = new File(objectFileName);
+				}
+				
+				// check minimum requirements for local library object file
+				if (!objectFile.exists() || !objectFile.isFile() || !objectFile.canRead()) {
+					LOG.error("Failed to read library object file '" + objectFileName + "'.");
+					return false;
+				} else if (objectFile.length() == 0) {
+					LOG.error("Skipping 0 byte library object file '" + objectFileName + "'.");
+					return false;
+				}
 			}
 
+			// next step: try and upload library object data
 			LOG.debug("Importing library object: " + objectFileName);
 
 			InputStream in = null;
@@ -119,7 +116,7 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 			if (isRemote) {
 				in = objectURL.openStream();
 			} else {
-				in = new FileInputStream(objectFileName);
+				in = new FileInputStream(objectFile);
 			}
 		
 			if (in == null) {
@@ -193,8 +190,7 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 
 	@Override
 	public void close() throws SQLException {
-		psPrepare.close();
-		psSelect.close();
+		psInsert.close();
 	}
 
 	@Override
