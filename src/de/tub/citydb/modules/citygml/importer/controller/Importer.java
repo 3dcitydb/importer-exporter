@@ -42,8 +42,6 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
-import org.citygml4j.builder.jaxb.xml.io.reader.CityGMLChunk;
-import org.citygml4j.builder.jaxb.xml.io.reader.JAXBChunkReader;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.CityModel;
@@ -51,7 +49,9 @@ import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.xml.io.CityGMLInputFactory;
 import org.citygml4j.xml.io.reader.CityGMLInputFilter;
 import org.citygml4j.xml.io.reader.CityGMLReadException;
+import org.citygml4j.xml.io.reader.CityGMLReader;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
+import org.citygml4j.xml.io.reader.XMLChunk;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
@@ -109,7 +109,7 @@ public class Importer implements EventHandler {
 	private final EventDispatcher eventDispatcher;
 
 	private WorkerPool<CityGML> dbWorkerPool;
-	private WorkerPool<CityGMLChunk> featureWorkerPool;
+	private WorkerPool<XMLChunk> featureWorkerPool;
 	private WorkerPool<DBXlink> tmpXlinkPool;
 	private WorkerPool<DBXlink> xlinkResolverPool;
 	private CacheManager cacheManager;
@@ -394,7 +394,7 @@ public class Importer implements EventHandler {
 								false);
 
 				// this worker pool unmarshals the input file and passes xml chunks to the dbworker pool
-				featureWorkerPool = new WorkerPool<CityGMLChunk>(
+				featureWorkerPool = new WorkerPool<XMLChunk>(
 						minThreads,
 						maxThreads,
 						new FeatureReaderWorkerFactory(dbWorkerPool, config, eventDispatcher),
@@ -407,13 +407,13 @@ public class Importer implements EventHandler {
 				featureWorkerPool.prestartCoreWorkers();
 
 				// ok, preparation done. inform user and start parsing the input file
-				JAXBChunkReader reader = null;
+				CityGMLReader reader = null;
 				try {
-					reader = (JAXBChunkReader)in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);	
+					reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);	
 					LOG.info("Importing file: " + file.toString());						
 
-					while (shouldRun && reader.hasNextChunk()) {
-						CityGMLChunk chunk = reader.nextChunk();
+					while (shouldRun && reader.hasNext()) {
+						XMLChunk chunk = reader.nextChunk();
 
 						if (counterFilter.isActive()) {
 							elementCounter++;

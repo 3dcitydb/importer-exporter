@@ -33,22 +33,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.impl.citygml.core.ImplicitRepresentationPropertyImpl;
-import org.citygml4j.impl.citygml.generics.GenericCityObjectImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.citygml.generics.GenericCityObject;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
@@ -120,7 +116,7 @@ public class DBGenericCityObject implements DBExporter {
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
-		GenericCityObject genericCityObject = new GenericCityObjectImpl();
+		GenericCityObject genericCityObject = new GenericCityObject();
 		long genericCityObjectId = splitter.getPrimaryKey();
 
 		// cityObject stuff
@@ -142,28 +138,28 @@ public class DBGenericCityObject implements DBExporter {
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRefImpl();
+					StringOrRef stringOrRef = new StringOrRef();
 					stringOrRef.setValue(description);
 					genericCityObject.setDescription(stringOrRef);
 				}
 
 				String clazz = rs.getString("CLASS");
 				if (clazz != null) {
-					genericCityObject.setClazz(clazz);
+					genericCityObject.setClazz(new Code(clazz));
 				}
 
 				String function = rs.getString("FUNCTION");
 				if (function != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] functionList = p.split(function.trim());
-					genericCityObject.setFunction(Arrays.asList(functionList));
+					for (String value : p.split(function.trim()))
+						genericCityObject.addFunction(new Code(value));
 				}
 
 				String usage = rs.getString("USAGE");
 				if (usage != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] usageList = p.split(usage.trim());
-					genericCityObject.setUsage(Arrays.asList(usageList));
+					for (String value : p.split(usage.trim()))
+						genericCityObject.addUsage(new Code(value));
 				}
 
 				for (int lod = 0; lod < 5 ; lod++) {
@@ -173,7 +169,7 @@ public class DBGenericCityObject implements DBExporter {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
 
 						if (geometry != null) {
-							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
+							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
 
 							if (geometry.getAbstractGeometry() != null)
 								geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -216,7 +212,7 @@ public class DBGenericCityObject implements DBExporter {
 
 					ImplicitGeometry implicit = implicitGeometryExporter.read(implicitGeometryId, referencePoint, transformationMatrix);
 					if (implicit != null) {
-						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationPropertyImpl();
+						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
 						implicitProperty.setObject(implicit);
 
 						switch (lod) {

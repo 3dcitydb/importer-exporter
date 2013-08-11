@@ -31,12 +31,10 @@ package de.tub.citydb.modules.citygml.importer.concurrent;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.xml.bind.JAXBException;
-
-import org.citygml4j.builder.jaxb.xml.io.reader.CityGMLChunk;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.xml.io.reader.MissingADESchemaException;
-import org.xml.sax.SAXException;
+import org.citygml4j.xml.io.reader.UnmarshalException;
+import org.citygml4j.xml.io.reader.XMLChunk;
 
 import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerPool;
@@ -47,14 +45,14 @@ import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.InterruptEnum;
 import de.tub.citydb.modules.common.event.InterruptEvent;
 
-public class FeatureReaderWorker implements Worker<CityGMLChunk> {
+public class FeatureReaderWorker implements Worker<XMLChunk> {
 	private final Logger LOG = Logger.getInstance();
 
 	// instance members needed for WorkPool
 	private volatile boolean shouldRun = true;
 	private ReentrantLock runLock = new ReentrantLock();
-	private WorkQueue<CityGMLChunk> workQueue = null;
-	private CityGMLChunk firstWork;
+	private WorkQueue<XMLChunk> workQueue = null;
+	private XMLChunk firstWork;
 	private Thread workerThread = null;
 
 	// instance members needed to do work
@@ -97,7 +95,7 @@ public class FeatureReaderWorker implements Worker<CityGMLChunk> {
 	}
 
 	@Override
-	public void setFirstWork(CityGMLChunk firstWork) {
+	public void setFirstWork(XMLChunk firstWork) {
 		this.firstWork = firstWork;
 	}
 
@@ -107,7 +105,7 @@ public class FeatureReaderWorker implements Worker<CityGMLChunk> {
 	}
 
 	@Override
-	public void setWorkQueue(WorkQueue<CityGMLChunk> workQueue) {
+	public void setWorkQueue(WorkQueue<XMLChunk> workQueue) {
 		this.workQueue = workQueue;
 	}
 
@@ -120,7 +118,7 @@ public class FeatureReaderWorker implements Worker<CityGMLChunk> {
 
 		while (shouldRun) {
 			try {
-				CityGMLChunk work = workQueue.take();				
+				XMLChunk work = workQueue.take();				
 				doWork(work);
 			} catch (InterruptedException ie) {
 				// re-check state
@@ -128,7 +126,7 @@ public class FeatureReaderWorker implements Worker<CityGMLChunk> {
 		}
 	}
 
-	private void doWork(CityGMLChunk work) {
+	private void doWork(XMLChunk work) {
 		final ReentrantLock runLock = this.runLock;
 		runLock.lock();
 
@@ -137,7 +135,7 @@ public class FeatureReaderWorker implements Worker<CityGMLChunk> {
 				CityGML cityGML = work.unmarshal();
 				if (dbWorkerPool != null && (!useValidation || work.hasPassedXMLValidation()))
 					dbWorkerPool.addWork(cityGML);
-			} catch (JAXBException e) {
+			} catch (UnmarshalException e) {
 				StringBuilder msg = new StringBuilder();				
 				msg.append("Failed to unmarshal XML chunk");
 
@@ -152,8 +150,6 @@ public class FeatureReaderWorker implements Worker<CityGMLChunk> {
 				msg.append(": ");
 				msg.append(e.getMessage());
 				LOG.error(msg.toString());
-			} catch (SAXException e) {
-				//
 			} catch (MissingADESchemaException e) {
 				LOG.error(e.getMessage());				
 				eventDispatcher.triggerEvent(new InterruptEvent(InterruptEnum.ADE_SCHEMA_READ_ERROR, this));

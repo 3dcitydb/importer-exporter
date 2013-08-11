@@ -137,21 +137,21 @@ public class DBGenericCityObject implements DBImporter {
 		}
 
 		// citygml:class
-		if (genericCityObject.isSetClazz())
-			psGenericCityObject.setString(5, genericCityObject.getClazz().trim());
+		if (genericCityObject.isSetClazz() && genericCityObject.getClazz().isSetValue())
+			psGenericCityObject.setString(5, genericCityObject.getClazz().getValue().trim());
 		else
 			psGenericCityObject.setNull(5, Types.VARCHAR);
 
 		// citygml:function
 		if (genericCityObject.isSetFunction()) {
-			psGenericCityObject.setString(6, Util.collection2string(genericCityObject.getFunction(), " "));
+			psGenericCityObject.setString(6, Util.codeList2string(genericCityObject.getFunction(), " "));
 		} else {
 			psGenericCityObject.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (genericCityObject.isSetUsage()) {
-			psGenericCityObject.setString(7, Util.collection2string(genericCityObject.getUsage(), " "));
+			psGenericCityObject.setString(7, Util.codeList2string(genericCityObject.getUsage(), " "));
 		} else {
 			psGenericCityObject.setNull(7, Types.VARCHAR);
 		}

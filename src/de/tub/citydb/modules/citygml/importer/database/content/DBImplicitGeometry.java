@@ -168,8 +168,8 @@ public class DBImplicitGeometry implements DBImporter {
 
 			if (libraryURI != null) {
 				// mimeType
-				if (implicitGeometry.isSetMimeType())
-					psUpdateImplicitGeometry.setString(1, implicitGeometry.getMimeType());
+				if (implicitGeometry.isSetMimeType() && implicitGeometry.getMimeType().isSetValue())
+					psUpdateImplicitGeometry.setString(1, implicitGeometry.getMimeType().getValue());
 				else
 					psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
 

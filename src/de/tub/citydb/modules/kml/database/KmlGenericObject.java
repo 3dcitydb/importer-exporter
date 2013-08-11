@@ -82,7 +82,6 @@ import oracle.sql.STRUCT;
 import org.citygml.textureAtlasAPI.TextureAtlasGenerator;
 import org.citygml.textureAtlasAPI.dataStructure.TexImage;
 import org.citygml.textureAtlasAPI.dataStructure.TexImageInfo;
-import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
@@ -202,7 +201,6 @@ public abstract class KmlGenericObject {
 
 	protected Connection connection;
 	protected KmlExporterManager kmlExporterManager;
-	protected CityGMLFactory cityGMLFactory; 
 	protected net.opengis.kml._2.ObjectFactory kmlFactory;
 	protected ElevationServiceHandler elevationServiceHandler;
 	protected BalloonTemplateHandlerImpl balloonTemplateHandler;
@@ -217,7 +215,6 @@ public abstract class KmlGenericObject {
 
 	public KmlGenericObject(Connection connection,
 							KmlExporterManager kmlExporterManager,
-							CityGMLFactory cityGMLFactory,
 							net.opengis.kml._2.ObjectFactory kmlFactory,
 							ElevationServiceHandler elevationServiceHandler,
 							BalloonTemplateHandlerImpl balloonTemplateHandler,
@@ -226,7 +223,6 @@ public abstract class KmlGenericObject {
 
 		this.connection = connection;
 		this.kmlExporterManager = kmlExporterManager;
-		this.cityGMLFactory = cityGMLFactory;
 		this.kmlFactory = kmlFactory;
 		this.elevationServiceHandler = elevationServiceHandler;
 		this.balloonTemplateHandler = balloonTemplateHandler;
@@ -237,7 +233,7 @@ public abstract class KmlGenericObject {
 		
 		dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
-		defaultX3dMaterial = cityGMLFactory.createX3DMaterial();
+		defaultX3dMaterial = new X3DMaterial();
 		defaultX3dMaterial.setAmbientIntensity(0.2d);
 		defaultX3dMaterial.setShininess(0.2d);
 		defaultX3dMaterial.setTransparency(0d);
@@ -1648,8 +1644,8 @@ public abstract class KmlGenericObject {
 				surfaceType = surfaceType + "Surface";
 			}
 
-			if ((!includeGroundSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) ||
-					(!includeClosureSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType)))	{
+			if ((!includeGroundSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) ||
+					(!includeClosureSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType)))	{
 				continue;
 			}
 
@@ -1721,16 +1717,16 @@ public abstract class KmlGenericObject {
 			}
 
 			if (surfaceType == null) {
-				surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString();
+				surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
 				switch (currentLod) {
 					case 1:
 						if (probablyRoof && (nz > 0.999)) {
-							surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString();
+							surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_ROOF_SURFACE).toString();
 						}
 						break;
 					case 2:
 						if (probablyRoof) {
-							surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString();
+							surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_ROOF_SURFACE).toString();
 						}
 						break;
 				}
@@ -1797,7 +1793,7 @@ public abstract class KmlGenericObject {
 	
 						if (buildingGeometryObj == null) { // root or parent
 							if (selectedTheme.equalsIgnoreCase(theme)) {
-								X3DMaterial x3dMaterial = cityGMLFactory.createX3DMaterial();
+								X3DMaterial x3dMaterial = new X3DMaterial();
 								fillX3dMaterialValues(x3dMaterial, rs2);
 								// x3dMaterial will only added if not all x3dMaterial members are null
 								addX3dMaterial(surfaceId, x3dMaterial);
@@ -1862,7 +1858,7 @@ public abstract class KmlGenericObject {
 								texCoordsTokenized = new StringTokenizer(texCoords.trim(), " ");
 							}
 							else {
-								X3DMaterial x3dMaterial = cityGMLFactory.createX3DMaterial();
+								X3DMaterial x3dMaterial = new X3DMaterial();
 								fillX3dMaterialValues(x3dMaterial, rs2);
 								// x3dMaterial will only added if not all x3dMaterial members are null
 								addX3dMaterial(surfaceId, x3dMaterial);
@@ -2237,7 +2233,7 @@ public abstract class KmlGenericObject {
 			List<Double> colorList = Util.string2double(colorString, "\\s+");
 
 			if (colorList != null && colorList.size() >= 3) {
-				color = cityGMLFactory.createColor(colorList.get(0), colorList.get(1), colorList.get(2));
+				color = new Color(colorList.get(0), colorList.get(1), colorList.get(2));
 			}
 		}
 		return color;

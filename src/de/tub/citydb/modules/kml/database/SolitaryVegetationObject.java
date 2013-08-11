@@ -58,7 +58,6 @@ import oracle.ord.im.OrdImage;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 
@@ -89,7 +88,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 
 	public SolitaryVegetationObject(Connection connection,
 			KmlExporterManager kmlExporterManager,
-			CityGMLFactory cityGMLFactory,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
@@ -98,7 +96,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 
 		super(connection,
 			  kmlExporterManager,
-			  cityGMLFactory,
 			  kmlFactory,
 			  elevationServiceHandler,
 			  balloonTemplateHandler,
@@ -476,7 +473,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 	
 						if (buildingGeometryObj == null) { // root or parent
 							if (selectedTheme.equalsIgnoreCase(theme)) {
-								X3DMaterial x3dMaterial = cityGMLFactory.createX3DMaterial();
+								X3DMaterial x3dMaterial = new X3DMaterial();
 								fillX3dMaterialValues(x3dMaterial, rs2);
 								// x3dMaterial will only added if not all x3dMaterial members are null
 								addX3dMaterial(surfaceId, x3dMaterial);
@@ -541,7 +538,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 								texCoordsTokenized = new StringTokenizer(texCoords, " ");
 							}
 							else {
-								X3DMaterial x3dMaterial = cityGMLFactory.createX3DMaterial();
+								X3DMaterial x3dMaterial = new X3DMaterial();
 								fillX3dMaterialValues(x3dMaterial, rs2);
 								// x3dMaterial will only added if not all x3dMaterial members are null
 								addX3dMaterial(surfaceId, x3dMaterial);

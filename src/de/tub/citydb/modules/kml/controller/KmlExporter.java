@@ -30,8 +30,8 @@
 package de.tub.citydb.modules.kml.controller;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
 import javax.xml.bind.JAXBContext;
@@ -76,7 +75,6 @@ import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 
-import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
@@ -138,7 +136,6 @@ public class KmlExporter implements EventHandler {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	private CityGMLFactory cityGMLFactory; 
 	private ObjectFactory kmlFactory; 
 	private WorkerPool<KmlSplittingResult> kmlWorkerPool;
 	private SingleWorkerPool<SAXEventBuffer> ioWriterPool;
@@ -185,7 +182,6 @@ public class KmlExporter implements EventHandler {
 		this.eventDispatcher = eventDispatcher;
 
 		kmlFactory = new ObjectFactory();		
-		cityGMLFactory = new CityGMLFactory();		
 	}
 	
 	public void cleanup() {
@@ -389,7 +385,6 @@ public class KmlExporter implements EventHandler {
 										dbPool,
 										ioWriterPool,
 										kmlFactory,
-										cityGMLFactory,
 										config,
 										eventDispatcher),
 										300,
@@ -1074,7 +1069,7 @@ public class KmlExporter implements EventHandler {
 			styleWallNormal.setPolyStyle(polyStyleWallNormal);
 			styleWallNormal.setBalloonStyle(balloonStyle);
 			if (isBuilding)
-				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString() + "Normal");
+				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString() + "Normal");
 			else
 				styleWallNormal.setId(styleBasisName + currentDisplayForm.getName() + "Normal");
 			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxBuffer);
@@ -1083,7 +1078,7 @@ public class KmlExporter implements EventHandler {
 				PolyStyleType polyStyleGroundSurface = kmlFactory.createPolyStyleType();
 				polyStyleGroundSurface.setColor(hexStringToByteArray("ff00aa00"));
 				StyleType styleGroundSurface = kmlFactory.createStyleType();
-				styleGroundSurface.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString() + "Style");
+				styleGroundSurface.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString() + "Style");
 				styleGroundSurface.setPolyStyle(polyStyleGroundSurface);
 				styleGroundSurface.setBalloonStyle(balloonStyle);
 				marshaller.marshal(kmlFactory.createStyle(styleGroundSurface), saxBuffer);
@@ -1093,7 +1088,7 @@ public class KmlExporter implements EventHandler {
 				PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
 				polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
 				StyleType styleRoofNormal = kmlFactory.createStyleType();
-				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() + "Normal");
+				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_ROOF_SURFACE).toString() + "Normal");
 				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
 				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
 				styleRoofNormal.setBalloonStyle(balloonStyle);

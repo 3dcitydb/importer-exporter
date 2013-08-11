@@ -43,9 +43,6 @@ import javax.xml.bind.Unmarshaller;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
 import org.citygml4j.builder.jaxb.unmarshal.JAXBUnmarshaller;
-import org.citygml4j.impl.citygml.appearance.AppearanceMemberImpl;
-import org.citygml4j.impl.citygml.core.CityObjectMemberImpl;
-import org.citygml4j.impl.gml.feature.FeatureMemberImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.appearance.AppearanceMember;
@@ -286,17 +283,17 @@ public class DBExporterManager {
 
 		// wrap feature with a feature property element
 		if (abstractFeature instanceof AbstractCityObject) {
-			member = new CityObjectMemberImpl();
+			member = new CityObjectMember();
 			((CityObjectMember)member).setCityObject((AbstractCityObject)abstractFeature);
 		} 
 
 		else if (abstractFeature instanceof Appearance) {
-			member = new AppearanceMemberImpl();
+			member = new AppearanceMember();
 			((AppearanceMember)member).setAppearance((Appearance)abstractFeature);
 		} 
 
 		else {
-			member = new FeatureMemberImpl();
+			member = new FeatureMember();
 			((FeatureMember)member).setFeature(abstractFeature);
 		}
 

@@ -135,14 +135,14 @@ public class DBCityFurniture implements DBImporter {
 		}
 
 		// citygml:class
-		if (cityFurniture.isSetClazz())
-			psCityFurniture.setString(5, cityFurniture.getClazz().trim());
+		if (cityFurniture.isSetClazz() && cityFurniture.getClazz().isSetValue())
+			psCityFurniture.setString(5, cityFurniture.getClazz().getValue().trim());
 		else
 			psCityFurniture.setNull(5, Types.VARCHAR);
 
 		// citygml:function
 		if (cityFurniture.isSetFunction()) {
-			psCityFurniture.setString(6, Util.collection2string(cityFurniture.getFunction(), " "));
+			psCityFurniture.setString(6, Util.codeList2string(cityFurniture.getFunction(), " "));
 		} else {
 			psCityFurniture.setNull(6, Types.VARCHAR);
 		}

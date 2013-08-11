@@ -33,16 +33,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import org.citygml4j.impl.citygml.landuse.LandUseImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfacePropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.landuse.LandUse;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
@@ -78,7 +75,7 @@ public class DBLandUse implements DBExporter {
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
-		LandUse landUse = new LandUseImpl();
+		LandUse landUse = new LandUse();
 		long landUseId = splitter.getPrimaryKey();
 
 		// cityObject stuff
@@ -100,28 +97,28 @@ public class DBLandUse implements DBExporter {
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRefImpl();
+					StringOrRef stringOrRef = new StringOrRef();
 					stringOrRef.setValue(description);
 					landUse.setDescription(stringOrRef);
 				}
 
 				String clazz = rs.getString("CLASS");
 				if (clazz != null) {
-					landUse.setClazz(clazz);
+					landUse.setClazz(new Code(clazz));
 				}
 
 				String function = rs.getString("FUNCTION");
 				if (function != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] functionList = p.split(function.trim());
-					landUse.setFunction(Arrays.asList(functionList));
+					for (String value : p.split(function.trim()))
+						landUse.addFunction(new Code(value));
 				}
 
 				String usage = rs.getString("USAGE");
 				if (usage != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] usageList = p.split(usage.trim());
-					landUse.setUsage(Arrays.asList(usageList));
+					for (String value : p.split(usage.trim()))
+						landUse.addUsage(new Code(value));
 				}
 
 				for (int lod = 0; lod < 5 ; lod++) {
@@ -131,7 +128,7 @@ public class DBLandUse implements DBExporter {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(multiSurfaceId);
 
 						if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
+							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
 
 							if (geometry.getAbstractGeometry() != null)
 								multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());

@@ -40,8 +40,6 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
 import org.citygml4j.geometry.Point;
-import org.citygml4j.impl.citygml.core.GeneralizationRelationImpl;
-import org.citygml4j.impl.gml.geometry.primitives.EnvelopeImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.GeneralizationRelation;
@@ -116,7 +114,7 @@ public class DBGeneralization implements DBExporter {
 
 					if (!rs.wasNull() && struct != null && boundingBoxFilter.isActive()) {
 						JGeometry jGeom = JGeometry.load(struct);
-						Envelope env = new EnvelopeImpl();
+						Envelope env = new Envelope();
 
 						double[] points = jGeom.getOrdinatesArray();
 						Point lower = new Point(points[0], points[1], points[2]);
@@ -218,7 +216,7 @@ public class DBGeneralization implements DBExporter {
 						}
 					}
 
-					GeneralizationRelation generalizesTo = new GeneralizationRelationImpl();
+					GeneralizationRelation generalizesTo = new GeneralizationRelation();
 					generalizesTo.setHref("#" + gmlId);
 					cityObject.addGeneralizesTo(generalizesTo);
 				}

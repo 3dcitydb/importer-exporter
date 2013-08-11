@@ -40,9 +40,6 @@ import javax.xml.bind.JAXBException;
 
 import net.opengis.kml._2.PlacemarkType;
 import oracle.jdbc.OracleResultSet;
-
-import org.citygml4j.factory.CityGMLFactory;
-
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
@@ -58,7 +55,6 @@ public class LandUse extends KmlGenericObject{
 
 	public LandUse(Connection connection,
 			KmlExporterManager kmlExporterManager,
-			CityGMLFactory cityGMLFactory,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
@@ -67,7 +63,6 @@ public class LandUse extends KmlGenericObject{
 
 		super(connection,
 			  kmlExporterManager,
-			  cityGMLFactory,
 			  kmlFactory,
 			  elevationServiceHandler,
 			  balloonTemplateHandler,

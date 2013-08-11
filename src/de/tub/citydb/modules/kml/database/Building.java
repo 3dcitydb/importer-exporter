@@ -48,9 +48,6 @@ import net.opengis.kml._2.PolygonType;
 import oracle.jdbc.OracleResultSet;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
-
-import org.citygml4j.factory.CityGMLFactory;
-
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
@@ -67,7 +64,6 @@ public class Building extends KmlGenericObject{
 
 	public Building(Connection connection,
 			KmlExporterManager kmlExporterManager,
-			CityGMLFactory cityGMLFactory,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
@@ -76,7 +72,6 @@ public class Building extends KmlGenericObject{
 
 		super(connection,
 			  kmlExporterManager,
-			  cityGMLFactory,
 			  kmlFactory,
 			  elevationServiceHandler,
 			  balloonTemplateHandler,

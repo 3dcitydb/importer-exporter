@@ -134,21 +134,21 @@ public class DBWaterBody implements DBImporter {
 		}
 
 		// citygml:class
-		if (waterBody.isSetClazz())
-			psWaterBody.setString(5, waterBody.getClazz().trim());
+		if (waterBody.isSetClazz() && waterBody.getClazz().isSetValue())
+			psWaterBody.setString(5, waterBody.getClazz().getValue().trim());
 		else
 			psWaterBody.setNull(5, Types.VARCHAR);
 
 		// citygml:function
 		if (waterBody.isSetFunction()) {
-			psWaterBody.setString(6, Util.collection2string(waterBody.getFunction(), " "));
+			psWaterBody.setString(6, Util.codeList2string(waterBody.getFunction(), " "));
 		} else {
 			psWaterBody.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (waterBody.isSetUsage()) {
-			psWaterBody.setString(7, Util.collection2string(waterBody.getUsage(), " "));
+			psWaterBody.setString(7, Util.codeList2string(waterBody.getUsage(), " "));
 		} else {
 			psWaterBody.setNull(7, Types.VARCHAR);
 		}

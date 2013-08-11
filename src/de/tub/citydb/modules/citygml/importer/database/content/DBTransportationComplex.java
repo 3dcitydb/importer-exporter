@@ -38,8 +38,6 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.impl.gml.geometry.complexes.GeometricComplexImpl;
-import org.citygml4j.impl.gml.geometry.primitives.GeometricPrimitivePropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficArea;
 import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficAreaProperty;
@@ -141,14 +139,14 @@ public class DBTransportationComplex implements DBImporter {
 
 		// citygml:function
 		if (transComplex.isSetFunction()) {
-			psTransComplex.setString(5, Util.collection2string(transComplex.getFunction(), " "));
+			psTransComplex.setString(5, Util.codeList2string(transComplex.getFunction(), " "));
 		} else {
 			psTransComplex.setNull(5, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (transComplex.isSetUsage()) {
-			psTransComplex.setString(6, Util.collection2string(transComplex.getUsage(), " "));
+			psTransComplex.setString(6, Util.codeList2string(transComplex.getUsage(), " "));
 		} else {
 			psTransComplex.setNull(6, Types.VARCHAR);
 		}
@@ -227,14 +225,14 @@ public class DBTransportationComplex implements DBImporter {
 
         // lod0Network
         if (transComplex.isSetLod0Network()) {
-        	GeometricComplex aggregateComplex = new GeometricComplexImpl();
+        	GeometricComplex aggregateComplex = new GeometricComplex();
         	JGeometry multiCurveGeom = null;
         	
         	for (GeometricComplexProperty complexProperty : transComplex.getLod0Network()) {
         		// for lod0Network we just consider appropriate curve geometries
         		
         		if (complexProperty.isSetCompositeCurve()) {
-        			GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitivePropertyImpl();
+        			GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitiveProperty();
         			primitiveProperty.setGeometricPrimitive(complexProperty.getCompositeCurve());
         			
         			aggregateComplex.addElement(primitiveProperty);

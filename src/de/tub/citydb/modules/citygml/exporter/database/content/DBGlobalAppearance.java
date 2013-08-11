@@ -41,23 +41,6 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
 import org.citygml4j.geometry.Matrix;
-import org.citygml4j.impl.citygml.appearance.AppearanceImpl;
-import org.citygml4j.impl.citygml.appearance.ColorImpl;
-import org.citygml4j.impl.citygml.appearance.ColorPlusOpacityImpl;
-import org.citygml4j.impl.citygml.appearance.GeoreferencedTextureImpl;
-import org.citygml4j.impl.citygml.appearance.ParameterizedTextureImpl;
-import org.citygml4j.impl.citygml.appearance.SurfaceDataPropertyImpl;
-import org.citygml4j.impl.citygml.appearance.TexCoordGenImpl;
-import org.citygml4j.impl.citygml.appearance.TexCoordListImpl;
-import org.citygml4j.impl.citygml.appearance.TextureAssociationImpl;
-import org.citygml4j.impl.citygml.appearance.TextureCoordinatesImpl;
-import org.citygml4j.impl.citygml.appearance.WorldToTextureImpl;
-import org.citygml4j.impl.citygml.appearance.X3DMaterialImpl;
-import org.citygml4j.impl.citygml.core.TransformationMatrix2x2Impl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.primitives.DirectPositionImpl;
-import org.citygml4j.impl.gml.geometry.primitives.PointImpl;
-import org.citygml4j.impl.gml.geometry.primitives.PointPropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.AbstractTexture;
@@ -75,7 +58,9 @@ import org.citygml4j.model.citygml.appearance.TextureType;
 import org.citygml4j.model.citygml.appearance.WorldToTexture;
 import org.citygml4j.model.citygml.appearance.WrapMode;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
+import org.citygml4j.model.citygml.core.TransformationMatrix2x2;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
@@ -160,7 +145,7 @@ public class DBGlobalAppearance implements DBExporter {
 		ResultSet rs = null;
 
 		try {
-			Appearance appearance = new AppearanceImpl();
+			Appearance appearance = new Appearance();
 			AbstractSurfaceData surfaceData = null;
 
 			long appearanceId = splitter.getPrimaryKey();
@@ -185,7 +170,7 @@ public class DBGlobalAppearance implements DBExporter {
 
 					String description = rs.getString("APP_DESCRIPTION");
 					if (description != null) {
-						StringOrRef stringOrRef = new StringOrRefImpl();
+						StringOrRef stringOrRef = new StringOrRef();
 						stringOrRef.setValue(description);
 						appearance.setDescription(stringOrRef);
 					}
@@ -220,11 +205,11 @@ public class DBGlobalAppearance implements DBExporter {
 						continue;
 
 					if (surfaceDataType.equals(TypeAttributeValueEnum.X3D_MATERIAL.toString().toUpperCase()))
-						surfaceData = new X3DMaterialImpl();
+						surfaceData = new X3DMaterial();
 					else if (surfaceDataType.equals(TypeAttributeValueEnum.PARAMETERIZED_TEXTURE.toString().toUpperCase()))
-						surfaceData = new ParameterizedTextureImpl();
+						surfaceData = new ParameterizedTexture();
 					else if (surfaceDataType.equals(TypeAttributeValueEnum.GEOREFERENCED_TEXTURE.toString().toUpperCase()))
-						surfaceData = new GeoreferencedTextureImpl();
+						surfaceData = new GeoreferencedTexture();
 
 					if (surfaceData == null)
 						continue;
@@ -234,7 +219,7 @@ public class DBGlobalAppearance implements DBExporter {
 						// process xlink
 						if (dbExporterManager.lookupAndPutGmlId(gmlId, surfaceDataId, CityGMLClass.ABSTRACT_SURFACE_DATA)) {
 							if (useXLink) {
-								SurfaceDataProperty surfaceDataProperty = new SurfaceDataPropertyImpl();
+								SurfaceDataProperty surfaceDataProperty = new SurfaceDataProperty();
 								surfaceDataProperty.setHref("#" + gmlId);
 
 								appearance.addSurfaceDataMember(surfaceDataProperty);
@@ -258,7 +243,7 @@ public class DBGlobalAppearance implements DBExporter {
 
 					String description = rs.getString("SD_DESCRIPTION");
 					if (description != null) {
-						StringOrRef stringOrRef = new StringOrRefImpl();
+						StringOrRef stringOrRef = new StringOrRef();
 						stringOrRef.setValue(description);
 						surfaceData.setDescription(stringOrRef);
 					}
@@ -302,7 +287,7 @@ public class DBGlobalAppearance implements DBExporter {
 								List<Double> colorList = Util.string2double(colorString, "\\s+");
 
 								if (colorList != null && colorList.size() >= 3) {
-									Color color = new ColorImpl(colorList.get(0), colorList.get(1), colorList.get(2));
+									Color color = new Color(colorList.get(0), colorList.get(1), colorList.get(2));
 
 									switch (i) {
 									case 0:
@@ -372,11 +357,11 @@ public class DBGlobalAppearance implements DBExporter {
 
 						String dbImageMimeType = rs.getString("DB_TEX_IMAGE_MIME_TYPE");
 						if (dbImageMimeType != null) {
-							absTex.setMimeType(dbImageMimeType);
+							absTex.setMimeType(new Code(dbImageMimeType));
 						} else {
 							String mimeType = rs.getString("TEX_MIME_TYPE");
 							if (mimeType != null)
-								absTex.setMimeType(mimeType);
+								absTex.setMimeType(new Code(mimeType));
 						}
 
 						String textureType = rs.getString("TEX_TEXTURE_TYPE");
@@ -396,7 +381,7 @@ public class DBGlobalAppearance implements DBExporter {
 							List<Double> colorList = Util.string2double(borderColorString, "\\s+");
 
 							if (colorList != null && colorList.size() >= 4) {
-								ColorPlusOpacity borderColor = new ColorPlusOpacityImpl(
+								ColorPlusOpacity borderColor = new ColorPlusOpacity(
 										colorList.get(0), colorList.get(1), colorList.get(2), colorList.get(3)
 										);
 
@@ -422,7 +407,7 @@ public class DBGlobalAppearance implements DBExporter {
 								Matrix matrix = new Matrix(2, 2);
 								matrix.setMatrix(m.subList(0, 4));
 
-								geoTex.setOrientation(new TransformationMatrix2x2Impl(matrix));
+								geoTex.setOrientation(new TransformationMatrix2x2(matrix));
 							}
 						}
 
@@ -432,18 +417,18 @@ public class DBGlobalAppearance implements DBExporter {
 							double[] point = jGeom.getPoint();
 
 							if (point != null && point.length >= 2) {
-								Point referencePoint = new PointImpl();
+								Point referencePoint = new Point();
 
 								List<Double> value = new ArrayList<Double>();
 								value.add(point[0]);
 								value.add(point[1]);
 
-								DirectPosition pos = new DirectPositionImpl();
+								DirectPosition pos = new DirectPosition();
 								pos.setValue(value);
 								pos.setSrsDimension(2);
 								referencePoint.setPos(pos);
 
-								PointProperty pointProperty = new PointPropertyImpl();
+								PointProperty pointProperty = new PointProperty();
 								pointProperty.setPoint(referencePoint);
 
 								geoTex.setReferencePoint(pointProperty);
@@ -452,7 +437,7 @@ public class DBGlobalAppearance implements DBExporter {
 					}
 
 					// add surface data to appearance
-					SurfaceDataProperty surfaceDataProperty = new SurfaceDataPropertyImpl();
+					SurfaceDataProperty surfaceDataProperty = new SurfaceDataProperty();
 					surfaceDataProperty.setSurfaceData(surfaceData);
 					appearance.addSurfaceDataMember(surfaceDataProperty);
 				}
@@ -478,12 +463,12 @@ public class DBGlobalAppearance implements DBExporter {
 					String textureCoordinates = rs.getString("TEXTURE_COORDINATES");
 
 					if (textureCoordinates != null) {
-						TextureAssociation textureAssociation = new TextureAssociationImpl();
+						TextureAssociation textureAssociation = new TextureAssociation();
 						textureAssociation.setUri(geometryTarget);
 
 						String[] rings = textureCoordinates.trim().split("\\s*;\\s*");
 						if (rings != null && rings.length != 0) {
-							TexCoordList texCoordList = new TexCoordListImpl();
+							TexCoordList texCoordList = new TexCoordList();
 
 							for (int i = 0; i < rings.length; i++) {
 								String split = rings[i];
@@ -493,7 +478,7 @@ public class DBGlobalAppearance implements DBExporter {
 
 								List<Double> coordsList = Util.string2double(split, "\\s+");
 								if (coordsList != null && coordsList.size() != 0) {
-									TextureCoordinates texureCoordinates = new TextureCoordinatesImpl();
+									TextureCoordinates texureCoordinates = new TextureCoordinates();
 									texureCoordinates.setValue(coordsList);
 									texureCoordinates.setRing(geometryTarget + '_' + i + '_');
 
@@ -509,7 +494,7 @@ public class DBGlobalAppearance implements DBExporter {
 					}
 
 					else if (worldToTexture != null) {
-						TextureAssociation textureAssociation = new TextureAssociationImpl();
+						TextureAssociation textureAssociation = new TextureAssociation();
 						textureAssociation.setUri(geometryTarget);
 
 						List<Double> m = Util.string2double(worldToTexture, "\\s+");
@@ -517,10 +502,10 @@ public class DBGlobalAppearance implements DBExporter {
 							Matrix matrix = new Matrix(3, 4);
 							matrix.setMatrix(m.subList(0, 12));
 
-							WorldToTexture worldToTextureMatrix = new WorldToTextureImpl();
+							WorldToTexture worldToTextureMatrix = new WorldToTexture();
 							worldToTextureMatrix.setMatrix(matrix);
 
-							TexCoordGen texCoordGen = new TexCoordGenImpl();
+							TexCoordGen texCoordGen = new TexCoordGen();
 							texCoordGen.setWorldToTexture(worldToTextureMatrix);
 
 							textureAssociation.setTextureParameterization(texCoordGen);

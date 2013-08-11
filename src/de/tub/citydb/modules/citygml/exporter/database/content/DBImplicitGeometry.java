@@ -39,11 +39,10 @@ import java.util.List;
 import oracle.spatial.geometry.JGeometry;
 
 import org.citygml4j.geometry.Matrix;
-import org.citygml4j.impl.citygml.core.ImplicitGeometryImpl;
-import org.citygml4j.impl.citygml.core.TransformationMatrix4x4Impl;
-import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
+import org.citygml4j.model.citygml.core.TransformationMatrix4x4;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
@@ -84,7 +83,7 @@ public class DBImplicitGeometry implements DBExporter {
 			rs = psImplicitGeometry.executeQuery();
 
 			// ImplicitGeometry
-			ImplicitGeometry implicit = new ImplicitGeometryImpl();
+			ImplicitGeometry implicit = new ImplicitGeometry();
 			boolean isValid = false;
 
 			if (rs.next()) {
@@ -106,7 +105,7 @@ public class DBImplicitGeometry implements DBExporter {
 
 					String mimeType = rs.getString("MIME_TYPE");
 					if (mimeType != null)
-						implicit.setMimeType(mimeType);
+						implicit.setMimeType(new Code(mimeType));
 				}
 
 				long surfaceGeometryId = rs.getLong("RELATIVE_GEOMETRY_ID");
@@ -121,7 +120,7 @@ public class DBImplicitGeometry implements DBExporter {
 					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
 
 					if (geometry != null) {
-						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
+						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
 
 						if (geometry.getAbstractGeometry() != null)
 							geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -156,7 +155,7 @@ public class DBImplicitGeometry implements DBExporter {
 					Matrix matrix = new Matrix(4, 4);
 					matrix.setMatrix(m.subList(0, 16));
 
-					implicit.setTransformationMatrix(new TransformationMatrix4x4Impl(matrix));
+					implicit.setTransformationMatrix(new TransformationMatrix4x4(matrix));
 				}
 			}
 

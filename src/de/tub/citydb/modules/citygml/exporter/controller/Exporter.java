@@ -195,8 +195,7 @@ public class Exporter implements EventHandler {
 			if (module instanceof CoreModule)
 				continue;
 
-			if (version != CityGMLVersion.v0_4_0 &&
-					!config.getProject().getExporter().getAppearances().isSetExportAppearance() &&
+			if (!config.getProject().getExporter().getAppearances().isSetExportAppearance() &&
 					module instanceof AppearanceModule)
 				continue;
 

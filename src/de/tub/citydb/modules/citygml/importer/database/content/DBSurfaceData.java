@@ -300,8 +300,8 @@ public class DBSurfaceData implements DBImporter {
 			} else
 				psSurfaceData.setNull(8, Types.VARCHAR);
 
-			if (absTex.isSetMimeType())
-				psSurfaceData.setString(9, absTex.getMimeType());
+			if (absTex.isSetMimeType() && absTex.getMimeType().isSetValue())
+				psSurfaceData.setString(9, absTex.getMimeType().getValue());
 			else
 				psSurfaceData.setNull(9, Types.VARCHAR);
 

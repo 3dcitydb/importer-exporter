@@ -33,17 +33,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import org.citygml4j.impl.citygml.building.BuildingFurnitureImpl;
-import org.citygml4j.impl.citygml.building.InteriorFurniturePropertyImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.model.citygml.building.BuildingFurniture;
 import org.citygml4j.model.citygml.building.InteriorFurnitureProperty;
 import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
@@ -97,7 +93,7 @@ public class DBBuildingFurniture implements DBExporter {
 
 			while (rs.next()) {
 				long buildingFurnitureId = rs.getLong("ID");
-				BuildingFurniture buildingFurniture = new BuildingFurnitureImpl();
+				BuildingFurniture buildingFurniture = new BuildingFurniture();
 
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
@@ -106,28 +102,28 @@ public class DBBuildingFurniture implements DBExporter {
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRefImpl();
+					StringOrRef stringOrRef = new StringOrRef();
 					stringOrRef.setValue(description);
 					buildingFurniture.setDescription(stringOrRef);
 				}
 
 				String clazz = rs.getString("CLASS");
 				if (clazz != null) {
-					buildingFurniture.setClazz(clazz);
+					buildingFurniture.setClazz(new Code(clazz));
 				}
 
 				String function = rs.getString("FUNCTION");
 				if (function != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] functionList = p.split(function.trim());
-					buildingFurniture.setFunction(Arrays.asList(functionList));
+					for (String value : p.split(function.trim()))
+						buildingFurniture.addFunction(new Code(value));
 				}
 
 				String usage = rs.getString("USAGE");
 				if (usage != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] usageList = p.split(usage.trim());
-					buildingFurniture.setUsage(Arrays.asList(usageList));
+					for (String value : p.split(usage.trim()))
+						buildingFurniture.addUsage(new Code(value));
 				}
 
 				long lodGeometryId = rs.getLong("LOD4_GEOMETRY_ID");
@@ -135,7 +131,7 @@ public class DBBuildingFurniture implements DBExporter {
 					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodGeometryId);
 
 					if (geometry != null) {
-						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
+						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
 
 						if (geometry.getAbstractGeometry() != null)
 							geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -149,7 +145,7 @@ public class DBBuildingFurniture implements DBExporter {
 				// cityObject stuff
 				cityObjectExporter.read(buildingFurniture, buildingFurnitureId);
 
-				InteriorFurnitureProperty buildingFurnitureProp = new InteriorFurniturePropertyImpl();
+				InteriorFurnitureProperty buildingFurnitureProp = new InteriorFurnitureProperty();
 				buildingFurnitureProp.setObject(buildingFurniture);
 				room.addInteriorFurniture(buildingFurnitureProp);
 			}

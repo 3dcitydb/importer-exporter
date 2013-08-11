@@ -36,7 +36,6 @@ import java.util.List;
 
 import oracle.spatial.geometry.JGeometry;
 
-import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
@@ -456,7 +455,7 @@ public class DBSdoGeometry implements DBImporter {
 				AbstractRing exteriorAbstractRing = polygon.getExterior().getRing();
 				if (exteriorAbstractRing instanceof LinearRing) {
 					LinearRing exteriorLinearRing = (LinearRing)exteriorAbstractRing;
-					List<Double> points = ((LinearRingImpl)exteriorLinearRing).toList3d();
+					List<Double> points = ((LinearRing)exteriorLinearRing).toList3d();
 
 					if (points != null && !points.isEmpty()) {
 						Double x = points.get(0);
@@ -501,7 +500,7 @@ public class DBSdoGeometry implements DBImporter {
 								AbstractRing interiorAbstractRing = abstractRingProperty.getRing();
 								if (interiorAbstractRing instanceof LinearRing) {
 									LinearRing interiorLinearRing = (LinearRing)interiorAbstractRing;
-									List<Double> interiorPoints = ((LinearRingImpl)interiorLinearRing).toList3d();
+									List<Double> interiorPoints = ((LinearRing)interiorLinearRing).toList3d();
 
 									if (interiorPoints != null && !interiorPoints.isEmpty()) {
 										x = interiorPoints.get(0);

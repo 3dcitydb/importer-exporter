@@ -120,7 +120,7 @@ public class DBOpening implements DBImporter {
 		psOpening.setString(5, TypeAttributeValueEnum.fromCityGMLClass(opening.getCityGMLClass()).toString());
 
 		// citygml:address
-		if (opening.getCityGMLClass() == CityGMLClass.DOOR) {
+		if (opening.getCityGMLClass() == CityGMLClass.BUILDING_DOOR) {
 			Door door = (Door)opening;
 			long addressId = 0;
 			

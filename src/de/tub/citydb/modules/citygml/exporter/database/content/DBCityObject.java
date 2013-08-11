@@ -41,15 +41,6 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
 import org.citygml4j.geometry.Point;
-import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
-import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
-import org.citygml4j.impl.citygml.generics.DateAttributeImpl;
-import org.citygml4j.impl.citygml.generics.DoubleAttributeImpl;
-import org.citygml4j.impl.citygml.generics.IntAttributeImpl;
-import org.citygml4j.impl.citygml.generics.StringAttributeImpl;
-import org.citygml4j.impl.citygml.generics.UriAttributeImpl;
-import org.citygml4j.impl.gml.feature.BoundingShapeImpl;
-import org.citygml4j.impl.gml.geometry.primitives.EnvelopeImpl;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -163,7 +154,7 @@ public class DBCityObject implements DBExporter {
 					JGeometry jGeom = JGeometry.load(struct);
 					double[] points = jGeom.getMBR();
 
-					Envelope env = new EnvelopeImpl();
+					Envelope env = new Envelope();
 					Point lower = null;
 					Point upper = null;
 
@@ -180,7 +171,7 @@ public class DBCityObject implements DBExporter {
 					env.setSrsDimension(3);
 					env.setSrsName(gmlSrsName);
 
-					BoundingShape boundedBy = new BoundingShapeImpl();
+					BoundingShape boundedBy = new BoundingShape();
 					boundedBy.setEnvelope(env);
 					cityObject.setBoundedBy(boundedBy);
 				}
@@ -224,8 +215,8 @@ public class DBCityObject implements DBExporter {
 					if (!rs.wasNull() && !externalReferenceSet.contains(externalReferenceId)) {
 						externalReferenceSet.add(externalReferenceId);
 
-						ExternalReference externalReference = new ExternalReferenceImpl();
-						ExternalObject externalObject = new ExternalObjectImpl();
+						ExternalReference externalReference = new ExternalReference();
+						ExternalObject externalObject = new ExternalObject();
 
 						String infoSys = rs.getString("INFOSYS");
 						if (infoSys != null)
@@ -261,35 +252,35 @@ public class DBCityObject implements DBExporter {
 						case 1:
 							String strVal = rs.getString("STRVAL");
 							if (!rs.wasNull()) {
-								genericAttrib = new StringAttributeImpl();
+								genericAttrib = new StringAttribute();
 								((StringAttribute)genericAttrib).setValue(strVal);
 							}
 							break;
 						case 2:
 							Integer intVal = rs.getInt("INTVAL");
 							if (!rs.wasNull()) {
-								genericAttrib = new IntAttributeImpl();
+								genericAttrib = new IntAttribute();
 								((IntAttribute)genericAttrib).setValue(intVal);
 							}
 							break;
 						case 3:
 							Double realVal = rs.getDouble("REALVAL");
 							if (!rs.wasNull()) {							
-								genericAttrib = new DoubleAttributeImpl();
+								genericAttrib = new DoubleAttribute();
 								((DoubleAttribute)genericAttrib).setValue(realVal);
 							}
 							break;
 						case 4:
 							String uriVal = rs.getString("URIVAL");
 							if (!rs.wasNull()) {
-								genericAttrib = new UriAttributeImpl();
+								genericAttrib = new UriAttribute();
 								((UriAttribute)genericAttrib).setValue(uriVal);
 							}
 							break;
 						case 5:
 							Date dateVal = rs.getDate("DATEVAL");
 							if (!rs.wasNull()) {
-								genericAttrib = new DateAttributeImpl();
+								genericAttrib = new DateAttribute();
 								GregorianCalendar gregDate = new GregorianCalendar();
 								gregDate.setTime(dateVal);	
 								((DateAttribute)genericAttrib).setValue(gregDate);
@@ -333,7 +324,7 @@ public class DBCityObject implements DBExporter {
 						value = String.valueOf(boundingBoxFilter.getTileRow()) + ' ' + String.valueOf(boundingBoxFilter.getTileColumn());
 					} 
 
-					StringAttribute genericStringAttrib = new StringAttributeImpl();
+					StringAttribute genericStringAttrib = new StringAttribute();
 					genericStringAttrib.setName("TILE");
 					genericStringAttrib.setValue(value);
 					cityObject.addGenericAttribute(genericStringAttrib);

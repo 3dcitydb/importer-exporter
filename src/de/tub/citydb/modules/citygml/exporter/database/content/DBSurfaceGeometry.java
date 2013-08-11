@@ -40,22 +40,6 @@ import java.util.List;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.impl.gml.geometry.aggregates.MultiSolidImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfaceImpl;
-import org.citygml4j.impl.gml.geometry.complexes.CompositeSolidImpl;
-import org.citygml4j.impl.gml.geometry.complexes.CompositeSurfaceImpl;
-import org.citygml4j.impl.gml.geometry.primitives.DirectPositionListImpl;
-import org.citygml4j.impl.gml.geometry.primitives.ExteriorImpl;
-import org.citygml4j.impl.gml.geometry.primitives.InteriorImpl;
-import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
-import org.citygml4j.impl.gml.geometry.primitives.OrientableSurfaceImpl;
-import org.citygml4j.impl.gml.geometry.primitives.PolygonImpl;
-import org.citygml4j.impl.gml.geometry.primitives.SolidImpl;
-import org.citygml4j.impl.gml.geometry.primitives.SolidPropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.SurfacePropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.TriangleImpl;
-import org.citygml4j.impl.gml.geometry.primitives.TrianglePatchArrayPropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.TriangulatedSurfaceImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -71,6 +55,7 @@ import org.citygml4j.model.gml.geometry.primitives.Interior;
 import org.citygml4j.model.gml.geometry.primitives.LinearRing;
 import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
+import org.citygml4j.model.gml.geometry.primitives.Sign;
 import org.citygml4j.model.gml.geometry.primitives.Solid;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
@@ -262,11 +247,11 @@ public class DBSurfaceGeometry implements DBExporter {
 					if (useXLink) {
 						// check whether we have to embrace the geometry with an orientableSurface
 						if (geomNode.isReverse != isSetOrientableSurface) {
-							OrientableSurface orientableSurface = new OrientableSurfaceImpl();				
-							SurfaceProperty surfaceProperty = new SurfacePropertyImpl();
+							OrientableSurface orientableSurface = new OrientableSurface();				
+							SurfaceProperty surfaceProperty = new SurfaceProperty();
 							surfaceProperty.setHref("#" + geomNode.gmlId); 
 							orientableSurface.setBaseSurface(surfaceProperty);
-							orientableSurface.setOrientation("-");
+							orientableSurface.setOrientation(Sign.MINUS);
 							dbExporterManager.updateGeometryCounter(GMLClass.ORIENTABLE_SURFACE);
 
 							return new DBSurfaceGeometryResult(orientableSurface);
@@ -299,7 +284,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		// Polygon
 		if (surfaceGeometryType == GMLClass.POLYGON) {
 			// try and interpret JGeometry
-			Polygon polygon = new PolygonImpl();
+			Polygon polygon = new Polygon();
 			boolean forceRingIds = false;
 
 			if (geomNode.gmlId != null) {
@@ -341,8 +326,8 @@ public class DBSurfaceGeometry implements DBExporter {
 				}
 
 				if (isExterior) {
-					LinearRing linearRing = new LinearRingImpl();
-					DirectPositionList directPositionList = new DirectPositionListImpl();
+					LinearRing linearRing = new LinearRing();
+					DirectPositionList directPositionList = new DirectPositionList();
 
 					if (forceRingIds)
 						linearRing.setId(polygon.getId() + '_' + ringNo + '_');
@@ -351,15 +336,15 @@ public class DBSurfaceGeometry implements DBExporter {
 					directPositionList.setSrsDimension(3);
 					linearRing.setPosList(directPositionList);
 
-					Exterior exterior = new ExteriorImpl();
+					Exterior exterior = new Exterior();
 					exterior.setRing(linearRing);
 					polygon.setExterior(exterior);
 
 					isExterior = false;
 					dbExporterManager.updateGeometryCounter(GMLClass.LINEAR_RING);
 				} else {
-					LinearRing linearRing = new LinearRingImpl();
-					DirectPositionList directPositionList = new DirectPositionListImpl();
+					LinearRing linearRing = new LinearRing();
+					DirectPositionList directPositionList = new DirectPositionList();
 
 					if (forceRingIds)
 						linearRing.setId(polygon.getId() + '_' + ringNo + '_');
@@ -368,7 +353,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					directPositionList.setSrsDimension(3);
 					linearRing.setPosList(directPositionList);
 
-					Interior interior = new InteriorImpl();
+					Interior interior = new Interior();
 					interior.setRing(linearRing);
 					polygon.addInterior(interior);
 
@@ -381,11 +366,11 @@ public class DBSurfaceGeometry implements DBExporter {
 
 			// check whether we have to embrace the polygon with an orientableSurface
 			if (initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse)) {
-				OrientableSurface orientableSurface = new OrientableSurfaceImpl();				
-				SurfaceProperty surfaceProperty = new SurfacePropertyImpl();
+				OrientableSurface orientableSurface = new OrientableSurface();				
+				SurfaceProperty surfaceProperty = new SurfaceProperty();
 				surfaceProperty.setSurface(polygon);
 				orientableSurface.setBaseSurface(surfaceProperty);
-				orientableSurface.setOrientation("-");
+				orientableSurface.setOrientation(Sign.MINUS);
 				dbExporterManager.updateGeometryCounter(GMLClass.ORIENTABLE_SURFACE);
 
 				return new DBSurfaceGeometryResult(orientableSurface);
@@ -395,7 +380,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 		// compositeSurface
 		else if (surfaceGeometryType == GMLClass.COMPOSITE_SURFACE) {
-			CompositeSurface compositeSurface = new CompositeSurfaceImpl();
+			CompositeSurface compositeSurface = new CompositeSurface();
 
 			if (geomNode.gmlId != null)
 				compositeSurface.setId(geomNode.gmlId);
@@ -405,7 +390,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 				if (geomMember != null) {
 					AbstractGeometry absGeom = geomMember.getAbstractGeometry();
-					SurfaceProperty surfaceMember = new SurfacePropertyImpl();
+					SurfaceProperty surfaceMember = new SurfaceProperty();
 
 					if (absGeom != null) {
 						switch (geomMember.getType()) {
@@ -430,11 +415,11 @@ public class DBSurfaceGeometry implements DBExporter {
 			if (compositeSurface.isSetSurfaceMember()) {
 				// check whether we have to embrace the compositeSurface with an orientableSurface
 				if (initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse)) {
-					OrientableSurface orientableSurface = new OrientableSurfaceImpl();				
-					SurfaceProperty surfaceProperty = new SurfacePropertyImpl();
+					OrientableSurface orientableSurface = new OrientableSurface();				
+					SurfaceProperty surfaceProperty = new SurfaceProperty();
 					surfaceProperty.setSurface(compositeSurface);
 					orientableSurface.setBaseSurface(surfaceProperty);
-					orientableSurface.setOrientation("-");
+					orientableSurface.setOrientation(Sign.MINUS);
 					dbExporterManager.updateGeometryCounter(GMLClass.ORIENTABLE_SURFACE);
 
 					return new DBSurfaceGeometryResult(orientableSurface);
@@ -447,7 +432,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 		// compositeSolid
 		else if (surfaceGeometryType == GMLClass.COMPOSITE_SOLID) {
-			CompositeSolid compositeSolid = new CompositeSolidImpl();
+			CompositeSolid compositeSolid = new CompositeSolid();
 
 			if (geomNode.gmlId != null)
 				compositeSolid.setId(geomNode.gmlId);
@@ -457,7 +442,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 				if (geomMember != null) {
 					AbstractGeometry absGeom = geomMember.getAbstractGeometry();
-					SolidProperty solidMember = new SolidPropertyImpl();
+					SolidProperty solidMember = new SolidProperty();
 
 					if (absGeom != null) {					
 						switch (geomMember.getType()) {
@@ -485,7 +470,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 		// a simple solid
 		else if (surfaceGeometryType == GMLClass.SOLID) {
-			Solid solid = new SolidImpl();
+			Solid solid = new Solid();
 
 			if (geomNode.gmlId != null)
 				solid.setId(geomNode.gmlId);
@@ -497,7 +482,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 				if (geomMember != null) {
 					AbstractGeometry absGeom = geomMember.getAbstractGeometry();
-					SurfaceProperty surfaceProperty = new SurfacePropertyImpl();
+					SurfaceProperty surfaceProperty = new SurfaceProperty();
 
 					if (absGeom != null) {
 						switch (geomMember.getType()) {
@@ -525,7 +510,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 		// multiSolid
 		else if (surfaceGeometryType == GMLClass.MULTI_SOLID) {
-			MultiSolid multiSolid = new MultiSolidImpl();
+			MultiSolid multiSolid = new MultiSolid();
 
 			if (geomNode.gmlId != null)
 				multiSolid.setId(geomNode.gmlId);
@@ -535,7 +520,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 				if (geomMember != null) {
 					AbstractGeometry absGeom = geomMember.getAbstractGeometry();
-					SolidProperty solidMember = new SolidPropertyImpl();
+					SolidProperty solidMember = new SolidProperty();
 
 					if (absGeom != null) {
 						switch (geomMember.getType()) {
@@ -564,7 +549,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 		// multiSurface
 		else if (surfaceGeometryType == GMLClass.MULTI_SURFACE){
-			MultiSurface multiSurface = new MultiSurfaceImpl();
+			MultiSurface multiSurface = new MultiSurface();
 
 			if (geomNode.gmlId != null)
 				multiSurface.setId(geomNode.gmlId);
@@ -574,7 +559,7 @@ public class DBSurfaceGeometry implements DBExporter {
 
 				if (geomMember != null) {
 					AbstractGeometry absGeom = geomMember.getAbstractGeometry();
-					SurfaceProperty surfaceMember = new SurfacePropertyImpl();
+					SurfaceProperty surfaceMember = new SurfaceProperty();
 
 					if (absGeom != null) {
 						switch (geomMember.getType()) {
@@ -604,12 +589,12 @@ public class DBSurfaceGeometry implements DBExporter {
 
 		// triangulatedSurface
 		else if (surfaceGeometryType == GMLClass.TRIANGULATED_SURFACE) {
-			TriangulatedSurface triangulatedSurface = new TriangulatedSurfaceImpl();
+			TriangulatedSurface triangulatedSurface = new TriangulatedSurface();
 
 			if (geomNode.gmlId != null)
 				triangulatedSurface.setId(geomNode.gmlId);
 
-			TrianglePatchArrayProperty triangleArray = new TrianglePatchArrayPropertyImpl();
+			TrianglePatchArrayProperty triangleArray = new TrianglePatchArrayProperty();
 			for (GeometryNode childNode : geomNode.childNodes) {
 				DBSurfaceGeometryResult geomMember = rebuildGeometry(childNode, isSetOrientableSurface, wasXlink);
 
@@ -622,7 +607,7 @@ public class DBSurfaceGeometry implements DBExporter {
 						// we do not have to deal with xlinks here...
 						if (absGeom != null) {
 							// convert polygon to trianglePatch
-							Triangle triangle = new TriangleImpl();
+							Triangle triangle = new Triangle();
 							Polygon polygon = (Polygon)absGeom;
 
 							if (polygon.isSetExterior()) {								
@@ -641,11 +626,11 @@ public class DBSurfaceGeometry implements DBExporter {
 
 				// check whether we have to embrace the compositeSurface with an orientableSurface
 				if (initOrientableSurface || (isSetOrientableSurface && !geomNode.isReverse)) {
-					OrientableSurface orientableSurface = new OrientableSurfaceImpl();				
-					SurfaceProperty surfaceProperty = new SurfacePropertyImpl();
+					OrientableSurface orientableSurface = new OrientableSurface();				
+					SurfaceProperty surfaceProperty = new SurfaceProperty();
 					surfaceProperty.setSurface(triangulatedSurface);
 					orientableSurface.setBaseSurface(surfaceProperty);
-					orientableSurface.setOrientation("-");
+					orientableSurface.setOrientation(Sign.MINUS);
 					dbExporterManager.updateGeometryCounter(GMLClass.ORIENTABLE_SURFACE);
 
 					return new DBSurfaceGeometryResult(orientableSurface);

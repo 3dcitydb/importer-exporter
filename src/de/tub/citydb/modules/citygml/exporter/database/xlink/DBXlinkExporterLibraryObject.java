@@ -146,12 +146,6 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 			LOG.error("Failed to write library object file " + fileName + ": " + ioEx.getMessage());
 			return false;
 		} finally {
-			try {
-				blob.free();
-			} catch (SQLException e) {
-				//
-			}
-			
 			if (in != null) {
 				try {
 					in.close();

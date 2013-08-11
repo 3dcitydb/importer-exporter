@@ -124,21 +124,21 @@ public class DBCityObjectGroup implements DBImporter {
 		}
 
 		// citygml:class
-		if (cityObjectGroup.isSetClazz())
-			psCityObjectGroup.setString(5, cityObjectGroup.getClazz().trim());
+		if (cityObjectGroup.isSetClazz() && cityObjectGroup.getClazz().isSetValue())
+			psCityObjectGroup.setString(5, cityObjectGroup.getClazz().getValue().trim());
 		else
 			psCityObjectGroup.setNull(5, Types.VARCHAR);
 
 		// citygml:function
 		if (cityObjectGroup.isSetFunction()) {
-			psCityObjectGroup.setString(6, Util.collection2string(cityObjectGroup.getFunction(), " "));
+			psCityObjectGroup.setString(6, Util.codeList2string(cityObjectGroup.getFunction(), " "));
 		} else {
 			psCityObjectGroup.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (cityObjectGroup.isSetUsage()) {
-			psCityObjectGroup.setString(7, Util.collection2string(cityObjectGroup.getUsage(), " "));
+			psCityObjectGroup.setString(7, Util.codeList2string(cityObjectGroup.getUsage(), " "));
 		} else {
 			psCityObjectGroup.setNull(7, Types.VARCHAR);
 		}

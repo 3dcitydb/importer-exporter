@@ -38,10 +38,10 @@ import org.citygml4j.model.module.citygml.CityGMLVersion;
 @XmlType(name="CityGMLVersionType")
 @XmlEnum
 public enum CityGMLVersionType {
+	@XmlEnumValue("v2.0.0")
+	v2_0_0("v2.0.0 (OGC Encoding Standard)"),
 	@XmlEnumValue("v1.0.0")
-	v1_0_0("v1.0.0 (OGC Encoding Standard)"),
-	@XmlEnumValue("v0.4.0")
-	v0_4_0("v0.4.0");
+	v1_0_0("v1.0.0");
 
 	private final String value;
 
@@ -56,18 +56,18 @@ public enum CityGMLVersionType {
 	
 	public CityGMLVersion toCityGMLVersion() {
 		switch (this) {
-		case v0_4_0:
-			return CityGMLVersion.v0_4_0;
-		default:
+		case v1_0_0:
 			return CityGMLVersion.v1_0_0;
+		default:
+			return CityGMLVersion.v2_0_0;
 		}
 	}
 
 	public static CityGMLVersionType fromCityGMLVersion(CityGMLVersion version) {
-		if (version == CityGMLVersion.v0_4_0)
-			return v0_4_0;
-		else
+		if (version == CityGMLVersion.v1_0_0)
 			return v1_0_0;
+		else
+			return v2_0_0;
 	}
 	
 	public static CityGMLVersionType fromValue(String value) {

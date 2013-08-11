@@ -108,8 +108,9 @@ public class DBWaterBoundarySurface implements DBImporter {
 		psWaterBoundarySurface.setString(5, TypeAttributeValueEnum.fromCityGMLClass(waterBoundarySurface.getCityGMLClass()).toString());
 
 		// waterLevel
-		if (waterBoundarySurface.getCityGMLClass() == CityGMLClass.WATER_SURFACE)
-			psWaterBoundarySurface.setString(6, ((WaterSurface)waterBoundarySurface).getWaterLevel());
+		if (waterBoundarySurface.getCityGMLClass() == CityGMLClass.WATER_SURFACE
+				&& ((WaterSurface)waterBoundarySurface).isSetWaterLevel())
+			psWaterBoundarySurface.setString(6, ((WaterSurface)waterBoundarySurface).getWaterLevel().getValue());
 		else
 			psWaterBoundarySurface.setNull(6, 0);
 

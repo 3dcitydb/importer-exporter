@@ -123,7 +123,7 @@ public class DBThematicSurface implements DBImporter {
 			psThematicSurface.setLong(6, parentId);
 			psThematicSurface.setNull(7, 0);
 			break;
-		case ROOM:
+		case BUILDING_ROOM:
 			psThematicSurface.setNull(6, 0);
 			psThematicSurface.setLong(7, parentId);
 			break;

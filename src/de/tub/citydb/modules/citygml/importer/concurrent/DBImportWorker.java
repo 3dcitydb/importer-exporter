@@ -48,6 +48,7 @@ import org.citygml4j.model.citygml.transportation.TransportationComplex;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
 import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
 import org.citygml4j.model.citygml.waterbody.WaterBody;
+import org.citygml4j.model.common.base.ModelType;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
@@ -275,7 +276,7 @@ public class DBImportWorker implements Worker<CityGML> {
 					if (dbAppearance != null)
 						id = dbAppearance.insert((Appearance)work, CityGMLClass.CITY_MODEL, 0);
 
-				} else if (CityGMLClass.ABSTRACT_CITY_OBJECT.isInstance(work.getCityGMLClass())) {
+				} else if (work.getModelType() == ModelType.CITYGML) {
 					AbstractCityObject cityObject = (AbstractCityObject)work;
 
 					// gml:id filter

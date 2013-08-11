@@ -137,20 +137,20 @@ public class DBSolitaryVegetatObject implements DBImporter {
 		}
 
 		// citygml:class
-		if (solVegObject.isSetClazz())
-			psSolitVegObject.setString(5, solVegObject.getClazz().trim());
+		if (solVegObject.isSetClazz() && solVegObject.getClazz().isSetValue())
+			psSolitVegObject.setString(5, solVegObject.getClazz().getValue().trim());
 		else
 			psSolitVegObject.setNull(5, Types.VARCHAR);
 
 		// species
-		if (solVegObject.isSetSpecies())
-			psSolitVegObject.setString(6, solVegObject.getSpecies());
+		if (solVegObject.isSetSpecies() && solVegObject.getSpecies().isSetValue())
+			psSolitVegObject.setString(6, solVegObject.getSpecies().getValue());
 		else
 			psSolitVegObject.setNull(6, Types.VARCHAR);
 
 		// citygml:function
 		if (solVegObject.isSetFunction()) {
-			psSolitVegObject.setString(7, Util.collection2string(solVegObject.getFunction(), " "));
+			psSolitVegObject.setString(7, Util.codeList2string(solVegObject.getFunction(), " "));
 		} else {
 			psSolitVegObject.setNull(7, Types.VARCHAR);
 		}

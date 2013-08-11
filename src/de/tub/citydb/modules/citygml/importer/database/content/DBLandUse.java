@@ -115,21 +115,21 @@ public class DBLandUse implements DBImporter {
 		}
 
 		// citygml:class
-		if (landUse.isSetClazz())
-			psLandUse.setString(5, landUse.getClazz().trim());
+		if (landUse.isSetClazz() && landUse.getClazz().isSetValue())
+			psLandUse.setString(5, landUse.getClazz().getValue().trim());
 		else
 			psLandUse.setNull(5, Types.VARCHAR);
 
 		// citygml:function
 		if (landUse.isSetFunction()) {
-			psLandUse.setString(6, Util.collection2string(landUse.getFunction(), " "));
+			psLandUse.setString(6, Util.codeList2string(landUse.getFunction(), " "));
 		} else {
 			psLandUse.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (landUse.isSetUsage()) {
-			psLandUse.setString(7, Util.collection2string(landUse.getUsage(), " "));
+			psLandUse.setString(7, Util.codeList2string(landUse.getUsage(), " "));
 		} else {
 			psLandUse.setNull(7, Types.VARCHAR);
 		}

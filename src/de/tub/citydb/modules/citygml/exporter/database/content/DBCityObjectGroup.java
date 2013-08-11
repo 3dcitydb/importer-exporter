@@ -33,17 +33,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.regex.Pattern;
 
-import org.citygml4j.impl.citygml.cityobjectgroup.CityObjectGroupImpl;
-import org.citygml4j.impl.citygml.cityobjectgroup.CityObjectGroupMemberImpl;
-import org.citygml4j.impl.citygml.cityobjectgroup.CityObjectGroupParentImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupMember;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupParent;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
@@ -93,7 +90,7 @@ public class DBCityObjectGroup implements DBExporter {
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
-		CityObjectGroup cityObjectGroup = new CityObjectGroupImpl();
+		CityObjectGroup cityObjectGroup = new CityObjectGroup();
 		long cityObjectGroupId = splitter.getPrimaryKey();
 
 		// cityObject stuff
@@ -117,30 +114,36 @@ public class DBCityObjectGroup implements DBExporter {
 
 					String description = rs.getString("DESCRIPTION");
 					if (description != null) {
-						StringOrRef stringOrRef = new StringOrRefImpl();
+						StringOrRef stringOrRef = new StringOrRef();
 						stringOrRef.setValue(description);
 						cityObjectGroup.setDescription(stringOrRef);
 					}
 
 					String clazz = rs.getString("CLASS");
 					if (clazz != null) {
-						cityObjectGroup.setClazz(clazz);
+						cityObjectGroup.setClazz(new Code(clazz));
 					}
 
 					String function = rs.getString("FUNCTION");
-					if (function != null) 
-						cityObjectGroup.addFunction(function);
+					if (function != null) {
+						Pattern p = Pattern.compile("\\s+");
+						for (String value : p.split(function.trim()))
+							cityObjectGroup.addFunction(new Code(value));
+					}
 
 					String usage = rs.getString("USAGE");
-					if (usage != null) 
-						cityObjectGroup.addUsage(usage);
+					if (usage != null) {
+						Pattern p = Pattern.compile("\\s+");
+						for (String value : p.split(usage.trim()))
+							cityObjectGroup.addUsage(new Code(value));
+					}
 
 					long lodGeometryId = rs.getLong("SURFACE_GEOMETRY_ID");
 					if (!rs.wasNull() && lodGeometryId != 0) {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodGeometryId);
 
 						if (geometry != null) {
-							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
+							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
 
 							if (geometry.getAbstractGeometry() != null)
 								geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -156,7 +159,7 @@ public class DBCityObjectGroup implements DBExporter {
 						String gmlId = dbExporterManager.getGmlId(parentId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
 						if (gmlId != null) {
-							CityObjectGroupParent parent = new CityObjectGroupParentImpl();
+							CityObjectGroupParent parent = new CityObjectGroupParent();
 							parent.setHref("#" + gmlId);
 							cityObjectGroup.setGroupParent(parent);
 						}
@@ -170,7 +173,7 @@ public class DBCityObjectGroup implements DBExporter {
 					String gmlId = dbExporterManager.getGmlId(groupMemberId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
 					if (gmlId != null) {
-						CityObjectGroupMember groupMember = new CityObjectGroupMemberImpl();
+						CityObjectGroupMember groupMember = new CityObjectGroupMember();
 						groupMember.setHref("#" + gmlId);
 
 						String role = rs.getString("ROLE");

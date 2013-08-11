@@ -39,7 +39,6 @@ import javax.xml.bind.JAXBContext;
 
 import net.opengis.kml._2.ObjectFactory;
 
-import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
@@ -83,7 +82,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 	// instance members needed to do work
 	private final ObjectFactory kmlFactory; 
-	private final CityGMLFactory cityGMLFactory; 
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
@@ -105,11 +103,9 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			DatabaseConnectionPool dbConnectionPool,
 			WorkerPool<SAXEventBuffer> ioWriterPool,
 			ObjectFactory kmlFactory,
-			CityGMLFactory cityGMLFactory,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.kmlFactory = kmlFactory;
-		this.cityGMLFactory = cityGMLFactory;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
@@ -308,7 +304,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				case BUILDING:
 					singleObject = new Building(connection,
 												kmlExporterManager,
-												cityGMLFactory,
 												kmlFactory,
 												elevationServiceHandler,
 												getBalloonTemplateHandler(featureClass),
@@ -322,7 +317,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				case WATER_SURFACE:
 					singleObject = new WaterBody(connection,
 												 kmlExporterManager,
-												 cityGMLFactory,
 												 kmlFactory,
 												 elevationServiceHandler,
 												 getBalloonTemplateHandler(featureClass),
@@ -333,7 +327,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				case LAND_USE:
 					singleObject = new LandUse(connection,
 											   kmlExporterManager,
-											   cityGMLFactory,
 											   kmlFactory,
 											   elevationServiceHandler,
 											   getBalloonTemplateHandler(featureClass),
@@ -344,7 +337,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				case SOLITARY_VEGETATION_OBJECT:
 					singleObject = new SolitaryVegetationObject(connection,
 												   				kmlExporterManager,
-												   				cityGMLFactory,
 												   				kmlFactory,
 												   				elevationServiceHandler,
 																getBalloonTemplateHandler(featureClass),
@@ -355,7 +347,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				case PLANT_COVER:
 					singleObject = new PlantCover(connection,
 												  kmlExporterManager,
-												  cityGMLFactory,
 												  kmlFactory,
 												  elevationServiceHandler,
 												  getBalloonTemplateHandler(featureClass),
@@ -372,7 +363,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				case SQUARE:
 					singleObject = new Transportation(connection,
 												   	  kmlExporterManager,
-												   	  cityGMLFactory,
 												   	  kmlFactory,
 												   	  elevationServiceHandler,
 												   	  getBalloonTemplateHandler(featureClass),
@@ -388,7 +378,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				case RELIEF_FEATURE:
 					singleObject = new Relief(connection,
 											  kmlExporterManager,
-											  cityGMLFactory,
 											  kmlFactory,
 											  elevationServiceHandler,
 											  getBalloonTemplateHandler(featureClass),
@@ -399,7 +388,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				case GENERIC_CITY_OBJECT:
 					singleObject = new GenericCityObject(connection,
 												   	   	 kmlExporterManager,
-												   	   	 cityGMLFactory,
 												   	   	 kmlFactory,
 												   	   	 elevationServiceHandler,
 												   	   	 getBalloonTemplateHandler(featureClass),
@@ -410,7 +398,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				case CITY_FURNITURE:
 					singleObject = new CityFurniture(connection,
 												   	 kmlExporterManager,
-												   	 cityGMLFactory,
 											   	   	 kmlFactory,
 											   	   	 elevationServiceHandler,
 											   	   	 getBalloonTemplateHandler(featureClass),
@@ -421,7 +408,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				case CITY_OBJECT_GROUP:
 					singleObject = new CityObjectGroup(connection,
 												   	   kmlExporterManager,
-												   	   cityGMLFactory,
 												   	   kmlFactory,
 												   	   elevationServiceHandler,
 												   	   getBalloonTemplateHandler(featureClass),

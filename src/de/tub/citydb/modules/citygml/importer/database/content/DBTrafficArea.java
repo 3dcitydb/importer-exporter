@@ -110,21 +110,21 @@ public class DBTrafficArea implements DBImporter {
 
 		// citygml:function
 		if (trafficArea.isSetFunction()) {
-			psTrafficArea.setString(6, Util.collection2string(trafficArea.getFunction(), " "));
+			psTrafficArea.setString(6, Util.codeList2string(trafficArea.getFunction(), " "));
 		} else {
 			psTrafficArea.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (trafficArea.isSetUsage()) {
-			psTrafficArea.setString(7, Util.collection2string(trafficArea.getUsage(), " "));
+			psTrafficArea.setString(7, Util.codeList2string(trafficArea.getUsage(), " "));
 		} else {
 			psTrafficArea.setNull(7, Types.VARCHAR);
 		}
 
 		// surface material
-		if (trafficArea.isSetSurfaceMaterial())
-			psTrafficArea.setString(8, trafficArea.getSurfaceMaterial());
+		if (trafficArea.isSetSurfaceMaterial() && trafficArea.getSurfaceMaterial().isSetValue())
+			psTrafficArea.setString(8, trafficArea.getSurfaceMaterial().getValue());
 		else
 			psTrafficArea.setNull(8, Types.VARCHAR);
 
@@ -238,7 +238,7 @@ public class DBTrafficArea implements DBImporter {
 
 		// citygml:function
 		if (auxiliaryTrafficArea.isSetFunction()) {
-			psTrafficArea.setString(6, Util.collection2string(auxiliaryTrafficArea.getFunction(), " "));
+			psTrafficArea.setString(6, Util.codeList2string(auxiliaryTrafficArea.getFunction(), " "));
 		} else {
 			psTrafficArea.setNull(6, Types.VARCHAR);
 		}
@@ -247,8 +247,8 @@ public class DBTrafficArea implements DBImporter {
 		psTrafficArea.setNull(7, Types.VARCHAR);
 
 		// surface material
-		if (auxiliaryTrafficArea.isSetSurfaceMaterial())
-			psTrafficArea.setString(8, auxiliaryTrafficArea.getSurfaceMaterial());
+		if (auxiliaryTrafficArea.isSetSurfaceMaterial() && auxiliaryTrafficArea.getSurfaceMaterial().isSetValue())
+			psTrafficArea.setString(8, auxiliaryTrafficArea.getSurfaceMaterial().getValue());
 		else
 			psTrafficArea.setNull(8, Types.VARCHAR);
 

@@ -109,21 +109,21 @@ public class DBBuildingInstallation implements DBImporter {
 		}
 
 		// citygml:class
-		if (buildingInstallation.isSetClazz())
-			psBuildingInstallation.setString(6, buildingInstallation.getClazz().trim());
+		if (buildingInstallation.isSetClazz() && buildingInstallation.getClazz().isSetValue())
+			psBuildingInstallation.setString(6, buildingInstallation.getClazz().getValue().trim());
 		else
 			psBuildingInstallation.setNull(6, Types.VARCHAR);
 
 		// citygml:function
 		if (buildingInstallation.isSetFunction()) {
-			psBuildingInstallation.setString(7, Util.collection2string(buildingInstallation.getFunction(), " "));
+			psBuildingInstallation.setString(7, Util.codeList2string(buildingInstallation.getFunction(), " "));
 		} else {
 			psBuildingInstallation.setNull(7, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (buildingInstallation.isSetUsage()) {
-			psBuildingInstallation.setString(8, Util.collection2string(buildingInstallation.getUsage(), " "));
+			psBuildingInstallation.setString(8, Util.codeList2string(buildingInstallation.getUsage(), " "));
 		} else {
 			psBuildingInstallation.setNull(8, Types.VARCHAR);
 		}
@@ -135,7 +135,7 @@ public class DBBuildingInstallation implements DBImporter {
 			psBuildingInstallation.setLong(9, parentId);
 			psBuildingInstallation.setNull(10, 0);
 			break;
-		case ROOM:
+		case BUILDING_ROOM:
 			psBuildingInstallation.setNull(9, 0);
 			psBuildingInstallation.setLong(10, parentId);
 			break;
@@ -250,22 +250,22 @@ public class DBBuildingInstallation implements DBImporter {
 		}
 
 		// citygml:class
-		if (intBuildingInstallation.isSetClazz()) {
-			psBuildingInstallation.setString(6, intBuildingInstallation.getClazz().trim());
+		if (intBuildingInstallation.isSetClazz() && intBuildingInstallation.getClazz().isSetValue()) {
+			psBuildingInstallation.setString(6, intBuildingInstallation.getClazz().getValue().trim());
 		} else {
 			psBuildingInstallation.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:function
 		if (intBuildingInstallation.isSetFunction()) {
-			psBuildingInstallation.setString(7, Util.collection2string(intBuildingInstallation.getFunction(), " "));
+			psBuildingInstallation.setString(7, Util.codeList2string(intBuildingInstallation.getFunction(), " "));
 		} else {
 			psBuildingInstallation.setNull(7, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (intBuildingInstallation.isSetUsage()) {
-			psBuildingInstallation.setString(8, Util.collection2string(intBuildingInstallation.getUsage(), " "));
+			psBuildingInstallation.setString(8, Util.codeList2string(intBuildingInstallation.getUsage(), " "));
 		} else {
 			psBuildingInstallation.setNull(8, Types.VARCHAR);
 		}
@@ -277,7 +277,7 @@ public class DBBuildingInstallation implements DBImporter {
 			psBuildingInstallation.setLong(9, parentId);
 			psBuildingInstallation.setNull(10, 0);
 			break;
-		case ROOM:
+		case BUILDING_ROOM:
 			psBuildingInstallation.setNull(9, 0);
 			psBuildingInstallation.setLong(10, parentId);
 			break;

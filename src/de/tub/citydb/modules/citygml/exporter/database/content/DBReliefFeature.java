@@ -38,18 +38,6 @@ import java.util.List;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
-import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
-import org.citygml4j.impl.citygml.relief.BreaklineReliefImpl;
-import org.citygml4j.impl.citygml.relief.MassPointReliefImpl;
-import org.citygml4j.impl.citygml.relief.ReliefComponentPropertyImpl;
-import org.citygml4j.impl.citygml.relief.ReliefFeatureImpl;
-import org.citygml4j.impl.citygml.relief.TINReliefImpl;
-import org.citygml4j.impl.citygml.relief.TinPropertyImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.primitives.TinImpl;
-import org.citygml4j.impl.gml.geometry.primitives.TrianglePatchArrayPropertyImpl;
-import org.citygml4j.impl.gml.measures.LengthImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -158,7 +146,7 @@ public class DBReliefFeature implements DBExporter {
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
-		ReliefFeature reliefFeature = new ReliefFeatureImpl();
+		ReliefFeature reliefFeature = new ReliefFeature();
 		AbstractReliefComponent reliefComponent = null;
 		long reliefFeatureId = splitter.getPrimaryKey();
 
@@ -187,7 +175,7 @@ public class DBReliefFeature implements DBExporter {
 
 					String description = rs.getString("RF_DESCRIPTION");
 					if (description != null) {
-						StringOrRef stringOrRef = new StringOrRefImpl();
+						StringOrRef stringOrRef = new StringOrRef();
 						stringOrRef.setValue(description);
 						reliefFeature.setDescription(stringOrRef);
 					}
@@ -212,11 +200,11 @@ public class DBReliefFeature implements DBExporter {
 				long breaklineReliedId = rs.getLong("BR_ID");
 
 				if (tinReliefId != 0)
-					reliefComponent = new TINReliefImpl();
+					reliefComponent = new TINRelief();
 				else if (massPointReliefId != 0)
-					reliefComponent = new MassPointReliefImpl();
+					reliefComponent = new MassPointRelief();
 				else if (breaklineReliedId != 0)
-					reliefComponent = new BreaklineReliefImpl();
+					reliefComponent = new BreaklineRelief();
 
 				if (reliefComponent == null)
 					continue;
@@ -228,7 +216,7 @@ public class DBReliefFeature implements DBExporter {
 					// process xlink
 					if (dbExporterManager.lookupAndPutGmlId(reliefComponent.getId(), reliefComponentId, CityGMLClass.ABSTRACT_RELIEF_COMPONENT)) {
 						if (useXLink) {
-							ReliefComponentProperty property = new ReliefComponentPropertyImpl();
+							ReliefComponentProperty property = new ReliefComponentProperty();
 							property.setHref("#" + reliefComponent.getId());
 
 							reliefFeature.addReliefComponent(property);
@@ -239,10 +227,10 @@ public class DBReliefFeature implements DBExporter {
 								newGmlId += '-' + reliefComponent.getId();
 
 							if (keepOldGmlId) {
-								ExternalReference externalReference = new ExternalReferenceImpl();
+								ExternalReference externalReference = new ExternalReference();
 								externalReference.setInformationSystem(infoSys);
 
-								ExternalObject externalObject = new ExternalObjectImpl();
+								ExternalObject externalObject = new ExternalObject();
 								externalObject.setName(reliefComponent.getId());
 
 								externalReference.setExternalObject(externalObject);
@@ -262,7 +250,7 @@ public class DBReliefFeature implements DBExporter {
 
 				String description = rs.getString("RC_DESCRIPTION");
 				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRefImpl();
+					StringOrRef stringOrRef = new StringOrRef();
 					stringOrRef.setValue(description);
 					reliefComponent.setDescription(stringOrRef);
 				}
@@ -320,7 +308,7 @@ public class DBReliefFeature implements DBExporter {
 						isTin = true;
 
 					// get triangle patches
-					TinProperty tinProperty = new TinPropertyImpl();
+					TinProperty tinProperty = new TinProperty();
 					TriangulatedSurface triangulatedSurface = null;
 					if (surfaceGeometryId != 0) {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
@@ -341,11 +329,11 @@ public class DBReliefFeature implements DBExporter {
 					if (isTin) {
 						if (triangulatedSurface != null) {
 							TrianglePatchArrayProperty patches = triangulatedSurface.getTrianglePatches();
-							triangulatedSurface = new TinImpl();
+							triangulatedSurface = new Tin();
 							triangulatedSurface.setTrianglePatches(patches);
 						} else {
-							triangulatedSurface = new TinImpl();
-							triangulatedSurface.setTrianglePatches(new TrianglePatchArrayPropertyImpl());
+							triangulatedSurface = new Tin();
+							triangulatedSurface.setTrianglePatches(new TrianglePatchArrayProperty());
 						}
 					}
 
@@ -357,7 +345,7 @@ public class DBReliefFeature implements DBExporter {
 						Tin tin = (Tin)triangulatedSurface;
 
 						if (maxLength != null) {
-							Length length = new LengthImpl();
+							Length length = new Length();
 							length.setValue(maxLength);
 							length.setUom("urn:ogc:def:uom:UCUM::m");
 							tin.setMaxLength(length);
@@ -435,7 +423,7 @@ public class DBReliefFeature implements DBExporter {
 				}
 
 				// add reliefComponent to reliefFeature
-				ReliefComponentProperty property = new ReliefComponentPropertyImpl();
+				ReliefComponentProperty property = new ReliefComponentProperty();
 				property.setObject(reliefComponent);
 				reliefFeature.addReliefComponent(property);
 			}

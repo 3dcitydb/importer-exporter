@@ -167,22 +167,22 @@ public class DBBuilding implements DBImporter {
 		}
 
 		// citygml:class
-		if (building.isSetClazz()) {
-			psBuilding.setString(5, building.getClazz().trim());
+		if (building.isSetClazz() && building.getClazz().isSetValue()) {
+			psBuilding.setString(5, building.getClazz().getValue().trim());
 		} else {
 			psBuilding.setNull(5, Types.VARCHAR);
 		}
 
 		// citygml:function
 		if (building.isSetFunction()) {
-			psBuilding.setString(6, Util.collection2string(building.getFunction(), " "));
+			psBuilding.setString(6, Util.codeList2string(building.getFunction(), " "));
 		} else {
 			psBuilding.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (building.isSetUsage()) {
-			psBuilding.setString(7, Util.collection2string(building.getUsage(), " "));
+			psBuilding.setString(7, Util.codeList2string(building.getUsage(), " "));
 		} else {
 			psBuilding.setNull(7, Types.VARCHAR);
 		}
@@ -202,8 +202,8 @@ public class DBBuilding implements DBImporter {
 		}
 
 		// citygml:roofType
-		if (building.isSetRoofType()) {
-			psBuilding.setString(10, building.getRoofType());
+		if (building.isSetRoofType() && building.getRoofType().isSetValue()) {
+			psBuilding.setString(10, building.getRoofType().getValue());
 		} else {
 			psBuilding.setNull(10, Types.VARCHAR);
 		}
@@ -650,7 +650,7 @@ public class DBBuilding implements DBImporter {
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.ROOM, 
+								CityGMLClass.BUILDING_ROOM, 
 								gmlId));
 						
 						LOG.error(msg.toString());

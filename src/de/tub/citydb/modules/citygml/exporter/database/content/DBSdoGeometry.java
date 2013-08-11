@@ -35,29 +35,6 @@ import java.util.List;
 
 import oracle.spatial.geometry.JGeometry;
 
-import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiCurveImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiCurvePropertyImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiPointImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiPointPropertyImpl;
-import org.citygml4j.impl.gml.geometry.complexes.GeometricComplexImpl;
-import org.citygml4j.impl.gml.geometry.complexes.GeometricComplexPropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.ControlPointImpl;
-import org.citygml4j.impl.gml.geometry.primitives.CurvePropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.DirectPositionImpl;
-import org.citygml4j.impl.gml.geometry.primitives.DirectPositionListImpl;
-import org.citygml4j.impl.gml.geometry.primitives.ExteriorImpl;
-import org.citygml4j.impl.gml.geometry.primitives.GeometricPositionGroupImpl;
-import org.citygml4j.impl.gml.geometry.primitives.GeometricPrimitivePropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.InteriorImpl;
-import org.citygml4j.impl.gml.geometry.primitives.LineStringImpl;
-import org.citygml4j.impl.gml.geometry.primitives.LineStringSegmentArrayPropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.LineStringSegmentImpl;
-import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
-import org.citygml4j.impl.gml.geometry.primitives.PointImpl;
-import org.citygml4j.impl.gml.geometry.primitives.PointPropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.PolygonImpl;
-import org.citygml4j.impl.gml.geometry.primitives.PolygonPropertyImpl;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
@@ -100,13 +77,13 @@ public class DBSdoGeometry implements DBExporter {
 			double[] pointCoord = geom.getPoint();
 
 			if (pointCoord != null && pointCoord.length >= dimensions) {
-				point = new PointImpl();
+				point = new Point();
 
 				List<Double> value = new ArrayList<Double>();
 				for (int i = 0; i < dimensions; i++)
 					value.add(pointCoord[i]);
 
-				DirectPosition pos = new DirectPositionImpl();
+				DirectPosition pos = new DirectPosition();
 				pos.setValue(value);
 				pos.setSrsDimension(dimensions);
 				if (setSrsName)
@@ -123,7 +100,7 @@ public class DBSdoGeometry implements DBExporter {
 
 		Point point = getPoint(geom, setSrsName);
 		if (point != null) {
-			pointProperty = new PointPropertyImpl();
+			pointProperty = new PointProperty();
 			pointProperty.setPoint(point);
 		}
 
@@ -134,28 +111,28 @@ public class DBSdoGeometry implements DBExporter {
 		MultiPoint multiPoint = null;
 
 		if (geom != null) {
-			multiPoint = new MultiPointImpl();
+			multiPoint = new MultiPoint();
 			int dimensions = geom.getDimensions();
 
 			if (geom.getType() == JGeometry.GTYPE_MULTIPOINT) {								
 				double[] ordinates = geom.getOrdinatesArray();
 
 				for (int i = 0; i < ordinates.length; i += dimensions) {
-					Point point = new PointImpl();
+					Point point = new Point();
 
 					List<Double> value = new ArrayList<Double>();
 
 					for (int j = 0; j < dimensions; j++)
 						value.add(ordinates[i + j]);
 
-					DirectPosition pos = new DirectPositionImpl();
+					DirectPosition pos = new DirectPosition();
 					pos.setValue(value);
 					pos.setSrsDimension(dimensions);
 					if (setSrsName)
 						pos.setSrsName(gmlSrsName);
 					point.setPos(pos);
 
-					PointProperty pointProperty = new PointPropertyImpl();
+					PointProperty pointProperty = new PointProperty();
 					pointProperty.setPoint(point);
 
 					multiPoint.addPointMember(pointProperty);
@@ -165,7 +142,7 @@ public class DBSdoGeometry implements DBExporter {
 			else if (geom.getType() == JGeometry.GTYPE_POINT) {
 				Point point = getPoint(geom, setSrsName);
 				if (point != null) {
-					PointProperty pointProperty = new PointPropertyImpl();
+					PointProperty pointProperty = new PointProperty();
 					pointProperty.setPoint(point);
 					multiPoint.addPointMember(pointProperty);
 				}
@@ -183,7 +160,7 @@ public class DBSdoGeometry implements DBExporter {
 
 		MultiPoint multiPoint = getMultiPoint(geom, setSrsName);
 		if (multiPoint != null) {
-			multiPointProperty = new MultiPointPropertyImpl();
+			multiPointProperty = new MultiPointProperty();
 			multiPointProperty.setMultiPoint(multiPoint);
 		}
 
@@ -194,13 +171,13 @@ public class DBSdoGeometry implements DBExporter {
 		ControlPoint controlPoint = null;
 
 		if (geom != null) {
-			controlPoint = new ControlPointImpl();
+			controlPoint = new ControlPoint();
 
 			if (geom.getType() == JGeometry.GTYPE_MULTIPOINT) {	
 				MultiPoint multiPoint = getMultiPoint(geom, setSrsName);
 				if (multiPoint != null) {
 					for (PointProperty pointProperty : multiPoint.getPointMember()) {
-						GeometricPositionGroup group = new GeometricPositionGroupImpl(pointProperty.getPoint().getPos());
+						GeometricPositionGroup group = new GeometricPositionGroup(pointProperty.getPoint().getPos());
 						controlPoint.addGeometricPositionGroup(group);
 					}
 				}
@@ -209,7 +186,7 @@ public class DBSdoGeometry implements DBExporter {
 			else if (geom.getType() == JGeometry.GTYPE_POINT) {
 				Point point = getPoint(geom, setSrsName);
 				if (point != null) {
-					GeometricPositionGroup group = new GeometricPositionGroupImpl(point.getPos());
+					GeometricPositionGroup group = new GeometricPositionGroup(point.getPos());
 					controlPoint.addGeometricPositionGroup(group);
 				}
 			}
@@ -232,8 +209,8 @@ public class DBSdoGeometry implements DBExporter {
 			for (int i = 0; i < ordinatesArray.length; i++)
 				value.add(ordinatesArray[i]);
 
-			lineString = new LineStringImpl();
-			DirectPositionList directPositionList = new DirectPositionListImpl();
+			lineString = new LineString();
+			DirectPositionList directPositionList = new DirectPositionList();
 
 			directPositionList.setValue(value);
 			directPositionList.setSrsDimension(dimensions);
@@ -250,7 +227,7 @@ public class DBSdoGeometry implements DBExporter {
 
 		LineString lineString = getLineString(geom, setSrsName);
 		if (lineString != null) {
-			curveProperty = new CurvePropertyImpl();
+			curveProperty = new CurveProperty();
 			curveProperty.setCurve(lineString);
 		}
 
@@ -261,7 +238,7 @@ public class DBSdoGeometry implements DBExporter {
 		MultiCurve multiCurve = null;
 
 		if (geom != null) {
-			multiCurve = new MultiCurveImpl();
+			multiCurve = new MultiCurve();
 			int dimensions = geom.getDimensions();
 
 			if (geom.getType() == JGeometry.GTYPE_MULTICURVE) {
@@ -284,8 +261,8 @@ public class DBSdoGeometry implements DBExporter {
 					for ( ; curveElem < curveLimit; curveElem++)
 						values.add(ordinatesArray[curveElem]);
 
-					LineString lineString = new LineStringImpl();
-					DirectPositionList directPositionList = new DirectPositionListImpl();
+					LineString lineString = new LineString();
+					DirectPositionList directPositionList = new DirectPositionList();
 
 					directPositionList.setValue(values);
 					directPositionList.setSrsDimension(dimensions);
@@ -293,7 +270,7 @@ public class DBSdoGeometry implements DBExporter {
 						directPositionList.setSrsName(gmlSrsName);
 					lineString.setPosList(directPositionList);
 
-					CurveProperty curveProperty = new CurvePropertyImpl();
+					CurveProperty curveProperty = new CurveProperty();
 					curveProperty.setCurve(lineString);					
 					multiCurve.addCurveMember(curveProperty);
 
@@ -304,7 +281,7 @@ public class DBSdoGeometry implements DBExporter {
 			else if (geom.getType() == JGeometry.GTYPE_CURVE) {
 				LineString lineString = getLineString(geom, setSrsName);
 				if (lineString != null) {
-					CurveProperty curveProperty = new CurvePropertyImpl();
+					CurveProperty curveProperty = new CurveProperty();
 					curveProperty.setCurve(lineString);				
 					multiCurve.addCurveMember(curveProperty);
 				}			
@@ -322,7 +299,7 @@ public class DBSdoGeometry implements DBExporter {
 
 		MultiCurve multiCurve = getMultiCurve(geom, setSrsName);
 		if (multiCurve != null) {
-			multiCurveProperty = new MultiCurvePropertyImpl();
+			multiCurveProperty = new MultiCurveProperty();
 			multiCurveProperty.setMultiCurve(multiCurve);
 		}
 
@@ -339,10 +316,10 @@ public class DBSdoGeometry implements DBExporter {
 				MultiCurve multiCurve = getMultiCurve(geom, setSrsName);
 				if (multiCurve != null) {
 					for (CurveProperty curveProperty : multiCurve.getCurveMember()) {
-						LineStringSegment lineStringSegment = new LineStringSegmentImpl();
+						LineStringSegment lineStringSegment = new LineStringSegment();
 						lineStringSegment.setPosList(((LineString)curveProperty.getCurve()).getPosList());
 
-						LineStringSegmentArrayProperty arrayProperty = new LineStringSegmentArrayPropertyImpl();
+						LineStringSegmentArrayProperty arrayProperty = new LineStringSegmentArrayProperty();
 						arrayProperty.addLineStringSegment(lineStringSegment);
 						arrayPropertyList.add(arrayProperty);
 					}
@@ -352,10 +329,10 @@ public class DBSdoGeometry implements DBExporter {
 			else if (geom.getType() == JGeometry.GTYPE_CURVE) {
 				LineString lineString = getLineString(geom, setSrsName);
 				if (lineString != null) {
-					LineStringSegment lineStringSegment = new LineStringSegmentImpl();
+					LineStringSegment lineStringSegment = new LineStringSegment();
 					lineStringSegment.setPosList(lineString.getPosList());
 
-					LineStringSegmentArrayProperty arrayProperty = new LineStringSegmentArrayPropertyImpl();
+					LineStringSegmentArrayProperty arrayProperty = new LineStringSegmentArrayProperty();
 					arrayProperty.addLineStringSegment(lineStringSegment);
 					arrayPropertyList.add(arrayProperty);
 				}			
@@ -372,13 +349,13 @@ public class DBSdoGeometry implements DBExporter {
 		GeometricComplex complex = null;
 
 		if (geom != null) {
-			complex = new GeometricComplexImpl();
+			complex = new GeometricComplex();
 
 			if (geom.getType() == JGeometry.GTYPE_MULTICURVE) {
 				MultiCurve multiCurve = getMultiCurve(geom, setSrsName);
 				if (multiCurve != null) {
 					for (CurveProperty curveProperty : multiCurve.getCurveMember()) {
-						GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitivePropertyImpl();
+						GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitiveProperty();
 						primitiveProperty.setGeometricPrimitive((LineString)curveProperty.getCurve());					
 						complex.addElement(primitiveProperty);
 					}
@@ -388,7 +365,7 @@ public class DBSdoGeometry implements DBExporter {
 			else if (geom.getType() == JGeometry.GTYPE_CURVE) {
 				LineString lineString = getLineString(geom, setSrsName);
 				if (lineString != null) {
-					GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitivePropertyImpl();
+					GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitiveProperty();
 					primitiveProperty.setGeometricPrimitive(lineString);					
 					complex.addElement(primitiveProperty);		
 				}			
@@ -398,7 +375,7 @@ public class DBSdoGeometry implements DBExporter {
 				MultiPoint multiPoint = getMultiPoint(geom, setSrsName);
 				if (multiPoint != null) {
 					for (PointProperty pointProperty : multiPoint.getPointMember()) {
-						GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitivePropertyImpl();
+						GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitiveProperty();
 						primitiveProperty.setGeometricPrimitive(pointProperty.getPoint());					
 						complex.addElement(primitiveProperty);	
 					}
@@ -408,7 +385,7 @@ public class DBSdoGeometry implements DBExporter {
 			else if (geom.getType() == JGeometry.GTYPE_POINT) {
 				Point point = getPoint(geom, setSrsName);
 				if (point != null) {
-					GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitivePropertyImpl();
+					GeometricPrimitiveProperty primitiveProperty = new GeometricPrimitiveProperty();
 					primitiveProperty.setGeometricPrimitive(point);					
 					complex.addElement(primitiveProperty);	
 				}
@@ -426,7 +403,7 @@ public class DBSdoGeometry implements DBExporter {
 		
 		GeometricComplex complex = getPointOrCurveComplex(geom, setSrsName);
 		if (complex != null) {
-			complexProperty = new GeometricComplexPropertyImpl();
+			complexProperty = new GeometricComplexProperty();
 			complexProperty.setGeometricComplex(complex);
 		}
 
@@ -455,7 +432,7 @@ public class DBSdoGeometry implements DBExporter {
 		
 		AbstractGeometry geometry = getPointOrCurveGeometry(geom, setSrsName);
 		if (geometry != null) {
-			geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
+			geometryProperty = new GeometryProperty<AbstractGeometry>();
 			geometryProperty.setGeometry(geometry);
 		}
 		
@@ -466,7 +443,7 @@ public class DBSdoGeometry implements DBExporter {
 		Polygon polygon = null;
 
 		if (geom != null && geom.getType() == JGeometry.GTYPE_POLYGON) {
-			polygon = new PolygonImpl();
+			polygon = new Polygon();
 			int dimensions = geom.getDimensions();
 
 			int[] elemInfoArray = geom.getElemInfo();
@@ -490,8 +467,8 @@ public class DBSdoGeometry implements DBExporter {
 					values.add(ordinatesArray[ringElem]);
 
 				if (isExterior) {
-					LinearRing linearRing = new LinearRingImpl();
-					DirectPositionList directPositionList = new DirectPositionListImpl();
+					LinearRing linearRing = new LinearRing();
+					DirectPositionList directPositionList = new DirectPositionList();
 
 					directPositionList.setValue(values);
 					directPositionList.setSrsDimension(dimensions);
@@ -499,14 +476,14 @@ public class DBSdoGeometry implements DBExporter {
 						directPositionList.setSrsName(gmlSrsName);
 					linearRing.setPosList(directPositionList);				
 
-					Exterior exterior = new ExteriorImpl();
+					Exterior exterior = new Exterior();
 					exterior.setRing(linearRing);
 					polygon.setExterior(exterior);
 
 					isExterior = false;
 				} else {
-					LinearRing linearRing = new LinearRingImpl();
-					DirectPositionList directPositionList = new DirectPositionListImpl();
+					LinearRing linearRing = new LinearRing();
+					DirectPositionList directPositionList = new DirectPositionList();
 
 					directPositionList.setValue(values);
 					directPositionList.setSrsDimension(dimensions);
@@ -514,7 +491,7 @@ public class DBSdoGeometry implements DBExporter {
 						directPositionList.setSrsName(gmlSrsName);
 					linearRing.setPosList(directPositionList);
 
-					Interior interior = new InteriorImpl();
+					Interior interior = new Interior();
 					interior.setRing(linearRing);
 					polygon.addInterior(interior);
 				}
@@ -529,7 +506,7 @@ public class DBSdoGeometry implements DBExporter {
 
 		Polygon polygon = getPolygon(geom, setSrsName);
 		if (polygon != null && (polygon.isSetExterior() || polygon.isSetInterior())) {
-			polygonProperty = new PolygonPropertyImpl();
+			polygonProperty = new PolygonProperty();
 			polygonProperty.setPolygon(polygon);
 		}
 

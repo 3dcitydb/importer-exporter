@@ -33,18 +33,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import org.citygml4j.impl.citygml.building.InteriorRoomPropertyImpl;
-import org.citygml4j.impl.citygml.building.RoomImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfacePropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.SolidPropertyImpl;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.InteriorRoomProperty;
 import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
@@ -90,7 +85,7 @@ public class DBRoom implements DBExporter {
 
 			while (rs.next()) {
 				long roomId = rs.getLong("ID");
-				Room room = new RoomImpl();
+				Room room = new Room();
 
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
@@ -99,28 +94,28 @@ public class DBRoom implements DBExporter {
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRefImpl();
+					StringOrRef stringOrRef = new StringOrRef();
 					stringOrRef.setValue(description);
 					room.setDescription(stringOrRef);
 				}
 
 				String clazz = rs.getString("CLASS");
 				if (clazz != null) {
-					room.setClazz(clazz);
+					room.setClazz(new Code(clazz));
 				}
 
 				String function = rs.getString("FUNCTION");
 				if (function != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] functionList = p.split(function.trim());
-					room.setFunction(Arrays.asList(functionList));
+					for (String value : p.split(function.trim()))
+						room.addFunction(new Code(value));
 				}
 
 				String usage = rs.getString("USAGE");
 				if (usage != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] usageList = p.split(usage.trim());
-					room.setUsage(Arrays.asList(usageList));
+					for (String value : p.split(usage.trim()))
+						room.addUsage(new Code(value));
 				}
 
 				// boundarySurface
@@ -136,7 +131,7 @@ public class DBRoom implements DBExporter {
 						switch (geometry.getType()) {
 						case COMPOSITE_SOLID:
 						case SOLID:
-							SolidProperty solidProperty = new SolidPropertyImpl();
+							SolidProperty solidProperty = new SolidProperty();
 
 							if (geometry.getAbstractGeometry() != null)
 								solidProperty.setSolid((AbstractSolid)geometry.getAbstractGeometry());
@@ -146,7 +141,7 @@ public class DBRoom implements DBExporter {
 							room.setLod4Solid(solidProperty);
 							break;
 						case MULTI_SURFACE:
-							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
+							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
 
 							if (geometry.getAbstractGeometry() != null)
 								multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
@@ -168,7 +163,7 @@ public class DBRoom implements DBExporter {
 				// buildingFurniture
 				buildingFurnitureExporter.read(room, roomId);
 
-				InteriorRoomProperty roomProperty = new InteriorRoomPropertyImpl();
+				InteriorRoomProperty roomProperty = new InteriorRoomProperty();
 				roomProperty.setObject(room);
 				building.addInteriorRoom(roomProperty);
 			}

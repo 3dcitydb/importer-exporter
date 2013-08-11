@@ -29,8 +29,8 @@
  */
 package de.tub.citydb.modules.citygml.importer.concurrent;
 
-import org.citygml4j.builder.jaxb.xml.io.reader.CityGMLChunk;
 import org.citygml4j.model.citygml.CityGML;
+import org.citygml4j.xml.io.reader.XMLChunk;
 
 import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerFactory;
@@ -38,7 +38,7 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 
-public class FeatureReaderWorkerFactory implements WorkerFactory<CityGMLChunk> {
+public class FeatureReaderWorkerFactory implements WorkerFactory<XMLChunk> {
 	private final WorkerPool<CityGML> dbWorkerPool;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -52,7 +52,7 @@ public class FeatureReaderWorkerFactory implements WorkerFactory<CityGMLChunk> {
 	}
 
 	@Override
-	public Worker<CityGMLChunk> createWorker() {
+	public Worker<XMLChunk> createWorker() {
 		return new FeatureReaderWorker(dbWorkerPool, config, eventDispatcher);
 	}
 }

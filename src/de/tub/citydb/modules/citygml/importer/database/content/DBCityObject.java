@@ -40,8 +40,6 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
-import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AppearanceProperty;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
@@ -162,10 +160,10 @@ public class DBCityObject implements DBImporter {
 				dbImporterManager.putGmlId(cityObject.getId(), cityObjectId, -1, false, gmlId, cityObject.getCityGMLClass());
 
 				if (rememberGmlId) {	
-					ExternalReference externalReference = new ExternalReferenceImpl();
+					ExternalReference externalReference = new ExternalReference();
 					externalReference.setInformationSystem(importFileName);
 
-					ExternalObject externalObject = new ExternalObjectImpl();
+					ExternalObject externalObject = new ExternalObject();
 					externalObject.setName(cityObject.getId());
 
 					externalReference.setExternalObject(externalObject);

@@ -36,11 +36,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.citygml4j.geometry.Matrix;
-import org.citygml4j.impl.citygml.appearance.TexCoordGenImpl;
-import org.citygml4j.impl.citygml.appearance.TexCoordListImpl;
-import org.citygml4j.impl.citygml.appearance.TextureAssociationImpl;
-import org.citygml4j.impl.citygml.appearance.TextureCoordinatesImpl;
-import org.citygml4j.impl.citygml.appearance.WorldToTextureImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.GeoreferencedTexture;
@@ -104,12 +99,12 @@ public class DBTextureParam implements DBExporter {
 					ParameterizedTexture paraTex = (ParameterizedTexture)surfaceData;
 
 					if (textureCoordinates != null) {
-						TextureAssociation textureAssociation = new TextureAssociationImpl();
+						TextureAssociation textureAssociation = new TextureAssociation();
 						textureAssociation.setUri(target);
 
 						String[] rings = textureCoordinates.trim().split("\\s*;\\s*");
 						if (rings != null && rings.length != 0) {
-							TexCoordList texCoordList = new TexCoordListImpl();
+							TexCoordList texCoordList = new TexCoordList();
 
 							for (int i = 0; i < rings.length; i++) {
 								String splitter = rings[i];
@@ -147,7 +142,7 @@ public class DBTextureParam implements DBExporter {
 										}
 									}
 									
-									TextureCoordinates texureCoordinates = new TextureCoordinatesImpl();
+									TextureCoordinates texureCoordinates = new TextureCoordinates();
 									texureCoordinates.setValue(coordsList);
 									texureCoordinates.setRing(target + '_' + i + '_');
 
@@ -163,7 +158,7 @@ public class DBTextureParam implements DBExporter {
 					}
 
 					else if (worldToTexture != null) {
-						TextureAssociation textureAssociation = new TextureAssociationImpl();
+						TextureAssociation textureAssociation = new TextureAssociation();
 						textureAssociation.setUri(target);
 
 						List<Double> m = Util.string2double(worldToTexture, "\\s+");
@@ -171,10 +166,10 @@ public class DBTextureParam implements DBExporter {
 							Matrix matrix = new Matrix(3, 4);
 							matrix.setMatrix(m.subList(0, 12));
 
-							WorldToTexture worldToTextureMatrix = new WorldToTextureImpl();
+							WorldToTexture worldToTextureMatrix = new WorldToTexture();
 							worldToTextureMatrix.setMatrix(matrix);
 
-							TexCoordGen texCoordGen = new TexCoordGenImpl();
+							TexCoordGen texCoordGen = new TexCoordGen();
 							texCoordGen.setWorldToTexture(worldToTextureMatrix);
 
 							textureAssociation.setTextureParameterization(texCoordGen);

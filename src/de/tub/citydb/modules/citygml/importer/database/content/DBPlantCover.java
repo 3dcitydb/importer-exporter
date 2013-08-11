@@ -116,8 +116,8 @@ public class DBPlantCover implements DBImporter {
 		}
 
 		// citygml:class
-		if (plantCover.isSetClazz())
-			psPlantCover.setString(5, plantCover.getClazz().trim());
+		if (plantCover.isSetClazz() && plantCover.getClazz().isSetValue())
+			psPlantCover.setString(5, plantCover.getClazz().getValue().trim());
 		else
 			psPlantCover.setNull(5, Types.VARCHAR);
 

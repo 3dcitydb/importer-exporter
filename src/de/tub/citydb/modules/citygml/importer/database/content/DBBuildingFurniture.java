@@ -119,21 +119,21 @@ public class DBBuildingFurniture implements DBImporter {
 		}
 
 		// citygml:class
-		if (buildingFurniture.isSetClazz())
-			psBuildingFurniture.setString(5, buildingFurniture.getClazz().trim());
+		if (buildingFurniture.isSetClazz() && buildingFurniture.getClazz().isSetValue())
+			psBuildingFurniture.setString(5, buildingFurniture.getClazz().getValue().trim());
 		else
 			psBuildingFurniture.setNull(5, Types.VARCHAR);
 
 		// citygml:function
 		if (buildingFurniture.isSetFunction()) {
-			psBuildingFurniture.setString(6, Util.collection2string(buildingFurniture.getFunction(), " "));
+			psBuildingFurniture.setString(6, Util.codeList2string(buildingFurniture.getFunction(), " "));
 		} else {
 			psBuildingFurniture.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (buildingFurniture.isSetUsage()) {
-			psBuildingFurniture.setString(7, Util.collection2string(buildingFurniture.getUsage(), " "));
+			psBuildingFurniture.setString(7, Util.codeList2string(buildingFurniture.getUsage(), " "));
 		} else {
 			psBuildingFurniture.setNull(7, Types.VARCHAR);
 		}

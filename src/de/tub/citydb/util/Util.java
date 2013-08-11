@@ -37,7 +37,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
-import org.citygml4j.impl.gml.basicTypes.CodeImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
@@ -64,40 +63,40 @@ public class Util {
 		case BUILDING_PART:
 			classId = 25;
 			break;
-		case CEILING_SURFACE:
+		case BUILDING_CEILING_SURFACE:
 			classId = 30;
 			break;
-		case CLOSURE_SURFACE:
+		case BUILDING_CLOSURE_SURFACE:
 			classId = 36;
 			break;
-		case DOOR:
+		case BUILDING_DOOR:
 			classId = 39;
 			break;
-		case FLOOR_SURFACE:
+		case BUILDING_FLOOR_SURFACE:
 			classId = 32;
 			break;
 		case GENERIC_CITY_OBJECT:
 			classId = 5;
 			break;
-		case GROUND_SURFACE:
+		case BUILDING_GROUND_SURFACE:
 			classId = 35;
 			break;
 		case INT_BUILDING_INSTALLATION:
 			classId = 28;
 			break;
-		case INTERIOR_WALL_SURFACE:
+		case INTERIOR_BUILDING_WALL_SURFACE:
 			classId = 31;
 			break;
-		case ROOF_SURFACE:
+		case BUILDING_ROOF_SURFACE:
 			classId = 33;
 			break;
-		case ROOM:
+		case BUILDING_ROOM:
 			classId = 41;
 			break;
-		case WALL_SURFACE:
+		case BUILDING_WALL_SURFACE:
 			classId = 34;
 			break;
-		case WINDOW:
+		case BUILDING_WINDOW:
 			classId = 38;
 			break;
 		case CITY_FURNITURE:
@@ -345,6 +344,15 @@ public class Util {
 
 		return url != null;
 	}
+	
+	public static String codeList2string(List<Code> codeList, String delimiter) {
+		List<String> values = new ArrayList<String>(codeList.size());
+		for (Code code : codeList)
+			if (code != null)
+				values.add(code.getValue());
+		
+		return collection2string(codeList, delimiter);
+	}
 
 	public static String[] gmlName2dbString(AbstractFeature feature) {
 		String[] dbGmlName = new String[2];
@@ -379,12 +387,12 @@ public class Util {
 		String delimiter = Internal.GML_NAME_DELIMITER.replaceAll("\\\\", "\\\\\\\\");
 
 		// decompose gml:name
-		List<String> gmlNameList = Util.string2string(dbGmlName, delimiter);
+		List<String> gmlNameList = string2string(dbGmlName, delimiter);
 		List<String> gmlNameCodespaceList = Util.string2string(dbGmlCodeSpace, delimiter);
 
 		if (gmlNameList != null && gmlNameList.size() != 0) {
 			for (int i = 0; i < gmlNameList.size(); i++) {
-				Code code = new CodeImpl();
+				Code code = new Code();
 				code.setValue(gmlNameList.get(i));
 
 				if (gmlNameCodespaceList != null && gmlNameCodespaceList.size() >= i + 1) {

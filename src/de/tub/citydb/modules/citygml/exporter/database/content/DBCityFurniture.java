@@ -33,21 +33,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.impl.citygml.cityfurniture.CityFurnitureImpl;
-import org.citygml4j.impl.citygml.core.ImplicitRepresentationPropertyImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
@@ -111,7 +107,7 @@ public class DBCityFurniture implements DBExporter {
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
-		CityFurniture cityFurniture = new CityFurnitureImpl();
+		CityFurniture cityFurniture = new CityFurniture();
 		long cityFurnitureId = splitter.getPrimaryKey();
 
 		// cityObject stuff
@@ -133,21 +129,21 @@ public class DBCityFurniture implements DBExporter {
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRefImpl();
+					StringOrRef stringOrRef = new StringOrRef();
 					stringOrRef.setValue(description);
 					cityFurniture.setDescription(stringOrRef);
 				}
 
 				String clazz = rs.getString("CLASS");
 				if (clazz != null) {
-					cityFurniture.setClazz(clazz);
+					cityFurniture.setClazz(new Code(clazz));
 				}
 
 				String function = rs.getString("FUNCTION");
 				if (function != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] functionList = p.split(function.trim());
-					cityFurniture.setFunction(Arrays.asList(functionList));
+					for (String value : p.split(function.trim()))
+						cityFurniture.addFunction(new Code(value));
 				}
 
 				for (int lod = 1; lod < 5 ; lod++) {
@@ -157,7 +153,7 @@ public class DBCityFurniture implements DBExporter {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
 
 						if (geometry != null) {
-							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
+							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
 
 							if (geometry.getAbstractGeometry() != null)
 								geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -197,7 +193,7 @@ public class DBCityFurniture implements DBExporter {
 
 					ImplicitGeometry implicit = implicitGeometryExporter.read(implicitGeometryId, referencePoint, transformationMatrix);
 					if (implicit != null) {
-						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationPropertyImpl();
+						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
 						implicitProperty.setObject(implicit);
 
 						switch (lod) {

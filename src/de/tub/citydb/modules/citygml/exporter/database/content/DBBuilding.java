@@ -36,7 +36,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -45,15 +44,6 @@ import java.util.regex.Pattern;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.impl.citygml.building.BuildingImpl;
-import org.citygml4j.impl.citygml.building.BuildingPartImpl;
-import org.citygml4j.impl.citygml.building.BuildingPartPropertyImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.basicTypes.DoubleOrNullImpl;
-import org.citygml4j.impl.gml.basicTypes.MeasureOrNullListImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfacePropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.SolidPropertyImpl;
-import org.citygml4j.impl.gml.measures.LengthImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.Building;
@@ -61,6 +51,7 @@ import org.citygml4j.model.citygml.building.BuildingPart;
 import org.citygml4j.model.citygml.building.BuildingPartProperty;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.basicTypes.DoubleOrNull;
 import org.citygml4j.model.gml.basicTypes.MeasureOrNullList;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
@@ -278,9 +269,9 @@ public class DBBuilding implements DBExporter {
 
 		if (buildingNode.parentId != 0) {
 			// we are dealing with a buildingPart
-			abstractBuilding = new BuildingPartImpl();
+			abstractBuilding = new BuildingPart();
 		} else {
-			abstractBuilding = new BuildingImpl();
+			abstractBuilding = new Building();
 		}
 
 		// do cityObject stuff
@@ -294,25 +285,25 @@ public class DBBuilding implements DBExporter {
 		Util.dbGmlName2featureName(abstractBuilding, gmlName, gmlNameCodespace);
 
 		if (buildingNode.description != null) {
-			StringOrRef stringOrRef = new StringOrRefImpl();
+			StringOrRef stringOrRef = new StringOrRef();
 			stringOrRef.setValue(buildingNode.description);
 			abstractBuilding.setDescription(stringOrRef);
 		}
 
 		if (buildingNode.clazz != null) {
-			abstractBuilding.setClazz(buildingNode.clazz);
+			abstractBuilding.setClazz(new Code(buildingNode.clazz));
 		}
 
 		if (buildingNode.function != null) {
 			Pattern p = Pattern.compile("\\s+");
-			String[] functionList = p.split(buildingNode.function.trim());
-			abstractBuilding.setFunction(Arrays.asList(functionList));
+			for (String function : p.split(buildingNode.function.trim()))
+				abstractBuilding.addFunction(new Code(function));
 		}
 
 		if (buildingNode.usage != null) {
 			Pattern p = Pattern.compile("\\s+");
-			String[] usageList = p.split(buildingNode.usage.trim());
-			abstractBuilding.setUsage(Arrays.asList(usageList));
+			for (String usage : p.split(buildingNode.usage.trim()))
+				abstractBuilding.addUsage(new Code(usage));
 		}
 
 		if (buildingNode.yearOfConstruction != null) {
@@ -328,11 +319,11 @@ public class DBBuilding implements DBExporter {
 		}
 
 		if (buildingNode.roofType != null) {
-			abstractBuilding.setRoofType(buildingNode.roofType);
+			abstractBuilding.setRoofType(new Code(buildingNode.roofType));
 		}
 
 		if (buildingNode.measuredHeight != null) {
-			Length length = new LengthImpl();
+			Length length = new Length();
 			length.setValue(buildingNode.measuredHeight);
 			length.setUom("urn:ogc:def:uom:UCUM::m");
 			abstractBuilding.setMeasuredHeight(length);
@@ -348,13 +339,13 @@ public class DBBuilding implements DBExporter {
 
 		if (buildingNode.storeyHeightsAboveGround != null) {
 			List<DoubleOrNull> storeyHeightsAboveGroundList = new ArrayList<DoubleOrNull>();
-			MeasureOrNullList measureList = new MeasureOrNullListImpl();
+			MeasureOrNullList measureList = new MeasureOrNullList();
 			Pattern p = Pattern.compile("\\s+");
 			String[] measureStrings = p.split(buildingNode.storeyHeightsAboveGround.trim());
 
 			for (String measureString : measureStrings) {
 				try {
-					storeyHeightsAboveGroundList.add(new DoubleOrNullImpl(Double.parseDouble(measureString)));
+					storeyHeightsAboveGroundList.add(new DoubleOrNull(Double.parseDouble(measureString)));
 				} catch (NumberFormatException nfEx) {
 					//
 				}
@@ -367,13 +358,13 @@ public class DBBuilding implements DBExporter {
 
 		if (buildingNode.storeyHeightsBelowGround != null) {
 			List<DoubleOrNull> storeyHeightsBelowGroundList = new ArrayList<DoubleOrNull>();
-			MeasureOrNullList measureList = new MeasureOrNullListImpl();
+			MeasureOrNullList measureList = new MeasureOrNullList();
 			Pattern p = Pattern.compile("\\s+");
 			String[] measureStrings = p.split(buildingNode.storeyHeightsBelowGround.trim());
 
 			for (String measureString : measureStrings) {
 				try {
-					storeyHeightsBelowGroundList.add(new DoubleOrNullImpl(Double.parseDouble(measureString)));
+					storeyHeightsBelowGroundList.add(new DoubleOrNull(Double.parseDouble(measureString)));
 				} catch (NumberFormatException nfEx) {
 					//
 				}
@@ -448,7 +439,7 @@ public class DBBuilding implements DBExporter {
 					switch (geometry.getType()) {
 					case COMPOSITE_SOLID:
 					case SOLID:
-						SolidProperty solidProperty = new SolidPropertyImpl();
+						SolidProperty solidProperty = new SolidProperty();
 
 						if (geometry.getAbstractGeometry() != null)
 							solidProperty.setSolid((AbstractSolid)geometry.getAbstractGeometry());
@@ -473,7 +464,7 @@ public class DBBuilding implements DBExporter {
 						break;
 
 					case MULTI_SURFACE:
-						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
+						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
 
 						if (geometry.getAbstractGeometry() != null)
 							multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
@@ -516,7 +507,7 @@ public class DBBuilding implements DBExporter {
 
 		for (BuildingNode childNode : buildingNode.childNodes) {
 			BuildingPart buildingPart = (BuildingPart)rebuildBuilding(childNode);
-			BuildingPartProperty buildingPartProperty = new BuildingPartPropertyImpl();
+			BuildingPartProperty buildingPartProperty = new BuildingPartProperty();
 			buildingPartProperty.setObject(buildingPart);
 			abstractBuilding.addConsistsOfBuildingPart(buildingPartProperty);
 		}

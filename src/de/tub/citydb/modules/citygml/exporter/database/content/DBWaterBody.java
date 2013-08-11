@@ -33,31 +33,22 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
-import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
-import org.citygml4j.impl.citygml.waterbody.BoundedByWaterSurfacePropertyImpl;
-import org.citygml4j.impl.citygml.waterbody.WaterBodyImpl;
-import org.citygml4j.impl.citygml.waterbody.WaterClosureSurfaceImpl;
-import org.citygml4j.impl.citygml.waterbody.WaterGroundSurfaceImpl;
-import org.citygml4j.impl.citygml.waterbody.WaterSurfaceImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfacePropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.SolidPropertyImpl;
-import org.citygml4j.impl.gml.geometry.primitives.SurfacePropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
 import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.BoundedByWaterSurfaceProperty;
 import org.citygml4j.model.citygml.waterbody.WaterBody;
+import org.citygml4j.model.citygml.waterbody.WaterClosureSurface;
+import org.citygml4j.model.citygml.waterbody.WaterGroundSurface;
 import org.citygml4j.model.citygml.waterbody.WaterSurface;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
@@ -137,7 +128,7 @@ public class DBWaterBody implements DBExporter {
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
-		WaterBody waterBody = new WaterBodyImpl();
+		WaterBody waterBody = new WaterBody();
 		long waterBodyId = splitter.getPrimaryKey();
 
 		// cityObject stuff
@@ -163,28 +154,28 @@ public class DBWaterBody implements DBExporter {
 
 					String description = rs.getString("WB_DESCRIPTION");
 					if (description != null) {
-						StringOrRef stringOrRef = new StringOrRefImpl();
+						StringOrRef stringOrRef = new StringOrRef();
 						stringOrRef.setValue(description);
 						waterBody.setDescription(stringOrRef);
 					}
 
 					String clazz = rs.getString("CLASS");
 					if (clazz != null) {
-						waterBody.setClazz(clazz);
+						waterBody.setClazz(new Code(clazz));
 					}
 
 					String function = rs.getString("FUNCTION");
 					if (function != null) {
 						Pattern p = Pattern.compile("\\s+");
-						String[] functionList = p.split(function.trim());
-						waterBody.setFunction(Arrays.asList(functionList));
+						for (String value : p.split(function.trim()))
+							waterBody.addFunction(new Code(value));
 					}
 
 					String usage = rs.getString("USAGE");
 					if (usage != null) {
 						Pattern p = Pattern.compile("\\s+");
-						String[] usageList = p.split(usage.trim());
-						waterBody.setUsage(Arrays.asList(usageList));
+						for (String value : p.split(usage.trim()))
+							waterBody.addUsage(new Code(value));
 					}
 
 					for (int lod = 1; lod < 5 ; lod++) {
@@ -194,7 +185,7 @@ public class DBWaterBody implements DBExporter {
 							DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
 
 							if (geometry != null) {
-								SolidProperty solidProperty = new SolidPropertyImpl();
+								SolidProperty solidProperty = new SolidProperty();
 
 								if (geometry.getAbstractGeometry() != null)
 									solidProperty.setSolid((AbstractSolid)geometry.getAbstractGeometry());
@@ -226,7 +217,7 @@ public class DBWaterBody implements DBExporter {
 							DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
 
 							if (geometry != null) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
+								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
 
 								if (geometry.getAbstractGeometry() != null)
 									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
@@ -284,11 +275,11 @@ public class DBWaterBody implements DBExporter {
 					continue;
 
 				if (type.equals(TypeAttributeValueEnum.WATER_SURFACE.toString().toUpperCase()))
-					waterBoundarySurface = new WaterSurfaceImpl();
+					waterBoundarySurface = new WaterSurface();
 				else if (type.equals(TypeAttributeValueEnum.WATER_GROUND_SURFACE.toString().toUpperCase()))
-					waterBoundarySurface = new WaterGroundSurfaceImpl();
+					waterBoundarySurface = new WaterGroundSurface();
 				else if (type.equals(TypeAttributeValueEnum.WATER_CLOSURE_SURFACE.toString().toUpperCase()))
-					waterBoundarySurface = new WaterClosureSurfaceImpl();
+					waterBoundarySurface = new WaterClosureSurface();
 
 				if (waterBoundarySurface == null)
 					continue;
@@ -300,7 +291,7 @@ public class DBWaterBody implements DBExporter {
 					// process xlink
 					if (dbExporterManager.lookupAndPutGmlId(waterBoundarySurface.getId(), waterBoundarySurfaceId, CityGMLClass.ABSTRACT_WATER_BOUNDARY_SURFACE)) {
 						if (useXLink) {
-							BoundedByWaterSurfaceProperty boundedByProperty = new BoundedByWaterSurfacePropertyImpl();
+							BoundedByWaterSurfaceProperty boundedByProperty = new BoundedByWaterSurfaceProperty();
 							boundedByProperty.setHref("#" + waterBoundarySurface.getId());
 
 							waterBody.addBoundedBySurface(boundedByProperty);
@@ -311,10 +302,10 @@ public class DBWaterBody implements DBExporter {
 								newGmlId += '-' + waterBoundarySurface.getId();
 
 							if (keepOldGmlId) {
-								ExternalReference externalReference = new ExternalReferenceImpl();
+								ExternalReference externalReference = new ExternalReference();
 								externalReference.setInformationSystem(infoSys);
 
-								ExternalObject externalObject = new ExternalObjectImpl();
+								ExternalObject externalObject = new ExternalObject();
 								externalObject.setName(waterBoundarySurface.getId());
 
 								externalReference.setExternalObject(externalObject);
@@ -333,7 +324,7 @@ public class DBWaterBody implements DBExporter {
 
 				String description = rs.getString("WS_DESCRIPTION");
 				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRefImpl();
+					StringOrRef stringOrRef = new StringOrRef();
 					stringOrRef.setValue(description);
 
 					waterBoundarySurface.setDescription(stringOrRef);
@@ -342,7 +333,7 @@ public class DBWaterBody implements DBExporter {
 				if (waterBoundarySurface.getCityGMLClass() == CityGMLClass.WATER_SURFACE) {
 					String waterLevel = rs.getString("WATER_LEVEL");
 					if (waterLevel != null)
-						((WaterSurface)waterBoundarySurface).setWaterLevel(waterLevel);
+						((WaterSurface)waterBoundarySurface).setWaterLevel(new Code(waterLevel));
 				}
 
 				for (int lod = 2; lod < 5 ; lod++) {
@@ -352,7 +343,7 @@ public class DBWaterBody implements DBExporter {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
 
 						if (geometry != null) {
-							SurfaceProperty surfaceProperty = new SurfacePropertyImpl();
+							SurfaceProperty surfaceProperty = new SurfaceProperty();
 
 							if (geometry.getAbstractGeometry() != null)
 								surfaceProperty.setSurface((AbstractSurface)geometry.getAbstractGeometry());
@@ -374,7 +365,7 @@ public class DBWaterBody implements DBExporter {
 					}
 				}
 
-				BoundedByWaterSurfaceProperty boundedByProperty = new BoundedByWaterSurfacePropertyImpl();
+				BoundedByWaterSurfaceProperty boundedByProperty = new BoundedByWaterSurfaceProperty();
 				boundedByProperty.setObject(waterBoundarySurface);
 				waterBody.addBoundedBySurface(boundedByProperty);
 			}

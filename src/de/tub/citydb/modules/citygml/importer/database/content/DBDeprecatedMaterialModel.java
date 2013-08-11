@@ -33,15 +33,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.citygml4j.impl.citygml.appearance.AppearanceImpl;
-import org.citygml4j.impl.citygml.appearance.ColorImpl;
-import org.citygml4j.impl.citygml.appearance.ParameterizedTextureImpl;
-import org.citygml4j.impl.citygml.appearance.SurfaceDataPropertyImpl;
-import org.citygml4j.impl.citygml.appearance.TexCoordListImpl;
-import org.citygml4j.impl.citygml.appearance.TextureAssociationImpl;
-import org.citygml4j.impl.citygml.appearance.TextureCoordinatesImpl;
-import org.citygml4j.impl.citygml.appearance.X3DMaterialImpl;
-import org.citygml4j.impl.gml.geometry.primitives.LinearRingImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.Appearance;
@@ -93,7 +84,7 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 			if (lastId != 0 && appearance != null)
 				appearanceImporter.insert(appearance, CityGMLClass.ABSTRACT_CITY_OBJECT, lastId);
 
-			appearance = new AppearanceImpl();
+			appearance = new Appearance();
 			appearance.setTheme(theme);
 			lastId = parentId;
 		}
@@ -103,10 +94,10 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 
 		switch (type) {
 		case _MATERIAL:
-			abstractSurfaceData =new X3DMaterialImpl();
+			abstractSurfaceData =new X3DMaterial();
 			break;
 		case _SIMPLE_TEXTURE:
-			abstractSurfaceData = new ParameterizedTextureImpl();
+			abstractSurfaceData = new ParameterizedTexture();
 			break;
 		default:
 			return false;
@@ -128,21 +119,21 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 				material.setAmbientIntensity(_material.getAmbientIntensity());
 
 			if (_material.isSetSpecularColor())
-				material.setSpecularColor(new ColorImpl(
+				material.setSpecularColor(new Color(
 						_material.getSpecularColor().getRed(),
 						_material.getSpecularColor().getGreen(),
 						_material.getSpecularColor().getBlue()
 				));
 
 			if (_material.isSetDiffuseColor())
-				material.setDiffuseColor(new ColorImpl(
+				material.setDiffuseColor(new Color(
 						_material.getDiffuseColor().getRed(),
 						_material.getDiffuseColor().getGreen(),
 						_material.getDiffuseColor().getBlue()
 				));
 
 			if (_material.isSetEmissiveColor())
-				material.setEmissiveColor(new ColorImpl(
+				material.setEmissiveColor(new Color(
 						_material.getEmissiveColor().getRed(),
 						_material.getEmissiveColor().getGreen(),
 						_material.getEmissiveColor().getBlue()
@@ -178,10 +169,10 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 				paraTex.setWrapMode(WrapMode.WRAP);
 
 			if (_simpleTex.isSetTextureCoordinates()) {
-				TextureAssociation texAss = new TextureAssociationImpl();
+				TextureAssociation texAss = new TextureAssociation();
 				texAss.setUri(target);
 
-				TexCoordList texCoordList = new TexCoordListImpl();
+				TexCoordList texCoordList = new TexCoordList();
 				List<Double> _texCoords = _simpleTex.getTextureCoordinates();
 
 				// interpret an inline polygon
@@ -192,7 +183,7 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 						LinearRing exteriorLinearRing = (LinearRing)polygon.getExterior().getRing();
 
 						if (exteriorLinearRing != null) {
-							List<Double> points = ((LinearRingImpl)exteriorLinearRing).toList3d();
+							List<Double> points = ((LinearRing)exteriorLinearRing).toList3d();
 
 							if (points != null && points.size() != 0) {
 								// we need two texture coordinates per geometry point
@@ -201,7 +192,7 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 								List<Double> texCoord = new ArrayList<Double>(_texCoords.subList(0, index));
 
 								if (texCoord.size() > 0) {
-									TextureCoordinates texCoords = new TextureCoordinatesImpl();
+									TextureCoordinates texCoords = new TextureCoordinates();
 									texCoords.setValue(texCoord);
 									texCoords.setRing(exteriorLinearRing.getId());
 									texCoordList.addTextureCoordinates(texCoords);
@@ -216,7 +207,7 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 						List<AbstractRingProperty> abstractRingPropertyList = polygon.getInterior();
 						for (AbstractRingProperty abstractRingProperty : abstractRingPropertyList) {
 							LinearRing interiorLinearRing = (LinearRing)abstractRingProperty.getRing();
-							List<Double> interiorPoints = ((LinearRingImpl)interiorLinearRing).toList3d();
+							List<Double> interiorPoints = ((LinearRing)interiorLinearRing).toList3d();
 
 							if (interiorPoints == null || interiorPoints.size() == 0)
 								continue;
@@ -227,7 +218,7 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 							List<Double> texCoord = new ArrayList<Double>(_texCoords.subList(0, index));
 
 							if (texCoord.size() > 0) {
-								TextureCoordinates texCoords = new TextureCoordinatesImpl();
+								TextureCoordinates texCoords = new TextureCoordinates();
 								texCoords.setValue(texCoord);
 								texCoords.setRing(interiorLinearRing.getId());
 								texCoordList.addTextureCoordinates(texCoords);
@@ -262,7 +253,7 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 		if (_appearance.isSetId() && _appearance.getId().length() != 0)
 			abstractSurfaceData.setId(_appearance.getId());
 
-		SurfaceDataProperty surfaceDataProperty = new SurfaceDataPropertyImpl();
+		SurfaceDataProperty surfaceDataProperty = new SurfaceDataProperty();
 		surfaceDataProperty.setSurfaceData(abstractSurfaceData);
 		appearance.addSurfaceDataMember(surfaceDataProperty);
 
@@ -270,7 +261,7 @@ public class DBDeprecatedMaterialModel implements DBImporter {
 	}
 
 	public boolean insertXlink(String href, long surfaceGeometryId, long parentId) throws SQLException {
-		Appearance appearance = new AppearanceImpl();
+		Appearance appearance = new Appearance();
 		appearance.setTheme(theme);
 
 		long appearanceId = appearanceImporter.insert(appearance, CityGMLClass.ABSTRACT_CITY_OBJECT, parentId);

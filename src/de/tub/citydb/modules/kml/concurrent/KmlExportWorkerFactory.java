@@ -30,13 +30,11 @@
 package de.tub.citydb.modules.kml.concurrent;
 
 import java.sql.SQLException;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.xml.bind.JAXBContext;
 
 import net.opengis.kml._2.ObjectFactory;
 
-import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 import de.tub.citydb.api.concurrent.Worker;
@@ -45,7 +43,6 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
-import de.tub.citydb.modules.kml.database.ColladaBundle;
 import de.tub.citydb.modules.kml.database.KmlSplittingResult;
 
 public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult> {
@@ -54,7 +51,6 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final ObjectFactory kmlFactory;
-	private final CityGMLFactory cityGMLFactory;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
@@ -64,7 +60,6 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 			DatabaseConnectionPool dbConnectionPool,
 			WorkerPool<SAXEventBuffer> ioWriterPool,
 			ObjectFactory kmlFactory,
-			CityGMLFactory cityGMLFactory,
 			Config config,
 			EventDispatcher eventDispatcher) {
 		this.jaxbKmlContext = jaxbKmlContext;
@@ -72,7 +67,6 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 		this.dbConnectionPool = dbConnectionPool;
 		this.ioWriterPool = ioWriterPool;
 		this.kmlFactory = kmlFactory;
-		this.cityGMLFactory = cityGMLFactory;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
@@ -88,7 +82,6 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 					dbConnectionPool,
 					ioWriterPool,
 					kmlFactory,
-					cityGMLFactory,
 					config,
 					eventDispatcher);
 		} catch (SQLException sqlEx) {

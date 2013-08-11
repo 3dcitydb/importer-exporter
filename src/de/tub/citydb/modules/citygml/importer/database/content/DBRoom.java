@@ -122,21 +122,21 @@ public class DBRoom implements DBImporter {
 		}
 
 		// citygml:class
-		if (room.isSetClazz())
-			psRoom.setString(5, room.getClazz().trim());
+		if (room.isSetClazz() && room.getClazz().isSetValue())
+			psRoom.setString(5, room.getClazz().getValue().trim());
 		else
 			psRoom.setNull(5, Types.VARCHAR);
 
 		// citygml:function
 		if (room.isSetFunction()) {
-			psRoom.setString(6, Util.collection2string(room.getFunction(), " "));
+			psRoom.setString(6, Util.codeList2string(room.getFunction(), " "));
 		} else {
 			psRoom.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (room.isSetUsage()) {
-			psRoom.setString(7, Util.collection2string(room.getUsage(), " "));
+			psRoom.setString(7, Util.codeList2string(room.getUsage(), " "));
 		} else {
 			psRoom.setNull(7, Types.VARCHAR);
 		}
@@ -222,7 +222,7 @@ public class DBRoom implements DBImporter {
 					
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								CityGMLClass.ROOM, 
+								CityGMLClass.BUILDING_ROOM, 
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
@@ -256,7 +256,7 @@ public class DBRoom implements DBImporter {
 					
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								CityGMLClass.ROOM, 
+								CityGMLClass.BUILDING_ROOM, 
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
@@ -290,7 +290,7 @@ public class DBRoom implements DBImporter {
 					
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								CityGMLClass.ROOM, 
+								CityGMLClass.BUILDING_ROOM, 
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
