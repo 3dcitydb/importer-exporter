@@ -73,7 +73,7 @@ public abstract class CacheTableModel {
 
 		try {
 			stmt = conn.createStatement();
-			stmt.executeUpdate("create table " + 
+			stmt.executeUpdate("create unlogged table " + 
 					tableName + 
 					getColumns());
 			conn.commit();
@@ -90,7 +90,7 @@ public abstract class CacheTableModel {
 		
 		try {
 			stmt = conn.createStatement();
-			stmt.executeUpdate("create table " + 
+			stmt.executeUpdate("create unlogged table " + 
 					tableName +
 //					" nologging" +
 					" as select * from " + 

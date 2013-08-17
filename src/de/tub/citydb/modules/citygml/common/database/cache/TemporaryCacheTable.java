@@ -300,6 +300,7 @@ public class TemporaryCacheTable implements CacheTable {
 					isCreated = false;
 				} finally {
 					if (isStandAlone && conn != null) {
+						conn.commit();
 						conn.close();
 						conn = null;
 					}
