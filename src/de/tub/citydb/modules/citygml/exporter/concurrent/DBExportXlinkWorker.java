@@ -77,7 +77,6 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 
 	private void init() throws SQLException {
 		connection = dbConnectionPool.getConnection();
-		connection.setAutoCommit(false);
 
 		// try and change workspace for the connection if needed
 //		Database database = config.getProject().getDatabase();
@@ -153,7 +152,6 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 		} finally {
 			if (connection != null) {
 				try {
-					connection.commit();
 					connection.close();
 				} catch (SQLException e) {
 					//

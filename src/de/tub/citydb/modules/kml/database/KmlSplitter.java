@@ -133,7 +133,6 @@ public class KmlSplitter {
 		}
 			
 		connection = dbConnectionPool.getConnection();
-		connection.setAutoCommit(false);
 		dbSrs = dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem();
 
 		// try and change workspace for connection if needed

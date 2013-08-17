@@ -115,7 +115,6 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 
 	private void init() throws SQLException, SAXException {
 		connection = dbConnectionPool.getConnection();
-		connection.setAutoCommit(false);
 
 		// try and change workspace for both connections if needed
 //		Database database = config.getProject().getDatabase();
@@ -204,7 +203,6 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 		} finally {
 			if (connection != null) {
 				try {
-					connection.commit();
 					connection.close();
 				} catch (SQLException e) {
 					//

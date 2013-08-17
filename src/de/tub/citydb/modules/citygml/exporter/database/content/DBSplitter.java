@@ -111,7 +111,6 @@ public class DBSplitter {
 
 	private void init(ExportFilter exportFilter, CacheManager cacheManager) throws SQLException {
 		connection = dbConnectionPool.getConnection();
-		connection.setAutoCommit(false);
 
 		// try and change workspace for connection
 		//		Database database = config.getProject().getDatabase();
