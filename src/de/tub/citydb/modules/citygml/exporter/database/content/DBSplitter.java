@@ -82,7 +82,7 @@ public class DBSplitter {
 	private Long lastElement;
 	private String gmlIdFilter;
 	private String gmlNameFilter;
-	private String[] bboxFilter;
+	private String bboxFilter;
 	//private String optimizerHint;
 
 	private FeatureClassFilter featureClassFilter;
@@ -185,21 +185,26 @@ public class DBSplitter {
 				double maxY = bbox.getUpperRightCorner().getY();
 
 				boolean overlap = tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode();
+										
+				StringBuilder bboxFilterQuery = new StringBuilder("");
+				bboxFilterQuery.append("and co.ENVELOPE && ST_GeomFromEWKT('SRID=").append(dbSrs.getSrid())
+								.append(";POLYGON((")
+								.append(minX).append(" ").append(minY).append(",")
+								.append(minX).append(" ").append(maxY).append(",")
+								.append(maxX).append(" ").append(maxY).append(",")
+								.append(maxX).append(" ").append(minY).append(",")
+								.append(minX).append(" ").append(minY).append("))')");
+								
+				if (!overlap)
+					bboxFilterQuery.append(" and ST_CoveredBy(co.ENVELOPE, ST_GeomFromEWKT('SRID=").append(dbSrs.getSrid())
+								.append(";POLYGON((")
+								.append(minX).append(" ").append(minY).append(",")
+								.append(minX).append(" ").append(maxY).append(",")
+								.append(maxX).append(" ").append(maxY).append(",")
+								.append(maxX).append(" ").append(minY).append(",")
+								.append(minX).append(" ").append(minY).append("))')) = 'TRUE'");
 				
-				bboxFilter = new String[overlap ? 2 : 1];
-						
-				String geomAgeomB = "(co.ENVELOPE, " +
-						"ST_GeomFromEWKT('SRID=" + dbSrs.getSrid() + ";POLYGON((" + 
-						minX + " " + minY + "," + 
-						minX + " " + maxY + "," + 
-						maxX + " " + maxY + "," + 
-						maxX + " " + minY + "," + 
-						minX + " " + minY + "))'))";
-				
-				bboxFilter[0] = "ST_CoveredBy" + geomAgeomB + " = 'TRUE'";
-				
-				if (overlap)
-					bboxFilter[0] = "ST_Intersects" + geomAgeomB + " = 'TRUE'";
+				bboxFilter = bboxFilterQuery.toString();
 				
 //				if (dbConnectionPool.getActiveConnectionMetaData().getDatabaseMajorVersion() == 11)
 //					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
@@ -321,7 +326,7 @@ public class DBSplitter {
 					query.append("and ").append(additionalWhere).append(" ");
 
 				if (bboxFilter != null)
-					query.append(appendStRelate(query.toString()));
+					query.append(bboxFilter);
 
 				if (featureCounterFilter.isActive())
 					query.append("order by co.ID");
@@ -356,7 +361,7 @@ public class DBSplitter {
 					query.append("co.CLASS_ID in (").append(classIdQuery).append(") "); 
 
 					if (bboxFilter != null)
-						query.append(appendStRelate(query.toString()));
+						query.append(bboxFilter);
 
 					if (featureCounterFilter.isActive())
 						query.append("order by ID");
@@ -452,7 +457,7 @@ public class DBSplitter {
 				groupQuery.append(" where co.CLASS_ID=23 ");
 
 			if (bboxFilter != null)
-				groupQuery.append(appendStRelate(groupQuery.toString()));
+				groupQuery.append(bboxFilter);
 
 			List<Integer> classIds = new ArrayList<Integer>();
 			for (CityGMLClass featureClass : featureClassFilter.getNotFilterState()) {
@@ -503,13 +508,13 @@ public class DBSplitter {
 			.append("select grp.PARENT_CITYOBJECT_ID from CITYOBJECTGROUP grp where grp.ID=?) ");
 
 				if (bboxFilter != null)
-					memberQuery.append(appendStRelate(memberQuery.toString()));
+					memberQuery.append(bboxFilter);
 			memberStmt = connection.prepareStatement(memberQuery.toString());
 
 			for (int i = 0; shouldRun && i < groupIds.size(); ++i) {
 				long groupId = groupIds.get(i);
 
-				int params = bboxFilter == null ? 2 : bboxFilter.length * 2;
+				int params = 2;
 				for (int j = 1; j <= params; ++j)
 					memberStmt.setLong(j, groupId);
 
@@ -596,21 +601,6 @@ public class DBSplitter {
 			}
 		}
 	}
-
-	private String appendStRelate(String query) {
-		StringBuilder unionAll = new StringBuilder();
-		for (int i = 0; i < bboxFilter.length; ++i) {
-			if (i > 0)
-				unionAll.append(query);
-
-			unionAll.append("and ").append(bboxFilter[i]).append(" ");
-
-			if (i < bboxFilter.length - 1)
-				unionAll.append("union all ");
-		}
-
-		return unionAll.toString();
-	}	
 	
 	private void queryGlobalAppearance() throws SQLException {
 		if (!shouldRun)

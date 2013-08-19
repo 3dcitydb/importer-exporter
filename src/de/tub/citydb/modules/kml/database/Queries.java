@@ -42,30 +42,25 @@ public class Queries {
 	// ----------------------------------------------------------------------
 
 	public static final String GET_IDS =
-	 	"SELECT co.id, co.gmlid, co.class_id " +
-	 	"FROM CITYOBJECT co " +
-	 	"WHERE " +
-			"ST_Intersects(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
-		"UNION ALL " +
-			"SELECT co.id, co.gmlid, co.class_id " +
-		 	"FROM CITYOBJECT co " +
-		 	"WHERE " +
-			  "ST_CoveredBy(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
-	 	"ORDER BY 3"; // ORDER BY co.class_id*/
+		 "SELECT co.id, co.gmlid, co.class_id " +
+		 "FROM CITYOBJECT co " +
+		 "WHERE co.envelope && ST_GeomFromEWKT(?) and " +
+		 	"ST_CoveredBy(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
+		 "ORDER BY 3"; // ORDER BY co.class_id*/
  
 	public static final String GET_EXTRUDED_HEIGHT =
-			"SELECT " + // "b.measured_height, " +
-			"ST_ZMax(Box3D(co.envelope)) - ST_ZMin(Box3D(co.envelope)) AS envelope_measured_height " +
-			"FROM CITYOBJECT co " + // ", BUILDING b " +
-			"WHERE co.id = ?"; // + " AND b.building_root_id = co.id";
+		"SELECT " + // "b.measured_height, " +
+		"ST_ZMax(Box3D(co.envelope)) - ST_ZMin(Box3D(co.envelope)) AS envelope_measured_height " +
+		"FROM CITYOBJECT co " + // ", BUILDING b " +
+		"WHERE co.id = ?"; // + " AND b.building_root_id = co.id";
 
 	public static final String GET_STRVAL_GENERICATTRIB_FROM_ID =
-			"SELECT coga.strval " +
-			"FROM CITYOBJECT_GENERICATTRIB coga " + 
-			"WHERE coga.cityobject_id = ? AND coga.attrname = ? ";
+		"SELECT coga.strval " +
+		"FROM CITYOBJECT_GENERICATTRIB coga " + 
+		"WHERE coga.cityobject_id = ? AND coga.attrname = ? ";
 
 	public static final String GET_ID_FROM_GMLID =
-			"SELECT id FROM CITYOBJECT WHERE gmlid = ?";
+		"SELECT id FROM CITYOBJECT WHERE gmlid = ?";
 	
     public static final String GET_ID_AND_OBJECTCLASS_FROM_GMLID =
 		"SELECT id, class_id FROM CITYOBJECT WHERE gmlid = ?";
