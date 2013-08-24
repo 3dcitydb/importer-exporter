@@ -75,7 +75,8 @@ public abstract class CacheTableModel {
 			stmt = conn.createStatement();
 			stmt.executeUpdate("create table " + 
 					tableName + 
-					getColumns());
+					getColumns() +
+					" nologging");
 			conn.commit();
 		} finally {
 			if (stmt != null) {
