@@ -1,10 +1,10 @@
--- UPDATE_DB_TO_2_0_5.sql
+-- UPDATE_DB_TO_2_1_0.sql
 --
 -- Authors:     Javier Herreruela <javier.herreruela@tu-berlin.de>
---              Claus Nagel <claus.nagel@tu-berlin.de>
+--              Claus Nagel <cnagel@virtualcitysystems.de>
 --
--- Copyright:   (c) 2007-2011, Institute for Geodesy and Geoinformation Science,
---                             Technische Universit‰t Berlin, Germany
+-- Copyright:   (c) 2007-2013, Institute for Geodesy and Geoinformation Science,
+--                             Technische Universit√§t Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -20,6 +20,7 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description                               | Author
+-- 2.1.0     2013-08-27   release version                             CNag
 -- 1.0.0     2011-05-16   release version                             JHer
 --                                                                    CNag
 
