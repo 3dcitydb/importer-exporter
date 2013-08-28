@@ -1,6 +1,6 @@
 -- UTIL.sql
 --
--- Authors:     Claus Nagel <claus.nagel@tu-berlin.de>
+-- Authors:     Claus Nagel <cnagel@virtualcitysystems.de>
 --
 -- Copyright:   (c) 2007-2011  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universit�t Berlin, Germany
@@ -60,7 +60,6 @@ AS
   FUNCTION versioning_db RETURN VARCHAR2;
   PROCEDURE db_info(srid OUT DATABASE_SRS.SRID%TYPE, srs OUT DATABASE_SRS.GML_SRS_NAME%TYPE, versioning OUT VARCHAR2);
   FUNCTION db_metadata RETURN DB_INFO_TABLE;
-  FUNCTION error_msg(err_code VARCHAR2) RETURN VARCHAR2;
   FUNCTION split(list VARCHAR2, delim VARCHAR2 := ',') RETURN STRARRAY;
   FUNCTION min(a number, b number) return number;
   FUNCTION transform_or_null(geom MDSYS.SDO_GEOMETRY, srid number) RETURN MDSYS.SDO_GEOMETRY;
@@ -156,19 +155,6 @@ AS
        
     info_ret(info_ret.count) := info_tmp;
     return info_ret;
-  END;
-  
-  /*****************************************************************
-  * error_msg
-  *
-  * @param err_code Oracle SQL error code, usually starting with '-',
-  *                 e.g. '-06404'
-  * @return VARCHAR2 corresponding Oracle SQL error message                 
-  ******************************************************************/
-  FUNCTION error_msg(err_code VARCHAR2) RETURN VARCHAR2
-  IS
-  BEGIN
-    RETURN SQLERRM(err_code);
   END;
   
   /*****************************************************************

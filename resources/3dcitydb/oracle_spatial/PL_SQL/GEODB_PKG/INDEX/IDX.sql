@@ -1,6 +1,6 @@
 -- IDX.sql
 --
--- Authors:     Claus Nagel <claus.nagel@tu-berlin.de>
+-- Authors:     Claus Nagel <cnagel@virtualcitysystems.de>
 --
 -- Copyright:   (c) 2007-2008  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universit�t Berlin, Germany
@@ -228,7 +228,7 @@ AS
   IS
     create_ddl VARCHAR2(1000);
     table_name VARCHAR2(100);
-    sql_err_code VARCHAR2(20);
+    sql_err_code VARCHAR2(32767);
   BEGIN    
     IF index_status(idx) <> 'VALID' THEN
       sql_err_code := drop_index(idx, is_versioned);
@@ -266,7 +266,7 @@ AS
             dbms_wm.ROLLBACKDDL(idx.table_name);
           END IF;
           
-          RETURN SQLCODE;
+          RETURN SQLERRM;
       END;
     END IF;
     
@@ -306,7 +306,7 @@ AS
             dbms_wm.ROLLBACKDDL(idx.table_name);
           END IF;
           
-          RETURN SQLCODE;
+          RETURN SQLERRM;
       END;
     END IF;
     
@@ -324,15 +324,15 @@ AS
   FUNCTION create_indexes(type SMALLINT) RETURN STRARRAY
   IS
     log STRARRAY;
-    sql_error_code VARCHAR2(20);
+    sql_error_msg VARCHAR2(32767);
   BEGIN    
     log := STRARRAY();
                 
     FOR i IN INDICES.FIRST .. INDICES.LAST LOOP
       IF INDICES(i).type = type THEN
-        sql_error_code := create_index(INDICES(i), geodb_util.versioning_table(INDICES(i).table_name) = 'ON');
+        sql_error_msg := create_index(INDICES(i), geodb_util.versioning_table(INDICES(i).table_name) = 'ON');
         log.extend;
-        log(log.count) := index_status(INDICES(i)) || ':' || INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code;
+        log(log.count) := index_status(INDICES(i)) || ':' || INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_msg;
       END IF;
     END LOOP;     
     
@@ -350,15 +350,15 @@ AS
   FUNCTION drop_indexes(type SMALLINT) RETURN STRARRAY
   IS
     log STRARRAY;
-    sql_error_code VARCHAR2(20);
+    sql_error_msg VARCHAR2(32767);
   BEGIN    
     log := STRARRAY();
     
     FOR i in INDICES.FIRST .. INDICES.LAST LOOP
       IF INDICES(i).type = type THEN
-        sql_error_code := drop_index(INDICES(i), geodb_util.versioning_table(INDICES(i).table_name) = 'ON');
+        sql_error_msg := drop_index(INDICES(i), geodb_util.versioning_table(INDICES(i).table_name) = 'ON');
         log.extend;
-        log(log.count) := index_status(INDICES(i)) || ':' || INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code;
+        log(log.count) := index_status(INDICES(i)) || ':' || INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_msg;
       END IF;
     END LOOP; 
     

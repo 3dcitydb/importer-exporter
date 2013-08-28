@@ -1,7 +1,7 @@
 -- UPDATE_DB_TO_2_0_5.sql
 --
 -- Authors:     Javier Herreruela <javier.herreruela@tu-berlin.de>
---              Claus Nagel <claus.nagel@tu-berlin.de>
+--              Claus Nagel <cnagel@virtualcitysystems.de>
 --
 -- Copyright:   (c) 2007-2011, Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
