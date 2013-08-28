@@ -1,6 +1,6 @@
-3D City Database version 2.0.6-postgis
+3D City Database version 2.1-postgis
 
-  The 3D City Database version 2.0.6-postgis is free software and comes 
+  The 3D City Database version 2.1-postgis is free software and comes 
   WITHOUT ANY WARRANTY. See the DISCLAIMER at the end of this document
   for more details. 
 
@@ -25,7 +25,7 @@
 1. License
 ----------
 
-The 3D City Database version 2.0.6-postgis is free software under the GNU Lesser 
+The 3D City Database version 2.1-postgis is free software under the GNU Lesser 
 General Public License Version 3.0. See the file LICENSE for more details. 
 For a copy of the GNU Lesser General Public License see the files 
 COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
@@ -34,7 +34,7 @@ COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
 2. Copyright
 ------------
 
-(c) 2007 - 2012
+(c) 2007 - 2013
 Institute for Geodesy and Geoinformation Science (IGG)
 Technische Universitaet Berlin, Germany
 http://www.igg.tu-berlin.de/
@@ -166,7 +166,7 @@ well as all PL/pgSQL functions and utilities. The database itself is not dropped
 7. Documentation
 ----------------
 
-A comprehensive documentation on the 3D City Database version 2.0.6 and on its
+A comprehensive documentation on the 3D City Database version 2.1 and on its
 porting to PostGIS can be found on the project's website at 
 http://www.igg.tu-berlin.de/software/. 
 
@@ -174,8 +174,8 @@ http://www.igg.tu-berlin.de/software/.
 8. Cooperation partners and supporters  
 --------------------------------------
 
-The development of the 3D City Database version 2.0.6 has been 
-financially supported by the following cooperation partners:
+The development of the 3D City Database version 2.1 has been 
+supported by the following cooperation partners:
 
 * Business Location Center, Berlin 
   http://www.businesslocationcenter.de/
@@ -183,28 +183,30 @@ financially supported by the following cooperation partners:
   http://www.virtualcitysystems.de/
 * Berlin Senate of Business, Technology and Women
   http://www.berlin.de/sen/wtf/
+* M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen
+  http://www.moss.de/
 
   
 9. Developers
 -------------
 
-Claus Nagel <claus.nagel@tu-berlin.de>
+Claus Nagel <cnagel@virtualcitysystems.de>
 Javier Herreruela <javier.herreruela@tu-berlin.de>
 Felix Kunde <fkunde@virtualcitysystems.de>
 Alexandra Lorenz <alexandra.lorenz@tu-berlin.de>
-Gerhard Koenig <gerhard.koenig@tu-berlin.de>
+Gerhard König <gerhard.koenig@tu-berlin.de>
 Thomas H. Kolbe <thomas.kolbe@tum.de>
+György Hudra <ghudra@moss.de>
 
 
 10. Contact
 ----------
 
-claus.nagel@tu-berlin.de
+cnagel@virtualcitysystems.de
 javier.herreruela@tu-berlin.de
 fkunde@virtualcitysystems.de
-lorenz@tu-berlin.de
-gerhard.koenig@tu-berlin.de
 thomas.kolbe@tum.de
+ghudra@moss.de
 
 
 11. Websites
@@ -215,7 +217,7 @@ http://www.3dcitydb.net/
 
 Related websites:
 http://www.igg.tu-berlin.de/
-http://www.gis.tu-berlin.de/software
+http://www.opportunity.bv.tu-berlin.de/
 http://www.citygml.org/
 http://www.citygmlwiki.org/
 http://www.opengeospatial.org/standards/citygml

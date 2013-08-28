@@ -6,7 +6,7 @@
 --              Joerg Schmittwilken <schmittwilken@ikg.uni-bonn.de>
 --              Viktor Stroh <stroh@ikg.uni-bonn.de>
 --              Dr. Andreas Poth <poth@lat-lon.de>
---              Claus Nagel <claus.nagel@tu-berlin.de>
+--              Claus Nagel <cnagel@virtualcitysystems.de>
 --
 -- Conversion:	Felix Kunde <fkunde@virtualcitysystems.de>
 --

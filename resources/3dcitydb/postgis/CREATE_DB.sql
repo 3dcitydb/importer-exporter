@@ -2,7 +2,7 @@
 --
 -- Authors:     Prof. Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Gerhard Koenig <gerhard.koenig@tu-berlin.de>
---              Claus Nagel <claus.nagel@tu-berlin.de>
+--              Claus Nagel <cnagel@virtualcitysystems.de>
 --              Alexandra Stadler <stroh@igg.tu-berlin.de>
 --
 -- Conversion:	Felix Kunde <fkunde@virtualcitysystems.de>

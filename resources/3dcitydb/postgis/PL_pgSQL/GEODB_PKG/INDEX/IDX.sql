@@ -1,6 +1,6 @@
 -- IDX.sql
 --
--- Authors:     Claus Nagel <claus.nagel@tu-berlin.de>
+-- Authors:     Claus Nagel <cnagel@virtualcitysystems.de>
 --
 -- Conversion:	Felix Kunde <fkunde@virtualcitysystems.de>
 --

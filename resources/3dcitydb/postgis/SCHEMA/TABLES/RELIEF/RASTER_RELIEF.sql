@@ -7,7 +7,7 @@
 --              Viktor Stroh <stroh@ikg.uni-bonn.de>
 --              Dr. Andreas Poth <poth@lat-lon.de>
 --              Gerhard Koenig <gerhard.koenig@tu-berlin.de>
---              Claus Nagel <claus.nagel@tu-berlin.de>
+--              Claus Nagel <cnagel@virtualcitysystems.de>
 --              Alexandra Stadler <stadler@igg.tu-berlin.de>
 --
 -- Conversion:  Laure Fraysse <Laure.fraysse@etumel.univmed.fr>

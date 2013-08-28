@@ -1,6 +1,6 @@
 -- MERGE.sql
 --
--- Authors:     Claus Nagel <claus.nagel@tu-berlin.de>
+-- Authors:     Claus Nagel <cnagel@virtualcitysystems.de>
 --              Alexandra Stadler <stadler@igg.tu-berlin.de>
 --
 -- Conversion:  Felix Kunde <fkunde@virtualcitysystems.de>
