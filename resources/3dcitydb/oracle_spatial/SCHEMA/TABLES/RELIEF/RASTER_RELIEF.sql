@@ -2,7 +2,7 @@
 --
 -- Authors:     Prof. Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Gerhard König <gerhard.koenig@tu-berlin.de>
---              Claus Nagel <claus.nagel@tu-berlin.de>
+--              Claus Nagel <cnagel@virtualcitysystems.de>
 --              Alexandra Stadler <stadler@igg.tu-berlin.de>
 --
 --              Prof. Dr. Lutz Pluemer <pluemer@ikg.uni-bonn.de>

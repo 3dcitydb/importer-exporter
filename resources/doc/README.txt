@@ -159,7 +159,7 @@ b) Alternatively, you can directly run the !impexp.jar.filename!
 --------------------------------------
 
 The development of the !impexp.name! has been 
-financially supported by the following cooperation partners:
+supported by the following cooperation partners:
 
 * Business Location Center, Berlin 
   http://www.businesslocationcenter.de/
@@ -167,13 +167,16 @@ financially supported by the following cooperation partners:
   http://www.virtualcitysystems.de/
 * Berlin Senate of Business, Technology and Women
   http://www.berlin.de/sen/wtf/
+* M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen
+  http://www.moss.de/
   
    
 8. Developers
 -------------
 
-Claus Nagel <claus.nagel@tu-berlin.de>
+Claus Nagel <cnagel@virtualcitysystems.de>
 Javier Herreruela <javier.herreruela@tu-berlin.de>
+Felix Kunde <fkunde@virtualcitysystems.de>
 Alexandra Lorenz <alexandra.lorenz@tu-berlin.de>
 Gerhard König <gerhard.koenig@tu-berlin.de>
 Thomas H. Kolbe <thomas.kolbe@tum.de>
@@ -182,8 +185,9 @@ Thomas H. Kolbe <thomas.kolbe@tum.de>
 9. Contact
 ----------
 
-claus.nagel@tu-berlin.de
+cnagel@virtualcitysystems.de
 javier.herreruela@tu-berlin.de
+fkunde@virtualcitysystems.de
 
 
 10. Websites
@@ -194,7 +198,7 @@ Official !impexp.name! website:
 
 Related websites:
 !vendor.homepage!
-http://www.gis.tu-berlin.de/software
+http://www.opportunity.bv.tu-berlin.de/
 http://www.citygml.org/
 http://www.citygmlwiki.org/
 http://www.opengeospatial.org/standards/citygml

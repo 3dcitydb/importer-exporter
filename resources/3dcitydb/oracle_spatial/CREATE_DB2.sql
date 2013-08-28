@@ -3,7 +3,7 @@
 --
 -- Authors:     Prof. Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --              Gerhard König <gerhard.koenig@tu-berlin.de>
---              Claus Nagel <claus.nagel@tu-berlin.de>
+--              Claus Nagel <cnagel@virtualcitysystems.de>
 --              Alexandra Stadler <stroh@igg.tu-berlin.de>
 --
 -- Copyright:   (c) 2007-2008, Institute for Geodesy and Geoinformation Science,

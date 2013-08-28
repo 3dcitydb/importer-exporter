@@ -1,7 +1,7 @@
 -- CREATE_RO_USER.sql
 --
 -- Authors:     Javier Herreruela <javier.herreruela@tu-berlin.de>
---              Claus Nagel <claus.nagel@tu-berlin.de>
+--              Claus Nagel <cnagel@virtualcitysystems.de>
 --
 -- Copyright:   (c) 2007-2012, Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
