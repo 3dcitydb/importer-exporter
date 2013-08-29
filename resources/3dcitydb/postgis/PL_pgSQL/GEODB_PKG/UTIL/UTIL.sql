@@ -184,11 +184,14 @@ LANGUAGE plpgsql;
 *******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.util_change_db_srid (db_srid INTEGER, db_gml_srs_name VARCHAR) RETURNS SETOF void AS $$
 BEGIN
+  -- update entry in DATABASE_SRS table first
+  UPDATE DATABASE_SRS SET SRID=db_srid, GML_SRS_NAME=db_gml_srs_name;
+  
   -- change srid of each spatially enabled table
   PERFORM geodb_pkg.util_change_table_srid('cityobject_spx', 'cityobject', 'envelope', TRUE, db_srid);
   PERFORM geodb_pkg.util_change_table_srid('surface_geom_spx', 'surface_geometry', 'geometry', TRUE, db_srid);
   PERFORM geodb_pkg.util_change_table_srid('breakline_rid_spx', 'breakline_relief', 'ridge_or_valley_lines', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('breakline_rid_spx', 'breakline_relief', 'break_lines', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_table_srid('breakline_break_spx', 'breakline_relief', 'break_lines', TRUE, db_srid);
   PERFORM geodb_pkg.util_change_table_srid('masspoint_rel_spx', 'masspoint_relief', 'relief_points', TRUE, db_srid);
   PERFORM geodb_pkg.util_change_table_srid('tin_relf_stop_spx', 'tin_relief', 'stop_lines', TRUE, db_srid);
   PERFORM geodb_pkg.util_change_table_srid('tin_relf_break_spx', 'tin_relief', 'break_lines', TRUE, db_srid);
@@ -232,10 +235,6 @@ BEGIN
   PERFORM geodb_pkg.util_change_table_srid('transportation_complex_spx', 'transportation_complex', 'lod0_network', TRUE, db_srid);
   PERFORM geodb_pkg.util_change_table_srid('waterbody_lod0multi_spx', 'waterbody', 'lod0_multi_curve', TRUE, db_srid);
   PERFORM geodb_pkg.util_change_table_srid('waterbody_lod1multi_spx', 'waterbody', 'lod1_multi_curve', TRUE, db_srid);
-
-  -- update entry in DATABASE_SRS-table
-  UPDATE DATABASE_SRS SET SRID=db_srid, GML_SRS_NAME=db_gml_srs_name;
-	
 END;
 $$ 
 LANGUAGE plpgsql;
