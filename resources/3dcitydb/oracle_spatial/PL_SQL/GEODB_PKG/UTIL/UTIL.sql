@@ -1,6 +1,7 @@
 -- UTIL.sql
 --
 -- Authors:     Claus Nagel <cnagel@virtualcitysystems.de>
+--              Felix Kunde <fkunde@virtualcitysystems.de>
 --
 -- Copyright:   (c) 2007-2011  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universit�t Berlin, Germany
@@ -20,8 +21,9 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description                               | Author
--- 1.0.0     2008-09-10   release version                             CNag
+-- 1.2.0     2013-08-29   added change_db_srid procedure              FKun
 -- 1.1.0     2011-07-28   update to 2.0.6                             CNag
+-- 1.0.0     2008-09-10   release version                             CNag
 --
 
 /*****************************************************************
@@ -62,11 +64,13 @@ AS
   FUNCTION db_metadata RETURN DB_INFO_TABLE;
   FUNCTION error_msg(err_code VARCHAR2) RETURN VARCHAR2;
   FUNCTION split(list VARCHAR2, delim VARCHAR2 := ',') RETURN STRARRAY;
-  FUNCTION min(a number, b number) return number;
-  FUNCTION transform_or_null(geom MDSYS.SDO_GEOMETRY, srid number) RETURN MDSYS.SDO_GEOMETRY;
+  FUNCTION min(a NUMBER, b NUMBER) RETURN NUMBER;
+  FUNCTION transform_or_null(geom MDSYS.SDO_GEOMETRY, srid NUMBER) RETURN MDSYS.SDO_GEOMETRY;
   FUNCTION is_coord_ref_sys_3d(srid NUMBER) RETURN NUMBER;
   FUNCTION is_db_coord_ref_sys_3d RETURN NUMBER;
-  FUNCTION to_2d(geom mdsys.sdo_geometry, srid number) return mdsys.sdo_geometry; 
+  PROCEDURE change_db_srid(db_srid NUMBER, db_gml_srs_name VARCHAR2);
+  PROCEDURE change_column_srid(i_name VARCHAR2, t_name VARCHAR2, c_name VARCHAR2, is_3d BOOLEAN, db_srid NUMBER);
+  FUNCTION to_2d(geom MDSYS.SDO_GEOMETRY, srid NUMBER) RETURN MDSYS.SDO_GEOMETRY; 
 END geodb_util;
 /
 
@@ -264,7 +268,130 @@ AS
     execute immediate 'SELECT srid from DATABASE_SRS' into srid;
     return is_coord_ref_sys_3d(srid);
   END;
-  
+
+  /*****************************************************************
+  * change_db_srid
+  *
+  * @param db_srid the SRID of the coordinate system to be further used in the database
+  * @param db_gml_srs_name the GML_SRS_NAME of the coordinate system to be further used in the database
+  ******************************************************************/
+  PROCEDURE change_db_srid(db_srid NUMBER, db_gml_srs_name VARCHAR2)
+  IS
+  BEGIN
+    -- update entry in DATABASE_SRS table first
+    UPDATE DATABASE_SRS SET SRID=db_srid, GML_SRS_NAME=db_gml_srs_name;
+
+    -- change srid of each spatially enabled table
+    change_column_srid('CITYOBJECT_SPX', 'CITYOBJECT', 'ENVELOPE', TRUE, db_srid);
+    change_column_srid('SURFACE_GEOM_SPX', 'SURFACE_GEOMETRY', 'GEOMETRY', TRUE, db_srid);
+    change_column_srid('BREAKLINE_RID_SPX', 'BREAKLINE_RELIEF', 'RIDGE_OR_VALLEY_LINES', TRUE, db_srid);
+    change_column_srid('BREAKLINE_BREAK_SPX', 'BREAKLINE_RELIEF', 'BREAK_LINES', TRUE, db_srid);
+    change_column_srid('MASSPOINT_REL_SPX', 'MASSPOINT_RELIEF', 'RELIEF_POINTS', TRUE, db_srid);
+    change_column_srid('ORTHOPHOTO_IMP_SPX', 'ORTHOPHOTO_IMP', 'FOOTPRINT', FALSE, db_srid);
+    change_column_srid('TIN_RELF_STOP_SPX', 'TIN_RELIEF', 'STOP_LINES', TRUE, db_srid);
+    change_column_srid('TIN_RELF_BREAK_SPX', 'TIN_RELIEF', 'BREAK_LINES', TRUE, db_srid);
+    change_column_srid('TIN_RELF_CRTLPTS_SPX', 'TIN_RELIEF', 'CONTROL_POINTS', TRUE, db_srid);
+    change_column_srid(NULL, 'CITYOBJECT_GENERICATTRIB', 'GEOMVAL', TRUE, db_srid);
+    change_column_srid('GENERICCITY_LOD0TERR_SPX', 'GENERIC_CITYOBJECT', 'LOD0_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('GENERICCITY_LOD1TERR_SPX', 'GENERIC_CITYOBJECT', 'LOD1_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('GENERICCITY_LOD2TERR_SPX', 'GENERIC_CITYOBJECT', 'LOD2_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('GENERICCITY_LOD3TERR_SPX', 'GENERIC_CITYOBJECT', 'LOD3_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('GENERICCITY_LOD4TERR_SPX', 'GENERIC_CITYOBJECT', 'LOD4_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('GENERICCITY_LOD0REFPNT_SPX', 'GENERIC_CITYOBJECT', 'LOD0_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('GENERICCITY_LOD1REFPNT_SPX', 'GENERIC_CITYOBJECT', 'LOD1_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('GENERICCITY_LOD2REFPNT_SPX', 'GENERIC_CITYOBJECT', 'LOD2_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('GENERICCITY_LOD3REFPNT_SPX', 'GENERIC_CITYOBJECT', 'LOD3_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('GENERICCITY_LOD4REFPNT_SPX', 'GENERIC_CITYOBJECT', 'LOD4_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid(NULL, 'ADDRESS', 'MULTI_POINT', TRUE, db_srid);
+    change_column_srid('BUILDING_LOD1TERR_SPX', 'BUILDING', 'LOD1_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('BUILDING_LOD2TERR_SPX', 'BUILDING', 'LOD2_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('BUILDING_LOD3TERR_SPX', 'BUILDING', 'LOD3_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('BUILDING_LOD4TERR_SPX', 'BUILDING', 'LOD4_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('BUILDING_LOD2MULTI_SPX', 'BUILDING', 'LOD2_MULTI_CURVE', TRUE, db_srid);
+    change_column_srid('BUILDING_LOD3MULTI_SPX', 'BUILDING', 'LOD3_MULTI_CURVE', TRUE, db_srid);
+    change_column_srid('BUILDING_LOD4MULTI_SPX', 'BUILDING', 'LOD4_MULTI_CURVE', TRUE, db_srid);
+    change_column_srid('BLDG_FURN_LOD4REFPT_SPX', 'BUILDING_FURNITURE', 'LOD4_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('CITY_FURN_LOD1TERR_SPX', 'CITY_FURNITURE', 'LOD1_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('CITY_FURN_LOD2TERR_SPX', 'CITY_FURNITURE', 'LOD2_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('CITY_FURN_LOD3TERR_SPX', 'CITY_FURNITURE', 'LOD3_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('CITY_FURN_LOD4TERR_SPX', 'CITY_FURNITURE', 'LOD4_TERRAIN_INTERSECTION', TRUE, db_srid);
+    change_column_srid('CITY_FURN_LOD1REFPNT_SPX', 'CITY_FURNITURE', 'LOD1_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('CITY_FURN_LOD2REFPNT_SPX', 'CITY_FURNITURE', 'LOD2_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('CITY_FURN_LOD3REFPNT_SPX', 'CITY_FURNITURE', 'LOD3_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('CITY_FURN_LOD4REFPNT_SPX', 'CITY_FURNITURE', 'LOD4_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('CITYMODEL_SPX', 'CITYMODEL', 'ENVELOPE', TRUE, db_srid);
+    change_column_srid('CITYOBJECTGROUP_SPX', 'CITYOBJECTGROUP', 'GEOMETRY', TRUE, db_srid);
+    change_column_srid('RELIEF_COMPONENT_SPX', 'RELIEF_COMPONENT', 'EXTENT', FALSE, db_srid);
+    change_column_srid('SOL_VEG_OBJ_LOD1REFPT_SPX', 'SOLITARY_VEGETAT_OBJECT', 'LOD1_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('SOL_VEG_OBJ_LOD2REFPT_SPX', 'SOLITARY_VEGETAT_OBJECT', 'LOD2_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('SOL_VEG_OBJ_LOD3REFPT_SPX', 'SOLITARY_VEGETAT_OBJECT', 'LOD3_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('SOL_VEG_OBJ_LOD4REFPT_SPX', 'SOLITARY_VEGETAT_OBJECT', 'LOD4_IMPLICIT_REF_POINT', TRUE, db_srid);
+    change_column_srid('SURFACE_DATA_SPX', 'SURFACE_DATA', 'GT_REFERENCE_POINT', FALSE, db_srid);
+    change_column_srid('TRANSPORTATION_COMPLEX_SPX', 'TRANSPORTATION_COMPLEX', 'LOD0_NETWORK', TRUE, db_srid);
+    change_column_srid('WATERBODY_LOD0MULTI_SPX', 'WATERBODY', 'LOD0_MULTI_CURVE', TRUE, db_srid);
+    change_column_srid('WATERBODY_LOD1MULTI_SPX', 'WATERBODY', 'LOD1_MULTI_CURVE', TRUE, db_srid);
+    change_column_srid('PLANNING_SPATIAL_EXTENT_IDX', 'PLANNING', 'SPATIAL_EXTENT', FALSE, db_srid);
+  END;
+
+  /*****************************************************************
+  * change_column_srid
+  *
+  * @param i_name name of the spatial index
+  * @param t_name name of the table
+  * @param c_name name of the column
+  * @param is_3d dimension of spatial index
+  * @param db_srid the SRID of the coordinate system to be further used in the database
+  ******************************************************************/
+  PROCEDURE change_column_srid( 
+    i_name VARCHAR2,
+    t_name VARCHAR2, 
+    c_name VARCHAR2,
+    is_3d BOOLEAN,
+    db_srid NUMBER)
+  IS
+    is_versioned BOOLEAN;
+    is_valid BOOLEAN;
+    idx INDEX_OBJ;
+    sql_err_code VARCHAR2(20);
+  BEGIN
+    is_versioned := versioning_table(t_name) = 'ON';
+
+    IF i_name IS NOT NULL THEN
+      is_valid := geodb_idx.index_status(t_name, c_name) = 'VALID';
+
+      -- drop spatial index
+      IF is_3d THEN
+        idx := INDEX_OBJ.construct_spatial_3d(i_name, t_name, c_name);
+      ELSE
+        idx := INDEX_OBJ.construct_spatial_2d(i_name, t_name, c_name);
+      END IF;
+
+      sql_err_code := geodb_idx.drop_index(idx, is_versioned);
+
+      IF NOT is_valid THEN
+        -- only update metadata as the index was switched off before transaction
+        EXECUTE IMMEDIATE 'UPDATE USER_SDO_GEOM_METADATA SET srid = :1 WHERE table_name = :2 AND column_name = :3'
+                             USING db_srid, t_name, c_name;
+        COMMIT;
+      END IF;
+
+      -- update geometry column
+      EXECUTE IMMEDIATE 'UPDATE ' || t_name || ' t  set t.' || c_name || '.SDO_SRID = :1 WHERE t.' || c_name || ' IS NOT NULL' 
+                           USING db_srid;
+      COMMIT;
+
+      IF is_valid THEN
+        -- create spatial index
+        sql_err_code := geodb_idx.create_index(idx, is_versioned);
+      END IF;
+    ELSE
+      -- no spatial index defined for table, only update geometry SRID
+      EXECUTE IMMEDIATE 'UPDATE ' || t_name || ' t  set t.' || c_name || '.SDO_SRID = :1 WHERE t.' || c_name || ' IS NOT NULL' 
+                           USING db_srid;
+      COMMIT;
+    END IF;
+  END;
+
   /*
   * code taken from http://forums.oracle.com/forums/thread.jspa?messageID=960492&#960492
   */
