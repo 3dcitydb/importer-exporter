@@ -1,8 +1,7 @@
 -- UTIL.sql
 --
 -- Authors:     Claus Nagel <cnagel@virtualcitysystems.de>
---
--- Conversion:	Felix Kunde <fkunde@virtualcitysystems.de>
+--              Felix Kunde <fkunde@virtualcitysystems.de>
 --
 -- Copyright:   (c) 2007-2013  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universitaet Berlin, Germany
@@ -22,9 +21,11 @@
 --
 -- ChangeLog:
 --
--- Version | Date       | Description      | Author | Conversion 
--- 1.1.0     2013-02-22   PostGIS version    CNag     FKun
--- 1.0.0     2008-09-10   release version    CNag
+-- Version | Date       | Description                                | Author
+-- 1.2.0     2013-08-29   minor changes to change_db_srid function     FKun
+-- 1.1.0     2013-02-22   PostGIS version                              FKun
+--                                                                     CNag
+-- 1.0.0     2008-09-10   release version                              CNag
 --
 
 /*****************************************************************
@@ -175,10 +176,6 @@ LANGUAGE plpgsql;
 /*******************************************************************
 * change_db_srid
 *
-* Changes the database-SRID, if wrong SRID was used for CREATE_DB.
-* Also helpful if using an instance of the 3DCityDB as a template database.
-* It should only be executed on an empty database to avoid any errors.
-*
 * @param db_srid the SRID of the coordinate system to be further used in the database
 * @param db_gml_srs_name the GML_SRS_NAME of the coordinate system to be further used in the database
 *******************************************************************/
@@ -188,59 +185,59 @@ BEGIN
   UPDATE DATABASE_SRS SET SRID=db_srid, GML_SRS_NAME=db_gml_srs_name;
   
   -- change srid of each spatially enabled table
-  PERFORM geodb_pkg.util_change_table_srid('cityobject_spx', 'cityobject', 'envelope', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('surface_geom_spx', 'surface_geometry', 'geometry', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('breakline_rid_spx', 'breakline_relief', 'ridge_or_valley_lines', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('breakline_break_spx', 'breakline_relief', 'break_lines', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('masspoint_rel_spx', 'masspoint_relief', 'relief_points', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('tin_relf_stop_spx', 'tin_relief', 'stop_lines', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('tin_relf_break_spx', 'tin_relief', 'break_lines', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('tin_relf_crtlpts_spx', 'tin_relief', 'control_points', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid(NULL, 'cityobject_genericattrib', 'geomval', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('genericcity_lod0terr_spx', 'generic_cityobject', 'lod0_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('genericcity_lod1terr_spx', 'generic_cityobject', 'lod1_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('genericcity_lod2terr_spx', 'generic_cityobject', 'lod2_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('genericcity_lod3terr_spx', 'generic_cityobject', 'lod3_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('genericcity_lod4terr_spx', 'generic_cityobject', 'lod4_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('genericcity_lod0refpnt_spx', 'generic_cityobject', 'lod0_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('genericcity_lod1refpnt_spx', 'generic_cityobject', 'lod1_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('genericcity_lod2refpnt_spx', 'generic_cityobject', 'lod2_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('genericcity_lod3refpnt_spx', 'generic_cityobject', 'lod3_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('genericcity_lod4refpnt_spx', 'generic_cityobject', 'lod4_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid(NULL, 'address', 'multi_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('building_lod1terr_spx', 'building', 'lod1_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('building_lod2terr_spx', 'building', 'lod2_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('building_lod3terr_spx', 'building', 'lod3_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('building_lod4terr_spx', 'building', 'lod4_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('building_lod2multi_spx', 'building', 'lod2_multi_curve', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('building_lod3multi_spx', 'building', 'lod3_multi_curve', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('building_lod4multi_spx', 'building', 'lod4_multi_curve', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('bldg_furn_lod4refpt_spx', 'building_furniture', 'lod4_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('city_furn_lod1terr_spx', 'city_furniture', 'lod1_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('city_furn_lod2terr_spx', 'city_furniture', 'lod2_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('city_furn_lod3terr_spx', 'city_furniture', 'lod3_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('city_furn_lod4terr_spx', 'city_furniture', 'lod4_terrain_intersection', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('city_furn_lod1refpnt_spx', 'city_furniture', 'lod1_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('city_furn_lod2refpnt_spx', 'city_furniture', 'lod2_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('city_furn_lod3refpnt_spx', 'city_furniture', 'lod3_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('city_furn_lod4refpnt_spx', 'city_furniture', 'lod4_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('citymodel_spx', 'citymodel', 'envelope', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('cityobjectgroup_spx', 'cityobjectgroup', 'geometry', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('relief_component_spx', 'relief_component', 'extent', FALSE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('sol_veg_obj_lod1refpt_spx', 'solitary_vegetat_object', 'lod1_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('sol_veg_obj_lod2refpt_spx', 'solitary_vegetat_object', 'lod2_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('sol_veg_obj_lod3refpt_spx', 'solitary_vegetat_object', 'lod3_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('sol_veg_obj_lod4refpt_spx', 'solitary_vegetat_object', 'lod4_implicit_ref_point', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('surface_data_spx', 'surface_data', 'gt_reference_point', FALSE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('transportation_complex_spx', 'transportation_complex', 'lod0_network', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('waterbody_lod0multi_spx', 'waterbody', 'lod0_multi_curve', TRUE, db_srid);
-  PERFORM geodb_pkg.util_change_table_srid('waterbody_lod1multi_spx', 'waterbody', 'lod1_multi_curve', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('cityobject_spx', 'cityobject', 'envelope', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('surface_geom_spx', 'surface_geometry', 'geometry', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('breakline_rid_spx', 'breakline_relief', 'ridge_or_valley_lines', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('breakline_break_spx', 'breakline_relief', 'break_lines', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('masspoint_rel_spx', 'masspoint_relief', 'relief_points', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('tin_relf_stop_spx', 'tin_relief', 'stop_lines', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('tin_relf_break_spx', 'tin_relief', 'break_lines', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('tin_relf_crtlpts_spx', 'tin_relief', 'control_points', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid(NULL, 'cityobject_genericattrib', 'geomval', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('genericcity_lod0terr_spx', 'generic_cityobject', 'lod0_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('genericcity_lod1terr_spx', 'generic_cityobject', 'lod1_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('genericcity_lod2terr_spx', 'generic_cityobject', 'lod2_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('genericcity_lod3terr_spx', 'generic_cityobject', 'lod3_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('genericcity_lod4terr_spx', 'generic_cityobject', 'lod4_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('genericcity_lod0refpnt_spx', 'generic_cityobject', 'lod0_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('genericcity_lod1refpnt_spx', 'generic_cityobject', 'lod1_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('genericcity_lod2refpnt_spx', 'generic_cityobject', 'lod2_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('genericcity_lod3refpnt_spx', 'generic_cityobject', 'lod3_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('genericcity_lod4refpnt_spx', 'generic_cityobject', 'lod4_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid(NULL, 'address', 'multi_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('building_lod1terr_spx', 'building', 'lod1_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('building_lod2terr_spx', 'building', 'lod2_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('building_lod3terr_spx', 'building', 'lod3_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('building_lod4terr_spx', 'building', 'lod4_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('building_lod2multi_spx', 'building', 'lod2_multi_curve', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('building_lod3multi_spx', 'building', 'lod3_multi_curve', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('building_lod4multi_spx', 'building', 'lod4_multi_curve', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('bldg_furn_lod4refpt_spx', 'building_furniture', 'lod4_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('city_furn_lod1terr_spx', 'city_furniture', 'lod1_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('city_furn_lod2terr_spx', 'city_furniture', 'lod2_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('city_furn_lod3terr_spx', 'city_furniture', 'lod3_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('city_furn_lod4terr_spx', 'city_furniture', 'lod4_terrain_intersection', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('city_furn_lod1refpnt_spx', 'city_furniture', 'lod1_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('city_furn_lod2refpnt_spx', 'city_furniture', 'lod2_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('city_furn_lod3refpnt_spx', 'city_furniture', 'lod3_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('city_furn_lod4refpnt_spx', 'city_furniture', 'lod4_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('citymodel_spx', 'citymodel', 'envelope', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('cityobjectgroup_spx', 'cityobjectgroup', 'geometry', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('relief_component_spx', 'relief_component', 'extent', FALSE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('sol_veg_obj_lod1refpt_spx', 'solitary_vegetat_object', 'lod1_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('sol_veg_obj_lod2refpt_spx', 'solitary_vegetat_object', 'lod2_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('sol_veg_obj_lod3refpt_spx', 'solitary_vegetat_object', 'lod3_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('sol_veg_obj_lod4refpt_spx', 'solitary_vegetat_object', 'lod4_implicit_ref_point', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('surface_data_spx', 'surface_data', 'gt_reference_point', FALSE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('transportation_complex_spx', 'transportation_complex', 'lod0_network', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('waterbody_lod0multi_spx', 'waterbody', 'lod0_multi_curve', TRUE, db_srid);
+  PERFORM geodb_pkg.util_change_column_srid('waterbody_lod1multi_spx', 'waterbody', 'lod1_multi_curve', TRUE, db_srid);
 END;
 $$ 
 LANGUAGE plpgsql;
 
 /*****************************************************************
-* change_table_srid
+* change_column_srid
 *
 * @param i_name name of the spatial index
 * @param t_name name of the table
@@ -248,7 +245,7 @@ LANGUAGE plpgsql;
 * @param is_3d dimension of spatial index
 * @param db_srid the SRID of the coordinate system to be further used in the database
 ******************************************************************/
-CREATE OR REPLACE FUNCTION geodb_pkg.util_change_table_srid(
+CREATE OR REPLACE FUNCTION geodb_pkg.util_change_column_srid(
   i_name VARCHAR,
   t_name VARCHAR, 
   c_name VARCHAR,
