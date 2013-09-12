@@ -44,7 +44,7 @@ public class Queries {
 	public static final String GET_IDS =
 		 "SELECT co.id, co.gmlid, co.class_id " +
 		 "FROM CITYOBJECT co " +
-		 "WHERE co.envelope && ST_GeomFromEWKT(?) and " +
+		 "WHERE ST_Intersects(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' or " +
 		 	"ST_CoveredBy(co.envelope, ST_GeomFromEWKT(?)) = 'TRUE' " +
 		 "ORDER BY 3"; // ORDER BY co.class_id*/
  

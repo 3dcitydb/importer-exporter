@@ -117,16 +117,16 @@ public class DBSplitter {
 		//		dbConnectionPool.gotoWorkspace(
 		//				connection, 
 		//				database.getWorkspaces().getExportWorkspace());
-		
+
 		// create temporary table for global appearances if needed
 		if (config.getInternal().isExportGlobalAppearances()) {
 			TemporaryCacheTable temp = cacheManager.createTemporaryCacheTableWithIndexes(CacheTableModelEnum.GLOBAL_APPEARANCE);
 
 			// try and change workspace for temporary table
-/*			dbConnectionPool.gotoWorkspace(
+			/*			dbConnectionPool.gotoWorkspace(
 					temp.getConnection(), 
 					config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
-*/		}
+			 */		}
 
 		// set filter instances 
 		featureClassFilter = exportFilter.getFeatureClassFilter();
@@ -168,7 +168,7 @@ public class DBSplitter {
 			if (DBUtil.isIndexed("CITYOBJECT", "ENVELOPE")) {	
 				TiledBoundingBox tiledBBox = expFilterConfig.getComplexFilter().getTiledBoundingBox();
 				DatabaseSrs dbSrs = dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem();
-				
+
 				// we need to ensure that the srid of the bbox agrees 
 				// with that of the databse for st_relate
 				if (bbox.getSrs().getSrid() != dbSrs.getSrid())	{
@@ -178,36 +178,38 @@ public class DBSplitter {
 						throw new SQLException("Failed to transform bounding box filter", e);
 					}
 				}
-				
+
 				double minX = bbox.getLowerLeftCorner().getX();
 				double minY = bbox.getLowerLeftCorner().getY();
 				double maxX = bbox.getUpperRightCorner().getX();
 				double maxY = bbox.getUpperRightCorner().getY();
 
 				boolean overlap = tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode();
-										
+
 				StringBuilder bboxFilterQuery = new StringBuilder("");
-				bboxFilterQuery.append("and co.ENVELOPE && ST_GeomFromEWKT('SRID=").append(dbSrs.getSrid())
-								.append(";POLYGON((")
-								.append(minX).append(" ").append(minY).append(",")
-								.append(minX).append(" ").append(maxY).append(",")
-								.append(maxX).append(" ").append(maxY).append(",")
-								.append(maxX).append(" ").append(minY).append(",")
-								.append(minX).append(" ").append(minY).append("))')");
-								
-				if (!overlap)
+				if (overlap) {
+					bboxFilterQuery.append("and (co.ENVELOPE && ST_GeomFromEWKT('SRID=").append(dbSrs.getSrid())
+					.append(";POLYGON((")
+					.append(minX).append(" ").append(minY).append(",")
+					.append(minX).append(" ").append(maxY).append(",")
+					.append(maxX).append(" ").append(maxY).append(",")
+					.append(maxX).append(" ").append(minY).append(",")
+					.append(minX).append(" ").append(minY).append("))'))");
+
+				} else {
 					bboxFilterQuery.append(" and ST_CoveredBy(co.ENVELOPE, ST_GeomFromEWKT('SRID=").append(dbSrs.getSrid())
-								.append(";POLYGON((")
-								.append(minX).append(" ").append(minY).append(",")
-								.append(minX).append(" ").append(maxY).append(",")
-								.append(maxX).append(" ").append(maxY).append(",")
-								.append(maxX).append(" ").append(minY).append(",")
-								.append(minX).append(" ").append(minY).append("))')) = 'TRUE'");
-				
+					.append(";POLYGON((")
+					.append(minX).append(" ").append(minY).append(",")
+					.append(minX).append(" ").append(maxY).append(",")
+					.append(maxX).append(" ").append(maxY).append(",")
+					.append(maxX).append(" ").append(minY).append(",")
+					.append(minX).append(" ").append(minY).append("))')) = 'TRUE'");
+				}
+
 				bboxFilter = bboxFilterQuery.toString();
-				
-//				if (dbConnectionPool.getActiveConnectionMetaData().getDatabaseMajorVersion() == 11)
-//					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
+
+				//				if (dbConnectionPool.getActiveConnectionMetaData().getDatabaseMajorVersion() == 11)
+				//					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
 
 			} else {
 				LOG.warn("Bounding box filter is enabled although spatial indexes are disabled.");
@@ -333,7 +335,7 @@ public class DBSplitter {
 
 				queryList.add(query.toString());
 			}
-				
+
 		} else {
 			StringBuilder query = new StringBuilder();
 
@@ -370,7 +372,7 @@ public class DBSplitter {
 				}				
 			}
 		}
-			
+
 		if (queryList.size() == 0)
 			return;
 
@@ -470,7 +472,7 @@ public class DBSplitter {
 			if (!classIds.isEmpty())
 				classIdsString = "and co.CLASS_ID in (" + Util.collection2string(classIds, ",") + ")";
 		}
-			
+
 		try {
 			// first step: retrieve group ids
 			groupStmt = connection.createStatement();
@@ -497,7 +499,7 @@ public class DBSplitter {
 
 			rs.close();	
 			groupStmt.close();
-			
+
 			// second step: export group members
 			StringBuilder memberQuery = new StringBuilder("select co.ID, co.CLASS_ID, co.GMLID from CITYOBJECT co ")
 			.append("where co.ID in (select co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co ")
@@ -507,8 +509,8 @@ public class DBSplitter {
 			.append("union all ")
 			.append("select grp.PARENT_CITYOBJECT_ID from CITYOBJECTGROUP grp where grp.ID=?) ");
 
-				if (bboxFilter != null)
-					memberQuery.append(bboxFilter);
+			if (bboxFilter != null)
+				memberQuery.append(bboxFilter);
 			memberStmt = connection.prepareStatement(memberQuery.toString());
 
 			for (int i = 0; shouldRun && i < groupIds.size(); ++i) {
@@ -545,7 +547,7 @@ public class DBSplitter {
 
 				rs.close();
 			}
-			
+
 			memberStmt.close();
 
 			// wait for jobs to be done...
@@ -561,7 +563,7 @@ public class DBSplitter {
 			for (long groupId : groupIds) {
 				if (!shouldRun)
 					break;
-				
+
 				DBSplittingResult splitter = new DBSplittingResult(groupId, CityGMLClass.CITY_OBJECT_GROUP);
 				dbWorkerPool.addWork(splitter);
 			}
@@ -589,7 +591,7 @@ public class DBSplitter {
 
 				groupStmt = null;
 			}
-			
+
 			if (memberStmt != null) {
 				try {
 					memberStmt.close();
@@ -601,7 +603,7 @@ public class DBSplitter {
 			}
 		}
 	}
-	
+
 	private void queryGlobalAppearance() throws SQLException {
 		if (!shouldRun)
 			return;
