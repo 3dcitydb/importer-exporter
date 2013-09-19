@@ -2,11 +2,11 @@
 --
 -- Authors:     Claus Nagel <cnagel@virtualcitysystems.de>
 --              Felix Kunde <fkunde@virtualcitysystems.de>
---              György Hudra <hudra@moss.de>
+--              GyÃ¶rgy Hudra <hudra@moss.de>
 --
 -- Copyright:   (c) 2013       Faculty of Civil, Geo and Environmental Engineering, 
 --                             Chair of Geoinformatics,
---                             Technische Universitaet München, Germany
+--                             Technische Universitaet MÃ¼nchen, Germany
 --                             http://www.gis.bv.tum.de/
 --              (c) 2007-2013  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universitaet Berlin, Germany
@@ -41,11 +41,17 @@ CREATE OR REPLACE FUNCTION geodb_pkg.del_is_not_referenced(
 RETURNS BOOLEAN AS
 $$
 DECLARE
-  is_not_referenced BOOLEAN;
+  ref_cur refcursor;
+  dummy INTEGER;
+  is_not_referenced BOOLEAN := false;
 BEGIN
-  EXECUTE 'SELECT EXISTS (SELECT * FROM ' || table_name || ' WHERE ' || check_column || '=$1 AND NOT ' || not_column || '=$2)'
-             INTO is_not_referenced USING check_id, not_id;
-
+  OPEN ref_cur FOR EXECUTE 'SELECT 1 FROM ' || table_name || ' WHERE ' || check_column || '=$1 AND NOT ' || not_column || '=$2' USING check_id, not_id;
+  FETCH ref_cur into dummy;
+  IF NOT FOUND THEN
+    is_not_referenced := true;
+  END IF;
+  CLOSE ref_cur;   
+  
   RETURN is_not_referenced;
 END; 
 $$ 
@@ -58,25 +64,15 @@ delete from SURFACE_GEOMETRY
 CREATE OR REPLACE FUNCTION geodb_pkg.del_delete_surface_geometry(pid INTEGER, clean_apps INTEGER DEFAULT 0) RETURNS SETOF void AS
 $$
 DECLARE
-  textureparam_rec INTEGER;
   surface_geometry_rec INTEGER;
 BEGIN
-  FOR textureparam_rec IN EXECUTE 'SELECT surface_geometry_id FROM textureparam WHERE surface_geometry_id IN
-             (WITH RECURSIVE geometry(id, parent_id, level) AS (
-                SELECT sg.id, sg.parent_id, 1 AS level FROM surface_geometry sg WHERE sg.id=$1
-              UNION ALL
-                SELECT sg.id, sg.parent_id, g.level + 1 AS level FROM surface_geometry sg, geometry g WHERE sg.parent_id = g.id
-              )
-              SELECT id FROM geometry ORDER BY level DESC)' USING pid LOOP
-    EXECUTE 'DELETE FROM textureparam WHERE surface_geometry_id = $1' USING textureparam_rec;
-  END LOOP;
-
   FOR surface_geometry_rec IN EXECUTE 'WITH RECURSIVE geometry(id, parent_id, level) AS (
                 SELECT sg.id, sg.parent_id, 1 AS level FROM surface_geometry sg WHERE sg.id=$1
               UNION ALL
                 SELECT sg.id, sg.parent_id, g.level + 1 AS level FROM surface_geometry sg, geometry g WHERE sg.parent_id = g.id
               )
               SELECT id FROM geometry ORDER BY level DESC' USING pid LOOP 			  
+    EXECUTE 'DELETE FROM textureparam WHERE surface_geometry_id = $1' USING surface_geometry_rec;
     EXECUTE 'DELETE FROM surface_geometry WHERE id = $1' USING surface_geometry_rec;
   END LOOP;
 
