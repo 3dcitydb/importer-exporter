@@ -33,6 +33,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
+
 
 public class CacheTableTextureParam extends CacheTableModel {
 	public static CacheTableTextureParam instance = null;
@@ -71,16 +73,20 @@ public class CacheTableTextureParam extends CacheTableModel {
 	}
 	
 	@Override
-	protected String getColumns() {
-		return "(ID NUMBER, " +
-		"GMLID VARCHAR2(256), " +
-		"TYPE NUMBER(3), " +
-		"IS_TEXTURE_PARAMETERIZATION NUMBER(1,0), " +
-		"TEXPARAM_GMLID VARCHAR2(256), " +
-		"WORLD_TO_TEXTURE VARCHAR2(1000), " +
-		"TEXTURE_COORDINATES VARCHAR2(4000), " +
-		"TARGET_URI VARCHAR2(256), " +
-		"TEXCOORDLIST_ID VARCHAR2(256))";
+	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+		StringBuilder builder = new StringBuilder("(")
+		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
+		.append("TYPE ").append(sqlAdapter.getNumeric(3)).append(", ")
+		.append("IS_TEXTURE_PARAMETERIZATION ").append(sqlAdapter.getNumeric(1, 0)).append(", ")
+		.append("TEXPARAM_GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
+		.append("WORLD_TO_TEXTURE ").append(sqlAdapter.getCharacterVarying(1000)).append(", ")
+		.append("TEXTURE_COORDINATES ").append(sqlAdapter.getCharacterVarying(4000)).append(", ")
+		.append("TARGET_URI ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
+		.append("TEXCOORDLIST_ID ").append(sqlAdapter.getCharacterVarying(256))
+		.append(")");
+		
+		return builder.toString();
 	}
 
 }

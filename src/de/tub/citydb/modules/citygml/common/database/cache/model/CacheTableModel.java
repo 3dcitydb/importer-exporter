@@ -34,31 +34,30 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
+
 
 public abstract class CacheTableModel {
 
-	public void create(Connection conn, String tableName, CacheTableType type) throws SQLException {
+	public void create(Connection conn, String tableName, CacheTableType type, AbstractSQLAdapter sqlAdapter) throws SQLException {
 		switch (type) {
 		case GLOBAL_TEMPORARY_TABLE:
-			createGlobalTemporaryTable(conn, tableName);
+			createGlobalTemporaryTable(conn, tableName, sqlAdapter);
 			break;
 		case HEAP_TABLE:
-			createHeapTable(conn, tableName);
+			createHeapTable(conn, tableName, sqlAdapter);
 			break;
 		default:
-			throw new IllegalArgumentException("Unsupported cache table type: " + type);
+			throw new SQLException("Unsupported cache table type: " + type);
 		}
 	}
 
-	private void createGlobalTemporaryTable(Connection conn, String tableName) throws SQLException {		
+	private void createGlobalTemporaryTable(Connection conn, String tableName, AbstractSQLAdapter sqlAdapter) throws SQLException {		
 		Statement stmt = null;
 
 		try {
 			stmt = conn.createStatement();
-			stmt.executeUpdate("create global temporary table " + 
-					tableName + 
-					getColumns() + 
-			"on commit preserve rows");
+			stmt.executeUpdate(sqlAdapter.getCreateGlobalTemporaryTable(tableName, getColumns(sqlAdapter), true));
 			conn.commit();
 		} finally {
 			if (stmt != null) {
@@ -68,14 +67,12 @@ public abstract class CacheTableModel {
 		}
 	}
 
-	private void createHeapTable(Connection conn, String tableName) throws SQLException {
+	private void createHeapTable(Connection conn, String tableName, AbstractSQLAdapter sqlAdapter) throws SQLException {
 		Statement stmt = null;
 
 		try {
 			stmt = conn.createStatement();
-			stmt.executeUpdate("create table " + 
-					tableName + 
-					getColumns());
+			stmt.executeUpdate(sqlAdapter.getCreateUnloggedTable(tableName, getColumns(sqlAdapter)));
 			conn.commit();
 		} finally {
 			if (stmt != null) {
@@ -85,16 +82,12 @@ public abstract class CacheTableModel {
 		}
 	}
 
-	public void createAsSelectFrom(Connection conn, String tableName, String sourceTableName) throws SQLException {
+	public void createAsSelectFrom(Connection conn, String tableName, String sourceTableName, AbstractSQLAdapter sqlAdapter) throws SQLException {
 		Statement stmt = null;
 		
 		try {
 			stmt = conn.createStatement();
-			stmt.executeUpdate("create table " + 
-					tableName +
-					" nologging" +
-					" as select * from " + 
-					sourceTableName);
+			stmt.executeUpdate(sqlAdapter.getCreateUnloggedTableAsSelectFrom(tableName, sourceTableName));
 			conn.commit();
 		} finally {
 			if (stmt != null) {
@@ -170,5 +163,5 @@ public abstract class CacheTableModel {
 	}
 	
 	public abstract CacheTableModelEnum getType();
-	protected abstract String getColumns();
+	protected abstract String getColumns(AbstractSQLAdapter sqlAdapter);
 }

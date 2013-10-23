@@ -33,6 +33,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
+
 
 public class CacheTableLinearRing extends CacheTableModel {
 	public static CacheTableLinearRing instance = null;
@@ -71,9 +73,13 @@ public class CacheTableLinearRing extends CacheTableModel {
 	}
 	
 	@Override
-	protected String getColumns() {
-		return "(GMLID VARCHAR2(256), " +
-		"PARENT_GMLID VARCHAR2(256), " +
-		"RING_NO NUMBER)"; 
+	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+		StringBuilder builder = new StringBuilder("(")
+		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
+		.append("PARENT_GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
+		.append("RING_NO ").append(sqlAdapter.getInteger())
+		.append(")");
+		
+		return builder.toString();
 	}
 }

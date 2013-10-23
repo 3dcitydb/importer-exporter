@@ -112,15 +112,17 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		connection = dbConnectionPool.getConnection();
 		connection.setAutoCommit(false);
 		// try and change workspace if needed
-		Database database = config.getProject().getDatabase();
-		dbConnectionPool.gotoWorkspace(connection, 
-				database.getWorkspaces().getKmlExportWorkspace());
+		if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
+			Database database = config.getProject().getDatabase();
+			dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(connection, 
+					database.getWorkspaces().getKmlExportWorkspace());
+		}
 
 		kmlExporterManager = new KmlExporterManager(jaxbKmlContext,
-													jaxbColladaContext,
-													ioWriterPool,
-													kmlFactory,
-													config);
+				jaxbColladaContext,
+				ioWriterPool,
+				kmlFactory,
+				config);
 
 		elevationServiceHandler = new ElevationServiceHandler();
 
@@ -301,142 +303,142 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		CityGMLClass featureClass = work.getCityObjectType();
 		try {
 			switch (featureClass) {
-				case BUILDING:
-					singleObject = new Building(connection,
-												kmlExporterManager,
-												kmlFactory,
-												elevationServiceHandler,
-												getBalloonTemplateHandler(featureClass),
-												eventDispatcher,
-												config);
-					break;
+			case BUILDING:
+				singleObject = new Building(connection,
+						kmlExporterManager,
+						kmlFactory,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
 
-				case WATER_BODY:
-				case WATER_CLOSURE_SURFACE:
-				case WATER_GROUND_SURFACE:
-				case WATER_SURFACE:
-					singleObject = new WaterBody(connection,
-												 kmlExporterManager,
-												 kmlFactory,
-												 elevationServiceHandler,
-												 getBalloonTemplateHandler(featureClass),
-												 eventDispatcher,
-												 config);
-					break;
+			case WATER_BODY:
+			case WATER_CLOSURE_SURFACE:
+			case WATER_GROUND_SURFACE:
+			case WATER_SURFACE:
+				singleObject = new WaterBody(connection,
+						kmlExporterManager,
+						kmlFactory,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
 
-				case LAND_USE:
-					singleObject = new LandUse(connection,
-											   kmlExporterManager,
-											   kmlFactory,
-											   elevationServiceHandler,
-											   getBalloonTemplateHandler(featureClass),
-											   eventDispatcher,
-											   config);
-					break;
+			case LAND_USE:
+				singleObject = new LandUse(connection,
+						kmlExporterManager,
+						kmlFactory,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
 
-				case SOLITARY_VEGETATION_OBJECT:
-					singleObject = new SolitaryVegetationObject(connection,
-												   				kmlExporterManager,
-												   				kmlFactory,
-												   				elevationServiceHandler,
-																getBalloonTemplateHandler(featureClass),
-												   				eventDispatcher,
-												   				config);
-					break;
+			case SOLITARY_VEGETATION_OBJECT:
+				singleObject = new SolitaryVegetationObject(connection,
+						kmlExporterManager,
+						kmlFactory,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
 
-				case PLANT_COVER:
-					singleObject = new PlantCover(connection,
-												  kmlExporterManager,
-												  kmlFactory,
-												  elevationServiceHandler,
-												  getBalloonTemplateHandler(featureClass),
-												  eventDispatcher,
-												  config);
-					break;
+			case PLANT_COVER:
+				singleObject = new PlantCover(connection,
+						kmlExporterManager,
+						kmlFactory,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
 
-				case TRAFFIC_AREA:
-				case AUXILIARY_TRAFFIC_AREA:
-				case TRANSPORTATION_COMPLEX:
-				case TRACK:
-				case RAILWAY:
-				case ROAD:
-				case SQUARE:
-					singleObject = new Transportation(connection,
-												   	  kmlExporterManager,
-												   	  kmlFactory,
-												   	  elevationServiceHandler,
-												   	  getBalloonTemplateHandler(featureClass),
-												   	  eventDispatcher,
-												   	  config);
-					break;
-/*
+			case TRAFFIC_AREA:
+			case AUXILIARY_TRAFFIC_AREA:
+			case TRANSPORTATION_COMPLEX:
+			case TRACK:
+			case RAILWAY:
+			case ROAD:
+			case SQUARE:
+				singleObject = new Transportation(connection,
+						kmlExporterManager,
+						kmlFactory,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
+				/*
 				case RASTER_RELIEF:
 				case MASSPOINT_RELIEF:
 				case BREAKLINE_RELIEF:
 				case TIN_RELIEF:
-*/
+				 */
 				case RELIEF_FEATURE:
 					singleObject = new Relief(connection,
-											  kmlExporterManager,
-											  kmlFactory,
-											  elevationServiceHandler,
-											  getBalloonTemplateHandler(featureClass),
-											  eventDispatcher,
-											  config);
+							kmlExporterManager,
+							kmlFactory,
+							elevationServiceHandler,
+							getBalloonTemplateHandler(featureClass),
+							eventDispatcher,
+							config);
 					break;
 
 				case GENERIC_CITY_OBJECT:
 					singleObject = new GenericCityObject(connection,
-												   	   	 kmlExporterManager,
-												   	   	 kmlFactory,
-												   	   	 elevationServiceHandler,
-												   	   	 getBalloonTemplateHandler(featureClass),
-												   	   	 eventDispatcher,
-												   	   	 config);
+							kmlExporterManager,
+							kmlFactory,
+							elevationServiceHandler,
+							getBalloonTemplateHandler(featureClass),
+							eventDispatcher,
+							config);
 					break;
 
 				case CITY_FURNITURE:
 					singleObject = new CityFurniture(connection,
-												   	 kmlExporterManager,
-											   	   	 kmlFactory,
-											   	   	 elevationServiceHandler,
-											   	   	 getBalloonTemplateHandler(featureClass),
-											   	   	 eventDispatcher,
-											   	   	 config);
+							kmlExporterManager,
+							kmlFactory,
+							elevationServiceHandler,
+							getBalloonTemplateHandler(featureClass),
+							eventDispatcher,
+							config);
 					break;
 
 				case CITY_OBJECT_GROUP:
 					singleObject = new CityObjectGroup(connection,
-												   	   kmlExporterManager,
-												   	   kmlFactory,
-												   	   elevationServiceHandler,
-												   	   getBalloonTemplateHandler(featureClass),
-												   	   eventDispatcher,
-												   	   config);
+							kmlExporterManager,
+							kmlFactory,
+							elevationServiceHandler,
+							getBalloonTemplateHandler(featureClass),
+							eventDispatcher,
+							config);
 					break;
 
 			}
 
 			singleObject.read(work);
-			
+
 			if (!work.isCityObjectGroup() && 
-				work.getDisplayForm().getForm() == DisplayForm.COLLADA &&
-				singleObject.getGmlId() != null) { // object is filled
+					work.getDisplayForm().getForm() == DisplayForm.COLLADA &&
+					singleObject.getGmlId() != null) { // object is filled
 
 				// correction for some CityGML Types exported together
 				if (featureClass == CityGMLClass.PLANT_COVER) featureClass = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
 
 				if (featureClass == CityGMLClass.WATER_CLOSURE_SURFACE ||
-					featureClass == CityGMLClass.WATER_GROUND_SURFACE ||
-					featureClass == CityGMLClass.WATER_SURFACE) featureClass = CityGMLClass.WATER_BODY;
-			
+						featureClass == CityGMLClass.WATER_GROUND_SURFACE ||
+						featureClass == CityGMLClass.WATER_SURFACE) featureClass = CityGMLClass.WATER_BODY;
+
 				if (featureClass == CityGMLClass.TRAFFIC_AREA ||
-					featureClass == CityGMLClass.AUXILIARY_TRAFFIC_AREA ||
-					featureClass == CityGMLClass.TRACK ||
-					featureClass == CityGMLClass.RAILWAY ||
-					featureClass == CityGMLClass.ROAD ||
-					featureClass == CityGMLClass.SQUARE) featureClass = CityGMLClass.TRANSPORTATION_COMPLEX;
-				
+						featureClass == CityGMLClass.AUXILIARY_TRAFFIC_AREA ||
+						featureClass == CityGMLClass.TRACK ||
+						featureClass == CityGMLClass.RAILWAY ||
+						featureClass == CityGMLClass.ROAD ||
+						featureClass == CityGMLClass.SQUARE) featureClass = CityGMLClass.TRANSPORTATION_COMPLEX;
+
 				KmlGenericObject currentObjectGroup = objectGroup.get(featureClass);
 				if (currentObjectGroup == null) {
 					currentObjectGroup = singleObject;
@@ -465,13 +467,13 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			double imageScaleFactor = 1;
 			ColladaOptions colladaOptions = objectGroup.getColladaOptions();
 			if (colladaOptions.isGenerateTextureAtlases()) {
-//				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.creatingAtlases")));
+				//				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.creatingAtlases")));
 				if (colladaOptions.isScaleImages()) {
 					imageScaleFactor = colladaOptions.getImageScaleFactor();
 				}
 				objectGroup.createTextureAtlas(colladaOptions.getPackingAlgorithm(),
-											   imageScaleFactor,
-											   colladaOptions.isTextureAtlasPots());
+						imageScaleFactor,
+						colladaOptions.isTextureAtlasPots());
 			}
 			else if (colladaOptions.isScaleImages()) {
 				imageScaleFactor = colladaOptions.getImageScaleFactor();
@@ -488,8 +490,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			colladaBundle.setGmlId(objectGroup.getGmlId());
 
 			kmlExporterManager.print(colladaBundle,
-									 objectGroup.getId(),					
-									 objectGroup.getBalloonSettings().isBalloonContentInSeparateFile());
+					objectGroup.getId(),					
+					objectGroup.getBalloonSettings().isBalloonContentInSeparateFile());
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -517,51 +519,51 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private Balloon getBalloonSettings(CityGMLClass cityObjectType) {
 		Balloon balloonSettings = null;
 		switch (cityObjectType) {
-			case BUILDING:
-				balloonSettings = config.getProject().getKmlExporter().getBuildingBalloon();
-				break;
-			case LAND_USE:
-				balloonSettings = config.getProject().getKmlExporter().getLandUseBalloon();
-				break;
-			case WATER_BODY:
-			case WATER_CLOSURE_SURFACE:
-			case WATER_GROUND_SURFACE:
-			case WATER_SURFACE:
-				balloonSettings = config.getProject().getKmlExporter().getWaterBodyBalloon();
-				break;
-			case SOLITARY_VEGETATION_OBJECT:
-			case PLANT_COVER:
-				balloonSettings = config.getProject().getKmlExporter().getVegetationBalloon();
-				break;
-			case TRAFFIC_AREA:
-			case AUXILIARY_TRAFFIC_AREA:
-			case TRANSPORTATION_COMPLEX:
-			case TRACK:
-			case RAILWAY:
-			case ROAD:
-			case SQUARE:
-				balloonSettings = config.getProject().getKmlExporter().getTransportationBalloon();
-				break;
-/*
+		case BUILDING:
+			balloonSettings = config.getProject().getKmlExporter().getBuildingBalloon();
+			break;
+		case LAND_USE:
+			balloonSettings = config.getProject().getKmlExporter().getLandUseBalloon();
+			break;
+		case WATER_BODY:
+		case WATER_CLOSURE_SURFACE:
+		case WATER_GROUND_SURFACE:
+		case WATER_SURFACE:
+			balloonSettings = config.getProject().getKmlExporter().getWaterBodyBalloon();
+			break;
+		case SOLITARY_VEGETATION_OBJECT:
+		case PLANT_COVER:
+			balloonSettings = config.getProject().getKmlExporter().getVegetationBalloon();
+			break;
+		case TRAFFIC_AREA:
+		case AUXILIARY_TRAFFIC_AREA:
+		case TRANSPORTATION_COMPLEX:
+		case TRACK:
+		case RAILWAY:
+		case ROAD:
+		case SQUARE:
+			balloonSettings = config.getProject().getKmlExporter().getTransportationBalloon();
+			break;
+			/*
 			case RASTER_RELIEF:
 			case MASSPOINT_RELIEF:
 			case BREAKLINE_RELIEF:
 			case TIN_RELIEF:
-*/
-			case RELIEF_FEATURE:
-				balloonSettings = config.getProject().getKmlExporter().getReliefBalloon();
-				break;
-			case GENERIC_CITY_OBJECT:
-				balloonSettings = config.getProject().getKmlExporter().getGenericCityObjectBalloon();
-				break;
-			case CITY_FURNITURE:
-				balloonSettings = config.getProject().getKmlExporter().getCityFurnitureBalloon();
-				break;
-			case CITY_OBJECT_GROUP:
-				balloonSettings = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
-				break;
-			default:
-				return null;
+			 */
+		case RELIEF_FEATURE:
+			balloonSettings = config.getProject().getKmlExporter().getReliefBalloon();
+			break;
+		case GENERIC_CITY_OBJECT:
+			balloonSettings = config.getProject().getKmlExporter().getGenericCityObjectBalloon();
+			break;
+		case CITY_FURNITURE:
+			balloonSettings = config.getProject().getKmlExporter().getCityFurnitureBalloon();
+			break;
+		case CITY_OBJECT_GROUP:
+			balloonSettings = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
+			break;
+		default:
+			return null;
 		}
 		return balloonSettings;
 	}

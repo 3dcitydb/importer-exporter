@@ -38,7 +38,6 @@ import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficArea;
 import org.citygml4j.model.citygml.transportation.TrafficArea;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
@@ -60,18 +59,20 @@ public class DBTrafficArea implements DBImporter {
 		init();
 	}
 
-	private void init() throws SQLException {		
-		psTrafficArea = batchConn.prepareStatement("insert into TRAFFIC_AREA (ID, IS_AUXILIARY, NAME, NAME_CODESPACE, DESCRIPTION, FUNCTION, USAGE, " +
-				"SURFACE_MATERIAL, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID, " +
-				"TRANSPORTATION_COMPLEX_ID) values "+
-				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	private void init() throws SQLException {
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into TRAFFIC_AREA (ID, IS_AUXILIARY, NAME, NAME_CODESPACE, DESCRIPTION, FUNCTION, USAGE, ")
+		.append("SURFACE_MATERIAL, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID, ")
+		.append("TRANSPORTATION_COMPLEX_ID) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psTrafficArea = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 	}
 
 	public long insert(TrafficArea trafficArea, long parentId) throws SQLException {
-		long trafficAreaId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long trafficAreaId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (trafficAreaId == 0)
 			return 0;
 
@@ -192,14 +193,14 @@ public class DBTrafficArea implements DBImporter {
         psTrafficArea.setLong(12, parentId);
 
         psTrafficArea.addBatch();
-        if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+        if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.TRAFFIC_AREA);
         
 		return trafficAreaId;
 	}
 
 	public long insert(AuxiliaryTrafficArea auxiliaryTrafficArea, long parentId) throws SQLException {
-		long auxiliaryTrafficAreaId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long auxiliaryTrafficAreaId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (auxiliaryTrafficAreaId == 0)
 			return 0;
 
@@ -316,7 +317,7 @@ public class DBTrafficArea implements DBImporter {
         psTrafficArea.setLong(12, parentId);
 
         psTrafficArea.addBatch();
-        if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+        if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.TRAFFIC_AREA);
         
 		return auxiliaryTrafficAreaId;

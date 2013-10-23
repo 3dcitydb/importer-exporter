@@ -34,33 +34,31 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import oracle.jdbc.OracleResultSet;
-import oracle.sql.BLOB;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.database.adapter.BlobImportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 
 public class XlinkLibraryObject implements DBXlinkResolver {
 	private final Logger LOG = Logger.getInstance();
-	
+
 	private final Connection externalFileConn;
 	private final Config config;
+	private final DBXlinkResolverManager resolverManager;
 
-	private PreparedStatement psPrepare;
-	PreparedStatement psSelect;
+	private BlobImportAdapter blobImportAdapter;
 	private String localPath;
 	private boolean replacePathSeparator;
 
-	public XlinkLibraryObject(Connection textureImageConn, Config config) throws SQLException {
+	public XlinkLibraryObject(Connection textureImageConn, Config config, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.externalFileConn = textureImageConn;
 		this.config = config;
+		this.resolverManager = resolverManager;
 
 		init();
 	}
@@ -69,34 +67,28 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 		localPath = config.getInternal().getImportPath();
 		replacePathSeparator = File.separatorChar == '/';
 
-		psPrepare = externalFileConn.prepareStatement("update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=empty_blob() where ID=?");
-		psSelect = externalFileConn.prepareStatement("select LIBRARY_OBJECT from IMPLICIT_GEOMETRY where ID=? for update");
+		blobImportAdapter = resolverManager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(externalFileConn);
 	}
 
 	public boolean insert(DBXlinkLibraryObject xlink) throws SQLException {
 		String objectFileName = xlink.getFileURI();
-		boolean isRemote = true;
-		URL objectURL = null;
-		File objectFile = null;
-		
-		try {
-			// first step: check whether we deal with a local or remote library object file
-			try {
-				objectURL = new URL(objectFileName);
-				objectFileName = objectURL.toString();
+		InputStream objectStream = null;
 
-			} catch (MalformedURLException malURL) {
-				isRemote = false;
-				
+		try {
+			try {
+				URL objectURL = new URL(objectFileName);
+				objectFileName = objectURL.toString();
+				objectStream = objectURL.openStream();
+			} catch (MalformedURLException malURL) {				
 				if (replacePathSeparator)
 					objectFileName = objectFileName.replace("\\", "/");
-				
-				objectFile = new File(objectFileName);
+
+				File objectFile = new File(objectFileName);
 				if (!objectFile.isAbsolute()) {
 					objectFileName = localPath + File.separator + objectFile.getPath();
 					objectFile = new File(objectFileName);
 				}
-				
+
 				// check minimum requirements for local library object file
 				if (!objectFile.exists() || !objectFile.isFile() || !objectFile.canRead()) {
 					LOG.error("Failed to read library object file '" + objectFileName + "'.");
@@ -105,87 +97,42 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 					LOG.error("Skipping 0 byte library object file '" + objectFileName + "'.");
 					return false;
 				}
+
+				objectStream = new FileInputStream(objectFileName);
+			}
+
+			boolean success = false;
+			if (objectStream == null) {
+				LOG.debug("Importing library object: " + objectFileName);
+				success = blobImportAdapter.insert(xlink.getId(), objectStream, objectFileName);
 			}
 			
-			// second step: prepare BLOB
-			psPrepare.setLong(1, xlink.getId());
-			psPrepare.executeUpdate();
-
-			// third step: get prepared BLOB to fill it with contents
-			psSelect.setLong(1, xlink.getId());
-			OracleResultSet rs = (OracleResultSet)psSelect.executeQuery();
-			if (!rs.next()) {
-				LOG.error("Database error while importing library object: " + objectFileName);
-
-				rs.close();
-				externalFileConn.rollback();
-				return false;
-			}
-
-			BLOB blob = rs.getBLOB(1);
-			rs.close();
-
-			// fourth step: try and upload library object data
-			LOG.debug("Importing library object: " + objectFileName);
-
-			InputStream in = null;
-
-			if (isRemote) {
-				in = objectURL.openStream();
-			} else {
-				in = new FileInputStream(objectFile);
-			}
-
-			if (in == null) {
-				LOG.error("Database error while importing library object: " + objectFileName);
-
-				externalFileConn.rollback();
-				return false;
-			}
-
-			OutputStream out = blob.setBinaryStream(1L);
-
-			int size = blob.getBufferSize();
-			byte[] buffer = new byte[size];
-			int length = -1;
-
-			while ((length = in.read(buffer)) != -1)
-				out.write(buffer, 0, length);
-		
-			in.close();
-			out.close();
-			blob.free();
-			externalFileConn.commit();
-			return true;
-			
-		} catch (FileNotFoundException fnfEx) {
+			return success;
+		} catch (FileNotFoundException e) {
 			LOG.error("Failed to find library object file '" + objectFileName + "'.");
-
-			externalFileConn.rollback();
 			return false;
-		} catch (IOException ioEx) {
-			LOG.error("Failed to read library object file '" + objectFileName + "': " + ioEx.getMessage());
-
-			externalFileConn.rollback();
+		} catch (IOException e) {
+			LOG.error("Failed to read library object file '" + objectFileName + "': " + e.getMessage());
 			return false;
-		} catch (SQLException sqlEx) {
-			LOG.error("SQL error while importing library object '" + objectFileName + "': " + sqlEx.getMessage());
-
-			externalFileConn.rollback();
-			return false;
-		} 
+		} finally {
+			if (objectStream != null) {
+				try {
+					objectStream.close();
+				} catch (IOException e) {
+					//
+				}
+			}
+		}
 	}
 
 	@Override
 	public void executeBatch() throws SQLException {
-		// we do not have any action here, since we are heavily committing and roll-backing
-		// within the insert-method. that's also the reason why we need a separated connection instance.
+		// we do not have any action here
 	}
 
 	@Override
 	public void close() throws SQLException {
-		psPrepare.close();
-		psSelect.close();
+		blobImportAdapter.close();
 	}
 
 	@Override

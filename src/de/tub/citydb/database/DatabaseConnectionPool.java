@@ -29,7 +29,6 @@
  */
 package de.tub.citydb.database;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -42,7 +41,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import oracle.jdbc.OracleConnection;
 import oracle.ucp.UniversalConnectionPoolAdapter;
 import oracle.ucp.UniversalConnectionPoolException;
 import oracle.ucp.UniversalConnectionPoolLifeCycleState;
@@ -50,6 +48,9 @@ import oracle.ucp.admin.UniversalConnectionPoolManager;
 import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
+
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.EventDispatcher;
@@ -57,20 +58,19 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBConnection;
-import de.tub.citydb.config.project.database.Workspace;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
+import de.tub.citydb.database.adapter.DatabaseAdapterFactory;
 import de.tub.citydb.event.DatabaseConnectionStateEventImpl;
-import de.tub.citydb.util.database.DBUtil;
 
 public class DatabaseConnectionPool {
 	private static DatabaseConnectionPool instance = new DatabaseConnectionPool();
 	private static final int LOGIN_TIMEOUT = 120;
 
-	private final String poolName = "oracle.pool";
+	private final String poolName = DefaultGMLIdManager.getInstance().generateUUID();
 	private final EventDispatcher eventDispatcher;
 	private UniversalConnectionPoolManager poolManager;
+	private AbstractDatabaseAdapter databaseAdapter;
 	private PoolDataSource poolDataSource;
-	private DBConnection activeConnection;
-	private DatabaseMetaDataImpl activeMetaData;
 
 	private DatabaseConnectionPool() {
 		// just to thwart instantiation
@@ -113,20 +113,22 @@ public class DatabaseConnectionPool {
 			if (isManagedConnectionPool(poolName))
 				disconnect();
 
+			// get database adapter
+			databaseAdapter = DatabaseAdapterFactory.getInstance().createDatabaseAdapter(conn.getDatabaseType());
+
+			// create data source
 			poolDataSource = PoolDataSourceFactory.getPoolDataSource();
 			poolDataSource.setConnectionPoolName(poolName);
 
-			poolDataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
-			poolDataSource.setURL("jdbc:oracle:thin:@//" + conn.getServer() + ":" + conn.getPort()+ "/" + conn.getSid());
+			poolDataSource.setConnectionFactoryClassName(databaseAdapter.getConnectionFactoryClassName());
+			poolDataSource.setURL(databaseAdapter.getJDBCUrl(conn.getServer(), conn.getPort(), conn.getSid()));
 			poolDataSource.setUser(conn.getUser());
 			poolDataSource.setPassword(conn.getInternalPassword());
 
 			// set connection properties
-			Properties props = new Properties();
-
-			// let statement data buffers be cached on a per thread basis
-			props.put(OracleConnection.CONNECTION_PROPERTY_USE_THREADLOCAL_BUFFER_CACHE, "true");
-			poolDataSource.setConnectionProperties(props);
+			Properties properties = databaseAdapter.getConnectionProperties();
+			if (properties != null)
+				poolDataSource.setConnectionProperties(properties);
 
 			poolManager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);		
 			poolManager.startConnectionPool(poolName);
@@ -140,11 +142,11 @@ public class DatabaseConnectionPool {
 
 		try {
 			// retrieve connection metadata
-			activeMetaData = DBUtil.getDatabaseInfo();
+			databaseAdapter.setConnectionMetaData(databaseAdapter.getUtil().getDatabaseInfo());
 
 			// check whether user-defined reference systems are supported
 			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
-				DBUtil.getSrsInfo(refSys);
+				databaseAdapter.getUtil().getSrsInfo(refSys);
 
 		} catch (SQLException e) {
 			try {
@@ -165,14 +167,18 @@ public class DatabaseConnectionPool {
 		}
 
 		// fire property change events
-		activeConnection = conn;
+		databaseAdapter.setConnectionDetails(conn);
 		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(false, true, this));
 	}
 	
+	public AbstractDatabaseAdapter getActiveDatabaseAdapter() {
+		return databaseAdapter;
+	}
+
 	public Connection getConnectionWithTimeout() throws SQLException {
 		if (poolDataSource == null)
 			throw new SQLException("Database is not connected.");
-		
+
 		ExecutorService service = Executors.newFixedThreadPool(1, new ThreadFactory() {
 			public Thread newThread(Runnable r) {
 				Thread t = new Thread(r);
@@ -192,25 +198,30 @@ public class DatabaseConnectionPool {
 
 		try {
 			connection = connectTask.get(LOGIN_TIMEOUT, TimeUnit.SECONDS);
+			connection.setAutoCommit(true);
+
 			service.shutdown();
 		} catch (Exception e) {
 			service.shutdownNow();
 			forceDisconnect();
-			
+
 			if (e instanceof ExecutionException)
 				throw (SQLException)e.getCause();
 			else 
 				throw new SQLException("A connection to the database could not be established.\nThe database did not respond for " + LOGIN_TIMEOUT + " seconds.");
 		}
-		
+
 		return connection;
 	}
-	
+
 	public Connection getConnection() throws SQLException {
 		if (poolDataSource == null)
 			throw new SQLException("Database is not connected.");
-		
-		return poolDataSource.getConnection();
+
+		Connection connection = poolDataSource.getConnection();
+		connection.setAutoCommit(true);
+
+		return connection;
 	}
 
 	public UniversalConnectionPoolLifeCycleState getLifeCyleState() {
@@ -226,14 +237,6 @@ public class DatabaseConnectionPool {
 
 	public boolean isConnected() {
 		return getLifeCyleState().equals(UniversalConnectionPoolLifeCycleState.LIFE_CYCLE_RUNNING);
-	}
-
-	public DBConnection getActiveConnection() {
-		return activeConnection;
-	}
-
-	public DatabaseMetaDataImpl getActiveConnectionMetaData() {
-		return activeMetaData;
 	}
 
 	public int getBorrowedConnectionsCount() throws SQLException {
@@ -306,10 +309,8 @@ public class DatabaseConnectionPool {
 			throw new SQLException(e.getMessage());
 		}
 
-		if (activeConnection != null) {
-			activeMetaData = null;
-			activeConnection = null;
-		}
+		if (databaseAdapter != null)
+			databaseAdapter = null;
 
 		// fire property change events
 		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(wasConnected, false, this));
@@ -325,79 +326,11 @@ public class DatabaseConnectionPool {
 			//
 		}
 
-		if (activeConnection != null) {
-			activeMetaData = null;
-			activeConnection = null;
-		}
+		if (databaseAdapter != null)
+			databaseAdapter = null;
 
 		// fire property change events
 		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(wasConnected, false, this));
-	}
-
-	public boolean gotoWorkspace(Connection conn, Workspace workspace) {
-		return gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
-	}
-
-	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) {
-		if (workspaceName == null)
-			throw new IllegalArgumentException("Workspace name may not be null.");
-
-		if (timestamp == null)
-			throw new IllegalArgumentException("Workspace timestamp name may not be null.");
-
-		workspaceName = workspaceName.trim();
-		timestamp = timestamp.trim();
-		CallableStatement stmt = null;
-
-		if (!workspaceName.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
-				(workspaceName.length() == 0 || workspaceName.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
-			workspaceName = Internal.ORACLE_DEFAULT_WORKSPACE;
-
-		try {
-			stmt = conn.prepareCall("{call dbms_wm.GotoWorkspace('" + workspaceName + "')}");
-			stmt.executeQuery();
-
-			if (timestamp.length() > 0) {
-				stmt.close();
-				stmt = conn.prepareCall("{call dbms_wm.GotoDate('" + timestamp + "', 'DD.MM.YYYY')}");
-				stmt.executeQuery();
-			}
-
-			return true;
-		} catch (SQLException sqlEx) {
-			return false;
-		} finally {
-			if (stmt != null) {
-				try {
-					stmt.close();
-				} catch (SQLException sqlEx) {
-					//
-				}
-
-				stmt = null;
-			}
-		}
-	}
-
-	public boolean existsWorkspace(Workspace workspace) {
-		Connection conn = null;
-
-		try {
-			conn = getConnection();
-			return gotoWorkspace(conn, workspace);
-		} catch (SQLException sqlEx) {
-			return false;
-		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException sqlEx) {
-					//
-				}
-
-				conn = null;
-			}
-		}
 	}
 
 	private boolean isManagedConnectionPool(String poolName) throws UniversalConnectionPoolException {

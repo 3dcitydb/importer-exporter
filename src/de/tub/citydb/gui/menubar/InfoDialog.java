@@ -142,8 +142,9 @@ public class InfoDialog extends JDialog {
 			authors.setBackground(new Color(255, 255, 255));
 			authors.setFont(authorsHeader.getFont());
 
-			authors.setText("Claus Nagel <claus.nagel@tu-berlin.de>\n" +
+			authors.setText("Claus Nagel <cnagel@virtualcitysystems.de>\n" +
 					"Javier Herreruela <javier.herreruela@tu-berlin.de>\n" +
+					"Felix Kunde <fkunde@virtualcitysystems.de>\n" +
 					"Alexandra Lorenz <alexandra.lorenz@tu-berlin.de>\n" +
 					"Gerhard König <gerhard.koenig@tu-berlin.de>\n" +
 			"Thomas H. Kolbe <thomas.kolbe@tum.de>");				
@@ -213,6 +214,13 @@ public class InfoDialog extends JDialog {
 		        ((HTMLDocument)wtf_label.getDocument()).getStyleSheet().addRule(bodyRule);
 		        wtf_label.setEditable(false);
 				logos.add(wtf_label, GuiUtil.setConstraints(1,2,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
+				
+				JLabel moss_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/moss_logo.png"))));
+				logos.add(moss_logo, GuiUtil.setConstraints(0,3,0,0,GridBagConstraints.NONE,5,0,5,0));
+				JEditorPane moss_label = new JEditorPane("text/html", "<html><b>M.O.S.S. Computer Grafik Systeme GmbH,<br/>Taufkirchen, Germany</b><br/>http://www.moss.de/</html>");
+		        ((HTMLDocument)moss_label.getDocument()).getStyleSheet().addRule(bodyRule);
+		        vcs_label.setEditable(false);				
+				logos.add(moss_label, GuiUtil.setConstraints(1,3,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
 
 				logos.add(new JLabel(), GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,5,5,0,5));
 	

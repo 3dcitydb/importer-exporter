@@ -63,6 +63,7 @@ import javax.swing.border.TitledBorder;
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseSrs;
+import de.tub.citydb.api.database.DatabaseType;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
@@ -92,6 +93,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	private JComboBox connCombo;
 	private JTextField descriptionText;
+	private JComboBox databaseTypeCombo;
 	private JTextField serverText;
 	private JFormattedTextField portText;
 	private JTextField databaseText;
@@ -111,6 +113,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	private JLabel connLabel;
 	private JLabel descriptionLabel;
+	private JLabel databaseTypeLabel;
 	private JLabel userLabel;
 	private JLabel passwordLabel;
 	private JLabel serverLabel;
@@ -135,6 +138,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private boolean isModified() {
 		DBConnection dbConnection = (DBConnection)connCombo.getSelectedItem();	
 		if (!descriptionText.getText().trim().equals(dbConnection.getDescription())) return true;
+		if (databaseTypeCombo.getSelectedItem() != dbConnection.getDatabaseType()) return true;
 		if (!serverText.getText().equals(dbConnection.getServer())) return true;
 		if (!userText.getText().equals(dbConnection.getUser())) return true;		
 		if (!String.valueOf(passwordText.getPassword()).equals(dbConnection.getInternalPassword())) return true;
@@ -148,6 +152,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private void initGui() {
 		connCombo = new JComboBox();
 		descriptionText = new JTextField();
+		databaseTypeCombo = new JComboBox();
 		serverText = new JTextField();
 		DecimalFormat df = new DecimalFormat("#####");
 		df.setMaximumIntegerDigits(5);
@@ -188,6 +193,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		connectionDetails.setBorder(BorderFactory.createTitledBorder(""));
 		connectionDetails.setLayout(new GridBagLayout());
 		descriptionLabel = new JLabel();
+		databaseTypeLabel = new JLabel();
 		userLabel = new JLabel();
 		passwordLabel = new JLabel();
 		serverLabel = new JLabel();
@@ -202,25 +208,27 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		connectionDetails.add(passwordLabel, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 		connectionDetails.add(passwordText, GuiUtil.setConstraints(1,2,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 		connectionDetails.add(passwordCheck, GuiUtil.setConstraints(1,3,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(serverLabel, GuiUtil.setConstraints(0,4,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(serverText, GuiUtil.setConstraints(1,4,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(portLabel, GuiUtil.setConstraints(0,5,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(databaseTypeLabel, GuiUtil.setConstraints(0,4,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(databaseTypeCombo, GuiUtil.setConstraints(1,4,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));		
+		connectionDetails.add(serverLabel, GuiUtil.setConstraints(0,5,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(serverText, GuiUtil.setConstraints(1,5,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(portLabel, GuiUtil.setConstraints(0,6,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 
-		connectionDetails.add(portText, GuiUtil.setConstraints(1,5,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,0,5,5,5));
+		connectionDetails.add(portText, GuiUtil.setConstraints(1,6,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,0,5,5,5));
 		portText.setMinimumSize(portText.getPreferredSize());
 
-		connectionDetails.add(databaseLabel, GuiUtil.setConstraints(0,6,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
-		connectionDetails.add(databaseText, GuiUtil.setConstraints(1,6,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(databaseLabel, GuiUtil.setConstraints(0,7,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(databaseText, GuiUtil.setConstraints(1,7,1.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 
 		connectionButtons = new JPanel();
-		connectionDetails.add(connectionButtons, GuiUtil.setConstraints(2,0,1,6,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
+		connectionDetails.add(connectionButtons, GuiUtil.setConstraints(2,0,1,7,0.0,0.0,GridBagConstraints.BOTH,0,5,5,5));
 		connectionButtons.setLayout(new GridBagLayout());
 		connectionButtons.add(applyButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,0,0,0));
 		connectionButtons.add(newButton, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
 		connectionButtons.add(copyButton, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
 		connectionButtons.add(deleteButton, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.HORIZONTAL,5,0,0,0));
-		connectionDetails.add(connectButton, GuiUtil.setConstraints(0,7,3,1,0.0,0.0,GridBagConstraints.NONE,10,5,5,5));
-		connectionDetails.add(infoButton, GuiUtil.setConstraints(2,7,0.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
+		connectionDetails.add(connectButton, GuiUtil.setConstraints(0,8,3,1,0.0,0.0,GridBagConstraints.NONE,10,5,5,5));
+		connectionDetails.add(infoButton, GuiUtil.setConstraints(2,8,0.0,0.0,GridBagConstraints.HORIZONTAL,5,5,0,5));
 
 		operations = new JPanel();
 		view.add(operations, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
@@ -239,6 +247,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		// influence focus policy
 		connectionDetails.setFocusCycleRoot(false);
 		connectionButtons.setFocusCycleRoot(true);
+		
+		for (DatabaseType type : DatabaseType.values())
+			databaseTypeCombo.addItem(type);
 
 		portText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -305,8 +316,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		infoButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				topFrame.clearConsole();
-				LOG.all(LogLevel.INFO, "Connected to database profile '" + databaseController.getActiveConnectionDetails().getDescription() + "'.");
-				databaseController.getActiveConnectionMetaData().printToConsole();
+				LOG.all(LogLevel.INFO, "Connected to database profile '" + databaseController.getActiveDatabaseAdapter().getConnectionDetails().getDescription() + "'.");
+				databaseController.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
 			}
 		});
 
@@ -322,6 +333,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		((TitledBorder)connectionDetails.getBorder()).setTitle(Internal.I18N.getString("db.border.connectionDetails"));
 		connLabel.setText(Internal.I18N.getString("db.label.connection"));
 		descriptionLabel.setText(Internal.I18N.getString("db.label.description"));
+		databaseTypeLabel.setText(Internal.I18N.getString("db.label.databaseType"));
 		userLabel.setText(Internal.I18N.getString("common.label.username"));
 		passwordLabel.setText(Internal.I18N.getString("common.label.password"));
 		serverLabel.setText(Internal.I18N.getString("common.label.server"));
@@ -437,7 +449,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		case FINISH_CONNECT:
 			if (databaseController.isConnected()) {
 				LOG.info("Database connection established.");
-				databaseController.getActiveConnectionMetaData().printToConsole();
+				databaseController.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
 
 				// log whether user-defined SRSs are supported
 				for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
@@ -564,6 +576,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		} else
 			descriptionText.setText(dbConnection.getDescription());
 
+		dbConnection.setDatabaseType((DatabaseType)databaseTypeCombo.getSelectedItem());
 		dbConnection.setServer(serverText.getText().trim());	
 		dbConnection.setPort(((Number)portText.getValue()).intValue());
 		dbConnection.setSid(databaseText.getText());
@@ -579,6 +592,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	private void getDbConnection(DBConnection dbConnection) {
 		descriptionText.setText(dbConnection.getDescription());
+		databaseTypeCombo.setSelectedItem(dbConnection.getDatabaseType());
 		serverText.setText(dbConnection.getServer());
 		databaseText.setText(dbConnection.getSid());
 		userText.setText(dbConnection.getUser());

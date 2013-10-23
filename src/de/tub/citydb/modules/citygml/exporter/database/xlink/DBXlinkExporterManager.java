@@ -36,16 +36,19 @@ import java.util.HashMap;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 
 public class DBXlinkExporterManager {
 	private final Connection connection;
+	private final AbstractDatabaseAdapter databaseAdapter;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
 	private HashMap<DBXlinkExporterEnum, DBXlinkExporter> dbExporterMap;
 
-	public DBXlinkExporterManager(Connection connection, Config config, EventDispatcher eventDispatcher) {
+	public DBXlinkExporterManager(Connection connection, AbstractDatabaseAdapter databaseAdapter, Config config, EventDispatcher eventDispatcher) {
 		this.connection = connection;
+		this.databaseAdapter = databaseAdapter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
@@ -61,7 +64,7 @@ public class DBXlinkExporterManager {
 				dbExporter = new DBXlinkExporterTextureImage(connection, config, this);
 				break;
 			case LIBRARY_OBJECT:
-				dbExporter = new DBXlinkExporterLibraryObject(connection, config);
+				dbExporter = new DBXlinkExporterLibraryObject(connection, config, this);
 				break;
 			}
 
@@ -70,6 +73,10 @@ public class DBXlinkExporterManager {
 		}
 
 		return dbExporter;
+	}
+	
+	public AbstractDatabaseAdapter getDatabaseAdapter() {
+		return databaseAdapter;
 	}
 
 	public void propagateEvent(Event event) {

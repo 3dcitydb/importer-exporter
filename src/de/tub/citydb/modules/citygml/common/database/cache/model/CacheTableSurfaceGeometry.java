@@ -33,6 +33,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
+
 
 public class CacheTableSurfaceGeometry extends CacheTableModel {
 	public static CacheTableSurfaceGeometry instance = null;
@@ -69,12 +71,16 @@ public class CacheTableSurfaceGeometry extends CacheTableModel {
 	}
 	
 	@Override
-	protected String getColumns() {
-		return "(ID NUMBER," +
-		"PARENT_ID NUMBER, " +
-		"ROOT_ID NUMBER, " +
-		"REVERSE NUMBER(1,0), " +
-		"GMLID VARCHAR2(256))";
+	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+		StringBuilder builder = new StringBuilder("(")
+		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("PARENT_ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("ROOT_ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("REVERSE ").append(sqlAdapter.getNumeric(1, 0)).append(", ")
+		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256))
+		.append(")");
+		
+		return builder.toString();
 	}
 
 }

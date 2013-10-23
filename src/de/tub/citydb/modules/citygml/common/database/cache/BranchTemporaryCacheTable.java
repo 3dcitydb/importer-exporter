@@ -169,6 +169,7 @@ public class BranchTemporaryCacheTable implements CacheTable {
 					isCreated = false;
 				} finally {
 					if (conn != null) {
+						conn.commit();
 						conn.close();
 						conn = null;
 					}

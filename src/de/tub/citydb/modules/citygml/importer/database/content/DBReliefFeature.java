@@ -39,7 +39,6 @@ import org.citygml4j.model.citygml.relief.AbstractReliefComponent;
 import org.citygml4j.model.citygml.relief.ReliefComponentProperty;
 import org.citygml4j.model.citygml.relief.ReliefFeature;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -73,7 +72,7 @@ public class DBReliefFeature implements DBImporter {
 	}
 
 	public long insert(ReliefFeature reliefFeature) throws SQLException {
-		long reliefFeatureId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long reliefFeatureId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (reliefFeatureId != 0)
@@ -124,7 +123,7 @@ public class DBReliefFeature implements DBImporter {
 		psReliefFeature.setInt(5, reliefFeature.getLod());
 
 		psReliefFeature.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.RELIEF_FEATURE);
 
 		// relief component

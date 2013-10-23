@@ -129,7 +129,8 @@ public class DatabaseMetaDataImpl implements DatabaseMetaData {
 
 	@Override
 	public void printToConsole() {
-		LOG.all(LogLevel.INFO, getShortDatabaseProductVersion());
+		LOG.all(LogLevel.INFO, "Database: " + getDatabaseProductName());
+		LOG.all(LogLevel.INFO, "Version: " + getDatabaseProductVersion());
 		LOG.all(LogLevel.INFO, "SRID: " + srs.getSrid() + " (" + srs.getType() + ')');
 		LOG.all(LogLevel.INFO, "SRS: " + srs.getDatabaseSrsName());
 		LOG.all(LogLevel.INFO, "gml:srsName: " + srs.getGMLSrsName());
@@ -137,9 +138,10 @@ public class DatabaseMetaDataImpl implements DatabaseMetaData {
 	}
 	
 	public enum Versioning {
-		ON("ON"),
-		OFF("OFF"),
-		PARTLY("PARTLY");
+		ON("On"),
+		OFF("Off"),
+		PARTLY("Partly"),
+		NOT_SUPPORTED("Not supported");
 		
 		private final String value;
 		
@@ -153,12 +155,12 @@ public class DatabaseMetaDataImpl implements DatabaseMetaData {
 
 		public static Versioning fromValue(String v) {
 			for (Versioning c: Versioning.values()) {
-				if (c.value.equals(v)) {
+				if (c.value.toLowerCase().equals(v.toLowerCase())) {
 					return c;
 				}
 			}
 
-			return OFF;
+			return NOT_SUPPORTED;
 		}
 		
 		public String toString() {

@@ -40,7 +40,6 @@ import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupMember;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -76,7 +75,7 @@ public class DBCityObjectGroup implements DBImporter {
 	}
 
 	public long insert(CityObjectGroup cityObjectGroup) throws SQLException {
-		long cityObjectGroupId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long cityObjectGroupId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (cityObjectGroupId != 0)
@@ -178,7 +177,7 @@ public class DBCityObjectGroup implements DBImporter {
 		psCityObjectGroup.setNull(9, 0);
 		
 		psCityObjectGroup.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECTGROUP);		
 		
 		// group parent

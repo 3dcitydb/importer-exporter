@@ -53,19 +53,20 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBOperationType;
+import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.IndexStatusInfo;
+import de.tub.citydb.database.IndexStatusInfo.IndexInfoObject;
+import de.tub.citydb.database.IndexStatusInfo.IndexStatus;
+import de.tub.citydb.database.IndexStatusInfo.IndexType;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.database.DBUtil;
-import de.tub.citydb.util.database.IndexStatusInfo;
-import de.tub.citydb.util.database.IndexStatusInfo.IndexInfoObject;
-import de.tub.citydb.util.database.IndexStatusInfo.IndexStatus;
-import de.tub.citydb.util.database.IndexStatusInfo.IndexType;
 import de.tub.citydb.util.gui.GuiUtil;
 
 public class IndexOperation extends DatabaseOperationView {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final ViewController viewController;
+	private final DatabaseConnectionPool dbConnectionPool;
 	private final Config config;
 
 	private JPanel component;
@@ -78,6 +79,7 @@ public class IndexOperation extends DatabaseOperationView {
 	public IndexOperation(Config config) {
 		this.config = config;
 		viewController = ObjectRegistry.getInstance().getViewController();
+		dbConnectionPool = DatabaseConnectionPool.getInstance();
 
 		init();
 	}
@@ -232,10 +234,10 @@ public class IndexOperation extends DatabaseOperationView {
 
 					if (type == IndexType.SPATIAL && spatial.isSelected()) {
 						LOG.all(LogLevel.INFO, "Activating spatial indexes...");
-						indexStatus = DBUtil.createSpatialIndexes();
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createSpatialIndexes();
 					} else if (type == IndexType.NORMAL && normal.isSelected()) {
 						LOG.all(LogLevel.INFO, "Activating normal indexes...");
-						indexStatus = DBUtil.createNormalIndexes();
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createNormalIndexes();
 					}
 
 					if (indexStatus != null) {				
@@ -318,10 +320,10 @@ public class IndexOperation extends DatabaseOperationView {
 
 					if (type == IndexType.SPATIAL && spatial.isSelected()) {
 						LOG.all(LogLevel.INFO, "Deactivating spatial indexes...");
-						indexStatus = DBUtil.dropSpatialIndexes();
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().dropSpatialIndexes();
 					} else if (type == IndexType.NORMAL && normal.isSelected()) {
 						LOG.all(LogLevel.INFO, "Deactivating normal indexes...");
-						indexStatus = DBUtil.dropNormalIndexes();
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().dropNormalIndexes();
 					}
 
 					if (indexStatus != null) {				
@@ -404,10 +406,10 @@ public class IndexOperation extends DatabaseOperationView {
 
 					if (type == IndexType.SPATIAL && spatial.isSelected()) {
 						LOG.all(LogLevel.INFO, "Checking spatial indexes...");
-						indexStatus = DBUtil.getStatusSpatialIndexes();
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getStatusSpatialIndexes();
 					} else if (type == IndexType.NORMAL && normal.isSelected()) {
 						LOG.all(LogLevel.INFO, "Checking normal indexes...");
-						indexStatus = DBUtil.getStatusNormalIndexes();
+						indexStatus = dbConnectionPool.getActiveDatabaseAdapter().getUtil().getStatusNormalIndexes();
 					}
 
 					if (indexStatus != null) {

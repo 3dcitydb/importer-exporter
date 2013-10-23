@@ -124,7 +124,7 @@ public class TemporaryCacheTable implements CacheTable {
 				conn = dbPool.getConnection();
 				conn.setAutoCommit(false);
 
-				model.create(conn, tableName, CacheTableType.GLOBAL_TEMPORARY_TABLE);
+				model.create(conn, tableName, CacheTableType.GLOBAL_TEMPORARY_TABLE, dbPool.getActiveDatabaseAdapter().getSQLAdapter());
 				isCreated = true;
 			}
 		} finally {
@@ -156,7 +156,7 @@ public class TemporaryCacheTable implements CacheTable {
 
 		try {
 			this.conn = conn;
-			model.create(conn, tableName, CacheTableType.GLOBAL_TEMPORARY_TABLE);
+			model.create(conn, tableName, CacheTableType.GLOBAL_TEMPORARY_TABLE, dbPool.getActiveDatabaseAdapter().getSQLAdapter());
 			isCreated = true;
 		} finally {
 			lock.unlock();
@@ -300,6 +300,7 @@ public class TemporaryCacheTable implements CacheTable {
 					isCreated = false;
 				} finally {
 					if (isStandAlone && conn != null) {
+						conn.commit();
 						conn.close();
 						conn = null;
 					}

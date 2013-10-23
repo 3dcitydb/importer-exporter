@@ -29,6 +29,8 @@
  */
 package de.tub.citydb.modules.citygml.common.database.cache.model;
 
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
+
 
 
 public class CacheTableTextureFile extends CacheTableModel {
@@ -50,9 +52,13 @@ public class CacheTableTextureFile extends CacheTableModel {
 	}
 	
 	@Override
-	protected String getColumns() {
-		return "(ID NUMBER, " +
-		"FILE_URI VARCHAR2(1000), " +
-		"TYPE NUMBER(3))";
+	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+		StringBuilder builder = new StringBuilder("(")
+		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("FILE_URI ").append(sqlAdapter.getCharacterVarying(1000)).append(", ")
+		.append("TYPE ").append(sqlAdapter.getNumeric(3))
+		.append(")");
+		
+		return builder.toString();
 	}
 }

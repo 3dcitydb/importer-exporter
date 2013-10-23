@@ -37,9 +37,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -64,8 +61,8 @@ import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
 
@@ -105,14 +102,17 @@ public class DBSurfaceGeometry implements DBExporter {
 
 		if (exportAppearance) {
 			Integer commitAfterProp = config.getProject().getDatabase().getUpdateBatching().getTempBatchValue();
-			if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= Internal.ORACLE_MAX_BATCH_SIZE)
+			if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= dbExporterManager.getDatabaseAdapter().getMaxBatchSize())
 				commitAfter = commitAfterProp;
 
-			psImportGmlId = tempTable.getConnection().prepareStatement(
-					"insert first when (select distinct SURFACE_GEOMETRY_ID from TEXTUREPARAM where SURFACE_GEOMETRY_ID = ?) is not null " +
-							" then into " + tempTable.getTableName() +
-							" select ?, ? from dual "
-					);
+			StringBuilder query = new StringBuilder()
+			.append("insert into ").append(tempTable.getTableName()).append(" ")
+			.append("select ? ");
+			if (dbExporterManager.getDatabaseAdapter().requiresPseudoTableInSelect())
+				query.append("from ").append(dbExporterManager.getDatabaseAdapter().getPseudoTableName()).append(" ");
+
+			query.append("where exists (select 1 from TEXTUREPARAM tp inner join APPEAR_TO_SURFACE_DATA a2s on a2s.SURFACE_DATA_ID=tp.SURFACE_DATA_ID inner join APPEARANCE app on app.ID = a2s.APPEARANCE_ID where tp.SURFACE_GEOMETRY_ID = ? and app.CITYOBJECT_ID IS NULL)");
+			psImportGmlId = tempTable.getConnection().prepareStatement(query.toString());
 		}
 
 		useXLink = config.getProject().getExporter().getXlink().getGeometry().isModeXLink();
@@ -125,13 +125,15 @@ public class DBSurfaceGeometry implements DBExporter {
 		useTransformation = applyTransformation = config.getInternal().isTransformCoordinates();
 		if (useTransformation) {	
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
-			psTransformSurfaceGeometry = connection.prepareStatement("select ID, GMLID, PARENT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, " +
-					"geodb_util.transform_or_null(GEOMETRY, " + srid + ") AS GEOMETRY " +
-					"from SURFACE_GEOMETRY where ROOT_ID = ?");
+			StringBuilder query = new StringBuilder("select ID, GMLID, PARENT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, ")
+			.append(transformOrNull).append("(GEOMETRY, ").append(srid).append(") AS GEOMETRY ")
+			.append("from SURFACE_GEOMETRY where ROOT_ID = ?");
+			psTransformSurfaceGeometry = connection.prepareStatement(query.toString());
 		}
 	}
-	
+
 	public void setApplyCoordinateTransformation(boolean applyTransformation) {
 		if (useTransformation)
 			this.applyTransformation = applyTransformation;
@@ -163,10 +165,10 @@ public class DBSurfaceGeometry implements DBExporter {
 				int isXlink = rs.getInt("IS_XLINK");
 				int isReverse = rs.getInt("IS_REVERSE");
 
-				JGeometry geometry = null;
-				STRUCT struct = (STRUCT)rs.getObject("GEOMETRY");
-				if (!rs.wasNull() && struct != null)
-					geometry = JGeometry.load(struct);
+				GeometryObject geometry = null;
+				Object object = rs.getObject("GEOMETRY");
+				if (!rs.wasNull() && object != null)
+					geometry = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
 
 				// constructing a geometry node
 				GeometryNode geomNode = new GeometryNode();
@@ -178,14 +180,13 @@ public class DBSurfaceGeometry implements DBExporter {
 				geomNode.isTriangulated = isTriangulated == 1;			
 				geomNode.isXlink = isXlink == 1;			
 				geomNode.isReverse = isReverse == 1;
-
 				geomNode.geometry = geometry;
 
 				// put it into our geometry tree
 				geomTree.insertNode(geomNode, parentId);
 			}
 
-			// interpret geometry tree as a single abstractGeometry
+			// interpret geometry tree as a single abstract geometry
 			if (geomTree.root != 0)
 				return rebuildGeometry(geomTree.getNode(geomTree.root), false, false);
 			else {
@@ -292,36 +293,20 @@ public class DBSurfaceGeometry implements DBExporter {
 				forceRingIds = true;
 			}
 
-			int[] elemInfoArray = geomNode.geometry.getElemInfo();
-			double[] ordinatesArray = geomNode.geometry.getOrdinatesArray();
-
-			if (elemInfoArray.length < 3 || ordinatesArray.length == 0)
-				return null;
-
-			// we are pragmatic here. if elemInfoArray contains more than one entry,
-			// we suppose we have one outer ring and anything else are inner rings.
-			List<Integer> ringLimits = new ArrayList<Integer>();
-			for (int i = 3; i < elemInfoArray.length; i += 3)
-				ringLimits.add(elemInfoArray[i] - 1);
-
-			ringLimits.add(ordinatesArray.length);
-
-			// ok, rebuild surface according to this info
-			boolean isExterior = elemInfoArray[1] == 1003;
-			int ringElem = 0;
-			int ringNo = 0;
-			for (Integer ringLimit : ringLimits) {
-				List<Double> values = new ArrayList<Double>();
+			// we suppose we have one outer ring and one or more inner rings
+			boolean isExterior = true;
+			for (int ringIndex = 0; ringIndex < geomNode.geometry.getNumElements(); ringIndex++) {
+				List<Double> values = new ArrayList<Double>(geomNode.geometry.getCoordinates(ringIndex).length);
 
 				// check whether we have to reverse the coordinate order
 				if (!geomNode.isReverse) { 
-					for ( ; ringElem < ringLimit; ringElem++)
-						values.add(ordinatesArray[ringElem]);
+					values.addAll(geomNode.geometry.getCoordinatesAsList(ringIndex));
 				} else {
-					for (int i = ringLimit - 3; i >= ringElem; i -= 3) {
-						values.add(ordinatesArray[i]);
-						values.add(ordinatesArray[i + 1]);
-						values.add(ordinatesArray[i + 2]);
+					double[] coordinates = geomNode.geometry.getCoordinates(ringIndex);
+					for (int i = coordinates.length - 3; i >= 0; i -= 3) {
+						values.add(coordinates[i]);
+						values.add(coordinates[i + 1]);
+						values.add(coordinates[i + 2]);
 					}
 				}
 
@@ -330,7 +315,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					DirectPositionList directPositionList = new DirectPositionList();
 
 					if (forceRingIds)
-						linearRing.setId(polygon.getId() + '_' + ringNo + '_');
+						linearRing.setId(polygon.getId() + '_' + ringIndex + '_');
 
 					directPositionList.setValue(values);
 					directPositionList.setSrsDimension(3);
@@ -347,7 +332,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					DirectPositionList directPositionList = new DirectPositionList();
 
 					if (forceRingIds)
-						linearRing.setId(polygon.getId() + '_' + ringNo + '_');
+						linearRing.setId(polygon.getId() + '_' + ringIndex + '_');
 
 					directPositionList.setValue(values);
 					directPositionList.setSrsDimension(3);
@@ -359,9 +344,6 @@ public class DBSurfaceGeometry implements DBExporter {
 
 					dbExporterManager.updateGeometryCounter(GMLClass.LINEAR_RING);
 				}
-
-				ringElem = ringLimit;
-				ringNo++;
 			}
 
 			// check whether we have to embrace the polygon with an orientableSurface
@@ -646,12 +628,11 @@ public class DBSurfaceGeometry implements DBExporter {
 
 	private void writeToAppearanceCache(GeometryNode geomNode) throws SQLException {
 		psImportGmlId.setLong(1, geomNode.id);
-		psImportGmlId.setString(2, geomNode.gmlId);
-		psImportGmlId.setLong(3, geomNode.id);
+		psImportGmlId.setLong(2, geomNode.id);
 		psImportGmlId.addBatch();
 		batchCounter++;
 
-		if (batchCounter == commitAfter || batchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+		if (batchCounter == commitAfter) {
 			psImportGmlId.executeBatch();
 			batchCounter = 0;
 		}
@@ -684,7 +665,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		protected boolean isTriangulated;
 		protected boolean isXlink;
 		protected boolean isReverse;
-		protected JGeometry geometry;
+		protected GeometryObject geometry;
 		protected List<GeometryNode> childNodes;
 
 		public GeometryNode() {

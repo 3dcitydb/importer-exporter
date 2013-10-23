@@ -29,7 +29,6 @@
  */
 package de.tub.citydb.api.database;
 
-
 public interface DatabaseMetaData {	
 	public String getDatabaseProductName();	
 	public String getShortDatabaseProductVersion();

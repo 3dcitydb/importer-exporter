@@ -43,19 +43,18 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
+import de.tub.citydb.modules.citygml.exporter.database.content.DBAppearance;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBBuilding;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBCityFurniture;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBCityObjectGroup;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBExporterEnum;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBExporterManager;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBGenericCityObject;
-import de.tub.citydb.modules.citygml.exporter.database.content.DBGlobalAppearance;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBLandUse;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBPlantCover;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBReliefFeature;
@@ -116,16 +115,17 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 
 	private void init() throws SQLException, SAXException {
 		connection = dbConnectionPool.getConnection();
-		connection.setAutoCommit(false);
 
-		// try and change workspace for both connections if needed
-		Database database = config.getProject().getDatabase();
-		dbConnectionPool.gotoWorkspace(
-				connection, 
-				database.getWorkspaces().getExportWorkspace());
+		// try and change workspace the connections if needed
+		if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
+			dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(
+					connection, 
+					config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
+		}
 
 		dbExporterManager = new DBExporterManager( 
 				connection,
+				dbConnectionPool.getActiveDatabaseAdapter(),
 				jaxbBuilder,
 				ioWriterPool,
 				xlinkExporterPool,
@@ -198,7 +198,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 			} catch (SQLException e) {
 				//
 			}
-			
+
 			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
 			eventDispatcher.triggerEvent(new FeatureCounterEvent(dbExporterManager.getFeatureCounter(), this));
 			eventDispatcher.triggerEvent(new GeometryCounterEvent(dbExporterManager.getGeometryCounter(), this));
@@ -274,7 +274,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 					break;
 				case APPEARANCE:
 					// we are working on global appearances here
-					DBGlobalAppearance dbAppearance = (DBGlobalAppearance)dbExporterManager.getDBExporter(DBExporterEnum.GLOBAL_APPEARANCE);
+					DBAppearance dbAppearance = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.GLOBAL_APPEARANCE);
 					if (dbAppearance != null)
 						success = dbAppearance.read(work);
 					break;

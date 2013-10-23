@@ -34,17 +34,20 @@ import java.util.HashMap;
 
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 
 public class DBXlinkImporterManager {
 	private final CacheManager dbTempTableManager;
+	private final AbstractDatabaseAdapter databaseAdapter;
 	private final EventDispatcher eventDispatcher;
 	private HashMap<DBXlinkImporterEnum, DBXlinkImporter> dbImporterMap;
 
-	public DBXlinkImporterManager(CacheManager dbTempTableManager, EventDispatcher eventDispatcher) {
+	public DBXlinkImporterManager(CacheManager dbTempTableManager, AbstractDatabaseAdapter databaseAdapter, EventDispatcher eventDispatcher) {
 		this.dbTempTableManager = dbTempTableManager;
+		this.databaseAdapter = databaseAdapter;
 		this.eventDispatcher = eventDispatcher;
 
 		dbImporterMap = new HashMap<DBXlinkImporterEnum, DBXlinkImporter>();
@@ -91,31 +94,31 @@ public class DBXlinkImporterManager {
 				// initialize DBImporter
 				switch (xlinkType) {
 				case SURFACE_GEOMETRY:
-					dbImporter = new DBXlinkImporterSurfaceGeometry(tempTable);
+					dbImporter = new DBXlinkImporterSurfaceGeometry(tempTable, this);
 					break;
 				case LINEAR_RING:
-					dbImporter = new DBXlinkImporterLinearRing(tempTable);
+					dbImporter = new DBXlinkImporterLinearRing(tempTable, this);
 					break;
 				case XLINK_BASIC:
-					dbImporter = new DBXlinkImporterBasic(tempTable);
+					dbImporter = new DBXlinkImporterBasic(tempTable, this);
 					break;
 				case XLINK_TEXTUREPARAM:
-					dbImporter = new DBXlinkImporterTextureParam(tempTable);
+					dbImporter = new DBXlinkImporterTextureParam(tempTable, this);
 					break;
 				case XLINK_TEXTUREASSOCIATION:
-					dbImporter = new DBXlinkImporterTextureAssociation(tempTable);
+					dbImporter = new DBXlinkImporterTextureAssociation(tempTable, this);
 					break;
 				case TEXTURE_FILE:
-					dbImporter = new DBXlinkImporterTextureFile(tempTable);
+					dbImporter = new DBXlinkImporterTextureFile(tempTable, this);
 					break;
 				case LIBRARY_OBJECT:
-					dbImporter = new DBXlinkImporterLibraryObject(tempTable);
+					dbImporter = new DBXlinkImporterLibraryObject(tempTable, this);
 					break;
 				case XLINK_DEPRECATED_MATERIAL:
-					dbImporter = new DBXlinkImporterDeprecatedMaterial(tempTable);
+					dbImporter = new DBXlinkImporterDeprecatedMaterial(tempTable, this);
 					break;
 				case GROUP_TO_CITYOBJECT:
-					dbImporter = new DBXlinkImporterGroupToCityObject(tempTable);
+					dbImporter = new DBXlinkImporterGroupToCityObject(tempTable, this);
 					break;
 				}
 
@@ -129,6 +132,10 @@ public class DBXlinkImporterManager {
 
 	public void propagateEvent(Event event) {
 		eventDispatcher.triggerEvent(event);
+	}
+	
+	public AbstractDatabaseAdapter getDatabaseAdapter() {
+		return databaseAdapter;
 	}
 
 	public void executeBatch() throws SQLException {

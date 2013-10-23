@@ -33,8 +33,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import de.tub.citydb.config.internal.Internal;
-
 public class DBReliefFeatToRelComp implements DBImporter {
 	private final Connection batchConn;
 	private final DBImporterManager dbImporterManager;
@@ -59,7 +57,7 @@ public class DBReliefFeatToRelComp implements DBImporter {
 		psReliefFeatToRelComp.setLong(2, reliefFeatureId);
 
 		psReliefFeatToRelComp.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.RELIEF_FEAT_TO_REL_COMP);
 	}
 	

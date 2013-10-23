@@ -36,9 +36,6 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
@@ -50,6 +47,7 @@ import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.filter.ExportFilter;
@@ -68,10 +66,8 @@ public class DBGenericCityObject implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 	private DBImplicitGeometry implicitGeometryExporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBOtherGeometry geometryExporter;
 	private FeatureClassFilter featureClassFilter;
-
-	private boolean transformCoords;
 
 	public DBGenericCityObject(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
@@ -83,36 +79,40 @@ public class DBGenericCityObject implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		transformCoords = config.getInternal().isTransformCoordinates();
-
-		if (!transformCoords) {
+		if (!config.getInternal().isTransformCoordinates()) {
 			psGenericCityObject = connection.prepareStatement("select * from GENERIC_CITYOBJECT where ID = ?");
 			psGenericGeometryAttribute = connection.prepareStatement("select ATTRNAME, GEOMVAL from CITYOBJECT_GENERICATTRIB where CITYOBJECT_ID = ? and DATATYPE = 6");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
-			psGenericCityObject = connection.prepareStatement("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
-					"geodb_util.transform_or_null(LOD0_TERRAIN_INTERSECTION, " + srid + ") AS LOD0_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(LOD1_TERRAIN_INTERSECTION, " + srid + ") AS LOD1_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(LOD2_TERRAIN_INTERSECTION, " + srid + ") AS LOD2_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(LOD3_TERRAIN_INTERSECTION, " + srid + ") AS LOD3_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(LOD4_TERRAIN_INTERSECTION, " + srid + ") AS LOD4_TERRAIN_INTERSECTION, " +
-					"LOD0_GEOMETRY_ID, LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, " +
-					"LOD0_IMPLICIT_REP_ID, LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID," +
-					"geodb_util.transform_or_null(LOD0_IMPLICIT_REF_POINT, " + srid + ") AS LOD0_IMPLICIT_REF_POINT, " +
-					"geodb_util.transform_or_null(LOD1_IMPLICIT_REF_POINT, " + srid + ") AS LOD1_IMPLICIT_REF_POINT, " +
-					"geodb_util.transform_or_null(LOD2_IMPLICIT_REF_POINT, " + srid + ") AS LOD2_IMPLICIT_REF_POINT, " +
-					"geodb_util.transform_or_null(LOD3_IMPLICIT_REF_POINT, " + srid + ") AS LOD3_IMPLICIT_REF_POINT, " +
-					"geodb_util.transform_or_null(LOD4_IMPLICIT_REF_POINT, " + srid + ") AS LOD4_IMPLICIT_REF_POINT, " +
-					"LOD0_IMPLICIT_TRANSFORMATION, LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION from GENERIC_CITYOBJECT where ID = ?");					
+			StringBuilder objectQuery = new StringBuilder()
+			.append("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, ")
+			.append(transformOrNull).append("(LOD0_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD0_TERRAIN_INTERSECTION, ")
+			.append(transformOrNull).append("(LOD1_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD1_TERRAIN_INTERSECTION, ")
+			.append(transformOrNull).append("(LOD2_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD2_TERRAIN_INTERSECTION, ")
+			.append(transformOrNull).append("(LOD3_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD3_TERRAIN_INTERSECTION, ")
+			.append(transformOrNull).append("(LOD4_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD4_TERRAIN_INTERSECTION, ")
+			.append("LOD0_GEOMETRY_ID, LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, ")
+			.append("LOD0_IMPLICIT_REP_ID, LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID,")
+			.append(transformOrNull).append("(LOD0_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD0_IMPLICIT_REF_POINT, ")
+			.append(transformOrNull).append("(LOD1_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD1_IMPLICIT_REF_POINT, ")
+			.append(transformOrNull).append("(LOD2_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD2_IMPLICIT_REF_POINT, ")
+			.append(transformOrNull).append("(LOD3_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD3_IMPLICIT_REF_POINT, ")
+			.append(transformOrNull).append("(LOD4_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD4_IMPLICIT_REF_POINT, ")
+			.append("LOD0_IMPLICIT_TRANSFORMATION, LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION from GENERIC_CITYOBJECT where ID = ?");					
+			psGenericCityObject = connection.prepareStatement(objectQuery.toString());
 
-			psGenericGeometryAttribute = connection.prepareStatement("select ATTRNAME, geodb_util.transform_or_null(GEOMVAL, " + srid + ") AS GEOMVAL from CITYOBJECT_GENERICATTRIB where CITYOBJECT_ID = ? and DATATYPE = 6");
+			StringBuilder attributeQuery = new StringBuilder()
+			.append("select ATTRNAME, ")
+			.append(transformOrNull).append("(GEOMVAL, ").append(srid).append(") AS GEOMVAL from CITYOBJECT_GENERICATTRIB where CITYOBJECT_ID = ? and DATATYPE = 6");
+			psGenericGeometryAttribute = connection.prepareStatement(attributeQuery.toString());
 		}
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 		implicitGeometryExporter = (DBImplicitGeometry)dbExporterManager.getDBExporter(DBExporterEnum.IMPLICIT_GEOMETRY);
-		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);
+		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
@@ -203,10 +203,10 @@ public class DBGenericCityObject implements DBExporter {
 					if (rs.wasNull())
 						continue;
 
-					JGeometry referencePoint = null;
-					STRUCT struct = (STRUCT)rs.getObject("LOD" + lod +"_IMPLICIT_REF_POINT");
-					if (!rs.wasNull() && struct != null)
-						referencePoint = JGeometry.load(struct);
+					GeometryObject referencePoint = null;
+					Object object = rs.getObject("LOD" + lod +"_IMPLICIT_REF_POINT");
+					if (!rs.wasNull() && object != null)
+						referencePoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPoint(referencePoint);
 
 					String transformationMatrix = rs.getString("LOD" + lod + "_IMPLICIT_TRANSFORMATION");
 
@@ -237,14 +237,13 @@ public class DBGenericCityObject implements DBExporter {
 
 				// lodXTerrainIntersection
 				for (int lod = 0; lod < 5; lod++) {
-					JGeometry terrainIntersection = null;
-					STRUCT terrainIntersectionObj = (STRUCT)rs.getObject("LOD" + lod + "_TERRAIN_INTERSECTION");
+					Object terrainIntersectionObj = rs.getObject("LOD" + lod + "_TERRAIN_INTERSECTION");
 
 					if (!rs.wasNull() && terrainIntersectionObj != null) {
-						terrainIntersection = JGeometry.load(terrainIntersectionObj);
+						GeometryObject terrainIntersection = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(terrainIntersectionObj);
 
 						if (terrainIntersection != null) {
-							MultiCurveProperty multiCurveProperty = sdoGeometry.getMultiCurveProperty(terrainIntersection, false);
+							MultiCurveProperty multiCurveProperty = geometryExporter.getMultiCurveProperty(terrainIntersection, false);
 							if (multiCurveProperty != null) {
 								switch (lod) {
 								case 0:
@@ -303,10 +302,10 @@ public class DBGenericCityObject implements DBExporter {
 						}
 
 						if (!hasGeometry) {
-							STRUCT struct = (STRUCT)rs.getObject("GEOMVAL");
-							if (!rs.wasNull() && struct != null) {
-								JGeometry geom = JGeometry.load(struct);
-								GeometryProperty<? extends AbstractGeometry> property = sdoGeometry.getPointOrCurveGeometryProperty(geom, false);
+							Object object = rs.getObject("GEOMVAL");
+							if (!rs.wasNull() && object != null) {
+								GeometryObject geom = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(object);
+								GeometryProperty<? extends AbstractGeometry> property = geometryExporter.getPointOrCurveGeometryProperty(geom, false);
 								if (property != null) {
 									switch (lod) {
 									case 0:

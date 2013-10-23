@@ -31,7 +31,7 @@
 --                                           ASta
 --
 CREATE TABLE OBJECTCLASS (
-ID               INTEGER,
+ID               INTEGER NOT NULL,
 CLASSNAME        VARCHAR(256),
 SUPERCLASS_ID    INTEGER
 )

@@ -38,9 +38,11 @@ import javax.xml.bind.annotation.XmlType;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
+import de.tub.citydb.api.database.DatabaseType;
 
 @XmlType(name="ConnectionType", propOrder={
 		"description",
+		"type",
 		"server",
 		"port",
 		"sid",
@@ -53,6 +55,7 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 	@XmlID
 	private String id;
 	private String description = "";
+	private DatabaseType type = DatabaseType.ORACLE;
 	@XmlSchemaType(name="anyURI")
 	private String server = "";
 	@XmlSchemaType(name="positiveInteger")
@@ -83,6 +86,15 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	@Override
+	public DatabaseType getDatabaseType() {
+		return type;
+	}
+
+	public void setDatabaseType(DatabaseType type) {
+		this.type = type;
 	}
 
 	@Override

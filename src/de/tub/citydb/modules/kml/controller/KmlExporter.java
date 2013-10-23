@@ -86,8 +86,8 @@ import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.gui.BoundingBox;
-import de.tub.citydb.api.gui.BoundingBoxCorner;
+import de.tub.citydb.api.geometry.BoundingBox;
+import de.tub.citydb.api.geometry.BoundingBoxCorner;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
@@ -127,7 +127,6 @@ import de.tub.citydb.modules.kml.database.Transportation;
 import de.tub.citydb.modules.kml.database.WaterBody;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.modules.kml.util.KMLHeaderWriter;
-import de.tub.citydb.util.database.DBUtil;
 
 public class KmlExporter implements EventHandler {
 	private final JAXBContext jaxbKmlContext;
@@ -203,28 +202,18 @@ public class KmlExporter implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		// checking workspace...
+		// checking workspace
 		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
-		if (!workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.existsWorkspace(workspace);
-
-			String name = "'" + workspace.getName().trim() + "'";
-			String timestamp = workspace.getTimestamp().trim();
-			if (timestamp.trim().length() > 0)
-				name += " at timestamp " + timestamp;
-			
-			if (!workspaceExists) {
-				Logger.getInstance().error("Database workspace " + name + " is not available.");
-				return false;
-			} else 
-				Logger.getInstance().info("Switching to database workspace " + name + '.');
-		}
+		if (shouldRun && dbPool.getActiveDatabaseAdapter().hasVersioningSupport() && 
+				!dbPool.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
+				!dbPool.getActiveDatabaseAdapter().getWorkspaceManager().existsWorkspace(workspace, true))
+			return false;
 		
 		// check whether spatial indexes are enabled
 		Logger.getInstance().info("Checking for spatial indexes on geometry columns of involved tables...");
 		try {
-			if (!DBUtil.isIndexed("CITYOBJECT", "ENVELOPE") || 
-					!DBUtil.isIndexed("SURFACE_GEOMETRY", "GEOMETRY")) {
+			if (!dbPool.getActiveDatabaseAdapter().getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE") || 
+					!dbPool.getActiveDatabaseAdapter().getUtil().isIndexEnabled("SURFACE_GEOMETRY", "GEOMETRY")) {
 				Logger.getInstance().error("Spatial indexes are not activated.");
 				Logger.getInstance().error("Please use the database tab to activate the spatial indexes.");
 				return false;
@@ -240,7 +229,7 @@ public class KmlExporter implements EventHandler {
 			try {
 				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 					if (displayForm.getForm() == DisplayForm.COLLADA && displayForm.isActive()) {
-						if (!DBUtil.getAppearanceThemeList(workspace).contains(selectedTheme)) {
+						if (!dbPool.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList(workspace).contains(selectedTheme)) {
 							Logger.getInstance().error("Database does not contain appearance theme \"" + selectedTheme + "\"");
 							return false;
 						}
@@ -621,21 +610,21 @@ public class KmlExporter implements EventHandler {
 		tileMatrix = new BoundingBox(new BoundingBoxCorner(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY()),
 										new BoundingBoxCorner(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY()));
 
-		DatabaseSrs dbSrs = dbPool.getActiveConnectionMetaData().getReferenceSystem();
+		DatabaseSrs dbSrs = dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 		DatabaseSrs bboxSrs = bbox.getSrs();
 		
 		if (bboxSrs == null) {
 			Logger.getInstance().warn("Could not read bbox reference system. DB reference system will be assumed.");
-			bboxSrs = dbPool.getActiveConnectionMetaData().getReferenceSystem();
+			bboxSrs = dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 //			throw new SQLException("Unknown BoundingBox srs");
 		}
 
 		if (bboxSrs.getSrid() != 0 && bboxSrs.getSrid() != dbSrs.getSrid()) {
-			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, bboxSrs, WGS84_2D);
-			tileMatrix = DBUtil.transformBBox(tileMatrix, bboxSrs, dbSrs);
+			wgs84TileMatrix = dbPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(tileMatrix, bboxSrs, WGS84_2D);
+			tileMatrix = dbPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(tileMatrix, bboxSrs, dbSrs);
 		}
 		else {
-			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, dbSrs, WGS84_2D);
+			wgs84TileMatrix = dbPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(tileMatrix, dbSrs, WGS84_2D);
 		}
 		
 		if (tilingMode == TilingMode.NO_TILING) {

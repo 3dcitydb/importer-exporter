@@ -49,16 +49,6 @@ public enum DatabaseSrsType {
     public String value() {
         return value;
     }
-
-    public static DatabaseSrsType fromValue(String v) {
-        for (DatabaseSrsType c : DatabaseSrsType.values()) {
-            if (c.value.toLowerCase().equals(v.toLowerCase())) {
-                return c;
-            }
-        }
-
-        return UNKNOWN;
-    }
     
     public String toString() {
 		return value;

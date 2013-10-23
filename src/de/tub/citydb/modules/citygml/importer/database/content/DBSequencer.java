@@ -35,12 +35,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
+
 public class DBSequencer {
-	private Connection conn;
+	private final Connection conn;
+	private final AbstractDatabaseAdapter databaseAdapter;
 	private HashMap<DBSequencerEnum, PreparedStatement> psIdMap;
 
-	public DBSequencer(Connection conn) throws SQLException {
+	public DBSequencer(Connection conn, AbstractDatabaseAdapter databaseAdapter) throws SQLException {
 		this.conn = conn;
+		this.databaseAdapter = databaseAdapter;
 		psIdMap = new HashMap<DBSequencerEnum, PreparedStatement>();
 	}
 
@@ -50,7 +54,13 @@ public class DBSequencer {
 
 		PreparedStatement pstsmt = psIdMap.get(sequence);
 		if (pstsmt == null) {
-			pstsmt = conn.prepareStatement("select " + sequence.toString() + ".nextval from dual");
+			StringBuilder query = new StringBuilder()
+			.append("select ")
+			.append(databaseAdapter.getSQLAdapter().getNextSequenceValue(sequence));
+			if (databaseAdapter.requiresPseudoTableInSelect())
+				query.append(" from ").append(databaseAdapter.getPseudoTableName());
+			
+			pstsmt = conn.prepareStatement(query.toString());
 			psIdMap.put(sequence, pstsmt);
 		}
 

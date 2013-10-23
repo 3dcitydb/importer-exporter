@@ -37,7 +37,6 @@ import java.sql.Types;
 import org.citygml4j.model.citygml.landuse.LandUse;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
@@ -59,17 +58,19 @@ public class DBLandUse implements DBImporter {
 		init();
 	}
 
-	private void init() throws SQLException {		
-		psLandUse = batchConn.prepareStatement("insert into LAND_USE (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
-				"LOD0_MULTI_SURFACE_ID, LOD1_MULTI_SURFACE_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID) values " +
-				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	private void init() throws SQLException {
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into LAND_USE (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, ")
+		.append("LOD0_MULTI_SURFACE_ID, LOD1_MULTI_SURFACE_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psLandUse = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 	}
 
 	public long insert(LandUse landUse) throws SQLException {
-		long landUseId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long landUseId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (landUseId != 0)
@@ -213,7 +214,7 @@ public class DBLandUse implements DBImporter {
         }
 
         psLandUse.addBatch();
-        if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+        if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.LAND_USE);
         
 		return true;

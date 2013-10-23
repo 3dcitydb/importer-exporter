@@ -32,18 +32,19 @@ package de.tub.citydb.modules.citygml.importer.database.xlink.importer;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLinearRing;
 
 public class DBXlinkImporterLinearRing implements DBXlinkImporter {
 	private final TemporaryCacheTable tempTable;
+	private final DBXlinkImporterManager xlinkImporterManager;
 	private PreparedStatement psLinearRing;
 	private int batchCounter;
 
-	public DBXlinkImporterLinearRing(TemporaryCacheTable tempTable) throws SQLException {
+	public DBXlinkImporterLinearRing(TemporaryCacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
 		this.tempTable = tempTable;
-
+		this.xlinkImporterManager = xlinkImporterManager;
+		
 		init();
 	}
 
@@ -59,7 +60,7 @@ public class DBXlinkImporterLinearRing implements DBXlinkImporter {
 		psLinearRing.setInt(3, xlinkEntry.getRingId());
 
 		psLinearRing.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			executeBatch();
 
 		return true;

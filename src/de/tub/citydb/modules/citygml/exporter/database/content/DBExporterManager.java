@@ -62,6 +62,7 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
@@ -73,6 +74,7 @@ import de.tub.citydb.modules.common.filter.ExportFilter;
 
 public class DBExporterManager {
 	private final Connection connection;
+	private final AbstractDatabaseAdapter databaseAdapter;
 	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
@@ -90,6 +92,7 @@ public class DBExporterManager {
 	private HashMap<GMLClass, Long> geometryCounterMap;
 
 	public DBExporterManager(Connection connection,
+			AbstractDatabaseAdapter databaseAdapter,
 			JAXBBuilder jaxbBuilder,
 			WorkerPool<SAXEventBuffer> ioWriterPool,
 			WorkerPool<DBXlink> xlinkExporterPool,
@@ -99,6 +102,7 @@ public class DBExporterManager {
 			Config config,
 			EventDispatcher eventDispatcher) throws SAXException {
 		this.connection = connection;
+		this.databaseAdapter = databaseAdapter;
 		this.jaxbBuilder = jaxbBuilder;
 		this.ioWriterPool = ioWriterPool;
 		this.xlinkExporterPool = xlinkExporterPool;
@@ -173,16 +177,17 @@ public class DBExporterManager {
 			case RELIEF_FEATURE:
 				dbExporter = new DBReliefFeature(connection, exportFilter, config, this);
 				break;
-			case APPEARANCE:
-				dbExporter = new DBAppearance(connection, config, this);
-				break;
+			case LOCAL_APPEARANCE:
 			case GLOBAL_APPEARANCE:
+				dbExporter = new DBAppearance(dbExporterType, connection, config, this);
+				break;
+			case LOCAL_APPEARANCE_TEXTUREPARAM:
+				dbExporter = new DBTextureParam(dbExporterType, connection);
+				break;
+			case GLOBAL_APPEARANCE_TEXTUREPARAM:
 				globalAppTempTable = (TemporaryCacheTable)cacheManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
 				if (globalAppTempTable != null)
-					dbExporter = new DBGlobalAppearance(globalAppTempTable, config, this);
-				break;
-			case TEXTUREPARAM:
-				dbExporter = new DBTextureParam(connection);
+					dbExporter = new DBTextureParam(dbExporterType, globalAppTempTable);
 				break;
 			case GENERIC_CITYOBJECT:
 				dbExporter = new DBGenericCityObject(connection, exportFilter, config, this);
@@ -191,10 +196,10 @@ public class DBExporterManager {
 				dbExporter = new DBCityObjectGroup(connection, config, this);
 				break;
 			case GENERALIZATION:
-				dbExporter = new DBGeneralization(connection, exportFilter, config);
+				dbExporter = new DBGeneralization(connection, exportFilter, config, this);
 				break;
-			case SDO_GEOMETRY:
-				dbExporter = new DBSdoGeometry(config);
+			case OTHER_GEOMETRY:
+				dbExporter = new DBOtherGeometry(config);
 				break;
 			}
 
@@ -271,6 +276,10 @@ public class DBExporterManager {
 
 	public HashMap<GMLClass, Long> getGeometryCounter() {
 		return geometryCounterMap;
+	}
+	
+	public AbstractDatabaseAdapter getDatabaseAdapter() {
+		return databaseAdapter;
 	}
 
 	public void close() throws SQLException {

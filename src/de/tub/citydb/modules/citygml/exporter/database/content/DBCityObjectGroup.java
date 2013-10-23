@@ -58,8 +58,6 @@ public class DBCityObjectGroup implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 
-	private boolean transformCoords;
-
 	public DBCityObjectGroup(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.config = config;
@@ -69,20 +67,23 @@ public class DBCityObjectGroup implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		transformCoords = config.getInternal().isTransformCoordinates();
-
-		if (!transformCoords) {		
-			psCityObjectGroup = connection.prepareStatement("select grp.ID, grp.NAME, grp.NAME_CODESPACE, grp.DESCRIPTION, grp.CLASS, grp.FUNCTION, grp.USAGE, grp.GEOMETRY, grp.SURFACE_GEOMETRY_ID, grp.PARENT_CITYOBJECT_ID, " +
-					"gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp " +
-					"left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
+		if (!config.getInternal().isTransformCoordinates()) {		
+			StringBuilder query = new StringBuilder()
+			.append("select grp.ID, grp.NAME, grp.NAME_CODESPACE, grp.DESCRIPTION, grp.CLASS, grp.FUNCTION, grp.USAGE, grp.GEOMETRY, grp.SURFACE_GEOMETRY_ID, grp.PARENT_CITYOBJECT_ID, ")
+			.append("gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp ")
+			.append("left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
+			psCityObjectGroup = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
-			psCityObjectGroup = connection.prepareStatement("select grp.ID, grp.NAME, grp.NAME_CODESPACE, grp.DESCRIPTION, grp.CLASS, grp.FUNCTION, grp.USAGE, " +
-					"geodb_util.transform_or_null(grp.GEOMETRY, " + srid + ") AS GEOMETRY, " +
-					"grp.SURFACE_GEOMETRY_ID, grp.PARENT_CITYOBJECT_ID, " +
-					"gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp " +
-					"left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
+			StringBuilder query = new StringBuilder()
+			.append("select grp.ID, grp.NAME, grp.NAME_CODESPACE, grp.DESCRIPTION, grp.CLASS, grp.FUNCTION, grp.USAGE, ")
+			.append(transformOrNull).append("(grp.GEOMETRY, ").append(srid).append(") AS GEOMETRY, ")
+			.append("grp.SURFACE_GEOMETRY_ID, grp.PARENT_CITYOBJECT_ID, ")
+			.append("gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp ")
+			.append("left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
+			psCityObjectGroup = connection.prepareStatement(query.toString());
 		}
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);

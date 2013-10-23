@@ -5,8 +5,9 @@
         <appversion>v!impexp.version!</appversion>
         <appsubpath>!izpack.installation.folder!</appsubpath>
         <authors>
-            <author name="Claus Nagel" email="claus.nagel@tu-berlin.de"/>
+            <author name="Claus Nagel" email="cnagel@virtualcitysystems.de"/>
             <author name="Javier Herreruela" email="javier.herreruela@tu-berlin.de"/>
+            <author name="Felix Kunde" email="fkunde@virtualcitysystems.de"/>
             <author name="Alexandra Lorenz" email="alexandra.lorenz@tu-berlin.de"/>
             <author name="Gerhard König" email="gerhard.koenig@tu-berlin.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tum.de"/>

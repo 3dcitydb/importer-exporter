@@ -33,8 +33,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import de.tub.citydb.config.internal.Internal;
-
 public class DBAppearToSurfaceData implements DBImporter {
 	private final Connection batchConn;
 	private final DBImporterManager dbImporterManager;
@@ -50,8 +48,7 @@ public class DBAppearToSurfaceData implements DBImporter {
 	}
 
 	private void init() throws SQLException {
-		psAppearToSurfaceData = batchConn.prepareStatement("insert into APPEAR_TO_SURFACE_DATA (SURFACE_DATA_ID, APPEARANCE_ID) values " +
-			"(?, ?)");
+		psAppearToSurfaceData = batchConn.prepareStatement("insert into APPEAR_TO_SURFACE_DATA (SURFACE_DATA_ID, APPEARANCE_ID) values (?, ?)");
 	}
 
 	public void insert(long surfaceDataId, long appearanceId) throws SQLException {
@@ -59,7 +56,7 @@ public class DBAppearToSurfaceData implements DBImporter {
 		psAppearToSurfaceData.setLong(2, appearanceId);
 
 		psAppearToSurfaceData.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.APPEAR_TO_SURFACE_DATA);
 	}
 

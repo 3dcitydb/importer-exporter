@@ -229,7 +229,7 @@ public abstract class KmlGenericObject {
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
 
-		dbSrs = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem();
+		dbSrs = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 		
 		dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 

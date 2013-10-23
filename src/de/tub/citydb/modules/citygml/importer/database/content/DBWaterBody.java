@@ -34,10 +34,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.BoundedByWaterSurfaceProperty;
@@ -46,7 +42,7 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -62,9 +58,11 @@ public class DBWaterBody implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBWaterBoundarySurface boundarySurfaceImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBOtherGeometry sdoGeometry;
 	
 	private int batchCounter;
+	private int nullGeometryType;
+	private String nullGeometryTypeName;
 
 	public DBWaterBody(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -74,19 +72,24 @@ public class DBWaterBody implements DBImporter {
 	}
 
 	private void init() throws SQLException {		
-		psWaterBody = batchConn.prepareStatement("insert into WATERBODY (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
-				"LOD1_SOLID_ID, LOD2_SOLID_ID, LOD3_SOLID_ID, LOD4_SOLID_ID, " +
-				"LOD0_MULTI_SURFACE_ID, LOD1_MULTI_SURFACE_ID, LOD0_MULTI_CURVE, LOD1_MULTI_CURVE) values " +
-				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		nullGeometryType = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
+		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
+
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into WATERBODY (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, ")
+		.append("LOD1_SOLID_ID, LOD2_SOLID_ID, LOD3_SOLID_ID, LOD4_SOLID_ID, ")
+		.append("LOD0_MULTI_SURFACE_ID, LOD1_MULTI_SURFACE_ID, LOD0_MULTI_CURVE, LOD1_MULTI_CURVE) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psWaterBody = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		boundarySurfaceImporter = (DBWaterBoundarySurface)dbImporterManager.getDBImporter(DBImporterEnum.WATERBOUNDARY_SURFACE);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		sdoGeometry = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
 	public long insert(WaterBody waterBody) throws SQLException {
-		long waterBodyId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long waterBodyId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (waterBodyId != 0)
@@ -278,7 +281,7 @@ public class DBWaterBody implements DBImporter {
 		for (int lod = 0; lod < 2; lod++) {
 			
 			MultiCurveProperty multiCurveProperty = null;
-			JGeometry multiLine = null;
+			GeometryObject multiLine = null;
 			
 			switch (lod) {
 			case 0:
@@ -295,25 +298,25 @@ public class DBWaterBody implements DBImporter {
 			switch (lod) {
 			case 0:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psWaterBody.setObject(14, multiLineObj);
 				} else
-					psWaterBody.setNull(14, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psWaterBody.setNull(14, nullGeometryType, nullGeometryTypeName);
 					
 				break;
 			case 1:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psWaterBody.setObject(15, multiLineObj);
 				} else
-					psWaterBody.setNull(15, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psWaterBody.setNull(15, nullGeometryType, nullGeometryTypeName);
 					
 				break;
 			}			
 		}
 		
 		psWaterBody.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.WATERBODY);
 
 		// boundary surfaces

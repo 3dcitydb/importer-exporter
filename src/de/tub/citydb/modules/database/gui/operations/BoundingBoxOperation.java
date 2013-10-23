@@ -46,22 +46,21 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.controller.ViewController;
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
-import de.tub.citydb.api.gui.BoundingBox;
+import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBOperationType;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
 import de.tub.citydb.gui.components.bbox.BoundingBoxPanelImpl;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.database.DBUtil;
 import de.tub.citydb.util.gui.GuiUtil;
 
 public class BoundingBoxOperation extends DatabaseOperationView {
@@ -69,9 +68,9 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 	private final Logger LOG = Logger.getInstance();
 	private final DatabaseOperationsPanel parent;
 	private final ViewController viewController;
-	private final DatabaseController databaseController;
+	private final DatabaseConnectionPool dbConnectionPool;
 	private final Config config;
-	
+
 	private JPanel component;
 	private JLabel featureLabel;
 	private JComboBox featureComboBox;
@@ -82,7 +81,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		this.parent = parent;
 		this.config = config;
 		viewController = ObjectRegistry.getInstance().getViewController();
-		databaseController = ObjectRegistry.getInstance().getDatabaseController();
+		dbConnectionPool = DatabaseConnectionPool.getInstance();
 
 		init();
 	}
@@ -110,7 +109,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		c = GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.NONE,10,5,5,5);
 		c.gridwidth = 2;
 		component.add(bboxButton, c);
-		
+
 		bboxButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Thread thread = new Thread() {
@@ -188,6 +187,8 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 			viewController.setStatusText(Internal.I18N.getString("main.status.database.bbox.label"));
 
 			LOG.info("Calculating bounding box...");			
+			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.existsWorkspace())
+				return;
 
 			final StatusDialog bboxDialog = new StatusDialog(viewController.getTopFrame(), 
 					Internal.I18N.getString("db.dialog.bbox.window"), 
@@ -207,7 +208,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				public void actionPerformed(ActionEvent e) {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
-							DBUtil.cancelOperation();
+							dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation();
 						}
 					});
 				}
@@ -215,41 +216,38 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 			BoundingBox bbox = null;
 			try {
-				// checking workspace... this should be improved in future...
-				if (parent.existsWorkspace()) {
-					FeatureClassMode featureClass = (FeatureClassMode)featureComboBox.getSelectedItem();
-					bbox = DBUtil.calcBoundingBox(workspace, featureClass);
-					
-					if (bbox != null) {
-						DatabaseSrs dbSrs = databaseController.getActiveConnectionMetaData().getReferenceSystem();
+				FeatureClassMode featureClass = (FeatureClassMode)featureComboBox.getSelectedItem();
+				bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(workspace, featureClass);
+
+				if (bbox != null) {
+					if (bbox.getLowerLeftCorner().getX() != Double.MAX_VALUE && 
+							bbox.getLowerLeftCorner().getY() != Double.MAX_VALUE &&
+							bbox.getUpperRightCorner().getX() != -Double.MAX_VALUE && 
+							bbox.getUpperRightCorner().getY() != -Double.MAX_VALUE) {
+
+						DatabaseSrs dbSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 						DatabaseSrs targetSrs = bboxPanel.getSrsComboBox().getSelectedItem();
 
 						if (targetSrs.isSupported() && targetSrs.getSrid() != dbSrs.getSrid()) {
 							try {
-								bbox = DBUtil.transformBBox(bbox, dbSrs, targetSrs);
+								bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(bbox, dbSrs, targetSrs);
 							} catch (SQLException e) {
 								//
 							}					
 						}
 
-						if (bbox.getLowerLeftCorner().getX() != Double.MAX_VALUE && 
-								bbox.getLowerLeftCorner().getY() != Double.MAX_VALUE &&
-								bbox.getUpperRightCorner().getX() != -Double.MAX_VALUE && 
-								bbox.getUpperRightCorner().getY() != -Double.MAX_VALUE) {
+						bboxPanel.setBoundingBox(bbox);	
+						bbox.setSrs(targetSrs);
+						BoundingBoxClipboardHandler.getInstance(config).putBoundingBox(bbox);
+						LOG.info("Bounding box for feature " + featureClass + " successfully calculated.");							
+					} else {
+						bboxPanel.clearBoundingBox();							
+						LOG.warn("The bounding box could not be calculated.");
+						LOG.warn("Either the database does not contain " + featureClass + " features or their ENVELOPE attribute is not set.");
+					}
 
-							bboxPanel.setBoundingBox(bbox);	
-							bbox.setSrs(targetSrs);
-							BoundingBoxClipboardHandler.getInstance(config).putBoundingBox(bbox);
-							LOG.info("Bounding box for feature " + featureClass + " successfully calculated.");							
-						} else {
-							bboxPanel.clearBoundingBox();							
-							LOG.warn("The bounding box could not be calculated.");
-							LOG.warn("Either the database does not contain " + featureClass + " features or their ENVELOPE attribute is not set.");
-						}
-
-					} else
-						LOG.warn("Calculation of bounding box aborted.");
-				}
+				} else
+					LOG.warn("Calculation of bounding box aborted.");
 
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -276,7 +274,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 						result, 
 						Internal.I18N.getString("common.dialog.error.db.title"),
 						JOptionPane.ERROR_MESSAGE);
-				
+
 				LOG.error("SQL error: " + sqlExMsg);
 			} finally {		
 				viewController.setStatusText(Internal.I18N.getString("main.status.ready.label"));

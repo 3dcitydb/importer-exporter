@@ -45,7 +45,6 @@ import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -85,7 +84,7 @@ public class DBRoom implements DBImporter {
 	}
 
 	public long insert(Room room, long buildingId) throws SQLException {
-		long roomId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long roomId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (roomId == 0)
 			return 0;
 
@@ -208,7 +207,7 @@ public class DBRoom implements DBImporter {
 			psRoom.setNull(9, 0);
 
 		psRoom.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.ROOM);
 
 		// BoundarySurfaces

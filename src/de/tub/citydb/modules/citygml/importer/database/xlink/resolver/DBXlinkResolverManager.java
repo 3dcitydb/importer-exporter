@@ -39,6 +39,7 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
@@ -52,6 +53,7 @@ import de.tub.citydb.modules.common.filter.ImportFilter;
 public class DBXlinkResolverManager {
 	private final Connection batchConn;
 	private final Connection commitConn;
+	private final AbstractDatabaseAdapter databaseAdapter;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
 	private final CacheManager dbTempTableManager;
 	private final ImportFilter importFilter;
@@ -65,6 +67,7 @@ public class DBXlinkResolverManager {
 	public DBXlinkResolverManager(
 			Connection batchConn,
 			Connection commitConn,
+			AbstractDatabaseAdapter databaseAdapter,
 			WorkerPool<DBXlink> tmpXlinkPool,
 			DBGmlIdLookupServerManager lookupServerManager,
 			CacheManager dbTempTableManager,
@@ -73,6 +76,7 @@ public class DBXlinkResolverManager {
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.batchConn = batchConn;
 		this.commitConn = commitConn;
+		this.databaseAdapter = databaseAdapter;
 		this.tmpXlinkPool = tmpXlinkPool;
 		this.dbTempTableManager = dbTempTableManager;
 		this.importFilter = importFilter;
@@ -81,7 +85,7 @@ public class DBXlinkResolverManager {
 
 		dbWriterMap = new HashMap<DBXlinkResolverEnum, DBXlinkResolver>();
 		dbGmlIdResolver = new DBGmlIdResolver(batchConn, lookupServerManager, config);
-		dbSequencer = new DBSequencer(batchConn);
+		dbSequencer = new DBSequencer(batchConn, databaseAdapter);
 	}
 
 	public DBXlinkResolver getDBXlinkResolver(DBXlinkResolverEnum dbResolverType) throws SQLException {
@@ -119,10 +123,10 @@ public class DBXlinkResolverManager {
 				dbResolver = new XlinkTextureImage(commitConn, config, this);
 				break;
 			case LIBRARY_OBJECT:
-				dbResolver = new XlinkLibraryObject(commitConn, config);
+				dbResolver = new XlinkLibraryObject(commitConn, config, this);
 				break;
 			case WORLD_FILE:
-				dbResolver = new XlinkWorldFile(batchConn, config);
+				dbResolver = new XlinkWorldFile(batchConn, config, this);
 				break;
 			case XLINK_DEPRECATED_MATERIAL:
 				dbResolver = new XlinkDeprecatedMaterial(batchConn, this);
@@ -160,6 +164,10 @@ public class DBXlinkResolverManager {
 
 	public void propagateEvent(Event event) {
 		eventDispatcher.triggerEvent(event);
+	}
+	
+	public AbstractDatabaseAdapter getDatabaseAdapter() {
+		return databaseAdapter;
 	}
 
 	public void executeBatch() throws SQLException {

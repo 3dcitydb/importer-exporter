@@ -42,7 +42,7 @@ import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.database.DatabaseSrs;
-import de.tub.citydb.api.gui.BoundingBox;
+import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
@@ -57,27 +57,27 @@ import de.tub.citydb.util.Util;
 public class KmlSplitter {
 
 	private static HashSet<CityGMLClass> CURRENTLY_ALLOWED_CITY_OBJECT_TYPES = new HashSet<CityGMLClass>();
-	
+
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
 	private final DisplayForm displayForm;
 	private final ExportFilter exportFilter;
-//	private final Config config;
+	//	private final Config config;
 	private ExportFilterConfig filterConfig;
 	private volatile boolean shouldRun = true;
 
 	private Connection connection;
 	private DatabaseSrs dbSrs;
-	
+
 	public KmlSplitter(DatabaseConnectionPool dbConnectionPool, 
-					   WorkerPool<KmlSplittingResult> dbWorkerPool, 
-					   ExportFilter exportFilter, 
-					   DisplayForm displayForm,
-					   Config config) throws SQLException {
+			WorkerPool<KmlSplittingResult> dbWorkerPool, 
+			ExportFilter exportFilter, 
+			DisplayForm displayForm,
+			Config config) throws SQLException {
 
 		this.dbWorkerPool = dbWorkerPool;
 		this.exportFilter = exportFilter;
 		this.displayForm = displayForm;
-//		this.config = config;
+		//		this.config = config;
 
 		this.filterConfig = config.getProject().getKmlExporter().getFilter();
 		CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.clear();
@@ -87,11 +87,11 @@ public class KmlSplitter {
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetWaterBody()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.WATER_BODY);
-/*
+			/*
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.WATER_SURFACE);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.WATER_CLOSURE_SURFACE);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.WATER_GROUND_SURFACE);
-*/
+			 */
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetLandUse()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.LAND_USE);
@@ -102,10 +102,10 @@ public class KmlSplitter {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.PLANT_COVER);
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetTransportation()) {
-/*
+			/*
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.TRAFFIC_AREA);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.AUXILIARY_TRAFFIC_AREA);
-*/
+			 */
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.TRANSPORTATION_COMPLEX);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.TRACK);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.RAILWAY);
@@ -115,12 +115,12 @@ public class KmlSplitter {
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetReliefFeature()
 				&& config.getProject().getKmlExporter().getLodToExportFrom() > 0) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.RELIEF_FEATURE);
-/*
+			/*
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.RASTER_RELIEF);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.MASSPOINT_RELIEF);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.BREAKLINE_RELIEF);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.TIN_RELIEF);
-*/
+			 */
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetGenericCityObject()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.GENERIC_CITY_OBJECT);
@@ -133,21 +133,22 @@ public class KmlSplitter {
 				&& config.getProject().getKmlExporter().getLodToExportFrom() > 0) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
 		}
-			
+
 		connection = dbConnectionPool.getConnection();
-		connection.setAutoCommit(false);
-		dbSrs = dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem();
+		dbSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 
 		// try and change workspace for connection if needed
-		Database database = config.getProject().getDatabase();
-		dbConnectionPool.gotoWorkspace(connection, 
-										 database.getWorkspaces().getKmlExportWorkspace());
+		if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
+			Database database = config.getProject().getDatabase();
+			dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(connection, 
+					database.getWorkspaces().getKmlExportWorkspace());
+		}
 
 	}
 
 	private void queryObjects() throws SQLException {
 
-//		long startTime = System.currentTimeMillis();
+		// long startTime = System.currentTimeMillis();
 
 		if (filterConfig.isSetSimpleFilter()) {
 			for (String gmlId: filterConfig.getSimpleFilter().getGmlIdFilter().getGmlIds()) {
@@ -159,7 +160,7 @@ public class KmlSplitter {
 					query = connection.prepareStatement(Queries.GET_ID_AND_OBJECTCLASS_FROM_GMLID);
 					query.setString(1, gmlId);
 					rs = (OracleResultSet)query.executeQuery();
-					
+
 					if (rs.next()) {
 						long id = rs.getLong("id");
 						if (KmlExporter.getAlreadyExported().containsKey(id)) continue;
@@ -184,14 +185,14 @@ public class KmlSplitter {
 			}
 		}
 		else if (filterConfig.isSetComplexFilter() &&
-				 filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
-			
+				filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
+
 			BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
 			OracleResultSet rs = null;
 			PreparedStatement spatialQuery = null;
 			try {
 				spatialQuery = connection.prepareStatement(Queries.GET_IDS);
-				
+
 				int srid = dbSrs.getSrid();
 
 				spatialQuery.setInt(1, srid);
@@ -218,7 +219,7 @@ public class KmlSplitter {
 				spatialQuery.setDouble(17, tile.getUpperRightCorner().getY());
 
 				rs = (OracleResultSet)spatialQuery.executeQuery();
-/*
+				/*
 				String absolutePath = config.getInternal().getExportFileName().trim();
 				String filename = absolutePath.substring(absolutePath.lastIndexOf(File.separator) + 1,
 														 absolutePath.lastIndexOf("."));
@@ -229,7 +230,7 @@ public class KmlSplitter {
 
 				Logger.getInstance().info("Spatial query for " + tileName + " resolved in " +
 										  (System.currentTimeMillis() - startTime) + " millis.");
-*/
+				 */
 				int objectCount = 0;
 
 				while (rs.next() && shouldRun) {
@@ -237,15 +238,15 @@ public class KmlSplitter {
 					String gmlId = rs.getString("gmlId");
 					CityGMLClass cityObjectType = Util.classId2cityObject(rs.getInt("class_id"));
 					addWorkToQueue(id, gmlId, cityObjectType, 
-								   exportFilter.getBoundingBoxFilter().getTileRow(),
-								   exportFilter.getBoundingBoxFilter().getTileColumn());
+							exportFilter.getBoundingBoxFilter().getTileRow(),
+							exportFilter.getBoundingBoxFilter().getTileColumn());
 
 					objectCount++;
 				}
 
 				Logger.getInstance().debug("Tile_" + exportFilter.getBoundingBoxFilter().getTileRow()
-						   					 + "_" + exportFilter.getBoundingBoxFilter().getTileColumn()
-						   					 + " contained " + objectCount + " objects.");
+						+ "_" + exportFilter.getBoundingBoxFilter().getTileColumn()
+						+ " contained " + objectCount + " objects.");
 			}
 			catch (SQLException sqlEx) {
 				throw sqlEx;
@@ -295,7 +296,7 @@ public class KmlSplitter {
 	private void addWorkToQueue(long id, String gmlId, CityGMLClass cityObjectType, int row, int column) throws SQLException {
 
 		if ((filterConfig.isSetSimpleFilter() || CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType)) &&
-			!KmlExporter.getAlreadyExported().containsKey(id)) {
+				!KmlExporter.getAlreadyExported().containsKey(id)) {
 
 			CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
 			cityObject4Json.setTileRow(row);
@@ -313,7 +314,7 @@ public class KmlSplitter {
 				PreparedStatement query = null;
 				try {
 					if (filterConfig.isSetComplexFilter() &&
-						filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
+							filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
 
 						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS_IN_BBOX);
 						BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
@@ -356,13 +357,13 @@ public class KmlSplitter {
 						query.setLong(1, id);
 					}
 					rs = (OracleResultSet)query.executeQuery();
-					
+
 					while (rs.next() && shouldRun) {
 						addWorkToQueue(rs.getLong("id"), // recursion for recursive groups
-									   rs.getString("gmlId"),
-									   Util.classId2cityObject(rs.getInt("class_id")), 
-									   row,
-									   column);
+								rs.getString("gmlId"),
+								Util.classId2cityObject(rs.getInt("class_id")), 
+								row,
+								column);
 					}
 				}
 				catch (SQLException sqlEx) {
@@ -382,7 +383,7 @@ public class KmlSplitter {
 			}
 		}
 	}
-	
+
 	private double[] getEnvelopeInWGS84(long id) {
 		double[] ordinatesArray = null;
 		PreparedStatement psQuery = null;
@@ -390,19 +391,19 @@ public class KmlSplitter {
 
 		try {
 			psQuery = dbSrs.is3D() ? 
-					  connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_3D_FROM_ID):
-					  connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_FROM_ID);
-						  
-			psQuery.setLong(1, id);
+					connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_3D_FROM_ID):
+						connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_FROM_ID);
 
-			rs = (OracleResultSet)psQuery.executeQuery();
-			if (rs.next()) {
-				STRUCT struct = (STRUCT)rs.getObject(1); 
-				if (!rs.wasNull() && struct != null) {
-					JGeometry geom = JGeometry.load(struct);
-					ordinatesArray = geom.getOrdinatesArray();
-				}
-			}
+					psQuery.setLong(1, id);
+
+					rs = (OracleResultSet)psQuery.executeQuery();
+					if (rs.next()) {
+						STRUCT struct = (STRUCT)rs.getObject(1); 
+						if (!rs.wasNull() && struct != null) {
+							JGeometry geom = JGeometry.load(struct);
+							ordinatesArray = geom.getOrdinatesArray();
+						}
+					}
 		} 
 		catch (SQLException sqlEx) {}
 		finally {

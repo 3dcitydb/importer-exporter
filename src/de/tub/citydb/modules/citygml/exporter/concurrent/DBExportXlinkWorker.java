@@ -37,7 +37,6 @@ import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
@@ -78,15 +77,15 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 
 	private void init() throws SQLException {
 		connection = dbConnectionPool.getConnection();
-		connection.setAutoCommit(false);
 
 		// try and change workspace for the connection if needed
-		Database database = config.getProject().getDatabase();
-		dbConnectionPool.gotoWorkspace(
-				connection, 
-				database.getWorkspaces().getExportWorkspace());
-		
-		xlinkExporterManager = new DBXlinkExporterManager(connection, config, eventDispatcher);
+		if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
+			dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(
+					connection, 
+					config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
+		}
+
+		xlinkExporterManager = new DBXlinkExporterManager(connection, dbConnectionPool.getActiveDatabaseAdapter(), config, eventDispatcher);
 	}
 
 	@Override
@@ -145,7 +144,7 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 					// re-check state
 				}
 			}
-			
+
 			try {
 				xlinkExporterManager.close();
 			} catch (SQLException e) {

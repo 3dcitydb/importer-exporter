@@ -53,10 +53,10 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
-import de.tub.citydb.util.database.DBUtil;
 
 public class Building extends KmlGenericObject{
 
@@ -71,22 +71,22 @@ public class Building extends KmlGenericObject{
 			Config config) {
 
 		super(connection,
-			  kmlExporterManager,
-			  kmlFactory,
-			  elevationServiceHandler,
-			  balloonTemplateHandler,
-			  eventDispatcher,
-			  config);
+				kmlExporterManager,
+				kmlFactory,
+				elevationServiceHandler,
+				balloonTemplateHandler,
+				eventDispatcher,
+				config);
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
 		return config.getProject().getKmlExporter().getBuildingDisplayForms();
 	}
-	
+
 	public ColladaOptions getColladaOptions() {
 		return config.getProject().getKmlExporter().getBuildingColladaOptions();
 	}
-	
+
 	public Balloon getBalloonSettings() {
 		return config.getProject().getKmlExporter().getBuildingBalloon();
 	}
@@ -156,10 +156,10 @@ public class Building extends KmlGenericObject{
 							placemarks.set(j, null); // polygons transfered, placemark exhausted
 						}
 					}
-					
+
 					kmlExporterManager.print(placemarks,
-											 work,
-											 getBalloonSettings().isBalloonContentInSeparateFile());
+							work,
+							getBalloonSettings().isBalloonContentInSeparateFile());
 
 					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
 				}
@@ -185,13 +185,13 @@ public class Building extends KmlGenericObject{
 
 				try {
 					psQuery = connection.prepareStatement(Queries.getBuildingPartQuery(currentLod, work.getDisplayForm()),
-							   							  ResultSet.TYPE_SCROLL_INSENSITIVE,
-							   							  ResultSet.CONCUR_READ_ONLY);
+							ResultSet.TYPE_SCROLL_INSENSITIVE,
+							ResultSet.CONCUR_READ_ONLY);
 
 					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 						psQuery.setLong(i, buildingPartId);
 					}
-				
+
 					rs = (OracleResultSet)psQuery.executeQuery();
 					if (rs.isBeforeFirst()) {
 						break; // result set not empty
@@ -216,13 +216,13 @@ public class Building extends KmlGenericObject{
 					int groupBasis = 4;
 					try {
 						psQuery = connection.prepareStatement(Queries.getBuildingPartAggregateGeometries(0.001,
-																									 DBUtil.get2DSrid(dbSrs),
-																									 currentLod,
-																									 Math.pow(groupBasis, 4),
-																									 Math.pow(groupBasis, 3),
-																									 Math.pow(groupBasis, 2)),
-															  ResultSet.TYPE_SCROLL_INSENSITIVE,
-															  ResultSet.CONCUR_READ_ONLY);
+								DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().get2DSrid(dbSrs),
+								currentLod,
+								Math.pow(groupBasis, 4),
+								Math.pow(groupBasis, 3),
+								Math.pow(groupBasis, 2)),
+								ResultSet.TYPE_SCROLL_INSENSITIVE,
+								ResultSet.CONCUR_READ_ONLY);
 
 						for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 							psQuery.setLong(i, buildingPartId);
@@ -268,7 +268,7 @@ public class Building extends KmlGenericObject{
 					double measuredHeight = rs2.getDouble("envelope_measured_height");
 					try { rs2.close(); /* release cursor on DB */ } catch (SQLException e) {}
 					try { psQuery2.close(); /* release cursor on DB */ } catch (SQLException e) {}
-					
+
 					return createPlacemarksForExtruded(rs, work, measuredHeight, reversePointOrder);
 
 				case DisplayForm.GEOMETRY:
@@ -292,11 +292,11 @@ public class Building extends KmlGenericObject{
 					fillGenericObjectForCollada(rs); // fill and refill
 					setGmlId(work.getGmlId());
 					setId(work.getId());
-					
+
 					if (getGeometryAmount() > GEOMETRY_AMOUNT_WARNING) {
 						Logger.getInstance().info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 					}
-				
+
 					List<Point3d> anchorCandidates = setOrigins(); // setOrigins() called mainly for the side-effect
 					double zOffset = getZOffsetFromConfigOrDB(work.getId());
 					if (zOffset == Double.MAX_VALUE) {
@@ -370,8 +370,8 @@ public class Building extends KmlGenericObject{
 
 		try {
 			getGeometriesStmt = connection.prepareStatement(getHighlightingQuery(),
-															ResultSet.TYPE_SCROLL_INSENSITIVE,
-															ResultSet.CONCUR_READ_ONLY);
+					ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
 
 			for (int i = 1; i <= getGeometriesStmt.getParameterMetaData().getParameterCount(); i++) {
 				// this is THE LINE

@@ -32,13 +32,8 @@ package de.tub.citydb.modules.citygml.importer.database.content;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.texturedsurface._AbstractAppearance;
@@ -63,6 +58,7 @@ import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
 import org.citygml4j.model.gml.geometry.primitives.Rectangle;
+import org.citygml4j.model.gml.geometry.primitives.Sign;
 import org.citygml4j.model.gml.geometry.primitives.Solid;
 import org.citygml4j.model.gml.geometry.primitives.SolidArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
@@ -75,6 +71,7 @@ import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DatabaseConnectionPool;
@@ -101,6 +98,8 @@ public class DBSurfaceGeometry implements DBImporter {
 	private boolean applyTransformation;
 	private int parentBatchCounter;
 	private int memberBatchCounter;
+	private int nullGeometryType;
+	private String nullGeometryTypeName;
 
 	public DBSurfaceGeometry(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -112,7 +111,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-		dbSrid = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().getSrid();
+		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
 		useTransformation = applyTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
@@ -121,11 +120,21 @@ public class DBSurfaceGeometry implements DBImporter {
 			gmlIdCodespace = "'" + gmlIdCodespace + "'";
 		else
 			gmlIdCodespace = "null";
+		
+		nullGeometryType = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
+		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 
-		psParentElem = batchConn.prepareStatement("insert into SURFACE_GEOMETRY (ID, GMLID, GMLID_CODESPACE, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY) values "
-				+ "(?, ?, " + gmlIdCodespace + ", ?, ?, ?, ?, ?, ?, ?, ?)");
-		psMemberElem = batchConn.prepareStatement("insert into SURFACE_GEOMETRY (ID, GMLID, GMLID_CODESPACE, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY) values "
-				+ "(SURFACE_GEOMETRY_SEQ.nextval, ?, " + gmlIdCodespace + ", ?, ?, 0, 0, 0, ?, ?, ?)");
+		StringBuilder parentStmt = new StringBuilder()
+		.append("insert into SURFACE_GEOMETRY (ID, GMLID, GMLID_CODESPACE, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY) values ")
+		.append("(?, ?, ").append(gmlIdCodespace).append(", ?, ?, ?, ?, ?, ?, ?, ?)");
+		
+		StringBuilder memberStmt = new StringBuilder()
+		.append("insert into SURFACE_GEOMETRY (ID, GMLID, GMLID_CODESPACE, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY) values ")
+		.append("(").append(dbImporterManager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ)).append(", ?, ")
+		.append(gmlIdCodespace).append(", ?, ?, 0, 0, 0, ?, ?, ?)");
+		
+		psParentElem = batchConn.prepareStatement(parentStmt.toString());
+		psMemberElem = batchConn.prepareStatement(memberStmt.toString());
 
 		materialModelImporter = (DBDeprecatedMaterialModel)dbImporterManager.getDBImporter(DBImporterEnum.DEPRECATED_MATERIAL_MODEL);
 	}
@@ -151,7 +160,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			return 0;
 		}
 		
-		long surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
+		long surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ);
 		if (surfaceGeometryId != 0)
 			insert(surfaceGeometry, surfaceGeometryId, 0, surfaceGeometryId, false, false, false, cityObjectId);
 
@@ -221,7 +230,7 @@ public class DBSurfaceGeometry implements DBImporter {
 				if (!x.equals(points.get(nrOfPoints - 3)) ||
 						!y.equals(points.get(nrOfPoints - 2)) ||
 						!z.equals(points.get(nrOfPoints - 1))) {
-					// repair unclosed ring because sdoapi fails to do its job...
+					// repair unclosed ring
 					StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
 							linearRing.getGMLClass(), 
 							origGmlId));
@@ -247,11 +256,11 @@ public class DBSurfaceGeometry implements DBImporter {
 				if (applyTransformation)
 					dbImporterManager.getAffineTransformer().transformCoordinates(points);
 
-				double[] ordinates = new double[points.size()];
+				double[] coordinates = new double[points.size()];
 
 				int i = 0;
 				for (Double point : points)
-					ordinates[i++] = point.doubleValue();
+					coordinates[i++] = point.doubleValue();
 
 				if (importAppearance && !isCopy) {
 					if (origGmlId == null)
@@ -263,10 +272,10 @@ public class DBSurfaceGeometry implements DBImporter {
 								origGmlId,
 								0));
 				}
-
-				JGeometry geom = JGeometry.createLinearPolygon(ordinates, 3, dbSrid);
-				STRUCT obj = SyncJGeometry.syncStore(geom, batchConn);
-
+				
+				GeometryObject geomObj = GeometryObject.createPolygon(coordinates, 3, dbSrid);
+				Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geomObj, batchConn);
+				
 				if (parentId == 0 && rootId == surfaceGeometryId) {
 					if (origGmlId != null && !isCopy)
 						dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
@@ -321,7 +330,7 @@ public class DBSurfaceGeometry implements DBImporter {
 						if (!x.equals(points.get(nrOfPoints - 3)) ||
 								!y.equals(points.get(nrOfPoints - 2)) ||
 								!z.equals(points.get(nrOfPoints - 1))) {
-							// repair unclosed ring because sdoapi fails to do its job...
+							// repair unclosed ring
 							StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
 									exteriorLinearRing.getGMLClass(), 
 									origGmlId));
@@ -377,7 +386,7 @@ public class DBSurfaceGeometry implements DBImporter {
 										y = interiorPoints.get(1);
 										z = interiorPoints.get(2);
 										nrOfPoints = interiorPoints.size();
-										nrOfCoordinates = points.size() / 3;
+										nrOfCoordinates = interiorPoints.size() / 3;
 
 										if (!x.equals(interiorPoints.get(nrOfPoints - 3)) ||
 												!y.equals(interiorPoints.get(nrOfPoints - 2)) ||
@@ -440,7 +449,7 @@ public class DBSurfaceGeometry implements DBImporter {
 										ringNo));
 						}
 
-						Object[] pointArray = new Object[pointList.size()];
+						double[][] coordinates = new double[pointList.size()][];
 						int i = 0;
 						for (List<Double> coordsList : pointList) {
 							double[] coords = new double[coordsList.size()];
@@ -451,12 +460,12 @@ public class DBSurfaceGeometry implements DBImporter {
 								j++;
 							}
 
-							pointArray[i] = coords;					
+							coordinates[i] = coords;	
 							i++;
 						}
-
-						JGeometry geom = JGeometry.createLinearPolygon(pointArray, 3, dbSrid);
-						STRUCT obj = SyncJGeometry.syncStore(geom, batchConn);
+						
+						GeometryObject geomObj = GeometryObject.createPolygon(coordinates, 3, dbSrid);
+						Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geomObj, batchConn);
 
 						if (parentId == 0 && rootId == surfaceGeometryId) {
 							if (origGmlId != null && !isCopy)
@@ -507,7 +516,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			OrientableSurface orientableSurface = (OrientableSurface)surfaceGeometry;
 
 			boolean negativeOrientation = false;
-			if (orientableSurface.isSetOrientation() && orientableSurface.getOrientation().equals("-")) {
+			if (orientableSurface.isSetOrientation() && orientableSurface.getOrientation() == Sign.MINUS) {
 				reverse = !reverse;
 				negativeOrientation = true;
 			}
@@ -534,7 +543,7 @@ public class DBSurfaceGeometry implements DBImporter {
 					case SURFACE:
 					case TRIANGULATED_SURFACE:
 					case TIN:
-						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
+						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ);
 						insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 						break;
 					}
@@ -621,7 +630,7 @@ public class DBSurfaceGeometry implements DBImporter {
 					case SURFACE:
 					case TRIANGULATED_SURFACE:
 					case TIN:
-						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
+						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ);
 						insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 						break;
 					}
@@ -723,7 +732,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			psParentElem.setInt(7, 0);
 			psParentElem.setInt(8, isXlink ? 1 : 0);
 			psParentElem.setInt(9, reverse ? 1 : 0);
-			psParentElem.setNull(10, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psParentElem.setNull(10, nullGeometryType, nullGeometryTypeName);
 			if (parentId != 0)
 				psParentElem.setLong(3, parentId);
 			else
@@ -750,7 +759,7 @@ public class DBSurfaceGeometry implements DBImporter {
 						case SURFACE:
 						case TRIANGULATED_SURFACE:
 						case TIN:
-							surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
+							surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ);
 							insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 							break;
 						}
@@ -791,7 +800,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			psParentElem.setInt(7, 0);
 			psParentElem.setInt(8, isXlink ? 1 : 0);
 			psParentElem.setInt(9, reverse ? 1 : 0);
-			psParentElem.setNull(10, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psParentElem.setNull(10, nullGeometryType, nullGeometryTypeName);
 			if (parentId != 0)
 				psParentElem.setLong(3, parentId);
 			else
@@ -847,7 +856,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			psParentElem.setInt(7, 1);
 			psParentElem.setInt(8, isXlink ? 1 : 0);
 			psParentElem.setInt(9, reverse ? 1 : 0);
-			psParentElem.setNull(10, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psParentElem.setNull(10, nullGeometryType, nullGeometryTypeName);
 			if (parentId != 0)
 				psParentElem.setLong(3, parentId);
 			else
@@ -889,7 +898,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			psParentElem.setInt(7, 0);
 			psParentElem.setInt(8, isXlink ? 1 : 0);
 			psParentElem.setInt(9, reverse ? 1 : 0);
-			psParentElem.setNull(10, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psParentElem.setNull(10, nullGeometryType, nullGeometryTypeName);
 			if (parentId != 0)
 				psParentElem.setLong(3, parentId);
 			else
@@ -909,7 +918,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 					// we just allow CompositeSurfaces here!
 					if (abstractSurface.getGMLClass() == GMLClass.COMPOSITE_SURFACE) {
-						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
+						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ);
 						insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 					}
 				} else {
@@ -955,7 +964,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			psParentElem.setInt(7, 0);
 			psParentElem.setInt(8, isXlink ? 1 : 0);
 			psParentElem.setInt(9, reverse ? 1 : 0);
-			psParentElem.setNull(10, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psParentElem.setNull(10, nullGeometryType, nullGeometryTypeName);
 			if (parentId != 0)
 				psParentElem.setLong(3, parentId);
 			else
@@ -970,7 +979,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			if (compositeSolid.isSetSolidMember()) {
 				for (SolidProperty solidProperty : compositeSolid.getSolidMember()) {
 					if (solidProperty.isSetSolid()) {
-						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
+						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ);
 						insert(solidProperty.getSolid(), surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 					} else {
 						// xlink
@@ -1007,7 +1016,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			psParentElem.setInt(7, 0);
 			psParentElem.setInt(8, isXlink ? 1 : 0);
 			psParentElem.setInt(9, reverse ? 1 : 0);
-			psParentElem.setNull(10, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psParentElem.setNull(10, nullGeometryType, nullGeometryTypeName);
 			if (parentId != 0)
 				psParentElem.setLong(3, parentId);
 			else
@@ -1057,7 +1066,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			psParentElem.setInt(7, 0);
 			psParentElem.setInt(8, isXlink ? 1 : 0);
 			psParentElem.setInt(9, reverse ? 1 : 0);
-			psParentElem.setNull(10, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psParentElem.setNull(10, nullGeometryType, nullGeometryTypeName);
 			if (parentId != 0)
 				psParentElem.setLong(3, parentId);
 			else
@@ -1084,7 +1093,7 @@ public class DBSurfaceGeometry implements DBImporter {
 						case SURFACE:
 						case TRIANGULATED_SURFACE:
 						case TIN:
-							surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
+							surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ);
 							insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 							break;
 						}
@@ -1123,7 +1132,7 @@ public class DBSurfaceGeometry implements DBImporter {
 						case SURFACE:
 						case TRIANGULATED_SURFACE:
 						case TIN:
-							surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
+							surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ);
 							insert(abstractSurface, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 							break;
 						}
@@ -1148,7 +1157,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			psParentElem.setInt(7, 0);
 			psParentElem.setInt(8, isXlink ? 1 : 0);
 			psParentElem.setInt(9, reverse ? 1 : 0);
-			psParentElem.setNull(10, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psParentElem.setNull(10, nullGeometryType, nullGeometryTypeName);
 			if (parentId != 0)
 				psParentElem.setLong(3, parentId);
 			else
@@ -1163,7 +1172,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			if (multiSolid.isSetSolidMember()) {
 				for (SolidProperty solidProperty : multiSolid.getSolidMember()) {
 					if (solidProperty.isSetSolid()) {
-						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
+						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ);
 						insert(solidProperty.getSolid(), surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 					} else {
 						// xlink
@@ -1188,7 +1197,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 				if (solidArrayProperty.isSetSolid()) {
 					for (AbstractSolid abstractSolid : solidArrayProperty.getSolid()) {
-						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_SEQ);
+						surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ);
 						insert(abstractSolid, surfaceGeometryId, parentId, rootId, reverse, isXlink, isCopy, cityObjectId);
 					}
 				}
@@ -1225,7 +1234,7 @@ public class DBSurfaceGeometry implements DBImporter {
 	private void addParentBatch() throws SQLException {
 		psParentElem.addBatch();
 
-		if (++parentBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+		if (++parentBatchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize()) {
 			psParentElem.executeBatch();
 			parentBatchCounter = 0;
 		}
@@ -1234,7 +1243,7 @@ public class DBSurfaceGeometry implements DBImporter {
 	private void addMemberBatch() throws SQLException {
 		psMemberElem.addBatch();
 
-		if (++memberBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) 
+		if (++memberBatchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize()) 
 			executeBatch();
 	}
 

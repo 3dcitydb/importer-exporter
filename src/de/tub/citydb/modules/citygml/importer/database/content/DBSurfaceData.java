@@ -36,10 +36,6 @@ import java.sql.Types;
 import java.util.HashSet;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
@@ -57,8 +53,8 @@ import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
@@ -85,6 +81,8 @@ public class DBSurfaceData implements DBImporter {
 	private boolean importTextureImage;
 	private boolean affineTransformation;
 	private int batchCounter;
+	private int nullGeometryType;
+	private String nullGeometryTypeName;
 
 	public DBSurfaceData(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -96,7 +94,7 @@ public class DBSurfaceData implements DBImporter {
 
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-		dbSrid = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().getSrid();
+		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
 		importTextureImage = config.getProject().getImporter().getAppearances().isSetImportTextureFiles();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
@@ -106,24 +104,33 @@ public class DBSurfaceData implements DBImporter {
 		else
 			gmlIdCodespace = "null";
 
-		psX3DMaterial = batchConn.prepareStatement("insert into SURFACE_DATA (ID, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, TYPE, " +
-				"X3D_SHININESS, X3D_TRANSPARENCY, X3D_AMBIENT_INTENSITY, X3D_SPECULAR_COLOR, X3D_DIFFUSE_COLOR, X3D_EMISSIVE_COLOR, X3D_IS_SMOOTH) values " +
-				"(?, ?, " + gmlIdCodespace + ", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		nullGeometryType = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
+		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 
-		psParaTex = batchConn.prepareStatement("insert into SURFACE_DATA (ID, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, TYPE, " +
-				"TEX_IMAGE_URI, TEX_MIME_TYPE, TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR) values " +
-				"(?, ?, " + gmlIdCodespace + ", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		StringBuilder x3dStmt = new StringBuilder()
+		.append("insert into SURFACE_DATA (ID, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, TYPE, ")
+		.append("X3D_SHININESS, X3D_TRANSPARENCY, X3D_AMBIENT_INTENSITY, X3D_SPECULAR_COLOR, X3D_DIFFUSE_COLOR, X3D_EMISSIVE_COLOR, X3D_IS_SMOOTH) values ")
+		.append("(?, ?, ").append(gmlIdCodespace).append(", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psX3DMaterial = batchConn.prepareStatement(x3dStmt.toString());
 
-		psGeoTex = batchConn.prepareStatement("insert into SURFACE_DATA (ID, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, TYPE, " +
-				"TEX_IMAGE_URI, TEX_MIME_TYPE, TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR, " +
-				"GT_PREFER_WORLDFILE, GT_ORIENTATION, GT_REFERENCE_POINT) values " +
-				"(?, ?, " + gmlIdCodespace + ", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		StringBuilder paraStmt = new StringBuilder()
+		.append("insert into SURFACE_DATA (ID, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, TYPE, ")
+		.append("TEX_IMAGE_URI, TEX_MIME_TYPE, TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR) values ")
+		.append("(?, ?, ").append(gmlIdCodespace).append(", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psParaTex = batchConn.prepareStatement(paraStmt.toString());
+
+		StringBuilder geoStmt = new StringBuilder()
+		.append("insert into SURFACE_DATA (ID, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, TYPE, ")
+		.append("TEX_IMAGE_URI, TEX_MIME_TYPE, TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR, ")
+		.append("GT_PREFER_WORLDFILE, GT_ORIENTATION, GT_REFERENCE_POINT) values ")
+		.append("(?, ?, ").append(gmlIdCodespace).append(", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psGeoTex = batchConn.prepareStatement(geoStmt.toString());
 
 		dbAppearToSurfaceDataImporter = (DBAppearToSurfaceData)dbImporterManager.getDBImporter(DBImporterEnum.APPEAR_TO_SURFACE_DATA);
 	}
 
 	public long insert(AbstractSurfaceData abstractSurfData, long parentId) throws SQLException {
-		long surfaceDataId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_DATA_SEQ);
+		long surfaceDataId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_DATA_ID_SEQ);
 		if (surfaceDataId == 0)
 			return 0;
 
@@ -250,7 +257,7 @@ public class DBSurfaceData implements DBImporter {
 				psSurfaceData.setInt(14, 0);
 
 			psSurfaceData.addBatch();
-			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 				dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
 			if (material.isSetTarget()) {
@@ -323,7 +330,7 @@ public class DBSurfaceData implements DBImporter {
 			// ParameterizedTexture
 			if (abstractSurfData.getCityGMLClass() == CityGMLClass.PARAMETERIZED_TEXTURE) {
 				psSurfaceData.addBatch();
-				if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+				if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 					dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
 				// xlink
@@ -482,12 +489,12 @@ public class DBSurfaceData implements DBImporter {
 							if (affineTransformation)
 								dbImporterManager.getAffineTransformer().transformCoordinates(coords);
 
-							JGeometry geom = new JGeometry(coords.get(0), coords.get(1), dbSrid);
-							STRUCT obj = SyncJGeometry.syncStore(geom, batchConn);
+							GeometryObject geom = GeometryObject.createPoint(new double[]{coords.get(0), coords.get(1)}, 2, dbSrid);
+							Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geom, batchConn);
 
 							psSurfaceData.setObject(15, obj);
 						} else
-							psSurfaceData.setNull(15, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+							psSurfaceData.setNull(15, nullGeometryType, nullGeometryTypeName);
 
 					} else {
 						// xlink is not supported...	
@@ -498,7 +505,7 @@ public class DBSurfaceData implements DBImporter {
 						}
 					}
 				} else
-					psSurfaceData.setNull(15, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psSurfaceData.setNull(15, nullGeometryType, nullGeometryTypeName);
 
 				// do we have a world file?!
 				if (geoTex.isSetImageURI() && !geoTex.isSetOrientation() && !geoTex.isSetReferencePoint()) {
@@ -512,7 +519,7 @@ public class DBSurfaceData implements DBImporter {
 				}
 
 				psSurfaceData.addBatch();
-				if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+				if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 					dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
 				if (geoTex.isSetTarget()) {

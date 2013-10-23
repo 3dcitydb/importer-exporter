@@ -40,7 +40,6 @@ import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -76,14 +75,16 @@ public class DBAppearance implements DBImporter {
 		else
 			gmlIdCodespace = "null";
 
-		psAppearance = batchConn.prepareStatement("insert into APPEARANCE (ID, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, THEME, CITYMODEL_ID, CITYOBJECT_ID) values " +
-			"(?, ?, " + gmlIdCodespace + ", ?, ?, ?, ?, ?, ?)");
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into APPEARANCE (ID, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, THEME, CITYMODEL_ID, CITYOBJECT_ID) values ")
+		.append("(?, ?, ").append(gmlIdCodespace).append(", ?, ?, ?, ?, ?, ?)");
+		psAppearance = batchConn.prepareStatement(stmt.toString());
 
 		surfaceDataImporter = (DBSurfaceData)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_DATA);
 	}
 
 	public long insert(Appearance appearance, CityGMLClass parent, long parentId) throws SQLException {
-		long appearanceId = dbImporterManager.getDBId(DBSequencerEnum.APPEARANCE_SEQ);
+		long appearanceId = dbImporterManager.getDBId(DBSequencerEnum.APPEARANCE_ID_SEQ);
 		boolean success = false;
 
 		if (appearanceId != 0)
@@ -158,7 +159,7 @@ public class DBAppearance implements DBImporter {
 		}
 
 		psAppearance.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.APPEARANCE);
 
 		// surfaceData members

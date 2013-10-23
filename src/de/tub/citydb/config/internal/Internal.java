@@ -36,8 +36,7 @@ import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 
 public class Internal {
-	public static final int ORACLE_MAX_BATCH_SIZE = 65535;
-	public static final String ORACLE_DEFAULT_WORKSPACE = "LIVE";
+	public static final int DB_MAX_BATCH_SIZE = 65535;
 	public static final String GML_NAME_DELIMITER = " --/\\-- ";
 	public static final String GEOMETRY_XLINK = "isXlink";
 	public static final String GEOMETRY_ORIGINAL = "origGeom";

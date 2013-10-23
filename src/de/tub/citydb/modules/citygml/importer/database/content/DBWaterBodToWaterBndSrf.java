@@ -33,8 +33,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import de.tub.citydb.config.internal.Internal;
-
 public class DBWaterBodToWaterBndSrf implements DBImporter {
 	private final Connection batchConn;
 	private final DBImporterManager dbImporterManager;
@@ -50,8 +48,7 @@ public class DBWaterBodToWaterBndSrf implements DBImporter {
 	}
 
 	private void init() throws SQLException {
-		psWaterBodToWaterBndSrf = batchConn.prepareStatement("insert into WATERBOD_TO_WATERBND_SRF (WATERBOUNDARY_SURFACE_ID, WATERBODY_ID) values " +
-			"(?, ?)");
+		psWaterBodToWaterBndSrf = batchConn.prepareStatement("insert into WATERBOD_TO_WATERBND_SRF (WATERBOUNDARY_SURFACE_ID, WATERBODY_ID) values (?, ?)");
 	}
 
 	public void insert(long waterSurfaceId, long waterBodyId) throws SQLException {
@@ -59,7 +56,7 @@ public class DBWaterBodToWaterBndSrf implements DBImporter {
 		psWaterBodToWaterBndSrf.setLong(2, waterBodyId);
 
 		psWaterBodToWaterBndSrf.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.WATERBOD_TO_WATERBND_SRF);
 	}
 

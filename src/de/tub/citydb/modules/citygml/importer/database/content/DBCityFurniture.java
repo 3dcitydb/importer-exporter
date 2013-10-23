@@ -34,10 +34,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
@@ -46,8 +42,8 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
@@ -60,10 +56,12 @@ public class DBCityFurniture implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBOtherGeometry geometryImporter;
 	
 	private boolean affineTransformation;
 	private int batchCounter;
+	private int nullGeometryType;
+	private String nullGeometryTypeName;
 
 	public DBCityFurniture(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -74,22 +72,27 @@ public class DBCityFurniture implements DBImporter {
 	}
 
 	private void init() throws SQLException {
-		psCityFurniture = batchConn.prepareStatement("insert into CITY_FURNITURE (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, " +
-				"LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, " +
-				"LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID, " +
-				"LOD1_IMPLICIT_REF_POINT, LOD2_IMPLICIT_REF_POINT, LOD3_IMPLICIT_REF_POINT, LOD4_IMPLICIT_REF_POINT, " +
-				"LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION, " +
-				"LOD1_TERRAIN_INTERSECTION, LOD2_TERRAIN_INTERSECTION, LOD3_TERRAIN_INTERSECTION, LOD4_TERRAIN_INTERSECTION) values " +
-				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		nullGeometryType = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
+		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
+
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into CITY_FURNITURE (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, ")
+		.append("LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, ")
+		.append("LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID, ")
+		.append("LOD1_IMPLICIT_REF_POINT, LOD2_IMPLICIT_REF_POINT, LOD3_IMPLICIT_REF_POINT, LOD4_IMPLICIT_REF_POINT, ")
+		.append("LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION, ")
+		.append("LOD1_TERRAIN_INTERSECTION, LOD2_TERRAIN_INTERSECTION, LOD3_TERRAIN_INTERSECTION, LOD4_TERRAIN_INTERSECTION) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psCityFurniture = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		implicitGeometryImporter = (DBImplicitGeometry)dbImporterManager.getDBImporter(DBImporterEnum.IMPLICIT_GEOMETRY);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		geometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
 	public long insert(CityFurniture cityFurniture) throws SQLException {
-		long cityFurnitureId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long cityFurnitureId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (cityFurnitureId != 0)
@@ -218,7 +221,7 @@ public class DBCityFurniture implements DBImporter {
 
 		for (int lod = 1; lod < 5; lod++) {
 			ImplicitRepresentationProperty implicit = null;
-			JGeometry pointGeom = null;
+			GeometryObject pointGeom = null;
 			String matrixString = null;
 			long implicitId = 0;
 
@@ -243,7 +246,7 @@ public class DBCityFurniture implements DBImporter {
 
 					// reference Point
 					if (geometry.isSetReferencePoint())
-						pointGeom = sdoGeometry.getPoint(geometry.getReferencePoint());
+						pointGeom = geometryImporter.getPoint(geometry.getReferencePoint());
 
 					// transformation matrix
 					if (geometry.isSetTransformationMatrix()) {
@@ -267,10 +270,10 @@ public class DBCityFurniture implements DBImporter {
 					psCityFurniture.setNull(11, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
+					Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(pointGeom, batchConn);
 					psCityFurniture.setObject(15, obj);
 				} else
-					psCityFurniture.setNull(15, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(15, nullGeometryType, nullGeometryTypeName);
 
 				if (matrixString != null)
 					psCityFurniture.setString(19, matrixString);
@@ -285,10 +288,10 @@ public class DBCityFurniture implements DBImporter {
 					psCityFurniture.setNull(12, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
+					Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(pointGeom, batchConn);
 					psCityFurniture.setObject(16, obj);
 				} else
-					psCityFurniture.setNull(16, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(16, nullGeometryType, nullGeometryTypeName);
 
 				if (matrixString != null)
 					psCityFurniture.setString(20, matrixString);
@@ -303,10 +306,10 @@ public class DBCityFurniture implements DBImporter {
 					psCityFurniture.setNull(13, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
+					Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(pointGeom, batchConn);
 					psCityFurniture.setObject(17, obj);
 				} else
-					psCityFurniture.setNull(17, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(17, nullGeometryType, nullGeometryTypeName);
 
 				if (matrixString != null)
 					psCityFurniture.setString(21, matrixString);
@@ -321,10 +324,10 @@ public class DBCityFurniture implements DBImporter {
 					psCityFurniture.setNull(14, 0);
 
 				if (pointGeom != null) {
-					STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
+					Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(pointGeom, batchConn);
 					psCityFurniture.setObject(18, obj);
 				} else
-					psCityFurniture.setNull(18, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(18, nullGeometryType, nullGeometryTypeName);
 
 				if (matrixString != null)
 					psCityFurniture.setString(22, matrixString);
@@ -339,7 +342,7 @@ public class DBCityFurniture implements DBImporter {
 		for (int lod = 1; lod < 5; lod++) {
 			
 			MultiCurveProperty multiCurveProperty = null;
-			JGeometry multiLine = null;
+			GeometryObject multiLine = null;
 			
 			switch (lod) {
 			case 1:
@@ -357,46 +360,46 @@ public class DBCityFurniture implements DBImporter {
 			}
 			
 			if (multiCurveProperty != null)
-				multiLine = sdoGeometry.getMultiCurve(multiCurveProperty);
+				multiLine = geometryImporter.getMultiCurve(multiCurveProperty);
 
 			switch (lod) {
 			case 1:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psCityFurniture.setObject(23, multiLineObj);
 				} else
-					psCityFurniture.setNull(23, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(23, nullGeometryType, nullGeometryTypeName);
 					
 				break;
 			case 2:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psCityFurniture.setObject(24, multiLineObj);
 				} else
-					psCityFurniture.setNull(24, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(24, nullGeometryType, nullGeometryTypeName);
 					
 				break;
 			case 3:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psCityFurniture.setObject(25, multiLineObj);
 				} else
-					psCityFurniture.setNull(25, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(25, nullGeometryType, nullGeometryTypeName);
 					
 				break;
 			case 4:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psCityFurniture.setObject(26, multiLineObj);
 				} else
-					psCityFurniture.setNull(26, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psCityFurniture.setNull(26, nullGeometryType, nullGeometryTypeName);
 					
 				break;
 			}
 		}
 		
 		psCityFurniture.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.CITY_FURNITURE);
 		
 		return true;

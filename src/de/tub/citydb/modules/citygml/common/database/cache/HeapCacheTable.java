@@ -124,7 +124,7 @@ public class HeapCacheTable implements CacheTable {
 				conn = dbPool.getConnection();
 				conn.setAutoCommit(false);
 
-				model.create(conn, tableName, CacheTableType.HEAP_TABLE);
+				model.create(conn, tableName, CacheTableType.HEAP_TABLE, dbPool.getActiveDatabaseAdapter().getSQLAdapter());
 				isCreated = true;
 			}
 		} finally {
@@ -141,7 +141,7 @@ public class HeapCacheTable implements CacheTable {
 
 		try {
 			if (!isCreated) {
-				model.createAsSelectFrom(conn, tableName, sourceTableName);
+				model.createAsSelectFrom(conn, tableName, sourceTableName, dbPool.getActiveDatabaseAdapter().getSQLAdapter());
 				this.conn = conn;
 				isCreated = true;
 			}
@@ -159,7 +159,7 @@ public class HeapCacheTable implements CacheTable {
 
 		try {
 			if (!isIndexed) {
-				model.createIndexes(conn, tableName, "nologging");
+				model.createIndexes(conn, tableName, dbPool.getActiveDatabaseAdapter().getSQLAdapter().getUnloggedIndexProperty());
 				isIndexed = true;
 			}
 		} finally {
@@ -234,6 +234,7 @@ public class HeapCacheTable implements CacheTable {
 					isCreated = false;
 				} finally {
 					if (isStandAlone && conn != null) {
+						conn.commit();
 						conn.close();
 						conn = null;
 					}

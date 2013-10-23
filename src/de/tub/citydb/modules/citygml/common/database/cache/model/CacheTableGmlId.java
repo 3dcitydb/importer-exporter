@@ -34,16 +34,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
+
 
 public class CacheTableGmlId extends CacheTableModel {
 	private static HashMap<CacheTableModelEnum, CacheTableGmlId> cacheTableMap;
 	private final CacheTableModelEnum type;
-	
+
 	private CacheTableGmlId(CacheTableModelEnum type) {
 		// just to thwart instantiation
 		this.type = type;
 	}
-	
+
 	public synchronized static CacheTableGmlId getInstance(CacheTableModelEnum type) {
 		switch (type) {
 		case GMLID_FEATURE:
@@ -52,26 +54,26 @@ public class CacheTableGmlId extends CacheTableModel {
 		default:
 			throw new IllegalArgumentException("Unsupported cache table type " + type);
 		}
-		
+
 		if (cacheTableMap == null)
 			cacheTableMap = new HashMap<CacheTableModelEnum, CacheTableGmlId>();
-		
+
 		CacheTableGmlId cacheTable = cacheTableMap.get(type);
 		if (cacheTable == null) {
 			cacheTable = new CacheTableGmlId(type);
 			cacheTableMap.put(type, cacheTable);
 		}
-		
+
 		return cacheTable;
 	}
-	
+
 	@Override
 	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
 		Statement stmt = null;
 
 		try {
 			stmt = conn.createStatement();
-			
+
 			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
 			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (ID) " + properties);
 		} finally {
@@ -86,14 +88,18 @@ public class CacheTableGmlId extends CacheTableModel {
 	public CacheTableModelEnum getType() {
 		return type;
 	}
-	
+
 	@Override
-	protected String getColumns() {
-		return "(GMLID VARCHAR2(256), " +
-		"ID NUMBER, " +
-		"ROOT_ID NUMBER, " +
-		"REVERSE NUMBER(1,0), " +
-		"MAPPING VARCHAR2(256)," +
-		"TYPE NUMBER(3))";
+	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+		StringBuilder builder = new StringBuilder("(")
+		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
+		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("ROOT_ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("REVERSE ").append(sqlAdapter.getNumeric(1, 0)).append(", ")
+		.append("MAPPING ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
+		.append("TYPE ").append(sqlAdapter.getNumeric(3))
+		.append(")");
+
+		return builder.toString();
 	}
 }

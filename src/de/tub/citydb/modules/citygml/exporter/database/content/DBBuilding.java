@@ -41,9 +41,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.Building;
@@ -64,6 +61,7 @@ import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.xal.AddressDetails;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.exporter.AddressMode;
 import de.tub.citydb.modules.citygml.common.xal.AddressExportFactory;
@@ -84,10 +82,8 @@ public class DBBuilding implements DBExporter {
 	private DBThematicSurface thematicSurfaceExporter;
 	private DBBuildingInstallation buildingInstallationExporter;
 	private DBRoom roomExporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBOtherGeometry geomtryExporter;
 	private FeatureClassFilter featureClassFilter;
-
-	private boolean transformCoords;
 
 	public DBBuilding(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
@@ -99,32 +95,35 @@ public class DBBuilding implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		transformCoords = config.getInternal().isTransformCoordinates();
-
-		if (!transformCoords) {
-			psBuilding = connection.prepareStatement("select b.ID, b.BUILDING_PARENT_ID, b.NAME, b.NAME_CODESPACE, b.DESCRIPTION, b.CLASS, b.FUNCTION, " +
-					"b.USAGE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, b.ROOF_TYPE, b.MEASURED_HEIGHT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, " +
-					"b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_BELOW_GROUND, b.LOD1_GEOMETRY_ID, b.LOD2_GEOMETRY_ID, b.LOD3_GEOMETRY_ID, b.LOD4_GEOMETRY_ID, " +
-					"b.LOD1_TERRAIN_INTERSECTION, b.LOD2_TERRAIN_INTERSECTION, b.LOD3_TERRAIN_INTERSECTION, b.LOD4_TERRAIN_INTERSECTION, " +
-					"b.LOD2_MULTI_CURVE, b.LOD3_MULTI_CURVE, b.LOD4_MULTI_CURVE, " +
-					"a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT, a.XAL_SOURCE " +
-					"from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
+		if (!config.getInternal().isTransformCoordinates()) {
+			StringBuilder query = new StringBuilder()
+			.append("select b.ID, b.BUILDING_PARENT_ID, b.NAME, b.NAME_CODESPACE, b.DESCRIPTION, b.CLASS, b.FUNCTION, ")
+			.append("b.USAGE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, b.ROOF_TYPE, b.MEASURED_HEIGHT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, ")
+			.append("b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_BELOW_GROUND, b.LOD1_GEOMETRY_ID, b.LOD2_GEOMETRY_ID, b.LOD3_GEOMETRY_ID, b.LOD4_GEOMETRY_ID, ")
+			.append("b.LOD1_TERRAIN_INTERSECTION, b.LOD2_TERRAIN_INTERSECTION, b.LOD3_TERRAIN_INTERSECTION, b.LOD4_TERRAIN_INTERSECTION, ")
+			.append("b.LOD2_MULTI_CURVE, b.LOD3_MULTI_CURVE, b.LOD4_MULTI_CURVE, ")
+			.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT, a.XAL_SOURCE ")
+			.append("from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
+			psBuilding = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
-			psBuilding = connection.prepareStatement("select b.ID, b.BUILDING_PARENT_ID, b.NAME, b.NAME_CODESPACE, b.DESCRIPTION, b.CLASS, b.FUNCTION, " +
-					"b.USAGE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, b.ROOF_TYPE, b.MEASURED_HEIGHT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, " +
-					"b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_BELOW_GROUND, b.LOD1_GEOMETRY_ID, b.LOD2_GEOMETRY_ID, b.LOD3_GEOMETRY_ID, b.LOD4_GEOMETRY_ID, " +
-					"geodb_util.transform_or_null(b.LOD1_TERRAIN_INTERSECTION, " + srid + ") AS LOD1_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(b.LOD2_TERRAIN_INTERSECTION, " + srid + ") AS LOD2_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(b.LOD3_TERRAIN_INTERSECTION, " + srid + ") AS LOD3_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(b.LOD4_TERRAIN_INTERSECTION, " + srid + ") AS LOD4_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(b.LOD2_MULTI_CURVE, " + srid + ") AS LOD2_MULTI_CURVE, " +
-					"geodb_util.transform_or_null(b.LOD3_MULTI_CURVE, " + srid + ") AS LOD3_MULTI_CURVE, " +
-					"geodb_util.transform_or_null(b.LOD4_MULTI_CURVE, " + srid + ") AS LOD4_MULTI_CURVE, " +
-					"a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, " +
-					"geodb_util.transform_or_null(a.MULTI_POINT, " + srid + ") AS MULTI_POINT, a.XAL_SOURCE " +
-					"from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
+			StringBuilder query = new StringBuilder()
+			.append("select b.ID, b.BUILDING_PARENT_ID, b.NAME, b.NAME_CODESPACE, b.DESCRIPTION, b.CLASS, b.FUNCTION, ")
+			.append("b.USAGE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, b.ROOF_TYPE, b.MEASURED_HEIGHT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, ")
+			.append("b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_BELOW_GROUND, b.LOD1_GEOMETRY_ID, b.LOD2_GEOMETRY_ID, b.LOD3_GEOMETRY_ID, b.LOD4_GEOMETRY_ID, ")
+			.append(transformOrNull).append("(b.LOD1_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD1_TERRAIN_INTERSECTION, ")
+			.append(transformOrNull).append("(b.LOD2_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD2_TERRAIN_INTERSECTION, ")
+			.append(transformOrNull).append("(b.LOD3_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD3_TERRAIN_INTERSECTION, ")
+			.append(transformOrNull).append("(b.LOD4_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD4_TERRAIN_INTERSECTION, ")
+			.append(transformOrNull).append("(b.LOD2_MULTI_CURVE, ").append(srid).append(") AS LOD2_MULTI_CURVE, ")
+			.append(transformOrNull).append("(b.LOD3_MULTI_CURVE, ").append(srid).append(") AS LOD3_MULTI_CURVE, ")
+			.append(transformOrNull).append("(b.LOD4_MULTI_CURVE, ").append(srid).append(") AS LOD4_MULTI_CURVE, ")
+			.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, ")
+			.append(transformOrNull).append("(a.MULTI_POINT, ").append(srid).append(") AS MULTI_POINT, a.XAL_SOURCE ")
+			.append("from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
+			psBuilding = connection.prepareStatement(query.toString());
 		}
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
@@ -132,7 +131,7 @@ public class DBBuilding implements DBExporter {
 		thematicSurfaceExporter = (DBThematicSurface)dbExporterManager.getDBExporter(DBExporterEnum.THEMATIC_SURFACE);
 		buildingInstallationExporter = (DBBuildingInstallation)dbExporterManager.getDBExporter(DBExporterEnum.BUILDING_INSTALLATION);
 		roomExporter = (DBRoom)dbExporterManager.getDBExporter(DBExporterEnum.ROOM);
-		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);
+		geomtryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
@@ -171,22 +170,22 @@ public class DBBuilding implements DBExporter {
 					String storeyHeightsAboveGround = rs.getString("STOREY_HEIGHTS_ABOVE_GROUND");
 					String storeyHeightsBelowGround = rs.getString("STOREY_HEIGHTS_BELOW_GROUND");
 					long[] lodGeometryId = new long[4];
-					JGeometry[] terrainIntersection = new JGeometry[4];
-					JGeometry[] multiCurve = new JGeometry[3];
+					GeometryObject[] terrainIntersection = new GeometryObject[4];
+					GeometryObject[] multiCurve = new GeometryObject[3];
 
 					for (int lod = 1; lod < 5 ; lod++) {
 						long lodSurfaceGeometryId = rs.getLong("LOD" + lod + "_GEOMETRY_ID");					
 						if (!rs.wasNull() && lodSurfaceGeometryId != 0)
 							lodGeometryId[lod - 1] = lodSurfaceGeometryId;
 
-						STRUCT terrainIntersectionObj = (STRUCT)rs.getObject("LOD" + lod + "_TERRAIN_INTERSECTION");
-						if (!rs.wasNull() && terrainIntersectionObj != null)
-							terrainIntersection[lod - 1] = JGeometry.load(terrainIntersectionObj);
+						Object terrainIntersectionObj = rs.getObject("LOD" + lod + "_TERRAIN_INTERSECTION");
+						if (!rs.wasNull() && terrainIntersectionObj != null)				
+							terrainIntersection[lod - 1] = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(terrainIntersectionObj);
 
 						if (lod >= 2) {
-							STRUCT multiCurveObj = (STRUCT)rs.getObject("LOD" + lod + "_MULTI_CURVE");
+							Object multiCurveObj = rs.getObject("LOD" + lod + "_MULTI_CURVE");
 							if (!rs.wasNull() && multiCurveObj != null)
-								multiCurve[lod - 2] = JGeometry.load(multiCurveObj);
+								multiCurve[lod - 2] = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(multiCurveObj);
 						}
 					}
 
@@ -228,10 +227,10 @@ public class DBBuilding implements DBExporter {
 
 					if (addressObject.canCreate()) {
 						// multiPointGeometry
-						STRUCT multiPointObj = (STRUCT)rs.getObject("MULTI_POINT");
+						Object multiPointObj = rs.getObject("MULTI_POINT");
 						if (!rs.wasNull() && multiPointObj != null) {
-							JGeometry multiPoint = JGeometry.load(multiPointObj);
-							MultiPointProperty multiPointProperty = sdoGeometry.getMultiPointProperty(multiPoint, false);
+							GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
+							MultiPointProperty multiPointProperty = geomtryExporter.getMultiPointProperty(multiPoint, false);
 							if (multiPointProperty != null)
 								addressObject.setMultiPointProperty(multiPointProperty);
 						}
@@ -377,10 +376,10 @@ public class DBBuilding implements DBExporter {
 
 		// terrainIntersection
 		for (int lod = 1; lod < 5; lod++) {
-			JGeometry terrainIntersection = buildingNode.terrainIntersection[lod - 1];
+			GeometryObject terrainIntersection = buildingNode.terrainIntersection[lod - 1];
 
 			if (terrainIntersection != null) {
-				MultiCurveProperty multiCurveProperty = sdoGeometry.getMultiCurveProperty(terrainIntersection, false);
+				MultiCurveProperty multiCurveProperty = geomtryExporter.getMultiCurveProperty(terrainIntersection, false);
 				if (multiCurveProperty != null) {
 					switch (lod) {
 					case 1:
@@ -402,10 +401,10 @@ public class DBBuilding implements DBExporter {
 
 		// multiCurve
 		for (int lod = 2; lod < 5; lod++) {
-			JGeometry multiCurve = buildingNode.multiCurve[lod - 2];
+			GeometryObject multiCurve = buildingNode.multiCurve[lod - 2];
 
 			if (multiCurve != null) {
-				MultiCurveProperty multiCurveProperty = sdoGeometry.getMultiCurveProperty(multiCurve, false);
+				MultiCurveProperty multiCurveProperty = geomtryExporter.getMultiCurveProperty(multiCurve, false);
 				if (multiCurveProperty != null) {
 					switch (lod) {
 					case 2:
@@ -423,7 +422,7 @@ public class DBBuilding implements DBExporter {
 		}
 
 		// BoundarySurface
-		// according to conformance requirement no. 3 of the Building version 1.0.0 module
+		// according to conformance requirement no. 3 of the Building version 2.0.0 module
 		// geometry objects of _BoundarySurface elements have to be referenced by lodXSolid and
 		// lodXMultiSurface properties. So we first export all _BoundarySurfaces
 		thematicSurfaceExporter.read(abstractBuilding, buildingNode.id);
@@ -536,15 +535,15 @@ public class DBBuilding implements DBExporter {
 		protected String storeyHeightsAboveGround;
 		protected String storeyHeightsBelowGround;
 		protected long[] lodGeometryId;
-		protected JGeometry[] terrainIntersection;
-		protected JGeometry[] multiCurve;
+		protected GeometryObject[] terrainIntersection;
+		protected GeometryObject[] multiCurve;
 		protected List<AddressProperty> addressProperty;
 		protected List<BuildingNode> childNodes;
 
 		public BuildingNode() {
 			lodGeometryId = new long[4];
-			terrainIntersection = new JGeometry[4];
-			multiCurve = new JGeometry[3];
+			terrainIntersection = new GeometryObject[4];
+			multiCurve = new GeometryObject[3];
 			addressProperty = new ArrayList<AddressProperty>();
 			childNodes = new ArrayList<BuildingNode>();
 		}
@@ -616,8 +615,7 @@ public class DBBuilding implements DBExporter {
 				BuildingNode parentNode = buildingTree.get(parentId);
 
 				if (parentNode == null) {
-					// there is no entry so far, so lets create a
-					// pseudo node
+					// there is no entry so far, so let's create a pseudo node
 					parentNode = new BuildingNode();
 					buildingTree.put(parentId, parentNode);
 				}

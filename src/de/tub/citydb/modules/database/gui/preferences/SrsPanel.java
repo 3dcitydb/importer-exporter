@@ -85,7 +85,6 @@ import de.tub.citydb.gui.factory.SrsComboBoxFactory;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.database.DBUtil;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -371,7 +370,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				try {
 					DatabaseSrs tmp = DatabaseSrs.createDefaultSrs();
 					tmp.setSrid(srid);
-					DBUtil.getSrsInfo(tmp);
+					dbPool.getActiveDatabaseAdapter().getUtil().getSrsInfo(tmp);
 					if (tmp.isSupported()) {
 						LOG.all(LogLevel.INFO, "SRID " + srid + " is supported.");
 						LOG.all(LogLevel.INFO, "Database name: " + tmp.getDatabaseSrsName());
@@ -452,7 +451,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		refSys.setSrid(((Number)sridText.getValue()).intValue());
 		if (dbPool.isConnected() && prev != refSys.getSrid()) {
 			try {
-				DBUtil.getSrsInfo(refSys);
+				dbPool.getActiveDatabaseAdapter().getUtil().getSrsInfo(refSys);
 
 				if (refSys.isSupported())
 					LOG.debug("SRID " + refSys.getSrid() + " is supported.");
@@ -495,6 +494,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		descriptionText.setEditable(isDBSrs);
 		applyButton.setEnabled(isDBSrs);		
 		deleteButton.setEnabled(isDBSrs);
+		copyButton.setEnabled(!dbPool.isConnected() ? isDBSrs : true);
 	}
 
 	private String wrap(String in,int len) {
@@ -584,7 +584,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 					if (dbPool.isConnected()) {
 						try {
-							DBUtil.getSrsInfo(refSys);
+							dbPool.getActiveDatabaseAdapter().getUtil().getSrsInfo(refSys);
 							if (!refSys.isSupported())
 								msg += " (NOT supported)";
 							else

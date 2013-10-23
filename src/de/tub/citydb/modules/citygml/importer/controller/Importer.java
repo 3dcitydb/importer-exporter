@@ -67,6 +67,10 @@ import de.tub.citydb.config.project.importer.ImportGmlId;
 import de.tub.citydb.config.project.importer.Index;
 import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.IndexStatusInfo;
+import de.tub.citydb.database.IndexStatusInfo.IndexInfoObject;
+import de.tub.citydb.database.IndexStatusInfo.IndexStatus;
+import de.tub.citydb.database.IndexStatusInfo.IndexType;
 import de.tub.citydb.io.DirectoryScanner;
 import de.tub.citydb.io.DirectoryScanner.CityGMLFilenameFilter;
 import de.tub.citydb.log.Logger;
@@ -94,11 +98,6 @@ import de.tub.citydb.modules.common.event.StatusDialogTitle;
 import de.tub.citydb.modules.common.filter.FilterMode;
 import de.tub.citydb.modules.common.filter.ImportFilter;
 import de.tub.citydb.modules.common.filter.statistic.FeatureCounterFilter;
-import de.tub.citydb.util.database.DBUtil;
-import de.tub.citydb.util.database.IndexStatusInfo;
-import de.tub.citydb.util.database.IndexStatusInfo.IndexInfoObject;
-import de.tub.citydb.util.database.IndexStatusInfo.IndexStatus;
-import de.tub.citydb.util.database.IndexStatusInfo.IndexType;
 
 public class Importer implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
@@ -174,18 +173,12 @@ public class Importer implements EventHandler {
 		// gml:id lookup cache update
 		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdLookupServerBatchValue();
 
-		// checking workspace... this should be improved in future...
+		// checking workspace
 		Workspace workspace = database.getWorkspaces().getImportWorkspace();
-		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.existsWorkspace(workspace);
-
-			if (!workspaceExists) {
-				LOG.error("Database workspace '" + workspace.getName().trim() + "' is not available.");
-				return false;
-			} else {
-				LOG.info("Switching to database workspace '" + workspace.getName().trim() + "'.");
-			}
-		}
+		if (shouldRun && dbPool.getActiveDatabaseAdapter().hasVersioningSupport() && 
+				!dbPool.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
+				!dbPool.getActiveDatabaseAdapter().getWorkspaceManager().existsWorkspace(workspace, true))
+			return false;
 
 		// deactivate database indexes
 		if (shouldRun && (index.isSpatialIndexModeDeactivate() || index.isSpatialIndexModeDeactivateActivate() ||
@@ -193,7 +186,7 @@ public class Importer implements EventHandler {
 			try {
 				if (shouldRun && (index.isSpatialIndexModeDeactivate() || index.isSpatialIndexModeDeactivateActivate())) {
 					LOG.info("Deactivating spatial indexes...");
-					IndexStatusInfo indexStatus = DBUtil.dropSpatialIndexes();
+					IndexStatusInfo indexStatus = dbPool.getActiveDatabaseAdapter().getUtil().dropSpatialIndexes();
 
 					if (indexStatus != null) {				
 						for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
@@ -205,11 +198,11 @@ public class Importer implements EventHandler {
 						}
 					}
 				} else
-					DBUtil.getIndexStatus(IndexType.SPATIAL).printStatusToConsole();
+					dbPool.getActiveDatabaseAdapter().getUtil().getIndexStatus(IndexType.SPATIAL).printStatusToConsole();
 
 				if (shouldRun && (index.isNormalIndexModeDeactivate() || index.isNormalIndexModeDeactivateActivate())) {
 					LOG.info("Deactivating normal indexes...");
-					IndexStatusInfo indexStatus = DBUtil.dropNormalIndexes();
+					IndexStatusInfo indexStatus = dbPool.getActiveDatabaseAdapter().getUtil().dropNormalIndexes();
 
 					if (indexStatus != null) {				
 						for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
@@ -221,7 +214,7 @@ public class Importer implements EventHandler {
 						}
 					}
 				} else
-					DBUtil.getIndexStatus(IndexType.NORMAL).printStatusToConsole();
+					dbPool.getActiveDatabaseAdapter().getUtil().getIndexStatus(IndexType.NORMAL).printStatusToConsole();
 
 			} catch (SQLException e) {
 				LOG.error("Database error while deactivating indexes: " + e.getMessage());
@@ -230,7 +223,7 @@ public class Importer implements EventHandler {
 		} else {
 			try {
 				for (IndexType type : IndexType.values())
-					DBUtil.getIndexStatus(type).printStatusToConsole();
+					dbPool.getActiveDatabaseAdapter().getUtil().getIndexStatus(type).printStatusToConsole();
 			} catch (SQLException e) {
 				LOG.error("Database error while querying index status: " + e.getMessage());
 				return false;
@@ -375,7 +368,7 @@ public class Importer implements EventHandler {
 				tmpXlinkPool = new WorkerPool<DBXlink>(
 						minThreads,
 						maxThreads,
-						new DBImportXlinkWorkerFactory(cacheManager, config, eventDispatcher),
+						new DBImportXlinkWorkerFactory(dbPool, cacheManager, config, eventDispatcher),
 						queueSize,
 						false);
 
@@ -563,7 +556,7 @@ public class Importer implements EventHandler {
 				try {
 					if (index.isSpatialIndexModeDeactivateActivate()) {
 						LOG.info("Activating spatial indexes. This can take long time...");
-						IndexStatusInfo indexStatus = DBUtil.createSpatialIndexes();
+						IndexStatusInfo indexStatus = dbPool.getActiveDatabaseAdapter().getUtil().createSpatialIndexes();
 
 						if (indexStatus != null) {				
 							for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
@@ -578,7 +571,7 @@ public class Importer implements EventHandler {
 
 					if (index.isNormalIndexModeDeactivateActivate()) {
 						LOG.info("Activating normal indexes. This can take long time...");
-						IndexStatusInfo indexStatus = DBUtil.createNormalIndexes();
+						IndexStatusInfo indexStatus = dbPool.getActiveDatabaseAdapter().getUtil().createNormalIndexes();
 
 						if (indexStatus != null) {				
 							for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							

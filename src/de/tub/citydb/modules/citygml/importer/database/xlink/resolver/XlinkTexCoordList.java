@@ -41,7 +41,6 @@ import java.util.List;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
@@ -196,7 +195,7 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 			psTexCoordList.setLong(3, xlink.getId());
 
 			psTexCoordList.addBatch();
-			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			if (++batchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
 				executeBatch();
 
 			if (xlink.getTexParamGmlId() != null) {

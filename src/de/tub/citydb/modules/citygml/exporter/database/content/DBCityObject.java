@@ -37,9 +37,6 @@ import java.sql.SQLException;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
@@ -53,7 +50,8 @@ import org.citygml4j.model.citygml.generics.UriAttribute;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
-import de.tub.citydb.api.gui.BoundingBox;
+import de.tub.citydb.api.geometry.BoundingBox;
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
@@ -74,7 +72,6 @@ public class DBCityObject implements DBExporter {
 	private boolean useInternalBBoxFilter;
 	private boolean useTiling;
 	private boolean setTileInfoAsGenericAttribute;
-	private boolean transformCoords;
 	private BoundingBoxFilter boundingBoxFilter;
 	private BoundingBox activeTile;
 	private Tiling tiling;
@@ -106,29 +103,33 @@ public class DBCityObject implements DBExporter {
 		externalReferenceSet = new HashSet<Long>();
 		genericAttributeSet = new HashSet<Long>();
 
-		transformCoords = config.getInternal().isTransformCoordinates();
 		gmlSrsName = config.getInternal().getExportTargetSRS().getGMLSrsName();
-		if (!transformCoords) {		
-			psCityObject = connection.prepareStatement("select co.GMLID, co.ENVELOPE, co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
-					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
-					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
-					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID and ga.DATATYPE < 6 " +
-					"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
+		if (!config.getInternal().isTransformCoordinates()) {
+			StringBuilder query = new StringBuilder()
+			.append("select co.GMLID, co.ENVELOPE, co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, ")
+			.append("ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID ")
+			.append("from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID ")
+			.append("left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID and ga.DATATYPE < 6 ")
+			.append("left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
+			psCityObject = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
-			psCityObject = connection.prepareStatement("select co.GMLID, " +
-					"geodb_util.transform_or_null(co.ENVELOPE, " + srid + ") AS ENVELOPE, " +
-					"co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
-					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
-					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
-					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID and ga.DATATYPE < 6 " +
-					"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
+			StringBuilder query = new StringBuilder()
+			.append("select co.GMLID, ")
+			.append(transformOrNull).append("(co.ENVELOPE, ").append(srid).append(") AS ENVELOPE, ")
+			.append("co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, ")
+			.append("ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID ")
+			.append("from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID ")
+			.append("left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID and ga.DATATYPE < 6 ")
+			.append("left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
+			psCityObject = connection.prepareStatement(query.toString());
 		}
 
 		generalizesToExporter = (DBGeneralization)dbExporterManager.getDBExporter(DBExporterEnum.GENERALIZATION);
 		if (exportAppearance)
-			appearanceExporter = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.APPEARANCE);
+			appearanceExporter = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.LOCAL_APPEARANCE);
 	}
 
 
@@ -149,30 +150,19 @@ public class DBCityObject implements DBExporter {
 				genericAttributeSet.clear();
 
 				// boundedBy
-				STRUCT struct = (STRUCT)rs.getObject("ENVELOPE");
-				if (!rs.wasNull() && struct != null) {
-					JGeometry jGeom = JGeometry.load(struct);
-					double[] points = jGeom.getMBR();
-
-					Envelope env = new Envelope();
-					Point lower = null;
-					Point upper = null;
-
-					if (jGeom.getDimensions() == 2) {
-						lower = new Point(points[0], points[1], 0);
-						upper = new Point(points[2], points[3], 0);
-					} else {					
-						lower = new Point(points[0], points[1], points[2]);
-						upper = new Point(points[3], points[4], points[5]);
-					}
-
-					env.setLowerCorner(lower);
-					env.setUpperCorner(upper);
-					env.setSrsDimension(3);
-					env.setSrsName(gmlSrsName);
+				Object object = rs.getObject("ENVELOPE");
+				if (!rs.wasNull() && object != null) {
+					GeometryObject geomObj = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getEnvelope(object);
+					double[] coordinates = geomObj.getCoordinates(0);
+					
+					Envelope envelope = new Envelope();
+					envelope.setLowerCorner(new Point(coordinates[0], coordinates[1], coordinates[2]));
+					envelope.setUpperCorner(new Point(coordinates[3], coordinates[4], coordinates[5]));
+					envelope.setSrsDimension(3);
+					envelope.setSrsName(gmlSrsName);
 
 					BoundingShape boundedBy = new BoundingShape();
-					boundedBy.setEnvelope(env);
+					boundedBy.setEnvelope(envelope);
 					cityObject.setBoundedBy(boundedBy);
 				}
 

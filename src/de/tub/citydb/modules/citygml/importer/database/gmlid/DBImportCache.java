@@ -40,8 +40,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.jdbc.OraclePreparedStatement;
-
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.modules.citygml.common.database.cache.BranchTemporaryCacheTable;
@@ -63,13 +61,16 @@ public class DBImportCache implements DBCacheModel {
 	private PreparedStatement[] psLookupGmlIds;
 	private PreparedStatement[] psDrains;
 	private ReentrantLock[] locks;
+	private int[] batchCounters;
 
+	private int batchSize;
 	private AtomicBoolean createHeapView = new AtomicBoolean(false);
 	private volatile boolean isHeapCreated = false;
 
 	public DBImportCache(CacheManager cacheManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
 		this.partitions = partitions;
 		this.cacheTableModel = cacheTableModel;
+		this.batchSize = batchSize;
 
 		BranchTemporaryCacheTable branchTable = cacheManager.createBranchTemporaryCacheTable(cacheTableModel);
 		backUpTables = new TemporaryCacheTable[partitions];
@@ -86,7 +87,6 @@ public class DBImportCache implements DBCacheModel {
 			backUpTables[i] = tempTable;
 			psDrains[i] = conn.prepareStatement("insert into " + tableName + " (GMLID, ID, ROOT_ID, REVERSE, MAPPING, TYPE) values (?, ?, ?, ?, ?, ?)");
 			locks[i] = new ReentrantLock(true);
-			((OraclePreparedStatement)psDrains[i]).setExecuteBatch(batchSize);
 		}		
 	}
 
@@ -111,15 +111,20 @@ public class DBImportCache implements DBCacheModel {
 			psDrain.setString(5, entry.getValue().getMapping());
 			psDrain.setInt(6, entry.getValue().getType().ordinal());
 
-			psDrain.executeUpdate();
+			psDrain.addBatch();
+			if (++batchCounters[partition] == batchSize) {
+				psDrain.executeBatch();
+				batchCounters[partition] = 0;
+			}
+
 			iter.remove();
 			++drainCounter;
 		}
 
-		// finally send batches
-		for (PreparedStatement psDrain : psDrains) 
-			if (psDrain != null)
-				((OraclePreparedStatement)psDrain).sendBatch();
+		// finally execute batches
+		for (int i = 0; i < psDrains.length; i++)
+			if (psDrains[i] != null && batchCounters[i] > 0)
+				psDrains[i].executeBatch();
 	}
 
 	public GmlIdEntry lookupDB(String key) throws SQLException {
@@ -209,12 +214,12 @@ public class DBImportCache implements DBCacheModel {
 		for (PreparedStatement ps : psDrains)
 			if (ps != null)
 				ps.close();
-		
+
 		for (PreparedStatement ps : psLookupGmlIds)
 			if (ps != null)
 				ps.close();
 	}
-	
+
 	@Override
 	public String getType() {
 		switch (cacheTableModel) {

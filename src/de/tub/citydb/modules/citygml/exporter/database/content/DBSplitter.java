@@ -40,11 +40,11 @@ import java.util.List;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
+import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.api.gui.BoundingBox;
+import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.TilingMode;
@@ -63,7 +63,6 @@ import de.tub.citydb.modules.common.filter.feature.GmlIdFilter;
 import de.tub.citydb.modules.common.filter.feature.GmlNameFilter;
 import de.tub.citydb.modules.common.filter.statistic.FeatureCounterFilter;
 import de.tub.citydb.util.Util;
-import de.tub.citydb.util.database.DBUtil;
 
 public class DBSplitter {
 	private final Logger LOG = Logger.getInstance();
@@ -82,7 +81,7 @@ public class DBSplitter {
 	private Long lastElement;
 	private String gmlIdFilter;
 	private String gmlNameFilter;
-	private String[] bboxFilter;
+	private String bboxFilter;
 	private String optimizerHint;
 
 	private FeatureClassFilter featureClassFilter;
@@ -111,22 +110,24 @@ public class DBSplitter {
 
 	private void init(ExportFilter exportFilter, CacheManager cacheManager) throws SQLException {
 		connection = dbConnectionPool.getConnection();
-		connection.setAutoCommit(false);
 
 		// try and change workspace for connection
-		Database database = config.getProject().getDatabase();
-		dbConnectionPool.gotoWorkspace(
-				connection, 
-				database.getWorkspaces().getExportWorkspace());
-		
+		if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
+			dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(
+					connection, 
+					config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
+		}
+
 		// create temporary table for global appearances if needed
 		if (config.getInternal().isExportGlobalAppearances()) {
 			TemporaryCacheTable temp = cacheManager.createTemporaryCacheTableWithIndexes(CacheTableModelEnum.GLOBAL_APPEARANCE);
 
 			// try and change workspace for temporary table
-			dbConnectionPool.gotoWorkspace(
-					temp.getConnection(), 
-					config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
+			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
+				dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(
+						temp.getConnection(), 
+						config.getProject().getDatabase().getWorkspaces().getExportWorkspace());
+			}
 		}
 
 		// set filter instances 
@@ -166,31 +167,24 @@ public class DBSplitter {
 		if (bbox != null) {
 
 			// check whether spatial indexes are active
-			if (DBUtil.isIndexed("CITYOBJECT", "ENVELOPE")) {			
+			if (dbConnectionPool.getActiveDatabaseAdapter().getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")) {			
 				TiledBoundingBox tiledBBox = expFilterConfig.getComplexFilter().getTiledBoundingBox();
-				int bboxSrid = bbox.getSrs().getSrid();
 
-				double minX = bbox.getLowerLeftCorner().getX();
-				double minY = bbox.getLowerLeftCorner().getY();
-				double maxX = bbox.getUpperRightCorner().getX();
-				double maxY = bbox.getUpperRightCorner().getY();
+				// convert the srid of the bbox to that of the database
+				DatabaseSrs dbSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();				
+				if (bbox.getSrs().getSrid() != dbSrs.getSrid())	{
+					try {
+						bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(bbox, bbox.getSrs(), dbSrs);
+					} catch (SQLException e) {
+						throw new SQLException("Failed to transform bounding box filter to database SRID.", e);
+					}
+				}
 
 				boolean overlap = tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode();
-				bboxFilter = new String[overlap ? 3 : 2];
+				bboxFilter = dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().getBoundingBoxPredicate("ENVELOPE", "co", bbox, overlap);
 
-				String filter = "SDO_RELATE(co.ENVELOPE, MDSYS.SDO_GEOMETRY(2003, " + bboxSrid + ", NULL, " +
-						"MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 3), " +
-						"MDSYS.SDO_ORDINATE_ARRAY(" + minX + ", " + minY + ", " + maxX + ", " + maxY + ")), " +
-						"'mask=";
-
-				bboxFilter[0] = filter + "inside+coveredby') = 'TRUE'";
-				bboxFilter[1] = filter + "equal') = 'TRUE'";				
-				if (overlap)
-					bboxFilter[2] = filter + "overlapbdyintersect') = 'TRUE'";
-
-				// on Oracle 11g the query performance greatly benefits from setting
-				// a no_index hint for the class_id column
-				if (dbConnectionPool.getActiveConnectionMetaData().getDatabaseMajorVersion() == 11)
+				// check whether a no_index hint for the class_id column improves query performance
+				if (dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().spatialPredicateRequiresNoIndexHint())
 					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
 
 			} else {
@@ -310,7 +304,7 @@ public class DBSplitter {
 					query.append("and ").append(additionalWhere).append(" ");
 
 				if (bboxFilter != null)
-					query.append(appendSdoRelate(query.toString()));
+					query.append("and ").append(bboxFilter);
 
 				if (featureCounterFilter.isActive())
 					query.append("order by co.ID");
@@ -345,7 +339,7 @@ public class DBSplitter {
 					query.append("co.CLASS_ID in (").append(classIdQuery).append(") "); 
 
 					if (bboxFilter != null)
-						query.append(appendSdoRelate(query.toString()));
+						query.append("and ").append(bboxFilter);
 
 					if (featureCounterFilter.isActive())
 						query.append("order by ID");
@@ -441,7 +435,7 @@ public class DBSplitter {
 				groupQuery.append(" where co.CLASS_ID=23 ");
 
 			if (bboxFilter != null)
-				groupQuery.append(appendSdoRelate(groupQuery.toString()));
+				groupQuery.append("and ").append(bboxFilter);
 
 			List<Integer> classIds = new ArrayList<Integer>();
 			for (CityGMLClass featureClass : featureClassFilter.getNotFilterState()) {
@@ -481,7 +475,7 @@ public class DBSplitter {
 
 			rs.close();	
 			groupStmt.close();
-			
+
 			// second step: export group members
 			StringBuilder memberQuery = new StringBuilder("select co.ID, co.CLASS_ID, co.GMLID from CITYOBJECT co ")
 			.append("where co.ID in (select co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co ")
@@ -492,16 +486,14 @@ public class DBSplitter {
 			.append("select grp.PARENT_CITYOBJECT_ID from CITYOBJECTGROUP grp where grp.ID=?) ");
 
 			if (bboxFilter != null)
-				memberQuery.append(appendSdoRelate(memberQuery.toString()));
-			
+				memberQuery.append("and ").append(bboxFilter);
+
 			memberStmt = connection.prepareStatement(memberQuery.toString());
 
 			for (int i = 0; shouldRun && i < groupIds.size(); ++i) {
 				long groupId = groupIds.get(i);
-
-				int params = bboxFilter == null ? 2 : bboxFilter.length * 2;
-				for (int j = 1; j <= params; ++j)
-					memberStmt.setLong(j, groupId);
+				memberStmt.setLong(1, groupId);
+				memberStmt.setLong(2, groupId);
 
 				rs = memberStmt.executeQuery();
 
@@ -530,7 +522,7 @@ public class DBSplitter {
 
 				rs.close();
 			}
-			
+
 			memberStmt.close();
 
 			// wait for jobs to be done...
@@ -546,7 +538,7 @@ public class DBSplitter {
 			for (long groupId : groupIds) {
 				if (!shouldRun)
 					break;
-				
+
 				DBSplittingResult splitter = new DBSplittingResult(groupId, CityGMLClass.CITY_OBJECT_GROUP);
 				dbWorkerPool.addWork(splitter);
 			}
@@ -574,7 +566,7 @@ public class DBSplitter {
 
 				groupStmt = null;
 			}
-			
+
 			if (memberStmt != null) {
 				try {
 					memberStmt.close();
@@ -585,21 +577,6 @@ public class DBSplitter {
 				memberStmt = null;
 			}
 		}
-	}
-
-	private String appendSdoRelate(String query) {
-		StringBuilder unionAll = new StringBuilder();
-		for (int i = 0; i < bboxFilter.length; ++i) {
-			if (i > 0)
-				unionAll.append(query);
-
-			unionAll.append("and ").append(bboxFilter[i]).append(" ");
-
-			if (i < bboxFilter.length - 1)
-				unionAll.append("union all ");
-		}
-
-		return unionAll.toString();
 	}
 
 	private void queryGlobalAppearance() throws SQLException {

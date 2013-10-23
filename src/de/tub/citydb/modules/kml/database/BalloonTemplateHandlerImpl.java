@@ -2474,52 +2474,52 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		private String checkForSpecialKeywords(String keyword) throws Exception {
 			String query = null;
 			if (CENTROID_WGS84.equalsIgnoreCase(keyword)) {
-				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+				query = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D() ?
 						Queries.GET_CENTROID_IN_WGS84_3D_FROM_ID:
 						Queries.GET_CENTROID_IN_WGS84_FROM_ID;
 			}
 			else if (CENTROID_WGS84_LAT.equalsIgnoreCase(keyword)) {
-				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+				query = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D() ?
 						Queries.GET_CENTROID_LAT_IN_WGS84_3D_FROM_ID:
 						Queries.GET_CENTROID_LAT_IN_WGS84_FROM_ID;
 			}
 			else if (CENTROID_WGS84_LON.equalsIgnoreCase(keyword)) {
-				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+				query = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D() ?
 						Queries.GET_CENTROID_LON_IN_WGS84_3D_FROM_ID:
 						Queries.GET_CENTROID_LON_IN_WGS84_FROM_ID;
 			}
 			else if (BBOX_WGS84_LAT_MIN.equalsIgnoreCase(keyword)) {
-				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+				query = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D() ?
 						Queries.GET_ENVELOPE_LAT_MIN_IN_WGS84_3D_FROM_ID:
 						Queries.GET_ENVELOPE_LAT_MIN_IN_WGS84_FROM_ID;
 			}
 			else if (BBOX_WGS84_LAT_MAX.equalsIgnoreCase(keyword)) {
-				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+				query = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D() ?
 						Queries.GET_ENVELOPE_LAT_MAX_IN_WGS84_3D_FROM_ID:
 						Queries.GET_ENVELOPE_LAT_MAX_IN_WGS84_FROM_ID;
 			}
 			else if (BBOX_WGS84_LON_MIN.equalsIgnoreCase(keyword)) {
-				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+				query = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D() ?
 						Queries.GET_ENVELOPE_LON_MIN_IN_WGS84_3D_FROM_ID:
 						Queries.GET_ENVELOPE_LON_MIN_IN_WGS84_FROM_ID;
 			}
 			else if (BBOX_WGS84_LON_MAX.equalsIgnoreCase(keyword)) {
-				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+				query = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D() ?
 						Queries.GET_ENVELOPE_LON_MAX_IN_WGS84_3D_FROM_ID:
 						Queries.GET_ENVELOPE_LON_MAX_IN_WGS84_FROM_ID;
 			}
 			else if (BBOX_WGS84_HEIGHT_MIN.equalsIgnoreCase(keyword)) {
-				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+				query = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D() ?
 						Queries.GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_3D_FROM_ID:
 						Queries.GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_FROM_ID;
 			}
 			else if (BBOX_WGS84_HEIGHT_MAX.equalsIgnoreCase(keyword)) {
-				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+				query = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D() ?
 						Queries.GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_3D_FROM_ID:
 						Queries.GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_FROM_ID;
 			}
 			else if (BBOX_WGS84_LAT_LON.equalsIgnoreCase(keyword)) {
-				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+				query = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D() ?
 						Queries.GET_ENVELOPE_LAT_MIN_IN_WGS84_3D_FROM_ID + " UNION ALL " +
 						Queries.GET_ENVELOPE_LON_MIN_IN_WGS84_3D_FROM_ID + " UNION ALL " +
 						Queries.GET_ENVELOPE_LAT_MAX_IN_WGS84_3D_FROM_ID + " UNION ALL " +
@@ -2530,7 +2530,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						Queries.GET_ENVELOPE_LON_MAX_IN_WGS84_FROM_ID;
 			}
 			else if (BBOX_WGS84_LON_LAT.equalsIgnoreCase(keyword)) {
-				query = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().is3D() ?
+				query = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D() ?
 						Queries.GET_ENVELOPE_LON_MIN_IN_WGS84_3D_FROM_ID + " UNION ALL " +
 						Queries.GET_ENVELOPE_LAT_MIN_IN_WGS84_3D_FROM_ID + " UNION ALL " +
 						Queries.GET_ENVELOPE_LON_MAX_IN_WGS84_3D_FROM_ID + " UNION ALL " +

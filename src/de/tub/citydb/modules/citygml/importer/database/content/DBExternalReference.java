@@ -37,8 +37,6 @@ import java.sql.Types;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
 
-import de.tub.citydb.config.internal.Internal;
-
 public class DBExternalReference implements DBImporter {
 	private final Connection batchConn;
 	private final DBImporterManager dbImporterManager;
@@ -54,8 +52,11 @@ public class DBExternalReference implements DBImporter {
 	}
 
 	private void init() throws SQLException {
-		psExternalReference = batchConn.prepareStatement("insert into EXTERNAL_REFERENCE (ID, INFOSYS, NAME, URI, CITYOBJECT_ID) values " +
-				"(EXTERNAL_REF_SEQ.nextval, ?, ?, ?, ?)");
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into EXTERNAL_REFERENCE (ID, INFOSYS, NAME, URI, CITYOBJECT_ID) values ")
+		.append("(").append(dbImporterManager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(DBSequencerEnum.EXTERNAL_REFERENCE_ID_SEQ))
+		.append(", ?, ?, ?, ?)");
+		psExternalReference = batchConn.prepareStatement(stmt.toString());
 	}
 
 	public void insert(ExternalReference externalReference, long cityObjectId) throws SQLException {
@@ -92,7 +93,7 @@ public class DBExternalReference implements DBImporter {
 		psExternalReference.setLong(4, cityObjectId);
 
 		psExternalReference.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.EXTERNAL_REFERENCE);
 	}
 

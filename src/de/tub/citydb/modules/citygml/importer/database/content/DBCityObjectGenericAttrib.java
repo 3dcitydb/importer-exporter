@@ -35,10 +35,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.model.citygml.generics.AbstractGenericAttribute;
 import org.citygml4j.model.citygml.generics.DateAttribute;
 import org.citygml4j.model.citygml.generics.DoubleAttribute;
@@ -46,7 +42,7 @@ import org.citygml4j.model.citygml.generics.IntAttribute;
 import org.citygml4j.model.citygml.generics.StringAttribute;
 import org.citygml4j.model.citygml.generics.UriAttribute;
 
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.api.geometry.GeometryObject;
 
 public class DBCityObjectGenericAttrib implements DBImporter {
 	private final Connection batchConn;
@@ -63,8 +59,11 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 	}
 
 	private void init() throws SQLException {
-		psGenericAttribute = batchConn.prepareStatement("insert into CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, INTVAL, REALVAL, URIVAL, DATEVAL, GEOMVAL, BLOBVAL, CITYOBJECT_ID, SURFACE_GEOMETRY_ID) values " +
-				"(CITYOBJECT_GENERICATT_SEQ.nextval, ?, ?, ?, ?, ?, ?, ?, ?, null, ?, null)");
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, INTVAL, REALVAL, URIVAL, DATEVAL, GEOMVAL, BLOBVAL, CITYOBJECT_ID, SURFACE_GEOMETRY_ID) values ")
+		.append("(").append(dbImporterManager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(DBSequencerEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ))
+		.append(", ?, ?, ?, ?, ?, ?, ?, ?, null, ?, null)");
+		psGenericAttribute = batchConn.prepareStatement(stmt.toString());
 	}
 
 	public void insert(AbstractGenericAttribute genericAttribute, long cityObjectId) throws SQLException {
@@ -149,15 +148,16 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 			psGenericAttribute.setNull(2, Types.NUMERIC);
 		}
 
-		psGenericAttribute.setNull(8, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+		psGenericAttribute.setNull(8, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+				dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 		psGenericAttribute.setLong(9, cityObjectId);
 
 		psGenericAttribute.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
 	}
 
-	public void insert(String attributeName, JGeometry geometry, long cityObjectId) throws SQLException {
+	public void insert(String attributeName, GeometryObject geometry, long cityObjectId) throws SQLException {
 		if (attributeName == null || attributeName.length() == 0)
 			return;
 
@@ -170,11 +170,11 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 		psGenericAttribute.setNull(7, Types.DATE);
 		psGenericAttribute.setLong(9, cityObjectId);
 		
-		STRUCT obj = SyncJGeometry.syncStore(geometry, batchConn);
+		Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geometry, batchConn);
 		psGenericAttribute.setObject(8, obj);
 		
 		psGenericAttribute.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
 	}
 

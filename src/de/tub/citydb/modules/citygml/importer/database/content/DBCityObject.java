@@ -32,13 +32,8 @@ package de.tub.citydb.modules.citygml.importer.database.content;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AppearanceProperty;
@@ -50,8 +45,8 @@ import org.citygml4j.model.citygml.generics.AbstractGenericAttribute;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
@@ -95,7 +90,7 @@ public class DBCityObject implements DBImporter {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		rememberGmlId = config.getProject().getImporter().getGmlId().isSetKeepGmlIdAsExternalReference();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
-		dbSrid = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().getSrid();
+		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
 		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 
@@ -129,8 +124,16 @@ public class DBCityObject implements DBImporter {
 		else
 			gmlIdCodespace = "null";
 
-		psCityObject = batchConn.prepareStatement("insert into CITYOBJECT (ID, CLASS_ID, GMLID, GMLID_CODESPACE, ENVELOPE, CREATION_DATE, TERMINATION_DATE, LAST_MODIFICATION_DATE, UPDATING_PERSON, REASON_FOR_UPDATE, LINEAGE, XML_SOURCE) values " +
-				"(?, ?, ?, " + gmlIdCodespace + ", ?, SYSDATE, null, SYSDATE, " + updatingPerson + ", " + reasonForUpdate + ", " + lineage + ", null)");
+		String now = dbImporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("date.current_date_and_time");
+				
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into CITYOBJECT (ID, CLASS_ID, GMLID, GMLID_CODESPACE, ENVELOPE, CREATION_DATE, TERMINATION_DATE, LAST_MODIFICATION_DATE, UPDATING_PERSON, REASON_FOR_UPDATE, LINEAGE, XML_SOURCE) values ")
+		.append("(?, ?, ?, ").append(gmlIdCodespace).append(", ?, ")
+		.append(now).append(", null, ").append(now).append(", ")
+		.append(updatingPerson).append(", ")
+		.append(reasonForUpdate).append(", ")
+		.append(lineage).append(", null)");
+		psCityObject = batchConn.prepareStatement(stmt.toString());
 
 		genericAttributeImporter = (DBCityObjectGenericAttrib)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
 		externalReferenceImporter = (DBExternalReference)dbImporterManager.getDBImporter(DBImporterEnum.EXTERNAL_REFERENCE);
@@ -196,32 +199,36 @@ public class DBCityObject implements DBImporter {
 			}
 		}
 
-		if (cityObject.isSetBoundedBy()) {
-			List<Double> points = new ArrayList<Double>(15);
+		if (cityObject.isSetBoundedBy()) {			
+			List<Double> points = new ArrayList<Double>(6);
 			points.addAll(cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue());
-			points.add(cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(0));
-			points.add(cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(1));
-			points.add(cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(2));
 			points.addAll(cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue());
-			points.add(cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(0));
-			points.add(cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(1));
-			points.add(cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(2));
-			points.addAll(cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue());
 
 			if (affineTransformation)
 				dbImporterManager.getAffineTransformer().transformCoordinates(points);
 
-			double[] ordinates = new double[points.size()];
-			int i = 0;
-			for (Double point : points)
-				ordinates[i++] = point.doubleValue();
-
-			JGeometry boundedBy = JGeometry.createLinearPolygon(ordinates, 3, dbSrid);
-			STRUCT obj = SyncJGeometry.syncStore(boundedBy, batchConn);
-
-			psCityObject.setObject(4, obj);
+			double[] coordinates = new double[15];
+			coordinates[0] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(0);
+			coordinates[1] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(1);
+			coordinates[2] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(2);
+			coordinates[3] = cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(0);
+			coordinates[4] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(1);
+			coordinates[5] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(2);
+			coordinates[6] = cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(0);
+			coordinates[7] = cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(1);
+			coordinates[8] = cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(2);
+			coordinates[9] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(0);
+			coordinates[10] = cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(1);
+			coordinates[11] = cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(2);
+			coordinates[12] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(0);
+			coordinates[13] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(1);
+			coordinates[14] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(2);
+			
+			GeometryObject envelope = GeometryObject.createPolygon(coordinates, 3, dbSrid);
+			psCityObject.setObject(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(envelope, batchConn));
 		} else {
-			psCityObject.setNull(4, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psCityObject.setNull(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(), 
+					dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 		}
 
 		// resolve local xlinks to geometry objects
@@ -242,7 +249,7 @@ public class DBCityObject implements DBImporter {
 		}
 
 		psCityObject.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECT);
 
 		// genericAttributes

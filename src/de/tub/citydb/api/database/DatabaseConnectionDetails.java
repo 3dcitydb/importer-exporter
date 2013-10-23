@@ -31,6 +31,7 @@ package de.tub.citydb.api.database;
 
 public interface DatabaseConnectionDetails {
 	public String getDescription();
+	public DatabaseType getDatabaseType();
 	public String getServer();
 	public Integer getPort();
 	public String getSid();

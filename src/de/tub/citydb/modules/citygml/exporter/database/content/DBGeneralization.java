@@ -36,15 +36,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashSet;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.GeneralizationRelation;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.common.filter.ExportFilter;
@@ -55,6 +53,7 @@ import de.tub.citydb.modules.common.filter.feature.GmlNameFilter;
 import de.tub.citydb.util.Util;
 
 public class DBGeneralization implements DBExporter {
+	private final DBExporterManager dbExporterManager;
 	private final ExportFilter exportFilter;
 	private final Config config;
 	private final Connection connection;
@@ -67,9 +66,8 @@ public class DBGeneralization implements DBExporter {
 	private GmlNameFilter featureGmlNameFilter;
 	private BoundingBoxFilter boundingBoxFilter;
 
-	private boolean transformCoords;
-
-	public DBGeneralization(Connection connection, ExportFilter exportFilter, Config config) throws SQLException {
+	public DBGeneralization(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
+		this.dbExporterManager = dbExporterManager;
 		this.exportFilter = exportFilter;
 		this.config = config;
 		this.connection = connection;
@@ -83,15 +81,17 @@ public class DBGeneralization implements DBExporter {
 		featureGmlNameFilter = exportFilter.getGmlNameFilter();
 		boundingBoxFilter = exportFilter.getBoundingBoxFilter();
 
-		transformCoords = config.getInternal().isTransformCoordinates();
-		if (!transformCoords) {	
+		if (!config.getInternal().isTransformCoordinates()) {	
 			psGeneralization = connection.prepareStatement("select GMLID, CLASS_ID, ENVELOPE from CITYOBJECT where ID=?");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			
-			psGeneralization = connection.prepareStatement("select GMLID, CLASS_ID, " +
-					"geodb_util.transform_or_null(co.ENVELOPE, " + srid + ") AS ENVELOPE " +
-			"from CITYOBJECT where ID=?");
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
+
+			StringBuilder query = new StringBuilder()
+			.append("select GMLID, CLASS_ID, ")
+			.append(transformOrNull).append("(co.ENVELOPE, ").append(srid).append(") AS ENVELOPE ")
+			.append("from CITYOBJECT where ID=?");
+			psGeneralization = connection.prepareStatement(query.toString());
 		}
 	}
 
@@ -110,20 +110,17 @@ public class DBGeneralization implements DBExporter {
 
 					int classId = rs.getInt("CLASS_ID");			
 					CityGMLClass type = Util.classId2cityObject(classId);			
-					STRUCT struct = (STRUCT)rs.getObject("ENVELOPE");
+					
+					Object object = rs.getObject("ENVELOPE");
+					if (!rs.wasNull() && object != null && boundingBoxFilter.isActive()) {
+						GeometryObject geomObj = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getEnvelope(object);
+						double[] coordinates = geomObj.getCoordinates(0);
+						
+						Envelope envelope = new Envelope();
+						envelope.setLowerCorner(new Point(coordinates[0], coordinates[1], coordinates[2]));
+						envelope.setUpperCorner(new Point(coordinates[3], coordinates[4], coordinates[5]));
 
-					if (!rs.wasNull() && struct != null && boundingBoxFilter.isActive()) {
-						JGeometry jGeom = JGeometry.load(struct);
-						Envelope env = new Envelope();
-
-						double[] points = jGeom.getOrdinatesArray();
-						Point lower = new Point(points[0], points[1], points[2]);
-						Point upper = new Point(points[3], points[4], points[5]);
-
-						env.setLowerCorner(lower);
-						env.setUpperCorner(upper);
-
-						if (boundingBoxFilter.filter(env))
+						if (boundingBoxFilter.filter(envelope))
 							continue;
 					}	
 
