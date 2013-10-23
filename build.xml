@@ -61,7 +61,7 @@
 		<delete file="${dir.resources.plugin-api.doc}/overview_adapted.html" />
 
 		<!-- compile the java code from ${dir.src.plugin.api} into ${dir.build.plugin.api} -->
-		<javac classpathref="classpath" srcdir="${dir.src.plugin.api}" destdir="${dir.build.plugin.api}" />
+		<javac includeantruntime="false" classpathref="classpath" srcdir="${dir.src.plugin.api}" destdir="${dir.build.plugin.api}" />
 
 		<!-- copy LICENSE templates -->
 		<copy todir="${dir.dest.plugin.api.license}">
@@ -120,7 +120,7 @@
 		<mkdir dir="${dir.dest.plugins}" />
 
 		<!-- compile the java code from ${dir.src} into ${dir.build} -->
-		<javac classpathref="classpath" srcdir="${dir.src}" destdir="${dir.build.base}" />
+		<javac includeantruntime="false" classpathref="classpath" srcdir="${dir.src}" destdir="${dir.build.base}" />
 
 		<!-- copy resources -->
 		<copy todir="${dir.build.base}">
