@@ -45,6 +45,9 @@ import org.citygml4j.model.gml.feature.AbstractFeature;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Workspace;
+import java.util.GregorianCalendar;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
+import org.citygml4j.model.common.child.Child;
 
 public class Util {
 
@@ -460,5 +463,64 @@ public class Util {
 		workspace.setTimestamp(timestamp);
 		return success;
 	}
+  
+	public static GregorianCalendar getCreationDate(AbstractCityObject cityObject, boolean checkParents) {
+		if (null == cityObject) return null;
 
+		if (cityObject.isSetCreationDate()) {
+			return cityObject.getCreationDate();
+		}
+
+		if (checkParents && cityObject.isSetParent()) {
+			Object parent = cityObject.getParent();
+			while (null != parent) {
+				if (parent instanceof AbstractCityObject) {
+					return getCreationDate((AbstractCityObject)parent, true);
+				}
+
+				if (!(parent instanceof Child)) {
+					break;
+				}
+
+				Child child = (Child)parent;
+				if (!child.isSetParent()) {
+					break;
+				}
+
+				parent = child.getParent();
+			}
+		}
+
+		return null;
+	}
+
+	public static GregorianCalendar getTerminationDate(AbstractCityObject cityObject, boolean checkParents) {
+		if (null == cityObject) return null;
+
+		if (cityObject.isSetTerminationDate()) {
+			return cityObject.getTerminationDate();
+		}
+
+		if (checkParents && cityObject.isSetParent()) {
+			Object parent = cityObject.getParent();
+			while (null != parent) {
+				if (parent instanceof AbstractCityObject) {
+					return getTerminationDate((AbstractCityObject)parent, true);
+				}
+
+				if (!(parent instanceof Child)) {
+					break;
+				}
+
+				Child child = (Child)parent;
+				if (!child.isSetParent()) {
+					break;
+				}
+
+				parent = child.getParent();
+			}
+		}
+
+		return null;
+	}
 }
