@@ -351,7 +351,7 @@ public class Util {
 			if (code != null)
 				values.add(code.getValue());
 		
-		return collection2string(codeList, delimiter);
+		return collection2string(values, delimiter);
 	}
 
 	public static String[] gmlName2dbString(AbstractFeature feature) {

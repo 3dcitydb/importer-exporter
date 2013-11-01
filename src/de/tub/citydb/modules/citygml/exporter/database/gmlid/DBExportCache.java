@@ -71,6 +71,7 @@ public class DBExportCache implements DBCacheModel {
 		psLookupGmlIds = new PreparedStatement[partitions];
 		psDrains = new PreparedStatement[partitions];
 		locks = new ReentrantLock[partitions];
+		batchCounters = new int[partitions];
 
 		for (int i = 0; i < partitions; i++) {
 			TemporaryCacheTable tempTable = i == 0 ? branchTable.getMainTable() : branchTable.branchWithIndexes();
@@ -92,7 +93,7 @@ public class DBExportCache implements DBCacheModel {
 
 		// firstly, try and write those entries which have already been requested
 		Iterator<Map.Entry<String, GmlIdEntry>> iter = map.entrySet().iterator();
-		while (iter.hasNext()) {
+		while (drainCounter <= drain && iter.hasNext()) {
 			Map.Entry<String, GmlIdEntry> entry = iter.next();
 			if (entry.getValue().isRequested()) { 
 				String gmlId = entry.getKey();

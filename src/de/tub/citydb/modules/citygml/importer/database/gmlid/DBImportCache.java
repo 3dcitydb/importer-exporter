@@ -77,6 +77,7 @@ public class DBImportCache implements DBCacheModel {
 		psLookupGmlIds = new PreparedStatement[partitions];
 		psDrains = new PreparedStatement[partitions];
 		locks = new ReentrantLock[partitions];
+		batchCounters = new int[partitions];
 
 		for (int i = 0; i < partitions; i++) {
 			TemporaryCacheTable tempTable = i == 0 ? branchTable.getMainTable() : branchTable.branch();
