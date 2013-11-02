@@ -36,26 +36,20 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.modules.citygml.common.database.cache.BranchTemporaryCacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
-import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBCacheModel;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 
-public class DBImportCache implements DBCacheModel {
+public class FeatureImportCache implements DBCacheModel {
 	private final int partitions;
 	private final CacheTableModelEnum cacheTableModel;
-
-	private final ReentrantLock mainLock = new ReentrantLock(true);
-	private final Condition heapCreationDone = mainLock.newCondition();
 
 	private TemporaryCacheTable[] backUpTables;
 	private PreparedStatement[] psLookupGmlIds;
@@ -64,15 +58,13 @@ public class DBImportCache implements DBCacheModel {
 	private int[] batchCounters;
 
 	private int batchSize;
-	private AtomicBoolean createHeapView = new AtomicBoolean(false);
-	private volatile boolean isHeapCreated = false;
 
-	public DBImportCache(CacheManager cacheManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
+	public FeatureImportCache(CacheManager cacheManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
 		this.partitions = partitions;
 		this.cacheTableModel = cacheTableModel;
 		this.batchSize = batchSize;
 
-		BranchTemporaryCacheTable branchTable = cacheManager.createBranchTemporaryCacheTable(cacheTableModel);
+		BranchTemporaryCacheTable branchTable = cacheManager.createBranchTemporaryCacheTableWithIndexes(cacheTableModel);
 		backUpTables = new TemporaryCacheTable[partitions];
 		psLookupGmlIds = new PreparedStatement[partitions];
 		psDrains = new PreparedStatement[partitions];
@@ -80,26 +72,60 @@ public class DBImportCache implements DBCacheModel {
 		batchCounters = new int[partitions];
 
 		for (int i = 0; i < partitions; i++) {
-			TemporaryCacheTable tempTable = i == 0 ? branchTable.getMainTable() : branchTable.branch();
+			TemporaryCacheTable tempTable = i == 0 ? branchTable.getMainTable() : branchTable.branchWithIndexes();
 
 			Connection conn = tempTable.getConnection();
 			String tableName = tempTable.getTableName();
 
 			backUpTables[i] = tempTable;
 			psDrains[i] = conn.prepareStatement("insert into " + tableName + " (GMLID, ID, ROOT_ID, REVERSE, MAPPING, TYPE) values (?, ?, ?, ?, ?, ?)");
+			psLookupGmlIds[i] = conn.prepareStatement("select ID, ROOT_ID, REVERSE, MAPPING, TYPE from " + tableName + " where GMLID=?");
 			locks[i] = new ReentrantLock(true);
 		}		
 	}
 
+	@Override
 	public void drainToDB(ConcurrentHashMap<String, GmlIdEntry> map, int drain) throws SQLException {
 		int drainCounter = 0;	
 
+		// firstly, try and write those entries which have not been requested so far
 		Iterator<Map.Entry<String, GmlIdEntry>> iter = map.entrySet().iterator();
+		while (drainCounter <= drain && iter.hasNext()) {
+			Map.Entry<String, GmlIdEntry> entry = iter.next();
+			if (!entry.getValue().isRequested()) {
+				String gmlId = entry.getKey();
+
+				// determine partition for gml:id
+				int partition = Math.abs(gmlId.hashCode() % partitions);
+
+				// get corresponding prepared statement
+				PreparedStatement psDrain = psDrains[partition];
+
+				psDrain.setString(1, gmlId);
+				psDrain.setLong(2, entry.getValue().getId());
+				psDrain.setLong(3, entry.getValue().getRootId());
+				psDrain.setInt(4, entry.getValue().isReverse() ? 1 : 0);
+				psDrain.setString(5, entry.getValue().getMapping());
+				psDrain.setInt(6, entry.getValue().getType().ordinal());
+
+				psDrain.addBatch();
+				if (++batchCounters[partition] == batchSize) {
+					psDrain.executeBatch();
+					batchCounters[partition] = 0;
+				}
+
+				iter.remove();
+				++drainCounter;
+			}
+		}
+
+		// secondly, drain remaining entries until drain limit
+		iter = map.entrySet().iterator();
 		while (drainCounter <= drain && iter.hasNext()) {
 			Map.Entry<String, GmlIdEntry> entry = iter.next();
 			String gmlId = entry.getKey();
 
-			// determine bucket for gml:id
+			// determine partition for gml:id
 			int partition = Math.abs(gmlId.hashCode() % partitions);
 
 			// get corresponding prepared statement
@@ -128,25 +154,8 @@ public class DBImportCache implements DBCacheModel {
 				psDrains[i].executeBatch();
 	}
 
+	@Override
 	public GmlIdEntry lookupDB(String key) throws SQLException {
-		if (createHeapView.compareAndSet(false, true)) 
-			deriveHeapCacheTables();
-
-		// wait for heap views to be created
-		if (!isHeapCreated) {
-			final ReentrantLock lock = this.mainLock;
-			lock.lock();
-
-			try {
-				while (!isHeapCreated)
-					heapCreationDone.await();
-			} catch (InterruptedException ie) {
-				//
-			} finally {
-				lock.unlock();
-			}
-		}
-
 		// determine partition for gml:id
 		int partition = Math.abs(key.hashCode() % partitions);
 
@@ -184,23 +193,6 @@ public class DBImportCache implements DBCacheModel {
 			}	
 		} finally {
 			tableLock.unlock();
-		}
-	}
-
-	private void deriveHeapCacheTables() throws SQLException {
-		for (int i = 0; i < partitions; i++) {			
-			HeapCacheTable heapView = backUpTables[i].deriveHeapCacheTableWithIndexes();		
-			psLookupGmlIds[i] = heapView.getConnection().prepareStatement("select ID, ROOT_ID, REVERSE, MAPPING, TYPE from " + heapView.getTableName() + " where GMLID=?");
-		}
-
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
-
-		try {
-			isHeapCreated = true;
-			heapCreationDone.signalAll();
-		} finally {
-			lock.unlock();
 		}
 	}
 

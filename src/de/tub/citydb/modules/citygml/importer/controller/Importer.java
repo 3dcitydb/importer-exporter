@@ -83,7 +83,8 @@ import de.tub.citydb.modules.citygml.importer.concurrent.DBImportWorkerFactory;
 import de.tub.citydb.modules.citygml.importer.concurrent.DBImportXlinkResolverWorkerFactory;
 import de.tub.citydb.modules.citygml.importer.concurrent.DBImportXlinkWorkerFactory;
 import de.tub.citydb.modules.citygml.importer.concurrent.FeatureReaderWorkerFactory;
-import de.tub.citydb.modules.citygml.importer.database.gmlid.DBImportCache;
+import de.tub.citydb.modules.citygml.importer.database.gmlid.GeometryImportCache;
+import de.tub.citydb.modules.citygml.importer.database.gmlid.FeatureImportCache;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.DBXlinkSplitter;
 import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -341,7 +342,7 @@ public class Importer implements EventHandler {
 				try {
 					lookupServerManager.initServer(
 							DBGmlIdLookupServerEnum.GEOMETRY,
-							new DBImportCache(cacheManager, 
+							new GeometryImportCache(cacheManager, 
 									CacheTableModelEnum.GMLID_GEOMETRY, 
 									system.getGmlIdLookupServer().getGeometry().getPartitions(), 
 									lookupCacheBatchSize),
@@ -351,7 +352,7 @@ public class Importer implements EventHandler {
 
 					lookupServerManager.initServer(
 							DBGmlIdLookupServerEnum.FEATURE,
-							new DBImportCache(cacheManager, 
+							new FeatureImportCache(cacheManager, 
 									CacheTableModelEnum.GMLID_FEATURE, 
 									system.getGmlIdLookupServer().getFeature().getPartitions(),
 									lookupCacheBatchSize),

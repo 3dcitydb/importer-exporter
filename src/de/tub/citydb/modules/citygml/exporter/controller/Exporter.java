@@ -86,7 +86,7 @@ import de.tub.citydb.modules.citygml.exporter.concurrent.DBExportWorkerFactory;
 import de.tub.citydb.modules.citygml.exporter.concurrent.DBExportXlinkWorkerFactory;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBSplitter;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBSplittingResult;
-import de.tub.citydb.modules.citygml.exporter.database.gmlid.DBExportCache;
+import de.tub.citydb.modules.citygml.exporter.database.gmlid.ExportCache;
 import de.tub.citydb.modules.common.concurrent.IOWriterWorkerFactory;
 import de.tub.citydb.modules.common.event.EventType;
 import de.tub.citydb.modules.common.event.FeatureCounterEvent;
@@ -384,7 +384,7 @@ public class Exporter implements EventHandler {
 					try {		
 						lookupServerManager.initServer(
 								DBGmlIdLookupServerEnum.GEOMETRY,
-								new DBExportCache(cacheManager, 
+								new ExportCache(cacheManager, 
 										CacheTableModelEnum.GMLID_GEOMETRY, 
 										system.getGmlIdLookupServer().getGeometry().getPartitions(),
 										lookupCacheBatchSize),
@@ -394,7 +394,7 @@ public class Exporter implements EventHandler {
 
 						lookupServerManager.initServer(
 								DBGmlIdLookupServerEnum.FEATURE,
-								new DBExportCache(cacheManager, 
+								new ExportCache(cacheManager, 
 										CacheTableModelEnum.GMLID_FEATURE, 
 										system.getGmlIdLookupServer().getFeature().getPartitions(), 
 										lookupCacheBatchSize),
