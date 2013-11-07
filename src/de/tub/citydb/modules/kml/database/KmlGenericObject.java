@@ -639,15 +639,23 @@ public abstract class KmlGenericObject {
 			// --------------------------- geometry (variable part) ---------------------------
 			GeometryInfo ginfo = geometryInfos.get(surfaceId);
 			ginfo.convertToIndexedTriangles();
-			/*
-				// the following seems to be buggy, so don't do it for now
-				// generate normals, currently not used, but this is the recommended order
-				NormalGenerator ng = new NormalGenerator();
-				ng.generateNormals(ginfo);
-				// stripify: merge triangles together into bigger triangles when possible
-				Stripifier st = new Stripifier();
-				st.stripify(ginfo);
-			 */
+/*
+			// the following seems to be buggy, so don't do it for now
+			// generate normals, currently not used, but this is the recommended order
+			NormalGenerator ng = new NormalGenerator();
+			ng.generateNormals(ginfo);
+			// stripify: merge triangles together into bigger triangles when possible
+			Stripifier st = new Stripifier();
+			st.stripify(ginfo);
+*/
+			// if convertToIndexedTriangles() reversed the orientation reverse it again
+			int[] coordIdx = ginfo.getCoordinateIndices();
+			if ((coordIdx[0] > coordIdx[1] && coordIdx[1] > coordIdx[2]) ||
+				(coordIdx[1] > coordIdx[2] && coordIdx[2] > coordIdx[0]) ||
+				(coordIdx[2] > coordIdx[0] && coordIdx[0] > coordIdx[1])){
+				ginfo.reverse();
+			}
+			
 			GeometryArray gArray = ginfo.getGeometryArray();
 			Point3d coordPoint = new Point3d();
 			for(int i = 0; i < gArray.getVertexCount(); i++){
