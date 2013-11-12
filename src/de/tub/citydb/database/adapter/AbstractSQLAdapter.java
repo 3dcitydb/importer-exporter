@@ -11,7 +11,13 @@ import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
 
 public abstract class AbstractSQLAdapter {
 	protected final Logger LOG = Logger.getInstance();
+	protected final AbstractDatabaseAdapter databaseAdapter;
+	
 	protected Properties databaseOperations;
+	
+	protected AbstractSQLAdapter(AbstractDatabaseAdapter databaseAdapter) {
+		this.databaseAdapter = databaseAdapter;
+	}
 
 	public abstract String getInteger();
 	public abstract String getSmallInt();
@@ -33,6 +39,7 @@ public abstract class AbstractSQLAdapter {
 	public abstract String getHierarchicalGeometryQuery();
 	public abstract String getTextureImageContentLength(String columName);
 	public abstract String getNextSequenceValue(DBSequencerEnum sequence);
+	public abstract String getNextSequenceValuesQuery(DBSequencerEnum sequence);
 	protected abstract String getSequenceName(DBSequencerEnum sequence);
 	
 	public String getBoundingBoxPredicate(String attributeName, String tablePrefix, BoundingBox bbox, boolean overlap) {

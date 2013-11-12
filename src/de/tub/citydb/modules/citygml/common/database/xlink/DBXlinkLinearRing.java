@@ -31,13 +31,15 @@ package de.tub.citydb.modules.citygml.common.database.xlink;
 
 public class DBXlinkLinearRing implements DBXlink {
 	private String gmlId;
-	private String parentGmlId;
+	private long parentId;
 	private int ringId;
+	private boolean isReverse;
 
-	public DBXlinkLinearRing(String gmlId, String parentGmlId, int ringId) {
+	public DBXlinkLinearRing(String gmlId, long parentId, int ringId, boolean isReverse) {
 		this.gmlId = gmlId;
-		this.parentGmlId = parentGmlId;
+		this.parentId = parentId;
 		this.ringId = ringId;
+		this.isReverse = isReverse;
 	}
 
 	public String getGmlId() {
@@ -48,12 +50,12 @@ public class DBXlinkLinearRing implements DBXlink {
 		this.gmlId = gmlId;
 	}
 
-	public String getParentGmlId() {
-		return parentGmlId;
+	public long getParentId() {
+		return parentId;
 	}
 
-	public void setParentGmlId(String parentGmlId) {
-		this.parentGmlId = parentGmlId;
+	public void setParentId(long parentId) {
+		this.parentId = parentId;
 	}
 
 	public int getRingId() {
@@ -62,6 +64,14 @@ public class DBXlinkLinearRing implements DBXlink {
 
 	public void setRingId(int ringId) {
 		this.ringId = ringId;
+	}
+
+	public boolean isReverse() {
+		return isReverse;
+	}
+
+	public void setReverse(boolean isReverse) {
+		this.isReverse = isReverse;
 	}
 
 	@Override

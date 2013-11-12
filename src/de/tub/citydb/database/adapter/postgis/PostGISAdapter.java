@@ -9,9 +9,9 @@ public class PostGISAdapter extends AbstractDatabaseAdapter {
 
 	public PostGISAdapter() {
 		geometryAdapter = new GeometryConverterAdapter();
-		utilAdapter = new UtilsAdapter(this);
+		utilAdapter = new UtilAdapter(this);
 		workspaceAdapter = new WorkspaceManagerAdapter(this);
-		sqlAdapter = new SQLAdapter();
+		sqlAdapter = new SQLAdapter(this);
 	}
 	
 	@Override

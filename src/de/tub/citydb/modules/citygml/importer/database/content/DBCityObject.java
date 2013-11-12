@@ -37,6 +37,7 @@ import java.util.List;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AppearanceProperty;
+import org.citygml4j.model.citygml.appearance.ParameterizedTexture;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -44,6 +45,7 @@ import org.citygml4j.model.citygml.core.GeneralizationRelation;
 import org.citygml4j.model.citygml.generics.AbstractGenericAttribute;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+import org.citygml4j.util.walker.FeatureFunctionWalker;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
@@ -125,7 +127,7 @@ public class DBCityObject implements DBImporter {
 			gmlIdCodespace = "null";
 
 		String now = dbImporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("date.current_date_and_time");
-				
+
 		StringBuilder stmt = new StringBuilder()
 		.append("insert into CITYOBJECT (ID, CLASS_ID, GMLID, GMLID_CODESPACE, ENVELOPE, CREATION_DATE, TERMINATION_DATE, LAST_MODIFICATION_DATE, UPDATING_PERSON, REASON_FOR_UPDATE, LINEAGE, XML_SOURCE) values ")
 		.append("(?, ?, ?, ").append(gmlIdCodespace).append(", ?, ")
@@ -144,7 +146,7 @@ public class DBCityObject implements DBImporter {
 	public long insert(AbstractCityObject cityObject, long cityObjectId) throws SQLException {
 		return insert(cityObject, cityObjectId, false);
 	}
-	
+
 	public long insert(AbstractCityObject cityObject, long cityObjectId, boolean isTopLevelFeature) throws SQLException {
 		// ID
 		psCityObject.setLong(1, cityObjectId);
@@ -223,7 +225,7 @@ public class DBCityObject implements DBImporter {
 			coordinates[12] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(0);
 			coordinates[13] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(1);
 			coordinates[14] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(2);
-			
+
 			GeometryObject envelope = GeometryObject.createPolygon(coordinates, 3, dbSrid);
 			psCityObject.setObject(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(envelope, batchConn));
 		} else {
@@ -282,48 +284,62 @@ public class DBCityObject implements DBImporter {
 								TableEnum.CITYOBJECT,
 								href,
 								TableEnum.CITYOBJECT
-						));
+								));
 					}
 				}
 			}
 		}		
 
-		// appearances
-		if (importAppearance) {
-			if (cityObject.isSetAppearance()) {
-				for (AppearanceProperty appearanceProperty : cityObject.getAppearance()) {
-					if (appearanceProperty.isSetAppearance()) {
-						String gmlId = appearanceProperty.getAppearance().getId();
-						long id = appearanceImporter.insert(appearanceProperty.getAppearance(), CityGMLClass.ABSTRACT_CITY_OBJECT, cityObjectId);
+		// reset local texture coordinates resolver
+		if (importAppearance && isTopLevelFeature) {
+			// reset local texture coordinates resolver
+			dbImporterManager.getLocalTextureCoordinatesResolver().reset();
 
-						if (id == 0) {
-							StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-									cityObject.getCityGMLClass(), 
-									origGmlId));
-							msg.append(": Failed to write ");
-							msg.append(Util.getFeatureSignature(
-									CityGMLClass.APPEARANCE, 
-									gmlId));
-
-							LOG.error(msg.toString());
-						}
-
-						// free memory of nested feature
-						appearanceProperty.unsetAppearance();
-					} else {
-						// xlink
-						String href = appearanceProperty.getHref();
-
-						if (href != null && href.length() != 0) {
-							LOG.error("XLink reference '" + href + "' to Appearance feature is not supported.");
-						}
-					}
+			// check whether we have at least one local appearance
+			FeatureFunctionWalker<Boolean> walker = new FeatureFunctionWalker<Boolean>() {
+				public Boolean apply(ParameterizedTexture parameterizedTexture) {
+					return true;
 				}
-			}
+			};
+
+			dbImporterManager.getLocalTextureCoordinatesResolver().setActive(cityObject.accept(walker) != null);
 		}
 
 		dbImporterManager.updateFeatureCounter(cityObject.getCityGMLClass());
 		return cityObjectId;
+	}
+
+	public void insertAppearance(AbstractCityObject cityObject, long cityObjectId) throws SQLException {
+		if (importAppearance && cityObject.isSetAppearance()) {
+			for (AppearanceProperty appearanceProperty : cityObject.getAppearance()) {
+				if (appearanceProperty.isSetAppearance()) {
+					String gmlId = appearanceProperty.getAppearance().getId();
+					long id = appearanceImporter.insert(appearanceProperty.getAppearance(), CityGMLClass.ABSTRACT_CITY_OBJECT, cityObjectId);
+
+					if (id == 0) {
+						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+								cityObject.getCityGMLClass(), 
+								cityObject.getId()));
+						msg.append(": Failed to write ");
+						msg.append(Util.getFeatureSignature(
+								CityGMLClass.APPEARANCE, 
+								gmlId));
+
+						LOG.error(msg.toString());
+					}
+
+					// free memory of nested feature
+					appearanceProperty.unsetAppearance();
+				} else {
+					// xlink
+					String href = appearanceProperty.getHref();
+
+					if (href != null && href.length() != 0) {
+						LOG.error("XLink reference '" + href + "' to Appearance feature is not supported.");
+					}
+				}
+			}
+		}
 	}
 
 	@Override

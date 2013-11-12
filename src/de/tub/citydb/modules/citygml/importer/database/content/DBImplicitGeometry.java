@@ -172,6 +172,8 @@ public class DBImplicitGeometry implements DBImporter {
 						surfaceGeometryImporter.setApplyAffineTransformation(false);
 
 					long surfaceGeometryId = surfaceGeometryImporter.insert(relativeGeometry, parentId);
+					implicitGeometry.unsetRelativeGMLGeometry();
+
 					if (surfaceGeometryId != 0)
 						psUpdateImplicitGeometry.setLong(2, surfaceGeometryId);
 					else

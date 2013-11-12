@@ -162,6 +162,7 @@ public class DBPlantCover implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiSurfaceId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), plantCoverId);
+					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					// xlink
 					String href = multiSurfaceProperty.getHref();
@@ -188,6 +189,7 @@ public class DBPlantCover implements DBImporter {
 				}
 				else
 					psPlantCover.setNull(8, 0);
+				
 				break;
 			case 2:
 				if (multiSurfaceId != 0) {
@@ -196,6 +198,7 @@ public class DBPlantCover implements DBImporter {
 				}
 				else
 					psPlantCover.setNull(9, 0);
+				
 				break;
 			case 3:
 				if (multiSurfaceId != 0) {
@@ -204,6 +207,7 @@ public class DBPlantCover implements DBImporter {
 				}
 				else
 					psPlantCover.setNull(10, 0);
+				
 				break;
 			case 4:
 				if (multiSurfaceId != 0) {
@@ -212,6 +216,7 @@ public class DBPlantCover implements DBImporter {
 				}
 				else
 					psPlantCover.setNull(11, 0);
+				
 				break;
 			}
 		}
@@ -235,13 +240,14 @@ public class DBPlantCover implements DBImporter {
 				multiSolidProperty = plantCover.getLod3MultiSolid();
 				break;
 			case 4:
-				multiSolidProperty = null;
+				multiSolidProperty = plantCover.getLod4MultiSolid();
 				break;
 			}
 
 			if (multiSolidProperty != null) {
 				if (multiSolidProperty.isSetMultiSolid()) {
 					multiSolidGeometryId = surfaceGeometryImporter.insert(multiSolidProperty.getMultiSolid(), plantCoverId);
+					multiSolidProperty.unsetMultiSolid();
 				} else {
 					// xlink
 					String href = multiSolidProperty.getHref();
@@ -280,7 +286,10 @@ public class DBPlantCover implements DBImporter {
 					psPlantCover.setNull(10, 0);
 				break;
 			case 4:
-				psPlantCover.setNull(11, 0);
+				if (multiSolidGeometryId != 0)
+					psPlantCover.setLong(11, multiSolidGeometryId);
+				else
+					psPlantCover.setNull(11, 0);
 				break;
 			}
 		}
@@ -288,6 +297,9 @@ public class DBPlantCover implements DBImporter {
 		psPlantCover.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.PLANT_COVER);
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(plantCover, plantCoverId);
 
 		return true;
 	}

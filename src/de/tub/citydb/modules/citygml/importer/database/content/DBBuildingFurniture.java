@@ -146,6 +146,7 @@ public class DBBuildingFurniture implements DBImporter {
 			
 			if (geometryProperty.isSetGeometry()) {
 				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), buildingFurnitureId);
+				geometryProperty.unsetGeometry();
 			} else {
 				// xlink
 				String href = geometryProperty.getHref();
@@ -218,6 +219,9 @@ public class DBBuildingFurniture implements DBImporter {
 		psBuildingFurniture.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING_FURNITURE);
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(buildingFurniture, buildingFurnitureId);
 		
 		return buildingFurnitureId;
 	}

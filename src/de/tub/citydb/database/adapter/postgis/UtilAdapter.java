@@ -24,9 +24,9 @@ import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.AbstractUtilAdapter;
 import de.tub.citydb.util.Util;
 
-public class UtilsAdapter extends AbstractUtilAdapter {
+public class UtilAdapter extends AbstractUtilAdapter {
 
-	protected UtilsAdapter(AbstractDatabaseAdapter databaseAdapter) {
+	protected UtilAdapter(AbstractDatabaseAdapter databaseAdapter) {
 		super(databaseAdapter);
 	}
 

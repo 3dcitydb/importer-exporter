@@ -48,7 +48,7 @@ public class DBLandUse implements DBImporter {
 	private PreparedStatement psLandUse;
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
-	
+
 	private int batchCounter;
 
 	public DBLandUse(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
@@ -136,87 +136,91 @@ public class DBLandUse implements DBImporter {
 		}
 
 		// Geometry
-        for (int lod = 0; lod < 5; lod++) {
-        	MultiSurfaceProperty multiSurfaceProperty = null;
-        	long multiSurfaceId = 0;
+		for (int lod = 0; lod < 5; lod++) {
+			MultiSurfaceProperty multiSurfaceProperty = null;
+			long multiSurfaceId = 0;
 
-    		switch (lod) {
-    		case 0:
-    			multiSurfaceProperty = landUse.getLod0MultiSurface();
-    			break;
-    		case 1:
-    			multiSurfaceProperty = landUse.getLod1MultiSurface();
-    			break;
-    		case 2:
-    			multiSurfaceProperty = landUse.getLod2MultiSurface();
-    			break;
-    		case 3:
-    			multiSurfaceProperty = landUse.getLod3MultiSurface();
-    			break;
-    		case 4:
-    			multiSurfaceProperty = landUse.getLod4MultiSurface();
-    			break;
-    		}
+			switch (lod) {
+			case 0:
+				multiSurfaceProperty = landUse.getLod0MultiSurface();
+				break;
+			case 1:
+				multiSurfaceProperty = landUse.getLod1MultiSurface();
+				break;
+			case 2:
+				multiSurfaceProperty = landUse.getLod2MultiSurface();
+				break;
+			case 3:
+				multiSurfaceProperty = landUse.getLod3MultiSurface();
+				break;
+			case 4:
+				multiSurfaceProperty = landUse.getLod4MultiSurface();
+				break;
+			}
 
-    		if (multiSurfaceProperty != null) {
-    			if (multiSurfaceProperty.isSetMultiSurface()) {
-    				multiSurfaceId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), landUseId);
-    			} else {
-    				// xlink
+			if (multiSurfaceProperty != null) {
+				if (multiSurfaceProperty.isSetMultiSurface()) {
+					multiSurfaceId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), landUseId);
+					multiSurfaceProperty.unsetMultiSurface();
+				} else {
+					// xlink
 					String href = multiSurfaceProperty.getHref();
 
-        			if (href != null && href.length() != 0) {
-        				DBXlinkBasic xlink = new DBXlinkBasic(
-        						landUseId,
-        						TableEnum.LAND_USE,
-        						href,
-        						TableEnum.SURFACE_GEOMETRY
-        				);
+					if (href != null && href.length() != 0) {
+						DBXlinkBasic xlink = new DBXlinkBasic(
+								landUseId,
+								TableEnum.LAND_USE,
+								href,
+								TableEnum.SURFACE_GEOMETRY
+								);
 
-        				xlink.setAttrName("LOD" + lod + "_MULTI_SURFACE_ID");
-        				dbImporterManager.propagateXlink(xlink);
-        			}
-    			}
-    		}
+						xlink.setAttrName("LOD" + lod + "_MULTI_SURFACE_ID");
+						dbImporterManager.propagateXlink(xlink);
+					}
+				}
+			}
 
-    		switch (lod) {
-    		case 0:
-        		if (multiSurfaceId != 0)
-        			psLandUse.setLong(8, multiSurfaceId);
-        		else
-        			psLandUse.setNull(8, 0);
-        		break;
-    		case 1:
-        		if (multiSurfaceId != 0)
-        			psLandUse.setLong(9, multiSurfaceId);
-        		else
-        			psLandUse.setNull(9, 0);
-        		break;
-    		case 2:
-        		if (multiSurfaceId != 0)
-        			psLandUse.setLong(10, multiSurfaceId);
-        		else
-        			psLandUse.setNull(10, 0);
-        		break;
-        	case 3:
-        		if (multiSurfaceId != 0)
-        			psLandUse.setLong(11, multiSurfaceId);
-        		else
-        			psLandUse.setNull(11, 0);
-        		break;
-        	case 4:
-        		if (multiSurfaceId != 0)
-        			psLandUse.setLong(12, multiSurfaceId);
-        		else
-        			psLandUse.setNull(12, 0);
-        		break;
-        	}
-        }
+			switch (lod) {
+			case 0:
+				if (multiSurfaceId != 0)
+					psLandUse.setLong(8, multiSurfaceId);
+				else
+					psLandUse.setNull(8, 0);
+				break;
+			case 1:
+				if (multiSurfaceId != 0)
+					psLandUse.setLong(9, multiSurfaceId);
+				else
+					psLandUse.setNull(9, 0);
+				break;
+			case 2:
+				if (multiSurfaceId != 0)
+					psLandUse.setLong(10, multiSurfaceId);
+				else
+					psLandUse.setNull(10, 0);
+				break;
+			case 3:
+				if (multiSurfaceId != 0)
+					psLandUse.setLong(11, multiSurfaceId);
+				else
+					psLandUse.setNull(11, 0);
+				break;
+			case 4:
+				if (multiSurfaceId != 0)
+					psLandUse.setLong(12, multiSurfaceId);
+				else
+					psLandUse.setNull(12, 0);
+				break;
+			}
+		}
 
-        psLandUse.addBatch();
-        if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
+		psLandUse.addBatch();
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.LAND_USE);
-        
+
+		// insert local appearance
+		cityObjectImporter.insertAppearance(landUse, landUseId);
+
 		return true;
 	}
 

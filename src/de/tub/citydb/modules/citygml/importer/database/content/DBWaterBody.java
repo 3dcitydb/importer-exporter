@@ -180,6 +180,7 @@ public class DBWaterBody implements DBImporter {
 			if (solidProperty != null) {
 				if (solidProperty.isSetSolid()) {
 					solidGeometryId = surfaceGeometryImporter.insert(solidProperty.getSolid(), waterBodyId);
+					solidProperty.unsetSolid();
 				} else {
 					// xlink
 					String href = solidProperty.getHref();
@@ -243,6 +244,7 @@ public class DBWaterBody implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiGeometryId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), waterBodyId);
+					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					// xlink
 					String href = multiSurfaceProperty.getHref();
@@ -292,8 +294,10 @@ public class DBWaterBody implements DBImporter {
 				break;
 			}
 			
-			if (multiCurveProperty != null)
+			if (multiCurveProperty != null) {
 				multiLine = sdoGeometry.getMultiCurve(multiCurveProperty);
+				multiCurveProperty.unsetMultiCurve();
+			}
 
 			switch (lod) {
 			case 0:
@@ -357,6 +361,9 @@ public class DBWaterBody implements DBImporter {
 				}
 			}
 		}
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(waterBody, waterBodyId);
 
 		return true;
 	}

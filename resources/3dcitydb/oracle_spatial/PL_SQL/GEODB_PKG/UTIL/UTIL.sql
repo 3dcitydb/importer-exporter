@@ -38,6 +38,9 @@ set serveroutput off;
 CREATE OR REPLACE TYPE STRARRAY IS TABLE OF VARCHAR2(32767);
 /
 
+CREATE OR REPLACE TYPE SEQ_TABLE IS TABLE OF NUMBER;
+/
+
 DROP TYPE DB_INFO_TABLE;
 CREATE OR REPLACE TYPE DB_INFO_OBJ AS OBJECT(
   SRID NUMBER,
@@ -69,6 +72,7 @@ AS
   FUNCTION is_db_coord_ref_sys_3d RETURN NUMBER;
   PROCEDURE change_db_srid(db_srid NUMBER, db_gml_srs_name VARCHAR2);
   PROCEDURE change_column_srid(i_name VARCHAR2, t_name VARCHAR2, c_name VARCHAR2, is_3d BOOLEAN, db_srid NUMBER);
+  FUNCTION get_sequence_values(seq_name VARCHAR2, seq_count NUMBER) RETURN SEQ_TABLE;
   FUNCTION to_2d(geom MDSYS.SDO_GEOMETRY, srid NUMBER) RETURN MDSYS.SDO_GEOMETRY; 
 END geodb_util;
 /
@@ -376,6 +380,20 @@ AS
                            USING db_srid;
       COMMIT;
     END IF;
+  END;
+
+  /*****************************************************************
+  * get_sequence_values
+  *
+  * @param seq_name name of the sequence
+  * @param count number of values to be queried from the sequence
+  ******************************************************************/
+  FUNCTION get_seq_values(seq_name VARCHAR2, seq_count NUMBER) RETURN SEQ_TABLE
+  IS
+	  seq_tbl SEQ_TABLE;
+  BEGIN
+	  execute immediate 'select ' || seq_name || '.nextval from dual connect by level <= :1' bulk collect into seq_tbl using seq_count;
+	  return seq_tbl;
   END;
 
   /*

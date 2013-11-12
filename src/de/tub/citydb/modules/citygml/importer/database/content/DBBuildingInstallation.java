@@ -165,6 +165,7 @@ public class DBBuildingInstallation implements DBImporter {
 			if (geometryProperty != null) {
 				if (geometryProperty.isSetGeometry()) {
 					geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), buildingInstallationId);
+					geometryProperty.unsetGeometry();
 				} else {
 					// xlink
 					String href = geometryProperty.getHref();
@@ -209,20 +210,23 @@ public class DBBuildingInstallation implements DBImporter {
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING_INSTALLATION);
 		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(buildingInstallation, buildingInstallationId);
+		
 		return buildingInstallationId;
 	}
 
 	public long insert(IntBuildingInstallation intBuildingInstallation, CityGMLClass parent, long parentId) throws SQLException {
-		long buildingInstallationId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
-		if (buildingInstallationId == 0)
+		long intBuildingInstallationId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
+		if (intBuildingInstallationId == 0)
 			return 0;
 
 		// CityObject
-		cityObjectImporter.insert(intBuildingInstallation, buildingInstallationId);
+		cityObjectImporter.insert(intBuildingInstallation, intBuildingInstallationId);
 
 		// IntBuildingInstallation
 		// ID
-		psBuildingInstallation.setLong(1, buildingInstallationId);
+		psBuildingInstallation.setLong(1, intBuildingInstallationId);
 
 		// IS_EXTERNAL
 		psBuildingInstallation.setLong(2, 0);
@@ -296,14 +300,15 @@ public class DBBuildingInstallation implements DBImporter {
 			GeometryProperty<? extends AbstractGeometry> geometryProperty = intBuildingInstallation.getLod4Geometry();
 
 			if (geometryProperty.isSetGeometry()) {
-				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), buildingInstallationId);
+				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), intBuildingInstallationId);
+				geometryProperty.unsetGeometry();
 			} else {
 				// xlink
 				String href = geometryProperty.getHref();
 
     			if (href != null && href.length() != 0) {
     				DBXlinkBasic xlink = new DBXlinkBasic(
-    						buildingInstallationId,
+    						intBuildingInstallationId,
     						TableEnum.BUILDING_INSTALLATION,
     						href,
     						TableEnum.SURFACE_GEOMETRY
@@ -314,16 +319,20 @@ public class DBBuildingInstallation implements DBImporter {
     			}
 			}
 		}
+		
 		if (geometryId != 0)
 			psBuildingInstallation.setLong(13, geometryId);
 		else
 			psBuildingInstallation.setNull(13, 0);
-
+		
 		psBuildingInstallation.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING_INSTALLATION);
 		
-		return buildingInstallationId;
+		// insert local appearance
+		cityObjectImporter.insertAppearance(intBuildingInstallation, intBuildingInstallationId);
+		
+		return intBuildingInstallationId;
 	}
 
 	@Override

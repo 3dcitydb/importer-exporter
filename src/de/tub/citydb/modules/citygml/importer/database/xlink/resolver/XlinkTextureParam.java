@@ -83,7 +83,7 @@ public class XlinkTextureParam implements DBXlinkResolver {
 			executeBatch();
 
 		if (xlink.getType() == DBXlinkTextureParamEnum.TEXCOORDGEN && xlink.getTexParamGmlId() != null) {
-			// propagate xlink...
+			// make sure xlinks to the corresponding texture parameterization can be resolved
 			resolverManager.propagateXlink(new DBXlinkTextureAssociation(
 					xlink.getId(),
 					surfaceGeometryEntry.getId(),

@@ -201,6 +201,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
     		if (geometryProperty != null) {
     			if (geometryProperty.isSetGeometry()) {
     				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), solVegObjectId);
+    				geometryProperty.unsetGeometry();
     			} else {
     				// xlink
 					String href = geometryProperty.getHref();
@@ -369,6 +370,9 @@ public class DBSolitaryVegetatObject implements DBImporter {
 		psSolitVegObject.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.SOLITARY_VEGETAT_OBJECT);
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(solVegObject, solVegObjectId);
 		
 		return true;
 	}

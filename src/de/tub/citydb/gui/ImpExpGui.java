@@ -157,19 +157,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private LanguageType currentLang = null;
 
 	public ImpExpGui(Config config) {
-		try {
-			// set look & feel
-			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
-			if (OSXAdapter.IS_MAC_OS_X) {
-				OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(ImpExp.class.getResource("/resources/img/common/logo_small.png")));
-				System.setProperty("apple.laf.useScreenMenuBar", "true");
-			}
-
-		} catch(Exception e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-
 		dbPool = DatabaseConnectionPool.getInstance();
 		this.config = config;
 

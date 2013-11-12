@@ -50,14 +50,15 @@ public class DBXlinkImporterLinearRing implements DBXlinkImporter {
 
 	private void init() throws SQLException {
 		psLinearRing = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() + 
-			" (GMLID, PARENT_GMLID, RING_NO) values " +
-			"(?, ?, ?)");
+			" (GMLID, PARENT_ID, RING_NO, REVERSE) values " +
+			"(?, ?, ?, ?)");
 	}
 
 	public boolean insert(DBXlinkLinearRing xlinkEntry) throws SQLException {
 		psLinearRing.setString(1, xlinkEntry.getGmlId());
-		psLinearRing.setString(2, xlinkEntry.getParentGmlId());
+		psLinearRing.setLong(2, xlinkEntry.getParentId());
 		psLinearRing.setInt(3, xlinkEntry.getRingId());
+		psLinearRing.setInt(4, xlinkEntry.isReverse() ? 1 : 0);
 
 		psLinearRing.addBatch();
 		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())

@@ -57,7 +57,7 @@ public class DBCityFurniture implements DBImporter {
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
 	private DBOtherGeometry geometryImporter;
-	
+
 	private boolean affineTransformation;
 	private int batchCounter;
 	private int nullGeometryType;
@@ -152,72 +152,73 @@ public class DBCityFurniture implements DBImporter {
 
 		// Geometry
 		for (int lod = 1; lod < 5; lod++) {
-        	GeometryProperty<? extends AbstractGeometry> geometryProperty = null;
-        	long geometryId = 0;
+			GeometryProperty<? extends AbstractGeometry> geometryProperty = null;
+			long geometryId = 0;
 
-    		switch (lod) {
-    		case 1:
-    			geometryProperty = cityFurniture.getLod1Geometry();
-    			break;
-    		case 2:
-    			geometryProperty = cityFurniture.getLod2Geometry();
-    			break;
-    		case 3:
-    			geometryProperty = cityFurniture.getLod3Geometry();
-    			break;
-    		case 4:
-    			geometryProperty = cityFurniture.getLod4Geometry();
-    			break;
-    		}
+			switch (lod) {
+			case 1:
+				geometryProperty = cityFurniture.getLod1Geometry();
+				break;
+			case 2:
+				geometryProperty = cityFurniture.getLod2Geometry();
+				break;
+			case 3:
+				geometryProperty = cityFurniture.getLod3Geometry();
+				break;
+			case 4:
+				geometryProperty = cityFurniture.getLod4Geometry();
+				break;
+			}
 
-    		if (geometryProperty != null) {
-    			if (geometryProperty.isSetGeometry()) {
-    				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), cityFurnitureId);
-    			} else {
-    				// xlink
+			if (geometryProperty != null) {
+				if (geometryProperty.isSetGeometry()) {
+					geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), cityFurnitureId);
+					geometryProperty.unsetGeometry();
+				} else {
+					// xlink
 					String href = geometryProperty.getHref();
 
-        			if (href != null && href.length() != 0) {
-        				DBXlinkBasic xlink = new DBXlinkBasic(
-        						cityFurnitureId,
-        						TableEnum.CITY_FURNITURE,
-        						href,
-        						TableEnum.SURFACE_GEOMETRY
-        				);
+					if (href != null && href.length() != 0) {
+						DBXlinkBasic xlink = new DBXlinkBasic(
+								cityFurnitureId,
+								TableEnum.CITY_FURNITURE,
+								href,
+								TableEnum.SURFACE_GEOMETRY
+								);
 
-        				xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
-        				dbImporterManager.propagateXlink(xlink);
-        			}
-    			}
-    		}
+						xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
+						dbImporterManager.propagateXlink(xlink);
+					}
+				}
+			}
 
-    		switch (lod) {
-    		case 1:
-        		if (geometryId != 0)
-        			psCityFurniture.setLong(7, geometryId);
-        		else
-        			psCityFurniture.setNull(7, 0);
-        		break;
-    		case 2:
-        		if (geometryId != 0)
-        			psCityFurniture.setLong(8, geometryId);
-        		else
-        			psCityFurniture.setNull(8, 0);
-        		break;
-        	case 3:
-        		if (geometryId != 0)
-        			psCityFurniture.setLong(9, geometryId);
-        		else
-        			psCityFurniture.setNull(9, 0);
-        		break;
-        	case 4:
-        		if (geometryId != 0)
-        			psCityFurniture.setLong(10, geometryId);
-        		else
-        			psCityFurniture.setNull(10, 0);
-        		break;
-        	}
-        }
+			switch (lod) {
+			case 1:
+				if (geometryId != 0)
+					psCityFurniture.setLong(7, geometryId);
+				else
+					psCityFurniture.setNull(7, 0);
+				break;
+			case 2:
+				if (geometryId != 0)
+					psCityFurniture.setLong(8, geometryId);
+				else
+					psCityFurniture.setNull(8, 0);
+				break;
+			case 3:
+				if (geometryId != 0)
+					psCityFurniture.setLong(9, geometryId);
+				else
+					psCityFurniture.setNull(9, 0);
+				break;
+			case 4:
+				if (geometryId != 0)
+					psCityFurniture.setLong(10, geometryId);
+				else
+					psCityFurniture.setNull(10, 0);
+				break;
+			}
+		}
 
 		for (int lod = 1; lod < 5; lod++) {
 			ImplicitRepresentationProperty implicit = null;
@@ -253,10 +254,10 @@ public class DBCityFurniture implements DBImporter {
 						Matrix matrix = geometry.getTransformationMatrix().getMatrix();
 						if (affineTransformation)
 							matrix = dbImporterManager.getAffineTransformer().transformImplicitGeometryTransformationMatrix(matrix);
-						
+
 						matrixString = Util.collection2string(matrix.toRowPackedList(), " ");
 					}
-					
+
 					// reference to IMPLICIT_GEOMETRY
 					implicitId = implicitGeometryImporter.insert(geometry, cityFurnitureId);
 				}
@@ -336,14 +337,14 @@ public class DBCityFurniture implements DBImporter {
 
 				break;
 			}
- 		}
+		}
 
 		// lodXTerrainIntersectionCurve
 		for (int lod = 1; lod < 5; lod++) {
-			
+
 			MultiCurveProperty multiCurveProperty = null;
 			GeometryObject multiLine = null;
-			
+
 			switch (lod) {
 			case 1:
 				multiCurveProperty = cityFurniture.getLod1TerrainIntersection();
@@ -358,9 +359,11 @@ public class DBCityFurniture implements DBImporter {
 				multiCurveProperty = cityFurniture.getLod4TerrainIntersection();
 				break;
 			}
-			
-			if (multiCurveProperty != null)
+
+			if (multiCurveProperty != null) {
 				multiLine = geometryImporter.getMultiCurve(multiCurveProperty);
+				multiCurveProperty.unsetMultiCurve();
+			}
 
 			switch (lod) {
 			case 1:
@@ -369,7 +372,7 @@ public class DBCityFurniture implements DBImporter {
 					psCityFurniture.setObject(23, multiLineObj);
 				} else
 					psCityFurniture.setNull(23, nullGeometryType, nullGeometryTypeName);
-					
+
 				break;
 			case 2:
 				if (multiLine != null) {
@@ -377,7 +380,7 @@ public class DBCityFurniture implements DBImporter {
 					psCityFurniture.setObject(24, multiLineObj);
 				} else
 					psCityFurniture.setNull(24, nullGeometryType, nullGeometryTypeName);
-					
+
 				break;
 			case 3:
 				if (multiLine != null) {
@@ -385,7 +388,7 @@ public class DBCityFurniture implements DBImporter {
 					psCityFurniture.setObject(25, multiLineObj);
 				} else
 					psCityFurniture.setNull(25, nullGeometryType, nullGeometryTypeName);
-					
+
 				break;
 			case 4:
 				if (multiLine != null) {
@@ -393,15 +396,18 @@ public class DBCityFurniture implements DBImporter {
 					psCityFurniture.setObject(26, multiLineObj);
 				} else
 					psCityFurniture.setNull(26, nullGeometryType, nullGeometryTypeName);
-					
+
 				break;
 			}
 		}
-		
+
 		psCityFurniture.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.CITY_FURNITURE);
-		
+
+		// insert local appearance
+		cityObjectImporter.insertAppearance(cityFurniture, cityFurnitureId);
+
 		return true;
 	}
 

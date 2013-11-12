@@ -180,6 +180,7 @@ public class DBTransportationComplex implements DBImporter {
     		if (multiSurfaceProperty != null) {
     			if (multiSurfaceProperty.isSetMultiSurface()) {
     				multiSurfaceId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), transComplexId);
+    				multiSurfaceProperty.unsetMultiSurface();
     			} else {
     				// xlink
 					String href = multiSurfaceProperty.getHref();
@@ -281,7 +282,10 @@ public class DBTransportationComplex implements DBImporter {
         		}
         	}
         	
-        	if (aggregateComplex.isSetElement() && !aggregateComplex.getElement().isEmpty())      		
+        	// free memory of geometry object
+        	transComplex.unsetLod0Network();
+        	
+        	if (aggregateComplex.isSetElement() && !aggregateComplex.getElement().isEmpty())   		
         		multiCurveGeom = geometryImporter.getCurveGeometry(aggregateComplex);
         	
         	if (multiCurveGeom != null) {
@@ -364,6 +368,9 @@ public class DBTransportationComplex implements DBImporter {
         		}
         	}
         }
+        
+		// insert local appearance
+		cityObjectImporter.insertAppearance(transComplex, transComplexId);
 
 		return true;
 	}

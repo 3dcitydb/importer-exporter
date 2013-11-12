@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import de.tub.citydb.api.geometry.BoundingBox;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 import de.tub.citydb.database.adapter.BlobExportAdapter;
 import de.tub.citydb.database.adapter.BlobImportAdapter;
@@ -13,8 +14,8 @@ import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
 
 public class SQLAdapter extends AbstractSQLAdapter {
 
-	protected SQLAdapter() {
-
+	protected SQLAdapter(AbstractDatabaseAdapter databaseAdapter) {
+		super(databaseAdapter);
 	}
 
 	@Override
@@ -109,6 +110,14 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 	
 	@Override
+	public String getNextSequenceValuesQuery(DBSequencerEnum sequence) {
+		return new StringBuilder("select * from table(")
+		.append(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geodb_util.get_seq_values")).append("(")
+		.append("'").append(getSequenceName(sequence)).append("'").append(",")
+		.append("?").append("))").toString();
+	}
+
+	@Override
 	protected String getSequenceName(DBSequencerEnum sequence) {
 		switch (sequence) {
 		case SURFACE_GEOMETRY_ID_SEQ:
@@ -171,7 +180,7 @@ public class SQLAdapter extends AbstractSQLAdapter {
 
 	@Override
 	public String getTextureImageContentLength(String columName) {
-		return columName + ".getContentLength()";
+		return new StringBuilder(columName).append(".getContentLength()").toString();
 	}
 
 	@Override

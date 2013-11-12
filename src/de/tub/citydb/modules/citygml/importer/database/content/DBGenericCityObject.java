@@ -51,7 +51,7 @@ import de.tub.citydb.util.Util;
 public class DBGenericCityObject implements DBImporter {
 	private final Connection batchConn;
 	private final DBImporterManager dbImporterManager;
-	
+
 	private PreparedStatement psGenericCityObject;
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
@@ -71,7 +71,7 @@ public class DBGenericCityObject implements DBImporter {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		init();
 	}
-	
+
 	private void init() throws SQLException {
 		nullGeometryType = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
@@ -92,7 +92,7 @@ public class DBGenericCityObject implements DBImporter {
 		geometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 		genericAttributeImporter = (DBCityObjectGenericAttrib)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
 	}
-	
+
 	public long insert(GenericCityObject genericCityObject) throws SQLException {
 		long genericCityObjectId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
@@ -105,7 +105,7 @@ public class DBGenericCityObject implements DBImporter {
 		else
 			return 0;
 	}
-	
+
 	private boolean insert(GenericCityObject genericCityObject, long genericCityObjectId) throws SQLException {
 		// CityObject
 		long cityObjectId = cityObjectImporter.insert(genericCityObject, genericCityObjectId, true);
@@ -158,90 +158,92 @@ public class DBGenericCityObject implements DBImporter {
 		} else {
 			psGenericCityObject.setNull(7, Types.VARCHAR);
 		}
-		
+
 		// Geometry
 		for (int lod = 0; lod < 5; lod++) {
-        	GeometryProperty<? extends AbstractGeometry> geometryProperty = null;
-        	long geometryId = 0;
+			GeometryProperty<? extends AbstractGeometry> geometryProperty = null;
+			long geometryId = 0;
 
-    		switch (lod) {
-    		case 0:
-    			geometryProperty = genericCityObject.getLod0Geometry();
-    			break;
-    		case 1:
-    			geometryProperty = genericCityObject.getLod1Geometry();
-    			break;
-    		case 2:
-    			geometryProperty = genericCityObject.getLod2Geometry();
-    			break;
-    		case 3:
-    			geometryProperty = genericCityObject.getLod3Geometry();
-    			break;
-    		case 4:
-    			geometryProperty = genericCityObject.getLod4Geometry();
-    			break;
-    		}
+			switch (lod) {
+			case 0:
+				geometryProperty = genericCityObject.getLod0Geometry();
+				break;
+			case 1:
+				geometryProperty = genericCityObject.getLod1Geometry();
+				break;
+			case 2:
+				geometryProperty = genericCityObject.getLod2Geometry();
+				break;
+			case 3:
+				geometryProperty = genericCityObject.getLod3Geometry();
+				break;
+			case 4:
+				geometryProperty = genericCityObject.getLod4Geometry();
+				break;
+			}
 
-    		if (geometryProperty != null) {
-    			if (geometryProperty.isSetGeometry()) {
-    				
-    				GeometryObject geom = geometryImporter.getPointOrCurveGeometry(geometryProperty.getGeometry());
-    				if (geom != null) {
-    					genericAttributeImporter.insert("LOD" + lod + "_Geometry", geom, genericCityObjectId);
-    				} else
-    					geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), genericCityObjectId);
-    			
-    			} else {
-    				// xlink
+			if (geometryProperty != null) {
+				if (geometryProperty.isSetGeometry()) {
+
+					GeometryObject geom = geometryImporter.getPointOrCurveGeometry(geometryProperty.getGeometry());
+					if (geom != null) {
+						genericAttributeImporter.insert("LOD" + lod + "_Geometry", geom, genericCityObjectId);
+					} else {
+						geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), genericCityObjectId);
+						geometryProperty.unsetGeometry();
+					}
+
+				} else {
+					// xlink
 					String href = geometryProperty.getHref();
 
-        			if (href != null && href.length() != 0) {
-        				DBXlinkBasic xlink = new DBXlinkBasic(
-        						genericCityObjectId,
-        						TableEnum.GENERIC_CITYOBJECT,
-        						href,
-        						TableEnum.SURFACE_GEOMETRY
-        				);
+					if (href != null && href.length() != 0) {
+						DBXlinkBasic xlink = new DBXlinkBasic(
+								genericCityObjectId,
+								TableEnum.GENERIC_CITYOBJECT,
+								href,
+								TableEnum.SURFACE_GEOMETRY
+								);
 
-        				xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
-        				dbImporterManager.propagateXlink(xlink);
-        			}
-    			}
-    		}
+						xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
+						dbImporterManager.propagateXlink(xlink);
+					}
+				}
+			}
 
-    		switch (lod) {
-    		case 0:
-        		if (geometryId != 0)
-        			psGenericCityObject.setLong(8, geometryId);
-        		else
-        			psGenericCityObject.setNull(8, 0);
-        		break;
-    		case 1:
-        		if (geometryId != 0)
-        			psGenericCityObject.setLong(9, geometryId);
-        		else
-        			psGenericCityObject.setNull(9, 0);
-        		break;
-    		case 2:
-        		if (geometryId != 0)
-        			psGenericCityObject.setLong(10, geometryId);
-        		else
-        			psGenericCityObject.setNull(10, 0);
-        		break;
-        	case 3:
-        		if (geometryId != 0)
-        			psGenericCityObject.setLong(11, geometryId);
-        		else
-        			psGenericCityObject.setNull(11, 0);
-        		break;
-        	case 4:
-        		if (geometryId != 0)
-        			psGenericCityObject.setLong(12, geometryId);
-        		else
-        			psGenericCityObject.setNull(12, 0);
-        		break;
-        	}
-        }
+			switch (lod) {
+			case 0:
+				if (geometryId != 0)
+					psGenericCityObject.setLong(8, geometryId);
+				else
+					psGenericCityObject.setNull(8, 0);
+				break;
+			case 1:
+				if (geometryId != 0)
+					psGenericCityObject.setLong(9, geometryId);
+				else
+					psGenericCityObject.setNull(9, 0);
+				break;
+			case 2:
+				if (geometryId != 0)
+					psGenericCityObject.setLong(10, geometryId);
+				else
+					psGenericCityObject.setNull(10, 0);
+				break;
+			case 3:
+				if (geometryId != 0)
+					psGenericCityObject.setLong(11, geometryId);
+				else
+					psGenericCityObject.setNull(11, 0);
+				break;
+			case 4:
+				if (geometryId != 0)
+					psGenericCityObject.setLong(12, geometryId);
+				else
+					psGenericCityObject.setNull(12, 0);
+				break;
+			}
+		}
 
 		for (int lod = 0; lod < 5; lod++) {
 			ImplicitRepresentationProperty implicit = null;
@@ -280,10 +282,10 @@ public class DBGenericCityObject implements DBImporter {
 						Matrix matrix = geometry.getTransformationMatrix().getMatrix();
 						if (affineTransformation)
 							matrix = dbImporterManager.getAffineTransformer().transformImplicitGeometryTransformationMatrix(matrix);
-						
+
 						matrixString = Util.collection2string(matrix.toRowPackedList(), " ");
 					}
-					
+
 					// reference to IMPLICIT_GEOMETRY
 					implicitId = implicitGeometryImporter.insert(geometry, genericCityObjectId);
 				}
@@ -381,14 +383,14 @@ public class DBGenericCityObject implements DBImporter {
 
 				break;
 			}
- 		}
+		}
 
 		// lodXTerrainIntersectionCurve
 		for (int lod = 0; lod < 5; lod++) {
-			
+
 			MultiCurveProperty multiCurveProperty = null;
 			GeometryObject multiLine = null;
-			
+
 			switch (lod) {
 			case 0:
 				multiCurveProperty = genericCityObject.getLod0TerrainIntersection();
@@ -406,9 +408,11 @@ public class DBGenericCityObject implements DBImporter {
 				multiCurveProperty = genericCityObject.getLod4TerrainIntersection();
 				break;
 			}
-			
-			if (multiCurveProperty != null)
+
+			if (multiCurveProperty != null) {
 				multiLine = geometryImporter.getMultiCurve(multiCurveProperty);
+				multiCurveProperty.unsetMultiCurve();
+			}
 
 			switch (lod) {
 			case 0:
@@ -417,7 +421,7 @@ public class DBGenericCityObject implements DBImporter {
 					psGenericCityObject.setObject(28, multiLineObj);
 				} else
 					psGenericCityObject.setNull(28, nullGeometryType, nullGeometryTypeName);
-					
+
 				break;
 			case 1:
 				if (multiLine != null) {
@@ -425,7 +429,7 @@ public class DBGenericCityObject implements DBImporter {
 					psGenericCityObject.setObject(29, multiLineObj);
 				} else
 					psGenericCityObject.setNull(29, nullGeometryType, nullGeometryTypeName);
-					
+
 				break;
 			case 2:
 				if (multiLine != null) {
@@ -433,7 +437,7 @@ public class DBGenericCityObject implements DBImporter {
 					psGenericCityObject.setObject(30, multiLineObj);
 				} else
 					psGenericCityObject.setNull(30, nullGeometryType, nullGeometryTypeName);
-					
+
 				break;
 			case 3:
 				if (multiLine != null) {
@@ -441,7 +445,7 @@ public class DBGenericCityObject implements DBImporter {
 					psGenericCityObject.setObject(31, multiLineObj);
 				} else
 					psGenericCityObject.setNull(31, nullGeometryType, nullGeometryTypeName);
-					
+
 				break;
 			case 4:
 				if (multiLine != null) {
@@ -449,18 +453,21 @@ public class DBGenericCityObject implements DBImporter {
 					psGenericCityObject.setObject(32, multiLineObj);
 				} else
 					psGenericCityObject.setNull(32, nullGeometryType, nullGeometryTypeName);
-					
+
 				break;
 			}	
 		}
-		
+
 		psGenericCityObject.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.GENERIC_CITYOBJECT);
 
+		// insert local appearance
+		cityObjectImporter.insertAppearance(genericCityObject, genericCityObjectId);
+
 		return true;
 	}
-	
+
 	@Override
 	public void executeBatch() throws SQLException {
 		psGenericCityObject.executeBatch();

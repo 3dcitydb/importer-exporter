@@ -162,6 +162,7 @@ public class DBRoom implements DBImporter {
 
 			if (solidProperty.isSetSolid()) {
 				geometryId = surfaceGeometryImporter.insert(solidProperty.getSolid(), roomId);
+				solidProperty.unsetSolid();
 			} else {
 				// xlink
 				String href = solidProperty.getHref();
@@ -183,6 +184,7 @@ public class DBRoom implements DBImporter {
 
 			if (multiSurfacePropery.isSetMultiSurface()) {
 				geometryId = surfaceGeometryImporter.insert(multiSurfacePropery.getMultiSurface(), roomId);
+				multiSurfacePropery.unsetMultiSurface();
 			} else {
 				// xlink
 				String href = multiSurfacePropery.getHref();
@@ -311,6 +313,9 @@ public class DBRoom implements DBImporter {
 				}
 			}
 		}
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(room, roomId);
 
 		return roomId;
 	}

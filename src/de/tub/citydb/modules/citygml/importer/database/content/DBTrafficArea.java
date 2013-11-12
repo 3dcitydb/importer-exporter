@@ -149,6 +149,7 @@ public class DBTrafficArea implements DBImporter {
     		if (multiSurfaceProperty != null) {
     			if (multiSurfaceProperty.isSetMultiSurface()) {
     				multiSurfaceId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), trafficAreaId);
+    				multiSurfaceProperty.unsetMultiSurface();
     			} else {
     				// xlink
 					String href = multiSurfaceProperty.getHref();
@@ -195,6 +196,9 @@ public class DBTrafficArea implements DBImporter {
         psTrafficArea.addBatch();
         if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.TRAFFIC_AREA);
+        
+		// insert local appearance
+		cityObjectImporter.insertAppearance(trafficArea, trafficAreaId);
         
 		return trafficAreaId;
 	}
@@ -273,6 +277,7 @@ public class DBTrafficArea implements DBImporter {
     		if (multiSurfaceProperty != null) {
     			if (multiSurfaceProperty.isSetMultiSurface()) {
     				multiSurfaceId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), auxiliaryTrafficAreaId);
+    				multiSurfaceProperty.unsetMultiSurface();
     			} else {
     				// xlink
 					String href = multiSurfaceProperty.getHref();
@@ -319,6 +324,9 @@ public class DBTrafficArea implements DBImporter {
         psTrafficArea.addBatch();
         if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.TRAFFIC_AREA);
+        
+		// insert local appearance
+		cityObjectImporter.insertAppearance(auxiliaryTrafficArea, auxiliaryTrafficAreaId);
         
 		return auxiliaryTrafficAreaId;
 	}

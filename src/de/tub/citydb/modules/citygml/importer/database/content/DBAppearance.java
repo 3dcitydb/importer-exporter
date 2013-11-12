@@ -167,7 +167,7 @@ public class DBAppearance implements DBImporter {
 			for (SurfaceDataProperty surfaceDataProp : appearance.getSurfaceDataMember()) {
 				if (surfaceDataProp.isSetSurfaceData()) {
 					String gmlId = surfaceDataProp.getSurfaceData().getId();
-					long id = surfaceDataImporter.insert(surfaceDataProp.getSurfaceData(), appearanceId);
+					long id = surfaceDataImporter.insert(surfaceDataProp.getSurfaceData(), appearanceId, parent == CityGMLClass.ABSTRACT_CITY_OBJECT);
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 								CityGMLClass.APPEARANCE, 

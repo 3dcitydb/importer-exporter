@@ -296,6 +296,7 @@ public class DBBuilding implements DBImporter {
 			if (solidProperty != null) {
 				if (solidProperty.isSetSolid()) {
 					solidGeometryId = surfaceGeometryImporter.insert(solidProperty.getSolid(), buildingId);
+					solidProperty.unsetSolid();
 				} else {
 					// xlink
 					String href = solidProperty.getHref();
@@ -376,6 +377,7 @@ public class DBBuilding implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiGeometryId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), buildingId);
+					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					// xlink
 					String href = multiSurfaceProperty.getHref();
@@ -442,8 +444,10 @@ public class DBBuilding implements DBImporter {
 				break;
 			}
 
-			if (multiCurveProperty != null)
+			if (multiCurveProperty != null) {
 				multiLine = geometryImporter.getMultiCurve(multiCurveProperty);
+				multiCurveProperty.unsetMultiCurve();
+			}
 
 			switch (lod) {
 			case 1:
@@ -484,7 +488,6 @@ public class DBBuilding implements DBImporter {
 
 		// lodXMultiCurve
 		for (int lod = 2; lod < 5; lod++) {
-
 			MultiCurveProperty multiCurveProperty = null;
 			GeometryObject multiLine = null;
 
@@ -500,8 +503,10 @@ public class DBBuilding implements DBImporter {
 				break;
 			}
 
-			if (multiCurveProperty != null)
+			if (multiCurveProperty != null) {
 				multiLine = geometryImporter.getMultiCurve(multiCurveProperty);
+				multiCurveProperty.unsetMultiCurve();
+			}
 
 			switch (lod) {
 			case 2:
@@ -745,6 +750,9 @@ public class DBBuilding implements DBImporter {
 				}
 			}
 		}
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(building, buildingId);
 
 		return true;
 	}

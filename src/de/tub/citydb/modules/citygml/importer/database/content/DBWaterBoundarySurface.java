@@ -135,6 +135,7 @@ public class DBWaterBoundarySurface implements DBImporter {
     		if (surfaceProperty != null) {
     			if (surfaceProperty.isSetSurface()) {
     				abstractSurfaceId = surfaceGeometryImporter.insert(surfaceProperty.getSurface(), waterBoundarySurfaceId);
+    				surfaceProperty.unsetSurface();
     			} else {
     				// xlink
 					String href = surfaceProperty.getHref();
@@ -181,6 +182,9 @@ public class DBWaterBoundarySurface implements DBImporter {
 
         // boundary surface to waterBody
         bodyToSurfaceImporter.insert(waterBoundarySurfaceId, parentId);
+        
+		// insert local appearance
+		cityObjectImporter.insertAppearance(waterBoundarySurface, waterBoundarySurfaceId);
 
         return waterBoundarySurfaceId;
 	}

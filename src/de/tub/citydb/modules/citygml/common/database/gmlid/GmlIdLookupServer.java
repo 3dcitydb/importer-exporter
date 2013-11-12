@@ -118,6 +118,10 @@ public class GmlIdLookupServer {
 
 		return key;
 	}
+	
+	public GmlIdEntry getFromMemory(String key) {
+		return lookupMap(key);
+	}
 
 	private GmlIdEntry lookupMap(String key) {
 		GmlIdEntry entry = map.get(key);

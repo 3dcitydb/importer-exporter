@@ -174,6 +174,9 @@ public class DBReliefFeature implements DBImporter {
 				}
 			}
 		}
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(reliefFeature, reliefFeatureId);
 
 		return true;
 	}

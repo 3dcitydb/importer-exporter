@@ -16,16 +16,16 @@ import de.tub.citydb.api.database.DatabaseSrsType;
 import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.api.geometry.BoundingBoxCorner;
 import de.tub.citydb.database.DatabaseMetaDataImpl;
-import de.tub.citydb.database.IndexStatusInfo;
 import de.tub.citydb.database.DatabaseMetaDataImpl.Versioning;
+import de.tub.citydb.database.IndexStatusInfo;
 import de.tub.citydb.database.IndexStatusInfo.IndexType;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.AbstractUtilAdapter;
 import de.tub.citydb.util.Util;
 
-public class UtilsAdapter extends AbstractUtilAdapter {
+public class UtilAdapter extends AbstractUtilAdapter {
 
-	protected UtilsAdapter(AbstractDatabaseAdapter databaseAdapter) {
+	protected UtilAdapter(AbstractDatabaseAdapter databaseAdapter) {
 		super(databaseAdapter);
 	}
 

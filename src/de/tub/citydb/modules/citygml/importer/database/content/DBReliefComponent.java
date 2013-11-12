@@ -182,6 +182,8 @@ public class DBReliefComponent implements DBImporter {
 						if (tin.isSetControlPoint())
 							controlPoints = geometryImporter.getMultiPoint(tin.getControlPoint());
 					}
+					
+					tinProperty.unsetTriangulatedSurface();
 
 				} else {
 					// xlink
@@ -236,8 +238,10 @@ public class DBReliefComponent implements DBImporter {
 
 			// reliefPoints
 			GeometryObject reliefPoints = null;
-			if (massPointRelief.isSetReliefPoints())
+			if (massPointRelief.isSetReliefPoints()) {
 				reliefPoints = geometryImporter.getMultiPoint(massPointRelief.getReliefPoints());
+				massPointRelief.unsetReliefPoints();
+			}
 
 			if (reliefPoints != null) {
 				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(reliefPoints, batchConn);
@@ -257,11 +261,15 @@ public class DBReliefComponent implements DBImporter {
 			GeometryObject ridgeOrValleyLines, breakLines;
 			ridgeOrValleyLines = breakLines = null;
 
-			if (breakLineRelief.isSetRidgeOrValleyLines())
+			if (breakLineRelief.isSetRidgeOrValleyLines()) {
 				ridgeOrValleyLines = geometryImporter.getMultiCurve(breakLineRelief.getRidgeOrValleyLines());
+				breakLineRelief.unsetRidgeOrValleyLines();
+			}
 
-			if (breakLineRelief.isSetBreaklines())
+			if (breakLineRelief.isSetBreaklines()) {
 				breakLines = geometryImporter.getMultiCurve(breakLineRelief.getBreaklines());
+				breakLineRelief.unsetBreaklines();
+			}
 
 			if (ridgeOrValleyLines != null) {
 				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(ridgeOrValleyLines, batchConn);
@@ -280,6 +288,9 @@ public class DBReliefComponent implements DBImporter {
 
 		// reliefComponent2reliefFeature
 		reliefFeatToRelComp.insert(reliefComponentId, parentId);
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(reliefComponent, reliefComponentId);
 
 		return reliefComponentId;
 	}

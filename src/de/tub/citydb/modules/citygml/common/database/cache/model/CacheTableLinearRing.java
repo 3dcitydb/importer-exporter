@@ -57,7 +57,7 @@ public class CacheTableLinearRing extends CacheTableModel {
 			stmt = conn.createStatement();
 			
 			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
-			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (PARENT_GMLID) " + properties);
+			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (PARENT_ID) " + properties);
 			stmt.executeUpdate("create index idx3_" + tableName + " on " + tableName + " (RING_NO) " + properties);
 		} finally {
 			if (stmt != null) {
@@ -76,8 +76,9 @@ public class CacheTableLinearRing extends CacheTableModel {
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		StringBuilder builder = new StringBuilder("(")
 		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("PARENT_GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("RING_NO ").append(sqlAdapter.getInteger())
+		.append("PARENT_ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("RING_NO ").append(sqlAdapter.getInteger()).append(", ")
+		.append("REVERSE ").append(sqlAdapter.getNumeric(1, 0))
 		.append(")");
 		
 		return builder.toString();
