@@ -638,6 +638,7 @@ public abstract class KmlGenericObject {
 		
 			// --------------------------- geometry (variable part) ---------------------------
 			GeometryInfo ginfo = geometryInfos.get(surfaceId);
+			int firstHoleIdx = ginfo.getStripCounts()[0];
 			ginfo.convertToIndexedTriangles();
 /*
 			// the following seems to be buggy, so don't do it for now
@@ -650,12 +651,21 @@ public abstract class KmlGenericObject {
 */
 			// if convertToIndexedTriangles() reversed the orientation reverse it again
 			int[] coordIdx = ginfo.getCoordinateIndices();
-			if ((coordIdx[0] > coordIdx[1] && coordIdx[1] > coordIdx[2]) ||
-				(coordIdx[1] > coordIdx[2] && coordIdx[2] > coordIdx[0]) ||
-				(coordIdx[2] > coordIdx[0] && coordIdx[0] > coordIdx[1])){
+			int idx = 0;
+			// avoid hole coordinates for orientation test 
+			while (idx < coordIdx.length && (
+				   coordIdx[idx+0] >= firstHoleIdx ||
+				   coordIdx[idx+1] >= firstHoleIdx ||
+				   coordIdx[idx+2] >= firstHoleIdx)) {
+				idx = idx + 3;
+			}
+			if (idx < coordIdx.length && (
+				(coordIdx[idx+0] > coordIdx[idx+1] && coordIdx[idx+1] > coordIdx[idx+2]) ||
+				(coordIdx[idx+1] > coordIdx[idx+2] && coordIdx[idx+2] > coordIdx[idx+0]) ||
+				(coordIdx[idx+2] > coordIdx[idx+0] && coordIdx[idx+0] > coordIdx[idx+1]))) {
 				ginfo.reverse();
 			}
-			
+
 			GeometryArray gArray = ginfo.getGeometryArray();
 			Point3d coordPoint = new Point3d();
 			for(int i = 0; i < gArray.getVertexCount(); i++){
