@@ -92,7 +92,7 @@ public class DBOtherGeometry implements DBImporter {
 		if (point != null) {
 			List<Double> values = point.toList3d();
 			if (values != null && !values.isEmpty())
-				pointGeom = GeometryObject.createPoint(toArray(values), 3, dbSrid);
+				pointGeom = GeometryObject.createPoint(convertPrimitive(values), 3, dbSrid);
 		}
 
 		return pointGeom;
@@ -113,7 +113,7 @@ public class DBOtherGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty()) {				
-				double[][] pointArray = toArray(pointList);
+				double[][] pointArray = convertAggregate(pointList);
 				if (pointList.size() > 1)				
 					pointGeom = GeometryObject.createMultiPoint(pointArray, 3, dbSrid);
 				else
@@ -142,7 +142,7 @@ public class DBOtherGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty())
-				multiPointGeom = GeometryObject.createMultiPoint(toArray(pointList), 3, dbSrid);
+				multiPointGeom = GeometryObject.createMultiPoint(convertAggregate(pointList), 3, dbSrid);
 		}
 
 		return multiPointGeom;
@@ -173,7 +173,7 @@ public class DBOtherGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty())
-				multiPointGeom = GeometryObject.createMultiPoint(toArray(pointList), 3, dbSrid);
+				multiPointGeom = GeometryObject.createMultiPoint(convertAggregate(pointList), 3, dbSrid);
 		}
 
 		return multiPointGeom;
@@ -186,7 +186,7 @@ public class DBOtherGeometry implements DBImporter {
 			List<Double> pointList = new ArrayList<Double>();
 			generatePointList(curve, pointList, false);
 			if (!pointList.isEmpty())
-				curveGeom = GeometryObject.createCurve(toArray(pointList), 3, dbSrid);
+				curveGeom = GeometryObject.createCurve(convertPrimitive(pointList), 3, dbSrid);
 		}
 
 		return curveGeom;
@@ -221,7 +221,7 @@ public class DBOtherGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty())
-				multiCurveGeom = GeometryObject.createMultiCurve(toArray(pointList), 3, dbSrid);
+				multiCurveGeom = GeometryObject.createMultiCurve(convertAggregate(pointList), 3, dbSrid);
 		}
 
 		return multiCurveGeom;
@@ -252,7 +252,7 @@ public class DBOtherGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty()) {
-				double[][] pointArray = toArray(pointList);
+				double[][] pointArray = convertAggregate(pointList);
 				if (pointList.size() > 1)
 					curveGeom = GeometryObject.createMultiCurve(pointArray, 3, dbSrid);
 				else
@@ -282,7 +282,7 @@ public class DBOtherGeometry implements DBImporter {
 			}
 
 			if (!pointList.isEmpty())
-				multiCurveGeom = GeometryObject.createMultiCurve(toArray(pointList), 3, dbSrid);
+				multiCurveGeom = GeometryObject.createMultiCurve(convertAggregate(pointList), 3, dbSrid);
 		}
 
 		return multiCurveGeom;
@@ -402,7 +402,7 @@ public class DBOtherGeometry implements DBImporter {
 		}
 	}
 	
-	private double[] toArray(List<Double> pointList) {
+	private double[] convertPrimitive(List<Double> pointList) {
 		if (affineTransformation)
 			dbImporterManager.getAffineTransformer().transformCoordinates(pointList);
 
@@ -415,7 +415,7 @@ public class DBOtherGeometry implements DBImporter {
 		return result;
 	}
 	
-	private double[][] toArray(List<List<Double>> pointList) {
+	private double[][] convertAggregate(List<List<Double>> pointList) {
 		double[][] result = new double[pointList.size()][];
 		int i = 0;
 		for (List<Double> points : pointList) {

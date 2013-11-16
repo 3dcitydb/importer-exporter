@@ -36,7 +36,9 @@ import javax.xml.bind.annotation.XmlType;
 		"lineage",
 		"updatingPersonMode",
 		"updatingPerson",
-		"reasonForUpdate"
+		"reasonForUpdate",
+		"creationDateMode",
+		"terminationDateMode"
 		})
 public class Continuation {
 	@XmlElement(required=true)
@@ -46,6 +48,10 @@ public class Continuation {
 	private String updatingPerson = "";
 	@XmlElement(required=true)
 	private String reasonForUpdate = "";
+	@XmlElement(required=true)
+	private CreationDateMode creationDateMode = CreationDateMode.REPLACE;
+	@XmlElement(required=true)
+	private TerminationDateMode terminationDateMode = TerminationDateMode.REPLACE;
 	
 	public Continuation() {
 		
@@ -90,5 +96,45 @@ public class Continuation {
 	public void setReasonForUpdate(String reasonForUpdate) {
 		this.reasonForUpdate = reasonForUpdate;
 	}
-	
+
+	public boolean isCreationDateModeInherit() {
+		return creationDateMode == CreationDateMode.INHERIT;
+	}
+
+	public boolean isCreationDateModeComplement() {
+		return creationDateMode == CreationDateMode.COMPLEMENT;
+	}
+
+	public boolean isCreationDateModeReplace() {
+		return creationDateMode == CreationDateMode.REPLACE;
+	}
+
+	public CreationDateMode getCreationDateMode() {
+		return creationDateMode;
+	}
+
+	public void setCreationDateMode(CreationDateMode creationDateMode) {
+		this.creationDateMode = creationDateMode;
+	}
+
+	public boolean isTerminationDateModeInherit() {
+		return terminationDateMode == TerminationDateMode.INHERIT;
+	}
+
+	public boolean isTerminationDateModeComplement() {
+		return terminationDateMode == TerminationDateMode.COMPLEMENT;
+	}
+
+	public boolean isTerminationDateModeReplace() {
+		return terminationDateMode == TerminationDateMode.REPLACE;
+	}
+
+	public TerminationDateMode getTerminationDateMode() {
+		return terminationDateMode;
+	}
+
+	public void setTerminationDateMode(TerminationDateMode terminationDateMode) {
+		this.terminationDateMode = terminationDateMode;
+	}
+  
 }

@@ -320,37 +320,38 @@ DECLARE
   on_delete_param VARCHAR;
 BEGIN
   on_delete_param := $1;
-  
+
   IF on_delete_param <> 'CASCADE' THEN
     on_delete_param := 'RESTRICT';
     RAISE NOTICE 'Constraints are set to ON DELETE RESTRICT';
+  ELSE
+    RAISE NOTICE 'Constraints are set to ON DELETE CASCADE';
   END IF;
 
   PERFORM geodb_pkg.util_on_delete_action('ADDRESS_TO_BUILDING','ADDRESS_TO_BUILDING_FK','BUILDING_ID','BUILDING','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('ADDRESS_TO_BUILDING','ADDRESS_TO_BUILDING_ADDRESS_FK','ADDRESS_ID','ADDRESS','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('APPEARANCE','APPEARANCE_CITYMODEL_FK','CITYMODEL_ID','CITYMODEL','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('APPEARANCE','APPEARANCE_CITYOBJECT_FK','CITYOBJECT_ID','CITYOBJECT','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('APPEAR_TO_SURFACE_DATA','APPEAR_TO_SURFACE_DATA_FK','SURFACE_DATA_ID','SURFACE_DATA','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('APPEAR_TO_SURFACE_DATA','APPEAR_TO_SURFACE_DATA_FK1','APPEARANCE_ID','APPEARANCE','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('APPEAR_TO_SURFACE_DATA','APPEAR_TO_SURFACE_DATA_FK','SURFACE_DATA_ID','SURFACE_DATA','ID',on_delete_param);  
-  PERFORM geodb_pkg.util_on_delete_action('APPEAR_TO_SURFACE_DATA','APPEAR_TO_SURFACE_DATA_FK','SURFACE_DATA_ID','SURFACE_DATA','ID',on_delete_param);    
   PERFORM geodb_pkg.util_on_delete_action('BREAKLINE_RELIEF','BREAKLINE_RELIEF_FK','ID','RELIEF_COMPONENT','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('BUILDING','BUILDING_SURFACE_GEOMETRY_FK','LOD1_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('BUILDING','BUILDING_SURFACE_GEOMETRY_FK3','LOD4_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('BUILDING','BUILDING_CITYOBJECT_FK','ID','CITYOBJECT','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('BUILDING','BUILDING_SURFACE_GEOMETRY_FK1','LOD2_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('BUILDING','BUILDING_SURFACE_GEOMETRY_FK2','LOD3_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('BUILDING','BUILDING_BUILDING_FK','BUILDING_PARENT_ID','BUILDING','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('BUILDING','BUILDING_BUILDING_FK1','BUILDING_ROOT_ID','BUILDING','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('BUILDING','BUILDING_SURFACE_GEOMETRY_FK','LOD1_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('BUILDING','BUILDING_SURFACE_GEOMETRY_FK1','LOD2_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('BUILDING','BUILDING_SURFACE_GEOMETRY_FK2','LOD3_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('BUILDING','BUILDING_SURFACE_GEOMETRY_FK3','LOD4_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('BUILDING_FURNITURE','BUILDING_FURNITURE_FK1','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('BUILDING_FURNITURE','BUILDING_FURNITURE_FK2','LOD4_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('BUILDING_FURNITURE','BUILDING_FURNITURE_FK','LOD4_IMPLICIT_REP_ID','IMPLICIT_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('BUILDING_FURNITURE','BUILDING_FURNITURE_ROOM_FK','ROOM_ID','ROOM','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('BUILDING_INSTALLATION','BUILDING_INSTALLATION_FK3','LOD3_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('BUILDING_INSTALLATION','BUILDING_INSTALLATION_FK','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('BUILDING_INSTALLATION','BUILDING_INSTALLATION_ROOM_FK','ROOM_ID','ROOM','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('BUILDING_INSTALLATION','BUILDING_INSTALLATION_FK4','LOD4_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('BUILDING_INSTALLATION','BUILDING_INSTALLATION_FK1','BUILDING_ID','BUILDING','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('BUILDING_INSTALLATION','BUILDING_INSTALLATION_FK2','LOD2_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('BUILDING_INSTALLATION','BUILDING_INSTALLATION_FK3','LOD3_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('BUILDING_INSTALLATION','BUILDING_INSTALLATION_FK4','LOD4_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('CITYOBJECT','CITYOBJECT_OBJECTCLASS_FK','CLASS_ID','OBJECTCLASS','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('CITYOBJECTGROUP','CITYOBJECT_GROUP_FK','SURFACE_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('CITYOBJECTGROUP','CITYOBJECTGROUP_CITYOBJECT_FK','PARENT_CITYOBJECT_ID','CITYOBJECT','ID',on_delete_param);
@@ -359,6 +360,7 @@ BEGIN
   PERFORM geodb_pkg.util_on_delete_action('CITYOBJECT_GENERICATTRIB','CITYOBJECT_GENERICATTRIB_FK1','SURFACE_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('CITYOBJECT_MEMBER','CITYOBJECT_MEMBER_CITYMODEL_FK','CITYMODEL_ID','CITYMODEL','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('CITYOBJECT_MEMBER','CITYOBJECT_MEMBER_FK','CITYOBJECT_ID','CITYOBJECT','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('CITY_FURNITURE','CITY_FURNITURE_CITYOBJECT_FK','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('CITY_FURNITURE','CITY_FURNITURE_FK','LOD1_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('CITY_FURNITURE','CITY_FURNITURE_FK1','LOD2_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('CITY_FURNITURE','CITY_FURNITURE_FK2','LOD3_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
@@ -367,10 +369,10 @@ BEGIN
   PERFORM geodb_pkg.util_on_delete_action('CITY_FURNITURE','CITY_FURNITURE_FK5','LOD2_IMPLICIT_REP_ID','IMPLICIT_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('CITY_FURNITURE','CITY_FURNITURE_FK6','LOD3_IMPLICIT_REP_ID','IMPLICIT_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('CITY_FURNITURE','CITY_FURNITURE_FK7','LOD4_IMPLICIT_REP_ID','IMPLICIT_GEOMETRY','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('CITY_FURNITURE','CITY_FURNITURE_CITYOBJECT_FK','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('EXTERNAL_REFERENCE','EXTERNAL_REFERENCE_FK','CITYOBJECT_ID','CITYOBJECT','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('GENERALIZATION','GENERALIZATION_FK1','GENERALIZES_TO_ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('GENERALIZATION','GENERALIZATION_FK','CITYOBJECT_ID','CITYOBJECT','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('GENERALIZATION','GENERALIZATION_FK1','GENERALIZES_TO_ID','CITYOBJECT','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('GENERIC_CITYOBJECT','GENERIC_CITYOBJECT_FK10','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('GENERIC_CITYOBJECT','GENERIC_CITYOBJECT_FK1','LOD1_IMPLICIT_REP_ID','IMPLICIT_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('GENERIC_CITYOBJECT','GENERIC_CITYOBJECT_FK2','LOD2_IMPLICIT_REP_ID','IMPLICIT_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('GENERIC_CITYOBJECT','GENERIC_CITYOBJECT_FK3','LOD3_IMPLICIT_REP_ID','IMPLICIT_GEOMETRY','ID',on_delete_param);
@@ -380,7 +382,6 @@ BEGIN
   PERFORM geodb_pkg.util_on_delete_action('GENERIC_CITYOBJECT','GENERIC_CITYOBJECT_FK7','LOD2_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('GENERIC_CITYOBJECT','GENERIC_CITYOBJECT_FK8','LOD3_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('GENERIC_CITYOBJECT','GENERIC_CITYOBJECT_FK9','LOD4_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('GENERIC_CITYOBJECT','GENERIC_CITYOBJECT_FK10','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('GROUP_TO_CITYOBJECT','GROUP_TO_CITYOBJECT_FK','CITYOBJECT_ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('GROUP_TO_CITYOBJECT','GROUP_TO_CITYOBJECT_FK1','CITYOBJECTGROUP_ID','CITYOBJECTGROUP','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('IMPLICIT_GEOMETRY','IMPLICIT_GEOMETRY_FK','RELATIVE_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
@@ -392,25 +393,25 @@ BEGIN
   PERFORM geodb_pkg.util_on_delete_action('LAND_USE','LAND_USE_SURFACE_GEOMETRY_FK4','LOD4_MULTI_SURFACE_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('MASSPOINT_RELIEF','MASSPOINT_RELIEF_FK','ID','RELIEF_COMPONENT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('OBJECTCLASS','OBJECTCLASS_OBJECTCLASS_FK','SUPERCLASS_ID','OBJECTCLASS','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('OPENING','OPENING_SURFACE_GEOMETRY_FK1','LOD4_MULTI_SURFACE_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('OPENING','OPENING_CITYOBJECT_FK','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('OPENING','OPENING_SURFACE_GEOMETRY_FK','LOD3_MULTI_SURFACE_ID','SURFACE_GEOMETRY','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('OPENING','OPENING_SURFACE_GEOMETRY_FK1','LOD4_MULTI_SURFACE_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('OPENING','OPENING_ADDRESS_FK','ADDRESS_ID','ADDRESS','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('OPENING_TO_THEM_SURFACE','OPENING_TO_THEMATIC_SURFACE_FK','OPENING_ID','OPENING','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('OPENING_TO_THEM_SURFACE','OPENING_TO_THEMATIC_SURFAC_FK1','THEMATIC_SURFACE_ID','THEMATIC_SURFACE','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('PLANT_COVER','PLANT_COVER_CITYOBJECT_FK','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('PLANT_COVER','PLANT_COVER_FK','LOD1_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('PLANT_COVER','PLANT_COVER_FK1','LOD2_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('PLANT_COVER','PLANT_COVER_FK2','LOD3_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('PLANT_COVER','PLANT_COVER_FK3','LOD4_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('PLANT_COVER','PLANT_COVER_CITYOBJECT_FK','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('RASTER_RELIEF','RASTER_RELIEF_FK','RELIEF_ID','RELIEF','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('RELIEF_COMPONENT','RELIEF_COMPONENT_CITYOBJECT_FK','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('RELIEF_FEATURE','RELIEF_FEATURE_CITYOBJECT_FK','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('RELIEF_FEAT_TO_REL_COMP','RELIEF_FEAT_TO_REL_COMP_FK','RELIEF_COMPONENT_ID','RELIEF_COMPONENT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('RELIEF_FEAT_TO_REL_COMP','RELIEF_FEAT_TO_REL_COMP_FK1','RELIEF_FEATURE_ID','RELIEF_FEATURE','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('ROOM','ROOM_CITYOBJECT_FK','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('ROOM','ROOM_BUILDING_FK','BUILDING_ID','BUILDING','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('ROOM','ROOM_SURFACE_GEOMETRY_FK','LOD4_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
-  PERFORM geodb_pkg.util_on_delete_action('ROOM','ROOM_CITYOBJECT_FK','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('SOLITARY_VEGETAT_OBJECT','SOLITARY_VEGETAT_OBJECT_FK','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('SOLITARY_VEGETAT_OBJECT','SOLITARY_VEGETAT_OBJECT_FK1','LOD1_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('SOLITARY_VEGETAT_OBJECT','SOLITARY_VEGETAT_OBJECT_FK2','LOD2_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
@@ -424,6 +425,7 @@ BEGIN
   PERFORM geodb_pkg.util_on_delete_action('SURFACE_GEOMETRY','SURFACE_GEOMETRY_FK1','ROOT_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('TEXTUREPARAM','TEXTUREPARAM_SURFACE_GEOM_FK','SURFACE_GEOMETRY_ID','SURFACE_GEOMETRY','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('TEXTUREPARAM','TEXTUREPARAM_SURFACE_DATA_FK','SURFACE_DATA_ID','SURFACE_DATA','ID',on_delete_param);
+  PERFORM geodb_pkg.util_on_delete_action('THEMATIC_SURFACE','THEMATIC_SURFACE_CITYOBJECT_FK','ID','CITYOBJECT','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('THEMATIC_SURFACE','THEMATIC_SURFACE_ROOM_FK','ROOM_ID','ROOM','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('THEMATIC_SURFACE','THEMATIC_SURFACE_BUILDING_FK','BUILDING_ID','BUILDING','ID',on_delete_param);
   PERFORM geodb_pkg.util_on_delete_action('THEMATIC_SURFACE','THEMATIC_SURFACE_FK','LOD2_MULTI_SURFACE_ID','SURFACE_GEOMETRY','ID',on_delete_param);

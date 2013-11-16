@@ -34,10 +34,14 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
+import org.citygml4j.model.common.base.ModelObject;
+import org.citygml4j.model.common.child.Child;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.feature.AbstractFeature;
@@ -344,13 +348,13 @@ public class Util {
 
 		return url != null;
 	}
-	
+
 	public static String codeList2string(List<Code> codeList, String delimiter) {
 		List<String> values = new ArrayList<String>(codeList.size());
 		for (Code code : codeList)
 			if (code != null)
 				values.add(code.getValue());
-		
+
 		return collection2string(values, delimiter);
 	}
 
@@ -454,7 +458,7 @@ public class Util {
 	public static boolean checkWorkspaceTimestamp(Workspace workspace) {
 		String timestamp = workspace.getTimestamp().trim();
 		boolean success = true;
-		
+
 		if (timestamp.length() > 0) {		
 			SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
 			format.setLenient(false);
@@ -467,6 +471,54 @@ public class Util {
 
 		workspace.setTimestamp(timestamp);
 		return success;
+	}
+
+	public static GregorianCalendar getCreationDate(AbstractCityObject cityObject, boolean checkParents) {
+		if (cityObject == null)
+			return null;
+		
+		if (cityObject.isSetCreationDate())
+			return cityObject.getCreationDate();
+		
+		if (checkParents) {
+			Child child = cityObject;
+			ModelObject parent = null;
+
+			while ((parent = child.getParent()) != null) {
+				if (parent instanceof AbstractCityObject && ((AbstractCityObject)child).isSetCreationDate())
+					return ((AbstractCityObject)child).getCreationDate();
+				else if (parent instanceof Child)
+					child = (Child)parent;
+				else 
+					break;
+			}
+		}
+
+		return null;
+	}
+
+	public static GregorianCalendar getTerminationDate(AbstractCityObject cityObject, boolean checkParents) {
+		if (cityObject == null)
+			return null;
+		
+		if (cityObject.isSetTerminationDate())
+			return cityObject.getTerminationDate();
+		
+		if (checkParents) {
+			Child child = cityObject;
+			ModelObject parent = null;
+
+			while ((parent = child.getParent()) != null) {
+				if (parent instanceof AbstractCityObject && ((AbstractCityObject)child).isSetTerminationDate())
+					return ((AbstractCityObject)child).getTerminationDate();
+				else if (parent instanceof Child)
+					child = (Child)parent;
+				else 
+					break;
+			}
+		}
+
+		return null;
 	}
 
 }

@@ -45,6 +45,8 @@ import javax.swing.border.TitledBorder;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.importer.Continuation;
+import de.tub.citydb.config.project.importer.CreationDateMode;
+import de.tub.citydb.config.project.importer.TerminationDateMode;
 import de.tub.citydb.config.project.importer.UpdatingPersonMode;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
@@ -54,6 +56,8 @@ import de.tub.citydb.util.gui.GuiUtil;
 public class ContinuationPanel extends AbstractPreferencesComponent {
 	private JPanel block1;
 	private JPanel block2;
+	private JPanel block3;
+	private JPanel block4;
 	
 	private JTextField lineageText;
 	private JLabel lineageLabel;
@@ -62,6 +66,13 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 	private JRadioButton updatingPersonDBAccount;
 	private JRadioButton updatingPersonUser;
 	private JTextField updatingPersonText;
+	
+	private JRadioButton creDateRadioInherit;
+	private JRadioButton creDateRadioOnlyMissing;
+	private JRadioButton creDateRadioAll;
+	private JRadioButton termDateRadioInherit;
+	private JRadioButton termDateRadioOnlyMissing;
+	private JRadioButton termDateRadioAll;
 	
 	public ContinuationPanel(Config config) {
 		super(config);
@@ -77,7 +88,13 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 		if (!updatingPersonText.getText().equals(continuation.getUpdatingPerson())) return true;
 		if (updatingPersonDBAccount.isSelected() != continuation.isUpdatingPersonModeDatabase()) return true;
 		if (updatingPersonUser.isSelected() != continuation.isUpdatingPersonModeUser()) return true;
-
+		if (creDateRadioInherit.isSelected() != continuation.isCreationDateModeInherit()) return true;
+		if (creDateRadioOnlyMissing.isSelected() != continuation.isCreationDateModeComplement()) return true;
+		if (creDateRadioAll.isSelected() != continuation.isCreationDateModeReplace()) return true;
+		if (termDateRadioInherit.isSelected() != continuation.isTerminationDateModeInherit()) return true;
+		if (termDateRadioOnlyMissing.isSelected() != continuation.isTerminationDateModeComplement()) return true;
+		if (termDateRadioAll.isSelected() != continuation.isTerminationDateModeReplace()) return true;
+    
 		return false;
 	}
 	
@@ -94,6 +111,22 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 		updatingPerson.add(updatingPersonUser);
 		updatingPersonText = new JTextField();
 		
+		creDateRadioInherit = new JRadioButton();
+		creDateRadioOnlyMissing = new JRadioButton();
+		creDateRadioAll = new JRadioButton();
+		ButtonGroup creDateRadio = new ButtonGroup();
+		creDateRadio.add(creDateRadioInherit);
+		creDateRadio.add(creDateRadioOnlyMissing);
+		creDateRadio.add(creDateRadioAll);
+    
+		termDateRadioInherit = new JRadioButton();
+		termDateRadioOnlyMissing = new JRadioButton();
+		termDateRadioAll = new JRadioButton();
+		ButtonGroup trmDateRadio = new ButtonGroup();
+		trmDateRadio.add(termDateRadioInherit);
+		trmDateRadio.add(termDateRadioOnlyMissing);
+		trmDateRadio.add(termDateRadioAll);
+    
 		PopupMenuDecorator.getInstance().decorate(lineageText, reasonForUpdateText, updatingPersonText);
 		
 		setLayout(new GridBagLayout());
@@ -121,6 +154,32 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 				block2.add(updatingPersonUser, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				block2.add(updatingPersonText, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
 			}
+      
+			block3 = new JPanel();
+			add(block3, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
+			block3.setBorder(BorderFactory.createTitledBorder(""));
+			block3.setLayout(new GridBagLayout());
+			creDateRadioInherit.setIconTextGap(10);
+			creDateRadioOnlyMissing.setIconTextGap(10);
+			creDateRadioAll.setIconTextGap(10);
+			{
+				block3.add(creDateRadioInherit, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block3.add(creDateRadioOnlyMissing, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block3.add(creDateRadioAll, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+			}
+
+			block4 = new JPanel();
+			add(block4, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
+			block4.setBorder(BorderFactory.createTitledBorder(""));
+			block4.setLayout(new GridBagLayout());
+			termDateRadioInherit.setIconTextGap(10);
+			termDateRadioOnlyMissing.setIconTextGap(10);
+			termDateRadioAll.setIconTextGap(10);
+			{
+				block4.add(termDateRadioInherit, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block4.add(termDateRadioOnlyMissing, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block4.add(termDateRadioAll, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+			}
 		}
 		
 		ActionListener updatingPersonListener = new ActionListener() {
@@ -141,12 +200,22 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 	public void doTranslation() {
 		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.import.continuation.border.lineage"));	
 		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.import.continuation.border.updatingPerson"));	
+		((TitledBorder)block3.getBorder()).setTitle(Internal.I18N.getString("pref.import.continuation.border.creationDate"));	
+		((TitledBorder)block4.getBorder()).setTitle(Internal.I18N.getString("pref.import.continuation.border.terminationDate"));	
 
 		lineageLabel.setText(Internal.I18N.getString("pref.import.continuation.label.lineage"));
 		reasonForUpdateLabel.setText(Internal.I18N.getString("pref.import.continuation.label.reasonForUpdate"));
 
 		updatingPersonDBAccount.setText(Internal.I18N.getString("pref.import.continuation.label.updatingPerson.database"));
 		updatingPersonUser.setText(Internal.I18N.getString("pref.import.continuation.label.updatingPerson.user"));		
+
+		creDateRadioInherit.setText(Internal.I18N.getString("pref.import.continuation.label.creationDate.inherit"));
+		creDateRadioOnlyMissing.setText(Internal.I18N.getString("pref.import.continuation.label.creationDate.onlyMissing"));
+		creDateRadioAll.setText(Internal.I18N.getString("pref.import.continuation.label.creationDate.all"));
+    
+		termDateRadioInherit.setText(Internal.I18N.getString("pref.import.continuation.label.terminationDate.inherit"));
+		termDateRadioOnlyMissing.setText(Internal.I18N.getString("pref.import.continuation.label.terminationDate.onlyMissing"));
+		termDateRadioAll.setText(Internal.I18N.getString("pref.import.continuation.label.terminationDate.all"));
 	}
 
 	@Override
@@ -163,6 +232,20 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 			updatingPersonUser.setSelected(true);
 		
 		setEnabledUpdatingPerson();
+    
+		if (continuation.isCreationDateModeInherit())
+			creDateRadioInherit.setSelected(true);
+		else if (continuation.isCreationDateModeComplement())
+			creDateRadioOnlyMissing.setSelected(true);
+		else
+			creDateRadioAll.setSelected(true);
+    
+		if (continuation.isTerminationDateModeInherit())
+			termDateRadioInherit.setSelected(true);
+		else if (continuation.isTerminationDateModeComplement())
+			termDateRadioOnlyMissing.setSelected(true);
+		else
+			termDateRadioAll.setSelected(true);
 	}
 
 	@Override
@@ -177,6 +260,20 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 			continuation.setUpdatingPersonMode(UpdatingPersonMode.DATABASE);
 		else
 			continuation.setUpdatingPersonMode(UpdatingPersonMode.USER);
+    
+		if (creDateRadioInherit.isSelected())
+			continuation.setCreationDateMode(CreationDateMode.INHERIT);
+		else if (creDateRadioOnlyMissing.isSelected())
+			continuation.setCreationDateMode(CreationDateMode.COMPLEMENT);
+		else
+			continuation.setCreationDateMode(CreationDateMode.REPLACE);
+    
+		if (termDateRadioInherit.isSelected())
+			continuation.setTerminationDateMode(TerminationDateMode.INHERIT);
+		else if (termDateRadioOnlyMissing.isSelected())
+			continuation.setTerminationDateMode(TerminationDateMode.COMPLEMENT);
+		else
+			continuation.setTerminationDateMode(TerminationDateMode.REPLACE);
 	}
 	
 	@Override

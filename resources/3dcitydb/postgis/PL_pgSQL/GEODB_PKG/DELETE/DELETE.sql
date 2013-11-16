@@ -1662,34 +1662,34 @@ DECLARE
   implicit_geometry_rec INTEGER;
 BEGIN
   FOR implicit_geometry_rec IN SELECT ig.id FROM implicit_geometry ig
-	LEFT JOIN BUILDING_FURNITURE bf ON bf.LOD4_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN CITY_FURNITURE cf1 ON cf1.LOD1_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN CITY_FURNITURE cf2 ON cf2.LOD2_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN CITY_FURNITURE cf3 ON cf3.LOD3_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN CITY_FURNITURE cf4 ON cf4.LOD4_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN GENERIC_CITYOBJECT gco0 ON gco0.LOD0_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN GENERIC_CITYOBJECT gco1 ON gco1.LOD1_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN GENERIC_CITYOBJECT gco2 ON gco2.LOD2_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN GENERIC_CITYOBJECT gco3 ON gco3.LOD3_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN GENERIC_CITYOBJECT gco4 ON gco4.LOD4_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN SOLITARY_VEGETAT_OBJECT svo1 ON svo1.LOD1_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN SOLITARY_VEGETAT_OBJECT svo2 ON svo2.LOD2_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN SOLITARY_VEGETAT_OBJECT svo3 ON svo3.LOD3_IMPLICIT_REP_ID = ig.id
-	LEFT JOIN SOLITARY_VEGETAT_OBJECT svo4 ON svo4.LOD4_IMPLICIT_REP_ID = ig.id
-	WHERE (bf.LOD4_IMPLICIT_REP_ID IS NULL) AND
-		  (cf1.LOD1_IMPLICIT_REP_ID IS NULL) AND
-		  (cf2.LOD2_IMPLICIT_REP_ID IS NULL) AND
-		  (cf3.LOD3_IMPLICIT_REP_ID IS NULL) AND
-		  (cf4.LOD4_IMPLICIT_REP_ID IS NULL) AND
-		  (gco0.LOD0_IMPLICIT_REP_ID IS NULL) AND
-		  (gco1.LOD1_IMPLICIT_REP_ID IS NULL) AND
-		  (gco2.LOD2_IMPLICIT_REP_ID IS NULL) AND
-		  (gco3.LOD3_IMPLICIT_REP_ID IS NULL) AND
-		  (gco4.LOD4_IMPLICIT_REP_ID IS NULL) AND
-		  (svo1.LOD1_IMPLICIT_REP_ID IS NULL) AND
-		  (svo2.LOD2_IMPLICIT_REP_ID IS NULL) AND
-		  (svo3.LOD3_IMPLICIT_REP_ID IS NULL) AND
-		  (svo4.LOD4_IMPLICIT_REP_ID IS NULL) LOOP
+    LEFT JOIN BUILDING_FURNITURE bf ON bf.LOD4_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN CITY_FURNITURE cf1 ON cf1.LOD1_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN CITY_FURNITURE cf2 ON cf2.LOD2_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN CITY_FURNITURE cf3 ON cf3.LOD3_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN CITY_FURNITURE cf4 ON cf4.LOD4_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN GENERIC_CITYOBJECT gco0 ON gco0.LOD0_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN GENERIC_CITYOBJECT gco1 ON gco1.LOD1_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN GENERIC_CITYOBJECT gco2 ON gco2.LOD2_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN GENERIC_CITYOBJECT gco3 ON gco3.LOD3_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN GENERIC_CITYOBJECT gco4 ON gco4.LOD4_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN SOLITARY_VEGETAT_OBJECT svo1 ON svo1.LOD1_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN SOLITARY_VEGETAT_OBJECT svo2 ON svo2.LOD2_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN SOLITARY_VEGETAT_OBJECT svo3 ON svo3.LOD3_IMPLICIT_REP_ID = ig.id
+    LEFT JOIN SOLITARY_VEGETAT_OBJECT svo4 ON svo4.LOD4_IMPLICIT_REP_ID = ig.id
+    WHERE (bf.LOD4_IMPLICIT_REP_ID IS NULL)
+      AND (cf1.LOD1_IMPLICIT_REP_ID IS NULL)
+      AND (cf2.LOD2_IMPLICIT_REP_ID IS NULL)
+      AND (c3.LOD3_IMPLICIT_REP_ID IS NULL)
+      AND (cf4.LOD4_IMPLICIT_REP_ID IS NULL)
+      AND (gco0.LOD0_IMPLICIT_REP_ID IS NULL)
+      AND (gco1.LOD1_IMPLICIT_REP_ID IS NULL)
+      AND (gco2.LOD2_IMPLICIT_REP_ID IS NULL)
+      AND (gco3.LOD3_IMPLICIT_REP_ID IS NULL)
+      AND (gco4.LOD4_IMPLICIT_REP_ID IS NULL)
+      AND (svo1.LOD1_IMPLICIT_REP_ID IS NULL)
+      AND (svo2.LOD2_IMPLICIT_REP_ID IS NULL)
+      AND (svo3.LOD3_IMPLICIT_REP_ID IS NULL)
+      AND (svo4.LOD4_IMPLICIT_REP_ID IS NULL) LOOP
 
     PERFORM geodb_pkg.del_delete_implicit_geom(implicit_geometry_rec);
   END LOOP;
@@ -1719,36 +1719,36 @@ BEGIN
     WHEN objectclass_id = 8 THEN PERFORM geodb_pkg.del_delete_plant_cover(pid);
     WHEN objectclass_id = 9 THEN PERFORM geodb_pkg.del_delete_waterbody(pid);
     WHEN objectclass_id = 11 OR 
-	     objectclass_id = 12 OR 
-	     objectclass_id = 13 THEN PERFORM geodb_pkg.del_delete_waterbnd_surface(pid);
+         objectclass_id = 12 OR 
+         objectclass_id = 13 THEN PERFORM geodb_pkg.del_delete_waterbnd_surface(pid);
     WHEN objectclass_id = 14 THEN PERFORM geodb_pkg.del_delete_relief_feature(pid);
     WHEN objectclass_id = 16 OR 
-	     objectclass_id = 17 OR 
-	     objectclass_id = 18 OR 
-	     objectclass_id = 19 THEN PERFORM geodb_pkg.del_delete_relief_component(pid);
+         objectclass_id = 17 OR 
+         objectclass_id = 18 OR 
+         objectclass_id = 19 THEN PERFORM geodb_pkg.del_delete_relief_component(pid);
     WHEN objectclass_id = 21 THEN PERFORM geodb_pkg.del_delete_city_furniture(pid);
     WHEN objectclass_id = 23 THEN PERFORM geodb_pkg.del_delete_cityobjectgroup(pid);
     WHEN objectclass_id = 25 OR 
-	     objectclass_id = 26 THEN PERFORM geodb_pkg.del_delete_building(pid);
+         objectclass_id = 26 THEN PERFORM geodb_pkg.del_delete_building(pid);
     WHEN objectclass_id = 27 OR 
-	     objectclass_id = 28 THEN PERFORM geodb_pkg.del_delete_cityobjectgroup(pid);
+         objectclass_id = 28 THEN PERFORM geodb_pkg.del_delete_building_inst(pid);
     WHEN objectclass_id = 30 OR 
-	     objectclass_id = 31 OR 
-	     objectclass_id = 32 OR 
-	     objectclass_id = 33 OR 
-	     objectclass_id = 34 OR 
-	     objectclass_id = 35 OR 
-	     objectclass_id = 36 THEN PERFORM geodb_pkg.del_delete_thematic_surface(pid);
+         objectclass_id = 31 OR 
+         objectclass_id = 32 OR 
+         objectclass_id = 33 OR 
+         objectclass_id = 34 OR 
+         objectclass_id = 35 OR 
+         objectclass_id = 36 THEN PERFORM geodb_pkg.del_delete_thematic_surface(pid);
     WHEN objectclass_id = 38 OR 
-	     objectclass_id = 39 THEN PERFORM geodb_pkg.del_delete_opening(pid);
+         objectclass_id = 39 THEN PERFORM geodb_pkg.del_delete_opening(pid);
     WHEN objectclass_id = 40 THEN PERFORM geodb_pkg.del_delete_building_furniture(pid);
     WHEN objectclass_id = 41 THEN PERFORM geodb_pkg.del_delete_room(pid);
     WHEN objectclass_id = 43 OR 
-	     objectclass_id = 44 OR 
-	     objectclass_id = 45 OR 
-	     objectclass_id = 46 THEN PERFORM geodb_pkg.del_delete_transport_complex(pid);
+         objectclass_id = 44 OR 
+         objectclass_id = 45 OR 
+         objectclass_id = 46 THEN PERFORM geodb_pkg.del_delete_transport_complex(pid);
     WHEN objectclass_id = 47 OR 
-	     objectclass_id = 48 THEN PERFORM geodb_pkg.del_delete_traffic_area(pid);
+         objectclass_id = 48 THEN PERFORM geodb_pkg.del_delete_traffic_area(pid);
     WHEN objectclass_id = 57 THEN PERFORM geodb_pkg.del_delete_city_model(pid);
     ELSE
       -- do nothing
