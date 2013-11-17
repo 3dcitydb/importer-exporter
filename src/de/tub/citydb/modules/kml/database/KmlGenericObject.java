@@ -638,9 +638,10 @@ public abstract class KmlGenericObject {
 		
 			// --------------------------- geometry (variable part) ---------------------------
 			GeometryInfo ginfo = geometryInfos.get(surfaceId);
-			int firstHoleIdx = ginfo.getStripCounts()[0];
+			int outerRingCount = ginfo.getStripCounts()[0];
 			ginfo.convertToIndexedTriangles();
-/*
+			
+			/*
 			// the following seems to be buggy, so don't do it for now
 			// generate normals, currently not used, but this is the recommended order
 			NormalGenerator ng = new NormalGenerator();
@@ -648,22 +649,27 @@ public abstract class KmlGenericObject {
 			// stripify: merge triangles together into bigger triangles when possible
 			Stripifier st = new Stripifier();
 			st.stripify(ginfo);
-*/
-			// if convertToIndexedTriangles() reversed the orientation reverse it again
-			int[] coordIdx = ginfo.getCoordinateIndices();
-			int idx = 0;
-			// avoid hole coordinates for orientation test 
-			while (idx < coordIdx.length && (
-				   coordIdx[idx+0] >= firstHoleIdx ||
-				   coordIdx[idx+1] >= firstHoleIdx ||
-				   coordIdx[idx+2] >= firstHoleIdx)) {
-				idx = idx + 3;
-			}
-			if (idx < coordIdx.length && (
-				(coordIdx[idx+0] > coordIdx[idx+1] && coordIdx[idx+1] > coordIdx[idx+2]) ||
-				(coordIdx[idx+1] > coordIdx[idx+2] && coordIdx[idx+2] > coordIdx[idx+0]) ||
-				(coordIdx[idx+2] > coordIdx[idx+0] && coordIdx[idx+0] > coordIdx[idx+1]))) {
-				ginfo.reverse();
+			 */
+
+			// fix a reversed orientation of the triangulated surface 
+			// idea: get the first triangle edge on the outer ring and
+			// check whether the order of the vertex indices is correct			
+			int[] indexes = ginfo.getCoordinateIndices();
+			byte[] edges = {0, 1, 1, 2, 2, 0};			
+			boolean hasFound = false;
+			
+			for (int i = 0; !hasFound && i < indexes.length; i += 3) {			
+				for (int j = 0; j < edges.length; j += 2) {
+					int first = i + edges[j];
+					int second = i + edges[j + 1]; 
+					
+					if (indexes[first] < outerRingCount && indexes[second] < outerRingCount && Math.abs(indexes[first] - indexes[second]) == 1) {
+						hasFound = true;
+						if (indexes[first] > indexes[second])
+							ginfo.reverse();
+						break;
+					}
+				}
 			}
 
 			GeometryArray gArray = ginfo.getGeometryArray();
