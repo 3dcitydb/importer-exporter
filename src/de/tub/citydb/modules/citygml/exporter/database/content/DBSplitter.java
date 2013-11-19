@@ -186,7 +186,7 @@ public class DBSplitter {
 				bboxFilter[0] = filter + "inside+coveredby') = 'TRUE'";
 				bboxFilter[1] = filter + "equal') = 'TRUE'";				
 				if (overlap)
-					bboxFilter[2] = filter + "overlapbdyintersect') = 'TRUE'";
+					bboxFilter[2] = filter + "overlapbdyintersect+overlapbdydisjoint+contains') = 'TRUE'";
 
 				// on Oracle 11g the query performance greatly benefits from setting
 				// a no_index hint for the class_id column
