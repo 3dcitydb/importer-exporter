@@ -224,7 +224,7 @@ public class DBSplitter {
 				}
 			}
 
-			if (config.getInternal().isExportGlobalAppearances())
+			if (config.getInternal().isExportGlobalAppearances() && elementCounter > 0)
 				queryGlobalAppearance();
 
 		} finally {

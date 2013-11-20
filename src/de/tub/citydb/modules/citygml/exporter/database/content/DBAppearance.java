@@ -287,6 +287,11 @@ public class DBAppearance implements DBExporter {
 
 			surfaceData.setId(gmlId);
 		}
+		
+		// retrieve targets. if there are no targets we suppress this surface data object
+		boolean hasTargets = textureParamExporter.read(surfaceData, surfaceDataId);
+		if (!hasTargets)
+			return;
 
 		String gmlName = rs.getString("SD_NAME");
 		String gmlNameCodespace = rs.getString("SD_NAME_CODESPACE");
@@ -480,9 +485,6 @@ public class DBAppearance implements DBExporter {
 			}
 		}
 		
-		// set texture parameterization
-		textureParamExporter.read(surfaceData, surfaceDataId);
-
 		// finally add surface data to appearance
 		SurfaceDataProperty surfaceDataProperty = new SurfaceDataProperty();
 		surfaceDataProperty.setSurfaceData(surfaceData);

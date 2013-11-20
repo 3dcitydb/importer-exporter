@@ -94,7 +94,8 @@ public class DBTextureParam implements DBExporter {
 		psTextureParam = connection.prepareStatement(query.toString());
 	}
 
-	public void read(AbstractSurfaceData surfaceData, long surfaceDataId) throws SQLException {
+	public boolean read(AbstractSurfaceData surfaceData, long surfaceDataId) throws SQLException {
+		boolean hasTargets = false;
 		ResultSet rs = null;
 
 		try {
@@ -206,7 +207,11 @@ public class DBTextureParam implements DBExporter {
 						}
 					}
 				}
+				
+				hasTargets = true;
 			}
+			
+			return hasTargets;
 		} finally {
 			if (rs != null)
 				rs.close();
