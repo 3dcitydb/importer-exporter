@@ -62,7 +62,7 @@ public class TextureImageImportAdapterImpl implements TextureImageImportAdapter 
 					imgProxy.setContentLength(1);
 					letDBdetermineProperties = false;
 				} else if (extension.toUpperCase().equals("RGBA")) {
-					imgProxy.setMimeType("image/rgbA");
+					imgProxy.setMimeType("image/x-rgb");
 					imgProxy.setFormat("RGBA");
 					imgProxy.setContentLength(1);
 					letDBdetermineProperties = false;
