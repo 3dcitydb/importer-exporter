@@ -1,5 +1,6 @@
 package de.tub.citydb.database.adapter.postgis;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
@@ -19,41 +20,35 @@ public class BlobExportAdapterImpl implements TextureImageExportAdapter, BlobExp
 	private PreparedStatement psExport;
 	private BlobType blobType;
 
-	protected BlobExportAdapterImpl(Connection connection, BlobType blobType) throws SQLException {
+	protected BlobExportAdapterImpl(Connection connection, BlobType blobType) {
 		this.connection = connection;
-		this.blobType = blobType;
-		
-		psExport = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
-				"select TEX_IMAGE from SURFACE_DATA where ID=?" : "select LIBRARY_OBJECT from IMPLICIT_GEOMETRY where ID=?");
+		this.blobType = blobType;		
 	}
 
 	@Override
-	public boolean exportInFile(long id, String objectName, String fileName) throws SQLException {
+	public byte[] getInByteArray(long id, String objectName, String fileName) throws SQLException {
 		ResultSet rs = null;
-		FileOutputStream out = null;
 
 		try {
+			if (psExport == null)
+				psExport = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
+						"select TEX_IMAGE from SURFACE_DATA where ID=?" : "select LIBRARY_OBJECT from IMPLICIT_GEOMETRY where ID=?");
+
 			// try and read texture image attribute from SURFACE_DATA table
 			psExport.setLong(1, id);
 			rs = psExport.executeQuery();
 			if (!rs.next()) {
 				LOG.error("Error while exporting a " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file: " + objectName + " does not exist in database.");
-				return false;
+				return null;
 			}
 
 			byte[] buf = rs.getBytes(1);
 			if (buf == null || buf.length == 0) {
 				LOG.error("Failed to read " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file: " + objectName + ".");
-				return false;
+				return null;
 			}
 
-			out = new FileOutputStream(fileName);
-			out.write(buf);
-			out.close();
-			return true;
-		} catch (IOException e) {
-			LOG.error("Failed to write " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file " + fileName + ": " + e.getMessage());
-			return false;
+			return buf;
 		} finally {
 			if (rs != null) {
 				try {
@@ -62,7 +57,21 @@ public class BlobExportAdapterImpl implements TextureImageExportAdapter, BlobExp
 					//
 				}
 			}
-			
+		}
+	}
+	
+	@Override
+	public boolean getInFile(long id, String objectName, String fileName) throws SQLException {
+		FileOutputStream out = null;
+
+		try {
+			out = new FileOutputStream(fileName);
+			out.write(getInByteArray(id, objectName, fileName));
+			return true;
+		} catch (IOException e) {
+			LOG.error("Failed to write " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file " + fileName + ": " + e.getMessage());
+			return false;
+		} finally {
 			if (out != null) {
 				try {
 					out.close();
@@ -74,8 +83,14 @@ public class BlobExportAdapterImpl implements TextureImageExportAdapter, BlobExp
 	}
 
 	@Override
+	public ByteArrayInputStream getInStream(ResultSet rs, String columnName, String objectName) throws SQLException {
+		return new ByteArrayInputStream(rs.getBytes(columnName));
+	}
+
+	@Override
 	public void close() throws SQLException {
-		psExport.close();
+		if (psExport != null)
+			psExport.close();
 	}
 
 }

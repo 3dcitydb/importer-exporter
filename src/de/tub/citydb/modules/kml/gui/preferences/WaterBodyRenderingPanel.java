@@ -361,12 +361,8 @@ public class WaterBodyRenderingPanel extends AbstractPreferencesComponent {
 		isoc.gridwidth = 2;
 		colladaPanel.add(ignoreSurfaceOrientationCheckbox, isoc);
 
-		packingAlgorithms.put("BASIC", -1);
-//		packingAlgorithms.put("FFDH", TextureAtlasGenerator.FFDH);
-//		packingAlgorithms.put("NFDH", TextureAtlasGenerator.NFDH);
-		packingAlgorithms.put("SLEA", TextureAtlasGenerator.SLEA);
 		packingAlgorithms.put("TPIM", TextureAtlasGenerator.TPIM);
-		packingAlgorithms.put("TPIM_WO_R", TextureAtlasGenerator.TPIM_WITHOUT_ROTATION);
+		packingAlgorithms.put("TPIM w/o image rotation", TextureAtlasGenerator.TPIM_WO_ROTATION);
 
 		for (String algorithm: packingAlgorithms.keySet()) {
 			packingAlgorithmsComboBox.addItem(algorithm);

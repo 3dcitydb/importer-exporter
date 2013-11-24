@@ -102,7 +102,7 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 		}
 
 		// read blob into file
-		return blobExportAdapter.exportInFile(xlink.getId(), fileName, fileURI);
+		return blobExportAdapter.getInFile(xlink.getId(), fileName, fileURI);
 	}
 
 	@Override

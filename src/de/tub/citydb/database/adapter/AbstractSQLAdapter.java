@@ -51,9 +51,9 @@ public abstract class AbstractSQLAdapter {
 	}
 	
 	public abstract TextureImageImportAdapter getTextureImageImportAdapter(Connection connection) throws SQLException;
-	public abstract TextureImageExportAdapter getTextureImageExportAdapter(Connection connection) throws SQLException;
+	public abstract TextureImageExportAdapter getTextureImageExportAdapter(Connection connection);
 	public abstract BlobImportAdapter getBlobImportAdapter(Connection connection) throws SQLException;
-	public abstract BlobExportAdapter getBlobExportAdapter(Connection connection) throws SQLException;
+	public abstract BlobExportAdapter getBlobExportAdapter(Connection connection);
 	
 	public String resolveDatabaseOperationName(String operation) {
 		if (databaseOperations == null) {

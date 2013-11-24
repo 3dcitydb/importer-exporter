@@ -42,6 +42,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -53,6 +54,7 @@ public class CityObjectGroup extends KmlGenericObject{
 	public CityObjectGroup(Connection connection,
 			KmlExporterManager kmlExporterManager,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
+			TextureImageExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
@@ -61,6 +63,7 @@ public class CityObjectGroup extends KmlGenericObject{
 		super(connection,
 			  kmlExporterManager,
 			  kmlFactory,
+			  textureExportAdapter,
 			  elevationServiceHandler,
 			  balloonTemplateHandler,
 			  eventDispatcher,

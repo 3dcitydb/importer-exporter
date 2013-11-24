@@ -192,7 +192,7 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public TextureImageExportAdapter getTextureImageExportAdapter( Connection connection) throws SQLException {
+	public TextureImageExportAdapter getTextureImageExportAdapter( Connection connection) {
 		return new TextureImageExportAdapterImpl(connection);
 	}
 
@@ -202,7 +202,7 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public BlobExportAdapter getBlobExportAdapter(Connection connection) throws SQLException {
+	public BlobExportAdapter getBlobExportAdapter(Connection connection) {
 		return new BlobExportAdapterImpl(connection);
 	}
 

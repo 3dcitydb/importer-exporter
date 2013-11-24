@@ -1397,7 +1397,7 @@ public class KmlExporter implements EventHandler {
 					kmlSplitter.shutdown();
 
 				if (kmlWorkerPool != null) {
-					kmlWorkerPool.shutdownNow();
+					kmlWorkerPool.drainWorkQueue();
 				}
 
 				if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case

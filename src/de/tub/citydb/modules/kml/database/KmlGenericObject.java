@@ -30,7 +30,6 @@
 package de.tub.citydb.modules.kml.database;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
@@ -46,13 +45,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.imageio.ImageIO;
 import javax.media.j3d.GeometryArray;
 import javax.vecmath.Point3d;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -74,14 +71,14 @@ import net.opengis.kml._2.OrientationType;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.PolygonType;
 import oracle.jdbc.OracleResultSet;
-import oracle.ord.im.OrdImage;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 
 import org.citygml.textureAtlasAPI.TextureAtlasGenerator;
-import org.citygml.textureAtlasAPI.dataStructure.TexImage;
-import org.citygml.textureAtlasAPI.dataStructure.TexImageInfo;
+import org.citygml.textureAtlasAPI.data.TextureImage;
+import org.citygml.textureAtlasAPI.data.TextureImagesInfo;
+import org.citygml.textureAtlasAPI.image.ImageReader;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
@@ -137,6 +134,7 @@ import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.TypeAttributeValueEnum;
+import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -172,10 +170,10 @@ public abstract class KmlGenericObject {
 	// key is surfaceId, surfaceId is originally a Long, here we use an Object for compatibility with the textureAtlasAPI
 	private HashMap<Object, String> texImageUris = new HashMap<Object, String>();
 	// key is imageUri
-	private HashMap<String, BufferedImage> texImages = new HashMap<String, BufferedImage>();
+	private HashMap<String, TextureImage> texImages = new HashMap<String, TextureImage>();
 	// for images in unusual formats or wrapping textures. Most times it will be null.
 	// key is imageUri
-	private HashMap<String, OrdImage> texOrdImages = null;
+	private HashMap<String, Long> unsupportedTexImageIds = null;
 	// key is surfaceId, surfaceId is originally a Long
 	private HashMap<Long, X3DMaterial> x3dMaterials = null;
 	
@@ -202,6 +200,7 @@ public abstract class KmlGenericObject {
 	protected Connection connection;
 	protected KmlExporterManager kmlExporterManager;
 	protected net.opengis.kml._2.ObjectFactory kmlFactory;
+	protected TextureImageExportAdapter textureExportAdapter;
 	protected ElevationServiceHandler elevationServiceHandler;
 	protected BalloonTemplateHandlerImpl balloonTemplateHandler;
 	protected EventDispatcher eventDispatcher;
@@ -216,6 +215,7 @@ public abstract class KmlGenericObject {
 	public KmlGenericObject(Connection connection,
 							KmlExporterManager kmlExporterManager,
 							net.opengis.kml._2.ObjectFactory kmlFactory,
+							TextureImageExportAdapter textureExportAdapter,
 							ElevationServiceHandler elevationServiceHandler,
 							BalloonTemplateHandlerImpl balloonTemplateHandler,
 							EventDispatcher eventDispatcher,
@@ -224,6 +224,7 @@ public abstract class KmlGenericObject {
 		this.connection = connection;
 		this.kmlExporterManager = kmlExporterManager;
 		this.kmlFactory = kmlFactory;
+		this.textureExportAdapter = textureExportAdapter;
 		this.elevationServiceHandler = elevationServiceHandler;
 		this.balloonTemplateHandler = balloonTemplateHandler;
 		this.eventDispatcher = eventDispatcher;
@@ -818,7 +819,7 @@ public abstract class KmlGenericObject {
 		}
 	}
 
-	protected void addTexImage(String texImageUri, BufferedImage texImage){
+	protected void addTexImage(String texImageUri, TextureImage texImage){
 		if (texImage != null) {
 			texImages.put(texImageUri, texImage);
 		}
@@ -828,38 +829,40 @@ public abstract class KmlGenericObject {
 		texImages.remove(texImageUri);
 	}
 
-	public HashMap<String, BufferedImage> getTexImages(){
+	public HashMap<String, TextureImage> getTexImages(){
 		return texImages;
 	}
 
-	protected BufferedImage getTexImage(String texImageUri){
-		BufferedImage texImage = null;
+	protected TextureImage getTexImage(String texImageUri){
+		TextureImage texImage = null;
 		if (texImages != null) {
 			texImage = texImages.get(texImageUri);
 		}
 		return texImage;
 	}
 
-	protected void addTexOrdImage(String texImageUri, OrdImage texOrdImage){
-		if (texOrdImage == null) {
+	protected void addUnsupportedTexImageId(String texImageUri, long surfaceDataId){
+		if (surfaceDataId < 0) {
 			return;
 		}
-		if (texOrdImages == null) {
-			texOrdImages = new HashMap<String, OrdImage>();
+		if (unsupportedTexImageIds == null) {
+			unsupportedTexImageIds = new HashMap<String, Long>();
 		}
-		texOrdImages.put(texImageUri, texOrdImage);
+		unsupportedTexImageIds.put(texImageUri, surfaceDataId);
 	}
 
-	public HashMap<String, OrdImage> getTexOrdImages(){
-		return texOrdImages;
+	public HashMap<String, Long> getUnsupportedTexImageIds(){
+		return unsupportedTexImageIds;
 	}
 
-	protected OrdImage getTexOrdImage(String texImageUri){
-		OrdImage texOrdImage = null;
-		if (texOrdImages != null) {
-			texOrdImage = texOrdImages.get(texImageUri);
+	protected long getUnsupportedTexImageId(String texImageUri){
+		long surfaceDataId = -1;
+		if (unsupportedTexImageIds != null) {
+			Long tmp = unsupportedTexImageIds.get(texImageUri);
+			if (tmp != null)
+				surfaceDataId = tmp.longValue();
 		}
-		return texOrdImage;
+		return surfaceDataId;
 	}
 
 	protected void setVertexInfoForXYZ(long surfaceId, double x, double y, double z, TexCoords texCoordsForThisSurface){
@@ -1036,7 +1039,7 @@ public abstract class KmlGenericObject {
 			String imageUri = objectToAppend.texImageUris.get(surfaceId);
 			this.addTexImageUri(surfaceId, imageUri);
 			this.addTexImage(imageUri, objectToAppend.getTexImage(imageUri));
-			this.addTexOrdImage(imageUri, objectToAppend.getTexOrdImage(imageUri));
+			this.addUnsupportedTexImageId(imageUri, objectToAppend.getUnsupportedTexImageId(imageUri));
 			this.addGeometryInfo(surfaceId, objectToAppend.geometryInfos.get(surfaceId));
 		}
 		
@@ -1074,48 +1077,20 @@ public abstract class KmlGenericObject {
 
 	public void createTextureAtlas(int packingAlgorithm, double imageScaleFactor, boolean pots) throws SQLException, IOException {
 
-		if (texImages.size() < 2 && texOrdImages == null) {
+		if (texImages.size() < 2) {
 			// building has not enough textures or they are in an unknown image format 
 			return;
 		}
 		
-		switch (packingAlgorithm) {
-			case -1:
-				useInternalTAGenerator(imageScaleFactor, pots);
-				break;
-			default:
-				useExternalTAGenerator(packingAlgorithm, imageScaleFactor, pots);
-		}
+		useExternalTAGenerator(packingAlgorithm, imageScaleFactor, pots);
 	}
 
 	private void useExternalTAGenerator(int packingAlgorithm, double scaleFactor, boolean pots) throws SQLException, IOException {
-
 		TextureAtlasGenerator taGenerator = new TextureAtlasGenerator();
-		TexImageInfo tiInfo = new TexImageInfo();
+		TextureImagesInfo tiInfo = new TextureImagesInfo();
 		tiInfo.setTexImageURIs(texImageUris);
-		
-		HashMap<String, TexImage> tiInfoImages = new HashMap<String, TexImage>();
-
-		Set<String> texImagesSet = texImages.keySet();
-		Iterator<String> texImagesIterator = texImagesSet.iterator();
-		while (texImagesIterator.hasNext()) {
-			String imageName = texImagesIterator.next();
-			TexImage image = new TexImage(texImages.get(imageName));
-			tiInfoImages.put(imageName, image);
-		}
-
-		if (texOrdImages != null) {
-			texImagesSet = texOrdImages.keySet();
-			texImagesIterator = texImagesSet.iterator();
-			while (texImagesIterator.hasNext()) {
-				String imageName = texImagesIterator.next();
-				TexImage image = new TexImage(texOrdImages.get(imageName));
-				tiInfoImages.put(imageName, image);
-			}
-		}
-		
-		tiInfo.setTexImages(tiInfoImages);
-		
+		tiInfo.setTexImages(texImages);
+				
 		// texture coordinates
 		HashMap<Object, String> tiInfoCoords = new HashMap<Object, String>();
 
@@ -1143,32 +1118,9 @@ public abstract class KmlGenericObject {
 		
 		taGenerator.setUsePOTS(pots);
 		taGenerator.setScaleFactor(scaleFactor);
-		tiInfo = taGenerator.convert(tiInfo, packingAlgorithm);
 		
-		texImageUris = tiInfo.getTexImageURIs();
-		tiInfoImages = tiInfo.getTexImages(); 
-		tiInfoCoords = tiInfo.getTexCoordinates();
-			
-		texImages.clear();
-		if (texOrdImages != null) {
-			texOrdImages.clear();
-		}
-		
-		texImagesSet = tiInfoImages.keySet();
-		texImagesIterator = texImagesSet.iterator();
-		while (texImagesIterator.hasNext()) {
-			String texImageName = texImagesIterator.next();
-			TexImage texImage = tiInfoImages.get(texImageName);
-			if (texImage.getBufferedImage() != null) {
-				texImages.put(texImageName, texImage.getBufferedImage());
-			}
-			else if (texImage.getOrdImage() != null) {
-				if (texOrdImages == null) {
-					texOrdImages = new HashMap<String, OrdImage>();
-				}
-				texOrdImages.put(texImageName, texImage.getOrdImage());
-			}
-		}
+		// create texture atlases
+		taGenerator.convert(tiInfo, packingAlgorithm);
 		
 		sgIdIterator = sgIdSet.iterator();
 		while (sgIdIterator.hasNext()) {
@@ -1187,139 +1139,6 @@ public abstract class KmlGenericObject {
 		} 
 	}
 	
-	private void useInternalTAGenerator(double scaleFactor, boolean pots) throws SQLException, IOException {
-
-		if (texImages.size() < 2) {
-			// building has not enough textures or they are in an unknown image format 
-			return;
-		}
-		// imageNamesOrderedByImageHeight
-		ArrayList<String> inobih = new ArrayList<String>();
-
-		int totalWidth = 0;
-		// order images by height		
-		Set<String> texImagesSet = texImages.keySet();
-		Iterator<String> texImagesIterator = texImagesSet.iterator();
-		while (texImagesIterator.hasNext()) {
-			String imageName = texImagesIterator.next();
-			BufferedImage imageToAdd = texImages.get(imageName);
-			int index = 0;
-			while (index < inobih.size() 
-				   && texImages.get(inobih.get(index)).getHeight() > imageToAdd.getHeight()) {
-				index++;
-			}
-			inobih.add(index, imageName);
-			totalWidth = totalWidth + imageToAdd.getWidth();
-		}
-		
-		// calculate size of texture atlas
-		final int TEX_ATLAS_MAX_WIDTH = (int)(totalWidth*scaleFactor/Math.sqrt(inobih.size()));
-		int accumulatedWidth = 0;
-		int maxWidth = 0;
-		int maxHeightForRow = 0;
-		int accumulatedHeight = 0;
-		
-		for (String imageName: inobih) {
-			BufferedImage imageToAdd = texImages.get(imageName);
-			if (accumulatedWidth + imageToAdd.getWidth()*scaleFactor > TEX_ATLAS_MAX_WIDTH) { // new row
-				maxWidth = Math.max(maxWidth, accumulatedWidth);
-				accumulatedHeight = accumulatedHeight + maxHeightForRow;
-				accumulatedWidth = 0;
-				maxHeightForRow = 0;
-			}
-			maxHeightForRow = Math.max(maxHeightForRow, (int)(imageToAdd.getHeight()*scaleFactor));
-			accumulatedWidth = accumulatedWidth + (int)(imageToAdd.getWidth()*scaleFactor);
-		}
-		maxWidth = Math.max(maxWidth, accumulatedWidth);
-		accumulatedHeight = accumulatedHeight + maxHeightForRow; // add last row
-
-		if (pots) {
-			maxWidth = roundUpPots(maxWidth);
-			accumulatedHeight = roundUpPots(accumulatedHeight);
-		}
-
-		// check the first image as example, is it jpeg or png?
-		int type = (texImages.get(inobih.get(0)).getTransparency() == Transparency.OPAQUE) ?
-                	BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
-		// draw texture atlas
-		if (maxWidth == 0 || accumulatedHeight == 0) return; // some buildings are that wrong
-		BufferedImage textureAtlas = new BufferedImage(maxWidth, accumulatedHeight, type);
-		Graphics2D g2d = textureAtlas.createGraphics();
-
-		accumulatedWidth = 0;
-		maxWidth = 0;
-		maxHeightForRow = 0;
-		accumulatedHeight = 0;
-		HashMap<String, Point> imageOffset = new HashMap<String, Point>();
-		
-		for (String imageName: inobih) {
-			BufferedImage imageToAdd = texImages.get(imageName);
-			if (accumulatedWidth + imageToAdd.getWidth()*scaleFactor > TEX_ATLAS_MAX_WIDTH) { // new row
-				maxWidth = Math.max(maxWidth, accumulatedWidth);
-				accumulatedHeight = accumulatedHeight + maxHeightForRow;
-				accumulatedWidth = 0;
-				maxHeightForRow = 0;
-			}
-			maxHeightForRow = Math.max(maxHeightForRow, (int)(imageToAdd.getHeight()*scaleFactor));
-			Point offsetPoint = new Point (accumulatedWidth,
-										   accumulatedHeight + maxHeightForRow - (int)(imageToAdd.getHeight()*scaleFactor));
-			g2d.drawImage(imageToAdd, offsetPoint.x, offsetPoint.y, (int)(imageToAdd.getWidth()*scaleFactor), (int)(imageToAdd.getHeight()*scaleFactor), null);
-			imageOffset.put(imageName, offsetPoint);
-			accumulatedWidth = accumulatedWidth + (int)(imageToAdd.getWidth()*scaleFactor);
-		}
-
-
-		HashSet<Long> wrappedSurfacesSet = new HashSet<Long>();
-		// transform texture coordinates
-		VertexInfo vertexInfoIterator = firstVertexInfo;
-		while (vertexInfoIterator != null) {
-			if (vertexInfoIterator.getAllTexCoords() != null) {
-				Set<Long> surfaceIdSet = vertexInfoIterator.getAllTexCoords().keySet();
-				Iterator<Long> surfaceIdIterator = surfaceIdSet.iterator();
-				while (surfaceIdIterator.hasNext()) {
-					Long surfaceId = surfaceIdIterator.next();
-					String imageName = texImageUris.get(surfaceId);
-					BufferedImage texImage = texImages.get(imageName);
-
-					if (texImage == null) { // wrapped textures or unknown format images are in texOrdImages
-						wrappedSurfacesSet.add(surfaceId);
-						continue;
-					}
-					
-					double s = vertexInfoIterator.getTexCoords(surfaceId).getS();
-					double t = vertexInfoIterator.getTexCoords(surfaceId).getT();
- 					s = (imageOffset.get(imageName).x + (s * texImage.getWidth()*scaleFactor)) / textureAtlas.getWidth();
-					// graphics2D coordinates start at the top left point
-					// texture coordinates start at the bottom left point
-					t = ((textureAtlas.getHeight() - imageOffset.get(imageName).y - texImage.getHeight()*scaleFactor) + 
-							t * texImage.getHeight()*scaleFactor) / textureAtlas.getHeight();
-					vertexInfoIterator.getTexCoords(surfaceId).setS(s);
-					vertexInfoIterator.getTexCoords(surfaceId).setT(t);
-				}
-			}
-			vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
-		} 
-
-		// redirect all non-wrapping, known-formatted texture images to texture atlas
-		String textureAtlasName = "textureAtlas_BASIC_" + getGmlId().hashCode() + "_" +
-								  inobih.get(0).substring(inobih.get(0).lastIndexOf('.'));
-		
-		Set<Object> surfaceIdSet = texImageUris.keySet();
-		Iterator<Object> surfaceIdIterator = surfaceIdSet.iterator();
-		while (surfaceIdIterator.hasNext()) {
-			Object surfaceId = surfaceIdIterator.next();
-			if (!wrappedSurfacesSet.contains(surfaceId)) {
-				texImageUris.put(surfaceId, textureAtlasName);
-			}
-		}
-
-		// remove all texture images included in texture atlas
-		texImages.clear();
-		texImages.put(textureAtlasName, textureAtlas);
-		g2d.dispose();
-	}
-	
-	
 	public void resizeAllImagesByFactor (double factor) throws SQLException, IOException {
 		if (texImages.size() == 0) { // building has no textures at all
 			return;
@@ -1329,7 +1148,7 @@ public abstract class KmlGenericObject {
 		Iterator<String> iterator = keySet.iterator();
 		while (iterator.hasNext()) {
 			String imageName = iterator.next();
-			BufferedImage imageToResize = texImages.get(imageName);
+			BufferedImage imageToResize = texImages.get(imageName).getBufferedImage();
 			if (imageToResize.getWidth()*factor < 1 || imageToResize.getHeight()*factor < 1) {
 				continue;
 			}
@@ -1338,7 +1157,7 @@ public abstract class KmlGenericObject {
 														   (int)(imageToResize.getHeight()*factor),
 														   RenderingHints.VALUE_INTERPOLATION_BILINEAR,
 														   true);
-			texImages.put(imageName, resizedImage);
+			texImages.put(imageName, new TextureImage(resizedImage));
 		}
 
 	}
@@ -1791,7 +1610,6 @@ public abstract class KmlGenericObject {
 	protected void fillGenericObjectForCollada(OracleResultSet rs) throws SQLException {
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
-
 		int texImageCounter = 0;
 		STRUCT buildingGeometryObj = null;
 
@@ -1813,6 +1631,7 @@ public abstract class KmlGenericObject {
 						buildingGeometryObj = (STRUCT)rs2.getObject(1); 
 						// surfaceId is the key to all Hashmaps in object
 						long surfaceId = rs2.getLong("id");
+						long surfaceDataId = rs2.getLong("sd_id");
 						long parentId = rs2.getLong("parent_id");
 	
 						if (buildingGeometryObj == null) { // root or parent
@@ -1834,7 +1653,6 @@ public abstract class KmlGenericObject {
 						eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 	
 						String texImageUri = null;
-						OrdImage texImage = null;
 						StringTokenizer texCoordsTokenized = null;
 	
 						if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
@@ -1846,29 +1664,27 @@ public abstract class KmlGenericObject {
 						}
 						else {
 							texImageUri = rs2.getString("tex_image_uri");
-							texImage = (OrdImage)rs2.getORAData("tex_image", OrdImage.getORADataFactory());
 							String texCoords = rs2.getString("texture_coordinates");
 	
 							if (texImageUri != null && texImageUri.trim().length() != 0
-									&&  texCoords != null && texCoords.trim().length() != 0
-									&&	texImage != null) {
+									&&  texCoords != null && texCoords.trim().length() != 0) {
 	
 								int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
 								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
 	
 								addTexImageUri(surfaceId, texImageUri);
-								if ((getTexOrdImage(texImageUri) == null) && (getTexImage(texImageUri) == null)) { 
+								if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
 									// not already marked as wrapping texture && not already read in
-									BufferedImage bufferedImage = null;
+									TextureImage texImage = null;
 									try {
-										bufferedImage = ImageIO.read(texImage.getDataInStream());
+										texImage = ImageReader.read(textureExportAdapter.getInStream(rs2, "tex_image", texImageUri));
 									}
 									catch (IOException ioe) {}
-									if (bufferedImage != null) { // image in JPEG, PNG or another usual format
-										addTexImage(texImageUri, bufferedImage);
+									if (texImage != null) { // image in JPEG, PNG or another usual format
+										addTexImage(texImageUri, texImage);
 									}
 									else {
-										addTexOrdImage(texImageUri, texImage);
+										addUnsupportedTexImageId(texImageUri, surfaceDataId);
 									}
 
 									texImageCounter++;
@@ -1922,7 +1738,7 @@ public abstract class KmlGenericObject {
 									double t = Double.parseDouble(texCoordsTokenized.nextToken());
 									if (s > 1.1 || s < -0.1 || t < -0.1 || t > 1.1) { // texture wrapping -- it conflicts with texture atlas
 										removeTexImage(texImageUri);
-										addTexOrdImage(texImageUri, texImage);
+										addUnsupportedTexImageId(texImageUri, surfaceDataId);
 									}
 									texCoordsForThisSurface = new TexCoords(s, t);
 								}
@@ -1955,7 +1771,7 @@ public abstract class KmlGenericObject {
 				}
 			}
 		}
-
+		
 		// count rest images
 		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
 	}
@@ -2743,19 +2559,6 @@ public abstract class KmlGenericObject {
 			return null;
 		}
 		return bytes;
-	}
-
-	private int roundUpPots(int t)
-	{
-	    t--;
-	    t |= t >> 1;
-	    t |= t >> 2;
-	    t |= t >> 4;
-	    t |= t >> 8;
-	    t |= t >> 16;
-	    t |= t >> 32;
-	    t++;
-	    return t;
 	}
 
 	protected class Node{

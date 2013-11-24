@@ -284,7 +284,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		// deal with geometry according to the identified type
 		// Polygon
 		if (surfaceGeometryType == GMLClass.POLYGON) {
-			// try and interpret JGeometry
+			// try and interpret geometry object from database
 			Polygon polygon = new Polygon();
 			boolean forceRingIds = false;
 

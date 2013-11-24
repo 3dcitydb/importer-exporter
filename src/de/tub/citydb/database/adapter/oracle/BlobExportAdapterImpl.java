@@ -18,18 +18,20 @@ public class BlobExportAdapterImpl implements BlobExportAdapter {
 
 	private PreparedStatement psLibraryObject;
 
-	protected BlobExportAdapterImpl(Connection connection) throws SQLException {
+	protected BlobExportAdapterImpl(Connection connection) {
 		this.connection = connection;
-		psLibraryObject = connection.prepareStatement("select LIBRARY_OBJECT from IMPLICIT_GEOMETRY where ID=?");
 	}
 
 	@Override
-	public boolean exportInFile(long id, String objectName, String fileName) throws SQLException {
+	public boolean getInFile(long id, String objectName, String fileName) throws SQLException {
 		OracleResultSet rs = null;
 		InputStream in = null;
 		FileOutputStream out = null;
 
 		try {
+			if (psLibraryObject == null)
+				psLibraryObject = connection.prepareStatement("select LIBRARY_OBJECT from IMPLICIT_GEOMETRY where ID=?");
+
 			// try and read object reference attribute from IMPLICIT_OBJECT table
 			psLibraryObject.setLong(1, id);
 			rs = (OracleResultSet)psLibraryObject.executeQuery();
@@ -65,7 +67,7 @@ public class BlobExportAdapterImpl implements BlobExportAdapter {
 					//
 				}
 			}
-			
+
 			if (in != null) {
 				try {
 					in.close();
@@ -86,7 +88,8 @@ public class BlobExportAdapterImpl implements BlobExportAdapter {
 
 	@Override
 	public void close() throws SQLException {
-		psLibraryObject.close();
+		if (psLibraryObject != null)
+			psLibraryObject.close();
 	}
 
 }

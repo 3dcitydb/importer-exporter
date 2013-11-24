@@ -54,6 +54,7 @@ import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.database.Building;
 import de.tub.citydb.modules.kml.database.CityFurniture;
@@ -81,6 +82,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private Thread workerThread = null;
 
 	// instance members needed to do work
+	private TextureImageExportAdapter textureExportAdapter;
 	private final ObjectFactory kmlFactory; 
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -117,15 +119,18 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(connection, 
 					database.getWorkspaces().getKmlExportWorkspace());
 		}
+		
+		textureExportAdapter = dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().getTextureImageExportAdapter(connection);
 
 		kmlExporterManager = new KmlExporterManager(jaxbKmlContext,
 				jaxbColladaContext,
 				ioWriterPool,
 				kmlFactory,
+				textureExportAdapter,
 				config);
-
+		
 		elevationServiceHandler = new ElevationServiceHandler();
-
+		
 		filterConfig = config.getProject().getKmlExporter().getFilter();
 		ColladaOptions colladaOptions = null; 
 
@@ -284,6 +289,14 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 		}
 		finally {
+			if (textureExportAdapter != null) {
+				try {
+					textureExportAdapter.close();
+				} catch (SQLException e) {
+					// 
+				}
+			}
+			
 			if (connection != null) {
 				try {
 					connection.commit(); // for all possible GE_LoDn_zOffset values
@@ -307,6 +320,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				singleObject = new Building(connection,
 						kmlExporterManager,
 						kmlFactory,
+						textureExportAdapter,
 						elevationServiceHandler,
 						getBalloonTemplateHandler(featureClass),
 						eventDispatcher,
@@ -320,6 +334,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				singleObject = new WaterBody(connection,
 						kmlExporterManager,
 						kmlFactory,
+						textureExportAdapter,
 						elevationServiceHandler,
 						getBalloonTemplateHandler(featureClass),
 						eventDispatcher,
@@ -330,6 +345,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				singleObject = new LandUse(connection,
 						kmlExporterManager,
 						kmlFactory,
+						textureExportAdapter,
 						elevationServiceHandler,
 						getBalloonTemplateHandler(featureClass),
 						eventDispatcher,
@@ -340,6 +356,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				singleObject = new SolitaryVegetationObject(connection,
 						kmlExporterManager,
 						kmlFactory,
+						textureExportAdapter,
 						elevationServiceHandler,
 						getBalloonTemplateHandler(featureClass),
 						eventDispatcher,
@@ -350,6 +367,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				singleObject = new PlantCover(connection,
 						kmlExporterManager,
 						kmlFactory,
+						textureExportAdapter,
 						elevationServiceHandler,
 						getBalloonTemplateHandler(featureClass),
 						eventDispatcher,
@@ -366,6 +384,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				singleObject = new Transportation(connection,
 						kmlExporterManager,
 						kmlFactory,
+						textureExportAdapter,
 						elevationServiceHandler,
 						getBalloonTemplateHandler(featureClass),
 						eventDispatcher,
@@ -381,6 +400,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					singleObject = new Relief(connection,
 							kmlExporterManager,
 							kmlFactory,
+							textureExportAdapter,
 							elevationServiceHandler,
 							getBalloonTemplateHandler(featureClass),
 							eventDispatcher,
@@ -391,6 +411,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					singleObject = new GenericCityObject(connection,
 							kmlExporterManager,
 							kmlFactory,
+							textureExportAdapter,
 							elevationServiceHandler,
 							getBalloonTemplateHandler(featureClass),
 							eventDispatcher,
@@ -401,6 +422,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					singleObject = new CityFurniture(connection,
 							kmlExporterManager,
 							kmlFactory,
+							textureExportAdapter,
 							elevationServiceHandler,
 							getBalloonTemplateHandler(featureClass),
 							eventDispatcher,
@@ -411,6 +433,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					singleObject = new CityObjectGroup(connection,
 							kmlExporterManager,
 							kmlFactory,
+							textureExportAdapter,
 							elevationServiceHandler,
 							getBalloonTemplateHandler(featureClass),
 							eventDispatcher,
@@ -485,7 +508,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			ColladaBundle colladaBundle = new ColladaBundle();
 			colladaBundle.setCollada(objectGroup.generateColladaTree());
 			colladaBundle.setTexImages(objectGroup.getTexImages());
-			colladaBundle.setTexOrdImages(objectGroup.getTexOrdImages());
+			colladaBundle.setUnsupportedTexImageIds(objectGroup.getUnsupportedTexImageIds());
 			colladaBundle.setPlacemark(objectGroup.createPlacemarkForColladaModel());
 			colladaBundle.setGmlId(objectGroup.getGmlId());
 

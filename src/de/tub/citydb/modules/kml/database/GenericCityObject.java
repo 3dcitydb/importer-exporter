@@ -29,7 +29,6 @@
  */
 package de.tub.citydb.modules.kml.database;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -40,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.imageio.ImageIO;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
@@ -54,10 +52,11 @@ import net.opengis.kml._2.MultiGeometryType;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.PolygonType;
 import oracle.jdbc.OracleResultSet;
-import oracle.ord.im.OrdImage;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
+import org.citygml.textureAtlasAPI.data.TextureImage;
+import org.citygml.textureAtlasAPI.image.ImageReader;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 
@@ -69,6 +68,7 @@ import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
+import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -89,6 +89,7 @@ public class GenericCityObject extends KmlGenericObject{
 	public GenericCityObject(Connection connection,
 			KmlExporterManager kmlExporterManager,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
+			TextureImageExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
@@ -97,6 +98,7 @@ public class GenericCityObject extends KmlGenericObject{
 		super(connection,
 			  kmlExporterManager,
 			  kmlFactory,
+			  textureExportAdapter,
 			  elevationServiceHandler,
 			  balloonTemplateHandler,
 			  eventDispatcher,
@@ -469,6 +471,7 @@ public class GenericCityObject extends KmlGenericObject{
 						// gmlId.hashCode() in order to properly group objects
 						// otherwise surfaces with the same id would be overwritten
 						long surfaceId = rs2.getLong("id") + getGmlId().hashCode();
+						long surfaceDataId = rs2.getLong("sd_id");
 						long parentId = rs2.getLong("parent_id");
 	
 						if (buildingGeometryObj == null) { // root or parent
@@ -490,7 +493,6 @@ public class GenericCityObject extends KmlGenericObject{
 						eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 	
 						String texImageUri = null;
-						OrdImage texImage = null;
 						StringTokenizer texCoordsTokenized = null;
 	
 						if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
@@ -502,29 +504,27 @@ public class GenericCityObject extends KmlGenericObject{
 						}
 						else {
 							texImageUri = rs2.getString("tex_image_uri");
-							texImage = (OrdImage)rs2.getORAData("tex_image", OrdImage.getORADataFactory());
 							String texCoords = rs2.getString("texture_coordinates");
 	
 							if (texImageUri != null && texImageUri.trim().length() != 0
-									&&  texCoords != null && texCoords.trim().length() != 0
-									&&	texImage != null) {
+									&&  texCoords != null && texCoords.trim().length() != 0) {
 	
 								int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
 								texImageUri = ".." + File.separator + "_" + texImageUri.substring(fileSeparatorIndex + 1);
 	
 								addTexImageUri(surfaceId, texImageUri);
-								if ((getTexOrdImage(texImageUri) == null) && (getTexImage(texImageUri) == null)) { 
+								if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
 									// not already marked as wrapping texture && not already read in
-									BufferedImage bufferedImage = null;
+									TextureImage texImage = null;
 									try {
-										bufferedImage = ImageIO.read(texImage.getDataInStream());
+										texImage = ImageReader.read(textureExportAdapter.getInStream(rs2, "tex_image", texImageUri));
 									}
 									catch (IOException ioe) {}
-									if (bufferedImage != null) { // image in JPEG, PNG or another usual format
-										addTexImage(texImageUri, bufferedImage);
+									if (texImage != null) { // image in JPEG, PNG or another usual format
+										addTexImage(texImageUri, texImage);
 									}
 									else {
-										addTexOrdImage(texImageUri, texImage);
+										addUnsupportedTexImageId(texImageUri, surfaceDataId);
 									}
 
 									texImageCounter++;
@@ -579,7 +579,7 @@ public class GenericCityObject extends KmlGenericObject{
 									double t = Double.parseDouble(texCoordsTokenized.nextToken());
 									if (s > 1.1 || s < -0.1 || t < -0.1 || t > 1.1) { // texture wrapping -- it conflicts with texture atlas
 										removeTexImage(texImageUri);
-										addTexOrdImage(texImageUri, texImage);
+										addUnsupportedTexImageId(texImageUri, surfaceDataId);
 									}
 									texCoordsForThisSurface = new TexCoords(s, t);
 								}

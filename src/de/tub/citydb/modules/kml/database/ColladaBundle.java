@@ -29,22 +29,21 @@
  */
 package de.tub.citydb.modules.kml.database;
 
-import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
 import net.opengis.kml._2.PlacemarkType;
-import oracle.ord.im.OrdImage;
 
+import org.citygml.textureAtlasAPI.data.TextureImage;
 import org.collada._2005._11.colladaschema.COLLADA;
 
 public class ColladaBundle {
 	
 	// wrapped textures or images in unknown formats (like .rgb)
 	// they cannot be "atlased", this is why they must be stored separately
-	private HashMap<String, OrdImage> texOrdImages;
+	private HashMap<String, Long> unsupportedTexImageIds;
 
 	// images or atlases in usual formats (like .jpg)
-	private HashMap<String, BufferedImage> texImages;
+	private HashMap<String, TextureImage> texImages;
 
 	private COLLADA collada;
 	private String colladaAsString;
@@ -52,20 +51,20 @@ public class ColladaBundle {
 	private String gmlId;
 	private String externalBalloonFileContent;
 
-	public void setTexImages(HashMap<String, BufferedImage> texImages) {
+	public void setTexImages(HashMap<String, TextureImage> texImages) {
 		this.texImages = texImages;
 	}
 
-	public HashMap<String, BufferedImage> getTexImages() {
+	public HashMap<String, TextureImage> getTexImages() {
 		return texImages;
 	}
 
-	public 	void setTexOrdImages(HashMap<String, OrdImage> texOrdImages) {
-		this.texOrdImages = texOrdImages;
+	public 	void setUnsupportedTexImageIds(HashMap<String, Long> unsupportedTexImageIds) {
+		this.unsupportedTexImageIds = unsupportedTexImageIds;
 	}
 
-	public 	HashMap<String, OrdImage> getTexOrdImages() {
-		return texOrdImages;
+	public 	HashMap<String, Long> getUnsupportedTexImageIds() {
+		return unsupportedTexImageIds;
 	}
 
 	public void setCollada(COLLADA collada) {

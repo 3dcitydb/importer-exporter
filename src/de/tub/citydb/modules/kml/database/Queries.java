@@ -345,7 +345,7 @@ public class Queries {
 				"AND b.lod1_geometry_id IS NOT NULL";
 
 		private static final String COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 =
-			"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, " +
+			"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, sd.id as sd_id, " +
 					"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
 					"sd.tex_image_uri, sd.tex_image, tp.texture_coordinates, a.theme " +
 			"FROM SURFACE_GEOMETRY sg " +
