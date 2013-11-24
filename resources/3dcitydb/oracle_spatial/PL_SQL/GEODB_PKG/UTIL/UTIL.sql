@@ -72,7 +72,7 @@ AS
   FUNCTION is_db_coord_ref_sys_3d RETURN NUMBER;
   PROCEDURE change_db_srid(db_srid NUMBER, db_gml_srs_name VARCHAR2);
   PROCEDURE change_column_srid(i_name VARCHAR2, t_name VARCHAR2, c_name VARCHAR2, is_3d BOOLEAN, db_srid NUMBER);
-  FUNCTION get_sequence_values(seq_name VARCHAR2, seq_count NUMBER) RETURN SEQ_TABLE;
+  FUNCTION get_seq_values(seq_name VARCHAR2, seq_count NUMBER) RETURN SEQ_TABLE;
   FUNCTION to_2d(geom MDSYS.SDO_GEOMETRY, srid NUMBER) RETURN MDSYS.SDO_GEOMETRY; 
 END geodb_util;
 /
@@ -383,7 +383,7 @@ AS
   END;
 
   /*****************************************************************
-  * get_sequence_values
+  * get_seq_values
   *
   * @param seq_name name of the sequence
   * @param count number of values to be queried from the sequence
