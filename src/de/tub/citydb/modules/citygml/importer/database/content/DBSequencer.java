@@ -57,8 +57,8 @@ public class DBSequencer {
 			StringBuilder query = new StringBuilder()
 			.append("select ")
 			.append(databaseAdapter.getSQLAdapter().getNextSequenceValue(sequence));
-			if (databaseAdapter.requiresPseudoTableInSelect())
-				query.append(" from ").append(databaseAdapter.getPseudoTableName());
+			if (databaseAdapter.getSQLAdapter().requiresPseudoTableInSelect())
+				query.append(" from ").append(databaseAdapter.getSQLAdapter().getPseudoTableName());
 			
 			pstsmt = conn.prepareStatement(query.toString());
 			psIdMap.put(sequence, pstsmt);

@@ -31,17 +31,18 @@ package de.tub.citydb.modules.kml.database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
-import oracle.jdbc.OracleResultSet;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -54,6 +55,7 @@ public class CityObjectGroup extends KmlGenericObject{
 	public CityObjectGroup(Connection connection,
 			KmlExporterManager kmlExporterManager,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
+			AbstractDatabaseAdapter databaseAdapter,
 			TextureImageExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
@@ -63,6 +65,7 @@ public class CityObjectGroup extends KmlGenericObject{
 		super(connection,
 			  kmlExporterManager,
 			  kmlFactory,
+			  databaseAdapter,
 			  textureExportAdapter,
 			  elevationServiceHandler,
 			  balloonTemplateHandler,
@@ -93,7 +96,7 @@ public class CityObjectGroup extends KmlGenericObject{
 	public void read(KmlSplittingResult work) {
 
 		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
+		ResultSet rs = null;
 
 		try {
 //			psQuery = getQueryForObjectType(work);
@@ -103,7 +106,7 @@ public class CityObjectGroup extends KmlGenericObject{
 				psQuery.setLong(i, work.getId());
 			}
 				
-			rs = (OracleResultSet)psQuery.executeQuery();
+			rs = psQuery.executeQuery();
 			if (!rs.isBeforeFirst()) {
 				try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
 				rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!

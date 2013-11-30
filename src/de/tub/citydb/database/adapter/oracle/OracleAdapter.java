@@ -55,14 +55,4 @@ public class OracleAdapter extends AbstractDatabaseAdapter {
 		return 65535;
 	}
 
-	@Override
-	public boolean requiresPseudoTableInSelect() {
-		return true;
-	}
-
-	@Override
-	public String getPseudoTableName() {
-		return "dual";
-	}
-
 }

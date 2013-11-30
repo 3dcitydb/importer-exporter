@@ -43,14 +43,14 @@ import net.opengis.kml._2.AltitudeModeEnumType;
 import net.opengis.kml._2.LineStringType;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.PointType;
-import oracle.jdbc.OracleResultSet;
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
 import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.geometry.GeometryObject;
+import de.tub.citydb.api.geometry.GeometryObject.GeometryType;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -64,6 +64,7 @@ public class Transportation extends KmlGenericObject{
 	public Transportation(Connection connection,
 			KmlExporterManager kmlExporterManager,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
+			AbstractDatabaseAdapter databaseAdapter,
 			TextureImageExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
@@ -71,13 +72,14 @@ public class Transportation extends KmlGenericObject{
 			Config config) {
 
 		super(connection,
-			  kmlExporterManager,
-			  kmlFactory,
-			  textureExportAdapter,
-			  elevationServiceHandler,
-			  balloonTemplateHandler,
-			  eventDispatcher,
-			  config);
+				kmlExporterManager,
+				kmlFactory,
+				databaseAdapter,
+				textureExportAdapter,
+				elevationServiceHandler,
+				balloonTemplateHandler,
+				eventDispatcher,
+				config);
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
@@ -103,8 +105,8 @@ public class Transportation extends KmlGenericObject{
 	public void read(KmlSplittingResult work) {
 
 		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
-		
+		ResultSet rs = null;
+
 		boolean reversePointOrder = false;
 
 		try {
@@ -117,14 +119,14 @@ public class Transportation extends KmlGenericObject{
 
 				try {
 					psQuery = connection.prepareStatement(Queries.getTransportationQuery(currentLod, work.getDisplayForm()),
-							   							  ResultSet.TYPE_SCROLL_INSENSITIVE,
-							   							  ResultSet.CONCUR_READ_ONLY);
+							ResultSet.TYPE_SCROLL_INSENSITIVE,
+							ResultSet.CONCUR_READ_ONLY);
 
 					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 						psQuery.setLong(i, work.getId());
 					}
-				
-					rs = (OracleResultSet)psQuery.executeQuery();
+
+					rs = psQuery.executeQuery();
 					if (rs.isBeforeFirst()) {
 						break; // result set not empty
 					}
@@ -165,31 +167,31 @@ public class Transportation extends KmlGenericObject{
 
 				if (currentLod == 0) { // LoD0_Network
 					kmlExporterManager.print(createPlacemarksForLoD0Network(rs, work),
-							 				 work,
-							 				 getBalloonSettings().isBalloonContentInSeparateFile());
+							work,
+							getBalloonSettings().isBalloonContentInSeparateFile());
 				}
 				else {
 					switch (work.getDisplayForm().getForm()) {
 					case DisplayForm.FOOTPRINT:
 						kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
-												 work,
-												 getBalloonSettings().isBalloonContentInSeparateFile());
+								work,
+								getBalloonSettings().isBalloonContentInSeparateFile());
 						break;
 					case DisplayForm.EXTRUDED:
-	
-						PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT);
+
+						PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT(databaseAdapter.getDatabaseType()));
 						for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
 							psQuery2.setLong(i, work.getId());
 						}
-						OracleResultSet rs2 = (OracleResultSet)psQuery2.executeQuery();
+						ResultSet rs2 = psQuery2.executeQuery();
 						rs2.next();
 						double measuredHeight = rs2.getDouble("envelope_measured_height");
 						try { rs2.close(); /* release cursor on DB */ } catch (SQLException e) {}
 						try { psQuery2.close(); /* release cursor on DB */ } catch (SQLException e) {}
-						
+
 						kmlExporterManager.print(createPlacemarksForExtruded(rs, work, measuredHeight, reversePointOrder),
-												 work,
-												 getBalloonSettings().isBalloonContentInSeparateFile());
+								work,
+								getBalloonSettings().isBalloonContentInSeparateFile());
 						break;
 					case DisplayForm.GEOMETRY:
 						setGmlId(work.getGmlId());
@@ -197,25 +199,25 @@ public class Transportation extends KmlGenericObject{
 						if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter()) { // region
 							if (work.getDisplayForm().isHighlightingEnabled()) {
 								kmlExporterManager.print(createPlacemarksForHighlighting(work),
-														 work,
-														 getBalloonSettings().isBalloonContentInSeparateFile());
+										work,
+										getBalloonSettings().isBalloonContentInSeparateFile());
 							}
 							kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
-													 work,
-													 getBalloonSettings().isBalloonContentInSeparateFile());
+									work,
+									getBalloonSettings().isBalloonContentInSeparateFile());
 						}
 						else { // reverse order for single buildings
 							kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
-													 work,
-													 getBalloonSettings().isBalloonContentInSeparateFile());
-	//							kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
+									work,
+									getBalloonSettings().isBalloonContentInSeparateFile());
+							//							kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
 							if (work.getDisplayForm().isHighlightingEnabled()) {
-	//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
-	//							 						 work,
-	//							 						 getBalloonSetings().isBalloonContentInSeparateFile());
+								//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
+								//							 						 work,
+								//							 						 getBalloonSetings().isBalloonContentInSeparateFile());
 								kmlExporterManager.print(createPlacemarksForHighlighting(work),
-														 work,
-														 getBalloonSettings().isBalloonContentInSeparateFile());
+										work,
+										getBalloonSettings().isBalloonContentInSeparateFile());
 							}
 						}
 						break;
@@ -234,23 +236,23 @@ public class Transportation extends KmlGenericObject{
 							zOffset = getZOffsetFromGEService(work.getId(), anchorCandidates);
 						}
 						setZOffset(zOffset);
-	
+
 						ColladaOptions colladaOptions = getColladaOptions();
 						setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 						try {
 							if (work.getDisplayForm().isHighlightingEnabled()) {
-	//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
-	//													 work,
-	//													 getBalloonSetings().isBalloonContentInSeparateFile());
+								//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
+								//													 work,
+								//													 getBalloonSetings().isBalloonContentInSeparateFile());
 								kmlExporterManager.print(createPlacemarksForHighlighting(work),
-														 work,
-														 getBalloonSettings().isBalloonContentInSeparateFile());
+										work,
+										getBalloonSettings().isBalloonContentInSeparateFile());
 							}
 						}
 						catch (Exception ioe) {
 							ioe.printStackTrace();
 						}
-	
+
 						break;
 					}
 				}
@@ -281,8 +283,8 @@ public class Transportation extends KmlGenericObject{
 		return super.createPlacemarkForColladaModel();
 	}
 
-	private List<PlacemarkType> createPlacemarksForLoD0Network(OracleResultSet rs,
-															   KmlSplittingResult work) throws SQLException {
+	private List<PlacemarkType> createPlacemarksForLoD0Network(ResultSet rs,
+			KmlSplittingResult work) throws SQLException {
 
 		DisplayForm footprintSettings = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
 		int indexOfDf = getDisplayForms().indexOf(footprintSettings);
@@ -300,41 +302,40 @@ public class Transportation extends KmlGenericObject{
 				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Style");
 			else
 				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Normal");
-			
-			STRUCT buildingGeometryObj = (STRUCT)rs.getObject(1); 
-			JGeometry pointOrCurveGeometry = JGeometry.load(buildingGeometryObj);
-			eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
-			if (pointOrCurveGeometry.isPoint()) { // point
-				double[] ordinatesArray = pointOrCurveGeometry.getPoint();
-				ordinatesArray = super.convertPointCoordinatesToWGS84(ordinatesArray);
+			Object buildingGeometryObj = rs.getObject(1); 
+			if (!rs.wasNull() && buildingGeometryObj != null) {
+				GeometryObject pointOrCurveGeometry = geometryConverterAdapter.getGeometry(buildingGeometryObj);
+				eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
-				PointType point = kmlFactory.createPointType();
-				point.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[0]) + "," 
-														+ reducePrecisionForXorY(ordinatesArray[1]) + ","
-														+ reducePrecisionForZ(ordinatesArray[2])));
+				if (pointOrCurveGeometry.getGeometryType() == GeometryType.POINT) { // point
+					double[] ordinatesArray = pointOrCurveGeometry.getCoordinates(0);
+					ordinatesArray = super.convertPointCoordinatesToWGS84(ordinatesArray);
 
-				placemark.setAbstractGeometryGroup(kmlFactory.createPoint(point));
-			}
-			else { // curve
-				pointOrCurveGeometry = super.convertToWGS84(pointOrCurveGeometry);
-				double[] ordinatesArray = pointOrCurveGeometry.getOrdinatesArray();
+					PointType point = kmlFactory.createPointType();
+					point.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArray[1]) + ","
+							+ reducePrecisionForZ(ordinatesArray[2])));
 
-				LineStringType lineString = kmlFactory.createLineStringType();
-				for (int i = 0; i < pointOrCurveGeometry.getElemInfo().length; i = i+3) {
-					int startNextRing = ((i+3) < pointOrCurveGeometry.getElemInfo().length) ? 
-										pointOrCurveGeometry.getElemInfo()[i+3] - 1: // still holes to come
-										ordinatesArray.length; // default
-
-					// order points clockwise
-					for (int j = pointOrCurveGeometry.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
-						lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + "," 
-																	 + reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-																	 + reducePrecisionForZ(ordinatesArray[j+2])));
-					}
+					placemark.setAbstractGeometryGroup(kmlFactory.createPoint(point));
 				}
-				lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
-				placemark.setAbstractGeometryGroup(kmlFactory.createLineString(lineString));
+				else { // curve
+					pointOrCurveGeometry = super.convertToWGS84(pointOrCurveGeometry);
+					LineStringType lineString = kmlFactory.createLineStringType();
+
+					for (int i = 0; i < pointOrCurveGeometry.getNumElements(); i++) {
+						double[] ordinatesArray = pointOrCurveGeometry.getCoordinates(i);
+						
+						// order points clockwise
+						for (int j = 0; j < ordinatesArray.length; j = j+3) {
+							lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + "," 
+									+ reducePrecisionForXorY(ordinatesArray[j+1]) + ","
+									+ reducePrecisionForZ(ordinatesArray[j+2])));
+						}
+					}
+					lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
+					placemark.setAbstractGeometryGroup(kmlFactory.createLineString(lineString));
+				}
 			}
 			// replace default BalloonTemplateHandler with a brand new one, this costs resources!
 			if (getBalloonSettings().isIncludeDescription()) {

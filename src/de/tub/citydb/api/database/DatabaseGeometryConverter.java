@@ -12,6 +12,7 @@ public interface DatabaseGeometryConverter {
 	public GeometryObject getCurve(Object geomObj) throws SQLException;
 	public GeometryObject getMultiCurve(Object geomObj) throws SQLException;
 	public GeometryObject getPolygon(Object geomObj) throws SQLException;
+	public GeometryObject getMultiPolygon(Object geomObj) throws SQLException;
 	public GeometryObject getGeometry(Object geomObj) throws SQLException;
 	public Object getDatabaseObject(GeometryObject geomObj, Connection connection) throws SQLException;
 	public int getNullGeometryType();

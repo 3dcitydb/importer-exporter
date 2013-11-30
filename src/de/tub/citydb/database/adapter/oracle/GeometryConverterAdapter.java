@@ -3,11 +3,14 @@ package de.tub.citydb.database.adapter.oracle;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.geometry.SyncJGeometry;
 import oracle.sql.STRUCT;
 import de.tub.citydb.api.geometry.GeometryObject;
+import de.tub.citydb.api.geometry.GeometryObject.ElementType;
 import de.tub.citydb.database.adapter.AbstractGeometryConverterAdapter;
 
 public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
@@ -158,27 +161,80 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 	}
 
 	private GeometryObject getPolygon(JGeometry geometry) {
-		if (geometry.getType() == JGeometry.GTYPE_POLYGON) {
+		if (geometry.getType() == JGeometry.GTYPE_POLYGON)
+			return GeometryObject.createPolygon(getPolygonCoordinates(geometry), geometry.getDimensions(), geometry.getSRID());
+
+		return null;
+	}
+	
+	private double[][] getPolygonCoordinates(JGeometry geometry) {
+		int[] elemInfo = geometry.getElemInfo();
+		double[] ordinates = geometry.getOrdinatesArray();
+		if (elemInfo.length < 3)
+			return null;
+
+		int[] ringLimits = new int[elemInfo.length / 3];
+		ringLimits[ringLimits.length - 1] = ordinates.length;
+		for (int i = 3, j = 0; i < elemInfo.length; i += 3, j++)
+			ringLimits[j] = elemInfo[i] - 1;
+
+		double[][] coordinates = new double[ringLimits.length][];			
+		for (int i = 0, ordinate = 0; i < ringLimits.length; i++) {
+			coordinates[i] = new double[ringLimits[i] - ordinate];
+			for (int j = 0; ordinate < ringLimits[i]; ordinate++, j++)
+				coordinates[i][j] = ordinates[ordinate];
+		}
+		
+		return coordinates;
+	}
+
+	@Override
+	public GeometryObject getMultiPolygon(Object geomObj) throws SQLException {
+		if (geomObj instanceof STRUCT)
+			return getMultiPolygon(JGeometry.load((STRUCT)geomObj));
+
+		return null;
+	}
+	
+	private GeometryObject getMultiPolygon(JGeometry geometry) {
+		if (geometry.getType() == JGeometry.GTYPE_MULTIPOLYGON) {
 			int[] elemInfo = geometry.getElemInfo();
 			double[] ordinates = geometry.getOrdinatesArray();
 			if (elemInfo.length < 3)
 				return null;
-
-			int[] ringLimits = new int[elemInfo.length / 3];
+			
+			List<Integer> exteriorRingList = new ArrayList<Integer>(elemInfo.length / 3);
+			int[] ringLimits = new int[elemInfo.length / 3];			
+			exteriorRingList.add(0);
 			ringLimits[ringLimits.length - 1] = ordinates.length;
-			for (int i = 3, j = 0; i < elemInfo.length; i += 3, j++)
+			
+			for (int i = 3, j = 0; i < elemInfo.length; i += 3, j++) {
 				ringLimits[j] = elemInfo[i] - 1;
-
+				if (elemInfo[i - 1] == 1003)
+					exteriorRingList.add(ringLimits[j]);					
+			}
+			
 			double[][] coordinates = new double[ringLimits.length][];			
 			for (int i = 0, ordinate = 0; i < ringLimits.length; i++) {
 				coordinates[i] = new double[ringLimits[i] - ordinate];
 				for (int j = 0; ordinate < ringLimits[i]; ordinate++, j++)
 					coordinates[i][j] = ordinates[ordinate];
 			}
-
-			return GeometryObject.createPolygon(coordinates, geometry.getDimensions(), geometry.getSRID());
+			
+			int[] exteriorRings = new int[exteriorRingList.size()];
+			for (int i = 0; i < exteriorRingList.size(); i++)
+				exteriorRings[i] = exteriorRingList.get(i).intValue();
+			
+			return GeometryObject.createMultiPolygon(coordinates, exteriorRings, geometry.getDimensions(), geometry.getSRID());
 		}
-
+		
+		else if (geometry.getType() == JGeometry.GTYPE_POLYGON) {
+			double[][] coordinates = getPolygonCoordinates(geometry);
+			int[] exteriorRings = new int[]{ 0 };
+			
+			return GeometryObject.createMultiPolygon(coordinates, exteriorRings, geometry.getDimensions(), geometry.getSRID());
+		}
+		
 		return null;
 	}
 
@@ -197,6 +253,10 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 				return getMultiCurve(geometry);
 			case JGeometry.GTYPE_POLYGON:
 				return getPolygon(geometry);
+			case JGeometry.GTYPE_MULTIPOLYGON:
+				return getMultiPolygon(geometry);
+			default:
+				throw new SQLException("Cannot convert Oracle geometry type '" + geometry.getType() + "' to internal representation: Unsupported type.");
 			}
 		}
 
@@ -206,7 +266,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 	@Override
 	public Object getDatabaseObject(GeometryObject geomObj, Connection connection) throws SQLException {
 		JGeometry geometry = null;
-		
+
 		switch (geomObj.getGeometryType()) {
 		case POLYGON:
 			geometry = convertPolygonToJGeometry(geomObj);
@@ -226,18 +286,21 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		case ENVELOPE:
 			geometry = convertEnvelopeToJGeometry(geomObj);
 			break;
+		case MULTI_POLYGON:
+			geometry = convertMultiPolygonToJGeometry(geomObj);
+			break;
 		}
-		
+
 		if (geometry == null)
 			throw new SQLException("Failed to convert geometry to internal database representation.");
 
 		return SyncJGeometry.syncStore(geometry, connection);
 	}
-	
+
 	private JGeometry convertPointToJGeometry(GeometryObject geomObj) {
 		return JGeometry.createPoint(geomObj.getCoordinates(0), geomObj.getDimension(), geomObj.getSrid());
 	}
-	
+
 	private JGeometry convertMultiPointToJGeometry(GeometryObject geomObj) {
 		Object[] objectArray = new Object[geomObj.getNumElements()];
 		for (int i = 0; i < geomObj.getNumElements(); i++)
@@ -245,11 +308,11 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 		return JGeometry.createMultiPoint(objectArray, geomObj.getDimension(), geomObj.getSrid());
 	}
-	
+
 	private JGeometry convertCurveToJGeometry(GeometryObject geomObj) {
 		return JGeometry.createLinearLineString(geomObj.getCoordinates(0), geomObj.getDimension(), geomObj.getSrid());
 	}
-	
+
 	private JGeometry convertMultiCurveToJGeometry(GeometryObject geomObj) {
 		Object[] objectArray = new Object[geomObj.getNumElements()];
 		for (int i = 0; i < geomObj.getNumElements(); i++)
@@ -257,7 +320,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 		return JGeometry.createLinearMultiLineString(objectArray, geomObj.getDimension(), geomObj.getSrid());
 	}
-	
+
 	private JGeometry convertPolygonToJGeometry(GeometryObject geomObj) {
 		if (geomObj.getNumElements() == 1) {
 			return JGeometry.createLinearPolygon(geomObj.getCoordinates(0), geomObj.getDimension(), geomObj.getSrid());
@@ -269,38 +332,70 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 			return JGeometry.createLinearPolygon(objectArray, geomObj.getDimension(), geomObj.getSrid());
 		} 
 	}
+	
+	private JGeometry convertMultiPolygonToJGeometry(GeometryObject geomObj) {
+		int[] elemInfo = new int[geomObj.getNumElements() * 3];
+		double[] ordinates = new double[geomObj.getNumCoordinates()];
+		
+		int ordinatesIndex = 0;
+		int elemInfoIndex = 0;
+		
+		for (int i = 0; i < geomObj.getNumElements(); i++) {			
+			elemInfo[elemInfoIndex++] = ordinatesIndex + 1;
+			elemInfo[elemInfoIndex++] = geomObj.getElementType(i) == ElementType.EXTERIOR_LINEAR_RING ? 1003 : 2003;
+			elemInfo[elemInfoIndex++] = 1;
+			
+			double[] coordinates = geomObj.getCoordinates(i);
+			for (int j = 0; j < coordinates.length; j++)
+				ordinates[ordinatesIndex++] = coordinates[j];
+		}
+		
+		return new JGeometry(JGeometry.GTYPE_MULTIPOLYGON, geomObj.getSrid(), elemInfo, ordinates);
+	}
 
 	private JGeometry convertEnvelopeToJGeometry(GeometryObject geomObj) {
 		int dimension = geomObj.getDimension();
 		double[] coordinates = new double[5 * dimension];
 		int i = 0;
 
-		coordinates[i++] = geomObj.getCoordinates()[0][0];
-		coordinates[i++] = geomObj.getCoordinates()[0][1];
-		if (dimension == 3)
+		if (dimension == 3) {
+			coordinates[i++] = geomObj.getCoordinates()[0][0];
+			coordinates[i++] = geomObj.getCoordinates()[0][1];
 			coordinates[i++] = geomObj.getCoordinates()[0][2];
 
-		coordinates[i++] = geomObj.getCoordinates()[0][3];
-		coordinates[i++] = geomObj.getCoordinates()[0][1];
-		if (dimension == 3)
+			coordinates[i++] = geomObj.getCoordinates()[0][3];
+			coordinates[i++] = geomObj.getCoordinates()[0][1];
 			coordinates[i++] = geomObj.getCoordinates()[0][2];
 
-		coordinates[i++] = geomObj.getCoordinates()[0][3];
-		coordinates[i++] = geomObj.getCoordinates()[0][4];
-		if (dimension == 3)
+			coordinates[i++] = geomObj.getCoordinates()[0][3];
+			coordinates[i++] = geomObj.getCoordinates()[0][4];
 			coordinates[i++] = geomObj.getCoordinates()[0][5];
 
-		coordinates[i++] = geomObj.getCoordinates()[0][0];
-		coordinates[i++] = geomObj.getCoordinates()[0][4];
-		if (dimension == 3)
+			coordinates[i++] = geomObj.getCoordinates()[0][0];
+			coordinates[i++] = geomObj.getCoordinates()[0][4];
 			coordinates[i++] = geomObj.getCoordinates()[0][5];
 
-		coordinates[i++] = geomObj.getCoordinates()[0][0];
-		coordinates[i++] = geomObj.getCoordinates()[0][1];
-		if (dimension == 3)
+			coordinates[i++] = geomObj.getCoordinates()[0][0];
+			coordinates[i++] = geomObj.getCoordinates()[0][1];
 			coordinates[i++] = geomObj.getCoordinates()[0][2];
-		
+		} else {
+			coordinates[i++] = geomObj.getCoordinates()[0][0];
+			coordinates[i++] = geomObj.getCoordinates()[0][1];
+
+			coordinates[i++] = geomObj.getCoordinates()[0][2];
+			coordinates[i++] = geomObj.getCoordinates()[0][1];
+			
+			coordinates[i++] = geomObj.getCoordinates()[0][2];
+			coordinates[i++] = geomObj.getCoordinates()[0][3];
+
+			coordinates[i++] = geomObj.getCoordinates()[0][0];
+			coordinates[i++] = geomObj.getCoordinates()[0][3];
+
+			coordinates[i++] = geomObj.getCoordinates()[0][0];
+			coordinates[i++] = geomObj.getCoordinates()[0][1];
+		}
+
 		return JGeometry.createLinearPolygon(coordinates, geomObj.getDimension(), geomObj.getSrid());
 	}
-	
+
 }

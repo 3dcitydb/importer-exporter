@@ -7,6 +7,7 @@ public class GeometryObject {
 
 	public enum GeometryType {
 		POLYGON,
+		MULTI_POLYGON,
 		CURVE,
 		POINT,
 		MULTI_CURVE,
@@ -15,7 +16,8 @@ public class GeometryObject {
 	};
 
 	public enum ElementType {
-		LINEAR_RING,
+		EXTERIOR_LINEAR_RING,
+		INTERIOR_LINEAR_RING,
 		LINE_STRING,
 		POINT,
 		BOUNDING_RECTANGLE
@@ -100,7 +102,7 @@ public class GeometryObject {
 			throw new IllegalArgumentException("The exterior linear ring must contain at least four coordinate tuples.");
 
 		GeometryObject geometryObject = new GeometryObject(GeometryType.POLYGON, dimension, srid);
-		geometryObject.elementTypes = new ElementType[]{ElementType.LINEAR_RING};
+		geometryObject.elementTypes = new ElementType[]{ElementType.EXTERIOR_LINEAR_RING};
 		geometryObject.coordinates = new double[1][];
 		geometryObject.coordinates[0] = coordinates;
 		
@@ -116,12 +118,37 @@ public class GeometryObject {
 			if (coordinates[i].length < 4 * dimension)
 				throw new IllegalArgumentException("The " + (i + 1) + ". linear ring must contain at least four coordinate tuples.");
 
-			geometryObject.elementTypes[i] = ElementType.LINEAR_RING;
+			geometryObject.elementTypes[i] = i == 0 ? ElementType.EXTERIOR_LINEAR_RING : ElementType.INTERIOR_LINEAR_RING;
 		}
 
 		return geometryObject;
 	}
+	
+	public static GeometryObject createMultiPolygon(double[][] coordinates, int[] exteriorRings, int dimension, int srid) {
+		if (exteriorRings.length > coordinates.length)
+			throw new IllegalArgumentException("The number of exterior linear rings exceeds the number of coordinate arrays.");
+				
+		GeometryObject geometryObject = new GeometryObject(GeometryType.MULTI_POLYGON, dimension, srid);
+		geometryObject.elementTypes = new ElementType[coordinates.length];
+		geometryObject.coordinates = coordinates;
+		
+		for (int i = 0; i < geometryObject.elementTypes.length; i++) {
+			if (coordinates[i].length < 4 * dimension)
+				throw new IllegalArgumentException("The " + (i + 1) + ". linear ring must contain at least four coordinate tuples.");
+			
+			geometryObject.elementTypes[i] = ElementType.INTERIOR_LINEAR_RING;
+		}
+		
+		for (int i = 0; i < exteriorRings.length; i++) {
+			if (exteriorRings[i] >= coordinates.length)
+				throw new IllegalArgumentException("The " + (i + 1) + ". exterior linear ring is not backed by a coordinate array.");
+			
+			geometryObject.elementTypes[i] = ElementType.EXTERIOR_LINEAR_RING;			
+		}
 
+		return geometryObject;
+	}
+	
 	private final GeometryType geometryType;
 	private final int dimension;
 	private final int srid;
@@ -148,6 +175,14 @@ public class GeometryObject {
 
 	public int getNumElements() {
 		return elementTypes.length;
+	}
+	
+	public int getNumCoordinates() {
+		int size = 0;
+		for (double[] element : coordinates)
+			size += element.length;
+		
+		return size;
 	}
 
 	public ElementType getElementType(int i) {

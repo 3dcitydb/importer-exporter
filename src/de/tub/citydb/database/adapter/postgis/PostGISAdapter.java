@@ -48,15 +48,5 @@ public class PostGISAdapter extends AbstractDatabaseAdapter {
 	public int getMaxBatchSize() {
 		return 10000;
 	}
-
-	@Override
-	public boolean requiresPseudoTableInSelect() {
-		return false;
-	}
-
-	@Override
-	public String getPseudoTableName() {
-		return "";
-	}
 	
 }

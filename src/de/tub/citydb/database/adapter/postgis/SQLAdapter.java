@@ -148,6 +148,16 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	public String getUnloggedIndexProperty() {
 		return "";
 	}
+	
+	@Override
+	public boolean requiresPseudoTableInSelect() {
+		return false;
+	}
+
+	@Override
+	public String getPseudoTableName() {
+		return "";
+	}
 
 	@Override
 	public String getBoundingBoxPredicate(String attributeName, BoundingBox bbox, boolean overlap) {

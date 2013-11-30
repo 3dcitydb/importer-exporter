@@ -51,23 +51,22 @@ import net.opengis.kml._2.ModelType;
 import net.opengis.kml._2.MultiGeometryType;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.PolygonType;
-import oracle.jdbc.OracleResultSet;
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
 
-import org.citygml.textureAtlasAPI.data.TextureImage;
-import org.citygml.textureAtlasAPI.image.ImageReader;
+import org.citygml.textureAtlas.image.ImageReader;
+import org.citygml.textureAtlas.model.TextureImage;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 
 import com.sun.j3d.utils.geometry.GeometryInfo;
 
 import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -87,22 +86,24 @@ public class CityFurniture extends KmlGenericObject{
 	private double refPointZ;
 
 	public CityFurniture(Connection connection,
-						 KmlExporterManager kmlExporterManager,
-						 net.opengis.kml._2.ObjectFactory kmlFactory,
-						 TextureImageExportAdapter textureExportAdapter,
-						 ElevationServiceHandler elevationServiceHandler,
-						 BalloonTemplateHandlerImpl balloonTemplateHandler,
-						 EventDispatcher eventDispatcher,
-						 Config config) {
+			KmlExporterManager kmlExporterManager,
+			net.opengis.kml._2.ObjectFactory kmlFactory,
+			AbstractDatabaseAdapter databaseAdapter,
+			TextureImageExportAdapter textureExportAdapter,
+			ElevationServiceHandler elevationServiceHandler,
+			BalloonTemplateHandlerImpl balloonTemplateHandler,
+			EventDispatcher eventDispatcher,
+			Config config) {
 
 		super(connection,
-			  kmlExporterManager,
-			  kmlFactory,
-			  textureExportAdapter,
-			  elevationServiceHandler,
-			  balloonTemplateHandler,
-			  eventDispatcher,
-			  config);
+				kmlExporterManager,
+				kmlFactory,
+				databaseAdapter,
+				textureExportAdapter,
+				elevationServiceHandler,
+				balloonTemplateHandler,
+				eventDispatcher,
+				config);
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
@@ -127,7 +128,7 @@ public class CityFurniture extends KmlGenericObject{
 
 	public void read(KmlSplittingResult work) {
 		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
+		ResultSet rs = null;
 
 		try {
 			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
@@ -144,7 +145,7 @@ public class CityFurniture extends KmlGenericObject{
 						psQuery.setLong(i, work.getId());
 					}
 
-					rs = (OracleResultSet)psQuery.executeQuery();
+					rs = psQuery.executeQuery();
 					if (rs.isBeforeFirst()) {
 						rs.next();
 						if (rs.getLong(4)!= 0 || rs.getLong(1)!= 0)
@@ -180,17 +181,17 @@ public class CityFurniture extends KmlGenericObject{
 			}
 			else { // result not empty
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
-				
+
 				// decide whether explicit or implicit geometry
 				sgRootId = rs.getLong(4);
 				if (sgRootId == 0) {
 					sgRootId = rs.getLong(1);
 					if (sgRootId != 0) {
-						double[] ordinatesArray = (JGeometry.load((STRUCT)rs.getObject(2))).getPoint();
+						double[] ordinatesArray = geometryConverterAdapter.getPoint(rs.getObject(2)).getCoordinates(0);
 						refPointX = ordinatesArray[0];
 						refPointY = ordinatesArray[1];
 						refPointZ = ordinatesArray[2];
-	
+
 						String transformationString = rs.getString(3);
 						if (transformationString != null) {
 							List<Double> m = Util.string2double(transformationString, "\\s+");
@@ -206,14 +207,14 @@ public class CityFurniture extends KmlGenericObject{
 				} catch (SQLException sqle) {}
 				rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 				try { psQuery.close(); // release cursor on DB
-			 	} catch (SQLException sqle) {}
+				} catch (SQLException sqle) {}
 
-				psQuery = connection.prepareStatement(Queries.getCityFurnitureGeometryContents(work.getDisplayForm()),
-						   							  ResultSet.TYPE_SCROLL_INSENSITIVE,
-						   							  ResultSet.CONCUR_READ_ONLY);
+				psQuery = connection.prepareStatement(Queries.getCityFurnitureGeometryContents(work.getDisplayForm(), databaseAdapter.getSQLAdapter()),
+						ResultSet.TYPE_SCROLL_INSENSITIVE,
+						ResultSet.CONCUR_READ_ONLY);
 				psQuery.setLong(1, sgRootId);
-				rs = (OracleResultSet)psQuery.executeQuery();
-			 	
+				rs = psQuery.executeQuery();
+
 				// get the proper displayForm (for highlighting)
 				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
 				if (indexOfDf != -1) {
@@ -223,16 +224,16 @@ public class CityFurniture extends KmlGenericObject{
 				switch (work.getDisplayForm().getForm()) {
 				case DisplayForm.FOOTPRINT:
 					kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
-											 work,
-											 getBalloonSettings().isBalloonContentInSeparateFile());
+							work,
+							getBalloonSettings().isBalloonContentInSeparateFile());
 					break;
 				case DisplayForm.EXTRUDED:
 
-					PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT);
+					PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT(databaseAdapter.getDatabaseType()));
 					for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
 						psQuery2.setLong(i, work.getId());
 					}
-					OracleResultSet rs2 = (OracleResultSet)psQuery2.executeQuery();
+					ResultSet rs2 = psQuery2.executeQuery();
 					rs2.next();
 					double measuredHeight = rs2.getDouble("envelope_measured_height");
 					try { rs2.close(); // release cursor on DB
@@ -241,8 +242,8 @@ public class CityFurniture extends KmlGenericObject{
 					} catch (SQLException e) {}
 
 					kmlExporterManager.print(createPlacemarksForExtruded(rs, work, measuredHeight, false),
-											 work,
-											 getBalloonSettings().isBalloonContentInSeparateFile());
+							work,
+							getBalloonSettings().isBalloonContentInSeparateFile());
 					break;
 				case DisplayForm.GEOMETRY:
 					setGmlId(work.getGmlId());
@@ -250,25 +251,25 @@ public class CityFurniture extends KmlGenericObject{
 					if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter()) { // region
 						if (work.getDisplayForm().isHighlightingEnabled()) {
 							kmlExporterManager.print(createPlacemarksForHighlighting(work),
-													 work,
-													 getBalloonSettings().isBalloonContentInSeparateFile());
+									work,
+									getBalloonSettings().isBalloonContentInSeparateFile());
 						}
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
-												 work,
-												 getBalloonSettings().isBalloonContentInSeparateFile());
+								work,
+								getBalloonSettings().isBalloonContentInSeparateFile());
 					}
 					else { // reverse order for single objects
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
-												 work,
-												 getBalloonSettings().isBalloonContentInSeparateFile());
-//						kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
+								work,
+								getBalloonSettings().isBalloonContentInSeparateFile());
+						//						kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
 						if (work.getDisplayForm().isHighlightingEnabled()) {
-//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
-//							 						 work,
-//							 						 getBalloonSetings().isBalloonContentInSeparateFile());
+							//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
+							//							 						 work,
+							//							 						 getBalloonSetings().isBalloonContentInSeparateFile());
 							kmlExporterManager.print(createPlacemarksForHighlighting(work),
-													 work,
-													 getBalloonSettings().isBalloonContentInSeparateFile());
+									work,
+									getBalloonSettings().isBalloonContentInSeparateFile());
 						}
 					}
 					break;
@@ -296,12 +297,12 @@ public class CityFurniture extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) {
-//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
-//													 work,
-//													 getBalloonSetings().isBalloonContentInSeparateFile());
+							//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
+							//													 work,
+							//													 getBalloonSetings().isBalloonContentInSeparateFile());
 							kmlExporterManager.print(createPlacemarksForHighlighting(work),
-													 work,
-													 getBalloonSettings().isBalloonContentInSeparateFile());
+									work,
+									getBalloonSettings().isBalloonContentInSeparateFile());
 						}
 					}
 					catch (Exception ioe) {
@@ -322,29 +323,31 @@ public class CityFurniture extends KmlGenericObject{
 		finally {
 			if (rs != null)
 				try { rs.close(); } catch (SQLException e) {}
-				if (psQuery != null)
-					try { psQuery.close(); } catch (SQLException e) {}
+			if (psQuery != null)
+				try { psQuery.close(); } catch (SQLException e) {}
 		}
-	}
-	
-	protected JGeometry applyTransformationMatrix(JGeometry jGeometry) throws SQLException {
-		if (transformation != null) {
-			double[] originalCoords = jGeometry.getOrdinatesArray();
-			for (int i = 0; i < originalCoords.length; i += 3) {
-				double[] vals = new double[]{originalCoords[i], originalCoords[i+1], originalCoords[i+2], 1};
-				Matrix v = new Matrix(vals, 4);
-		
-				v = transformation.times(v);
-				originalCoords[i] = v.get(0, 0) + refPointX;
-				originalCoords[i+1] = v.get(1, 0) + refPointY;
-				originalCoords[i+2] = v.get(2, 0) + refPointZ;
-			}
-		}
-		return jGeometry;
 	}
 
-	protected JGeometry convertToWGS84(JGeometry jGeometry) throws SQLException {
-		return super.convertToWGS84(applyTransformationMatrix(jGeometry));
+	protected GeometryObject applyTransformationMatrix(GeometryObject geomObj) throws SQLException {
+		if (transformation != null) {
+			for (int i = 0; i < geomObj.getNumElements(); i++) {
+				double[] originalCoords = geomObj.getCoordinates(i);
+				for (int j = 0; j < originalCoords.length; j += 3) {
+					double[] vals = new double[]{originalCoords[j], originalCoords[j+1], originalCoords[j+2], 1};
+					Matrix v = new Matrix(vals, 4);
+
+					v = transformation.times(v);
+					originalCoords[j] = v.get(0, 0) + refPointX;
+					originalCoords[j+1] = v.get(1, 0) + refPointY;
+					originalCoords[j+2] = v.get(2, 0) + refPointZ;
+				}
+			}
+		}
+		return geomObj;
+	}
+
+	protected GeometryObject convertToWGS84(GeometryObject geomObj) throws SQLException {
+		return super.convertToWGS84(applyTransformationMatrix(geomObj));
 	}
 
 	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
@@ -406,8 +409,8 @@ public class CityFurniture extends KmlGenericObject{
 		LinkType link = kmlFactory.createLinkType();
 
 		if (config.getProject().getKmlExporter().isOneFilePerObject() &&
-			!config.getProject().getKmlExporter().isExportAsKmz() &&
-			config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue())
+				!config.getProject().getKmlExporter().isExportAsKmz() &&
+				config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue())
 		{
 			link.setHref(getGmlId() + ".dae");
 		}
@@ -421,9 +424,9 @@ public class CityFurniture extends KmlGenericObject{
 		return placemark;
 	}
 
-    protected List<Point3d> setOrigins() {
+	protected List<Point3d> setOrigins() {
 		List<Point3d> coords = new ArrayList<Point3d>();
-		
+
 		if (transformation != null) { // for implicit geometries
 			setOriginX(refPointX * 100); // trick for very close coordinates
 			setOriginY(refPointY * 100);
@@ -435,11 +438,11 @@ public class CityFurniture extends KmlGenericObject{
 		else {
 			coords = super.setOrigins();
 		}
-		
+
 		return coords;
-    }
-    
-	protected void fillGenericObjectForCollada(OracleResultSet rs) throws SQLException {
+	}
+
+	protected void fillGenericObjectForCollada(ResultSet rs) throws SQLException {
 
 		if (transformation == null) { // no implicit geometry
 			super.fillGenericObjectForCollada(rs);
@@ -447,25 +450,23 @@ public class CityFurniture extends KmlGenericObject{
 		}
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
-
 		int texImageCounter = 0;
-		STRUCT buildingGeometryObj = null;
 
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
 			for (String colladaQuery: Queries.COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID) { // parent surfaces come first
 				PreparedStatement psQuery = null;
-				OracleResultSet rs2 = null;
+				ResultSet rs2 = null;
 				try {
 					psQuery = connection.prepareStatement(colladaQuery);
 					psQuery.setLong(1, surfaceRootId);
-//					psQuery.setString(2, selectedTheme);
-					rs2 = (OracleResultSet)psQuery.executeQuery();
-	
+					//					psQuery.setString(2, selectedTheme);
+					rs2 = psQuery.executeQuery();
+
 					while (rs2.next()) {
 						String theme = rs2.getString("theme");
-	
-						buildingGeometryObj = (STRUCT)rs2.getObject(1); 
+
+						Object buildingGeometryObj = rs2.getObject(1); 
 						// surfaceId is the key to all Hashmaps in building
 						// for implicit geometries it must be randomized with
 						// gmlId.hashCode() in order to properly group objects
@@ -473,7 +474,7 @@ public class CityFurniture extends KmlGenericObject{
 						long surfaceId = rs2.getLong("id") + getGmlId().hashCode();
 						long surfaceDataId = rs2.getLong("sd_id");
 						long parentId = rs2.getLong("parent_id");
-	
+
 						if (buildingGeometryObj == null) { // root or parent
 							if (selectedTheme.equalsIgnoreCase(theme)) {
 								X3DMaterial x3dMaterial = new X3DMaterial();
@@ -488,13 +489,13 @@ public class CityFurniture extends KmlGenericObject{
 							}
 							continue;
 						}
-	
+
 						// from hier on it is a surfaceMember
 						eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
-	
+
 						String texImageUri = null;
 						StringTokenizer texCoordsTokenized = null;
-	
+
 						if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
 							addX3dMaterial(surfaceId, defaultX3dMaterial);
 						}
@@ -505,13 +506,13 @@ public class CityFurniture extends KmlGenericObject{
 						else {
 							texImageUri = rs2.getString("tex_image_uri");
 							String texCoords = rs2.getString("texture_coordinates");
-	
+
 							if (texImageUri != null && texImageUri.trim().length() != 0
 									&&  texCoords != null && texCoords.trim().length() != 0) {
-	
+
 								int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
 								texImageUri = ".." + File.separator + "_" + texImageUri.substring(fileSeparatorIndex + 1);
-	
+
 								addTexImageUri(surfaceId, texImageUri);
 								if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
 									// not already marked as wrapping texture && not already read in
@@ -533,7 +534,7 @@ public class CityFurniture extends KmlGenericObject{
 										texImageCounter = 0;
 									}
 								}
-	
+
 								texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
 								texCoordsTokenized = new StringTokenizer(texCoords, " ");
 							}
@@ -548,49 +549,41 @@ public class CityFurniture extends KmlGenericObject{
 								}
 							}
 						}
-	
-						JGeometry surface = JGeometry.load(buildingGeometryObj);
+
+						GeometryObject surface = geometryConverterAdapter.getPolygon(buildingGeometryObj);
 						surface = applyTransformationMatrix(surface);
-						double[] ordinatesArray = surface.getOrdinatesArray();
-	
 						GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
-						int contourCount = surface.getElemInfo().length/3;
-						// last point of polygons in gml is identical to first and useless for GeometryInfo
-						double[] giOrdinatesArray = new double[ordinatesArray.length - (contourCount*3)];
-	
+
+						int contourCount = surface.getNumElements();
 						int[] stripCountArray = new int[contourCount];
 						int[] countourCountArray = {contourCount};
-	
-						for (int currentContour = 1; currentContour <= contourCount; currentContour++) {
-							int startOfCurrentRing = surface.getElemInfo()[(currentContour-1)*3] - 1;
-							int startOfNextRing = (currentContour == contourCount) ? 
-									ordinatesArray.length: // last
-									surface.getElemInfo()[currentContour*3] - 1; // still holes to come
-	
-							for (int j = startOfCurrentRing; j < startOfNextRing - 3; j = j+3) {
 
-								giOrdinatesArray[(j-(currentContour-1)*3)] = ordinatesArray[j] * 100; // trick for very close coordinates
-								giOrdinatesArray[(j-(currentContour-1)*3)+1] = ordinatesArray[j+1] * 100;
-								giOrdinatesArray[(j-(currentContour-1)*3)+2] = ordinatesArray[j+2] * 100;
-	
+						// last point of polygons in gml is identical to first and useless for GeometryInfo
+						double[] giOrdinatesArray = new double[surface.getNumCoordinates() - (contourCount * 3)];
+						int i = 0;
+
+						for (int currentContour = 0; currentContour < surface.getNumElements(); currentContour++) {
+							double[] ordinatesArray = surface.getCoordinates(currentContour);
+							for (int j = 0; j < ordinatesArray.length - 3; j = j+3, i = i+3) {
+
+								giOrdinatesArray[i] = ordinatesArray[j] * 100; // trick for very close coordinates
+								giOrdinatesArray[i+1] = ordinatesArray[j+1] * 100;
+								giOrdinatesArray[i+2] = ordinatesArray[j+2] * 100;
+
 								TexCoords texCoordsForThisSurface = null;
-								if (texCoordsTokenized != null) {
+								if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
 									double s = Double.parseDouble(texCoordsTokenized.nextToken());
 									double t = Double.parseDouble(texCoordsTokenized.nextToken());
-									if (s > 1.1 || s < -0.1 || t < -0.1 || t > 1.1) { // texture wrapping -- it conflicts with texture atlas
-										removeTexImage(texImageUri);
-										addUnsupportedTexImageId(texImageUri, surfaceDataId);
-									}
 									texCoordsForThisSurface = new TexCoords(s, t);
 								}
 								setVertexInfoForXYZ(surfaceId,
-										giOrdinatesArray[(j-(currentContour-1)*3)],
-										giOrdinatesArray[(j-(currentContour-1)*3)+1],
-										giOrdinatesArray[(j-(currentContour-1)*3)+2],
+										giOrdinatesArray[i],
+										giOrdinatesArray[i+1],
+										giOrdinatesArray[i+2],
 										texCoordsForThisSurface);
 							}
-							stripCountArray[currentContour-1] = (startOfNextRing -3 - startOfCurrentRing)/3;
-							if (texCoordsTokenized != null) {
+							stripCountArray[currentContour] = (ordinatesArray.length - 3) / 3;
+							if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
 								texCoordsTokenized.nextToken(); // geometryInfo ignores last point in a polygon
 								texCoordsTokenized.nextToken(); // keep texture coordinates in sync
 							}
@@ -607,8 +600,8 @@ public class CityFurniture extends KmlGenericObject{
 				finally {
 					if (rs2 != null)
 						try { rs2.close(); } catch (SQLException e) {}
-						if (psQuery != null)
-							try { psQuery.close(); } catch (SQLException e) {}
+					if (psQuery != null)
+						try { psQuery.close(); } catch (SQLException e) {}
 				}
 			}
 		}
@@ -638,19 +631,19 @@ public class CityFurniture extends KmlGenericObject{
 		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
 		PreparedStatement getGeometriesStmt = null;
-		OracleResultSet rs = null;
+		ResultSet rs = null;
 
 		double hlDistance = work.getDisplayForm().getHighlightingDistance();
 
 		try {
 			getGeometriesStmt = connection.prepareStatement(getHighlightingQuery(),
-															ResultSet.TYPE_SCROLL_INSENSITIVE,
-															ResultSet.CONCUR_READ_ONLY);
+					ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
 
 			for (int i = 1; i <= getGeometriesStmt.getParameterMetaData().getParameterCount(); i++) {
 				getGeometriesStmt.setLong(i, work.getId());
 			}
-			rs = (OracleResultSet)getGeometriesStmt.executeQuery();
+			rs = getGeometriesStmt.executeQuery();
 
 			double zOffset = getZOffsetFromConfigOrDB(work.getId());
 			if (zOffset == Double.MAX_VALUE) {
@@ -661,30 +654,20 @@ public class CityFurniture extends KmlGenericObject{
 			}
 
 			while (rs.next()) {
-				STRUCT unconverted = (STRUCT)rs.getObject(1);
-				JGeometry unconvertedSurface = JGeometry.load(unconverted);
+				Object unconvertedObj = rs.getObject(1);
+				GeometryObject unconvertedSurface = geometryConverterAdapter.getPolygon(unconvertedObj);
 				unconvertedSurface = applyTransformationMatrix(unconvertedSurface);
-				double[] ordinatesArray = unconvertedSurface.getOrdinatesArray();
-				if (ordinatesArray == null) {
-					continue;
-				}
+				if (unconvertedSurface == null || unconvertedSurface.getNumElements() == 0)
+					return null;
 
-				int contourCount = unconvertedSurface.getElemInfo().length/3;
-				// remove normal-irrelevant points
-				int startContour1 = unconvertedSurface.getElemInfo()[0] - 1;
-				int endContour1 = (contourCount == 1) ? 
-						ordinatesArray.length: // last
-							unconvertedSurface.getElemInfo()[3] - 1; // holes are irrelevant for normal calculation
-				// last point of polygons in gml is identical to first and useless for GeometryInfo
-				endContour1 = endContour1 - 3;
-
+				double[] ordinatesArray = unconvertedSurface.getCoordinates(0);
 				double nx = 0;
 				double ny = 0;
 				double nz = 0;
 
-				for (int current = startContour1; current < endContour1; current = current+3) {
+				for (int current = 0; current < ordinatesArray.length - 3; current = current+3) {
 					int next = current+3;
-					if (next >= endContour1) next = 0;
+					if (next >= ordinatesArray.length - 3) next = 0;
 					nx = nx + ((ordinatesArray[current+1] - ordinatesArray[next+1]) * (ordinatesArray[current+2] + ordinatesArray[next+2])); 
 					ny = ny + ((ordinatesArray[current+2] - ordinatesArray[next+2]) * (ordinatesArray[current] + ordinatesArray[next])); 
 					nz = nz + ((ordinatesArray[current] - ordinatesArray[next]) * (ordinatesArray[current+1] + ordinatesArray[next+1])); 
@@ -698,16 +681,19 @@ public class CityFurniture extends KmlGenericObject{
 				ny = ny / value;
 				nz = nz / value;
 
-				for (int i = 0; i < ordinatesArray.length; i = i + 3) {
-					// coordinates = coordinates + hlDistance * (dot product of normal vector and unity vector)
-					ordinatesArray[i] = ordinatesArray[i] + hlDistance * nx;
-					ordinatesArray[i+1] = ordinatesArray[i+1] + hlDistance * ny;
-					ordinatesArray[i+2] = ordinatesArray[i+2] + zOffset + hlDistance * nz;
+				for (int i = 0; i < unconvertedSurface.getNumElements(); i++) {
+					ordinatesArray = unconvertedSurface.getCoordinates(i);
+					for (int j = 0; j < ordinatesArray.length; j = j + 3) {
+						// coordinates = coordinates + hlDistance * (dot product of normal vector and unity vector)
+						ordinatesArray[j] = ordinatesArray[j] + hlDistance * nx;
+						ordinatesArray[j+1] = ordinatesArray[j+1] + hlDistance * ny;
+						ordinatesArray[j+2] = ordinatesArray[j+2] + zOffset + hlDistance * nz;
+					}
 				}
 
-				// now convert to WGS84 without applying transformation matrix (already done)
-				JGeometry surface = super.convertToWGS84(unconvertedSurface);
-				ordinatesArray = surface.getOrdinatesArray();
+				// now convert to WGS84
+				GeometryObject surface = convertToWGS84(unconvertedSurface);
+				unconvertedSurface = null;
 
 				PolygonType polygon = kmlFactory.createPolygonType();
 				switch (config.getProject().getKmlExporter().getAltitudeMode()) {
@@ -720,32 +706,27 @@ public class CityFurniture extends KmlGenericObject{
 				}
 				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 
-				for (int i = 0; i < surface.getElemInfo().length; i = i+3) {
+				for (int i = 0; i < surface.getNumElements(); i++) {
 					LinearRingType linearRing = kmlFactory.createLinearRingType();
 					BoundaryType boundary = kmlFactory.createBoundaryType();
 					boundary.setLinearRing(linearRing);
-					if (surface.getElemInfo()[i+1] == EXTERIOR_POLYGON_RING) {
+
+					if (i == 0)
 						polygon.setOuterBoundaryIs(boundary);
-					}
-					else { // INTERIOR_POLYGON_RING
+					else
 						polygon.getInnerBoundaryIs().add(boundary);
-					}
 
-					int startNextRing = ((i+3) < surface.getElemInfo().length) ? 
-							surface.getElemInfo()[i+3] - 1: // still holes to come
-								ordinatesArray.length; // default
-
-							// order points clockwise
-							for (int j = surface.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
-								linearRing.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + "," 
-										+ reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-										+ reducePrecisionForZ(ordinatesArray[j+2])));
-							}
+					// order points clockwise
+					ordinatesArray = surface.getCoordinates(i);
+					for (int j = 0; j < ordinatesArray.length; j = j+3)
+						linearRing.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + "," 
+								+ reducePrecisionForXorY(ordinatesArray[j+1]) + ","
+								+ reducePrecisionForZ(ordinatesArray[j+2])));
 				}
 			}
 		}
 		catch (Exception e) {
-			Logger.getInstance().warn("Exception when generating highlighting geometry of cityFurniture object " + work.getGmlId());
+			Logger.getInstance().warn("Exception when generating highlighting geometry of CityFurniture object " + work.getGmlId());
 			e.printStackTrace();
 		}
 		finally {

@@ -108,8 +108,8 @@ public class DBSurfaceGeometry implements DBExporter {
 			StringBuilder query = new StringBuilder()
 			.append("insert into ").append(tempTable.getTableName()).append(" ")
 			.append("select ? ");
-			if (dbExporterManager.getDatabaseAdapter().requiresPseudoTableInSelect())
-				query.append("from ").append(dbExporterManager.getDatabaseAdapter().getPseudoTableName()).append(" ");
+			if (dbExporterManager.getDatabaseAdapter().getSQLAdapter().requiresPseudoTableInSelect())
+				query.append("from ").append(dbExporterManager.getDatabaseAdapter().getSQLAdapter().getPseudoTableName()).append(" ");
 
 			query.append("where exists (select 1 from TEXTUREPARAM tp inner join APPEAR_TO_SURFACE_DATA a2s on a2s.SURFACE_DATA_ID=tp.SURFACE_DATA_ID inner join APPEARANCE app on app.ID = a2s.APPEARANCE_ID where tp.SURFACE_GEOMETRY_ID = ? and app.CITYOBJECT_ID IS NULL)");
 			psImportGmlId = tempTable.getConnection().prepareStatement(query.toString());

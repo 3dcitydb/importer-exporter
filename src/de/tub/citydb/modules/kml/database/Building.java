@@ -45,15 +45,14 @@ import net.opengis.kml._2.LinearRingType;
 import net.opengis.kml._2.MultiGeometryType;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.PolygonType;
-import oracle.jdbc.OracleResultSet;
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
 import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -66,6 +65,7 @@ public class Building extends KmlGenericObject{
 	public Building(Connection connection,
 			KmlExporterManager kmlExporterManager,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
+			AbstractDatabaseAdapter databaseAdapter,
 			TextureImageExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
@@ -75,6 +75,7 @@ public class Building extends KmlGenericObject{
 		super(connection,
 				kmlExporterManager,
 				kmlFactory,
+				databaseAdapter,
 				textureExportAdapter,
 				elevationServiceHandler,
 				balloonTemplateHandler,
@@ -106,7 +107,7 @@ public class Building extends KmlGenericObject{
 
 		List<PlacemarkType> placemarks = new ArrayList<PlacemarkType>();
 		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
+		ResultSet rs = null;
 
 		try {
 			psQuery = connection.prepareStatement(Queries.BUILDING_PARTS_FROM_BUILDING);
@@ -115,7 +116,7 @@ public class Building extends KmlGenericObject{
 				psQuery.setLong(i, work.getId());
 			}
 
-			rs = (OracleResultSet)psQuery.executeQuery();
+			rs = psQuery.executeQuery();
 			while (rs.next()) {
 				long buildingPartId = rs.getLong(1);
 				List<PlacemarkType> placemarkBPart = readBuildingPart(buildingPartId, work);
@@ -174,7 +175,7 @@ public class Building extends KmlGenericObject{
 	private List<PlacemarkType> readBuildingPart(long buildingPartId, KmlSplittingResult work) {
 
 		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
+		ResultSet rs = null;
 
 		boolean reversePointOrder = false;
 
@@ -187,7 +188,7 @@ public class Building extends KmlGenericObject{
 				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
 
 				try {
-					psQuery = connection.prepareStatement(Queries.getBuildingPartQuery(currentLod, work.getDisplayForm()),
+					psQuery = connection.prepareStatement(Queries.getBuildingPartQuery(currentLod, work.getDisplayForm(), databaseAdapter.getDatabaseType()),
 							ResultSet.TYPE_SCROLL_INSENSITIVE,
 							ResultSet.CONCUR_READ_ONLY);
 
@@ -195,7 +196,7 @@ public class Building extends KmlGenericObject{
 						psQuery.setLong(i, buildingPartId);
 					}
 
-					rs = (OracleResultSet)psQuery.executeQuery();
+					rs = psQuery.executeQuery();
 					if (rs.isBeforeFirst()) {
 						break; // result set not empty
 					}
@@ -223,14 +224,15 @@ public class Building extends KmlGenericObject{
 								currentLod,
 								Math.pow(groupBasis, 4),
 								Math.pow(groupBasis, 3),
-								Math.pow(groupBasis, 2)),
+								Math.pow(groupBasis, 2),
+								databaseAdapter.getDatabaseType()),
 								ResultSet.TYPE_SCROLL_INSENSITIVE,
 								ResultSet.CONCUR_READ_ONLY);
 
 						for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 							psQuery.setLong(i, buildingPartId);
 						}
-						rs = (OracleResultSet)psQuery.executeQuery();
+						rs = psQuery.executeQuery();
 						if (rs.isBeforeFirst()) {
 							rs.next();
 							if(rs.getObject(1) != null) {
@@ -262,11 +264,11 @@ public class Building extends KmlGenericObject{
 					return createPlacemarksForFootprint(rs, work);
 
 				case DisplayForm.EXTRUDED:
-					PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT);
+					PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT(databaseAdapter.getDatabaseType()));
 					for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
 						psQuery2.setLong(i, buildingPartId);
 					}
-					OracleResultSet rs2 = (OracleResultSet)psQuery2.executeQuery();
+					ResultSet rs2 = psQuery2.executeQuery();
 					rs2.next();
 					double measuredHeight = rs2.getDouble("envelope_measured_height");
 					try { rs2.close(); /* release cursor on DB */ } catch (SQLException e) {}
@@ -367,7 +369,7 @@ public class Building extends KmlGenericObject{
 		placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
 		PreparedStatement getGeometriesStmt = null;
-		OracleResultSet rs = null;
+		ResultSet rs = null;
 
 		double hlDistance = work.getDisplayForm().getHighlightingDistance();
 
@@ -380,7 +382,7 @@ public class Building extends KmlGenericObject{
 				// this is THE LINE
 				getGeometriesStmt.setLong(i, buildingPartId);
 			}
-			rs = (OracleResultSet)getGeometriesStmt.executeQuery();
+			rs = getGeometriesStmt.executeQuery();
 
 			double zOffset = getZOffsetFromConfigOrDB(work.getId());
 			if (zOffset == Double.MAX_VALUE) {
@@ -390,29 +392,19 @@ public class Building extends KmlGenericObject{
 			}
 
 			while (rs.next()) {
-				STRUCT unconverted = (STRUCT)rs.getObject(1);
-				JGeometry unconvertedSurface = JGeometry.load(unconverted);
-				double[] ordinatesArray = unconvertedSurface.getOrdinatesArray();
-				if (ordinatesArray == null) {
-					continue;
-				}
+				Object unconvertedObj = rs.getObject(1);
+				GeometryObject unconvertedSurface = geometryConverterAdapter.getPolygon(unconvertedObj);
+				if (unconvertedSurface == null || unconvertedSurface.getNumElements() == 0)
+					return null;
 
-				int contourCount = unconvertedSurface.getElemInfo().length/3;
-				// remove normal-irrelevant points
-				int startContour1 = unconvertedSurface.getElemInfo()[0] - 1;
-				int endContour1 = (contourCount == 1) ? 
-						ordinatesArray.length: // last
-							unconvertedSurface.getElemInfo()[3] - 1; // holes are irrelevant for normal calculation
-				// last point of polygons in gml is identical to first and useless for GeometryInfo
-				endContour1 = endContour1 - 3;
-
+				double[] ordinatesArray = unconvertedSurface.getCoordinates(0);
 				double nx = 0;
 				double ny = 0;
 				double nz = 0;
 
-				for (int current = startContour1; current < endContour1; current = current+3) {
+				for (int current = 0; current < ordinatesArray.length - 3; current = current+3) {
 					int next = current+3;
-					if (next >= endContour1) next = 0;
+					if (next >= ordinatesArray.length - 3) next = 0;
 					nx = nx + ((ordinatesArray[current+1] - ordinatesArray[next+1]) * (ordinatesArray[current+2] + ordinatesArray[next+2])); 
 					ny = ny + ((ordinatesArray[current+2] - ordinatesArray[next+2]) * (ordinatesArray[current] + ordinatesArray[next])); 
 					nz = nz + ((ordinatesArray[current] - ordinatesArray[next]) * (ordinatesArray[current+1] + ordinatesArray[next+1])); 
@@ -426,16 +418,18 @@ public class Building extends KmlGenericObject{
 				ny = ny / value;
 				nz = nz / value;
 
-				for (int i = 0; i < ordinatesArray.length; i = i + 3) {
-					// coordinates = coordinates + hlDistance * (dot product of normal vector and unity vector)
-					ordinatesArray[i] = ordinatesArray[i] + hlDistance * nx;
-					ordinatesArray[i+1] = ordinatesArray[i+1] + hlDistance * ny;
-					ordinatesArray[i+2] = ordinatesArray[i+2] + zOffset + hlDistance * nz;
+				for (int i = 0; i < unconvertedSurface.getNumElements(); i++) {
+					ordinatesArray = unconvertedSurface.getCoordinates(i);
+					for (int j = 0; j < ordinatesArray.length; j = j + 3) {
+						// coordinates = coordinates + hlDistance * (dot product of normal vector and unity vector)
+						ordinatesArray[j] = ordinatesArray[j] + hlDistance * nx;
+						ordinatesArray[j+1] = ordinatesArray[j+1] + hlDistance * ny;
+						ordinatesArray[j+2] = ordinatesArray[j+2] + zOffset + hlDistance * nz;
+					}
 				}
 
 				// now convert to WGS84
-				JGeometry surface = convertToWGS84(unconvertedSurface);
-				ordinatesArray = surface.getOrdinatesArray();
+				GeometryObject surface = convertToWGS84(unconvertedSurface);
 
 				PolygonType polygon = kmlFactory.createPolygonType();
 				switch (config.getProject().getKmlExporter().getAltitudeMode()) {
@@ -448,27 +442,22 @@ public class Building extends KmlGenericObject{
 				}
 				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 
-				for (int i = 0; i < surface.getElemInfo().length; i = i+3) {
+				for (int i = 0; i < surface.getNumElements(); i++) {
 					LinearRingType linearRing = kmlFactory.createLinearRingType();
 					BoundaryType boundary = kmlFactory.createBoundaryType();
 					boundary.setLinearRing(linearRing);
-					if (surface.getElemInfo()[i+1] == EXTERIOR_POLYGON_RING) {
+
+					if (i == 0)
 						polygon.setOuterBoundaryIs(boundary);
-					}
-					else { // INTERIOR_POLYGON_RING
+					else
 						polygon.getInnerBoundaryIs().add(boundary);
-					}
 
-					int startNextRing = ((i+3) < surface.getElemInfo().length) ? 
-							surface.getElemInfo()[i+3] - 1: // still holes to come
-								ordinatesArray.length; // default
-
-							// order points clockwise
-							for (int j = surface.getElemInfo()[i] - 1; j < startNextRing; j = j+3) {
-								linearRing.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + "," 
-										+ reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-										+ reducePrecisionForZ(ordinatesArray[j+2])));
-							}
+					// order points clockwise
+					ordinatesArray = surface.getCoordinates(i);
+					for (int j = 0; j < ordinatesArray.length; j = j+3)
+						linearRing.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + "," 
+								+ reducePrecisionForXorY(ordinatesArray[j+1]) + ","
+								+ reducePrecisionForZ(ordinatesArray[j+2])));
 				}
 			}
 		}

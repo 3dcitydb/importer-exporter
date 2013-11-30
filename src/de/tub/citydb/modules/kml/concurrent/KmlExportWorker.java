@@ -54,6 +54,7 @@ import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.database.Building;
@@ -82,6 +83,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private Thread workerThread = null;
 
 	// instance members needed to do work
+	private AbstractDatabaseAdapter databaseAdapter;
 	private TextureImageExportAdapter textureExportAdapter;
 	private final ObjectFactory kmlFactory; 
 	private final Config config;
@@ -120,7 +122,8 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					database.getWorkspaces().getKmlExportWorkspace());
 		}
 		
-		textureExportAdapter = dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().getTextureImageExportAdapter(connection);
+		databaseAdapter = dbConnectionPool.getActiveDatabaseAdapter();
+		textureExportAdapter = databaseAdapter.getSQLAdapter().getTextureImageExportAdapter(connection);
 
 		kmlExporterManager = new KmlExporterManager(jaxbKmlContext,
 				jaxbColladaContext,
@@ -320,6 +323,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				singleObject = new Building(connection,
 						kmlExporterManager,
 						kmlFactory,
+						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
 						getBalloonTemplateHandler(featureClass),
@@ -334,6 +338,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				singleObject = new WaterBody(connection,
 						kmlExporterManager,
 						kmlFactory,
+						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
 						getBalloonTemplateHandler(featureClass),
@@ -345,6 +350,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				singleObject = new LandUse(connection,
 						kmlExporterManager,
 						kmlFactory,
+						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
 						getBalloonTemplateHandler(featureClass),
@@ -356,6 +362,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				singleObject = new SolitaryVegetationObject(connection,
 						kmlExporterManager,
 						kmlFactory,
+						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
 						getBalloonTemplateHandler(featureClass),
@@ -367,6 +374,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				singleObject = new PlantCover(connection,
 						kmlExporterManager,
 						kmlFactory,
+						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
 						getBalloonTemplateHandler(featureClass),
@@ -384,6 +392,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				singleObject = new Transportation(connection,
 						kmlExporterManager,
 						kmlFactory,
+						databaseAdapter,
 						textureExportAdapter,
 						elevationServiceHandler,
 						getBalloonTemplateHandler(featureClass),
@@ -400,6 +409,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					singleObject = new Relief(connection,
 							kmlExporterManager,
 							kmlFactory,
+							databaseAdapter,
 							textureExportAdapter,
 							elevationServiceHandler,
 							getBalloonTemplateHandler(featureClass),
@@ -411,6 +421,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					singleObject = new GenericCityObject(connection,
 							kmlExporterManager,
 							kmlFactory,
+							databaseAdapter,
 							textureExportAdapter,
 							elevationServiceHandler,
 							getBalloonTemplateHandler(featureClass),
@@ -422,6 +433,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					singleObject = new CityFurniture(connection,
 							kmlExporterManager,
 							kmlFactory,
+							databaseAdapter,
 							textureExportAdapter,
 							elevationServiceHandler,
 							getBalloonTemplateHandler(featureClass),
@@ -433,6 +445,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 					singleObject = new CityObjectGroup(connection,
 							kmlExporterManager,
 							kmlFactory,
+							databaseAdapter,
 							textureExportAdapter,
 							elevationServiceHandler,
 							getBalloonTemplateHandler(featureClass),
