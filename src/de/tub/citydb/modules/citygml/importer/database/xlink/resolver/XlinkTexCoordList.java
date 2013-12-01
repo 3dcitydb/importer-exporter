@@ -33,18 +33,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
-import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.gml.GMLClass;
-
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.util.Util;
@@ -80,9 +73,9 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 		Connection linearRingConn = linearRingHeapTable.getConnection();
 		String linearRingTableName = linearRingHeapTable.getTableName();
 		
-		psSelectLinearRing = linearRingConn.prepareStatement("select RING_NO, PARENT_GMLID from " + linearRingTableName + " where GMLID=?");
+		psSelectLinearRing = linearRingConn.prepareStatement("select RING_NO, PARENT_ID, REVERSE from " + linearRingTableName + " where GMLID=?");
 		psSelectInteriorLinearRing = linearRingConn.prepareStatement("select GMLID, RING_NO from " + linearRingTableName +
-				" where PARENT_GMLID=? and RING_NO<>0");
+				" where PARENT_ID=? and RING_NO<>0");
 		psSelectTexCoord = textureParamHeapTable.getConnection().prepareStatement("select GMLID, TEXTURE_COORDINATES from " + textureParamHeapTable.getTableName() +
 				" where TEXCOORDLIST_ID=? and not GMLID=?");
 	}
@@ -98,7 +91,7 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 
 		// replace leading #
 		gmlId = gmlId.replaceAll("^#", "");
-
+		
 		try {
 			// step 1: get the exterior linear ring element
 			psSelectLinearRing.setString(1, gmlId);
@@ -112,33 +105,18 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 			if (exteriorRing != 0)
 				return true;
 			
-			String parentGmlId = rs.getString("PARENT_GMLID");
+			long parentId = rs.getLong("PARENT_ID");
+			boolean reverse = rs.getBoolean("REVERSE");
 			rs.close();
 
-			// step 2: check whether parent geometry exists... we need to do this
-			// since we require the database key for referencing
-			GmlIdEntry surfaceGeometryEntry = resolverManager.getDBId(parentGmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
-			if (surfaceGeometryEntry == null || surfaceGeometryEntry.getId() == -1) {
-				StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
-						GMLClass.LINEAR_RING, 
-						gmlId));
-				msg.append(": The element could not be assigned to an existing geometry object.");
-				
-				LOG.error(msg.toString());
-				return false;
-			}
-
 			// step 3: find all corresponding interior rings
-			psSelectInteriorLinearRing.setString(1, parentGmlId);
+			psSelectInteriorLinearRing.setLong(1, parentId);
 			rs = psSelectInteriorLinearRing.executeQuery();
 
 			HashMap<String, Integer> innerRingMap = new HashMap<String, Integer>();
 			int maxRingNo = 0;
 			while (rs.next()) {
 				String innerGmlId = rs.getString("GMLID");
-				if (innerGmlId == null)
-					innerGmlId = parentGmlId;
-
 				int ringNo = rs.getInt("RING_NO");
 
 				innerRingMap.put(innerGmlId, ringNo);
@@ -149,16 +127,16 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 			rs.close();
 
 			// step 4: find corresponding texture coordinates
-			List<String> texCoordList = new ArrayList<String>();
+			String[] texCoordList = new String[maxRingNo + 1];
 			String textureCoordinates = xlink.getTextureCoord();
 			
 			// reverse order of texture coordinates if necessary
-			if (surfaceGeometryEntry.isReverse())
+			if (reverse)
 				textureCoordinates = reverseTextureCoordinates(textureCoordinates);
 			
-			texCoordList.add(0, textureCoordinates);
-			for (int i = 0; i < maxRingNo; i++)
-				texCoordList.add("");
+			texCoordList[0] = textureCoordinates;
+			for (int i = 1; i <= maxRingNo; i++)
+				texCoordList[i] = "";
 
 			psSelectTexCoord.setString(1, xlink.getTexCoordListId());
 			psSelectTexCoord.setString(2, xlink.getGmlId());
@@ -172,38 +150,38 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 					continue;
 				
 				// reverse order of texture coordinates if necessary
-				if (surfaceGeometryEntry.isReverse())					
+				if (reverse)					
 					textureCoordinates = reverseTextureCoordinates(textureCoordinates);
 
 				// replace leading #
 				innerGmlId = innerGmlId.replaceAll("^#", "");
 				if (innerRingMap.containsKey(innerGmlId))
-					texCoordList.set(innerRingMap.get(innerGmlId), textureCoordinates);
+					texCoordList[innerRingMap.get(innerGmlId)] = textureCoordinates;
 			}
 
 			// step 5: sanity check
-			String texCoord = Util.collection2string(texCoordList, ";");
+			String texCoord = Util.collection2string(Arrays.asList(texCoordList), ";");
 			if (texCoord.length() > 4000) {
-				LOG.error("Texture coordinates exceed 4000 characters for target geometry object '" + parentGmlId + "'.");
+				LOG.error("Texture coordinates for ring '" + gmlId + "' (and its interior rings) exceed 4000 characters and will not be imported.");
 				return false;
 			}
 				
 			if (texCoord.contains(";;") || texCoord.endsWith(";"))
-				LOG.warn("Missing texture coordinates for target geometry object '" + parentGmlId + "'.");
+				LOG.warn("Missing texture coordinates for ring '" + gmlId + "' (or its interior rings).");
 
-			psTexCoordList.setLong(1, surfaceGeometryEntry.getId());
+			psTexCoordList.setLong(1, parentId);
 			psTexCoordList.setString(2, texCoord);
 			psTexCoordList.setLong(3, xlink.getId());
 
 			psTexCoordList.addBatch();
-			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			if (++batchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
 				executeBatch();
 
 			if (xlink.getTexParamGmlId() != null) {
-				// propagate xlink...
+				// make sure xlinks to the corresponding texture parameterization can be resolved
 				resolverManager.propagateXlink(new DBXlinkTextureAssociation(
 						xlink.getId(),
-						surfaceGeometryEntry.getId(),
+						parentId,
 						xlink.getTexParamGmlId()));
 			}
 

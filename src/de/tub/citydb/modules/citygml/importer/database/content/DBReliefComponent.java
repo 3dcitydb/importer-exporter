@@ -34,10 +34,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.relief.AbstractReliefComponent;
 import org.citygml4j.model.citygml.relief.BreaklineRelief;
@@ -48,7 +44,7 @@ import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.primitives.Tin;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
@@ -65,9 +61,11 @@ public class DBReliefComponent implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBReliefFeatToRelComp reliefFeatToRelComp;
 	private DBSurfaceGeometry surfaceGeometryImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBOtherGeometry geometryImporter;
 	
 	private int batchCounter;
+	private int nullGeometryType;
+	private String nullGeometryTypeName;
 
 	public DBReliefComponent(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -77,23 +75,22 @@ public class DBReliefComponent implements DBImporter {
 	}
 
 	private void init() throws SQLException {
-		psReliefComponent = batchConn.prepareStatement("insert into RELIEF_COMPONENT (ID, NAME, NAME_CODESPACE, DESCRIPTION, LOD, EXTENT) values " +
-		"(?, ?, ?, ?, ?, ?)");
-		psTinRelief = batchConn.prepareStatement("insert into TIN_RELIEF (ID, MAX_LENGTH, STOP_LINES, BREAK_LINES, CONTROL_POINTS, SURFACE_GEOMETRY_ID) values " +
-		"(?, ?, ?, ?, ?, ?)");
-		psMassPointRelief = batchConn.prepareStatement("insert into MASSPOINT_RELIEF (ID, RELIEF_POINTS) values " +
-		"(?, ?)");
-		psBreaklineRelief = batchConn.prepareStatement("insert into BREAKLINE_RELIEF (ID, RIDGE_OR_VALLEY_LINES, BREAK_LINES) values " +
-		"(?, ?, ?)");
+		nullGeometryType = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
+		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
+
+		psReliefComponent = batchConn.prepareStatement("insert into RELIEF_COMPONENT (ID, NAME, NAME_CODESPACE, DESCRIPTION, LOD, EXTENT) values (?, ?, ?, ?, ?, ?)");
+		psTinRelief = batchConn.prepareStatement("insert into TIN_RELIEF (ID, MAX_LENGTH, STOP_LINES, BREAK_LINES, CONTROL_POINTS, SURFACE_GEOMETRY_ID) values (?, ?, ?, ?, ?, ?)");
+		psMassPointRelief = batchConn.prepareStatement("insert into MASSPOINT_RELIEF (ID, RELIEF_POINTS) values (?, ?)");
+		psBreaklineRelief = batchConn.prepareStatement("insert into BREAKLINE_RELIEF (ID, RIDGE_OR_VALLEY_LINES, BREAK_LINES) values (?, ?, ?)");
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		reliefFeatToRelComp = (DBReliefFeatToRelComp)dbImporterManager.getDBImporter(DBImporterEnum.RELIEF_FEAT_TO_REL_COMP);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		geometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
 	public long insert(AbstractReliefComponent reliefComponent, long parentId) throws SQLException {
-		long reliefComponentId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long reliefComponentId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (reliefComponentId == 0)
 			return 0;
 
@@ -132,17 +129,17 @@ public class DBReliefComponent implements DBImporter {
 
 		// extent
 		if (reliefComponent.isSetExtent()) {
-			JGeometry extent = sdoGeometry.get2DPolygon(reliefComponent.getExtent());
+			GeometryObject extent = geometryImporter.get2DPolygon(reliefComponent.getExtent());
 			if (extent != null) {
-				STRUCT extentObj = SyncJGeometry.syncStore(extent, batchConn);
+				Object extentObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(extent, batchConn);
 				psReliefComponent.setObject(6, extentObj);
 			} else
-				psReliefComponent.setNull(6, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+				psReliefComponent.setNull(6, nullGeometryType, nullGeometryTypeName);
 		} else
-			psReliefComponent.setNull(6, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psReliefComponent.setNull(6, nullGeometryType, nullGeometryTypeName);
 
 		psReliefComponent.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.RELIEF_COMPONENT);
 
 		// fill sub-tables according to relief component type
@@ -153,7 +150,7 @@ public class DBReliefComponent implements DBImporter {
 			psTinRelief.setLong(1, reliefComponentId);
 
 			double maxLength = -Double.MAX_VALUE;
-			JGeometry stopLines, breakLines, controlPoints;
+			GeometryObject stopLines, breakLines, controlPoints;
 			stopLines = breakLines = controlPoints = null;
 			long geometryId = 0;
 
@@ -175,16 +172,18 @@ public class DBReliefComponent implements DBImporter {
 
 						// stopLines
 						if (tin.isSetStopLines())
-							stopLines = sdoGeometry.getMultiCurve(tin.getStopLines());
+							stopLines = geometryImporter.getMultiCurve(tin.getStopLines());
 
 						// breakLines
 						if (tin.isSetBreakLines())
-							breakLines = sdoGeometry.getMultiCurve(tin.getBreakLines());
+							breakLines = geometryImporter.getMultiCurve(tin.getBreakLines());
 
 						// controlPoints
 						if (tin.isSetControlPoint())
-							controlPoints = sdoGeometry.getMultiPoint(tin.getControlPoint());
+							controlPoints = geometryImporter.getMultiPoint(tin.getControlPoint());
 					}
+					
+					tinProperty.unsetTriangulatedSurface();
 
 				} else {
 					// xlink
@@ -203,24 +202,24 @@ public class DBReliefComponent implements DBImporter {
 
 			// stopLines
 			if (stopLines != null) {
-				STRUCT geomObj = SyncJGeometry.syncStore(stopLines, batchConn);
+				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(stopLines, batchConn);
 				psTinRelief.setObject(3, geomObj);
 			} else
-				psTinRelief.setNull(3, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+				psTinRelief.setNull(3, nullGeometryType, nullGeometryTypeName);
 
 			// breakLines
 			if (breakLines != null) {
-				STRUCT geomObj = SyncJGeometry.syncStore(breakLines, batchConn);
+				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(breakLines, batchConn);
 				psTinRelief.setObject(4, geomObj);
 			} else
-				psTinRelief.setNull(4, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+				psTinRelief.setNull(4, nullGeometryType, nullGeometryTypeName);
 
 			// controlPoints
 			if (controlPoints != null) {
-				STRUCT geomObj = SyncJGeometry.syncStore(controlPoints, batchConn);
+				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(controlPoints, batchConn);
 				psTinRelief.setObject(5, geomObj);
 			} else
-				psTinRelief.setNull(5, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+				psTinRelief.setNull(5, nullGeometryType, nullGeometryTypeName);
 
 			// triangle patches
 			if (geometryId != 0)
@@ -238,15 +237,17 @@ public class DBReliefComponent implements DBImporter {
 			psMassPointRelief.setLong(1, reliefComponentId);
 
 			// reliefPoints
-			JGeometry reliefPoints = null;
-			if (massPointRelief.isSetReliefPoints())
-				reliefPoints = sdoGeometry.getMultiPoint(massPointRelief.getReliefPoints());
+			GeometryObject reliefPoints = null;
+			if (massPointRelief.isSetReliefPoints()) {
+				reliefPoints = geometryImporter.getMultiPoint(massPointRelief.getReliefPoints());
+				massPointRelief.unsetReliefPoints();
+			}
 
 			if (reliefPoints != null) {
-				STRUCT geomObj = SyncJGeometry.syncStore(reliefPoints, batchConn);
+				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(reliefPoints, batchConn);
 				psMassPointRelief.setObject(2, geomObj);
 			} else
-				psMassPointRelief.setNull(2, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+				psMassPointRelief.setNull(2, nullGeometryType, nullGeometryTypeName);
 
 			psMassPointRelief.addBatch();
 		}
@@ -257,32 +258,39 @@ public class DBReliefComponent implements DBImporter {
 			// ID
 			psBreaklineRelief.setLong(1, reliefComponentId);
 
-			JGeometry ridgeOrValleyLines, breakLines;
+			GeometryObject ridgeOrValleyLines, breakLines;
 			ridgeOrValleyLines = breakLines = null;
 
-			if (breakLineRelief.isSetRidgeOrValleyLines())
-				ridgeOrValleyLines = sdoGeometry.getMultiCurve(breakLineRelief.getRidgeOrValleyLines());
+			if (breakLineRelief.isSetRidgeOrValleyLines()) {
+				ridgeOrValleyLines = geometryImporter.getMultiCurve(breakLineRelief.getRidgeOrValleyLines());
+				breakLineRelief.unsetRidgeOrValleyLines();
+			}
 
-			if (breakLineRelief.isSetBreaklines())
-				breakLines = sdoGeometry.getMultiCurve(breakLineRelief.getBreaklines());
+			if (breakLineRelief.isSetBreaklines()) {
+				breakLines = geometryImporter.getMultiCurve(breakLineRelief.getBreaklines());
+				breakLineRelief.unsetBreaklines();
+			}
 
 			if (ridgeOrValleyLines != null) {
-				STRUCT geomObj = SyncJGeometry.syncStore(ridgeOrValleyLines, batchConn);
+				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(ridgeOrValleyLines, batchConn);
 				psBreaklineRelief.setObject(2, geomObj);
 			} else
-				psBreaklineRelief.setNull(2, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+				psBreaklineRelief.setNull(2, nullGeometryType, nullGeometryTypeName);
 
 			if (breakLines != null) {
-				STRUCT geomObj = SyncJGeometry.syncStore(breakLines, batchConn);
+				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(breakLines, batchConn);
 				psBreaklineRelief.setObject(3, geomObj);
 			} else
-				psBreaklineRelief.setNull(3, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+				psBreaklineRelief.setNull(3, nullGeometryType, nullGeometryTypeName);
 
 			psBreaklineRelief.addBatch();
 		}
 
 		// reliefComponent2reliefFeature
 		reliefFeatToRelComp.insert(reliefComponentId, parentId);
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(reliefComponent, reliefComponentId);
 
 		return reliefComponentId;
 	}

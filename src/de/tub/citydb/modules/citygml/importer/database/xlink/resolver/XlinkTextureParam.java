@@ -36,7 +36,6 @@ import java.sql.Types;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
@@ -80,11 +79,11 @@ public class XlinkTextureParam implements DBXlinkResolver {
 			psTextureParam.setNull(3, Types.VARCHAR);
 
 		psTextureParam.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
 			executeBatch();
 
 		if (xlink.getType() == DBXlinkTextureParamEnum.TEXCOORDGEN && xlink.getTexParamGmlId() != null) {
-			// propagate xlink...
+			// make sure xlinks to the corresponding texture parameterization can be resolved
 			resolverManager.propagateXlink(new DBXlinkTextureAssociation(
 					xlink.getId(),
 					surfaceGeometryEntry.getId(),

@@ -87,20 +87,6 @@ import de.tub.citydb.util.gui.OSXAdapter;
 
 public class ImpExp {
 
-	// set look & feel
-	static {
-		try {
-			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
-			if (OSXAdapter.IS_MAC_OS_X) {
-				OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(ImpExp.class.getResource("/resources/img/common/logo_small.png")));
-				System.setProperty("apple.laf.useScreenMenuBar", "true");
-			}
-
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	@Option(name="-config", usage="config file containing project settings", metaVar="fileName")
 	private File configFile;
 
@@ -174,7 +160,7 @@ public class ImpExp {
 		if (version) {
 			System.out.println(
 					this.getClass().getPackage().getImplementationTitle() + ", version \"" +
-					this.getClass().getPackage().getImplementationVersion() + "\"");
+							this.getClass().getPackage().getImplementationVersion() + "\"");
 			System.out.println(this.getClass().getPackage().getImplementationVendor());
 			System.exit(0);			
 		}
@@ -204,22 +190,26 @@ public class ImpExp {
 			}
 		}
 
-		// initialize splash screen
-		useSplashScreen = !shell && !noSplash;
-		if (useSplashScreen) {
-			splashScreen = new SplashScreen(4, 3, 50, Color.BLACK);
-			splashScreen.setMessage("Version \"" + this.getClass().getPackage().getImplementationVersion() + "\"");
+		// initialize look&feel and splash screen
+		if (!shell) {
+			setLookAndFeel();
 
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					splashScreen.setVisible(true);
+			if (!noSplash) {
+				useSplashScreen = true;
+				splashScreen = new SplashScreen(4, 3, 50, Color.BLACK);
+				splashScreen.setMessage("Version \"" + this.getClass().getPackage().getImplementationVersion() + "\"");
+
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						splashScreen.setVisible(true);
+					}
+				});		
+
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					//
 				}
-			});		
-
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				//
 			}
 		}
 
@@ -267,21 +257,21 @@ public class ImpExp {
 				System.exit(1);
 			}
 		}	
-		
+
 		// initialize application environment
 		printInfoMessage("Initializing application environment");
 		config = new Config();
-		
+
 		// initialize object registry
 		ObjectRegistry registry = ObjectRegistry.getInstance();
-		
+
 		// register log controller
 		registry.setLogController(Logger.getInstance());
-		
+
 		// create and register application-wide event dispatcher
 		EventDispatcher eventDispatcher = new EventDispatcher();		
 		registry.setEventDispatcher(eventDispatcher);
-		
+
 		// create and register plugin config controller
 		PluginConfigControllerImpl pluginConfigController = new PluginConfigControllerImpl(config);
 		registry.setPluginConfigController(pluginConfigController);
@@ -289,7 +279,7 @@ public class ImpExp {
 		// create and register database controller
 		DatabaseControllerImpl databaseController = new DatabaseControllerImpl(config);
 		registry.setDatabaseController(databaseController);
-		
+
 		// create and register i/o controller
 		IOControllerImpl ioController = new IOControllerImpl(config);
 		registry.setIOController(ioController);
@@ -298,7 +288,7 @@ public class ImpExp {
 		IllegalPluginEventChecker checker = IllegalPluginEventChecker.getInstance();
 		eventDispatcher.addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, checker);
 		eventDispatcher.addEventHandler(GlobalEvents.SWITCH_LOCALE, checker);
-		
+
 		// set internal proxy selector as default
 		ProxySelector.setDefault(InternalProxySelector.getInstance(config));
 
@@ -307,7 +297,7 @@ public class ImpExp {
 			// create citygml4j builder and register in object registry
 			jaxbBuilder = new JAXBBuilder();
 			registry.setCityGMLBuilder(jaxbBuilder);
-			
+
 			kmlContext = JAXBContext.newInstance("net.opengis.kml._2", Thread.currentThread().getContextClassLoader());
 			colladaContext = JAXBContext.newInstance("org.collada._2005._11.colladaschema", Thread.currentThread().getContextClassLoader());
 			projectContext = JAXBContext.newInstance(projectConfigClasses.toArray(new Class<?>[]{}));
@@ -564,6 +554,21 @@ public class ImpExp {
 			}.start();
 
 			return;
+		}
+	}
+
+	private void setLookAndFeel() {
+		try {
+			// set look & feel
+			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+			if (OSXAdapter.IS_MAC_OS_X) {
+				OSXAdapter.setDockIconImage(Toolkit.getDefaultToolkit().getImage(ImpExp.class.getResource("/resources/img/common/logo_small.png")));
+				System.setProperty("apple.laf.useScreenMenuBar", "true");
+			}
+
+		} catch(Exception e) {
+			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 

@@ -64,7 +64,7 @@ import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.gui.BoundingBox;
+import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
@@ -75,6 +75,7 @@ import de.tub.citydb.config.project.filter.TileSuffixMode;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.IndexStatusInfo.IndexType;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
@@ -85,7 +86,7 @@ import de.tub.citydb.modules.citygml.exporter.concurrent.DBExportWorkerFactory;
 import de.tub.citydb.modules.citygml.exporter.concurrent.DBExportXlinkWorkerFactory;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBSplitter;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBSplittingResult;
-import de.tub.citydb.modules.citygml.exporter.database.gmlid.DBExportCache;
+import de.tub.citydb.modules.citygml.exporter.database.gmlid.ExportCache;
 import de.tub.citydb.modules.common.concurrent.IOWriterWorkerFactory;
 import de.tub.citydb.modules.common.event.EventType;
 import de.tub.citydb.modules.common.event.FeatureCounterEvent;
@@ -95,8 +96,6 @@ import de.tub.citydb.modules.common.event.StatusDialogMessage;
 import de.tub.citydb.modules.common.event.StatusDialogTitle;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.util.Util;
-import de.tub.citydb.util.database.DBUtil;
-import de.tub.citydb.util.database.IndexStatusInfo.IndexType;
 
 public class Exporter implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
@@ -161,22 +160,12 @@ public class Exporter implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		// checking workspace... this should be improved in future...
+		// checking workspace
 		Workspace workspace = database.getWorkspaces().getExportWorkspace();
-		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.existsWorkspace(workspace);
-
-			String name = "'" + workspace.getName().trim() + "'";
-			String timestamp = workspace.getTimestamp().trim();
-			if (timestamp.trim().length() > 0)
-				name += " at timestamp " + timestamp;
-
-			if (!workspaceExists) {
-				LOG.error("Database workspace " + name + " is not available.");
-				return false;
-			} else 
-				LOG.info("Switching to database workspace " + name + '.');
-		}
+		if (shouldRun && dbPool.getActiveDatabaseAdapter().hasVersioningSupport() && 
+				!dbPool.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
+				!dbPool.getActiveDatabaseAdapter().getWorkspaceManager().existsWorkspace(workspace, true))
+			return false;
 
 		// set module context according to CityGML version and create SAX writer
 		CityGMLVersion version = config.getProject().getExporter().getCityGMLVersion().toCityGMLVersion();
@@ -195,8 +184,7 @@ public class Exporter implements EventHandler {
 			if (module instanceof CoreModule)
 				continue;
 
-			if (version != CityGMLVersion.v0_4_0 &&
-					!config.getProject().getExporter().getAppearances().isSetExportAppearance() &&
+			if (!config.getProject().getExporter().getAppearances().isSetExportAppearance() &&
 					module instanceof AppearanceModule)
 				continue;
 
@@ -228,10 +216,10 @@ public class Exporter implements EventHandler {
 		DatabaseSrs targetSRS = config.getProject().getExporter().getTargetSRS();
 		internalConfig.setExportTargetSRS(targetSRS);
 		internalConfig.setTransformCoordinates(targetSRS.isSupported() && 
-				targetSRS.getSrid() != dbPool.getActiveConnectionMetaData().getReferenceSystem().getSrid());
+				targetSRS.getSrid() != dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
 
 		if (internalConfig.isTransformCoordinates()) {
-			if (targetSRS.is3D() == dbPool.getActiveConnectionMetaData().getReferenceSystem().is3D()) {
+			if (targetSRS.is3D() == dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D()) {
 				LOG.info("Transforming geometry representation to reference system '" + targetSRS.getDescription() + "' (SRID: " + targetSRS.getSrid() + ").");
 				LOG.warn("Transformation is NOT applied to height reference system.");
 			} else {
@@ -243,7 +231,7 @@ public class Exporter implements EventHandler {
 		// log index status
 		try {
 			for (IndexType type : IndexType.values())
-				DBUtil.getIndexStatus(type).printStatusToConsole();
+				dbPool.getActiveDatabaseAdapter().getUtil().getIndexStatus(type).printStatusToConsole();
 		} catch (SQLException e) {
 			LOG.error("Database error while querying index status: " + e.getMessage());
 			return false;
@@ -252,7 +240,7 @@ public class Exporter implements EventHandler {
 		// check whether database contains global appearances and set internal flag
 		try {
 			internalConfig.setExportGlobalAppearances(config.getProject().getExporter().getAppearances().isSetExportAppearance() && 
-					DBUtil.getNumGlobalAppearances() > 0);
+					dbPool.getActiveDatabaseAdapter().getUtil().getNumGlobalAppearances(workspace) > 0);
 		} catch (SQLException e) {
 			LOG.error("Database error while querying the number of global appearances: " + e.getMessage());
 			return false;
@@ -396,7 +384,7 @@ public class Exporter implements EventHandler {
 					try {		
 						lookupServerManager.initServer(
 								DBGmlIdLookupServerEnum.GEOMETRY,
-								new DBExportCache(cacheManager, 
+								new ExportCache(cacheManager, 
 										CacheTableModelEnum.GMLID_GEOMETRY, 
 										system.getGmlIdLookupServer().getGeometry().getPartitions(),
 										lookupCacheBatchSize),
@@ -406,7 +394,7 @@ public class Exporter implements EventHandler {
 
 						lookupServerManager.initServer(
 								DBGmlIdLookupServerEnum.FEATURE,
-								new DBExportCache(cacheManager, 
+								new ExportCache(cacheManager, 
 										CacheTableModelEnum.GMLID_FEATURE, 
 										system.getGmlIdLookupServer().getFeature().getPartitions(), 
 										lookupCacheBatchSize),

@@ -38,7 +38,6 @@ import org.citygml4j.model.citygml.vegetation.PlantCover;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
@@ -60,17 +59,19 @@ public class DBPlantCover implements DBImporter {
 		init();
 	}
 
-	private void init() throws SQLException {		
-		psPlantCover = batchConn.prepareStatement("insert into PLANT_COVER (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, " +
-				"AVERAGE_HEIGHT, LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID) values " +
-				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	private void init() throws SQLException {
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into PLANT_COVER (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, ")
+		.append("AVERAGE_HEIGHT, LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psPlantCover = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 	}
 
 	public long insert(PlantCover plantCover) throws SQLException {
-		long plantCoverId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long plantCoverId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (plantCoverId != 0)
@@ -116,8 +117,8 @@ public class DBPlantCover implements DBImporter {
 		}
 
 		// citygml:class
-		if (plantCover.isSetClazz())
-			psPlantCover.setString(5, plantCover.getClazz().trim());
+		if (plantCover.isSetClazz() && plantCover.getClazz().isSetValue())
+			psPlantCover.setString(5, plantCover.getClazz().getValue().trim());
 		else
 			psPlantCover.setNull(5, Types.VARCHAR);
 
@@ -161,6 +162,7 @@ public class DBPlantCover implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiSurfaceId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), plantCoverId);
+					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					// xlink
 					String href = multiSurfaceProperty.getHref();
@@ -187,6 +189,7 @@ public class DBPlantCover implements DBImporter {
 				}
 				else
 					psPlantCover.setNull(8, 0);
+				
 				break;
 			case 2:
 				if (multiSurfaceId != 0) {
@@ -195,6 +198,7 @@ public class DBPlantCover implements DBImporter {
 				}
 				else
 					psPlantCover.setNull(9, 0);
+				
 				break;
 			case 3:
 				if (multiSurfaceId != 0) {
@@ -203,6 +207,7 @@ public class DBPlantCover implements DBImporter {
 				}
 				else
 					psPlantCover.setNull(10, 0);
+				
 				break;
 			case 4:
 				if (multiSurfaceId != 0) {
@@ -211,6 +216,7 @@ public class DBPlantCover implements DBImporter {
 				}
 				else
 					psPlantCover.setNull(11, 0);
+				
 				break;
 			}
 		}
@@ -234,13 +240,14 @@ public class DBPlantCover implements DBImporter {
 				multiSolidProperty = plantCover.getLod3MultiSolid();
 				break;
 			case 4:
-				multiSolidProperty = null;
+				multiSolidProperty = plantCover.getLod4MultiSolid();
 				break;
 			}
 
 			if (multiSolidProperty != null) {
 				if (multiSolidProperty.isSetMultiSolid()) {
 					multiSolidGeometryId = surfaceGeometryImporter.insert(multiSolidProperty.getMultiSolid(), plantCoverId);
+					multiSolidProperty.unsetMultiSolid();
 				} else {
 					// xlink
 					String href = multiSolidProperty.getHref();
@@ -279,14 +286,20 @@ public class DBPlantCover implements DBImporter {
 					psPlantCover.setNull(10, 0);
 				break;
 			case 4:
-				psPlantCover.setNull(11, 0);
+				if (multiSolidGeometryId != 0)
+					psPlantCover.setLong(11, multiSolidGeometryId);
+				else
+					psPlantCover.setNull(11, 0);
 				break;
 			}
 		}
 
 		psPlantCover.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.PLANT_COVER);
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(plantCover, plantCoverId);
 
 		return true;
 	}

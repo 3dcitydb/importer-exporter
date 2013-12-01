@@ -36,8 +36,8 @@ import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
 import de.tub.citydb.api.database.DatabaseSrs;
-import de.tub.citydb.api.gui.BoundingBox;
-import de.tub.citydb.api.gui.BoundingBoxCorner;
+import de.tub.citydb.api.geometry.BoundingBox;
+import de.tub.citydb.api.geometry.BoundingBoxCorner;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
 import de.tub.citydb.config.project.filter.FilterBoundingBox;
@@ -48,7 +48,6 @@ import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.filter.Filter;
 import de.tub.citydb.modules.common.filter.FilterMode;
-import de.tub.citydb.util.database.DBUtil;
 
 public class BoundingBoxFilter implements Filter<Envelope> {
 	private final Logger LOG = Logger.getInstance();
@@ -99,12 +98,12 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 					boundingBoxConfig.getUpperRightCorner().getY() != null) {
 				boundingBox = new BoundingBox(boundingBoxConfig);
 				if (boundingBox.getSrs() == null) {
-					boundingBox.setSrs(DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem());
+					boundingBox.setSrs(DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem());
 					LOG.warn("SRS on bounding box filter not set. Choosing database SRS '" + boundingBox.getSrs().getDatabaseSrsName() + "' instead.");
 				}
 
 				// check whether we have to transform the bounding box
-				DatabaseSrs targetSrs = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem();
+				DatabaseSrs targetSrs = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 
 				// targetSrs differs if a coordinate transformation is applied to the CityGML export
 				if (mode == FilterMode.EXPORT) {
@@ -115,7 +114,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 				
 				if (boundingBox.getSrs().isSupported() && boundingBox.getSrs().getSrid() != targetSrs.getSrid()) {			
 					try {
-						boundingBox = DBUtil.transformBBox(boundingBox, boundingBox.getSrs(), targetSrs);
+						boundingBox = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().transformBoundingBox(boundingBox, boundingBox.getSrs(), targetSrs);
 					} catch (SQLException sqlEx) {
 						LOG.error("Failed to initialize bounding box filter.");
 					}

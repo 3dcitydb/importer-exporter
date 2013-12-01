@@ -54,15 +54,17 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
+import de.tub.citydb.modules.citygml.importer.util.LocalTextureCoordinatesResolver;
 
 public class DBImporterManager {
 	private final Connection batchConn;
-	private final Connection commitConn;
+	private final AbstractDatabaseAdapter databaseAdapter;
 	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
@@ -75,19 +77,20 @@ public class DBImporterManager {
 	private final DBSequencer dbSequencer;
 	
 	private AffineTransformer affineTransformer;
+	private LocalTextureCoordinatesResolver localTexCoordResolver;
 	private CityGMLVersion cityGMLVersion;
 	private JAXBMarshaller jaxbMarshaller;
 	private SAXWriter saxWriter;
 
 	public DBImporterManager(Connection batchConn,
-			Connection commitConn,
+			AbstractDatabaseAdapter databaseAdapter,
 			JAXBBuilder jaxbBuilder,
 			Config config,
 			WorkerPool<DBXlink> tmpXlinkPool,
 			DBGmlIdLookupServerManager lookupServerManager,
 			EventDispatcher eventDipatcher) throws SQLException {
 		this.batchConn = batchConn;
-		this.commitConn = commitConn;
+		this.databaseAdapter = databaseAdapter;
 		this.jaxbBuilder = jaxbBuilder;
 		this.config = config;
 		this.lookupServerManager = lookupServerManager;
@@ -97,10 +100,13 @@ public class DBImporterManager {
 		dbImporterMap = new HashMap<DBImporterEnum, DBImporter>();
 		featureCounterMap = new HashMap<CityGMLClass, Long>();
 		geometryCounterMap = new HashMap<GMLClass, Long>();
-		dbSequencer = new DBSequencer(batchConn);
+		dbSequencer = new DBSequencer(batchConn, databaseAdapter);
 
 		if (config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation())
 			affineTransformer = config.getInternal().getAffineTransformer();
+		
+		if (config.getProject().getImporter().getAppearances().isSetImportAppearance())
+			localTexCoordResolver = new LocalTextureCoordinatesResolver();
 
 		if (config.getProject().getImporter().getAddress().isSetImportXAL()) {
 			cityGMLVersion = CityGMLVersion.DEFAULT;
@@ -119,7 +125,7 @@ public class DBImporterManager {
 				dbImporter = new DBSurfaceGeometry(batchConn, config, this);
 				break;
 			case IMPLICIT_GEOMETRY:
-				dbImporter = new DBImplicitGeometry(batchConn, commitConn, config, this);
+				dbImporter = new DBImplicitGeometry(batchConn, config, this);
 				break;
 			case CITYOBJECT:
 				dbImporter = new DBCityObject(batchConn, config, this);
@@ -172,6 +178,9 @@ public class DBImporterManager {
 			case APPEAR_TO_SURFACE_DATA:
 				dbImporter = new DBAppearToSurfaceData(batchConn, this);
 				break;
+			case TEXTURE_PARAM:
+				dbImporter = new DBTextureParam(batchConn, this);
+				break;
 			case DEPRECATED_MATERIAL_MODEL:
 				dbImporter = new DBDeprecatedMaterialModel(config, this);
 				break;
@@ -211,8 +220,8 @@ public class DBImporterManager {
 			case CITYOBJECTGROUP:
 				dbImporter = new DBCityObjectGroup(batchConn, this);
 				break;
-			case SDO_GEOMETRY:
-				dbImporter = new DBSdoGeometry(config, this);
+			case OTHER_GEOMETRY:
+				dbImporter = new DBOtherGeometry(config, this);
 				break;
 			}
 
@@ -257,6 +266,18 @@ public class DBImporterManager {
 
 		return 0;
 	}
+	
+	public long getDBIdFromMemory(String gmlId, CityGMLClass type) {
+		GmlIdLookupServer lookupServer = lookupServerManager.getLookupServer(type);
+
+		if (lookupServer != null) {
+			GmlIdEntry entry = lookupServer.getFromMemory(gmlId);
+			if (entry != null && entry.getId() > 0)
+				return entry.getId();
+		}
+
+		return 0;
+	}
 
 	public void propagateXlink(DBXlink xlink) {
 		tmpXlinkPool.addWork(xlink);
@@ -276,6 +297,10 @@ public class DBImporterManager {
 
 	public AffineTransformer getAffineTransformer() {
 		return affineTransformer;
+	}
+
+	public LocalTextureCoordinatesResolver getLocalTextureCoordinatesResolver() {
+		return localTexCoordResolver;
 	}
 
 	public HashMap<CityGMLClass, Long> getFeatureCounter() {
@@ -342,6 +367,10 @@ public class DBImporterManager {
 			if (importer != null)
 				importer.executeBatch();
 		}
+	}
+	
+	public AbstractDatabaseAdapter getDatabaseAdapter() {
+		return databaseAdapter;
 	}
 
 	public void close() throws SQLException {

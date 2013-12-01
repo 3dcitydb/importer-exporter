@@ -36,7 +36,6 @@ import java.sql.SQLException;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObject;
@@ -115,7 +114,7 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 			psGroupParentToCityObject.setLong(2, xlink.getGroupId());
 			
 			psGroupParentToCityObject.addBatch();
-			if (++parentBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+			if (++parentBatchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize()) {
 				psGroupParentToCityObject.executeBatch();
 				parentBatchCounter = 0;
 			}
@@ -125,7 +124,7 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 			psGroupMemberToCityObject.setString(3, xlink.getRole());
 
 			psGroupMemberToCityObject.addBatch();
-			if (++memberBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE) {
+			if (++memberBatchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize()) {
 				psGroupMemberToCityObject.executeBatch();
 				memberBatchCounter = 0;
 			}

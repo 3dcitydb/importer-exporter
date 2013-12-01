@@ -49,9 +49,9 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.DBOperationType;
 import de.tub.citydb.config.project.database.Workspace;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.gui.components.StatusDialog;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.database.DBUtil;
 import de.tub.citydb.util.gui.GuiUtil;
 
 public class ReportOperation extends DatabaseOperationView {
@@ -59,6 +59,7 @@ public class ReportOperation extends DatabaseOperationView {
 	private final Logger LOG = Logger.getInstance();
 	private final DatabaseOperationsPanel parent;
 	private final ViewController viewController;
+	private final DatabaseConnectionPool dbConnectionPool;
 
 	private JPanel component;
 	private JButton reportButton;
@@ -66,6 +67,7 @@ public class ReportOperation extends DatabaseOperationView {
 	public ReportOperation(DatabaseOperationsPanel parent) {
 		this.parent = parent;
 		viewController = ObjectRegistry.getInstance().getViewController();
+		dbConnectionPool = DatabaseConnectionPool.getInstance();
 
 		init();
 	}
@@ -76,7 +78,7 @@ public class ReportOperation extends DatabaseOperationView {
 
 		reportButton = new JButton();		
 		component.add(reportButton, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,0,5,0,5));
-		
+
 		reportButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Thread thread = new Thread() {
@@ -119,7 +121,7 @@ public class ReportOperation extends DatabaseOperationView {
 	public void doTranslation() {
 		reportButton.setText(Internal.I18N.getString("db.button.report"));
 	}
-	
+
 	@Override
 	public void setEnabled(boolean enable) {
 		reportButton.setEnabled(enable);
@@ -148,6 +150,8 @@ public class ReportOperation extends DatabaseOperationView {
 			viewController.setStatusText(Internal.I18N.getString("main.status.database.report.label"));
 
 			LOG.info("Generating database report...");			
+			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.existsWorkspace())
+				return;
 
 			final StatusDialog reportDialog = new StatusDialog(viewController.getTopFrame(), 
 					Internal.I18N.getString("db.dialog.report.window"), 
@@ -167,7 +171,7 @@ public class ReportOperation extends DatabaseOperationView {
 				public void actionPerformed(ActionEvent e) {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
-							DBUtil.cancelOperation();
+							dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation();
 						}
 					});
 				}
@@ -176,22 +180,20 @@ public class ReportOperation extends DatabaseOperationView {
 			String[] report = null;
 			String dbSqlEx = null;
 			try {
-				if (parent.existsWorkspace()) {
-					report = DBUtil.databaseReport(workspace);
+				report = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createDatabaseReport(workspace);
 
-					if (report != null) {
-						for(String line : report) {
-							if (line != null) {
-								line = line.replaceAll("\\\\n", "\\\n");
-								line = line.replaceAll("\\\\t", "\\\t");
-								LOG.print(line);
-							}
+				if (report != null) {
+					for(String line : report) {
+						if (line != null) {
+							line = line.replaceAll("\\\\n", "\\\n");
+							line = line.replaceAll("\\\\t", "\\\t");
+							LOG.print(line);
 						}
+					}
 
-						LOG.info("Database report successfully generated.");
-					} else
-						LOG.warn("Generation of database report aborted.");
-				}
+					LOG.info("Database report successfully generated.");
+				} else
+					LOG.warn("Generation of database report aborted.");
 
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {

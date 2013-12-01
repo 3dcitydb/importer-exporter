@@ -37,9 +37,9 @@ import oracle.ucp.jdbc.ValidConnection;
 import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
+import de.tub.citydb.api.database.DatabaseType;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DatabaseConnectionPool;
@@ -120,21 +120,24 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 
 		externalFileConn = dbPool.getConnection();
 		externalFileConn.setAutoCommit(false);
-		
+
 		Database database = config.getProject().getDatabase();
 
 		// try and change workspace for both connections if needed
-		Workspace workspace = database.getWorkspaces().getImportWorkspace();
-		dbPool.gotoWorkspace(batchConn, workspace);
-		dbPool.gotoWorkspace(externalFileConn, workspace);
+		if (dbPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
+			Workspace workspace = database.getWorkspaces().getImportWorkspace();
+			dbPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(batchConn, workspace);
+			dbPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(externalFileConn, workspace);
+		}
 
 		Integer commitAfterProp = database.getUpdateBatching().getFeatureBatchValue();
-		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= Internal.ORACLE_MAX_BATCH_SIZE)
+		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= dbPool.getActiveDatabaseAdapter().getMaxBatchSize())
 			commitAfter = commitAfterProp;
 
 		xlinkResolverManager = new DBXlinkResolverManager(
 				batchConn,
 				externalFileConn,
+				dbPool.getActiveDatabaseAdapter(),
 				tmpXlinkPool,
 				lookupServerManager,
 				cacheManager,
@@ -206,13 +209,13 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 			} catch (SQLException sqlEx) {
 				LOG.error("SQL error: " + sqlEx.getMessage());
 			}
-			
+
 			try {
 				xlinkResolverManager.close();
 			} catch (SQLException sqlEx) {
 				LOG.error("SQL error: " + sqlEx.getMessage());
 			}
-			
+
 		} finally {
 			if (batchConn != null) {
 				try {
@@ -226,7 +229,11 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 
 			if (externalFileConn != null) {
 				try {
-					((ValidConnection)externalFileConn).setInvalid();
+					// this hack is required for freeing database resources
+					// on OrdImage objects when working with Oracle 11g 
+					if (xlinkResolverManager.getDatabaseAdapter().getDatabaseType() == DatabaseType.ORACLE)
+						((ValidConnection)externalFileConn).setInvalid();
+					
 					externalFileConn.close();
 				} catch (SQLException e) {
 					//

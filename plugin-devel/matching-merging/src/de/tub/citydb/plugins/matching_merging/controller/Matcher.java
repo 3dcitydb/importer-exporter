@@ -76,8 +76,8 @@ public class Matcher implements EventHandler {
 	}
 
 	private boolean checkWorkspace(Workspace workspace) {
-		if (shouldRun && !workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = databaseController.existsWorkspace(workspace.getName());
+		if (shouldRun && !workspace.getName().toUpperCase().equals(databaseController.getActiveDatabaseAdapter().getWorkspaceManager().getDefaultWorkspaceName())) {
+			boolean workspaceExists = databaseController.getActiveDatabaseAdapter().getWorkspaceManager().existsWorkspace(workspace.getName());
 
 			String name = "'" + workspace.getName().trim() + "'";
 			String timestamp = workspace.getTimestamp().trim();
@@ -95,9 +95,9 @@ public class Matcher implements EventHandler {
 	}
 
 	public boolean match() {
-		// checking workspace... this should be improved in future...
+		// checking workspace
 		Workspace workspace = plugin.getConfig().getWorkspace();
-		if (!checkWorkspace(workspace))
+		if (databaseController.getActiveDatabaseAdapter().hasVersioningSupport() && !checkWorkspace(workspace))
 			return false;
 
 		ConfigImpl matching = plugin.getConfig();
@@ -113,8 +113,8 @@ public class Matcher implements EventHandler {
 		// check whether spatial indexes are enabled
 		logController.info("Checking for spatial indexes on geometry columns of involved tables...");
 		try {
-			if (!databaseController.isIndexEnabled("CITYOBJECT", "ENVELOPE") || 
-					!databaseController.isIndexEnabled("SURFACE_GEOMETRY", "GEOMETRY")) {
+			if (!databaseController.getActiveDatabaseAdapter().getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE") || 
+					!databaseController.getActiveDatabaseAdapter().getUtil().isIndexEnabled("SURFACE_GEOMETRY", "GEOMETRY")) {
 				logController.error("Spatial indexes are not activated.");
 				logController.error("Please use the preferences tab to activate the spatial indexes.");
 				return false;
@@ -137,8 +137,7 @@ public class Matcher implements EventHandler {
 
 		try {
 			conn = databaseController.getConnection();
-			databaseController.gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
-			conn.setAutoCommit(true);
+			databaseController.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
 
 			eventDispatcher.triggerEvent(new StatusDialogTitle(Util.I18N.getString("match.match.dialog.process"), this));
 			stmt = conn.createStatement();				
@@ -354,7 +353,6 @@ public class Matcher implements EventHandler {
 
 		try {
 			conn = databaseController.getConnection();
-			conn.setAutoCommit(true);
 
 			eventDispatcher.triggerEvent(new StatusDialogTitle(Util.I18N.getString("match.overlap.dialog.process"), this));
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(1, 2, this));
@@ -501,8 +499,7 @@ public class Matcher implements EventHandler {
 
 		try {
 			conn = databaseController.getConnection();
-			databaseController.gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
-			conn.setAutoCommit(true);
+			databaseController.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
 
 			eventDispatcher.triggerEvent(new StatusDialogTitle(Util.I18N.getString("match.merge.dialog.process"), this));
 
@@ -652,8 +649,7 @@ public class Matcher implements EventHandler {
 
 		try {
 			conn = databaseController.getConnection();
-			databaseController.gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
-			conn.setAutoCommit(true);
+			databaseController.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(conn, workspace.getName(), workspace.getTimestamp());
 
 			stmt = conn.createStatement();
 			result = stmt.executeQuery("select count(*) from cityobject where class_id=26 and lineage='" + lineage+"'");

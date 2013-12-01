@@ -37,8 +37,8 @@ import javax.xml.bind.annotation.XmlType;
 		"timestamp"
 })
 public class Workspace {
-	@XmlElement(required=true, defaultValue="LIVE")
-	private String name = "LIVE";
+	@XmlElement(required=true)
+	private String name = "";
 	private String timestamp = "";
 
 	public Workspace() {
@@ -69,6 +69,16 @@ public class Workspace {
 	public void setTimestamp(String timestamp) {
 		if (timestamp != null)
 			this.timestamp = timestamp;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("'").append(getName()).append("'");
+		if (timestamp.length() > 0)
+			builder.append(" at timestamp ").append(timestamp);
+		
+		return builder.toString();
 	}
 
 }

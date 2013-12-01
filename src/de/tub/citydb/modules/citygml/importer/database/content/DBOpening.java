@@ -41,7 +41,6 @@ import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
@@ -50,7 +49,7 @@ import de.tub.citydb.util.Util;
 
 public class DBOpening implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
-	
+
 	private final Connection batchConn;
 	private final DBImporterManager dbImporterManager;
 
@@ -59,9 +58,9 @@ public class DBOpening implements DBImporter {
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBOpeningToThemSurface openingToThemSurfaceImporter;
 	private DBAddress addressImporter;
-	
+
 	private int batchCounter;
-	
+
 	public DBOpening(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
 		this.dbImporterManager = dbImporterManager;
@@ -69,9 +68,11 @@ public class DBOpening implements DBImporter {
 		init();
 	}
 
-	private void init() throws SQLException {		
-		psOpening = batchConn.prepareStatement("insert into OPENING (ID, NAME, NAME_CODESPACE, DESCRIPTION, TYPE, ADDRESS_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID) values " +
-		"(?, ?, ?, ?, ?, ?, ?, ?)");
+	private void init() throws SQLException {
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into OPENING (ID, NAME, NAME_CODESPACE, DESCRIPTION, TYPE, ADDRESS_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?)");
+		psOpening = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
@@ -80,12 +81,12 @@ public class DBOpening implements DBImporter {
 	}
 
 	public long insert(AbstractOpening opening, long parentId) throws SQLException {
-		long openingId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long openingId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (openingId == 0)
 			return 0;
 
 		String origGmlId = opening.getId();
-		
+
 		// CityObject
 		cityObjectImporter.insert(opening, openingId);
 
@@ -120,19 +121,19 @@ public class DBOpening implements DBImporter {
 		psOpening.setString(5, TypeAttributeValueEnum.fromCityGMLClass(opening.getCityGMLClass()).toString());
 
 		// citygml:address
-		if (opening.getCityGMLClass() == CityGMLClass.DOOR) {
+		if (opening.getCityGMLClass() == CityGMLClass.BUILDING_DOOR) {
 			Door door = (Door)opening;
 			long addressId = 0;
-			
+
 			if (door.isSetAddress() && !door.getAddress().isEmpty()) {
 				// unfortunately, we can just represent one address in database...
 				AddressProperty addressProperty = door.getAddress().get(0);
 				Address address = addressProperty.getObject();
-				
+
 				if (address != null) {
 					String gmlId = address.getId();
 					addressId = addressImporter.insert(address);
-					
+
 					if (addressId == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 								opening.getCityGMLClass(), 
@@ -141,7 +142,7 @@ public class DBOpening implements DBImporter {
 						msg.append(Util.getFeatureSignature(
 								CityGMLClass.ADDRESS, 
 								gmlId));
-						
+
 						LOG.error(msg.toString());
 					}					
 				} else {
@@ -154,7 +155,7 @@ public class DBOpening implements DBImporter {
 								TableEnum.OPENING,
 								href,
 								TableEnum.ADDRESS
-						);
+								);
 
 						xlink.setAttrName("ADDRESS_ID");
 						dbImporterManager.propagateXlink(xlink);
@@ -166,7 +167,7 @@ public class DBOpening implements DBImporter {
 				psOpening.setLong(6, addressId);
 			else
 				psOpening.setNull(6, 0);
-			
+
 		} else {
 			psOpening.setNull(6, 0);
 		}
@@ -188,6 +189,7 @@ public class DBOpening implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiSurfaceId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), openingId);
+					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					// xlink
 					String href = multiSurfaceProperty.getHref();
@@ -198,7 +200,7 @@ public class DBOpening implements DBImporter {
 								TableEnum.OPENING,
 								href,
 								TableEnum.SURFACE_GEOMETRY
-						);
+								);
 
 						xlink.setAttrName("LOD" + lod + "_MULTI_SURFACE_ID");
 						dbImporterManager.propagateXlink(xlink);
@@ -223,10 +225,13 @@ public class DBOpening implements DBImporter {
 		}
 
 		psOpening.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.OPENING);
-		
+
 		openingToThemSurfaceImporter.insert(openingId, parentId);
+
+		// insert local appearance
+		cityObjectImporter.insertAppearance(opening, openingId);
 
 		return openingId;
 	}

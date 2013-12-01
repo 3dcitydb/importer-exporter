@@ -40,7 +40,6 @@ import org.citygml4j.model.citygml.building.IntBuildingInstallation;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
@@ -62,16 +61,18 @@ public class DBBuildingInstallation implements DBImporter {
 		init();
 	}
 
-	private void init() throws SQLException {		
-		psBuildingInstallation = batchConn.prepareStatement("insert into BUILDING_INSTALLATION (ID, IS_EXTERNAL, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, BUILDING_ID, ROOM_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID) values " +
-				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	private void init() throws SQLException {	
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into BUILDING_INSTALLATION (ID, IS_EXTERNAL, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, BUILDING_ID, ROOM_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psBuildingInstallation = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 	}
 
 	public long insert(BuildingInstallation buildingInstallation, CityGMLClass parent, long parentId) throws SQLException {
-		long buildingInstallationId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long buildingInstallationId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (buildingInstallationId == 0)
 			return 0;
 
@@ -109,21 +110,21 @@ public class DBBuildingInstallation implements DBImporter {
 		}
 
 		// citygml:class
-		if (buildingInstallation.isSetClazz())
-			psBuildingInstallation.setString(6, buildingInstallation.getClazz().trim());
+		if (buildingInstallation.isSetClazz() && buildingInstallation.getClazz().isSetValue())
+			psBuildingInstallation.setString(6, buildingInstallation.getClazz().getValue().trim());
 		else
 			psBuildingInstallation.setNull(6, Types.VARCHAR);
 
 		// citygml:function
 		if (buildingInstallation.isSetFunction()) {
-			psBuildingInstallation.setString(7, Util.collection2string(buildingInstallation.getFunction(), " "));
+			psBuildingInstallation.setString(7, Util.codeList2string(buildingInstallation.getFunction(), " "));
 		} else {
 			psBuildingInstallation.setNull(7, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (buildingInstallation.isSetUsage()) {
-			psBuildingInstallation.setString(8, Util.collection2string(buildingInstallation.getUsage(), " "));
+			psBuildingInstallation.setString(8, Util.codeList2string(buildingInstallation.getUsage(), " "));
 		} else {
 			psBuildingInstallation.setNull(8, Types.VARCHAR);
 		}
@@ -135,7 +136,7 @@ public class DBBuildingInstallation implements DBImporter {
 			psBuildingInstallation.setLong(9, parentId);
 			psBuildingInstallation.setNull(10, 0);
 			break;
-		case ROOM:
+		case BUILDING_ROOM:
 			psBuildingInstallation.setNull(9, 0);
 			psBuildingInstallation.setLong(10, parentId);
 			break;
@@ -164,6 +165,7 @@ public class DBBuildingInstallation implements DBImporter {
 			if (geometryProperty != null) {
 				if (geometryProperty.isSetGeometry()) {
 					geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), buildingInstallationId);
+					geometryProperty.unsetGeometry();
 				} else {
 					// xlink
 					String href = geometryProperty.getHref();
@@ -205,23 +207,26 @@ public class DBBuildingInstallation implements DBImporter {
 		}
 
 		psBuildingInstallation.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING_INSTALLATION);
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(buildingInstallation, buildingInstallationId);
 		
 		return buildingInstallationId;
 	}
 
 	public long insert(IntBuildingInstallation intBuildingInstallation, CityGMLClass parent, long parentId) throws SQLException {
-		long buildingInstallationId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
-		if (buildingInstallationId == 0)
+		long intBuildingInstallationId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
+		if (intBuildingInstallationId == 0)
 			return 0;
 
 		// CityObject
-		cityObjectImporter.insert(intBuildingInstallation, buildingInstallationId);
+		cityObjectImporter.insert(intBuildingInstallation, intBuildingInstallationId);
 
 		// IntBuildingInstallation
 		// ID
-		psBuildingInstallation.setLong(1, buildingInstallationId);
+		psBuildingInstallation.setLong(1, intBuildingInstallationId);
 
 		// IS_EXTERNAL
 		psBuildingInstallation.setLong(2, 0);
@@ -250,22 +255,22 @@ public class DBBuildingInstallation implements DBImporter {
 		}
 
 		// citygml:class
-		if (intBuildingInstallation.isSetClazz()) {
-			psBuildingInstallation.setString(6, intBuildingInstallation.getClazz().trim());
+		if (intBuildingInstallation.isSetClazz() && intBuildingInstallation.getClazz().isSetValue()) {
+			psBuildingInstallation.setString(6, intBuildingInstallation.getClazz().getValue().trim());
 		} else {
 			psBuildingInstallation.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:function
 		if (intBuildingInstallation.isSetFunction()) {
-			psBuildingInstallation.setString(7, Util.collection2string(intBuildingInstallation.getFunction(), " "));
+			psBuildingInstallation.setString(7, Util.codeList2string(intBuildingInstallation.getFunction(), " "));
 		} else {
 			psBuildingInstallation.setNull(7, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (intBuildingInstallation.isSetUsage()) {
-			psBuildingInstallation.setString(8, Util.collection2string(intBuildingInstallation.getUsage(), " "));
+			psBuildingInstallation.setString(8, Util.codeList2string(intBuildingInstallation.getUsage(), " "));
 		} else {
 			psBuildingInstallation.setNull(8, Types.VARCHAR);
 		}
@@ -277,7 +282,7 @@ public class DBBuildingInstallation implements DBImporter {
 			psBuildingInstallation.setLong(9, parentId);
 			psBuildingInstallation.setNull(10, 0);
 			break;
-		case ROOM:
+		case BUILDING_ROOM:
 			psBuildingInstallation.setNull(9, 0);
 			psBuildingInstallation.setLong(10, parentId);
 			break;
@@ -295,14 +300,15 @@ public class DBBuildingInstallation implements DBImporter {
 			GeometryProperty<? extends AbstractGeometry> geometryProperty = intBuildingInstallation.getLod4Geometry();
 
 			if (geometryProperty.isSetGeometry()) {
-				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), buildingInstallationId);
+				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), intBuildingInstallationId);
+				geometryProperty.unsetGeometry();
 			} else {
 				// xlink
 				String href = geometryProperty.getHref();
 
     			if (href != null && href.length() != 0) {
     				DBXlinkBasic xlink = new DBXlinkBasic(
-    						buildingInstallationId,
+    						intBuildingInstallationId,
     						TableEnum.BUILDING_INSTALLATION,
     						href,
     						TableEnum.SURFACE_GEOMETRY
@@ -313,16 +319,20 @@ public class DBBuildingInstallation implements DBImporter {
     			}
 			}
 		}
+		
 		if (geometryId != 0)
 			psBuildingInstallation.setLong(13, geometryId);
 		else
 			psBuildingInstallation.setNull(13, 0);
-
+		
 		psBuildingInstallation.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING_INSTALLATION);
 		
-		return buildingInstallationId;
+		// insert local appearance
+		cityObjectImporter.insertAppearance(intBuildingInstallation, intBuildingInstallationId);
+		
+		return intBuildingInstallationId;
 	}
 
 	@Override

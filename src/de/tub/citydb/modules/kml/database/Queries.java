@@ -31,9 +31,12 @@ package de.tub.citydb.modules.kml.database;
 
 import java.util.HashMap;
 
+import de.tub.citydb.api.database.DatabaseType;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
 
 public class Queries {
 
@@ -41,32 +44,42 @@ public class Queries {
 	// 	GENERIC PURPOSE QUERIES
 	// ----------------------------------------------------------------------
 
-    public static final String GET_IDS =
-    	"SELECT co.id, co.gmlid, co.class_id " +
-		"FROM CITYOBJECT co " +
-		"WHERE " +
-		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
-		"UNION ALL " +
-    	"SELECT co.id, co.gmlid, co.class_id " +
-		"FROM CITYOBJECT co " +
-		"WHERE " +
-		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby') ='TRUE') " +
-		"UNION ALL " +
-    	"SELECT co.id, co.gmlid, co.class_id " +
-		"FROM CITYOBJECT co " +
-		"WHERE " +
-		  "(SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
-		"ORDER BY 3"; // ORDER BY co.class_id
+    public static final String GET_IDS(DatabaseType type) {
+    	String query = "SELECT co.id, co.gmlid, co.class_id FROM CITYOBJECT co WHERE ";
+    	
+    	switch (type) {
+    	case ORACLE:
+    		query += "(SDO_RELATE(co.envelope, ?, 'mask=overlapbdydisjoint') = 'TRUE') "
+        			+ "UNION ALL "
+    				+ "SELECT co.id, co.gmlid, co.class_id FROM CITYOBJECT co WHERE "
+        			+ "(SDO_RELATE(co.envelope, ?, 'mask=inside+coveredby+equal') = 'TRUE') ";
+    		break;
+    	case POSTGIS:
+    		query += "ST_Intersects(co.envelope, ?) = 'TRUE' "
+    				+ "or ST_CoveredBy(co.envelope, ?) = 'TRUE' ";
+    		break;
+    	}
+    	
+    	query += "ORDER BY 3"; // ORDER BY co.class_id
+    	return query;
+    }
 
-	public static final String GET_EXTRUDED_HEIGHT =
-		"SELECT " + // "b.measured_height, " +
-		"SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) - SDO_GEOM.SDO_MIN_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
-		"FROM CITYOBJECT co " + // ", BUILDING b " +
-		"WHERE " +
-			"co.id = ?"; // + " AND b.building_root_id = co.id";
+	public static final String GET_EXTRUDED_HEIGHT(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT " + // "b.measured_height, " +
+					"SDO_GEOM.SDO_MAX_MBR_ORDINATE(co.envelope, 3) - SDO_GEOM.SDO_MIN_MBR_ORDINATE(co.envelope, 3) AS envelope_measured_height " +
+					"FROM CITYOBJECT co " + // ", BUILDING b " +
+					"WHERE co.id = ?"; // + " AND b.building_root_id = co.id";
+		case POSTGIS:
+			return "SELECT " + // "b.measured_height, " +
+					"ST_ZMax(Box3D(co.envelope)) - ST_ZMin(Box3D(co.envelope)) AS envelope_measured_height " +
+					"FROM CITYOBJECT co " + // ", BUILDING b " +
+					"WHERE co.id = ?"; // + " AND b.building_root_id = co.id";
+		default:
+			return null;
+		}
+	}
 
 	public static final String GET_STRVAL_GENERICATTRIB_FROM_ID =
 		"SELECT coga.strval " +
@@ -82,119 +95,312 @@ public class Queries {
     public static final String GET_GMLID_AND_OBJECTCLASS_FROM_ID =
 		"SELECT gmlid, class_id FROM CITYOBJECT WHERE id = ?";
 
-    public static final String INSERT_GE_ZOFFSET =
-		"INSERT INTO CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) " +
-		"VALUES (CITYOBJECT_GENERICATT_SEQ.NEXTVAL, ?, 1, ?, ?)";
+    public static final String INSERT_GE_ZOFFSET(AbstractSQLAdapter sqlAdapter) {
+    	return "INSERT INTO CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) " +
+		"VALUES (" + sqlAdapter.getNextSequenceValue(DBSequencerEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ) + ", ?, 1, ?, ?)";
+    }
 	
-	public static final String TRANSFORM_GEOMETRY_TO_WGS84 =
-		"SELECT SDO_CS.TRANSFORM(?, 4326) FROM DUAL";
+	public static final String TRANSFORM_GEOMETRY_TO_WGS84(AbstractSQLAdapter sqlAdapter) {
+		String query = "SELECT " + sqlAdapter.resolveDatabaseOperationName("geom_transform") + "(?, 4326)";
+		if (sqlAdapter.requiresPseudoTableInSelect())
+			query += " FROM " + sqlAdapter.getPseudoTableName();
+		
+		return query;
+	}
 
-	public static final String TRANSFORM_GEOMETRY_TO_WGS84_3D =
-		"SELECT SDO_CS.TRANSFORM(?, 4329) FROM DUAL";
+	public static final String TRANSFORM_GEOMETRY_TO_WGS84_3D(AbstractSQLAdapter sqlAdapter) {
+		String query = "SELECT " + sqlAdapter.resolveDatabaseOperationName("geom_transform") + "(?, 4329)";
+		if (sqlAdapter.requiresPseudoTableInSelect())
+			query += " FROM " + sqlAdapter.getPseudoTableName();
+		
+		return query;
+	}
 
-	public static final String GET_ENVELOPE_IN_WGS84_FROM_ID =
-		"SELECT SDO_CS.TRANSFORM(co.envelope, 4326) " +
+	public static final String GET_ENVELOPE_IN_WGS84_FROM_ID(AbstractSQLAdapter sqlAdapter) {
+		return "SELECT " + sqlAdapter.resolveDatabaseOperationName("geom_transform") + "(co.envelope, 4326) " +
 		"FROM CITYOBJECT co " +
 		"WHERE co.id = ?";
+	}
 
-	public static final String GET_ENVELOPE_IN_WGS84_3D_FROM_ID =
-		"SELECT SDO_CS.TRANSFORM(co.envelope, 4329) " +
+	public static final String GET_ENVELOPE_IN_WGS84_3D_FROM_ID(AbstractSQLAdapter sqlAdapter) {
+		return "SELECT " + sqlAdapter.resolveDatabaseOperationName("geom_transform") + "(co.envelope, 4329) " +
 		"FROM CITYOBJECT co " +
 		"WHERE co.id = ?";
+	}
 
-	public static final String GET_CENTROID_IN_WGS84_FROM_ID =
-		"SELECT SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4326) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_CENTROID_IN_WGS84_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4326) " +
+			"FROM CITYOBJECT co " +
+			"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_Transform(ST_Centroid(co.envelope), 4326) " +
+			"FROM CITYOBJECT co " +
+			"WHERE co.id = ?";
+		default:
+			return null;
+		}		
+	}
 
-	public static final String GET_CENTROID_IN_WGS84_3D_FROM_ID =
-		"SELECT SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4329) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_CENTROID_IN_WGS84_3D_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4329) " +
+			"FROM CITYOBJECT co " +
+			"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_Transform(ST_Centroid(co.envelope), 4329) " +
+			"FROM CITYOBJECT co " +
+			"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 	
-	public static final String GET_CENTROID_LAT_IN_WGS84_FROM_ID =
-		"SELECT v.Y FROM TABLE(" +
-			"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4326)) " +
-			"FROM CITYOBJECT co " + 
-			"WHERE co.id = ?) v";
+	public static final String GET_CENTROID_LAT_IN_WGS84_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT v.Y FROM TABLE(" +
+					"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4326)) " +
+					"FROM CITYOBJECT co " + 
+					"WHERE co.id = ?) v";
+		case POSTGIS:
+			return "SELECT ST_Y(ST_Transform(ST_Centroid(co.envelope), 4326)) " +
+					"FROM CITYOBJECT co " + 
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_CENTROID_LAT_IN_WGS84_3D_FROM_ID =
-		"SELECT v.Y FROM TABLE(" +
-			"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4329)) " +
-			"FROM CITYOBJECT co " + 
-			"WHERE co.id = ?) v";
+	public static final String GET_CENTROID_LAT_IN_WGS84_3D_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT v.Y FROM TABLE(" +
+					"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4329)) " +
+					"FROM CITYOBJECT co " + 
+					"WHERE co.id = ?) v";
+		case POSTGIS:
+			return "SELECT ST_Y(ST_Transform(ST_Centroid(co.envelope), 4329)) " +
+					"FROM CITYOBJECT co " + 
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_CENTROID_LON_IN_WGS84_FROM_ID =
-		"SELECT v.X FROM TABLE(" +
-			"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4326)) " +
-			"FROM CITYOBJECT co " + 
-			"WHERE co.id = ?) v";
+	public static final String GET_CENTROID_LON_IN_WGS84_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT v.X FROM TABLE(" +
+					"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4326)) " +
+					"FROM CITYOBJECT co " + 
+					"WHERE co.id = ?) v";
+		case POSTGIS:
+			return "SELECT ST_X(ST_Transform(ST_Centroid(co.envelope), 4326)) " +
+					"FROM CITYOBJECT co " + 
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}	
+	}
 
-	public static final String GET_CENTROID_LON_IN_WGS84_3D_FROM_ID =
-		"SELECT v.X FROM TABLE(" +
-			"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4329)) " +
-			"FROM CITYOBJECT co " + 
-			"WHERE co.id = ?) v";
+	public static final String GET_CENTROID_LON_IN_WGS84_3D_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT v.X FROM TABLE(" +
+					"SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), 4329)) " +
+					"FROM CITYOBJECT co " + 
+					"WHERE co.id = ?) v";
+		case POSTGIS:
+			return "SELECT ST_X(ST_Transform(ST_Centroid(co.envelope), 4329)) " +
+					"FROM CITYOBJECT co " + 
+					"WHERE co.id = ?";	
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_ENVELOPE_LAT_MIN_IN_WGS84_FROM_ID =
-		"SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 2) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_ENVELOPE_LAT_MIN_IN_WGS84_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 2) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_YMin(Box3D(ST_Transform(co.envelope, 4326))) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_ENVELOPE_LAT_MIN_IN_WGS84_3D_FROM_ID =
-		"SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 2) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_ENVELOPE_LAT_MIN_IN_WGS84_3D_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 2) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_YMin(Box3D(ST_Transform(co.envelope, 4329))) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_ENVELOPE_LAT_MAX_IN_WGS84_FROM_ID =
-		"SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 2) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_ENVELOPE_LAT_MAX_IN_WGS84_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 2) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_YMax(Box3D(ST_Transform(co.envelope, 4326))) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_ENVELOPE_LAT_MAX_IN_WGS84_3D_FROM_ID =
-		"SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 2) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_ENVELOPE_LAT_MAX_IN_WGS84_3D_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 2) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_YMax(Box3D(ST_Transform(co.envelope, 4329))) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_ENVELOPE_LON_MIN_IN_WGS84_FROM_ID =
-		"SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 1) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_ENVELOPE_LON_MIN_IN_WGS84_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 1) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_XMin(Box3D(ST_Transform(co.envelope, 4326))) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_ENVELOPE_LON_MIN_IN_WGS84_3D_FROM_ID =
-		"SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 1) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_ENVELOPE_LON_MIN_IN_WGS84_3D_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 1) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_XMin(Box3D(ST_Transform(co.envelope, 4329)))) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_ENVELOPE_LON_MAX_IN_WGS84_FROM_ID =
-		"SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 1) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_ENVELOPE_LON_MAX_IN_WGS84_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 1) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_XMax(Box3D(ST_Transform(co.envelope, 4326))) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_ENVELOPE_LON_MAX_IN_WGS84_3D_FROM_ID =
-		"SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 1) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_ENVELOPE_LON_MAX_IN_WGS84_3D_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 1) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_XMax(Box3D(ST_Transform(co.envelope, 4329))) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_FROM_ID =
-		"SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 3) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 3) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_ZMin(Box3D(ST_Transform(co.envelope, 4326))) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_3D_FROM_ID =
-		"SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 3) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_3D_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 3) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_ZMin(Box3D(ST_Transform(co.envelope, 4329))) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_FROM_ID =
-		"SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 3) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4326), 3) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_ZMax(Box3D(ST_Transform(co.envelope, 4326))) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
-	public static final String GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_3D_FROM_ID =
-		"SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 3) " +
-		"FROM CITYOBJECT co " +
-		"WHERE co.id = ?";
+	public static final String GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_3D_FROM_ID(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, 4329), 3) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		case POSTGIS:
+			return "SELECT ST_ZMax(Box3D(ST_Transform(co.envelope, 4329))) " +
+					"FROM CITYOBJECT co " +
+					"WHERE co.id = ?";
+		default:
+			return null;
+		}
+	}
 
 	// ----------------------------------------------------------------------
 	// 	BUILDING QUERIES
@@ -345,7 +551,7 @@ public class Queries {
 				"AND b.lod1_geometry_id IS NOT NULL";
 
 		private static final String COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 =
-			"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, " +
+			"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, sd.id as sd_id, " +
 					"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
 					"sd.tex_image_uri, sd.tex_image, tp.texture_coordinates, a.theme " +
 			"FROM SURFACE_GEOMETRY sg " +
@@ -440,92 +646,150 @@ public class Queries {
 						"AND ts.lod4_multi_surface_id IS NULL)";
 
 
-	    private static final String BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER =
-			"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
-			"FROM (" +
+	    private static final String BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER(DatabaseType type) {
+	    	switch (type) {
+			case ORACLE:
+				return "SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+						"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+						"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+						"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
+						"FROM (" +
 
-			"SELECT * FROM (" +
-			"SELECT * FROM (" +
-			
-	    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-//	    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-//			"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
-//			"SELECT sg.geometry AS simple_geom " +
-			"FROM SURFACE_GEOMETRY sg " +
-			"WHERE " +
-			  "sg.root_id IN( " +
-			     "SELECT b.lod<LoD>_geometry_id " +
-			     "FROM BUILDING b " +
-			     "WHERE "+
-			       "b.id = ? " +
-			       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
-			     "UNION " +
-			     "SELECT ts.lod<LoD>_multi_surface_id " +
-			     "FROM THEMATIC_SURFACE ts " +
-			     "WHERE "+
-			       "ts.building_id = ? " +
-			       "AND ts.lod<LoD>_multi_surface_id IS NOT NULL "+
-			  ") " +
-			  "AND sg.geometry IS NOT NULL" +
-			
-			") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
-			") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
-			
-			") " +
-			"GROUP BY mod(rownum, <GROUP_BY_1>) " +
-			") " +
-			"GROUP BY mod (rownum, <GROUP_BY_2>) " +
-			") " +
-			"GROUP BY mod (rownum, <GROUP_BY_3>) " +
-			")";
+						"SELECT * FROM (" +
+						"SELECT * FROM (" +
+						
+				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+//				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+//						"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
+//						"SELECT sg.geometry AS simple_geom " +
+						"FROM SURFACE_GEOMETRY sg " +
+						"WHERE " +
+						  "sg.root_id IN( " +
+						     "SELECT b.lod<LoD>_geometry_id " +
+						     "FROM BUILDING b " +
+						     "WHERE "+
+						       "b.id = ? " +
+						       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
+						     "UNION " +
+						     "SELECT ts.lod<LoD>_multi_surface_id " +
+						     "FROM THEMATIC_SURFACE ts " +
+						     "WHERE "+
+						       "ts.building_id = ? " +
+						       "AND ts.lod<LoD>_multi_surface_id IS NOT NULL "+
+						  ") " +
+						  "AND sg.geometry IS NOT NULL" +
+						
+						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
+						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
+						
+						") " +
+						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_2>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_3>) " +
+						")";
+			case POSTGIS:
+				return "SELECT ST_Union(get_valid_area.simple_geom) " +
+				    	"FROM (" +
+				    	"SELECT * FROM (" +
+				    	"SELECT * FROM (" +
+				    		
+				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				    	"FROM SURFACE_GEOMETRY sg " +
+				    	"WHERE " +
+				    	  "sg.root_id IN( " +
+				    	     "SELECT b.lod<LoD>_geometry_id " +
+				    	     "FROM BUILDING b " +
+				    	     "WHERE b.id = ? " +
+				    	       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
+				    	     "UNION " +
+				    	     "SELECT ts.lod<LoD>_multi_surface_id " +
+				    	     "FROM THEMATIC_SURFACE ts " +
+				    	     "WHERE ts.building_id = ? " +
+				    	       "AND ts.lod<LoD>_multi_surface_id IS NOT NULL "+
+				    	  ") " +
+				    	  "AND sg.geometry IS NOT NULL) AS get_geoms " +
+				    	
+				    	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
+				    	// ST_Area for WGS84 only works correctly if the geometry is a geography data type
+				    	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE>) AS get_valid_area";
+			default:
+				return null;
+			}
+	    }
 
-	    private static final String BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1 =
-			"SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
-			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
-			"FROM (" +
+	    private static final String BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(DatabaseType type) {
+	    	switch (type) {
+			case ORACLE:
+				return "SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+						"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+						"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+						"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
+						"FROM (" +
 
-			"SELECT * FROM (" +
-			"SELECT * FROM (" +
-			
-	    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-//	    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-//			"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
-//			"SELECT sg.geometry AS simple_geom " +
-			"FROM SURFACE_GEOMETRY sg " +
-			"WHERE " +
-			  "sg.root_id IN( " +
-			     "SELECT b.lod<LoD>_geometry_id " +
-			     "FROM BUILDING b " +
-			     "WHERE "+
-			       "b.id = ? " +
-			       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
-			  ") " +
-			  "AND sg.geometry IS NOT NULL" +
-			
-			") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
-			") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
-			
-			") " +
-			"GROUP BY mod(rownum, <GROUP_BY_1>) " +
-			") " +
-			"GROUP BY mod (rownum, <GROUP_BY_2>) " +
-			") " +
-			"GROUP BY mod (rownum, <GROUP_BY_3>) " +
-			")";
+						"SELECT * FROM (" +
+						"SELECT * FROM (" +
+						
+				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+//				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+//						"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
+//						"SELECT sg.geometry AS simple_geom " +
+						"FROM SURFACE_GEOMETRY sg " +
+						"WHERE " +
+						  "sg.root_id IN( " +
+						     "SELECT b.lod<LoD>_geometry_id " +
+						     "FROM BUILDING b " +
+						     "WHERE "+
+						       "b.id = ? " +
+						       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
+						  ") " +
+						  "AND sg.geometry IS NOT NULL" +
+						
+						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
+						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
+						
+						") " +
+						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_2>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_3>) " +
+						")";
+			case POSTGIS:
+				return "SELECT ST_Union(get_valid_area.simple_geom) " +
+				    	"FROM (" +
+				    	"SELECT * FROM (" +
+				    	"SELECT * FROM (" +
+				    		
+				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				    	"FROM SURFACE_GEOMETRY sg " +
+				    	"WHERE " +
+				    	  "sg.root_id IN( " +
+				    	     "SELECT b.lod<LoD>_geometry_id " +
+				    	     "FROM BUILDING b " +
+				    	     "WHERE b.id = ? " +
+				    	       "AND b.lod<LoD>_geometry_id IS NOT NULL " +
+				    	  ") " +
+				    	  "AND sg.geometry IS NOT NULL) AS get_geoms " +
+				    	
+				    	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
+				    	// ST_Area for WGS84 only works correctly if the geometry is a geography data type
+				    	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE>) AS get_valid_area";
+			default:
+				return null;
+			}
+	    }
 
 	    public static String getBuildingPartAggregateGeometries (double tolerance,
 	    													 int srid2D,
 	    													 int lodToExportFrom,
 	    													 double groupBy1,
 	    													 double groupBy2,
-	    													 double groupBy3) {
+	    													 double groupBy3,
+	    													 DatabaseType type) {
 	    	if (lodToExportFrom > 1) {
-	    	   	return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER.replace("<TOLERANCE>", String.valueOf(tolerance))
+	    	   	return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER(type).replace("<TOLERANCE>", String.valueOf(tolerance))
 	    	   															   .replace("<2D_SRID>", String.valueOf(srid2D))
 	    	   															   .replace("<LoD>", String.valueOf(lodToExportFrom))
 	    	   															   .replace("<GROUP_BY_1>", String.valueOf(groupBy1))
@@ -533,7 +797,7 @@ public class Queries {
 	    	   															   .replace("<GROUP_BY_3>", String.valueOf(groupBy3));
 	    	}
 	    	// else
-		   	return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1.replace("<TOLERANCE>", String.valueOf(tolerance))
+		   	return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", String.valueOf(tolerance))
 			   												 .replace("<2D_SRID>", String.valueOf(srid2D))
 			   												 .replace("<LoD>", String.valueOf(lodToExportFrom))
 			   												 .replace("<GROUP_BY_1>", String.valueOf(groupBy1))
@@ -541,13 +805,22 @@ public class Queries {
 			   												 .replace("<GROUP_BY_3>", String.valueOf(groupBy3));
 	    }
 
-		private static final String BUILDING_PART_FOOTPRINT_LOD1 =
-			BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1.replace("<TOLERANCE>", "0.001")
-						 							  .replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
-						 							  .replace("<LoD>", "1")
-						 							  .replace("<GROUP_BY_1>", "256")
-						 							  .replace("<GROUP_BY_2>", "64")
-						 							  .replace("<GROUP_BY_3>", "16");
+		private static final String BUILDING_PART_FOOTPRINT_LOD1(DatabaseType type) {
+			switch (type) {
+			case ORACLE:
+				return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", "0.001")
+						  .replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
+						  .replace("<LoD>", "1")
+						  .replace("<GROUP_BY_1>", "256")
+						  .replace("<GROUP_BY_2>", "64")
+						  .replace("<GROUP_BY_3>", "16");
+			case POSTGIS:
+				return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", "0.001")
+						  .replace("<LoD>", "1");
+			default:
+				return null;
+			}
+		}
 
 		private static final HashMap<Integer, String> buildingPartQueriesLod4 = new HashMap<Integer, String>();
 	    static {
@@ -573,20 +846,20 @@ public class Queries {
 	    	buildingPartQueriesLod2.put(DisplayForm.COLLADA, BUILDING_PART_COLLADA_LOD2_ROOT_IDS);
 	    }
 
-		private static final HashMap<Integer, String> buildingPartQueriesLod1 = new HashMap<Integer, String>();
-	    static {
-	    	buildingPartQueriesLod1.put(DisplayForm.FOOTPRINT, BUILDING_PART_FOOTPRINT_LOD1);
-	    	buildingPartQueriesLod1.put(DisplayForm.EXTRUDED, BUILDING_PART_FOOTPRINT_LOD1);
-	    	buildingPartQueriesLod1.put(DisplayForm.GEOMETRY, BUILDING_PART_GEOMETRY_LOD1);
-	    	buildingPartQueriesLod1.put(DisplayForm.COLLADA, BUILDING_PART_COLLADA_LOD1_ROOT_IDS);
-	    }
-
-	    public static String getBuildingPartQuery (int lodToExportFrom, DisplayForm displayForm) {
+	private static final HashMap<Integer, String> buildingPartQueriesLod1 = new HashMap<Integer, String>();
+    static {
+    	buildingPartQueriesLod1.put(DisplayForm.GEOMETRY, BUILDING_PART_GEOMETRY_LOD1);
+    	buildingPartQueriesLod1.put(DisplayForm.COLLADA, BUILDING_PART_COLLADA_LOD1_ROOT_IDS);
+    }
+	    public static String getBuildingPartQuery (int lodToExportFrom, DisplayForm displayForm, DatabaseType type) {
 	    	String query = null;
 	    	switch (lodToExportFrom) {
 	    		case 1:
-	    	    	query = buildingPartQueriesLod1.get(displayForm.getForm());
-	    	    	break;
+	    			if (displayForm.getForm() == DisplayForm.FOOTPRINT || displayForm.getForm() == DisplayForm.EXTRUDED)
+	    				query = BUILDING_PART_FOOTPRINT_LOD1(type);
+	    			else 
+	    				query = buildingPartQueriesLod1.get(displayForm.getForm());
+	    			break;
 	    		case 2:
 	    	    	query = buildingPartQueriesLod2.get(displayForm.getForm());
 	    	    	break;
@@ -647,31 +920,36 @@ public class Queries {
 		                "WHERE g2co.cityobjectgroup_id = ?) " +
    		"ORDER BY co.class_id";
 
-	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX = 
-		"SELECT co.id, co.gmlid, co.class_id " + 
-		"FROM CITYOBJECT co " +
-		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-		                "FROM GROUP_TO_CITYOBJECT g2co "+ 
-		                "WHERE g2co.cityobjectgroup_id = ?) " +
-		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2002, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?,?,?)), 'mask=overlapbdydisjoint') ='TRUE') " +
-		"UNION ALL " +
-		"SELECT co.id, co.gmlid, co.class_id " + 
-		"FROM CITYOBJECT co " +
-		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-		                "FROM GROUP_TO_CITYOBJECT g2co "+ 
-		                "WHERE g2co.cityobjectgroup_id = ?) " +
-		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=inside+coveredby') ='TRUE') " +
-		"UNION ALL " +
-		"SELECT co.id, co.gmlid, co.class_id " + 
-		"FROM CITYOBJECT co " +
-		"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-		                "FROM GROUP_TO_CITYOBJECT g2co "+ 
-		                "WHERE g2co.cityobjectgroup_id = ?) " +
-		"AND (SDO_RELATE(co.envelope, MDSYS.SDO_GEOMETRY(2003, ?, null, MDSYS.SDO_ELEM_INFO_ARRAY(1,1003,3), " +
-					  "MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), 'mask=equal') ='TRUE') " +
-		"ORDER BY 3"; // ORDER BY co.class_id
+	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX(DatabaseType type) { 
+		switch (type) {
+		case ORACLE:
+			return "SELECT co.id, co.gmlid, co.class_id " + 
+					"FROM CITYOBJECT co " +
+					"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
+					                "FROM GROUP_TO_CITYOBJECT g2co "+ 
+					                "WHERE g2co.cityobjectgroup_id = ?) " +
+					"AND (SDO_RELATE(co.envelope, ?, 'mask=overlapbdydisjoint') = 'TRUE') " +
+					"UNION ALL " +
+					"SELECT co.id, co.gmlid, co.class_id " + 
+					"FROM CITYOBJECT co " +
+					"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
+					                "FROM GROUP_TO_CITYOBJECT g2co "+ 
+					                "WHERE g2co.cityobjectgroup_id = ?) " +
+					"AND (SDO_RELATE(co.envelope, ?, 'mask=inside+coveredby+equal') = 'TRUE') " +
+					"ORDER BY 3"; // ORDER BY co.class_id
+		case POSTGIS:
+			return "SELECT co.id, co.gmlid, co.class_id " +
+					"FROM cityobject co " +
+					"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
+			        				"FROM group_to_cityobject g2co " + 
+			        				"WHERE g2co.cityobjectgroup_id = ?) " +
+					"AND (ST_Intersects(co.envelope, ?) = 'TRUE' " +
+						" or ST_CoveredBy(co.envelope, ?) = 'TRUE') " +
+					"ORDER BY 3"; // ORDER BY co.class_id*/
+		default:
+			return null;
+		}
+	}
 	
 	// ----------------------------------------------------------------------
 	// SOLITARY VEGETATION OBJECT QUERIES
@@ -694,10 +972,15 @@ public class Queries {
 		"WHERE sg.root_id = ? " + 
 		"AND sg.geometry IS NOT NULL";
 	
-	private static final String SOLITARY_VEGETATION_OBJECT_COLLADA_ROOT_IDS =
-		"SELECT ? FROM DUAL "; // dummy
+	private static final String SOLITARY_VEGETATION_OBJECT_COLLADA_ROOT_IDS(AbstractSQLAdapter sqlAdapter) {
+		String query = "SELECT ? "; // dummy
+		if (sqlAdapter.requiresPseudoTableInSelect())
+			query += " FROM " + sqlAdapter.getPseudoTableName();
+		
+		return query;
+	}
 
-    public static String getSolitaryVegetationObjectGeometryContents (DisplayForm displayForm) {
+    public static String getSolitaryVegetationObjectGeometryContents (DisplayForm displayForm, AbstractSQLAdapter sqlAdapter) {
     	String query = null;
     	switch (displayForm.getForm()) {
     		case DisplayForm.FOOTPRINT:
@@ -706,7 +989,7 @@ public class Queries {
     			query = SOLITARY_VEGETATION_OBJECT_FOOTPRINT_EXTRUDED_GEOMETRY;
     	    	break;
     		case DisplayForm.COLLADA:
-    			query = SOLITARY_VEGETATION_OBJECT_COLLADA_ROOT_IDS;
+    			query = SOLITARY_VEGETATION_OBJECT_COLLADA_ROOT_IDS(sqlAdapter);
     	    	break;
     	    default:
     	    	Logger.getInstance().log(LogLevel.INFO, "No solitary vegetation object query found");
@@ -794,10 +1077,15 @@ public class Queries {
 		"WHERE sg.root_id = ? " + 
 		"AND sg.geometry IS NOT NULL";
 	
-	private static final String GENERIC_CITYOBJECT_COLLADA_ROOT_IDS =
-		"SELECT ? FROM DUAL "; // dummy
+	private static final String GENERIC_CITYOBJECT_COLLADA_ROOT_IDS(AbstractSQLAdapter sqlAdapter) {
+		String query = "SELECT ? "; // dummy
+		if (sqlAdapter.requiresPseudoTableInSelect())
+			query += " FROM " + sqlAdapter.getPseudoTableName();
+		
+		return query;
+	}
 
-    public static String getGenericCityObjectGeometryContents (DisplayForm displayForm) {
+    public static String getGenericCityObjectGeometryContents (DisplayForm displayForm, AbstractSQLAdapter sqlAdapter) {
     	String query = null;
     	switch (displayForm.getForm()) {
     		case DisplayForm.FOOTPRINT:
@@ -806,7 +1094,7 @@ public class Queries {
     			query = GENERIC_CITYOBJECT_FOOTPRINT_EXTRUDED_GEOMETRY;
     	    	break;
     		case DisplayForm.COLLADA:
-    			query = GENERIC_CITYOBJECT_COLLADA_ROOT_IDS;
+    			query = GENERIC_CITYOBJECT_COLLADA_ROOT_IDS(sqlAdapter);
     	    	break;
     	    default:
     	    	Logger.getInstance().log(LogLevel.INFO, "No GenericCityObject query found");
@@ -855,10 +1143,15 @@ public class Queries {
 		"WHERE sg.root_id = ? " + 
 		"AND sg.geometry IS NOT NULL";
 	
-	private static final String CITY_FURNITURE_COLLADA_ROOT_IDS =
-		"SELECT ? FROM DUAL "; // dummy
+	private static final String CITY_FURNITURE_COLLADA_ROOT_IDS(AbstractSQLAdapter sqlAdapter) {
+		String query = "SELECT ? "; // dummy
+		if (sqlAdapter.requiresPseudoTableInSelect())
+			query += " FROM " + sqlAdapter.getPseudoTableName();
+		
+		return query;
+	}
 
-    public static String getCityFurnitureGeometryContents (DisplayForm displayForm) {
+    public static String getCityFurnitureGeometryContents (DisplayForm displayForm, AbstractSQLAdapter sqlAdapter) {
     	String query = null;
     	switch (displayForm.getForm()) {
     		case DisplayForm.FOOTPRINT:
@@ -867,7 +1160,7 @@ public class Queries {
     			query = CITY_FURNITURE_FOOTPRINT_EXTRUDED_GEOMETRY;
     	    	break;
     		case DisplayForm.COLLADA:
-    			query = CITY_FURNITURE_COLLADA_ROOT_IDS;
+    			query = CITY_FURNITURE_COLLADA_ROOT_IDS(sqlAdapter);
     	    	break;
     	    default:
     	    	Logger.getInstance().log(LogLevel.INFO, "No city furniture query found");

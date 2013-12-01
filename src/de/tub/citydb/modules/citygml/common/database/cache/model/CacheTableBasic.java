@@ -29,6 +29,8 @@
  */
 package de.tub.citydb.modules.citygml.common.database.cache.model;
 
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
+
 
 
 public class CacheTableBasic extends CacheTableModel {
@@ -50,11 +52,16 @@ public class CacheTableBasic extends CacheTableModel {
 	}
 
 	@Override
-	protected String getColumns() {
-		return "(ID NUMBER, FROM_TABLE NUMBER(3), " +
-				"GMLID VARCHAR2(256), " +
-				"TO_TABLE NUMBER(3), " +
-				"ATTRNAME VARCHAR(50))";
+	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+		StringBuilder builder = new StringBuilder("(")
+		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("FROM_TABLE ").append(sqlAdapter.getNumeric(3)).append(", ")
+		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
+		.append("TO_TABLE ").append(sqlAdapter.getNumeric(3)).append(", ")
+		.append("ATTRNAME ").append(sqlAdapter.getCharacterVarying(50))
+		.append(")");
+		
+		return builder.toString();
 	}
 
 }

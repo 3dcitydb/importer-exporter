@@ -29,21 +29,6 @@
  */
 package de.tub.citydb.modules.citygml.common.xal;
 
-import org.citygml4j.impl.citygml.core.AddressImpl;
-import org.citygml4j.impl.citygml.core.AddressPropertyImpl;
-import org.citygml4j.impl.citygml.core.XalAddressPropertyImpl;
-import org.citygml4j.impl.xal.AddressDetailsImpl;
-import org.citygml4j.impl.xal.CountryImpl;
-import org.citygml4j.impl.xal.CountryNameImpl;
-import org.citygml4j.impl.xal.LocalityImpl;
-import org.citygml4j.impl.xal.LocalityNameImpl;
-import org.citygml4j.impl.xal.PostBoxImpl;
-import org.citygml4j.impl.xal.PostBoxNumberImpl;
-import org.citygml4j.impl.xal.PostalCodeImpl;
-import org.citygml4j.impl.xal.PostalCodeNumberImpl;
-import org.citygml4j.impl.xal.ThoroughfareImpl;
-import org.citygml4j.impl.xal.ThoroughfareNameImpl;
-import org.citygml4j.impl.xal.ThoroughfareNumberImpl;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.citygml.core.XalAddressProperty;
@@ -93,27 +78,27 @@ public class AddressExportFactory {
 			if (mode == AddressMode.XAL) {
 				addressDetails = addressObject.addressDetails;						
 			} else {				
-				addressDetails = new AddressDetailsImpl();
+				addressDetails = new AddressDetails();
 
-				Locality locality = new LocalityImpl();
+				Locality locality = new Locality();
 				locality.setType("Town");
 
 				if (addressObject.city != null) {
-					LocalityName localityName = new LocalityNameImpl();
+					LocalityName localityName = new LocalityName();
 					localityName.setContent(addressObject.city);
 					locality.addLocalityName(localityName);
 				}
 
 				if (addressObject.street != null) {
-					Thoroughfare thoroughfare = new ThoroughfareImpl();
+					Thoroughfare thoroughfare = new Thoroughfare();
 					thoroughfare.setType("Street");
 
-					ThoroughfareName name = new ThoroughfareNameImpl();
+					ThoroughfareName name = new ThoroughfareName();
 					name.setContent(addressObject.street);
 					thoroughfare.addThoroughfareName(name);
 
 					if (addressObject.houseNumber != null) {
-						ThoroughfareNumber number = new ThoroughfareNumberImpl();
+						ThoroughfareNumber number = new ThoroughfareNumber();
 						number.setContent(addressObject.houseNumber);
 						thoroughfare.addThoroughfareNumber(number);
 					}
@@ -122,8 +107,8 @@ public class AddressExportFactory {
 				}				
 
 				if (addressObject.zipCode != null) {
-					PostalCode postalCode = new PostalCodeImpl();
-					PostalCodeNumber zipNumber = new PostalCodeNumberImpl();
+					PostalCode postalCode = new PostalCode();
+					PostalCodeNumber zipNumber = new PostalCodeNumber();
 					zipNumber.setContent(addressObject.zipCode);
 
 					postalCode.addPostalCodeNumber(zipNumber);
@@ -131,18 +116,18 @@ public class AddressExportFactory {
 				}
 
 				if (addressObject.poBox != null) {
-					PostBox postBox = new PostBoxImpl();
-					PostBoxNumber postBoxNumber = new PostBoxNumberImpl();
+					PostBox postBox = new PostBox();
+					PostBoxNumber postBoxNumber = new PostBoxNumber();
 					postBoxNumber.setContent(addressObject.poBox);
 
 					postBox.setPostBoxNumber(postBoxNumber);
 					locality.setPostBox(postBox);
 				}
 				
-				Country country = new CountryImpl();
+				Country country = new Country();
 
 				if (addressObject.country != null) {
-					CountryName countryName = new CountryNameImpl();
+					CountryName countryName = new CountryName();
 					countryName.setContent(addressObject.country);
 					country.addCountryName(countryName);
 				}
@@ -152,17 +137,17 @@ public class AddressExportFactory {
 			}
 
 			if (addressDetails != null) {
-				XalAddressProperty xalAddressProperty = new XalAddressPropertyImpl();
+				XalAddressProperty xalAddressProperty = new XalAddressProperty();
 				xalAddressProperty.setAddressDetails(addressDetails);
 
-				Address address = new AddressImpl();
+				Address address = new Address();
 				address.setXalAddress(xalAddressProperty);
 
 				// multiPointGeometry
 				if (addressObject.multiPointProperty != null)
 					address.setMultiPoint(addressObject.multiPointProperty);				
 
-				addressProperty = new AddressPropertyImpl();
+				addressProperty = new AddressProperty();
 				addressProperty.setObject(address);
 			}
 		}

@@ -33,15 +33,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
-import org.citygml4j.impl.citygml.building.BuildingInstallationImpl;
-import org.citygml4j.impl.citygml.building.BuildingInstallationPropertyImpl;
-import org.citygml4j.impl.citygml.building.IntBuildingInstallationImpl;
-import org.citygml4j.impl.citygml.building.IntBuildingInstallationPropertyImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.BuildingInstallation;
 import org.citygml4j.model.citygml.building.BuildingInstallationProperty;
@@ -49,6 +44,7 @@ import org.citygml4j.model.citygml.building.IntBuildingInstallation;
 import org.citygml4j.model.citygml.building.IntBuildingInstallationProperty;
 import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
@@ -94,9 +90,9 @@ public class DBBuildingInstallation implements DBExporter {
 				IntBuildingInstallation intBuildingInstallation = null;
 
 				if (isExternal == 1)
-					buildingInstallation = new BuildingInstallationImpl();
+					buildingInstallation = new BuildingInstallation();
 				else
-					intBuildingInstallation = new IntBuildingInstallationImpl();
+					intBuildingInstallation = new IntBuildingInstallation();
 
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
@@ -108,7 +104,7 @@ public class DBBuildingInstallation implements DBExporter {
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRefImpl();
+					StringOrRef stringOrRef = new StringOrRef();
 					stringOrRef.setValue(description);
 
 					if (buildingInstallation != null)
@@ -120,31 +116,35 @@ public class DBBuildingInstallation implements DBExporter {
 				String clazz = rs.getString("CLASS");
 				if (clazz != null) {
 					if (buildingInstallation != null)
-						buildingInstallation.setClazz(clazz);
+						buildingInstallation.setClazz(new Code(clazz));
 					else
-						intBuildingInstallation.setClazz(clazz);
+						intBuildingInstallation.setClazz(new Code(clazz));
 				}
 
 				String function = rs.getString("FUNCTION");
 				if (function != null) {
+					List<Code> functionList = new ArrayList<Code>();
 					Pattern p = Pattern.compile("\\s+");
-					String[] functionList = p.split(function.trim());
+					for (String value : p.split(function.trim()))
+						functionList.add(new Code(value));
 
 					if (buildingInstallation != null)
-						buildingInstallation.setFunction(Arrays.asList(functionList));
+						buildingInstallation.setFunction(functionList);
 					else
-						intBuildingInstallation.setFunction(Arrays.asList(functionList));
+						intBuildingInstallation.setFunction(functionList);
 				}
 
 				String usage = rs.getString("USAGE");
 				if (usage != null) {
+					List<Code> usageList = new ArrayList<Code>();
 					Pattern p = Pattern.compile("\\s+");
-					String[] usageList = p.split(usage.trim());
+					for (String value : p.split(usage.trim()))
+						usageList.add(new Code(value));
 
 					if (buildingInstallation != null)
-						buildingInstallation.setUsage(Arrays.asList(usageList));
+						buildingInstallation.setUsage(usageList);
 					else
-						intBuildingInstallation.setUsage(Arrays.asList(usageList));
+						intBuildingInstallation.setUsage(usageList);
 				}
 
 				for (int lod = 2; lod < 5 ; lod++) {
@@ -154,7 +154,7 @@ public class DBBuildingInstallation implements DBExporter {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodSurfaceGeometryId);
 
 						if (geometry != null) {
-							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
+							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
 
 							if (geometry.getAbstractGeometry() != null)
 								geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -184,13 +184,13 @@ public class DBBuildingInstallation implements DBExporter {
 				if (buildingInstallation != null) {
 					cityObjectReader.read(buildingInstallation, installationId);
 
-					BuildingInstallationProperty buildInstProp = new BuildingInstallationPropertyImpl();
+					BuildingInstallationProperty buildInstProp = new BuildingInstallationProperty();
 					buildInstProp.setObject(buildingInstallation);
 					building.addOuterBuildingInstallation(buildInstProp);
 				} else {
 					cityObjectReader.read(intBuildingInstallation, installationId);
 
-					IntBuildingInstallationProperty intInstProp = new IntBuildingInstallationPropertyImpl();
+					IntBuildingInstallationProperty intInstProp = new IntBuildingInstallationProperty();
 					intInstProp.setObject(intBuildingInstallation);
 					building.addInteriorBuildingInstallation(intInstProp);
 				}
@@ -210,7 +210,7 @@ public class DBBuildingInstallation implements DBExporter {
 
 			while (rs.next()) {
 				long installationId = rs.getLong("ID");
-				IntBuildingInstallation intBuildingInstallation = new IntBuildingInstallationImpl();
+				IntBuildingInstallation intBuildingInstallation = new IntBuildingInstallation();
 
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
@@ -219,7 +219,7 @@ public class DBBuildingInstallation implements DBExporter {
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRefImpl();
+					StringOrRef stringOrRef = new StringOrRef();
 					stringOrRef.setValue(description);
 
 					intBuildingInstallation.setDescription(stringOrRef);
@@ -227,23 +227,21 @@ public class DBBuildingInstallation implements DBExporter {
 
 				String clazz = rs.getString("CLASS");
 				if (clazz != null) {
-					intBuildingInstallation.setClazz(clazz);
+					intBuildingInstallation.setClazz(new Code(clazz));
 				}
 
 				String function = rs.getString("FUNCTION");
 				if (function != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] functionList = p.split(function.trim());
-
-					intBuildingInstallation.setFunction(Arrays.asList(functionList));
+					for (String value : p.split(function.trim()))
+						intBuildingInstallation.addFunction(new Code(value));
 				}
 
 				String usage = rs.getString("USAGE");
 				if (usage != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] usageList = p.split(usage.trim());
-
-					intBuildingInstallation.setUsage(Arrays.asList(usageList));
+					for (String value : p.split(usage.trim()))
+						intBuildingInstallation.addUsage(new Code(value));
 				}
 
 				long lodSurfaceGeometryId = rs.getLong("LOD4_GEOMETRY_ID");
@@ -251,7 +249,7 @@ public class DBBuildingInstallation implements DBExporter {
 					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodSurfaceGeometryId);
 
 					if (geometry != null) {
-						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
+						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
 
 						if (geometry.getAbstractGeometry() != null)
 							geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -264,7 +262,7 @@ public class DBBuildingInstallation implements DBExporter {
 
 				cityObjectReader.read(intBuildingInstallation, installationId);
 
-				IntBuildingInstallationProperty intInstProp = new IntBuildingInstallationPropertyImpl();
+				IntBuildingInstallationProperty intInstProp = new IntBuildingInstallationProperty();
 				intInstProp.setObject(intBuildingInstallation);
 				room.addRoomInstallation(intInstProp);
 			}

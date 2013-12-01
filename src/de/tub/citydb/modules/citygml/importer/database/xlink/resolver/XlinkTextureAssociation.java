@@ -39,7 +39,6 @@ import java.util.List;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
@@ -140,7 +139,7 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 					}
 
 					psTextureParam.addBatch();
-					if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+					if (++batchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
 						executeBatch();
 
 				} else {

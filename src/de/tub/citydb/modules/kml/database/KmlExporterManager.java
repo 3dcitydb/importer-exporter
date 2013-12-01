@@ -59,15 +59,14 @@ import net.opengis.kml._2.ObjectFactory;
 import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.RegionType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
-import oracle.ord.im.OrdImage;
 
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
 
@@ -76,6 +75,7 @@ public class KmlExporterManager {
 	private final JAXBContext jaxbColladaContext;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final ObjectFactory kmlFactory; 
+	private final TextureImageExportAdapter textureExportAdapter;
 	private final Config config;
 	
 	private boolean isBBoxActive;
@@ -89,11 +89,13 @@ public class KmlExporterManager {
 							  JAXBContext jaxbColladaContext,
 							  WorkerPool<SAXEventBuffer> ioWriterPool,
 							  ObjectFactory kmlFactory,
+							  TextureImageExportAdapter textureExportAdapter,
 							  Config config) {
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.ioWriterPool = ioWriterPool;
 		this.kmlFactory = kmlFactory;
+		this.textureExportAdapter = textureExportAdapter;
 		this.config = config;
 
 		isBBoxActive = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue();
@@ -481,14 +483,14 @@ public class KmlExporterManager {
 	        zipOut.closeEntry();
 
 	        // ----------------- image saving -----------------
-	        if (colladaBundle.getTexOrdImages() != null) {
-	        	Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
+	        if (colladaBundle.getUnsupportedTexImageIds() != null) {
+	        	Set<String> keySet = colladaBundle.getUnsupportedTexImageIds().keySet();
 	        	Iterator<String> iterator = keySet.iterator();
 	        	while (iterator.hasNext()) {
 	        		String imageFilename = iterator.next();
-	        		OrdImage texOrdImage = colladaBundle.getTexOrdImages().get(imageFilename);
+//	        		OrdImage texOrdImage = colladaBundle.getUnsupportedTexImageIds().get(imageFilename);
 //					byte[] ordImageBytes = texOrdImage.getDataInByteArray();
-	        		byte[] ordImageBytes = texOrdImage.getBlobContent().getBytes(1, (int)texOrdImage.getBlobContent().length());
+	        		byte[] ordImageBytes = textureExportAdapter.getInByteArray(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, imageFilename);
 
 //					zipEntry = new ZipEntry(imageFilename);
 	        		zipEntry = imageFilename.startsWith("..") ?
@@ -506,7 +508,7 @@ public class KmlExporterManager {
 	        	Iterator<String> iterator = keySet.iterator();
 	        	while (iterator.hasNext()) {
 	        		String imageFilename = iterator.next();
-	        		BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename);
+	        		BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename).getBufferedImage();
 	        		String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
 //					zipEntry = new ZipEntry(imageFilename);
@@ -557,20 +559,21 @@ public class KmlExporterManager {
 			// ----------------- image saving -----------------
 
 			// first those wrapped textures or images in unknown formats (like .rgb)
-			if (colladaBundle.getTexOrdImages() != null) {
-				Set<String> keySet = colladaBundle.getTexOrdImages().keySet();
+			if (colladaBundle.getUnsupportedTexImageIds() != null) {
+				Set<String> keySet = colladaBundle.getUnsupportedTexImageIds().keySet();
 				Iterator<String> iterator = keySet.iterator();
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
-					OrdImage texOrdImage = colladaBundle.getTexOrdImages().get(imageFilename);
-					if (texOrdImage.getContentLength() < 1) continue;
-					try {
-						texOrdImage.getDataInFile(buildingDirectory + File.separator + imageFilename);
-					}
-					catch (IOException ioEx) {}
-					finally {
-						texOrdImage.close();
-					}
+//					OrdImage texOrdImage = colladaBundle.getUnsupportedTexImageIds().get(imageFilename);
+//					if (texOrdImage.getContentLength() < 1) continue;
+//					try {
+						String fileName = buildingDirectory + File.separator + imageFilename;
+						textureExportAdapter.getInFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, fileName);
+//					}
+//					catch (IOException ioEx) {}
+//					finally {
+//						texOrdImage.close();
+//					}
 				}
 			}
 
@@ -579,7 +582,7 @@ public class KmlExporterManager {
 				Iterator<String> iterator = keySet.iterator();
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
-					BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename);
+					BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename).getBufferedImage();
 					String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
 					File imageFile = new File(buildingDirectory, imageFilename);

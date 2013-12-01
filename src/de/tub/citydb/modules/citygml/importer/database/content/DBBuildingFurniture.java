@@ -34,10 +34,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.building.BuildingFurniture;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
@@ -45,8 +41,8 @@ import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.util.Util;
@@ -59,7 +55,7 @@ public class DBBuildingFurniture implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBOtherGeometry geometryImporter;
 	
 	private boolean affineTransformation;
 	private int batchCounter;
@@ -73,18 +69,20 @@ public class DBBuildingFurniture implements DBImporter {
 	}
 
 	private void init() throws SQLException {
-		psBuildingFurniture = batchConn.prepareStatement("insert into BUILDING_FURNITURE (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, ROOM_ID, LOD4_GEOMETRY_ID, " +
-				"LOD4_IMPLICIT_REP_ID, LOD4_IMPLICIT_REF_POINT, LOD4_IMPLICIT_TRANSFORMATION) values " +
-		"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into BUILDING_FURNITURE (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, ROOM_ID, LOD4_GEOMETRY_ID, ")
+		.append("LOD4_IMPLICIT_REP_ID, LOD4_IMPLICIT_REF_POINT, LOD4_IMPLICIT_TRANSFORMATION) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psBuildingFurniture = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		implicitGeometryImporter = (DBImplicitGeometry)dbImporterManager.getDBImporter(DBImporterEnum.IMPLICIT_GEOMETRY);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		geometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
 	public long insert(BuildingFurniture buildingFurniture, long roomId) throws SQLException {
-		long buildingFurnitureId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long buildingFurnitureId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (buildingFurnitureId == 0)
 			return 0;
 
@@ -119,21 +117,21 @@ public class DBBuildingFurniture implements DBImporter {
 		}
 
 		// citygml:class
-		if (buildingFurniture.isSetClazz())
-			psBuildingFurniture.setString(5, buildingFurniture.getClazz().trim());
+		if (buildingFurniture.isSetClazz() && buildingFurniture.getClazz().isSetValue())
+			psBuildingFurniture.setString(5, buildingFurniture.getClazz().getValue().trim());
 		else
 			psBuildingFurniture.setNull(5, Types.VARCHAR);
 
 		// citygml:function
 		if (buildingFurniture.isSetFunction()) {
-			psBuildingFurniture.setString(6, Util.collection2string(buildingFurniture.getFunction(), " "));
+			psBuildingFurniture.setString(6, Util.codeList2string(buildingFurniture.getFunction(), " "));
 		} else {
 			psBuildingFurniture.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (buildingFurniture.isSetUsage()) {
-			psBuildingFurniture.setString(7, Util.collection2string(buildingFurniture.getUsage(), " "));
+			psBuildingFurniture.setString(7, Util.codeList2string(buildingFurniture.getUsage(), " "));
 		} else {
 			psBuildingFurniture.setNull(7, Types.VARCHAR);
 		}
@@ -148,6 +146,7 @@ public class DBBuildingFurniture implements DBImporter {
 			
 			if (geometryProperty.isSetGeometry()) {
 				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), buildingFurnitureId);
+				geometryProperty.unsetGeometry();
 			} else {
 				// xlink
 				String href = geometryProperty.getHref();
@@ -172,7 +171,7 @@ public class DBBuildingFurniture implements DBImporter {
 			psBuildingFurniture.setNull(9, 0);
 
 		// implicit geometry
-		JGeometry pointGeom = null;
+		GeometryObject pointGeom = null;
 		String matrixString = null;
 		long implicitId = 0;
 
@@ -184,7 +183,7 @@ public class DBBuildingFurniture implements DBImporter {
 
 				// reference Point
 				if (geometry.isSetReferencePoint())
-					pointGeom = sdoGeometry.getPoint(geometry.getReferencePoint());
+					pointGeom = geometryImporter.getPoint(geometry.getReferencePoint());
 
 				// transformation matrix
 				if (geometry.isSetTransformationMatrix()) {
@@ -206,10 +205,11 @@ public class DBBuildingFurniture implements DBImporter {
 			psBuildingFurniture.setNull(10, 0);
 
 		if (pointGeom != null) {
-			STRUCT obj = SyncJGeometry.syncStore(pointGeom, batchConn);
+			Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(pointGeom, batchConn);
 			psBuildingFurniture.setObject(11, obj);
 		} else
-			psBuildingFurniture.setNull(11, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+			psBuildingFurniture.setNull(11, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+					dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 
 		if (matrixString != null)
 			psBuildingFurniture.setString(12, matrixString);
@@ -217,8 +217,11 @@ public class DBBuildingFurniture implements DBImporter {
 			psBuildingFurniture.setNull(12, Types.VARCHAR);
 
 		psBuildingFurniture.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING_FURNITURE);
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(buildingFurniture, buildingFurnitureId);
 		
 		return buildingFurnitureId;
 	}

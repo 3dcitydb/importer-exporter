@@ -223,7 +223,7 @@ public class ImpExpCmd {
 		try {
 			dbPool.connect(config);
 			LOG.info("Database connection established.");
-			dbPool.getActiveConnectionMetaData().printToConsole();
+			dbPool.getActiveDatabaseAdapter().getConnectionMetaData().printToConsole();
 
 			// log whether user-defined SRSs are supported
 			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {

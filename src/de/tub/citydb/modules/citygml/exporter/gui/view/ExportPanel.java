@@ -62,7 +62,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 
+import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
@@ -86,7 +90,7 @@ import de.tub.citydb.util.Util;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class ExportPanel extends JPanel implements DropTargetListener {
+public class ExportPanel extends JPanel implements DropTargetListener, EventHandler {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final JAXBBuilder jaxbBuilder;
@@ -113,6 +117,8 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		this.mainView = mainView;
 		dbPool = DatabaseConnectionPool.getInstance();
 
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
+		
 		initGui();
 	}
 
@@ -193,6 +199,13 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 		browseText.setDropTarget(dropTarget);
 		setDropTarget(dropTarget);
 	}
+	
+	public void setEnabledWorkspace(boolean enable) {
+		workspaceLabel.setEnabled(enable);
+		workspaceText.setEnabled(enable);
+		timestampLabel.setEnabled(enable);
+		timestampText.setEnabled(enable);
+	}
 
 	public void doTranslation() {
 		((TitledBorder)operations.getBorder()).setTitle(Internal.I18N.getString("export.border.settings"));
@@ -217,13 +230,8 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	public void setSettings() {
 		config.getInternal().setExportFileName(browseText.getText());
 
-		String workspace = workspaceText.getText().trim();
-		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
-				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
-			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
-
-		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText());
-		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(timestampText.getText());
+		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setName(workspaceText.getText().trim());
+		config.getProject().getDatabase().getWorkspaces().getExportWorkspace().setTimestamp(timestampText.getText().trim());
 		config.getProject().getExporter().setTargetSRS(srsComboBox.getSelectedItem());
 		filterPanel.setSettings();
 	}
@@ -457,6 +465,12 @@ public class ExportPanel extends JPanel implements DropTargetListener {
 	@Override
 	public void dropActionChanged(DropTargetDragEvent dtde) {
 		// nothing to do here
+	}
+
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent)event;
+		setEnabledWorkspace(state.wasConnected() || dbPool.getActiveDatabaseAdapter().hasVersioningSupport());
 	}
 
 }

@@ -56,7 +56,7 @@ public class Continuation {
 	public Continuation() {
 		
 	}
-
+	
 	public String getLineage() {
 		return lineage;
 	}
@@ -68,11 +68,11 @@ public class Continuation {
 	public boolean isUpdatingPersonModeDatabase() {
 		return updatingPersonMode == UpdatingPersonMode.DATABASE;
 	}
-
+	
 	public boolean isUpdatingPersonModeUser() {
 		return updatingPersonMode == UpdatingPersonMode.USER;
 	}
-
+	
 	public UpdatingPersonMode getUpdatingPersonMode() {
 		return updatingPersonMode;
 	}

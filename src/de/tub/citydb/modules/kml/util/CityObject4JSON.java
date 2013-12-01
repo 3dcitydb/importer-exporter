@@ -40,7 +40,7 @@ public class CityObject4JSON {
 
 	private int tileRow = 0;
 	private int tileColumn = 0;
-	
+
 	public CityObject4JSON (String gmlId) {
 		this.gmlId = gmlId;
 	}
@@ -49,18 +49,18 @@ public class CityObject4JSON {
 	public String toString() {
 
 		return "\t\"" + gmlId + "\": {" +
-			   "\n\t\"envelope\": [" + envelopeXmin + ", " + envelopeYmin + ", " + envelopeXmax + ", " + envelopeYmax +
-			   "],\n\t\"tile\": [" + tileRow + ", " + tileColumn + "]}";
-/*
+				"\n\t\"envelope\": [" + envelopeXmin + ", " + envelopeYmin + ", " + envelopeXmax + ", " + envelopeYmax +
+				"],\n\t\"tile\": [" + tileRow + ", " + tileColumn + "]}";
+		/*
 		return "\n\t\"envelope\": [" + envelopeXmin + ", " + envelopeYmin + ", " + envelopeXmax + ", " + envelopeYmax +
 		   	   "],\n\t\"tile\": [" + tileRow + ", " + tileColumn + "]}";
-*/
+		 */
 	}
 
-/*
+	/*
 	@Override
 	public boolean equals(Object obj) {
-		
+
 		try {
 			CityObject4JSON cityObject4Json = (CityObject4JSON) obj;
 			return this.gmlId.equals(cityObject4Json.getGmlId());
@@ -68,28 +68,21 @@ public class CityObject4JSON {
 		catch (Exception e) {}
 		return false;
 	}
-	
+
 	@Override
 	public int hashCode(){
 		return this.gmlId.hashCode();
 	}
-*/
+	 */
 
 	public void setEnvelope (double[] ordinatesArray) {
 		if (ordinatesArray == null) return;
 		envelopeXmin = ordinatesArray[0];
 		envelopeYmin = ordinatesArray[1];
-		if (ordinatesArray.length == 6) {
-			envelopeXmax = ordinatesArray[3];
-			envelopeYmax = ordinatesArray[4];
-			return;
-		}
-		if (ordinatesArray.length == 15) {
-			envelopeXmax = ordinatesArray[6];
-			envelopeYmax = ordinatesArray[7];
-		}
+		envelopeXmax = ordinatesArray[3];
+		envelopeYmax = ordinatesArray[4];
 	}
-	
+
 	public void setEnvelopeXmin(double envelopeXmin) {
 		this.envelopeXmin = envelopeXmin;
 	}
@@ -137,9 +130,9 @@ public class CityObject4JSON {
 	public int getTileColumn() {
 		return tileColumn;
 	}
-/*
+	/*
 	public String getGmlId() {
 		return gmlId;
 	}
-*/
+	 */
 }

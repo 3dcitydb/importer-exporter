@@ -38,11 +38,12 @@ import javax.xml.bind.ValidationEventHandler;
 import javax.xml.namespace.QName;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
-import org.citygml4j.builder.jaxb.xml.io.reader.CityGMLChunk;
 import org.citygml4j.builder.jaxb.xml.io.reader.JAXBChunkReader;
 import org.citygml4j.xml.io.CityGMLInputFactory;
 import org.citygml4j.xml.io.reader.CityGMLReadException;
+import org.citygml4j.xml.io.reader.CityGMLReader;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
+import org.citygml4j.xml.io.reader.XMLChunk;
 
 import de.tub.citydb.api.concurrent.SingleWorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool;
@@ -72,7 +73,7 @@ public class XMLValidator implements EventHandler {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	private WorkerPool<CityGMLChunk> featureWorkerPool;
+	private WorkerPool<XMLChunk> featureWorkerPool;
 
 	private volatile boolean shouldRun = true;
 	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
@@ -158,7 +159,7 @@ public class XMLValidator implements EventHandler {
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
 
 				// this worker pool parses the xml file and passes xml chunks to the dbworker pool
-				featureWorkerPool = new SingleWorkerPool<CityGMLChunk>(
+				featureWorkerPool = new SingleWorkerPool<XMLChunk>(
 						new FeatureReaderWorkerFactory(null, config, eventDispatcher),
 						queueSize,
 						false);
@@ -167,18 +168,18 @@ public class XMLValidator implements EventHandler {
 				featureWorkerPool.prestartCoreWorkers();
 
 				// ok, preparation done. inform user and  start parsing the input file
-				JAXBChunkReader reader = null;
+				CityGMLReader reader = null;
 				boolean containsCityGML = false;
 
 				try {
 					reader = (JAXBChunkReader)in.createCityGMLReader(file);					
 					LOG.info("Validating document: " + file.toString());						
 
-					containsCityGML = reader.hasNextChunk();
+					containsCityGML = reader.hasNext();
 
 					// iterate through chunks and validate
-					while (shouldRun && reader.hasNextChunk()) {
-						CityGMLChunk chunk = reader.nextChunk();
+					while (shouldRun && reader.hasNext()) {
+						XMLChunk chunk = reader.nextChunk();
 						featureWorkerPool.addWork(chunk);
 					}						
 				} catch (CityGMLReadException e) {

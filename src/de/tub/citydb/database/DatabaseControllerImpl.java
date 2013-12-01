@@ -35,16 +35,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.tub.citydb.api.controller.DatabaseController;
-import de.tub.citydb.api.database.BalloonTemplateFactory;
+import de.tub.citydb.api.database.DatabaseAdapter;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
-import de.tub.citydb.api.database.DatabaseMetaData;
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.DBConnection;
-import de.tub.citydb.config.project.database.Workspace;
-import de.tub.citydb.modules.kml.database.BalloonTemplateFactoryImpl;
-import de.tub.citydb.util.database.DBUtil;
 
 public class DatabaseControllerImpl implements DatabaseController {
 	private final Config config;
@@ -112,36 +108,6 @@ public class DatabaseControllerImpl implements DatabaseController {
 	}
 
 	@Override
-	public boolean isIndexEnabled(String tableName, String columnName) throws SQLException {
-		return DBUtil.isIndexed(tableName, columnName);
-	}
-
-	@Override
-	public boolean existsWorkspace(String workspaceName) {
-		return dbPool.existsWorkspace(new Workspace(workspaceName));
-	}
-
-	@Override
-	public boolean gotoWorkspace(Connection conn, String workspaceName, String timestamp) throws SQLException {
-		return dbPool.gotoWorkspace(conn, new Workspace(workspaceName, timestamp));
-	}
-
-	@Override
-	public boolean gotoWorkspace(Connection conn, String workspaceName) throws SQLException {
-		return gotoWorkspace(conn, workspaceName, null);
-	}
-
-	@Override
-	public DatabaseConnectionDetails getActiveConnectionDetails() {
-		return dbPool.getActiveConnection();
-	}
-
-	@Override
-	public DatabaseMetaData getActiveConnectionMetaData() {
-		return dbPool.getActiveConnectionMetaData();
-	}
-
-	@Override
 	public List<DatabaseConnectionDetails> getConnectionDetails() {
 		ArrayList<DatabaseConnectionDetails> tmp = new ArrayList<DatabaseConnectionDetails>();
 		for (DBConnection conn : config.getProject().getDatabase().getConnections())
@@ -156,8 +122,8 @@ public class DatabaseControllerImpl implements DatabaseController {
 	}
 
 	@Override
-	public BalloonTemplateFactory getBalloonTemplateFactory() {
-		return BalloonTemplateFactoryImpl.getInstance();
+	public DatabaseAdapter getActiveDatabaseAdapter() {
+		return dbPool.getActiveDatabaseAdapter();
 	}
 
 }

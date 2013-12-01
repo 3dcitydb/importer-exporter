@@ -33,6 +33,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
+
 
 public class CacheTableGroupToCityObject extends CacheTableModel {
 	public static CacheTableGroupToCityObject instance = null;
@@ -69,10 +71,14 @@ public class CacheTableGroupToCityObject extends CacheTableModel {
 	}
 	
 	@Override
-	protected String getColumns() {
-		return "(GROUP_ID NUMBER," +
-		"GMLID VARCHAR2(256), " +
-		"IS_PARENT NUMBER(1,0), " +
-		"ROLE VARCHAR2(256))";
+	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+		StringBuilder builder = new StringBuilder("(")
+		.append("GROUP_ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
+		.append("IS_PARENT ").append(sqlAdapter.getNumeric(1, 0)).append(", ")
+		.append("ROLE ").append(sqlAdapter.getCharacterVarying(256))
+		.append(")");
+		
+		return builder.toString();
 	}
 }

@@ -31,23 +31,22 @@ package de.tub.citydb.modules.kml.database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
-
-import oracle.jdbc.OracleResultSet;
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.database.DatabaseSrs;
-import de.tub.citydb.api.gui.BoundingBox;
+import de.tub.citydb.api.geometry.BoundingBox;
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
@@ -57,27 +56,28 @@ import de.tub.citydb.util.Util;
 public class KmlSplitter {
 
 	private static HashSet<CityGMLClass> CURRENTLY_ALLOWED_CITY_OBJECT_TYPES = new HashSet<CityGMLClass>();
-	
+
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
 	private final DisplayForm displayForm;
 	private final ExportFilter exportFilter;
-//	private final Config config;
+	//	private final Config config;
 	private ExportFilterConfig filterConfig;
 	private volatile boolean shouldRun = true;
 
+	private AbstractDatabaseAdapter databaseAdapter;
 	private Connection connection;
 	private DatabaseSrs dbSrs;
-	
+
 	public KmlSplitter(DatabaseConnectionPool dbConnectionPool, 
-					   WorkerPool<KmlSplittingResult> dbWorkerPool, 
-					   ExportFilter exportFilter, 
-					   DisplayForm displayForm,
-					   Config config) throws SQLException {
+			WorkerPool<KmlSplittingResult> dbWorkerPool, 
+			ExportFilter exportFilter, 
+			DisplayForm displayForm,
+			Config config) throws SQLException {
 
 		this.dbWorkerPool = dbWorkerPool;
 		this.exportFilter = exportFilter;
 		this.displayForm = displayForm;
-//		this.config = config;
+		//		this.config = config;
 
 		this.filterConfig = config.getProject().getKmlExporter().getFilter();
 		CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.clear();
@@ -87,11 +87,11 @@ public class KmlSplitter {
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetWaterBody()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.WATER_BODY);
-/*
+			/*
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.WATER_SURFACE);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.WATER_CLOSURE_SURFACE);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.WATER_GROUND_SURFACE);
-*/
+			 */
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetLandUse()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.LAND_USE);
@@ -102,10 +102,10 @@ public class KmlSplitter {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.PLANT_COVER);
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetTransportation()) {
-/*
+			/*
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.TRAFFIC_AREA);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.AUXILIARY_TRAFFIC_AREA);
-*/
+			 */
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.TRANSPORTATION_COMPLEX);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.TRACK);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.RAILWAY);
@@ -115,12 +115,12 @@ public class KmlSplitter {
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetReliefFeature()
 				&& config.getProject().getKmlExporter().getLodToExportFrom() > 0) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.RELIEF_FEATURE);
-/*
+			/*
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.RASTER_RELIEF);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.MASSPOINT_RELIEF);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.BREAKLINE_RELIEF);
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.TIN_RELIEF);
-*/
+			 */
 		}
 		if (filterConfig.getComplexFilter().getFeatureClass().isSetGenericCityObject()) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.GENERIC_CITY_OBJECT);
@@ -133,33 +133,35 @@ public class KmlSplitter {
 				&& config.getProject().getKmlExporter().getLodToExportFrom() > 0) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
 		}
-			
+
+		databaseAdapter = dbConnectionPool.getActiveDatabaseAdapter();
 		connection = dbConnectionPool.getConnection();
-		connection.setAutoCommit(false);
-		dbSrs = dbConnectionPool.getActiveConnectionMetaData().getReferenceSystem();
+		dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();
 
 		// try and change workspace for connection if needed
-		Database database = config.getProject().getDatabase();
-		dbConnectionPool.gotoWorkspace(connection, 
-										 database.getWorkspaces().getKmlExportWorkspace());
+		if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
+			Database database = config.getProject().getDatabase();
+			dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(connection, 
+					database.getWorkspaces().getKmlExportWorkspace());
+		}
 
 	}
 
 	private void queryObjects() throws SQLException {
 
-//		long startTime = System.currentTimeMillis();
+		// long startTime = System.currentTimeMillis();
 
 		if (filterConfig.isSetSimpleFilter()) {
 			for (String gmlId: filterConfig.getSimpleFilter().getGmlIdFilter().getGmlIds()) {
 				if (!shouldRun) break;
 
-				OracleResultSet rs = null;
+				ResultSet rs = null;
 				PreparedStatement query = null;
 				try {
 					query = connection.prepareStatement(Queries.GET_ID_AND_OBJECTCLASS_FROM_GMLID);
 					query.setString(1, gmlId);
-					rs = (OracleResultSet)query.executeQuery();
-					
+					rs = query.executeQuery();
+
 					if (rs.next()) {
 						long id = rs.getLong("id");
 						if (KmlExporter.getAlreadyExported().containsKey(id)) continue;
@@ -184,41 +186,32 @@ public class KmlSplitter {
 			}
 		}
 		else if (filterConfig.isSetComplexFilter() &&
-				 filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
-			
+				filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
+
 			BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
-			OracleResultSet rs = null;
+			ResultSet rs = null;
 			PreparedStatement spatialQuery = null;
 			try {
-				spatialQuery = connection.prepareStatement(Queries.GET_IDS);
-				
+				spatialQuery = connection.prepareStatement(Queries.GET_IDS(databaseAdapter.getDatabaseType())); 
 				int srid = dbSrs.getSrid();
 
-				spatialQuery.setInt(1, srid);
-				// coordinates for overlapbydisjoint
-				spatialQuery.setDouble(2, tile.getLowerLeftCorner().getX());
-				spatialQuery.setDouble(3, tile.getUpperRightCorner().getY());
-				spatialQuery.setDouble(4, tile.getLowerLeftCorner().getX());
-				spatialQuery.setDouble(5, tile.getLowerLeftCorner().getY());
-				spatialQuery.setDouble(6, tile.getUpperRightCorner().getX());
-				spatialQuery.setDouble(7, tile.getLowerLeftCorner().getY());
-
-				spatialQuery.setInt(8, srid);
-				// coordinates for inside+coveredby
-				spatialQuery.setDouble(9, tile.getLowerLeftCorner().getX());
-				spatialQuery.setDouble(10, tile.getLowerLeftCorner().getY());
-				spatialQuery.setDouble(11, tile.getUpperRightCorner().getX());
-				spatialQuery.setDouble(12, tile.getUpperRightCorner().getY());
-
-				spatialQuery.setInt(13, srid);
-				// coordinates for equals
-				spatialQuery.setDouble(14, tile.getLowerLeftCorner().getX());
-				spatialQuery.setDouble(15, tile.getLowerLeftCorner().getY());
-				spatialQuery.setDouble(16, tile.getUpperRightCorner().getX());
-				spatialQuery.setDouble(17, tile.getUpperRightCorner().getY());
-
-				rs = (OracleResultSet)spatialQuery.executeQuery();
-/*
+				Object curve = databaseAdapter.getGeometryConverter().getDatabaseObject(GeometryObject.createCurve(new double[] {
+						tile.getLowerLeftCorner().getX(),
+						tile.getUpperRightCorner().getY(),
+						tile.getLowerLeftCorner().getX(),
+						tile.getLowerLeftCorner().getY(),
+						tile.getUpperRightCorner().getX(),
+						tile.getLowerLeftCorner().getY()
+				}, 2, srid), connection);
+				
+				Object envelope = databaseAdapter.getGeometryConverter().getDatabaseObject(GeometryObject.createEnvelope(tile), connection);
+				
+				// set spatial objects for query
+				spatialQuery.setObject(1, curve);
+				spatialQuery.setObject(2, envelope);
+				
+				rs = spatialQuery.executeQuery();
+				/*
 				String absolutePath = config.getInternal().getExportFileName().trim();
 				String filename = absolutePath.substring(absolutePath.lastIndexOf(File.separator) + 1,
 														 absolutePath.lastIndexOf("."));
@@ -229,7 +222,7 @@ public class KmlSplitter {
 
 				Logger.getInstance().info("Spatial query for " + tileName + " resolved in " +
 										  (System.currentTimeMillis() - startTime) + " millis.");
-*/
+				 */
 				int objectCount = 0;
 
 				while (rs.next() && shouldRun) {
@@ -237,15 +230,15 @@ public class KmlSplitter {
 					String gmlId = rs.getString("gmlId");
 					CityGMLClass cityObjectType = Util.classId2cityObject(rs.getInt("class_id"));
 					addWorkToQueue(id, gmlId, cityObjectType, 
-								   exportFilter.getBoundingBoxFilter().getTileRow(),
-								   exportFilter.getBoundingBoxFilter().getTileColumn());
+							exportFilter.getBoundingBoxFilter().getTileRow(),
+							exportFilter.getBoundingBoxFilter().getTileColumn());
 
 					objectCount++;
 				}
 
 				Logger.getInstance().debug("Tile_" + exportFilter.getBoundingBoxFilter().getTileRow()
-						   					 + "_" + exportFilter.getBoundingBoxFilter().getTileColumn()
-						   					 + " contained " + objectCount + " objects.");
+						+ "_" + exportFilter.getBoundingBoxFilter().getTileColumn()
+						+ " contained " + objectCount + " objects.");
 			}
 			catch (SQLException sqlEx) {
 				throw sqlEx;
@@ -295,7 +288,7 @@ public class KmlSplitter {
 	private void addWorkToQueue(long id, String gmlId, CityGMLClass cityObjectType, int row, int column) throws SQLException {
 
 		if ((filterConfig.isSetSimpleFilter() || CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType)) &&
-			!KmlExporter.getAlreadyExported().containsKey(id)) {
+				!KmlExporter.getAlreadyExported().containsKey(id)) {
 
 			CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
 			cityObject4Json.setTileRow(row);
@@ -309,60 +302,46 @@ public class KmlSplitter {
 
 			if (splitter.isCityObjectGroup() && 
 					(filterConfig.isSetSimpleFilter() || CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.size() > 1)) {
-				OracleResultSet rs = null;
+				ResultSet rs = null;
 				PreparedStatement query = null;
 				try {
 					if (filterConfig.isSetComplexFilter() &&
-						filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
+							filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
 
-						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS_IN_BBOX);
+						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS_IN_BBOX(databaseAdapter.getDatabaseType()));
 						BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
 						int srid = dbSrs.getSrid();
 
-						// group's id
+						Object curve = databaseAdapter.getGeometryConverter().getDatabaseObject(GeometryObject.createCurve(new double[] {
+								tile.getLowerLeftCorner().getX(),
+								tile.getUpperRightCorner().getY(),
+								tile.getLowerLeftCorner().getX(),
+								tile.getLowerLeftCorner().getY(),
+								tile.getUpperRightCorner().getX(),
+								tile.getLowerLeftCorner().getY()
+						}, 2, srid), connection);
+						
+						Object envelope = databaseAdapter.getGeometryConverter().getDatabaseObject(GeometryObject.createEnvelope(tile), connection);
+						
+						// set group's id
 						query.setLong(1, id);
 
-						query.setInt(2, srid);
-						// coordinates for overlapbydisjoint
-						query.setDouble(3, tile.getLowerLeftCorner().getX());
-						query.setDouble(4, tile.getUpperRightCorner().getY());
-						query.setDouble(5, tile.getLowerLeftCorner().getX());
-						query.setDouble(6, tile.getLowerLeftCorner().getY());
-						query.setDouble(7, tile.getUpperRightCorner().getX());
-						query.setDouble(8, tile.getLowerLeftCorner().getY());
-
-						// group's id
-						query.setLong(9, id);
-
-						query.setInt(10, srid);
-						// coordinates for inside+coveredby
-						query.setDouble(11, tile.getLowerLeftCorner().getX());
-						query.setDouble(12, tile.getLowerLeftCorner().getY());
-						query.setDouble(13, tile.getUpperRightCorner().getX());
-						query.setDouble(14, tile.getUpperRightCorner().getY());
-
-						// group's id
-						query.setLong(15, id);
-
-						query.setInt(16, srid);
-						// coordinates for equals
-						query.setDouble(17, tile.getLowerLeftCorner().getX());
-						query.setDouble(18, tile.getLowerLeftCorner().getY());
-						query.setDouble(19, tile.getUpperRightCorner().getX());
-						query.setDouble(20, tile.getUpperRightCorner().getY());
+						// set spatial objects for query
+						query.setObject(1, curve);
+						query.setObject(2, envelope);
 					}
 					else {
 						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS);
 						query.setLong(1, id);
 					}
-					rs = (OracleResultSet)query.executeQuery();
-					
+					rs = query.executeQuery();
+
 					while (rs.next() && shouldRun) {
 						addWorkToQueue(rs.getLong("id"), // recursion for recursive groups
-									   rs.getString("gmlId"),
-									   Util.classId2cityObject(rs.getInt("class_id")), 
-									   row,
-									   column);
+								rs.getString("gmlId"),
+								Util.classId2cityObject(rs.getInt("class_id")), 
+								row,
+								column);
 					}
 				}
 				catch (SQLException sqlEx) {
@@ -382,27 +361,27 @@ public class KmlSplitter {
 			}
 		}
 	}
-	
+
 	private double[] getEnvelopeInWGS84(long id) {
 		double[] ordinatesArray = null;
 		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
+		ResultSet rs = null;
 
 		try {
 			psQuery = dbSrs.is3D() ? 
-					  connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_3D_FROM_ID):
-					  connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_FROM_ID);
-						  
-			psQuery.setLong(1, id);
+					connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_3D_FROM_ID(databaseAdapter.getSQLAdapter())):
+						connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_FROM_ID(databaseAdapter.getSQLAdapter()));
 
-			rs = (OracleResultSet)psQuery.executeQuery();
-			if (rs.next()) {
-				STRUCT struct = (STRUCT)rs.getObject(1); 
-				if (!rs.wasNull() && struct != null) {
-					JGeometry geom = JGeometry.load(struct);
-					ordinatesArray = geom.getOrdinatesArray();
-				}
-			}
+					psQuery.setLong(1, id);
+
+					rs = psQuery.executeQuery();
+					if (rs.next()) {
+						Object object = rs.getObject(1); 
+						if (!rs.wasNull() && object != null) {
+							GeometryObject geomObj = databaseAdapter.getGeometryConverter().getEnvelope(object);
+							ordinatesArray = geomObj.getCoordinates(0);
+						}
+					}
 		} 
 		catch (SQLException sqlEx) {}
 		finally {

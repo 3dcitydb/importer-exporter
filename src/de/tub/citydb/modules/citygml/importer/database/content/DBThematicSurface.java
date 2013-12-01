@@ -40,7 +40,6 @@ import org.citygml4j.model.citygml.building.AbstractOpening;
 import org.citygml4j.model.citygml.building.OpeningProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
@@ -59,7 +58,7 @@ public class DBThematicSurface implements DBImporter {
 	private DBOpening openingImporter;
 
 	private int batchCounter;
-	
+
 	public DBThematicSurface(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
 		this.dbImporterManager = dbImporterManager;
@@ -67,9 +66,11 @@ public class DBThematicSurface implements DBImporter {
 		init();
 	}
 
-	private void init() throws SQLException {		
-		psThematicSurface = batchConn.prepareStatement("insert into THEMATIC_SURFACE (ID, NAME, NAME_CODESPACE, DESCRIPTION, TYPE, BUILDING_ID, ROOM_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID) values " +
-				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	private void init() throws SQLException {
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into THEMATIC_SURFACE (ID, NAME, NAME_CODESPACE, DESCRIPTION, TYPE, BUILDING_ID, ROOM_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psThematicSurface = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
@@ -77,17 +78,17 @@ public class DBThematicSurface implements DBImporter {
 	}
 
 	public long insert(AbstractBoundarySurface boundarySurface, CityGMLClass parent, long parentId) throws SQLException {
-		long boundarySurfaceId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
-    	if (boundarySurfaceId == 0)
-    		return 0;
+		long boundarySurfaceId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
+		if (boundarySurfaceId == 0)
+			return 0;
 
-    	String origGmlId = boundarySurface.getId();
-    	
+		String origGmlId = boundarySurface.getId();
+
 		// CityObject
-    	cityObjectImporter.insert(boundarySurface, boundarySurfaceId);
+		cityObjectImporter.insert(boundarySurface, boundarySurfaceId);
 
 		// BoundarySurface
-        // ID
+		// ID
 		psThematicSurface.setLong(1, boundarySurfaceId);
 
 		// gml:name
@@ -114,16 +115,16 @@ public class DBThematicSurface implements DBImporter {
 		}
 
 		// TYPE
-        psThematicSurface.setString(5, TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString());
+		psThematicSurface.setString(5, TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString());
 
-        // parentId
+		// parentId
 		switch (parent) {
 		case BUILDING:
 		case BUILDING_PART:
 			psThematicSurface.setLong(6, parentId);
 			psThematicSurface.setNull(7, 0);
 			break;
-		case ROOM:
+		case BUILDING_ROOM:
 			psThematicSurface.setNull(6, 0);
 			psThematicSurface.setLong(7, parentId);
 			break;
@@ -132,79 +133,80 @@ public class DBThematicSurface implements DBImporter {
 			psThematicSurface.setNull(7, 0);
 		}
 
-        // Geometry
-        for (int lod = 2; lod < 5; lod++) {
-        	MultiSurfaceProperty multiSurfaceProperty = null;
-        	long multiSurfaceId = 0;
+		// Geometry
+		for (int lod = 2; lod < 5; lod++) {
+			MultiSurfaceProperty multiSurfaceProperty = null;
+			long multiSurfaceId = 0;
 
-    		switch (lod) {
-    		case 2:
-    			multiSurfaceProperty = boundarySurface.getLod2MultiSurface();
-    			break;
-    		case 3:
-    			multiSurfaceProperty = boundarySurface.getLod3MultiSurface();
-    			break;
-    		case 4:
-    			multiSurfaceProperty = boundarySurface.getLod4MultiSurface();
-    			break;
-    		}
+			switch (lod) {
+			case 2:
+				multiSurfaceProperty = boundarySurface.getLod2MultiSurface();
+				break;
+			case 3:
+				multiSurfaceProperty = boundarySurface.getLod3MultiSurface();
+				break;
+			case 4:
+				multiSurfaceProperty = boundarySurface.getLod4MultiSurface();
+				break;
+			}
 
-    		if (multiSurfaceProperty != null) {
-    			if (multiSurfaceProperty.isSetMultiSurface()) {
-    				multiSurfaceId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), boundarySurfaceId);
-    			} else {
-    				// xlink
+			if (multiSurfaceProperty != null) {
+				if (multiSurfaceProperty.isSetMultiSurface()) {
+					multiSurfaceId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), boundarySurfaceId);
+					multiSurfaceProperty.unsetMultiSurface();
+				} else {
+					// xlink
 					String href = multiSurfaceProperty.getHref();
 
-        			if (href != null && href.length() != 0) {
-        				DBXlinkBasic xlink = new DBXlinkBasic(
-        						boundarySurfaceId,
-        						TableEnum.THEMATIC_SURFACE,
-        						href,
-        						TableEnum.SURFACE_GEOMETRY
-        				);
+					if (href != null && href.length() != 0) {
+						DBXlinkBasic xlink = new DBXlinkBasic(
+								boundarySurfaceId,
+								TableEnum.THEMATIC_SURFACE,
+								href,
+								TableEnum.SURFACE_GEOMETRY
+								);
 
-        				xlink.setAttrName("LOD" + lod + "_MULTI_SURFACE_ID");
-        				dbImporterManager.propagateXlink(xlink);
-        			}
-    			}
-    		}
+						xlink.setAttrName("LOD" + lod + "_MULTI_SURFACE_ID");
+						dbImporterManager.propagateXlink(xlink);
+					}
+				}
+			}
 
-    		switch (lod) {
-        	case 2:
-        		if (multiSurfaceId != 0)
-        			psThematicSurface.setLong(8, multiSurfaceId);
-        		else
-        			psThematicSurface.setNull(8, 0);
-        		break;
-        	case 3:
-        		if (multiSurfaceId != 0)
-        			psThematicSurface.setLong(9, multiSurfaceId);
-        		else
-        			psThematicSurface.setNull(9, 0);
-        		break;
-        	case 4:
-        		if (multiSurfaceId != 0)
-        			psThematicSurface.setLong(10, multiSurfaceId);
-        		else
-        			psThematicSurface.setNull(10, 0);
-        		break;
-        	}
-        }
+			switch (lod) {
+			case 2:
+				if (multiSurfaceId != 0)
+					psThematicSurface.setLong(8, multiSurfaceId);
+				else
+					psThematicSurface.setNull(8, 0);
+				break;
+			case 3:
+				if (multiSurfaceId != 0)
+					psThematicSurface.setLong(9, multiSurfaceId);
+				else
+					psThematicSurface.setNull(9, 0);
+				break;
+			case 4:
+				if (multiSurfaceId != 0)
+					psThematicSurface.setLong(10, multiSurfaceId);
+				else
+					psThematicSurface.setNull(10, 0);
+				break;
+			}
+		}
 
-        psThematicSurface.addBatch();
-        if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		psThematicSurface.addBatch();
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.THEMATIC_SURFACE);
 
-        // Openings
-        if (boundarySurface.isSetOpening()) {
-        	for (OpeningProperty openingProperty : boundarySurface.getOpening()) {
-        		if (openingProperty.isSetOpening()) {
-        			AbstractOpening opening = openingProperty.getOpening();
-        			String gmlId = opening.getId();
-        			long id = openingImporter.insert(opening, boundarySurfaceId);
-        			
-        			if (id == 0) {
+		// Openings
+		if (boundarySurface.isSetOpening()) {
+			for (OpeningProperty openingProperty : boundarySurface.getOpening()) {
+				if (openingProperty.isSetOpening()) {
+					AbstractOpening opening = openingProperty.getOpening();
+					String gmlId = opening.getId();
+					long id = openingImporter.insert(opening, boundarySurfaceId);
+
+					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 								boundarySurface.getCityGMLClass(), 
 								origGmlId));
@@ -212,29 +214,32 @@ public class DBThematicSurface implements DBImporter {
 						msg.append(Util.getFeatureSignature(
 								opening.getCityGMLClass(), 
 								gmlId));
-						
+
 						LOG.error(msg.toString());
 					}
-        			
-        			// free memory of nested feature
-        			openingProperty.unsetOpening();
-        		} else {
-        			// xlink
-        			String href = openingProperty.getHref();
 
-        			if (href != null && href.length() != 0) {
-        				dbImporterManager.propagateXlink(new DBXlinkBasic(
-        						boundarySurfaceId,
-        						TableEnum.THEMATIC_SURFACE,
-        						href,
-        						TableEnum.OPENING
-        				));
-        			}
-        		}
-        	}
-        }
+					// free memory of nested feature
+					openingProperty.unsetOpening();
+				} else {
+					// xlink
+					String href = openingProperty.getHref();
 
-    	return boundarySurfaceId;
+					if (href != null && href.length() != 0) {
+						dbImporterManager.propagateXlink(new DBXlinkBasic(
+								boundarySurfaceId,
+								TableEnum.THEMATIC_SURFACE,
+								href,
+								TableEnum.OPENING
+								));
+					}
+				}
+			}
+		}
+
+		// insert local appearance
+		cityObjectImporter.insertAppearance(boundarySurface, boundarySurfaceId);
+
+		return boundarySurfaceId;
 	}
 
 	@Override

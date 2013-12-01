@@ -49,7 +49,7 @@ import javax.swing.SwingUtilities;
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.database.DatabaseSrs;
-import de.tub.citydb.api.gui.BoundingBox;
+import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -59,7 +59,6 @@ import de.tub.citydb.gui.components.mapviewer.MapWindow;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.database.DBUtil;
 import de.tub.citydb.util.gui.GuiUtil;
 
 public class BoundingBoxValidator {
@@ -245,7 +244,7 @@ public class BoundingBoxValidator {
 					}
 				}
 				
-				bbox.copyFrom(DBUtil.transformBBox(bbox, bbox.getSrs(), wgs84));
+				bbox.copyFrom(dbController.getActiveDatabaseAdapter().getUtil().transformBoundingBox(bbox, bbox.getSrs(), wgs84));
 				
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {

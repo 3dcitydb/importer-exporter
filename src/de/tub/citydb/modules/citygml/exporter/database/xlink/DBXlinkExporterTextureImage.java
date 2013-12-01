@@ -30,16 +30,13 @@
 package de.tub.citydb.modules.citygml.exporter.database.xlink;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import oracle.jdbc.OracleResultSet;
-import oracle.ord.im.OrdImage;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -48,13 +45,11 @@ import de.tub.citydb.util.Util;
 
 public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 	private final Logger LOG = Logger.getInstance();
-
 	private final DBXlinkExporterManager xlinkExporterManager;
 	private final Config config;
 	private final Connection connection;
 
-	private PreparedStatement psTextureImage;
-	
+	private TextureImageExportAdapter textureImageExportAdapter;
 	private String localPath;
 	private String texturePath;
 	private boolean texturePathIsLocal;
@@ -76,12 +71,11 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 		overwriteTextureImage = config.getProject().getExporter().getAppearances().isSetOverwriteTextureFiles();
 		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
 
-		psTextureImage = connection.prepareStatement("select TEX_IMAGE from SURFACE_DATA where ID=?");
+		textureImageExportAdapter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getTextureImageExportAdapter(connection);
 	}
 
 	public boolean export(DBXlinkTextureFile xlink) throws SQLException {
 		String fileName = xlink.getFileURI();
-		boolean isRemote = false;
 
 		if (fileName == null || fileName.length() == 0) {
 			LOG.error("Database error while exporting a texture file: Attribute TEX_IMAGE_URI is empty.");
@@ -91,7 +85,6 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 		// check whether we deal with a remote image uri
 		if (Util.isRemoteXlink(fileName)) {
 			URL url = null;
-			isRemote = true;
 
 			try {
 				url = new URL(fileName);
@@ -119,47 +112,14 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 		if (!overwriteTextureImage && file.exists())
 			return false;
 
-		// try and read texture image attribute from surface_data table
-		psTextureImage.setLong(1, xlink.getId());
-		OracleResultSet rs = (OracleResultSet)psTextureImage.executeQuery();
-		if (!rs.next()) {
-			if (!isRemote) {
-				// we could not read from database. if we deal with a remote
-				// image uri, we do not really care. but if the texture image should
-				// be provided by us, then this is serious...
-				LOG.error("Error while exporting a texture file: " + fileName + " does not exist in database.");
-			}
-
-			rs.close();
-			return false;
-		}
-
+		// load image data into file
 		xlinkExporterManager.propagateEvent(counter);
-
-		// read oracle image data type
-		OrdImage imgProxy = (OrdImage)rs.getORAData(1, OrdImage.getORADataFactory());
-		rs.close();
-		
-		if (imgProxy == null) {
-			LOG.error("Database error while reading texture file: " + fileName);
-			return false;
-		}
-
-		try {
-			imgProxy.getDataInFile(fileURI);
-		} catch (IOException ioEx) {
-			LOG.error("Failed to write texture file " + fileName + ": " + ioEx.getMessage());
-			return false;
-		} finally {
-			imgProxy.close();
-		}
-
-		return true;
+		return textureImageExportAdapter.getInFile(xlink.getId(), fileName, fileURI);
 	}
 
 	@Override
 	public void close() throws SQLException {
-		psTextureImage.close();
+		textureImageExportAdapter.close();
 	}
 
 	@Override

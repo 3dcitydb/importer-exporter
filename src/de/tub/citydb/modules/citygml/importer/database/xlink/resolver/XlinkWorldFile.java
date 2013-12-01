@@ -40,10 +40,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
@@ -53,6 +51,7 @@ public class XlinkWorldFile implements DBXlinkResolver {
 	private final Logger LOG = Logger.getInstance();
 	
     private final Connection batchConn;
+    private final DBXlinkResolverManager resolverManager;
     private final Config config;
 
     private PreparedStatement psUpdate;
@@ -60,16 +59,17 @@ public class XlinkWorldFile implements DBXlinkResolver {
     private int dbSrid;
     private int batchCounter;
 
-    public XlinkWorldFile(Connection batchConn, Config config) throws SQLException {
+    public XlinkWorldFile(Connection batchConn, Config config, DBXlinkResolverManager resolverManager) throws SQLException {
         this.batchConn = batchConn;
         this.config = config;
+        this.resolverManager = resolverManager;
 
         init();
     }
 
     private void init() throws SQLException {
         localPath = config.getInternal().getImportPath();
-        dbSrid = DatabaseConnectionPool.getInstance().getActiveConnectionMetaData().getReferenceSystem().getSrid();
+        dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
 
         psUpdate = batchConn.prepareStatement("update SURFACE_DATA set GT_ORIENTATION=?, GT_REFERENCE_POINT=? where ID=?");
     }
@@ -129,15 +129,15 @@ public class XlinkWorldFile implements DBXlinkResolver {
                     	// interpretation of world file content taken from CityGML specification document version 1.0.0
                     	String orientation = content.get(0) + " " + content.get(2) + " " + content.get(1) + " " + content.get(3);
 
-                    	JGeometry geom = new JGeometry(content.get(4), content.get(5), dbSrid);
-						STRUCT obj = JGeometry.store(geom, batchConn);
+                    	GeometryObject geomObj = GeometryObject.createPoint(new double[]{content.get(4), content.get(5)}, 2, dbSrid);
+                    	Object obj = resolverManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geomObj, batchConn);
 
 						psUpdate.setString(1, orientation);
 						psUpdate.setObject(2, obj);
 						psUpdate.setLong(3, xlink.getId());
 						
 						psUpdate.addBatch();
-						if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+						if (++batchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
 							executeBatch();
 
 						return true;

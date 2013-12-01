@@ -33,37 +33,30 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
-import org.citygml4j.impl.citygml.transportation.AuxiliaryTrafficAreaImpl;
-import org.citygml4j.impl.citygml.transportation.AuxiliaryTrafficAreaPropertyImpl;
-import org.citygml4j.impl.citygml.transportation.RailwayImpl;
-import org.citygml4j.impl.citygml.transportation.RoadImpl;
-import org.citygml4j.impl.citygml.transportation.SquareImpl;
-import org.citygml4j.impl.citygml.transportation.TrackImpl;
-import org.citygml4j.impl.citygml.transportation.TrafficAreaImpl;
-import org.citygml4j.impl.citygml.transportation.TrafficAreaPropertyImpl;
-import org.citygml4j.impl.citygml.transportation.TransportationComplexImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfacePropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.transportation.AbstractTransportationObject;
 import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficArea;
 import org.citygml4j.model.citygml.transportation.AuxiliaryTrafficAreaProperty;
+import org.citygml4j.model.citygml.transportation.Railway;
+import org.citygml4j.model.citygml.transportation.Road;
+import org.citygml4j.model.citygml.transportation.Square;
+import org.citygml4j.model.citygml.transportation.Track;
 import org.citygml4j.model.citygml.transportation.TrafficArea;
 import org.citygml4j.model.citygml.transportation.TrafficAreaProperty;
 import org.citygml4j.model.citygml.transportation.TransportationComplex;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplexProperty;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
@@ -78,10 +71,8 @@ public class DBTransportationComplex implements DBExporter {
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBOtherGeometry geometryExporter;
 	private FeatureClassFilter featureClassFilter;
-
-	private boolean transformCoords;
 
 	public DBTransportationComplex(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
@@ -93,30 +84,33 @@ public class DBTransportationComplex implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		transformCoords = config.getInternal().isTransformCoordinates();
-
-		if (!transformCoords) {		
-			psTranComplex = connection.prepareStatement("select tc.ID as TC_ID, tc.NAME as TC_NAME, tc.NAME_CODESPACE as TC_NAME_CODESPACE, tc.DESCRIPTION as TC_DESCRIPTION, tc.FUNCTION as TC_FUNCTION, tc.USAGE as TC_USAGE, " +
-					"upper(tc.TYPE) as TC_TYPE, tc.LOD1_MULTI_SURFACE_ID as TC_LOD1_MULTI_SURFACE_ID, tc.LOD2_MULTI_SURFACE_ID as TC_LOD2_MULTI_SURFACE_ID, tc.LOD3_MULTI_SURFACE_ID as TC_LOD3_MULTI_SURFACE_ID, " +
-					"tc.LOD4_MULTI_SURFACE_ID as TC_LOD4_MULTI_SURFACE_ID, tc.LOD0_NETWORK as TC_LOD0_NETWORK, " +
-					"ta.ID as TA_ID, ta.IS_AUXILIARY, ta.NAME as TA_NAME, ta.NAME_CODESPACE as TA_NAME_CODESPACE, ta.DESCRIPTION as TA_DESCRIPTION, ta.FUNCTION as TA_FUNCTION, ta.USAGE as TA_USAGE, " +
-					"ta.SURFACE_MATERIAL, ta.LOD2_MULTI_SURFACE_ID as TA_LOD2_MULTI_SURFACE_ID, ta.LOD3_MULTI_SURFACE_ID as TA_LOD3_MULTI_SURFACE_ID, " +
-			"ta.LOD4_MULTI_SURFACE_ID as TA_LOD4_MULTI_SURFACE_ID from TRANSPORTATION_COMPLEX tc left join TRAFFIC_AREA ta on tc.ID=ta.TRANSPORTATION_COMPLEX_ID where tc.ID=?");
+		if (!config.getInternal().isTransformCoordinates()) {
+			StringBuilder query = new StringBuilder()
+			.append("select tc.ID as TC_ID, tc.NAME as TC_NAME, tc.NAME_CODESPACE as TC_NAME_CODESPACE, tc.DESCRIPTION as TC_DESCRIPTION, tc.FUNCTION as TC_FUNCTION, tc.USAGE as TC_USAGE, ")
+			.append("upper(tc.TYPE) as TC_TYPE, tc.LOD1_MULTI_SURFACE_ID as TC_LOD1_MULTI_SURFACE_ID, tc.LOD2_MULTI_SURFACE_ID as TC_LOD2_MULTI_SURFACE_ID, tc.LOD3_MULTI_SURFACE_ID as TC_LOD3_MULTI_SURFACE_ID, ")
+			.append("tc.LOD4_MULTI_SURFACE_ID as TC_LOD4_MULTI_SURFACE_ID, tc.LOD0_NETWORK as TC_LOD0_NETWORK, ")
+			.append("ta.ID as TA_ID, ta.IS_AUXILIARY, ta.NAME as TA_NAME, ta.NAME_CODESPACE as TA_NAME_CODESPACE, ta.DESCRIPTION as TA_DESCRIPTION, ta.FUNCTION as TA_FUNCTION, ta.USAGE as TA_USAGE, ")
+			.append("ta.SURFACE_MATERIAL, ta.LOD2_MULTI_SURFACE_ID as TA_LOD2_MULTI_SURFACE_ID, ta.LOD3_MULTI_SURFACE_ID as TA_LOD3_MULTI_SURFACE_ID, ")
+			.append("ta.LOD4_MULTI_SURFACE_ID as TA_LOD4_MULTI_SURFACE_ID from TRANSPORTATION_COMPLEX tc left join TRAFFIC_AREA ta on tc.ID=ta.TRANSPORTATION_COMPLEX_ID where tc.ID=?");
+			psTranComplex = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			
-			psTranComplex = connection.prepareStatement("select tc.ID as TC_ID, tc.NAME as TC_NAME, tc.NAME_CODESPACE as TC_NAME_CODESPACE, tc.DESCRIPTION as TC_DESCRIPTION, tc.FUNCTION as TC_FUNCTION, tc.USAGE as TC_USAGE, " +
-					"upper(tc.TYPE) as TC_TYPE, tc.LOD1_MULTI_SURFACE_ID as TC_LOD1_MULTI_SURFACE_ID, tc.LOD2_MULTI_SURFACE_ID as TC_LOD2_MULTI_SURFACE_ID, tc.LOD3_MULTI_SURFACE_ID as TC_LOD3_MULTI_SURFACE_ID, " +
-					"tc.LOD4_MULTI_SURFACE_ID as TC_LOD4_MULTI_SURFACE_ID, " +
-					"geodb_util.transform_or_null(tc.LOD0_NETWORK, " + srid + ") as TC_LOD0_NETWORK, " +
-					"ta.ID as TA_ID, ta.IS_AUXILIARY, ta.NAME as TA_NAME, ta.NAME_CODESPACE as TA_NAME_CODESPACE, ta.DESCRIPTION as TA_DESCRIPTION, ta.FUNCTION as TA_FUNCTION, ta.USAGE as TA_USAGE, " +
-					"ta.SURFACE_MATERIAL, ta.LOD2_MULTI_SURFACE_ID as TA_LOD2_MULTI_SURFACE_ID, ta.LOD3_MULTI_SURFACE_ID as TA_LOD3_MULTI_SURFACE_ID, " +
-			"ta.LOD4_MULTI_SURFACE_ID as TA_LOD4_MULTI_SURFACE_ID from TRANSPORTATION_COMPLEX tc left join TRAFFIC_AREA ta on tc.ID=ta.TRANSPORTATION_COMPLEX_ID where tc.ID=?");
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
+
+			StringBuilder query = new StringBuilder()
+			.append("select tc.ID as TC_ID, tc.NAME as TC_NAME, tc.NAME_CODESPACE as TC_NAME_CODESPACE, tc.DESCRIPTION as TC_DESCRIPTION, tc.FUNCTION as TC_FUNCTION, tc.USAGE as TC_USAGE, ")
+			.append("upper(tc.TYPE) as TC_TYPE, tc.LOD1_MULTI_SURFACE_ID as TC_LOD1_MULTI_SURFACE_ID, tc.LOD2_MULTI_SURFACE_ID as TC_LOD2_MULTI_SURFACE_ID, tc.LOD3_MULTI_SURFACE_ID as TC_LOD3_MULTI_SURFACE_ID, ")
+			.append("tc.LOD4_MULTI_SURFACE_ID as TC_LOD4_MULTI_SURFACE_ID, ")
+			.append(transformOrNull).append("(tc.LOD0_NETWORK, ").append(srid).append(") as TC_LOD0_NETWORK, ")
+			.append("ta.ID as TA_ID, ta.IS_AUXILIARY, ta.NAME as TA_NAME, ta.NAME_CODESPACE as TA_NAME_CODESPACE, ta.DESCRIPTION as TA_DESCRIPTION, ta.FUNCTION as TA_FUNCTION, ta.USAGE as TA_USAGE, ")
+			.append("ta.SURFACE_MATERIAL, ta.LOD2_MULTI_SURFACE_ID as TA_LOD2_MULTI_SURFACE_ID, ta.LOD3_MULTI_SURFACE_ID as TA_LOD3_MULTI_SURFACE_ID, ")
+			.append("ta.LOD4_MULTI_SURFACE_ID as TA_LOD4_MULTI_SURFACE_ID from TRANSPORTATION_COMPLEX tc left join TRAFFIC_AREA ta on tc.ID=ta.TRANSPORTATION_COMPLEX_ID where tc.ID=?");
+			psTranComplex = connection.prepareStatement(query.toString());
 		}
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
-		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);
+		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
@@ -125,19 +119,19 @@ public class DBTransportationComplex implements DBExporter {
 
 		switch (splitter.getCityObjectType()) {
 		case ROAD:
-			transComplex = new RoadImpl();
+			transComplex = new Road();
 			break;
 		case RAILWAY:
-			transComplex = new RailwayImpl();
+			transComplex = new Railway();
 			break;
 		case SQUARE:
-			transComplex = new SquareImpl();
+			transComplex = new Square();
 			break;
 		case TRACK:
-			transComplex = new TrackImpl();
+			transComplex = new Track();
 			break;
 		default:
-			transComplex = new TransportationComplexImpl();
+			transComplex = new TransportationComplex();
 		}
 
 		// cityObject stuff
@@ -162,7 +156,7 @@ public class DBTransportationComplex implements DBExporter {
 
 					String description = rs.getString("TC_DESCRIPTION");
 					if (description != null) {
-						StringOrRef stringOrRef = new StringOrRefImpl();
+						StringOrRef stringOrRef = new StringOrRef();
 						stringOrRef.setValue(description);
 						transComplex.setDescription(stringOrRef);
 					}
@@ -170,15 +164,15 @@ public class DBTransportationComplex implements DBExporter {
 					String function = rs.getString("TC_FUNCTION");
 					if (function != null) {
 						Pattern p = Pattern.compile("\\s+");
-						String[] functionList = p.split(function.trim());
-						transComplex.setFunction(Arrays.asList(functionList));
+						for (String value : p.split(function.trim()))
+							transComplex.addFunction(new Code(value));
 					}
 
 					String usage = rs.getString("TC_USAGE");
 					if (usage != null) {
 						Pattern p = Pattern.compile("\\s+");
-						String[] usageList = p.split(usage.trim());
-						transComplex.setUsage(Arrays.asList(usageList));
+						for (String value : p.split(usage.trim()))
+							transComplex.addUsage(new Code(value));
 					}
 
 					for (int lod = 1; lod < 5 ; lod++) {
@@ -188,7 +182,7 @@ public class DBTransportationComplex implements DBExporter {
 							DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(multiSurfaceId);
 
 							if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
+								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
 
 								if (geometry.getAbstractGeometry() != null)
 									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
@@ -214,11 +208,10 @@ public class DBTransportationComplex implements DBExporter {
 					}
 
 					// lod0Network
-					STRUCT struct = (STRUCT)rs.getObject("TC_LOD0_NETWORK");
-					if (!rs.wasNull() && struct != null) {
-						JGeometry lod0Network = JGeometry.load(struct);
-
-						GeometricComplexProperty complexProperty = sdoGeometry.getPointOrCurveComplexProperty(lod0Network, false);
+					Object object = rs.getObject("TC_LOD0_NETWORK");
+					if (!rs.wasNull() && object != null) {
+						GeometryObject lod0Network = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(object);
+						GeometricComplexProperty complexProperty = geometryExporter.getPointOrCurveComplexProperty(lod0Network, false);
 						transComplex.addLod0Network(complexProperty);
 					}
 
@@ -233,9 +226,9 @@ public class DBTransportationComplex implements DBExporter {
 				boolean isAuxiliary = rs.getBoolean("IS_AUXILIARY");
 
 				if (isAuxiliary)
-					transObject = new AuxiliaryTrafficAreaImpl();
+					transObject = new AuxiliaryTrafficArea();
 				else
-					transObject = new TrafficAreaImpl();
+					transObject = new TrafficArea();
 
 				// cityobject stuff
 				cityObjectExporter.read(transObject, trafficAreaId);
@@ -247,35 +240,37 @@ public class DBTransportationComplex implements DBExporter {
 
 				String description = rs.getString("TA_DESCRIPTION");
 				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRefImpl();
+					StringOrRef stringOrRef = new StringOrRef();
 					stringOrRef.setValue(description);
 					transObject.setDescription(stringOrRef);
 				}
 
 				String function = rs.getString("TA_FUNCTION");
 				if (function != null) {
+					List<Code> functionList = new ArrayList<Code>();
 					Pattern p = Pattern.compile("\\s+");
-					String[] functionList = p.split(function.trim());
+					for (String value : p.split(function.trim()))
+						functionList.add(new Code(value));
 
 					if (isAuxiliary)
-						((AuxiliaryTrafficArea)transObject).setFunction(Arrays.asList(functionList));
+						((AuxiliaryTrafficArea)transObject).setFunction(functionList);
 					else
-						((TrafficArea)transObject).setFunction(Arrays.asList(functionList));
+						((TrafficArea)transObject).setFunction(functionList);
 				}
 
 				String usage = rs.getString("TA_USAGE");
 				if (usage != null && !isAuxiliary) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] usageList = p.split(usage.trim());
-					((TrafficArea)transObject).setUsage(Arrays.asList(usageList));
+					for (String value : p.split(usage.trim()))
+						((TrafficArea)transObject).addUsage(new Code(value));
 				}
 
 				String surfaceMaterial = rs.getString("SURFACE_MATERIAL");
 				if (surfaceMaterial != null) {
 					if (isAuxiliary)
-						((AuxiliaryTrafficArea)transObject).setSurfaceMaterial(surfaceMaterial);
+						((AuxiliaryTrafficArea)transObject).setSurfaceMaterial(new Code(surfaceMaterial));
 					else
-						((TrafficArea)transObject).setSurfaceMaterial(surfaceMaterial);
+						((TrafficArea)transObject).setSurfaceMaterial(new Code(surfaceMaterial));
 				}
 
 				for (int lod = 2; lod < 5 ; lod++) {
@@ -285,7 +280,7 @@ public class DBTransportationComplex implements DBExporter {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(multiSurfaceId);
 
 						if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
+							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
 
 							if (geometry.getAbstractGeometry() != null)
 								multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
@@ -317,11 +312,11 @@ public class DBTransportationComplex implements DBExporter {
 				}
 
 				if (isAuxiliary) {
-					AuxiliaryTrafficAreaProperty auxProperty  = new AuxiliaryTrafficAreaPropertyImpl();
+					AuxiliaryTrafficAreaProperty auxProperty  = new AuxiliaryTrafficAreaProperty();
 					auxProperty.setObject((AuxiliaryTrafficArea)transObject);
 					transComplex.addAuxiliaryTrafficArea(auxProperty);
 				} else {
-					TrafficAreaProperty trafficProperty = new TrafficAreaPropertyImpl();
+					TrafficAreaProperty trafficProperty = new TrafficAreaProperty();
 					trafficProperty.setObject((TrafficArea)transObject);
 					transComplex.addTrafficArea(trafficProperty);
 				}

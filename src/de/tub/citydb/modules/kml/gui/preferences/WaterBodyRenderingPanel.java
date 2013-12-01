@@ -54,7 +54,7 @@ import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.TitledBorder;
 
-import org.citygml.textureAtlasAPI.TextureAtlasGenerator;
+import org.citygml.textureAtlas.TextureAtlasCreator;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
@@ -361,12 +361,9 @@ public class WaterBodyRenderingPanel extends AbstractPreferencesComponent {
 		isoc.gridwidth = 2;
 		colladaPanel.add(ignoreSurfaceOrientationCheckbox, isoc);
 
-		packingAlgorithms.put("BASIC", -1);
-//		packingAlgorithms.put("FFDH", TextureAtlasGenerator.FFDH);
-//		packingAlgorithms.put("NFDH", TextureAtlasGenerator.NFDH);
-		packingAlgorithms.put("SLEA", TextureAtlasGenerator.SLEA);
-		packingAlgorithms.put("TPIM", TextureAtlasGenerator.TPIM);
-		packingAlgorithms.put("TPIM_WO_R", TextureAtlasGenerator.TPIM_WITHOUT_ROTATION);
+		packingAlgorithms.put("BASIC", TextureAtlasCreator.BASIC);
+		packingAlgorithms.put("TPIM", TextureAtlasCreator.TPIM);
+		packingAlgorithms.put("TPIM w/o image rotation", TextureAtlasCreator.TPIM_WO_ROTATION);
 
 		for (String algorithm: packingAlgorithms.keySet()) {
 			packingAlgorithmsComboBox.addItem(algorithm);
@@ -940,7 +937,7 @@ public class WaterBodyRenderingPanel extends AbstractPreferencesComponent {
 		colladaOptions.setIgnoreSurfaceOrientation(false);
 		colladaOptions.setGenerateTextureAtlases(true);
 		colladaOptions.setTextureAtlasPots(true);
-		colladaOptions.setPackingAlgorithm(TextureAtlasGenerator.TPIM); 
+		colladaOptions.setPackingAlgorithm(TextureAtlasCreator.BASIC); 
 
 		colladaOptions.setScaleImages(false);
 		colladaOptions.setImageScaleFactor(1);

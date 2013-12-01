@@ -60,7 +60,7 @@ public class UpdateBatching {
 
 	public void setFeatureBatchValue(Integer featureBatchValue) {
 		if (featureBatchValue != null && featureBatchValue > 0 &&
-				featureBatchValue <= Internal.ORACLE_MAX_BATCH_SIZE)
+				featureBatchValue <= Internal.DB_MAX_BATCH_SIZE)
 			this.featureBatchValue = featureBatchValue;
 	}
 
@@ -70,7 +70,7 @@ public class UpdateBatching {
 
 	public void setGmlIdLookupServerBatchValue(Integer gmlIdLookupServerBatchValue) {
 		if (gmlIdLookupServerBatchValue != null && gmlIdLookupServerBatchValue > 0 &&
-				gmlIdLookupServerBatchValue <= Internal.ORACLE_MAX_BATCH_SIZE)
+				gmlIdLookupServerBatchValue <= Internal.DB_MAX_BATCH_SIZE)
 			this.gmlIdLookupServerBatchValue = gmlIdLookupServerBatchValue;
 	}
 
@@ -80,7 +80,7 @@ public class UpdateBatching {
 
 	public void setTempBatchValue(Integer tempBatchValue) {
 		if (tempBatchValue != null && tempBatchValue > 0 && 
-				tempBatchValue <= Internal.ORACLE_MAX_BATCH_SIZE)
+				tempBatchValue <= Internal.DB_MAX_BATCH_SIZE)
 			this.tempBatchValue = tempBatchValue;
 	}
 	

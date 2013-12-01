@@ -39,15 +39,13 @@ import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
 import net.opengis.kml._2.PlacemarkType;
-import oracle.jdbc.OracleResultSet;
-
-import org.citygml4j.factory.CityGMLFactory;
-
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
+import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -58,8 +56,9 @@ public class PlantCover extends KmlGenericObject{
 
 	public PlantCover(Connection connection,
 			KmlExporterManager kmlExporterManager,
-			CityGMLFactory cityGMLFactory,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
+			AbstractDatabaseAdapter databaseAdapter,
+			TextureImageExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
@@ -67,8 +66,9 @@ public class PlantCover extends KmlGenericObject{
 
 		super(connection,
 			  kmlExporterManager,
-			  cityGMLFactory,
 			  kmlFactory,
+			  databaseAdapter,
+			  textureExportAdapter,
 			  elevationServiceHandler,
 			  balloonTemplateHandler,
 			  eventDispatcher,
@@ -98,7 +98,7 @@ public class PlantCover extends KmlGenericObject{
 	public void read(KmlSplittingResult work) {
 
 		PreparedStatement psQuery = null;
-		OracleResultSet rs = null;
+		ResultSet rs = null;
 
 		boolean reversePointOrder = false;
 
@@ -119,7 +119,7 @@ public class PlantCover extends KmlGenericObject{
 						psQuery.setLong(i, work.getId());
 					}
 				
-					rs = (OracleResultSet)psQuery.executeQuery();
+					rs = psQuery.executeQuery();
 					if (rs.isBeforeFirst()) {
 						break; // result set not empty
 					}
@@ -166,11 +166,11 @@ public class PlantCover extends KmlGenericObject{
 					break;
 				case DisplayForm.EXTRUDED:
 
-					PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT);
+					PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT(databaseAdapter.getDatabaseType()));
 					for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
 						psQuery2.setLong(i, work.getId());
 					}
-					OracleResultSet rs2 = (OracleResultSet)psQuery2.executeQuery();
+					ResultSet rs2 = psQuery2.executeQuery();
 					rs2.next();
 					double measuredHeight = rs2.getDouble("envelope_measured_height");
 					try { rs2.close(); /* release cursor on DB */ } catch (SQLException e) {}

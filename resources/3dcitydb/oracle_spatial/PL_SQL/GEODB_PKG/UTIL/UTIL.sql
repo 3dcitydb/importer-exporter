@@ -38,6 +38,9 @@ set serveroutput off;
 CREATE OR REPLACE TYPE STRARRAY IS TABLE OF VARCHAR2(32767);
 /
 
+CREATE OR REPLACE TYPE SEQ_TABLE IS TABLE OF NUMBER;
+/
+
 DROP TYPE DB_INFO_TABLE;
 CREATE OR REPLACE TYPE DB_INFO_OBJ AS OBJECT(
   SRID NUMBER,
@@ -62,7 +65,6 @@ AS
   FUNCTION versioning_db RETURN VARCHAR2;
   PROCEDURE db_info(srid OUT DATABASE_SRS.SRID%TYPE, srs OUT DATABASE_SRS.GML_SRS_NAME%TYPE, versioning OUT VARCHAR2);
   FUNCTION db_metadata RETURN DB_INFO_TABLE;
-  FUNCTION error_msg(err_code VARCHAR2) RETURN VARCHAR2;
   FUNCTION split(list VARCHAR2, delim VARCHAR2 := ',') RETURN STRARRAY;
   FUNCTION min(a NUMBER, b NUMBER) RETURN NUMBER;
   FUNCTION transform_or_null(geom MDSYS.SDO_GEOMETRY, srid NUMBER) RETURN MDSYS.SDO_GEOMETRY;
@@ -70,6 +72,7 @@ AS
   FUNCTION is_db_coord_ref_sys_3d RETURN NUMBER;
   PROCEDURE change_db_srid(db_srid NUMBER, db_gml_srs_name VARCHAR2);
   PROCEDURE change_column_srid(i_name VARCHAR2, t_name VARCHAR2, c_name VARCHAR2, is_3d BOOLEAN, db_srid NUMBER);
+  FUNCTION get_seq_values(seq_name VARCHAR2, seq_count NUMBER) RETURN SEQ_TABLE;
   FUNCTION to_2d(geom MDSYS.SDO_GEOMETRY, srid NUMBER) RETURN MDSYS.SDO_GEOMETRY; 
 END geodb_util;
 /
@@ -160,19 +163,6 @@ AS
        
     info_ret(info_ret.count) := info_tmp;
     return info_ret;
-  END;
-  
-  /*****************************************************************
-  * error_msg
-  *
-  * @param err_code Oracle SQL error code, usually starting with '-',
-  *                 e.g. '-06404'
-  * @return VARCHAR2 corresponding Oracle SQL error message                 
-  ******************************************************************/
-  FUNCTION error_msg(err_code VARCHAR2) RETURN VARCHAR2
-  IS
-  BEGIN
-    RETURN SQLERRM(err_code);
   END;
   
   /*****************************************************************
@@ -390,6 +380,20 @@ AS
                            USING db_srid;
       COMMIT;
     END IF;
+  END;
+
+  /*****************************************************************
+  * get_seq_values
+  *
+  * @param seq_name name of the sequence
+  * @param count number of values to be queried from the sequence
+  ******************************************************************/
+  FUNCTION get_seq_values(seq_name VARCHAR2, seq_count NUMBER) RETURN SEQ_TABLE
+  IS
+	  seq_tbl SEQ_TABLE;
+  BEGIN
+	  execute immediate 'select ' || seq_name || '.nextval from dual connect by level <= :1' bulk collect into seq_tbl using seq_count;
+	  return seq_tbl;
   END;
 
   /*

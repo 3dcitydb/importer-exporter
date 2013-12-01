@@ -48,6 +48,7 @@ import org.citygml4j.model.citygml.transportation.TransportationComplex;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
 import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
 import org.citygml4j.model.citygml.waterbody.WaterBody;
+import org.citygml4j.model.common.base.ModelType;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
@@ -104,7 +105,6 @@ public class DBImportWorker implements Worker<CityGML> {
 	private final EventDispatcher eventDispatcher;
 	private final ImportFilter importFilter;
 	private Connection batchConn;
-	private Connection commitConn;
 	private DBImporterManager dbImporterManager;
 	private int updateCounter = 0;
 	private int commitAfter = 20;
@@ -136,14 +136,13 @@ public class DBImportWorker implements Worker<CityGML> {
 		batchConn = dbConnectionPool.getConnection();
 		batchConn.setAutoCommit(false);
 
-		commitConn = dbConnectionPool.getConnection();
-		commitConn.setAutoCommit(true);
+		Database database = config.getProject().getDatabase();
 
 		// try and change workspace for both connections if needed
-		Database database = config.getProject().getDatabase();
-		Workspace workspace = database.getWorkspaces().getImportWorkspace();
-		dbConnectionPool.gotoWorkspace(batchConn, workspace);
-		dbConnectionPool.gotoWorkspace(commitConn, workspace);
+		if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
+			Workspace workspace = database.getWorkspaces().getImportWorkspace();
+			dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(batchConn, workspace);
+		}
 
 		// init filter 
 		featureBoundingBoxFilter = importFilter.getBoundingBoxFilter();
@@ -152,7 +151,7 @@ public class DBImportWorker implements Worker<CityGML> {
 
 		dbImporterManager = new DBImporterManager(
 				batchConn,
-				commitConn,
+				dbConnectionPool.getActiveDatabaseAdapter(),
 				jaxbBuilder,
 				config,
 				tmpXlinkPool,
@@ -248,16 +247,6 @@ public class DBImportWorker implements Worker<CityGML> {
 
 				batchConn = null;
 			}
-
-			if (commitConn != null) {
-				try {
-					commitConn.close();
-				} catch (SQLException sqlEx) {
-					//
-				}
-
-				commitConn = null;
-			}
 		}
 	}
 
@@ -275,7 +264,7 @@ public class DBImportWorker implements Worker<CityGML> {
 					if (dbAppearance != null)
 						id = dbAppearance.insert((Appearance)work, CityGMLClass.CITY_MODEL, 0);
 
-				} else if (CityGMLClass.ABSTRACT_CITY_OBJECT.isInstance(work.getCityGMLClass())) {
+				} else if (work.getModelType() == ModelType.CITYGML) {
 					AbstractCityObject cityObject = (AbstractCityObject)work;
 
 					// gml:id filter

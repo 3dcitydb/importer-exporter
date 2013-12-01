@@ -37,19 +37,7 @@ import java.sql.SQLException;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.geometry.Point;
-import org.citygml4j.impl.citygml.core.ExternalObjectImpl;
-import org.citygml4j.impl.citygml.core.ExternalReferenceImpl;
-import org.citygml4j.impl.citygml.generics.DateAttributeImpl;
-import org.citygml4j.impl.citygml.generics.DoubleAttributeImpl;
-import org.citygml4j.impl.citygml.generics.IntAttributeImpl;
-import org.citygml4j.impl.citygml.generics.StringAttributeImpl;
-import org.citygml4j.impl.citygml.generics.UriAttributeImpl;
-import org.citygml4j.impl.gml.feature.BoundingShapeImpl;
-import org.citygml4j.impl.gml.geometry.primitives.EnvelopeImpl;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.ExternalObject;
 import org.citygml4j.model.citygml.core.ExternalReference;
@@ -62,7 +50,8 @@ import org.citygml4j.model.citygml.generics.UriAttribute;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
-import de.tub.citydb.api.gui.BoundingBox;
+import de.tub.citydb.api.geometry.BoundingBox;
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
@@ -83,7 +72,6 @@ public class DBCityObject implements DBExporter {
 	private boolean useInternalBBoxFilter;
 	private boolean useTiling;
 	private boolean setTileInfoAsGenericAttribute;
-	private boolean transformCoords;
 	private BoundingBoxFilter boundingBoxFilter;
 	private BoundingBox activeTile;
 	private Tiling tiling;
@@ -115,29 +103,33 @@ public class DBCityObject implements DBExporter {
 		externalReferenceSet = new HashSet<Long>();
 		genericAttributeSet = new HashSet<Long>();
 
-		transformCoords = config.getInternal().isTransformCoordinates();
 		gmlSrsName = config.getInternal().getExportTargetSRS().getGMLSrsName();
-		if (!transformCoords) {		
-			psCityObject = connection.prepareStatement("select co.GMLID, co.ENVELOPE, co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
-					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
-					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
-					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID and ga.DATATYPE < 6 " +
-					"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
+		if (!config.getInternal().isTransformCoordinates()) {
+			StringBuilder query = new StringBuilder()
+			.append("select co.GMLID, co.ENVELOPE, co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, ")
+			.append("ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID ")
+			.append("from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID ")
+			.append("left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID and ga.DATATYPE < 6 ")
+			.append("left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
+			psCityObject = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
-			psCityObject = connection.prepareStatement("select co.GMLID, " +
-					"geodb_util.transform_or_null(co.ENVELOPE, " + srid + ") AS ENVELOPE, " +
-					"co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, " +
-					"ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID " +
-					"from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID " +
-					"left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID and ga.DATATYPE < 6 " +
-					"left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
+			StringBuilder query = new StringBuilder()
+			.append("select co.GMLID, ")
+			.append(transformOrNull).append("(co.ENVELOPE, ").append(srid).append(") AS ENVELOPE, ")
+			.append("co.CREATION_DATE, co.TERMINATION_DATE, ex.ID as EXID, ex.INFOSYS, ex.NAME, ex.URI, ")
+			.append("ga.ID as GAID, ga.ATTRNAME, ga.DATATYPE, ga.STRVAL, ga.INTVAL, ga.REALVAL, ga.URIVAL, ga.DATEVAL, ge.GENERALIZES_TO_ID ")
+			.append("from CITYOBJECT co left join EXTERNAL_REFERENCE ex on co.ID = ex.CITYOBJECT_ID ")
+			.append("left join CITYOBJECT_GENERICATTRIB ga on co.ID = ga.CITYOBJECT_ID and ga.DATATYPE < 6 ")
+			.append("left join GENERALIZATION ge on ge.CITYOBJECT_ID=co.ID where co.ID = ?");
+			psCityObject = connection.prepareStatement(query.toString());
 		}
 
 		generalizesToExporter = (DBGeneralization)dbExporterManager.getDBExporter(DBExporterEnum.GENERALIZATION);
 		if (exportAppearance)
-			appearanceExporter = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.APPEARANCE);
+			appearanceExporter = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.LOCAL_APPEARANCE);
 	}
 
 
@@ -158,30 +150,19 @@ public class DBCityObject implements DBExporter {
 				genericAttributeSet.clear();
 
 				// boundedBy
-				STRUCT struct = (STRUCT)rs.getObject("ENVELOPE");
-				if (!rs.wasNull() && struct != null) {
-					JGeometry jGeom = JGeometry.load(struct);
-					double[] points = jGeom.getMBR();
+				Object object = rs.getObject("ENVELOPE");
+				if (!rs.wasNull() && object != null) {
+					GeometryObject geomObj = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getEnvelope(object);
+					double[] coordinates = geomObj.getCoordinates(0);
+					
+					Envelope envelope = new Envelope();
+					envelope.setLowerCorner(new Point(coordinates[0], coordinates[1], coordinates[2]));
+					envelope.setUpperCorner(new Point(coordinates[3], coordinates[4], coordinates[5]));
+					envelope.setSrsDimension(3);
+					envelope.setSrsName(gmlSrsName);
 
-					Envelope env = new EnvelopeImpl();
-					Point lower = null;
-					Point upper = null;
-
-					if (jGeom.getDimensions() == 2) {
-						lower = new Point(points[0], points[1], 0);
-						upper = new Point(points[2], points[3], 0);
-					} else {					
-						lower = new Point(points[0], points[1], points[2]);
-						upper = new Point(points[3], points[4], points[5]);
-					}
-
-					env.setLowerCorner(lower);
-					env.setUpperCorner(upper);
-					env.setSrsDimension(3);
-					env.setSrsName(gmlSrsName);
-
-					BoundingShape boundedBy = new BoundingShapeImpl();
-					boundedBy.setEnvelope(env);
+					BoundingShape boundedBy = new BoundingShape();
+					boundedBy.setEnvelope(envelope);
 					cityObject.setBoundedBy(boundedBy);
 				}
 
@@ -224,8 +205,8 @@ public class DBCityObject implements DBExporter {
 					if (!rs.wasNull() && !externalReferenceSet.contains(externalReferenceId)) {
 						externalReferenceSet.add(externalReferenceId);
 
-						ExternalReference externalReference = new ExternalReferenceImpl();
-						ExternalObject externalObject = new ExternalObjectImpl();
+						ExternalReference externalReference = new ExternalReference();
+						ExternalObject externalObject = new ExternalObject();
 
 						String infoSys = rs.getString("INFOSYS");
 						if (infoSys != null)
@@ -261,35 +242,35 @@ public class DBCityObject implements DBExporter {
 						case 1:
 							String strVal = rs.getString("STRVAL");
 							if (!rs.wasNull()) {
-								genericAttrib = new StringAttributeImpl();
+								genericAttrib = new StringAttribute();
 								((StringAttribute)genericAttrib).setValue(strVal);
 							}
 							break;
 						case 2:
 							Integer intVal = rs.getInt("INTVAL");
 							if (!rs.wasNull()) {
-								genericAttrib = new IntAttributeImpl();
+								genericAttrib = new IntAttribute();
 								((IntAttribute)genericAttrib).setValue(intVal);
 							}
 							break;
 						case 3:
 							Double realVal = rs.getDouble("REALVAL");
 							if (!rs.wasNull()) {							
-								genericAttrib = new DoubleAttributeImpl();
+								genericAttrib = new DoubleAttribute();
 								((DoubleAttribute)genericAttrib).setValue(realVal);
 							}
 							break;
 						case 4:
 							String uriVal = rs.getString("URIVAL");
 							if (!rs.wasNull()) {
-								genericAttrib = new UriAttributeImpl();
+								genericAttrib = new UriAttribute();
 								((UriAttribute)genericAttrib).setValue(uriVal);
 							}
 							break;
 						case 5:
 							Date dateVal = rs.getDate("DATEVAL");
 							if (!rs.wasNull()) {
-								genericAttrib = new DateAttributeImpl();
+								genericAttrib = new DateAttribute();
 								GregorianCalendar gregDate = new GregorianCalendar();
 								gregDate.setTime(dateVal);	
 								((DateAttribute)genericAttrib).setValue(gregDate);
@@ -333,7 +314,7 @@ public class DBCityObject implements DBExporter {
 						value = String.valueOf(boundingBoxFilter.getTileRow()) + ' ' + String.valueOf(boundingBoxFilter.getTileColumn());
 					} 
 
-					StringAttribute genericStringAttrib = new StringAttributeImpl();
+					StringAttribute genericStringAttrib = new StringAttribute();
 					genericStringAttrib.setName("TILE");
 					genericStringAttrib.setValue(value);
 					cityObject.addGenericAttribute(genericStringAttrib);

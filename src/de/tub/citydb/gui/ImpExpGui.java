@@ -82,6 +82,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import de.tub.citydb.ImpExp;
 import de.tub.citydb.api.controller.ViewController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.Event;
@@ -135,13 +136,13 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private MenuBar menuBar;
 	private JTabbedPane menu;
 	private JSplitPane splitPane;
-	
+
 	private JPanel console;
 	private JLabel consoleLabel;
 	private ConsolePopupMenuWrapper consolePopup;
 	private ConsoleWindow consoleWindow;
 	private JTextArea consoleText;
-	
+
 	private int tmpConsoleWidth;
 	private int activePosition;
 
@@ -616,8 +617,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			setTitle(Internal.I18N.getString("main.window.title"));
 			connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
 		} else {
-			setTitle(Internal.I18N.getString("main.window.title") + " : " + dbPool.getActiveConnection().getDescription());
-			connectText.setText(Internal.I18N.getString("main.status.database.connected.label"));
+			setTitle(Internal.I18N.getString("main.window.title") + " : " + dbPool.getActiveDatabaseAdapter().getConnectionDetails().getDescription());
+			String text = Internal.I18N.getString("main.status.database.connected.label");
+			Object[] args = new Object[]{ dbPool.getActiveDatabaseAdapter().getDatabaseType().toString() };
+			String result = MessageFormat.format(text, args);
+			connectText.setText(result);
 		}
 	}
 
@@ -666,7 +670,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	public void handleEvent(Event event) throws Exception {
 		setDatabaseStatus(((DatabaseConnectionStateEvent)event).isConnected());
 	}
-	
+
 	private class JTextAreaOutputStream extends FilterOutputStream {
 		private final int MAX_DOC_LENGTH = 10000;
 		private final JTextArea ta;
@@ -710,7 +714,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 			});
 		}
 	}
-	
+
 	private final class ConsolePopupMenuWrapper {
 		private JMenuItem clear;	
 
@@ -725,25 +729,25 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 					clearConsole();
 				}
 			});
-			
+
 			popupMenu.addPopupMenuListener(new PopupMenuListener() {
-				
+
 				@Override
 				public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 					clear.setEnabled(consoleText.getDocument().getLength() != 0);
 				}
-				
+
 				@Override
 				public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
 					// nothing to do
 				}
-				
+
 				@Override
 				public void popupMenuCanceled(PopupMenuEvent e) {
 					// nothing to do
 				}
 			});
-			
+
 		}
 
 		private void doTranslation() {

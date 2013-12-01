@@ -36,11 +36,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.citygml4j.geometry.Matrix;
-import org.citygml4j.impl.citygml.appearance.TexCoordGenImpl;
-import org.citygml4j.impl.citygml.appearance.TexCoordListImpl;
-import org.citygml4j.impl.citygml.appearance.TextureAssociationImpl;
-import org.citygml4j.impl.citygml.appearance.TextureCoordinatesImpl;
-import org.citygml4j.impl.citygml.appearance.WorldToTextureImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
 import org.citygml4j.model.citygml.appearance.GeoreferencedTexture;
@@ -53,26 +48,54 @@ import org.citygml4j.model.citygml.appearance.WorldToTexture;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
 import de.tub.citydb.util.Util;
 
 public class DBTextureParam implements DBExporter {
 	private final Logger LOG = Logger.getInstance();
+	private final DBExporterEnum type;
 	private final Connection connection;
+	private final TemporaryCacheTable globalAppTemplTable;
 
 	private PreparedStatement psTextureParam;
 
-	public DBTextureParam(Connection connection) throws SQLException {
+	public DBTextureParam(DBExporterEnum type, Connection connection) throws SQLException {
+		if (type != DBExporterEnum.LOCAL_APPEARANCE_TEXTUREPARAM)
+			throw new IllegalArgumentException("Only type " + DBExporterEnum.LOCAL_APPEARANCE_TEXTUREPARAM + " is allowed.");
+		
+		this.type = type;
 		this.connection = connection;
+		globalAppTemplTable = null;
+		
+		init();
+	}
+	
+	public DBTextureParam(DBExporterEnum type, TemporaryCacheTable globalAppTemplTable) throws SQLException {
+		if (type != DBExporterEnum.GLOBAL_APPEARANCE_TEXTUREPARAM)
+			throw new IllegalArgumentException("Only type " + DBExporterEnum.GLOBAL_APPEARANCE_TEXTUREPARAM + " is allowed.");
+
+		this.type = type;
+		this.connection = globalAppTemplTable.getConnection();
+		this.globalAppTemplTable = globalAppTemplTable;
 
 		init();
 	}
 
 	private void init() throws SQLException {
-		psTextureParam = connection.prepareStatement("select tp.WORLD_TO_TEXTURE, tp.TEXTURE_COORDINATES, " +
-		"sg.GMLID, sg.IS_REVERSE from TEXTUREPARAM tp inner join SURFACE_GEOMETRY sg on sg.ID=tp.SURFACE_GEOMETRY_ID where tp.SURFACE_DATA_ID=?");
+		StringBuilder query = new StringBuilder()
+		.append("select tp.WORLD_TO_TEXTURE, tp.TEXTURE_COORDINATES, sg.GMLID, sg.IS_REVERSE from TEXTUREPARAM tp ");
+		
+		if (type == DBExporterEnum.LOCAL_APPEARANCE_TEXTUREPARAM)
+			query.append("inner join SURFACE_GEOMETRY sg on sg.ID=tp.SURFACE_GEOMETRY_ID ");
+		else
+			query.append("inner join " + globalAppTemplTable.getTableName() + " drain on tp.SURFACE_GEOMETRY_ID=drain.ID inner join SURFACE_GEOMETRY sg on sg.ID=drain.ID ");
+		
+		query.append("where tp.SURFACE_DATA_ID=?");	
+		psTextureParam = connection.prepareStatement(query.toString());
 	}
 
-	public void read(AbstractSurfaceData surfaceData, long surfaceDataId) throws SQLException {
+	public boolean read(AbstractSurfaceData surfaceData, long surfaceDataId) throws SQLException {
+		boolean hasTargets = false;
 		ResultSet rs = null;
 
 		try {
@@ -104,12 +127,12 @@ public class DBTextureParam implements DBExporter {
 					ParameterizedTexture paraTex = (ParameterizedTexture)surfaceData;
 
 					if (textureCoordinates != null) {
-						TextureAssociation textureAssociation = new TextureAssociationImpl();
+						TextureAssociation textureAssociation = new TextureAssociation();
 						textureAssociation.setUri(target);
 
 						String[] rings = textureCoordinates.trim().split("\\s*;\\s*");
 						if (rings != null && rings.length != 0) {
-							TexCoordList texCoordList = new TexCoordListImpl();
+							TexCoordList texCoordList = new TexCoordList();
 
 							for (int i = 0; i < rings.length; i++) {
 								String splitter = rings[i];
@@ -119,35 +142,35 @@ public class DBTextureParam implements DBExporter {
 
 								List<Double> coordsList = Util.string2double(splitter, "\\s+");
 								if (coordsList != null && coordsList.size() != 0) {
-									
+
 									// reverse order of texture coordinates if necessary
 									if (isReverse) {
-										
+
 										// check for even number of texture coordinates
 										if ((coordsList.size() & 1) == 1) {
 											coordsList.add(0.0);
-											
+
 											StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 													surfaceData.getCityGMLClass(), 
 													surfaceData.getId()));
-											
+
 											msg.append(": Odd number of texture coordinates found. Adding 0.0 to fix this.");
 											LOG.error(msg.toString());
 										}
-										
+
 										for (int lower = 0, upper = coordsList.size() - 2; lower < upper; lower += 2, upper -= 2) {
 											Double x = coordsList.get(lower);
 											Double y = coordsList.get(lower + 1);
 
 											coordsList.set(lower, coordsList.get(upper));
 											coordsList.set(lower + 1, coordsList.get(upper + 1));
-											
+
 											coordsList.set(upper, x);
 											coordsList.set(upper + 1, y);
 										}
 									}
-									
-									TextureCoordinates texureCoordinates = new TextureCoordinatesImpl();
+
+									TextureCoordinates texureCoordinates = new TextureCoordinates();
 									texureCoordinates.setValue(coordsList);
 									texureCoordinates.setRing(target + '_' + i + '_');
 
@@ -163,7 +186,7 @@ public class DBTextureParam implements DBExporter {
 					}
 
 					else if (worldToTexture != null) {
-						TextureAssociation textureAssociation = new TextureAssociationImpl();
+						TextureAssociation textureAssociation = new TextureAssociation();
 						textureAssociation.setUri(target);
 
 						List<Double> m = Util.string2double(worldToTexture, "\\s+");
@@ -171,10 +194,10 @@ public class DBTextureParam implements DBExporter {
 							Matrix matrix = new Matrix(3, 4);
 							matrix.setMatrix(m.subList(0, 12));
 
-							WorldToTexture worldToTextureMatrix = new WorldToTextureImpl();
+							WorldToTexture worldToTextureMatrix = new WorldToTexture();
 							worldToTextureMatrix.setMatrix(matrix);
 
-							TexCoordGen texCoordGen = new TexCoordGenImpl();
+							TexCoordGen texCoordGen = new TexCoordGen();
 							texCoordGen.setWorldToTexture(worldToTextureMatrix);
 
 							textureAssociation.setTextureParameterization(texCoordGen);
@@ -184,7 +207,11 @@ public class DBTextureParam implements DBExporter {
 						}
 					}
 				}
+				
+				hasTargets = true;
 			}
+			
+			return hasTargets;
 		} finally {
 			if (rs != null)
 				rs.close();
@@ -198,7 +225,7 @@ public class DBTextureParam implements DBExporter {
 
 	@Override
 	public DBExporterEnum getDBExporterType() {
-		return DBExporterEnum.TEXTUREPARAM;
+		return type;
 	}
 
 }

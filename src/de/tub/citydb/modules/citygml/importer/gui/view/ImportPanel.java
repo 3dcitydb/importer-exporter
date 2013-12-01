@@ -70,6 +70,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
+import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -77,7 +78,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 
+import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
+import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
@@ -98,7 +103,7 @@ import de.tub.citydb.modules.common.event.InterruptEvent;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class ImportPanel extends JPanel {
+public class ImportPanel extends JPanel implements EventHandler {
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final Logger LOG = Logger.getInstance();
 	private final JAXBBuilder jaxbBuilder;
@@ -123,6 +128,8 @@ public class ImportPanel extends JPanel {
 		this.config = config;
 		this.mainView = mainView;
 		dbPool = DatabaseConnectionPool.getInstance();
+
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
 
 		initGui();
 	}
@@ -247,6 +254,16 @@ public class ImportPanel extends JPanel {
 		buttonPanel.add(importButton, GuiUtil.setConstraints(0,0,2,1,1.0,0.0,GridBagConstraints.NONE,5,5,5,5));				
 		buttonPanel.add(validateButton, GuiUtil.setConstraints(1,0,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,5,5,5,0));
 	}
+	
+	public void setEnabledWorkspace(boolean enable) {
+		((TitledBorder)workspacePanel.getBorder()).setTitleColor(enable ? 
+				UIManager.getColor("TitledBorder.titleColor"):
+					UIManager.getColor("Label.disabledForeground"));
+		workspacePanel.repaint();
+		
+		row2_1.setEnabled(enable);
+		workspaceText.setEnabled(enable);
+	}
 
 	public void doTranslation() {
 		browseButton.setText(Internal.I18N.getString("common.button.browse"));
@@ -270,13 +287,7 @@ public class ImportPanel extends JPanel {
 			importFiles[i] = new File(fileListModel.get(i).toString());
 
 		config.getInternal().setImportFiles(importFiles);		
-
-		String workspace = workspaceText.getText().trim();
-		if (!workspace.equals(Internal.ORACLE_DEFAULT_WORKSPACE) && 
-				(workspace.length() == 0 || workspace.toUpperCase().equals(Internal.ORACLE_DEFAULT_WORKSPACE)))
-			workspaceText.setText(Internal.ORACLE_DEFAULT_WORKSPACE);
-
-		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText());
+		config.getProject().getDatabase().getWorkspaces().getImportWorkspace().setName(workspaceText.getText().trim());
 		filterPanel.setSettings();
 	}
 
@@ -683,5 +694,11 @@ public class ImportPanel extends JPanel {
 		public void dragOver(DropTargetDragEvent dtde) {
 			// nothing to do here
 		}
+	}
+	
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent)event;
+		setEnabledWorkspace(state.wasConnected() || dbPool.getActiveDatabaseAdapter().hasVersioningSupport());
 	}
 }

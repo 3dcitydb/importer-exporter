@@ -34,20 +34,20 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
-import org.citygml4j.impl.gml.basicTypes.CodeImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
+import org.citygml4j.model.common.base.ModelObject;
+import org.citygml4j.model.common.child.Child;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Workspace;
-import java.util.GregorianCalendar;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
-import org.citygml4j.model.common.child.Child;
 
 public class Util {
 
@@ -67,40 +67,40 @@ public class Util {
 		case BUILDING_PART:
 			classId = 25;
 			break;
-		case CEILING_SURFACE:
+		case BUILDING_CEILING_SURFACE:
 			classId = 30;
 			break;
-		case CLOSURE_SURFACE:
+		case BUILDING_CLOSURE_SURFACE:
 			classId = 36;
 			break;
-		case DOOR:
+		case BUILDING_DOOR:
 			classId = 39;
 			break;
-		case FLOOR_SURFACE:
+		case BUILDING_FLOOR_SURFACE:
 			classId = 32;
 			break;
 		case GENERIC_CITY_OBJECT:
 			classId = 5;
 			break;
-		case GROUND_SURFACE:
+		case BUILDING_GROUND_SURFACE:
 			classId = 35;
 			break;
 		case INT_BUILDING_INSTALLATION:
 			classId = 28;
 			break;
-		case INTERIOR_WALL_SURFACE:
+		case INTERIOR_BUILDING_WALL_SURFACE:
 			classId = 31;
 			break;
-		case ROOF_SURFACE:
+		case BUILDING_ROOF_SURFACE:
 			classId = 33;
 			break;
-		case ROOM:
+		case BUILDING_ROOM:
 			classId = 41;
 			break;
-		case WALL_SURFACE:
+		case BUILDING_WALL_SURFACE:
 			classId = 34;
 			break;
-		case WINDOW:
+		case BUILDING_WINDOW:
 			classId = 38;
 			break;
 		case CITY_FURNITURE:
@@ -349,6 +349,15 @@ public class Util {
 		return url != null;
 	}
 
+	public static String codeList2string(List<Code> codeList, String delimiter) {
+		List<String> values = new ArrayList<String>(codeList.size());
+		for (Code code : codeList)
+			if (code != null)
+				values.add(code.getValue());
+
+		return collection2string(values, delimiter);
+	}
+
 	public static String[] gmlName2dbString(AbstractFeature feature) {
 		String[] dbGmlName = new String[2];
 
@@ -382,12 +391,12 @@ public class Util {
 		String delimiter = Internal.GML_NAME_DELIMITER.replaceAll("\\\\", "\\\\\\\\");
 
 		// decompose gml:name
-		List<String> gmlNameList = Util.string2string(dbGmlName, delimiter);
+		List<String> gmlNameList = string2string(dbGmlName, delimiter);
 		List<String> gmlNameCodespaceList = Util.string2string(dbGmlCodeSpace, delimiter);
 
 		if (gmlNameList != null && gmlNameList.size() != 0) {
 			for (int i = 0; i < gmlNameList.size(); i++) {
-				Code code = new CodeImpl();
+				Code code = new Code();
 				code.setValue(gmlNameList.get(i));
 
 				if (gmlNameCodespaceList != null && gmlNameCodespaceList.size() >= i + 1) {
@@ -449,7 +458,7 @@ public class Util {
 	public static boolean checkWorkspaceTimestamp(Workspace workspace) {
 		String timestamp = workspace.getTimestamp().trim();
 		boolean success = true;
-		
+
 		if (timestamp.length() > 0) {		
 			SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
 			format.setLenient(false);
@@ -463,31 +472,25 @@ public class Util {
 		workspace.setTimestamp(timestamp);
 		return success;
 	}
-  
+
 	public static GregorianCalendar getCreationDate(AbstractCityObject cityObject, boolean checkParents) {
-		if (null == cityObject) return null;
-
-		if (cityObject.isSetCreationDate()) {
+		if (cityObject == null)
+			return null;
+		
+		if (cityObject.isSetCreationDate())
 			return cityObject.getCreationDate();
-		}
+		
+		if (checkParents) {
+			Child child = cityObject;
+			ModelObject parent = null;
 
-		if (checkParents && cityObject.isSetParent()) {
-			Object parent = cityObject.getParent();
-			while (null != parent) {
-				if (parent instanceof AbstractCityObject) {
-					return getCreationDate((AbstractCityObject)parent, true);
-				}
-
-				if (!(parent instanceof Child)) {
+			while ((parent = child.getParent()) != null) {
+				if (parent instanceof AbstractCityObject && ((AbstractCityObject)child).isSetCreationDate())
+					return ((AbstractCityObject)child).getCreationDate();
+				else if (parent instanceof Child)
+					child = (Child)parent;
+				else 
 					break;
-				}
-
-				Child child = (Child)parent;
-				if (!child.isSetParent()) {
-					break;
-				}
-
-				parent = child.getParent();
 			}
 		}
 
@@ -495,32 +498,27 @@ public class Util {
 	}
 
 	public static GregorianCalendar getTerminationDate(AbstractCityObject cityObject, boolean checkParents) {
-		if (null == cityObject) return null;
-
-		if (cityObject.isSetTerminationDate()) {
+		if (cityObject == null)
+			return null;
+		
+		if (cityObject.isSetTerminationDate())
 			return cityObject.getTerminationDate();
-		}
+		
+		if (checkParents) {
+			Child child = cityObject;
+			ModelObject parent = null;
 
-		if (checkParents && cityObject.isSetParent()) {
-			Object parent = cityObject.getParent();
-			while (null != parent) {
-				if (parent instanceof AbstractCityObject) {
-					return getTerminationDate((AbstractCityObject)parent, true);
-				}
-
-				if (!(parent instanceof Child)) {
+			while ((parent = child.getParent()) != null) {
+				if (parent instanceof AbstractCityObject && ((AbstractCityObject)child).isSetTerminationDate())
+					return ((AbstractCityObject)child).getTerminationDate();
+				else if (parent instanceof Child)
+					child = (Child)parent;
+				else 
 					break;
-				}
-
-				Child child = (Child)parent;
-				if (!child.isSetParent()) {
-					break;
-				}
-
-				parent = child.getParent();
 			}
 		}
 
 		return null;
 	}
+
 }

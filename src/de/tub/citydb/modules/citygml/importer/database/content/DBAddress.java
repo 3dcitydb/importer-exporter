@@ -36,11 +36,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
-import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.XalAddressProperty;
 import org.citygml4j.model.module.xal.XALModuleType;
@@ -57,8 +52,8 @@ import org.citygml4j.model.xal.Thoroughfare;
 import org.citygml4j.model.xal.ThoroughfareName;
 import org.citygml4j.model.xal.ThoroughfareNumberOrRange;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.util.Util;
 
@@ -97,7 +92,7 @@ public class DBAddress implements DBImporter {
 
 	private PreparedStatement psAddress;
 	private DBAddressToBuilding addressToBuildingImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBOtherGeometry geometryImporter;
 	private int batchCounter;
 
 	private boolean importXalSource;
@@ -113,11 +108,13 @@ public class DBAddress implements DBImporter {
 	private void init() throws SQLException {
 		importXalSource = config.getProject().getImporter().getAddress().isSetImportXAL();
 
-		psAddress = batchConn.prepareStatement("insert into ADDRESS (ID, STREET, HOUSE_NUMBER, PO_BOX, ZIP_CODE, CITY, COUNTRY, MULTI_POINT, XAL_SOURCE) values "+
-				"(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into ADDRESS (ID, STREET, HOUSE_NUMBER, PO_BOX, ZIP_CODE, CITY, COUNTRY, MULTI_POINT, XAL_SOURCE) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psAddress = batchConn.prepareStatement(stmt.toString());
 
 		addressToBuildingImporter = (DBAddressToBuilding)dbImporterManager.getDBImporter(DBImporterEnum.ADDRESS_TO_BUILDING);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		geometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
 	public long insert(Address address) throws SQLException {
@@ -128,14 +125,14 @@ public class DBAddress implements DBImporter {
 		AddressDetails addressDetails = xalAddressProperty.getAddressDetails();
 
 		// ok, let's start
-		long addressId = dbImporterManager.getDBId(DBSequencerEnum.ADDRESS_SEQ);
+		long addressId = dbImporterManager.getDBId(DBSequencerEnum.ADDRESS_ID_SEQ);
 		if (addressId == 0)
 			return 0;
 
 		boolean success = false;
 		String streetAttr, houseNoAttr, poBoxAttr, zipCodeAttr, cityAttr, countryAttr, xalSource;
 		streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = xalSource = null;
-		JGeometry multiPoint = null;		
+		GeometryObject multiPoint = null;		
 
 		// try and interpret <country> child element
 		if (addressDetails.isSetCountry()) {
@@ -259,8 +256,8 @@ public class DBAddress implements DBImporter {
 
 			// multiPoint geometry
 			if (address.isSetMultiPoint())
-				multiPoint = sdoGeometry.getMultiPoint(address.getMultiPoint());
-		
+				multiPoint = geometryImporter.getMultiPoint(address.getMultiPoint());
+
 			success = true;
 		} else {
 			StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
@@ -276,7 +273,7 @@ public class DBAddress implements DBImporter {
 			if (xalSource != null && xalSource.length() > 0)
 				success = true;
 		}		
-		
+
 		if (success) {		
 			psAddress.setLong(1, addressId);
 			psAddress.setString(2, streetAttr);
@@ -287,10 +284,11 @@ public class DBAddress implements DBImporter {
 			psAddress.setString(7, countryAttr);
 
 			if (multiPoint != null) {
-				STRUCT multiPointObj = SyncJGeometry.syncStore(multiPoint, batchConn);
+				Object multiPointObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiPoint, batchConn);
 				psAddress.setObject(8, multiPointObj);
 			} else
-				psAddress.setNull(8, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+				psAddress.setNull(8, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+						dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 
 			if (xalSource != null)
 				psAddress.setString(9, xalSource);
@@ -298,7 +296,7 @@ public class DBAddress implements DBImporter {
 				psAddress.setNull(9, Types.CLOB);
 
 			psAddress.addBatch();
-			if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 				dbImporterManager.executeBatch(DBImporterEnum.ADDRESS);
 
 			// enable xlinks
@@ -306,7 +304,7 @@ public class DBAddress implements DBImporter {
 				dbImporterManager.putGmlId(address.getId(), addressId, address.getCityGMLClass());
 		} else
 			addressId = 0;		
-		
+
 		return addressId;
 	}
 

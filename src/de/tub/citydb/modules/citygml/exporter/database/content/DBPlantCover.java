@@ -33,18 +33,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import org.citygml4j.impl.citygml.vegetation.PlantCoverImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiSolidPropertyImpl;
-import org.citygml4j.impl.gml.geometry.aggregates.MultiSurfacePropertyImpl;
-import org.citygml4j.impl.gml.measures.LengthImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
@@ -83,7 +78,7 @@ public class DBPlantCover implements DBExporter {
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
-		PlantCover plantCover = new PlantCoverImpl();
+		PlantCover plantCover = new PlantCover();
 		long plantCoverId = splitter.getPrimaryKey();
 
 		// cityObject stuff
@@ -105,26 +100,26 @@ public class DBPlantCover implements DBExporter {
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRefImpl();
+					StringOrRef stringOrRef = new StringOrRef();
 					stringOrRef.setValue(description);
 					plantCover.setDescription(stringOrRef);
 				}
 
 				String clazz = rs.getString("CLASS");
 				if (clazz != null) {
-					plantCover.setClazz(clazz);
+					plantCover.setClazz(new Code(clazz));
 				}
 
 				String function = rs.getString("FUNCTION");
 				if (function != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] functionList = p.split(function.trim());
-					plantCover.setFunction(Arrays.asList(functionList));
+					for (String value : p.split(function.trim()))
+						plantCover.addFunction(new Code(value));
 				}
 
 				double averageHeight = rs.getDouble("AVERAGE_HEIGHT");
 				if (!rs.wasNull()) {
-					Length length = new LengthImpl();
+					Length length = new Length();
 					length.setValue(averageHeight);
 					length.setUom("urn:ogc:def:uom:UCUM::m");
 					plantCover.setAverageHeight(length);
@@ -138,7 +133,7 @@ public class DBPlantCover implements DBExporter {
 
 						if (geometry != null) {
 							if (geometry.getType() == GMLClass.MULTI_SURFACE) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfacePropertyImpl();
+								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
 
 								if (geometry.getAbstractGeometry() != null)
 									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
@@ -162,7 +157,7 @@ public class DBPlantCover implements DBExporter {
 							}
 
 							else if (geometry.getType() == GMLClass.MULTI_SOLID) {
-								MultiSolidProperty multiSolidProperty = new MultiSolidPropertyImpl();
+								MultiSolidProperty multiSolidProperty = new MultiSolidProperty();
 
 								if (geometry.getAbstractGeometry() != null)
 									multiSolidProperty.setMultiSolid((MultiSolid)geometry.getAbstractGeometry());

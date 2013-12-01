@@ -30,18 +30,13 @@
 package de.tub.citydb.modules.citygml.exporter.database.xlink;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import oracle.jdbc.OracleResultSet;
-import oracle.sql.BLOB;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.database.adapter.BlobExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 import de.tub.citydb.util.Util;
@@ -49,15 +44,17 @@ import de.tub.citydb.util.Util;
 public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 	private final Logger LOG = Logger.getInstance();
 
+	private final DBXlinkExporterManager xlinkExporterManager;
 	private final Config config;
 	private final Connection connection;
 
-	private PreparedStatement psLibraryObject;
+	private BlobExportAdapter blobExportAdapter;
 	private String localPath;
 
-	public DBXlinkExporterLibraryObject(Connection connection, Config config) throws SQLException {
+	public DBXlinkExporterLibraryObject(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
 		this.config = config;
 		this.connection = connection;
+		this.xlinkExporterManager = xlinkExporterManager;
 
 		init();
 	}
@@ -65,22 +62,20 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 	private void init() throws SQLException {
 		localPath = config.getInternal().getExportPath();
 
-		psLibraryObject = connection.prepareStatement("select LIBRARY_OBJECT from IMPLICIT_GEOMETRY where ID=?");
+		blobExportAdapter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getBlobExportAdapter(connection);
 	}
 
 	public boolean export(DBXlinkLibraryObject xlink) throws SQLException {
 		String fileName = xlink.getFileURI();
-		boolean isRemote = false;
 
 		if (fileName == null || fileName.length() == 0) {
 			LOG.error("Database error while exporting a library object: Attribute REFERENCE_TO_LIBRARY is empty.");
 			return false;
 		}
 
-		// check whether we deal with a remote image uri
+		// check whether we deal with a remote object uri
 		if (Util.isRemoteXlink(fileName)) {
 			URL url = null;
-			isRemote = true;
 
 			try {
 				url = new URL(fileName);
@@ -106,75 +101,13 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 			return false;
 		}
 
-		// try and read texture image attribute from surface_data table
-		psLibraryObject.setLong(1, xlink.getId());
-		OracleResultSet rs = (OracleResultSet)psLibraryObject.executeQuery();
-		if (!rs.next()) {
-			if (!isRemote) {
-				// we could not read from database. if we deal with a remote
-				// image uri, we do not really care. but if the texture image should
-				// be provided by us, then this is serious...
-				LOG.error("Error while exporting a library object: " + fileName + " does not exist in database.");
-			}
-
-			rs.close();
-			return false;
-		}
-
-		// read oracle image data type
-		BLOB blob = rs.getBLOB(1);
-		rs.close();
-
-		if (blob == null) {
-			LOG.error("Database error while reading library object: " + fileName);
-			return false;
-		}
-
-		int size = blob.getBufferSize();
-		byte[] buffer = new byte[size];
-		InputStream in = null;
-		FileOutputStream out = null;
-
-		try {
-			in = blob.getBinaryStream(1L);
-			out = new FileOutputStream(fileURI);
-
-			int length = -1;
-			while ((length = in.read(buffer)) != -1)
-				out.write(buffer, 0, length);
-		} catch (IOException ioEx) {
-			LOG.error("Failed to write library object file " + fileName + ": " + ioEx.getMessage());
-			return false;
-		} finally {
-			try {
-				blob.free();
-			} catch (SQLException e) {
-				//
-			}
-			
-			if (in != null) {
-				try {
-					in.close();
-				} catch (IOException e) {
-					//
-				}
-			}
-
-			if (out != null) {
-				try {
-					out.close();
-				} catch (IOException e) {
-					//
-				}
-			}
-		}
-
-		return true;
+		// read blob into file
+		return blobExportAdapter.getInFile(xlink.getId(), fileName, fileURI);
 	}
 
 	@Override
 	public void close() throws SQLException {
-		psLibraryObject.close();
+		blobExportAdapter.close();
 	}
 
 	@Override

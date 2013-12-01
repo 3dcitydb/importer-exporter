@@ -33,26 +33,20 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
-import org.citygml4j.impl.citygml.cityfurniture.CityFurnitureImpl;
-import org.citygml4j.impl.citygml.core.ImplicitRepresentationPropertyImpl;
-import org.citygml4j.impl.gml.base.StringOrRefImpl;
-import org.citygml4j.impl.gml.geometry.GeometryPropertyImpl;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
@@ -68,10 +62,8 @@ public class DBCityFurniture implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 	private DBImplicitGeometry implicitGeometryExporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBOtherGeometry geometryExporter;
 	private FeatureClassFilter featureClassFilter;
-
-	private boolean transformCoords;
 
 	public DBCityFurniture(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
@@ -83,35 +75,36 @@ public class DBCityFurniture implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		transformCoords = config.getInternal().isTransformCoordinates();
-		
-		if (!transformCoords) {
+		if (!config.getInternal().isTransformCoordinates()) {
 			psCityFurniture = connection.prepareStatement("select * from CITY_FURNITURE where ID = ?");		
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			
-			psCityFurniture = connection.prepareStatement("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, " +
-					"geodb_util.transform_or_null(LOD1_TERRAIN_INTERSECTION, " + srid + ") AS LOD1_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(LOD2_TERRAIN_INTERSECTION, " + srid + ") AS LOD2_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(LOD3_TERRAIN_INTERSECTION, " + srid + ") AS LOD3_TERRAIN_INTERSECTION, " +
-					"geodb_util.transform_or_null(LOD4_TERRAIN_INTERSECTION, " + srid + ") AS LOD4_TERRAIN_INTERSECTION, " +
-					"LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, " +
-					"LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID," +
-					"geodb_util.transform_or_null(LOD1_IMPLICIT_REF_POINT, " + srid + ") AS LOD1_IMPLICIT_REF_POINT, " +
-					"geodb_util.transform_or_null(LOD2_IMPLICIT_REF_POINT, " + srid + ") AS LOD2_IMPLICIT_REF_POINT, " +
-					"geodb_util.transform_or_null(LOD3_IMPLICIT_REF_POINT, " + srid + ") AS LOD3_IMPLICIT_REF_POINT, " +
-					"geodb_util.transform_or_null(LOD4_IMPLICIT_REF_POINT, " + srid + ") AS LOD4_IMPLICIT_REF_POINT, " +
-			"LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION from CITY_FURNITURE where ID = ?");					
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
+
+			StringBuilder query = new StringBuilder()
+			.append("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, ")
+			.append(transformOrNull).append("(LOD1_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD1_TERRAIN_INTERSECTION, ")
+			.append(transformOrNull).append("(LOD2_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD2_TERRAIN_INTERSECTION, ")
+			.append(transformOrNull).append("(LOD3_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD3_TERRAIN_INTERSECTION, ")
+			.append(transformOrNull).append("(LOD4_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD4_TERRAIN_INTERSECTION, ")
+			.append("LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, ")
+			.append("LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID, ")
+			.append(transformOrNull).append("(LOD1_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD1_IMPLICIT_REF_POINT, ")
+			.append(transformOrNull).append("(LOD2_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD2_IMPLICIT_REF_POINT, ")
+			.append(transformOrNull).append("(LOD3_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD3_IMPLICIT_REF_POINT, ")
+			.append(transformOrNull).append("(LOD4_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD4_IMPLICIT_REF_POINT, ")
+			.append("LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION from CITY_FURNITURE where ID = ?");			
+			psCityFurniture = connection.prepareStatement(query.toString());
 		}
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 		implicitGeometryExporter = (DBImplicitGeometry)dbExporterManager.getDBExporter(DBExporterEnum.IMPLICIT_GEOMETRY);
-		sdoGeometry = (DBSdoGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SDO_GEOMETRY);
+		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
-		CityFurniture cityFurniture = new CityFurnitureImpl();
+		CityFurniture cityFurniture = new CityFurniture();
 		long cityFurnitureId = splitter.getPrimaryKey();
 
 		// cityObject stuff
@@ -133,21 +126,21 @@ public class DBCityFurniture implements DBExporter {
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRefImpl();
+					StringOrRef stringOrRef = new StringOrRef();
 					stringOrRef.setValue(description);
 					cityFurniture.setDescription(stringOrRef);
 				}
 
 				String clazz = rs.getString("CLASS");
 				if (clazz != null) {
-					cityFurniture.setClazz(clazz);
+					cityFurniture.setClazz(new Code(clazz));
 				}
 
 				String function = rs.getString("FUNCTION");
 				if (function != null) {
 					Pattern p = Pattern.compile("\\s+");
-					String[] functionList = p.split(function.trim());
-					cityFurniture.setFunction(Arrays.asList(functionList));
+					for (String value : p.split(function.trim()))
+						cityFurniture.addFunction(new Code(value));
 				}
 
 				for (int lod = 1; lod < 5 ; lod++) {
@@ -157,7 +150,7 @@ public class DBCityFurniture implements DBExporter {
 						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
 
 						if (geometry != null) {
-							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryPropertyImpl<AbstractGeometry>();
+							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
 
 							if (geometry.getAbstractGeometry() != null)
 								geometryProperty.setGeometry(geometry.getAbstractGeometry());
@@ -188,16 +181,16 @@ public class DBCityFurniture implements DBExporter {
 					if (rs.wasNull())
 						continue;
 
-					JGeometry referencePoint = null;
-					STRUCT struct = (STRUCT)rs.getObject("LOD" + lod +"_IMPLICIT_REF_POINT");
-					if (!rs.wasNull() && struct != null)
-						referencePoint = JGeometry.load(struct);
+					GeometryObject referencePoint = null;
+					Object referencePointObj = rs.getObject("LOD" + lod +"_IMPLICIT_REF_POINT");
+					if (!rs.wasNull() && referencePointObj != null)
+						referencePoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
 
 					String transformationMatrix = rs.getString("LOD" + lod + "_IMPLICIT_TRANSFORMATION");
 
 					ImplicitGeometry implicit = implicitGeometryExporter.read(implicitGeometryId, referencePoint, transformationMatrix);
 					if (implicit != null) {
-						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationPropertyImpl();
+						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
 						implicitProperty.setObject(implicit);
 
 						switch (lod) {
@@ -219,14 +212,13 @@ public class DBCityFurniture implements DBExporter {
 
 				// lodXTerrainIntersection
 				for (int lod = 1; lod < 5; lod++) {
-					JGeometry terrainIntersection = null;
-					STRUCT terrainIntersectionObj = (STRUCT)rs.getObject("LOD" + lod + "_TERRAIN_INTERSECTION");
+					Object terrainIntersectionObj = rs.getObject("LOD" + lod + "_TERRAIN_INTERSECTION");
 
 					if (!rs.wasNull() && terrainIntersectionObj != null) {
-						terrainIntersection = JGeometry.load(terrainIntersectionObj);
+						GeometryObject terrainIntersection = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(terrainIntersectionObj);
 
 						if (terrainIntersection != null) {
-							MultiCurveProperty multiCurveProperty = sdoGeometry.getMultiCurveProperty(terrainIntersection, false);
+							MultiCurveProperty multiCurveProperty = geometryExporter.getMultiCurveProperty(terrainIntersection, false);
 							if (multiCurveProperty != null) {
 								switch (lod) {
 								case 1:

@@ -37,10 +37,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
-
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
@@ -61,7 +57,7 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -80,9 +76,11 @@ public class DBBuilding implements DBImporter {
 	private DBBuildingInstallation buildingInstallationImporter;
 	private DBRoom roomImporter;
 	private DBAddress addressImporter;
-	private DBSdoGeometry sdoGeometry;
+	private DBOtherGeometry geometryImporter;
 
 	private int batchCounter;
+	private int nullGeometryType;
+	private String nullGeometryTypeName;	
 
 	public DBBuilding(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -92,10 +90,15 @@ public class DBBuilding implements DBImporter {
 	}
 
 	private void init() throws SQLException {
-		psBuilding = batchConn.prepareStatement("insert into BUILDING (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, YEAR_OF_CONSTRUCTION, YEAR_OF_DEMOLITION, ROOF_TYPE, MEASURED_HEIGHT, " +
-				"STOREYS_ABOVE_GROUND, STOREYS_BELOW_GROUND, STOREY_HEIGHTS_ABOVE_GROUND, STOREY_HEIGHTS_BELOW_GROUND, BUILDING_PARENT_ID, BUILDING_ROOT_ID, LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, " +
-				"LOD4_GEOMETRY_ID, LOD1_TERRAIN_INTERSECTION, LOD2_TERRAIN_INTERSECTION, LOD3_TERRAIN_INTERSECTION, LOD4_TERRAIN_INTERSECTION, LOD2_MULTI_CURVE, LOD3_MULTI_CURVE, LOD4_MULTI_CURVE) values " +
-		"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		nullGeometryType = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
+		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
+
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into BUILDING (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, YEAR_OF_CONSTRUCTION, YEAR_OF_DEMOLITION, ROOF_TYPE, MEASURED_HEIGHT, ")
+		.append("STOREYS_ABOVE_GROUND, STOREYS_BELOW_GROUND, STOREY_HEIGHTS_ABOVE_GROUND, STOREY_HEIGHTS_BELOW_GROUND, BUILDING_PARENT_ID, BUILDING_ROOT_ID, LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, ")
+		.append("LOD4_GEOMETRY_ID, LOD1_TERRAIN_INTERSECTION, LOD2_TERRAIN_INTERSECTION, LOD3_TERRAIN_INTERSECTION, LOD4_TERRAIN_INTERSECTION, LOD2_MULTI_CURVE, LOD3_MULTI_CURVE, LOD4_MULTI_CURVE) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psBuilding = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
@@ -103,11 +106,11 @@ public class DBBuilding implements DBImporter {
 		buildingInstallationImporter = (DBBuildingInstallation)dbImporterManager.getDBImporter(DBImporterEnum.BUILDING_INSTALLATION);
 		roomImporter = (DBRoom)dbImporterManager.getDBImporter(DBImporterEnum.ROOM);
 		addressImporter = (DBAddress)dbImporterManager.getDBImporter(DBImporterEnum.ADDRESS);
-		sdoGeometry = (DBSdoGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SDO_GEOMETRY);
+		geometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
 	public long insert(AbstractBuilding building) throws SQLException {
-		long buildingId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long buildingId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (buildingId != 0)
@@ -167,22 +170,22 @@ public class DBBuilding implements DBImporter {
 		}
 
 		// citygml:class
-		if (building.isSetClazz()) {
-			psBuilding.setString(5, building.getClazz().trim());
+		if (building.isSetClazz() && building.getClazz().isSetValue()) {
+			psBuilding.setString(5, building.getClazz().getValue().trim());
 		} else {
 			psBuilding.setNull(5, Types.VARCHAR);
 		}
 
 		// citygml:function
 		if (building.isSetFunction()) {
-			psBuilding.setString(6, Util.collection2string(building.getFunction(), " "));
+			psBuilding.setString(6, Util.codeList2string(building.getFunction(), " "));
 		} else {
 			psBuilding.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (building.isSetUsage()) {
-			psBuilding.setString(7, Util.collection2string(building.getUsage(), " "));
+			psBuilding.setString(7, Util.codeList2string(building.getUsage(), " "));
 		} else {
 			psBuilding.setNull(7, Types.VARCHAR);
 		}
@@ -202,8 +205,8 @@ public class DBBuilding implements DBImporter {
 		}
 
 		// citygml:roofType
-		if (building.isSetRoofType()) {
-			psBuilding.setString(10, building.getRoofType());
+		if (building.isSetRoofType() && building.getRoofType().isSetValue()) {
+			psBuilding.setString(10, building.getRoofType().getValue());
 		} else {
 			psBuilding.setNull(10, Types.VARCHAR);
 		}
@@ -293,6 +296,7 @@ public class DBBuilding implements DBImporter {
 			if (solidProperty != null) {
 				if (solidProperty.isSetSolid()) {
 					solidGeometryId = surfaceGeometryImporter.insert(solidProperty.getSolid(), buildingId);
+					solidProperty.unsetSolid();
 				} else {
 					// xlink
 					String href = solidProperty.getHref();
@@ -373,6 +377,7 @@ public class DBBuilding implements DBImporter {
 			if (multiSurfaceProperty != null) {
 				if (multiSurfaceProperty.isSetMultiSurface()) {
 					multiGeometryId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), buildingId);
+					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					// xlink
 					String href = multiSurfaceProperty.getHref();
@@ -422,7 +427,7 @@ public class DBBuilding implements DBImporter {
 		// lodXTerrainIntersectionCurve
 		for (int lod = 1; lod < 5; lod++) {
 			MultiCurveProperty multiCurveProperty = null;
-			JGeometry multiLine = null;
+			GeometryObject multiLine = null;
 
 			switch (lod) {
 			case 1:
@@ -439,40 +444,42 @@ public class DBBuilding implements DBImporter {
 				break;
 			}
 
-			if (multiCurveProperty != null)
-				multiLine = sdoGeometry.getMultiCurve(multiCurveProperty);
+			if (multiCurveProperty != null) {
+				multiLine = geometryImporter.getMultiCurve(multiCurveProperty);
+				multiCurveProperty.unsetMultiCurve();
+			}
 
 			switch (lod) {
 			case 1:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psBuilding.setObject(22, multiLineObj);
 				} else
-					psBuilding.setNull(22, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(22, nullGeometryType, nullGeometryTypeName);
 
 				break;
 			case 2:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psBuilding.setObject(23, multiLineObj);
 				} else
-					psBuilding.setNull(23, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(23, nullGeometryType, nullGeometryTypeName);
 
 				break;
 			case 3:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psBuilding.setObject(24, multiLineObj);
 				} else
-					psBuilding.setNull(24, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(24, nullGeometryType, nullGeometryTypeName);
 
 				break;
 			case 4:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psBuilding.setObject(25, multiLineObj);
 				} else
-					psBuilding.setNull(25, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(25, nullGeometryType, nullGeometryTypeName);
 
 				break;
 			}
@@ -481,9 +488,8 @@ public class DBBuilding implements DBImporter {
 
 		// lodXMultiCurve
 		for (int lod = 2; lod < 5; lod++) {
-
 			MultiCurveProperty multiCurveProperty = null;
-			JGeometry multiLine = null;
+			GeometryObject multiLine = null;
 
 			switch (lod) {
 			case 2:
@@ -497,32 +503,34 @@ public class DBBuilding implements DBImporter {
 				break;
 			}
 
-			if (multiCurveProperty != null)
-				multiLine = sdoGeometry.getMultiCurve(multiCurveProperty);
+			if (multiCurveProperty != null) {
+				multiLine = geometryImporter.getMultiCurve(multiCurveProperty);
+				multiCurveProperty.unsetMultiCurve();
+			}
 
 			switch (lod) {
 			case 2:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psBuilding.setObject(26, multiLineObj);
 				} else
-					psBuilding.setNull(26, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(26, nullGeometryType, nullGeometryTypeName);
 
 				break;
 			case 3:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psBuilding.setObject(27, multiLineObj);
 				} else
-					psBuilding.setNull(27, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(27, nullGeometryType, nullGeometryTypeName);
 
 				break;
 			case 4:
 				if (multiLine != null) {
-					STRUCT multiLineObj = SyncJGeometry.syncStore(multiLine, batchConn);
+					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
 					psBuilding.setObject(28, multiLineObj);
 				} else
-					psBuilding.setNull(28, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					psBuilding.setNull(28, nullGeometryType, nullGeometryTypeName);
 
 				break;
 			}
@@ -530,7 +538,7 @@ public class DBBuilding implements DBImporter {
 		}
 
 		psBuilding.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING);
 
 		// BoundarySurfaces
@@ -650,7 +658,7 @@ public class DBBuilding implements DBImporter {
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.ROOM, 
+								CityGMLClass.BUILDING_ROOM, 
 								gmlId));
 						
 						LOG.error(msg.toString());
@@ -675,7 +683,7 @@ public class DBBuilding implements DBImporter {
 				BuildingPart buildingPart = buildingPartProperty.getBuildingPart();
 				
 				if (buildingPart != null) {
-					long id = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+					long id = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 					
 					if (id != 0)
 						insert(buildingPart, id, buildingId, rootId);
@@ -742,6 +750,9 @@ public class DBBuilding implements DBImporter {
 				}
 			}
 		}
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(building, buildingId);
 
 		return true;
 	}

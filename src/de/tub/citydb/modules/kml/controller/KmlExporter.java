@@ -30,8 +30,8 @@
 package de.tub.citydb.modules.kml.controller;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
 import javax.xml.bind.JAXBContext;
@@ -76,7 +75,6 @@ import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 
-import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
@@ -88,8 +86,8 @@ import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.gui.BoundingBox;
-import de.tub.citydb.api.gui.BoundingBoxCorner;
+import de.tub.citydb.api.geometry.BoundingBox;
+import de.tub.citydb.api.geometry.BoundingBoxCorner;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
@@ -129,7 +127,6 @@ import de.tub.citydb.modules.kml.database.Transportation;
 import de.tub.citydb.modules.kml.database.WaterBody;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.modules.kml.util.KMLHeaderWriter;
-import de.tub.citydb.util.database.DBUtil;
 
 public class KmlExporter implements EventHandler {
 	private final JAXBContext jaxbKmlContext;
@@ -138,7 +135,6 @@ public class KmlExporter implements EventHandler {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	private CityGMLFactory cityGMLFactory; 
 	private ObjectFactory kmlFactory; 
 	private WorkerPool<KmlSplittingResult> kmlWorkerPool;
 	private SingleWorkerPool<SAXEventBuffer> ioWriterPool;
@@ -185,7 +181,6 @@ public class KmlExporter implements EventHandler {
 		this.eventDispatcher = eventDispatcher;
 
 		kmlFactory = new ObjectFactory();		
-		cityGMLFactory = new CityGMLFactory();		
 	}
 	
 	public void cleanup() {
@@ -207,28 +202,18 @@ public class KmlExporter implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		// checking workspace...
+		// checking workspace
 		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
-		if (!workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.existsWorkspace(workspace);
-
-			String name = "'" + workspace.getName().trim() + "'";
-			String timestamp = workspace.getTimestamp().trim();
-			if (timestamp.trim().length() > 0)
-				name += " at timestamp " + timestamp;
-			
-			if (!workspaceExists) {
-				Logger.getInstance().error("Database workspace " + name + " is not available.");
-				return false;
-			} else 
-				Logger.getInstance().info("Switching to database workspace " + name + '.');
-		}
+		if (shouldRun && dbPool.getActiveDatabaseAdapter().hasVersioningSupport() && 
+				!dbPool.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
+				!dbPool.getActiveDatabaseAdapter().getWorkspaceManager().existsWorkspace(workspace, true))
+			return false;
 		
 		// check whether spatial indexes are enabled
 		Logger.getInstance().info("Checking for spatial indexes on geometry columns of involved tables...");
 		try {
-			if (!DBUtil.isIndexed("CITYOBJECT", "ENVELOPE") || 
-					!DBUtil.isIndexed("SURFACE_GEOMETRY", "GEOMETRY")) {
+			if (!dbPool.getActiveDatabaseAdapter().getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE") || 
+					!dbPool.getActiveDatabaseAdapter().getUtil().isIndexEnabled("SURFACE_GEOMETRY", "GEOMETRY")) {
 				Logger.getInstance().error("Spatial indexes are not activated.");
 				Logger.getInstance().error("Please use the database tab to activate the spatial indexes.");
 				return false;
@@ -244,7 +229,7 @@ public class KmlExporter implements EventHandler {
 			try {
 				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 					if (displayForm.getForm() == DisplayForm.COLLADA && displayForm.isActive()) {
-						if (!DBUtil.getAppearanceThemeList(workspace).contains(selectedTheme)) {
+						if (!dbPool.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList(workspace).contains(selectedTheme)) {
 							Logger.getInstance().error("Database does not contain appearance theme \"" + selectedTheme + "\"");
 							return false;
 						}
@@ -389,7 +374,6 @@ public class KmlExporter implements EventHandler {
 										dbPool,
 										ioWriterPool,
 										kmlFactory,
-										cityGMLFactory,
 										config,
 										eventDispatcher),
 										300,
@@ -626,21 +610,21 @@ public class KmlExporter implements EventHandler {
 		tileMatrix = new BoundingBox(new BoundingBoxCorner(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY()),
 										new BoundingBoxCorner(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY()));
 
-		DatabaseSrs dbSrs = dbPool.getActiveConnectionMetaData().getReferenceSystem();
+		DatabaseSrs dbSrs = dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 		DatabaseSrs bboxSrs = bbox.getSrs();
 		
 		if (bboxSrs == null) {
 			Logger.getInstance().warn("Could not read bbox reference system. DB reference system will be assumed.");
-			bboxSrs = dbPool.getActiveConnectionMetaData().getReferenceSystem();
+			bboxSrs = dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 //			throw new SQLException("Unknown BoundingBox srs");
 		}
 
 		if (bboxSrs.getSrid() != 0 && bboxSrs.getSrid() != dbSrs.getSrid()) {
-			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, bboxSrs, WGS84_2D);
-			tileMatrix = DBUtil.transformBBox(tileMatrix, bboxSrs, dbSrs);
+			wgs84TileMatrix = dbPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(tileMatrix, bboxSrs, WGS84_2D);
+			tileMatrix = dbPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(tileMatrix, bboxSrs, dbSrs);
 		}
 		else {
-			wgs84TileMatrix = DBUtil.transformBBox(tileMatrix, dbSrs, WGS84_2D);
+			wgs84TileMatrix = dbPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(tileMatrix, dbSrs, WGS84_2D);
 		}
 		
 		if (tilingMode == TilingMode.NO_TILING) {
@@ -1074,7 +1058,7 @@ public class KmlExporter implements EventHandler {
 			styleWallNormal.setPolyStyle(polyStyleWallNormal);
 			styleWallNormal.setBalloonStyle(balloonStyle);
 			if (isBuilding)
-				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.WALL_SURFACE).toString() + "Normal");
+				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString() + "Normal");
 			else
 				styleWallNormal.setId(styleBasisName + currentDisplayForm.getName() + "Normal");
 			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxBuffer);
@@ -1083,7 +1067,7 @@ public class KmlExporter implements EventHandler {
 				PolyStyleType polyStyleGroundSurface = kmlFactory.createPolyStyleType();
 				polyStyleGroundSurface.setColor(hexStringToByteArray("ff00aa00"));
 				StyleType styleGroundSurface = kmlFactory.createStyleType();
-				styleGroundSurface.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.GROUND_SURFACE).toString() + "Style");
+				styleGroundSurface.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString() + "Style");
 				styleGroundSurface.setPolyStyle(polyStyleGroundSurface);
 				styleGroundSurface.setBalloonStyle(balloonStyle);
 				marshaller.marshal(kmlFactory.createStyle(styleGroundSurface), saxBuffer);
@@ -1093,7 +1077,7 @@ public class KmlExporter implements EventHandler {
 				PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
 				polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
 				StyleType styleRoofNormal = kmlFactory.createStyleType();
-				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.ROOF_SURFACE).toString() + "Normal");
+				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_ROOF_SURFACE).toString() + "Normal");
 				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
 				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
 				styleRoofNormal.setBalloonStyle(balloonStyle);
@@ -1413,7 +1397,7 @@ public class KmlExporter implements EventHandler {
 					kmlSplitter.shutdown();
 
 				if (kmlWorkerPool != null) {
-					kmlWorkerPool.shutdownNow();
+					kmlWorkerPool.drainWorkQueue();
 				}
 
 				if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case

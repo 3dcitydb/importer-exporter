@@ -45,7 +45,6 @@ import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -85,7 +84,7 @@ public class DBRoom implements DBImporter {
 	}
 
 	public long insert(Room room, long buildingId) throws SQLException {
-		long roomId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long roomId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		if (roomId == 0)
 			return 0;
 
@@ -122,21 +121,21 @@ public class DBRoom implements DBImporter {
 		}
 
 		// citygml:class
-		if (room.isSetClazz())
-			psRoom.setString(5, room.getClazz().trim());
+		if (room.isSetClazz() && room.getClazz().isSetValue())
+			psRoom.setString(5, room.getClazz().getValue().trim());
 		else
 			psRoom.setNull(5, Types.VARCHAR);
 
 		// citygml:function
 		if (room.isSetFunction()) {
-			psRoom.setString(6, Util.collection2string(room.getFunction(), " "));
+			psRoom.setString(6, Util.codeList2string(room.getFunction(), " "));
 		} else {
 			psRoom.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (room.isSetUsage()) {
-			psRoom.setString(7, Util.collection2string(room.getUsage(), " "));
+			psRoom.setString(7, Util.codeList2string(room.getUsage(), " "));
 		} else {
 			psRoom.setNull(7, Types.VARCHAR);
 		}
@@ -163,6 +162,7 @@ public class DBRoom implements DBImporter {
 
 			if (solidProperty.isSetSolid()) {
 				geometryId = surfaceGeometryImporter.insert(solidProperty.getSolid(), roomId);
+				solidProperty.unsetSolid();
 			} else {
 				// xlink
 				String href = solidProperty.getHref();
@@ -184,6 +184,7 @@ public class DBRoom implements DBImporter {
 
 			if (multiSurfacePropery.isSetMultiSurface()) {
 				geometryId = surfaceGeometryImporter.insert(multiSurfacePropery.getMultiSurface(), roomId);
+				multiSurfacePropery.unsetMultiSurface();
 			} else {
 				// xlink
 				String href = multiSurfacePropery.getHref();
@@ -208,7 +209,7 @@ public class DBRoom implements DBImporter {
 			psRoom.setNull(9, 0);
 
 		psRoom.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.ROOM);
 
 		// BoundarySurfaces
@@ -222,7 +223,7 @@ public class DBRoom implements DBImporter {
 					
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								CityGMLClass.ROOM, 
+								CityGMLClass.BUILDING_ROOM, 
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
@@ -256,7 +257,7 @@ public class DBRoom implements DBImporter {
 					
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								CityGMLClass.ROOM, 
+								CityGMLClass.BUILDING_ROOM, 
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
@@ -290,7 +291,7 @@ public class DBRoom implements DBImporter {
 					
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								CityGMLClass.ROOM, 
+								CityGMLClass.BUILDING_ROOM, 
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
@@ -312,6 +313,9 @@ public class DBRoom implements DBImporter {
 				}
 			}
 		}
+		
+		// insert local appearance
+		cityObjectImporter.insertAppearance(room, roomId);
 
 		return roomId;
 	}

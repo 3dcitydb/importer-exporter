@@ -33,6 +33,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
+
 
 public class CacheTableTextureAssociation extends CacheTableModel {
 	public static CacheTableTextureAssociation instance = null;
@@ -69,10 +71,13 @@ public class CacheTableTextureAssociation extends CacheTableModel {
 	}
 	
 	@Override
-	protected String getColumns() {
-		return "(SURFACE_DATA_ID NUMBER, " +
-		"SURFACE_GEOMETRY_ID NUMBER, " +
-		"GMLID VARCHAR2(256))";
+	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+		StringBuilder builder = new StringBuilder("(")
+		.append("SURFACE_DATA_ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("SURFACE_GEOMETRY_ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256))
+		.append(")");
+		
+		return builder.toString();
 	}
-
 }

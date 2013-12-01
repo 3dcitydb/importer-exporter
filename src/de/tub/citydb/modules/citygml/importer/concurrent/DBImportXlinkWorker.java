@@ -36,8 +36,8 @@ import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
+import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
@@ -78,18 +78,21 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 	private int updateCounter = 0;
 	private int commitAfter = 1000;
 
-	public DBImportXlinkWorker(CacheManager cacheManager, Config config, EventDispatcher eventDispatcher) {
+	public DBImportXlinkWorker(DatabaseConnectionPool dbPool,
+			CacheManager cacheManager, 
+			Config config, 
+			EventDispatcher eventDispatcher) {
 		this.config = config;
-		dbXlinkManager = new DBXlinkImporterManager(cacheManager, eventDispatcher);
+		dbXlinkManager = new DBXlinkImporterManager(cacheManager, dbPool.getActiveDatabaseAdapter(), eventDispatcher);
 		
-		init();		
+		init(dbPool);		
 	}
 
-	private void init() {
+	private void init(DatabaseConnectionPool dbPool) {
 		Database database = config.getProject().getDatabase();
 		
 		Integer commitAfterProp = database.getUpdateBatching().getTempBatchValue();
-		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= Internal.ORACLE_MAX_BATCH_SIZE)
+		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= dbPool.getActiveDatabaseAdapter().getMaxBatchSize())
 			commitAfter = commitAfterProp;		
 	}
 	

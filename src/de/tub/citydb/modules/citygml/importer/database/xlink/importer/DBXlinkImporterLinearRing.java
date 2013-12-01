@@ -32,34 +32,36 @@ package de.tub.citydb.modules.citygml.importer.database.xlink.importer;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLinearRing;
 
 public class DBXlinkImporterLinearRing implements DBXlinkImporter {
 	private final TemporaryCacheTable tempTable;
+	private final DBXlinkImporterManager xlinkImporterManager;
 	private PreparedStatement psLinearRing;
 	private int batchCounter;
 
-	public DBXlinkImporterLinearRing(TemporaryCacheTable tempTable) throws SQLException {
+	public DBXlinkImporterLinearRing(TemporaryCacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
 		this.tempTable = tempTable;
-
+		this.xlinkImporterManager = xlinkImporterManager;
+		
 		init();
 	}
 
 	private void init() throws SQLException {
 		psLinearRing = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() + 
-			" (GMLID, PARENT_GMLID, RING_NO) values " +
-			"(?, ?, ?)");
+			" (GMLID, PARENT_ID, RING_NO, REVERSE) values " +
+			"(?, ?, ?, ?)");
 	}
 
 	public boolean insert(DBXlinkLinearRing xlinkEntry) throws SQLException {
 		psLinearRing.setString(1, xlinkEntry.getGmlId());
-		psLinearRing.setString(2, xlinkEntry.getParentGmlId());
+		psLinearRing.setLong(2, xlinkEntry.getParentId());
 		psLinearRing.setInt(3, xlinkEntry.getRingId());
+		psLinearRing.setInt(4, xlinkEntry.isReverse() ? 1 : 0);
 
 		psLinearRing.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			executeBatch();
 
 		return true;

@@ -56,6 +56,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.api.controller.DatabaseController;
 import de.tub.citydb.api.controller.LogController;
@@ -64,6 +66,8 @@ import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
+import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
+import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.plugins.matching_merging.PluginImpl;
@@ -137,6 +141,9 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		viewController = ObjectRegistry.getInstance().getViewController();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		logController = ObjectRegistry.getInstance().getLogController();
+		
+		eventDispatcher.addEventHandler(EventType.RELEVANT_MATCHES, this);
+		eventDispatcher.addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
 
 		plugin.getConfig().getMerging().addPropertyChangeListener(this);
 		initGui();
@@ -396,6 +403,18 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		setEnabledLineage();
 		setEnabledButtons(false);
 	}
+	
+	public void setEnabledWorkspace(boolean enable) {
+		((TitledBorder)workspacePanel.getBorder()).setTitleColor(enable ? 
+				UIManager.getColor("TitledBorder.titleColor"):
+					UIManager.getColor("Label.disabledForeground"));
+		workspacePanel.repaint();
+		
+		workspaceLabel.setEnabled(enable);
+		workspaceText.setEnabled(enable);
+		timestampLabel.setEnabled(enable);
+		timestampText.setEnabled(enable);
+	}
 
 	public void switchLocale() {
 		workspacePanel.setBorder(BorderFactory.createTitledBorder(Util.I18N.getString("common.border.versioning")));
@@ -483,14 +502,9 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 		deleteLinageText.setText(plugin.getConfig().getDeleteBuildingsByLineage().getLineage());
 	}
 
-	public void setSettings() {
-		String workspace = workspaceText.getText().trim();
-		if (!workspace.equals("LIVE") && 
-				(workspace.length() == 0 || workspace.toUpperCase().equals("LIVE")))
-			workspaceText.setText("LIVE");
-
-		plugin.getConfig().getWorkspace().setName(workspaceText.getText());
-		plugin.getConfig().getWorkspace().setTimestamp(timestampText.getText());
+	public void setSettings() {		
+		plugin.getConfig().getWorkspace().setName(workspaceText.getText().trim());
+		plugin.getConfig().getWorkspace().setTimestamp(timestampText.getText().trim());
 
 		plugin.getConfig().getMasterBuildings().setLodProjection(masterLODCombo.getSelectedIndex()+1);
 		plugin.getConfig().getMasterBuildings().setOverlap(((Number)masterOverlapText.getValue()).doubleValue() / 100);
@@ -535,9 +549,6 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 			viewController.setStatusText(Util.I18N.getString("main.status.match.label"));
 			logController.info("Initializing matching process...");
-
-			// initialize event dispatcher
-			eventDispatcher.addEventHandler(EventType.RELEVANT_MATCHES, this);
 
 			final StatusDialog status = new StatusDialog(viewController.getTopFrame(), 
 					Util.I18N.getString("match.match.dialog.window"), 
@@ -629,7 +640,6 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			logController.info("Initializing merging process...");
 
 			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			final StatusDialog status = new StatusDialog(viewController.getTopFrame(), 
 					Util.I18N.getString("match.merge.dialog.window"), 
 					Util.I18N.getString("match.merge.dialog.msg"),
@@ -699,10 +709,6 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 			viewController.setStatusText(Util.I18N.getString("main.status.overlap.label"));
 			logController.info("Initializing matching process...");
-
-			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-			eventDispatcher.addEventHandler(EventType.RELEVANT_MATCHES, this);
 
 			final StatusDialog status = new StatusDialog(viewController.getTopFrame(), 
 					Util.I18N.getString("match.overlap.dialog.window"), 
@@ -783,8 +789,6 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			Object[] args = new Object[]{ plugin.getConfig().getDeleteBuildingsByLineage().getLineage() };
 			String result = MessageFormat.format(msg, args);
 
-			// initialize event dispatcher
-			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			final StatusDialog status = new StatusDialog(viewController.getTopFrame(), 
 					Util.I18N.getString("match.tools.dialog.title"), 
 					result,
@@ -835,7 +839,12 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 
 	@Override
 	public void handleEvent(Event e) throws Exception {
-		setEnabledButtons(((CounterEvent)e).getCounter() > 0);
+		if (e.getEventType() == EventType.RELEVANT_MATCHES)
+			setEnabledButtons(((CounterEvent)e).getCounter() > 0);
+		else if (e.getEventType() == GlobalEvents.DATABASE_CONNECTION_STATE) {
+			DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent)e;
+			setEnabledWorkspace(state.wasConnected() || databaseController.getActiveDatabaseAdapter().hasVersioningSupport());
+		}
 	}
 
 	@Override

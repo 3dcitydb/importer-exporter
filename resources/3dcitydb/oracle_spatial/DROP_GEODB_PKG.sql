@@ -23,6 +23,7 @@
 SELECT 'Deleting packages ''geodb_util'', ''geodb_idx'', ''geodb_stat'', ''geodb_delete_by_lineage'', ''geodb_delete'' and corresponding types' as message from DUAL;
 --// drop global types
 DROP TYPE STRARRAY;
+DROP TYPE SEQ_TABLE;
 DROP TYPE INDEX_OBJ;
 DROP TYPE DB_INFO_TABLE;
 DROP TYPE DB_INFO_OBJ;

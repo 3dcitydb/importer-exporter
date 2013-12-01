@@ -38,7 +38,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -79,7 +78,7 @@ public class XlinkBasic implements DBXlinkResolver {
 	
 			ps.addBatch();
 			int counter = psBatchCounterMap.get(key);
-			if (++counter == Internal.ORACLE_MAX_BATCH_SIZE) {
+			if (++counter == resolverManager.getDatabaseAdapter().getMaxBatchSize()) {
 				ps.executeBatch();
 				psBatchCounterMap.put(key, 0);
 			} else
@@ -89,7 +88,7 @@ public class XlinkBasic implements DBXlinkResolver {
 		if (xlink.getToTable() == TableEnum.SURFACE_GEOMETRY) {
 			psUpdateSurfGeom.setLong(1, entry.getId());
 			psUpdateSurfGeom.addBatch();
-			if (++updateBatchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+			if (++updateBatchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
 				executeUpdateSurfGeomBatch();
 		}
 

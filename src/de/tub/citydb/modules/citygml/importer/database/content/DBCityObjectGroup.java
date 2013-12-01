@@ -40,7 +40,6 @@ import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupMember;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -49,7 +48,7 @@ import de.tub.citydb.util.Util;
 
 public class DBCityObjectGroup implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
-	
+
 	private final Connection batchConn;
 	private final DBImporterManager dbImporterManager;
 
@@ -69,14 +68,14 @@ public class DBCityObjectGroup implements DBImporter {
 	private void init() throws SQLException {
 		psCityObjectGroup = batchConn.prepareStatement("insert into CITYOBJECTGROUP (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
 				"GEOMETRY, SURFACE_GEOMETRY_ID, PARENT_CITYOBJECT_ID) values " +
-		"(?, ?, ?, ?, ?, ?, ?, null, ?, ?)");
+				"(?, ?, ?, ?, ?, ?, ?, null, ?, ?)");
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 	}
 
 	public long insert(CityObjectGroup cityObjectGroup) throws SQLException {
-		long cityObjectGroupId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_SEQ);
+		long cityObjectGroupId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
 		boolean success = false;
 
 		if (cityObjectGroupId != 0)
@@ -90,7 +89,7 @@ public class DBCityObjectGroup implements DBImporter {
 
 	private boolean insert(CityObjectGroup cityObjectGroup, long cityObjectGroupId) throws SQLException {
 		String origGmlId = cityObjectGroup.getId();
-		
+
 		// CityObject
 		long cityObjectId = cityObjectImporter.insert(cityObjectGroup, cityObjectGroupId, true);
 		if (cityObjectId == 0)
@@ -124,21 +123,21 @@ public class DBCityObjectGroup implements DBImporter {
 		}
 
 		// citygml:class
-		if (cityObjectGroup.isSetClazz())
-			psCityObjectGroup.setString(5, cityObjectGroup.getClazz().trim());
+		if (cityObjectGroup.isSetClazz() && cityObjectGroup.getClazz().isSetValue())
+			psCityObjectGroup.setString(5, cityObjectGroup.getClazz().getValue().trim());
 		else
 			psCityObjectGroup.setNull(5, Types.VARCHAR);
 
 		// citygml:function
 		if (cityObjectGroup.isSetFunction()) {
-			psCityObjectGroup.setString(6, Util.collection2string(cityObjectGroup.getFunction(), " "));
+			psCityObjectGroup.setString(6, Util.codeList2string(cityObjectGroup.getFunction(), " "));
 		} else {
 			psCityObjectGroup.setNull(6, Types.VARCHAR);
 		}
 
 		// citygml:usage
 		if (cityObjectGroup.isSetUsage()) {
-			psCityObjectGroup.setString(7, Util.collection2string(cityObjectGroup.getUsage(), " "));
+			psCityObjectGroup.setString(7, Util.codeList2string(cityObjectGroup.getUsage(), " "));
 		} else {
 			psCityObjectGroup.setNull(7, Types.VARCHAR);
 		}
@@ -151,6 +150,7 @@ public class DBCityObjectGroup implements DBImporter {
 
 			if (geometryProperty.isSetGeometry()) {
 				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), cityObjectGroupId);
+				geometryProperty.unsetGeometry();
 			} else {
 				// xlink
 				String href = geometryProperty.getHref();
@@ -161,7 +161,7 @@ public class DBCityObjectGroup implements DBImporter {
 							TableEnum.CITYOBJECTGROUP,
 							href,
 							TableEnum.SURFACE_GEOMETRY
-					);
+							);
 
 					xlink.setAttrName("SURFACE_GEOMETRY_ID");
 					dbImporterManager.propagateXlink(xlink);
@@ -176,18 +176,18 @@ public class DBCityObjectGroup implements DBImporter {
 
 		// parent
 		psCityObjectGroup.setNull(9, 0);
-		
+
 		psCityObjectGroup.addBatch();
-		if (++batchCounter == Internal.ORACLE_MAX_BATCH_SIZE)
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECTGROUP);		
-		
+
 		// group parent
 		if (cityObjectGroup.isSetGroupParent()) {
 			if (cityObjectGroup.getGroupParent().isSetCityObject()) {
 				StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 						CityGMLClass.CITY_OBJECT_GROUP, 
 						origGmlId));
-				
+
 				msg.append(": XML read error while parsing parent element.");
 				LOG.error(msg.toString());
 			} else {			
@@ -210,7 +210,7 @@ public class DBCityObjectGroup implements DBImporter {
 					StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 							CityGMLClass.CITY_OBJECT_GROUP, 
 							origGmlId));
-					
+
 					msg.append(": XML read error while parsing groupMember element.");
 					LOG.error(msg.toString());
 				} else {
@@ -222,14 +222,17 @@ public class DBCityObjectGroup implements DBImporter {
 								cityObjectGroupId,
 								href,
 								false);
-						
+
 						xlink.setRole(groupMember.getGroupRole());						
 						dbImporterManager.propagateXlink(xlink);
 					}
 				}
 			}
 		}
-		
+
+		// insert local appearance
+		cityObjectImporter.insertAppearance(cityObjectGroup, cityObjectGroupId);
+
 		return true;
 	}
 
