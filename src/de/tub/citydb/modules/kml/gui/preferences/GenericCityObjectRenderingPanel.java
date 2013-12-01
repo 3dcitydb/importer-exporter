@@ -365,9 +365,9 @@ public class GenericCityObjectRenderingPanel extends AbstractPreferencesComponen
 		packingAlgorithms.put("TPIM", TextureAtlasCreator.TPIM);
 		packingAlgorithms.put("TPIM w/o image rotation", TextureAtlasCreator.TPIM_WO_ROTATION);
 
-		for (String algorithm: packingAlgorithms.keySet()) {
-			packingAlgorithmsComboBox.addItem(algorithm);
-		}
+		packingAlgorithmsComboBox.addItem("BASIC");
+		packingAlgorithmsComboBox.addItem("TPIM");
+		packingAlgorithmsComboBox.addItem("TPIM w/o image rotation");
 
 		textureAtlasCheckbox.setIconTextGap(10);
 		colladaPanel.add(textureAtlasCheckbox, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
