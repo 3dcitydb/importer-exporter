@@ -238,33 +238,37 @@ RETURNS SETOF void AS
 $$
 DECLARE
   geom_type VARCHAR(100);
+  s_name VARCHAR(100);
+  s_t_name VARCHAR(100);
   is_valid BOOLEAN;
 BEGIN
-  EXECUTE 'SELECT type FROM geometry_columns WHERE f_table_name = $1 AND f_geometry_column = $2'
-             INTO geom_type USING t_name, c_name;
+  EXECUTE 'SELECT f_table_schema, type FROM geometry_columns WHERE f_table_name = $1 AND f_geometry_column = $2'
+             INTO s_name, geom_type USING t_name, c_name;
 
   IF i_name IS NOT NULL THEN 
-    is_valid := geodb_pkg.idx_index_status(t_name, c_name) = 'VALID';
+    
+	s_t_name := s_name || '.' || t_name;
+	is_valid := geodb_pkg.idx_index_status(t_name, c_name) = 'VALID';
 
     -- drop spatial index if exists
     IF is_valid THEN
-       EXECUTE 'DROP INDEX ' || i_name;
+       EXECUTE 'DROP INDEX ' || s_name || '.' || i_name;
     END IF;
 
     -- update geometry SRID
-    PERFORM UpdateGeometrySRID(t_name, c_name, db_srid);
+    PERFORM UpdateGeometrySRID(s_name, t_name, c_name, db_srid);
 
     -- create spatial index again
     IF is_valid THEN
       IF is_3d THEN
-        EXECUTE 'CREATE INDEX ' || i_name || ' ON ' || t_name || ' USING GIST ( ' || c_name || ' gist_geometry_ops_nd )';
+        EXECUTE 'CREATE INDEX ' || i_name || ' ON ' || s_t_name || ' USING GIST ( ' || c_name || ' gist_geometry_ops_nd )';
       ELSE
-        EXECUTE 'CREATE INDEX ' || i_name || ' ON ' || t_name || ' USING GIST ( ' || c_name || ' gist_geometry_ops_nd )';
+        EXECUTE 'CREATE INDEX ' || i_name || ' ON ' || s_t_name || ' USING GIST ( ' || c_name || ' )';
       END IF;
     END IF;
   ELSE
     -- no spatial index defined for table, only update metadata and geometry SRID
-    PERFORM UpdateGeometrySRID(t_name, c_name, db_srid);
+    PERFORM UpdateGeometrySRID(s_name, t_name, c_name, db_srid);
   END IF;
 
 END;

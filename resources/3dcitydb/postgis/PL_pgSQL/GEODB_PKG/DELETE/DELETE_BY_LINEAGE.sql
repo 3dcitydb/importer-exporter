@@ -83,9 +83,9 @@ BEGIN
   END LOOP;
 
   -- cleanup
-  PERFORM geodb_pkg.del_cleanup_implicitgeometries;
+  PERFORM geodb_pkg.del_cleanup_implicitgeometries();
   PERFORM geodb_pkg.del_cleanup_appearances(1);
-  PERFORM geodb_pkg.del_cleanup_citymodels;
+  PERFORM geodb_pkg.del_cleanup_citymodels();
 
   EXCEPTION
     WHEN OTHERS THEN
@@ -112,9 +112,9 @@ BEGIN
   END LOOP;
 
   -- cleanup
-  PERFORM geodb_pkg.del_cleanup_implicitgeometries;
+  PERFORM geodb_pkg.del_cleanup_implicitgeometries();
   PERFORM geodb_pkg.del_cleanup_appearances(1);
-  PERFORM geodb_pkg.del_cleanup_citymodels;
+  PERFORM geodb_pkg.del_cleanup_citymodels();
 
   EXCEPTION
     WHEN OTHERS THEN
@@ -142,7 +142,7 @@ BEGIN
 
   -- cleanup
   PERFORM geodb_pkg.del_cleanup_appearances(1);
-  PERFORM geodb_pkg.del_cleanup_citymodels;
+  PERFORM geodb_pkg.del_cleanup_citymodels();
 
   EXCEPTION
     WHEN OTHERS THEN
@@ -170,7 +170,7 @@ BEGIN
 
   -- cleanup
   PERFORM geodb_pkg.del_cleanup_appearances(1);
-  PERFORM geodb_pkg.del_cleanup_citymodels;
+  PERFORM geodb_pkg.del_cleanup_citymodels();
 
   EXCEPTION
     WHEN OTHERS THEN
@@ -197,9 +197,9 @@ BEGIN
   END LOOP;
 
   -- cleanup
-  PERFORM geodb_pkg.del_cleanup_implicitgeometries;
+  PERFORM geodb_pkg.del_cleanup_implicitgeometries();
   PERFORM geodb_pkg.del_cleanup_appearances(1);
-  PERFORM geodb_pkg.del_cleanup_citymodels;
+  PERFORM geodb_pkg.del_cleanup_citymodels();
 
   EXCEPTION
     WHEN OTHERS THEN
@@ -227,7 +227,7 @@ BEGIN
 
   -- cleanup
   PERFORM geodb_pkg.del_cleanup_appearances(1);
-  PERFORM geodb_pkg.del_cleanup_citymodels;
+  PERFORM geodb_pkg.del_cleanup_citymodels();
 
   EXCEPTION
     WHEN OTHERS THEN
@@ -255,7 +255,7 @@ BEGIN
 
   -- cleanup
   PERFORM geodb_pkg.del_cleanup_appearances(1);
-  PERFORM geodb_pkg.del_cleanup_citymodels;
+  PERFORM geodb_pkg.del_cleanup_citymodels();
 
   EXCEPTION
     WHEN OTHERS THEN
@@ -283,7 +283,7 @@ BEGIN
 
   -- cleanup
   PERFORM geodb_pkg.del_cleanup_appearances(1);
-  PERFORM geodb_pkg.del_cleanup_citymodels;
+  PERFORM geodb_pkg.del_cleanup_citymodels();
 
   EXCEPTION
     WHEN OTHERS THEN
@@ -311,7 +311,7 @@ BEGIN
 
   -- cleanup
   PERFORM geodb_pkg.del_cleanup_appearances(1);
-  PERFORM geodb_pkg.del_cleanup_citymodels;
+  PERFORM geodb_pkg.del_cleanup_citymodels();
 
   EXCEPTION
     WHEN OTHERS THEN
@@ -337,9 +337,9 @@ BEGIN
   END LOOP;
 
   -- cleanup
-  PERFORM geodb_pkg.del_cleanup_implicitgeometries;
+  PERFORM geodb_pkg.del_cleanup_implicitgeometries();
   PERFORM geodb_pkg.del_cleanup_appearances(1);
-  PERFORM geodb_pkg.del_cleanup_citymodels;
+  PERFORM geodb_pkg.del_cleanup_citymodels();
 
   EXCEPTION
     WHEN OTHERS THEN
