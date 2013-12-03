@@ -64,7 +64,6 @@ public class ConfigUtil {
 	public static void marshal(Object object, File file, JAXBContext ctx) throws JAXBException {		
 		Marshaller m = ctx.createMarshaller();	
 		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,Boolean.TRUE);
-		m.setProperty("com.sun.xml.bind.indentString", "  ");
 
 		m.marshal(object, file);
 	}
