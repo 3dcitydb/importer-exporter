@@ -2,13 +2,12 @@ package de.tub.citydb.database.adapter.oracle;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Struct;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
 import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.geometry.SyncJGeometry;
-import oracle.sql.STRUCT;
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.api.geometry.GeometryObject.ElementType;
 import de.tub.citydb.database.adapter.AbstractGeometryConverterAdapter;
@@ -33,8 +32,8 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 	public GeometryObject getEnvelope(Object geomObj) throws SQLException {
 		GeometryObject envelope = null;
 
-		if (geomObj instanceof STRUCT) {
-			JGeometry geometry = JGeometry.load((STRUCT)geomObj);
+		if (geomObj instanceof Struct) {
+			JGeometry geometry = JGeometry.loadJS((Struct)geomObj);
 			double[] ordinates = geometry.getMBR();
 			double[] coordinates;
 
@@ -51,8 +50,8 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 	@Override
 	public GeometryObject getPoint(Object geomObj) throws SQLException {
-		if (geomObj instanceof STRUCT)
-			return getPoint(JGeometry.load((STRUCT)geomObj));
+		if (geomObj instanceof Struct)
+			return getPoint(JGeometry.loadJS((Struct)geomObj));
 
 		return null;
 	}
@@ -66,8 +65,8 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 	@Override
 	public GeometryObject getMultiPoint(Object geomObj) throws SQLException {
-		if (geomObj instanceof STRUCT)
-			return getMultiPoint(JGeometry.load((STRUCT)geomObj));
+		if (geomObj instanceof Struct)
+			return getMultiPoint(JGeometry.loadJS((Struct)geomObj));
 
 		return null;
 	}
@@ -99,8 +98,8 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 	@Override
 	public GeometryObject getCurve(Object geomObj) throws SQLException {
-		if (geomObj instanceof STRUCT)
-			return getCurve(JGeometry.load((STRUCT)geomObj));
+		if (geomObj instanceof Struct)
+			return getCurve(JGeometry.loadJS((Struct)geomObj));
 
 		return null;
 	}
@@ -114,8 +113,8 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 	@Override
 	public GeometryObject getMultiCurve(Object geomObj) throws SQLException {
-		if (geomObj instanceof STRUCT)
-			return getMultiCurve(JGeometry.load((STRUCT)geomObj));
+		if (geomObj instanceof Struct)
+			return getMultiCurve(JGeometry.loadJS((Struct)geomObj));
 
 		return null;
 	}
@@ -154,8 +153,8 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 	@Override
 	public GeometryObject getPolygon(Object geomObj) throws SQLException {
-		if (geomObj instanceof STRUCT)
-			return getPolygon(JGeometry.load((STRUCT)geomObj));
+		if (geomObj instanceof Struct)
+			return getPolygon(JGeometry.loadJS((Struct)geomObj));
 
 		return null;
 	}
@@ -190,8 +189,8 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 	@Override
 	public GeometryObject getMultiPolygon(Object geomObj) throws SQLException {
-		if (geomObj instanceof STRUCT)
-			return getMultiPolygon(JGeometry.load((STRUCT)geomObj));
+		if (geomObj instanceof Struct)
+			return getMultiPolygon(JGeometry.loadJS((Struct)geomObj));
 
 		return null;
 	}
@@ -240,8 +239,8 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 	@Override
 	public GeometryObject getGeometry(Object geomObj) throws SQLException {
-		if (geomObj instanceof STRUCT) {
-			JGeometry geometry = JGeometry.load((STRUCT)geomObj);
+		if (geomObj instanceof Struct) {
+			JGeometry geometry = JGeometry.loadJS((Struct)geomObj);
 			switch (geometry.getType()) {
 			case JGeometry.GTYPE_POINT:
 				return getPoint(geometry);
@@ -294,7 +293,11 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		if (geometry == null)
 			throw new SQLException("Failed to convert geometry to internal database representation.");
 
-		return SyncJGeometry.syncStore(geometry, connection);
+		try {
+			return JGeometry.storeJS(connection, geometry);
+		} catch (Exception e) {
+			throw new SQLException(e.getMessage(), e);
+		}
 	}
 
 	private JGeometry convertPointToJGeometry(GeometryObject geomObj) {
