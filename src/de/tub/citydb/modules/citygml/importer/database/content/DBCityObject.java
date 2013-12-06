@@ -219,21 +219,21 @@ public class DBCityObject implements DBImporter {
 				dbImporterManager.getAffineTransformer().transformCoordinates(points);
 
 			double[] coordinates = new double[15];
-			coordinates[0] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(0);
-			coordinates[1] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(1);
-			coordinates[2] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(2);
-			coordinates[3] = cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(0);
-			coordinates[4] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(1);
-			coordinates[5] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(2);
-			coordinates[6] = cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(0);
-			coordinates[7] = cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(1);
-			coordinates[8] = cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(2);
-			coordinates[9] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(0);
-			coordinates[10] = cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(1);
-			coordinates[11] = cityObject.getBoundedBy().getEnvelope().getUpperCorner().getValue().get(2);
-			coordinates[12] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(0);
-			coordinates[13] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(1);
-			coordinates[14] = cityObject.getBoundedBy().getEnvelope().getLowerCorner().getValue().get(2);
+			coordinates[0] = points.get(0);
+			coordinates[1] = points.get(1);
+			coordinates[2] = points.get(2);
+			coordinates[3] = points.get(0);
+			coordinates[4] = points.get(1);
+			coordinates[5] = points.get(2);
+			coordinates[6] = points.get(0);
+			coordinates[7] = points.get(1);
+			coordinates[8] = points.get(2);
+			coordinates[9] = points.get(0);
+			coordinates[10] = points.get(1);
+			coordinates[11] = points.get(2);
+			coordinates[12] = points.get(0);
+			coordinates[13] = points.get(1);
+			coordinates[14] = points.get(2);
 
 			GeometryObject envelope = GeometryObject.createPolygon(coordinates, 3, dbSrid);
 			psCityObject.setObject(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(envelope, batchConn));
