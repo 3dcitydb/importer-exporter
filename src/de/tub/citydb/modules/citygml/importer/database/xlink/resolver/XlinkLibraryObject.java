@@ -102,7 +102,7 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 			}
 
 			boolean success = false;
-			if (objectStream == null) {
+			if (objectStream != null) {
 				LOG.debug("Importing library object: " + objectFileName);
 				success = blobImportAdapter.insert(xlink.getId(), objectStream, objectFileName);
 			}
