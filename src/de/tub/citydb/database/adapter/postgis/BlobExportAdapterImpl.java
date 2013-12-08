@@ -43,7 +43,7 @@ public class BlobExportAdapterImpl implements TextureImageExportAdapter, BlobExp
 			}
 
 			byte[] buf = rs.getBytes(1);
-			if (buf == null || buf.length == 0) {
+			if (rs.wasNull() || buf.length == 0) {
 				LOG.error("Failed to read " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file: " + objectName + ".");
 				return null;
 			}
@@ -59,15 +59,21 @@ public class BlobExportAdapterImpl implements TextureImageExportAdapter, BlobExp
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean getInFile(long id, String objectName, String fileName) throws SQLException {
 		FileOutputStream out = null;
 
 		try {
 			out = new FileOutputStream(fileName);
-			out.write(getInByteArray(id, objectName, fileName));
-			return true;
+
+			byte[] buf = getInByteArray(id, objectName, fileName);
+			if (buf != null) {
+				out.write(buf);
+				return true;
+			} else
+				return false;
+			
 		} catch (IOException e) {
 			LOG.error("Failed to write " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file " + fileName + ": " + e.getMessage());
 			return false;

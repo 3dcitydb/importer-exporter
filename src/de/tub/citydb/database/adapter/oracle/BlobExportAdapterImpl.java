@@ -5,10 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import oracle.jdbc.OracleResultSet;
-import oracle.sql.BLOB;
 import de.tub.citydb.database.adapter.BlobExportAdapter;
 import de.tub.citydb.log.Logger;
 
@@ -24,7 +23,7 @@ public class BlobExportAdapterImpl implements BlobExportAdapter {
 
 	@Override
 	public boolean getInFile(long id, String objectName, String fileName) throws SQLException {
-		OracleResultSet rs = null;
+		ResultSet rs = null;
 		InputStream in = null;
 		FileOutputStream out = null;
 
@@ -34,27 +33,21 @@ public class BlobExportAdapterImpl implements BlobExportAdapter {
 
 			// try and read object reference attribute from IMPLICIT_OBJECT table
 			psLibraryObject.setLong(1, id);
-			rs = (OracleResultSet)psLibraryObject.executeQuery();
+			rs = psLibraryObject.executeQuery();
 			if (!rs.next()) {
 				LOG.error("Error while exporting a library object: " + objectName + " does not exist in database.");
 				return false;
 			}
-
-			BLOB blob = rs.getBLOB(1);
-			if (blob == null) {
-				LOG.error("Error while exporting a library object: " + objectName + " does not exist in database.");
+			
+			byte[] buf = rs.getBytes(1);
+			if (rs.wasNull() || buf.length == 0) {
+				LOG.error("Failed to read library object file: " + objectName + ".");
 				return false;
 			}
-
-			int size = blob.getBufferSize();
-			byte[] buffer = new byte[size];
-			in = blob.getBinaryStream(1L);
+			
 			out = new FileOutputStream(fileName);
-
-			int length = -1;
-			while ((length = in.read(buffer)) != -1)
-				out.write(buffer, 0, length);
-
+			out.write(buf);
+			
 			return true;
 		} catch (IOException e) {
 			LOG.error("Failed to write library object file " + objectName + ": " + e.getMessage());

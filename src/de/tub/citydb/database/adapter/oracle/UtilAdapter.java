@@ -6,11 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Struct;
 import java.util.List;
 
 import oracle.jdbc.OracleTypes;
 import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.database.DatabaseSrsType;
 import de.tub.citydb.api.geometry.BoundingBox;
@@ -160,9 +160,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			rs = interruptableStatement.executeQuery(query);
 
 			if (rs.next()) {
-				STRUCT struct = (STRUCT)rs.getObject(1);
+				Struct struct = (Struct)rs.getObject(1);
 				if (!rs.wasNull() && struct != null) {
-					JGeometry jGeom = JGeometry.load(struct);
+					JGeometry jGeom = JGeometry.loadJS(struct);
 					int dim = jGeom.getDimensions();	
 					if (dim == 2 || dim == 3) {
 						double[] points = jGeom.getOrdinatesArray();
@@ -276,9 +276,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
 			rs = psQuery.executeQuery();
 			if (rs.next()) {
-				STRUCT struct = (STRUCT)rs.getObject(1); 
+				Struct struct = (Struct)rs.getObject(1); 
 				if (!rs.wasNull() && struct != null) {
-					JGeometry geom = JGeometry.load(struct);
+					JGeometry geom = JGeometry.loadJS(struct);
 					double[] ordinatesArray = geom.getOrdinatesArray();
 
 					result.getLowerLeftCorner().setX(ordinatesArray[0]);
