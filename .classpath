@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="plugin-devel/matching-merging/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/args4j-2.0.11.jar"/>
 	<classpathentry kind="lib" path="resources/jar"/>
 	<classpathentry kind="lib" path="lib/ordim.jar"/>
 	<classpathentry kind="lib" path="lib/sdoapi.jar"/>
@@ -22,5 +21,6 @@
 	<classpathentry kind="lib" path="lib/vecmath.jar"/>
 	<classpathentry kind="lib" path="lib/ojdbc7.jar"/>
 	<classpathentry kind="lib" path="lib/swingx-all-1.6.4.jar"/>
+	<classpathentry kind="lib" path="lib/args4j-2.0.21.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
