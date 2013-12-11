@@ -472,13 +472,8 @@ LANGUAGE plpgsql;
 * @param count number of values to be queried from the sequence
 ******************************************************************/
 CREATE OR REPLACE FUNCTION geodb_pkg.util_get_seq_values(seq_name VARCHAR, seq_count INTEGER) RETURNS SETOF INTEGER AS $$
-DECLARE
-  seq_value INTEGER;
 BEGIN
-  FOR seq_value IN EXECUTE 'SELECT nextval($1)::int FROM generate_series(1, $2)' USING seq_name, seq_count LOOP
-    RETURN NEXT seq_value;
-  END LOOP;
-  RETURN;
+  RETURN QUERY EXECUTE 'SELECT nextval($1)::int FROM generate_series(1, $2)' USING seq_name, seq_count;
 END;
 $$
 LANGUAGE plpgsql;
