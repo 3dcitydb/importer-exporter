@@ -48,8 +48,12 @@ import de.tub.citydb.modules.citygml.common.database.gmlid.DBCacheModel;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 
 public class ExportCache implements DBCacheModel {
+	private final ReentrantLock mainLock = new ReentrantLock(true);
 	private final int partitions;
 	private final CacheTableModelEnum cacheTableModel;
+	private final CacheManager cacheManager;
+	
+	private BranchTemporaryCacheTable branchTable;
 
 	private TemporaryCacheTable[] backUpTables;
 	private PreparedStatement[] psLookupDbIds;
@@ -61,11 +65,11 @@ public class ExportCache implements DBCacheModel {
 	private int batchSize;
 
 	public ExportCache(CacheManager cacheManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
+		this.cacheManager = cacheManager;
 		this.partitions = partitions;
 		this.cacheTableModel = cacheTableModel;
 		this.batchSize = batchSize;
 
-		BranchTemporaryCacheTable branchTable = cacheManager.createBranchTemporaryCacheTableWithIndexes(cacheTableModel);
 		backUpTables = new TemporaryCacheTable[partitions];
 		psLookupDbIds = new PreparedStatement[partitions];
 		psLookupGmlIds = new PreparedStatement[partitions];
@@ -73,18 +77,8 @@ public class ExportCache implements DBCacheModel {
 		locks = new ReentrantLock[partitions];
 		batchCounters = new int[partitions];
 
-		for (int i = 0; i < partitions; i++) {
-			TemporaryCacheTable tempTable = i == 0 ? branchTable.getMainTable() : branchTable.branchWithIndexes();
-
-			Connection conn = tempTable.getConnection();
-			String tableName = tempTable.getTableName();
-
-			backUpTables[i] = tempTable;
+		for (int i = 0; i < partitions; i++)
 			locks[i] = new ReentrantLock(true);
-			psLookupDbIds[i] = conn.prepareStatement("select GMLID, TYPE from " + tableName + " where ID=?");
-			psLookupGmlIds[i] = conn.prepareStatement("select ID, ROOT_ID, REVERSE, MAPPING, TYPE from " + tableName + " where GMLID=?");
-			psDrains[i] = conn.prepareStatement("insert into " + tableName + " (GMLID, ID, ROOT_ID, REVERSE, MAPPING, TYPE) values (?, ?, ?, ?, ?, ?)");
-		}
 	}
 
 	@Override
@@ -100,6 +94,7 @@ public class ExportCache implements DBCacheModel {
 
 				// determine partition for gml:id
 				int partition = Math.abs(gmlId.hashCode() % partitions);
+				initializePartition(partition);
 
 				// get corresponding prepared statement
 				PreparedStatement psDrain = psDrains[partition];
@@ -130,6 +125,7 @@ public class ExportCache implements DBCacheModel {
 
 			// determine partition for gml:id
 			int partition = Math.abs(gmlId.hashCode() % partitions);
+			initializePartition(partition);
 
 			// get corresponding prepared statement
 			PreparedStatement psDrain = psDrains[partition];
@@ -161,6 +157,7 @@ public class ExportCache implements DBCacheModel {
 	public GmlIdEntry lookupDB(String key) throws SQLException { 
 		// determine partition for gml:id
 		int partition = Math.abs(key.hashCode() % partitions);
+		initializePartition(partition);
 
 		// lock partition
 		final ReentrantLock tableLock = this.locks[partition];
@@ -208,6 +205,9 @@ public class ExportCache implements DBCacheModel {
 			tableLock.lock();
 
 			try {
+				if (backUpTables[i] == null)
+					continue;
+				
 				ResultSet rs = null;
 				try {
 					psLookupDbIds[i].setLong(1, id);
@@ -265,5 +265,38 @@ public class ExportCache implements DBCacheModel {
 			return "";
 		}
 	}
+	
+	private void initializePartition(int partition) throws SQLException {
+		if (branchTable == null) {
+			mainLock.lock();
+			
+			try {
+				if (branchTable == null)
+					branchTable = cacheManager.createBranchTemporaryCacheTableWithIndexes(cacheTableModel);
+			} finally {
+				mainLock.unlock();
+			}
+		}
+		
+		if (backUpTables[partition] == null) {
+			final ReentrantLock tableLock = locks[partition];
+			tableLock.lock();
+			
+			try {
+				if (backUpTables[partition] == null) {
+					TemporaryCacheTable tempTable = partition == 0 ? branchTable.getMainTable() : branchTable.branchWithIndexes();
 
+					Connection conn = tempTable.getConnection();
+					String tableName = tempTable.getTableName();
+
+					backUpTables[partition] = tempTable;
+					psLookupDbIds[partition] = conn.prepareStatement("select GMLID, TYPE from " + tableName + " where ID=?");
+					psLookupGmlIds[partition] = conn.prepareStatement("select ID, ROOT_ID, REVERSE, MAPPING, TYPE from " + tableName + " where GMLID=?");
+					psDrains[partition] = conn.prepareStatement("insert into " + tableName + " (GMLID, ID, ROOT_ID, REVERSE, MAPPING, TYPE) values (?, ?, ?, ?, ?, ?)");
+				}
+			} finally {
+				tableLock.unlock();
+			}
+		}
+	}	
 }
