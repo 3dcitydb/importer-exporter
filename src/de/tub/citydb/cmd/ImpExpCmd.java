@@ -235,10 +235,8 @@ public class ImpExpCmd {
 
 		} catch (DatabaseConfigurationException e) {
 			LOG.error("Connection to database could not be established: " + e.getMessage());
-			dbPool.forceDisconnect();
 		} catch (SQLException e) {
 			LOG.error("Connection to database could not be established: " + e.getMessage());
-			dbPool.forceDisconnect();			
 		} 
 	}
 	

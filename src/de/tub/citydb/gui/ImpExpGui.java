@@ -82,7 +82,6 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import de.tub.citydb.ImpExp;
 import de.tub.citydb.api.controller.ViewController;
 import de.tub.citydb.api.database.DatabaseConfigurationException;
 import de.tub.citydb.api.event.Event;
@@ -605,11 +604,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	}
 
 	public void disconnectFromDatabase() {
-		try {
-			ObjectRegistry.getInstance().getDatabaseController().disconnect(true);
-		} catch (SQLException e) {
-			//
-		}
+		ObjectRegistry.getInstance().getDatabaseController().disconnect();
 	}
 
 	private void setDatabaseStatus(boolean isConnected) {
@@ -650,12 +645,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		if (dbPool.isConnected()) {
 			LOG.info("Terminating database connection");
-			try {
-				dbPool.disconnect();
-			} catch (SQLException e) {
-				LOG.error("Failed to terminate database connection: " + e.getMessage());
-				success = false;
-			}
+			dbPool.disconnect();
 		}
 
 		if (success)

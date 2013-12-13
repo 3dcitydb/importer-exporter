@@ -470,7 +470,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	@Override
 	public void handleEvent(Event event) throws Exception {
 		DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent)event;
-		setEnabledWorkspace(state.wasConnected() || dbPool.getActiveDatabaseAdapter().hasVersioningSupport());
+		setEnabledWorkspace(!state.isConnected() || (state.isConnected() && dbPool.getActiveDatabaseAdapter().hasVersioningSupport()));
 	}
 
 }

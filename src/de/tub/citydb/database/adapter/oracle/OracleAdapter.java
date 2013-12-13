@@ -1,8 +1,5 @@
 package de.tub.citydb.database.adapter.oracle;
 
-import java.util.Properties;
-
-import oracle.jdbc.OracleConnection;
 import de.tub.citydb.api.database.DatabaseType;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 
@@ -32,7 +29,7 @@ public class OracleAdapter extends AbstractDatabaseAdapter {
 
 	@Override
 	public String getConnectionFactoryClassName() {
-		return "oracle.jdbc.pool.OracleDataSource";
+		return "oracle.jdbc.OracleDriver";
 	}
 
 	@Override
@@ -40,16 +37,6 @@ public class OracleAdapter extends AbstractDatabaseAdapter {
 		return "jdbc:oracle:thin:@//" + server + ":" + port + "/" + database;
 	}
 
-	@Override
-	public Properties getConnectionProperties() {
-		Properties properties = new Properties();
-
-		// let statement data buffers be cached on a per thread basis
-		properties.put(OracleConnection.CONNECTION_PROPERTY_USE_THREADLOCAL_BUFFER_CACHE, "true");
-
-		return properties;
-	}
-	
 	@Override
 	public int getMaxBatchSize() {
 		return 65535;

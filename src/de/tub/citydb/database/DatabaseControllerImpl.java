@@ -52,7 +52,7 @@ public class DatabaseControllerImpl implements DatabaseController {
 		this.config = config;
 		dbPool = DatabaseConnectionPool.getInstance();
 	}	
-	
+
 	public void setConnectionViewHandler(ConnectionViewHandler viewHandler) {
 		this.viewHandler = viewHandler;
 	}
@@ -66,10 +66,10 @@ public class DatabaseControllerImpl implements DatabaseController {
 			try {
 				dbPool.connect(config);
 			} catch (DatabaseConfigurationException e) {
-				viewHandler.printError(ConnectionStateEnum.CONNECT_ERROR, e, showErrorDialog);
+				viewHandler.printError(e, showErrorDialog);
 				throw e;
 			} catch (SQLException e) {
-				viewHandler.printError(ConnectionStateEnum.CONNECT_ERROR, e, showErrorDialog);
+				viewHandler.printError(e, showErrorDialog);
 				throw e;
 			}
 
@@ -78,24 +78,12 @@ public class DatabaseControllerImpl implements DatabaseController {
 	}
 
 	@Override
-	public void disconnect(boolean showErrorDialog) throws SQLException {
+	public void disconnect() {
 		if (dbPool.isConnected()) {
 			viewHandler.printConnectionState(ConnectionStateEnum.INIT_DISCONNECT);
-
-			try {
-				dbPool.disconnect();
-			} catch (SQLException e) {
-				viewHandler.printError(ConnectionStateEnum.DISCONNECT_ERROR, e, showErrorDialog);
-				throw e;
-			}
-
+			dbPool.disconnect();
 			viewHandler.printConnectionState(ConnectionStateEnum.FINISH_DISCONNECT);
 		}
-	}
-
-	@Override
-	public void forceDisconnect() {
-		dbPool.forceDisconnect();
 	}
 
 	public boolean isConnected() {
@@ -112,7 +100,7 @@ public class DatabaseControllerImpl implements DatabaseController {
 		ArrayList<DatabaseConnectionDetails> tmp = new ArrayList<DatabaseConnectionDetails>();
 		for (DBConnection conn : config.getProject().getDatabase().getConnections())
 			tmp.add(conn);
-		
+
 		return tmp;
 	}
 

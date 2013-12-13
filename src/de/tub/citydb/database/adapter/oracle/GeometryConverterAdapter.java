@@ -7,6 +7,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import oracle.jdbc.driver.OracleConnection;
 import oracle.spatial.geometry.JGeometry;
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.api.geometry.GeometryObject.ElementType;
@@ -294,7 +295,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 			throw new SQLException("Failed to convert geometry to internal database representation.");
 
 		try {
-			return JGeometry.storeJS(connection, geometry);
+			return JGeometry.storeJS(connection.unwrap(OracleConnection.class), geometry);
 		} catch (Exception e) {
 			throw new SQLException(e.getMessage(), e);
 		}

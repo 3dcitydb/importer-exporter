@@ -1197,7 +1197,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			themeComboBox.setEnabled(false);
 		}
 
-		setEnabledWorkspace(state.wasConnected() || dbPool.getActiveDatabaseAdapter().hasVersioningSupport());
+		setEnabledWorkspace(!state.isConnected() || (state.isConnected() && dbPool.getActiveDatabaseAdapter().hasVersioningSupport()));
 	}
 
 	private class ThemeUpdater extends Thread {

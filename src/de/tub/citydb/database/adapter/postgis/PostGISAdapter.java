@@ -1,7 +1,5 @@
 package de.tub.citydb.database.adapter.postgis;
 
-import java.util.Properties;
-
 import de.tub.citydb.api.database.DatabaseType;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 
@@ -39,11 +37,6 @@ public class PostGISAdapter extends AbstractDatabaseAdapter {
 		return "jdbc:postgresql://" + server + ":" + port + "/" + database;
 	}
 
-	@Override
-	public Properties getConnectionProperties() {
-		return null;
-	}
-	
 	@Override
 	public int getMaxBatchSize() {
 		return 10000;

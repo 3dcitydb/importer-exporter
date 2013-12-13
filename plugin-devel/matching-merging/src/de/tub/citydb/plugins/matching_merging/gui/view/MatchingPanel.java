@@ -843,7 +843,7 @@ public class MatchingPanel extends JPanel implements PropertyChangeListener, Eve
 			setEnabledButtons(((CounterEvent)e).getCounter() > 0);
 		else if (e.getEventType() == GlobalEvents.DATABASE_CONNECTION_STATE) {
 			DatabaseConnectionStateEvent state = (DatabaseConnectionStateEvent)e;
-			setEnabledWorkspace(state.wasConnected() || databaseController.getActiveDatabaseAdapter().hasVersioningSupport());
+			setEnabledWorkspace(!state.isConnected() || (state.isConnected() && databaseController.getActiveDatabaseAdapter().hasVersioningSupport()));
 		}
 	}
 

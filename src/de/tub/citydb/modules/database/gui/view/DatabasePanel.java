@@ -247,7 +247,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		// influence focus policy
 		connectionDetails.setFocusCycleRoot(false);
 		connectionButtons.setFocusCycleRoot(true);
-		
+
 		for (DatabaseType type : DatabaseType.values())
 			databaseTypeCombo.addItem(type);
 
@@ -300,11 +300,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 								//
 							}
 						} else {
-							try {
-								disconnect(true);
-							} catch (SQLException e) {
-								//
-							}
+							disconnect();
 						}
 					}
 				};
@@ -421,12 +417,12 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		}
 	}
 
-	public void disconnect(boolean showErrorDialog) throws SQLException {
+	public void disconnect() {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
 		try {
-			databaseController.disconnect(true);
+			databaseController.disconnect();
 		} finally {
 			lock.unlock();
 		}
@@ -473,63 +469,35 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	@Override
-	public void printError(ConnectionStateEnum state, DatabaseConfigurationException e, boolean showErrorDialog) {
-		switch (state) {
-		case CONNECT_ERROR:
-			if (showErrorDialog)
-				topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
+	public void printError(DatabaseConfigurationException e, boolean showErrorDialog) {
+		if (showErrorDialog)
+			topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
 
-			LOG.error("Connection to database could not be established.");
-			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
-			break;
-		}
+		LOG.error("Connection to database could not be established.");
+		topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
 	}
 
 	@Override
-	public void printError(ConnectionStateEnum state, SQLException e, boolean showErrorDialog) {
-		switch (state) {
-		case CONNECT_ERROR:
-			if (showErrorDialog) {
-				String text = Internal.I18N.getString("db.dialog.error.openConn");
-				Object[] args = new Object[]{ e.getMessage() };
-				String result = MessageFormat.format(text, args);					
+	public void printError(SQLException e, boolean showErrorDialog) {
+		if (showErrorDialog) {
+			String text = Internal.I18N.getString("db.dialog.error.openConn");
+			Object[] args = new Object[]{ e.getMessage() };
+			String result = MessageFormat.format(text, args);					
 
-				topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
-				topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
-			}
+			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
+			topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
+		}
 
-			LOG.error("Connection to database could not be established.");
-			if (LOG.getDefaultConsoleLogLevel() == LogLevel.DEBUG) {
-				LOG.debug("Check the following stack trace for details:");
-				e.printStackTrace();
-			}
-
-			break;
-		case DISCONNECT_ERROR:
-			LOG.error("Connection error: " + e.getMessage().trim());
-			LOG.error("Terminating connection...");
-			databaseController.forceDisconnect();
-
-			if (showErrorDialog) {
-				String text = Internal.I18N.getString("db.dialog.error.closeConn");
-				Object[] args = new Object[]{ e.getMessage() };
-				String result = MessageFormat.format(text, args);
-
-				topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
-			}
-
-			break;
+		LOG.error("Connection to database could not be established.");
+		if (LOG.getDefaultConsoleLogLevel() == LogLevel.DEBUG) {
+			LOG.debug("Check the following stack trace for details:");
+			e.printStackTrace();
 		}
 	}
 
 	public void loadSettings() {
-		if (databaseController.isConnected()) {
-			try {
-				disconnect(true);
-			} catch (SQLException e) {
-				databaseController.forceDisconnect();
-			}
-		}
+		if (databaseController.isConnected())
+			disconnect();
 
 		databaseConfig = config.getProject().getDatabase();
 		isSettingsLoaded = false;

@@ -31,8 +31,6 @@ package de.tub.citydb.database;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -41,14 +39,8 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import oracle.ucp.UniversalConnectionPoolAdapter;
-import oracle.ucp.UniversalConnectionPoolException;
-import oracle.ucp.UniversalConnectionPoolLifeCycleState;
-import oracle.ucp.admin.UniversalConnectionPoolManager;
-import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
-import oracle.ucp.jdbc.PoolDataSource;
-import oracle.ucp.jdbc.PoolDataSourceFactory;
-
+import org.apache.tomcat.jdbc.pool.DataSource;
+import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.api.database.DatabaseConfigurationException;
@@ -68,18 +60,11 @@ public class DatabaseConnectionPool {
 
 	private final String poolName = DefaultGMLIdManager.getInstance().generateUUID();
 	private final EventDispatcher eventDispatcher;
-	private UniversalConnectionPoolManager poolManager;
 	private AbstractDatabaseAdapter databaseAdapter;
-	private PoolDataSource poolDataSource;
+	private DataSource dataSource;
 
 	private DatabaseConnectionPool() {
 		// just to thwart instantiation
-		try {
-			poolManager = UniversalConnectionPoolManagerImpl.getUniversalConnectionPoolManager();
-		} catch (UniversalConnectionPoolException e) {
-			throw new IllegalStateException("Failed to initialize Oracle Universal Pool Manager.");
-		}
-
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 	}
 
@@ -109,38 +94,64 @@ public class DatabaseConnectionPool {
 		if (conn.getSid() == null || conn.getSid().trim().length() == 0)
 			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.sid"));
 
+		// disconnect if we are currently connected to another database
+		if (isConnected())
+			disconnect();
+
+		// get database adapter
+		databaseAdapter = DatabaseAdapterFactory.getInstance().createDatabaseAdapter(conn.getDatabaseType());
+
+		// general pool properties
+		PoolProperties properties = new PoolProperties();
+		properties.setUrl(databaseAdapter.getJDBCUrl(conn.getServer(), conn.getPort(), conn.getSid()));
+		properties.setDriverClassName(databaseAdapter.getConnectionFactoryClassName());
+		properties.setUsername(conn.getUser());
+		properties.setPassword(conn.getInternalPassword());
+		properties.setName(poolName);
+		properties.setDefaultAutoCommit(true);
+
+		// set user-definable pool properties	
+		if (conn.getMaxActive() != null) properties.setMaxActive(conn.getMaxActive().intValue());
+		if (conn.getMaxIdle() != null) properties.setMaxIdle(conn.getMaxIdle().intValue());
+		if (conn.getMinIdle() != null) properties.setMinIdle(conn.getMinIdle().intValue());
+		if (conn.getInitialSize() != null) properties.setInitialSize(conn.getInitialSize().intValue());
+		if (conn.getMaxWait() != null) properties.setMaxWait(conn.getMaxWait().intValue());
+		if (conn.getTestOnBorrow() != null) properties.setTestOnBorrow(conn.getTestOnBorrow().booleanValue());
+		if (conn.getTestOnReturn() != null) properties.setTestOnReturn(conn.getTestOnReturn().booleanValue());
+		if (conn.getTestWhileIdle() != null) properties.setTestWhileIdle(conn.getTestWhileIdle().booleanValue());
+		if (conn.getValidationQuery() != null) properties.setValidationQuery(conn.getValidationQuery());
+		if (conn.getValidatorClassName() != null) properties.setValidatorClassName(conn.getValidatorClassName());
+		if (conn.getTimeBetweenEvictionRunsMillis() != null) properties.setTimeBetweenEvictionRunsMillis(conn.getTimeBetweenEvictionRunsMillis().intValue());
+		if (conn.getNumTestsPerEvictionRun() != null) properties.setNumTestsPerEvictionRun(conn.getNumTestsPerEvictionRun().intValue());
+		if (conn.getMinEvictableIdleTimeMillis() != null) properties.setMinEvictableIdleTimeMillis(conn.getMinEvictableIdleTimeMillis().intValue());
+		if (conn.getRemoveAbandoned() != null) properties.setRemoveAbandoned(conn.getRemoveAbandoned().booleanValue());
+		if (conn.getRemoveAbandonedTimeout() != null) properties.setRemoveAbandonedTimeout(conn.getRemoveAbandonedTimeout().intValue());
+		if (conn.getLogAbandoned() != null) properties.setLogAbandoned(conn.getLogAbandoned().booleanValue());
+		if (conn.getConnectionProperties() != null) properties.setConnectionProperties(conn.getConnectionProperties());
+		if (conn.getInitSQL() != null) properties.setInitSQL(conn.getInitSQL());
+		if (conn.getValidationInterval() != null) properties.setValidationInterval(conn.getValidationInterval().longValue());
+		if (conn.getJmxEnabled() != null) properties.setJmxEnabled(conn.getJmxEnabled().booleanValue());
+		if (conn.getFairQueue() != null) properties.setFairQueue(conn.getFairQueue().booleanValue());
+		if (conn.getAbandonWhenPercentageFull() != null) properties.setAbandonWhenPercentageFull(conn.getAbandonWhenPercentageFull().intValue());
+		if (conn.getMaxAge() != null) properties.setMaxAge(conn.getMaxAge().longValue());
+		if (conn.getUseEquals() != null) properties.setUseEquals(conn.getUseEquals().booleanValue());
+		if (conn.getSuspectTimeout() != null) properties.setSuspectTimeout(conn.getSuspectTimeout().intValue());
+
+		String jdbcInterceptors = conn.getJdbcInterceptors();
+		if (jdbcInterceptors == null) 
+			jdbcInterceptors = "org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer";
+		else if (!jdbcInterceptors.contains("org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer"))
+			jdbcInterceptors += ";org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer";
+				
+		properties.setJdbcInterceptors(conn.getJdbcInterceptors());
+
+		// set properties on data source
+		dataSource = new DataSource(properties);
+
 		try {
-			if (isManagedConnectionPool(poolName))
-				disconnect();
+			// create connection pool
+			dataSource.createPool();
 
-			// get database adapter
-			databaseAdapter = DatabaseAdapterFactory.getInstance().createDatabaseAdapter(conn.getDatabaseType());
-
-			// create data source
-			poolDataSource = PoolDataSourceFactory.getPoolDataSource();
-			poolDataSource.setConnectionPoolName(poolName);
-
-			poolDataSource.setConnectionFactoryClassName(databaseAdapter.getConnectionFactoryClassName());
-			poolDataSource.setURL(databaseAdapter.getJDBCUrl(conn.getServer(), conn.getPort(), conn.getSid()));
-			poolDataSource.setUser(conn.getUser());
-			poolDataSource.setPassword(conn.getInternalPassword());
-
-			// set connection properties
-			Properties properties = databaseAdapter.getConnectionProperties();
-			if (properties != null)
-				poolDataSource.setConnectionProperties(properties);
-
-			poolManager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);		
-			poolManager.startConnectionPool(poolName);
-		} catch (UniversalConnectionPoolException e) {
-			poolDataSource = null;
-			throw new SQLException(Internal.I18N.getString("db.dialog.error.conn.sql"), e);
-		} catch (SQLException e) {
-			poolDataSource = null;
-			throw new SQLException(Internal.I18N.getString("db.dialog.error.conn.sql"), e);
-		}
-
-		try {
 			// retrieve connection metadata
 			databaseAdapter.setConnectionMetaData(databaseAdapter.getUtil().getDatabaseInfo());
 
@@ -149,34 +160,21 @@ public class DatabaseConnectionPool {
 				databaseAdapter.getUtil().getSrsInfo(refSys);
 
 		} catch (SQLException e) {
-			try {
-				poolManager.destroyConnectionPool(poolName);
-			} catch (UniversalConnectionPoolException e1) {
-				//
-			}
-
-			poolDataSource = null;
-
-			// try and get some meaningful error message
-			Throwable cause = null;
-			Iterator<Throwable> iter = e.iterator();
-			while (iter.hasNext())
-				cause = iter.next();
-
-			throw (cause != null) ? new SQLException(cause.getMessage()) : e;
+			disconnect();
+			throw e;
 		}
 
 		// fire property change events
 		databaseAdapter.setConnectionDetails(conn);
 		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(false, true, this));
 	}
-	
+
 	public AbstractDatabaseAdapter getActiveDatabaseAdapter() {
 		return databaseAdapter;
 	}
 
 	public Connection getConnectionWithTimeout() throws SQLException {
-		if (poolDataSource == null)
+		if (!isConnected())
 			throw new SQLException("Database is not connected.");
 
 		ExecutorService service = Executors.newFixedThreadPool(1, new ThreadFactory() {
@@ -189,7 +187,7 @@ public class DatabaseConnectionPool {
 
 		FutureTask<Connection> connectTask = new FutureTask<Connection>(new Callable<Connection>() {
 			public Connection call() throws SQLException {
-				return poolDataSource.getConnection();
+				return dataSource.getConnection();
 			}
 		});
 
@@ -198,12 +196,9 @@ public class DatabaseConnectionPool {
 
 		try {
 			connection = connectTask.get(LOGIN_TIMEOUT, TimeUnit.SECONDS);
-			connection.setAutoCommit(true);
-
 			service.shutdown();
 		} catch (Exception e) {
 			service.shutdownNow();
-			forceDisconnect();
 
 			if (e instanceof ExecutionException)
 				throw (SQLException)e.getCause();
@@ -215,131 +210,32 @@ public class DatabaseConnectionPool {
 	}
 
 	public Connection getConnection() throws SQLException {
-		if (poolDataSource == null)
+		if (!isConnected())
 			throw new SQLException("Database is not connected.");
 
-		Connection connection = poolDataSource.getConnection();
-		connection.setAutoCommit(true);
-
-		return connection;
-	}
-
-	public UniversalConnectionPoolLifeCycleState getLifeCyleState() {
-		try {
-			if (isManagedConnectionPool(poolName))
-				return poolManager.getConnectionPool(poolName).getLifeCycleState();
-		} catch (UniversalConnectionPoolException e) {
-			//
-		}
-
-		return UniversalConnectionPoolLifeCycleState.LIFE_CYCLE_FAILED;
+		return dataSource.getConnection();
 	}
 
 	public boolean isConnected() {
-		return getLifeCyleState().equals(UniversalConnectionPoolLifeCycleState.LIFE_CYCLE_RUNNING);
+		return dataSource != null && dataSource.getPool() != null && !dataSource.getPool().isClosed();
 	}
 
-	public int getBorrowedConnectionsCount() throws SQLException {
-		return poolDataSource != null ? poolDataSource.getBorrowedConnectionsCount() : 0;
+	public synchronized void purge() {
+		if (isConnected())
+			dataSource.purge();
 	}
 
-	public int getAvailableConnectionsCount() throws SQLException {
-		return poolDataSource != null ? poolDataSource.getAvailableConnectionsCount() : 0;
-	}
-
-	public int getMinPoolSize() throws SQLException {
-		return poolDataSource != null ? poolDataSource.getMinPoolSize() : 0;
-	}
-
-	public int getMaxPoolSize() throws SQLException {
-		return poolDataSource != null ? poolDataSource.getMaxPoolSize() : 0;
-	}
-
-	public int getInitialPoolSize() throws SQLException {
-		return poolDataSource != null ? poolDataSource.getInitialPoolSize() : 0;
-	}
-
-	public void setMinPoolSize(int minPoolSize) throws SQLException {
-		if (poolDataSource != null)
-			poolDataSource.setMinPoolSize(minPoolSize);
-	}
-
-	public void setMaxPoolSize(int maxPoolSize) throws SQLException {
-		if (poolDataSource != null)
-			poolDataSource.setMaxPoolSize(maxPoolSize);
-	}
-
-	public void setInitialPoolSize(int initialPoolSize) throws SQLException {
-		if (poolDataSource != null)
-			poolDataSource.setInitialPoolSize(initialPoolSize);
-	}
-
-	public synchronized void refresh() throws UniversalConnectionPoolException {
-		if (isManagedConnectionPool(poolName))
-			poolManager.refreshConnectionPool(poolName);
-	}
-
-	public synchronized void recylce() throws UniversalConnectionPoolException {
-		if (isManagedConnectionPool(poolName))
-			poolManager.recycleConnectionPool(poolName);
-	}
-
-	public synchronized void purge() throws UniversalConnectionPoolException {
-		if (isManagedConnectionPool(poolName))
-			poolManager.purgeConnectionPool(poolName);
-	}
-
-	public synchronized void stop() throws UniversalConnectionPoolException {
-		if (isManagedConnectionPool(poolName))
-			poolManager.stopConnectionPool(poolName);
-	}
-
-	public synchronized void start() throws UniversalConnectionPoolException {
-		if (isManagedConnectionPool(poolName))
-			poolManager.startConnectionPool(poolName);
-	}
-
-	public synchronized void disconnect() throws SQLException {
+	public synchronized void disconnect() {
 		boolean wasConnected = isConnected();
 
-		try {			
-			if (isManagedConnectionPool(poolName))
-				poolManager.destroyConnectionPool(poolName);
-		} catch (UniversalConnectionPoolException e) {
-			throw new SQLException(e.getMessage());
-		}
+		dataSource.close(true);
+		dataSource = null;
 
 		if (databaseAdapter != null)
 			databaseAdapter = null;
 
 		// fire property change events
 		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(wasConnected, false, this));
-	}
-
-	public synchronized void forceDisconnect() {
-		boolean wasConnected = isConnected();
-
-		try {
-			if (isManagedConnectionPool(poolName))
-				poolManager.destroyConnectionPool(poolName);
-		} catch (UniversalConnectionPoolException e) {
-			//
-		}
-
-		if (databaseAdapter != null)
-			databaseAdapter = null;
-
-		// fire property change events
-		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(wasConnected, false, this));
-	}
-
-	private boolean isManagedConnectionPool(String poolName) throws UniversalConnectionPoolException {
-		for (String managedPool : poolManager.getConnectionPoolNames()) {
-			if (managedPool.equals(poolName))
-				return true;
-		}
-
-		return false;
 	}
 
 }

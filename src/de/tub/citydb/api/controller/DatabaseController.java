@@ -40,8 +40,7 @@ import de.tub.citydb.api.database.DatabaseSrs;
 
 public interface DatabaseController {
 	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException;
-	public void disconnect(boolean showErrorDialog) throws SQLException;
-	public void forceDisconnect();
+	public void disconnect();
 	public boolean isConnected();
 
 	public Connection getConnection() throws SQLException;

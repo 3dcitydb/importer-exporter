@@ -64,6 +64,60 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 	private String user = "";
 	private String password = "";
 	private Boolean savePassword = false;
+	
+	@XmlAttribute
+	private Integer initialSize = 0;
+	@XmlAttribute
+	private Integer maxActive;
+	@XmlAttribute
+	private Integer maxIdle;
+	@XmlAttribute
+	private Integer minIdle;	
+	@XmlAttribute
+	private Integer maxWait;
+	@XmlAttribute
+	private Boolean testOnBorrow;
+	@XmlAttribute
+	private Boolean testOnReturn;
+	@XmlAttribute
+	private Boolean testWhileIdle;
+	@XmlAttribute
+	private String validationQuery;
+	@XmlAttribute
+	private String validatorClassName;
+	@XmlAttribute
+	private Integer timeBetweenEvictionRunsMillis;
+	@XmlAttribute
+	private Integer numTestsPerEvictionRun;
+	@XmlAttribute
+	private Integer minEvictableIdleTimeMillis;
+	@XmlAttribute
+	private Boolean removeAbandoned;
+	@XmlAttribute
+	private Integer removeAbandonedTimeout;
+	@XmlAttribute
+	private Boolean logAbandoned;
+	@XmlAttribute
+	private String connectionProperties;
+	@XmlAttribute
+	private String initSQL;
+	@XmlAttribute
+	private String jdbcInterceptors;
+	@XmlAttribute
+	private Long validationInterval;
+	@XmlAttribute
+	private Boolean jmxEnabled;
+	@XmlAttribute
+	private Boolean fairQueue;
+	@XmlAttribute
+	private Integer abandonWhenPercentageFull;
+	@XmlAttribute
+	private Long maxAge;
+	@XmlAttribute
+	private Boolean useEquals;
+	@XmlAttribute
+	private Integer suspectTimeout;
+	
 	@XmlTransient
 	private String internalPassword;
 		
@@ -156,10 +210,6 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 		this.savePassword = savePassword;
 	}
 	
-	public String toString() {
-		return description;
-	}
-	
 	public String getInternalPassword() {
 		return internalPassword;
 	}
@@ -168,6 +218,228 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 		this.internalPassword = internalPassword;
 	}
 	
+	public DatabaseType getType() {
+		return type;
+	}
+
+	public void setType(DatabaseType type) {
+		this.type = type;
+	}
+
+	public Integer getInitialSize() {
+		return initialSize;
+	}
+
+	public void setInitialSize(Integer initialSize) {
+		this.initialSize = initialSize;
+	}
+
+	public Integer getMaxActive() {
+		return maxActive;
+	}
+
+	public void setMaxActive(Integer maxActive) {
+		this.maxActive = maxActive;
+	}
+
+	public Integer getMaxIdle() {
+		return maxIdle;
+	}
+
+	public void setMaxIdle(Integer maxIdle) {
+		this.maxIdle = maxIdle;
+	}
+
+	public Integer getMinIdle() {
+		return minIdle;
+	}
+
+	public void setMinIdle(Integer minIdle) {
+		this.minIdle = minIdle;
+	}
+
+	public Integer getMaxWait() {
+		return maxWait;
+	}
+
+	public void setMaxWait(Integer maxWait) {
+		this.maxWait = maxWait;
+	}
+
+	public Boolean getTestOnBorrow() {
+		return testOnBorrow;
+	}
+
+	public void setTestOnBorrow(Boolean testOnBorrow) {
+		this.testOnBorrow = testOnBorrow;
+	}
+
+	public Boolean getTestOnReturn() {
+		return testOnReturn;
+	}
+
+	public void setTestOnReturn(Boolean testOnReturn) {
+		this.testOnReturn = testOnReturn;
+	}
+
+	public Boolean getTestWhileIdle() {
+		return testWhileIdle;
+	}
+
+	public void setTestWhileIdle(Boolean testWhileIdle) {
+		this.testWhileIdle = testWhileIdle;
+	}
+
+	public String getValidationQuery() {
+		return validationQuery;
+	}
+
+	public void setValidationQuery(String validationQuery) {
+		this.validationQuery = validationQuery;
+	}
+
+	public String getValidatorClassName() {
+		return validatorClassName;
+	}
+
+	public void setValidatorClassName(String validatorClassName) {
+		this.validatorClassName = validatorClassName;
+	}
+
+	public Integer getTimeBetweenEvictionRunsMillis() {
+		return timeBetweenEvictionRunsMillis;
+	}
+
+	public void setTimeBetweenEvictionRunsMillis(
+			Integer timeBetweenEvictionRunsMillis) {
+		this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
+	}
+
+	public Integer getNumTestsPerEvictionRun() {
+		return numTestsPerEvictionRun;
+	}
+
+	public void setNumTestsPerEvictionRun(Integer numTestsPerEvictionRun) {
+		this.numTestsPerEvictionRun = numTestsPerEvictionRun;
+	}
+
+	public Integer getMinEvictableIdleTimeMillis() {
+		return minEvictableIdleTimeMillis;
+	}
+
+	public void setMinEvictableIdleTimeMillis(Integer minEvictableIdleTimeMillis) {
+		this.minEvictableIdleTimeMillis = minEvictableIdleTimeMillis;
+	}
+
+	public Boolean getRemoveAbandoned() {
+		return removeAbandoned;
+	}
+
+	public void setRemoveAbandoned(Boolean removeAbandoned) {
+		this.removeAbandoned = removeAbandoned;
+	}
+
+	public Integer getRemoveAbandonedTimeout() {
+		return removeAbandonedTimeout;
+	}
+
+	public void setRemoveAbandonedTimeout(Integer removeAbandonedTimeout) {
+		this.removeAbandonedTimeout = removeAbandonedTimeout;
+	}
+
+	public Boolean getLogAbandoned() {
+		return logAbandoned;
+	}
+
+	public void setLogAbandoned(Boolean logAbandoned) {
+		this.logAbandoned = logAbandoned;
+	}
+
+	public String getConnectionProperties() {
+		return connectionProperties;
+	}
+
+	public void setConnectionProperties(String connectionProperties) {
+		this.connectionProperties = connectionProperties;
+	}
+
+	public String getInitSQL() {
+		return initSQL;
+	}
+
+	public void setInitSQL(String initSQL) {
+		this.initSQL = initSQL;
+	}
+
+	public String getJdbcInterceptors() {
+		return jdbcInterceptors;
+	}
+
+	public void setJdbcInterceptors(String jdbcInterceptors) {
+		this.jdbcInterceptors = jdbcInterceptors;
+	}
+
+	public Long getValidationInterval() {
+		return validationInterval;
+	}
+
+	public void setValidationInterval(Long validationInterval) {
+		this.validationInterval = validationInterval;
+	}
+
+	public Boolean getJmxEnabled() {
+		return jmxEnabled;
+	}
+
+	public void setJmxEnabled(Boolean jmxEnabled) {
+		this.jmxEnabled = jmxEnabled;
+	}
+
+	public Boolean getFairQueue() {
+		return fairQueue;
+	}
+
+	public void setFairQueue(Boolean fairQueue) {
+		this.fairQueue = fairQueue;
+	}
+
+	public Integer getAbandonWhenPercentageFull() {
+		return abandonWhenPercentageFull;
+	}
+
+	public void setAbandonWhenPercentageFull(Integer abandonWhenPercentageFull) {
+		this.abandonWhenPercentageFull = abandonWhenPercentageFull;
+	}
+
+	public Long getMaxAge() {
+		return maxAge;
+	}
+
+	public void setMaxAge(Long maxAge) {
+		this.maxAge = maxAge;
+	}
+
+	public Boolean getUseEquals() {
+		return useEquals;
+	}
+
+	public void setUseEquals(Boolean useEquals) {
+		this.useEquals = useEquals;
+	}
+
+	public Integer getSuspectTimeout() {
+		return suspectTimeout;
+	}
+
+	public void setSuspectTimeout(Integer suspectTimeout) {
+		this.suspectTimeout = suspectTimeout;
+	}
+	
+	@Override
+	public String toString() {
+		return description;
+	}
+
 	@Override
 	public int compareTo(DBConnection o) {
 		return description.toUpperCase().compareTo(o.getDescription().toUpperCase());

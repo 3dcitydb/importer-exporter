@@ -33,11 +33,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import oracle.ucp.jdbc.ValidConnection;
 import de.tub.citydb.api.concurrent.Worker;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool.WorkQueue;
-import de.tub.citydb.api.database.DatabaseType;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
@@ -229,11 +227,6 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 
 			if (externalFileConn != null) {
 				try {
-					// this hack is required for freeing database resources
-					// on OrdImage objects when working with Oracle 11g 
-					if (xlinkResolverManager.getDatabaseAdapter().getDatabaseType() == DatabaseType.ORACLE)
-						((ValidConnection)externalFileConn).setInvalid();
-					
 					externalFileConn.close();
 				} catch (SQLException e) {
 					//

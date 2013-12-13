@@ -1,7 +1,5 @@
 package de.tub.citydb.database.adapter;
 
-import java.util.Properties;
-
 import de.tub.citydb.api.database.BalloonTemplateFactory;
 import de.tub.citydb.api.database.DatabaseAdapter;
 import de.tub.citydb.config.project.database.DBConnection;
@@ -25,7 +23,6 @@ public abstract class AbstractDatabaseAdapter implements DatabaseAdapter {
 	public abstract int getDefaultPort();
 	public abstract String getConnectionFactoryClassName();
 	public abstract String getJDBCUrl(String server, int port, String database);
-	public abstract Properties getConnectionProperties();
 	public abstract int getMaxBatchSize();
 		
 	@Override
