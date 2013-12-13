@@ -66,9 +66,9 @@ public class Database {
 	private List<DBConnection> connections;
 	@XmlIDREF
 	private DBConnection activeConnection;
-	@XmlElement(required=true)
+	@XmlElement
 	private UpdateBatching updateBatching;
-	@XmlElement(required=true)
+	@XmlElement
 	private Workspaces workspaces;
 	private DBOperation operation;
 

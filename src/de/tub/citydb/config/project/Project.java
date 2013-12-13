@@ -53,13 +53,13 @@ import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 		"extensions"
 })
 public class Project {
-	@XmlElement(required=true)
+	@XmlElement
 	private Database database;
-	@XmlElement(name="import", required=true)
+	@XmlElement(name="import")
 	private Importer importer;
-	@XmlElement(name="export", required=true)
+	@XmlElement(name="export")
 	private Exporter exporter;
-	@XmlElement(name="kmlExport", required=true)
+	@XmlElement(name="kmlExport")
 	private KmlExporter kmlExporter;
 	private Global global;
 	@XmlJavaTypeAdapter(de.tub.citydb.config.project.plugin.PluginConfigListAdapter.class)

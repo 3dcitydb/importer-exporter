@@ -30,6 +30,7 @@
 package de.tub.citydb.config.project.database;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
@@ -51,17 +52,22 @@ import de.tub.citydb.api.database.DatabaseType;
 		"savePassword"
 		})
 public class DBConnection implements DatabaseConnectionDetails, Comparable<DBConnection> {
-	@XmlAttribute(required=true)
+	@XmlAttribute
 	@XmlID
 	private String id;
 	private String description = "";
 	private DatabaseType type = DatabaseType.ORACLE;
 	@XmlSchemaType(name="anyURI")
+	@XmlElement(required=true)
 	private String server = "";
 	@XmlSchemaType(name="positiveInteger")
+	@XmlElement(required=true)
 	private Integer port = 1521;
+	@XmlElement(required=true)
 	private String sid = "";
+	@XmlElement(required=true)
 	private String user = "";
+	@XmlElement(required=true)
 	private String password = "";
 	private Boolean savePassword = false;
 	
