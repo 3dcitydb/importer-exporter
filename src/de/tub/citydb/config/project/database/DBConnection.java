@@ -55,7 +55,9 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 	@XmlAttribute
 	@XmlID
 	private String id;
+	@XmlElement(required=true)
 	private String description = "";
+	@XmlElement(required=true)
 	private DatabaseType type = DatabaseType.ORACLE;
 	@XmlSchemaType(name="anyURI")
 	@XmlElement(required=true)
