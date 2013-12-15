@@ -46,7 +46,7 @@ import de.tub.citydb.util.Util;
 public class DBGmlIdResolver {
 	private final Logger LOG = Logger.getInstance();
 	
-	private final Connection commitConn;
+	private final Connection conn;
 	private final DBGmlIdLookupServerManager lookupServerManager;
 	private final Config config;
 
@@ -55,7 +55,7 @@ public class DBGmlIdResolver {
 	private String gmlIdCodespace;
 
 	public DBGmlIdResolver(Connection commitConn, DBGmlIdLookupServerManager lookupServerManager, Config config) throws SQLException {
-		this.commitConn = commitConn;
+		this.conn = commitConn;
 		this.lookupServerManager = lookupServerManager;
 		this.config = config;
 
@@ -73,8 +73,8 @@ public class DBGmlIdResolver {
 		if (gmlIdCodespace != null && gmlIdCodespace.length() != 0)
 			sqlCityObjectFromClause += " and GMLID_CODESPACE='" + gmlIdCodespace + "'";
 
-		psSurfaceGeometryId = commitConn.prepareStatement("select ID " + sqlGeometryFromClause);
-		psCityObjectId = commitConn.prepareStatement("select ID, CLASS_ID " + sqlCityObjectFromClause);
+		psSurfaceGeometryId = conn.prepareStatement("select ID " + sqlGeometryFromClause);
+		psCityObjectId = conn.prepareStatement("select ID, CLASS_ID " + sqlCityObjectFromClause);
 	}
 	
 	public GmlIdEntry getDBId(String gmlId, CityGMLClass type, boolean forceCityObjectDatabaseLookup) {

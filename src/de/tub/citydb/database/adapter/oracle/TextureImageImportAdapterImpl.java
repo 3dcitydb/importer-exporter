@@ -41,7 +41,6 @@ public class TextureImageImportAdapterImpl implements TextureImageImportAdapter 
 			rs = (OracleResultSet)psSelect.executeQuery();
 			if (!rs.next()) {
 				LOG.error("Database error while importing texture file '" + fileName + "'.");
-				connection.rollback();
 				return false;
 			}
 
@@ -77,16 +76,13 @@ public class TextureImageImportAdapterImpl implements TextureImageImportAdapter 
 			psInsert.execute();
 
 			imgProxy.close();
-			connection.commit();
 			
 			return true;
 		} catch (IOException e) {
 			LOG.error("Failed to read texture file '" + fileName + "': " + e.getMessage());
-			connection.rollback();
 			return false;
 		} catch (SQLException e) {
 			LOG.error("SQL error while importing texture file '" + fileName + "': " + e.getMessage());
-			connection.rollback();
 			return false;
 		} finally {
 			if (rs != null) {

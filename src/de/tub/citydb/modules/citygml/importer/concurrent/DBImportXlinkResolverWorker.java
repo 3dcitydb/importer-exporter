@@ -88,8 +88,7 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	private Connection batchConn;
-	private Connection externalFileConn;
+	private Connection connection;
 	private DBXlinkResolverManager xlinkResolverManager;
 	private int updateCounter = 0;
 	private int commitAfter = 20;
@@ -113,19 +112,15 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 	}
 
 	private void init() throws SQLException {
-		batchConn = dbPool.getConnection();
-		batchConn.setAutoCommit(false);
-
-		externalFileConn = dbPool.getConnection();
-		externalFileConn.setAutoCommit(false);
+		connection = dbPool.getConnection();
+		connection.setAutoCommit(false);
 
 		Database database = config.getProject().getDatabase();
 
-		// try and change workspace for both connections if needed
+		// try and change workspace for the connection if needed
 		if (dbPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
 			Workspace workspace = database.getWorkspaces().getImportWorkspace();
-			dbPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(batchConn, workspace);
-			dbPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(externalFileConn, workspace);
+			dbPool.getActiveDatabaseAdapter().getWorkspaceManager().gotoWorkspace(connection, workspace);
 		}
 
 		Integer commitAfterProp = database.getUpdateBatching().getFeatureBatchValue();
@@ -133,8 +128,7 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 			commitAfter = commitAfterProp;
 
 		xlinkResolverManager = new DBXlinkResolverManager(
-				batchConn,
-				externalFileConn,
+				connection,
 				dbPool.getActiveDatabaseAdapter(),
 				tmpXlinkPool,
 				lookupServerManager,
@@ -203,7 +197,7 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 
 			try {
 				xlinkResolverManager.executeBatch();
-				batchConn.commit();
+				connection.commit();
 			} catch (SQLException sqlEx) {
 				LOG.error("SQL error: " + sqlEx.getMessage());
 			}
@@ -215,24 +209,14 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 			}
 
 		} finally {
-			if (batchConn != null) {
+			if (connection != null) {
 				try {
-					batchConn.close();
+					connection.close();
 				} catch (SQLException e) {
 					//
 				}
 
-				batchConn = null;
-			}
-
-			if (externalFileConn != null) {
-				try {
-					externalFileConn.close();
-				} catch (SQLException e) {
-					//
-				}
-
-				externalFileConn = null;
+				connection = null;
 			}
 		}
 	}
@@ -364,7 +348,7 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 			try {
 				if (updateCounter == commitAfter) {
 					xlinkResolverManager.executeBatch();
-					batchConn.commit();
+					connection.commit();
 
 					updateCounter = 0;
 				}

@@ -27,15 +27,12 @@ public class BlobImportAdapterImpl implements BlobImportAdapter {
 			psUpdate.setLong(2, id);
 			psUpdate.execute();		
 
-			connection.commit();
 			return true;
 		} catch (IOException e) {
 			LOG.error("Failed to read library object file '" + fileName + "': " + e.getMessage());
-			connection.rollback();
 			return false;
 		} catch (SQLException e) {
 			LOG.error("SQL error while importing library object file '" + fileName + "': " + e.getMessage());
-			connection.rollback();
 			return false;
 		}
 	}
