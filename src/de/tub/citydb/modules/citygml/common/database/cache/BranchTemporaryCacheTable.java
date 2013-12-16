@@ -35,24 +35,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 
 public class BranchTemporaryCacheTable implements CacheTable {
 	private final TemporaryCacheTable main;
 	private final CacheTableModelEnum model;
-	private final DatabaseConnectionPool dbPool;
+	private final AbstractSQLAdapter sqlAdapter;
 	private final ReentrantLock mainLock = new ReentrantLock();
 
 	private Connection conn;
 	private volatile boolean isCreated = false;
 	private List<TemporaryCacheTable> branches;
 
-	protected BranchTemporaryCacheTable(CacheTableModelEnum model, DatabaseConnectionPool dbPool) {
+	protected BranchTemporaryCacheTable(CacheTableModelEnum model, Connection conn, AbstractSQLAdapter sqlAdapter) {
 		this.model = model;
-		this.dbPool = dbPool;
+		this.conn = conn;
+		this.sqlAdapter = sqlAdapter;
 
-		main = new TemporaryCacheTable(model, dbPool, false);
+		main = new TemporaryCacheTable(model, conn, sqlAdapter, false);
 		branches = new ArrayList<TemporaryCacheTable>();
 	}
 
@@ -101,7 +102,7 @@ public class BranchTemporaryCacheTable implements CacheTable {
 
 		try {
 			if (isCreated) {
-				TemporaryCacheTable branch = new TemporaryCacheTable(model, dbPool, false);	
+				TemporaryCacheTable branch = new TemporaryCacheTable(model, conn, sqlAdapter, false);	
 				branch.create(conn);
 				branches.add(branch);
 
@@ -122,7 +123,7 @@ public class BranchTemporaryCacheTable implements CacheTable {
 
 		try {
 			if (isCreated) {
-				TemporaryCacheTable branch = new TemporaryCacheTable(model, dbPool, false);	
+				TemporaryCacheTable branch = new TemporaryCacheTable(model, conn, sqlAdapter, false);	
 				branch.createWithIndexes(conn);
 				branches.add(branch);
 
@@ -170,8 +171,6 @@ public class BranchTemporaryCacheTable implements CacheTable {
 				} finally {
 					if (conn != null) {
 						conn.commit();
-						conn.close();
-						conn = null;
 					}
 				}
 			}

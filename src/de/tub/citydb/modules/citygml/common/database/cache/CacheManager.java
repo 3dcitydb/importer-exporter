@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.modules.citygml.common.database.cache;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,54 +38,57 @@ import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModel
 
 public class CacheManager {
 	private final DatabaseConnectionPool dbPool;	
+	private final Connection connection;	
 	private ConcurrentHashMap<CacheTableModelEnum, CacheTable> cacheTableMap;
-	
-	public CacheManager(DatabaseConnectionPool dbPool, int concurrencyLevel) {
+
+	public CacheManager(DatabaseConnectionPool dbPool, int concurrencyLevel) throws SQLException {
 		this.dbPool = dbPool;
-		
+		connection = dbPool.getConnection();
+		connection.setAutoCommit(false);
+
 		cacheTableMap = new ConcurrentHashMap<CacheTableModelEnum, CacheTable>(
 				CacheTableModelEnum.values().length,
 				0.75f,
 				concurrencyLevel
-		);
+				);
 	}
 
 	public TemporaryCacheTable createTemporaryCacheTable(CacheTableModelEnum model) throws SQLException {
 		TemporaryCacheTable temporaryTable = (TemporaryCacheTable)getOrCreateCacheTable(model, CacheTableEnum.TEMPORARY);
 		if (!temporaryTable.isCreated())
 			temporaryTable.create();
-		
+
 		return temporaryTable;
 	}
-	
+
 	public TemporaryCacheTable createTemporaryCacheTableWithIndexes(CacheTableModelEnum model) throws SQLException {
 		TemporaryCacheTable temporaryTable = (TemporaryCacheTable)getOrCreateCacheTable(model, CacheTableEnum.TEMPORARY);
 		if (!temporaryTable.isCreated())
 			temporaryTable.createWithIndexes();
-		
+
 		return temporaryTable;
 	}
-	
+
 	public BranchTemporaryCacheTable createBranchTemporaryCacheTable(CacheTableModelEnum model) throws SQLException {
 		BranchTemporaryCacheTable branchTable = (BranchTemporaryCacheTable)getOrCreateCacheTable(model, CacheTableEnum.BRANCH_TEMPORARY);
 		if (!branchTable.isCreated())
 			branchTable.create();
-		
+
 		return branchTable;
 	}
-	
+
 	public BranchTemporaryCacheTable createBranchTemporaryCacheTableWithIndexes(CacheTableModelEnum model) throws SQLException {
 		BranchTemporaryCacheTable branchTable = (BranchTemporaryCacheTable)getOrCreateCacheTable(model, CacheTableEnum.BRANCH_TEMPORARY);
 		if (!branchTable.isCreated())
 			branchTable.createWithIndexes();
-		
+
 		return branchTable;
 	}
-	
+
 	public CacheTable getCacheTable(CacheTableModelEnum type) {
 		return cacheTableMap.get(type);
 	}
-	
+
 	public HeapCacheTable getDerivedHeapCacheTable(CacheTableModelEnum type) {
 		CacheTable cacheTable = cacheTableMap.get(type);
 		if (cacheTable instanceof TemporaryCacheTable)
@@ -92,41 +96,41 @@ public class CacheManager {
 		else
 			return null;
 	}
-	
+
 	public boolean existsTemporaryCacheTable(CacheTableModelEnum type) {
 		CacheTable cacheTable = cacheTableMap.get(type);
 		return (cacheTable instanceof TemporaryCacheTable 
 				&& ((TemporaryCacheTable)cacheTable).isCreated());
 	}
-	
+
 	private CacheTable getOrCreateCacheTable(CacheTableModelEnum model, CacheTableEnum type) {
 		CacheTable cacheTable = cacheTableMap.get(model);
-		
+
 		if (cacheTable == null) {
 			CacheTable newCacheTable = null;
-			
+
 			switch (type) {
 			case TEMPORARY:
-				newCacheTable = new TemporaryCacheTable(model, dbPool);
+				newCacheTable = new TemporaryCacheTable(model, connection, dbPool.getActiveDatabaseAdapter().getSQLAdapter());
 				break;
 			case HEAP:
-				newCacheTable = new HeapCacheTable(model, dbPool);
+				newCacheTable = new HeapCacheTable(model, connection, dbPool.getActiveDatabaseAdapter().getSQLAdapter());
 				break;
 			case BRANCH_TEMPORARY:
-				newCacheTable = new BranchTemporaryCacheTable(model, dbPool);
+				newCacheTable = new BranchTemporaryCacheTable(model, connection, dbPool.getActiveDatabaseAdapter().getSQLAdapter());
 				break;
 			default:
 				throw new IllegalArgumentException("Unsupported cache table type " + type);
 			}
-			
+
 			cacheTable = cacheTableMap.putIfAbsent(model, newCacheTable);
 			if (cacheTable == null)
 				cacheTable = newCacheTable;
 		}
-			
+
 		return cacheTable;
 	}
-		
+
 	public void drop(CacheTable cacheTable) throws SQLException {
 		switch (cacheTable.getType()) {
 		case TEMPORARY:
@@ -141,26 +145,29 @@ public class CacheManager {
 		default:
 			throw new IllegalArgumentException("Unsupported cache table type " + cacheTable.getType());
 		}
-		
+
 		cacheTableMap.remove(cacheTable.getType());
 	}
-	
+
 	public void dropAll() throws SQLException {
-		for (CacheTable cacheTable : cacheTableMap.values())
-			switch (cacheTable.getType()) {
-			case TEMPORARY:
-				((TemporaryCacheTable)cacheTable).drop();
-				break;
-			case HEAP:
-				((HeapCacheTable)cacheTable).drop();
-				break;
-			case BRANCH_TEMPORARY:
-				((BranchTemporaryCacheTable)cacheTable).drop();
-				break;
-			default:
-				throw new IllegalArgumentException("Unsupported cache table type " + cacheTable.getType());
-			}
-		
-		cacheTableMap.clear();
+		try {
+			for (CacheTable cacheTable : cacheTableMap.values())
+				switch (cacheTable.getType()) {
+				case TEMPORARY:
+					((TemporaryCacheTable)cacheTable).drop();
+					break;
+				case HEAP:
+					((HeapCacheTable)cacheTable).drop();
+					break;
+				case BRANCH_TEMPORARY:
+					((BranchTemporaryCacheTable)cacheTable).drop();
+					break;
+				default:
+					throw new IllegalArgumentException("Unsupported cache table type " + cacheTable.getType());
+				}
+		} finally {		
+			cacheTableMap.clear();
+			connection.close();
+		}
 	}
 }

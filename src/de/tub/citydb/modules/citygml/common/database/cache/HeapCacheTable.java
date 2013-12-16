@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
-import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableBasic;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableDeprecatedMaterial;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGlobalAppearance;
@@ -53,7 +53,7 @@ import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableType;
 
 public class HeapCacheTable implements CacheTable {
 	private final CacheTableModel model;
-	private final DatabaseConnectionPool dbPool;
+	private final AbstractSQLAdapter sqlAdapter;
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final String tableName;
 	private final boolean isStandAlone;
@@ -63,7 +63,7 @@ public class HeapCacheTable implements CacheTable {
 	private volatile boolean isCreated = false;
 	private volatile boolean isIndexed = false;
 
-	protected HeapCacheTable(CacheTableModelEnum model, DatabaseConnectionPool dbPool, boolean isStandAlone) {
+	protected HeapCacheTable(CacheTableModelEnum model, Connection conn, AbstractSQLAdapter sqlAdapter, boolean isStandAlone) {
 		switch (model) {
 		case BASIC:
 			this.model = CacheTableBasic.getInstance();
@@ -103,13 +103,14 @@ public class HeapCacheTable implements CacheTable {
 			throw new IllegalArgumentException("Unsupported cache table type " + model);
 		}
 		
-		this.dbPool = dbPool;
+		this.conn = conn;
+		this.sqlAdapter = sqlAdapter;
 		this.isStandAlone = isStandAlone;
 		tableName = createTableName();
 	}
 
-	protected HeapCacheTable(CacheTableModelEnum model, DatabaseConnectionPool dbPool) {
-		this(model, dbPool, true);
+	protected HeapCacheTable(CacheTableModelEnum model, Connection conn, AbstractSQLAdapter sqlAdapter) {
+		this(model, conn, sqlAdapter, true);
 	}
 
 	protected void create() throws SQLException {
@@ -121,10 +122,7 @@ public class HeapCacheTable implements CacheTable {
 
 		try {
 			if (!isCreated) {				
-				conn = dbPool.getConnection();
-				conn.setAutoCommit(false);
-
-				model.create(conn, tableName, CacheTableType.HEAP_TABLE, dbPool.getActiveDatabaseAdapter().getSQLAdapter());
+				model.create(conn, tableName, CacheTableType.HEAP_TABLE, sqlAdapter);
 				isCreated = true;
 			}
 		} finally {
@@ -141,7 +139,7 @@ public class HeapCacheTable implements CacheTable {
 
 		try {
 			if (!isCreated) {
-				model.createAsSelectFrom(conn, tableName, sourceTableName, dbPool.getActiveDatabaseAdapter().getSQLAdapter());
+				model.createAsSelectFrom(conn, tableName, sourceTableName, sqlAdapter);
 				this.conn = conn;
 				isCreated = true;
 			}
@@ -159,7 +157,7 @@ public class HeapCacheTable implements CacheTable {
 
 		try {
 			if (!isIndexed) {
-				model.createIndexes(conn, tableName, dbPool.getActiveDatabaseAdapter().getSQLAdapter().getUnloggedIndexProperty());
+				model.createIndexes(conn, tableName, sqlAdapter.getUnloggedIndexProperty());
 				isIndexed = true;
 			}
 		} finally {
@@ -235,8 +233,6 @@ public class HeapCacheTable implements CacheTable {
 				} finally {
 					if (isStandAlone && conn != null) {
 						conn.commit();
-						conn.close();
-						conn = null;
 					}
 				}
 			}

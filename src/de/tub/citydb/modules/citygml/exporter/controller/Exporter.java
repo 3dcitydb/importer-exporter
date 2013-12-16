@@ -133,7 +133,7 @@ public class Exporter implements EventHandler {
 		totalFeatureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
 		totalGeometryCounterMap = new EnumMap<GMLClass, Long>(GMLClass.class);
 	}
-	
+
 	public void cleanup() {
 		eventDispatcher.removeEventHandler(this);
 	}
@@ -216,7 +216,7 @@ public class Exporter implements EventHandler {
 		DatabaseSrs targetSRS = config.getProject().getExporter().getTargetSRS();
 		if (!targetSRS.isSupported())
 			targetSRS = dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
-		
+
 		internalConfig.setExportTargetSRS(targetSRS);
 		internalConfig.setTransformCoordinates(targetSRS.isSupported() && 
 				targetSRS.getSrid() != dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
@@ -378,7 +378,12 @@ public class Exporter implements EventHandler {
 					}					
 
 					// create instance of temp table manager
-					cacheManager = new CacheManager(dbPool, maxThreads);
+					try {
+						cacheManager = new CacheManager(dbPool, maxThreads);
+					} catch (SQLException e) {
+						LOG.error("SQL error while initializing cache manager: " + e.getMessage());
+						return false;
+					}
 
 					// create instance of gml:id lookup server manager...
 					lookupServerManager = new DBGmlIdLookupServerManager();
@@ -412,8 +417,8 @@ public class Exporter implements EventHandler {
 					// create worker pools
 					// here we have an open issue: queue sizes are fix...
 					xlinkExporterPool = new WorkerPool<DBXlink>(
-							minThreads,
-							maxThreads,
+							1,
+							Math.max(1, maxThreads / 2),
 							new DBExportXlinkWorkerFactory(dbPool, config, eventDispatcher),
 							300,
 							false);
@@ -492,7 +497,7 @@ public class Exporter implements EventHandler {
 						dbWorkerPool.shutdownAndWait();
 						if (shouldRun)
 							xlinkExporterPool.shutdownAndWait();
-						
+
 						ioWriterPool.shutdownAndWait();
 					} catch (InterruptedException e) {
 						LOG.error("Internal error: " + e.getMessage());
@@ -526,7 +531,7 @@ public class Exporter implements EventHandler {
 					} catch (SQLException e) {
 						LOG.error("SQL error: " + e.getMessage());
 					}
-					
+
 					try {
 						LOG.info("Cleaning temporary cache.");
 						cacheManager.dropAll();
@@ -659,10 +664,10 @@ public class Exporter implements EventHandler {
 
 				if (dbSplitter != null)
 					dbSplitter.shutdown();
-				
+
 				if (dbWorkerPool != null)
 					dbWorkerPool.drainWorkQueue();
-				
+
 				if (xlinkExporterPool != null)
 					xlinkExporterPool.shutdownNow();
 			}

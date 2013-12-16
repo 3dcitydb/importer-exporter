@@ -53,6 +53,7 @@ import org.citygml4j.xml.io.reader.CityGMLReader;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
 import org.citygml4j.xml.io.reader.XMLChunk;
 
+import de.tub.citydb.api.concurrent.SingleWorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
@@ -83,8 +84,8 @@ import de.tub.citydb.modules.citygml.importer.concurrent.DBImportWorkerFactory;
 import de.tub.citydb.modules.citygml.importer.concurrent.DBImportXlinkResolverWorkerFactory;
 import de.tub.citydb.modules.citygml.importer.concurrent.DBImportXlinkWorkerFactory;
 import de.tub.citydb.modules.citygml.importer.concurrent.FeatureReaderWorkerFactory;
-import de.tub.citydb.modules.citygml.importer.database.gmlid.GeometryImportCache;
 import de.tub.citydb.modules.citygml.importer.database.gmlid.FeatureImportCache;
+import de.tub.citydb.modules.citygml.importer.database.gmlid.GeometryImportCache;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.DBXlinkSplitter;
 import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -333,7 +334,12 @@ public class Importer implements EventHandler {
 					intConfig.setCurrentGmlIdCodespace(null);
 
 				// create instance of temp table manager
-				cacheManager = new CacheManager(dbPool, maxThreads);
+				try {
+					cacheManager = new CacheManager(dbPool, maxThreads);
+				} catch (SQLException e) {
+					LOG.error("SQL error while initializing cache manager: " + e.getMessage());
+					continue;
+				}
 
 				// create instance of gml:id lookup server manager...
 				lookupServerManager = new DBGmlIdLookupServerManager();
@@ -366,9 +372,7 @@ public class Importer implements EventHandler {
 
 				// creating worker pools needed for data import
 				// this pool is for registering xlinks
-				tmpXlinkPool = new WorkerPool<DBXlink>(
-						minThreads,
-						maxThreads,
+				tmpXlinkPool = new SingleWorkerPool<DBXlink>(
 						new DBImportXlinkWorkerFactory(dbPool, cacheManager, config, eventDispatcher),
 						queueSize,
 						false);
@@ -507,7 +511,7 @@ public class Importer implements EventHandler {
 				} catch (SQLException e) {
 					LOG.error("SQL error: " + e.getMessage());
 				}
-				
+
 				try {
 					LOG.info("Cleaning temporary cache.");
 					cacheManager.dropAll();
