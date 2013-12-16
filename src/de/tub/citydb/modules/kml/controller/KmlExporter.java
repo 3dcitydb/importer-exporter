@@ -439,8 +439,7 @@ public class KmlExporter implements EventHandler {
 						}
 
 						try {
-							if (shouldRun)
-								kmlWorkerPool.shutdownAndWait();
+							kmlWorkerPool.shutdownAndWait();
 
 							if (!featureCounterMap.isEmpty() &&
 									(!config.getProject().getKmlExporter().isOneFilePerObject() ||
