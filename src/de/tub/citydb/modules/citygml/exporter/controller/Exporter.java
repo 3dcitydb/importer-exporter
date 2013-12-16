@@ -660,11 +660,11 @@ public class Exporter implements EventHandler {
 				if (dbSplitter != null)
 					dbSplitter.shutdown();
 				
-				if (xlinkExporterPool != null)
-					xlinkExporterPool.shutdownNow();
-				
 				if (dbWorkerPool != null)
 					dbWorkerPool.drainWorkQueue();
+				
+				if (xlinkExporterPool != null)
+					xlinkExporterPool.shutdownNow();
 			}
 		}
 	}
