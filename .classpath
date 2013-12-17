@@ -23,5 +23,6 @@
 	<classpathentry kind="lib" path="lib/args4j-2.0.21.jar"/>
 	<classpathentry kind="lib" path="lib/tomcat-jdbc.jar"/>
 	<classpathentry kind="lib" path="lib/tomcat-juli.jar"/>
+	<classpathentry kind="lib" path="lib/h2-1.3.174.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
