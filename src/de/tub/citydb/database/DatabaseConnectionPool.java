@@ -137,15 +137,10 @@ public class DatabaseConnectionPool {
 		if (conn.getUseEquals() != null) properties.setUseEquals(conn.getUseEquals().booleanValue());
 		if (conn.getSuspectTimeout() != null) properties.setSuspectTimeout(conn.getSuspectTimeout().intValue());
 
-		String jdbcInterceptors = conn.getJdbcInterceptors();
-		if (jdbcInterceptors == null) 
-			jdbcInterceptors = "org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer";
-		else if (!jdbcInterceptors.contains("org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer"))
-			jdbcInterceptors += ";org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer";
-				
-		properties.setJdbcInterceptors(conn.getJdbcInterceptors());
+		// pool maintenance
+		properties.setJdbcInterceptors("org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer");
 
-		// set properties on data source
+		// create new data source
 		dataSource = new DataSource(properties);
 
 		try {

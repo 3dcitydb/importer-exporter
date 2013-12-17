@@ -110,8 +110,6 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 	@XmlAttribute
 	private String initSQL;
 	@XmlAttribute
-	private String jdbcInterceptors;
-	@XmlAttribute
 	private Long validationInterval;
 	@XmlAttribute
 	private Boolean jmxEnabled;
@@ -377,14 +375,6 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 
 	public void setInitSQL(String initSQL) {
 		this.initSQL = initSQL;
-	}
-
-	public String getJdbcInterceptors() {
-		return jdbcInterceptors;
-	}
-
-	public void setJdbcInterceptors(String jdbcInterceptors) {
-		this.jdbcInterceptors = jdbcInterceptors;
 	}
 
 	public Long getValidationInterval() {
