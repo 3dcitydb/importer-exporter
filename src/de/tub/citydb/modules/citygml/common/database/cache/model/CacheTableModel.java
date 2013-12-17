@@ -39,35 +39,7 @@ import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 
 public abstract class CacheTableModel {
 
-	public void create(Connection conn, String tableName, CacheTableType type, AbstractSQLAdapter sqlAdapter) throws SQLException {
-		switch (type) {
-		case GLOBAL_TEMPORARY_TABLE:
-			createGlobalTemporaryTable(conn, tableName, sqlAdapter);
-			break;
-		case HEAP_TABLE:
-			createHeapTable(conn, tableName, sqlAdapter);
-			break;
-		default:
-			throw new SQLException("Unsupported cache table type: " + type);
-		}
-	}
-
-	private void createGlobalTemporaryTable(Connection conn, String tableName, AbstractSQLAdapter sqlAdapter) throws SQLException {		
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-			stmt.executeUpdate(sqlAdapter.getCreateGlobalTemporaryTable(tableName, getColumns(sqlAdapter), true));
-			conn.commit();
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-				stmt = null;
-			}
-		}
-	}
-
-	private void createHeapTable(Connection conn, String tableName, AbstractSQLAdapter sqlAdapter) throws SQLException {
+	public void create(Connection conn, String tableName, AbstractSQLAdapter sqlAdapter) throws SQLException {
 		Statement stmt = null;
 
 		try {
@@ -129,7 +101,7 @@ public abstract class CacheTableModel {
 
 		try {
 			stmt = conn.createStatement();
-			stmt.executeUpdate("truncate table " + tableName);
+			stmt.executeUpdate("delete from " + tableName);
 			conn.commit();
 		} finally {
 			if (stmt != null) {
@@ -152,10 +124,6 @@ public abstract class CacheTableModel {
 				stmt = null;
 			}
 		}
-	}
-	
-	public void createIndexes(Connection conn, String tableName) throws SQLException {
-		createIndexes(conn, tableName, "");
 	}
 	
 	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {

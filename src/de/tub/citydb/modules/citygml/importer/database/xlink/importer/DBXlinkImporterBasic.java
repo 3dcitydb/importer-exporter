@@ -33,16 +33,16 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 
 public class DBXlinkImporterBasic implements DBXlinkImporter {
-	private final TemporaryCacheTable tempTable;
+	private final CacheTable tempTable;
 	private final DBXlinkImporterManager xlinkImporterManager;
 	private PreparedStatement psXlink;	
 	private int batchCounter;
 
-	public DBXlinkImporterBasic(TemporaryCacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+	public DBXlinkImporterBasic(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
 		this.tempTable = tempTable;
 		this.xlinkImporterManager = xlinkImporterManager;
 

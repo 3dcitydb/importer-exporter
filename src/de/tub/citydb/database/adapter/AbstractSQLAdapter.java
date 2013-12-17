@@ -11,14 +11,9 @@ import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
 
 public abstract class AbstractSQLAdapter {
 	protected final Logger LOG = Logger.getInstance();
-	protected final AbstractDatabaseAdapter databaseAdapter;
 	
 	protected Properties databaseOperations;
 	
-	protected AbstractSQLAdapter(AbstractDatabaseAdapter databaseAdapter) {
-		this.databaseAdapter = databaseAdapter;
-	}
-
 	public abstract String getInteger();
 	public abstract String getSmallInt();
 	public abstract String getBigInt();
@@ -29,7 +24,6 @@ public abstract class AbstractSQLAdapter {
 	public abstract String getDoublePrecision();
 	public abstract String getCharacter(int nrOfChars);
 	public abstract String getCharacterVarying(int nrOfChars);
-	public abstract String getCreateGlobalTemporaryTable(String tableName, String columns, boolean onCommitPreserveRows);
 	public abstract String getCreateUnloggedTable(String tableName, String columns);
 	public abstract String getCreateUnloggedTableAsSelectFrom(String targetTableName, String sourceTableName);
 	public abstract String getUnloggedIndexProperty();

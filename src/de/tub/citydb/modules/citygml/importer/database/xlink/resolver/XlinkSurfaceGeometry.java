@@ -43,7 +43,7 @@ import org.citygml4j.model.gml.GMLClass;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
@@ -53,7 +53,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	private static final ReentrantLock mainLock = new ReentrantLock();
 
 	private final Connection batchConn;
-	private final HeapCacheTable heapTable;
+	private final CacheTable cacheTable;
 	private final Config config;
 	private final DBXlinkResolverManager resolverManager;
 
@@ -67,9 +67,9 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	private int memberBatchCounter;
 	private int updateBatchCounter;
 
-	public XlinkSurfaceGeometry(Connection batchConn, HeapCacheTable heapTable, Config config, DBXlinkResolverManager resolverManager) throws SQLException {
+	public XlinkSurfaceGeometry(Connection batchConn, CacheTable cacheTable, Config config, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.heapTable = heapTable;
+		this.cacheTable = cacheTable;
 		this.config = config;
 		this.resolverManager = resolverManager;
 
@@ -83,7 +83,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		else
 			gmlIdCodespace = "null";
 		
-		psSelectTmpSurfGeom = heapTable.getConnection().prepareStatement("select ID from " + heapTable.getTableName() + " where PARENT_ID=?");
+		psSelectTmpSurfGeom = cacheTable.getConnection().prepareStatement("select ID from " + cacheTable.getTableName() + " where PARENT_ID=?");
 		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
 		psUpdateSurfGeom = batchConn.prepareStatement("update SURFACE_GEOMETRY set IS_XLINK=1 where ID=?");
 

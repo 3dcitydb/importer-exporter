@@ -36,7 +36,7 @@ import java.sql.SQLException;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObject;
 import de.tub.citydb.modules.common.filter.ImportFilter;
@@ -44,7 +44,7 @@ import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
 
 public class XlinkGroupToCityObject implements DBXlinkResolver {
 	private final Connection batchConn;
-	private final HeapCacheTable heapTable;
+	private final CacheTable cacheTable;
 	private final DBXlinkResolverManager resolverManager;
 
 	private PreparedStatement psSelectTmp;
@@ -56,9 +56,9 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 
 	private FeatureClassFilter featureClassFilter;
 
-	public XlinkGroupToCityObject(Connection batchConn, HeapCacheTable heapTable, ImportFilter importFilter, DBXlinkResolverManager resolverManager) throws SQLException {
+	public XlinkGroupToCityObject(Connection batchConn, CacheTable cacheTable, ImportFilter importFilter, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.heapTable = heapTable;
+		this.cacheTable = cacheTable;
 		this.resolverManager = resolverManager;
 		this.featureClassFilter = importFilter.getFeatureClassFilter();
 		
@@ -66,7 +66,7 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 	}
 
 	private void init() throws SQLException {
-		psSelectTmp = heapTable.getConnection().prepareStatement("select GROUP_ID from " + heapTable.getTableName() + " where GROUP_ID=? and IS_PARENT=?");
+		psSelectTmp = cacheTable.getConnection().prepareStatement("select GROUP_ID from " + cacheTable.getTableName() + " where GROUP_ID=? and IS_PARENT=?");
 		psGroupMemberToCityObject = batchConn.prepareStatement("insert into GROUP_TO_CITYOBJECT (CITYOBJECT_ID, CITYOBJECTGROUP_ID, ROLE) values " +
 		"(?, ?, ?)");
 		psGroupParentToCityObject = batchConn.prepareStatement("update CITYOBJECTGROUP set PARENT_CITYOBJECT_ID=? where ID=?");

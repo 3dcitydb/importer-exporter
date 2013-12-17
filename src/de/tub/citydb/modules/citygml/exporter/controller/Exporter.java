@@ -384,6 +384,9 @@ public class Exporter implements EventHandler {
 					} catch (SQLException e) {
 						LOG.error("SQL error while initializing cache manager: " + e.getMessage());
 						return false;
+					} catch (IOException e) {
+						LOG.error("I/O error while initializing cache manager: " + e.getMessage());
+						return false;
 					}
 
 					// create instance of gml:id lookup server manager...

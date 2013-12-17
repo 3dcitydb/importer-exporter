@@ -64,13 +64,13 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 
 public class DBSurfaceGeometry implements DBExporter {
 	private final Logger LOG = Logger.getInstance();
 
 	private final Connection connection;
-	private final TemporaryCacheTable tempTable;
+	private final CacheTable tempTable;
 	private final DBExporterManager dbExporterManager;
 	private final Config config;
 
@@ -88,7 +88,7 @@ public class DBSurfaceGeometry implements DBExporter {
 	private int commitAfter = 1000;
 	private int batchCounter;
 
-	public DBSurfaceGeometry(Connection connection, TemporaryCacheTable tempTable, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBSurfaceGeometry(Connection connection, CacheTable tempTable, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.tempTable = tempTable;
 		this.config = config;

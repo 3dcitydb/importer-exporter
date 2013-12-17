@@ -48,14 +48,14 @@ import org.citygml4j.model.citygml.appearance.WorldToTexture;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.util.Util;
 
 public class DBTextureParam implements DBExporter {
 	private final Logger LOG = Logger.getInstance();
 	private final DBExporterEnum type;
 	private final Connection connection;
-	private final TemporaryCacheTable globalAppTemplTable;
+	private final CacheTable globalAppTemplTable;
 
 	private PreparedStatement psTextureParam;
 
@@ -70,7 +70,7 @@ public class DBTextureParam implements DBExporter {
 		init();
 	}
 	
-	public DBTextureParam(DBExporterEnum type, TemporaryCacheTable globalAppTemplTable) throws SQLException {
+	public DBTextureParam(DBExporterEnum type, CacheTable globalAppTemplTable) throws SQLException {
 		if (type != DBExporterEnum.GLOBAL_APPEARANCE_TEXTUREPARAM)
 			throw new IllegalArgumentException("Only type " + DBExporterEnum.GLOBAL_APPEARANCE_TEXTUREPARAM + " is allowed.");
 

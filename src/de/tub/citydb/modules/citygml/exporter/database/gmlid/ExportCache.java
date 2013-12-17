@@ -40,9 +40,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.modules.citygml.common.database.cache.BranchTemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.BranchCacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
-import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBCacheModel;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
@@ -53,9 +53,9 @@ public class ExportCache implements DBCacheModel {
 	private final CacheTableModelEnum cacheTableModel;
 	private final CacheManager cacheManager;
 	
-	private BranchTemporaryCacheTable branchTable;
+	private BranchCacheTable branchTable;
 
-	private TemporaryCacheTable[] backUpTables;
+	private CacheTable[] backUpTables;
 	private PreparedStatement[] psLookupDbIds;
 	private PreparedStatement[] psLookupGmlIds;
 	private PreparedStatement[] psDrains;
@@ -70,7 +70,7 @@ public class ExportCache implements DBCacheModel {
 		this.cacheTableModel = cacheTableModel;
 		this.batchSize = batchSize;
 
-		backUpTables = new TemporaryCacheTable[partitions];
+		backUpTables = new CacheTable[partitions];
 		psLookupDbIds = new PreparedStatement[partitions];
 		psLookupGmlIds = new PreparedStatement[partitions];
 		psDrains = new PreparedStatement[partitions];
@@ -272,7 +272,7 @@ public class ExportCache implements DBCacheModel {
 			
 			try {
 				if (branchTable == null)
-					branchTable = cacheManager.createBranchTemporaryCacheTableWithIndexes(cacheTableModel);
+					branchTable = cacheManager.createAndIndexBranchCacheTable(cacheTableModel);
 			} finally {
 				mainLock.unlock();
 			}
@@ -284,7 +284,7 @@ public class ExportCache implements DBCacheModel {
 			
 			try {
 				if (backUpTables[partition] == null) {
-					TemporaryCacheTable tempTable = partition == 0 ? branchTable.getMainTable() : branchTable.branchWithIndexes();
+					CacheTable tempTable = partition == 0 ? branchTable.getMainTable() : branchTable.branchAndIndex();
 
 					Connection conn = tempTable.getConnection();
 					String tableName = tempTable.getTableName();

@@ -52,7 +52,7 @@ import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
-import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;
 import de.tub.citydb.modules.common.event.StatusDialogMessage;
@@ -120,7 +120,7 @@ public class DBSplitter {
 
 		// create temporary table for global appearances if needed
 		if (config.getInternal().isExportGlobalAppearances()) {
-			TemporaryCacheTable temp = cacheManager.createTemporaryCacheTableWithIndexes(CacheTableModelEnum.GLOBAL_APPEARANCE);
+			CacheTable temp = cacheManager.createAndIndexCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
 
 			// try and change workspace for temporary table
 			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {

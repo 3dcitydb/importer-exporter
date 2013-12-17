@@ -64,7 +64,7 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
-import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;
@@ -125,13 +125,13 @@ public class DBExporterManager {
 
 	public DBExporter getDBExporter(DBExporterEnum dbExporterType) throws SQLException {
 		DBExporter dbExporter = dbExporterMap.get(dbExporterType);
-		TemporaryCacheTable globalAppTempTable = null;
+		CacheTable globalAppTempTable = null;
 
 		if (dbExporter == null) {
 			switch (dbExporterType) {
 			case SURFACE_GEOMETRY:
 				if (config.getInternal().isExportGlobalAppearances())
-					globalAppTempTable = (TemporaryCacheTable)cacheManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+					globalAppTempTable = cacheManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
 
 				dbExporter = new DBSurfaceGeometry(connection, globalAppTempTable, config, this);
 				break;
@@ -185,7 +185,7 @@ public class DBExporterManager {
 				dbExporter = new DBTextureParam(dbExporterType, connection);
 				break;
 			case GLOBAL_APPEARANCE_TEXTUREPARAM:
-				globalAppTempTable = (TemporaryCacheTable)cacheManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+				globalAppTempTable = cacheManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
 				if (globalAppTempTable != null)
 					dbExporter = new DBTextureParam(dbExporterType, globalAppTempTable);
 				break;

@@ -37,7 +37,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.util.Util;
@@ -46,8 +46,8 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 	private final Logger LOG = Logger.getInstance();
 	
 	private final Connection batchConn;
-	private final HeapCacheTable textureParamHeapTable;
-	private final HeapCacheTable linearRingHeapTable;
+	private final CacheTable textureParamCacheTable;
+	private final CacheTable linearRingCacheTable;
 	private final DBXlinkResolverManager resolverManager;
 
 	private PreparedStatement psTexCoordList;
@@ -57,10 +57,10 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 	
 	private int batchCounter;
 
-	public XlinkTexCoordList(Connection batchConn, HeapCacheTable textureParamHeapTable, HeapCacheTable linearRingHeapTable, DBXlinkResolverManager resolverManager) throws SQLException {
+	public XlinkTexCoordList(Connection batchConn, CacheTable textureParamCacheTable, CacheTable linearRingCacheTable, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.textureParamHeapTable = textureParamHeapTable;
-		this.linearRingHeapTable = linearRingHeapTable;
+		this.textureParamCacheTable = textureParamCacheTable;
+		this.linearRingCacheTable = linearRingCacheTable;
 		this.resolverManager = resolverManager;
 
 		init();
@@ -70,13 +70,13 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 		psTexCoordList = batchConn.prepareStatement("insert into TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE , TEXTURE_COORDINATES, SURFACE_DATA_ID) values " +
 			"(?, 1, null, ?, ?)");
 
-		Connection linearRingConn = linearRingHeapTable.getConnection();
-		String linearRingTableName = linearRingHeapTable.getTableName();
+		Connection linearRingConn = linearRingCacheTable.getConnection();
+		String linearRingTableName = linearRingCacheTable.getTableName();
 		
 		psSelectLinearRing = linearRingConn.prepareStatement("select RING_NO, PARENT_ID, REVERSE from " + linearRingTableName + " where GMLID=?");
 		psSelectInteriorLinearRing = linearRingConn.prepareStatement("select GMLID, RING_NO from " + linearRingTableName +
 				" where PARENT_ID=? and RING_NO<>0");
-		psSelectTexCoord = textureParamHeapTable.getConnection().prepareStatement("select GMLID, TEXTURE_COORDINATES from " + textureParamHeapTable.getTableName() +
+		psSelectTexCoord = textureParamCacheTable.getConnection().prepareStatement("select GMLID, TEXTURE_COORDINATES from " + textureParamCacheTable.getTableName() +
 				" where TEXCOORDLIST_ID=? and not GMLID=?");
 	}
 

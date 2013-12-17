@@ -9,7 +9,7 @@ public class OracleAdapter extends AbstractDatabaseAdapter {
 		geometryAdapter = new GeometryConverterAdapter();
 		utilAdapter = new UtilAdapter(this);
 		workspaceAdapter = new WorkspaceManagerAdapter(this);
-		sqlAdapter = new SQLAdapter(this);
+		sqlAdapter = new SQLAdapter();
 	}
 
 	@Override

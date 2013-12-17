@@ -40,7 +40,7 @@ import java.util.List;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
@@ -50,7 +50,7 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 	private final Logger LOG = Logger.getInstance();
 
 	private final Connection batchConn;
-	private final HeapCacheTable heapTable;
+	private final CacheTable cacheTable;
 	private final DBXlinkResolverManager resolverManager;
 
 	private PreparedStatement psTextureParam;
@@ -59,9 +59,9 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 	
 	private int batchCounter;
 
-	public XlinkTextureAssociation(Connection batchConn, HeapCacheTable heapTable, DBXlinkResolverManager resolverManager) throws SQLException {
+	public XlinkTextureAssociation(Connection batchConn, CacheTable cacheTable, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.heapTable = heapTable;
+		this.cacheTable = cacheTable;
 		this.resolverManager = resolverManager;
 
 		init();
@@ -71,7 +71,7 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 		psTextureParam = batchConn.prepareStatement("insert into TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, SURFACE_DATA_ID) values " +
 			"(?, 1, ?, ?, ?)");
 		
-		psSelectParts = heapTable.getConnection().prepareStatement("select SURFACE_DATA_ID, SURFACE_GEOMETRY_ID from " + heapTable.getTableName() + " where GMLID=?");
+		psSelectParts = cacheTable.getConnection().prepareStatement("select SURFACE_DATA_ID, SURFACE_GEOMETRY_ID from " + cacheTable.getTableName() + " where GMLID=?");
 		psSelectContent = batchConn.prepareStatement("select WORLD_TO_TEXTURE, TEXTURE_COORDINATES from TEXTUREPARAM where SURFACE_DATA_ID=? " +
 				"and SURFACE_GEOMETRY_ID=?");
 	}

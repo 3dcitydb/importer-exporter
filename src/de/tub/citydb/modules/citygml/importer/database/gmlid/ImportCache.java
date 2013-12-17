@@ -36,43 +36,50 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.modules.citygml.common.database.cache.BranchTemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.BranchCacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
-import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBCacheModel;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 
-public class FeatureImportCache implements DBCacheModel {
+public class ImportCache implements DBCacheModel {
 	private final int partitions;
 	private final CacheTableModelEnum cacheTableModel;
+	
+	private final ReentrantLock mainLock = new ReentrantLock(true);
+	private final Condition indexingDone = mainLock.newCondition();
 
-	private TemporaryCacheTable[] backUpTables;
+	private CacheTable[] backUpTables;
 	private PreparedStatement[] psLookupGmlIds;
 	private PreparedStatement[] psDrains;
 	private ReentrantLock[] locks;
 	private int[] batchCounters;
 
 	private int batchSize;
+	private AtomicBoolean enableIndexes = new AtomicBoolean(false);
+	private volatile boolean isIndexed = false;
 
-	public FeatureImportCache(CacheManager cacheManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
+	public ImportCache(CacheManager cacheManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
 		this.partitions = partitions;
 		this.cacheTableModel = cacheTableModel;
 		this.batchSize = batchSize;
 
-		BranchTemporaryCacheTable branchTable = cacheManager.createBranchTemporaryCacheTableWithIndexes(cacheTableModel);
-		backUpTables = new TemporaryCacheTable[partitions];
+		BranchCacheTable branchTable = cacheManager.createBranchCacheTable(cacheTableModel);
+		backUpTables = new CacheTable[partitions];
 		psLookupGmlIds = new PreparedStatement[partitions];
 		psDrains = new PreparedStatement[partitions];
 		locks = new ReentrantLock[partitions];
 		batchCounters = new int[partitions];
 
 		for (int i = 0; i < partitions; i++) {
-			TemporaryCacheTable tempTable = i == 0 ? branchTable.getMainTable() : branchTable.branchWithIndexes();
+			CacheTable tempTable = i == 0 ? branchTable.getMainTable() : branchTable.branch();
 
 			Connection conn = tempTable.getConnection();
 			String tableName = tempTable.getTableName();
@@ -156,6 +163,24 @@ public class FeatureImportCache implements DBCacheModel {
 
 	@Override
 	public GmlIdEntry lookupDB(String key) throws SQLException {
+		if (enableIndexes.compareAndSet(false, true)) 
+			enableIndexesOnCacheTables();
+
+		// wait for tables to be indexed
+		if (!isIndexed) {
+			final ReentrantLock lock = this.mainLock;
+			lock.lock();
+
+			try {
+				while (!isIndexed)
+					indexingDone.await();
+			} catch (InterruptedException ie) {
+				//
+			} finally {
+				lock.unlock();
+			}
+		}
+		
 		// determine partition for gml:id
 		int partition = Math.abs(key.hashCode() % partitions);
 
@@ -222,6 +247,22 @@ public class FeatureImportCache implements DBCacheModel {
 			return "feature";
 		default:
 			return "";
+		}
+	}
+	
+	private void enableIndexesOnCacheTables() throws SQLException {
+		// cache is indexed upon first database lookup
+		for (int i = 0; i < partitions; i++)		
+			backUpTables[i].enableIndexes();		
+
+		final ReentrantLock lock = this.mainLock;
+		lock.lock();
+
+		try {
+			isIndexed = true;
+			indexingDone.signalAll();
+		} finally {
+			lock.unlock();
 		}
 	}
 

@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import de.tub.citydb.api.geometry.BoundingBox;
-import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 import de.tub.citydb.database.adapter.BlobExportAdapter;
 import de.tub.citydb.database.adapter.BlobImportAdapter;
@@ -13,10 +12,6 @@ import de.tub.citydb.database.adapter.TextureImageImportAdapter;
 import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
 
 public class SQLAdapter extends AbstractSQLAdapter {
-
-	protected SQLAdapter(AbstractDatabaseAdapter databaseAdapter) {
-		super(databaseAdapter);
-	}
 
 	@Override
 	public String getInteger() {
@@ -69,19 +64,6 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public String getCreateGlobalTemporaryTable(String tableName, String columns, boolean onCommitPreserveRows) {
-		StringBuilder builder = new StringBuilder()
-		.append("create global temporary table ")
-		.append(tableName).append(" ")
-		.append(columns);
-
-		if (onCommitPreserveRows)
-			builder.append(" on commit preserve rows");
-
-		return builder.toString();
-	}
-
-	@Override
 	public String getCreateUnloggedTable(String tableName, String columns) {
 		StringBuilder builder = new StringBuilder()
 		.append("create table ")
@@ -112,7 +94,7 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	@Override
 	public String getNextSequenceValuesQuery(DBSequencerEnum sequence) {
 		return new StringBuilder("select * from table(")
-		.append(databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geodb_util.get_seq_values")).append("(")
+		.append(resolveDatabaseOperationName("geodb_util.get_seq_values")).append("(")
 		.append("'").append(getSequenceName(sequence)).append("'").append(",")
 		.append("?").append("))").toString();
 	}

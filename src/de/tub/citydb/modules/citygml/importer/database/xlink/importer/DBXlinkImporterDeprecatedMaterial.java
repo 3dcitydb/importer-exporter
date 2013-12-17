@@ -32,16 +32,16 @@ package de.tub.citydb.modules.citygml.importer.database.xlink.importer;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
 
 public class DBXlinkImporterDeprecatedMaterial implements DBXlinkImporter {
-	private final TemporaryCacheTable tempTable;
+	private final CacheTable tempTable;
 	private final DBXlinkImporterManager xlinkImporterManager;
 	private PreparedStatement psXlink;
 	private int batchCounter;
 
-	public DBXlinkImporterDeprecatedMaterial(TemporaryCacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+	public DBXlinkImporterDeprecatedMaterial(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
 		this.tempTable = tempTable;
 		this.xlinkImporterManager = xlinkImporterManager;
 

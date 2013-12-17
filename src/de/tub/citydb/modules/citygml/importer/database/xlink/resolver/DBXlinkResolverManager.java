@@ -41,7 +41,7 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
-import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
@@ -92,7 +92,7 @@ public class DBXlinkResolverManager {
 			// initialise DBWriter
 			switch (dbResolverType) {
 			case SURFACE_GEOMETRY:
-				HeapCacheTable surfaceGeomHeapView = dbTempTableManager.getDerivedHeapCacheTable(CacheTableModelEnum.SURFACE_GEOMETRY);
+				CacheTable surfaceGeomHeapView = dbTempTableManager.getCacheTable(CacheTableModelEnum.SURFACE_GEOMETRY).getMirrorTable();
 				if (surfaceGeomHeapView != null)
 					dbResolver = new XlinkSurfaceGeometry(connection, surfaceGeomHeapView, config, this);
 
@@ -101,8 +101,8 @@ public class DBXlinkResolverManager {
 				dbResolver = new XlinkBasic(connection, this);
 				break;
 			case TEXCOORDLIST:
-				HeapCacheTable textureParamHeapView = dbTempTableManager.getDerivedHeapCacheTable(CacheTableModelEnum.TEXTUREPARAM);
-				HeapCacheTable linearRingHeapView = dbTempTableManager.getDerivedHeapCacheTable(CacheTableModelEnum.LINEAR_RING);				
+				CacheTable textureParamHeapView = dbTempTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
+				CacheTable linearRingHeapView = dbTempTableManager.getCacheTable(CacheTableModelEnum.LINEAR_RING);				
 				if (textureParamHeapView != null && linearRingHeapView != null)
 					dbResolver = new XlinkTexCoordList(connection,
 							textureParamHeapView,
@@ -112,7 +112,7 @@ public class DBXlinkResolverManager {
 				dbResolver = new XlinkTextureParam(connection, this);
 				break;
 			case XLINK_TEXTUREASSOCIATION:
-				HeapCacheTable texAssHeapView = dbTempTableManager.getDerivedHeapCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION);
+				CacheTable texAssHeapView = dbTempTableManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION);
 				if (texAssHeapView != null)
 					dbResolver = new XlinkTextureAssociation(connection, texAssHeapView, this);
 				break;
@@ -129,7 +129,7 @@ public class DBXlinkResolverManager {
 				dbResolver = new XlinkDeprecatedMaterial(connection, this);
 				break;
 			case GROUP_TO_CITYOBJECT:
-				HeapCacheTable groupHeapView = dbTempTableManager.getDerivedHeapCacheTable(CacheTableModelEnum.GROUP_TO_CITYOBJECT);
+				CacheTable groupHeapView = dbTempTableManager.getCacheTable(CacheTableModelEnum.GROUP_TO_CITYOBJECT).getMirrorTable();
 				if (groupHeapView != null)					
 					dbResolver = new XlinkGroupToCityObject(connection, groupHeapView, importFilter, this);
 

@@ -41,8 +41,6 @@ import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
-import de.tub.citydb.modules.citygml.common.database.cache.HeapCacheTable;
-import de.tub.citydb.modules.citygml.common.database.cache.TemporaryCacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -122,20 +120,18 @@ public class DBXlinkSplitter {
 
 		try {
 			CacheTable cacheTable = cacheManager.getCacheTable(CacheTableModelEnum.BASIC);	
-			if (!(cacheTable instanceof TemporaryCacheTable))
+			if (cacheTable == null)
 				return;
 
 			LOG.info("Resolving feature XLinks...");
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.basicXLink.msg"), this));
-
-			TemporaryCacheTable temporaryTable = (TemporaryCacheTable)cacheTable;
 			
-			int max = (int)temporaryTable.size();
+			int max = (int)cacheTable.size();
 			int current = 0;
 			
-			stmt = temporaryTable.getConnection().createStatement();
-			rs = stmt.executeQuery("select * from " + temporaryTable.getTableName());
+			stmt = cacheTable.getConnection().createStatement();
+			rs = stmt.executeQuery("select * from " + cacheTable.getTableName());
 
 			while (rs.next() && shouldRun) {
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
@@ -176,15 +172,15 @@ public class DBXlinkSplitter {
 			return;
 
 		CacheTable cacheTable = cacheManager.getCacheTable(CacheTableModelEnum.GROUP_TO_CITYOBJECT);		
-		if (!(cacheTable instanceof TemporaryCacheTable))
+		if (cacheTable == null)
 			return;
 
 		LOG.info("Resolving CityObjectGroup XLinks...");
 
-		queryGroupMemberXLinks((TemporaryCacheTable)cacheTable, checkRecursive, -1, 1);
+		queryGroupMemberXLinks(cacheTable, checkRecursive, -1, 1);
 	}
 
-	private void queryGroupMemberXLinks(TemporaryCacheTable cacheTable, 
+	private void queryGroupMemberXLinks(CacheTable cacheTable, 
 			boolean checkRecursive, 
 			long remaining, 
 			int pass) throws SQLException {
@@ -200,11 +196,11 @@ public class DBXlinkSplitter {
 			int max = (remaining == -1) ? (int)cacheTable.size() : (int)remaining;
 			int current = 0;
 
-			HeapCacheTable heapTable = cacheTable.deriveHeapCacheTableWithIndexes();
+			CacheTable mirrorTable = cacheTable.mirrorAndIndex();
 			cacheTable.truncate();
 			
-			stmt = heapTable.getConnection().createStatement();
-			rs = stmt.executeQuery("select * from " + heapTable.getTableName());
+			stmt = mirrorTable.getConnection().createStatement();
+			rs = stmt.executeQuery("select * from " + mirrorTable.getTableName());
 
 			while (rs.next() && shouldRun) {
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
@@ -239,7 +235,7 @@ public class DBXlinkSplitter {
 				if (unresolved > 0) {
 					if (unresolved != remaining) {
 						// we still have unresolved xlinks... so do another recursion
-						cacheTable.dropHeapCacheTable();
+						cacheTable.dropMirrorTable();
 						queryGroupMemberXLinks(cacheTable, checkRecursive, unresolved, ++pass);
 					} else {
 						// we detected a cycle and cannot resolve the remaining xlinks
@@ -268,8 +264,8 @@ public class DBXlinkSplitter {
 		ResultSet rs = null;
 
 		try {
-			if (!cacheManager.existsTemporaryCacheTable(CacheTableModelEnum.TEXTUREPARAM) && 
-					!cacheManager.existsTemporaryCacheTable(CacheTableModelEnum.TEXTURE_FILE))
+			if (!cacheManager.existsCacheTable(CacheTableModelEnum.TEXTUREPARAM) && 
+					!cacheManager.existsCacheTable(CacheTableModelEnum.TEXTURE_FILE))
 				return;			
 
 			LOG.info("Resolving appearance XLinks...");
@@ -277,12 +273,12 @@ public class DBXlinkSplitter {
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.appXlink.msg"), this));
 
 			// first run: resolve texture param
-			if (cacheManager.existsTemporaryCacheTable(CacheTableModelEnum.TEXTUREPARAM)) {			
-				TemporaryCacheTable temporaryTable = (TemporaryCacheTable)cacheManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
+			if (cacheManager.existsCacheTable(CacheTableModelEnum.TEXTUREPARAM)) {			
+				CacheTable temporaryTable = cacheManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);				
+				temporaryTable.enableIndexes();				
 				
-				temporaryTable.deriveHeapCacheTableWithIndexes();
-				if (cacheManager.existsTemporaryCacheTable(CacheTableModelEnum.LINEAR_RING))
-					((TemporaryCacheTable)cacheManager.getCacheTable(CacheTableModelEnum.LINEAR_RING)).deriveHeapCacheTableWithIndexes();
+				if (cacheManager.existsCacheTable(CacheTableModelEnum.LINEAR_RING))
+					cacheManager.getCacheTable(CacheTableModelEnum.LINEAR_RING).enableIndexes();
 
 				int max = (int)temporaryTable.size();
 				int current = 0;
@@ -336,12 +332,12 @@ public class DBXlinkSplitter {
 			}
 
 			// second run: import texture images and world files
-			if (cacheManager.existsTemporaryCacheTable(CacheTableModelEnum.TEXTURE_FILE)) {		
+			if (cacheManager.existsCacheTable(CacheTableModelEnum.TEXTURE_FILE)) {		
 				LOG.info("Importing texture images...");
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.texImg.msg"), this));
 				
-				TemporaryCacheTable temporaryTable = (TemporaryCacheTable)cacheManager.getCacheTable(CacheTableModelEnum.TEXTURE_FILE);
+				CacheTable temporaryTable = cacheManager.getCacheTable(CacheTableModelEnum.TEXTURE_FILE);
 
 				int max = (int)temporaryTable.size();
 				int current = 0;
@@ -381,13 +377,13 @@ public class DBXlinkSplitter {
 				return;
 
 			// third run: identifying xlinks to texture association elements...
-			if (cacheManager.existsTemporaryCacheTable(CacheTableModelEnum.TEXTUREPARAM) && 
-					cacheManager.existsTemporaryCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION)) {
+			if (cacheManager.existsCacheTable(CacheTableModelEnum.TEXTUREPARAM) && 
+					cacheManager.existsCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION)) {
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.appXlink.msg"), this));
 				
-				TemporaryCacheTable cacheTable = (TemporaryCacheTable)cacheManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
-				((TemporaryCacheTable)cacheManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION)).deriveHeapCacheTableWithIndexes();
+				CacheTable cacheTable = cacheManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
+				cacheManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION).enableIndexes();
 
 				int max = (int)cacheTable.size();
 				int current = 0;
@@ -434,20 +430,18 @@ public class DBXlinkSplitter {
 
 		try {
 			CacheTable cacheTable = cacheManager.getCacheTable(CacheTableModelEnum.LIBRARY_OBJECT);	
-			if (!(cacheTable instanceof TemporaryCacheTable))
+			if (cacheTable == null)
 				return;
 			
 			LOG.info("Importing library objects...");
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.libObj.msg"), this));
-			
-			TemporaryCacheTable temporaryTable = (TemporaryCacheTable)cacheTable;
-		
-			int max = (int)temporaryTable.size();
+				
+			int max = (int)cacheTable.size();
 			int current = 0;
 			
-			stmt = temporaryTable.getConnection().createStatement();
-			rs = stmt.executeQuery("select * from " + temporaryTable.getTableName());
+			stmt = cacheTable.getConnection().createStatement();
+			rs = stmt.executeQuery("select * from " + cacheTable.getTableName());
 
 			while (rs.next() && shouldRun) {
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
@@ -484,20 +478,18 @@ public class DBXlinkSplitter {
 
 		try {
 			CacheTable cacheTable = cacheManager.getCacheTable(CacheTableModelEnum.DEPRECATED_MATERIAL);
-			if (!(cacheTable instanceof TemporaryCacheTable))
+			if (cacheTable == null)
 				return;
 
 			LOG.info("Resolving TexturedSurface XLinks...");
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.depMat.msg"), this));
-
-			TemporaryCacheTable temporaryTable = (TemporaryCacheTable)cacheTable;
 			
-			int max = (int)temporaryTable.size();
+			int max = (int)cacheTable.size();
 			int current = 0;
 			
-			stmt = temporaryTable.getConnection().createStatement();
-			rs = stmt.executeQuery("select * from " + temporaryTable.getTableName());
+			stmt = cacheTable.getConnection().createStatement();
+			rs = stmt.executeQuery("select * from " + cacheTable.getTableName());
 
 			while (rs.next() && shouldRun) {
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
@@ -527,7 +519,7 @@ public class DBXlinkSplitter {
 		}
 	}
 
-	public void surfaceGeometryXlinks(boolean checkRecursive) throws SQLException {
+	private void surfaceGeometryXlinks(boolean checkRecursive) throws SQLException {
 		if (!shouldRun)
 			return;
 
@@ -537,10 +529,10 @@ public class DBXlinkSplitter {
 
 		LOG.info("Resolving geometry XLinks...");
 
-		querySurfaceGeometryXlinks((TemporaryCacheTable)cacheTable, checkRecursive, -1, 1);
+		querySurfaceGeometryXlinks(cacheTable, checkRecursive, -1, 1);
 	}
 
-	private void querySurfaceGeometryXlinks(TemporaryCacheTable cacheTable, 
+	private void querySurfaceGeometryXlinks(CacheTable cacheTable, 
 			boolean checkRecursive, 
 			long remaining, 
 			int pass) throws SQLException {
@@ -556,11 +548,11 @@ public class DBXlinkSplitter {
 			int max = (remaining == -1) ? (int)cacheTable.size() : (int)remaining;
 			int current = 0;
 			
-			HeapCacheTable heapTable = cacheTable.deriveHeapCacheTableWithIndexes();
+			CacheTable mirrorTable = cacheTable.mirrorAndIndex();
 			cacheTable.truncate();
 
-			stmt = heapTable.getConnection().createStatement();
-			rs = stmt.executeQuery("select * from " + heapTable.getTableName());
+			stmt = mirrorTable.getConnection().createStatement();
+			rs = stmt.executeQuery("select * from " + mirrorTable.getTableName());
 
 			while (rs.next() && shouldRun) {
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
@@ -597,7 +589,7 @@ public class DBXlinkSplitter {
 				if (unresolved > 0) {
 					if (unresolved != remaining) {
 						// we still have unresolved xlinks... so do another recursion
-						cacheTable.dropHeapCacheTable();
+						cacheTable.dropMirrorTable();
 						querySurfaceGeometryXlinks(cacheTable, checkRecursive, unresolved, ++pass);
 					} else {
 						// we detected a cycle and cannot resolve the remaining xlinks
