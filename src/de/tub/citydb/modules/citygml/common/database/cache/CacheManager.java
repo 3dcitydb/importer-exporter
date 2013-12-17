@@ -66,7 +66,7 @@ public class CacheManager {
 		try {
 			Class.forName(h2Adapter.getConnectionFactoryClassName());
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			throw new SQLException(e);
 		}
 
 		cacheDir = tempDir + File.separator + DefaultGMLIdManager.getInstance().generateUUID("");		
