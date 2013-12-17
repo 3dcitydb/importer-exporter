@@ -45,6 +45,7 @@ public class EventDispatcher {
 	public EventDispatcher(int eventQueueSize) {
 		containerQueueMap = new ConcurrentHashMap<Enum<?>, EventHandlerContainerQueue>();
 		eventDispatcherThread = new SingleWorkerPool<Event>(
+				"event_dispatcher",
 				new EventWorkerFactory(this),
 				eventQueueSize,
 				true);

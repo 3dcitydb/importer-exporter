@@ -151,6 +151,7 @@ public class DatabaseConnectionPool {
 		try {
 			// create connection pool
 			dataSource.createPool();
+			databaseAdapter.setConnectionDetails(conn);
 
 			// retrieve connection metadata
 			databaseAdapter.setConnectionMetaData(databaseAdapter.getUtil().getDatabaseInfo());
@@ -165,7 +166,6 @@ public class DatabaseConnectionPool {
 		}
 
 		// fire property change events
-		databaseAdapter.setConnectionDetails(conn);
 		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(false, true, this));
 	}
 

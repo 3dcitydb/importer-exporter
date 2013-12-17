@@ -31,36 +31,44 @@ package de.tub.citydb.api.concurrent;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import de.tub.citydb.api.controller.LogController;
+import de.tub.citydb.api.registry.ObjectRegistry;
+
 public class WorkerPool<T> {
 	private final ReentrantLock mainLock = new ReentrantLock();
 
+	private final LogController log;
 	private final WorkQueue<T> workQueue;
 	private final ConcurrentHashMap<Worker<T>, Object> workers;
 	private final WorkerFactory<T> workerFactory;
-	private static final Object DUMMY = new Object();
+	private final Object DUMMY = new Object();
 
 	private volatile int runState;
-	private static final int RUNNING    = 0;
-	private static final int SHUTDOWN   = 1;
-	private static final int STOP       = 2;
-	private static final int TERMINATED = 3;
+	private final int RUNNING    = 0;
+	private final int SHUTDOWN   = 1;
+	private final int STOP       = 2;
+	private final int TERMINATED = 3;
 
 	private ClassLoader contextClassLoader;
 	private ClassLoader defaultClassLoader;
 
+	private String poolName;
+	private PoolSizeAdaptationStrategy adaptationStrategy = PoolSizeAdaptationStrategy.AGGRESSIVE;
 	private volatile int corePoolSize;
 	private volatile int maximumPoolSize;
 	private final int queueSize;
 	private final boolean daemon;
 	private int poolSize;
+	private byte poolSizeAdaptationFailure;
+	private byte threadNo;
 
 	// WorkQueue
 	public static final class WorkQueue<E> {
@@ -394,47 +402,58 @@ public class WorkerPool<T> {
 	}
 
 	// WorkerPool
-	public WorkerPool(int corePoolSize,
+	public WorkerPool(String poolName,
+			int corePoolSize,
 			int maximumPoolSize,
+			PoolSizeAdaptationStrategy adaptationStrategy,
 			WorkerFactory<T> workerFactory,
 			int queueSize,
 			boolean fair,
 			boolean daemon) {
-		if (corePoolSize < 0 || maximumPoolSize <= 0 || maximumPoolSize < corePoolSize)
-			throw new IllegalArgumentException();
+		if (corePoolSize <= 0)
+			throw new IllegalArgumentException("Core pool size must be greater than zero.");
+		
+		if  (maximumPoolSize < corePoolSize)
+			throw new IllegalArgumentException("Maximum pool size must be greater or equal to core pool size.");
 
 		if (workerFactory == null)
 			throw new IllegalArgumentException("WorkerFactory may not be null.");
 
+		this.poolName = poolName;
 		this.corePoolSize = corePoolSize;
 		this.maximumPoolSize = maximumPoolSize;
+		this.adaptationStrategy = adaptationStrategy;
 		this.daemon = daemon;
 		this.workerFactory = workerFactory;
 		this.defaultClassLoader = Thread.currentThread().getContextClassLoader();
 
-		// setting up work queue
+		// setting up work queue and workers map
 		this.queueSize = queueSize;
 		workQueue = new WorkQueue<T>(queueSize, fair);
-
-		// setting up the workers
 		workers = new ConcurrentHashMap<Worker<T>, Object>(maximumPoolSize);
+
+		log = ObjectRegistry.getInstance().getLogController();
 	}
 
-	public WorkerPool(int corePoolSize,
+	public WorkerPool(String poolName,
+			int corePoolSize,
 			int maximumPoolSize,
+			PoolSizeAdaptationStrategy adaptationStrategy,
 			WorkerFactory<T> workerFactory,
 			int queueSize,
 			boolean fair) {
-		this(corePoolSize, maximumPoolSize, workerFactory, queueSize, fair, true);
+		this(poolName, corePoolSize, maximumPoolSize, adaptationStrategy, workerFactory, queueSize, fair, true);
 	}
 
-	public WorkerPool(int corePoolSize,
+	public WorkerPool(String poolName,
+			int corePoolSize,
 			int maximumPoolSize,
+			PoolSizeAdaptationStrategy adaptationStrategy,
 			WorkerFactory<T> workerFactory,
 			int queueSize) {
-		this(corePoolSize, maximumPoolSize, workerFactory, queueSize, false);
+		this(poolName, corePoolSize, maximumPoolSize, adaptationStrategy, workerFactory, queueSize, false);
 	}
-	
+
 	public ClassLoader getDefaultContextClassLoader() {
 		return defaultClassLoader;
 	}
@@ -442,7 +461,7 @@ public class WorkerPool<T> {
 	public void setContextClassLoader(ClassLoader contextClassLoader) {
 		this.contextClassLoader = contextClassLoader;
 	}
-	
+
 	private boolean addWorker(T firstWork) {
 		final ReentrantLock mainLock = this.mainLock;
 		mainLock.lock();
@@ -453,6 +472,7 @@ public class WorkerPool<T> {
 
 				if (worker != null) {
 					Thread workerThread = new Thread(worker);
+					workerThread.setName(poolName + " " + threadNo++);
 					workerThread.setDaemon(daemon);
 					if (contextClassLoader != null)
 						workerThread.setContextClassLoader(contextClassLoader);
@@ -468,6 +488,49 @@ public class WorkerPool<T> {
 					return true;
 				}
 
+				else {
+					// adapt worker pool size according to chosen strategy
+					if (++poolSizeAdaptationFailure == 3) {
+						adaptationStrategy = PoolSizeAdaptationStrategy.AGGRESSIVE;
+						log.info("[" + poolName + "] Failed three times to create worker. Falling back to " + PoolSizeAdaptationStrategy.AGGRESSIVE + " adaptation strategy.");
+					}
+
+					if (adaptationStrategy == PoolSizeAdaptationStrategy.NONE) {
+						log.warn("[" + poolName + "] Not adapting pool size although creation of worker failed.");
+					} else {
+						switch (adaptationStrategy) {
+						case AGGRESSIVE:
+							if (poolSize < corePoolSize) {
+								// remove all workers but one
+								Iterator<Entry<Worker<T>, Object>> it = workers.entrySet().iterator();
+								while (it.hasNext() && poolSize > 1) {
+									it.next().getKey().interruptIfIdle();
+									it.remove();
+									--poolSize;
+								}
+								corePoolSize = poolSize;
+							} else if (poolSize < maximumPoolSize)
+								maximumPoolSize = poolSize;
+							break;
+						case STEPWISE:
+							if (poolSize < corePoolSize && poolSize > 1) {
+								// remove one worker
+								Iterator<Entry<Worker<T>, Object>> it = workers.entrySet().iterator();
+								it.next().getKey().interruptIfIdle();
+								it.remove();
+								--poolSize;
+								--corePoolSize;
+							} else if (poolSize < maximumPoolSize)
+								--maximumPoolSize;
+							break;
+						default: 
+							// nothing to do
+						}
+
+						if (corePoolSize > 0)
+							log.info("[" + poolName + "] Adapting pool size to " + corePoolSize + " core worker(s) and " + maximumPoolSize + " maximum worker(s).");
+					}
+				}
 			}
 
 			return false;
@@ -644,9 +707,9 @@ public class WorkerPool<T> {
 		try {
 			if (runState < SHUTDOWN)
 				runState = SHUTDOWN;
-			
+
 			interruptWorkers();
-			
+
 			runState = TERMINATED;
 			clearWorkers();
 			return workList;
@@ -787,17 +850,32 @@ public class WorkerPool<T> {
 			this.maximumPoolSize = maximumPoolSize;
 
 			if (extra > 0 && poolSize > maximumPoolSize) {
-				HashSet<Worker<T>> remove = new HashSet<Worker<T>>();
-				Iterator<Worker<T>> it = workers.keySet().iterator();
+				Iterator<Entry<Worker<T>, Object>> it = workers.entrySet().iterator();
 				while (it.hasNext() && extra-- > 0 && poolSize > maximumPoolSize) {
-					Worker<T> worker = it.next();
-					worker.interruptIfIdle();
-					remove.add(worker);
+					it.next().getKey().interruptIfIdle();
+					it.remove();
 					--poolSize;
 				}
+			}
+		} finally {
+			mainLock.unlock();
+		}
+	}
 
-				for (Worker<T> worker : remove)
-					workers.remove(worker);
+	public void setCorePoolSize(int corePoolSize) {
+		if (corePoolSize < 0 || corePoolSize > maximumPoolSize)
+			throw new IllegalArgumentException();
+
+		ReentrantLock mainLock = this.mainLock;
+		mainLock.lock();
+		try {
+			int extra = poolSize - corePoolSize;
+			this.corePoolSize = corePoolSize;
+
+			if (extra < 0) {
+				int n = workQueue.size();
+				while (extra++ < 0 && n-- > 0 && poolSize < corePoolSize)
+					addWorker(null);
 			}
 		} finally {
 			mainLock.unlock();
@@ -812,38 +890,6 @@ public class WorkerPool<T> {
 		return corePoolSize;
 	}
 
-	public void setCorePoolSize(int corePoolSize) {
-		if (corePoolSize < 0 || corePoolSize > maximumPoolSize)
-			throw new IllegalArgumentException();
-
-		ReentrantLock mainLock = this.mainLock;
-		mainLock.lock();
-		try {
-			int extra = this.corePoolSize - corePoolSize;
-			this.corePoolSize = corePoolSize;
-
-			if (extra < 0) {
-				int n = workQueue.size();
-				while (extra++ < 0 && n-- > 0 && poolSize < corePoolSize)
-					addWorker(null);
-			} else if (extra > 0 && poolSize > corePoolSize) {
-				HashSet<Worker<T>> remove = new HashSet<Worker<T>>();
-				Iterator<Worker<T>> it = workers.keySet().iterator();
-				while (it.hasNext() && extra-- > 0 && poolSize > corePoolSize && workQueue.remainingCapacity() == 0) {
-					Worker<T> worker = it.next();
-					worker.interruptIfIdle();
-					remove.add(worker);
-					--poolSize;
-				}
-
-				for (Worker<T> worker : remove)
-					workers.remove(worker);
-			}
-		} finally {
-			mainLock.unlock();
-		}
-	}
-
 	public boolean isTerminated() {
 		return runState == TERMINATED;
 	}
@@ -855,6 +901,22 @@ public class WorkerPool<T> {
 
 	public int getPoolSize() {
 		return poolSize;
+	}
+
+	public PoolSizeAdaptationStrategy getPoolSizeAdaptationStrategy() {
+		return adaptationStrategy;
+	}
+
+	public void setPoolSizeAdaptationStrategy(PoolSizeAdaptationStrategy adaptationStrategy) {
+		this.adaptationStrategy = adaptationStrategy;
+	}
+
+	public String getName() {
+		return poolName;
+	}
+
+	public void setName(String poolName) {
+		this.poolName = poolName;
 	}
 
 	protected void finalize() {

@@ -53,7 +53,7 @@ import org.citygml4j.xml.io.reader.CityGMLReader;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
 import org.citygml4j.xml.io.reader.XMLChunk;
 
-import de.tub.citydb.api.concurrent.SingleWorkerPool;
+import de.tub.citydb.api.concurrent.PoolSizeAdaptationStrategy;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
@@ -372,15 +372,21 @@ public class Importer implements EventHandler {
 
 				// creating worker pools needed for data import
 				// this pool is for registering xlinks
-				tmpXlinkPool = new SingleWorkerPool<DBXlink>(
+				tmpXlinkPool = new WorkerPool<DBXlink>(
+						"xlink_importer_pool",
+						minThreads,
+						maxThreads,
+						PoolSizeAdaptationStrategy.AGGRESSIVE,
 						new DBImportXlinkWorkerFactory(dbPool, cacheManager, config, eventDispatcher),
 						queueSize,
 						false);
 
 				// this pool basically works on the data import
 				dbWorkerPool = new WorkerPool<CityGML>(
+						"db_importer_pool",
 						minThreads,
 						maxThreads,
+						PoolSizeAdaptationStrategy.AGGRESSIVE,
 						new DBImportWorkerFactory(dbPool, 
 								jaxbBuilder,
 								tmpXlinkPool, 
@@ -393,8 +399,10 @@ public class Importer implements EventHandler {
 
 				// this worker pool unmarshals the input file and passes xml chunks to the dbworker pool
 				featureWorkerPool = new WorkerPool<XMLChunk>(
+						"citygml_parser_pool",
 						minThreads,
 						maxThreads,
+						PoolSizeAdaptationStrategy.AGGRESSIVE,
 						new FeatureReaderWorkerFactory(dbWorkerPool, config, eventDispatcher),
 						queueSize,
 						false);
@@ -403,6 +411,12 @@ public class Importer implements EventHandler {
 				tmpXlinkPool.prestartCoreWorkers();
 				dbWorkerPool.prestartCoreWorkers();
 				featureWorkerPool.prestartCoreWorkers();
+				
+				// fail if we could not start a single import worker
+				if (dbWorkerPool.getPoolSize() == 0) {
+					LOG.error("Failed to start database import worker pool. Check the database connection pool settings.");
+					return false;
+				}
 
 				// ok, preparation done. inform user and start parsing the input file
 				CityGMLReader reader = null;
@@ -457,8 +471,10 @@ public class Importer implements EventHandler {
 					// get an xlink resolver pool
 					LOG.info("Resolving XLink references.");
 					xlinkResolverPool = new WorkerPool<DBXlink>(
+							"xlink_resolver_pool",
 							minThreads,
 							maxThreads,
+							PoolSizeAdaptationStrategy.AGGRESSIVE,
 							new DBImportXlinkResolverWorkerFactory(dbPool, 
 									tmpXlinkPool, 
 									lookupServerManager, 
@@ -468,8 +484,8 @@ public class Importer implements EventHandler {
 									eventDispatcher),
 									queueSize,
 									false);
-
-					// and prestart its workers
+					
+					// prestart its workers
 					xlinkResolverPool.prestartCoreWorkers();
 
 					// we also need a splitter which extracts the data from the temp tables
@@ -515,6 +531,7 @@ public class Importer implements EventHandler {
 				try {
 					LOG.info("Cleaning temporary cache.");
 					cacheManager.dropAll();
+					cacheManager = null;
 				} catch (SQLException sqlE) {
 					LOG.error("SQL error: " + sqlE.getMessage());
 				}
@@ -543,15 +560,24 @@ public class Importer implements EventHandler {
 
 				if (xlinkResolverPool != null && !xlinkResolverPool.isTerminated())
 					xlinkResolverPool.shutdownNow();
+				
+				if (cacheManager != null) {
+					try {
+						LOG.info("Cleaning temporary cache.");
+						cacheManager.dropAll();
+						cacheManager = null;
+					} catch (SQLException sqlEx) {
+						LOG.error("SQL error while finishing database import: " + sqlEx.getMessage());
+					}
+				}
 
 				// set to null
-				cacheManager = null;
 				lookupServerManager = null;
 				tmpXlinkPool = null;
 				dbWorkerPool = null;
 				featureWorkerPool = null;
 				xlinkResolverPool = null;
-				tmpSplitter = null;
+				tmpSplitter = null;				
 			}
 		} 	
 
@@ -609,17 +635,6 @@ public class Importer implements EventHandler {
 
 		if (geometryObjects != 0)
 			LOG.info("Processed geometry objects: " + geometryObjects);
-
-		// cleaning temp cache
-		if (cacheManager != null) {
-			try {
-				LOG.info("Cleaning temporary cache.");
-				cacheManager.dropAll();
-				cacheManager = null;
-			} catch (SQLException sqlEx) {
-				LOG.error("SQL error while finishing database import: " + sqlEx.getMessage());
-			}
-		}
 
 		return shouldRun;
 	}

@@ -160,6 +160,7 @@ public class XMLValidator implements EventHandler {
 
 				// this worker pool parses the xml file and passes xml chunks to the dbworker pool
 				featureWorkerPool = new SingleWorkerPool<XMLChunk>(
+						"citygml_validator_pool",
 						new FeatureReaderWorkerFactory(null, config, eventDispatcher),
 						queueSize,
 						false);

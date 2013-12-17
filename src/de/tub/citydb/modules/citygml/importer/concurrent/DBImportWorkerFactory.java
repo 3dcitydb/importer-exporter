@@ -40,11 +40,14 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.common.filter.ImportFilter;
 
 public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
+	private final Logger LOG = Logger.getInstance();
+	
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<DBXlink> xlinkWorkerPool;
@@ -81,8 +84,8 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 					importFilter,
 					config, 
 					eventDispatcher);
-		} catch (SQLException sqlEx) {
-			// could not instantiate DBWorker
+		} catch (SQLException e) {
+			LOG.error("Failed to create import worker: " + e.getMessage());
 		}
 
 		return dbWorker;

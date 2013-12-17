@@ -31,21 +31,24 @@ package de.tub.citydb.api.concurrent;
 
 public class SingleWorkerPool<T> extends WorkerPool<T> {
 
-	public SingleWorkerPool(WorkerFactory<T> workerFactory,
+	public SingleWorkerPool(String poolName,
+			WorkerFactory<T> workerFactory,
 			int queueSize,
 			boolean fair,
 			boolean daemon) {
-		super(1, 1, workerFactory, queueSize, fair, daemon);
+		super(poolName, 1, 1, PoolSizeAdaptationStrategy.AGGRESSIVE, workerFactory, queueSize, fair, daemon);
 	}
 
-	public SingleWorkerPool(WorkerFactory<T> workerFactory,
+	public SingleWorkerPool(String poolName,
+			WorkerFactory<T> workerFactory,
 			int queueSize,
 			boolean fair) {
-		super(1, 1, workerFactory, queueSize, fair, true);
+		super(poolName, 1, 1, PoolSizeAdaptationStrategy.AGGRESSIVE, workerFactory, queueSize, fair, true);
 	}
 
-	public SingleWorkerPool(WorkerFactory<T> workerFactory,
+	public SingleWorkerPool(String poolName,
+			WorkerFactory<T> workerFactory,
 			int queueSize) {
-		super(1, 1, workerFactory, queueSize, false);
+		super(poolName, 1, 1, PoolSizeAdaptationStrategy.AGGRESSIVE, workerFactory, queueSize, false);
 	}
 }

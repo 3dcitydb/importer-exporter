@@ -36,9 +36,12 @@ import de.tub.citydb.api.concurrent.WorkerFactory;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 
 public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
+	private final Logger LOG = Logger.getInstance();
+	
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -55,8 +58,8 @@ public class DBExportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 
 		try {
 			dbWorker = new DBExportXlinkWorker(dbConnectionPool, config, eventDispatcher);
-		} catch (SQLException sqlEx) {
-			// could not instantiate DBWorker
+		} catch (SQLException e) {
+			LOG.error("Failed to create XLink export worker: " + e.getMessage());
 		}
 
 		return dbWorker;

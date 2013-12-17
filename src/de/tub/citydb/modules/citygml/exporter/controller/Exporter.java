@@ -58,6 +58,7 @@ import org.citygml4j.xml.io.writer.CityGMLWriteException;
 import org.citygml4j.xml.io.writer.CityModelInfo;
 import org.xml.sax.SAXException;
 
+import de.tub.citydb.api.concurrent.PoolSizeAdaptationStrategy;
 import de.tub.citydb.api.concurrent.SingleWorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.database.DatabaseSrs;
@@ -417,20 +418,25 @@ public class Exporter implements EventHandler {
 					// create worker pools
 					// here we have an open issue: queue sizes are fix...
 					xlinkExporterPool = new WorkerPool<DBXlink>(
+							"xlink_exporter_pool",
 							1,
 							Math.max(1, maxThreads / 2),
+							PoolSizeAdaptationStrategy.AGGRESSIVE,
 							new DBExportXlinkWorkerFactory(dbPool, config, eventDispatcher),
 							300,
 							false);
 
 					ioWriterPool = new SingleWorkerPool<SAXEventBuffer>(
+							"citygml_writer_pool",
 							new IOWriterWorkerFactory(saxWriter),
 							100,
 							false);
 
 					dbWorkerPool = new WorkerPool<DBSplittingResult>(
+							"db_exporter_pool",
 							minThreads,
 							maxThreads,
+							PoolSizeAdaptationStrategy.AGGRESSIVE,
 							new DBExportWorkerFactory(
 									dbPool,
 									jaxbBuilder,
@@ -443,11 +449,17 @@ public class Exporter implements EventHandler {
 									eventDispatcher),
 									300,
 									false);
-
+					
 					// prestart pool workers
 					xlinkExporterPool.prestartCoreWorkers();
 					ioWriterPool.prestartCoreWorkers();
 					dbWorkerPool.prestartCoreWorkers();
+					
+					// fail if we could not start a single import worker
+					if (dbWorkerPool.getPoolSize() == 0) {
+						LOG.error("Failed to start database export worker pool. Check the database connection pool settings.");
+						return false;
+					}
 
 					// ok, preparations done. inform user...
 					LOG.info("Exporting to file: " + file.getAbsolutePath());
@@ -490,6 +502,7 @@ public class Exporter implements EventHandler {
 							dbSplitter.startQuery();
 					} catch (SQLException sqlE) {
 						LOG.error("SQL error: " + sqlE.getMessage());
+						LOG.error("Failed to query the database. Check the database connection pool settings.");
 						return false;
 					}
 
@@ -535,6 +548,7 @@ public class Exporter implements EventHandler {
 					try {
 						LOG.info("Cleaning temporary cache.");
 						cacheManager.dropAll();
+						cacheManager = null;
 					} catch (SQLException sqlE) {
 						LOG.error("SQL error: " + sqlE.getMessage());
 						return false;
@@ -547,15 +561,7 @@ public class Exporter implements EventHandler {
 						LOG.error("Internal error: " + iE.getMessage());
 						return false;
 					}
-
-					// set null
-					cacheManager = null;
-					lookupServerManager = null;
-					xlinkExporterPool = null;
-					ioWriterPool = null;
-					dbWorkerPool = null;
-					dbSplitter = null;
-
+					
 					// show exported features
 					if (!featureCounterMap.isEmpty()) {
 						LOG.info("Exported CityGML features:");
@@ -572,8 +578,17 @@ public class Exporter implements EventHandler {
 
 					featureCounterMap.clear();
 					geometryCounterMap.clear();
-
 				} finally {
+					// clean up
+					if (xlinkExporterPool != null && !xlinkExporterPool.isTerminated())
+						xlinkExporterPool.shutdownNow();
+
+					if (dbWorkerPool != null && !dbWorkerPool.isTerminated())
+						dbWorkerPool.shutdownNow();
+
+					if (ioWriterPool != null && !ioWriterPool.isTerminated())
+						ioWriterPool.shutdownNow();
+					
 					if (cacheManager != null) {
 						try {
 							LOG.info("Cleaning temporary cache.");
@@ -583,6 +598,13 @@ public class Exporter implements EventHandler {
 							LOG.error("SQL error while finishing database export: " + sqlEx.getMessage());
 						}
 					}
+
+					// set null
+					lookupServerManager = null;
+					xlinkExporterPool = null;
+					ioWriterPool = null;
+					dbWorkerPool = null;
+					dbSplitter = null;
 				}
 			}
 		}

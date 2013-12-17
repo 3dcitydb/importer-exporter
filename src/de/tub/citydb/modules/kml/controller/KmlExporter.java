@@ -80,6 +80,7 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
 import org.xml.sax.SAXException;
 
+import de.tub.citydb.api.concurrent.PoolSizeAdaptationStrategy;
 import de.tub.citydb.api.concurrent.SingleWorkerPool;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.database.DatabaseSrs;
@@ -361,13 +362,16 @@ public class KmlExporter implements EventHandler {
 						// create worker pools
 						// here we have an open issue: queue sizes are fix...
 						ioWriterPool = new SingleWorkerPool<SAXEventBuffer>(
+								"kml_writer_pool",
 								new IOWriterWorkerFactory(saxWriter),
 								100,
 								true);
 
 						kmlWorkerPool = new WorkerPool<KmlSplittingResult>(
+								"db_exporter_pool",
 								minThreads,
 								maxThreads,
+								PoolSizeAdaptationStrategy.AGGRESSIVE,
 								new KmlExportWorkerFactory(
 										jaxbKmlContext,
 										jaxbColladaContext,
@@ -378,10 +382,16 @@ public class KmlExporter implements EventHandler {
 										eventDispatcher),
 										300,
 										false);
-
+						
 						// prestart pool workers
 						ioWriterPool.prestartCoreWorkers();
 						kmlWorkerPool.prestartCoreWorkers();
+						
+						// fail if we could not start a single import worker
+						if (kmlWorkerPool.getPoolSize() == 0) {
+							Logger.getInstance().error("Failed to start database export worker pool. Check the database connection pool settings.");
+							return false;
+						}
 
 						// create file header
 						KMLHeaderWriter kmlHeader = new KMLHeaderWriter(saxWriter);
@@ -435,6 +445,7 @@ public class KmlExporter implements EventHandler {
 								kmlSplitter.startQuery();
 						} catch (SQLException sqlE) {
 							Logger.getInstance().error("SQL error: " + sqlE.getMessage());
+							Logger.getInstance().error("Failed to query the database. Check the database connection pool settings.");
 							return false;
 						}
 
@@ -524,12 +535,6 @@ public class KmlExporter implements EventHandler {
 							Logger.getInstance().error("Internal error: " + iE.getMessage());
 							return false;
 						}
-
-						// set null
-						ioWriterPool = null;
-						kmlWorkerPool = null;
-						kmlSplitter = null;
-
 					}
 /*
 					catch (FileNotFoundException fnfe) {
@@ -537,7 +542,19 @@ public class KmlExporter implements EventHandler {
 						return false;
 					}
 */
-					finally {}
+					finally {
+						// clean up
+						if (ioWriterPool != null && !ioWriterPool.isTerminated())
+							ioWriterPool.shutdownNow();
+
+						if (kmlWorkerPool != null && !kmlWorkerPool.isTerminated())
+							kmlWorkerPool.shutdownNow();
+
+						// set null
+						ioWriterPool = null;
+						kmlWorkerPool = null;
+						kmlSplitter = null;
+					}
 				}
 			}
 		}
@@ -683,9 +700,11 @@ public class KmlExporter implements EventHandler {
 			saxWriter.setOutput(new StreamResult(outputStream), ENCODING);	
 
 			ioWriterPool = new SingleWorkerPool<SAXEventBuffer>(
+					"kml_master_file_writer_pool",
 					new IOWriterWorkerFactory(saxWriter),
 					100,
 					true);
+			
 			ioWriterPool.prestartCoreWorkers();
 
 			// create file header

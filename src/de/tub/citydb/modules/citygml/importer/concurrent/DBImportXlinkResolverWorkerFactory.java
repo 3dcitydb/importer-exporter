@@ -37,12 +37,15 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.common.filter.ImportFilter;
 
 public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink> {
+	private final Logger LOG = Logger.getInstance();
+	
 	private final DatabaseConnectionPool dbPool;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
 	private final DBGmlIdLookupServerManager lookupServerManager;
@@ -79,8 +82,8 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 					importFilter,
 					config, 
 					eventDispatcher);
-		} catch (SQLException sqlEx) {
-			// could not instantiate DBWorker
+		} catch (SQLException e) {
+			LOG.error("Failed to create XLink resolver worker: " + e.getMessage());
 		}
 
 		return dbWorker;

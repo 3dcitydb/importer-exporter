@@ -150,7 +150,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	private DatabasePlugin databasePlugin;
 
 	private PrintStream out;
-	private PrintStream err;
 
 	// internal state
 	private LanguageType currentLang = null;
@@ -419,10 +418,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		}
 
 		out = System.out;
-		err = System.err;
-
 		System.setOut(writer);
-		System.setErr(writer);
 
 		// show console window if required
 		if (config.getGui().getConsoleWindow().isDetached()) {
@@ -627,7 +623,6 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	public void shutdown() {		
 		System.setOut(out);
-		System.setErr(err);
 		boolean success = true;
 
 		consoleWindow.dispose();

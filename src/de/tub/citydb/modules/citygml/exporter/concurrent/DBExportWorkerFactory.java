@@ -41,6 +41,7 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
+import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
@@ -48,6 +49,8 @@ import de.tub.citydb.modules.citygml.exporter.database.content.DBSplittingResult
 import de.tub.citydb.modules.common.filter.ExportFilter;
 
 public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
+	private final Logger LOG = Logger.getInstance();
+	
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
@@ -94,10 +97,10 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 					exportFilter,
 					config,
 					eventDispatcher);
-		} catch (SQLException sqlEx) {
-			// could not instantiate DBWorker
+		} catch (SQLException e) {
+			LOG.error("Failed to create export worker: " + e.getMessage());
 		} catch (SAXException e) {
-			// could not instantiate DBWorker
+			LOG.error("Failed to create export worker: " + e.getMessage());
 		}
 
 		return dbWorker;
