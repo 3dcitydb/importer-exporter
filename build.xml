@@ -55,7 +55,7 @@
 		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!impexp.homepage!" value="${impexp.homepage}" />
 
 		<!-- create javadoc from source files -->
-		<javadoc access="public" author="true" classpathref="classpath" destdir="${dir.dest.plugin.api.javadoc}" doctitle="${impexp.plugin.api.name} - ${impexp.plugin.api.version}" maxmemory="256m" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" overview="${dir.resources.plugin-api.javadoc}/overview_adapted.html" packagenames="de.tub.citydb.api.*" source="1.6" sourcepath="${dir.src}" splitindex="true" use="true" version="true" />
+		<javadoc access="public" author="true" classpathref="classpath" destdir="${dir.dest.plugin.api.javadoc}" doctitle="${impexp.plugin.api.name} - ${impexp.plugin.api.version}" maxmemory="256m" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" overview="${dir.resources.plugin-api.javadoc}/overview_adapted.html" packagenames="de.tub.citydb.api.*" sourcepath="${dir.src}" splitindex="true" use="true" version="true" />
 
 		<!-- clean up -->
 		<delete file="${dir.resources.plugin-api.doc}/overview_adapted.html" />
