@@ -32,18 +32,30 @@ package de.tub.citydb.config.project.global;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="GlobalType", propOrder={
+		"cache",
 		"logging",
 		"language",
 		"proxies"
 		})
 public class Global {
+	private Cache cache;
 	private Logging logging;
 	private LanguageType language = LanguageType.fromValue(System.getProperty("user.language"));
 	private Proxies proxies;
 
 	public Global() {
+		cache = new Cache();
 		logging = new Logging();
 		proxies = new Proxies();
+	}
+	
+	public Cache getCache() {
+		return cache;
+	}
+	
+	public void setCache(Cache cache) {
+		if (cache != null)
+			this.cache = cache;
 	}
 	
 	public Logging getLogging() {

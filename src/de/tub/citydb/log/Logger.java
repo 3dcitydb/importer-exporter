@@ -76,14 +76,14 @@ public class Logger implements LogController {
 	public LogLevel getDefaultFileLogLevel() {
 		return fileLogLevel;
 	}
-	
+
 	private String getPrefix(LogLevel type) {
 		cal = Calendar.getInstance();
 
 		int h = cal.get(Calendar.HOUR_OF_DAY);
 		int m = cal.get(Calendar.MINUTE);
 		int s = cal.get(Calendar.SECOND);
-		
+
 		StringBuffer prefix = new StringBuffer()
 		.append("[")
 		.append(df.format(h))
@@ -141,9 +141,12 @@ public class Logger implements LogController {
 	public void all(LogLevel type, String message) {
 		StringBuffer buffer = new StringBuffer(getPrefix(type));
 		buffer.append(message);
-		
-		System.out.println(buffer.toString());
-		writeToFile(buffer.toString());
+
+		if (consoleLogLevel.ordinal() >= type.ordinal())
+			System.out.println(buffer.toString());
+
+		if (fileLogLevel.ordinal() >= type.ordinal())
+			writeToFile(buffer.toString());
 	}
 
 	@Override

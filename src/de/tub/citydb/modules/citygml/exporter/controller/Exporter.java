@@ -380,7 +380,7 @@ public class Exporter implements EventHandler {
 
 					// create instance of temp table manager
 					try {
-						cacheManager = new CacheManager(dbPool, maxThreads);
+						cacheManager = new CacheManager(dbPool, maxThreads, config);
 					} catch (SQLException e) {
 						LOG.error("SQL error while initializing cache manager: " + e.getMessage());
 						return false;

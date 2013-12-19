@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
+import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 import de.tub.citydb.database.adapter.h2.H2Adapter;
@@ -49,28 +50,34 @@ public class CacheManager {
 	private final AbstractSQLAdapter sqlAdapter;	
 	private final Connection connection;	
 
-	private final String tempDir = "C:\\Users\\cnagel\\3DCityDB-Importer-Exporter\\tmp";
 	private String cacheDir;
 
 	private ConcurrentHashMap<CacheTableModelEnum, CacheTable> cacheTables;
 	private ConcurrentHashMap<CacheTableModelEnum, BranchCacheTable> branchCacheTables;
 
-	public CacheManager(DatabaseConnectionPool dbPool, int concurrencyLevel) throws SQLException, IOException {
-		//		sqlAdapter = dbPool.getActiveDatabaseAdapter().getSQLAdapter();
-		//		connection = dbPool.getConnection();
-		//		connection.setAutoCommit(false);
-
-		H2Adapter h2Adapter = new H2Adapter();
-		sqlAdapter = h2Adapter.getSQLAdapter();
-
-		try {
-			Class.forName(h2Adapter.getConnectionFactoryClassName());
-		} catch (ClassNotFoundException e) {
-			throw new SQLException(e);
+	public CacheManager(DatabaseConnectionPool dbPool, int concurrencyLevel, Config config) throws SQLException, IOException {
+		if (config.getProject().getGlobal().getCache().isUseDatabase()) {
+			sqlAdapter = dbPool.getActiveDatabaseAdapter().getSQLAdapter();
+			connection = dbPool.getConnection();
 		}
 
-		cacheDir = tempDir + File.separator + DefaultGMLIdManager.getInstance().generateUUID("");		
-		connection = DriverManager.getConnection(h2Adapter.getJDBCUrl(cacheDir + File.separator + "tmp", -1, null), "sa", "");			
+		else {
+			File tempDir = checkTempDir(config.getProject().getGlobal().getCache().getLocalCachePath());
+			LOG.debug("Local cache directory is '" + tempDir.getAbsolutePath() + "'.");
+
+			H2Adapter h2Adapter = new H2Adapter();
+			sqlAdapter = h2Adapter.getSQLAdapter();
+
+			try {
+				Class.forName(h2Adapter.getConnectionFactoryClassName());
+			} catch (ClassNotFoundException e) {
+				throw new SQLException(e);
+			}
+
+			cacheDir = tempDir.getAbsolutePath() + File.separator + DefaultGMLIdManager.getInstance().generateUUID("");		
+			connection = DriverManager.getConnection(h2Adapter.getJDBCUrl(cacheDir + File.separator + "tmp", -1, null), "sa", "");			
+		}
+
 		connection.setAutoCommit(false);
 
 		cacheTables = new ConcurrentHashMap<CacheTableModelEnum, CacheTable>(CacheTableModelEnum.values().length, 0.75f, concurrencyLevel);
@@ -134,18 +141,20 @@ public class CacheManager {
 
 			for (BranchCacheTable branchCacheTable : branchCacheTables.values())
 				branchCacheTable.drop();
-			
+
 		} finally  {
 			// clean up
 			cacheTables.clear();
 			branchCacheTables.clear();
 
 			connection.close();
-			
-			try {
-				deleteTempFiles(new File(cacheDir));
-			} catch (SecurityException e) {
-				LOG.error("Failed to delete temp directory: " + e.getMessage());
+
+			if (cacheDir != null) {
+				try {
+					deleteTempFiles(new File(cacheDir));
+				} catch (IOException e) {
+					LOG.error("Failed to delete temp directory: " + e.getMessage());
+				}
 			}
 		}
 	}
@@ -173,13 +182,34 @@ public class CacheManager {
 
 		return branchCacheTable;
 	}
+
+	private File checkTempDir(String tempDir) throws IOException {
+		if (tempDir == null || tempDir.trim().length() == 0)
+			throw new IOException("No temp directory for local cache provided.");
+		
+		File dir = new File(tempDir);
 	
-	private void deleteTempFiles(File file) throws SecurityException {
+		if (!dir.exists() && !dir.mkdirs())
+			throw new IOException("Failed to create temp directory '" + dir.getAbsolutePath() + "'.");
+
+		if (!dir.isDirectory())
+			throw new IOException("The local cache setting '" + dir.getAbsolutePath() + "' is not a directory.");
+	
+		if (!dir.canRead() && !dir.setReadable(true, true))
+			throw new IOException("Lacking read permissions on temp directory '" + dir.getAbsolutePath() + "'.");
+
+		if (!dir.canWrite() && !dir.setWritable(true, true))
+			throw new IOException("Lacking write permissions on temp directory '" + dir.getAbsolutePath() + "'.");
+		
+		return dir;
+	}
+
+	private void deleteTempFiles(File file) throws IOException {
 		if (file.isDirectory()) {
 			for (File nested : file.listFiles())
 				deleteTempFiles(nested);
 		}
-		
+
 		file.delete();
 	}
 
