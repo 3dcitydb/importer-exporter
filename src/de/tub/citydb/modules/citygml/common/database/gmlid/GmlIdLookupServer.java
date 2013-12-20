@@ -157,7 +157,7 @@ public class GmlIdLookupServer {
 
 	private void drainToDB() {
 		try {
-			LOG.debug("Writing gml:id " + cacheModel.getType() + " cache to database.");
+			LOG.debug("Writing gml:ids to " + cacheModel.getType() + " cache.");
 			backUp = true;
 			
 			int drain = Math.round(capacity * drainFactor);
@@ -165,10 +165,10 @@ public class GmlIdLookupServer {
 				cacheModel.drainToDB(map, drain);
 				entries.set(map.size());
 
-				LOG.debug("gml:id " + cacheModel.getType() + " cache written to database.");
+				LOG.debug("gml:ids written to " + cacheModel.getType() + " cache.");
 
 			} catch (SQLException sqlEx) {
-				LOG.error("SQL error while writing gml:id " + cacheModel.getType() + " cache to database: " + sqlEx.getMessage());
+				LOG.error("SQL error while writing gml:ids to " + cacheModel.getType() + " cache: " + sqlEx.getMessage());
 			}
 		} finally {
 			final ReentrantLock lock = this.mainLock;

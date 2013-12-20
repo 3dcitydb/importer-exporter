@@ -33,6 +33,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
+
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableBasic;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableDeprecatedMaterial;
@@ -101,7 +103,7 @@ public class CacheTable extends AbstractCacheTable {
 		}
 
 		this.isStandAlone = isStandAlone;
-		tableName = model.value() + ID;
+		tableName = generateUniqueTableName();
 	}
 
 	protected CacheTable(CacheTableModelEnum model, Connection connection, AbstractSQLAdapter sqlAdapter) {
@@ -301,5 +303,13 @@ public class CacheTable extends AbstractCacheTable {
 	@Override
 	public CacheTableModelEnum getModelType() {
 		return model.getType();
+	}
+	
+	private String generateUniqueTableName() {		
+		String name = "TMP_" + model.getType().value() + ID + Math.abs(DefaultGMLIdManager.getInstance().generateUUID().hashCode());
+		if (name.length() > 28)
+			name = name.substring(0, 28);
+
+		return name;
 	}
 }
