@@ -296,12 +296,13 @@ public class DBSurfaceGeometry implements DBExporter {
 			// we suppose we have one outer ring and one or more inner rings
 			boolean isExterior = true;
 			for (int ringIndex = 0; ringIndex < geomNode.geometry.getNumElements(); ringIndex++) {
-				List<Double> values = new ArrayList<Double>(geomNode.geometry.getCoordinates(ringIndex).length);
+				List<Double> values = null;
 
 				// check whether we have to reverse the coordinate order
 				if (!geomNode.isReverse) { 
-					values.addAll(geomNode.geometry.getCoordinatesAsList(ringIndex));
+					values = geomNode.geometry.getCoordinatesAsList(ringIndex);
 				} else {
+					values = new ArrayList<Double>(geomNode.geometry.getCoordinates(ringIndex).length);
 					double[] coordinates = geomNode.geometry.getCoordinates(ringIndex);
 					for (int i = coordinates.length - 3; i >= 0; i -= 3) {
 						values.add(coordinates[i]);
