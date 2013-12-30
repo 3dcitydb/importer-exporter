@@ -327,12 +327,12 @@ public class Exporter implements EventHandler {
 					if (appearances.isSetExportAppearance()) {
 						// read user input
 						String textureExportPath = null;
-						boolean isRelative = appearances.isTexturePathRealtive();
+						boolean isRelative = appearances.getTexturePath().isRelative();
 
 						if (isRelative)
-							textureExportPath = appearances.getRelativeTexturePath();
+							textureExportPath = appearances.getTexturePath().getRelativePath();
 						else
-							textureExportPath = appearances.getAbsoluteTexturePath();
+							textureExportPath = appearances.getTexturePath().getAbsolutePath();
 
 						if (textureExportPath != null && textureExportPath.length() > 0) {
 							// convert into system readable path name

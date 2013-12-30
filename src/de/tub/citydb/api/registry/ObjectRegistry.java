@@ -51,7 +51,7 @@ public class ObjectRegistry {
 	private PluginConfigController pluginConfigController;
 	private IOController ioController;
 	private CityGMLBuilder cityGMLBuilder;
-	
+
 	private ObjectRegistry() {
 		// just to thwart instantiation
 	}
@@ -148,7 +148,7 @@ public class ObjectRegistry {
 	public void setCityGMLBuilder(CityGMLBuilder cityGMLBuilder) {
 		if (this.cityGMLBuilder != null)
 			throw new IllegalArgumentException("CityGML Builder is already registered with the object registry.");
-		
+
 		this.cityGMLBuilder = cityGMLBuilder;
 	}
 

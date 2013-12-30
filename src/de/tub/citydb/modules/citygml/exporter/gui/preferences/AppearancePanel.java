@@ -79,10 +79,10 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	public boolean isModified() {
 		ExportAppearance appearances = config.getProject().getExporter().getAppearances();
 
-		if (!pathAbsText.getText().equals(appearances.getAbsoluteTexturePath())) return true;
-		if (!pathRelText.getText().equals(appearances.getRelativeTexturePath())) return true;
-		if (radioPathRel.isSelected() != appearances.isTexturePathRealtive()) return true;
-		if (radioPathAbs.isSelected() != appearances.isTexturePathAbsolute()) return true;
+		if (!pathAbsText.getText().equals(appearances.getTexturePath().getAbsolutePath())) return true;
+		if (!pathRelText.getText().equals(appearances.getTexturePath().getRelativePath())) return true;
+		if (radioPathRel.isSelected() != appearances.getTexturePath().isRelative()) return true;
+		if (radioPathAbs.isSelected() != appearances.getTexturePath().isAbsolute()) return true;
 		if (radioExp.isSelected() && !(appearances.isSetExportAppearance() && appearances.isSetExportTextureFiles())) return true;
 		if (radioNoExp.isSelected() && !(!appearances.isSetExportAppearance() && !appearances.isSetExportTextureFiles())) return true;
 		if (radioAppExp.isSelected() && !(appearances.isSetExportAppearance() && !appearances.isSetExportTextureFiles())) return true;
@@ -229,10 +229,10 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 		overwriteCheck.setSelected(appearances.isSetOverwriteTextureFiles());
 		generateUniqueCheck.setSelected(appearances.isSetUniqueTextureFileNames());
-		pathRelText.setText(appearances.getRelativeTexturePath());
-		pathAbsText.setText(appearances.getAbsoluteTexturePath());
-		radioPathRel.setSelected(appearances.isTexturePathRealtive());
-		radioPathAbs.setSelected(!appearances.isTexturePathRealtive());
+		pathRelText.setText(appearances.getTexturePath().getRelativePath());
+		pathAbsText.setText(appearances.getTexturePath().getAbsolutePath());
+		radioPathRel.setSelected(appearances.getTexturePath().isRelative());
+		radioPathAbs.setSelected(!appearances.getTexturePath().isRelative());
 		
 		setEnabledTextureExport();
 	}
@@ -256,16 +256,16 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 		appearances.setOverwriteTextureFiles(overwriteCheck.isSelected());
 		appearances.setUniqueTextureFileNames(generateUniqueCheck.isSelected());
-		appearances.setAbsoluteTexturePath(pathAbsText.getText());
+		appearances.getTexturePath().setAbsolutePath(pathAbsText.getText());
 		
 		if (pathRelText.getText() == null || pathRelText.getText().trim().length() == 0)
 			pathRelText.setText("appearance"); 
-		appearances.setRelativeTexturePath(pathRelText.getText());
+		appearances.getTexturePath().setRelativePath(pathRelText.getText());
 
 		if (radioPathRel.isSelected())
-			appearances.setTexturePathMode(TexturePathMode.RELATIVE);
+			appearances.getTexturePath().setMode(TexturePathMode.RELATIVE);
 		else
-			appearances.setTexturePathMode(TexturePathMode.ABSOLUTE);
+			appearances.getTexturePath().setMode(TexturePathMode.ABSOLUTE);
 	}
 	
 	@Override

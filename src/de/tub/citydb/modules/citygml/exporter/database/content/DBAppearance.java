@@ -64,6 +64,7 @@ import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
@@ -82,6 +83,8 @@ public class DBAppearance implements DBExporter {
 	private boolean exportTextureImage;
 	private boolean uniqueFileNames;
 	private String texturePath;
+	private boolean useBuckets;
+	private int noOfBuckets;
 	private boolean useXLink;
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
@@ -105,9 +108,11 @@ public class DBAppearance implements DBExporter {
 		textureNameCache = new HashSet<String>();
 		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
 		uniqueFileNames = config.getProject().getExporter().getAppearances().isSetUniqueTextureFileNames();
+		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets();
+		noOfBuckets = config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets(); 
 
 		texturePath = config.getInternal().getExportTextureFilePath();
-		pathSeparator = config.getProject().getExporter().getAppearances().isTexturePathAbsolute() ?
+		pathSeparator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ?
 				File.separator : "/";
 
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
@@ -377,22 +382,23 @@ public class DBAppearance implements DBExporter {
 			if (imageURI != null) {
 				if (uniqueFileNames) {
 					String extension = Util.getFileExtension(imageURI);
-					imageURI = "tex" + surfaceDataId + (extension != null ? "." + extension : "");
+					imageURI = Internal.UNIQUE_TEXTURE_FILENAME_PREFIX + surfaceDataId + (extension != null ? "." + extension : "");
 				}
 
 				File file = new File(imageURI);
 				String fileName = file.getName();
-				if (texturePath != null)
-					fileName = texturePath + pathSeparator + fileName;
-
-				absTex.setImageURI(fileName);
+				
+				if (useBuckets)
+					fileName = String.valueOf(Math.abs(surfaceDataId % noOfBuckets + 1)) + pathSeparator + fileName;
+				
+				absTex.setImageURI(texturePath != null ? texturePath + pathSeparator + fileName : fileName);
 
 				// export texture image from database
 				if (exportTextureImage && (uniqueFileNames || !textureNameCache.contains(imageURI))) {
 					if (dbImageSize > 0) {
 						DBXlinkTextureFile xlink = new DBXlinkTextureFile(
 								surfaceDataId,
-								file.getName(),
+								fileName,
 								DBXlinkTextureFileEnum.TEXTURE_IMAGE);
 						dbExporterManager.propagateXlink(xlink);
 					} else {

@@ -40,6 +40,7 @@ public class Internal {
 	public static final String GML_NAME_DELIMITER = " --/\\-- ";
 	public static final String GEOMETRY_XLINK = "isXlink";
 	public static final String GEOMETRY_ORIGINAL = "origGeom";
+	public static final String UNIQUE_TEXTURE_FILENAME_PREFIX = "tex_";
 
 	// language pack
 	public static ResourceBundle I18N;

@@ -37,10 +37,8 @@ import javax.xml.bind.annotation.XmlType;
 		"exportTextureFiles",
 		"overwriteTextureFiles",
 		"uniqueTextureFileNames",
-		"texturePathMode",
-		"relativeTexturePath",
-		"absoluteTexturePath"
-		})
+		"texturePath"
+})
 public class ExportAppearance {
 	@XmlElement(name="export", required=true, defaultValue="true")
 	private Boolean exportAppearances = true;
@@ -49,17 +47,16 @@ public class ExportAppearance {
 	@XmlElement(defaultValue="false")
 	private Boolean overwriteTextureFiles = true;
 	private Boolean uniqueTextureFileNames = false;
-	private TexturePathMode texturePathMode = TexturePathMode.RELATIVE;
-	private String relativeTexturePath = "appearance";
-	private String absoluteTexturePath = "";
-	
+	private TexturePath texturePath;
+
 	public ExportAppearance() {
+		texturePath = new TexturePath();
 	}
 
 	public boolean isSetExportAppearance() {
 		if (exportAppearances != null)
 			return exportAppearances.booleanValue();
-		
+
 		return false;
 	}
 
@@ -70,11 +67,11 @@ public class ExportAppearance {
 	public void setExportAppearances(Boolean exportAppearances) {
 		this.exportAppearances = exportAppearances;
 	}
-	
+
 	public boolean isSetExportTextureFiles() {
 		if (exportTextureFiles != null)
 			return exportTextureFiles.booleanValue();
-		
+
 		return false;
 	}
 
@@ -89,10 +86,10 @@ public class ExportAppearance {
 	public boolean isSetOverwriteTextureFiles() {
 		if (overwriteTextureFiles != null)
 			return overwriteTextureFiles.booleanValue();
-		
+
 		return false;
 	}
-	
+
 	public Boolean getOverwriteTextureFiles() {
 		return overwriteTextureFiles;
 	}
@@ -100,14 +97,14 @@ public class ExportAppearance {
 	public void setOverwriteTextureFiles(Boolean overwriteTextureFiles) {
 		this.overwriteTextureFiles = overwriteTextureFiles;
 	}
-	
+
 	public boolean isSetUniqueTextureFileNames() {
 		if (uniqueTextureFileNames != null)
 			return uniqueTextureFileNames.booleanValue();
-		
+
 		return false;
 	}
-	
+
 	public Boolean getUniqueTextureFileNames() {
 		return uniqueTextureFileNames;
 	}
@@ -116,36 +113,13 @@ public class ExportAppearance {
 		this.uniqueTextureFileNames = uniqueTextureFileNames;
 	}
 
-	public boolean isTexturePathAbsolute() {
-		return texturePathMode == TexturePathMode.ABSOLUTE;
-	}
-	
-	public boolean isTexturePathRealtive() {
-		return texturePathMode == TexturePathMode.RELATIVE;
-	}
-	
-	public TexturePathMode getTexturePathMode() {
-		return texturePathMode;
+	public TexturePath getTexturePath() {
+		return texturePath;
 	}
 
-	public void setTexturePathMode(TexturePathMode texturePathMode) {
-		this.texturePathMode = texturePathMode;
+	public void setTexturePath(TexturePath texturePath) {
+		if (texturePath != null)
+			this.texturePath = texturePath;
 	}
 
-	public String getRelativeTexturePath() {
-		return relativeTexturePath;
-	}
-
-	public void setRelativeTexturePath(String relativeTexturePath) {
-		this.relativeTexturePath = relativeTexturePath;
-	}
-
-	public String getAbsoluteTexturePath() {
-		return absoluteTexturePath;
-	}
-
-	public void setAbsoluteTexturePath(String absoluteTexturePath) {
-		this.absoluteTexturePath = absoluteTexturePath;
-	}
-	
 }

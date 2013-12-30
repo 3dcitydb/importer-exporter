@@ -54,6 +54,8 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 	private String texturePath;
 	private boolean texturePathIsLocal;
 	private boolean overwriteTextureImage;
+	private boolean useBuckets;
+	private boolean[] buckets; 
 	private CounterEvent counter;
 
 	public DBXlinkExporterTextureImage(Connection connection, Config config, DBXlinkExporterManager xlinkExporterManager) throws SQLException {
@@ -66,10 +68,14 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 
 	private void init() throws SQLException {
 		localPath = config.getInternal().getExportPath();
-		texturePathIsLocal = config.getProject().getExporter().getAppearances().isTexturePathRealtive();
+		texturePathIsLocal = config.getProject().getExporter().getAppearances().getTexturePath().isRelative();
 		texturePath = config.getInternal().getExportTextureFilePath();
 		overwriteTextureImage = config.getProject().getExporter().getAppearances().isSetOverwriteTextureFiles();
 		counter = new CounterEvent(CounterType.TEXTURE_IMAGE, 1, this);
+		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets();
+
+		if (useBuckets)
+			buckets = new boolean[config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets()];
 
 		textureImageExportAdapter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getTextureImageExportAdapter(connection);
 	}
@@ -111,6 +117,14 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 		File file = new File(fileURI);
 		if (!overwriteTextureImage && file.exists())
 			return false;
+
+		if (useBuckets) {
+			int bucket = Integer.valueOf(fileName.substring(0, fileName.indexOf('/'))) - 1;
+			if (!buckets[bucket]) {
+				file.getParentFile().mkdir();
+				buckets[bucket] = true;
+			}
+		}
 
 		// load image data into file
 		xlinkExporterManager.propagateEvent(counter);
