@@ -38,7 +38,6 @@ import java.util.HashMap;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.transform.stream.StreamResult;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
@@ -328,7 +327,7 @@ public class DBImporterManager {
 				ctx.setPrefix(cityGMLVersion.getModule(moduleType));
 
 			ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
-			saxWriter.setOutput(new StreamResult(out));
+			saxWriter.setOutput(out);
 			saxWriter.setNamespaceContext(ctx);
 
 			Marshaller marshaller = jaxbBuilder.getJAXBContext().createMarshaller();

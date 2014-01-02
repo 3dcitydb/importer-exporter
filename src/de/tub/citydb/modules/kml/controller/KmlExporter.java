@@ -52,7 +52,6 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.transform.stream.StreamResult;
 
 import net.opengis.kml._2.BalloonStyleType;
 import net.opengis.kml._2.DocumentType;
@@ -353,7 +352,7 @@ public class KmlExporter implements EventHandler {
 							}
 								
 							// set output for SAXWriter
-							saxWriter.setOutput(new StreamResult(fileWriter), ENCODING);	
+							saxWriter.setOutput(fileWriter);	
 						} catch (IOException ioE) {
 							Logger.getInstance().error("Failed to open file '" + file.getName() + "' for writing: " + ioE.getMessage());
 							return false;
@@ -697,7 +696,7 @@ public class KmlExporter implements EventHandler {
 		try {
 			File mainFile = new File(path + File.separator + filename + ".kml");
 			FileOutputStream outputStream = new FileOutputStream(mainFile);
-			saxWriter.setOutput(new StreamResult(outputStream), ENCODING);	
+			saxWriter.setOutput(outputStream, ENCODING);	
 
 			ioWriterPool = new SingleWorkerPool<SAXEventBuffer>(
 					"kml_master_file_writer_pool",

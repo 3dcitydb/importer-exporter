@@ -189,7 +189,7 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public TextureImageExportAdapter getTextureImageExportAdapter( Connection connection) {
+	public TextureImageExportAdapter getTextureImageExportAdapter(Connection connection) {
 		return new BlobExportAdapterImpl(connection, BlobType.TEXTURE_IMAGE);
 	}
 

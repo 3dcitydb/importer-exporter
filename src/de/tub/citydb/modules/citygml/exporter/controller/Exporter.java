@@ -38,8 +38,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.xml.transform.stream.StreamResult;
-
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.builder.jaxb.xml.io.writer.JAXBModelWriter;
 import org.citygml4j.builder.jaxb.xml.io.writer.JAXBOutputFactory;
@@ -372,7 +370,7 @@ public class Exporter implements EventHandler {
 					// open file for writing
 					try {
 						OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
-						saxWriter.setOutput(new StreamResult(fileWriter));
+						saxWriter.setOutput(fileWriter);
 					} catch (IOException ioE) {
 						LOG.error("Failed to open file '" + fileName + "' for writing: " + ioE.getMessage());
 						return false;
