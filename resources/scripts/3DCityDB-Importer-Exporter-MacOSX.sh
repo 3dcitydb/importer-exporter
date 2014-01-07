@@ -18,7 +18,7 @@ fi
 # Uncomment the following line to use this script as execution wrapper, 
 # e.g., from external programs. Command line arguments are passed to the 
 # jar file.
-# exec "$JAVA" -jar -Xms128m -Xmx768m lib/!impexp.jar.filename! "$@"
+# exec "$JAVA" -jar -Xms128m -Xmx1024m lib/!impexp.jar.filename! "$@"
 
 # The following command executes the GUI version 
-exec "$JAVA" -jar -Xms128m -Xmx768m !mac.os.x! lib/!impexp.jar.filename!
+exec "$JAVA" -jar -Xms128m -Xmx1024m !mac.os.x! lib/!impexp.jar.filename!

@@ -24,7 +24,7 @@ goto LAUNCH
 REM Uncomment the following line to use this script as execution wrapper, 
 REM e.g., from external programs. Command line arguments are passed to the 
 REM jar file.
-REM %JAVA% -jar -Xms128m -Xmx768m lib/!impexp.jar.filename! %*
+REM %JAVA% -jar -Xms128m -Xmx1024m lib/!impexp.jar.filename! %*
 
 REM The following command executes the GUI version 
-start /min cmd /c "%JAVA% -jar -Xms128m -Xmx768m lib/!impexp.jar.filename!"
+start /min cmd /c "%JAVA% -jar -Xms128m -Xmx1024m lib/!impexp.jar.filename!"
