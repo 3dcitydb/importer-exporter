@@ -38,7 +38,6 @@ import javax.xml.bind.ValidationEventHandler;
 import javax.xml.namespace.QName;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
-import org.citygml4j.builder.jaxb.xml.io.reader.JAXBChunkReader;
 import org.citygml4j.xml.io.CityGMLInputFactory;
 import org.citygml4j.xml.io.reader.CityGMLReadException;
 import org.citygml4j.xml.io.reader.CityGMLReader;
@@ -173,7 +172,7 @@ public class XMLValidator implements EventHandler {
 				boolean containsCityGML = false;
 
 				try {
-					reader = (JAXBChunkReader)in.createCityGMLReader(file);					
+					reader = in.createCityGMLReader(file);					
 					LOG.info("Validating document: " + file.toString());						
 
 					containsCityGML = reader.hasNext();

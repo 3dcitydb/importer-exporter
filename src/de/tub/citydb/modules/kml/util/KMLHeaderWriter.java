@@ -73,22 +73,14 @@ public class KMLHeaderWriter {
 				}
 
 				event.send(saxWriter);
-				saxBuffer.removeFirstEvent();
+				saxBuffer.dropFirstEvent();
 			} while ((event = event.next()) != null);			
 		}
 	}
 
 
 	public void endRootElement() throws SAXException {
-		if (saxBuffer != null && !saxBuffer.isEmpty()) {
-			SAXEvent event = saxBuffer.getFirstEvent();
-
-			do {
-				event.send(saxWriter);
-				saxBuffer.removeFirstEvent();
-			} while ((event = event.next()) != null);	
-		}
-
+		saxBuffer.send(saxWriter);
 		saxWriter.endDocument();
 	}
 

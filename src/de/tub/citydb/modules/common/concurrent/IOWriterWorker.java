@@ -33,7 +33,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
-import org.citygml4j.util.xml.saxevents.SAXEvent;
 import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.Worker;
@@ -119,13 +118,7 @@ public class IOWriterWorker implements Worker<SAXEventBuffer> {
         runLock.lock();
 
         try {
-        	SAXEvent event = work.getFirstEvent();
-        	while (event != null) {
-				event.send(saxWriter);
-				work.removeFirstEvent();
-				event = event.next();
-        	}
-
+        	work.send(saxWriter);
         	saxWriter.flush();
         } catch (SAXException e) {
         	LOG.error("XML error: " + e.getMessage());
