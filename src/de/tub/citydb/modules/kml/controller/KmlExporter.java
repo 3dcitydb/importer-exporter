@@ -42,7 +42,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -52,6 +51,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.namespace.QName;
 
 import net.opengis.kml._2.BalloonStyleType;
 import net.opengis.kml._2.DocumentType;
@@ -76,6 +76,8 @@ import net.opengis.kml._2.ViewRefreshModeEnumType;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
+import org.citygml4j.util.xml.SAXFragmentWriter;
+import org.citygml4j.util.xml.SAXFragmentWriter.WriteMode;
 import org.citygml4j.util.xml.SAXWriter;
 import org.xml.sax.SAXException;
 
@@ -126,7 +128,6 @@ import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
 import de.tub.citydb.modules.kml.database.Transportation;
 import de.tub.citydb.modules.kml.database.WaterBody;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
-import de.tub.citydb.modules.kml.util.KMLHeaderWriter;
 
 public class KmlExporter implements EventHandler {
 	private final JAXBContext jaxbKmlContext;
@@ -271,9 +272,6 @@ public class KmlExporter implements EventHandler {
 		saxWriter.setPrefix("atom", "http://www.w3.org/2005/Atom");
 		saxWriter.setPrefix("xal", "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0");
 		
-		Properties props = new Properties();
-		props.put(Marshaller.JAXB_FRAGMENT, new Boolean(true));
-
 		path = config.getInternal().getExportFileName().trim();
 		if (path.lastIndexOf(File.separator) == -1) {
 			if (path.lastIndexOf(".") == -1) {
@@ -392,9 +390,9 @@ public class KmlExporter implements EventHandler {
 							return false;
 						}
 
-						// create file header
-						KMLHeaderWriter kmlHeader = new KMLHeaderWriter(saxWriter);
-
+						// create file header writer
+						SAXFragmentWriter fragmentWriter = new SAXFragmentWriter(kmlFactory.createDocument(null).getName(), saxWriter);
+						
 						// ok, preparations done. inform user...
 						Logger.getInstance().info("Exporting to file: " + file.getAbsolutePath());
 
@@ -412,11 +410,18 @@ public class KmlExporter implements EventHandler {
 						document.setOpen(false);
 						kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
 
+						Marshaller marshaller = null;						
 						try {
-							kmlHeader.setRootElement(kml, jaxbKmlContext, props);
-							kmlHeader.startRootElement();
+							marshaller = jaxbKmlContext.createMarshaller();
+							marshaller.setProperty(Marshaller.JAXB_FRAGMENT, new Boolean(true));
+						} catch (JAXBException e) {
+							Logger.getInstance().error("Failed to create JAXB marshaller object.");
+							return false;
+						}
 
-							// make sure header has been written
+						try {
+							fragmentWriter.setWriteMode(WriteMode.HEAD);
+							marshaller.marshal(kml, fragmentWriter);
 							saxWriter.flush();
 
 							if (isBBoxActive &&	tiling.getMode() != TilingMode.NO_TILING) {
@@ -470,9 +475,10 @@ public class KmlExporter implements EventHandler {
 
 						// write footer element
 						try {
-							kmlHeader.endRootElement();
-						} catch (SAXException saxE) {
-							Logger.getInstance().error("XML error: " + saxE.getMessage());
+							fragmentWriter.setWriteMode(WriteMode.TAIL);
+							marshaller.marshal(kml, fragmentWriter);
+						} catch (JAXBException jaxBE) {
+							Logger.getInstance().error("I/O error: " + jaxBE.getMessage());
 							return false;
 						}
 
@@ -686,11 +692,6 @@ public class KmlExporter implements EventHandler {
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
-		Properties props = new Properties();
-		props.put(Marshaller.JAXB_FRAGMENT, new Boolean(true));
-//		props.put(Marshaller.JAXB_FORMATTED_OUTPUT, new Boolean(true));
-//		props.put(Marshaller.JAXB_ENCODING, ENCODING);
-
 		TilingMode tilingMode = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode();
 
 		try {
@@ -707,7 +708,8 @@ public class KmlExporter implements EventHandler {
 			ioWriterPool.prestartCoreWorkers();
 
 			// create file header
-			KMLHeaderWriter kmlHeader = new KMLHeaderWriter(saxWriter);
+			SAXFragmentWriter fragmentWriter = new SAXFragmentWriter(
+					new QName("http://www.opengis.net/kml/2.2", "Document"), saxWriter);						
 
 			// create kml root element
 			KmlType kmlType = kmlFactory.createKmlType();
@@ -726,8 +728,9 @@ public class KmlExporter implements EventHandler {
 			kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
 
 			try {
-				kmlHeader.setRootElement(kml, jaxbKmlContext, props);
-				kmlHeader.startRootElement();
+				fragmentWriter.setWriteMode(WriteMode.HEAD);
+				marshaller.marshal(kml, fragmentWriter);				
+				
 				if (config.getProject().getKmlExporter().isOneFilePerObject()) {
 					FeatureClass featureFilter = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass();
 					if (featureFilter.isSetBuilding()) {
@@ -873,7 +876,8 @@ public class KmlExporter implements EventHandler {
 
 			try {
 				ioWriterPool.shutdownAndWait();
-				kmlHeader.endRootElement();
+				fragmentWriter.setWriteMode(WriteMode.TAIL);
+				marshaller.marshal(kml, fragmentWriter);
 				saxWriter.flush();
 			} catch (SAXException saxE) {
 				Logger.getInstance().error("I/O error: " + saxE.getMessage());

@@ -139,14 +139,14 @@ public class FeatureReaderWorker implements Worker<XMLChunk> {
 				StringBuilder msg = new StringBuilder();				
 				msg.append("Failed to unmarshal XML chunk");
 
-				if (work.getFirstStartElement() != null && work.getFirstStartElement().getLocation() != null) {
-					msg.append(" at [")
-					.append(work.getFirstStartElement().getLocation().getLineNumber())
-					.append(", ")
-					.append(work.getFirstStartElement().getLocation().getColumnNumber())
-					.append("]");
-				}
-				
+//				if (work.getFirstStartElement() != null && work.getFirstStartElement().getLocation() != null) {
+//					msg.append(" at [")
+//					.append(work.getFirstStartElement().getLocation().getLineNumber())
+//					.append(", ")
+//					.append(work.getFirstStartElement().getLocation().getColumnNumber())
+//					.append("]");
+//				}
+//				
 				msg.append(": ");
 				msg.append(e.getMessage());
 				LOG.error(msg.toString());

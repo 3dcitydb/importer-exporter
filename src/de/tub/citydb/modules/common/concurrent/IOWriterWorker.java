@@ -118,7 +118,7 @@ public class IOWriterWorker implements Worker<SAXEventBuffer> {
         runLock.lock();
 
         try {
-        	work.send(saxWriter);
+        	work.send(saxWriter, true);
         	saxWriter.flush();
         } catch (SAXException e) {
         	LOG.error("XML error: " + e.getMessage());

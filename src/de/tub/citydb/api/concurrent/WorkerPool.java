@@ -52,10 +52,10 @@ public class WorkerPool<T> {
 	private final Object DUMMY = new Object();
 
 	private volatile int runState;
-	private final int RUNNING    = 0;
-	private final int SHUTDOWN   = 1;
-	private final int STOP       = 2;
-	private final int TERMINATED = 3;
+	private final byte RUNNING    = 0;
+	private final byte SHUTDOWN   = 1;
+	private final byte STOP       = 2;
+	private final byte TERMINATED = 3;
 
 	private ClassLoader contextClassLoader;
 	private ClassLoader defaultClassLoader;
