@@ -1273,6 +1273,7 @@ public class DBSurfaceGeometry implements DBImporter {
 		}
 
 		private void clear() {
+			reset();
 			ids = null;
 			count = 0;
 			index = 0;
