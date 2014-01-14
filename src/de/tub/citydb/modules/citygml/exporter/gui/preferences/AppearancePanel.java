@@ -33,13 +33,19 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -69,7 +75,9 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	private JTextField pathAbsText;
 	private JButton pathAbsButton;
 	private JTextField pathRelText;
-
+	private JCheckBox useBuckets;
+	private JFormattedTextField noOfBuckets;
+	
 	public AppearancePanel(Config config) {
 		super(config);
 		initGui();
@@ -78,6 +86,8 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	@Override
 	public boolean isModified() {
 		ExportAppearance appearances = config.getProject().getExporter().getAppearances();
+
+		try { noOfBuckets.commitEdit(); } catch (ParseException e) { }
 
 		if (!pathAbsText.getText().equals(appearances.getTexturePath().getAbsolutePath())) return true;
 		if (!pathRelText.getText().equals(appearances.getTexturePath().getRelativePath())) return true;
@@ -88,7 +98,9 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		if (radioAppExp.isSelected() && !(appearances.isSetExportAppearance() && !appearances.isSetExportTextureFiles())) return true;
 		if (overwriteCheck.isSelected() != appearances.isSetOverwriteTextureFiles()) return true;
 		if (generateUniqueCheck.isSelected() != appearances.isSetUniqueTextureFileNames()) return true;
-		
+		if (useBuckets.isSelected() != appearances.getTexturePath().isUseBuckets()) return true;
+		if (((Number)noOfBuckets.getValue()).intValue() != appearances.getTexturePath().getNoOfBuckets()) return true;
+
 		return false;
 	}
 
@@ -111,7 +123,13 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		pathAbsButton = new JButton();
 		pathRelText = new JTextField();
 
-		PopupMenuDecorator.getInstance().decorate(pathAbsText);
+		useBuckets = new JCheckBox();
+		DecimalFormat bucketsFormat = new DecimalFormat("########");
+		bucketsFormat.setMaximumIntegerDigits(8);
+		bucketsFormat.setMinimumIntegerDigits(1);		
+		noOfBuckets = new JFormattedTextField(bucketsFormat);
+
+		PopupMenuDecorator.getInstance().decorate(pathAbsText, noOfBuckets);
 		
 		pathAbsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -155,6 +173,14 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 				path1.add(pathAbsButton, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
 				path1.add(radioPathRel, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,5,5,0,5));
 				path1.add(pathRelText, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
+				
+				Box box = Box.createHorizontalBox();
+				box.add(useBuckets);
+				box.add(Box.createHorizontalStrut(5));
+				box.add(noOfBuckets);
+				useBuckets.setIconTextGap(10);
+				path1.add(box, GuiUtil.setConstraints(0,4,0.0,0.0,GridBagConstraints.BOTH,5,5,5,5));
+				pathRelText.setPreferredSize(useBuckets.getPreferredSize());
 			}
 
 		}
@@ -176,22 +202,37 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		radioExp.addActionListener(textureExportListener);		
 		radioPathAbs.addActionListener(texturePathListener);
 		radioPathRel.addActionListener(texturePathListener);
+		
+		useBuckets.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				noOfBuckets.setEnabled(useBuckets.isSelected());
+			}
+		});
+		
+		noOfBuckets.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (((Number)noOfBuckets.getValue()).intValue() < 0)
+					noOfBuckets.setValue(-((Number)noOfBuckets.getValue()).intValue());
+			}
+		});
 	}
 
 	private void setEnabledTextureExport() {
 		overwriteCheck.setEnabled(radioExp.isSelected());
 		generateUniqueCheck.setEnabled(radioExp.isSelected());
 		
-		((TitledBorder)path1.getBorder()).setTitleColor(!radioNoExp.isSelected() ? 
+		((TitledBorder)path1.getBorder()).setTitleColor(radioExp.isSelected() ? 
 				UIManager.getColor("TitledBorder.titleColor"):
 					UIManager.getColor("Label.disabledForeground"));
 		path1.repaint();
 
-		radioPathAbs.setEnabled(!radioNoExp.isSelected());
-		radioPathRel.setEnabled(!radioNoExp.isSelected());
-		pathAbsText.setEnabled(!radioNoExp.isSelected() && radioPathAbs.isSelected());
-		pathAbsButton.setEnabled(!radioNoExp.isSelected() && radioPathAbs.isSelected());
-		pathRelText.setEnabled(!radioNoExp.isSelected() && radioPathRel.isSelected());
+		radioPathAbs.setEnabled(radioExp.isSelected());
+		radioPathRel.setEnabled(radioExp.isSelected());
+		pathAbsText.setEnabled(radioExp.isSelected() && radioPathAbs.isSelected());
+		pathAbsButton.setEnabled(radioExp.isSelected() && radioPathAbs.isSelected());
+		pathRelText.setEnabled(radioExp.isSelected() && radioPathRel.isSelected());
+		useBuckets.setEnabled(radioExp.isSelected());
+		noOfBuckets.setEnabled(radioExp.isSelected() && useBuckets.isSelected());
 	}
 	
 	private void setEnabledTexturePath() {
@@ -212,6 +253,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		radioPathAbs.setText(Internal.I18N.getString("pref.export.appearance.label.absPath"));
 		radioPathRel.setText(Internal.I18N.getString("pref.export.appearance.label.relPath"));
 		pathAbsButton.setText(Internal.I18N.getString("common.button.browse"));
+		useBuckets.setText(Internal.I18N.getString("pref.export.appearance.label.useBuckets"));
 	}
 
 	@Override
@@ -225,14 +267,15 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 				radioAppExp.setSelected(true);
 		} else
 			radioNoExp.setSelected(true);
-
-
+		
 		overwriteCheck.setSelected(appearances.isSetOverwriteTextureFiles());
 		generateUniqueCheck.setSelected(appearances.isSetUniqueTextureFileNames());
 		pathRelText.setText(appearances.getTexturePath().getRelativePath());
 		pathAbsText.setText(appearances.getTexturePath().getAbsolutePath());
 		radioPathRel.setSelected(appearances.getTexturePath().isRelative());
 		radioPathAbs.setSelected(!appearances.getTexturePath().isRelative());
+		useBuckets.setSelected(appearances.getTexturePath().isUseBuckets());
+		noOfBuckets.setValue(appearances.getTexturePath().getNoOfBuckets());
 		
 		setEnabledTextureExport();
 	}
@@ -266,6 +309,9 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 			appearances.getTexturePath().setMode(TexturePathMode.RELATIVE);
 		else
 			appearances.getTexturePath().setMode(TexturePathMode.ABSOLUTE);
+		
+		appearances.getTexturePath().setUseBuckets(useBuckets.isSelected());
+		appearances.getTexturePath().setNoOfBuckets(((Number)noOfBuckets.getValue()).intValue());
 	}
 	
 	@Override

@@ -108,8 +108,8 @@ public class DBAppearance implements DBExporter {
 		textureNameCache = new HashSet<String>();
 		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
 		uniqueFileNames = config.getProject().getExporter().getAppearances().isSetUniqueTextureFileNames();
-		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets();
 		noOfBuckets = config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets(); 
+		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() && noOfBuckets > 0;
 
 		texturePath = config.getInternal().getExportTextureFilePath();
 		pathSeparator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ?
