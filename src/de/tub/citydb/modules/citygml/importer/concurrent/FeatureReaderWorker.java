@@ -133,23 +133,14 @@ public class FeatureReaderWorker implements Worker<XMLChunk> {
 		try {
 			try {
 				CityGML cityGML = work.unmarshal();
-				if (dbWorkerPool != null && (!useValidation || work.hasPassedXMLValidation()))
+				if (!useValidation || work.hasPassedXMLValidation())
 					dbWorkerPool.addWork(cityGML);
 			} catch (UnmarshalException e) {
-				StringBuilder msg = new StringBuilder();				
-				msg.append("Failed to unmarshal XML chunk");
-
-//				if (work.getFirstStartElement() != null && work.getFirstStartElement().getLocation() != null) {
-//					msg.append(" at [")
-//					.append(work.getFirstStartElement().getLocation().getLineNumber())
-//					.append(", ")
-//					.append(work.getFirstStartElement().getLocation().getColumnNumber())
-//					.append("]");
-//				}
-//				
-				msg.append(": ");
-				msg.append(e.getMessage());
-				LOG.error(msg.toString());
+				if (!useValidation || work.hasPassedXMLValidation()) {
+					StringBuilder msg = new StringBuilder();				
+					msg.append("Failed to unmarshal XML chunk: ").append(e.getMessage());			
+					LOG.error(msg.toString());
+				}
 			} catch (MissingADESchemaException e) {
 				LOG.error(e.getMessage());				
 				eventDispatcher.triggerEvent(new InterruptEvent(InterruptEnum.ADE_SCHEMA_READ_ERROR, this));

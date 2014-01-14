@@ -30,33 +30,31 @@
 package de.tub.citydb.modules.citygml.importer.controller;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.xml.bind.ValidationEvent;
-import javax.xml.bind.ValidationEventHandler;
-import javax.xml.namespace.QName;
+import javax.xml.XMLConstants;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 
-import org.citygml4j.builder.jaxb.JAXBBuilder;
-import org.citygml4j.xml.io.CityGMLInputFactory;
-import org.citygml4j.xml.io.reader.CityGMLReadException;
-import org.citygml4j.xml.io.reader.CityGMLReader;
-import org.citygml4j.xml.io.reader.FeatureReadMode;
-import org.citygml4j.xml.io.reader.XMLChunk;
+import org.citygml4j.xml.schema.SchemaHandler;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
-import de.tub.citydb.api.concurrent.SingleWorkerPool;
-import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.io.DirectoryScanner;
 import de.tub.citydb.io.DirectoryScanner.CityGMLFilenameFilter;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.importer.concurrent.FeatureReaderWorkerFactory;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.EventType;
@@ -68,25 +66,19 @@ import de.tub.citydb.modules.common.event.StatusDialogTitle;
 public class XMLValidator implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
 
-	private final JAXBBuilder jaxbBuilder;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	private WorkerPool<XMLChunk> featureWorkerPool;
-
 	private volatile boolean shouldRun = true;
-	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private DirectoryScanner directoryScanner;
-	private long xmlValidationErrorCounter;
-
+	private boolean reportAllErrors;
+	private InputStream inputStream;
+	
 	private int runState;
 	private final int PREPARING = 1;
 	private final int VALIDATING = 2;
 
-	public XMLValidator(JAXBBuilder jaxbBuilder, 
-			Config config, 
-			EventDispatcher eventDispatcher) {
-		this.jaxbBuilder = jaxbBuilder;
+	public XMLValidator(Config config, EventDispatcher eventDispatcher) {
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
@@ -101,14 +93,8 @@ public class XMLValidator implements EventHandler {
 		// adding listeners
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
-		// worker pool settings 
-		de.tub.citydb.config.project.system.System system = config.getProject().getImporter().getSystem();
-		int maxThreads = system.getThreadPool().getDefaultPool().getMaxThreads();
-		int queueSize = maxThreads * 2;
-
-		Internal intConfig = config.getInternal();
-
 		// build list of files to be validated
+		Internal intConfig = config.getInternal();
 		LOG.info("Creating list of CityGML files to be validated...");
 		directoryScanner = new DirectoryScanner(true);
 		directoryScanner.addFilenameFilter(new CityGMLFilenameFilter());
@@ -128,168 +114,115 @@ public class XMLValidator implements EventHandler {
 		LOG.info(remainingFiles + " file(s) will be validated.");
 
 		// prepare XML validation
-		XMLValidation xmlValidation = config.getProject().getImporter().getXMLValidation();
-		ValidationHandler validationHandler = new ValidationHandler();
-		validationHandler.allErrors = !xmlValidation.isSetReportOneErrorPerFeature();
-
-		// prepare CityGML input factory
-		CityGMLInputFactory in = null;
+		reportAllErrors = !config.getProject().getImporter().getXMLValidation().isSetReportOneErrorPerFeature();
+		Validator validator = null;
+		ValidationErrorHandler errorHandler = new ValidationErrorHandler();
 		try {
-			in = jaxbBuilder.createCityGMLInputFactory();
-			in.setProperty(CityGMLInputFactory.USE_VALIDATION, true);
-			in.setProperty(CityGMLInputFactory.FEATURE_READ_MODE, FeatureReadMode.SPLIT_PER_COLLECTION_MEMBER);
-			in.setProperty(CityGMLInputFactory.SPLIT_AT_FEATURE_PROPERTY, new QName("generalizesTo"));
-			in.setValidationEventHandler(validationHandler);
-		} catch (CityGMLReadException e) {
-			LOG.error("Failed to initialize CityGML parser. Aborting.");
+			SchemaHandler schemaHandler = SchemaHandler.newInstance();
+			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);		
+			Schema schema = schemaFactory.newSchema(schemaHandler.getSchemaSources());	
+			validator = schema.newValidator();
+		} catch (SAXException e) {
+			LOG.error("Failed to create CityGML schema context: " + e.getMessage());
 			return false;
 		}
 
 		runState = VALIDATING;
 
-		while (shouldRun && fileCounter < importFiles.size()) {
+		while (shouldRun && fileCounter < importFiles.size()) {			
+			File file = importFiles.get(fileCounter++);
+			intConfig.setImportPath(file.getParent());
+
+			eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("validate.dialog.validate.msg"), this));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
+
+			// ok, preparation done. inform user and start validating the input file
 			try {
-				File file = importFiles.get(fileCounter++);
-				intConfig.setImportPath(file.getParent());
+				LOG.info("Validating file: " + file.toString());
+				
+				validator.reset(); 
+				validator.setErrorHandler(errorHandler);
+				errorHandler.reset();
+				
+				inputStream = new FileInputStream(file);
+				validator.validate(new StreamSource(inputStream));	
+			} catch (SAXException | IOException e) {
+				if (!errorHandler.isAborted && shouldRun)
+					LOG.error("Failed to validate CityGML file: " + e.getMessage());
+			}
 
-				eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("validate.dialog.validate.msg"), this));
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("validate.dialog.finish.msg"), this));
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 
-				// this worker pool parses the xml file and passes xml chunks to the dbworker pool
-				featureWorkerPool = new SingleWorkerPool<XMLChunk>(
-						"citygml_validator_pool",
-						new FeatureReaderWorkerFactory(null, config, eventDispatcher),
-						queueSize,
-						false);
-
-				// prestart threads
-				featureWorkerPool.prestartCoreWorkers();
-
-				// ok, preparation done. inform user and  start parsing the input file
-				CityGMLReader reader = null;
-				boolean containsCityGML = false;
-
-				try {
-					reader = in.createCityGMLReader(file);					
-					LOG.info("Validating document: " + file.toString());						
-
-					containsCityGML = reader.hasNext();
-
-					// iterate through chunks and validate
-					while (shouldRun && reader.hasNext()) {
-						XMLChunk chunk = reader.nextChunk();
-						featureWorkerPool.addWork(chunk);
-					}						
-				} catch (CityGMLReadException e) {
-					LOG.error("Fatal CityGML parser error: " + e.getCause().getMessage());
-					continue;
-				}
-
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("validate.dialog.finish.msg"), this));
-				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
-
-				// we are done with parsing. so shutdown the workers
-				try {
-					featureWorkerPool.shutdownAndWait();
-					eventDispatcher.flushEvents();				
-				} catch (InterruptedException ie) {
-					//
-				}
-
-				try {
-					reader.close();
-				} catch (CityGMLReadException e) {
-					//
-				}
-
-				// show XML validation errors
-				if (xmlValidationErrorCounter > 0)
-					LOG.warn(xmlValidationErrorCounter + " error(s) encountered while validating the document.");
-				else if (xmlValidationErrorCounter == 0 && shouldRun) {
-					if (!containsCityGML)
-						LOG.info("The document does not contain any CityGML elements.");
-					else 
-						LOG.info("The CityGML elements contained in the document are valid.");
-				}
-
-				xmlValidationErrorCounter = 0;
-			} finally {
-				// clean up
-				if (featureWorkerPool != null && !featureWorkerPool.isTerminated())
-					featureWorkerPool.shutdownNow();
-
-				// set to null
-				featureWorkerPool = null;
-			}			
+			// show XML validation errors
+			if (errorHandler.errors > 0)
+				LOG.warn(errorHandler.errors + " error(s) reported while validating the document.");
+			else if (errorHandler.errors == 0 && shouldRun)
+				LOG.info("The CityGML file is valid.");
 		} 	
 
 		return shouldRun;
 	}
 
-	// react on events we are receiving via the eventDispatcher
 	@Override
 	public void handleEvent(Event e) throws Exception {
 		if (e.getEventType() == EventType.INTERRUPT) {
-			if (isInterrupted.compareAndSet(false, true)) {
-				switch (((InterruptEvent)e).getInterruptType()) {
-				case ADE_SCHEMA_READ_ERROR:
-				case USER_ABORT:
-					shouldRun = false;
-					break;
-				}
+			shouldRun = false;
 
-				String log = ((InterruptEvent)e).getLogMessage();
-				if (log != null)
-					LOG.log(((InterruptEvent)e).getLogLevelType(), log);
+			String log = ((InterruptEvent)e).getLogMessage();
+			if (log != null)
+				LOG.log(((InterruptEvent)e).getLogLevelType(), log);
 
-				if (runState == PREPARING && directoryScanner != null)
-					directoryScanner.stopScanning();
-			}
+			if (runState == PREPARING && directoryScanner != null)
+				directoryScanner.stopScanning();
+
+			if (runState == VALIDATING && inputStream != null)
+				inputStream.close();
 		}
 	}
 
-	private final class ValidationHandler implements ValidationEventHandler {
-		boolean allErrors = false;
+	private final class ValidationErrorHandler implements ErrorHandler {
+		int errors;
+		boolean isAborted;
+
+		public void reset() {
+			errors = 0;
+			isAborted = false;
+		}
 
 		@Override
-		public boolean handleEvent(ValidationEvent event) {
-			if (!event.getMessage().startsWith("cvc"))
-				return true;
-
-			StringBuilder msg = new StringBuilder();
-			LogLevel type;
-
-			switch (event.getSeverity()) {
-			case ValidationEvent.FATAL_ERROR:
-			case ValidationEvent.ERROR:
-				msg.append("Invalid content");
-				type = LogLevel.ERROR;
-				break;
-			case ValidationEvent.WARNING:
-				msg.append("Warning");
-				type = LogLevel.WARN;
-				break;
-			default:
-				return allErrors;
-			}
-
-			if (event.getLocator() != null) {
-				msg.append(" at [")
-				.append(event.getLocator().getLineNumber())
-				.append(", ")
-				.append(event.getLocator().getColumnNumber())
-				.append("]");
-			}
-
-			msg.append(": ");
-			msg.append(event.getMessage());
-			LOG.log(type, msg.toString());
-
-			xmlValidationErrorCounter++;
-			return allErrors;
+		public void warning(SAXParseException e) throws SAXException {
+			write(e, "Warning", LogLevel.WARN);
 		}
 
+		@Override
+		public void fatalError(SAXParseException e) throws SAXException {
+			write(e, "Invalid content", LogLevel.ERROR);
+		}
+
+		@Override
+		public void error(SAXParseException e) throws SAXException {
+			write(e, "Invalid content", LogLevel.ERROR);
+		}
+
+		public void write(SAXParseException e, String prefix, LogLevel level) throws SAXException {
+			if (!isAborted) {
+				StringBuilder msg = new StringBuilder()
+				.append(prefix).append(" at ")
+				.append('[').append(e.getLineNumber()).append(',').append(e.getColumnNumber()).append("]: ")
+				.append(e.getMessage());
+				LOG.log(level, msg.toString());
+
+				errors++;						
+
+				if (!reportAllErrors) {
+					isAborted = true;
+					throw new SAXException();
+				}
+			}
+		}
 	}
+
 }

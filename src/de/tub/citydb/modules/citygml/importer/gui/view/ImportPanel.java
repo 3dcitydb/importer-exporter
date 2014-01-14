@@ -479,7 +479,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 				}
 			});
 
-			XMLValidator validator = new XMLValidator(jaxbBuilder, config, eventDispatcher);
+			XMLValidator validator = new XMLValidator(config, eventDispatcher);
 
 			validatorDialog.getButton().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {

@@ -138,7 +138,7 @@ public class DatabaseConnectionPool {
 		if (conn.getSuspectTimeout() != null) properties.setSuspectTimeout(conn.getSuspectTimeout().intValue());
 
 		// pool maintenance
-		properties.setJdbcInterceptors("org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer");
+		properties.setJdbcInterceptors("StatementFinalizer");
 
 		// create new data source
 		dataSource = new DataSource(properties);

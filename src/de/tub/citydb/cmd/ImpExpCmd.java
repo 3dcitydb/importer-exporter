@@ -125,7 +125,7 @@ public class ImpExpCmd {
 
 		config.getInternal().setImportFiles(files.toArray(new File[0]));
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
-		XMLValidator validator = new XMLValidator(cityGMLBuilder, config, eventDispatcher);
+		XMLValidator validator = new XMLValidator(config, eventDispatcher);
 		boolean success = validator.doProcess();
 
 		try {

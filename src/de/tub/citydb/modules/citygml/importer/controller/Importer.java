@@ -273,7 +273,7 @@ public class Importer implements EventHandler {
 			in.setProperty(CityGMLInputFactory.USE_VALIDATION, true);
 			in.setProperty(CityGMLInputFactory.PARSE_SCHEMA, true);
 
-			ValidationHandler validationHandler = new ValidationHandler();
+			ValidationErrorHandler validationHandler = new ValidationErrorHandler();
 			validationHandler.allErrors = !xmlValidation.isSetReportOneErrorPerFeature();
 			in.setValidationEventHandler(validationHandler);
 		}
@@ -695,14 +695,11 @@ public class Importer implements EventHandler {
 		}
 	}
 
-	private final class ValidationHandler implements ValidationEventHandler {
+	private final class ValidationErrorHandler implements ValidationEventHandler {
 		boolean allErrors = false;
 
 		@Override
 		public boolean handleEvent(ValidationEvent event) {
-			if (!event.getMessage().startsWith("cvc"))
-				return true;
-
 			StringBuilder msg = new StringBuilder();
 			LogLevel type;
 
@@ -720,16 +717,7 @@ public class Importer implements EventHandler {
 				return allErrors;
 			}
 
-			if (event.getLocator() != null) {
-				msg.append(" at [")
-				.append(event.getLocator().getLineNumber())
-				.append(", ")
-				.append(event.getLocator().getColumnNumber())
-				.append("]");
-			}
-
-			msg.append(": ");
-			msg.append(event.getMessage());
+			msg.append(": ").append(event.getMessage());
 			LOG.log(type, msg.toString());
 
 			xmlValidationErrorCounter++;
