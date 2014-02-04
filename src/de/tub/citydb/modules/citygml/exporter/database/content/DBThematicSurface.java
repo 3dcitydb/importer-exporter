@@ -196,7 +196,7 @@ public class DBThematicSurface implements DBExporter {
 						String gmlName = rs.getString("NAME");
 						String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-						Util.dbGmlName2featureName(boundarySurface, gmlName, gmlNameCodespace);
+						Util.string2codeList(boundarySurface, gmlName, gmlNameCodespace);
 
 						String description = rs.getString("DESCRIPTION");
 						if (description != null) {
@@ -312,7 +312,7 @@ public class DBThematicSurface implements DBExporter {
 				String gmlName = rs.getString("OPNAME");
 				String gmlNameCodespace = rs.getString("OPNAME_CODESPACE");
 
-				Util.dbGmlName2featureName(opening, gmlName, gmlNameCodespace);
+				Util.string2codeList(opening, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("OPDESCRIPTION");
 				if (description != null) {

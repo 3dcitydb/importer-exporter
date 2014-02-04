@@ -40,10 +40,11 @@ import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupMember;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObject;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.util.Util;
 
 public class DBCityObjectGroup implements DBImporter {
@@ -55,6 +56,7 @@ public class DBCityObjectGroup implements DBImporter {
 	private PreparedStatement psCityObjectGroup;
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
+	private DBOtherGeometry otherGeometryImporter;
 
 	private int batchCounter;
 
@@ -66,12 +68,15 @@ public class DBCityObjectGroup implements DBImporter {
 	}
 
 	private void init() throws SQLException {
-		psCityObjectGroup = batchConn.prepareStatement("insert into CITYOBJECTGROUP (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, " +
-				"GEOMETRY, SURFACE_GEOMETRY_ID, PARENT_CITYOBJECT_ID) values " +
-				"(?, ?, ?, ?, ?, ?, ?, null, ?, ?)");
+		StringBuilder stmt = new StringBuilder()
+		.append("insert into CITYOBJECTGROUP (ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, ")
+		.append("BREP_ID, OTHER_GEOM, PARENT_CITYOBJECT_ID) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		psCityObjectGroup = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
+		otherGeometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
 	public long insert(CityObjectGroup cityObjectGroup) throws SQLException {
@@ -99,72 +104,68 @@ public class DBCityObjectGroup implements DBImporter {
 		// ID
 		psCityObjectGroup.setLong(1, cityObjectId);
 
-		// gml:name
-		if (cityObjectGroup.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(cityObjectGroup);
-
-			psCityObjectGroup.setString(2, dbGmlName[0]);
-			psCityObjectGroup.setString(3, dbGmlName[1]);
+		// class
+		if (cityObjectGroup.isSetClazz() && cityObjectGroup.getClazz().isSetValue()) {
+			psCityObjectGroup.setString(2, cityObjectGroup.getClazz().getValue());
+			psCityObjectGroup.setString(3, cityObjectGroup.getClazz().getCodeSpace());
 		} else {
 			psCityObjectGroup.setNull(2, Types.VARCHAR);
 			psCityObjectGroup.setNull(3, Types.VARCHAR);
 		}
 
-		// gml:description
-		if (cityObjectGroup.isSetDescription()) {
-			String description = cityObjectGroup.getDescription().getValue();
-
-			if (description != null)
-				description = description.trim();
-
-			psCityObjectGroup.setString(4, description);
+		// function
+		if (cityObjectGroup.isSetFunction()) {
+			String[] function = Util.codeList2string(cityObjectGroup.getFunction());
+			psCityObjectGroup.setString(4, function[0]);
+			psCityObjectGroup.setString(5, function[1]);
 		} else {
 			psCityObjectGroup.setNull(4, Types.VARCHAR);
+			psCityObjectGroup.setNull(5, Types.VARCHAR);
 		}
 
-		// citygml:class
-		if (cityObjectGroup.isSetClazz() && cityObjectGroup.getClazz().isSetValue())
-			psCityObjectGroup.setString(5, cityObjectGroup.getClazz().getValue().trim());
-		else
-			psCityObjectGroup.setNull(5, Types.VARCHAR);
-
-		// citygml:function
-		if (cityObjectGroup.isSetFunction()) {
-			psCityObjectGroup.setString(6, Util.codeList2string(cityObjectGroup.getFunction(), " "));
+		// usage
+		if (cityObjectGroup.isSetUsage()) {
+			String[] usage = Util.codeList2string(cityObjectGroup.getUsage());
+			psCityObjectGroup.setString(6, usage[0]);
+			psCityObjectGroup.setString(7, usage[1]);
 		} else {
 			psCityObjectGroup.setNull(6, Types.VARCHAR);
-		}
-
-		// citygml:usage
-		if (cityObjectGroup.isSetUsage()) {
-			psCityObjectGroup.setString(7, Util.codeList2string(cityObjectGroup.getUsage(), " "));
-		} else {
 			psCityObjectGroup.setNull(7, Types.VARCHAR);
 		}
 
-		// Geometry
 		long geometryId = 0;
+		GeometryObject geometryObject = null;
 
 		if (cityObjectGroup.isSetGeometry()) {
 			GeometryProperty<? extends AbstractGeometry> geometryProperty = cityObjectGroup.getGeometry();
 
 			if (geometryProperty.isSetGeometry()) {
-				geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), cityObjectGroupId);
+				AbstractGeometry abstractGeometry = geometryProperty.getGeometry();
+				if (surfaceGeometryImporter.isSurfaceGeometry(abstractGeometry))
+					geometryId = surfaceGeometryImporter.insert(abstractGeometry, cityObjectGroupId);
+				else if (otherGeometryImporter.isPointOrLineGeometry(abstractGeometry))
+					geometryObject = otherGeometryImporter.getPointOrCurveGeometry(abstractGeometry);
+				else {
+					StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+							cityObjectGroup.getCityGMLClass(), 
+							cityObjectGroup.getId()));
+					msg.append(": Unsupported geometry type ");
+					msg.append(abstractGeometry.getGMLClass()).append('.');
+
+					LOG.error(msg.toString());
+				}
+
 				geometryProperty.unsetGeometry();
 			} else {
 				// xlink
 				String href = geometryProperty.getHref();
 
 				if (href != null && href.length() != 0) {
-					DBXlinkBasic xlink = new DBXlinkBasic(
-							cityObjectGroupId,
-							TableEnum.CITYOBJECTGROUP,
-							href,
-							TableEnum.SURFACE_GEOMETRY
-							);
-
-					xlink.setAttrName("SURFACE_GEOMETRY_ID");
-					dbImporterManager.propagateXlink(xlink);
+					dbImporterManager.propagateXlink(new DBXlinkSurfaceGeometry(
+							href, 
+							cityObjectGroupId, 
+							TableEnum.CITYOBJECTGROUP, 
+							"BREP_ID"));
 				}
 			}
 		}
@@ -172,10 +173,16 @@ public class DBCityObjectGroup implements DBImporter {
 		if (geometryId != 0)
 			psCityObjectGroup.setLong(8, geometryId);
 		else
-			psCityObjectGroup.setNull(8, 0);
+			psCityObjectGroup.setNull(8, Types.NULL);
+
+		if (geometryObject != null)
+			psCityObjectGroup.setObject(9, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geometryObject, batchConn));
+		else
+			psCityObjectGroup.setNull(9, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+					dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 
 		// parent
-		psCityObjectGroup.setNull(9, 0);
+		psCityObjectGroup.setNull(10, Types.NULL);
 
 		psCityObjectGroup.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())

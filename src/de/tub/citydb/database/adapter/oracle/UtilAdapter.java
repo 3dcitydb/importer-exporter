@@ -39,8 +39,8 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			rs = statement.executeQuery("select * from table(" + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geodb_util.db_metadata") + ")");
 			if (rs.next()) {
 				DatabaseSrs srs = metaData.getReferenceSystem();
-				srs.setSrid(rs.getInt("SRID"));
-				srs.setGMLSrsName(rs.getString("GML_SRS_NAME"));
+				srs.setSrid(rs.getInt("SCHEMA_SRID"));
+				srs.setGMLSrsName(rs.getString("SCHEMA_GML_SRS_NAME"));
 				srs.setDatabaseSrsName(rs.getString("COORD_REF_SYS_NAME"));
 				srs.setType(getSrsType(rs.getString("COORD_REF_SYS_KIND")));
 				srs.setSupported(true);				

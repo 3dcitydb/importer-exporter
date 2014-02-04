@@ -100,47 +100,39 @@ public class DBCityObject implements DBImporter {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
-		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+		reasonForUpdate = config.getProject().getImporter().getContinuation().getReasonForUpdate();
+		lineage = config.getProject().getImporter().getContinuation().getLineage();
+		creationDateMode = config.getProject().getImporter().getContinuation().getCreationDateMode();
+		terminationDateMode = config.getProject().getImporter().getContinuation().getTerminationDateMode();
 
 		if (rememberGmlId)
 			importFileName = config.getInternal().getCurrentImportFile().getAbsolutePath();
 
-		reasonForUpdate = config.getProject().getImporter().getContinuation().getReasonForUpdate();
-		lineage = config.getProject().getImporter().getContinuation().getLineage();
 		if (config.getProject().getImporter().getContinuation().isUpdatingPersonModeDatabase())
 			updatingPerson = config.getProject().getDatabase().getActiveConnection().getUser();
 		else
 			updatingPerson = config.getProject().getImporter().getContinuation().getUpdatingPerson();
 
-		if (reasonForUpdate != null && reasonForUpdate.length() != 0)
+		if (reasonForUpdate != null && reasonForUpdate.length() > 0)
 			reasonForUpdate = "'" + reasonForUpdate + "'";
 		else
 			reasonForUpdate = null;
 
-		if (lineage != null && lineage.length() != 0)
+		if (lineage != null && lineage.length() > 0)
 			lineage = "'" + lineage + "'";
 		else
 			lineage = null;
 
-		if (updatingPerson != null && updatingPerson.length() != 0)
+		if (updatingPerson != null && updatingPerson.length() > 0)
 			updatingPerson = "'" + updatingPerson + "'";
 		else
 			updatingPerson = null;
 
-		creationDateMode = config.getProject().getImporter().getContinuation().getCreationDateMode();
-		terminationDateMode = config.getProject().getImporter().getContinuation().getTerminationDateMode();
-
-		if (gmlIdCodespace != null && gmlIdCodespace.length() != 0)
-			gmlIdCodespace = "'" + gmlIdCodespace + "'";
-		else
-			gmlIdCodespace = "null";
-
-		String now = dbImporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("date.current_date_and_time");
-
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into CITYOBJECT (ID, CLASS_ID, GMLID, GMLID_CODESPACE, ENVELOPE, CREATION_DATE, TERMINATION_DATE, LAST_MODIFICATION_DATE, UPDATING_PERSON, REASON_FOR_UPDATE, LINEAGE, XML_SOURCE) values ")
-		.append("(?, ?, ?, ").append(gmlIdCodespace).append(", ?, ?, ?, ")
-		.append(now).append(", ")
+		.append("insert into CITYOBJECT (ID, OBJECTCLASS_ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, ENVELOPE, CREATION_DATE, TERMINATION_DATE, ")
+		.append("RELATIVE_TO_TERRAIN, RELATIVE_TO_WATER, LAST_MODIFICATION_DATE, UPDATING_PERSON, REASON_FOR_UPDATE, LINEAGE, XML_SOURCE) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ")
+		.append(dbImporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("date.current_date_and_time")).append(", ")
 		.append(updatingPerson).append(", ")
 		.append(reasonForUpdate).append(", ")
 		.append(lineage).append(", null)");
@@ -160,9 +152,8 @@ public class DBCityObject implements DBImporter {
 		// ID
 		psCityObject.setLong(1, cityObjectId);
 
-		// CLASS_ID
-		int classId = Util.cityObject2classId(cityObject.getCityGMLClass());
-		psCityObject.setInt(2, classId);
+		// OBJECTCLASS_ID
+		psCityObject.setInt(2, Util.cityObject2classId(cityObject.getCityGMLClass()));
 
 		// gml:id
 		String origGmlId = cityObject.getId();
@@ -195,6 +186,27 @@ public class DBCityObject implements DBImporter {
 		}
 
 		psCityObject.setString(3, cityObject.getId());
+
+		// gml:name
+		if (cityObject.isSetName()) {
+			String[] dbGmlName = Util.codeList2string(cityObject.getName());
+			psCityObject.setString(4, dbGmlName[0]);
+			psCityObject.setString(5, dbGmlName[1]);
+		} else {
+			psCityObject.setNull(4, Types.VARCHAR);
+			psCityObject.setNull(5, Types.VARCHAR);
+		}
+
+		// gml:description
+		if (cityObject.isSetDescription()) {
+			String description = cityObject.getDescription().getValue();
+			if (description != null)
+				description = description.trim();
+
+			psCityObject.setString(6, description);
+		} else {
+			psCityObject.setNull(6, Types.VARCHAR);
+		}
 
 		// gml:boundedBy
 		if (!cityObject.isSetBoundedBy() || !cityObject.getBoundedBy().isSetEnvelope())
@@ -236,43 +248,56 @@ public class DBCityObject implements DBImporter {
 			coordinates[14] = points.get(2);
 
 			GeometryObject envelope = GeometryObject.createPolygon(coordinates, 3, dbSrid);
-			psCityObject.setObject(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(envelope, batchConn));
+			psCityObject.setObject(7, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(envelope, batchConn));
 		} else {
-			psCityObject.setNull(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(), 
+			psCityObject.setNull(7, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(), 
 					dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 		}
 
 		// creationDate (null is not allowed)
-		java.util.Date dateCre = null;
-		if ((CreationDateMode.INHERIT == creationDateMode) ||
-				(CreationDateMode.COMPLEMENT == creationDateMode)) {
-			GregorianCalendar gc = Util.getCreationDate(cityObject, (CreationDateMode.INHERIT == creationDateMode));
-			if (null != gc) {
+		java.util.Date creationDate = null;
+		if (creationDateMode == CreationDateMode.INHERIT || creationDateMode == CreationDateMode.COMPLEMENT) {
+			GregorianCalendar gc = Util.getCreationDate(cityObject, creationDateMode == CreationDateMode.INHERIT);
+			if (gc != null) {
 				// get creationDate from cityObject (or parents)
-				dateCre = gc.getTime();
+				creationDate = gc.getTime();
 			}
 		}
-		if (null == dateCre) {
+
+		if (creationDate == null) {
 			// creationDate is not set: use current date
-			dateCre = new java.util.Date();
+			creationDate = new java.util.Date();
 		}
-		psCityObject.setDate(5, new java.sql.Date(dateCre.getTime()));
+
+		psCityObject.setDate(8, new java.sql.Date(creationDate.getTime()));
 
 		// terminationDate (null is allowed)
-		java.util.Date dateTrm = null;
-		if ((TerminationDateMode.INHERIT == terminationDateMode) ||
-				(TerminationDateMode.COMPLEMENT == terminationDateMode)) {
-			GregorianCalendar gc = Util.getTerminationDate(cityObject, (TerminationDateMode.INHERIT == terminationDateMode));
-			if (null != gc) {
+		java.util.Date terminationDate = null;
+		if (terminationDateMode == TerminationDateMode.INHERIT || terminationDateMode == TerminationDateMode.COMPLEMENT) {
+			GregorianCalendar gc = Util.getTerminationDate(cityObject, terminationDateMode == TerminationDateMode.INHERIT);
+			if (gc != null) {
 				// get terminationDate from cityObject (or parents)
-				dateTrm = gc.getTime();
+				terminationDate = gc.getTime();
 			}
 		}
-		if (null == dateTrm) {
-			psCityObject.setNull(6, Types.DATE);
+
+		if (terminationDate == null) {
+			psCityObject.setNull(9, Types.DATE);
 		} else {
-			psCityObject.setDate(6, new java.sql.Date(dateTrm.getTime()));
-		}		
+			psCityObject.setDate(9, new java.sql.Date(terminationDate.getTime()));
+		}
+
+		// relativeToTerrain
+		if (cityObject.isSetRelativeToTerrain())
+			psCityObject.setString(10, cityObject.getRelativeToTerrain().getValue());
+		else
+			psCityObject.setNull(10, Types.VARCHAR);
+
+		// relativeToWater
+		if (cityObject.isSetRelativeToWater())
+			psCityObject.setString(11, cityObject.getRelativeToWater().getValue());
+		else
+			psCityObject.setNull(11, Types.VARCHAR);
 
 		// resolve local xlinks to geometry objects
 		if (isTopLevelFeature) {
@@ -376,7 +401,7 @@ public class DBCityObject implements DBImporter {
 					String href = appearanceProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						LOG.error("XLink reference '" + href + "' to Appearance feature is not supported.");
+						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.APPEARANCE + " feature is not supported.");
 					}
 				}
 			}

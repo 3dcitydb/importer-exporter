@@ -39,7 +39,7 @@ public class PostGISAdapter extends AbstractDatabaseAdapter {
 
 	@Override
 	public int getMaxBatchSize() {
-		return 10000;
+		return 65535;
 	}
 	
 }

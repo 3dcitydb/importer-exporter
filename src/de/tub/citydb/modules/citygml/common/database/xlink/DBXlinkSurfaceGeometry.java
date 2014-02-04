@@ -29,51 +29,51 @@
  */
 package de.tub.citydb.modules.citygml.common.database.xlink;
 
+import de.tub.citydb.database.TableEnum;
+
 public class DBXlinkSurfaceGeometry implements DBXlink {
 	private long id;
 	private long parentId;
 	private long rootId;
 	private boolean reverse;
+	private long cityObjectId;
+	private TableEnum fromTable;
+	private String fromTableAttributeName;
 	private String gmlId;
-
-	public DBXlinkSurfaceGeometry(long id, long parentId, long rootId, boolean reverse, String gmlId) {
+	
+	public DBXlinkSurfaceGeometry(long id, long parentId, long rootId, boolean reverse, String gmlId, long cityObjectId, TableEnum fromTable, String fromTableAttributeName) {
 		this.id = id;
 		this.parentId = parentId;
 		this.rootId = rootId;
 		this.reverse = reverse;
 		this.gmlId = gmlId;
+		this.cityObjectId = cityObjectId;
+		this.fromTable = fromTable;
+		this.fromTableAttributeName = fromTableAttributeName;
 	}
-
+	
+	public DBXlinkSurfaceGeometry(long id, long parentId, long rootId, boolean reverse, String gmlId, long cityObjectId) {
+		this(id, parentId, rootId, reverse, gmlId, cityObjectId, null, null);
+	}
+	
+	public DBXlinkSurfaceGeometry(String gmlId, long cityObjectId, TableEnum fromTable, String fromTableAttributeName) {
+		this(0, 0, 0, false, gmlId, cityObjectId, fromTable, fromTableAttributeName);
+	}
+	
 	public long getId() {
 		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
 	}
 
 	public long getParentId() {
 		return parentId;
 	}
 
-	public void setParentId(long parentId) {
-		this.parentId = parentId;
-	}
-
 	public long getRootId() {
 		return rootId;
 	}
 
-	public void setRootId(long rootId) {
-		this.rootId = rootId;
-	}
-
 	public boolean isReverse() {
 		return reverse;
-	}
-
-	public void setReverse(boolean reverse) {
-		this.reverse = reverse;
 	}
 
 	public String getGmlId() {
@@ -82,6 +82,18 @@ public class DBXlinkSurfaceGeometry implements DBXlink {
 
 	public void setGmlId(String gmlId) {
 		this.gmlId = gmlId;
+	}
+
+	public long getCityObjectId() {
+		return cityObjectId;
+	}
+
+	public TableEnum getFromTable() {
+		return fromTable;
+	}
+
+	public String getFromTableAttributeName() {
+		return fromTableAttributeName;
 	}
 
 	@Override

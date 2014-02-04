@@ -41,11 +41,10 @@ import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.util.Util;
 
 public class DBImplicitGeometry implements DBImporter {
@@ -60,20 +59,17 @@ public class DBImplicitGeometry implements DBImporter {
 	private PreparedStatement psSelectLibraryObject;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 
-	private boolean affineTransformation;
 	private int batchCounter;
 
-	public DBImplicitGeometry(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
+	public DBImplicitGeometry(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
 		this.dbImporterManager = dbImporterManager;
-
-		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		init();
 	}
 
 	private void init() throws SQLException {
 		psImplicitGeometry = batchConn.prepareStatement("insert into IMPLICIT_GEOMETRY (ID, REFERENCE_TO_LIBRARY) values (?, ?)");
-		psUpdateImplicitGeometry = batchConn.prepareStatement("update IMPLICIT_GEOMETRY set MIME_TYPE=?, RELATIVE_GEOMETRY_ID=? where ID=?");
+		psUpdateImplicitGeometry = batchConn.prepareStatement("update IMPLICIT_GEOMETRY set MIME_TYPE=?, RELATIVE_BREP_ID=? where ID=?");
 		psSelectLibraryObject = batchConn.prepareStatement("select ID from IMPLICIT_GEOMETRY where REFERENCE_TO_LIBRARY=?");
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
@@ -164,26 +160,16 @@ public class DBImplicitGeometry implements DBImporter {
 				} else
 					psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
 
+				long surfaceGeometryId = 0;
 				if (relativeGeometry != null) {
-					// if affine transformation is activated we apply the user-defined affine
-					// transformation to the transformation matrix associated with the implicit geometry.
-					// thus, we do not need to apply it to the coordinate values
-					if (affineTransformation)
-						surfaceGeometryImporter.setApplyAffineTransformation(false);
-
-					long surfaceGeometryId = surfaceGeometryImporter.insert(relativeGeometry, parentId);
+					surfaceGeometryId = surfaceGeometryImporter.insertImplicitGeometry(relativeGeometry);
 					implicitGeometry.unsetRelativeGMLGeometry();
-
-					if (surfaceGeometryId != 0)
-						psUpdateImplicitGeometry.setLong(2, surfaceGeometryId);
-					else
-						psUpdateImplicitGeometry.setNull(2, 0);
-
-					// re-activate affine transformation on surface geometry writer if necessary
-					if (affineTransformation)
-						surfaceGeometryImporter.setApplyAffineTransformation(true);
-				} else
-					psUpdateImplicitGeometry.setNull(2, 0);
+				}
+				
+				if (surfaceGeometryId != 0)
+					psUpdateImplicitGeometry.setLong(2, surfaceGeometryId);
+				else
+					psUpdateImplicitGeometry.setNull(2, Types.NULL);
 
 				psUpdateImplicitGeometry.addBatch();
 				++batchCounter;
@@ -209,12 +195,11 @@ public class DBImplicitGeometry implements DBImporter {
 		}
 
 		if (isXLink && !dbImporterManager.lookupAndPutGmlId("#xlink#" + gmlId, 1, CityGMLClass.IMPLICIT_GEOMETRY)) {
-			dbImporterManager.propagateXlink(new DBXlinkBasic(
+			dbImporterManager.propagateXlink(new DBXlinkSurfaceGeometry(
+					gmlId, 
 					implicitGeometryId, 
 					TableEnum.IMPLICIT_GEOMETRY, 
-					gmlId, 
-					TableEnum.SURFACE_GEOMETRY)
-					);
+					null));
 		}
 
 		return implicitGeometryId;

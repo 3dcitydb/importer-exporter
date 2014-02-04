@@ -61,6 +61,7 @@ import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.util.Util;
 
 public class DBBuilding implements DBImporter {
@@ -76,7 +77,7 @@ public class DBBuilding implements DBImporter {
 	private DBBuildingInstallation buildingInstallationImporter;
 	private DBRoom roomImporter;
 	private DBAddress addressImporter;
-	private DBOtherGeometry geometryImporter;
+	private DBOtherGeometry otherGeometryImporter;
 
 	private int batchCounter;
 	private int nullGeometryType;
@@ -94,10 +95,12 @@ public class DBBuilding implements DBImporter {
 		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into BUILDING (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, YEAR_OF_CONSTRUCTION, YEAR_OF_DEMOLITION, ROOF_TYPE, MEASURED_HEIGHT, ")
-		.append("STOREYS_ABOVE_GROUND, STOREYS_BELOW_GROUND, STOREY_HEIGHTS_ABOVE_GROUND, STOREY_HEIGHTS_BELOW_GROUND, BUILDING_PARENT_ID, BUILDING_ROOT_ID, LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, ")
-		.append("LOD4_GEOMETRY_ID, LOD1_TERRAIN_INTERSECTION, LOD2_TERRAIN_INTERSECTION, LOD3_TERRAIN_INTERSECTION, LOD4_TERRAIN_INTERSECTION, LOD2_MULTI_CURVE, LOD3_MULTI_CURVE, LOD4_MULTI_CURVE) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("insert into BUILDING (ID, BUILDING_PARENT_ID, BUILDING_ROOT_ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, YEAR_OF_CONSTRUCTION, YEAR_OF_DEMOLITION, ")
+		.append("ROOF_TYPE, ROOF_TYPE_CODESPACE, MEASURED_HEIGHT, MEASURED_HEIGHT_UNIT, STOREYS_ABOVE_GROUND, STOREYS_BELOW_GROUND, STOREY_HEIGHTS_ABOVE_GROUND, STOREY_HEIGHTS_BELOW_GROUND, ")
+		.append("LOD1_TERRAIN_INTERSECTION, LOD2_TERRAIN_INTERSECTION, LOD3_TERRAIN_INTERSECTION, LOD4_TERRAIN_INTERSECTION, LOD2_MULTI_CURVE, LOD3_MULTI_CURVE, LOD4_MULTI_CURVE, ")
+		.append("LOD0_FOOTPRINT_ID, LOD0_ROOFPRINT_ID, LOD1_MULTI_SURFACE_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID, ")
+		.append("LOD1_SOLID_ID, LOD2_SOLID_ID, LOD3_SOLID_ID, LOD4_SOLID_ID) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psBuilding = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
@@ -106,7 +109,7 @@ public class DBBuilding implements DBImporter {
 		buildingInstallationImporter = (DBBuildingInstallation)dbImporterManager.getDBImporter(DBImporterEnum.BUILDING_INSTALLATION);
 		roomImporter = (DBRoom)dbImporterManager.getDBImporter(DBImporterEnum.ROOM);
 		addressImporter = (DBAddress)dbImporterManager.getDBImporter(DBImporterEnum.ADDRESS);
-		geometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
+		otherGeometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
 	public long insert(AbstractBuilding building) throws SQLException {
@@ -127,7 +130,7 @@ public class DBBuilding implements DBImporter {
 			long parentId,
 			long rootId) throws SQLException {
 		String origGmlId = building.getId();
-		
+
 		// CityObject
 		long cityObjectId = cityObjectImporter.insert(building, buildingId, parentId == 0);
 		if (cityObjectId == 0)
@@ -139,100 +142,89 @@ public class DBBuilding implements DBImporter {
 
 		// BUILDING_PARENT_ID
 		if (parentId != 0)
-			psBuilding.setLong(16, parentId);
+			psBuilding.setLong(2, parentId);
 		else
-			psBuilding.setNull(16, 0);
+			psBuilding.setNull(2, Types.NULL);
 
 		// BUILDING_ROOT_ID
-		psBuilding.setLong(17, rootId);
+		psBuilding.setLong(3, rootId);
 
-		// gml:name
-		if (building.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(building);
-
-			psBuilding.setString(2, dbGmlName[0]);
-			psBuilding.setString(3, dbGmlName[1]);
-		} else {
-			psBuilding.setNull(2, Types.VARCHAR);
-			psBuilding.setNull(3, Types.VARCHAR);
-		}
-
-		// gml:description
-		if (building.isSetDescription()) {
-			String description = building.getDescription().getValue();
-
-			if (description != null)
-				description = description.trim();
-
-			psBuilding.setString(4, description);
+		// bldg:class
+		if (building.isSetClazz() && building.getClazz().isSetValue()) {
+			psBuilding.setString(4, building.getClazz().getValue());
+			psBuilding.setString(5, building.getClazz().getCodeSpace());
 		} else {
 			psBuilding.setNull(4, Types.VARCHAR);
-		}
-
-		// citygml:class
-		if (building.isSetClazz() && building.getClazz().isSetValue()) {
-			psBuilding.setString(5, building.getClazz().getValue().trim());
-		} else {
 			psBuilding.setNull(5, Types.VARCHAR);
 		}
 
-		// citygml:function
+		// bldg:function
 		if (building.isSetFunction()) {
-			psBuilding.setString(6, Util.codeList2string(building.getFunction(), " "));
+			String[] function = Util.codeList2string(building.getFunction());
+			psBuilding.setString(6, function[0]);
+			psBuilding.setString(7, function[1]);
 		} else {
 			psBuilding.setNull(6, Types.VARCHAR);
-		}
-
-		// citygml:usage
-		if (building.isSetUsage()) {
-			psBuilding.setString(7, Util.codeList2string(building.getUsage(), " "));
-		} else {
 			psBuilding.setNull(7, Types.VARCHAR);
 		}
 
-		// citygml:yearOfConstruction
+		// bldg:usage
+		if (building.isSetUsage()) {
+			String[] usage = Util.codeList2string(building.getUsage());
+			psBuilding.setString(8, usage[0]);
+			psBuilding.setString(9, usage[1]);
+		} else {
+			psBuilding.setNull(8, Types.VARCHAR);
+			psBuilding.setNull(9, Types.VARCHAR);
+		}
+
+		// bldg:yearOfConstruction
 		if (building.isSetYearOfConstruction()) {
-			psBuilding.setDate(8, new Date(building.getYearOfConstruction().getTime().getTime()));
+			psBuilding.setDate(10, new Date(building.getYearOfConstruction().getTime().getTime()));
 		} else {
-			psBuilding.setNull(8, Types.DATE);
+			psBuilding.setNull(10, Types.DATE);
 		}
 
-		// citygml:yearOfDemolition
+		// bldg:yearOfDemolition
 		if (building.isSetYearOfDemolition()) {
-			psBuilding.setDate(9, new Date(building.getYearOfDemolition().getTime().getTime()));
+			psBuilding.setDate(11, new Date(building.getYearOfDemolition().getTime().getTime()));
 		} else {
-			psBuilding.setNull(9, Types.DATE);
+			psBuilding.setNull(11, Types.DATE);
 		}
 
-		// citygml:roofType
+		// bldg:roofType
 		if (building.isSetRoofType() && building.getRoofType().isSetValue()) {
-			psBuilding.setString(10, building.getRoofType().getValue());
+			psBuilding.setString(12, building.getRoofType().getValue());
+			psBuilding.setString(13, building.getRoofType().getCodeSpace());
 		} else {
-			psBuilding.setNull(10, Types.VARCHAR);
+			psBuilding.setNull(12, Types.VARCHAR);
+			psBuilding.setNull(13, Types.VARCHAR);
 		}
 
-		// citygml:measuredHeight
+		// bldg:measuredHeight
 		if (building.isSetMeasuredHeight() && building.getMeasuredHeight().isSetValue()) {
-			psBuilding.setDouble(11, building.getMeasuredHeight().getValue());
+			psBuilding.setDouble(14, building.getMeasuredHeight().getValue());
+			psBuilding.setString(15, building.getMeasuredHeight().getUom());
 		} else {
-			psBuilding.setNull(11, Types.DOUBLE);
+			psBuilding.setNull(14, Types.DOUBLE);
+			psBuilding.setNull(15, Types.VARCHAR);
 		}
 
-		// citygml:storeysAboveGround
+		// bldg:storeysAboveGround
 		if (building.isSetStoreysAboveGround()) {
-			psBuilding.setInt(12, building.getStoreysAboveGround());
+			psBuilding.setInt(16, building.getStoreysAboveGround());
 		} else {
-			psBuilding.setNull(12, Types.INTEGER);
+			psBuilding.setNull(16, Types.INTEGER);
 		}
 
-		// citygml:storeysBelowGround
+		// bldg:storeysBelowGround
 		if (building.isSetStoreysBelowGround()) {
-			psBuilding.setInt(13, building.getStoreysBelowGround());
+			psBuilding.setInt(17, building.getStoreysBelowGround());
 		} else {
-			psBuilding.setNull(13, Types.INTEGER);
+			psBuilding.setNull(17, Types.INTEGER);
 		}
 
-		// citygml:storeyHeightsAboveGround
+		// bldg:storeyHeightsAboveGround
 		if (building.isSetStoreyHeightsAboveGround()) {
 			MeasureOrNullList measureOrNullList = building.getStoreyHeightsAboveGround();
 			if (measureOrNullList.isSetDoubleOrNull()) {
@@ -243,15 +235,15 @@ public class DBBuilding implements DBImporter {
 					else
 						doubleOrNull.getNull().getValue();			
 				}
-				
-				psBuilding.setString(14, Util.collection2string(values, " "));
+
+				psBuilding.setString(18, Util.collection2string(values, " "));
 			} else
-				psBuilding.setNull(14, Types.VARCHAR);
+				psBuilding.setNull(18, Types.VARCHAR);
 		} else {
-			psBuilding.setNull(14, Types.VARCHAR);
+			psBuilding.setNull(18, Types.VARCHAR);
 		}
 
-		// citygml:storeyHeightsBelowGround
+		// bldg:storeyHeightsBelowGround
 		if (building.isSetStoreyHeightsBelowGround()) {
 			MeasureOrNullList measureOrNullList = building.getStoreyHeightsBelowGround();
 			if (measureOrNullList.isSetDoubleOrNull()) {
@@ -262,114 +254,130 @@ public class DBBuilding implements DBImporter {
 					else
 						doubleOrNull.getNull().getValue();			
 				}
-				
-				psBuilding.setString(15, Util.collection2string(values, " "));
+
+				psBuilding.setString(19, Util.collection2string(values, " "));
 			} else
-				psBuilding.setNull(15, Types.VARCHAR);
+				psBuilding.setNull(19, Types.VARCHAR);
 		} else {
-			psBuilding.setNull(15, Types.VARCHAR);
+			psBuilding.setNull(19, Types.VARCHAR);
 		}
 
 		// Geometry
-		// lodXSolid
-		boolean[] lodGeometry = new boolean[4];
+		// lodXTerrainIntersectionCurve
+		for (int i = 0; i < 4; i++) {
+			MultiCurveProperty multiCurveProperty = null;
+			GeometryObject multiLine = null;
 
-		for (int lod = 1; lod < 5; lod++) {
-			SolidProperty solidProperty = null;
-			long solidGeometryId = 0;
-
-			switch (lod) {
+			switch (i) {
+			case 0:
+				multiCurveProperty = building.getLod1TerrainIntersection();
+				break;
 			case 1:
-				solidProperty = building.getLod1Solid();
+				multiCurveProperty = building.getLod2TerrainIntersection();
 				break;
 			case 2:
-				solidProperty = building.getLod2Solid();
+				multiCurveProperty = building.getLod3TerrainIntersection();
 				break;
 			case 3:
-				solidProperty = building.getLod3Solid();
-				break;
-			case 4:
-				solidProperty = building.getLod4Solid();
+				multiCurveProperty = building.getLod4TerrainIntersection();
 				break;
 			}
 
-			if (solidProperty != null) {
-				if (solidProperty.isSetSolid()) {
-					solidGeometryId = surfaceGeometryImporter.insert(solidProperty.getSolid(), buildingId);
-					solidProperty.unsetSolid();
+			if (multiCurveProperty != null) {
+				multiLine = otherGeometryImporter.getMultiCurve(multiCurveProperty);
+				multiCurveProperty.unsetMultiCurve();
+			}
+
+			if (multiLine != null) {
+				Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
+				psBuilding.setObject(20 + i, multiLineObj);
+			} else
+				psBuilding.setNull(20 + i, nullGeometryType, nullGeometryTypeName);
+		}
+
+		// lodXMultiCurve
+		for (int i = 0; i < 3; i++) {
+			MultiCurveProperty multiCurveProperty = null;
+			GeometryObject multiLine = null;
+
+			switch (i) {
+			case 0:
+				multiCurveProperty = building.getLod2MultiCurve();
+				break;
+			case 1:
+				multiCurveProperty = building.getLod3MultiCurve();
+				break;
+			case 2:
+				multiCurveProperty = building.getLod4MultiCurve();
+				break;
+			}
+
+			if (multiCurveProperty != null) {
+				multiLine = otherGeometryImporter.getMultiCurve(multiCurveProperty);
+				multiCurveProperty.unsetMultiCurve();
+			}
+
+			if (multiLine != null) {
+				Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
+				psBuilding.setObject(24 + i, multiLineObj);
+			} else
+				psBuilding.setNull(24 + i, nullGeometryType, nullGeometryTypeName);
+		}
+
+		// lod0FootPrint and lod0RoofEdge
+		for (int i = 0; i < 2; i++) {
+			MultiSurfaceProperty multiSurfaceProperty = null;
+			long multiSurfaceId = 0;
+
+			switch (i) {
+			case 0:
+				multiSurfaceProperty = building.getLod0FootPrint();
+				break;
+			case 1:
+				multiSurfaceProperty = building.getLod0RoofEdge();
+				break;			
+			}
+
+			if (multiSurfaceProperty != null) {
+				if (multiSurfaceProperty.isSetMultiSurface()) {
+					multiSurfaceId = surfaceGeometryImporter.insert(multiSurfaceProperty.getMultiSurface(), buildingId);
+					multiSurfaceProperty.unsetMultiSurface();
 				} else {
 					// xlink
-					String href = solidProperty.getHref();
+					String href = multiSurfaceProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						DBXlinkBasic xlink = new DBXlinkBasic(
-								buildingId,
-								TableEnum.BUILDING,
-								href,
-								TableEnum.SURFACE_GEOMETRY
-						);
-
-						xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
-						dbImporterManager.propagateXlink(xlink);
+						dbImporterManager.propagateXlink(new DBXlinkSurfaceGeometry(
+								href, 
+								buildingId, 
+								TableEnum.BUILDING, 
+								i == 0 ? "LOD0_FOOTPRINT_ID" : "LOD0_ROOFPRINT_ID"));
 					}
 				}
 			}
 
-			switch (lod) {
-			case 1:
-				if (solidGeometryId != 0) {
-					psBuilding.setLong(18, solidGeometryId);
-					lodGeometry[0] = true;
-				}
-				else
-					psBuilding.setNull(18, 0);
-				break;
-			case 2:
-				if (solidGeometryId != 0) {
-					psBuilding.setLong(19, solidGeometryId);
-					lodGeometry[1] = true;
-				}
-				else
-					psBuilding.setNull(19, 0);
-				break;
-			case 3:
-				if (solidGeometryId != 0) {
-					psBuilding.setLong(20, solidGeometryId);
-					lodGeometry[2] = true;
-				}
-				else
-					psBuilding.setNull(20, 0);
-				break;
-			case 4:
-				if (solidGeometryId != 0) {
-					psBuilding.setLong(21, solidGeometryId);
-					lodGeometry[3] = true;
-				}
-				else
-					psBuilding.setNull(21, 0);
-				break;
-			}
+			if (multiSurfaceId != 0)
+				psBuilding.setLong(27 + i, multiSurfaceId);
+			else
+				psBuilding.setNull(27 + i, Types.NULL);
 		}
 
 		// lodXMultiSurface
-		for (int lod = 1; lod < 5; lod++) {
-			if (lodGeometry[lod - 1])
-				continue;
-
+		for (int i = 0; i < 4; i++) {
 			MultiSurfaceProperty multiSurfaceProperty = null;
 			long multiGeometryId = 0;
 
-			switch (lod) {
-			case 1:
+			switch (i) {
+			case 0:
 				multiSurfaceProperty = building.getLod1MultiSurface();
 				break;
-			case 2:
+			case 1:
 				multiSurfaceProperty = building.getLod2MultiSurface();
 				break;
-			case 3:
+			case 2:
 				multiSurfaceProperty = building.getLod3MultiSurface();
 				break;
-			case 4:
+			case 3:
 				multiSurfaceProperty = building.getLod4MultiSurface();
 				break;
 			}
@@ -383,158 +391,62 @@ public class DBBuilding implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						DBXlinkBasic xlink = new DBXlinkBasic(
-								buildingId,
-								TableEnum.BUILDING,
-								href,
-								TableEnum.SURFACE_GEOMETRY
-						);
-
-						xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
-						dbImporterManager.propagateXlink(xlink);
+						dbImporterManager.propagateXlink(new DBXlinkSurfaceGeometry(
+								href, 
+								buildingId, 
+								TableEnum.BUILDING, 
+								"LOD" + (i + 1) + "_MULTI_SURFACE_ID"));
 					}
 				}
 			}
 
-			switch (lod) {
-			case 1:
-				if (multiGeometryId != 0)
-					psBuilding.setLong(18, multiGeometryId);
-				else
-					psBuilding.setNull(18, 0);
-				break;
-			case 2:
-				if (multiGeometryId != 0)
-					psBuilding.setLong(19, multiGeometryId);
-				else
-					psBuilding.setNull(19, 0);
-				break;
-			case 3:
-				if (multiGeometryId != 0)
-					psBuilding.setLong(20, multiGeometryId);
-				else
-					psBuilding.setNull(20, 0);
-				break;
-			case 4:
-				if (multiGeometryId != 0)
-					psBuilding.setLong(21, multiGeometryId);
-				else
-					psBuilding.setNull(21, 0);
-				break;
-			}
+			if (multiGeometryId != 0)
+				psBuilding.setLong(29 + i, multiGeometryId);
+			else
+				psBuilding.setNull(29 + i, Types.NULL);
 		}
 
-		// lodXTerrainIntersectionCurve
-		for (int lod = 1; lod < 5; lod++) {
-			MultiCurveProperty multiCurveProperty = null;
-			GeometryObject multiLine = null;
+		// lodXSolid
+		for (int i = 0; i < 4; i++) {
+			SolidProperty solidProperty = null;
+			long solidGeometryId = 0;
 
-			switch (lod) {
+			switch (i) {
+			case 0:
+				solidProperty = building.getLod1Solid();
+				break;
 			case 1:
-				multiCurveProperty = building.getLod1TerrainIntersection();
+				solidProperty = building.getLod2Solid();
 				break;
 			case 2:
-				multiCurveProperty = building.getLod2TerrainIntersection();
+				solidProperty = building.getLod3Solid();
 				break;
 			case 3:
-				multiCurveProperty = building.getLod3TerrainIntersection();
-				break;
-			case 4:
-				multiCurveProperty = building.getLod4TerrainIntersection();
+				solidProperty = building.getLod4Solid();
 				break;
 			}
 
-			if (multiCurveProperty != null) {
-				multiLine = geometryImporter.getMultiCurve(multiCurveProperty);
-				multiCurveProperty.unsetMultiCurve();
+			if (solidProperty != null) {
+				if (solidProperty.isSetSolid()) {
+					solidGeometryId = surfaceGeometryImporter.insert(solidProperty.getSolid(), buildingId);
+					solidProperty.unsetSolid();
+				} else {
+					// xlink
+					String href = solidProperty.getHref();
+					if (href != null && href.length() != 0) {
+						dbImporterManager.propagateXlink(new DBXlinkSurfaceGeometry(
+								href, 
+								buildingId, 
+								TableEnum.BUILDING, 
+								"LOD" + (i + 1) + "_SOLID_ID"));
+					}
+				}
 			}
 
-			switch (lod) {
-			case 1:
-				if (multiLine != null) {
-					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-					psBuilding.setObject(22, multiLineObj);
-				} else
-					psBuilding.setNull(22, nullGeometryType, nullGeometryTypeName);
-
-				break;
-			case 2:
-				if (multiLine != null) {
-					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-					psBuilding.setObject(23, multiLineObj);
-				} else
-					psBuilding.setNull(23, nullGeometryType, nullGeometryTypeName);
-
-				break;
-			case 3:
-				if (multiLine != null) {
-					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-					psBuilding.setObject(24, multiLineObj);
-				} else
-					psBuilding.setNull(24, nullGeometryType, nullGeometryTypeName);
-
-				break;
-			case 4:
-				if (multiLine != null) {
-					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-					psBuilding.setObject(25, multiLineObj);
-				} else
-					psBuilding.setNull(25, nullGeometryType, nullGeometryTypeName);
-
-				break;
-			}
-
-		}
-
-		// lodXMultiCurve
-		for (int lod = 2; lod < 5; lod++) {
-			MultiCurveProperty multiCurveProperty = null;
-			GeometryObject multiLine = null;
-
-			switch (lod) {
-			case 2:
-				multiCurveProperty = building.getLod2MultiCurve();
-				break;
-			case 3:
-				multiCurveProperty = building.getLod3MultiCurve();
-				break;
-			case 4:
-				multiCurveProperty = building.getLod4MultiCurve();
-				break;
-			}
-
-			if (multiCurveProperty != null) {
-				multiLine = geometryImporter.getMultiCurve(multiCurveProperty);
-				multiCurveProperty.unsetMultiCurve();
-			}
-
-			switch (lod) {
-			case 2:
-				if (multiLine != null) {
-					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-					psBuilding.setObject(26, multiLineObj);
-				} else
-					psBuilding.setNull(26, nullGeometryType, nullGeometryTypeName);
-
-				break;
-			case 3:
-				if (multiLine != null) {
-					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-					psBuilding.setObject(27, multiLineObj);
-				} else
-					psBuilding.setNull(27, nullGeometryType, nullGeometryTypeName);
-
-				break;
-			case 4:
-				if (multiLine != null) {
-					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-					psBuilding.setObject(28, multiLineObj);
-				} else
-					psBuilding.setNull(28, nullGeometryType, nullGeometryTypeName);
-
-				break;
-			}
-
+			if (solidGeometryId != 0)
+				psBuilding.setLong(33 + i, solidGeometryId);
+			else
+				psBuilding.setNull(33 + i, Types.NULL);
 		}
 
 		psBuilding.addBatch();
@@ -549,7 +461,7 @@ public class DBBuilding implements DBImporter {
 				if (boundarySurface != null) {
 					String gmlId = boundarySurface.getId();
 					long id = thematicSurfaceImporter.insert(boundarySurface, building.getCityGMLClass(), buildingId);
-					
+
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 								building.getCityGMLClass(), 
@@ -558,10 +470,10 @@ public class DBBuilding implements DBImporter {
 						msg.append(Util.getFeatureSignature(
 								boundarySurface.getCityGMLClass(), 
 								gmlId));
-						
+
 						LOG.error(msg.toString());
 					}
-					
+
 					// free memory of nested feature
 					boundarySurfaceProperty.unsetBoundarySurface();
 				} else {
@@ -569,7 +481,7 @@ public class DBBuilding implements DBImporter {
 					String href = boundarySurfaceProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						LOG.error("XLink reference '" + href + "' to BoundarySurface feature is not supported.");
+						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.ABSTRACT_BUILDING_BOUNDARY_SURFACE + " feature is not supported.");
 					}
 				}
 			}
@@ -579,11 +491,11 @@ public class DBBuilding implements DBImporter {
 		if (building.isSetOuterBuildingInstallation()) {
 			for (BuildingInstallationProperty buildingInstProperty : building.getOuterBuildingInstallation()) {
 				BuildingInstallation buildingInst = buildingInstProperty.getBuildingInstallation();
-				
+
 				if (buildingInst != null) {
 					String gmlId = buildingInst.getId();
 					long id = buildingInstallationImporter.insert(buildingInst, building.getCityGMLClass(), buildingId);
-					
+
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 								building.getCityGMLClass(), 
@@ -592,10 +504,10 @@ public class DBBuilding implements DBImporter {
 						msg.append(Util.getFeatureSignature(
 								CityGMLClass.BUILDING_INSTALLATION, 
 								gmlId));
-						
+
 						LOG.error(msg.toString());
 					}
-					
+
 					// free memory of nested feature
 					buildingInstProperty.unsetBuildingInstallation();
 				} else {
@@ -603,7 +515,7 @@ public class DBBuilding implements DBImporter {
 					String href = buildingInstProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						LOG.error("XLink reference '" + href + "' to BuildingInstallation feature is not supported.");
+						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.BUILDING_INSTALLATION + " feature is not supported.");
 					}
 				}
 			}
@@ -613,11 +525,11 @@ public class DBBuilding implements DBImporter {
 		if (building.isSetInteriorBuildingInstallation()) {
 			for (IntBuildingInstallationProperty intBuildingInstProperty : building.getInteriorBuildingInstallation()) {
 				IntBuildingInstallation intBuildingInst = intBuildingInstProperty.getIntBuildingInstallation();
-				
+
 				if (intBuildingInst != null) {
 					String gmlId = intBuildingInst.getId();
 					long id = buildingInstallationImporter.insert(intBuildingInst, building.getCityGMLClass(), buildingId);
-					
+
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 								building.getCityGMLClass(), 
@@ -626,10 +538,10 @@ public class DBBuilding implements DBImporter {
 						msg.append(Util.getFeatureSignature(
 								CityGMLClass.INT_BUILDING_INSTALLATION, 
 								gmlId));
-						
+
 						LOG.error(msg.toString());
 					}
-					
+
 					// free memory of nested feature
 					intBuildingInstProperty.unsetIntBuildingInstallation();
 				} else {
@@ -637,7 +549,7 @@ public class DBBuilding implements DBImporter {
 					String href = intBuildingInstProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						LOG.error("XLink reference '" + href + "' to IntBuildingInstallation feature is not supported.");
+						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.INT_BUILDING_INSTALLATION + " feature is not supported.");
 					}
 				}
 			}
@@ -647,11 +559,11 @@ public class DBBuilding implements DBImporter {
 		if (building.isSetInteriorRoom()) {
 			for (InteriorRoomProperty roomProperty : building.getInteriorRoom()) {
 				Room room = roomProperty.getRoom();
-				
+
 				if (room != null) {
 					String gmlId = room.getId();
 					long id = roomImporter.insert(room, buildingId);
-					
+
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 								building.getCityGMLClass(), 
@@ -660,10 +572,10 @@ public class DBBuilding implements DBImporter {
 						msg.append(Util.getFeatureSignature(
 								CityGMLClass.BUILDING_ROOM, 
 								gmlId));
-						
+
 						LOG.error(msg.toString());
 					}
-					
+
 					// free memory of nested feature
 					roomProperty.unsetRoom();
 				} else {
@@ -671,7 +583,7 @@ public class DBBuilding implements DBImporter {
 					String href = roomProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						LOG.error("XLink reference '" + href + "' to Room feature is not supported.");
+						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.BUILDING_ROOM + " feature is not supported.");
 					}
 				}
 			}
@@ -681,10 +593,10 @@ public class DBBuilding implements DBImporter {
 		if (building.isSetConsistsOfBuildingPart()) {
 			for (BuildingPartProperty buildingPartProperty : building.getConsistsOfBuildingPart()) {
 				BuildingPart buildingPart = buildingPartProperty.getBuildingPart();
-				
+
 				if (buildingPart != null) {
 					long id = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
-					
+
 					if (id != 0)
 						insert(buildingPart, id, buildingId, rootId);
 					else {
@@ -695,10 +607,10 @@ public class DBBuilding implements DBImporter {
 						msg.append(Util.getFeatureSignature(
 								CityGMLClass.BUILDING_PART, 
 								buildingPart.getId()));
-						
+
 						LOG.error(msg.toString());
 					}
-					
+
 					// free memory of nested feature
 					buildingPartProperty.unsetBuildingPart();
 				} else {
@@ -706,7 +618,7 @@ public class DBBuilding implements DBImporter {
 					String href = buildingPartProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						LOG.error("XLink reference '" + href + "' to BuildingPart feature is not supported.");
+						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.BUILDING_PART + " feature is not supported.");
 					}
 				}
 			}
@@ -716,11 +628,11 @@ public class DBBuilding implements DBImporter {
 		if (building.isSetAddress()) {
 			for (AddressProperty addressProperty : building.getAddress()) {
 				Address address = addressProperty.getAddress();
-				
+
 				if (address != null) {
 					String gmlId = address.getId();
 					long id = addressImporter.insert(address, buildingId);
-					
+
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 								building.getCityGMLClass(), 
@@ -729,10 +641,10 @@ public class DBBuilding implements DBImporter {
 						msg.append(Util.getFeatureSignature(
 								CityGMLClass.ADDRESS, 
 								gmlId));
-						
+
 						LOG.error(msg.toString());
 					}
-					
+
 					// free memory of nested feature
 					addressProperty.unsetAddress();
 				} else {
@@ -745,12 +657,12 @@ public class DBBuilding implements DBImporter {
 								TableEnum.BUILDING,
 								href,
 								TableEnum.ADDRESS
-						));
+								));
 					}
 				}
 			}
 		}
-		
+
 		// insert local appearance
 		cityObjectImporter.insertAppearance(building, buildingId);
 

@@ -61,8 +61,8 @@ public class DBReliefComponent implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBReliefFeatToRelComp reliefFeatToRelComp;
 	private DBSurfaceGeometry surfaceGeometryImporter;
-	private DBOtherGeometry geometryImporter;
-	
+	private DBOtherGeometry otherGeometryImporter;
+
 	private int batchCounter;
 	private int nullGeometryType;
 	private String nullGeometryTypeName;
@@ -78,7 +78,7 @@ public class DBReliefComponent implements DBImporter {
 		nullGeometryType = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 
-		psReliefComponent = batchConn.prepareStatement("insert into RELIEF_COMPONENT (ID, NAME, NAME_CODESPACE, DESCRIPTION, LOD, EXTENT) values (?, ?, ?, ?, ?, ?)");
+		psReliefComponent = batchConn.prepareStatement("insert into RELIEF_COMPONENT (ID, OBJECTCLASS_ID, LOD, EXTENT) values (?, ?, ?, ?)");
 		psTinRelief = batchConn.prepareStatement("insert into TIN_RELIEF (ID, MAX_LENGTH, STOP_LINES, BREAK_LINES, CONTROL_POINTS, SURFACE_GEOMETRY_ID) values (?, ?, ?, ?, ?, ?)");
 		psMassPointRelief = batchConn.prepareStatement("insert into MASSPOINT_RELIEF (ID, RELIEF_POINTS) values (?, ?)");
 		psBreaklineRelief = batchConn.prepareStatement("insert into BREAKLINE_RELIEF (ID, RIDGE_OR_VALLEY_LINES, BREAK_LINES) values (?, ?, ?)");
@@ -86,7 +86,7 @@ public class DBReliefComponent implements DBImporter {
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		reliefFeatToRelComp = (DBReliefFeatToRelComp)dbImporterManager.getDBImporter(DBImporterEnum.RELIEF_FEAT_TO_REL_COMP);
-		geometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
+		otherGeometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
 	public long insert(AbstractReliefComponent reliefComponent, long parentId) throws SQLException {
@@ -101,42 +101,21 @@ public class DBReliefComponent implements DBImporter {
 		// ID
 		psReliefComponent.setLong(1, reliefComponentId);
 
-		// gml:name
-		if (reliefComponent.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(reliefComponent);
-
-			psReliefComponent.setString(2, dbGmlName[0]);
-			psReliefComponent.setString(3, dbGmlName[1]);
-		} else {
-			psReliefComponent.setNull(2, Types.VARCHAR);
-			psReliefComponent.setNull(3, Types.VARCHAR);
-		}
-
-		// gml:description
-		if (reliefComponent.isSetDescription()) {
-			String description = reliefComponent.getDescription().getValue();
-
-			if (description != null)
-				description = description.trim();
-
-			psReliefComponent.setString(4, description);
-		} else {
-			psReliefComponent.setNull(4, Types.VARCHAR);
-		}
+		// OBJECTCLASS_ID
+		psReliefComponent.setLong(2, Util.cityObject2classId(reliefComponent.getCityGMLClass()));
 
 		// lod
-		psReliefComponent.setInt(5, reliefComponent.getLod());
+		psReliefComponent.setInt(3, reliefComponent.getLod());
 
 		// extent
-		if (reliefComponent.isSetExtent()) {
-			GeometryObject extent = geometryImporter.get2DPolygon(reliefComponent.getExtent());
-			if (extent != null) {
-				Object extentObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(extent, batchConn);
-				psReliefComponent.setObject(6, extentObj);
-			} else
-				psReliefComponent.setNull(6, nullGeometryType, nullGeometryTypeName);
-		} else
-			psReliefComponent.setNull(6, nullGeometryType, nullGeometryTypeName);
+		GeometryObject extent = null;
+		if (reliefComponent.isSetExtent())
+			extent = otherGeometryImporter.get2DPolygon(reliefComponent.getExtent());
+
+		if (extent != null)
+			psReliefComponent.setObject(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(extent, batchConn));
+		else
+			psReliefComponent.setNull(4, nullGeometryType, nullGeometryTypeName);
 
 		psReliefComponent.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
@@ -158,7 +137,7 @@ public class DBReliefComponent implements DBImporter {
 			if (tinRelief.isSetTin()) {
 				TinProperty tinProperty = tinRelief.getTin();
 				TriangulatedSurface triangulatedSurface = tinProperty.getObject();
-				
+
 				if (triangulatedSurface != null) {
 					geometryId = surfaceGeometryImporter.insert(triangulatedSurface, reliefComponentId);
 
@@ -172,17 +151,17 @@ public class DBReliefComponent implements DBImporter {
 
 						// stopLines
 						if (tin.isSetStopLines())
-							stopLines = geometryImporter.getMultiCurve(tin.getStopLines());
+							stopLines = otherGeometryImporter.getMultiCurve(tin.getStopLines());
 
 						// breakLines
 						if (tin.isSetBreakLines())
-							breakLines = geometryImporter.getMultiCurve(tin.getBreakLines());
+							breakLines = otherGeometryImporter.getMultiCurve(tin.getBreakLines());
 
 						// controlPoints
 						if (tin.isSetControlPoint())
-							controlPoints = geometryImporter.getMultiPoint(tin.getControlPoint());
+							controlPoints = otherGeometryImporter.getMultiPoint(tin.getControlPoint());
 					}
-					
+
 					tinProperty.unsetTriangulatedSurface();
 
 				} else {
@@ -190,7 +169,7 @@ public class DBReliefComponent implements DBImporter {
 					String href = tinProperty.getHref();
 
 					if (href != null && href.length() != 0)
-						LOG.error("XLink reference '" + href + "' to gml:TriangulatedSurface element is not supported");
+						LOG.error("XLink reference '" + href + "' to " + GMLClass.TRIANGULATED_SURFACE + " element is not supported");
 				}
 			}
 
@@ -201,24 +180,21 @@ public class DBReliefComponent implements DBImporter {
 				psTinRelief.setNull(2, Types.DOUBLE);
 
 			// stopLines
-			if (stopLines != null) {
-				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(stopLines, batchConn);
-				psTinRelief.setObject(3, geomObj);
-			} else
+			if (stopLines != null)
+				psTinRelief.setObject(3, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(stopLines, batchConn));
+			else
 				psTinRelief.setNull(3, nullGeometryType, nullGeometryTypeName);
 
 			// breakLines
-			if (breakLines != null) {
-				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(breakLines, batchConn);
-				psTinRelief.setObject(4, geomObj);
-			} else
+			if (breakLines != null)
+				psTinRelief.setObject(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(breakLines, batchConn));
+			else
 				psTinRelief.setNull(4, nullGeometryType, nullGeometryTypeName);
 
 			// controlPoints
-			if (controlPoints != null) {
-				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(controlPoints, batchConn);
-				psTinRelief.setObject(5, geomObj);
-			} else
+			if (controlPoints != null)
+				psTinRelief.setObject(5, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(controlPoints, batchConn));
+			else
 				psTinRelief.setNull(5, nullGeometryType, nullGeometryTypeName);
 
 			// triangle patches
@@ -239,14 +215,13 @@ public class DBReliefComponent implements DBImporter {
 			// reliefPoints
 			GeometryObject reliefPoints = null;
 			if (massPointRelief.isSetReliefPoints()) {
-				reliefPoints = geometryImporter.getMultiPoint(massPointRelief.getReliefPoints());
+				reliefPoints = otherGeometryImporter.getMultiPoint(massPointRelief.getReliefPoints());
 				massPointRelief.unsetReliefPoints();
 			}
 
-			if (reliefPoints != null) {
-				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(reliefPoints, batchConn);
-				psMassPointRelief.setObject(2, geomObj);
-			} else
+			if (reliefPoints != null)
+				psMassPointRelief.setObject(2, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(reliefPoints, batchConn));
+			else
 				psMassPointRelief.setNull(2, nullGeometryType, nullGeometryTypeName);
 
 			psMassPointRelief.addBatch();
@@ -262,25 +237,23 @@ public class DBReliefComponent implements DBImporter {
 			ridgeOrValleyLines = breakLines = null;
 
 			if (breakLineRelief.isSetRidgeOrValleyLines()) {
-				ridgeOrValleyLines = geometryImporter.getMultiCurve(breakLineRelief.getRidgeOrValleyLines());
+				ridgeOrValleyLines = otherGeometryImporter.getMultiCurve(breakLineRelief.getRidgeOrValleyLines());
 				breakLineRelief.unsetRidgeOrValleyLines();
 			}
 
 			if (breakLineRelief.isSetBreaklines()) {
-				breakLines = geometryImporter.getMultiCurve(breakLineRelief.getBreaklines());
+				breakLines = otherGeometryImporter.getMultiCurve(breakLineRelief.getBreaklines());
 				breakLineRelief.unsetBreaklines();
 			}
 
-			if (ridgeOrValleyLines != null) {
-				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(ridgeOrValleyLines, batchConn);
-				psBreaklineRelief.setObject(2, geomObj);
-			} else
+			if (ridgeOrValleyLines != null)
+				psBreaklineRelief.setObject(2, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(ridgeOrValleyLines, batchConn));
+			else
 				psBreaklineRelief.setNull(2, nullGeometryType, nullGeometryTypeName);
 
-			if (breakLines != null) {
-				Object geomObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(breakLines, batchConn);
-				psBreaklineRelief.setObject(3, geomObj);
-			} else
+			if (breakLines != null)
+				psBreaklineRelief.setObject(3, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(breakLines, batchConn));
+			else
 				psBreaklineRelief.setNull(3, nullGeometryType, nullGeometryTypeName);
 
 			psBreaklineRelief.addBatch();
@@ -288,7 +261,7 @@ public class DBReliefComponent implements DBImporter {
 
 		// reliefComponent2reliefFeature
 		reliefFeatToRelComp.insert(reliefComponentId, parentId);
-		
+
 		// insert local appearance
 		cityObjectImporter.insertAppearance(reliefComponent, reliefComponentId);
 

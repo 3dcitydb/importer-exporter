@@ -34,17 +34,22 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.AbstractOpening;
 import org.citygml4j.model.citygml.building.Door;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
+import org.citygml4j.model.citygml.core.ImplicitGeometry;
+import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 
+import de.tub.citydb.api.geometry.GeometryObject;
+import de.tub.citydb.config.Config;
 import de.tub.citydb.database.TableEnum;
-import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.util.Util;
 
 public class DBOpening implements DBImporter {
@@ -56,25 +61,34 @@ public class DBOpening implements DBImporter {
 	private PreparedStatement psOpening;
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
+	private DBOtherGeometry otherGeometryImporter;
+	private DBImplicitGeometry implicitGeometryImporter;
 	private DBOpeningToThemSurface openingToThemSurfaceImporter;
 	private DBAddress addressImporter;
 
+	private boolean affineTransformation;
 	private int batchCounter;
 
-	public DBOpening(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
+	public DBOpening(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
 		this.dbImporterManager = dbImporterManager;
 
+		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		init();
 	}
 
 	private void init() throws SQLException {
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into OPENING (ID, NAME, NAME_CODESPACE, DESCRIPTION, TYPE, ADDRESS_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("insert into OPENING (ID, OBJECTCLASS_ID, ADDRESS_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID, ")
+		.append("LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID, ")
+		.append("LOD3_IMPLICIT_REF_POINT, LOD4_IMPLICIT_REF_POINT, ")
+		.append("LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psOpening = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
+		otherGeometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
+		implicitGeometryImporter = (DBImplicitGeometry)dbImporterManager.getDBImporter(DBImporterEnum.IMPLICIT_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		openingToThemSurfaceImporter = (DBOpeningToThemSurface)dbImporterManager.getDBImporter(DBImporterEnum.OPENING_TO_THEM_SURFACE);
 		addressImporter = (DBAddress)dbImporterManager.getDBImporter(DBImporterEnum.ADDRESS);
@@ -94,36 +108,13 @@ public class DBOpening implements DBImporter {
 		// ID
 		psOpening.setLong(1, openingId);
 
-		// gml:name
-		if (opening.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(opening);
-
-			psOpening.setString(2, dbGmlName[0]);
-			psOpening.setString(3, dbGmlName[1]);
-		} else {
-			psOpening.setNull(2, Types.VARCHAR);
-			psOpening.setNull(3, Types.VARCHAR);
-		}
-
-		// gml:description
-		if (opening.isSetDescription()) {
-			String description = opening.getDescription().getValue();
-
-			if (description != null)
-				description = description.trim();
-
-			psOpening.setString(4, description);
-		} else {
-			psOpening.setNull(4, Types.VARCHAR);
-		}
-
-		// TYPE
-		psOpening.setString(5, TypeAttributeValueEnum.fromCityGMLClass(opening.getCityGMLClass()).toString());
+		// OBJECTCLASS_ID
+		psOpening.setInt(2, Util.cityObject2classId(opening.getCityGMLClass()));
 
 		// citygml:address
+		long addressId = 0;
 		if (opening.getCityGMLClass() == CityGMLClass.BUILDING_DOOR) {
 			Door door = (Door)opening;
-			long addressId = 0;
 
 			if (door.isSetAddress() && !door.getAddress().isEmpty()) {
 				// unfortunately, we can just represent one address in database...
@@ -162,26 +153,23 @@ public class DBOpening implements DBImporter {
 					}
 				}
 			}
-
-			if (addressId != 0)
-				psOpening.setLong(6, addressId);
-			else
-				psOpening.setNull(6, 0);
-
-		} else {
-			psOpening.setNull(6, 0);
 		}
 
+		if (addressId != 0)
+			psOpening.setLong(3, addressId);
+		else
+			psOpening.setNull(3, Types.NULL);
+
 		// Geometry
-		for (int lod = 3; lod < 5; lod++) {
+		for (int i = 0; i < 2; i++) {
 			MultiSurfaceProperty multiSurfaceProperty = null;
 			long multiSurfaceId = 0;
 
-			switch (lod) {
-			case 3:
+			switch (i) {
+			case 0:
 				multiSurfaceProperty = opening.getLod3MultiSurface();
 				break;
-			case 4:
+			case 1:
 				multiSurfaceProperty = opening.getLod4MultiSurface();
 				break;
 			}
@@ -195,33 +183,74 @@ public class DBOpening implements DBImporter {
 					String href = multiSurfaceProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						DBXlinkBasic xlink = new DBXlinkBasic(
-								openingId,
-								TableEnum.OPENING,
-								href,
-								TableEnum.SURFACE_GEOMETRY
-								);
-
-						xlink.setAttrName("LOD" + lod + "_MULTI_SURFACE_ID");
-						dbImporterManager.propagateXlink(xlink);
+						dbImporterManager.propagateXlink(new DBXlinkSurfaceGeometry(
+								href, 
+								openingId, 
+								TableEnum.OPENING, 
+								"LOD" + (i + 3) + "_MULTI_SURFACE_ID"));
 					}
 				}
 			}
 
-			switch (lod) {
-			case 3:
-				if (multiSurfaceId != 0)
-					psOpening.setLong(7, multiSurfaceId);
-				else
-					psOpening.setNull(7, 0);
+			if (multiSurfaceId != 0)
+				psOpening.setLong(4 + i, multiSurfaceId);
+			else
+				psOpening.setNull(4 + i, Types.NULL);
+		}
+
+		// implicit geometry
+		for (int i = 0; i < 2; i++) {
+			ImplicitRepresentationProperty implicit = null;
+			GeometryObject pointGeom = null;
+			String matrixString = null;
+			long implicitId = 0;
+
+			switch (i) {
+			case 0:
+				implicit = opening.getLod3ImplicitRepresentation();
 				break;
-			case 4:
-				if (multiSurfaceId != 0)
-					psOpening.setLong(8, multiSurfaceId);
-				else
-					psOpening.setNull(8, 0);
+			case 1:
+				implicit = opening.getLod4ImplicitRepresentation();
 				break;
 			}
+
+			if (implicit != null) {
+				if (implicit.isSetObject()) {
+					ImplicitGeometry geometry = implicit.getObject();
+
+					// reference Point
+					if (geometry.isSetReferencePoint())
+						pointGeom = otherGeometryImporter.getPoint(geometry.getReferencePoint());
+
+					// transformation matrix
+					if (geometry.isSetTransformationMatrix()) {
+						Matrix matrix = geometry.getTransformationMatrix().getMatrix();
+						if (affineTransformation)
+							matrix = dbImporterManager.getAffineTransformer().transformImplicitGeometryTransformationMatrix(matrix);
+
+						matrixString = Util.collection2string(matrix.toRowPackedList(), " ");
+					}
+
+					// reference to IMPLICIT_GEOMETRY
+					implicitId = implicitGeometryImporter.insert(geometry, openingId);
+				}
+			}
+
+			if (implicitId != 0)
+				psOpening.setLong(6 + i, implicitId);
+			else
+				psOpening.setNull(6 + i, Types.NULL);
+
+			if (pointGeom != null)
+				psOpening.setObject(8 + i, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(pointGeom, batchConn));
+			else
+				psOpening.setNull(8 + i, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+						dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
+
+			if (matrixString != null)
+				psOpening.setString(10 + i, matrixString);
+			else
+				psOpening.setNull(10 + i, Types.VARCHAR);
 		}
 
 		psOpening.addBatch();

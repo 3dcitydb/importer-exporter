@@ -81,7 +81,7 @@ public class DBXlinkResolverManager {
 		this.eventDispatcher = eventDispatcher;
 
 		dbWriterMap = new HashMap<DBXlinkResolverEnum, DBXlinkResolver>();
-		dbGmlIdResolver = new DBGmlIdResolver(batchConn, lookupServerManager, config);
+		dbGmlIdResolver = new DBGmlIdResolver(batchConn, lookupServerManager);
 		dbSequencer = new DBSequencer(batchConn, databaseAdapter);
 	}
 
@@ -94,7 +94,7 @@ public class DBXlinkResolverManager {
 			case SURFACE_GEOMETRY:
 				CacheTable surfaceGeomHeapView = dbTempTableManager.getCacheTable(CacheTableModelEnum.SURFACE_GEOMETRY).getMirrorTable();
 				if (surfaceGeomHeapView != null)
-					dbResolver = new XlinkSurfaceGeometry(connection, surfaceGeomHeapView, config, this);
+					dbResolver = new XlinkSurfaceGeometry(connection, surfaceGeomHeapView, this);
 
 				break;
 			case BASIC:

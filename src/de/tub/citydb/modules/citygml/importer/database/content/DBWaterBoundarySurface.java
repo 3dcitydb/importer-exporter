@@ -40,8 +40,7 @@ import org.citygml4j.model.citygml.waterbody.WaterSurface;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
 import de.tub.citydb.database.TableEnum;
-import de.tub.citydb.database.TypeAttributeValueEnum;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.util.Util;
 
 public class DBWaterBoundarySurface implements DBImporter {
@@ -52,9 +51,9 @@ public class DBWaterBoundarySurface implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBWaterBodToWaterBndSrf bodyToSurfaceImporter;
-	
+
 	private int batchCounter;
-	
+
 	public DBWaterBoundarySurface(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
 		this.dbImporterManager = dbImporterManager;
@@ -64,9 +63,9 @@ public class DBWaterBoundarySurface implements DBImporter {
 
 	private void init() throws SQLException {
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into WATERBOUNDARY_SURFACE (ID, NAME, NAME_CODESPACE, DESCRIPTION, TYPE, WATER_LEVEL, ")
+		.append("insert into WATERBOUNDARY_SURFACE (ID, OBJECTCLASS_ID, WATER_LEVEL, WATER_LEVEL_CODESPACE, ")
 		.append("LOD2_SURFACE_ID, LOD3_SURFACE_ID, LOD4_SURFACE_ID) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("(?, ?, ?, ?, ?, ?, ?)");
 		psWaterBoundarySurface = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
@@ -76,117 +75,81 @@ public class DBWaterBoundarySurface implements DBImporter {
 
 	public long insert(AbstractWaterBoundarySurface waterBoundarySurface, long parentId) throws SQLException {
 		long waterBoundarySurfaceId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
-    	if (waterBoundarySurfaceId == 0)
-    		return 0;
+		if (waterBoundarySurfaceId == 0)
+			return 0;
 
 		// CityObject
-    	cityObjectImporter.insert(waterBoundarySurface, waterBoundarySurfaceId);
+		cityObjectImporter.insert(waterBoundarySurface, waterBoundarySurfaceId);
 
 		// BoundarySurface
-        // ID
-    	psWaterBoundarySurface.setLong(1, waterBoundarySurfaceId);
+		// ID
+		psWaterBoundarySurface.setLong(1, waterBoundarySurfaceId);
 
-		// gml:name
-    	if (waterBoundarySurface.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(waterBoundarySurface);
+		// OBJECTCLASS_ID
+		psWaterBoundarySurface.setLong(2, Util.cityObject2classId(waterBoundarySurface.getCityGMLClass()));
 
-			psWaterBoundarySurface.setString(2, dbGmlName[0]);
-			psWaterBoundarySurface.setString(3, dbGmlName[1]);
+		// waterLevel
+		if (waterBoundarySurface.getCityGMLClass() == CityGMLClass.WATER_SURFACE && 
+				((WaterSurface)waterBoundarySurface).isSetWaterLevel() && ((WaterSurface)waterBoundarySurface).getWaterLevel().isSetValue()) {
+			psWaterBoundarySurface.setString(3, ((WaterSurface)waterBoundarySurface).getWaterLevel().getValue());
+			psWaterBoundarySurface.setString(4, ((WaterSurface)waterBoundarySurface).getWaterLevel().getCodeSpace());
 		} else {
-			psWaterBoundarySurface.setNull(2, Types.VARCHAR);
-			psWaterBoundarySurface.setNull(3, Types.VARCHAR);
-		}
-
-		// gml:description
-		if (waterBoundarySurface.isSetDescription()) {
-			String description = waterBoundarySurface.getDescription().getValue();
-			psWaterBoundarySurface.setString(4, description);
-		} else {
+			psWaterBoundarySurface.setNull(3, Types.NULL);
 			psWaterBoundarySurface.setNull(4, Types.VARCHAR);
 		}
 
-		// TYPE
-		psWaterBoundarySurface.setString(5, TypeAttributeValueEnum.fromCityGMLClass(waterBoundarySurface.getCityGMLClass()).toString());
+		// lodXMultiSurface
+		for (int i = 0; i < 3; i++) {
+			SurfaceProperty surfaceProperty = null;
+			long surfaceGeometryId = 0;
 
-		// waterLevel
-		if (waterBoundarySurface.getCityGMLClass() == CityGMLClass.WATER_SURFACE
-				&& ((WaterSurface)waterBoundarySurface).isSetWaterLevel())
-			psWaterBoundarySurface.setString(6, ((WaterSurface)waterBoundarySurface).getWaterLevel().getValue());
-		else
-			psWaterBoundarySurface.setNull(6, 0);
+			switch (i) {
+			case 0:
+				surfaceProperty = waterBoundarySurface.getLod2Surface();
+				break;
+			case 1:
+				surfaceProperty = waterBoundarySurface.getLod3Surface();
+				break;
+			case 2:
+				surfaceProperty = waterBoundarySurface.getLod4Surface();
+				break;
+			}
 
-		// Geometry
-        for (int lod = 2; lod < 5; lod++) {
-        	SurfaceProperty surfaceProperty = null;
-        	long abstractSurfaceId = 0;
-
-    		switch (lod) {
-    		case 2:
-    			surfaceProperty = waterBoundarySurface.getLod2Surface();
-    			break;
-    		case 3:
-    			surfaceProperty = waterBoundarySurface.getLod3Surface();
-    			break;
-    		case 4:
-    			surfaceProperty = waterBoundarySurface.getLod4Surface();
-    			break;
-    		}
-
-    		if (surfaceProperty != null) {
-    			if (surfaceProperty.isSetSurface()) {
-    				abstractSurfaceId = surfaceGeometryImporter.insert(surfaceProperty.getSurface(), waterBoundarySurfaceId);
-    				surfaceProperty.unsetSurface();
-    			} else {
-    				// xlink
+			if (surfaceProperty != null) {
+				if (surfaceProperty.isSetSurface()) {
+					surfaceGeometryId = surfaceGeometryImporter.insert(surfaceProperty.getSurface(), waterBoundarySurfaceId);
+					surfaceProperty.unsetSurface();
+				} else {
+					// xlink
 					String href = surfaceProperty.getHref();
 
-        			if (href != null && href.length() != 0) {
-        				DBXlinkBasic xlink = new DBXlinkBasic(
-        						waterBoundarySurfaceId,
-        						TableEnum.WATERBOUNDARY_SURFACE,
-        						href,
-        						TableEnum.SURFACE_GEOMETRY
-        				);
+					if (href != null && href.length() != 0) {
+						dbImporterManager.propagateXlink(new DBXlinkSurfaceGeometry(
+								href, 
+								waterBoundarySurfaceId, 
+								TableEnum.WATERBOUNDARY_SURFACE, 
+								"LOD" + (i + 2) + "_SURFACE_ID"));
+					}
+				}
+			}
 
-        				xlink.setAttrName("LOD" + lod + "_SURFACE_ID");
-        				dbImporterManager.propagateXlink(xlink);
-        			}
-    			}
-    		}
+			if (surfaceGeometryId != 0)
+				psWaterBoundarySurface.setLong(5 + i, surfaceGeometryId);
+			else
+				psWaterBoundarySurface.setNull(5 + i, Types.NULL);
+		}
 
-    		switch (lod) {
-        	case 2:
-        		if (abstractSurfaceId != 0)
-        			psWaterBoundarySurface.setLong(7, abstractSurfaceId);
-        		else
-        			psWaterBoundarySurface.setNull(7, 0);
-        		break;
-        	case 3:
-        		if (abstractSurfaceId != 0)
-        			psWaterBoundarySurface.setLong(8, abstractSurfaceId);
-        		else
-        			psWaterBoundarySurface.setNull(8, 0);
-        		break;
-        	case 4:
-        		if (abstractSurfaceId != 0)
-        			psWaterBoundarySurface.setLong(9, abstractSurfaceId);
-        		else
-        			psWaterBoundarySurface.setNull(9, 0);
-        		break;
-        	}
-        }
-
-        psWaterBoundarySurface.addBatch();
-        if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
+		psWaterBoundarySurface.addBatch();
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.WATERBOUNDARY_SURFACE);
 
-        // boundary surface to waterBody
-        bodyToSurfaceImporter.insert(waterBoundarySurfaceId, parentId);
-        
+		// boundary surface to waterBody
+		bodyToSurfaceImporter.insert(waterBoundarySurfaceId, parentId);
+
 		// insert local appearance
 		cityObjectImporter.insertAppearance(waterBoundarySurface, waterBoundarySurfaceId);
 
-        return waterBoundarySurfaceId;
+		return waterBoundarySurfaceId;
 	}
 
 	@Override

@@ -52,7 +52,6 @@ import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObj
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFileEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParamEnum;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.DBXlinkResolverEnum;
@@ -282,24 +281,14 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 
 				case TEXTURE_FILE:
 					DBXlinkTextureFile externalFile = (DBXlinkTextureFile)work;
-					DBXlinkTextureFileEnum fileSubType = externalFile.getType();
+					XlinkTextureImage xlinkTextureImage = (XlinkTextureImage)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXTURE_IMAGE);
+					if (xlinkTextureImage != null)
+						xlinkTextureImage.insert(externalFile);
 
-					switch (fileSubType) {
-					case TEXTURE_IMAGE:
-						XlinkTextureImage xlinkTextureImage = (XlinkTextureImage)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXTURE_IMAGE);
-
-						if (xlinkTextureImage != null)
-							xlinkTextureImage.insert(externalFile);
-
-						break;
-
-					case WORLD_FILE:
+					if (externalFile.hasWorldFile()) {
 						XlinkWorldFile xlinkWorldFile = (XlinkWorldFile)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.WORLD_FILE);
-
 						if (xlinkWorldFile != null)
 							xlinkWorldFile.insert(externalFile);
-
-						break;
 					}
 
 					// we generate error messages within the modules, so no need for

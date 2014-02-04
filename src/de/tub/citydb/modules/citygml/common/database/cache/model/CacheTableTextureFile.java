@@ -29,6 +29,10 @@
  */
 package de.tub.citydb.modules.citygml.common.database.cache.model;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 
 
@@ -45,6 +49,22 @@ public class CacheTableTextureFile extends CacheTableModel {
 		
 		return instance;
 	}
+	
+	@Override
+	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
+		Statement stmt = null;
+
+		try {
+			stmt = conn.createStatement();
+			
+			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (FILE_URI) " + properties);
+		} finally {
+			if (stmt != null) {
+				stmt.close();
+				stmt = null;
+			}
+		}
+	}
 
 	@Override
 	public CacheTableModelEnum getType() {
@@ -56,7 +76,9 @@ public class CacheTableTextureFile extends CacheTableModel {
 		StringBuilder builder = new StringBuilder("(")
 		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
 		.append("FILE_URI ").append(sqlAdapter.getCharacterVarying(1000)).append(", ")
-		.append("TYPE ").append(sqlAdapter.getNumeric(3))
+		.append("MIME_TYPE ").append(sqlAdapter.getCharacterVarying(30)).append(", ")
+		.append("MIME_TYPE_CODESPACE ").append(sqlAdapter.getCharacterVarying(1000)).append(", ")
+		.append("HAS_WORLD_FILE ").append(sqlAdapter.getNumeric(1, 0))
 		.append(")");
 		
 		return builder.toString();

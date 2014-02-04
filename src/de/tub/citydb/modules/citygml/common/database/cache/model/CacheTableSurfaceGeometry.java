@@ -77,7 +77,10 @@ public class CacheTableSurfaceGeometry extends CacheTableModel {
 		.append("PARENT_ID ").append(sqlAdapter.getInteger()).append(", ")
 		.append("ROOT_ID ").append(sqlAdapter.getInteger()).append(", ")
 		.append("REVERSE ").append(sqlAdapter.getNumeric(1, 0)).append(", ")
-		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256))
+		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
+		.append("CITYOBJECT_ID ").append(sqlAdapter.getInteger()).append(", ")
+		.append("FROM_TABLE ").append(sqlAdapter.getNumeric(3)).append(", ")
+		.append("ATTRNAME ").append(sqlAdapter.getCharacterVarying(30))
 		.append(")");
 		
 		return builder.toString();

@@ -151,7 +151,7 @@ public class DBWaterBody implements DBExporter {
 					String gmlName = rs.getString("WB_NAME");
 					String gmlNameCodespace = rs.getString("WB_NAME_CODESPACE");
 
-					Util.dbGmlName2featureName(waterBody, gmlName, gmlNameCodespace);
+					Util.string2codeList(waterBody, gmlName, gmlNameCodespace);
 
 					String description = rs.getString("WB_DESCRIPTION");
 					if (description != null) {
@@ -316,7 +316,7 @@ public class DBWaterBody implements DBExporter {
 				String gmlName = rs.getString("WS_NAME");
 				String gmlNameCodespace = rs.getString("WS_NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(waterBoundarySurface, gmlName, gmlNameCodespace);
+				Util.string2codeList(waterBoundarySurface, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("WS_DESCRIPTION");
 				if (description != null) {

@@ -281,7 +281,7 @@ public class DBBuilding implements DBExporter {
 		String gmlName = buildingNode.name;
 		String gmlNameCodespace = buildingNode.nameCodespace;
 
-		Util.dbGmlName2featureName(abstractBuilding, gmlName, gmlNameCodespace);
+		Util.string2codeList(abstractBuilding, gmlName, gmlNameCodespace);
 
 		if (buildingNode.description != null) {
 			StringOrRef stringOrRef = new StringOrRef();

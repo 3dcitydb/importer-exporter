@@ -31,6 +31,7 @@ package de.tub.citydb.modules.citygml.importer.database.xlink.importer;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
@@ -49,9 +50,9 @@ public class DBXlinkImporterSurfaceGeometry implements DBXlinkImporter {
 	}
 
 	private void init() throws SQLException {
-		psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() + 
-			" (ID, PARENT_ID, ROOT_ID, REVERSE, GMLID) values " +
-			"(?, ?, ?, ?, ?)");
+		psXlink = tempTable.getConnection().prepareStatement(new StringBuilder("insert into " + tempTable.getTableName()) 
+			.append(" (ID, PARENT_ID, ROOT_ID, REVERSE, GMLID, CITYOBJECT_ID, FROM_TABLE, ATTRNAME) values ")
+			.append("(?, ?, ?, ?, ?, ?, ?, ?)").toString());
 	}
 
 	public boolean insert(DBXlinkSurfaceGeometry xlinkEntry) throws SQLException {
@@ -60,7 +61,16 @@ public class DBXlinkImporterSurfaceGeometry implements DBXlinkImporter {
 		psXlink.setLong(3, xlinkEntry.getRootId());
 		psXlink.setInt(4, xlinkEntry.isReverse() ? 1 : 0);
 		psXlink.setString(5, xlinkEntry.getGmlId());
+		psXlink.setLong(6, xlinkEntry.getCityObjectId());
 
+		if (xlinkEntry.getFromTable() != null) {
+			psXlink.setInt(7, xlinkEntry.getFromTable().ordinal());
+			psXlink.setString(8, xlinkEntry.getFromTableAttributeName());
+		} else {
+			psXlink.setNull(7, Types.NULL);
+			psXlink.setNull(8, Types.VARCHAR);
+		}
+		
 		psXlink.addBatch();
 		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			executeBatch();

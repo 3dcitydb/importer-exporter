@@ -134,7 +134,7 @@ public class XlinkWorldFile implements DBXlinkResolver {
 
 						psUpdate.setString(1, orientation);
 						psUpdate.setObject(2, obj);
-						psUpdate.setLong(3, xlink.getId());
+						psUpdate.setLong(3, xlink.getSurfaceDataId());
 						
 						psUpdate.addBatch();
 						if (++batchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())

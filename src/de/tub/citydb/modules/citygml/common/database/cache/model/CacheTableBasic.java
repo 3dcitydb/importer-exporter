@@ -58,7 +58,7 @@ public class CacheTableBasic extends CacheTableModel {
 		.append("FROM_TABLE ").append(sqlAdapter.getNumeric(3)).append(", ")
 		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
 		.append("TO_TABLE ").append(sqlAdapter.getNumeric(3)).append(", ")
-		.append("ATTRNAME ").append(sqlAdapter.getCharacterVarying(50))
+		.append("ATTRNAME ").append(sqlAdapter.getCharacterVarying(30))
 		.append(")");
 		
 		return builder.toString();

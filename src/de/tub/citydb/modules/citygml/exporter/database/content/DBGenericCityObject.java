@@ -134,7 +134,7 @@ public class DBGenericCityObject implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(genericCityObject, gmlName, gmlNameCodespace);
+				Util.string2codeList(genericCityObject, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

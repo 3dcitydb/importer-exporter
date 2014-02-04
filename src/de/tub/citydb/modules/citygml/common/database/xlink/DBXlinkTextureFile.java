@@ -30,22 +30,26 @@
 package de.tub.citydb.modules.citygml.common.database.xlink;
 
 public class DBXlinkTextureFile implements DBXlink {
-	long id;
-	String fileURI;
-	DBXlinkTextureFileEnum type;
+	private long surfaceDataId;
+	private String fileURI;
+	private String mimeType;
+	private String mimeTypeCodeSpace;
+	private boolean hasWorldFile;
+	private boolean isTextureAtlas;
 
-	public DBXlinkTextureFile(long id, String fileURI, DBXlinkTextureFileEnum type) {
-		this.id = id;
+	public DBXlinkTextureFile(long surfaceDataId, String fileURI, String mimeType, String mimeTypeCodeSpace) {
+		this.surfaceDataId = surfaceDataId;
 		this.fileURI = fileURI;
-		this.type = type;
+		this.mimeType = mimeType;
+		this.mimeTypeCodeSpace = mimeTypeCodeSpace;
 	}
 
-	public long getId() {
-		return id;
+	public long getSurfaceDataId() {
+		return surfaceDataId;
 	}
 
-	public void setId(long id) {
-		this.id = id;
+	public void setSurfaceDataId(long surfaceDataId) {
+		this.surfaceDataId = surfaceDataId;
 	}
 
 	public String getFileURI() {
@@ -56,12 +60,36 @@ public class DBXlinkTextureFile implements DBXlink {
 		this.fileURI = fileURI;
 	}
 
-	public DBXlinkTextureFileEnum getType() {
-		return type;
+	public String getMimeType() {
+		return mimeType;
 	}
 
-	public void setType(DBXlinkTextureFileEnum type) {
-		this.type = type;
+	public void setMimeType(String mimeType) {
+		this.mimeType = mimeType;
+	}
+
+	public String getMimeTypeCodeSpace() {
+		return mimeTypeCodeSpace;
+	}
+
+	public void setMimeTypeCodeSpace(String mimeTypeCodeSpace) {
+		this.mimeTypeCodeSpace = mimeTypeCodeSpace;
+	}
+
+	public boolean hasWorldFile() {
+		return hasWorldFile;
+	}
+
+	public void setHasWorldFile(boolean hasWorldFile) {
+		this.hasWorldFile = hasWorldFile;
+	}
+	
+	public boolean isTextureAtlas() {
+		return isTextureAtlas;
+	}
+
+	public void setTextureAtlas(boolean isTextureAtlas) {
+		this.isTextureAtlas = isTextureAtlas;
 	}
 
 	@Override

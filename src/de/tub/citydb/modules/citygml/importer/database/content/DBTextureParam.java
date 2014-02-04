@@ -57,7 +57,7 @@ public class DBTextureParam implements DBImporter {
 
 	private void init() throws SQLException {		
 		StringBuilder texCoordListStmt = new StringBuilder()
-		.append("insert into TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE , TEXTURE_COORDINATES, SURFACE_DATA_ID) values ")
+		.append("insert into TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, SURFACE_DATA_ID) values ")
 		.append("(?, ?, ?, ?, ?)");
 		psTextureParam = batchConn.prepareStatement(texCoordListStmt.toString());
 	}

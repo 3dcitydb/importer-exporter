@@ -90,7 +90,7 @@ public class DBRoom implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(room, gmlName, gmlNameCodespace);
+				Util.string2codeList(room, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

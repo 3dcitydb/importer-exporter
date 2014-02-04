@@ -45,10 +45,13 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.TableEnum;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
+import de.tub.citydb.log.Logger;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.util.Util;
 
 public class DBGenericCityObject implements DBImporter {
+	private final Logger LOG = Logger.getInstance();
+
 	private final Connection batchConn;
 	private final DBImporterManager dbImporterManager;
 
@@ -56,8 +59,7 @@ public class DBGenericCityObject implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
-	private DBOtherGeometry geometryImporter;
-	private DBCityObjectGenericAttrib genericAttributeImporter;
+	private DBOtherGeometry otherGeometryImporter;
 
 	private boolean affineTransformation;
 	private int batchCounter;
@@ -77,20 +79,20 @@ public class DBGenericCityObject implements DBImporter {
 		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into GENERIC_CITYOBJECT (ID, NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, ")
-		.append("LOD0_GEOMETRY_ID, LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, ")
+		.append("insert into GENERIC_CITYOBJECT (ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, ")
+		.append("LOD0_TERRAIN_INTERSECTION, LOD1_TERRAIN_INTERSECTION, LOD2_TERRAIN_INTERSECTION, LOD3_TERRAIN_INTERSECTION, LOD4_TERRAIN_INTERSECTION, ")
+		.append("LOD0_BREP_ID, LOD1_BREP_ID, LOD2_BREP_ID, LOD3_BREP_ID, LOD4_BREP_ID, ")
+		.append("LOD0_OTHER_GEOM, LOD1_OTHER_GEOM, LOD2_OTHER_GEOM, LOD3_OTHER_GEOM, LOD4_OTHER_GEOM, ")
 		.append("LOD0_IMPLICIT_REP_ID, LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID, ")
 		.append("LOD0_IMPLICIT_REF_POINT, LOD1_IMPLICIT_REF_POINT, LOD2_IMPLICIT_REF_POINT, LOD3_IMPLICIT_REF_POINT, LOD4_IMPLICIT_REF_POINT, ")
-		.append("LOD0_IMPLICIT_TRANSFORMATION, LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION, ")
-		.append("LOD0_TERRAIN_INTERSECTION, LOD1_TERRAIN_INTERSECTION, LOD2_TERRAIN_INTERSECTION, LOD3_TERRAIN_INTERSECTION, LOD4_TERRAIN_INTERSECTION) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("LOD0_IMPLICIT_TRANSFORMATION, LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psGenericCityObject = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		implicitGeometryImporter = (DBImplicitGeometry)dbImporterManager.getDBImporter(DBImporterEnum.IMPLICIT_GEOMETRY);
-		geometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
-		genericAttributeImporter = (DBCityObjectGenericAttrib)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
+		otherGeometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
 	public long insert(GenericCityObject genericCityObject) throws SQLException {
@@ -112,59 +114,81 @@ public class DBGenericCityObject implements DBImporter {
 		if (cityObjectId == 0)
 			return false;
 
-		// CityFurniture
+		// genericCityObject
 		// ID
 		psGenericCityObject.setLong(1, cityObjectId);
 
-		// gml:name
-		if (genericCityObject.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(genericCityObject);
-
-			psGenericCityObject.setString(2, dbGmlName[0]);
-			psGenericCityObject.setString(3, dbGmlName[1]);
+		// class
+		if (genericCityObject.isSetClazz() && genericCityObject.getClazz().isSetValue()) {
+			psGenericCityObject.setString(2, genericCityObject.getClazz().getValue());
+			psGenericCityObject.setString(3, genericCityObject.getClazz().getCodeSpace());
 		} else {
 			psGenericCityObject.setNull(2, Types.VARCHAR);
 			psGenericCityObject.setNull(3, Types.VARCHAR);
 		}
 
-		// gml:description
-		if (genericCityObject.isSetDescription()) {
-			String description = genericCityObject.getDescription().getValue();
-
-			if (description != null)
-				description = description.trim();
-
-			psGenericCityObject.setString(4, description);
+		// function
+		if (genericCityObject.isSetFunction()) {
+			String[] function = Util.codeList2string(genericCityObject.getFunction());
+			psGenericCityObject.setString(4, function[0]);
+			psGenericCityObject.setString(5, function[1]);
 		} else {
 			psGenericCityObject.setNull(4, Types.VARCHAR);
+			psGenericCityObject.setNull(5, Types.VARCHAR);
 		}
 
-		// citygml:class
-		if (genericCityObject.isSetClazz() && genericCityObject.getClazz().isSetValue())
-			psGenericCityObject.setString(5, genericCityObject.getClazz().getValue().trim());
-		else
-			psGenericCityObject.setNull(5, Types.VARCHAR);
-
-		// citygml:function
-		if (genericCityObject.isSetFunction()) {
-			psGenericCityObject.setString(6, Util.codeList2string(genericCityObject.getFunction(), " "));
+		// usage
+		if (genericCityObject.isSetUsage()) {
+			String[] usage = Util.codeList2string(genericCityObject.getUsage());
+			psGenericCityObject.setString(6, usage[0]);
+			psGenericCityObject.setString(7, usage[1]);
 		} else {
 			psGenericCityObject.setNull(6, Types.VARCHAR);
-		}
-
-		// citygml:usage
-		if (genericCityObject.isSetUsage()) {
-			psGenericCityObject.setString(7, Util.codeList2string(genericCityObject.getUsage(), " "));
-		} else {
 			psGenericCityObject.setNull(7, Types.VARCHAR);
 		}
 
-		// Geometry
-		for (int lod = 0; lod < 5; lod++) {
+		// lodXTerrainIntersectionCurve
+		for (int i = 0; i < 5; i++) {
+			MultiCurveProperty multiCurveProperty = null;
+			GeometryObject multiLine = null;
+
+			switch (i) {
+			case 0:
+				multiCurveProperty = genericCityObject.getLod0TerrainIntersection();
+				break;
+			case 1:
+				multiCurveProperty = genericCityObject.getLod1TerrainIntersection();
+				break;
+			case 2:
+				multiCurveProperty = genericCityObject.getLod2TerrainIntersection();
+				break;
+			case 3:
+				multiCurveProperty = genericCityObject.getLod3TerrainIntersection();
+				break;
+			case 4:
+				multiCurveProperty = genericCityObject.getLod4TerrainIntersection();
+				break;
+			}
+
+			if (multiCurveProperty != null) {
+				multiLine = otherGeometryImporter.getMultiCurve(multiCurveProperty);
+				multiCurveProperty.unsetMultiCurve();
+			}
+
+			if (multiLine != null) {
+				Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
+				psGenericCityObject.setObject(8 + i, multiLineObj);
+			} else
+				psGenericCityObject.setNull(8 + i, nullGeometryType, nullGeometryTypeName);
+		}
+
+		// lodXGeometry
+		for (int i = 0; i < 5; i++) {
 			GeometryProperty<? extends AbstractGeometry> geometryProperty = null;
 			long geometryId = 0;
+			GeometryObject geometryObject = null;
 
-			switch (lod) {
+			switch (i) {
 			case 0:
 				geometryProperty = genericCityObject.getLod0Geometry();
 				break;
@@ -184,74 +208,55 @@ public class DBGenericCityObject implements DBImporter {
 
 			if (geometryProperty != null) {
 				if (geometryProperty.isSetGeometry()) {
+					AbstractGeometry abstractGeometry = geometryProperty.getGeometry();
+					if (surfaceGeometryImporter.isSurfaceGeometry(abstractGeometry))
+						geometryId = surfaceGeometryImporter.insert(abstractGeometry, genericCityObjectId);
+					else if (otherGeometryImporter.isPointOrLineGeometry(abstractGeometry))
+						geometryObject = otherGeometryImporter.getPointOrCurveGeometry(abstractGeometry);
+					else {
+						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+								genericCityObject.getCityGMLClass(), 
+								genericCityObject.getId()));
+						msg.append(": Unsupported geometry type ");
+						msg.append(abstractGeometry.getGMLClass()).append('.');
 
-					GeometryObject geom = geometryImporter.getPointOrCurveGeometry(geometryProperty.getGeometry());
-					if (geom != null) {
-						genericAttributeImporter.insert("LOD" + lod + "_Geometry", geom, genericCityObjectId);
-					} else {
-						geometryId = surfaceGeometryImporter.insert(geometryProperty.getGeometry(), genericCityObjectId);
-						geometryProperty.unsetGeometry();
+						LOG.error(msg.toString());
 					}
 
+					geometryProperty.unsetGeometry();
 				} else {
 					// xlink
 					String href = geometryProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						DBXlinkBasic xlink = new DBXlinkBasic(
-								genericCityObjectId,
-								TableEnum.GENERIC_CITYOBJECT,
-								href,
-								TableEnum.SURFACE_GEOMETRY
-								);
-
-						xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
-						dbImporterManager.propagateXlink(xlink);
+						dbImporterManager.propagateXlink(new DBXlinkSurfaceGeometry(
+								href, 
+								genericCityObjectId, 
+								TableEnum.GENERIC_CITYOBJECT, 
+								"LOD" + i + "_BREP_ID"));
 					}
 				}
 			}
 
-			switch (lod) {
-			case 0:
-				if (geometryId != 0)
-					psGenericCityObject.setLong(8, geometryId);
-				else
-					psGenericCityObject.setNull(8, 0);
-				break;
-			case 1:
-				if (geometryId != 0)
-					psGenericCityObject.setLong(9, geometryId);
-				else
-					psGenericCityObject.setNull(9, 0);
-				break;
-			case 2:
-				if (geometryId != 0)
-					psGenericCityObject.setLong(10, geometryId);
-				else
-					psGenericCityObject.setNull(10, 0);
-				break;
-			case 3:
-				if (geometryId != 0)
-					psGenericCityObject.setLong(11, geometryId);
-				else
-					psGenericCityObject.setNull(11, 0);
-				break;
-			case 4:
-				if (geometryId != 0)
-					psGenericCityObject.setLong(12, geometryId);
-				else
-					psGenericCityObject.setNull(12, 0);
-				break;
-			}
+			if (geometryId != 0)
+				psGenericCityObject.setLong(13 + i, geometryId);
+			else
+				psGenericCityObject.setNull(13 + i, Types.NULL);
+
+			if (geometryObject != null)
+				psGenericCityObject.setObject(18 + i, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geometryObject, batchConn));
+			else
+				psGenericCityObject.setNull(18 + i, nullGeometryType, nullGeometryTypeName);
 		}
 
-		for (int lod = 0; lod < 5; lod++) {
+		// implicit geometry
+		for (int i = 0; i < 5; i++) {
 			ImplicitRepresentationProperty implicit = null;
 			GeometryObject pointGeom = null;
 			String matrixString = null;
 			long implicitId = 0;
 
-			switch (lod) {
+			switch (i) {
 			case 0:
 				implicit = genericCityObject.getLod0ImplicitRepresentation();
 				break;
@@ -275,7 +280,7 @@ public class DBGenericCityObject implements DBImporter {
 
 					// reference Point
 					if (geometry.isSetReferencePoint())
-						pointGeom = geometryImporter.getPoint(geometry.getReferencePoint());
+						pointGeom = otherGeometryImporter.getPoint(geometry.getReferencePoint());
 
 					// transformation matrix
 					if (geometry.isSetTransformationMatrix()) {
@@ -291,171 +296,20 @@ public class DBGenericCityObject implements DBImporter {
 				}
 			}
 
-			switch (lod) {
-			case 0:
-				if (implicitId != 0)
-					psGenericCityObject.setLong(13, implicitId);
-				else
-					psGenericCityObject.setNull(13, 0);
+			if (implicitId != 0)
+				psGenericCityObject.setLong(23 + i, implicitId);
+			else
+				psGenericCityObject.setNull(23 + i, Types.NULL);
 
-				if (pointGeom != null) {
-					Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(pointGeom, batchConn);
-					psGenericCityObject.setObject(18, obj);
-				} else
-					psGenericCityObject.setNull(18, nullGeometryType, nullGeometryTypeName);
+			if (pointGeom != null)
+				psGenericCityObject.setObject(28 + i, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(pointGeom, batchConn));
+			else
+				psGenericCityObject.setNull(28 + i, nullGeometryType, nullGeometryTypeName);
 
-				if (matrixString != null)
-					psGenericCityObject.setString(23, matrixString);
-				else
-					psGenericCityObject.setNull(23, Types.VARCHAR);
-
-				break;
-			case 1:
-				if (implicitId != 0)
-					psGenericCityObject.setLong(14, implicitId);
-				else
-					psGenericCityObject.setNull(14, 0);
-
-				if (pointGeom != null) {
-					Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(pointGeom, batchConn);
-					psGenericCityObject.setObject(19, obj);
-				} else
-					psGenericCityObject.setNull(19, nullGeometryType, nullGeometryTypeName);
-
-				if (matrixString != null)
-					psGenericCityObject.setString(24, matrixString);
-				else
-					psGenericCityObject.setNull(24, Types.VARCHAR);
-
-				break;
-			case 2:
-				if (implicitId != 0)
-					psGenericCityObject.setLong(15, implicitId);
-				else
-					psGenericCityObject.setNull(15, 0);
-
-				if (pointGeom != null) {
-					Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(pointGeom, batchConn);
-					psGenericCityObject.setObject(20, obj);
-				} else
-					psGenericCityObject.setNull(20, nullGeometryType, nullGeometryTypeName);
-
-				if (matrixString != null)
-					psGenericCityObject.setString(25, matrixString);
-				else
-					psGenericCityObject.setNull(25, Types.VARCHAR);
-
-				break;
-			case 3:
-				if (implicitId != 0)
-					psGenericCityObject.setLong(16, implicitId);
-				else
-					psGenericCityObject.setNull(16, 0);
-
-				if (pointGeom != null) {
-					Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(pointGeom, batchConn);
-					psGenericCityObject.setObject(21, obj);
-				} else
-					psGenericCityObject.setNull(21, nullGeometryType, nullGeometryTypeName);
-
-				if (matrixString != null)
-					psGenericCityObject.setString(26, matrixString);
-				else
-					psGenericCityObject.setNull(26, Types.VARCHAR);
-
-				break;
-			case 4:
-				if (implicitId != 0)
-					psGenericCityObject.setLong(17, implicitId);
-				else
-					psGenericCityObject.setNull(17, 0);
-
-				if (pointGeom != null) {
-					Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(pointGeom, batchConn);
-					psGenericCityObject.setObject(22, obj);
-				} else
-					psGenericCityObject.setNull(22, nullGeometryType, nullGeometryTypeName);
-
-				if (matrixString != null)
-					psGenericCityObject.setString(27, matrixString);
-				else
-					psGenericCityObject.setNull(27, Types.VARCHAR);
-
-				break;
-			}
-		}
-
-		// lodXTerrainIntersectionCurve
-		for (int lod = 0; lod < 5; lod++) {
-
-			MultiCurveProperty multiCurveProperty = null;
-			GeometryObject multiLine = null;
-
-			switch (lod) {
-			case 0:
-				multiCurveProperty = genericCityObject.getLod0TerrainIntersection();
-				break;
-			case 1:
-				multiCurveProperty = genericCityObject.getLod1TerrainIntersection();
-				break;
-			case 2:
-				multiCurveProperty = genericCityObject.getLod2TerrainIntersection();
-				break;
-			case 3:
-				multiCurveProperty = genericCityObject.getLod3TerrainIntersection();
-				break;
-			case 4:
-				multiCurveProperty = genericCityObject.getLod4TerrainIntersection();
-				break;
-			}
-
-			if (multiCurveProperty != null) {
-				multiLine = geometryImporter.getMultiCurve(multiCurveProperty);
-				multiCurveProperty.unsetMultiCurve();
-			}
-
-			switch (lod) {
-			case 0:
-				if (multiLine != null) {
-					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-					psGenericCityObject.setObject(28, multiLineObj);
-				} else
-					psGenericCityObject.setNull(28, nullGeometryType, nullGeometryTypeName);
-
-				break;
-			case 1:
-				if (multiLine != null) {
-					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-					psGenericCityObject.setObject(29, multiLineObj);
-				} else
-					psGenericCityObject.setNull(29, nullGeometryType, nullGeometryTypeName);
-
-				break;
-			case 2:
-				if (multiLine != null) {
-					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-					psGenericCityObject.setObject(30, multiLineObj);
-				} else
-					psGenericCityObject.setNull(30, nullGeometryType, nullGeometryTypeName);
-
-				break;
-			case 3:
-				if (multiLine != null) {
-					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-					psGenericCityObject.setObject(31, multiLineObj);
-				} else
-					psGenericCityObject.setNull(31, nullGeometryType, nullGeometryTypeName);
-
-				break;
-			case 4:
-				if (multiLine != null) {
-					Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-					psGenericCityObject.setObject(32, multiLineObj);
-				} else
-					psGenericCityObject.setNull(32, nullGeometryType, nullGeometryTypeName);
-
-				break;
-			}	
+			if (matrixString != null)
+				psGenericCityObject.setString(33 + i, matrixString);
+			else
+				psGenericCityObject.setNull(33 + i, Types.VARCHAR);
 		}
 
 		psGenericCityObject.addBatch();

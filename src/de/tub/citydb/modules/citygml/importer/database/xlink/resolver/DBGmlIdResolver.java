@@ -36,7 +36,6 @@ import java.sql.SQLException;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
 import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
@@ -48,33 +47,20 @@ public class DBGmlIdResolver {
 	
 	private final Connection conn;
 	private final DBGmlIdLookupServerManager lookupServerManager;
-	private final Config config;
 
 	private PreparedStatement psSurfaceGeometryId;
 	private PreparedStatement psCityObjectId;
-	private String gmlIdCodespace;
 
-	public DBGmlIdResolver(Connection commitConn, DBGmlIdLookupServerManager lookupServerManager, Config config) throws SQLException {
+	public DBGmlIdResolver(Connection commitConn, DBGmlIdLookupServerManager lookupServerManager) throws SQLException {
 		this.conn = commitConn;
 		this.lookupServerManager = lookupServerManager;
-		this.config = config;
 
 		init();
 	}
 
 	private void init() throws SQLException {
-		gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
-
-		String sqlGeometryFromClause = "from SURFACE_GEOMETRY where ROOT_ID=? and GMLID=?";
-		if (gmlIdCodespace != null && gmlIdCodespace.length() != 0)
-			sqlGeometryFromClause += " and GMLID_CODESPACE='" + gmlIdCodespace + "'";
-		
-		String sqlCityObjectFromClause = "from CITYOBJECT where GMLID=?";
-		if (gmlIdCodespace != null && gmlIdCodespace.length() != 0)
-			sqlCityObjectFromClause += " and GMLID_CODESPACE='" + gmlIdCodespace + "'";
-
-		psSurfaceGeometryId = conn.prepareStatement("select ID " + sqlGeometryFromClause);
-		psCityObjectId = conn.prepareStatement("select ID, CLASS_ID " + sqlCityObjectFromClause);
+		psSurfaceGeometryId = conn.prepareStatement("select ID from SURFACE_GEOMETRY where ROOT_ID=? and GMLID=?");
+		psCityObjectId = conn.prepareStatement("select ID, OBJECTCLASS_ID from CITYOBJECT where GMLID=?");
 	}
 	
 	public GmlIdEntry getDBId(String gmlId, CityGMLClass type, boolean forceCityObjectDatabaseLookup) {

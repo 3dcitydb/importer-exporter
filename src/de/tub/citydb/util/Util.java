@@ -34,8 +34,10 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.regex.PatternSyntaxException;
 
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -44,194 +46,109 @@ import org.citygml4j.model.common.base.ModelObject;
 import org.citygml4j.model.common.child.Child;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
-import org.citygml4j.model.gml.feature.AbstractFeature;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Workspace;
 
 public class Util {
+	private static final EnumMap<CityGMLClass, Integer> cityGMLClassMap = new EnumMap<CityGMLClass, Integer>(CityGMLClass.class);
+
+	static {
+		cityGMLClassMap.put(CityGMLClass.LAND_USE, 4);
+		cityGMLClassMap.put(CityGMLClass.GENERIC_CITY_OBJECT, 5);
+		cityGMLClassMap.put(CityGMLClass.SOLITARY_VEGETATION_OBJECT, 7);
+		cityGMLClassMap.put(CityGMLClass.PLANT_COVER, 8);
+		cityGMLClassMap.put(CityGMLClass.WATER_BODY, 9);
+		cityGMLClassMap.put(CityGMLClass.WATER_SURFACE, 11);
+		cityGMLClassMap.put(CityGMLClass.WATER_GROUND_SURFACE, 12);
+		cityGMLClassMap.put(CityGMLClass.WATER_CLOSURE_SURFACE, 13);
+		cityGMLClassMap.put(CityGMLClass.RELIEF_FEATURE, 14);
+		cityGMLClassMap.put(CityGMLClass.TIN_RELIEF, 16);
+		cityGMLClassMap.put(CityGMLClass.MASSPOINT_RELIEF, 17);
+		cityGMLClassMap.put(CityGMLClass.BREAKLINE_RELIEF, 18);
+		cityGMLClassMap.put(CityGMLClass.RASTER_RELIEF, 19);
+		cityGMLClassMap.put(CityGMLClass.CITY_FURNITURE, 21);
+		cityGMLClassMap.put(CityGMLClass.CITY_OBJECT_GROUP, 23);		
+		cityGMLClassMap.put(CityGMLClass.BUILDING_PART, 25);
+		cityGMLClassMap.put(CityGMLClass.BUILDING, 26);		
+		cityGMLClassMap.put(CityGMLClass.BUILDING_INSTALLATION, 27);
+		cityGMLClassMap.put(CityGMLClass.INT_BUILDING_INSTALLATION, 28);
+		cityGMLClassMap.put(CityGMLClass.BUILDING_CEILING_SURFACE, 30);
+		cityGMLClassMap.put(CityGMLClass.INTERIOR_BUILDING_WALL_SURFACE, 31);
+		cityGMLClassMap.put(CityGMLClass.BUILDING_FLOOR_SURFACE, 32);
+		cityGMLClassMap.put(CityGMLClass.BUILDING_ROOF_SURFACE, 33);
+		cityGMLClassMap.put(CityGMLClass.BUILDING_WALL_SURFACE, 34);
+		cityGMLClassMap.put(CityGMLClass.BUILDING_GROUND_SURFACE, 35);
+		cityGMLClassMap.put(CityGMLClass.BUILDING_CLOSURE_SURFACE, 36);
+		cityGMLClassMap.put(CityGMLClass.OUTER_BUILDING_CEILING_SURFACE, 60);
+		cityGMLClassMap.put(CityGMLClass.OUTER_BUILDING_FLOOR_SURFACE, 61);
+		cityGMLClassMap.put(CityGMLClass.BUILDING_WINDOW, 38);
+		cityGMLClassMap.put(CityGMLClass.BUILDING_DOOR, 39);
+		cityGMLClassMap.put(CityGMLClass.BUILDING_FURNITURE, 40);
+		cityGMLClassMap.put(CityGMLClass.BUILDING_ROOM, 41);
+		cityGMLClassMap.put(CityGMLClass.TRANSPORTATION_COMPLEX, 42);
+		cityGMLClassMap.put(CityGMLClass.TRACK, 43);
+		cityGMLClassMap.put(CityGMLClass.RAILWAY, 44);
+		cityGMLClassMap.put(CityGMLClass.ROAD, 45);
+		cityGMLClassMap.put(CityGMLClass.SQUARE, 46);
+		cityGMLClassMap.put(CityGMLClass.TRAFFIC_AREA, 47);
+		cityGMLClassMap.put(CityGMLClass.AUXILIARY_TRAFFIC_AREA, 48);
+		cityGMLClassMap.put(CityGMLClass.APPEARANCE, 50);
+		cityGMLClassMap.put(CityGMLClass.X3D_MATERIAL, 53);
+		cityGMLClassMap.put(CityGMLClass.PARAMETERIZED_TEXTURE, 54);
+		cityGMLClassMap.put(CityGMLClass.GEOREFERENCED_TEXTURE, 55);
+		cityGMLClassMap.put(CityGMLClass.CITY_MODEL, 57);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_PART, 63);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE, 64);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_INSTALLATION, 65);
+		cityGMLClassMap.put(CityGMLClass.INT_BRIDGE_INSTALLATION, 66);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_CEILING_SURFACE, 68);
+		cityGMLClassMap.put(CityGMLClass.INTERIOR_BRIDGE_WALL_SURFACE, 69);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_FLOOR_SURFACE, 70);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_ROOF_SURFACE, 71);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_WALL_SURFACE, 72);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_GROUND_SURFACE, 73);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_CLOSURE_SURFACE, 74);
+		cityGMLClassMap.put(CityGMLClass.OUTER_BRIDGE_CEILING_SURFACE, 75);
+		cityGMLClassMap.put(CityGMLClass.OUTER_BRIDGE_FLOOR_SURFACE, 76);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_WINDOW, 78);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_DOOR, 79);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_FURNITURE, 80);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_ROOM, 81);
+		cityGMLClassMap.put(CityGMLClass.BRIDGE_CONSTRUCTION_ELEMENT, 82);
+		cityGMLClassMap.put(CityGMLClass.TUNNEL_PART, 84);
+		cityGMLClassMap.put(CityGMLClass.TUNNEL, 85);
+		cityGMLClassMap.put(CityGMLClass.TUNNEL_INSTALLATION, 86);
+		cityGMLClassMap.put(CityGMLClass.INT_TUNNEL_INSTALLATION, 87);
+		cityGMLClassMap.put(CityGMLClass.TUNNEL_CEILING_SURFACE, 89);
+		cityGMLClassMap.put(CityGMLClass.INTERIOR_TUNNEL_WALL_SURFACE, 90);
+		cityGMLClassMap.put(CityGMLClass.TUNNEL_FLOOR_SURFACE, 91);
+		cityGMLClassMap.put(CityGMLClass.TUNNEL_ROOF_SURFACE, 92);
+		cityGMLClassMap.put(CityGMLClass.TUNNEL_WALL_SURFACE, 93);
+		cityGMLClassMap.put(CityGMLClass.TUNNEL_GROUND_SURFACE, 94);
+		cityGMLClassMap.put(CityGMLClass.TUNNEL_CLOSURE_SURFACE, 95);
+		cityGMLClassMap.put(CityGMLClass.OUTER_TUNNEL_CEILING_SURFACE, 96);
+		cityGMLClassMap.put(CityGMLClass.OUTER_TUNNEL_FLOOR_SURFACE, 97);
+		cityGMLClassMap.put(CityGMLClass.TUNNEL_WINDOW, 99);
+		cityGMLClassMap.put(CityGMLClass.TUNNEL_DOOR, 100);
+		cityGMLClassMap.put(CityGMLClass.TUNNEL_FURNITURE, 101);
+		cityGMLClassMap.put(CityGMLClass.HOLLOW_SPACE, 102);
+	}
 
 	public static int cityObject2classId(CityGMLClass cityGMLClass) {
-		int classId = 0;
-
-		switch (cityGMLClass) {
-		case BUILDING:
-			classId = 26;
-			break;
-		case BUILDING_FURNITURE:
-			classId = 40;
-			break;
-		case BUILDING_INSTALLATION:
-			classId = 27;
-			break;
-		case BUILDING_PART:
-			classId = 25;
-			break;
-		case BUILDING_CEILING_SURFACE:
-			classId = 30;
-			break;
-		case BUILDING_CLOSURE_SURFACE:
-			classId = 36;
-			break;
-		case BUILDING_DOOR:
-			classId = 39;
-			break;
-		case BUILDING_FLOOR_SURFACE:
-			classId = 32;
-			break;
-		case GENERIC_CITY_OBJECT:
-			classId = 5;
-			break;
-		case BUILDING_GROUND_SURFACE:
-			classId = 35;
-			break;
-		case INT_BUILDING_INSTALLATION:
-			classId = 28;
-			break;
-		case INTERIOR_BUILDING_WALL_SURFACE:
-			classId = 31;
-			break;
-		case BUILDING_ROOF_SURFACE:
-			classId = 33;
-			break;
-		case BUILDING_ROOM:
-			classId = 41;
-			break;
-		case BUILDING_WALL_SURFACE:
-			classId = 34;
-			break;
-		case BUILDING_WINDOW:
-			classId = 38;
-			break;
-		case CITY_FURNITURE:
-			classId = 21;
-			break;
-		case LAND_USE:
-			classId = 4;
-			break;
-		case WATER_BODY:
-			classId = 9;
-			break;
-		case WATER_SURFACE:
-			classId = 11;
-			break;
-		case WATER_GROUND_SURFACE:
-			classId = 12;
-			break;
-		case WATER_CLOSURE_SURFACE:
-			classId = 13;
-			break;
-		case SOLITARY_VEGETATION_OBJECT:
-			classId = 7;
-			break;
-		case PLANT_COVER:
-			classId = 8;
-			break;
-		case TRANSPORTATION_COMPLEX:
-			classId = 42;
-			break;
-		case TRACK:
-			classId = 43;
-			break;
-		case RAILWAY:
-			classId = 44;
-			break;
-		case ROAD:
-			classId = 45;
-			break;
-		case SQUARE:
-			classId = 46;
-			break;
-		case TRAFFIC_AREA:
-			classId = 47;
-			break;
-		case AUXILIARY_TRAFFIC_AREA:
-			classId = 48;
-			break;
-		case CITY_OBJECT_GROUP:
-			classId = 23;
-			break;
-		case RELIEF_FEATURE:
-			classId = 14;
-			break;
-		case TIN_RELIEF:
-			classId = 16;
-			break;
-		case MASSPOINT_RELIEF:
-			classId = 17;
-			break;
-		case BREAKLINE_RELIEF:
-			classId = 18;
-			break;
-		case RASTER_RELIEF:
-			classId = 19;
-			break;
+		try {
+			return cityGMLClassMap.get(cityGMLClass);
+		} catch (NullPointerException e) {
+			return 0;
 		}
-
-		return classId;
 	}
 
 	public static CityGMLClass classId2cityObject(int classId) {
-		CityGMLClass cityObjectType = CityGMLClass.UNDEFINED;
+		for (Entry<CityGMLClass, Integer> entry : cityGMLClassMap.entrySet())
+			if (entry.getValue() == classId)
+				return entry.getKey();
 
-		switch (classId) {
-		case 4:
-			cityObjectType = CityGMLClass.LAND_USE;
-			break;
-		case 21:
-			cityObjectType = CityGMLClass.CITY_FURNITURE;
-			break;
-		case 26:
-			cityObjectType = CityGMLClass.BUILDING;
-			break;
-		case 9:
-			cityObjectType = CityGMLClass.WATER_BODY;
-			break;
-		case 8:
-			cityObjectType = CityGMLClass.PLANT_COVER;
-			break;
-		case 7:
-			cityObjectType = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
-			break;
-		case 42:
-			cityObjectType = CityGMLClass.TRANSPORTATION_COMPLEX;
-			break;
-		case 43:
-			cityObjectType = CityGMLClass.TRACK;
-			break;
-		case 44:
-			cityObjectType = CityGMLClass.RAILWAY;
-			break;
-		case 45:
-			cityObjectType = CityGMLClass.ROAD;
-			break;
-		case 46:
-			cityObjectType = CityGMLClass.SQUARE;
-			break;
-		case 5:
-			cityObjectType = CityGMLClass.GENERIC_CITY_OBJECT;
-			break;
-		case 23:
-			cityObjectType = CityGMLClass.CITY_OBJECT_GROUP;
-			break;
-		case 14:
-			cityObjectType = CityGMLClass.RELIEF_FEATURE;
-			break;
-		case 16:
-			cityObjectType = CityGMLClass.TIN_RELIEF;
-			break;
-		case 17:
-			cityObjectType = CityGMLClass.MASSPOINT_RELIEF;
-			break;
-		case 18:
-			cityObjectType = CityGMLClass.BREAKLINE_RELIEF;
-			break;
-		case 19:
-			cityObjectType = CityGMLClass.RASTER_RELIEF;
-			break;
-		}
-
-		return cityObjectType;
+		return CityGMLClass.UNDEFINED;
 	}
 
 	public static List<Double> string2double(String input, String delimiter) {
@@ -349,66 +266,55 @@ public class Util {
 		return url != null;
 	}
 
-	public static String codeList2string(List<Code> codeList, String delimiter) {
-		List<String> values = new ArrayList<String>(codeList.size());
-		for (Code code : codeList)
-			if (code != null)
-				values.add(code.getValue());
+	public static String[] codeList2string(List<Code> codeList) {
+		String[] result = new String[2];
 
-		return collection2string(values, delimiter);
-	}
+		if (!codeList.isEmpty()) {
+			List<String> values = new ArrayList<String>(codeList.size());
+			List<String> codespaces = new ArrayList<String>(codeList.size());
 
-	public static String[] gmlName2dbString(AbstractFeature feature) {
-		String[] dbGmlName = new String[2];
-
-		dbGmlName[0] = null;
-		dbGmlName[1] = null;
-
-		if (feature.isSetName()) {
-			List<String> gmlNameList = new ArrayList<String>();
-			List<String> gmlNameCodespaceList = new ArrayList<String>();
-
-			for (Code code : feature.getName()) {
-				String name = code.getValue();
+			for (Code code : codeList) {
+				String value = code.getValue();
 				String codespace = code.getCodeSpace();
-
-				if (name != null)
-					name = name.trim();
-
-				gmlNameList.add(name);
-				gmlNameCodespaceList.add(codespace);
+				if (value != null) {
+					values.add(value.trim());
+					codespaces.add(codespace);
+				}
 			}
 
-			dbGmlName[0] = Util.collection2string(gmlNameList, Internal.GML_NAME_DELIMITER);
-			dbGmlName[1] = Util.collection2string(gmlNameCodespaceList, Internal.GML_NAME_DELIMITER);
+			result[0] = collection2string(values, Internal.CODELIST_DELIMITER);
+			result[1] = collection2string(codespaces, Internal.CODELIST_DELIMITER);
 		}
 
-		return dbGmlName;
+		return result;
 	}
 
-	public static void dbGmlName2featureName(AbstractFeature feature, String dbGmlName, String dbGmlCodeSpace) {
-		// this is weird, isn't it...
-		String delimiter = Internal.GML_NAME_DELIMITER.replaceAll("\\\\", "\\\\\\\\");
+	public static List<Code> string2codeList(String values, String codespaces) {
+		List<Code> codeList = null;
+		String delimiter = Internal.CODELIST_DELIMITER.replaceAll("\\\\", "\\\\\\\\");
 
-		// decompose gml:name
-		List<String> gmlNameList = string2string(dbGmlName, delimiter);
-		List<String> gmlNameCodespaceList = Util.string2string(dbGmlCodeSpace, delimiter);
+		// decompose values and codespaces
+		List<String> valueList = string2string(values, delimiter);
+		List<String> codespaceList = Util.string2string(codespaces, delimiter);
 
-		if (gmlNameList != null && gmlNameList.size() != 0) {
-			for (int i = 0; i < gmlNameList.size(); i++) {
+		if (valueList != null && valueList.size() > 0) {
+			codeList = new ArrayList<Code>(valueList.size());
+
+			for (int i = 0; i < valueList.size(); i++) {
 				Code code = new Code();
-				code.setValue(gmlNameList.get(i));
+				code.setValue(valueList.get(i));
 
-				if (gmlNameCodespaceList != null && gmlNameCodespaceList.size() >= i + 1) {
-					String codeSpace = gmlNameCodespaceList.get(i);
-
-					if (codeSpace != null && codeSpace.length() != 0)
+				if (codespaceList != null && codespaceList.size() > i) {
+					String codeSpace = codespaceList.get(i);
+					if (codeSpace != null && codeSpace.length() > 0)
 						code.setCodeSpace(codeSpace);
 				}
 
-				feature.addName(code);
+				codeList.add(code);
 			}
 		}
+
+		return codeList;
 	}
 
 	public static String getFeatureSignature(CityGMLClass featureType, String gmlId) {
@@ -476,10 +382,10 @@ public class Util {
 	public static GregorianCalendar getCreationDate(AbstractCityObject cityObject, boolean checkParents) {
 		if (cityObject == null)
 			return null;
-		
+
 		if (cityObject.isSetCreationDate())
 			return cityObject.getCreationDate();
-		
+
 		if (checkParents) {
 			Child child = cityObject;
 			ModelObject parent = null;
@@ -500,10 +406,10 @@ public class Util {
 	public static GregorianCalendar getTerminationDate(AbstractCityObject cityObject, boolean checkParents) {
 		if (cityObject == null)
 			return null;
-		
+
 		if (cityObject.isSetTerminationDate())
 			return cityObject.getTerminationDate();
-		
+
 		if (checkParents) {
 			Child child = cityObject;
 			ModelObject parent = null;

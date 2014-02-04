@@ -34,7 +34,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
@@ -43,15 +42,11 @@ import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 
 public class XlinkBasic implements DBXlinkResolver {
-	private static final ReentrantLock mainLock = new ReentrantLock();
-	
 	private final Connection batchConn;
 	private final DBXlinkResolverManager resolverManager;
 
 	private HashMap<String, PreparedStatement> psMap;
 	private HashMap<String, Integer> psBatchCounterMap;
-	private PreparedStatement psUpdateSurfGeom;
-	private int updateBatchCounter;
 
 	public XlinkBasic(Connection batchConn, DBXlinkResolverManager resolverManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -59,7 +54,6 @@ public class XlinkBasic implements DBXlinkResolver {
 
 		psMap = new HashMap<String, PreparedStatement>();
 		psBatchCounterMap = new HashMap<String, Integer>();
-		psUpdateSurfGeom = batchConn.prepareStatement("update SURFACE_GEOMETRY set IS_XLINK=1 where ID=? and IS_XLINK=0");
 	}
 
 	public boolean insert(DBXlinkBasic xlink) throws SQLException {
@@ -85,13 +79,6 @@ public class XlinkBasic implements DBXlinkResolver {
 				psBatchCounterMap.put(key, counter);
 		}
 		
-		if (xlink.getToTable() == TableEnum.SURFACE_GEOMETRY) {
-			psUpdateSurfGeom.setLong(1, entry.getId());
-			psUpdateSurfGeom.addBatch();
-			if (++updateBatchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
-				executeUpdateSurfGeomBatch();
-		}
-
 		return true;
 	}
 
@@ -157,29 +144,12 @@ public class XlinkBasic implements DBXlinkResolver {
 		
 		for (Entry<String, Integer> entry : psBatchCounterMap.entrySet())
 			entry.setValue(0);
-	
-		executeUpdateSurfGeomBatch();
-	}
-	
-	private void executeUpdateSurfGeomBatch() throws SQLException {
-		// we need to synchronize updates otherwise Oracle will run
-		// into deadlocks
-		final ReentrantLock lock = mainLock;
-		lock.lock();
-		try {
-			psUpdateSurfGeom.executeBatch();
-			updateBatchCounter = 0;
-		} finally {
-			lock.unlock();
-		}
 	}
 	
 	@Override
 	public void close() throws SQLException {
 		for (PreparedStatement ps : psMap.values())
 			ps.close();
-
-		psUpdateSurfGeom.close();
 	}
 
 	@Override

@@ -238,7 +238,7 @@ public class DBAppearance implements DBExporter {
 		String gmlName = rs.getString("APP_NAME");
 		String gmlNameCodespace = rs.getString("APP_NAME_CODESPACE");
 
-		Util.dbGmlName2featureName(appearance, gmlName, gmlNameCodespace);
+		Util.string2codeList(appearance, gmlName, gmlNameCodespace);
 
 		String description = rs.getString("APP_DESCRIPTION");
 		if (description != null) {
@@ -301,7 +301,7 @@ public class DBAppearance implements DBExporter {
 		String gmlName = rs.getString("SD_NAME");
 		String gmlNameCodespace = rs.getString("SD_NAME_CODESPACE");
 
-		Util.dbGmlName2featureName(surfaceData, gmlName, gmlNameCodespace);
+		Util.string2codeList(surfaceData, gmlName, gmlNameCodespace);
 
 		String description = rs.getString("SD_DESCRIPTION");
 		if (description != null) {

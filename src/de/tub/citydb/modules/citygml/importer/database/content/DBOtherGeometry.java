@@ -86,6 +86,24 @@ public class DBOtherGeometry implements DBImporter {
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 	}
 
+	public boolean isPointOrLineGeometry(AbstractGeometry abstractGeometry) {
+		switch (abstractGeometry.getGMLClass()) {
+		case POINT:
+		case MULTI_POINT:
+		case LINE_STRING:
+		case CURVE:
+		case COMPOSITE_CURVE:
+		case ORIENTABLE_CURVE:
+		case MULTI_CURVE:
+			return true;
+		case GEOMETRIC_COMPLEX:
+			GeometricComplex complex = (GeometricComplex)abstractGeometry;
+			return containsPointPrimitives(complex, true) || containsCurvePrimitives(complex, true);
+		default:
+			return false;
+		}
+	}
+	
 	public GeometryObject getPoint(Point point) {
 		GeometryObject pointGeom = null;
 
@@ -244,6 +262,9 @@ public class DBOtherGeometry implements DBImporter {
 					case ORIENTABLE_CURVE:
 					case CURVE:
 						generatePointList((AbstractCurve)primitive, points, false);
+						break;
+					default:
+						// nothing to do
 					}
 
 					if (!points.isEmpty())

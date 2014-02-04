@@ -35,10 +35,13 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.generics.AbstractGenericAttribute;
 import org.citygml4j.model.citygml.generics.DateAttribute;
 import org.citygml4j.model.citygml.generics.DoubleAttribute;
+import org.citygml4j.model.citygml.generics.GenericAttributeSet;
 import org.citygml4j.model.citygml.generics.IntAttribute;
+import org.citygml4j.model.citygml.generics.MeasureAttribute;
 import org.citygml4j.model.citygml.generics.StringAttribute;
 import org.citygml4j.model.citygml.generics.UriAttribute;
 
@@ -48,7 +51,9 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 	private final Connection batchConn;
 	private final DBImporterManager dbImporterManager;
 
-	private PreparedStatement psGenericAttribute;
+	private PreparedStatement psAtomicGenericAttribute;
+	private PreparedStatement psGenericAttributeSet;
+	private PreparedStatement psGenericAttributeMember;
 	private int batchCounter;
 
 	public DBCityObjectGenericAttrib(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
@@ -60,133 +65,212 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 
 	private void init() throws SQLException {
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, INTVAL, REALVAL, URIVAL, DATEVAL, GEOMVAL, BLOBVAL, CITYOBJECT_ID, SURFACE_GEOMETRY_ID) values ")
+		.append("insert into CITYOBJECT_GENERICATTRIB (ID, PARENT_GENATTRIB_ID, ROOT_GENATTRIB_ID, ATTRNAME, DATATYPE, GENATTRIBSET_CODESPACE, CITYOBJECT_ID) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?)");
+		psGenericAttributeSet = batchConn.prepareStatement(stmt.toString());		
+
+		stmt = new StringBuilder()
+		.append("insert into CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, INTVAL, REALVAL, URIVAL, DATEVAL, UNIT, GEOMVAL, CITYOBJECT_ID, PARENT_GENATTRIB_ID, ROOT_GENATTRIB_ID) values ")
 		.append("(").append(dbImporterManager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(DBSequencerEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ))
-		.append(", ?, ?, ?, ?, ?, ?, ?, ?, null, ?, null)");
-		psGenericAttribute = batchConn.prepareStatement(stmt.toString());
+		.append(", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ");
+		
+		psGenericAttributeMember = batchConn.prepareStatement(new StringBuilder(stmt).append("?, ?)").toString());		
+		psAtomicGenericAttribute = batchConn.prepareStatement(new StringBuilder(stmt).append("null, ")
+		.append(dbImporterManager.getDatabaseAdapter().getSQLAdapter().getCurrentSequenceValue(DBSequencerEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ)).append(")").toString());
 	}
 
 	public void insert(AbstractGenericAttribute genericAttribute, long cityObjectId) throws SQLException {
+		insert(genericAttribute, 0, 0, cityObjectId);
+	}
+
+	private void insert(AbstractGenericAttribute genericAttribute,
+			long parentId,
+			long rootId,
+			long cityObjectId) throws SQLException {
 		// attribute name may not be null
 		if (!genericAttribute.isSetName())
 			return;
 
-		psGenericAttribute.setString(1, genericAttribute.getName());
-
-		switch (genericAttribute.getCityGMLClass()) {
-		case STRING_ATTRIBUTE:
-			psGenericAttribute.setInt(2, 1);
-
-			StringAttribute stringAttribute = (StringAttribute)genericAttribute;
-			if (stringAttribute.isSetValue())
-				psGenericAttribute.setString(3, stringAttribute.getValue());
+		if (genericAttribute.getCityGMLClass() == CityGMLClass.GENERIC_ATTRIBUTE_SET) {
+			GenericAttributeSet attributeSet = (GenericAttributeSet)genericAttribute;
+			
+			// we do not import empty attribute sets
+			if (attributeSet.getGenericAttribute().size() == 0)
+				return;
+			
+			long attributeSetId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ);
+			if (rootId == 0)
+				rootId = attributeSetId;
+			
+			psGenericAttributeSet.setLong(1, attributeSetId);
+			psGenericAttributeSet.setLong(3, rootId);
+			psGenericAttributeSet.setString(4, attributeSet.getName());
+			psGenericAttributeSet.setInt(5, 7);
+			psGenericAttributeSet.setString(6, attributeSet.getCodeSpace());
+			psGenericAttributeSet.setLong(7, cityObjectId);
+			if (parentId != 0)
+				psGenericAttributeSet.setLong(2, parentId);
 			else
-				psGenericAttribute.setNull(3, Types.VARCHAR);
+				psGenericAttributeSet.setNull(2, Types.NULL);
+			
+			psGenericAttributeSet.addBatch();
+			if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
+				dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
+			
+			// insert members of the attribute set
+			for (AbstractGenericAttribute attribute : attributeSet.getGenericAttribute())
+				insert(attribute, attributeSetId, rootId, cityObjectId);			
+		
+		} else {
+			@SuppressWarnings("resource")
+			PreparedStatement ps = rootId == 0 ? psAtomicGenericAttribute : psGenericAttributeMember;
+			ps.setString(1, genericAttribute.getName());
 
-			psGenericAttribute.setNull(4, 0);
-			psGenericAttribute.setNull(5, 0);
-			psGenericAttribute.setNull(6, Types.VARCHAR);
-			psGenericAttribute.setNull(7, Types.DATE);
-			break;
-		case INT_ATTRIBUTE:
-			psGenericAttribute.setInt(2, 2);
+			switch (genericAttribute.getCityGMLClass()) {
+			case STRING_ATTRIBUTE:
+				ps.setInt(2, 1);
 
-			IntAttribute intAttribute = (IntAttribute)genericAttribute;
-			if (intAttribute.isSetValue())
-				psGenericAttribute.setInt(4, intAttribute.getValue());
-			else
-				psGenericAttribute.setNull(4, 0);
+				StringAttribute stringAttribute = (StringAttribute)genericAttribute;
+				if (stringAttribute.isSetValue())
+					ps.setString(3, stringAttribute.getValue());
+				else
+					ps.setNull(3, Types.VARCHAR);
 
-			psGenericAttribute.setNull(3, Types.VARCHAR);
-			psGenericAttribute.setNull(5, 0);
-			psGenericAttribute.setNull(6, Types.VARCHAR);
-			psGenericAttribute.setNull(7, Types.DATE);
-			break;
-		case DOUBLE_ATTRIBUTE:
-			psGenericAttribute.setInt(2, 3);
+				ps.setNull(4, Types.NULL);
+				ps.setNull(5, Types.NULL);
+				ps.setNull(6, Types.VARCHAR);
+				ps.setNull(7, Types.DATE);
+				ps.setNull(8, Types.VARCHAR);
+				break;
+			case INT_ATTRIBUTE:
+				ps.setInt(2, 2);
 
-			DoubleAttribute doubleAttribute = (DoubleAttribute)genericAttribute;
-			if (doubleAttribute.isSetValue())
-				psGenericAttribute.setDouble(5, doubleAttribute.getValue());
-			else
-				psGenericAttribute.setNull(5, 0);
+				IntAttribute intAttribute = (IntAttribute)genericAttribute;
+				if (intAttribute.isSetValue())
+					ps.setInt(4, intAttribute.getValue());
+				else
+					ps.setNull(4, Types.NULL);
 
-			psGenericAttribute.setNull(3, Types.VARCHAR);
-			psGenericAttribute.setNull(4, 0);
-			psGenericAttribute.setNull(6, Types.VARCHAR);
-			psGenericAttribute.setNull(7, Types.DATE);
-			break;
-		case URI_ATTRIBUTE:
-			psGenericAttribute.setInt(2, 4);
+				ps.setNull(3, Types.VARCHAR);
+				ps.setNull(5, Types.NULL);
+				ps.setNull(6, Types.VARCHAR);
+				ps.setNull(7, Types.DATE);
+				ps.setNull(8, Types.VARCHAR);
+				break;
+			case DOUBLE_ATTRIBUTE:
+				ps.setInt(2, 3);
 
-			UriAttribute uriAttribute = (UriAttribute)genericAttribute;
-			if (uriAttribute.isSetValue())
-				psGenericAttribute.setString(6, uriAttribute.getValue());
-			else
-				psGenericAttribute.setNull(6, Types.VARCHAR);
+				DoubleAttribute doubleAttribute = (DoubleAttribute)genericAttribute;
+				if (doubleAttribute.isSetValue())
+					ps.setDouble(5, doubleAttribute.getValue());
+				else
+					ps.setNull(5, Types.NULL);
 
-			psGenericAttribute.setNull(3, Types.VARCHAR);
-			psGenericAttribute.setNull(4, 0);
-			psGenericAttribute.setNull(5, 0);
-			psGenericAttribute.setNull(7, Types.DATE);
-			break;
-		case DATE_ATTRIBUTE:
-			psGenericAttribute.setInt(2, 5);
+				ps.setNull(3, Types.VARCHAR);
+				ps.setNull(4, Types.NULL);
+				ps.setNull(6, Types.VARCHAR);
+				ps.setNull(7, Types.DATE);
+				ps.setNull(8, Types.VARCHAR);
+				break;
+			case URI_ATTRIBUTE:
+				ps.setInt(2, 4);
 
-			DateAttribute dateAttribute = (DateAttribute)genericAttribute;
-			if (dateAttribute.isSetValue())
-				psGenericAttribute.setDate(7, new Date(dateAttribute.getValue().getTimeInMillis()));
-			else
-				psGenericAttribute.setNull(7, Types.DATE);
+				UriAttribute uriAttribute = (UriAttribute)genericAttribute;
+				if (uriAttribute.isSetValue())
+					ps.setString(6, uriAttribute.getValue());
+				else
+					ps.setNull(6, Types.VARCHAR);
 
-			psGenericAttribute.setNull(3, Types.VARCHAR);
-			psGenericAttribute.setNull(4, 0);
-			psGenericAttribute.setNull(5, 0);
-			psGenericAttribute.setNull(6, Types.VARCHAR);
-			break;
-		default:
-			psGenericAttribute.setNull(2, Types.NUMERIC);
+				ps.setNull(3, Types.VARCHAR);
+				ps.setNull(4, Types.NULL);
+				ps.setNull(5, Types.NULL);
+				ps.setNull(7, Types.DATE);
+				ps.setNull(8, Types.VARCHAR);
+				break;
+			case DATE_ATTRIBUTE:
+				ps.setInt(2, 5);
+
+				DateAttribute dateAttribute = (DateAttribute)genericAttribute;
+				if (dateAttribute.isSetValue())
+					ps.setDate(7, new Date(dateAttribute.getValue().getTimeInMillis()));
+				else
+					ps.setNull(7, Types.DATE);
+
+				ps.setNull(3, Types.VARCHAR);
+				ps.setNull(4, Types.NULL);
+				ps.setNull(5, Types.NULL);
+				ps.setNull(6, Types.VARCHAR);
+				ps.setNull(8, Types.VARCHAR);
+				break;
+			case MEASURE_ATTRIBUTE:
+				ps.setInt(2, 6);
+
+				MeasureAttribute measureAttribute = (MeasureAttribute)genericAttribute;
+				if (measureAttribute.isSetValue()) {
+					ps.setDouble(5, measureAttribute.getValue().getValue());
+					ps.setString(8, measureAttribute.getValue().getUom());
+				} else {
+					ps.setNull(5, Types.NULL);
+					ps.setNull(8, Types.VARCHAR);
+				}
+
+				ps.setNull(3, Types.VARCHAR);
+				ps.setNull(4, Types.NULL);
+				ps.setNull(6, Types.VARCHAR);
+				ps.setNull(7, Types.DATE);
+				break;
+			default:
+				ps.setNull(2, Types.NUMERIC);
+			}
+
+			ps.setNull(9, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+					dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
+			ps.setLong(10, cityObjectId);
+			
+			if (rootId != 0) {
+				ps.setLong(11, parentId);
+				ps.setLong(12, rootId);
+			}
+
+			ps.addBatch();
+			if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
+				dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
 		}
-
-		psGenericAttribute.setNull(8, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
-				dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
-		psGenericAttribute.setLong(9, cityObjectId);
-
-		psGenericAttribute.addBatch();
-		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
-			dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
 	}
 
 	public void insert(String attributeName, GeometryObject geometry, long cityObjectId) throws SQLException {
 		if (attributeName == null || attributeName.length() == 0)
 			return;
 
-		psGenericAttribute.setString(1, attributeName);
-		psGenericAttribute.setInt(2, 6);
-		psGenericAttribute.setNull(3, Types.VARCHAR);
-		psGenericAttribute.setNull(4, 0);
-		psGenericAttribute.setNull(5, 0);
-		psGenericAttribute.setNull(6, Types.VARCHAR);
-		psGenericAttribute.setNull(7, Types.DATE);
-		psGenericAttribute.setLong(9, cityObjectId);
-		
-		Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geometry, batchConn);
-		psGenericAttribute.setObject(8, obj);
-		
-		psGenericAttribute.addBatch();
+		psAtomicGenericAttribute.setString(1, attributeName);
+		psAtomicGenericAttribute.setInt(2, 8);
+		psAtomicGenericAttribute.setNull(3, Types.VARCHAR);
+		psAtomicGenericAttribute.setNull(4, Types.NULL);
+		psAtomicGenericAttribute.setNull(5, Types.NULL);
+		psAtomicGenericAttribute.setNull(6, Types.VARCHAR);
+		psAtomicGenericAttribute.setNull(7, Types.DATE);
+		psAtomicGenericAttribute.setNull(8, Types.VARCHAR);	
+		psAtomicGenericAttribute.setObject(9, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geometry, batchConn));
+		psAtomicGenericAttribute.setLong(10, cityObjectId);
+
+		psAtomicGenericAttribute.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.CITYOBJECT_GENERICATTRIB);
 	}
 
 	@Override
 	public void executeBatch() throws SQLException {
-		psGenericAttribute.executeBatch();
+		psAtomicGenericAttribute.executeBatch();
+		psGenericAttributeSet.executeBatch();
+		psGenericAttributeMember.executeBatch();
 		batchCounter = 0;
 	}
 
 	@Override
 	public void close() throws SQLException {
-		psGenericAttribute.close();
+		psAtomicGenericAttribute.close();
+		psGenericAttributeSet.close();
+		psGenericAttributeMember.close();
 	}
 
 	@Override

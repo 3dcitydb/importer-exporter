@@ -50,14 +50,16 @@ public class DBXlinkImporterTextureFile implements DBXlinkImporter {
 
 	private void init() throws SQLException {
 		psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() + 
-			" (ID, FILE_URI, TYPE) values " +
-			"(?, ?, ?)");
+			" (ID, FILE_URI, MIME_TYPE, MIME_TYPE_CODESPACE, HAS_WORLD_FILE) values " +
+			"(?, ?, ?, ?, ?)");
 	}
 
 	public boolean insert(DBXlinkTextureFile xlinkEntry) throws SQLException {
-		psXlink.setLong(1, xlinkEntry.getId());
+		psXlink.setLong(1, xlinkEntry.getSurfaceDataId());
 		psXlink.setString(2, xlinkEntry.getFileURI());
-		psXlink.setInt(3, xlinkEntry.getType().ordinal());
+		psXlink.setString(3,  xlinkEntry.getMimeType());
+		psXlink.setString(4,  xlinkEntry.getMimeTypeCodeSpace());
+		psXlink.setInt(5, xlinkEntry.hasWorldFile() ? 1 : 0);
 
 		psXlink.addBatch();
 		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())

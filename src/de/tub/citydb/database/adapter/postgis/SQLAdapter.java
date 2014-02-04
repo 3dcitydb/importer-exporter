@@ -13,11 +13,6 @@ import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
 
 public class SQLAdapter extends AbstractSQLAdapter {
 
-	protected enum BlobType {
-		TEXTURE_IMAGE,
-		LIBRARY_OBJECT
-	}
-	
 	@Override
 	public String getInteger() {
 		return "INTEGER";
@@ -95,35 +90,16 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 	
 	@Override
+	public String getCurrentSequenceValue(DBSequencerEnum sequence) {
+		return new StringBuilder("currval('").append(getSequenceName(sequence)).append("')").toString();
+	}
+	
+	@Override
 	public String getNextSequenceValuesQuery(DBSequencerEnum sequence) {
 		return new StringBuilder("select ")
 		.append(resolveDatabaseOperationName("geodb_util.get_seq_values")).append("(")
 		.append("'").append(getSequenceName(sequence)).append("'").append(",")
 		.append("?").append(")").toString();
-	}
-
-	@Override
-	protected String getSequenceName(DBSequencerEnum sequence) {
-		switch (sequence) {
-		case SURFACE_GEOMETRY_ID_SEQ:
-			return "surface_geometry_id_seq";
-		case CITYOBJECT_ID_SEQ:
-			return "cityobject_id_seq";
-		case SURFACE_DATA_ID_SEQ:
-			return "surface_data_id_seq";
-		case CITYOBJECT_GENERICATTRIB_ID_SEQ:
-			return "cityobject_genericattrib_id_seq";
-		case EXTERNAL_REFERENCE_ID_SEQ:
-			return "external_reference_id_seq";
-		case APPEARANCE_ID_SEQ:
-			return "appearance_id_seq";
-		case ADDRESS_ID_SEQ:
-			return "address_id_seq";
-		case IMPLICIT_GEOMETRY_ID_SEQ:
-			return "implicit_geometry_id_seq";
-		default:
-			return null;
-		}
 	}
 
 	@Override
@@ -170,9 +146,9 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	@Override
 	public String getHierarchicalGeometryQuery() {
 		StringBuilder query = new StringBuilder()
-		.append("WITH RECURSIVE geometry_rec (id, gmlid, gmlid_codespace, parent_id, root_id, is_solid, is_composite, is_triangulated, is_xlink, is_reverse, geometry, level) ")
-		.append("AS (SELECT sg.*, 1 AS level FROM surface_geometry sg WHERE sg.id=? UNION ALL ")
-		.append("SELECT sg.*, g.level + 1 AS level FROM surface_geometry sg, geometry_rec g WHERE sg.parent_id=g.id) ")
+		.append("WITH RECURSIVE geometry_rec (id, gmlid, parent_id, root_id, is_solid, is_composite, is_triangulated, is_xlink, is_reverse, geometry, implicit_geometry, solid_geometry, cityobject_id, level) ")
+		.append("AS (SELECT sg.id, sg.gmlid, sg.parent_id, sg.root_id, sg.is_solid, sg.is_composite, sg.is_triangulated, sg.is_xlink, sg.is_reverse, sg.geometry, sg.implicit_geometry, sg.solid_geometry, sg.cityobject_id, 1 AS level FROM surface_geometry sg WHERE sg.id=? UNION ALL ")
+		.append("SELECT sg.id, sg.gmlid, sg.parent_id, sg.root_id, sg.is_solid, sg.is_composite, sg.is_triangulated, sg.is_xlink, sg.is_reverse, sg.geometry, sg.implicit_geometry, sg.solid_geometry, sg.cityobject_id, g.level + 1 AS level FROM surface_geometry sg, geometry_rec g WHERE sg.parent_id=g.id) ")
 		.append("SELECT * FROM geometry_rec");
 		
 		return query.toString();
@@ -185,22 +161,22 @@ public class SQLAdapter extends AbstractSQLAdapter {
 
 	@Override
 	public TextureImageImportAdapter getTextureImageImportAdapter(Connection connection) throws SQLException {
-		return new BlobImportAdapterImpl(connection, BlobType.TEXTURE_IMAGE);
+		return new TextureImageImportAdapterImpl(connection);
 	}
 
 	@Override
 	public TextureImageExportAdapter getTextureImageExportAdapter(Connection connection) {
-		return new BlobExportAdapterImpl(connection, BlobType.TEXTURE_IMAGE);
+		return new TextureImageExportAdapterImpl(connection);
 	}
 
 	@Override
 	public BlobImportAdapter getBlobImportAdapter(Connection connection) throws SQLException {
-		return new BlobImportAdapterImpl(connection, BlobType.LIBRARY_OBJECT);
+		return new BlobImportAdapterImpl(connection);
 	}
 
 	@Override
 	public BlobExportAdapter getBlobExportAdapter(Connection connection) {
-		return new BlobExportAdapterImpl(connection, BlobType.LIBRARY_OBJECT);
+		return new BlobExportAdapterImpl(connection);
 	}
 
 }

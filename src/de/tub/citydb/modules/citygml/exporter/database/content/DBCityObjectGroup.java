@@ -111,7 +111,7 @@ public class DBCityObjectGroup implements DBExporter {
 					String gmlName = rs.getString("NAME");
 					String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-					Util.dbGmlName2featureName(cityObjectGroup, gmlName, gmlNameCodespace);
+					Util.string2codeList(cityObjectGroup, gmlName, gmlNameCodespace);
 
 					String description = rs.getString("DESCRIPTION");
 					if (description != null) {

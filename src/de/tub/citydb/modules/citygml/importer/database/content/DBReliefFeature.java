@@ -32,7 +32,6 @@ package de.tub.citydb.modules.citygml.importer.database.content;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.relief.AbstractReliefComponent;
@@ -64,8 +63,7 @@ public class DBReliefFeature implements DBImporter {
 	}
 
 	private void init() throws SQLException {
-		psReliefFeature = batchConn.prepareStatement("insert into RELIEF_FEATURE (ID, NAME, NAME_CODESPACE, DESCRIPTION, LOD) values " +
-				"(?, ?, ?, ?, ?)");
+		psReliefFeature = batchConn.prepareStatement("insert into RELIEF_FEATURE (ID, LOD) values (?, ?)");
 
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		reliefComponentImporter = (DBReliefComponent)dbImporterManager.getDBImporter(DBImporterEnum.RELIEF_COMPONENT);
@@ -96,31 +94,8 @@ public class DBReliefFeature implements DBImporter {
 		// ID
 		psReliefFeature.setLong(1, cityObjectId);
 
-		// gml:name
-		if (reliefFeature.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(reliefFeature);
-
-			psReliefFeature.setString(2, dbGmlName[0]);
-			psReliefFeature.setString(3, dbGmlName[1]);
-		} else {
-			psReliefFeature.setNull(2, Types.VARCHAR);
-			psReliefFeature.setNull(3, Types.VARCHAR);
-		}
-
-		// gml:description
-		if (reliefFeature.isSetDescription()) {
-			String description = reliefFeature.getDescription().getValue();
-
-			if (description != null)
-				description = description.trim();
-
-			psReliefFeature.setString(4, description);
-		} else {
-			psReliefFeature.setNull(4, Types.VARCHAR);
-		}
-
 		// lod
-		psReliefFeature.setInt(5, reliefFeature.getLod());
+		psReliefFeature.setInt(2, reliefFeature.getLod());
 
 		psReliefFeature.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())

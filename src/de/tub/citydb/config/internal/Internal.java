@@ -37,7 +37,7 @@ import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 
 public class Internal {
 	public static final int DB_MAX_BATCH_SIZE = 65535;
-	public static final String GML_NAME_DELIMITER = " --/\\-- ";
+	public static final String CODELIST_DELIMITER = "--/\\--";
 	public static final String GEOMETRY_XLINK = "isXlink";
 	public static final String GEOMETRY_ORIGINAL = "origGeom";
 	public static final String UNIQUE_TEXTURE_FILENAME_PREFIX = "tex_";
@@ -65,7 +65,6 @@ public class Internal {
 	private DatabaseSrs exportTargetSRS;
 
 	// internal variables
-	private String currentGmlIdCodespace = "";
 	private AffineTransformer affineTransformer;
 
 	// internal flags
@@ -74,14 +73,6 @@ public class Internal {
 	private boolean exportGlobalAppearances = false;
 
 	public Internal() {
-	}
-
-	public String getCurrentGmlIdCodespace() {
-		return currentGmlIdCodespace;
-	}
-
-	public void setCurrentGmlIdCodespace(String currentGmlIdCodespace) {
-		this.currentGmlIdCodespace = currentGmlIdCodespace;
 	}
 
 	public String getExportPath() {

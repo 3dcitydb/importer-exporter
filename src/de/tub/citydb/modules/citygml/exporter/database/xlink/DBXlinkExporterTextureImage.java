@@ -129,7 +129,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 
 		// load image data into file
 		xlinkExporterManager.propagateEvent(counter);
-		return textureImageExportAdapter.getInFile(xlink.getId(), fileName, fileURI);
+		return textureImageExportAdapter.getInFile(xlink.getSurfaceDataId(), fileName, fileURI);
 	}
 
 	@Override

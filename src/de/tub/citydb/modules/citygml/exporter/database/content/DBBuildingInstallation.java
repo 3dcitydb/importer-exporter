@@ -98,9 +98,9 @@ public class DBBuildingInstallation implements DBExporter {
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
 				if (buildingInstallation != null)
-					Util.dbGmlName2featureName(buildingInstallation, gmlName, gmlNameCodespace);
+					Util.string2codeList(buildingInstallation, gmlName, gmlNameCodespace);
 				else
-					Util.dbGmlName2featureName(intBuildingInstallation, gmlName, gmlNameCodespace);
+					Util.string2codeList(intBuildingInstallation, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {
@@ -215,7 +215,7 @@ public class DBBuildingInstallation implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(intBuildingInstallation, gmlName, gmlNameCodespace);
+				Util.string2codeList(intBuildingInstallation, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

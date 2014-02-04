@@ -122,7 +122,7 @@ public class DBCityFurniture implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(cityFurniture, gmlName, gmlNameCodespace);
+				Util.string2codeList(cityFurniture, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

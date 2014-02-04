@@ -172,7 +172,7 @@ public class DBReliefFeature implements DBExporter {
 					String gmlName = rs.getString("RF_NAME");
 					String gmlNameCodespace = rs.getString("RF_NAME_CODESPACE");
 
-					Util.dbGmlName2featureName(reliefFeature, gmlName, gmlNameCodespace);
+					Util.string2codeList(reliefFeature, gmlName, gmlNameCodespace);
 
 					String description = rs.getString("RF_DESCRIPTION");
 					if (description != null) {
@@ -247,7 +247,7 @@ public class DBReliefFeature implements DBExporter {
 				String gmlName = rs.getString("RC_NAME");
 				String gmlNameCodespace = rs.getString("RC_NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(reliefComponent, gmlName, gmlNameCodespace);
+				Util.string2codeList(reliefComponent, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("RC_DESCRIPTION");
 				if (description != null) {

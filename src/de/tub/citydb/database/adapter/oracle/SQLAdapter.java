@@ -92,35 +92,16 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 	
 	@Override
+	public String getCurrentSequenceValue(DBSequencerEnum sequence) {
+		return new StringBuilder(getSequenceName(sequence)).append(".currval").toString();
+	}
+	
+	@Override
 	public String getNextSequenceValuesQuery(DBSequencerEnum sequence) {
 		return new StringBuilder("select * from table(")
 		.append(resolveDatabaseOperationName("geodb_util.get_seq_values")).append("(")
 		.append("'").append(getSequenceName(sequence)).append("'").append(",")
 		.append("?").append("))").toString();
-	}
-
-	@Override
-	protected String getSequenceName(DBSequencerEnum sequence) {
-		switch (sequence) {
-		case SURFACE_GEOMETRY_ID_SEQ:
-			return "SURFACE_GEOMETRY_SEQ";
-		case CITYOBJECT_ID_SEQ:
-			return "CITYOBJECT_SEQ";
-		case SURFACE_DATA_ID_SEQ:
-			return "SURFACE_DATA_SEQ";
-		case CITYOBJECT_GENERICATTRIB_ID_SEQ:
-			return "CITYOBJECT_GENERICATT_SEQ";
-		case EXTERNAL_REFERENCE_ID_SEQ:
-			return "EXTERNAL_REF_SEQ";
-		case APPEARANCE_ID_SEQ:
-			return "APPEARANCE_SEQ";
-		case ADDRESS_ID_SEQ:
-			return "ADDRESS_SEQ";
-		case IMPLICIT_GEOMETRY_ID_SEQ:
-			return "IMPLICIT_GEOMETRY_SEQ";
-		default:
-			return null;
-		}
 	}
 
 	@Override

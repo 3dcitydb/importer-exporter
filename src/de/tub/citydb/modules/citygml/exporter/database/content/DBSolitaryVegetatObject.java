@@ -116,7 +116,7 @@ public class DBSolitaryVegetatObject implements DBExporter {
 				String gmlName = rs.getString("NAME");
 				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(solVegObject, gmlName, gmlNameCodespace);
+				Util.string2codeList(solVegObject, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("DESCRIPTION");
 				if (description != null) {

@@ -135,6 +135,12 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
+	public String getCurrentSequenceValue(DBSequencerEnum sequence) {
+		// not required for cache tables
+		return "";
+	}
+
+	@Override
 	public String getNextSequenceValuesQuery(DBSequencerEnum sequence) {
 		// not required for cache tables
 		return "";

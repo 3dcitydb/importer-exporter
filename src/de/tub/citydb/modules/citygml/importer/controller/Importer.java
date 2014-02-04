@@ -65,7 +65,6 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.AffineTransformation;
-import de.tub.citydb.config.project.importer.ImportGmlId;
 import de.tub.citydb.config.project.importer.Index;
 import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.database.DatabaseConnectionPool;
@@ -165,7 +164,6 @@ public class Importer implements EventHandler {
 		de.tub.citydb.config.project.system.System system = importer.getSystem();
 
 		Index index = importer.getIndexes();
-		ImportGmlId gmlId = importer.getGmlId();
 
 		// worker pool settings 
 		int minThreads = system.getThreadPool().getDefaultPool().getMinThreads();
@@ -322,16 +320,6 @@ public class Importer implements EventHandler {
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.cityObj.msg"), this));
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
-
-				// set gml:id codespace
-				if (gmlId.isSetRelativeCodeSpaceMode())
-					intConfig.setCurrentGmlIdCodespace(file.getName());
-				else if (gmlId.isSetAbsoluteCodeSpaceMode())
-					intConfig.setCurrentGmlIdCodespace(file.toString());
-				else if (gmlId.isSetUserCodeSpaceMode())
-					intConfig.setCurrentGmlIdCodespace(gmlId.getCodeSpace());
-				else if (!gmlId.isSetUserCodeSpaceMode())
-					intConfig.setCurrentGmlIdCodespace(null);
 
 				// create instance of temp table manager
 				try {

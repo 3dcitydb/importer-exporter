@@ -124,7 +124,7 @@ public class DBImporterManager {
 				dbImporter = new DBSurfaceGeometry(batchConn, config, this);
 				break;
 			case IMPLICIT_GEOMETRY:
-				dbImporter = new DBImplicitGeometry(batchConn, config, this);
+				dbImporter = new DBImplicitGeometry(batchConn, this);
 				break;
 			case CITYOBJECT:
 				dbImporter = new DBCityObject(batchConn, config, this);
@@ -145,13 +145,13 @@ public class DBImporterManager {
 				dbImporter = new DBBuildingFurniture(batchConn, config, this);
 				break;
 			case BUILDING_INSTALLATION:
-				dbImporter = new DBBuildingInstallation(batchConn, this);
+				dbImporter = new DBBuildingInstallation(batchConn, config, this);
 				break;
 			case THEMATIC_SURFACE:
 				dbImporter = new DBThematicSurface(batchConn, this);
 				break;
 			case OPENING:
-				dbImporter = new DBOpening(batchConn, this);
+				dbImporter = new DBOpening(batchConn, config, this);
 				break;
 			case OPENING_TO_THEM_SURFACE:
 				dbImporter = new DBOpeningToThemSurface(batchConn, this);

@@ -49,7 +49,6 @@ import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObj
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFileEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParamEnum;
 import de.tub.citydb.modules.common.event.StatusDialogMessage;
@@ -107,7 +106,7 @@ public class DBXlinkSplitter {
 		// now imagine the following situation: a geometry referenced by an xlink
 		// itself points to another geometry. in order to really copy any information
 		// we have to resolve the inner xlink firstly. afterwards we can deal with the
-		// outer xlink. thus, we need a recursive handling here...
+		// outer xlink. thus, we need a recursive strategy here...
 		surfaceGeometryXlinks(true);
 	}
 
@@ -338,27 +337,36 @@ public class DBXlinkSplitter {
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.texImg.msg"), this));
 				
 				CacheTable temporaryTable = cacheManager.getCacheTable(CacheTableModelEnum.TEXTURE_FILE);
-
+				temporaryTable.enableIndexes();
+				
 				int max = (int)temporaryTable.size();
 				int current = 0;
 				
 				stmt = temporaryTable.getConnection().createStatement();
-				rs = stmt.executeQuery("select * from " + temporaryTable.getTableName());
+				rs = stmt.executeQuery("select * from " + temporaryTable.getTableName() + " order by FILE_URI");
 
+				String previousImageURI = null;
 				while (rs.next() && shouldRun) {
 					eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
 					
 					long id = rs.getLong("ID");
 					String imageURI = rs.getString("FILE_URI");
-					int dataType = rs.getInt("TYPE");
+					String mimeType = rs.getString("MIME_TYPE");
+					String codeSpace = rs.getString("MIME_TYPE_CODESPACE");
+					boolean hasWorldFile = rs.getBoolean("HAS_WORLD_FILE");
 
-					// set initial context
 					DBXlinkTextureFile xlink = new DBXlinkTextureFile(
 							id,
 							imageURI,
-							DBXlinkTextureFileEnum.fromInt(dataType));
+							mimeType,
+							codeSpace
+							);
 					
+					xlink.setHasWorldFile(hasWorldFile);
+					xlink.setTextureAtlas(imageURI.equals(previousImageURI));
 					xlinkResolverPool.addWork(xlink);
+					
+					previousImageURI = imageURI;
 				}
 
 				rs.close();
@@ -562,6 +570,9 @@ public class DBXlinkSplitter {
 				long rootId = rs.getLong("ROOT_ID");
 				boolean reverse = rs.getInt("REVERSE") == 1;
 				String gmlId = rs.getString("GMLID");
+				long cityObjectId = rs.getLong("CITYOBJECT_ID");
+				int fromTable = rs.getInt("FROM_TABLE");
+				String attrName = rs.getString("ATTRNAME");
 
 				// set initial context...
 				DBXlinkSurfaceGeometry xlink = new DBXlinkSurfaceGeometry(
@@ -569,7 +580,10 @@ public class DBXlinkSplitter {
 						parentId,
 						rootId,
 						reverse,
-						gmlId);
+						gmlId,
+						cityObjectId,
+						TableEnum.fromInt(fromTable),
+						attrName);
 
 				xlinkResolverPool.addWork(xlink);
 			}

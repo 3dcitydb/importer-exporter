@@ -47,7 +47,7 @@ import de.tub.citydb.util.Util;
 
 public class DBAppearance implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
-	
+
 	private final Connection batchConn;
 	private final Config config;
 	private final DBImporterManager dbImporterManager;
@@ -68,16 +68,10 @@ public class DBAppearance implements DBImporter {
 
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
-
-		if (gmlIdCodespace != null && gmlIdCodespace.length() != 0)
-			gmlIdCodespace = "'" + gmlIdCodespace + "'";
-		else
-			gmlIdCodespace = "null";
 
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into APPEARANCE (ID, GMLID, GMLID_CODESPACE, NAME, NAME_CODESPACE, DESCRIPTION, THEME, CITYMODEL_ID, CITYOBJECT_ID) values ")
-		.append("(?, ?, ").append(gmlIdCodespace).append(", ?, ?, ?, ?, ?, ?)");
+		.append("insert into APPEARANCE (ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, THEME, CITYMODEL_ID, CITYOBJECT_ID) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?)");
 		psAppearance = batchConn.prepareStatement(stmt.toString());
 
 		surfaceDataImporter = (DBSurfaceData)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_DATA);
@@ -122,8 +116,7 @@ public class DBAppearance implements DBImporter {
 
 		// gml:name
 		if (appearance.isSetName()) {
-			String[] dbGmlName = Util.gmlName2dbString(appearance);
-
+			String[] dbGmlName = Util.codeList2string(appearance.getName());
 			psAppearance.setString(3, dbGmlName[0]);
 			psAppearance.setString(4, dbGmlName[1]);
 		} else {
@@ -134,7 +127,6 @@ public class DBAppearance implements DBImporter {
 		// gml:description
 		if (appearance.isSetDescription()) {
 			String description = appearance.getDescription().getValue();
-
 			if (description != null)
 				description = description.trim();
 
@@ -156,6 +148,8 @@ public class DBAppearance implements DBImporter {
 			psAppearance.setNull(7, Types.INTEGER);
 			psAppearance.setLong(8, parentId);
 			break;
+		default:
+			return false;
 		}
 
 		psAppearance.addBatch();
@@ -176,23 +170,23 @@ public class DBAppearance implements DBImporter {
 						msg.append(Util.getFeatureSignature(
 								surfaceDataProp.getSurfaceData().getCityGMLClass(), 
 								gmlId));								
-						
+
 						LOG.error(msg.toString());
 					}
-					
+
 					// free memory of nested feature
 					surfaceDataProp.unsetSurfaceData();
 				} else {
 					// xlink
 					String href = surfaceDataProp.getHref();					
-					
+
 					if (href != null && href.length() != 0) {
 						dbImporterManager.propagateXlink(new DBXlinkBasic(
 								appearanceId,
 								TableEnum.APPEARANCE,
 								href,
 								TableEnum.SURFACE_DATA
-						));
+								));
 					}
 				}
 			}

@@ -152,7 +152,7 @@ public class DBTransportationComplex implements DBExporter {
 					String gmlName = rs.getString("TC_NAME");
 					String gmlNameCodespace = rs.getString("TC_NAME_CODESPACE");
 
-					Util.dbGmlName2featureName(transComplex, gmlName, gmlNameCodespace);
+					Util.string2codeList(transComplex, gmlName, gmlNameCodespace);
 
 					String description = rs.getString("TC_DESCRIPTION");
 					if (description != null) {
@@ -236,7 +236,7 @@ public class DBTransportationComplex implements DBExporter {
 				String gmlName = rs.getString("TA_NAME");
 				String gmlNameCodespace = rs.getString("TA_NAME_CODESPACE");
 
-				Util.dbGmlName2featureName(transObject, gmlName, gmlNameCodespace);
+				Util.string2codeList(transObject, gmlName, gmlNameCodespace);
 
 				String description = rs.getString("TA_DESCRIPTION");
 				if (description != null) {
