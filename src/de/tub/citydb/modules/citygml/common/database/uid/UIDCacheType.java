@@ -31,5 +31,6 @@ package de.tub.citydb.modules.citygml.common.database.uid;
 
 public enum UIDCacheType {
 	FEATURE,
-	GEOMETRY
+	GEOMETRY,
+	TEX_IMAGE
 }

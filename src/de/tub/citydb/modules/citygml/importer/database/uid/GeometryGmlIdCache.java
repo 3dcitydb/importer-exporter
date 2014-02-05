@@ -43,8 +43,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.modules.citygml.common.database.cache.BranchCacheTable;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCachingModel;
@@ -65,11 +65,11 @@ public class GeometryGmlIdCache implements UIDCachingModel {
 	private AtomicBoolean enableIndexes = new AtomicBoolean(false);
 	private volatile boolean isIndexed = false;
 
-	public GeometryGmlIdCache(CacheTableManager cacheTableManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
+	public GeometryGmlIdCache(CacheTableManager cacheTableManager, int partitions, int batchSize) throws SQLException {
 		this.partitions = partitions;
 		this.batchSize = batchSize;
 
-		BranchCacheTable branchTable = cacheTableManager.createBranchCacheTable(cacheTableModel);
+		BranchCacheTable branchTable = cacheTableManager.createBranchCacheTable(CacheTableModelEnum.GMLID_GEOMETRY);
 		backUpTables = new CacheTable[partitions];
 		psLookupGmlIds = new PreparedStatement[partitions];
 		psDrains = new PreparedStatement[partitions];

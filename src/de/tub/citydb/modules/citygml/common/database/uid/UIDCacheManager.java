@@ -63,6 +63,9 @@ public class UIDCacheManager {
 		case ABSTRACT_GML_GEOMETRY:
 			cacheType = UIDCacheType.GEOMETRY;
 			break;
+		case ABSTRACT_TEXTURE:
+			cacheType = UIDCacheType.TEX_IMAGE;
+			break;
 		default:
 			cacheType = UIDCacheType.FEATURE;
 		}

@@ -77,7 +77,6 @@ import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.IndexStatusInfo.IndexType;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
-import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheManager;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheType;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
@@ -396,7 +395,6 @@ public class Exporter implements EventHandler {
 						uidCacheManager.initCache(
 								UIDCacheType.GEOMETRY,
 								new GeometryGmlIdCache(cacheTableManager, 
-										CacheTableModelEnum.GMLID_GEOMETRY, 
 										system.getGmlIdCache().getGeometry().getPartitions(),
 										lookupCacheBatchSize),
 										system.getGmlIdCache().getGeometry().getCacheSize(),
@@ -406,7 +404,6 @@ public class Exporter implements EventHandler {
 						uidCacheManager.initCache(
 								UIDCacheType.FEATURE,
 								new FeatureGmlIdCache(cacheTableManager, 
-										CacheTableModelEnum.GMLID_FEATURE, 
 										system.getGmlIdCache().getFeature().getPartitions(), 
 										lookupCacheBatchSize),
 										system.getGmlIdCache().getFeature().getCacheSize(),

@@ -64,12 +64,12 @@ public class FeatureGmlIdCache implements UIDCachingModel {
 
 	private int batchSize;
 
-	public FeatureGmlIdCache(CacheTableManager cacheTableManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
+	public FeatureGmlIdCache(CacheTableManager cacheTableManager, int partitions, int batchSize) throws SQLException {
 		this.cacheTableManager = cacheTableManager;
 		this.partitions = partitions;
-		this.cacheTableModel = cacheTableModel;
 		this.batchSize = batchSize;
 
+		cacheTableModel = CacheTableModelEnum.GMLID_FEATURE;
 		backUpTables = new CacheTable[partitions];
 		psLookupDbIds = new PreparedStatement[partitions];
 		psLookupGmlIds = new PreparedStatement[partitions];

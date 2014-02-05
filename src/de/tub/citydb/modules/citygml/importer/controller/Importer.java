@@ -76,7 +76,6 @@ import de.tub.citydb.io.DirectoryScanner;
 import de.tub.citydb.io.DirectoryScanner.CityGMLFilenameFilter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
-import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheManager;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheType;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
@@ -86,6 +85,7 @@ import de.tub.citydb.modules.citygml.importer.concurrent.DBImportXlinkWorkerFact
 import de.tub.citydb.modules.citygml.importer.concurrent.FeatureReaderWorkerFactory;
 import de.tub.citydb.modules.citygml.importer.database.uid.FeatureGmlIdCache;
 import de.tub.citydb.modules.citygml.importer.database.uid.GeometryGmlIdCache;
+import de.tub.citydb.modules.citygml.importer.database.uid.TextureImageCache;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.DBXlinkSplitter;
 import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -341,7 +341,6 @@ public class Importer implements EventHandler {
 					uidCacheManager.initCache(
 							UIDCacheType.GEOMETRY,
 							new GeometryGmlIdCache(cacheTableManager, 
-									CacheTableModelEnum.GMLID_GEOMETRY, 
 									system.getGmlIdCache().getGeometry().getPartitions(), 
 									lookupCacheBatchSize),
 									system.getGmlIdCache().getGeometry().getCacheSize(),
@@ -351,12 +350,23 @@ public class Importer implements EventHandler {
 					uidCacheManager.initCache(
 							UIDCacheType.FEATURE,
 							new FeatureGmlIdCache(cacheTableManager, 
-									CacheTableModelEnum.GMLID_FEATURE, 
 									system.getGmlIdCache().getFeature().getPartitions(),
 									lookupCacheBatchSize),
 									system.getGmlIdCache().getFeature().getCacheSize(),
 									system.getGmlIdCache().getFeature().getPageFactor(),
 									maxThreads);
+
+					if (config.getProject().getImporter().getAppearances().isSetImportAppearance() &&
+							config.getProject().getImporter().getAppearances().isSetImportTextureFiles()) {
+						uidCacheManager.initCache(
+								UIDCacheType.TEX_IMAGE,
+								new TextureImageCache(cacheTableManager, 
+										10,
+										20),
+										10,
+										80,
+										maxThreads);
+					}
 				} catch (SQLException sqlEx) {
 					LOG.error("SQL error while initializing database import: " + sqlEx.getMessage());
 					continue;
@@ -403,7 +413,7 @@ public class Importer implements EventHandler {
 				tmpXlinkPool.prestartCoreWorkers();
 				dbWorkerPool.prestartCoreWorkers();
 				featureWorkerPool.prestartCoreWorkers();
-				
+
 				// fail if we could not start a single import worker
 				if (dbWorkerPool.getPoolSize() == 0) {
 					LOG.error("Failed to start database import worker pool. Check the database connection pool settings.");
@@ -476,7 +486,7 @@ public class Importer implements EventHandler {
 									eventDispatcher),
 									queueSize,
 									false);
-					
+
 					// prestart its workers
 					xlinkResolverPool.prestartCoreWorkers();
 
@@ -552,7 +562,7 @@ public class Importer implements EventHandler {
 
 				if (xlinkResolverPool != null && !xlinkResolverPool.isTerminated())
 					xlinkResolverPool.shutdownNow();
-				
+
 				if (cacheTableManager != null) {
 					try {
 						LOG.info("Cleaning temporary cache.");

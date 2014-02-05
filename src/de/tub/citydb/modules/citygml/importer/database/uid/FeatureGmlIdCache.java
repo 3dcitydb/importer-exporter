@@ -65,11 +65,11 @@ public class FeatureGmlIdCache implements UIDCachingModel {
 	private AtomicBoolean enableIndexes = new AtomicBoolean(false);
 	private volatile boolean isIndexed = false;
 
-	public FeatureGmlIdCache(CacheTableManager cacheTableManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
+	public FeatureGmlIdCache(CacheTableManager cacheTableManager, int partitions, int batchSize) throws SQLException {
 		this.partitions = partitions;
 		this.batchSize = batchSize;
 
-		BranchCacheTable branchTable = cacheTableManager.createBranchCacheTable(cacheTableModel);
+		BranchCacheTable branchTable = cacheTableManager.createBranchCacheTable(CacheTableModelEnum.GMLID_FEATURE);
 		backUpTables = new CacheTable[partitions];
 		psLookupGmlIds = new PreparedStatement[partitions];
 		psDrains = new PreparedStatement[partitions];
