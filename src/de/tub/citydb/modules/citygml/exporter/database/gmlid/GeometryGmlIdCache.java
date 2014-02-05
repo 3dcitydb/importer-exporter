@@ -44,8 +44,8 @@ import de.tub.citydb.modules.citygml.common.database.cache.BranchCacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
-import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCachingModel;
-import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheEntry;
+import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
+import de.tub.citydb.modules.citygml.common.database.uid.UIDCachingModel;
 
 public class GeometryGmlIdCache implements UIDCachingModel {
 	private final ReentrantLock mainLock = new ReentrantLock(true);

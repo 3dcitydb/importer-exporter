@@ -27,51 +27,9 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.modules.citygml.common.database.gmlid;
+package de.tub.citydb.modules.citygml.common.database.uid;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-
-import org.citygml4j.model.citygml.CityGMLClass;
-
-public class UIDCacheManager {
-	private final HashMap<UIDCacheType, UIDCache> cacheMap;
-
-	public UIDCacheManager() {
-		cacheMap = new HashMap<UIDCacheType, UIDCache>();
-	}
-
-	public void initCache(
-		UIDCacheType cacheType,
-		UIDCachingModel model,
-		int cacheSize,
-		float drainFactor,
-		int concurrencyLevel) {
-
-		cacheMap.put(cacheType, new UIDCache(
-				model,
-				cacheSize,
-				drainFactor,
-				concurrencyLevel
-		));
-	}
-
-	public UIDCache getCache(CityGMLClass type) {
-		UIDCacheType cacheType;
-
-		switch (type) {
-		case ABSTRACT_GML_GEOMETRY:
-			cacheType = UIDCacheType.GEOMETRY;
-			break;
-		default:
-			cacheType = UIDCacheType.FEATURE;
-		}
-
-		return cacheMap.get(cacheType);
-	}
-	
-	public void shutdownAll() throws SQLException {
-		for (UIDCache server : cacheMap.values())
-			server.shutdown();
-	}
+public enum UIDCacheType {
+	FEATURE,
+	GEOMETRY
 }
