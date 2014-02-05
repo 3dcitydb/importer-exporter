@@ -45,7 +45,7 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
+import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
 import de.tub.citydb.util.Util;
@@ -93,7 +93,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	}
 
 	public boolean insert(DBXlinkSurfaceGeometry xlink) throws SQLException {
-		GmlIdEntry rootGeometryEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
+		UIDCacheEntry rootGeometryEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
 		if (rootGeometryEntry == null || rootGeometryEntry.getRootId() == -1)
 			return false;
 

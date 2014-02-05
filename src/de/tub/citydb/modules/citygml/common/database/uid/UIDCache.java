@@ -27,7 +27,7 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.modules.citygml.common.database.gmlid;
+package de.tub.citydb.modules.citygml.common.database.uid;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -42,11 +42,11 @@ import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.log.Logger;
 
-public class GmlIdLookupServer {
+public class UIDCache {
 	private final Logger LOG = Logger.getInstance();
 	
-	private final ConcurrentHashMap<String, GmlIdEntry> map;
-	private final DBCacheModel cacheModel;
+	private final ConcurrentHashMap<String, UIDCacheEntry> map;
+	private final UIDCachingModel cacheModel;
 	private final int capacity;
 	private final float drainFactor;
 
@@ -57,20 +57,20 @@ public class GmlIdLookupServer {
 	private final AtomicInteger entries = new AtomicInteger(0);
 	private volatile boolean backUp = false;
 
-	public GmlIdLookupServer(
-			DBCacheModel model,
+	public UIDCache(
+			UIDCachingModel cacheModel,
 			int capacity,
 			float drainFactor,
 			int concurrencyLevel) {
-		this.cacheModel = model;
+		this.cacheModel = cacheModel;
 		this.capacity = capacity;
 		this.drainFactor = drainFactor;
 
-		map = new ConcurrentHashMap<String, GmlIdEntry>(capacity, .75f, concurrencyLevel);
+		map = new ConcurrentHashMap<String, UIDCacheEntry>(capacity, .75f, concurrencyLevel);
 	}
 
 	public void put(String key, long id, long rootId, boolean reverse, String mapping, CityGMLClass type) {
-		GmlIdEntry entry = lookupMap(key);
+		UIDCacheEntry entry = lookupMap(key);
 
 		if (entry == null) {
 			entry = getOrCreate(key, id, rootId, reverse, mapping, type);
@@ -88,7 +88,7 @@ public class GmlIdLookupServer {
 			lookup = lookupDB(key) != null;
 
 		if (!lookup) {		
-			GmlIdEntry entry = getOrCreate(key, id, rootId, reverse, mapping, type);
+			UIDCacheEntry entry = getOrCreate(key, id, rootId, reverse, mapping, type);
 			if (!entry.getAndSetRegistered(true)) {
 				if (entries.incrementAndGet() >= capacity && isDraining.compareAndSet(false, true))
 					drainToDB();
@@ -103,8 +103,8 @@ public class GmlIdLookupServer {
 		return lookupAndPut(key, id, 0, false, null, type);
 	}
 
-	public GmlIdEntry get(String key) {
-		GmlIdEntry entry = lookupMap(key);
+	public UIDCacheEntry get(String key) {
+		UIDCacheEntry entry = lookupMap(key);
 		if (entry == null && backUp)
 			entry = lookupDB(key);
 
@@ -119,12 +119,12 @@ public class GmlIdLookupServer {
 		return key;
 	}
 	
-	public GmlIdEntry getFromMemory(String key) {
+	public UIDCacheEntry getFromMemory(String key) {
 		return lookupMap(key);
 	}
 
-	private GmlIdEntry lookupMap(String key) {
-		GmlIdEntry entry = map.get(key);
+	private UIDCacheEntry lookupMap(String key) {
+		UIDCacheEntry entry = map.get(key);
 		if (entry != null)
 			entry.getAndSetRequested(true);
 
@@ -132,21 +132,21 @@ public class GmlIdLookupServer {
 	}
 
 	private String lookupMap(long id, CityGMLClass type) {
-		Iterator<Map.Entry<String, GmlIdEntry>> iter = map.entrySet().iterator();
+		Iterator<Map.Entry<String, UIDCacheEntry>> iter = map.entrySet().iterator();
 		while (iter.hasNext()) {
-			Map.Entry<String, GmlIdEntry> entry = iter.next();
+			Map.Entry<String, UIDCacheEntry> entry = iter.next();
 			if (entry.getValue().getId() == id)
-				if (type.isInstance(entry.getValue().getType()))
+				if (entry.getValue().getType().isInstance(type))
 					return entry.getKey();
 		}
 
 		return null;
 	}
 
-	private GmlIdEntry getOrCreate(String key, long id, long rootId, boolean reverse, String mapping, CityGMLClass type) {
-		GmlIdEntry entry = map.get(key);
+	private UIDCacheEntry getOrCreate(String key, long id, long rootId, boolean reverse, String mapping, CityGMLClass type) {
+		UIDCacheEntry entry = map.get(key);
 		if (entry == null) {
-			GmlIdEntry newEntry = new GmlIdEntry(id, rootId, reverse, mapping, type);
+			UIDCacheEntry newEntry = new UIDCacheEntry(id, rootId, reverse, mapping, type);
 			entry = map.putIfAbsent(key, newEntry);
 			if (entry == null)
 				entry = newEntry;
@@ -183,7 +183,7 @@ public class GmlIdLookupServer {
 		}
 	}
 
-	private GmlIdEntry lookupDB(String key) {
+	private UIDCacheEntry lookupDB(String key) {
 		if (isDraining.get()) {
 			final ReentrantLock lock = this.mainLock;
 			lock.lock();

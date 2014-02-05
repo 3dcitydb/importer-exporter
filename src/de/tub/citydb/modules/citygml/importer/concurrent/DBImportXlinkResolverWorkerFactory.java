@@ -38,8 +38,8 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
+import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.common.filter.ImportFilter;
 
@@ -48,23 +48,23 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 	
 	private final DatabaseConnectionPool dbPool;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
-	private final DBGmlIdLookupServerManager lookupServerManager;
-	private final CacheManager cacheManager;
+	private final UIDCacheManager uidCacheManager;
+	private final CacheTableManager cacheTableManager;
 	private final ImportFilter importFilter;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
 	public DBImportXlinkResolverWorkerFactory(DatabaseConnectionPool dbPool, 
 			WorkerPool<DBXlink> tmpXlinkPool, 
-			DBGmlIdLookupServerManager lookupServerManager, 
-			CacheManager cacheManager, 
+			UIDCacheManager uidCacheManager, 
+			CacheTableManager cacheTableManager, 
 			ImportFilter importFilter, 
 			Config config, 
 			EventDispatcher eventDispatcher) {
 		this.dbPool = dbPool;
 		this.tmpXlinkPool = tmpXlinkPool;
-		this.lookupServerManager = lookupServerManager;
-		this.cacheManager = cacheManager;
+		this.uidCacheManager = uidCacheManager;
+		this.cacheTableManager = cacheTableManager;
 		this.importFilter = importFilter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -77,8 +77,8 @@ public class DBImportXlinkResolverWorkerFactory implements WorkerFactory<DBXlink
 		try {
 			dbWorker = new DBImportXlinkResolverWorker(dbPool, 
 					tmpXlinkPool, 
-					lookupServerManager, 
-					cacheManager, 
+					uidCacheManager, 
+					cacheTableManager, 
 					importFilter,
 					config, 
 					eventDispatcher);

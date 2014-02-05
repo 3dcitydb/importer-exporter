@@ -33,27 +33,27 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="SystemType", propOrder={
-		"gmlIdLookupServer",
+		"gmlIdCache",
 		"threadPool"
 })
 public class System {
 	@XmlElement(required=true)
-	private GmlIdLookupServer gmlIdLookupServer;
+	private UIDCache gmlIdCache;
 	@XmlElement(required=true)
 	private ThreadPool threadPool;
 
 	public System() {
-		gmlIdLookupServer = new GmlIdLookupServer();
+		gmlIdCache = new UIDCache();
 		threadPool = new ThreadPool();
 	}
 
-	public GmlIdLookupServer getGmlIdLookupServer() {
-		return gmlIdLookupServer;
+	public UIDCache getGmlIdCache() {
+		return gmlIdCache;
 	}
 
-	public void setGmlIdLookupServer(GmlIdLookupServer gmlIdLookupServer) {
-		if (gmlIdLookupServer != null)
-			this.gmlIdLookupServer = gmlIdLookupServer;
+	public void setGmlIdCache(UIDCache gmlIdCache) {
+		if (gmlIdCache != null)
+			this.gmlIdCache = gmlIdCache;
 	}
 
 	public ThreadPool getThreadPool() {

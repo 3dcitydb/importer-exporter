@@ -41,18 +41,18 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.modules.citygml.common.database.cache.BranchCacheTable;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBCacheModel;
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
+import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
+import de.tub.citydb.modules.citygml.common.database.uid.UIDCachingModel;
 
-public class ExportCache implements DBCacheModel {
+public class GeometryGmlIdCache implements UIDCachingModel {
 	private final ReentrantLock mainLock = new ReentrantLock(true);
 	private final int partitions;
 	private final CacheTableModelEnum cacheTableModel;
-	private final CacheManager cacheManager;
-	
+	private final CacheTableManager cacheTableManager;
+
 	private BranchCacheTable branchTable;
 
 	private CacheTable[] backUpTables;
@@ -64,8 +64,8 @@ public class ExportCache implements DBCacheModel {
 
 	private int batchSize;
 
-	public ExportCache(CacheManager cacheManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
-		this.cacheManager = cacheManager;
+	public GeometryGmlIdCache(CacheTableManager cacheTableManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
+		this.cacheTableManager = cacheTableManager;
 		this.partitions = partitions;
 		this.cacheTableModel = cacheTableModel;
 		this.batchSize = batchSize;
@@ -82,13 +82,13 @@ public class ExportCache implements DBCacheModel {
 	}
 
 	@Override
-	public void drainToDB(ConcurrentHashMap<String, GmlIdEntry> map, int drain) throws SQLException {
+	public void drainToDB(ConcurrentHashMap<String, UIDCacheEntry> map, int drain) throws SQLException {
 		int drainCounter = 0;			
 
 		// firstly, try and write those entries which have already been requested
-		Iterator<Map.Entry<String, GmlIdEntry>> iter = map.entrySet().iterator();
+		Iterator<Map.Entry<String, UIDCacheEntry>> iter = map.entrySet().iterator();
 		while (drainCounter <= drain && iter.hasNext()) {
-			Map.Entry<String, GmlIdEntry> entry = iter.next();
+			Map.Entry<String, UIDCacheEntry> entry = iter.next();
 			if (entry.getValue().isRequested()) { 
 				String gmlId = entry.getKey();
 
@@ -120,7 +120,7 @@ public class ExportCache implements DBCacheModel {
 		// secondly, drain remaining entries until drain limit
 		iter = map.entrySet().iterator();
 		while (drainCounter <= drain && iter.hasNext()) {
-			Map.Entry<String, GmlIdEntry> entry = iter.next();				
+			Map.Entry<String, UIDCacheEntry> entry = iter.next();				
 			String gmlId = entry.getKey();
 
 			// determine partition for gml:id
@@ -154,7 +154,7 @@ public class ExportCache implements DBCacheModel {
 	}
 
 	@Override
-	public GmlIdEntry lookupDB(String key) throws SQLException { 
+	public UIDCacheEntry lookupDB(String key) throws SQLException { 
 		// determine partition for gml:id
 		int partition = Math.abs(key.hashCode() % partitions);
 		initializePartition(partition);
@@ -176,7 +176,7 @@ public class ExportCache implements DBCacheModel {
 					String mapping = rs.getString(4);
 					int type = rs.getInt(5);
 
-					return new GmlIdEntry(id, rootId, reverse, mapping, CityGMLClass.fromInt(type));
+					return new UIDCacheEntry(id, rootId, reverse, mapping, CityGMLClass.fromInt(type));
 				}
 
 				return null;
@@ -207,7 +207,7 @@ public class ExportCache implements DBCacheModel {
 			try {
 				if (backUpTables[i] == null)
 					continue;
-				
+
 				ResultSet rs = null;
 				try {
 					psLookupDbIds[i].setLong(1, id);
@@ -215,7 +215,7 @@ public class ExportCache implements DBCacheModel {
 
 					while (rs.next()) {
 						CityGMLClass dbType = CityGMLClass.fromInt(rs.getInt(2));
-						if (!type.isInstance(dbType))
+						if (!dbType.isInstance(type))
 							continue;
 
 						return rs.getString(1);
@@ -256,32 +256,25 @@ public class ExportCache implements DBCacheModel {
 
 	@Override
 	public String getType() {
-		switch (cacheTableModel) {
-		case GMLID_GEOMETRY:
-			return "geometry";
-		case GMLID_FEATURE:
-			return "feature";
-		default:
-			return "";
-		}
+		return "geometry";
 	}
-	
+
 	private void initializePartition(int partition) throws SQLException {
 		if (branchTable == null) {
 			mainLock.lock();
-			
+
 			try {
 				if (branchTable == null)
-					branchTable = cacheManager.createAndIndexBranchCacheTable(cacheTableModel);
+					branchTable = cacheTableManager.createAndIndexBranchCacheTable(cacheTableModel);
 			} finally {
 				mainLock.unlock();
 			}
 		}
-		
+
 		if (backUpTables[partition] == null) {
 			final ReentrantLock tableLock = locks[partition];
 			tableLock.lock();
-			
+
 			try {
 				if (backUpTables[partition] == null) {
 					CacheTable tempTable = partition == 0 ? branchTable.getMainTable() : branchTable.branchAndIndex();

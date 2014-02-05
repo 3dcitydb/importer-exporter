@@ -43,15 +43,14 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.modules.citygml.common.database.cache.BranchCacheTable;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBCacheModel;
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
+import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
+import de.tub.citydb.modules.citygml.common.database.uid.UIDCachingModel;
 
-public class ImportCache implements DBCacheModel {
+public class FeatureGmlIdCache implements UIDCachingModel {
 	private final int partitions;
-	private final CacheTableModelEnum cacheTableModel;
 	
 	private final ReentrantLock mainLock = new ReentrantLock(true);
 	private final Condition indexingDone = mainLock.newCondition();
@@ -66,12 +65,11 @@ public class ImportCache implements DBCacheModel {
 	private AtomicBoolean enableIndexes = new AtomicBoolean(false);
 	private volatile boolean isIndexed = false;
 
-	public ImportCache(CacheManager cacheManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
+	public FeatureGmlIdCache(CacheTableManager cacheTableManager, CacheTableModelEnum cacheTableModel, int partitions, int batchSize) throws SQLException {
 		this.partitions = partitions;
-		this.cacheTableModel = cacheTableModel;
 		this.batchSize = batchSize;
 
-		BranchCacheTable branchTable = cacheManager.createBranchCacheTable(cacheTableModel);
+		BranchCacheTable branchTable = cacheTableManager.createBranchCacheTable(cacheTableModel);
 		backUpTables = new CacheTable[partitions];
 		psLookupGmlIds = new PreparedStatement[partitions];
 		psDrains = new PreparedStatement[partitions];
@@ -85,20 +83,20 @@ public class ImportCache implements DBCacheModel {
 			String tableName = tempTable.getTableName();
 
 			backUpTables[i] = tempTable;
-			psDrains[i] = conn.prepareStatement("insert into " + tableName + " (GMLID, ID, ROOT_ID, REVERSE, MAPPING, TYPE) values (?, ?, ?, ?, ?, ?)");
-			psLookupGmlIds[i] = conn.prepareStatement("select ID, ROOT_ID, REVERSE, MAPPING, TYPE from " + tableName + " where GMLID=?");
+			psDrains[i] = conn.prepareStatement("insert into " + tableName + " (GMLID, ID, MAPPING, TYPE) values (?, ?, ?, ?)");
+			psLookupGmlIds[i] = conn.prepareStatement("select ID, MAPPING, TYPE from " + tableName + " where GMLID=?");
 			locks[i] = new ReentrantLock(true);
 		}		
 	}
 
 	@Override
-	public void drainToDB(ConcurrentHashMap<String, GmlIdEntry> map, int drain) throws SQLException {
+	public void drainToDB(ConcurrentHashMap<String, UIDCacheEntry> map, int drain) throws SQLException {
 		int drainCounter = 0;	
 
 		// firstly, try and write those entries which have not been requested so far
-		Iterator<Map.Entry<String, GmlIdEntry>> iter = map.entrySet().iterator();
+		Iterator<Map.Entry<String, UIDCacheEntry>> iter = map.entrySet().iterator();
 		while (drainCounter <= drain && iter.hasNext()) {
-			Map.Entry<String, GmlIdEntry> entry = iter.next();
+			Map.Entry<String, UIDCacheEntry> entry = iter.next();
 			if (!entry.getValue().isRequested()) {
 				String gmlId = entry.getKey();
 
@@ -110,10 +108,8 @@ public class ImportCache implements DBCacheModel {
 
 				psDrain.setString(1, gmlId);
 				psDrain.setLong(2, entry.getValue().getId());
-				psDrain.setLong(3, entry.getValue().getRootId());
-				psDrain.setInt(4, entry.getValue().isReverse() ? 1 : 0);
-				psDrain.setString(5, entry.getValue().getMapping());
-				psDrain.setInt(6, entry.getValue().getType().ordinal());
+				psDrain.setString(3, entry.getValue().getMapping());
+				psDrain.setInt(4, entry.getValue().getType().ordinal());
 
 				psDrain.addBatch();
 				if (++batchCounters[partition] == batchSize) {
@@ -129,7 +125,7 @@ public class ImportCache implements DBCacheModel {
 		// secondly, drain remaining entries until drain limit
 		iter = map.entrySet().iterator();
 		while (drainCounter <= drain && iter.hasNext()) {
-			Map.Entry<String, GmlIdEntry> entry = iter.next();
+			Map.Entry<String, UIDCacheEntry> entry = iter.next();
 			String gmlId = entry.getKey();
 
 			// determine partition for gml:id
@@ -140,10 +136,8 @@ public class ImportCache implements DBCacheModel {
 
 			psDrain.setString(1, gmlId);
 			psDrain.setLong(2, entry.getValue().getId());
-			psDrain.setLong(3, entry.getValue().getRootId());
-			psDrain.setInt(4, entry.getValue().isReverse() ? 1 : 0);
-			psDrain.setString(5, entry.getValue().getMapping());
-			psDrain.setInt(6, entry.getValue().getType().ordinal());
+			psDrain.setString(3, entry.getValue().getMapping());
+			psDrain.setInt(4, entry.getValue().getType().ordinal());
 
 			psDrain.addBatch();
 			if (++batchCounters[partition] == batchSize) {
@@ -162,7 +156,7 @@ public class ImportCache implements DBCacheModel {
 	}
 
 	@Override
-	public GmlIdEntry lookupDB(String key) throws SQLException {
+	public UIDCacheEntry lookupDB(String key) throws SQLException {
 		if (enableIndexes.compareAndSet(false, true)) 
 			enableIndexesOnCacheTables();
 
@@ -196,12 +190,10 @@ public class ImportCache implements DBCacheModel {
 
 				if (rs.next()) {
 					long id = rs.getLong(1);
-					long rootId = rs.getLong(2);
-					boolean reverse = rs.getBoolean(3);
-					String mapping = rs.getString(4);
-					int type = rs.getInt(5);
+					String mapping = rs.getString(2);
+					int type = rs.getInt(3);
 
-					return new GmlIdEntry(id, rootId, reverse, mapping, CityGMLClass.fromInt(type));
+					return new UIDCacheEntry(id, 0, false, mapping, CityGMLClass.fromInt(type));
 				}
 
 				return null;
@@ -240,14 +232,7 @@ public class ImportCache implements DBCacheModel {
 
 	@Override
 	public String getType() {
-		switch (cacheTableModel) {
-		case GMLID_GEOMETRY:
-			return "geometry";
-		case GMLID_FEATURE:
-			return "feature";
-		default:
-			return "";
-		}
+		return "feature";
 	}
 	
 	private void enableIndexesOnCacheTables() throws SQLException {

@@ -27,42 +27,51 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.system;
+package de.tub.citydb.modules.citygml.common.database.uid;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import java.sql.SQLException;
+import java.util.HashMap;
 
-@XmlType(name="GmlIdLookupServerType", propOrder={
-		"feature",
-		"geometry"		
-})
-public class GmlIdLookupServer {
-	@XmlElement(required=true)
-	private GmlIdLookupServerConfig feature;
-	@XmlElement(required=true)
-	private GmlIdLookupServerConfig geometry;
+import org.citygml4j.model.citygml.CityGMLClass;
 
-	public GmlIdLookupServer() {
-		feature = new GmlIdLookupServerConfig();
-		geometry = new GmlIdLookupServerConfig();
+public class UIDCacheManager {
+	private final HashMap<UIDCacheType, UIDCache> cacheMap;
+
+	public UIDCacheManager() {
+		cacheMap = new HashMap<UIDCacheType, UIDCache>();
 	}
 
-	public GmlIdLookupServerConfig getFeature() {
-		return feature;
+	public void initCache(
+		UIDCacheType cacheType,
+		UIDCachingModel model,
+		int cacheSize,
+		float drainFactor,
+		int concurrencyLevel) {
+
+		cacheMap.put(cacheType, new UIDCache(
+				model,
+				cacheSize,
+				drainFactor,
+				concurrencyLevel
+		));
 	}
 
-	public void setFeature(GmlIdLookupServerConfig feature) {
-		if (feature != null)
-			this.feature = feature;
-	}
+	public UIDCache getCache(CityGMLClass type) {
+		UIDCacheType cacheType;
 
-	public GmlIdLookupServerConfig getGeometry() {
-		return geometry;
-	}
+		switch (type) {
+		case ABSTRACT_GML_GEOMETRY:
+			cacheType = UIDCacheType.GEOMETRY;
+			break;
+		default:
+			cacheType = UIDCacheType.FEATURE;
+		}
 
-	public void setGeometry(GmlIdLookupServerConfig geometry) {
-		if (geometry != null)
-			this.geometry = geometry;
+		return cacheMap.get(cacheType);
 	}
-
+	
+	public void shutdownAll() throws SQLException {
+		for (UIDCache server : cacheMap.values())
+			server.shutdown();
+	}
 }

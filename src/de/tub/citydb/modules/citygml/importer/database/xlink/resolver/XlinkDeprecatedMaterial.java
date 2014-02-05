@@ -35,7 +35,7 @@ import java.sql.SQLException;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
+import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
 import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
 
@@ -65,7 +65,7 @@ public class XlinkDeprecatedMaterial implements DBXlinkResolver {
 	}
 
 	public boolean insert(DBXlinkDeprecatedMaterial xlink) throws SQLException {
-		GmlIdEntry surfaceDataEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.APPEARANCE);
+		UIDCacheEntry surfaceDataEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.APPEARANCE);
 		if (surfaceDataEntry == null || surfaceDataEntry.getId() == -1)
 			return false;
 

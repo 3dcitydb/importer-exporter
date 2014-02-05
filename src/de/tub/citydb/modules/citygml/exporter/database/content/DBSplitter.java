@@ -51,10 +51,10 @@ import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;
+import de.tub.citydb.modules.citygml.common.database.uid.UIDCache;
 import de.tub.citydb.modules.common.event.StatusDialogMessage;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.BoundingBoxFilter;
@@ -69,7 +69,7 @@ public class DBSplitter {
 
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<DBSplittingResult> dbWorkerPool;
-	private final GmlIdLookupServer featureGmlIdCache;
+	private final UIDCache featureGmlIdCache;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 	private volatile boolean shouldRun = true;
@@ -95,8 +95,8 @@ public class DBSplitter {
 	public DBSplitter(DatabaseConnectionPool dbConnectionPool, 
 			WorkerPool<DBSplittingResult> dbWorkerPool, 
 			ExportFilter exportFilter, 
-			GmlIdLookupServer featureGmlIdCache,
-			CacheManager cacheManager,
+			UIDCache featureGmlIdCache,
+			CacheTableManager cacheTableManager,
 			EventDispatcher eventDispatcher, 
 			Config config) throws SQLException {
 		this.dbConnectionPool = dbConnectionPool;
@@ -105,10 +105,10 @@ public class DBSplitter {
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
 
-		init(exportFilter, cacheManager);
+		init(exportFilter, cacheTableManager);
 	}
 
-	private void init(ExportFilter exportFilter, CacheManager cacheManager) throws SQLException {
+	private void init(ExportFilter exportFilter, CacheTableManager cacheTableManager) throws SQLException {
 		connection = dbConnectionPool.getConnection();
 
 		// try and change workspace for connection
@@ -120,7 +120,7 @@ public class DBSplitter {
 
 		// create temporary table for global appearances if needed
 		if (config.getInternal().isExportGlobalAppearances()) {
-			CacheTable temp = cacheManager.createAndIndexCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+			CacheTable temp = cacheTableManager.createAndIndexCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
 
 			// try and change workspace for temporary table
 			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {

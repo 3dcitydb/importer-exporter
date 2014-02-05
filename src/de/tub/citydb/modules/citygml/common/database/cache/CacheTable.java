@@ -38,8 +38,9 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableBasic;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableDeprecatedMaterial;
+import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableFeatureGmlId;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGlobalAppearance;
-import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGmlId;
+import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGeometryGmlId;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGroupToCityObject;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableLibraryObject;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableLinearRing;
@@ -76,9 +77,11 @@ public class CacheTable extends AbstractCacheTable {
 		case LIBRARY_OBJECT:
 			this.model = CacheTableLibraryObject.getInstance();
 			break;
-		case GMLID_FEATURE:			
+		case GMLID_FEATURE:
+			this.model = CacheTableFeatureGmlId.getInstance();
+			break;
 		case GMLID_GEOMETRY:
-			this.model = CacheTableGmlId.getInstance(model);
+			this.model = CacheTableGeometryGmlId.getInstance();
 			break;
 		case GROUP_TO_CITYOBJECT:
 			this.model = CacheTableGroupToCityObject.getInstance();

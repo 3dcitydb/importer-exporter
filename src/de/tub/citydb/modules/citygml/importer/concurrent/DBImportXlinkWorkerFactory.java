@@ -34,24 +34,24 @@ import de.tub.citydb.api.concurrent.WorkerFactory;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 
 public class DBImportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 	private final DatabaseConnectionPool dbPool;
-	private final CacheManager cacheManager;
+	private final CacheTableManager cacheTableManager;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	public DBImportXlinkWorkerFactory(DatabaseConnectionPool dbPool, CacheManager cacheManager, Config config, EventDispatcher eventDispatcher) {
+	public DBImportXlinkWorkerFactory(DatabaseConnectionPool dbPool, CacheTableManager cacheTableManager, Config config, EventDispatcher eventDispatcher) {
 		this.dbPool = dbPool;
-		this.cacheManager = cacheManager;
+		this.cacheTableManager = cacheTableManager;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
 
 	@Override
 	public Worker<DBXlink> createWorker() {
-		return new DBImportXlinkWorker(dbPool, cacheManager, config, eventDispatcher);
+		return new DBImportXlinkWorker(dbPool, cacheTableManager, config, eventDispatcher);
 	}
 }

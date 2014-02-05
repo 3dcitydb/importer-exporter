@@ -27,16 +27,16 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.modules.citygml.common.database.gmlid;
+package de.tub.citydb.modules.citygml.common.database.uid;
 
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-public interface DBCacheModel {
-	public void drainToDB(ConcurrentHashMap<String, GmlIdEntry> map, int drain) throws SQLException;
-	public GmlIdEntry lookupDB(String key) throws SQLException;
+public interface UIDCachingModel {
+	public void drainToDB(ConcurrentHashMap<String, UIDCacheEntry> map, int drain) throws SQLException;
+	public UIDCacheEntry lookupDB(String key) throws SQLException;
 	public String lookupDB(long id, CityGMLClass type) throws SQLException;
 	public void close() throws SQLException;
 	public String getType();

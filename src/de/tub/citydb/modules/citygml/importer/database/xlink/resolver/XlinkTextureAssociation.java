@@ -41,7 +41,7 @@ import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
+import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.util.Util;
@@ -114,14 +114,14 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 					String texCoord = rs.getString("TEXTURE_COORDINATES");
 
 					if (worldToTexture != null) {
-						GmlIdEntry idEntry = resolverManager.getDBId(xlink.getTargetURI(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
+						UIDCacheEntry entry = resolverManager.getDBId(xlink.getTargetURI(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
-						if (idEntry == null || idEntry.getId() == -1) {
+						if (entry == null || entry.getId() == -1) {
 							LOG.error("Failed to resolve XLink reference '" + xlink.getTargetURI() + "'.");
 							continue;
 						}
 
-						psTextureParam.setLong(1, idEntry.getId());
+						psTextureParam.setLong(1, entry.getId());
 						psTextureParam.setString(2, worldToTexture);
 						psTextureParam.setNull(3, Types.VARCHAR);
 						psTextureParam.setLong(4, xlink.getId());

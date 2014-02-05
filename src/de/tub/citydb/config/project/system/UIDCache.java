@@ -30,53 +30,39 @@
 package de.tub.citydb.config.project.system;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="GmlIdLookupServerConfigType", propOrder={
-		"cacheSize",
-		"pageFactor",
-		"partitions"
+@XmlType(name="UIDCacheType", propOrder={
+		"feature",
+		"geometry"		
 })
-public class GmlIdLookupServerConfig {
-	@XmlSchemaType(name="positiveInteger")
-	@XmlElement(required=true, defaultValue="200000")
-	private Integer cacheSize = 200000;
-	@XmlElement(required=true, defaultValue="0.85")
-	private Float pageFactor = 0.85f;
-	@XmlElement(required=true, defaultValue="50")
-	private Integer partitions = 10;
-	
-	public GmlIdLookupServerConfig() {
+public class UIDCache {
+	@XmlElement(required=true)
+	private UIDCacheConfig feature;
+	@XmlElement(required=true)
+	private UIDCacheConfig geometry;
+
+	public UIDCache() {
+		feature = new UIDCacheConfig();
+		geometry = new UIDCacheConfig();
 	}
 
-	public Integer getCacheSize() {
-		return cacheSize;
+	public UIDCacheConfig getFeature() {
+		return feature;
 	}
 
-	public void setCacheSize(Integer cacheSize) {
-		if (cacheSize != null && cacheSize > 0)
-			this.cacheSize = cacheSize;
+	public void setFeature(UIDCacheConfig feature) {
+		if (feature != null)
+			this.feature = feature;
 	}
 
-	public Float getPageFactor() {
-		return pageFactor;
+	public UIDCacheConfig getGeometry() {
+		return geometry;
 	}
 
-	public void setPageFactor(Float pageFactor) {
-		if (pageFactor != null && pageFactor > 0 && pageFactor <= 1)
-			this.pageFactor = pageFactor;
+	public void setGeometry(UIDCacheConfig geometry) {
+		if (geometry != null)
+			this.geometry = geometry;
 	}
 
-	public Integer getPartitions() {
-		return partitions;
-	}
-
-	public void setPartitions(Integer concurrentTempTables) {
-		if (concurrentTempTables != null && 
-				concurrentTempTables > 0 && 
-				concurrentTempTables <= 100)
-			this.partitions = concurrentTempTables;
-	}
-	
 }

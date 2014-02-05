@@ -39,7 +39,7 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
@@ -57,17 +57,17 @@ import de.tub.citydb.modules.common.event.StatusDialogProgressBar;
 public class DBXlinkSplitter {
 	private final Logger LOG = Logger.getInstance();
 
-	private final CacheManager cacheManager;
+	private final CacheTableManager cacheTableManager;
 	private final WorkerPool<DBXlink> xlinkResolverPool;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
 	private final EventDispatcher eventDispatcher;
 	private volatile boolean shouldRun = true;
 
-	public DBXlinkSplitter(CacheManager cacheManager, 
+	public DBXlinkSplitter(CacheTableManager cacheTableManager, 
 			WorkerPool<DBXlink> xlinkResolverPool, 
 			WorkerPool<DBXlink> tmpXlinkPool, 
 			EventDispatcher eventDispatcher) {
-		this.cacheManager = cacheManager;
+		this.cacheTableManager = cacheTableManager;
 		this.xlinkResolverPool = xlinkResolverPool;
 		this.tmpXlinkPool = tmpXlinkPool;
 		this.eventDispatcher = eventDispatcher;
@@ -118,7 +118,7 @@ public class DBXlinkSplitter {
 		ResultSet rs = null;
 
 		try {
-			CacheTable cacheTable = cacheManager.getCacheTable(CacheTableModelEnum.BASIC);	
+			CacheTable cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.BASIC);	
 			if (cacheTable == null)
 				return;
 
@@ -170,7 +170,7 @@ public class DBXlinkSplitter {
 		if (!shouldRun)
 			return;
 
-		CacheTable cacheTable = cacheManager.getCacheTable(CacheTableModelEnum.GROUP_TO_CITYOBJECT);		
+		CacheTable cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GROUP_TO_CITYOBJECT);		
 		if (cacheTable == null)
 			return;
 
@@ -263,8 +263,8 @@ public class DBXlinkSplitter {
 		ResultSet rs = null;
 
 		try {
-			if (!cacheManager.existsCacheTable(CacheTableModelEnum.TEXTUREPARAM) && 
-					!cacheManager.existsCacheTable(CacheTableModelEnum.TEXTURE_FILE))
+			if (!cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTUREPARAM) && 
+					!cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTURE_FILE))
 				return;			
 
 			LOG.info("Resolving appearance XLinks...");
@@ -272,12 +272,12 @@ public class DBXlinkSplitter {
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.appXlink.msg"), this));
 
 			// first run: resolve texture param
-			if (cacheManager.existsCacheTable(CacheTableModelEnum.TEXTUREPARAM)) {			
-				CacheTable temporaryTable = cacheManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);				
+			if (cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTUREPARAM)) {			
+				CacheTable temporaryTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);				
 				temporaryTable.enableIndexes();				
 				
-				if (cacheManager.existsCacheTable(CacheTableModelEnum.LINEAR_RING))
-					cacheManager.getCacheTable(CacheTableModelEnum.LINEAR_RING).enableIndexes();
+				if (cacheTableManager.existsCacheTable(CacheTableModelEnum.LINEAR_RING))
+					cacheTableManager.getCacheTable(CacheTableModelEnum.LINEAR_RING).enableIndexes();
 
 				int max = (int)temporaryTable.size();
 				int current = 0;
@@ -331,14 +331,13 @@ public class DBXlinkSplitter {
 			}
 
 			// second run: import texture images and world files
-			if (cacheManager.existsCacheTable(CacheTableModelEnum.TEXTURE_FILE)) {		
+			if (cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTURE_FILE)) {		
 				LOG.info("Importing texture images...");
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.texImg.msg"), this));
 				
-				CacheTable temporaryTable = cacheManager.getCacheTable(CacheTableModelEnum.TEXTURE_FILE);
-				temporaryTable.enableIndexes();
-				
+				CacheTable temporaryTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTURE_FILE);
+
 				int max = (int)temporaryTable.size();
 				int current = 0;
 				
@@ -385,13 +384,13 @@ public class DBXlinkSplitter {
 				return;
 
 			// third run: identifying xlinks to texture association elements...
-			if (cacheManager.existsCacheTable(CacheTableModelEnum.TEXTUREPARAM) && 
-					cacheManager.existsCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION)) {
+			if (cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTUREPARAM) && 
+					cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION)) {
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.appXlink.msg"), this));
 				
-				CacheTable cacheTable = cacheManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
-				cacheManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION).enableIndexes();
+				CacheTable cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
+				cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION).enableIndexes();
 
 				int max = (int)cacheTable.size();
 				int current = 0;
@@ -437,7 +436,7 @@ public class DBXlinkSplitter {
 		ResultSet rs = null;
 
 		try {
-			CacheTable cacheTable = cacheManager.getCacheTable(CacheTableModelEnum.LIBRARY_OBJECT);	
+			CacheTable cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.LIBRARY_OBJECT);	
 			if (cacheTable == null)
 				return;
 			
@@ -485,7 +484,7 @@ public class DBXlinkSplitter {
 		ResultSet rs = null;
 
 		try {
-			CacheTable cacheTable = cacheManager.getCacheTable(CacheTableModelEnum.DEPRECATED_MATERIAL);
+			CacheTable cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.DEPRECATED_MATERIAL);
 			if (cacheTable == null)
 				return;
 
@@ -531,7 +530,7 @@ public class DBXlinkSplitter {
 		if (!shouldRun)
 			return;
 
-		CacheTable cacheTable = cacheManager.getCacheTable(CacheTableModelEnum.SURFACE_GEOMETRY);
+		CacheTable cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.SURFACE_GEOMETRY);
 		if (cacheTable == null)
 			return;
 
