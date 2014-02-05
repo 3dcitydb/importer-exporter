@@ -36,7 +36,7 @@ import java.sql.Types;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParamEnum;
@@ -61,7 +61,7 @@ public class XlinkTextureParam implements DBXlinkResolver {
 	}
 
 	public boolean insert(DBXlinkTextureParam xlink) throws SQLException {
-		GmlIdEntry surfaceGeometryEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
+		UIDCacheEntry surfaceGeometryEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
 		if (surfaceGeometryEntry == null || surfaceGeometryEntry.getId() == -1)
 			return false;
 

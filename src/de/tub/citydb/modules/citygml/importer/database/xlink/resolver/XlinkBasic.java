@@ -39,7 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.database.TableEnum;
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 
 public class XlinkBasic implements DBXlinkResolver {
@@ -66,7 +66,7 @@ public class XlinkBasic implements DBXlinkResolver {
 		CityGMLClass type = xlink.getToTable() == TableEnum.SURFACE_GEOMETRY ? 
 				CityGMLClass.ABSTRACT_GML_GEOMETRY : CityGMLClass.ABSTRACT_CITY_OBJECT;
 
-		GmlIdEntry entry = resolverManager.getDBId(xlink.getGmlId(), type);
+		UIDCacheEntry entry = resolverManager.getDBId(xlink.getGmlId(), type);
 		if (entry == null)
 			return false;
 

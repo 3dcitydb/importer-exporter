@@ -76,16 +76,17 @@ import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.IndexStatusInfo.IndexType;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerEnum;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheType;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.exporter.concurrent.DBExportWorkerFactory;
 import de.tub.citydb.modules.citygml.exporter.concurrent.DBExportXlinkWorkerFactory;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBSplitter;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBSplittingResult;
-import de.tub.citydb.modules.citygml.exporter.database.gmlid.ExportCache;
+import de.tub.citydb.modules.citygml.exporter.database.gmlid.FeatureGmlIdCache;
+import de.tub.citydb.modules.citygml.exporter.database.gmlid.GeometryGmlIdCache;
 import de.tub.citydb.modules.common.concurrent.IOWriterWorkerFactory;
 import de.tub.citydb.modules.common.event.EventType;
 import de.tub.citydb.modules.common.event.FeatureCounterEvent;
@@ -111,8 +112,8 @@ public class Exporter implements EventHandler {
 	private WorkerPool<DBSplittingResult> dbWorkerPool;
 	private SingleWorkerPool<SAXEventBuffer> ioWriterPool;
 	private WorkerPool<DBXlink> xlinkExporterPool;
-	private CacheManager cacheManager;
-	private DBGmlIdLookupServerManager lookupServerManager;
+	private CacheTableManager cacheTableManager;
+	private UIDCacheManager uidCacheManager;
 	private ExportFilter exportFilter;
 	private boolean useTiling;
 
@@ -152,7 +153,7 @@ public class Exporter implements EventHandler {
 		//int writerQueueSize = maxThreads * 100;
 
 		// gml:id lookup cache update
-		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdLookupServerBatchValue();		
+		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdCacheBatchValue();		
 
 		// adding listeners
 		eventDispatcher.addEventHandler(EventType.FEATURE_COUNTER, this);
@@ -378,7 +379,7 @@ public class Exporter implements EventHandler {
 
 					// create instance of temp table manager
 					try {
-						cacheManager = new CacheManager(dbPool, maxThreads, config);
+						cacheTableManager = new CacheTableManager(dbPool, maxThreads, config);
 					} catch (SQLException e) {
 						LOG.error("SQL error while initializing cache manager: " + e.getMessage());
 						return false;
@@ -388,28 +389,28 @@ public class Exporter implements EventHandler {
 					}
 
 					// create instance of gml:id lookup server manager...
-					lookupServerManager = new DBGmlIdLookupServerManager();
+					uidCacheManager = new UIDCacheManager();
 
 					// ...and start servers
 					try {		
-						lookupServerManager.initServer(
-								DBGmlIdLookupServerEnum.GEOMETRY,
-								new ExportCache(cacheManager, 
+						uidCacheManager.initCache(
+								UIDCacheType.GEOMETRY,
+								new GeometryGmlIdCache(cacheTableManager, 
 										CacheTableModelEnum.GMLID_GEOMETRY, 
-										system.getGmlIdLookupServer().getGeometry().getPartitions(),
+										system.getGmlIdCache().getGeometry().getPartitions(),
 										lookupCacheBatchSize),
-										system.getGmlIdLookupServer().getGeometry().getCacheSize(),
-										system.getGmlIdLookupServer().getGeometry().getPageFactor(),
+										system.getGmlIdCache().getGeometry().getCacheSize(),
+										system.getGmlIdCache().getGeometry().getPageFactor(),
 										maxThreads);
 
-						lookupServerManager.initServer(
-								DBGmlIdLookupServerEnum.FEATURE,
-								new ExportCache(cacheManager, 
+						uidCacheManager.initCache(
+								UIDCacheType.FEATURE,
+								new FeatureGmlIdCache(cacheTableManager, 
 										CacheTableModelEnum.GMLID_FEATURE, 
-										system.getGmlIdLookupServer().getFeature().getPartitions(), 
+										system.getGmlIdCache().getFeature().getPartitions(), 
 										lookupCacheBatchSize),
-										system.getGmlIdLookupServer().getFeature().getCacheSize(),
-										system.getGmlIdLookupServer().getFeature().getPageFactor(),
+										system.getGmlIdCache().getFeature().getCacheSize(),
+										system.getGmlIdCache().getFeature().getPageFactor(),
 										maxThreads);
 					} catch (SQLException sqlEx) {
 						LOG.error("SQL error while initializing database export: " + sqlEx.getMessage());
@@ -443,8 +444,8 @@ public class Exporter implements EventHandler {
 									jaxbBuilder,
 									ioWriterPool,
 									xlinkExporterPool,
-									lookupServerManager,
-									cacheManager,
+									uidCacheManager,
+									cacheTableManager,
 									exportFilter,
 									config,
 									eventDispatcher),
@@ -494,8 +495,8 @@ public class Exporter implements EventHandler {
 								dbPool,
 								dbWorkerPool,
 								exportFilter,
-								lookupServerManager.getLookupServer(CityGMLClass.ABSTRACT_CITY_OBJECT),
-								cacheManager,
+								uidCacheManager.getCache(CityGMLClass.ABSTRACT_CITY_OBJECT),
+								cacheTableManager,
 								eventDispatcher,
 								config);
 
@@ -541,15 +542,15 @@ public class Exporter implements EventHandler {
 
 					// cleaning up...
 					try {
-						lookupServerManager.shutdownAll();
+						uidCacheManager.shutdownAll();
 					} catch (SQLException e) {
 						LOG.error("SQL error: " + e.getMessage());
 					}
 
 					try {
 						LOG.info("Cleaning temporary cache.");
-						cacheManager.dropAll();
-						cacheManager = null;
+						cacheTableManager.dropAll();
+						cacheTableManager = null;
 					} catch (SQLException sqlE) {
 						LOG.error("SQL error: " + sqlE.getMessage());
 						return false;
@@ -590,18 +591,18 @@ public class Exporter implements EventHandler {
 					if (ioWriterPool != null && !ioWriterPool.isTerminated())
 						ioWriterPool.shutdownNow();
 					
-					if (cacheManager != null) {
+					if (cacheTableManager != null) {
 						try {
 							LOG.info("Cleaning temporary cache.");
-							cacheManager.dropAll();
-							cacheManager = null;
+							cacheTableManager.dropAll();
+							cacheTableManager = null;
 						} catch (SQLException sqlEx) {
 							LOG.error("SQL error while finishing database export: " + sqlEx.getMessage());
 						}
 					}
 
 					// set null
-					lookupServerManager = null;
+					uidCacheManager = null;
 					xlinkExporterPool = null;
 					ioWriterPool = null;
 					dbWorkerPool = null;

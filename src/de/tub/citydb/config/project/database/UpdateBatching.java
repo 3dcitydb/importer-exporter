@@ -37,7 +37,7 @@ import de.tub.citydb.config.internal.Internal;
 
 @XmlType(name="UpdateBatchingType", propOrder={
 		"featureBatchValue",
-		"gmlIdLookupServerBatchValue",
+		"gmlIdCacheBatchValue",
 		"tempBatchValue"
 		})
 public class UpdateBatching {
@@ -46,7 +46,7 @@ public class UpdateBatching {
 	private Integer featureBatchValue = 20;
 	@XmlElement(required=true, defaultValue="1000")
 	@XmlSchemaType(name="positiveInteger")
-	private Integer gmlIdLookupServerBatchValue = 1000;
+	private Integer gmlIdCacheBatchValue = 1000;
 	@XmlElement(required=true, defaultValue="1000")
 	@XmlSchemaType(name="positiveInteger")
 	private Integer tempBatchValue = 1000;
@@ -64,14 +64,14 @@ public class UpdateBatching {
 			this.featureBatchValue = featureBatchValue;
 	}
 
-	public Integer getGmlIdLookupServerBatchValue() {
-		return gmlIdLookupServerBatchValue;
+	public Integer getGmlIdCacheBatchValue() {
+		return gmlIdCacheBatchValue;
 	}
 
-	public void setGmlIdLookupServerBatchValue(Integer gmlIdLookupServerBatchValue) {
-		if (gmlIdLookupServerBatchValue != null && gmlIdLookupServerBatchValue > 0 &&
-				gmlIdLookupServerBatchValue <= Internal.DB_MAX_BATCH_SIZE)
-			this.gmlIdLookupServerBatchValue = gmlIdLookupServerBatchValue;
+	public void setGmlIdCacheBatchValue(Integer gmlIdCacheBatchValue) {
+		if (gmlIdCacheBatchValue != null && gmlIdCacheBatchValue > 0 &&
+				gmlIdCacheBatchValue <= Internal.DB_MAX_BATCH_SIZE)
+			this.gmlIdCacheBatchValue = gmlIdCacheBatchValue;
 	}
 
 	public Integer getTempBatchValue() {

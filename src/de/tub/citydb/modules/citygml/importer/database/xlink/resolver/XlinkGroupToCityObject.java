@@ -37,7 +37,7 @@ import java.sql.SQLException;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObject;
 import de.tub.citydb.modules.common.filter.ImportFilter;
 import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
@@ -75,7 +75,7 @@ public class XlinkGroupToCityObject implements DBXlinkResolver {
 	public boolean insert(DBXlinkGroupToCityObject xlink) throws SQLException {
 		// for groupMembers, we do not only lookup gmlIds within the document, but also within
 		// the whole database!
-		GmlIdEntry cityObjectEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.ABSTRACT_CITY_OBJECT, true);
+		UIDCacheEntry cityObjectEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.ABSTRACT_CITY_OBJECT, true);
 		if (cityObjectEntry == null || cityObjectEntry.getId() == -1)
 			return false;
 

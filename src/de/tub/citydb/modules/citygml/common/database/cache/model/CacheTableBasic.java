@@ -31,8 +31,6 @@ package de.tub.citydb.modules.citygml.common.database.cache.model;
 
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 
-
-
 public class CacheTableBasic extends CacheTableModel {
 	public static CacheTableBasic instance = null;
 

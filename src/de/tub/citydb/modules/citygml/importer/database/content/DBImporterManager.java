@@ -54,9 +54,9 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheManager;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheEntry;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCache;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 import de.tub.citydb.modules.citygml.importer.util.LocalTextureCoordinatesResolver;
@@ -66,7 +66,7 @@ public class DBImporterManager {
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
-	private final DBGmlIdLookupServerManager lookupServerManager;
+	private final UIDCacheManager uidCacheManager;
 	private final EventDispatcher eventDipatcher;
 	private final Config config;
 
@@ -86,13 +86,13 @@ public class DBImporterManager {
 			JAXBBuilder jaxbBuilder,
 			Config config,
 			WorkerPool<DBXlink> tmpXlinkPool,
-			DBGmlIdLookupServerManager lookupServerManager,
+			UIDCacheManager uidCacheManager,
 			EventDispatcher eventDipatcher) throws SQLException {
 		this.batchConn = batchConn;
 		this.databaseAdapter = databaseAdapter;
 		this.jaxbBuilder = jaxbBuilder;
 		this.config = config;
-		this.lookupServerManager = lookupServerManager;
+		this.uidCacheManager = uidCacheManager;
 		this.tmpXlinkPool = tmpXlinkPool;
 		this.eventDipatcher = eventDipatcher;
 
@@ -236,9 +236,9 @@ public class DBImporterManager {
 	}
 
 	public void putGmlId(String gmlId, long id, long rootId, boolean reverse, String mapping, CityGMLClass type) {
-		GmlIdLookupServer lookupServer = lookupServerManager.getLookupServer(type);
-		if (lookupServer != null)
-			lookupServer.put(gmlId, id, rootId, reverse, mapping, type);
+		UIDCache cache = uidCacheManager.getCache(type);
+		if (cache != null)
+			cache.put(gmlId, id, rootId, reverse, mapping, type);
 	}
 
 	public void putGmlId(String gmlId, long id, CityGMLClass type) {
@@ -246,19 +246,19 @@ public class DBImporterManager {
 	}
 	
 	public boolean lookupAndPutGmlId(String gmlId, long id, CityGMLClass type) {
-		GmlIdLookupServer lookupServer = lookupServerManager.getLookupServer(type);
+		UIDCache cache = uidCacheManager.getCache(type);
 
-		if (lookupServer != null)
-			return lookupServer.lookupAndPut(gmlId, id, type);
+		if (cache != null)
+			return cache.lookupAndPut(gmlId, id, type);
 		else
 			return false;
 	}
 
 	public long getDBId(String gmlId, CityGMLClass type) {
-		GmlIdLookupServer lookupServer = lookupServerManager.getLookupServer(type);
+		UIDCache cache = uidCacheManager.getCache(type);
 
-		if (lookupServer != null) {
-			GmlIdEntry entry = lookupServer.get(gmlId);
+		if (cache != null) {
+			UIDCacheEntry entry = cache.get(gmlId);
 			if (entry != null && entry.getId() > 0)
 				return entry.getId();
 		}
@@ -267,10 +267,10 @@ public class DBImporterManager {
 	}
 	
 	public long getDBIdFromMemory(String gmlId, CityGMLClass type) {
-		GmlIdLookupServer lookupServer = lookupServerManager.getLookupServer(type);
+		UIDCache cache = uidCacheManager.getCache(type);
 
-		if (lookupServer != null) {
-			GmlIdEntry entry = lookupServer.getFromMemory(gmlId);
+		if (cache != null) {
+			UIDCacheEntry entry = cache.getFromMemory(gmlId);
 			if (entry != null && entry.getId() > 0)
 				return entry.getId();
 		}

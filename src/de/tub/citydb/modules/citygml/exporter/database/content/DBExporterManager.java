@@ -63,11 +63,11 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdLookupServer;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheManager;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCache;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.common.xal.AddressExportFactory;
 import de.tub.citydb.modules.common.filter.ExportFilter;
@@ -78,8 +78,8 @@ public class DBExporterManager {
 	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
-	private final DBGmlIdLookupServerManager lookupServerManager;
-	private final CacheManager cacheManager;
+	private final UIDCacheManager uidCacheManager;
+	private final CacheTableManager cacheTableManager;
 	private final ExportFilter exportFilter;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -96,8 +96,8 @@ public class DBExporterManager {
 			JAXBBuilder jaxbBuilder,
 			WorkerPool<SAXEventBuffer> ioWriterPool,
 			WorkerPool<DBXlink> xlinkExporterPool,
-			DBGmlIdLookupServerManager lookupServerManager,
-			CacheManager cacheManager,
+			UIDCacheManager uidCacheManager,
+			CacheTableManager cacheTableManager,
 			ExportFilter exportFilter,
 			Config config,
 			EventDispatcher eventDispatcher) throws SAXException {
@@ -106,8 +106,8 @@ public class DBExporterManager {
 		this.jaxbBuilder = jaxbBuilder;
 		this.ioWriterPool = ioWriterPool;
 		this.xlinkExporterPool = xlinkExporterPool;
-		this.lookupServerManager = lookupServerManager;
-		this.cacheManager = cacheManager;
+		this.uidCacheManager = uidCacheManager;
+		this.cacheTableManager = cacheTableManager;
 		this.exportFilter = exportFilter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -131,7 +131,7 @@ public class DBExporterManager {
 			switch (dbExporterType) {
 			case SURFACE_GEOMETRY:
 				if (config.getInternal().isExportGlobalAppearances())
-					globalAppTempTable = cacheManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+					globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
 
 				dbExporter = new DBSurfaceGeometry(connection, globalAppTempTable, config, this);
 				break;
@@ -185,7 +185,7 @@ public class DBExporterManager {
 				dbExporter = new DBTextureParam(dbExporterType, connection);
 				break;
 			case GLOBAL_APPEARANCE_TEXTUREPARAM:
-				globalAppTempTable = cacheManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+				globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
 				if (globalAppTempTable != null)
 					dbExporter = new DBTextureParam(dbExporterType, globalAppTempTable);
 				break;
@@ -211,19 +211,19 @@ public class DBExporterManager {
 	}
 
 	public boolean lookupAndPutGmlId(String gmlId, long id, CityGMLClass type) {
-		GmlIdLookupServer lookupServer = lookupServerManager.getLookupServer(type);
+		UIDCache cache = uidCacheManager.getCache(type);
 
-		if (lookupServer != null)
-			return lookupServer.lookupAndPut(gmlId, id, type);
+		if (cache != null)
+			return cache.lookupAndPut(gmlId, id, type);
 		else
 			return false;
 	}
 
 	public void putGmlId(String gmlId, long id, long rootId, boolean reverse, String mapping, CityGMLClass type) {
-		GmlIdLookupServer lookupServer = lookupServerManager.getLookupServer(type);
+		UIDCache cache = uidCacheManager.getCache(type);
 
-		if (lookupServer != null)
-			lookupServer.put(gmlId, id, rootId, reverse, mapping, type);
+		if (cache != null)
+			cache.put(gmlId, id, rootId, reverse, mapping, type);
 	}
 
 	public void putGmlId(String gmlId, long id, CityGMLClass type) {
@@ -231,10 +231,10 @@ public class DBExporterManager {
 	}
 
 	public String getGmlId(long id, CityGMLClass type) {
-		GmlIdLookupServer lookupServer = lookupServerManager.getLookupServer(type);
+		UIDCache cache = uidCacheManager.getCache(type);
 
-		if (lookupServer != null)
-			return lookupServer.get(id, type);
+		if (cache != null)
+			return cache.get(id, type);
 		else
 			return null;
 	}

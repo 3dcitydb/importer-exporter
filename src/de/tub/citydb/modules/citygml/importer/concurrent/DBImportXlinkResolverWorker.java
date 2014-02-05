@@ -42,8 +42,8 @@ import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
@@ -82,8 +82,8 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 	// instance members needed to do work
 	private final DatabaseConnectionPool dbPool;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
-	private final DBGmlIdLookupServerManager lookupServerManager;
-	private final CacheManager cacheManager;
+	private final UIDCacheManager uidCacheManager;
+	private final CacheTableManager cacheTableManager;
 	private final ImportFilter importFilter;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -95,15 +95,15 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 
 	public DBImportXlinkResolverWorker(DatabaseConnectionPool dbPool, 
 			WorkerPool<DBXlink> tmpXlinkPool, 
-			DBGmlIdLookupServerManager lookupServerManager, 
-			CacheManager cacheManager, 
+			UIDCacheManager uidCacheManager, 
+			CacheTableManager cacheTableManager, 
 			ImportFilter importFilter, 
 			Config config, 
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.dbPool = dbPool;
 		this.tmpXlinkPool = tmpXlinkPool;
-		this.lookupServerManager = lookupServerManager;
-		this.cacheManager = cacheManager;
+		this.uidCacheManager = uidCacheManager;
+		this.cacheTableManager = cacheTableManager;
 		this.importFilter = importFilter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -131,8 +131,8 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 				connection,
 				dbPool.getActiveDatabaseAdapter(),
 				tmpXlinkPool,
-				lookupServerManager,
-				cacheManager,
+				uidCacheManager,
+				cacheTableManager,
 				importFilter,
 				config,
 				eventDispatcher);

@@ -76,16 +76,17 @@ import de.tub.citydb.database.IndexStatusInfo.IndexType;
 import de.tub.citydb.io.DirectoryScanner;
 import de.tub.citydb.io.DirectoryScanner.CityGMLFilenameFilter;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerEnum;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheType;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.importer.concurrent.DBImportWorkerFactory;
 import de.tub.citydb.modules.citygml.importer.concurrent.DBImportXlinkResolverWorkerFactory;
 import de.tub.citydb.modules.citygml.importer.concurrent.DBImportXlinkWorkerFactory;
 import de.tub.citydb.modules.citygml.importer.concurrent.FeatureReaderWorkerFactory;
-import de.tub.citydb.modules.citygml.importer.database.gmlid.ImportCache;
+import de.tub.citydb.modules.citygml.importer.database.gmlid.FeatureGmlIdCache;
+import de.tub.citydb.modules.citygml.importer.database.gmlid.GeometryGmlIdCache;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.DBXlinkSplitter;
 import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -113,7 +114,7 @@ public class Importer implements EventHandler {
 	private WorkerPool<XMLChunk> featureWorkerPool;
 	private WorkerPool<DBXlink> tmpXlinkPool;
 	private WorkerPool<DBXlink> xlinkResolverPool;
-	private CacheManager cacheManager;
+	private CacheTableManager cacheTableManager;
 	private DBXlinkSplitter tmpSplitter;
 	private SAXParserFactory factory;
 
@@ -121,7 +122,7 @@ public class Importer implements EventHandler {
 	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	private EnumMap<CityGMLClass, Long> featureCounterMap;
 	private EnumMap<GMLClass, Long> geometryCounterMap;
-	private DBGmlIdLookupServerManager lookupServerManager;
+	private UIDCacheManager uidCacheManager;
 	private DirectoryScanner directoryScanner;
 	private long xmlValidationErrorCounter;
 
@@ -173,7 +174,7 @@ public class Importer implements EventHandler {
 		int queueSize = maxThreads * 2;
 
 		// gml:id lookup cache update
-		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdLookupServerBatchValue();
+		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdCacheBatchValue();
 
 		// checking workspace
 		Workspace workspace = database.getWorkspaces().getImportWorkspace();
@@ -335,7 +336,7 @@ public class Importer implements EventHandler {
 
 				// create instance of temp table manager
 				try {
-					cacheManager = new CacheManager(dbPool, maxThreads, config);
+					cacheTableManager = new CacheTableManager(dbPool, maxThreads, config);
 				} catch (SQLException e) {
 					LOG.error("SQL error while initializing cache manager: " + e.getMessage());
 					return false;
@@ -345,28 +346,28 @@ public class Importer implements EventHandler {
 				}
 
 				// create instance of gml:id lookup server manager...
-				lookupServerManager = new DBGmlIdLookupServerManager();
+				uidCacheManager = new UIDCacheManager();
 
 				// ...and start servers
 				try {
-					lookupServerManager.initServer(
-							DBGmlIdLookupServerEnum.GEOMETRY,
-							new ImportCache(cacheManager, 
+					uidCacheManager.initCache(
+							UIDCacheType.GEOMETRY,
+							new GeometryGmlIdCache(cacheTableManager, 
 									CacheTableModelEnum.GMLID_GEOMETRY, 
-									system.getGmlIdLookupServer().getGeometry().getPartitions(), 
+									system.getGmlIdCache().getGeometry().getPartitions(), 
 									lookupCacheBatchSize),
-									system.getGmlIdLookupServer().getGeometry().getCacheSize(),
-									system.getGmlIdLookupServer().getGeometry().getPageFactor(),
+									system.getGmlIdCache().getGeometry().getCacheSize(),
+									system.getGmlIdCache().getGeometry().getPageFactor(),
 									maxThreads);
 
-					lookupServerManager.initServer(
-							DBGmlIdLookupServerEnum.FEATURE,
-							new ImportCache(cacheManager, 
+					uidCacheManager.initCache(
+							UIDCacheType.FEATURE,
+							new FeatureGmlIdCache(cacheTableManager, 
 									CacheTableModelEnum.GMLID_FEATURE, 
-									system.getGmlIdLookupServer().getFeature().getPartitions(),
+									system.getGmlIdCache().getFeature().getPartitions(),
 									lookupCacheBatchSize),
-									system.getGmlIdLookupServer().getFeature().getCacheSize(),
-									system.getGmlIdLookupServer().getFeature().getPageFactor(),
+									system.getGmlIdCache().getFeature().getCacheSize(),
+									system.getGmlIdCache().getFeature().getPageFactor(),
 									maxThreads);
 				} catch (SQLException sqlEx) {
 					LOG.error("SQL error while initializing database import: " + sqlEx.getMessage());
@@ -380,7 +381,7 @@ public class Importer implements EventHandler {
 						minThreads,
 						maxThreads,
 						PoolSizeAdaptationStrategy.AGGRESSIVE,
-						new DBImportXlinkWorkerFactory(dbPool, cacheManager, config, eventDispatcher),
+						new DBImportXlinkWorkerFactory(dbPool, cacheTableManager, config, eventDispatcher),
 						queueSize,
 						false);
 
@@ -393,7 +394,7 @@ public class Importer implements EventHandler {
 						new DBImportWorkerFactory(dbPool, 
 								jaxbBuilder,
 								tmpXlinkPool, 
-								lookupServerManager, 
+								uidCacheManager, 
 								importFilter,
 								config, 
 								eventDispatcher),
@@ -480,8 +481,8 @@ public class Importer implements EventHandler {
 							PoolSizeAdaptationStrategy.AGGRESSIVE,
 							new DBImportXlinkResolverWorkerFactory(dbPool, 
 									tmpXlinkPool, 
-									lookupServerManager, 
-									cacheManager, 
+									uidCacheManager, 
+									cacheTableManager, 
 									importFilter,
 									config, 
 									eventDispatcher),
@@ -492,7 +493,7 @@ public class Importer implements EventHandler {
 					xlinkResolverPool.prestartCoreWorkers();
 
 					// we also need a splitter which extracts the data from the temp tables
-					tmpSplitter = new DBXlinkSplitter(cacheManager, 
+					tmpSplitter = new DBXlinkSplitter(cacheTableManager, 
 							xlinkResolverPool, 
 							tmpXlinkPool,
 							eventDispatcher);
@@ -526,15 +527,15 @@ public class Importer implements EventHandler {
 
 				// finally clean up and join eventDispatcher
 				try {
-					lookupServerManager.shutdownAll();
+					uidCacheManager.shutdownAll();
 				} catch (SQLException e) {
 					LOG.error("SQL error: " + e.getMessage());
 				}
 
 				try {
 					LOG.info("Cleaning temporary cache.");
-					cacheManager.dropAll();
-					cacheManager = null;
+					cacheTableManager.dropAll();
+					cacheTableManager = null;
 				} catch (SQLException sqlE) {
 					LOG.error("SQL error: " + sqlE.getMessage());
 				}
@@ -564,18 +565,18 @@ public class Importer implements EventHandler {
 				if (xlinkResolverPool != null && !xlinkResolverPool.isTerminated())
 					xlinkResolverPool.shutdownNow();
 				
-				if (cacheManager != null) {
+				if (cacheTableManager != null) {
 					try {
 						LOG.info("Cleaning temporary cache.");
-						cacheManager.dropAll();
-						cacheManager = null;
+						cacheTableManager.dropAll();
+						cacheTableManager = null;
 					} catch (SQLException sqlEx) {
 						LOG.error("SQL error while finishing database import: " + sqlEx.getMessage());
 					}
 				}
 
 				// set to null
-				lookupServerManager = null;
+				uidCacheManager = null;
 				tmpXlinkPool = null;
 				dbWorkerPool = null;
 				featureWorkerPool = null;

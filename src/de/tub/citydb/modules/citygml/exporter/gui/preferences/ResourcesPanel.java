@@ -44,7 +44,7 @@ import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.system.GmlIdLookupServerConfig;
+import de.tub.citydb.config.project.system.UIDCacheConfig;
 import de.tub.citydb.config.project.system.ThreadPoolConfig;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
@@ -81,8 +81,8 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	@Override
 	public boolean isModified() {
 		ThreadPoolConfig threadPool = config.getProject().getExporter().getSystem().getThreadPool().getDefaultPool();
-		GmlIdLookupServerConfig geometry = config.getProject().getExporter().getSystem().getGmlIdLookupServer().getGeometry();
-		GmlIdLookupServerConfig feature = config.getProject().getExporter().getSystem().getGmlIdLookupServer().getFeature();
+		UIDCacheConfig geometry = config.getProject().getExporter().getSystem().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getProject().getExporter().getSystem().getGmlIdCache().getFeature();
 
 		try { expResMinThreadsText.commitEdit(); } catch (ParseException e) { }
 		try { expResMaxThreadsText.commitEdit(); } catch (ParseException e) { }
@@ -251,8 +251,8 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	@Override
 	public void loadSettings() {
 		ThreadPoolConfig threadPool = config.getProject().getExporter().getSystem().getThreadPool().getDefaultPool();
-		GmlIdLookupServerConfig geometry = config.getProject().getExporter().getSystem().getGmlIdLookupServer().getGeometry();
-		GmlIdLookupServerConfig feature = config.getProject().getExporter().getSystem().getGmlIdLookupServer().getFeature();
+		UIDCacheConfig geometry = config.getProject().getExporter().getSystem().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getProject().getExporter().getSystem().getGmlIdCache().getFeature();
 
 		expResMinThreadsText.setValue(threadPool.getMinThreads());
 		expResMaxThreadsText.setValue(threadPool.getMaxThreads());
@@ -267,8 +267,8 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	@Override
 	public void setSettings() {
 		ThreadPoolConfig threadPool = config.getProject().getExporter().getSystem().getThreadPool().getDefaultPool();
-		GmlIdLookupServerConfig geometry = config.getProject().getExporter().getSystem().getGmlIdLookupServer().getGeometry();
-		GmlIdLookupServerConfig feature = config.getProject().getExporter().getSystem().getGmlIdLookupServer().getFeature();
+		UIDCacheConfig geometry = config.getProject().getExporter().getSystem().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getProject().getExporter().getSystem().getGmlIdCache().getFeature();
 
 		int minThreads = ((Number)expResMinThreadsText.getValue()).intValue();
 		int maxThreads = ((Number)expResMaxThreadsText.getValue()).intValue();

@@ -39,7 +39,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
@@ -79,11 +79,11 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 	private int commitAfter = 1000;
 
 	public DBImportXlinkWorker(DatabaseConnectionPool dbPool,
-			CacheManager cacheManager, 
+			CacheTableManager cacheTableManager, 
 			Config config, 
 			EventDispatcher eventDispatcher) {
 		this.config = config;
-		dbXlinkManager = new DBXlinkImporterManager(cacheManager, dbPool.getActiveDatabaseAdapter(), eventDispatcher);
+		dbXlinkManager = new DBXlinkImporterManager(cacheTableManager, dbPool.getActiveDatabaseAdapter(), eventDispatcher);
 		
 		init(dbPool);		
 	}

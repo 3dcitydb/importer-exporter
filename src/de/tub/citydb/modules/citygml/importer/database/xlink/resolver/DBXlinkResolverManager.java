@@ -40,11 +40,11 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
-import de.tub.citydb.modules.citygml.common.database.gmlid.GmlIdEntry;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheManager;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.importer.database.content.DBSequencer;
 import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
@@ -54,7 +54,7 @@ public class DBXlinkResolverManager {
 	private final Connection connection;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
-	private final CacheManager dbTempTableManager;
+	private final CacheTableManager cacheTableManager;
 	private final ImportFilter importFilter;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -67,21 +67,21 @@ public class DBXlinkResolverManager {
 			Connection batchConn,
 			AbstractDatabaseAdapter databaseAdapter,
 			WorkerPool<DBXlink> tmpXlinkPool,
-			DBGmlIdLookupServerManager lookupServerManager,
-			CacheManager dbTempTableManager,
+			UIDCacheManager uidCacheManager,
+			CacheTableManager cacheTableManager,
 			ImportFilter importFilter,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.connection = batchConn;
 		this.databaseAdapter = databaseAdapter;
 		this.tmpXlinkPool = tmpXlinkPool;
-		this.dbTempTableManager = dbTempTableManager;
+		this.cacheTableManager = cacheTableManager;
 		this.importFilter = importFilter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
 		dbWriterMap = new HashMap<DBXlinkResolverEnum, DBXlinkResolver>();
-		dbGmlIdResolver = new DBGmlIdResolver(batchConn, lookupServerManager, config);
+		dbGmlIdResolver = new DBGmlIdResolver(batchConn, uidCacheManager, config);
 		dbSequencer = new DBSequencer(batchConn, databaseAdapter);
 	}
 
@@ -92,7 +92,7 @@ public class DBXlinkResolverManager {
 			// initialise DBWriter
 			switch (dbResolverType) {
 			case SURFACE_GEOMETRY:
-				CacheTable surfaceGeomHeapView = dbTempTableManager.getCacheTable(CacheTableModelEnum.SURFACE_GEOMETRY).getMirrorTable();
+				CacheTable surfaceGeomHeapView = cacheTableManager.getCacheTable(CacheTableModelEnum.SURFACE_GEOMETRY).getMirrorTable();
 				if (surfaceGeomHeapView != null)
 					dbResolver = new XlinkSurfaceGeometry(connection, surfaceGeomHeapView, config, this);
 
@@ -101,8 +101,8 @@ public class DBXlinkResolverManager {
 				dbResolver = new XlinkBasic(connection, this);
 				break;
 			case TEXCOORDLIST:
-				CacheTable textureParamHeapView = dbTempTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
-				CacheTable linearRingHeapView = dbTempTableManager.getCacheTable(CacheTableModelEnum.LINEAR_RING);				
+				CacheTable textureParamHeapView = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
+				CacheTable linearRingHeapView = cacheTableManager.getCacheTable(CacheTableModelEnum.LINEAR_RING);				
 				if (textureParamHeapView != null && linearRingHeapView != null)
 					dbResolver = new XlinkTexCoordList(connection,
 							textureParamHeapView,
@@ -112,7 +112,7 @@ public class DBXlinkResolverManager {
 				dbResolver = new XlinkTextureParam(connection, this);
 				break;
 			case XLINK_TEXTUREASSOCIATION:
-				CacheTable texAssHeapView = dbTempTableManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION);
+				CacheTable texAssHeapView = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION);
 				if (texAssHeapView != null)
 					dbResolver = new XlinkTextureAssociation(connection, texAssHeapView, this);
 				break;
@@ -129,7 +129,7 @@ public class DBXlinkResolverManager {
 				dbResolver = new XlinkDeprecatedMaterial(connection, this);
 				break;
 			case GROUP_TO_CITYOBJECT:
-				CacheTable groupHeapView = dbTempTableManager.getCacheTable(CacheTableModelEnum.GROUP_TO_CITYOBJECT).getMirrorTable();
+				CacheTable groupHeapView = cacheTableManager.getCacheTable(CacheTableModelEnum.GROUP_TO_CITYOBJECT).getMirrorTable();
 				if (groupHeapView != null)					
 					dbResolver = new XlinkGroupToCityObject(connection, groupHeapView, importFilter, this);
 
@@ -147,11 +147,11 @@ public class DBXlinkResolverManager {
 		return dbSequencer.getDBId(sequence);
 	}
 
-	public GmlIdEntry getDBId(String gmlId, CityGMLClass type) {
+	public UIDCacheEntry getDBId(String gmlId, CityGMLClass type) {
 		return getDBId(gmlId, type, false);
 	}
 
-	public GmlIdEntry getDBId(String gmlId, CityGMLClass type, boolean forceCityObjectDatabaseLookup) {
+	public UIDCacheEntry getDBId(String gmlId, CityGMLClass type, boolean forceCityObjectDatabaseLookup) {
 		return dbGmlIdResolver.getDBId(gmlId, type, forceCityObjectDatabaseLookup);
 	}
 

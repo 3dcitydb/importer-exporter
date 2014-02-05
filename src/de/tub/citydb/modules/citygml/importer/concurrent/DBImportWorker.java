@@ -62,7 +62,7 @@ import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.importer.database.content.DBAppearance;
 import de.tub.citydb.modules.citygml.importer.database.content.DBBuilding;
@@ -100,7 +100,7 @@ public class DBImportWorker implements Worker<CityGML> {
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
-	private final DBGmlIdLookupServerManager lookupServerManager;
+	private final UIDCacheManager uidCacheManager;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 	private final ImportFilter importFilter;
@@ -117,14 +117,14 @@ public class DBImportWorker implements Worker<CityGML> {
 	public DBImportWorker(DatabaseConnectionPool dbConnectionPool,
 			JAXBBuilder jaxbBuilder,
 			WorkerPool<DBXlink> tmpXlinkPool,
-			DBGmlIdLookupServerManager lookupServerManager,
+			UIDCacheManager uidCacheManager,
 			ImportFilter importFilter,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.dbConnectionPool = dbConnectionPool;
 		this.jaxbBuilder = jaxbBuilder;
 		this.tmpXlinkPool = tmpXlinkPool;
-		this.lookupServerManager = lookupServerManager;
+		this.uidCacheManager = uidCacheManager;
 		this.importFilter = importFilter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -155,7 +155,7 @@ public class DBImportWorker implements Worker<CityGML> {
 				jaxbBuilder,
 				config,
 				tmpXlinkPool,
-				lookupServerManager,
+				uidCacheManager,
 				eventDispatcher);
 
 		Integer commitAfterProp = database.getUpdateBatching().getFeatureBatchValue();

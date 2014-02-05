@@ -29,49 +29,7 @@
  */
 package de.tub.citydb.modules.citygml.common.database.gmlid;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-
-import org.citygml4j.model.citygml.CityGMLClass;
-
-public class DBGmlIdLookupServerManager {
-	private final HashMap<DBGmlIdLookupServerEnum, GmlIdLookupServer> serverMap;
-
-	public DBGmlIdLookupServerManager() {
-		serverMap = new HashMap<DBGmlIdLookupServerEnum, GmlIdLookupServer>();
-	}
-
-	public void initServer(
-		DBGmlIdLookupServerEnum serverType,
-		DBCacheModel model,
-		int cacheSize,
-		float drainFactor,
-		int concurrencyLevel) {
-
-		serverMap.put(serverType, new GmlIdLookupServer(
-				model,
-				cacheSize,
-				drainFactor,
-				concurrencyLevel
-		));
-	}
-
-	public GmlIdLookupServer getLookupServer(CityGMLClass type) {
-		DBGmlIdLookupServerEnum lookupServer;
-
-		switch (type) {
-		case ABSTRACT_GML_GEOMETRY:
-			lookupServer = DBGmlIdLookupServerEnum.GEOMETRY;
-			break;
-		default:
-			lookupServer = DBGmlIdLookupServerEnum.FEATURE;
-		}
-
-		return serverMap.get(lookupServer);
-	}
-	
-	public void shutdownAll() throws SQLException {
-		for (GmlIdLookupServer server : serverMap.values())
-			server.shutdown();
-	}
+public enum UIDCacheType {
+	FEATURE,
+	GEOMETRY
 }

@@ -27,42 +27,63 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.system;
+package de.tub.citydb.modules.citygml.common.database.gmlid;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@XmlType(name="GmlIdLookupServerType", propOrder={
-		"feature",
-		"geometry"		
-})
-public class GmlIdLookupServer {
-	@XmlElement(required=true)
-	private GmlIdLookupServerConfig feature;
-	@XmlElement(required=true)
-	private GmlIdLookupServerConfig geometry;
+import org.citygml4j.model.citygml.CityGMLClass;
 
-	public GmlIdLookupServer() {
-		feature = new GmlIdLookupServerConfig();
-		geometry = new GmlIdLookupServerConfig();
+public class UIDCacheEntry {
+	private long id;
+	private long rootId;
+	private boolean reverse;
+	private String mapping;
+	private CityGMLClass type;
+	private AtomicBoolean isRegistered = new AtomicBoolean(false);
+	private AtomicBoolean isRequested = new AtomicBoolean(false);
+
+	public UIDCacheEntry(long id, long rootId, boolean reverse, String mapping, CityGMLClass type) {
+		this.id = id;
+		this.rootId = rootId;
+		this.reverse = reverse;
+		this.mapping = mapping;
+		this.type = type;
 	}
 
-	public GmlIdLookupServerConfig getFeature() {
-		return feature;
+	public long getId() {
+		return id;
 	}
 
-	public void setFeature(GmlIdLookupServerConfig feature) {
-		if (feature != null)
-			this.feature = feature;
+	public long getRootId() {
+		return rootId;
 	}
 
-	public GmlIdLookupServerConfig getGeometry() {
-		return geometry;
+	public boolean isReverse() {
+		return reverse;
 	}
 
-	public void setGeometry(GmlIdLookupServerConfig geometry) {
-		if (geometry != null)
-			this.geometry = geometry;
+	public String getMapping() {
+		return mapping;
+	}
+
+	public boolean isRequested() {
+		return isRequested.get();
+	}
+	
+	protected boolean getAndSetRequested(boolean value) {
+		return isRequested.getAndSet(value);
+	}
+	
+	protected boolean isRegistered() {
+		return isRegistered.get();
+	}
+	
+	protected boolean getAndSetRegistered(boolean value) {
+		return isRegistered.getAndSet(value);
+	}
+	
+	public CityGMLClass getType() {
+		return type;
 	}
 
 }

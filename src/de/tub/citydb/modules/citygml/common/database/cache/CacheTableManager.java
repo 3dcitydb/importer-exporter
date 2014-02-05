@@ -45,7 +45,7 @@ import de.tub.citydb.database.adapter.h2.H2Adapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 
-public class CacheManager {
+public class CacheTableManager {
 	private final Logger LOG = Logger.getInstance();
 	private final AbstractSQLAdapter sqlAdapter;	
 	private final Connection connection;	
@@ -55,7 +55,7 @@ public class CacheManager {
 	private ConcurrentHashMap<CacheTableModelEnum, CacheTable> cacheTables;
 	private ConcurrentHashMap<CacheTableModelEnum, BranchCacheTable> branchCacheTables;
 
-	public CacheManager(DatabaseConnectionPool dbPool, int concurrencyLevel, Config config) throws SQLException, IOException {
+	public CacheTableManager(DatabaseConnectionPool dbPool, int concurrencyLevel, Config config) throws SQLException, IOException {
 		if (config.getProject().getGlobal().getCache().isUseDatabase()) {
 			sqlAdapter = dbPool.getActiveDatabaseAdapter().getSQLAdapter();
 			connection = dbPool.getConnection();

@@ -35,18 +35,18 @@ import java.util.HashMap;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheManager;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 
 public class DBXlinkImporterManager {
-	private final CacheManager dbTempTableManager;
+	private final CacheTableManager cacheTableManager;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final EventDispatcher eventDispatcher;
 	private HashMap<DBXlinkImporterEnum, DBXlinkImporter> dbImporterMap;
 
-	public DBXlinkImporterManager(CacheManager dbTempTableManager, AbstractDatabaseAdapter databaseAdapter, EventDispatcher eventDispatcher) {
-		this.dbTempTableManager = dbTempTableManager;
+	public DBXlinkImporterManager(CacheTableManager cacheTableManager, AbstractDatabaseAdapter databaseAdapter, EventDispatcher eventDispatcher) {
+		this.cacheTableManager = cacheTableManager;
 		this.databaseAdapter = databaseAdapter;
 		this.eventDispatcher = eventDispatcher;
 
@@ -62,31 +62,31 @@ public class DBXlinkImporterManager {
 
 			switch (xlinkType) {
 			case SURFACE_GEOMETRY:
-				tempTable = dbTempTableManager.createCacheTable(CacheTableModelEnum.SURFACE_GEOMETRY);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.SURFACE_GEOMETRY);
 				break;
 			case LINEAR_RING:
-				tempTable = dbTempTableManager.createCacheTable(CacheTableModelEnum.LINEAR_RING);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.LINEAR_RING);
 				break;
 			case XLINK_BASIC:
-				tempTable = dbTempTableManager.createCacheTable(CacheTableModelEnum.BASIC);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.BASIC);
 				break;
 			case XLINK_TEXTUREPARAM:
-				tempTable = dbTempTableManager.createCacheTable(CacheTableModelEnum.TEXTUREPARAM);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTUREPARAM);
 				break;
 			case XLINK_TEXTUREASSOCIATION:
-				tempTable = dbTempTableManager.createCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION);
 				break;
 			case TEXTURE_FILE:
-				tempTable = dbTempTableManager.createCacheTable(CacheTableModelEnum.TEXTURE_FILE);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTURE_FILE);
 				break;
 			case LIBRARY_OBJECT:
-				tempTable = dbTempTableManager.createCacheTable(CacheTableModelEnum.LIBRARY_OBJECT);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.LIBRARY_OBJECT);
 				break;
 			case XLINK_DEPRECATED_MATERIAL:
-				tempTable = dbTempTableManager.createCacheTable(CacheTableModelEnum.DEPRECATED_MATERIAL);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.DEPRECATED_MATERIAL);
 				break;
 			case GROUP_TO_CITYOBJECT:
-				tempTable = dbTempTableManager.createCacheTable(CacheTableModelEnum.GROUP_TO_CITYOBJECT);
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.GROUP_TO_CITYOBJECT);
 				break;
 			}
 

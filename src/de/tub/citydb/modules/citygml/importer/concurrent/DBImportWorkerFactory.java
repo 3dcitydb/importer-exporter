@@ -41,7 +41,7 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.gmlid.DBGmlIdLookupServerManager;
+import de.tub.citydb.modules.citygml.common.database.gmlid.UIDCacheManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.common.filter.ImportFilter;
 
@@ -51,7 +51,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<DBXlink> xlinkWorkerPool;
-	private final DBGmlIdLookupServerManager lookupServerManager;
+	private final UIDCacheManager uidCacheManager;
 	private final ImportFilter importFilter;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -59,14 +59,14 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 	public DBImportWorkerFactory(DatabaseConnectionPool dbConnectionPool,
 			JAXBBuilder jaxbBuilder,
 			WorkerPool<DBXlink> xlinkWorkerPool,
-			DBGmlIdLookupServerManager lookupServerManager,
+			UIDCacheManager uidCacheManager,
 			ImportFilter importFilter,
 			Config config,
 			EventDispatcher eventDispatcher) {
 		this.dbConnectionPool = dbConnectionPool;
 		this.jaxbBuilder = jaxbBuilder;
 		this.xlinkWorkerPool = xlinkWorkerPool;
-		this.lookupServerManager = lookupServerManager;
+		this.uidCacheManager = uidCacheManager;
 		this.importFilter = importFilter;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -80,7 +80,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 			dbWorker = new DBImportWorker(dbConnectionPool,
 					jaxbBuilder,
 					xlinkWorkerPool, 
-					lookupServerManager,
+					uidCacheManager,
 					importFilter,
 					config, 
 					eventDispatcher);

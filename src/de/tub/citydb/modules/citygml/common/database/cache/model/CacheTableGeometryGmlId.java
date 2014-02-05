@@ -32,39 +32,26 @@ package de.tub.citydb.modules.citygml.common.database.cache.model;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
 
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 
 
-public class CacheTableGmlId extends CacheTableModel {
-	private static HashMap<CacheTableModelEnum, CacheTableGmlId> cacheTableMap;
-	private final CacheTableModelEnum type;
+public class CacheTableGeometryGmlId extends CacheTableModel {
+	private static CacheTableGeometryGmlId instance;
 
-	private CacheTableGmlId(CacheTableModelEnum type) {
-		// just to thwart instantiation
-		this.type = type;
+	private CacheTableGeometryGmlId() {
 	}
 
-	public synchronized static CacheTableGmlId getInstance(CacheTableModelEnum type) {
-		switch (type) {
-		case GMLID_FEATURE:
-		case GMLID_GEOMETRY:
-			break;
-		default:
-			throw new IllegalArgumentException("Unsupported cache table type " + type);
-		}
+	public synchronized static CacheTableGeometryGmlId getInstance() {
+		if (instance == null)
+			instance = new CacheTableGeometryGmlId();
 
-		if (cacheTableMap == null)
-			cacheTableMap = new HashMap<CacheTableModelEnum, CacheTableGmlId>();
-
-		CacheTableGmlId cacheTable = cacheTableMap.get(type);
-		if (cacheTable == null) {
-			cacheTable = new CacheTableGmlId(type);
-			cacheTableMap.put(type, cacheTable);
-		}
-
-		return cacheTable;
+		return instance;
+	}
+	
+	@Override
+	public CacheTableModelEnum getType() {
+		return CacheTableModelEnum.GMLID_GEOMETRY;
 	}
 
 	@Override
@@ -82,11 +69,6 @@ public class CacheTableGmlId extends CacheTableModel {
 				stmt = null;
 			}
 		}
-	}
-
-	@Override
-	public CacheTableModelEnum getType() {
-		return type;
 	}
 
 	@Override
