@@ -157,7 +157,7 @@ public class DBCityObjectGroup implements DBExporter {
 
 					long parentId = rs.getLong("PARENT_CITYOBJECT_ID");
 					if (!rs.wasNull() && parentId != 0) {
-						String gmlId = dbExporterManager.getGmlId(parentId, CityGMLClass.ABSTRACT_CITY_OBJECT);
+						String gmlId = dbExporterManager.getUID(parentId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
 						if (gmlId != null) {
 							CityObjectGroupParent parent = new CityObjectGroupParent();
@@ -171,7 +171,7 @@ public class DBCityObjectGroup implements DBExporter {
 
 				long groupMemberId = rs.getLong("CITYOBJECT_ID");
 				if (!rs.wasNull() && groupMemberId != 0) {
-					String gmlId = dbExporterManager.getGmlId(groupMemberId, CityGMLClass.ABSTRACT_CITY_OBJECT);
+					String gmlId = dbExporterManager.getUID(groupMemberId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
 					if (gmlId != null) {
 						CityObjectGroupMember groupMember = new CityObjectGroupMember();

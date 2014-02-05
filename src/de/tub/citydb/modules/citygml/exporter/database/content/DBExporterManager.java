@@ -219,18 +219,18 @@ public class DBExporterManager {
 			return false;
 	}
 
-	public void putGmlId(String gmlId, long id, long rootId, boolean reverse, String mapping, CityGMLClass type) {
+	public void putUID(String gmlId, long id, long rootId, boolean reverse, String mapping, CityGMLClass type) {
 		UIDCache cache = uidCacheManager.getCache(type);
 
 		if (cache != null)
 			cache.put(gmlId, id, rootId, reverse, mapping, type);
 	}
 
-	public void putGmlId(String gmlId, long id, CityGMLClass type) {
-		putGmlId(gmlId, id, -1, false, null, type);
+	public void putUID(String gmlId, long id, CityGMLClass type) {
+		putUID(gmlId, id, -1, false, null, type);
 	}
 
-	public String getGmlId(long id, CityGMLClass type) {
+	public String getUID(long id, CityGMLClass type) {
 		UIDCache cache = uidCacheManager.getCache(type);
 
 		if (cache != null)

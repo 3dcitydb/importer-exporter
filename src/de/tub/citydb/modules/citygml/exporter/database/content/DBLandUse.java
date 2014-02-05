@@ -158,7 +158,7 @@ public class DBLandUse implements DBExporter {
 			}
 
 			if (landUse.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
-				dbExporterManager.putGmlId(landUse.getId(), landUseId, landUse.getCityGMLClass());
+				dbExporterManager.putUID(landUse.getId(), landUseId, landUse.getCityGMLClass());
 			dbExporterManager.print(landUse);
 			return true;
 		} finally {

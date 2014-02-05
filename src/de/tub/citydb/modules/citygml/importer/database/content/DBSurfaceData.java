@@ -58,7 +58,6 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParamEnum;
 import de.tub.citydb.modules.citygml.importer.util.LocalTextureCoordinatesResolver;
@@ -76,6 +75,7 @@ public class DBSurfaceData implements DBImporter {
 	private PreparedStatement psParaTex;
 	private PreparedStatement psGeoTex;
 	private DBTextureParam textureParamImporter;
+	private DBTexImage textureImageImporter;
 	private DBAppearToSurfaceData appearToSurfaceDataImporter;
 	private LocalTextureCoordinatesResolver localTexCoordResolver;
 
@@ -111,18 +111,19 @@ public class DBSurfaceData implements DBImporter {
 
 		StringBuilder paraStmt = new StringBuilder()
 		.append("insert into SURFACE_DATA (ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, OBJECTCLASS_ID, ")
-		.append("TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("TEX_IMAGE_ID, TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psParaTex = batchConn.prepareStatement(paraStmt.toString());
 
 		StringBuilder geoStmt = new StringBuilder()
 		.append("insert into SURFACE_DATA (ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, OBJECTCLASS_ID, ")
-		.append("TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR, ")
+		.append("TEX_IMAGE_ID, TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR, ")
 		.append("GT_PREFER_WORLDFILE, GT_ORIENTATION, GT_REFERENCE_POINT) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psGeoTex = batchConn.prepareStatement(geoStmt.toString());
 
 		textureParamImporter = (DBTextureParam)dbImporterManager.getDBImporter(DBImporterEnum.TEXTURE_PARAM);
+		textureImageImporter = (DBTexImage)dbImporterManager.getDBImporter(DBImporterEnum.TEX_IMAGE);
 		appearToSurfaceDataImporter = (DBAppearToSurfaceData)dbImporterManager.getDBImporter(DBImporterEnum.APPEAR_TO_SURFACE_DATA);
 		localTexCoordResolver = dbImporterManager.getLocalTextureCoordinatesResolver();
 	}
@@ -157,13 +158,13 @@ public class DBSurfaceData implements DBImporter {
 
 			// mapping entry
 			if (abstractSurfData.isSetId())
-				dbImporterManager.putGmlId(abstractSurfData.getId(), surfaceDataId, -1, false, gmlId, abstractSurfData.getCityGMLClass());
+				dbImporterManager.putUID(abstractSurfData.getId(), surfaceDataId, -1, false, gmlId, abstractSurfData.getCityGMLClass());
 
 			abstractSurfData.setId(gmlId);
 
 		} else {
 			if (abstractSurfData.isSetId())
-				dbImporterManager.putGmlId(abstractSurfData.getId(), surfaceDataId, abstractSurfData.getCityGMLClass());
+				dbImporterManager.putUID(abstractSurfData.getId(), surfaceDataId, abstractSurfData.getCityGMLClass());
 			else
 				abstractSurfData.setId(DefaultGMLIdManager.getInstance().generateUUID());
 		}
@@ -287,45 +288,29 @@ public class DBSurfaceData implements DBImporter {
 			AbstractTexture absTex = (AbstractTexture)abstractSurfData;
 
 			// handle texture image
-			if (importTextureImage && absTex.isSetImageURI()) {
-				String imageURI = absTex.getImageURI().trim();
-				String mimeType = null;
-				String codeSpace = null;
+			long texImageId = 0;
+			if (importTextureImage && absTex.isSetImageURI())
+				texImageId = textureImageImporter.insert(absTex, surfaceDataId);
 
-				if (absTex.isSetMimeType()) {
-					mimeType = absTex.getMimeType().getValue();
-					codeSpace = absTex.getMimeType().getCodeSpace();
-				}
-
-				DBXlinkTextureFile xlink = new DBXlinkTextureFile(
-						surfaceDataId,
-						imageURI,
-						mimeType,
-						codeSpace
-						);
-
-				// do we have a world file?!
-				if (absTex.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE &&
-						!((GeoreferencedTexture)absTex).isSetOrientation() && !((GeoreferencedTexture)absTex).isSetReferencePoint())
-					xlink.setHasWorldFile(true);
-
-				dbImporterManager.propagateXlink(xlink);
-			}
-
-			if (absTex.isSetTextureType())
-				psSurfaceData.setString(8, absTex.getTextureType().getValue());
+			if (texImageId != 0)
+				psSurfaceData.setLong(8, texImageId);
 			else
-				psSurfaceData.setNull(8, Types.VARCHAR);
-
-			if (absTex.isSetWrapMode())
-				psSurfaceData.setString(9, absTex.getWrapMode().getValue());
+				psSurfaceData.setNull(8, Types.NULL);			
+			
+			if (absTex.isSetTextureType())
+				psSurfaceData.setString(9, absTex.getTextureType().getValue());
 			else
 				psSurfaceData.setNull(9, Types.VARCHAR);
 
-			if (absTex.isSetBorderColor())
-				psSurfaceData.setString(10, Util.collection2string(absTex.getBorderColor().toList(), " "));
+			if (absTex.isSetWrapMode())
+				psSurfaceData.setString(10, absTex.getWrapMode().getValue());
 			else
 				psSurfaceData.setNull(10, Types.VARCHAR);
+
+			if (absTex.isSetBorderColor())
+				psSurfaceData.setString(11, Util.collection2string(absTex.getBorderColor().toList(), " "));
+			else
+				psSurfaceData.setNull(11, Types.VARCHAR);
 
 			// ParameterizedTexture
 			if (abstractSurfData.getCityGMLClass() == CityGMLClass.PARAMETERIZED_TEXTURE) {
@@ -524,18 +509,18 @@ public class DBSurfaceData implements DBImporter {
 				GeoreferencedTexture geoTex = (GeoreferencedTexture)abstractSurfData;
 
 				if (geoTex.isSetPreferWorldFile() && !geoTex.getPreferWorldFile())
-					psSurfaceData.setInt(11, 0);
+					psSurfaceData.setInt(12, 0);
 				else
-					psSurfaceData.setInt(11, 1);
+					psSurfaceData.setInt(12, 1);
 
 				if (geoTex.isSetOrientation()) {
 					Matrix orientation = geoTex.getOrientation().getMatrix();
 					if (affineTransformation)
 						orientation = dbImporterManager.getAffineTransformer().transformGeoreferencedTextureOrientation(orientation);
 
-					psSurfaceData.setString(12, Util.collection2string(orientation.toRowPackedList(), " "));
+					psSurfaceData.setString(13, Util.collection2string(orientation.toRowPackedList(), " "));
 				} else
-					psSurfaceData.setNull(12, Types.VARCHAR);
+					psSurfaceData.setNull(13, Types.VARCHAR);
 
 				GeometryObject geom = null;
 				if (geoTex.isSetReferencePoint()) {
@@ -561,9 +546,9 @@ public class DBSurfaceData implements DBImporter {
 				}
 
 				if (geom != null)
-					psSurfaceData.setObject(13, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geom, batchConn));
+					psSurfaceData.setObject(14, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geom, batchConn));
 				else
-					psSurfaceData.setNull(13, nullGeometryType, nullGeometryTypeName);
+					psSurfaceData.setNull(14, nullGeometryType, nullGeometryTypeName);
 
 				psSurfaceData.addBatch();
 				if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())

@@ -241,7 +241,7 @@ public class DBCityFurniture implements DBExporter {
 			}
 
 			if (cityFurniture.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
-				dbExporterManager.putGmlId(cityFurniture.getId(), cityFurnitureId, cityFurniture.getCityGMLClass());
+				dbExporterManager.putUID(cityFurniture.getId(), cityFurnitureId, cityFurniture.getCityGMLClass());
 			dbExporterManager.print(cityFurniture);
 			return true;
 		} finally {

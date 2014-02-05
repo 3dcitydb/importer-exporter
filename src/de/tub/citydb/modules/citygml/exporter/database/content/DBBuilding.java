@@ -512,7 +512,7 @@ public class DBBuilding implements DBExporter {
 		}
 
 		if (abstractBuilding.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
-			dbExporterManager.putGmlId(abstractBuilding.getId(), buildingNode.id, abstractBuilding.getCityGMLClass());
+			dbExporterManager.putUID(abstractBuilding.getId(), buildingNode.id, abstractBuilding.getCityGMLClass());
 
 		return abstractBuilding;
 	}

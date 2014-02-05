@@ -49,6 +49,7 @@ import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModel
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableSurfaceGeometry;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableTextureAssociation;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableTextureFile;
+import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableTextureFileId;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableTextureParam;
 
 public class CacheTable extends AbstractCacheTable {	
@@ -73,6 +74,9 @@ public class CacheTable extends AbstractCacheTable {
 			break;
 		case TEXTURE_FILE:
 			this.model = CacheTableTextureFile.getInstance();
+			break;
+		case TEXTURE_FILE_ID:
+			this.model = CacheTableTextureFileId.getInstance();
 			break;
 		case LIBRARY_OBJECT:
 			this.model = CacheTableLibraryObject.getInstance();

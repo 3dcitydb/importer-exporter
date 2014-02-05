@@ -418,7 +418,7 @@ public class DBReliefFeature implements DBExporter {
 			}
 
 			if (reliefFeature.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
-				dbExporterManager.putGmlId(reliefFeature.getId(), reliefFeatureId, reliefFeature.getCityGMLClass());
+				dbExporterManager.putUID(reliefFeature.getId(), reliefFeatureId, reliefFeature.getCityGMLClass());
 			dbExporterManager.print(reliefFeature);
 			return true;
 		} finally {

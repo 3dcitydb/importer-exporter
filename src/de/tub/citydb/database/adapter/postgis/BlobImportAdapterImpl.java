@@ -7,17 +7,23 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import de.tub.citydb.database.adapter.BlobImportAdapter;
+import de.tub.citydb.database.adapter.TextureImageImportAdapter;
+import de.tub.citydb.database.adapter.postgis.SQLAdapter.BlobType;
 import de.tub.citydb.log.Logger;
 
-public class BlobImportAdapterImpl implements BlobImportAdapter {
+public class BlobImportAdapterImpl implements TextureImageImportAdapter, BlobImportAdapter {
 	protected final Logger LOG = Logger.getInstance();
 	protected final Connection connection;
 
 	private PreparedStatement psUpdate;
+	private BlobType blobType;
 
-	protected BlobImportAdapterImpl(Connection connection) throws SQLException {
+	protected BlobImportAdapterImpl(Connection connection, BlobType blobType) throws SQLException {
 		this.connection = connection;
-		psUpdate = connection.prepareStatement("update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=? where ID=?");
+		this.blobType = blobType;
+
+		psUpdate = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
+				"update TEX_IMAGE set TEX_IMAGE=? where ID=?" : "update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=? where ID=?");
 	}
 
 	@Override
@@ -29,10 +35,10 @@ public class BlobImportAdapterImpl implements BlobImportAdapter {
 
 			return true;
 		} catch (IOException e) {
-			LOG.error("Failed to read library object file '" + fileName + "': " + e.getMessage());
+			LOG.error("Failed to read " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file '" + fileName + "': " + e.getMessage());
 			return false;
 		} catch (SQLException e) {
-			LOG.error("SQL error while importing library object file '" + fileName + "': " + e.getMessage());
+			LOG.error("SQL error while importing " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file '" + fileName + "': " + e.getMessage());
 			return false;
 		}
 	}

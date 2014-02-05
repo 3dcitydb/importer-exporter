@@ -301,7 +301,7 @@ public class DBAddress implements DBImporter {
 
 			// enable xlinks
 			if (address.isSetId())
-				dbImporterManager.putGmlId(address.getId(), addressId, address.getCityGMLClass());
+				dbImporterManager.putUID(address.getId(), addressId, address.getCityGMLClass());
 		} else
 			addressId = 0;		
 

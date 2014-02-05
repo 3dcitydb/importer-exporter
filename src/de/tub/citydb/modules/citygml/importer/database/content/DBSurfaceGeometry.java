@@ -309,7 +309,7 @@ public class DBSurfaceGeometry implements DBImporter {
 				Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geomObj, batchConn);
 
 				if (origGmlId != null && !isCopy)
-					dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+					dbImporterManager.putUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 				psGeomElem.setLong(1, surfaceGeometryId);
 				psGeomElem.setString(2, gmlId);
@@ -503,7 +503,7 @@ public class DBSurfaceGeometry implements DBImporter {
 						Object obj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geomObj, batchConn);
 
 						if (origGmlId != null && !isCopy)
-							dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+							dbImporterManager.putUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 						psGeomElem.setLong(1, surfaceGeometryId);
 						psGeomElem.setString(2, gmlId);
@@ -605,7 +605,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 				// do mapping
 				if (origGmlId != null && !isCopy)
-					dbImporterManager.putGmlId(origGmlId, -1, -1, negativeOrientation, mapping, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+					dbImporterManager.putUID(origGmlId, -1, -1, negativeOrientation, mapping, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 			}
 		}
 
@@ -636,7 +636,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 					// do mapping
 					if (origGmlId != null && !isCopy)
-						dbImporterManager.putGmlId(origGmlId, -1, -1, negativeOrientation, targetURI, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+						dbImporterManager.putUID(origGmlId, -1, -1, negativeOrientation, targetURI, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 					switch (abstractSurface.getGMLClass()) {
 					case _TEXTURED_SURFACE:
@@ -689,7 +689,7 @@ public class DBSurfaceGeometry implements DBImporter {
 
 						// do mapping
 						if (origGmlId != null && !isCopy)
-							dbImporterManager.putGmlId(origGmlId, -1, -1, negativeOrientation, targetURI, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+							dbImporterManager.putUID(origGmlId, -1, -1, negativeOrientation, targetURI, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 						// well, regarding appearances we cannot work on remote geometries so far...				
 						StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
@@ -756,7 +756,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			CompositeSurface compositeSurface = (CompositeSurface)surfaceGeometry;
 
 			if (origGmlId != null && !isCopy)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+				dbImporterManager.putUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psGeomElem.setLong(1, surfaceGeometryId);
@@ -833,7 +833,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			Surface surface = (Surface)surfaceGeometry;
 
 			if (origGmlId != null && !isCopy)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+				dbImporterManager.putUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psGeomElem.setLong(1, surfaceGeometryId);
@@ -900,7 +900,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			TriangulatedSurface triangulatedSurface = (TriangulatedSurface)surfaceGeometry;
 
 			if (origGmlId != null && !isCopy)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+				dbImporterManager.putUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psGeomElem.setLong(1, surfaceGeometryId);
@@ -951,7 +951,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			Solid solid = (Solid)surfaceGeometry;
 
 			if (origGmlId != null && !isCopy)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+				dbImporterManager.putUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psGeomElem.setLong(1, surfaceGeometryId);
@@ -1024,7 +1024,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			CompositeSolid compositeSolid = (CompositeSolid)surfaceGeometry;
 
 			if (origGmlId != null && !isCopy)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+				dbImporterManager.putUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psGeomElem.setLong(1, surfaceGeometryId);
@@ -1082,7 +1082,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			MultiPolygon multiPolygon = (MultiPolygon)surfaceGeometry;
 
 			if (origGmlId != null && !isCopy)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+				dbImporterManager.putUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psGeomElem.setLong(1, surfaceGeometryId);
@@ -1140,7 +1140,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			MultiSurface multiSurface = (MultiSurface)surfaceGeometry;
 
 			if (origGmlId != null && !isCopy)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+				dbImporterManager.putUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psGeomElem.setLong(1, surfaceGeometryId);
@@ -1242,7 +1242,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			MultiSolid multiSolid = (MultiSolid)surfaceGeometry;
 
 			if (origGmlId != null && !isCopy)
-				dbImporterManager.putGmlId(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
+				dbImporterManager.putUID(origGmlId, surfaceGeometryId, rootId, reverse, gmlId, CityGMLClass.ABSTRACT_GML_GEOMETRY);
 
 			// set root entry
 			psGeomElem.setLong(1, surfaceGeometryId);

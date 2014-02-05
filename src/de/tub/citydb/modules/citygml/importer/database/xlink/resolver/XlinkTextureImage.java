@@ -43,7 +43,6 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.database.adapter.TextureImageImportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
-import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 
@@ -76,55 +75,53 @@ public class XlinkTextureImage implements DBXlinkResolver {
 	}
 
 	public boolean insert(DBXlinkTextureFile xlink) throws SQLException {
-		String imageFileName = xlink.getFileURI();
+		String imageFileURL = xlink.getFileURI();
 		InputStream imageStream = null;
 		boolean success = true;
 
 		try {
-			if (!xlink.isTextureAtlas()) {
-				try {
-					URL imageURL = new URL(imageFileName);
-					imageFileName = imageURL.toString();
-					imageStream = imageURL.openStream();
-				} catch (MalformedURLException malURL) {
-					if (replacePathSeparator)
-						imageFileName = imageFileName.replace("\\", "/");
+			try {
+				URL tmp = new URL(imageFileURL);
+				imageFileURL = tmp.toString();
+				imageStream = tmp.openStream();
+			} catch (MalformedURLException malURL) {
+				if (replacePathSeparator)
+					imageFileURL = imageFileURL.replace("\\", "/");
 
-					File imageFile = new File(imageFileName);
-					if (!imageFile.isAbsolute()) {
-						imageFileName = localPath + File.separator + imageFile.getPath();
-						imageFile = new File(imageFileName);
-					}
-
-					// check minimum requirements for local texture files
-					if (!imageFile.exists() || !imageFile.isFile() || !imageFile.canRead()) {
-						LOG.error("Failed to read texture file '" + imageFileName + "'.");
-						return false;
-					} else if (imageFile.length() == 0) {
-						LOG.error("Skipping 0 byte texture file '" + imageFileName + "'.");
-						return false;
-					}
-
-					imageStream = new FileInputStream(imageFileName);
+				File imageFile = new File(imageFileURL);
+				if (!imageFile.isAbsolute()) {
+					imageFileURL = localPath + File.separator + imageFile.getPath();
+					imageFile = new File(imageFileURL);
 				}
 
-				if (imageStream != null) {
-					LOG.debug("Importing texture file: " + imageFileName);
-//					success = textureImportAdapter.insert(xlink.getId(), imageStream, imageFileName);
-					resolverManager.propagateEvent(counter);
+				// check minimum requirements for local texture files
+				if (!imageFile.exists() || !imageFile.isFile() || !imageFile.canRead()) {
+					LOG.error("Failed to read texture file '" + imageFileURL + "'.");
+					return false;
+				} else if (imageFile.length() == 0) {
+					LOG.error("Skipping 0 byte texture file '" + imageFileURL + "'.");
+					return false;
 				}
+
+				imageStream = new FileInputStream(imageFileURL);
 			}
-			
+
+			if (imageStream != null) {
+				LOG.debug("Importing texture file: " + imageFileURL);
+				success = textureImportAdapter.insert(xlink.getId(), imageStream, imageFileURL);
+				resolverManager.propagateEvent(counter);
+			}
+
 			if (success) {
 				//
 			}
 
 			return success;
 		} catch (FileNotFoundException e) {
-			LOG.error("Failed to find texture file '" + imageFileName + "'.");
+			LOG.error("Failed to find texture file '" + imageFileURL + "'.");
 			return false;
 		} catch (IOException e) {
-			LOG.error("Failed to read texture file '" + imageFileName + "': " + e.getMessage());
+			LOG.error("Failed to read texture file '" + imageFileURL + "': " + e.getMessage());
 			return false;
 		} finally {
 			if (imageStream != null) {

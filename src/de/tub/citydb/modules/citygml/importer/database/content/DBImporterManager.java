@@ -180,6 +180,9 @@ public class DBImporterManager {
 			case TEXTURE_PARAM:
 				dbImporter = new DBTextureParam(batchConn, this);
 				break;
+			case TEX_IMAGE:
+				dbImporter = new DBTexImage(batchConn, config, this);
+				break;
 			case DEPRECATED_MATERIAL_MODEL:
 				dbImporter = new DBDeprecatedMaterialModel(config, this);
 				break;
@@ -235,17 +238,17 @@ public class DBImporterManager {
 		return dbSequencer.getDBId(sequence);
 	}
 
-	public void putGmlId(String gmlId, long id, long rootId, boolean reverse, String mapping, CityGMLClass type) {
+	public void putUID(String gmlId, long id, long rootId, boolean reverse, String mapping, CityGMLClass type) {
 		UIDCache cache = uidCacheManager.getCache(type);
 		if (cache != null)
 			cache.put(gmlId, id, rootId, reverse, mapping, type);
 	}
 
-	public void putGmlId(String gmlId, long id, CityGMLClass type) {
-		putGmlId(gmlId, id, -1, false, null, type);
+	public void putUID(String gmlId, long id, CityGMLClass type) {
+		putUID(gmlId, id, -1, false, null, type);
 	}
 	
-	public boolean lookupAndPutGmlId(String gmlId, long id, CityGMLClass type) {
+	public boolean lookupAndPutUID(String gmlId, long id, CityGMLClass type) {
 		UIDCache cache = uidCacheManager.getCache(type);
 
 		if (cache != null)

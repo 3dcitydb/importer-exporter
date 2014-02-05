@@ -162,7 +162,7 @@ public class DBCityObject implements DBImporter {
 
 			// mapping entry
 			if (cityObject.isSetId()) {
-				dbImporterManager.putGmlId(cityObject.getId(), cityObjectId, -1, false, gmlId, cityObject.getCityGMLClass());
+				dbImporterManager.putUID(cityObject.getId(), cityObjectId, -1, false, gmlId, cityObject.getCityGMLClass());
 
 				if (rememberGmlId) {	
 					ExternalReference externalReference = new ExternalReference();
@@ -180,7 +180,7 @@ public class DBCityObject implements DBImporter {
 
 		} else {
 			if (cityObject.isSetId())
-				dbImporterManager.putGmlId(cityObject.getId(), cityObjectId, cityObject.getCityGMLClass());
+				dbImporterManager.putUID(cityObject.getId(), cityObjectId, cityObject.getCityGMLClass());
 			else
 				cityObject.setId(DefaultGMLIdManager.getInstance().generateUUID());
 		}

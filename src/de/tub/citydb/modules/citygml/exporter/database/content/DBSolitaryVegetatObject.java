@@ -235,7 +235,7 @@ public class DBSolitaryVegetatObject implements DBExporter {
 			}
 
 			if (solVegObject.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
-				dbExporterManager.putGmlId(solVegObject.getId(), solVegObjectId, solVegObject.getCityGMLClass());
+				dbExporterManager.putUID(solVegObject.getId(), solVegObjectId, solVegObject.getCityGMLClass());
 			dbExporterManager.print(solVegObject);
 			return true;
 		} finally {

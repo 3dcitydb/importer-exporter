@@ -30,26 +30,22 @@
 package de.tub.citydb.modules.citygml.common.database.xlink;
 
 public class DBXlinkTextureFile implements DBXlink {
-	private long surfaceDataId;
+	private long id;
 	private String fileURI;
-	private String mimeType;
-	private String mimeTypeCodeSpace;
-	private boolean hasWorldFile;
-	private boolean isTextureAtlas;
+	private boolean isWorldFile;
 
-	public DBXlinkTextureFile(long surfaceDataId, String fileURI, String mimeType, String mimeTypeCodeSpace) {
-		this.surfaceDataId = surfaceDataId;
+	public DBXlinkTextureFile(long id, String fileURI, boolean isWorldFile) {
+		this.id = id;
 		this.fileURI = fileURI;
-		this.mimeType = mimeType;
-		this.mimeTypeCodeSpace = mimeTypeCodeSpace;
+		this.isWorldFile = isWorldFile;
 	}
 
-	public long getSurfaceDataId() {
-		return surfaceDataId;
+	public long getId() {
+		return id;
 	}
 
-	public void setSurfaceDataId(long surfaceDataId) {
-		this.surfaceDataId = surfaceDataId;
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	public String getFileURI() {
@@ -60,36 +56,12 @@ public class DBXlinkTextureFile implements DBXlink {
 		this.fileURI = fileURI;
 	}
 
-	public String getMimeType() {
-		return mimeType;
+	public boolean isWorldFile() {
+		return isWorldFile;
 	}
 
-	public void setMimeType(String mimeType) {
-		this.mimeType = mimeType;
-	}
-
-	public String getMimeTypeCodeSpace() {
-		return mimeTypeCodeSpace;
-	}
-
-	public void setMimeTypeCodeSpace(String mimeTypeCodeSpace) {
-		this.mimeTypeCodeSpace = mimeTypeCodeSpace;
-	}
-
-	public boolean hasWorldFile() {
-		return hasWorldFile;
-	}
-
-	public void setHasWorldFile(boolean hasWorldFile) {
-		this.hasWorldFile = hasWorldFile;
-	}
-	
-	public boolean isTextureAtlas() {
-		return isTextureAtlas;
-	}
-
-	public void setTextureAtlas(boolean isTextureAtlas) {
-		this.isTextureAtlas = isTextureAtlas;
+	public void setWorldFile(boolean isWorldFile) {
+		this.isWorldFile = isWorldFile;
 	}
 
 	@Override

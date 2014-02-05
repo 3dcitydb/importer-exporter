@@ -345,7 +345,7 @@ public class DBGenericCityObject implements DBExporter {
 			}
 
 			if (genericCityObject.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
-				dbExporterManager.putGmlId(genericCityObject.getId(), genericCityObjectId, genericCityObject.getCityGMLClass());
+				dbExporterManager.putUID(genericCityObject.getId(), genericCityObjectId, genericCityObject.getCityGMLClass());
 			dbExporterManager.print(genericCityObject);
 			return true;
 		} finally {

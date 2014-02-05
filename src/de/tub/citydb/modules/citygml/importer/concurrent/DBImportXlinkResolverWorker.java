@@ -275,17 +275,20 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 							success = xlinkTextureParam.insert(textureParam);
 
 						break;
+					case UNDEFINED:
+						// nothing to do
 					}
 
 					break;
 
 				case TEXTURE_FILE:
 					DBXlinkTextureFile externalFile = (DBXlinkTextureFile)work;
-					XlinkTextureImage xlinkTextureImage = (XlinkTextureImage)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXTURE_IMAGE);
-					if (xlinkTextureImage != null)
-						xlinkTextureImage.insert(externalFile);
 
-					if (externalFile.hasWorldFile()) {
+					if (!externalFile.isWorldFile()) {
+						XlinkTextureImage xlinkTextureImage = (XlinkTextureImage)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXTURE_IMAGE);
+						if (xlinkTextureImage != null)
+							xlinkTextureImage.insert(externalFile);
+					} else {
 						XlinkWorldFile xlinkWorldFile = (XlinkWorldFile)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.WORLD_FILE);
 						if (xlinkWorldFile != null)
 							xlinkWorldFile.insert(externalFile);

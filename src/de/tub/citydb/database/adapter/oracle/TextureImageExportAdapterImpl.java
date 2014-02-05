@@ -30,7 +30,7 @@ public class TextureImageExportAdapterImpl implements TextureImageExportAdapter 
 
 		try {
 			if (psExport == null)
-				psExport = connection.prepareStatement("select TEX_IMAGE from SURFACE_DATA where ID=?");
+				psExport = connection.prepareStatement("select TEX_IMAGE from TEX_IMAGE where ID=?");
 
 			// try and read texture image attribute from SURFACE_DATA table
 			psExport.setLong(1, id);

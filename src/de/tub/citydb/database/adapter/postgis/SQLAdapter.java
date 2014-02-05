@@ -13,6 +13,11 @@ import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
 
 public class SQLAdapter extends AbstractSQLAdapter {
 
+	protected enum BlobType {
+		TEXTURE_IMAGE,
+		LIBRARY_OBJECT
+	}
+	
 	@Override
 	public String getInteger() {
 		return "INTEGER";
@@ -161,22 +166,22 @@ public class SQLAdapter extends AbstractSQLAdapter {
 
 	@Override
 	public TextureImageImportAdapter getTextureImageImportAdapter(Connection connection) throws SQLException {
-		return new TextureImageImportAdapterImpl(connection);
+		return new BlobImportAdapterImpl(connection, BlobType.TEXTURE_IMAGE);
 	}
 
 	@Override
 	public TextureImageExportAdapter getTextureImageExportAdapter(Connection connection) {
-		return new TextureImageExportAdapterImpl(connection);
+		return new BlobExportAdapterImpl(connection, BlobType.TEXTURE_IMAGE);
 	}
 
 	@Override
 	public BlobImportAdapter getBlobImportAdapter(Connection connection) throws SQLException {
-		return new BlobImportAdapterImpl(connection);
+		return new BlobImportAdapterImpl(connection, BlobType.LIBRARY_OBJECT);
 	}
 
 	@Override
 	public BlobExportAdapter getBlobExportAdapter(Connection connection) {
-		return new BlobExportAdapterImpl(connection);
+		return new BlobExportAdapterImpl(connection, BlobType.LIBRARY_OBJECT);
 	}
 
 }

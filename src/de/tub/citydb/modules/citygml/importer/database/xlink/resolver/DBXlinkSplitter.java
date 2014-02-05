@@ -39,8 +39,8 @@ import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -342,30 +342,16 @@ public class DBXlinkSplitter {
 				int current = 0;
 				
 				stmt = temporaryTable.getConnection().createStatement();
-				rs = stmt.executeQuery("select * from " + temporaryTable.getTableName() + " order by FILE_URI");
+				rs = stmt.executeQuery("select * from " + temporaryTable.getTableName());
 
-				String previousImageURI = null;
 				while (rs.next() && shouldRun) {
 					eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
 					
 					long id = rs.getLong("ID");
 					String imageURI = rs.getString("FILE_URI");
-					String mimeType = rs.getString("MIME_TYPE");
-					String codeSpace = rs.getString("MIME_TYPE_CODESPACE");
-					boolean hasWorldFile = rs.getBoolean("HAS_WORLD_FILE");
+					boolean isWorldFile = rs.getBoolean("IS_WORLD_FILE");
 
-					DBXlinkTextureFile xlink = new DBXlinkTextureFile(
-							id,
-							imageURI,
-							mimeType,
-							codeSpace
-							);
-					
-					xlink.setHasWorldFile(hasWorldFile);
-					xlink.setTextureAtlas(imageURI.equals(previousImageURI));
-					xlinkResolverPool.addWork(xlink);
-					
-					previousImageURI = imageURI;
+					xlinkResolverPool.addWork(new DBXlinkTextureFile(id, imageURI, isWorldFile));
 				}
 
 				rs.close();

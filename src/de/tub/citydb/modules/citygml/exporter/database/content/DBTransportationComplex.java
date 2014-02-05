@@ -323,7 +323,7 @@ public class DBTransportationComplex implements DBExporter {
 			}
 
 			if (transComplex.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
-				dbExporterManager.putGmlId(transComplex.getId(), transComplexId, transComplex.getCityGMLClass());
+				dbExporterManager.putUID(transComplex.getId(), transComplexId, transComplex.getCityGMLClass());
 			dbExporterManager.print(transComplex);
 			return true;
 		} finally {

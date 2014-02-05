@@ -182,7 +182,7 @@ public class DBPlantCover implements DBExporter {
 			}
 
 			if (plantCover.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
-				dbExporterManager.putGmlId(plantCover.getId(), plantCoverId, plantCover.getCityGMLClass());
+				dbExporterManager.putUID(plantCover.getId(), plantCoverId, plantCover.getCityGMLClass());
 			dbExporterManager.print(plantCover);
 			return true;
 		} finally {

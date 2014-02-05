@@ -367,7 +367,7 @@ public class DBWaterBody implements DBExporter {
 			}
 
 			if (waterBody.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
-				dbExporterManager.putGmlId(waterBody.getId(), waterBodyId, waterBody.getCityGMLClass());
+				dbExporterManager.putUID(waterBody.getId(), waterBodyId, waterBody.getCityGMLClass());
 			dbExporterManager.print(waterBody);
 			return true;
 		} finally {

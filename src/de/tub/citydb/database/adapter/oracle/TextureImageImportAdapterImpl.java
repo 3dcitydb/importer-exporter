@@ -22,9 +22,9 @@ public class TextureImageImportAdapterImpl implements TextureImageImportAdapter 
 
 	protected TextureImageImportAdapterImpl(Connection connection) throws SQLException {
 		this.connection = connection;
-		psPrepare = connection.prepareStatement("update SURFACE_DATA set TEX_IMAGE=ordimage.init() where ID=?");
-		psSelect = connection.prepareStatement("select TEX_IMAGE from SURFACE_DATA where ID=? for update");
-		psInsert = (OraclePreparedStatement)connection.prepareStatement("update SURFACE_DATA set TEX_IMAGE=? where ID=?");
+		psPrepare = connection.prepareStatement("update TEX_IMAGE set TEX_IMAGE=ordimage.init() where ID=?");
+		psSelect = connection.prepareStatement("select TEX_IMAGE from TEX_IMAGE where ID=? for update");
+		psInsert = (OraclePreparedStatement)connection.prepareStatement("update TEX_IMAGE set TEX_IMAGE=? where ID=?");
 	}
 
 	@Override

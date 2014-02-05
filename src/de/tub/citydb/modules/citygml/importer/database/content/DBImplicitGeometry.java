@@ -137,7 +137,7 @@ public class DBImplicitGeometry implements DBImporter {
 				++batchCounter;
 
 				if (gmlId != null)
-					dbImporterManager.putGmlId(gmlId, implicitGeometryId, CityGMLClass.ABSTRACT_CITY_OBJECT);
+					dbImporterManager.putUID(gmlId, implicitGeometryId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
 				dbImporterManager.updateFeatureCounter(CityGMLClass.IMPLICIT_GEOMETRY);
 			}
@@ -178,6 +178,7 @@ public class DBImplicitGeometry implements DBImporter {
 			if (batchCounter > 0) {
 				dbImporterManager.executeBatch(DBImporterEnum.IMPLICIT_GEOMETRY);
 				batchConn.commit();
+				batchCounter = 0;
 			}
 
 		} finally {
@@ -194,7 +195,7 @@ public class DBImplicitGeometry implements DBImporter {
 			lock.unlock();
 		}
 
-		if (isXLink && !dbImporterManager.lookupAndPutGmlId("#xlink#" + gmlId, 1, CityGMLClass.IMPLICIT_GEOMETRY)) {
+		if (isXLink && !dbImporterManager.lookupAndPutUID("#xlink#" + gmlId, 1, CityGMLClass.IMPLICIT_GEOMETRY)) {
 			dbImporterManager.propagateXlink(new DBXlinkSurfaceGeometry(
 					gmlId, 
 					implicitGeometryId, 

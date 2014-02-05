@@ -101,13 +101,13 @@ public class DBAppearance implements DBImporter {
 
 			// mapping entry
 			if (appearance.isSetId())
-				dbImporterManager.putGmlId(appearance.getId(), appearanceId, -1, false, gmlId, appearance.getCityGMLClass());
+				dbImporterManager.putUID(appearance.getId(), appearanceId, -1, false, gmlId, appearance.getCityGMLClass());
 
 			appearance.setId(gmlId);
 
 		} else {
 			if (appearance.isSetId())
-				dbImporterManager.putGmlId(appearance.getId(), appearanceId, appearance.getCityGMLClass());
+				dbImporterManager.putUID(appearance.getId(), appearanceId, appearance.getCityGMLClass());
 			else
 				appearance.setId(DefaultGMLIdManager.getInstance().generateUUID());
 		}
