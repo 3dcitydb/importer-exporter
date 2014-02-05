@@ -27,7 +27,7 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.modules.citygml.exporter.database.gmlid;
+package de.tub.citydb.modules.citygml.exporter.database.uid;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
