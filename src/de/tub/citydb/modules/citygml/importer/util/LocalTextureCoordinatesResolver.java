@@ -7,11 +7,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.util.Util;
 
 public class LocalTextureCoordinatesResolver {
 	private final HashMap<Long, ParameterizedTextureTarget> textureObjects;
 	private final HashMap<String, LinearRingTarget> rings;
+	
 	private HashSet<ParameterizedTextureTarget> targets;
 	private boolean isActive;
 
@@ -99,8 +101,8 @@ public class LocalTextureCoordinatesResolver {
 				ring.clearTextureCoordinates();
 		}
 
-		public String compileTextureCoordinates() {
-			StringBuilder builder = new StringBuilder();
+		public GeometryObject compileTextureCoordinates() {			
+			double[][] coordinates = new double[targetRings.size()][];
 			
 			for (int i = 0; i < targetRings.size(); i++) {
 				LinearRingTarget ring = targetRings.get(i);
@@ -110,14 +112,16 @@ public class LocalTextureCoordinatesResolver {
 					if (isReverse)
 						textureCoordinates = reverseTextureCoordinates(textureCoordinates);
 					
-					builder.append(textureCoordinates);
+					List<Double> tmp = Util.string2double(textureCoordinates, "\\s+");
+					coordinates[i] = new double[tmp.size()];
+					for (int j = 0; j < tmp.size(); j++)
+						coordinates[i][j] = tmp.get(j);
+				} else {
+					// PROBLEM
 				}
-				
-				if (i < targetRings.size() - 1)
-					builder.append(";");
 			}
 			
-			return builder.toString();
+			return GeometryObject.createPolygon(coordinates, 2, 0);
 		}
 		
 		public long getSurfaceGeometryId() {

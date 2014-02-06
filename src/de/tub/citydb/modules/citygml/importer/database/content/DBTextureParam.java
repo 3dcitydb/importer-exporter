@@ -36,6 +36,7 @@ import java.sql.Types;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.importer.util.LocalTextureCoordinatesResolver.ParameterizedTextureTarget;
 import de.tub.citydb.util.Util;
@@ -63,10 +64,10 @@ public class DBTextureParam implements DBImporter {
 	}
 
 	public void insert(ParameterizedTextureTarget target, String texGmlId, long surfaceDataId) throws SQLException {
-		String texCoord = target.compileTextureCoordinates();
+		GeometryObject texCoord = target.compileTextureCoordinates();
 		
 		// sanity checks for texture coordinates
-		if (texCoord.length() > 4000) {
+		if (texCoord == null) {
 			StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 					CityGMLClass.PARAMETERIZED_TEXTURE, 
 					texGmlId));
@@ -75,25 +76,11 @@ public class DBTextureParam implements DBImporter {
 			LOG.error(msg.toString());
 			return;
 		}
-			
-		if (texCoord.contains(";;") || texCoord.endsWith(";")) {
-			String[] tokens = texCoord.split(";", -1);
-			for (int i = 0; i < tokens.length; i++) {
-				if (tokens[i].length() == 0) {
-					StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-							CityGMLClass.PARAMETERIZED_TEXTURE, 
-							texGmlId));
-
-					msg.append("Missing texture coordinates for target ring '" + target.getRingId(i) + "'.");
-					LOG.warn(msg.toString());
-				}
-			}			
-		}
 		
 		psTextureParam.setLong(1, target.getSurfaceGeometryId());
 		psTextureParam.setInt(2, 1);
 		psTextureParam.setNull(3, Types.VARCHAR);
-		psTextureParam.setString(4, target.compileTextureCoordinates());
+		psTextureParam.setObject(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(texCoord, batchConn));
 		psTextureParam.setLong(5, surfaceDataId);
 		
 		addBatch();

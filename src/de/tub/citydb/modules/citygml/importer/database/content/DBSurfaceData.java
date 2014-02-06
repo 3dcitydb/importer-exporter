@@ -417,7 +417,28 @@ public class DBSurfaceData implements DBImporter {
 										LOG.debug(msg.toString());
 										continue;
 									}
+									
+									
+									// prüfen, ob alle resolved werden können
+									// 1) wenn ja, dann versichen geometryobject zu bauen
+									// 2) wenn nein, alle später auflösen
+									
+									
+									
+									
+									// check for minimum number of texture coordinates
+									if (texCoord.getValue().size() < 8) {
+										while (texCoord.getValue().size() < 8)
+											texCoord.addValue(0.0);
+										
+										StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+												abstractSurfData.getCityGMLClass(), 
+												abstractSurfData.getId()));
 
+										msg.append(": Less than four texture coordinates found. Adding 0.0 to fix this.");
+										LOG.error(msg.toString());
+									}
+ 
 									// check for even number of texture coordinates
 									if ((texCoord.getValue().size() & 1) == 1) {
 										texCoord.addValue(0.0);
@@ -431,17 +452,6 @@ public class DBSurfaceData implements DBImporter {
 									}
 
 									String coords = Util.collection2string(texCoord.getValue(), " ");
-
-									// check for texture coordinates exceeding 4000 characters
-									if (coords.length() > 4000) {
-										StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-												abstractSurfData.getCityGMLClass(), 
-												abstractSurfData.getId()));
-
-										msg.append(": Texture coordinates for ring '").append(ringId).append("' exceed 4000 characters and will not be imported.");
-										LOG.error(msg.toString());
-										continue;
-									}
 
 									boolean isResolved = false;
 									if (isLocalAppearance) {

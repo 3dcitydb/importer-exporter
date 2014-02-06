@@ -172,10 +172,9 @@ public class DBCityFurniture implements DBImporter {
 				multiCurveProperty.unsetMultiCurve();
 			}
 
-			if (multiLine != null) {
-				Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-				psCityFurniture.setObject(8 + i, multiLineObj);
-			} else
+			if (multiLine != null)
+				psCityFurniture.setObject(8 + i, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn));
+			else
 				psCityFurniture.setNull(8 + i, nullGeometryType, nullGeometryTypeName);
 		}
 
