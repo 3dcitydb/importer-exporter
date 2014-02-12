@@ -30,11 +30,11 @@
 package de.tub.citydb.modules.citygml.importer.database.xlink.importer;
 
 public enum DBXlinkImporterEnum {
-	LINEAR_RING,
 	SURFACE_GEOMETRY,
 	XLINK_BASIC,
 	XLINK_TEXTUREPARAM,
 	XLINK_TEXTUREASSOCIATION,
+	SURFACE_DATA_TO_TEX_IMAGE,
 	TEXTURE_FILE,
 	LIBRARY_OBJECT,
 	XLINK_DEPRECATED_MATERIAL,

@@ -40,14 +40,14 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
-import de.tub.citydb.database.adapter.AbstractSQLAdapter;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.h2.H2Adapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 
 public class CacheTableManager {
 	private final Logger LOG = Logger.getInstance();
-	private final AbstractSQLAdapter sqlAdapter;	
+	private final AbstractDatabaseAdapter databaseAdapter;	
 	private final Connection connection;	
 
 	private String cacheDir;
@@ -57,7 +57,7 @@ public class CacheTableManager {
 
 	public CacheTableManager(DatabaseConnectionPool dbPool, int concurrencyLevel, Config config) throws SQLException, IOException {
 		if (config.getProject().getGlobal().getCache().isUseDatabase()) {
-			sqlAdapter = dbPool.getActiveDatabaseAdapter().getSQLAdapter();
+			databaseAdapter = dbPool.getActiveDatabaseAdapter();
 			connection = dbPool.getConnection();
 		}
 
@@ -65,17 +65,16 @@ public class CacheTableManager {
 			File tempDir = checkTempDir(config.getProject().getGlobal().getCache().getLocalCachePath());
 			LOG.debug("Local cache directory is '" + tempDir.getAbsolutePath() + "'.");
 
-			H2Adapter h2Adapter = new H2Adapter();
-			sqlAdapter = h2Adapter.getSQLAdapter();
+			databaseAdapter = new H2Adapter();
 
 			try {
-				Class.forName(h2Adapter.getConnectionFactoryClassName());
+				Class.forName(databaseAdapter.getConnectionFactoryClassName());
 			} catch (ClassNotFoundException e) {
 				throw new SQLException(e);
 			}
 
 			cacheDir = tempDir.getAbsolutePath() + File.separator + DefaultGMLIdManager.getInstance().generateUUID("");		
-			connection = DriverManager.getConnection(h2Adapter.getJDBCUrl(cacheDir + File.separator + "tmp", -1, null), "sa", "");			
+			connection = DriverManager.getConnection(databaseAdapter.getJDBCUrl(cacheDir + File.separator + "tmp", -1, null), "sa", "");			
 		}
 
 		connection.setAutoCommit(false);
@@ -84,6 +83,10 @@ public class CacheTableManager {
 		branchCacheTables = new ConcurrentHashMap<CacheTableModelEnum, BranchCacheTable>(CacheTableModelEnum.values().length, 0.75f, concurrencyLevel);
 	}
 
+	public AbstractDatabaseAdapter getDatabaseAdapter() {
+		return databaseAdapter;
+	}
+	
 	public CacheTable createCacheTable(CacheTableModelEnum model) throws SQLException {
 		CacheTable cacheTable = getOrCreateCacheTable(model);		
 		if (!cacheTable.isCreated())
@@ -162,7 +165,7 @@ public class CacheTableManager {
 	private CacheTable getOrCreateCacheTable(CacheTableModelEnum model) {
 		CacheTable cacheTable = cacheTables.get(model);
 		if (cacheTable == null) {
-			CacheTable tmp = new CacheTable(model, connection, sqlAdapter);
+			CacheTable tmp = new CacheTable(model, connection, databaseAdapter.getSQLAdapter());
 			cacheTable = cacheTables.putIfAbsent(model, tmp);
 			if (cacheTable == null)
 				cacheTable = tmp;
@@ -174,7 +177,7 @@ public class CacheTableManager {
 	private BranchCacheTable gerOrCreateBranchCacheTable(CacheTableModelEnum model) {
 		BranchCacheTable branchCacheTable = branchCacheTables.get(model);
 		if (branchCacheTable == null) {
-			BranchCacheTable tmp = new BranchCacheTable(model, connection, sqlAdapter);
+			BranchCacheTable tmp = new BranchCacheTable(model, connection, databaseAdapter.getSQLAdapter());
 			branchCacheTable = branchCacheTables.putIfAbsent(model, tmp);
 			if (branchCacheTable == null)
 				branchCacheTable = tmp;

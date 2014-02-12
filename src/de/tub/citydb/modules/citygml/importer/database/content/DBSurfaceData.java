@@ -57,11 +57,12 @@ import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParamEnum;
 import de.tub.citydb.modules.citygml.importer.util.LocalTextureCoordinatesResolver;
-import de.tub.citydb.modules.citygml.importer.util.LocalTextureCoordinatesResolver.ParameterizedTextureTarget;
+import de.tub.citydb.modules.citygml.importer.util.LocalTextureCoordinatesResolver.SurfaceGeometryTarget;
 import de.tub.citydb.util.Util;
 
 public class DBSurfaceData implements DBImporter {
@@ -111,15 +112,15 @@ public class DBSurfaceData implements DBImporter {
 
 		StringBuilder paraStmt = new StringBuilder()
 		.append("insert into SURFACE_DATA (ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, OBJECTCLASS_ID, ")
-		.append("TEX_IMAGE_ID, TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR) values ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psParaTex = batchConn.prepareStatement(paraStmt.toString());
 
 		StringBuilder geoStmt = new StringBuilder()
 		.append("insert into SURFACE_DATA (ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, OBJECTCLASS_ID, ")
-		.append("TEX_IMAGE_ID, TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR, ")
+		.append("TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR, ")
 		.append("GT_PREFER_WORLDFILE, GT_ORIENTATION, GT_REFERENCE_POINT) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psGeoTex = batchConn.prepareStatement(geoStmt.toString());
 
 		textureParamImporter = (DBTextureParam)dbImporterManager.getDBImporter(DBImporterEnum.TEXTURE_PARAM);
@@ -202,6 +203,7 @@ public class DBSurfaceData implements DBImporter {
 		psSurfaceData.setInt(7, Util.cityObject2classId(abstractSurfData.getCityGMLClass()));
 
 		// fill other columns depending on the type
+		String featureSignature = Util.getFeatureSignature(abstractSurfData.getCityGMLClass(), abstractSurfData.getId());
 		if (abstractSurfData.getCityGMLClass() == CityGMLClass.X3D_MATERIAL) {
 			X3DMaterial material = (X3DMaterial)abstractSurfData;
 
@@ -257,19 +259,14 @@ public class DBSurfaceData implements DBImporter {
 				dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
 			if (material.isSetTarget()) {
-				HashSet<String> targets = new HashSet<String>(material.getTarget().size());
+				HashSet<String> duplicateTargets = new HashSet<String>(material.getTarget().size());
 
 				for (String target : material.getTarget()) {
 					if (target != null && target.length() != 0) {
 
 						// check for duplicate targets
-						if (!targets.add(target.replaceAll("^#", ""))) {
-							StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-									abstractSurfData.getCityGMLClass(), 
-									abstractSurfData.getId()));
-
-							msg.append(": Skipping duplicate target '" + target + "'.");
-							LOG.debug(msg.toString());
+						if (!duplicateTargets.add(target.replaceAll("^#", ""))) {
+							LOG.debug(new StringBuilder(featureSignature).append(": Skipping duplicate target '").append(target).append("'.").toString());
 							continue;
 						}
 
@@ -279,8 +276,6 @@ public class DBSurfaceData implements DBImporter {
 								DBXlinkTextureParamEnum.X3DMATERIAL));
 					}
 				}
-
-				targets.clear();
 			}
 		}
 
@@ -289,28 +284,30 @@ public class DBSurfaceData implements DBImporter {
 
 			// handle texture image
 			long texImageId = 0;
-			if (importTextureImage && absTex.isSetImageURI())
+			if (importTextureImage && absTex.isSetImageURI()) {
 				texImageId = textureImageImporter.insert(absTex, surfaceDataId);
 
-			if (texImageId != 0)
-				psSurfaceData.setLong(8, texImageId);
-			else
-				psSurfaceData.setNull(8, Types.NULL);			
-			
+				if (texImageId != 0) {
+					dbImporterManager.propagateXlink(new DBXlinkSurfaceDataToTexImage(
+							surfaceDataId, 
+							texImageId));
+				}
+			}
+
 			if (absTex.isSetTextureType())
-				psSurfaceData.setString(9, absTex.getTextureType().getValue());
+				psSurfaceData.setString(8, absTex.getTextureType().getValue());
+			else
+				psSurfaceData.setNull(8, Types.VARCHAR);
+
+			if (absTex.isSetWrapMode())
+				psSurfaceData.setString(9, absTex.getWrapMode().getValue());
 			else
 				psSurfaceData.setNull(9, Types.VARCHAR);
 
-			if (absTex.isSetWrapMode())
-				psSurfaceData.setString(10, absTex.getWrapMode().getValue());
+			if (absTex.isSetBorderColor())
+				psSurfaceData.setString(10, Util.collection2string(absTex.getBorderColor().toList(), " "));
 			else
 				psSurfaceData.setNull(10, Types.VARCHAR);
-
-			if (absTex.isSetBorderColor())
-				psSurfaceData.setString(11, Util.collection2string(absTex.getBorderColor().toList(), " "));
-			else
-				psSurfaceData.setNull(11, Types.VARCHAR);
 
 			// ParameterizedTexture
 			if (abstractSurfData.getCityGMLClass() == CityGMLClass.PARAMETERIZED_TEXTURE) {
@@ -320,8 +317,7 @@ public class DBSurfaceData implements DBImporter {
 
 				ParameterizedTexture paraTex = (ParameterizedTexture)abstractSurfData;
 				if (paraTex.isSetTarget()) {
-					HashSet<String> targetURIs = new HashSet<String>(paraTex.getTarget().size());
-					long targetId = 0;
+					HashSet<String> duplicateTargets = new HashSet<String>(paraTex.getTarget().size());
 
 					for (TextureAssociation target : paraTex.getTarget()) {
 						String targetURI = target.getUri();
@@ -329,25 +325,14 @@ public class DBSurfaceData implements DBImporter {
 							continue;
 
 						// check for duplicate targets
-						if (!targetURIs.add(targetURI.replaceAll("^#", ""))) {
-							StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-									abstractSurfData.getCityGMLClass(), 
-									abstractSurfData.getId()));
-
-							msg.append(": Skipping duplicate target '" + targetURI + "'.");
-							LOG.debug(msg.toString());
+						if (!duplicateTargets.add(targetURI.replaceAll("^#", ""))) {
+							LOG.debug(new StringBuilder(featureSignature).append(": Skipping duplicate target '").append(targetURI).append("'.").toString());
 							continue;
 						}
 
 						if (target.isSetTextureParameterization()) {
 							AbstractTextureParameterization texPara = target.getTextureParameterization();
 							String texParamGmlId = texPara.getId();
-
-							// the texture parameterization might be referenced by an xlink 
-							// remember the database ids of its targets in this case
-							HashSet<Long> surfaceGeometryIds = null;
-							if (texParamGmlId != null && isLocalAppearance)
-								surfaceGeometryIds = new HashSet<Long>();
 
 							if (texPara.getCityGMLClass() == CityGMLClass.TEX_COORD_GEN) {
 								TexCoordGen texCoordGen = (TexCoordGen)texPara;
@@ -397,93 +382,90 @@ public class DBSurfaceData implements DBImporter {
 								if (!texCoordList.isSetTextureCoordinates())
 									continue;
 
-								HashSet<String> rings = new HashSet<String>(texCoordList.getTextureCoordinates().size());
-								targetId++;
-
+								int texCoordId = 0;
+								
 								for (TextureCoordinates texCoord : texCoordList.getTextureCoordinates()) {
 									String ring = texCoord.getRing();
-									if (ring == null || ring.length() == 0 || !texCoord.isSetValue())
+									if (ring == null || ring.length() == 0 || !texCoord.isSetValue()) {
 										continue;
+									}
 
 									String ringId = ring.replaceAll("^#", "");
-
-									// check for duplicate rings
-									if (!rings.add(ringId)) {
-										StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-												abstractSurfData.getCityGMLClass(), 
-												abstractSurfData.getId()));
-
-										msg.append(": Skipping duplicate target ring '" + ring + "'.");
-										LOG.debug(msg.toString());
+									
+									// check for duplicate references to the same geometry object
+									if (!duplicateTargets.add(ringId)) {
+										LOG.debug(new StringBuilder(featureSignature).append(": Skipping duplicate target ring '").append(ringId).append("'.").toString());
 										continue;
 									}
-									
-									
-									// prüfen, ob alle resolved werden können
-									// 1) wenn ja, dann versichen geometryobject zu bauen
-									// 2) wenn nein, alle später auflösen
-									
-									
-									
-									
+
 									// check for minimum number of texture coordinates
 									if (texCoord.getValue().size() < 8) {
-										while (texCoord.getValue().size() < 8)
-											texCoord.addValue(0.0);
-										
-										StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-												abstractSurfData.getCityGMLClass(), 
-												abstractSurfData.getId()));
-
-										msg.append(": Less than four texture coordinates found. Adding 0.0 to fix this.");
-										LOG.error(msg.toString());
+										LOG.error(new StringBuilder(featureSignature).append(": Less than four texture coordinates for ring '").append(ringId).append("'.").toString());										
+										continue;
 									}
- 
+
 									// check for even number of texture coordinates
 									if ((texCoord.getValue().size() & 1) == 1) {
-										texCoord.addValue(0.0);
-
-										StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-												abstractSurfData.getCityGMLClass(), 
-												abstractSurfData.getId()));
-
-										msg.append(": Odd number of texture coordinates found. Adding 0.0 to fix this.");
-										LOG.error(msg.toString());
+										LOG.error(new StringBuilder(featureSignature).append(": Odd number of texture coordinates for ring '").append(ringId).append("'.").toString());										
+										continue;
 									}
 
-									String coords = Util.collection2string(texCoord.getValue(), " ");
+									// fix unclosed texture coordinates
+									int nrOfCoord = texCoord.getValue().size();
+									if (!texCoord.getValue().get(0).equals(texCoord.getValue().get(nrOfCoord - 2)) ||
+											!texCoord.getValue().get(1).equals(texCoord.getValue().get(nrOfCoord - 1))) {
+										texCoord.getValue().add(texCoord.getValue().get(0));
+										texCoord.getValue().add(texCoord.getValue().get(1));
+										LOG.debug(new StringBuilder(featureSignature).append(": Fixed unclosed texture coordinates for ring '").append(ringId).append("'.").toString());										
+									}
 
 									boolean isResolved = false;
 									if (isLocalAppearance) {
-										// announce texture coordinates to local appearance resolver
-										isResolved = localTexCoordResolver.setTextureCoordinates(ringId, coords);
+										// announce texture coordinates to local appearance resolver. this will return false
+										// in case there is no corresponding linear ring
+										isResolved = localTexCoordResolver.setTextureCoordinates(ringId, texCoord.getValue());
+									}
 
-										if (isResolved && texParamGmlId != null) {
-											// make sure xlinks to this texture parameterization can be resolved
-											long surfaceGeometryId = localTexCoordResolver.getSurfaceGeometryId(ringId);
-											if (surfaceGeometryIds.add(surfaceGeometryId))											
-												dbImporterManager.propagateXlink(new DBXlinkTextureAssociation(
-														surfaceDataId,
-														surfaceGeometryId,
-														texParamGmlId));
-										}
-									} 
-
-									if (!isResolved) {													
-										// send target information to tmp file
+									if (!isResolved) {
+										// in case of a global appearance or lacking information for resolving
+										// a local appearance, we send the target information to the cache
+										double[] coordinates = new double[texCoord.getValue().size()];
+										for (int i = 0; i < texCoord.getValue().size(); i++)
+											coordinates[i] = texCoord.getValue().get(i);
+											
 										DBXlinkTextureParam xlink = new DBXlinkTextureParam(
 												surfaceDataId,
-												ring,
+												targetURI,
 												DBXlinkTextureParamEnum.TEXCOORDLIST);
 
 										xlink.setTextureParameterization(true);
 										xlink.setTexParamGmlId(texParamGmlId);
-										xlink.setTextureCoord(coords);
-										xlink.setTargetURI(targetURI);
-										xlink.setTexCoordListId(surfaceDataId + "_" + targetId);
-
-										//										dbImporterManager.propagateXlink(xlink);
+										xlink.setTextureCoord(GeometryObject.createPolygon(coordinates, 2, 0));
+										xlink.setTextureCoordId(texCoordId++);
+										
+										dbImporterManager.propagateXlink(xlink);	
 									}
+								}
+
+								if (isLocalAppearance) {
+									for (SurfaceGeometryTarget tmp : localTexCoordResolver.getLocalContext()) {
+										if (!tmp.isComplete()) {
+											LOG.error(new StringBuilder(featureSignature).append(": Not all rings in target geometry '").append(targetURI).append("' receive texture coordinates. Skipping target.").toString());										
+											continue;
+										}
+
+										textureParamImporter.insert(tmp, surfaceDataId);
+
+										// make sure xlinks to this texture parameterization can be resolved
+										if (texParamGmlId != null) {
+											dbImporterManager.propagateXlink(new DBXlinkTextureAssociation(
+													surfaceDataId,
+													tmp.getSurfaceGeometryId(),
+													texParamGmlId));
+										}
+									}
+
+									localTexCoordResolver.clearLocalContext();
 								}
 							}
 
@@ -502,15 +484,6 @@ public class DBSurfaceData implements DBImporter {
 							}
 						}
 					}
-
-					if (isLocalAppearance) {
-						for (ParameterizedTextureTarget target : localTexCoordResolver.getTargets())
-							textureParamImporter.insert(target, paraTex.getId(), surfaceDataId);
-
-						localTexCoordResolver.clearLocalContext();
-					}
-
-					targetURIs.clear();
 				}
 			}
 
@@ -519,18 +492,18 @@ public class DBSurfaceData implements DBImporter {
 				GeoreferencedTexture geoTex = (GeoreferencedTexture)abstractSurfData;
 
 				if (geoTex.isSetPreferWorldFile() && !geoTex.getPreferWorldFile())
-					psSurfaceData.setInt(12, 0);
+					psSurfaceData.setInt(11, 0);
 				else
-					psSurfaceData.setInt(12, 1);
+					psSurfaceData.setInt(11, 1);
 
 				if (geoTex.isSetOrientation()) {
 					Matrix orientation = geoTex.getOrientation().getMatrix();
 					if (affineTransformation)
 						orientation = dbImporterManager.getAffineTransformer().transformGeoreferencedTextureOrientation(orientation);
 
-					psSurfaceData.setString(13, Util.collection2string(orientation.toRowPackedList(), " "));
+					psSurfaceData.setString(12, Util.collection2string(orientation.toRowPackedList(), " "));
 				} else
-					psSurfaceData.setNull(13, Types.VARCHAR);
+					psSurfaceData.setNull(12, Types.VARCHAR);
 
 				GeometryObject geom = null;
 				if (geoTex.isSetReferencePoint()) {
@@ -556,28 +529,23 @@ public class DBSurfaceData implements DBImporter {
 				}
 
 				if (geom != null)
-					psSurfaceData.setObject(14, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geom, batchConn));
+					psSurfaceData.setObject(13, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geom, batchConn));
 				else
-					psSurfaceData.setNull(14, nullGeometryType, nullGeometryTypeName);
+					psSurfaceData.setNull(13, nullGeometryType, nullGeometryTypeName);
 
 				psSurfaceData.addBatch();
 				if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 					dbImporterManager.executeBatch(DBImporterEnum.SURFACE_DATA);
 
 				if (geoTex.isSetTarget()) {
-					HashSet<String> targets = new HashSet<String>(geoTex.getTarget().size());
+					HashSet<String> duplicateTargets = new HashSet<String>(geoTex.getTarget().size());
 
 					for (String target : geoTex.getTarget()) {
 						if (target != null && target.length() != 0) {
 
 							// check for duplicate targets
-							if (!targets.add(target.replaceAll("^#", ""))) {
-								StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-										abstractSurfData.getCityGMLClass(), 
-										abstractSurfData.getId()));
-
-								msg.append(": Skipping duplicate target '" + target + "'.");
-								LOG.debug(msg.toString());
+							if (!duplicateTargets.add(target.replaceAll("^#", ""))) {
+								LOG.debug(new StringBuilder(featureSignature).append(": Skipping duplicate target '").append(target).append("'.").toString());
 								continue;
 							}
 
@@ -599,8 +567,6 @@ public class DBSurfaceData implements DBImporter {
 							}
 						}
 					}
-
-					targets.clear();
 				}
 			}
 		}

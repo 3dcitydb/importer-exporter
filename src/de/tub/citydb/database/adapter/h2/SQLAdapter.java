@@ -70,6 +70,11 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
+	public String getPolygon2D() {
+		return "GEOMETRY";
+	}
+
+	@Override
 	public String getCreateUnloggedTable(String tableName, String columns) {
 		StringBuilder builder = new StringBuilder()
 		.append("create table ")

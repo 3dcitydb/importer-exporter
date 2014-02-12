@@ -50,9 +50,10 @@ public class DBXlinkImporterBasic implements DBXlinkImporter {
 	}
 
 	private void init() throws SQLException {
-		psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() + 
-			" (ID, FROM_TABLE, GMLID, TO_TABLE, ATTRNAME) values " +
-			"(?, ?, ?, ?, ?)");
+		psXlink = tempTable.getConnection().prepareStatement(new StringBuilder()
+		.append("insert into ").append(tempTable.getTableName())
+		.append(" (ID, FROM_TABLE, GMLID, TO_TABLE, ATTRNAME) values ")
+		.append("(?, ?, ?, ?, ?)").toString());
 	}
 
 	public boolean insert(DBXlinkBasic xlinkEntry) throws SQLException {
@@ -67,7 +68,7 @@ public class DBXlinkImporterBasic implements DBXlinkImporter {
 			psXlink.setNull(5, Types.VARCHAR);
 
 		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())
+		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
 			executeBatch();
 
 		return true;

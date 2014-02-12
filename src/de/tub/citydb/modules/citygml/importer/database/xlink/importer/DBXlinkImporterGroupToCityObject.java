@@ -61,7 +61,7 @@ public class DBXlinkImporterGroupToCityObject implements DBXlinkImporter {
 		psXlink.setString(4, xlinkEntry.getRole());
 
 		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())
+		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
 			executeBatch();
 
 		return true;

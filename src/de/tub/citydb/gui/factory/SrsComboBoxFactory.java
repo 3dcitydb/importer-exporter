@@ -124,9 +124,10 @@ public class SrsComboBoxFactory {
 		private boolean showOnlySupported;
 		private boolean showOnlySameDimension;
 
+		@SuppressWarnings("unchecked")
 		private SrsComboBox(boolean onlyShowSupported) {
 			this.showOnlySupported = onlyShowSupported;
-			setRenderer(new SrsComboBoxRenderer(this, getRenderer()));
+			setRenderer(new SrsComboBoxRenderer(this, (ListCellRenderer<DatabaseSrs>)getRenderer()));
 
 			ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);
 		}
@@ -235,18 +236,18 @@ public class SrsComboBoxFactory {
 		}
 	}
 
-	private class SrsComboBoxRenderer implements ListCellRenderer {
+	private class SrsComboBoxRenderer implements ListCellRenderer<DatabaseSrs> {
 		final SrsComboBox box;
-		final ListCellRenderer renderer;
+		final ListCellRenderer<DatabaseSrs> renderer;
 
-		public SrsComboBoxRenderer(SrsComboBox box, ListCellRenderer renderer) {
+		public SrsComboBoxRenderer(SrsComboBox box, ListCellRenderer<DatabaseSrs> renderer) {
 			this.box = box;
 			this.renderer = renderer;
 		}
 
 		@Override
-		public Component getListCellRendererComponent(JList list, 
-				Object value, 
+		public Component getListCellRendererComponent(JList<? extends DatabaseSrs> list, 
+				DatabaseSrs value, 
 				int index, 
 				boolean isSelected, 
 				boolean cellHasFocus) {

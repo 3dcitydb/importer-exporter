@@ -111,8 +111,8 @@ public class ImportPanel extends JPanel implements EventHandler {
 	private final ImpExpGui mainView;
 	private final DatabaseConnectionPool dbPool;
 
-	private JList fileList;
-	private DefaultListModel fileListModel;
+	private JList<String> fileList;
+	private DefaultListModel<String> fileListModel;
 	private JButton browseButton;
 	private JButton removeButton;
 	private JButton importButton;
@@ -135,7 +135,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 	}
 
 	private void initGui() {
-		fileList = new JList();		
+		fileList = new JList<String>();		
 		browseButton = new JButton();
 		removeButton = new JButton();
 		filterPanel = new FilterPanel(config, FilterPanelType.IMPORT);
@@ -145,7 +145,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 		DropCutCopyPasteHandler handler = new DropCutCopyPasteHandler();
 
-		fileListModel = new DefaultListModel();
+		fileListModel = new DefaultListModel<String>();
 		fileList.setModel(fileListModel);
 		fileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		fileList.setTransferHandler(handler);

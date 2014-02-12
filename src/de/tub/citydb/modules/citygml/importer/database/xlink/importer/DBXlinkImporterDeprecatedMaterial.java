@@ -60,7 +60,7 @@ public class DBXlinkImporterDeprecatedMaterial implements DBXlinkImporter {
 		psXlink.setLong(3, xlinkEntry.getSurfaceGeometryId());
 
 		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())
+		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
 			executeBatch();
 
 		return true;

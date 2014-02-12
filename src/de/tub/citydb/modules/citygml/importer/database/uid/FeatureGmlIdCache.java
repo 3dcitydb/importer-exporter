@@ -238,7 +238,7 @@ public class FeatureGmlIdCache implements UIDCachingModel {
 	private void enableIndexesOnCacheTables() throws SQLException {
 		// cache is indexed upon first database lookup
 		for (int i = 0; i < partitions; i++)		
-			backUpTables[i].enableIndexes();		
+			backUpTables[i].createIndexes();		
 
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();

@@ -363,8 +363,8 @@ public class Importer implements EventHandler {
 								new TextureImageCache(cacheTableManager, 
 										10,
 										20),
-										10,
-										80,
+										200000,
+										90,
 										maxThreads);
 					}
 				} catch (SQLException sqlEx) {
@@ -494,6 +494,7 @@ public class Importer implements EventHandler {
 					tmpSplitter = new DBXlinkSplitter(cacheTableManager, 
 							xlinkResolverPool, 
 							tmpXlinkPool,
+							cacheTableManager.getDatabaseAdapter(),
 							eventDispatcher);
 
 					// resolve xlinks

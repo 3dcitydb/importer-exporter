@@ -45,7 +45,7 @@ import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObject;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLinearRing;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
@@ -55,8 +55,8 @@ import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImp
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterEnum;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterGroupToCityObject;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterLibraryObject;
-import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterLinearRing;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterManager;
+import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterSurfaceGeometry;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureAssociation;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureFile;
@@ -83,7 +83,7 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 			Config config, 
 			EventDispatcher eventDispatcher) {
 		this.config = config;
-		dbXlinkManager = new DBXlinkImporterManager(cacheTableManager, dbPool.getActiveDatabaseAdapter(), eventDispatcher);
+		dbXlinkManager = new DBXlinkImporterManager(cacheTableManager, eventDispatcher);
 		
 		init(dbPool);		
 	}
@@ -176,23 +176,13 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 				switch (work.getXlinkType()) {
 				case SURFACE_GEOMETRY:
 					DBXlinkSurfaceGeometry xlinkSurfaceGeometry = (DBXlinkSurfaceGeometry)work;
-
 					DBXlinkImporterSurfaceGeometry dbSurfaceGeometry = (DBXlinkImporterSurfaceGeometry)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.SURFACE_GEOMETRY);
 					if (dbSurfaceGeometry != null)
 						success = dbSurfaceGeometry.insert(xlinkSurfaceGeometry);
 
 					break;
-				case LINEAR_RING:
-					DBXlinkLinearRing xlinkLinearRing = (DBXlinkLinearRing)work;
-
-					DBXlinkImporterLinearRing dbLinearRing = (DBXlinkImporterLinearRing)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.LINEAR_RING);
-					if (dbLinearRing != null)
-						success = dbLinearRing.insert(xlinkLinearRing);
-
-					break;
 				case BASIC:
 					DBXlinkBasic xlinkBasic = (DBXlinkBasic)work;
-
 					DBXlinkImporterBasic dbBasic = (DBXlinkImporterBasic)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_BASIC);
 					if (dbBasic != null)
 						success = dbBasic.insert(xlinkBasic);
@@ -200,7 +190,6 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 					break;
 				case TEXTUREPARAM:
 					DBXlinkTextureParam xlinkAppearance = (DBXlinkTextureParam)work;
-
 					DBXlinkImporterTextureParam dbAppearance = (DBXlinkImporterTextureParam)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_TEXTUREPARAM);
 					if (dbAppearance != null)
 						success = dbAppearance.insert(xlinkAppearance);
@@ -208,7 +197,6 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 					break;
 				case TEXTUREASSOCIATION:
 					DBXlinkTextureAssociation xlinkTextureAssociation = (DBXlinkTextureAssociation)work;
-
 					DBXlinkImporterTextureAssociation dbTexAss = (DBXlinkImporterTextureAssociation)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_TEXTUREASSOCIATION);
 					if (dbTexAss != null)
 						success = dbTexAss.insert(xlinkTextureAssociation);
@@ -216,15 +204,20 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 					break;
 				case TEXTURE_FILE:
 					DBXlinkTextureFile xlinkFile = (DBXlinkTextureFile)work;
-
 					DBXlinkImporterTextureFile dbFile = (DBXlinkImporterTextureFile)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.TEXTURE_FILE);
 					if (dbFile != null)
 						success = dbFile.insert(xlinkFile);
 
 					break;
+				case SURFACE_DATA_TO_TEX_IMAGE:
+					DBXlinkSurfaceDataToTexImage xlinkSurfData = (DBXlinkSurfaceDataToTexImage)work;
+					DBXlinkImporterSurfaceDataToTexImage dbSurfData = (DBXlinkImporterSurfaceDataToTexImage)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.SURFACE_DATA_TO_TEX_IMAGE);
+					if (dbSurfData != null)
+						success = dbSurfData.insert(xlinkSurfData);
+					
+					break;
 				case LIBRARY_OBJECT:
 					DBXlinkLibraryObject xlinkLibraryObject = (DBXlinkLibraryObject)work;
-
 					DBXlinkImporterLibraryObject dbLibraryObject = (DBXlinkImporterLibraryObject)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.LIBRARY_OBJECT);
 					if (dbLibraryObject != null)
 						success = dbLibraryObject.insert(xlinkLibraryObject);
@@ -232,7 +225,6 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 					break;
 				case DEPRECATED_MATERIAL:
 					DBXlinkDeprecatedMaterial xlinkDeprecatedMaterial = (DBXlinkDeprecatedMaterial)work;
-
 					DBXlinkImporterDeprecatedMaterial dbDeprectatedMaterial = (DBXlinkImporterDeprecatedMaterial)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_DEPRECATED_MATERIAL);
 					if (dbDeprectatedMaterial != null)
 						success = dbDeprectatedMaterial.insert(xlinkDeprecatedMaterial);
@@ -240,7 +232,6 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 					break;
 				case GROUP_TO_CITYOBJECT:
 					DBXlinkGroupToCityObject xlinkGroupToCityObject = (DBXlinkGroupToCityObject)work;
-					
 					DBXlinkImporterGroupToCityObject dbGroup = (DBXlinkImporterGroupToCityObject)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.GROUP_TO_CITYOBJECT);
 					if (dbGroup != null)
 						success = dbGroup.insert(xlinkGroupToCityObject);

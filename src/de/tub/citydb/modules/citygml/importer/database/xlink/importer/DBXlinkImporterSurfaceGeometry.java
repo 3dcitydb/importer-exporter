@@ -72,7 +72,7 @@ public class DBXlinkImporterSurfaceGeometry implements DBXlinkImporter {
 		}
 		
 		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())
+		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
 			executeBatch();
 		
 		return true;

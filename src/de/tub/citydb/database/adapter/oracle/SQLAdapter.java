@@ -62,6 +62,11 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	public String getCharacterVarying(int nrOfChars) {
 		return "VARCHAR2(" + nrOfChars + ")";
 	}
+	
+	@Override
+	public String getPolygon2D() {
+		return "MDSYS.SDO_GEOMETRY";
+	}
 
 	@Override
 	public String getCreateUnloggedTable(String tableName, String columns) {

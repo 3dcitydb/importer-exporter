@@ -50,6 +50,7 @@ import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkDeprecatedMate
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObject;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
@@ -60,6 +61,7 @@ import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkBasic
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkDeprecatedMaterial;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkGroupToCityObject;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkLibraryObject;
+import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkTexCoordList;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkTextureAssociation;
@@ -234,21 +236,17 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 				case SURFACE_GEOMETRY:
 					DBXlinkSurfaceGeometry surfaceGeometry = (DBXlinkSurfaceGeometry)work;
 					XlinkSurfaceGeometry xlinkSurfaceGeometry = (XlinkSurfaceGeometry)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.SURFACE_GEOMETRY);
-
 					if (xlinkSurfaceGeometry != null)
 						success = xlinkSurfaceGeometry.insert(surfaceGeometry);
 
 					break;
-
 				case BASIC:
 					DBXlinkBasic basic = (DBXlinkBasic)work;
-
 					XlinkBasic xlinkBasic = (XlinkBasic)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.BASIC);
 					if (xlinkBasic != null)
 						success = xlinkBasic.insert(basic);
 
 					break;
-
 				case TEXTUREPARAM:
 					DBXlinkTextureParam textureParam = (DBXlinkTextureParam)work;
 					DBXlinkTextureParamEnum subType = textureParam.getType();
@@ -260,7 +258,6 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 							success = xlinkTexCoordList.insert(textureParam);
 
 						break;
-
 					case XLINK_TEXTUREASSOCIATION:
 						XlinkTextureAssociation xlinkTextureAssociation = (XlinkTextureAssociation)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.XLINK_TEXTUREASSOCIATION);
 						if (xlinkTextureAssociation != null)
@@ -280,7 +277,6 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 					}
 
 					break;
-
 				case TEXTURE_FILE:
 					DBXlinkTextureFile externalFile = (DBXlinkTextureFile)work;
 
@@ -298,33 +294,36 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 					// a global warning
 					success = true;
 					break;
+				case SURFACE_DATA_TO_TEX_IMAGE:
+					DBXlinkSurfaceDataToTexImage surfData = (DBXlinkSurfaceDataToTexImage)work;
+					XlinkSurfaceDataToTexImage xlinkSurfData = (XlinkSurfaceDataToTexImage)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.SURFACE_DATA_TO_TEX_IMAGE);
+					if (xlinkSurfData != null)
+						success = xlinkSurfData.insert(surfData);
 
+					break;
 				case LIBRARY_OBJECT:
 					DBXlinkLibraryObject libObject = (DBXlinkLibraryObject)work;
 					XlinkLibraryObject xlinkLibraryObject = (XlinkLibraryObject)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.LIBRARY_OBJECT);
-
 					if (xlinkLibraryObject != null)
 						success = xlinkLibraryObject.insert(libObject);
 
 					break;
-
 				case DEPRECATED_MATERIAL:
 					DBXlinkDeprecatedMaterial depMaterial = (DBXlinkDeprecatedMaterial)work;
 					XlinkDeprecatedMaterial xlinkDeprecatedMaterial = (XlinkDeprecatedMaterial)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.XLINK_DEPRECATED_MATERIAL);
-
 					if (xlinkDeprecatedMaterial != null)
 						success = xlinkDeprecatedMaterial.insert(depMaterial);
 
 					break;
-
 				case GROUP_TO_CITYOBJECT:
 					DBXlinkGroupToCityObject groupMember = (DBXlinkGroupToCityObject)work;
 					XlinkGroupToCityObject xlinkGroupToCityObject = (XlinkGroupToCityObject)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.GROUP_TO_CITYOBJECT);
-
 					if (xlinkGroupToCityObject != null)
 						success = xlinkGroupToCityObject.insert(groupMember);
 
 					break;
+				default:
+					return;
 				}
 
 				if (!success) {

@@ -60,7 +60,7 @@ public class DBXlinkImporterTextureFile implements DBXlinkImporter {
 		psXlink.setInt(3, xlinkEntry.isWorldFile() ? 1 : 0);
 
 		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())
+		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
 			executeBatch();
 
 		return true;

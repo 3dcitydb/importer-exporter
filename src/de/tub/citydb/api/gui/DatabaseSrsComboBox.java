@@ -34,7 +34,7 @@ import javax.swing.JComboBox;
 import de.tub.citydb.api.database.DatabaseSrs;
 
 @SuppressWarnings("serial")
-public abstract class DatabaseSrsComboBox extends JComboBox {
+public abstract class DatabaseSrsComboBox extends JComboBox<DatabaseSrs> {
 	
 	public abstract void setShowOnlySameDimension(boolean show);
 	public abstract void setShowOnlySupported(boolean show);
@@ -52,15 +52,13 @@ public abstract class DatabaseSrsComboBox extends JComboBox {
 	}
 	
 	@Override
-	public void addItem(Object anObject) {
-		if (anObject instanceof DatabaseSrs)
-			super.addItem(anObject);
+	public void addItem(DatabaseSrs srs) {
+		super.addItem(srs);
 	}
 
 	@Override
-	public void insertItemAt(Object anObject, int index) {
-		if (anObject instanceof DatabaseSrs)
-			super.insertItemAt(anObject, index);
+	public void insertItemAt(DatabaseSrs srs, int index) {
+		super.insertItemAt(srs, index);
 	}
 	
 }

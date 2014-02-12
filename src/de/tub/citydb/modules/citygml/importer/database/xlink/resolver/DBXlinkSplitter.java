@@ -38,6 +38,7 @@ import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
+import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
@@ -47,6 +48,7 @@ import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObject;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
@@ -60,16 +62,19 @@ public class DBXlinkSplitter {
 	private final CacheTableManager cacheTableManager;
 	private final WorkerPool<DBXlink> xlinkResolverPool;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
+	private final AbstractDatabaseAdapter databaseAdapter;
 	private final EventDispatcher eventDispatcher;
 	private volatile boolean shouldRun = true;
 
 	public DBXlinkSplitter(CacheTableManager cacheTableManager, 
 			WorkerPool<DBXlink> xlinkResolverPool, 
 			WorkerPool<DBXlink> tmpXlinkPool, 
+			AbstractDatabaseAdapter databaseAdapter,
 			EventDispatcher eventDispatcher) {
 		this.cacheTableManager = cacheTableManager;
 		this.xlinkResolverPool = xlinkResolverPool;
 		this.tmpXlinkPool = tmpXlinkPool;
+		this.databaseAdapter = databaseAdapter;
 		this.eventDispatcher = eventDispatcher;
 	}
 
@@ -85,7 +90,7 @@ public class DBXlinkSplitter {
 
 		if (!shouldRun)
 			return;
-		
+
 		// restart xlink worker pools
 		// just to make sure all appearance xlinks have been handled
 		// before starting to work on geometry xlinks
@@ -125,10 +130,10 @@ public class DBXlinkSplitter {
 			LOG.info("Resolving feature XLinks...");
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.basicXLink.msg"), this));
-			
+
 			int max = (int)cacheTable.size();
 			int current = 0;
-			
+
 			stmt = cacheTable.getConnection().createStatement();
 			rs = stmt.executeQuery("select * from " + cacheTable.getTableName());
 
@@ -165,7 +170,7 @@ public class DBXlinkSplitter {
 			}
 		}
 	}
-	
+
 	private void groupMemberXLinks(boolean checkRecursive) throws SQLException {
 		if (!shouldRun)
 			return;
@@ -197,7 +202,7 @@ public class DBXlinkSplitter {
 
 			CacheTable mirrorTable = cacheTable.mirrorAndIndex();
 			cacheTable.truncate();
-			
+
 			stmt = mirrorTable.getConnection().createStatement();
 			rs = stmt.executeQuery("select * from " + mirrorTable.getTableName());
 
@@ -271,13 +276,10 @@ public class DBXlinkSplitter {
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.appXlink.msg"), this));
 
-			// first run: resolve texture param
+			// first step: resolve texture param
 			if (cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTUREPARAM)) {			
 				CacheTable temporaryTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);				
-				temporaryTable.enableIndexes();				
-				
-				if (cacheTableManager.existsCacheTable(CacheTableModelEnum.LINEAR_RING))
-					cacheTableManager.getCacheTable(CacheTableModelEnum.LINEAR_RING).enableIndexes();
+				temporaryTable.createIndexes();				
 
 				int max = (int)temporaryTable.size();
 				int current = 0;
@@ -291,37 +293,31 @@ public class DBXlinkSplitter {
 
 					long id = rs.getLong("ID");
 					String gmlId = rs.getString("GMLID");
-					int appType = rs.getInt("TYPE");
+					DBXlinkTextureParamEnum type = DBXlinkTextureParamEnum.fromInt(rs.getInt("TYPE"));
+					int isTexPara = rs.getInt("IS_TEXTURE_PARAMETERIZATION");
+					String texParamGmlId = rs.getString("TEXPARAM_GMLID");
+					String worldToTexture = rs.getString("WORLD_TO_TEXTURE");
+					String targetURI = rs.getString("TARGET_URI");
+					int texCoordId = rs.getInt("TEXTURE_COORDINATES_ID");
 
+					if (type == DBXlinkTextureParamEnum.TEXCOORDLIST && texCoordId > 0)
+						continue;
+					
 					// set initial context...
 					DBXlinkTextureParam xlink = new DBXlinkTextureParam(
 							id,
 							gmlId,
-							DBXlinkTextureParamEnum.fromInt(appType));
+							type);
 
-					int isTexPara = rs.getInt("IS_TEXTURE_PARAMETERIZATION");
-					if (!rs.wasNull())
-						xlink.setTextureParameterization(isTexPara != 0);
+					xlink.setTextureParameterization(isTexPara != 0);
+					xlink.setTexParamGmlId(texParamGmlId);
+					xlink.setWorldToTexture(worldToTexture);
+					xlink.setTargetURI(targetURI);
+					xlink.setTextureCoordId(texCoordId);
 
-					String texParamGmlId = rs.getString("TEXPARAM_GMLID");
-					if (!rs.wasNull())
-						xlink.setTexParamGmlId(texParamGmlId);
-
-					String worldToTexture = rs.getString("WORLD_TO_TEXTURE");
-					if (!rs.wasNull())
-						xlink.setWorldToTexture(worldToTexture);
-
-					String textureCoord = rs.getString("TEXTURE_COORDINATES");
-					if (!rs.wasNull())
-						xlink.setTextureCoord(textureCoord);
-
-					String targetURI = rs.getString("TARGET_URI");
-					if (!rs.wasNull())
-						xlink.setTargetURI(targetURI);
-
-					String texCoordListId = rs.getString("TEXCOORDLIST_ID");
-					if (!rs.wasNull())
-						xlink.setTexCoordListId(texCoordListId);
+					Object textureCoord = rs.getObject("TEXTURE_COORDINATES");
+					if (!rs.wasNull() && textureCoord != null)
+						xlink.setTextureCoord(databaseAdapter.getGeometryConverter().getPolygon(textureCoord));
 
 					xlinkResolverPool.addWork(xlink);
 				}
@@ -330,28 +326,56 @@ public class DBXlinkSplitter {
 				stmt.close();
 			}
 
-			// second run: import texture images and world files
+			// second step: import texture images and world files
 			if (cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTURE_FILE)) {		
 				LOG.info("Importing texture images...");
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.texImg.msg"), this));
-				
+
 				CacheTable temporaryTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTURE_FILE);
 
 				int max = (int)temporaryTable.size();
 				int current = 0;
-				
+
 				stmt = temporaryTable.getConnection().createStatement();
 				rs = stmt.executeQuery("select * from " + temporaryTable.getTableName());
 
 				while (rs.next() && shouldRun) {
 					eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
-					
+
 					long id = rs.getLong("ID");
 					String imageURI = rs.getString("FILE_URI");
 					boolean isWorldFile = rs.getBoolean("IS_WORLD_FILE");
 
 					xlinkResolverPool.addWork(new DBXlinkTextureFile(id, imageURI, isWorldFile));
+				}
+
+				rs.close();
+				stmt.close();
+			}
+
+			// third step: linking surface data to texture images
+			if (cacheTableManager.existsCacheTable(CacheTableModelEnum.SURFACE_DATA_TO_TEX_IMAGE)) {
+
+				LOG.info("Linking texture images to surface data...");
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.linkTexImg.msg"), this));
+
+				CacheTable temporaryTable = cacheTableManager.getCacheTable(CacheTableModelEnum.SURFACE_DATA_TO_TEX_IMAGE);
+
+				int max = (int)temporaryTable.size();
+				int current = 0;
+
+				stmt = temporaryTable.getConnection().createStatement();
+				rs = stmt.executeQuery("select * from " + temporaryTable.getTableName());
+
+				while (rs.next() && shouldRun) {
+					eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
+
+					long fromId = rs.getLong("FROM_ID");
+					long toId = rs.getLong("TO_ID");
+
+					xlinkResolverPool.addWork(new DBXlinkSurfaceDataToTexImage(fromId, toId));
 				}
 
 				rs.close();
@@ -369,18 +393,18 @@ public class DBXlinkSplitter {
 			if (!shouldRun)
 				return;
 
-			// third run: identifying xlinks to texture association elements...
+			// fourth step: identifying xlinks to texture association elements...
 			if (cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTUREPARAM) && 
 					cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION)) {
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.appXlink.msg"), this));
-				
+
 				CacheTable cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
-				cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION).enableIndexes();
+				cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION).createIndexes();
 
 				int max = (int)cacheTable.size();
 				int current = 0;
-				
+
 				stmt = cacheTable.getConnection().createStatement();
 				rs = stmt.executeQuery("select * from " + cacheTable.getTableName() + " where TYPE=" + DBXlinkTextureParamEnum.XLINK_TEXTUREASSOCIATION.ordinal());
 
@@ -417,7 +441,7 @@ public class DBXlinkSplitter {
 	private void libraryObjectXLinks() throws SQLException {
 		if (!shouldRun)
 			return;
-		
+
 		Statement stmt = null;
 		ResultSet rs = null;
 
@@ -425,14 +449,14 @@ public class DBXlinkSplitter {
 			CacheTable cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.LIBRARY_OBJECT);	
 			if (cacheTable == null)
 				return;
-			
+
 			LOG.info("Importing library objects...");
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.libObj.msg"), this));
-				
+
 			int max = (int)cacheTable.size();
 			int current = 0;
-			
+
 			stmt = cacheTable.getConnection().createStatement();
 			rs = stmt.executeQuery("select * from " + cacheTable.getTableName());
 
@@ -446,7 +470,7 @@ public class DBXlinkSplitter {
 				DBXlinkLibraryObject xlink = new DBXlinkLibraryObject(
 						id,
 						imageURI);
-				
+
 				xlinkResolverPool.addWork(xlink);
 			}
 		} finally {
@@ -461,7 +485,7 @@ public class DBXlinkSplitter {
 			}
 		}
 	}
-	
+
 	private void deprecatedMaterialXlinks() throws SQLException {
 		if (!shouldRun)
 			return;
@@ -477,10 +501,10 @@ public class DBXlinkSplitter {
 			LOG.info("Resolving TexturedSurface XLinks...");
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.depMat.msg"), this));
-			
+
 			int max = (int)cacheTable.size();
 			int current = 0;
-			
+
 			stmt = cacheTable.getConnection().createStatement();
 			rs = stmt.executeQuery("select * from " + cacheTable.getTableName());
 
@@ -540,7 +564,7 @@ public class DBXlinkSplitter {
 
 			int max = (remaining == -1) ? (int)cacheTable.size() : (int)remaining;
 			int current = 0;
-			
+
 			CacheTable mirrorTable = cacheTable.mirrorAndIndex();
 			cacheTable.truncate();
 
@@ -549,7 +573,7 @@ public class DBXlinkSplitter {
 
 			while (rs.next() && shouldRun) {
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
-				
+
 				long id = rs.getLong("ID");
 				long parentId = rs.getLong("PARENT_ID");
 				long rootId = rs.getLong("ROOT_ID");

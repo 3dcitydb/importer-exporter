@@ -34,15 +34,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.citygml4j.model.citygml.CityGMLClass;
-
-import de.tub.citydb.api.geometry.GeometryObject;
-import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.importer.util.LocalTextureCoordinatesResolver.ParameterizedTextureTarget;
-import de.tub.citydb.util.Util;
+import de.tub.citydb.modules.citygml.importer.util.LocalTextureCoordinatesResolver.SurfaceGeometryTarget;
 
 public class DBTextureParam implements DBImporter {
-	private final Logger LOG = Logger.getInstance();
 	private final Connection batchConn;
 	private final DBImporterManager dbImporterManager;
 
@@ -63,49 +57,38 @@ public class DBTextureParam implements DBImporter {
 		psTextureParam = batchConn.prepareStatement(texCoordListStmt.toString());
 	}
 
-	public void insert(ParameterizedTextureTarget target, String texGmlId, long surfaceDataId) throws SQLException {
-		GeometryObject texCoord = target.compileTextureCoordinates();
-		
-		// sanity checks for texture coordinates
-		if (texCoord == null) {
-			StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-					CityGMLClass.PARAMETERIZED_TEXTURE, 
-					texGmlId));
-
-			msg.append(": Texture coordinates exceed 4000 characters and will not be imported.");
-			LOG.error(msg.toString());
-			return;
-		}
-		
+	public void insert(SurfaceGeometryTarget target, long surfaceDataId) throws SQLException {
 		psTextureParam.setLong(1, target.getSurfaceGeometryId());
 		psTextureParam.setInt(2, 1);
 		psTextureParam.setNull(3, Types.VARCHAR);
-		psTextureParam.setObject(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(texCoord, batchConn));
+		psTextureParam.setObject(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(target.compileTextureCoordinates(), batchConn));
 		psTextureParam.setLong(5, surfaceDataId);
-		
+
 		addBatch();
 	}
-	
+
 	public void insert(String worldToTexture, long surfaceDataId, long surfaceGeometryId) throws SQLException {
 		psTextureParam.setLong(1, surfaceGeometryId);
 		psTextureParam.setInt(2, 1);
 		psTextureParam.setString(3, worldToTexture);
-		psTextureParam.setNull(4, Types.VARCHAR);
+		psTextureParam.setNull(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+				dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 		psTextureParam.setLong(5, surfaceDataId);
-		
+
 		addBatch();
 	}
-	
+
 	public void insert(long surfaceDataId, long surfaceGeometryId) throws SQLException {
 		psTextureParam.setLong(1, surfaceGeometryId);
 		psTextureParam.setInt(2, 0);
 		psTextureParam.setNull(3, Types.VARCHAR);
-		psTextureParam.setNull(4, Types.VARCHAR);
+		psTextureParam.setNull(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+				dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 		psTextureParam.setLong(5, surfaceDataId);
-		
+
 		addBatch();
 	}
-	
+
 	private void addBatch() throws SQLException {
 		psTextureParam.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
@@ -127,5 +110,4 @@ public class DBTextureParam implements DBImporter {
 	public DBImporterEnum getDBImporterType() {
 		return DBImporterEnum.TEXTURE_PARAM;
 	}
-
 }

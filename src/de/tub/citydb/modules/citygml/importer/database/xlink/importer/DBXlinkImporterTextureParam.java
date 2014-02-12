@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.modules.citygml.importer.database.xlink.importer;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -39,6 +40,8 @@ import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 public class DBXlinkImporterTextureParam implements DBXlinkImporter {
 	private final CacheTable tempTable;
 	private final DBXlinkImporterManager xlinkImporterManager;
+	
+	private Connection connection;
 	private PreparedStatement psXlink;
 	private int batchCounter;
 
@@ -50,8 +53,9 @@ public class DBXlinkImporterTextureParam implements DBXlinkImporter {
 	}
 
 	private void init() throws SQLException {
-		psXlink = tempTable.getConnection().prepareStatement("insert into " + tempTable.getTableName() + 
-			" (ID, GMLID, TYPE, IS_TEXTURE_PARAMETERIZATION, TEXPARAM_GMLID, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, TARGET_URI, TEXCOORDLIST_ID) values " +
+		connection = tempTable.getConnection();
+		psXlink = connection.prepareStatement("insert into " + tempTable.getTableName() + 
+			" (ID, GMLID, TYPE, IS_TEXTURE_PARAMETERIZATION, TEXPARAM_GMLID, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, TARGET_URI, TEXTURE_COORDINATES_ID) values " +
 			"(?, ?, ?, ?, ?, ?, ?, ?, ?)");
 	}
 
@@ -71,23 +75,24 @@ public class DBXlinkImporterTextureParam implements DBXlinkImporter {
 		else
 			psXlink.setNull(6, Types.VARCHAR);
 
-		if (xlinkEntry.getTextureCoord() != null && xlinkEntry.getTextureCoord().length() != 0)
-			psXlink.setString(7, xlinkEntry.getTextureCoord());
+		if (xlinkEntry.getTextureCoord() != null)
+			psXlink.setObject(7, xlinkImporterManager.getCacheAdapter().getGeometryConverter().getDatabaseObject(xlinkEntry.getTextureCoord(), connection));
 		else
-			psXlink.setNull(7, Types.VARCHAR);
+			psXlink.setNull(7, xlinkImporterManager.getCacheAdapter().getGeometryConverter().getNullGeometryType(),
+					xlinkImporterManager.getCacheAdapter().getGeometryConverter().getNullGeometryTypeName());
 
 		if (xlinkEntry.getTargetURI() != null && xlinkEntry.getTargetURI().length() != 0)
 			psXlink.setString(8, xlinkEntry.getTargetURI());
 		else
 			psXlink.setNull(8, Types.VARCHAR);
-
-		if (xlinkEntry.getTexCoordListId() != null && xlinkEntry.getTexCoordListId().length() != 0)
-			psXlink.setString(9, xlinkEntry.getTexCoordListId());
+		
+		if (xlinkEntry.getTextureCoordId() != 0)
+			psXlink.setInt(9, xlinkEntry.getTextureCoordId());
 		else
-			psXlink.setNull(9, Types.VARCHAR);
+			psXlink.setNull(9, Types.NULL);
 
 		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())
+		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
 			executeBatch();
 
 		return true;

@@ -39,13 +39,13 @@ import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableBasic;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableDeprecatedMaterial;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableFeatureGmlId;
-import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGlobalAppearance;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGeometryGmlId;
+import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGlobalAppearance;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGroupToCityObject;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableLibraryObject;
-import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableLinearRing;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModel;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
+import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableSurfaceGeometry;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableTextureAssociation;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableTextureFile;
@@ -90,9 +90,6 @@ public class CacheTable extends AbstractCacheTable {
 		case GROUP_TO_CITYOBJECT:
 			this.model = CacheTableGroupToCityObject.getInstance();
 			break;
-		case LINEAR_RING:
-			this.model = CacheTableLinearRing.getInstance();
-			break;
 		case SURFACE_GEOMETRY:
 			this.model = CacheTableSurfaceGeometry.getInstance();
 			break;
@@ -101,6 +98,9 @@ public class CacheTable extends AbstractCacheTable {
 			break;
 		case TEXTUREPARAM:
 			this.model = CacheTableTextureParam.getInstance();
+			break;
+		case SURFACE_DATA_TO_TEX_IMAGE:
+			this.model = CacheTableSurfaceDataToTexImage.getInstance();
 			break;
 		case GLOBAL_APPEARANCE:
 			this.model = CacheTableGlobalAppearance.getInstance();
@@ -159,13 +159,13 @@ public class CacheTable extends AbstractCacheTable {
 
 		try {
 			create();			
-			enableIndexes();
+			createIndexes();
 		} finally {
 			lock.unlock();
 		}
 	}
 
-	public void enableIndexes() throws SQLException {
+	public void createIndexes() throws SQLException {
 		if (!isCreated || isIndexed)
 			return;
 
@@ -248,7 +248,7 @@ public class CacheTable extends AbstractCacheTable {
 		try {
 			if (isCreated && mirrorTable == null) {
 				mirror();			
-				mirrorTable.enableIndexes();
+				mirrorTable.createIndexes();
 			}
 
 			return mirrorTable;

@@ -26,6 +26,7 @@ public class DBTexImage implements DBImporter {
 	private MessageDigest md5;
 	private String localPath;
 	private boolean replacePathSeparator;
+	private int batchCounter;
 
 	public DBTexImage(Connection connection, Config config, DBImporterManager importerManager) throws SQLException {
 		this.connection = connection;
@@ -56,43 +57,42 @@ public class DBTexImage implements DBImporter {
 		String md5URI = toHexString(md5.digest(imageURI.getBytes()));
 		boolean insertTexImage = false;
 
+		// check whether the texture image is referenced from another surface data
+		// this check has to be synchronized though
 		final ReentrantLock lock = mainLock;
 		lock.lock();
 
 		try {
 			texImageId = importerManager.getDBId(md5URI, CityGMLClass.ABSTRACT_TEXTURE);
-
 			if (texImageId == 0) {
 				texImageId = importerManager.getDBId(DBSequencerEnum.TEX_IMAGE_ID_SEQ);
 				importerManager.putUID(md5URI, texImageId, CityGMLClass.ABSTRACT_TEXTURE);
 				insertTexImage = true;
-			}
-
-			if (insertTexImage) {
-				// fill TEX_IMAGE with texture file properties
-				String fileName = getFileName(imageURI);
-				String mimeType = null;
-				String codeSpace = null;
-
-				if (abstractTexture.isSetMimeType()) {
-					mimeType = abstractTexture.getMimeType().getValue();
-					codeSpace = abstractTexture.getMimeType().getCodeSpace();
-				}
-
-				psInsertStmt.setLong(1, texImageId);
-				psInsertStmt.setString(2, fileName);
-				psInsertStmt.setString(3, mimeType);
-				psInsertStmt.setString(4, codeSpace);
-
-				psInsertStmt.addBatch();
-				importerManager.executeBatch(DBImporterEnum.TEX_IMAGE);
-				connection.commit();
 			}
 		} finally {
 			lock.unlock();
 		}
 
 		if (insertTexImage) {
+			// fill TEX_IMAGE with texture file properties
+			String fileName = getFileName(imageURI);
+			String mimeType = null;
+			String codeSpace = null;
+
+			if (abstractTexture.isSetMimeType()) {
+				mimeType = abstractTexture.getMimeType().getValue();
+				codeSpace = abstractTexture.getMimeType().getCodeSpace();
+			}
+
+			psInsertStmt.setLong(1, texImageId);
+			psInsertStmt.setString(2, fileName);
+			psInsertStmt.setString(3, mimeType);
+			psInsertStmt.setString(4, codeSpace);
+
+			psInsertStmt.addBatch();
+			if (++batchCounter == importerManager.getDatabaseAdapter().getMaxBatchSize())
+				importerManager.executeBatch(DBImporterEnum.TEX_IMAGE);
+
 			// propagte xlink to import the texture file itself
 			importerManager.propagateXlink(new DBXlinkTextureFile(
 					texImageId,
@@ -141,6 +141,7 @@ public class DBTexImage implements DBImporter {
 	@Override
 	public void executeBatch() throws SQLException {
 		psInsertStmt.executeBatch();
+		batchCounter = 0;
 	}
 
 	@Override

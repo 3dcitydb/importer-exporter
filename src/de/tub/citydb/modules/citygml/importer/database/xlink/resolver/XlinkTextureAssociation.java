@@ -72,8 +72,7 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 			"(?, 1, ?, ?, ?)");
 		
 		psSelectParts = cacheTable.getConnection().prepareStatement("select SURFACE_DATA_ID, SURFACE_GEOMETRY_ID from " + cacheTable.getTableName() + " where GMLID=?");
-		psSelectContent = batchConn.prepareStatement("select WORLD_TO_TEXTURE, TEXTURE_COORDINATES from TEXTUREPARAM where SURFACE_DATA_ID=? " +
-				"and SURFACE_GEOMETRY_ID=?");
+		psSelectContent = batchConn.prepareStatement("select WORLD_TO_TEXTURE, TEXTURE_COORDINATES from TEXTUREPARAM where SURFACE_DATA_ID=? and SURFACE_GEOMETRY_ID=?");
 	}
 
 	public boolean insert(DBXlinkTextureParam xlink) throws SQLException {
@@ -111,7 +110,6 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 
 				if (rs.next()) {
 					String worldToTexture = rs.getString("WORLD_TO_TEXTURE");
-					String texCoord = rs.getString("TEXTURE_COORDINATES");
 
 					if (worldToTexture != null) {
 						UIDCacheEntry entry = resolverManager.getDBId(xlink.getTargetURI(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
@@ -134,7 +132,7 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 
 						psTextureParam.setLong(1, texAss.getSurfaceGeometryId());
 						psTextureParam.setNull(2, Types.VARCHAR);
-						psTextureParam.setString(3, texCoord);
+						psTextureParam.setObject(3, rs.getObject("TEXTURE_COORDINATES"));
 						psTextureParam.setLong(4, xlink.getId());
 					}
 
@@ -143,7 +141,7 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 						executeBatch();
 
 				} else {
-					LOG.warn("Failed to completely resolve XLink reference '" + gmlId + "' to TextureAssociation.");
+					LOG.warn("Failed to completely resolve XLink reference '" + gmlId + "' to " + CityGMLClass.TEXTURE_ASSOCIATION + ".");
 				}
 
 				rs.close();

@@ -40,8 +40,8 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheManager;
@@ -101,12 +101,9 @@ public class DBXlinkResolverManager {
 				dbResolver = new XlinkBasic(connection, this);
 				break;
 			case TEXCOORDLIST:
-				CacheTable textureParamHeapView = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
-				CacheTable linearRingHeapView = cacheTableManager.getCacheTable(CacheTableModelEnum.LINEAR_RING);				
-				if (textureParamHeapView != null && linearRingHeapView != null)
-					dbResolver = new XlinkTexCoordList(connection,
-							textureParamHeapView,
-							linearRingHeapView, this);
+				CacheTable texParamTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
+				if (texParamTable != null)
+					dbResolver = new XlinkTexCoordList(connection, texParamTable, this);
 				break;
 			case TEXTUREPARAM:
 				dbResolver = new XlinkTextureParam(connection, this);
@@ -118,6 +115,9 @@ public class DBXlinkResolverManager {
 				break;
 			case TEXTURE_IMAGE:
 				dbResolver = new XlinkTextureImage(connection, config, this);
+				break;
+			case SURFACE_DATA_TO_TEX_IMAGE:
+				dbResolver = new XlinkSurfaceDataToTexImage(connection, this);
 				break;
 			case LIBRARY_OBJECT:
 				dbResolver = new XlinkLibraryObject(connection, config, this);
@@ -162,11 +162,15 @@ public class DBXlinkResolverManager {
 	public void propagateEvent(Event event) {
 		eventDispatcher.triggerEvent(event);
 	}
-	
+
 	public AbstractDatabaseAdapter getDatabaseAdapter() {
 		return databaseAdapter;
 	}
 
+	public AbstractDatabaseAdapter getCacheAdapter() {
+		return cacheTableManager.getDatabaseAdapter();
+	}
+	
 	public void executeBatch() throws SQLException {
 		for (DBXlinkResolver dbResolver : dbWriterMap.values())
 			dbResolver.executeBatch();
@@ -175,7 +179,7 @@ public class DBXlinkResolverManager {
 	public void close() throws SQLException {
 		dbGmlIdResolver.close();
 		dbSequencer.close();
-		
+
 		for (DBXlinkResolver dbResolver : dbWriterMap.values())
 			dbResolver.close();
 	}

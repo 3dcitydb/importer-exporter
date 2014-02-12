@@ -7,6 +7,7 @@ public class H2Adapter extends AbstractDatabaseAdapter {
 	// NOTE: this adapter is currently only used for cache tables
 	
 	public H2Adapter() {
+		geometryAdapter = new GeometryConverterAdapter();
 		sqlAdapter = new SQLAdapter();
 	}
 	

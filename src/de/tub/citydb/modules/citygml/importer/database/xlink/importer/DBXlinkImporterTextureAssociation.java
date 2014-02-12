@@ -60,7 +60,7 @@ public class DBXlinkImporterTextureAssociation implements DBXlinkImporter {
 		psXlink.setString(3, xlinkEntry.getGmlId());
 
 		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())
+		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
 			executeBatch();
 
 		return true;

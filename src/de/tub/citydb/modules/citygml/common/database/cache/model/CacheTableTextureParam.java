@@ -56,9 +56,9 @@ public class CacheTableTextureParam extends CacheTableModel {
 		try {
 			stmt = conn.createStatement();
 			
-			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (TEXCOORDLIST_ID) " + properties);
-			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (GMLID) " + properties);
-			stmt.executeUpdate("create index idx3_" + tableName + " on " + tableName + " (TYPE) " + properties);
+			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
+			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (TYPE) " + properties);
+			stmt.executeUpdate("create index idx3_" + tableName + " on " + tableName + " (TEXTURE_COORDINATES_ID) " + properties);
 		} finally {
 			if (stmt != null) {
 				stmt.close();
@@ -81,9 +81,9 @@ public class CacheTableTextureParam extends CacheTableModel {
 		.append("IS_TEXTURE_PARAMETERIZATION ").append(sqlAdapter.getNumeric(1, 0)).append(", ")
 		.append("TEXPARAM_GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
 		.append("WORLD_TO_TEXTURE ").append(sqlAdapter.getCharacterVarying(1000)).append(", ")
-		.append("TEXTURE_COORDINATES ").append(sqlAdapter.getCharacterVarying(4000)).append(", ")
+		.append("TEXTURE_COORDINATES ").append(sqlAdapter.getPolygon2D()).append(", ")
 		.append("TARGET_URI ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("TEXCOORDLIST_ID ").append(sqlAdapter.getCharacterVarying(256))
+		.append("TEXTURE_COORDINATES_ID ").append(sqlAdapter.getInteger())
 		.append(")");
 		
 		return builder.toString();

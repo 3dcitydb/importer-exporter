@@ -80,7 +80,6 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLinearRing;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.importer.util.LocalTextureCoordinatesResolver;
 import de.tub.citydb.util.Util;
@@ -390,7 +389,6 @@ public class DBSurfaceGeometry implements DBImporter {
 							dbImporterManager.getAffineTransformer().transformCoordinates(points);
 
 						pointList.add(points);
-						int ringNo = 0;
 						dbImporterManager.updateGeometryCounter(GMLClass.LINEAR_RING);
 
 						// well, taking care about geometry is not enough... this ring could
@@ -400,13 +398,6 @@ public class DBSurfaceGeometry implements DBImporter {
 							if (exteriorLinearRing.isSetId()) {
 								if (localTexCoordResolver != null)
 									localTexCoordResolver.registerLinearRing(exteriorLinearRing.getId(), surfaceGeometryId, reverse);
-
-								// the ring could be target of a global appearance so cache its gml:id
-								dbImporterManager.propagateXlink(new DBXlinkLinearRing(
-										exteriorLinearRing.getId(),
-										surfaceGeometryId,
-										ringNo,
-										reverse));
 							}
 						}
 
@@ -455,7 +446,6 @@ public class DBSurfaceGeometry implements DBImporter {
 
 										pointList.add(interiorPoints);
 
-										ringNo++;
 										dbImporterManager.updateGeometryCounter(GMLClass.LINEAR_RING);
 
 										// also remember the gml:id of interior rings in case it is
@@ -463,13 +453,6 @@ public class DBSurfaceGeometry implements DBImporter {
 										if (importAppearance && !isCopy && interiorLinearRing.isSetId()) {
 											if (localTexCoordResolver != null)
 												localTexCoordResolver.registerLinearRing(interiorLinearRing.getId(), surfaceGeometryId, reverse);
-
-											// the ring could be target of a global appearance so cache its gml:id
-											dbImporterManager.propagateXlink(new DBXlinkLinearRing(
-													interiorLinearRing.getId(),
-													surfaceGeometryId,
-													ringNo,
-													reverse));
 										}
 									}
 								} else {

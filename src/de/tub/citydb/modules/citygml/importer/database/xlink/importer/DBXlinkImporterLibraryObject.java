@@ -59,7 +59,7 @@ public class DBXlinkImporterLibraryObject implements DBXlinkImporter {
 		psXlink.setString(2, xlinkEntry.getFileURI());
 
 		psXlink.addBatch();
-		if (++batchCounter == xlinkImporterManager.getDatabaseAdapter().getMaxBatchSize())
+		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
 			executeBatch();
 
 		return true;
@@ -78,7 +78,7 @@ public class DBXlinkImporterLibraryObject implements DBXlinkImporter {
 
 	@Override
 	public DBXlinkImporterEnum getDBXlinkImporterType() {
-		return DBXlinkImporterEnum.TEXTURE_FILE;
+		return DBXlinkImporterEnum.LIBRARY_OBJECT;
 	}
 
 }

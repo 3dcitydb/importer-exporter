@@ -35,19 +35,17 @@ import java.util.HashMap;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 
 public class DBXlinkImporterManager {
 	private final CacheTableManager cacheTableManager;
-	private final AbstractDatabaseAdapter databaseAdapter;
 	private final EventDispatcher eventDispatcher;
 	private HashMap<DBXlinkImporterEnum, DBXlinkImporter> dbImporterMap;
 
-	public DBXlinkImporterManager(CacheTableManager cacheTableManager, AbstractDatabaseAdapter databaseAdapter, EventDispatcher eventDispatcher) {
+	public DBXlinkImporterManager(CacheTableManager cacheTableManager, EventDispatcher eventDispatcher) {
 		this.cacheTableManager = cacheTableManager;
-		this.databaseAdapter = databaseAdapter;
 		this.eventDispatcher = eventDispatcher;
 
 		dbImporterMap = new HashMap<DBXlinkImporterEnum, DBXlinkImporter>();
@@ -64,9 +62,6 @@ public class DBXlinkImporterManager {
 			case SURFACE_GEOMETRY:
 				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.SURFACE_GEOMETRY);
 				break;
-			case LINEAR_RING:
-				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.LINEAR_RING);
-				break;
 			case XLINK_BASIC:
 				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.BASIC);
 				break;
@@ -78,6 +73,9 @@ public class DBXlinkImporterManager {
 				break;
 			case TEXTURE_FILE:
 				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTURE_FILE);
+				break;
+			case SURFACE_DATA_TO_TEX_IMAGE:
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.SURFACE_DATA_TO_TEX_IMAGE);
 				break;
 			case LIBRARY_OBJECT:
 				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.LIBRARY_OBJECT);
@@ -96,9 +94,6 @@ public class DBXlinkImporterManager {
 				case SURFACE_GEOMETRY:
 					dbImporter = new DBXlinkImporterSurfaceGeometry(tempTable, this);
 					break;
-				case LINEAR_RING:
-					dbImporter = new DBXlinkImporterLinearRing(tempTable, this);
-					break;
 				case XLINK_BASIC:
 					dbImporter = new DBXlinkImporterBasic(tempTable, this);
 					break;
@@ -110,6 +105,9 @@ public class DBXlinkImporterManager {
 					break;
 				case TEXTURE_FILE:
 					dbImporter = new DBXlinkImporterTextureFile(tempTable, this);
+					break;
+				case SURFACE_DATA_TO_TEX_IMAGE:
+					dbImporter = new DBXlinkImporterSurfaceDataToTexImage(tempTable, this);
 					break;
 				case LIBRARY_OBJECT:
 					dbImporter = new DBXlinkImporterLibraryObject(tempTable, this);
@@ -134,8 +132,8 @@ public class DBXlinkImporterManager {
 		eventDispatcher.triggerEvent(event);
 	}
 	
-	public AbstractDatabaseAdapter getDatabaseAdapter() {
-		return databaseAdapter;
+	public AbstractDatabaseAdapter getCacheAdapter() {
+		return cacheTableManager.getDatabaseAdapter();
 	}
 
 	public void executeBatch() throws SQLException {

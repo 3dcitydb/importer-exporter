@@ -85,6 +85,7 @@ import de.tub.citydb.modules.common.filter.ImportFilter;
 import de.tub.citydb.modules.common.filter.feature.BoundingBoxFilter;
 import de.tub.citydb.modules.common.filter.feature.GmlIdFilter;
 import de.tub.citydb.modules.common.filter.feature.GmlNameFilter;
+import de.tub.citydb.util.Util;
 
 public class DBImportWorker implements Worker<CityGML> {
 	private final Logger LOG = Logger.getInstance();
@@ -379,6 +380,12 @@ public class DBImportWorker implements Worker<CityGML> {
 							id = dbCityObjectGroup.insert((CityObjectGroup)work);
 
 						break;
+					default:
+						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+								cityObject.getCityGMLClass(), 
+								cityObject.getId()));
+						LOG.error(msg.append(": Skipping import since this is not a top-level feature type.").toString());
+						return;
 					}
 				}
 

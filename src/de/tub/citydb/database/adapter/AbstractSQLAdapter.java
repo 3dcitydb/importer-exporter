@@ -24,6 +24,7 @@ public abstract class AbstractSQLAdapter {
 	public abstract String getDoublePrecision();
 	public abstract String getCharacter(int nrOfChars);
 	public abstract String getCharacterVarying(int nrOfChars);
+	public abstract String getPolygon2D();
 	public abstract String getCreateUnloggedTable(String tableName, String columns);
 	public abstract String getCreateUnloggedTableAsSelectFrom(String targetTableName, String sourceTableName);
 	public abstract String getUnloggedIndexProperty();

@@ -40,12 +40,14 @@ import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParamEnum;
+import de.tub.citydb.util.Util;
 
 public class XlinkTextureParam implements DBXlinkResolver {
 	private final Connection batchConn;
 	private final DBXlinkResolverManager resolverManager;
 
 	private PreparedStatement psTextureParam;
+
 	private int batchCounter;
 
 	public XlinkTextureParam(Connection batchConn, DBXlinkResolverManager resolverManager) throws SQLException {
@@ -56,28 +58,31 @@ public class XlinkTextureParam implements DBXlinkResolver {
 	}
 
 	private void init() throws SQLException {
-		psTextureParam = batchConn.prepareStatement("insert into TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, TEXTURE_COORDINATES, SURFACE_DATA_ID) values " +
-			"(?, ?, ?, null, ?)");
+		psTextureParam = batchConn.prepareStatement(new StringBuilder()
+		.append("insert into TEXTUREPARAM (SURFACE_GEOMETRY_ID, IS_TEXTURE_PARAMETRIZATION, WORLD_TO_TEXTURE, SURFACE_DATA_ID) values ")
+		.append("(?, ?, ?, ?)").toString());
 	}
 
 	public boolean insert(DBXlinkTextureParam xlink) throws SQLException {
-		UIDCacheEntry surfaceGeometryEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
-		if (surfaceGeometryEntry == null || surfaceGeometryEntry.getId() == -1)
+		// check whether we deal with a local gml:id
+		// remote gml:ids are not supported so far...
+		if (Util.isRemoteXlink(xlink.getGmlId()))
 			return false;
 
-		psTextureParam.setLong(1, surfaceGeometryEntry.getId());
+		UIDCacheEntry geometryEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.ABSTRACT_GML_GEOMETRY, true);
+		if (geometryEntry == null || geometryEntry.getId() == -1)
+			return false;
+
+		psTextureParam.setLong(1, geometryEntry.getId());
+		psTextureParam.setInt(2, xlink.isTextureParameterization() ? 1 : 0);
 		psTextureParam.setLong(4, xlink.getId());
 
-		if (xlink.isTextureParameterization())
-			psTextureParam.setInt(2, 1);
-		else
-			psTextureParam.setInt(2, 0);
-
+		// worldToTexture
 		if (xlink.getWorldToTexture() != null && xlink.getWorldToTexture().length() != 0)
 			psTextureParam.setString(3, xlink.getWorldToTexture());
 		else
 			psTextureParam.setNull(3, Types.VARCHAR);
-
+		
 		psTextureParam.addBatch();
 		if (++batchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize())
 			executeBatch();
@@ -86,7 +91,7 @@ public class XlinkTextureParam implements DBXlinkResolver {
 			// make sure xlinks to the corresponding texture parameterization can be resolved
 			resolverManager.propagateXlink(new DBXlinkTextureAssociation(
 					xlink.getId(),
-					surfaceGeometryEntry.getId(),
+					geometryEntry.getId(),
 					xlink.getTexParamGmlId()));
 		}
 
