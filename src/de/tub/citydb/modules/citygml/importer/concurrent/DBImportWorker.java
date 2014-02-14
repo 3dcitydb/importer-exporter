@@ -37,6 +37,7 @@ import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Appearance;
+import org.citygml4j.model.citygml.bridge.Bridge;
 import org.citygml4j.model.citygml.building.Building;
 import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
@@ -65,6 +66,7 @@ import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.importer.database.content.DBAppearance;
+import de.tub.citydb.modules.citygml.importer.database.content.DBBridge;
 import de.tub.citydb.modules.citygml.importer.database.content.DBBuilding;
 import de.tub.citydb.modules.citygml.importer.database.content.DBCityFurniture;
 import de.tub.citydb.modules.citygml.importer.database.content.DBCityObjectGroup;
@@ -314,13 +316,19 @@ public class DBImportWorker implements Worker<CityGML> {
 							featureBoundingBoxFilter.filter(cityObject.getBoundedBy().getEnvelope()))
 						return;
 
-					// if the cityobject did pass all filters, let us furhter work on it
+					// if the cityobject did pass all filters, let us further work on it
 					switch (work.getCityGMLClass()) {
 					case BUILDING:
 						DBBuilding dbBuilding = (DBBuilding)dbImporterManager.getDBImporter(DBImporterEnum.BUILDING);
 						if (dbBuilding != null)
 							id = dbBuilding.insert((Building)work);
 
+						break;
+					case BRIDGE:
+						DBBridge dbBridge = (DBBridge)dbImporterManager.getDBImporter(DBImporterEnum.BRIDGE);
+						if (dbBridge != null)
+							id = dbBridge.insert((Bridge)work);
+						
 						break;
 					case CITY_FURNITURE:
 						DBCityFurniture dbCityFurniture = (DBCityFurniture)dbImporterManager.getDBImporter(DBImporterEnum.CITY_FURNITURE);

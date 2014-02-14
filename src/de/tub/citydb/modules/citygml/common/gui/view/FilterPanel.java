@@ -96,6 +96,7 @@ public class FilterPanel extends JPanel {
 
 	private DefaultMutableTreeNode cityObject;
 	private DefaultMutableTreeNode building;
+	private DefaultMutableTreeNode bridge;
 	private DefaultMutableTreeNode water;
 	private DefaultMutableTreeNode landuse;
 	private DefaultMutableTreeNode vegetation;
@@ -151,6 +152,7 @@ public class FilterPanel extends JPanel {
 		featureClassFilter = new JCheckBox();		
 		cityObject = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECT);
 		building = new DefaultMutableTreeNode(FeatureClassMode.BUILDING);
+		bridge = new DefaultMutableTreeNode(FeatureClassMode.BRIDGE);
 		water = new DefaultMutableTreeNode(FeatureClassMode.WATERBODY);
 		landuse = new DefaultMutableTreeNode(FeatureClassMode.LANDUSE);
 		vegetation = new DefaultMutableTreeNode(FeatureClassMode.VEGETATION);
@@ -161,6 +163,7 @@ public class FilterPanel extends JPanel {
 		cityObjectGroup = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECTGROUP);
 
 		cityObject.add(building);
+		cityObject.add(bridge);
 		cityObject.add(water);
 		cityObject.add(landuse);
 		cityObject.add(vegetation);
@@ -353,6 +356,7 @@ public class FilterPanel extends JPanel {
 		DefaultTreeCheckingModel model = (DefaultTreeCheckingModel)fcTree.getCheckingModel();
 		model.setPathEnabled(new TreePath(cityObject), enable);
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, building}), enable);
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, bridge}), enable);
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, water}), enable);
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, landuse}), enable);
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, vegetation}), enable);
@@ -384,6 +388,7 @@ public class FilterPanel extends JPanel {
 		DefaultTreeCheckingModel model = (DefaultTreeCheckingModel)fcTree.getCheckingModel();
 		model.setPathEnabled(new TreePath(cityObject), featureClassFilter.isSelected());
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, building}), featureClassFilter.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, bridge}), featureClassFilter.isSelected());
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, water}), featureClassFilter.isSelected());
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, landuse}), featureClassFilter.isSelected());
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, vegetation}), featureClassFilter.isSelected());
@@ -440,6 +445,11 @@ public class FilterPanel extends JPanel {
 		else
 			fcTree.getCheckingModel().removeCheckingPath(new TreePath(building.getPath()));
 
+		if (!featureClass.isSetBridge())
+			fcTree.getCheckingModel().addCheckingPath(new TreePath(bridge.getPath()));
+		else
+			fcTree.getCheckingModel().removeCheckingPath(new TreePath(bridge.getPath()));
+		
 		if (!featureClass.isSetWaterBody())
 			fcTree.getCheckingModel().addCheckingPath(new TreePath(water.getPath()));
 		else
@@ -520,6 +530,7 @@ public class FilterPanel extends JPanel {
 		bbox.copyFrom(bboxPanel.getBoundingBox());
 
 		featureClass.setBuilding(!fcTree.getCheckingModel().isPathChecked(new TreePath(building.getPath()))); 
+		featureClass.setBridge(!fcTree.getCheckingModel().isPathChecked(new TreePath(bridge.getPath()))); 
 		featureClass.setWaterBody(!fcTree.getCheckingModel().isPathChecked(new TreePath(water.getPath())));
 		featureClass.setLandUse(!fcTree.getCheckingModel().isPathChecked(new TreePath(landuse.getPath())));
 		featureClass.setVegetation(!fcTree.getCheckingModel().isPathChecked(new TreePath(vegetation.getPath())));

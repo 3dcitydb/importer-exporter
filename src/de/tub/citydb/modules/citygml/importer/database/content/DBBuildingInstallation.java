@@ -36,6 +36,8 @@ import java.sql.Types;
 
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
+import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
 import org.citygml4j.model.citygml.building.BuildingInstallation;
 import org.citygml4j.model.citygml.building.IntBuildingInstallation;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
@@ -52,12 +54,13 @@ import de.tub.citydb.util.Util;
 
 public class DBBuildingInstallation implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
-	
+
 	private final Connection batchConn;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psBuildingInstallation;
 	private DBCityObject cityObjectImporter;
+	private DBThematicSurface thematicSurfaceImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBOtherGeometry otherGeometryImporter;
 	private DBImplicitGeometry implicitGeometryImporter;
@@ -92,6 +95,7 @@ public class DBBuildingInstallation implements DBImporter {
 		otherGeometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 		implicitGeometryImporter = (DBImplicitGeometry)dbImporterManager.getDBImporter(DBImporterEnum.IMPLICIT_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
+		thematicSurfaceImporter = (DBThematicSurface)dbImporterManager.getDBImporter(DBImporterEnum.THEMATIC_SURFACE);
 	}
 
 	public long insert(BuildingInstallation buildingInstallation, CityGMLClass parent, long parentId) throws SQLException {
@@ -185,10 +189,10 @@ public class DBBuildingInstallation implements DBImporter {
 								buildingInstallation.getId()));
 						msg.append(": Unsupported geometry type ");
 						msg.append(abstractGeometry.getGMLClass()).append('.');
-						
+
 						LOG.error(msg.toString());
 					}
-					
+
 					geometryProperty.unsetGeometry();
 				} else {
 					// xlink
@@ -276,6 +280,40 @@ public class DBBuildingInstallation implements DBImporter {
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING_INSTALLATION);
 
+		// BoundarySurfaces
+		if (buildingInstallation.isSetBoundedBySurface()) {
+			for (BoundarySurfaceProperty boundarySurfaceProperty : buildingInstallation.getBoundedBySurface()) {
+				AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
+
+				if (boundarySurface != null) {
+					String gmlId = boundarySurface.getId();
+					long id = thematicSurfaceImporter.insert(boundarySurface, buildingInstallation.getCityGMLClass(), buildingInstallationId);
+
+					if (id == 0) {
+						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+								buildingInstallation.getCityGMLClass(), 
+								buildingInstallation.getId()));
+						msg.append(": Failed to write ");
+						msg.append(Util.getFeatureSignature(
+								boundarySurface.getCityGMLClass(), 
+								gmlId));
+
+						LOG.error(msg.toString());
+					}
+
+					// free memory of nested feature
+					boundarySurfaceProperty.unsetBoundarySurface();
+				} else {
+					// xlink
+					String href = boundarySurfaceProperty.getHref();
+
+					if (href != null && href.length() != 0) {
+						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.ABSTRACT_BUILDING_BOUNDARY_SURFACE + " feature is not supported.");
+					}
+				}
+			}
+		}
+
 		// insert local appearance
 		cityObjectImporter.insertAppearance(buildingInstallation, buildingInstallationId);
 
@@ -353,7 +391,7 @@ public class DBBuildingInstallation implements DBImporter {
 
 		if (intBuildingInstallation.isSetLod4Geometry()) {
 			GeometryProperty<? extends AbstractGeometry> geometryProperty = intBuildingInstallation.getLod4Geometry();
-			
+
 			if (geometryProperty.isSetGeometry()) {
 				AbstractGeometry abstractGeometry = geometryProperty.getGeometry();
 				if (surfaceGeometryImporter.isSurfaceGeometry(abstractGeometry))
@@ -366,7 +404,7 @@ public class DBBuildingInstallation implements DBImporter {
 							intBuildingInstallation.getId()));
 					msg.append(": Unsupported geometry type ");
 					msg.append(abstractGeometry.getGMLClass()).append('.');
-					
+
 					LOG.error(msg.toString());
 				}
 
@@ -449,6 +487,40 @@ public class DBBuildingInstallation implements DBImporter {
 		psBuildingInstallation.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.BUILDING_INSTALLATION);
+
+		// BoundarySurfaces
+		if (intBuildingInstallation.isSetBoundedBySurface()) {
+			for (BoundarySurfaceProperty boundarySurfaceProperty : intBuildingInstallation.getBoundedBySurface()) {
+				AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
+
+				if (boundarySurface != null) {
+					String gmlId = boundarySurface.getId();
+					long id = thematicSurfaceImporter.insert(boundarySurface, intBuildingInstallation.getCityGMLClass(), intBuildingInstallationId);
+
+					if (id == 0) {
+						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+								intBuildingInstallation.getCityGMLClass(), 
+								intBuildingInstallation.getId()));
+						msg.append(": Failed to write ");
+						msg.append(Util.getFeatureSignature(
+								boundarySurface.getCityGMLClass(), 
+								gmlId));
+
+						LOG.error(msg.toString());
+					}
+
+					// free memory of nested feature
+					boundarySurfaceProperty.unsetBoundarySurface();
+				} else {
+					// xlink
+					String href = boundarySurfaceProperty.getHref();
+
+					if (href != null && href.length() != 0) {
+						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.ABSTRACT_BUILDING_BOUNDARY_SURFACE + " feature is not supported.");
+					}
+				}
+			}
+		}
 
 		// insert local appearance
 		cityObjectImporter.insertAppearance(intBuildingInstallation, intBuildingInstallationId);

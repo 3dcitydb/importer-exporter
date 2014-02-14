@@ -92,6 +92,7 @@ public class DBAddress implements DBImporter {
 
 	private PreparedStatement psAddress;
 	private DBAddressToBuilding addressToBuildingImporter;
+	private DBAddressToBridge addressToBridgeImporter;
 	private DBOtherGeometry geometryImporter;
 	private int batchCounter;
 
@@ -114,6 +115,7 @@ public class DBAddress implements DBImporter {
 		psAddress = batchConn.prepareStatement(stmt.toString());
 
 		addressToBuildingImporter = (DBAddressToBuilding)dbImporterManager.getDBImporter(DBImporterEnum.ADDRESS_TO_BUILDING);
+		addressToBridgeImporter = (DBAddressToBridge)dbImporterManager.getDBImporter(DBImporterEnum.ADDRESS_TO_BRIDGE);
 		geometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
@@ -308,11 +310,18 @@ public class DBAddress implements DBImporter {
 		return addressId;
 	}
 
-	public long insert(Address address, long parentId) throws SQLException {
+	public long insertBuildingAddress(Address address, long parentId) throws SQLException {
 		long addressId = insert(address);
-
 		if (addressId != 0)
 			addressToBuildingImporter.insert(addressId, parentId);		
+
+		return addressId;
+	}
+	
+	public long insertBridgeAddress(Address address, long parentId) throws SQLException {
+		long addressId = insert(address);
+		if (addressId != 0)
+			addressToBridgeImporter.insert(addressId, parentId);		
 
 		return addressId;
 	}

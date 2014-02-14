@@ -156,11 +156,38 @@ public class DBImporterManager {
 			case OPENING_TO_THEM_SURFACE:
 				dbImporter = new DBOpeningToThemSurface(batchConn, this);
 				break;
+			case BRIDGE:
+				dbImporter = new DBBridge(batchConn, this);
+				break;
+			case BRIDGE_CONSTR_ELEMENT:
+				dbImporter = new DBBridgeConstrElement(batchConn, config, this);
+				break;
+			case BRIDGE_INSTALLATION:
+				dbImporter = new DBBridgeInstallation(batchConn, config, this);
+				break;
+			case BRIDGE_THEMATIC_SURFACE:
+				dbImporter = new DBBridgeThematicSurface(batchConn, this);
+				break;
+			case BRIDGE_OPENING:
+				dbImporter = new DBBridgeOpening(batchConn, config, this);
+				break;
+			case BRIDGE_OPEN_TO_THEM_SRF:
+				dbImporter = new DBBridgeOpenToThemSrf(batchConn, this);
+				break;
+			case BRIDGE_ROOM:
+				dbImporter = new DBBridgeRoom(batchConn, this);
+				break;
+			case BRIDGE_FURNITURE:
+				dbImporter = new DBBridgeFurniture(batchConn, config, this);
+				break;
 			case ADDRESS:
 				dbImporter = new DBAddress(batchConn, config, this);
 				break;
 			case ADDRESS_TO_BUILDING:
 				dbImporter = new DBAddressToBuilding(batchConn, this);
+				break;
+			case ADDRESS_TO_BRIDGE:
+				dbImporter = new DBAddressToBridge(batchConn, this);
 				break;
 			case CITY_FURNITURE:
 				dbImporter = new DBCityFurniture(batchConn, config, this);

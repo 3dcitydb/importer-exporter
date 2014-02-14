@@ -91,8 +91,6 @@ public class DBRoom implements DBImporter {
 		if (roomId == 0)
 			return 0;
 
-		String origGmlId = room.getId();
-
 		// CityObject
 		cityObjectImporter.insert(room, roomId);
 
@@ -204,8 +202,8 @@ public class DBRoom implements DBImporter {
 
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								CityGMLClass.BUILDING_ROOM, 
-								origGmlId));
+								room.getCityGMLClass(), 
+								room.getId()));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
 								boundarySurface.getCityGMLClass(), 
@@ -238,11 +236,11 @@ public class DBRoom implements DBImporter {
 
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								CityGMLClass.BUILDING_ROOM, 
-								origGmlId));
+								room.getCityGMLClass(), 
+								room.getId()));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.INT_BUILDING_INSTALLATION, 
+								intBuildingInst.getCityGMLClass(), 
 								gmlId));
 
 						LOG.error(msg.toString());
@@ -272,11 +270,11 @@ public class DBRoom implements DBImporter {
 
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								CityGMLClass.BUILDING_ROOM, 
-								origGmlId));
+								room.getCityGMLClass(), 
+								room.getId()));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.BUILDING_FURNITURE, 
+								furniture.getCityGMLClass(), 
 								gmlId));
 
 						LOG.error(msg.toString());

@@ -93,6 +93,9 @@ public class XlinkBasic implements DBXlinkResolver {
 			if (fromTable == TableEnum.THEMATIC_SURFACE && toTable == TableEnum.OPENING)
 				ps = batchConn.prepareStatement("insert into OPENING_TO_THEM_SURFACE (OPENING_ID, THEMATIC_SURFACE_ID) values (?, ?)");
 
+			else if (fromTable == TableEnum.BRIDGE_THEMATIC_SURFACE && toTable == TableEnum.BRIDGE_OPENING)
+				ps = batchConn.prepareStatement("insert into BRIDGE_OPEN_TO_THEM_SRF (BRIDGE_OPENING_ID, BRIDGE_THEMATIC_SURFACE_ID) values (?, ?)");
+
 			else if (fromTable == TableEnum.APPEARANCE && toTable == TableEnum.SURFACE_DATA)
 				ps = batchConn.prepareStatement("insert into APPEAR_TO_SURFACE_DATA (SURFACE_DATA_ID, APPEARANCE_ID) values (?, ?)");
 
@@ -101,6 +104,9 @@ public class XlinkBasic implements DBXlinkResolver {
 
 			else if (fromTable == TableEnum.BUILDING && toTable == TableEnum.ADDRESS)
 				ps = batchConn.prepareStatement("insert into ADDRESS_TO_BUILDING (ADDRESS_ID, BUILDING_ID) values (?, ?)");
+
+			else if (fromTable == TableEnum.BRIDGE && toTable == TableEnum.ADDRESS)
+				ps = batchConn.prepareStatement("insert into ADDRESS_TO_BRIDGE (ADDRESS_ID, BRIDGE_ID) values (?, ?)");
 
 			else if (fromTable == TableEnum.RELIEF_FEATURE && toTable == TableEnum.RELIEF_COMPONENT)
 				ps = batchConn.prepareStatement("insert into RELIEF_FEAT_TO_REL_COMP (RELIEF_COMPONENT_ID, RELIEF_FEATURE_ID) values (?, ?)");

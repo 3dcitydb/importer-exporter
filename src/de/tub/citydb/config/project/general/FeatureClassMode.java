@@ -40,6 +40,8 @@ public enum FeatureClassMode {
     CITYOBJECT("CityObject"),
 	@XmlEnumValue("Building")
     BUILDING("Building"),
+    @XmlEnumValue("Bridge")
+    BRIDGE("Bridge"),
 	@XmlEnumValue("WaterBody")
     WATERBODY("WaterBody"),
 	@XmlEnumValue("LandUse")

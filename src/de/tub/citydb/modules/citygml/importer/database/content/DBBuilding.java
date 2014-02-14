@@ -631,7 +631,7 @@ public class DBBuilding implements DBImporter {
 
 				if (address != null) {
 					String gmlId = address.getId();
-					long id = addressImporter.insert(address, buildingId);
+					long id = addressImporter.insertBuildingAddress(address, buildingId);
 
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
