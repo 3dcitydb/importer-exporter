@@ -80,6 +80,8 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 				return featureClassFilter.isSetBuilding();
 			case BRIDGE:
 				return featureClassFilter.isSetBridge();
+			case TUNNEL:
+				return featureClassFilter.isSetTunnel();
 			case CITY_FURNITURE:
 				return featureClassFilter.isSetCityFurniture();
 			case LAND_USE:
@@ -128,6 +130,9 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 			if (inverse ^ featureClassFilter.isSetBridge())
 				state.add(CityGMLClass.BRIDGE);
 
+			if (inverse ^ featureClassFilter.isSetTunnel())
+				state.add(CityGMLClass.TUNNEL);
+
 			if (inverse ^ featureClassFilter.isSetCityFurniture())
 				state.add(CityGMLClass.CITY_FURNITURE);
 
@@ -163,6 +168,7 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 		else if (inverse) {
 			state.add(CityGMLClass.BUILDING);
 			state.add(CityGMLClass.BRIDGE);
+			state.add(CityGMLClass.TUNNEL);
 			state.add(CityGMLClass.CITY_FURNITURE);
 			state.add(CityGMLClass.LAND_USE);
 			state.add(CityGMLClass.WATER_BODY);

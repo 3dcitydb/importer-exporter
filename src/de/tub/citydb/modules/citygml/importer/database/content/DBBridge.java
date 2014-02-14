@@ -452,14 +452,14 @@ public class DBBridge implements DBImporter {
 			}
 		}
 
-		// IntBuildingInstallation
+		// IntBridgeInstallation
 		if (bridge.isSetInteriorBridgeInstallation()) {
 			for (IntBridgeInstallationProperty intBridgeInstProperty : bridge.getInteriorBridgeInstallation()) {
-				IntBridgeInstallation intBuildingInst = intBridgeInstProperty.getIntBridgeInstallation();
+				IntBridgeInstallation intBridgeInst = intBridgeInstProperty.getIntBridgeInstallation();
 
-				if (intBuildingInst != null) {
-					String gmlId = intBuildingInst.getId();
-					long id = bridgeInstallationImporter.insert(intBuildingInst, bridge.getCityGMLClass(), bridgeId);
+				if (intBridgeInst != null) {
+					String gmlId = intBridgeInst.getId();
+					long id = bridgeInstallationImporter.insert(intBridgeInst, bridge.getCityGMLClass(), bridgeId);
 
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
@@ -467,7 +467,7 @@ public class DBBridge implements DBImporter {
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.INT_BUILDING_INSTALLATION, 
+								CityGMLClass.INT_BRIDGE_INSTALLATION, 
 								gmlId));
 
 						LOG.error(msg.toString());
@@ -501,7 +501,7 @@ public class DBBridge implements DBImporter {
 								origGmlId));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								CityGMLClass.BUILDING_ROOM, 
+								CityGMLClass.BRIDGE_ROOM, 
 								gmlId));
 
 						LOG.error(msg.toString());

@@ -180,6 +180,27 @@ public class DBImporterManager {
 			case BRIDGE_FURNITURE:
 				dbImporter = new DBBridgeFurniture(batchConn, config, this);
 				break;
+			case TUNNEL:
+				dbImporter = new DBTunnel(batchConn, this);
+				break;
+			case TUNNEL_THEMATIC_SURFACE:
+				dbImporter = new DBTunnelThematicSurface(batchConn, this);
+				break;
+			case TUNNEL_OPENING:
+				dbImporter = new DBTunnelOpening(batchConn, config, this);
+				break;
+			case TUNNEL_OPEN_TO_THEM_SRF:
+				dbImporter = new DBTunnelOpenToThemSrf(batchConn, this);
+				break;
+			case TUNNEL_INSTALLATION:
+				dbImporter = new DBTunnelInstallation(batchConn, config, this);
+				break;
+			case TUNNEL_HOLLOW_SPACE:
+				dbImporter = new DBTunnelHollowSpace(batchConn, this);
+				break;
+			case TUNNEL_FURNITURE:
+				dbImporter = new DBTunnelFurniture(batchConn, config, this);
+				break;
 			case ADDRESS:
 				dbImporter = new DBAddress(batchConn, config, this);
 				break;

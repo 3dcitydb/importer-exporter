@@ -42,6 +42,8 @@ public enum FeatureClassMode {
     BUILDING("Building"),
     @XmlEnumValue("Bridge")
     BRIDGE("Bridge"),
+    @XmlEnumValue("Tunnel")
+    TUNNEL("Tunnel"),
 	@XmlEnumValue("WaterBody")
     WATERBODY("WaterBody"),
 	@XmlEnumValue("LandUse")

@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="FeatureClassType", propOrder={
 		"building",
 		"bridge",
+		"tunnel",
 		"waterBody",
 		"landUse",
 		"vegetation",
@@ -50,6 +51,8 @@ public class FeatureClass {
 	private Boolean building = true;
 	@XmlElement(defaultValue="true")
 	private Boolean bridge = true;
+	@XmlElement(defaultValue="true")
+	private Boolean tunnel = true;
 	@XmlElement(defaultValue="true")
 	private Boolean waterBody = true;
 	@XmlElement(defaultValue="true")
@@ -100,6 +103,21 @@ public class FeatureClass {
 
 	public void setBridge(Boolean bridge) {
 		this.bridge = bridge;
+	}
+	
+	public boolean isSetTunnel() {
+		if (tunnel != null)
+			return tunnel.booleanValue();
+
+		return false;
+	}
+
+	public Boolean getTunnel() {
+		return tunnel;
+	}
+
+	public void setTunnel(Boolean tunnel) {
+		this.tunnel = tunnel;
 	}
 
 	public boolean isSetWaterBody() {

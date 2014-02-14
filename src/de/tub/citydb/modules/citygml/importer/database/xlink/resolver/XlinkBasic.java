@@ -96,6 +96,9 @@ public class XlinkBasic implements DBXlinkResolver {
 			else if (fromTable == TableEnum.BRIDGE_THEMATIC_SURFACE && toTable == TableEnum.BRIDGE_OPENING)
 				ps = batchConn.prepareStatement("insert into BRIDGE_OPEN_TO_THEM_SRF (BRIDGE_OPENING_ID, BRIDGE_THEMATIC_SURFACE_ID) values (?, ?)");
 
+			else if (fromTable == TableEnum.TUNNEL_THEMATIC_SURFACE && toTable == TableEnum.TUNNEL_OPENING)
+				ps = batchConn.prepareStatement("insert into TUNNEL_OPEN_TO_THEM_SRF (TUNNEL_OPENING_ID, TUNNEL_THEMATIC_SURFACE_ID) values (?, ?)");
+
 			else if (fromTable == TableEnum.APPEARANCE && toTable == TableEnum.SURFACE_DATA)
 				ps = batchConn.prepareStatement("insert into APPEAR_TO_SURFACE_DATA (SURFACE_DATA_ID, APPEARANCE_ID) values (?, ?)");
 

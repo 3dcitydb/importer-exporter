@@ -35,13 +35,13 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.bridge.AbstractBoundarySurface;
-import org.citygml4j.model.citygml.bridge.BoundarySurfaceProperty;
-import org.citygml4j.model.citygml.bridge.BridgeFurniture;
-import org.citygml4j.model.citygml.bridge.BridgeRoom;
-import org.citygml4j.model.citygml.bridge.IntBridgeInstallation;
-import org.citygml4j.model.citygml.bridge.IntBridgeInstallationProperty;
-import org.citygml4j.model.citygml.bridge.InteriorFurnitureProperty;
+import org.citygml4j.model.citygml.tunnel.AbstractBoundarySurface;
+import org.citygml4j.model.citygml.tunnel.BoundarySurfaceProperty;
+import org.citygml4j.model.citygml.tunnel.HollowSpace;
+import org.citygml4j.model.citygml.tunnel.IntTunnelInstallation;
+import org.citygml4j.model.citygml.tunnel.IntTunnelInstallationProperty;
+import org.citygml4j.model.citygml.tunnel.InteriorFurnitureProperty;
+import org.citygml4j.model.citygml.tunnel.TunnelFurniture;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
@@ -50,22 +50,22 @@ import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.util.Util;
 
-public class DBBridgeRoom implements DBImporter {
+public class DBTunnelHollowSpace implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 
 	private final Connection batchConn;
 	private final DBImporterManager dbImporterManager;
 
-	private PreparedStatement psRoom;
+	private PreparedStatement psHollowSpace;
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
-	private DBBridgeThematicSurface thematicSurfaceImporter;
-	private DBBridgeFurniture bridgeFurnitureImporter;
-	private DBBridgeInstallation bridgeInstallationImporter;
+	private DBTunnelThematicSurface thematicSurfaceImporter;
+	private DBTunnelFurniture tunnelFurnitureImporter;
+	private DBTunnelInstallation tunnelInstallationImporter;
 
 	private int batchCounter;
 
-	public DBBridgeRoom(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
+	public DBTunnelHollowSpace(Connection batchConn, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
 		this.dbImporterManager = dbImporterManager;
 
@@ -74,71 +74,71 @@ public class DBBridgeRoom implements DBImporter {
 
 	private void init() throws SQLException {
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into BRIDGE_ROOM (ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, BRIDGE_ID, ")
+		.append("insert into TUNNEL_HOLLOW_SPACE (ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, TUNNEL_ID, ")
 		.append("LOD4_MULTI_SURFACE_ID, LOD4_SOLID_ID) values ")
 		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		psRoom = batchConn.prepareStatement(stmt.toString());
+		psHollowSpace = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
-		thematicSurfaceImporter = (DBBridgeThematicSurface)dbImporterManager.getDBImporter(DBImporterEnum.BRIDGE_THEMATIC_SURFACE);
-		bridgeFurnitureImporter = (DBBridgeFurniture)dbImporterManager.getDBImporter(DBImporterEnum.BRIDGE_FURNITURE);
-		bridgeInstallationImporter = (DBBridgeInstallation)dbImporterManager.getDBImporter(DBImporterEnum.BRIDGE_INSTALLATION);
+		thematicSurfaceImporter = (DBTunnelThematicSurface)dbImporterManager.getDBImporter(DBImporterEnum.TUNNEL_THEMATIC_SURFACE);
+		tunnelFurnitureImporter = (DBTunnelFurniture)dbImporterManager.getDBImporter(DBImporterEnum.TUNNEL_FURNITURE);
+		tunnelInstallationImporter = (DBTunnelInstallation)dbImporterManager.getDBImporter(DBImporterEnum.TUNNEL_INSTALLATION);
 	}
 
-	public long insert(BridgeRoom bridgeRoom, long bridgeId) throws SQLException {
-		long bridgeRoomId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
-		if (bridgeRoomId == 0)
+	public long insert(HollowSpace hollowSpace, long tunnelId) throws SQLException {
+		long hollowSpaceId = dbImporterManager.getDBId(DBSequencerEnum.CITYOBJECT_ID_SEQ);
+		if (hollowSpaceId == 0)
 			return 0;
 
 		// CityObject
-		cityObjectImporter.insert(bridgeRoom, bridgeRoomId);
+		cityObjectImporter.insert(hollowSpace, hollowSpaceId);
 
-		// BridgeRoom
+		// HollowSpace
 		// ID
-		psRoom.setLong(1, bridgeRoomId);
+		psHollowSpace.setLong(1, hollowSpaceId);
 
 		// class
-		if (bridgeRoom.isSetClazz() && bridgeRoom.getClazz().isSetValue()) {
-			psRoom.setString(2, bridgeRoom.getClazz().getValue());
-			psRoom.setString(3, bridgeRoom.getClazz().getCodeSpace());
+		if (hollowSpace.isSetClazz() && hollowSpace.getClazz().isSetValue()) {
+			psHollowSpace.setString(2, hollowSpace.getClazz().getValue());
+			psHollowSpace.setString(3, hollowSpace.getClazz().getCodeSpace());
 		} else {
-			psRoom.setNull(2, Types.VARCHAR);
-			psRoom.setNull(3, Types.VARCHAR);
+			psHollowSpace.setNull(2, Types.VARCHAR);
+			psHollowSpace.setNull(3, Types.VARCHAR);
 		}
 
 		// function
-		if (bridgeRoom.isSetFunction()) {
-			String[] function = Util.codeList2string(bridgeRoom.getFunction());
-			psRoom.setString(4, function[0]);
-			psRoom.setString(5, function[1]);
+		if (hollowSpace.isSetFunction()) {
+			String[] function = Util.codeList2string(hollowSpace.getFunction());
+			psHollowSpace.setString(4, function[0]);
+			psHollowSpace.setString(5, function[1]);
 		} else {
-			psRoom.setNull(4, Types.VARCHAR);
-			psRoom.setNull(5, Types.VARCHAR);
+			psHollowSpace.setNull(4, Types.VARCHAR);
+			psHollowSpace.setNull(5, Types.VARCHAR);
 		}
 
 		// usage
-		if (bridgeRoom.isSetUsage()) {
-			String[] usage = Util.codeList2string(bridgeRoom.getUsage());
-			psRoom.setString(6, usage[0]);
-			psRoom.setString(7, usage[1]);
+		if (hollowSpace.isSetUsage()) {
+			String[] usage = Util.codeList2string(hollowSpace.getUsage());
+			psHollowSpace.setString(6, usage[0]);
+			psHollowSpace.setString(7, usage[1]);
 		} else {
-			psRoom.setNull(6, Types.VARCHAR);
-			psRoom.setNull(7, Types.VARCHAR);
+			psHollowSpace.setNull(6, Types.VARCHAR);
+			psHollowSpace.setNull(7, Types.VARCHAR);
 		}
 
-		// BRIDGE_ID
-		psRoom.setLong(8, bridgeId);
+		// TUNNEL_ID
+		psHollowSpace.setLong(8, tunnelId);
 
 		// Geometry
 		// lod4MultiSurface
 		long geometryId = 0;
-		
-		if (bridgeRoom.isSetLod4MultiSurface()) {
-			MultiSurfaceProperty multiSurfacePropery = bridgeRoom.getLod4MultiSurface();
+
+		if (hollowSpace.isSetLod4MultiSurface()) {
+			MultiSurfaceProperty multiSurfacePropery = hollowSpace.getLod4MultiSurface();
 
 			if (multiSurfacePropery.isSetMultiSurface()) {
-				geometryId = surfaceGeometryImporter.insert(multiSurfacePropery.getMultiSurface(), bridgeRoomId);
+				geometryId = surfaceGeometryImporter.insert(multiSurfacePropery.getMultiSurface(), hollowSpaceId);
 				multiSurfacePropery.unsetMultiSurface();
 			} else {
 				// xlink
@@ -147,26 +147,26 @@ public class DBBridgeRoom implements DBImporter {
 				if (href != null && href.length() != 0) {
 					dbImporterManager.propagateXlink(new DBXlinkSurfaceGeometry(
 							href, 
-							bridgeRoomId, 
-							TableEnum.BRIDGE_ROOM, 
+							hollowSpaceId, 
+							TableEnum.TUNNEL_HOLLOW_SPACE, 
 							"LOD4_MULTI_SURFACE_ID"));
 				}
 			}
 		} 
-		
+
 		if (geometryId != 0)
-			psRoom.setLong(9, geometryId);
+			psHollowSpace.setLong(9, geometryId);
 		else
-			psRoom.setNull(9, Types.NULL);
+			psHollowSpace.setNull(9, Types.NULL);
 
 		// lod4Solid
 		geometryId = 0;
 
-		if (bridgeRoom.isSetLod4Solid()) {
-			SolidProperty solidProperty = bridgeRoom.getLod4Solid();
+		if (hollowSpace.isSetLod4Solid()) {
+			SolidProperty solidProperty = hollowSpace.getLod4Solid();
 
 			if (solidProperty.isSetSolid()) {
-				geometryId = surfaceGeometryImporter.insert(solidProperty.getSolid(), bridgeRoomId);
+				geometryId = surfaceGeometryImporter.insert(solidProperty.getSolid(), hollowSpaceId);
 				solidProperty.unsetSolid();
 			} else {
 				// xlink
@@ -175,35 +175,35 @@ public class DBBridgeRoom implements DBImporter {
 				if (href != null && href.length() != 0) {
 					dbImporterManager.propagateXlink(new DBXlinkSurfaceGeometry(
 							href, 
-							bridgeRoomId, 
-							TableEnum.BRIDGE_ROOM, 
+							hollowSpaceId, 
+							TableEnum.TUNNEL_HOLLOW_SPACE, 
 							"LOD4_SOLID_ID"));
 				}
 			}
 		} 
-		
-		if (geometryId != 0)
-			psRoom.setLong(10, geometryId);
-		else
-			psRoom.setNull(10, Types.NULL);
 
-		psRoom.addBatch();
+		if (geometryId != 0)
+			psHollowSpace.setLong(10, geometryId);
+		else
+			psHollowSpace.setNull(10, Types.NULL);
+
+		psHollowSpace.addBatch();
 		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
-			dbImporterManager.executeBatch(DBImporterEnum.BRIDGE_ROOM);
+			dbImporterManager.executeBatch(DBImporterEnum.TUNNEL_HOLLOW_SPACE);
 
 		// BoundarySurfaces
-		if (bridgeRoom.isSetBoundedBySurface()) {
-			for (BoundarySurfaceProperty boundarySurfaceProperty : bridgeRoom.getBoundedBySurface()) {
+		if (hollowSpace.isSetBoundedBySurface()) {
+			for (BoundarySurfaceProperty boundarySurfaceProperty : hollowSpace.getBoundedBySurface()) {
 				AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
 
 				if (boundarySurface != null) {
 					String gmlId = boundarySurface.getId();
-					long id = thematicSurfaceImporter.insert(boundarySurface, bridgeRoom.getCityGMLClass(), bridgeRoomId);
+					long id = thematicSurfaceImporter.insert(boundarySurface, hollowSpace.getCityGMLClass(), hollowSpaceId);
 
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								bridgeRoom.getCityGMLClass(), 
-								bridgeRoom.getId()));
+								hollowSpace.getCityGMLClass(), 
+								hollowSpace.getId()));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
 								boundarySurface.getCityGMLClass(), 
@@ -219,59 +219,59 @@ public class DBBridgeRoom implements DBImporter {
 					String href = boundarySurfaceProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.ABSTRACT_BRIDGE_BOUNDARY_SURFACE + " feature is not supported.");
+						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.ABSTRACT_TUNNEL_BOUNDARY_SURFACE + " feature is not supported.");
 					}
 				}
 			}
 		}
 
 		// IntBuildingInstallation
-		if (bridgeRoom.isSetBridgeRoomInstallation()) {
-			for (IntBridgeInstallationProperty intBridgeInstProperty : bridgeRoom.getBridgeRoomInstallation()) {
-				IntBridgeInstallation intBrigdeInst = intBridgeInstProperty.getObject();
+		if (hollowSpace.isSetHollowSpaceInstallation()) {
+			for (IntTunnelInstallationProperty intTunnelInstProperty : hollowSpace.getHollowSpaceInstallation()) {
+				IntTunnelInstallation intTunnelInst = intTunnelInstProperty.getObject();
 
-				if (intBrigdeInst != null) {
-					String gmlId = intBrigdeInst.getId();
-					long id = bridgeInstallationImporter.insert(intBrigdeInst, bridgeRoom.getCityGMLClass(), bridgeRoomId);
+				if (intTunnelInst != null) {
+					String gmlId = intTunnelInst.getId();
+					long id = tunnelInstallationImporter.insert(intTunnelInst, hollowSpace.getCityGMLClass(), hollowSpaceId);
 
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								bridgeRoom.getCityGMLClass(), 
-								bridgeRoom.getId()));
+								hollowSpace.getCityGMLClass(), 
+								hollowSpace.getId()));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
-								intBrigdeInst.getCityGMLClass(), 
+								intTunnelInst.getCityGMLClass(), 
 								gmlId));
 
 						LOG.error(msg.toString());
 					}
 
 					// free memory of nested feature
-					intBridgeInstProperty.unsetIntBridgeInstallation();
+					intTunnelInstProperty.unsetIntTunnelInstallation();
 				} else {
 					// xlink
-					String href = intBridgeInstProperty.getHref();
+					String href = intTunnelInstProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.INT_BRIDGE_INSTALLATION + " feature is not supported.");
+						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.INT_TUNNEL_INSTALLATION + " feature is not supported.");
 					}
 				}
 			}
 		}
 
-		// BuildingFurniture
-		if (bridgeRoom.isSetInteriorFurniture()) {
-			for (InteriorFurnitureProperty intFurnitureProperty : bridgeRoom.getInteriorFurniture()) {
-				BridgeFurniture furniture = intFurnitureProperty.getObject();
+		// TunnelFurniture
+		if (hollowSpace.isSetInteriorFurniture()) {
+			for (InteriorFurnitureProperty intFurnitureProperty : hollowSpace.getInteriorFurniture()) {
+				TunnelFurniture furniture = intFurnitureProperty.getObject();
 
 				if (furniture != null) {
 					String gmlId = furniture.getId();
-					long id = bridgeFurnitureImporter.insert(furniture, bridgeRoomId);
+					long id = tunnelFurnitureImporter.insert(furniture, hollowSpaceId);
 
 					if (id == 0) {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								bridgeRoom.getCityGMLClass(), 
-								bridgeRoom.getId()));
+								hollowSpace.getCityGMLClass(), 
+								hollowSpace.getId()));
 						msg.append(": Failed to write ");
 						msg.append(Util.getFeatureSignature(
 								furniture.getCityGMLClass(), 
@@ -281,38 +281,38 @@ public class DBBridgeRoom implements DBImporter {
 					}
 
 					// free memory of nested feature
-					intFurnitureProperty.unsetBridgeFurniture();
+					intFurnitureProperty.unsetTunnelFurniture();
 				} else {
 					// xlink
 					String href = intFurnitureProperty.getHref();
 
 					if (href != null && href.length() != 0) {
-						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.BRIDGE_FURNITURE + " feature is not supported.");
+						LOG.error("XLink reference '" + href + "' to " + CityGMLClass.TUNNEL_FURNITURE + " feature is not supported.");
 					}
 				}
 			}
 		}
 
 		// insert local appearance
-		cityObjectImporter.insertAppearance(bridgeRoom, bridgeRoomId);
+		cityObjectImporter.insertAppearance(hollowSpace, hollowSpaceId);
 
-		return bridgeRoomId;
+		return hollowSpaceId;
 	}
 
 	@Override
 	public void executeBatch() throws SQLException {
-		psRoom.executeBatch();
+		psHollowSpace.executeBatch();
 		batchCounter = 0;
 	}
 
 	@Override
 	public void close() throws SQLException {
-		psRoom.close();
+		psHollowSpace.close();
 	}
 
 	@Override
 	public DBImporterEnum getDBImporterType() {
-		return DBImporterEnum.BRIDGE_ROOM;
+		return DBImporterEnum.TUNNEL_HOLLOW_SPACE;
 	}
 
 }

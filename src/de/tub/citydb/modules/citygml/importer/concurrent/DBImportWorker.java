@@ -46,6 +46,7 @@ import org.citygml4j.model.citygml.generics.GenericCityObject;
 import org.citygml4j.model.citygml.landuse.LandUse;
 import org.citygml4j.model.citygml.relief.ReliefFeature;
 import org.citygml4j.model.citygml.transportation.TransportationComplex;
+import org.citygml4j.model.citygml.tunnel.Tunnel;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
 import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
 import org.citygml4j.model.citygml.waterbody.WaterBody;
@@ -78,6 +79,7 @@ import de.tub.citydb.modules.citygml.importer.database.content.DBPlantCover;
 import de.tub.citydb.modules.citygml.importer.database.content.DBReliefFeature;
 import de.tub.citydb.modules.citygml.importer.database.content.DBSolitaryVegetatObject;
 import de.tub.citydb.modules.citygml.importer.database.content.DBTransportationComplex;
+import de.tub.citydb.modules.citygml.importer.database.content.DBTunnel;
 import de.tub.citydb.modules.citygml.importer.database.content.DBWaterBody;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -328,6 +330,12 @@ public class DBImportWorker implements Worker<CityGML> {
 						DBBridge dbBridge = (DBBridge)dbImporterManager.getDBImporter(DBImporterEnum.BRIDGE);
 						if (dbBridge != null)
 							id = dbBridge.insert((Bridge)work);
+						
+						break;
+					case TUNNEL:
+						DBTunnel dbTunnel = (DBTunnel)dbImporterManager.getDBImporter(DBImporterEnum.TUNNEL);
+						if (dbTunnel != null)
+							id = dbTunnel.insert((Tunnel)work);
 						
 						break;
 					case CITY_FURNITURE:
