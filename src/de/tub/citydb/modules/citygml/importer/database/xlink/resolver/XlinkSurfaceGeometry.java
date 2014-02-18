@@ -95,7 +95,9 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	public boolean insert(DBXlinkSurfaceGeometry xlink) throws SQLException {
 		UIDCacheEntry rootGeometryEntry = resolverManager.getDBId(xlink.getGmlId(), CityGMLClass.ABSTRACT_GML_GEOMETRY);
 		if (rootGeometryEntry == null || rootGeometryEntry.getRootId() == -1)
-			return false;
+			// do not return an error in case of implicit geometries since the
+			// the implicit geometry might be a point or curve
+			return xlink.getFromTable() == TableEnum.IMPLICIT_GEOMETRY;
 
 		if (xlink.getFromTable() != TableEnum.IMPLICIT_GEOMETRY) {
 			ResultSet rs = null;

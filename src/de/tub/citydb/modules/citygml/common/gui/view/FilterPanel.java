@@ -173,8 +173,8 @@ public class FilterPanel extends JPanel {
 		cityObject.add(reliefFeature);
 		cityObject.add(transportation);
 		cityObject.add(tunnel);
-		cityObject.add(water);
 		cityObject.add(vegetation);
+		cityObject.add(water);
 
 		fcTree = new CheckboxTree(cityObject);
 		fcTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 4);		

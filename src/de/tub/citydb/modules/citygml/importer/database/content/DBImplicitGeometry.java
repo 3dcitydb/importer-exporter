@@ -41,6 +41,7 @@ import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
@@ -57,7 +58,9 @@ public class DBImplicitGeometry implements DBImporter {
 	private PreparedStatement psImplicitGeometry;
 	private PreparedStatement psUpdateImplicitGeometry;
 	private PreparedStatement psSelectLibraryObject;
+	
 	private DBSurfaceGeometry surfaceGeometryImporter;
+	private DBOtherGeometry otherGeometryImporter;
 
 	private int batchCounter;
 
@@ -69,10 +72,11 @@ public class DBImplicitGeometry implements DBImporter {
 
 	private void init() throws SQLException {
 		psImplicitGeometry = batchConn.prepareStatement("insert into IMPLICIT_GEOMETRY (ID, REFERENCE_TO_LIBRARY) values (?, ?)");
-		psUpdateImplicitGeometry = batchConn.prepareStatement("update IMPLICIT_GEOMETRY set MIME_TYPE=?, RELATIVE_BREP_ID=? where ID=?");
+		psUpdateImplicitGeometry = batchConn.prepareStatement("update IMPLICIT_GEOMETRY set MIME_TYPE=?, RELATIVE_BREP_ID=?, RELATIVE_OTHER_GEOM=? where ID=?");
 		psSelectLibraryObject = batchConn.prepareStatement("select ID from IMPLICIT_GEOMETRY where REFERENCE_TO_LIBRARY=?");
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
+		otherGeometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
 	public long insert(ImplicitGeometry implicitGeometry, long parentId) throws SQLException {
@@ -143,7 +147,7 @@ public class DBImplicitGeometry implements DBImporter {
 			}
 
 			if (updateTable) {
-				psUpdateImplicitGeometry.setLong(3, implicitGeometryId);
+				psUpdateImplicitGeometry.setLong(4, implicitGeometryId);
 
 				if (libraryURI != null) {
 					// mimeType
@@ -160,16 +164,37 @@ public class DBImplicitGeometry implements DBImporter {
 				} else
 					psUpdateImplicitGeometry.setNull(1, Types.VARCHAR);
 
-				long surfaceGeometryId = 0;
+				long geometryId = 0;
+				GeometryObject geometryObject = null;
+				
 				if (relativeGeometry != null) {
-					surfaceGeometryId = surfaceGeometryImporter.insertImplicitGeometry(relativeGeometry);
+					if (surfaceGeometryImporter.isSurfaceGeometry(relativeGeometry))
+						geometryId = surfaceGeometryImporter.insertImplicitGeometry(relativeGeometry);
+					else if (otherGeometryImporter.isPointOrLineGeometry(relativeGeometry))
+						geometryObject = otherGeometryImporter.getPointOrCurveGeometry(relativeGeometry);
+					else {
+						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+								implicitGeometry.getCityGMLClass(), 
+								implicitGeometry.getId()));
+						msg.append(": Unsupported geometry type ");
+						msg.append(relativeGeometry.getGMLClass()).append('.');
+
+						LOG.error(msg.toString());
+					}
+					
 					implicitGeometry.unsetRelativeGMLGeometry();
 				}
 				
-				if (surfaceGeometryId != 0)
-					psUpdateImplicitGeometry.setLong(2, surfaceGeometryId);
+				if (geometryId != 0)
+					psUpdateImplicitGeometry.setLong(2, geometryId);
 				else
 					psUpdateImplicitGeometry.setNull(2, Types.NULL);
+				
+				if (geometryObject != null)
+					psUpdateImplicitGeometry.setObject(3, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geometryObject, batchConn));
+				else
+					psUpdateImplicitGeometry.setNull(3, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+							dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 
 				psUpdateImplicitGeometry.addBatch();
 				++batchCounter;
