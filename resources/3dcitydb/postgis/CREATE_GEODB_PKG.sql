@@ -1,11 +1,14 @@
 -- CREATE_GEODB_PKG.sql
 --
 -- Authors:     Claus Nagel <cnagel@virtualcitysystems.de>
+--              Felix Kunde <fkunde@virtualcitysystems.de>
 --
--- Conversion:	Felix Kunde <fkunde@virtualcitysystems.de>
+-- Copyright:   (c) 2012-2014  Chair of Geoinformatics,
+--                             Technische Universität München, Germany
+--                             http://www.gis.bv.tum.de
 --
--- Copyright:   (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
---                             Technische Universitaet Berlin, Germany
+--              (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
+--                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -19,8 +22,9 @@
 --
 -- ChangeLog:
 --
--- Version | Date       | Description      | Author | Conversion
--- 1.0.0     2012-05-21   release version    CNag     FKun
+-- Version | Date       | Description               | Author
+-- 1.0.0     2012-05-21   release version             CNag
+--                                                    FKun
 --
 
 -------------------------------------------------------------------------------
@@ -36,8 +40,7 @@ CREATE SCHEMA geodb_pkg;
 --// call PL/pgSQL-Scripts to add GEODB_PKG-Functions
 \i PL_pgSQL/GEODB_PKG/UTIL/UTIL.sql
 \i PL_pgSQL/GEODB_PKG/INDEX/IDX.sql
+\i PL_pgSQL/GEODB_PKG/SRS/SRS.sql
 \i PL_pgSQL/GEODB_PKG/STATISTICS/STAT.sql
 \i PL_pgSQL/GEODB_PKG/DELETE/DELETE.sql
 \i PL_pgSQL/GEODB_PKG/DELETE/DELETE_BY_LINEAGE.sql
-\i PL_pgSQL/GEODB_PKG/MATCHING/MATCH.sql
-\i PL_pgSQL/GEODB_PKG/MATCHING/MERGE.sql
