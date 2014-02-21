@@ -4,11 +4,11 @@
 --              Felix Kunde <fkunde@virtualcitysystems.de>
 --              György Hudra <ghudra@moss.de>
 --
--- Copyright:   (c) 2013       Faculty of Civil, Geo and Environmental Engineering, 
---                             Chair of Geoinformatics,
+-- Copyright:   (c) 2012-2014  Chair of Geoinformatics,
 --                             Technische Universität München, Germany
---                             http://www.gis.bv.tum.de/
---              (c) 2007-2013  Institute for Geodesy and Geoinformation Science,
+--                             http://www.gis.bv.tum.de
+--
+--              (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
 --                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
@@ -68,6 +68,8 @@ AS
   procedure cleanup_citymodels;
   procedure cleanup_implicitgeometries;
   procedure delete_cityobject(pid number);
+  
+  function is_not_referenced(table_name varchar2, check_column varchar2, check_id number, not_column varchar2, not_id number) return boolean;
 END geodb_delete;
 /
 
@@ -138,7 +140,6 @@ AS
   procedure post_delete_relief_component(relief_component_rec relief_component%rowtype);
   procedure post_delete_tin_relief(tin_relief_rec tin_relief%rowtype);
 
-  function is_not_referenced(table_name varchar2, check_column varchar2, check_id number, not_column varchar2, not_id number) return boolean;
   type ref_cursor is ref cursor;
 
   /*

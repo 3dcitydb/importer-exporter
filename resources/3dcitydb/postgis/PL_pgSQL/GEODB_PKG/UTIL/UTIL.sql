@@ -329,21 +329,21 @@ BEGIN
          class_id = 85 THEN table_name := 'tunnel';
     WHEN class_id = 86 OR
          class_id = 87 THEN table_name := 'tunnel_installation';
-    WHEN class_id = 88 OR 
-         class_id = 89 OR 
+    WHEN class_id = 89 OR 
          class_id = 90 OR 
          class_id = 91 OR 
-         class_id = 92 OR
+         class_id = 92 OR 
          class_id = 93 OR
          class_id = 94 OR
          class_id = 95 OR
-         class_id = 96 THEN table_name := 'tunnel_thematic_surface';
+         class_id = 96 OR
+         class_id = 97 THEN table_name := 'tunnel_thematic_surface';
     WHEN class_id = 99 OR 
          class_id = 100 THEN table_name := 'tunnel_opening';		 
     WHEN class_id = 101 THEN table_name := 'tunnel_furniture';
     WHEN class_id = 102 THEN table_name := 'tunnel_hollow_space';
   ELSE
-    RAISE NOTICE 'Table name unknown.';
+    RAISE EXCEPTION 'Table name unknown.';
   END CASE;
   
   RETURN table_name;

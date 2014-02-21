@@ -2,8 +2,12 @@
 --
 -- Authors:     Claus Nagel <cnagel@virtualcitysystems.de>
 --
--- Copyright:   (c) 2007-2008  Institute for Geodesy and Geoinformation Science,
---                             Technische Universit�t Berlin, Germany
+-- Copyright:   (c) 2012-2014  Chair of Geoinformatics,
+--                             Technische Universität München, Germany
+--                             http://www.gis.bv.tum.de
+--
+--              (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
+--                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -101,12 +105,12 @@ AS
   SPATIAL CONSTANT NUMBER(1) := 1;
   
   INDICES CONSTANT index_table := index_table( 
-    INDEX_OBJ.construct_spatial_3d('CITYOBJECT_SPX', 'CITYOBJECT', 'ENVELOPE'),
+    INDEX_OBJ.construct_spatial_3d('CITYOBJECT_ENVELOPE_SPX', 'CITYOBJECT', 'ENVELOPE'),
     INDEX_OBJ.construct_spatial_3d('SURFACE_GEOM_SPX', 'SURFACE_GEOMETRY', 'GEOMETRY'),
-    INDEX_OBJ.construct_normal('CITYOBJECT_INX', 'CITYOBJECT', 'GMLID, GMLID_CODESPACE'),
-    INDEX_OBJ.construct_normal('SURFACE_GEOMETRY_INX', 'SURFACE_GEOMETRY', 'GMLID, GMLID_CODESPACE'),
-    INDEX_OBJ.construct_normal('APPEARANCE_INX', 'APPEARANCE', 'GMLID, GMLID_CODESPACE'),
-    INDEX_OBJ.construct_normal('SURFACE_DATA_INX', 'SURFACE_DATA', 'GMLID, GMLID_CODESPACE')
+    INDEX_OBJ.construct_normal('CITYOBJECT_INX', 'CITYOBJECT', 'GMLID'),
+    INDEX_OBJ.construct_normal('SURFACE_GEOM_INX', 'SURFACE_GEOMETRY', 'GMLID'),
+    INDEX_OBJ.construct_normal('APPEARANCE_INX', 'APPEARANCE', 'GMLID'),
+    INDEX_OBJ.construct_normal('SURFACE_DATA_INX', 'SURFACE_DATA', 'GMLID')
   );
     
   /*****************************************************************
@@ -228,7 +232,7 @@ AS
   IS
     create_ddl VARCHAR2(1000);
     table_name VARCHAR2(100);
-    sql_err_code VARCHAR2(32767);
+    sql_err_code VARCHAR2(20);
   BEGIN    
     IF index_status(idx) <> 'VALID' THEN
       sql_err_code := drop_index(idx, is_versioned);
@@ -266,7 +270,7 @@ AS
             dbms_wm.ROLLBACKDDL(idx.table_name);
           END IF;
           
-          RETURN SQLERRM;
+          RETURN SQLCODE;
       END;
     END IF;
     
@@ -306,7 +310,7 @@ AS
             dbms_wm.ROLLBACKDDL(idx.table_name);
           END IF;
           
-          RETURN SQLERRM;
+          RETURN SQLCODE;
       END;
     END IF;
     
@@ -324,15 +328,15 @@ AS
   FUNCTION create_indexes(type SMALLINT) RETURN STRARRAY
   IS
     log STRARRAY;
-    sql_error_msg VARCHAR2(32767);
+    sql_error_code VARCHAR2(20);
   BEGIN    
     log := STRARRAY();
                 
     FOR i IN INDICES.FIRST .. INDICES.LAST LOOP
       IF INDICES(i).type = type THEN
-        sql_error_msg := create_index(INDICES(i), geodb_util.versioning_table(INDICES(i).table_name) = 'ON');
+        sql_error_code := create_index(INDICES(i), geodb_util.versioning_table(INDICES(i).table_name) = 'ON');
         log.extend;
-        log(log.count) := index_status(INDICES(i)) || ':' || INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_msg;
+        log(log.count) := index_status(INDICES(i)) || ':' || INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code;
       END IF;
     END LOOP;     
     
@@ -350,15 +354,15 @@ AS
   FUNCTION drop_indexes(type SMALLINT) RETURN STRARRAY
   IS
     log STRARRAY;
-    sql_error_msg VARCHAR2(32767);
+    sql_error_code VARCHAR2(20);
   BEGIN    
     log := STRARRAY();
     
     FOR i in INDICES.FIRST .. INDICES.LAST LOOP
       IF INDICES(i).type = type THEN
-        sql_error_msg := drop_index(INDICES(i), geodb_util.versioning_table(INDICES(i).table_name) = 'ON');
+        sql_error_code := drop_index(INDICES(i), geodb_util.versioning_table(INDICES(i).table_name) = 'ON');
         log.extend;
-        log(log.count) := index_status(INDICES(i)) || ':' || INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_msg;
+        log(log.count) := index_status(INDICES(i)) || ':' || INDICES(i).index_name || ':' || INDICES(i).table_name || ':' || INDICES(i).attribute_name || ':' || sql_error_code;
       END IF;
     END LOOP; 
     
