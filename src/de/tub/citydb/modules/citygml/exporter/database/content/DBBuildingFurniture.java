@@ -33,16 +33,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 
 import org.citygml4j.model.citygml.building.BuildingFurniture;
 import org.citygml4j.model.citygml.building.InteriorFurnitureProperty;
 import org.citygml4j.model.citygml.building.Room;
-import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.citygml.core.ImplicitGeometry;
+import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.util.Util;
 
@@ -55,6 +56,8 @@ public class DBBuildingFurniture implements DBExporter {
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
+	private DBImplicitGeometry implicitGeometryExporter;
+	private DBOtherGeometry geometryExporter;
 
 	public DBBuildingFurniture(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
@@ -65,22 +68,32 @@ public class DBBuildingFurniture implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		if (!config.getInternal().isTransformCoordinates()) {		
-			psBuildingFurniture = connection.prepareStatement("select * from BUILDING_FURNITURE where ROOM_ID = ?");
+		if (!config.getInternal().isTransformCoordinates()) {
+			StringBuilder query = new StringBuilder()
+			.append("select ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, ")
+			.append("LOD4_BREP_ID, LOD4_OTHER_GEOM, ")
+			.append("LOD4_IMPLICIT_REP_ID, LOD4_IMPLICIT_REF_POINT, LOD4_IMPLICIT_TRANSFORMATION ")
+			.append("from BUILDING_FURNITURE where ROOM_ID = ?");
+			psBuildingFurniture = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
-			.append("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, FUNCTION, USAGE, ")
-			.append("ROOM_ID, LOD4_GEOMETRY_ID, LOD4_IMPLICIT_REP_ID, ")
+			.append("select ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, ")
+			.append("LOD4_BREP_ID, ")
+			.append(transformOrNull).append("(LOD4_OTHER_GEOM, ").append(srid).append(") AS LOD4_OTHER_GEOM, ")
+			.append("LOD4_IMPLICIT_REP_ID, ")
 			.append(transformOrNull).append("(LOD4_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD4_IMPLICIT_REF_POINT, ")
-			.append("LOD4_IMPLICIT_TRANSFORMATION from BUILDING_FURNITURE where ROOM_ID = ?");			
+			.append("LOD4_IMPLICIT_TRANSFORMATION ")
+			.append("from BUILDING_FURNITURE where ROOM_ID = ?");			
 			psBuildingFurniture = connection.prepareStatement(query.toString());
 		}
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
+		implicitGeometryExporter = (DBImplicitGeometry)dbExporterManager.getDBExporter(DBExporterEnum.IMPLICIT_GEOMETRY);
+		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
 	public void read(Room room, long parentId) throws SQLException {
@@ -91,53 +104,67 @@ public class DBBuildingFurniture implements DBExporter {
 			rs = psBuildingFurniture.executeQuery();
 
 			while (rs.next()) {
-				long buildingFurnitureId = rs.getLong("ID");
+				long buildingFurnitureId = rs.getLong(1);
 				BuildingFurniture buildingFurniture = new BuildingFurniture();
 
-				String gmlName = rs.getString("NAME");
-				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
-
-				Util.string2codeList(buildingFurniture, gmlName, gmlNameCodespace);
-
-				String description = rs.getString("DESCRIPTION");
-				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRef();
-					stringOrRef.setValue(description);
-					buildingFurniture.setDescription(stringOrRef);
-				}
-
-				String clazz = rs.getString("CLASS");
+				String clazz = rs.getString(2);
 				if (clazz != null) {
-					buildingFurniture.setClazz(new Code(clazz));
+					Code code = new Code(clazz);
+					code.setCodeSpace(rs.getString(3));
+					buildingFurniture.setClazz(code);
 				}
 
-				String function = rs.getString("FUNCTION");
-				if (function != null) {
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(function.trim()))
-						buildingFurniture.addFunction(new Code(value));
-				}
+				String function = rs.getString(4);
+				String functionCodeSpace = rs.getString(5);
+				if (function != null)
+					buildingFurniture.setFunction(Util.string2codeList(function, functionCodeSpace));
 
-				String usage = rs.getString("USAGE");
-				if (usage != null) {
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(usage.trim()))
-						buildingFurniture.addUsage(new Code(value));
-				}
+				String usage = rs.getString(6);
+				String usageCodeSpace = rs.getString(7);
+				if (usage != null)
+					buildingFurniture.setUsage(Util.string2codeList(usage, usageCodeSpace));
 
-				long lodGeometryId = rs.getLong("LOD4_GEOMETRY_ID");
-				if (!rs.wasNull() && lodGeometryId != 0) {
-					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodGeometryId);
+				// geometry
+				long surfaceGeometryId = rs.getLong(8);
+				Object geomObj = rs.getObject(9);
+				if (surfaceGeometryId != 0 || geomObj != null) {
+					GeometryProperty<AbstractGeometry> geometryProperty = null;
+					if (surfaceGeometryId != 0) {
+						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
+						if (geometry != null) {
+							geometryProperty = new GeometryProperty<AbstractGeometry>();
+							if (geometry.getAbstractGeometry() != null)
+								geometryProperty.setGeometry(geometry.getAbstractGeometry());
+							else
+								geometryProperty.setHref(geometry.getTarget());
+						}
+					} else {
+						GeometryObject geometry = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(geomObj);
+						if (geometry != null) {
+							geometryProperty = new GeometryProperty<AbstractGeometry>();
+							geometryProperty.setGeometry(geometryExporter.getPointOrCurveGeometry(geometry, true));
+						}	
+					}
 
-					if (geometry != null) {
-						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
-
-						if (geometry.getAbstractGeometry() != null)
-							geometryProperty.setGeometry(geometry.getAbstractGeometry());
-						else
-							geometryProperty.setHref(geometry.getTarget());
-
+					if (geometryProperty != null)
 						buildingFurniture.setLod4Geometry(geometryProperty);
+				}
+
+				// implicit geometry
+				long implicitGeometryId = rs.getLong(10);
+				if (implicitGeometryId != 0) {
+					GeometryObject referencePoint = null;
+					Object referencePointObj = rs.getObject(11);
+					if (!rs.wasNull() && referencePointObj != null)
+						referencePoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
+
+					String transformationMatrix = rs.getString(12);
+
+					ImplicitGeometry implicit = implicitGeometryExporter.read(implicitGeometryId, referencePoint, transformationMatrix);
+					if (implicit != null) {
+						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
+						implicitProperty.setObject(implicit);
+						buildingFurniture.setLod4ImplicitRepresentation(implicitProperty);
 					}
 				}
 

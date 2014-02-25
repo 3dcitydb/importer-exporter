@@ -33,18 +33,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupMember;
 import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupParent;
-import org.citygml4j.model.gml.base.StringOrRef;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
+import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.util.Util;
 
@@ -57,6 +56,7 @@ public class DBCityObjectGroup implements DBExporter {
 	
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
+	private DBOtherGeometry geometryExporter;
 
 	public DBCityObjectGroup(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
@@ -69,7 +69,8 @@ public class DBCityObjectGroup implements DBExporter {
 	private void init() throws SQLException {
 		if (!config.getInternal().isTransformCoordinates()) {		
 			StringBuilder query = new StringBuilder()
-			.append("select grp.ID, grp.NAME, grp.NAME_CODESPACE, grp.DESCRIPTION, grp.CLASS, grp.FUNCTION, grp.USAGE, grp.GEOMETRY, grp.SURFACE_GEOMETRY_ID, grp.PARENT_CITYOBJECT_ID, ")
+			.append("select grp.CLASS, grp.CLASS_CODESPACE, grp.FUNCTION, grp.FUNCTION_CODESPACE, grp.USAGE, grp.USAGE_CODESPACE, ")
+			.append("grp.BREP_ID, grp.OTHER_GEOM, grp.PARENT_CITYOBJECT_ID, ")
 			.append("gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp ")
 			.append("left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
 			psCityObjectGroup = connection.prepareStatement(query.toString());
@@ -78,9 +79,10 @@ public class DBCityObjectGroup implements DBExporter {
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
-			.append("select grp.ID, grp.NAME, grp.NAME_CODESPACE, grp.DESCRIPTION, grp.CLASS, grp.FUNCTION, grp.USAGE, ")
-			.append(transformOrNull).append("(grp.GEOMETRY, ").append(srid).append(") AS GEOMETRY, ")
-			.append("grp.SURFACE_GEOMETRY_ID, grp.PARENT_CITYOBJECT_ID, ")
+			.append("select grp.CLASS, grp.CLASS_CODESPACE, grp.FUNCTION, grp.FUNCTION_CODESPACE, grp.USAGE, grp.USAGE_CODESPACE, ")
+			.append("grp.BREP_ID, ")
+			.append(transformOrNull).append("(grp.OTHER_GEOM, ").append(srid).append(") AS OTHER_GEOM, ")
+			.append("grp.PARENT_CITYOBJECT_ID, ")
 			.append("gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp ")
 			.append("left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
 			psCityObjectGroup = connection.prepareStatement(query.toString());
@@ -88,6 +90,7 @@ public class DBCityObjectGroup implements DBExporter {
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
+		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
@@ -108,51 +111,47 @@ public class DBCityObjectGroup implements DBExporter {
 
 			while (rs.next()) {
 				if (!isInited) {
-					String gmlName = rs.getString("NAME");
-					String gmlNameCodespace = rs.getString("NAME_CODESPACE");
-
-					Util.string2codeList(cityObjectGroup, gmlName, gmlNameCodespace);
-
-					String description = rs.getString("DESCRIPTION");
-					if (description != null) {
-						StringOrRef stringOrRef = new StringOrRef();
-						stringOrRef.setValue(description);
-						cityObjectGroup.setDescription(stringOrRef);
-					}
-
-					String clazz = rs.getString("CLASS");
+					String clazz = rs.getString(1);
 					if (clazz != null) {
-						cityObjectGroup.setClazz(new Code(clazz));
+						Code code = new Code(clazz);
+						code.setCodeSpace(rs.getString(2));
+						cityObjectGroup.setClazz(code);
 					}
 
-					String function = rs.getString("FUNCTION");
-					if (function != null) {
-						Pattern p = Pattern.compile("\\s+");
-						for (String value : p.split(function.trim()))
-							cityObjectGroup.addFunction(new Code(value));
-					}
+					String function = rs.getString(3);
+					String functionCodeSpace = rs.getString(4);
+					if (function != null)
+						cityObjectGroup.setFunction(Util.string2codeList(function, functionCodeSpace));
 
-					String usage = rs.getString("USAGE");
-					if (usage != null) {
-						Pattern p = Pattern.compile("\\s+");
-						for (String value : p.split(usage.trim()))
-							cityObjectGroup.addUsage(new Code(value));
-					}
+					String usage = rs.getString(5);
+					String usageCodeSpace = rs.getString(6);
+					if (usage != null)
+						cityObjectGroup.setUsage(Util.string2codeList(usage, usageCodeSpace));
 
-					long lodGeometryId = rs.getLong("SURFACE_GEOMETRY_ID");
-					if (!rs.wasNull() && lodGeometryId != 0) {
-						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodGeometryId);
-
-						if (geometry != null) {
-							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
-
-							if (geometry.getAbstractGeometry() != null)
-								geometryProperty.setGeometry(geometry.getAbstractGeometry());
-							else
-								geometryProperty.setHref(geometry.getTarget());
-
-							cityObjectGroup.setGeometry(geometryProperty);
+					// geometry
+					long surfaceGeometryId = rs.getLong(7);
+					Object geomObj = rs.getObject(8);
+					if (surfaceGeometryId != 0 || geomObj != null) {
+						GeometryProperty<AbstractGeometry> geometryProperty = null;
+						if (surfaceGeometryId != 0) {
+							DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
+							if (geometry != null) {
+								geometryProperty = new GeometryProperty<AbstractGeometry>();
+								if (geometry.getAbstractGeometry() != null)
+									geometryProperty.setGeometry(geometry.getAbstractGeometry());
+								else
+									geometryProperty.setHref(geometry.getTarget());
+							}
+						} else {
+							GeometryObject geometry = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(geomObj);
+							if (geometry != null) {
+								geometryProperty = new GeometryProperty<AbstractGeometry>();
+								geometryProperty.setGeometry(geometryExporter.getPointOrCurveGeometry(geometry, true));
+							}	
 						}
+
+						if (geometryProperty != null)
+							cityObjectGroup.setGeometry(geometryProperty);
 					}
 
 					long parentId = rs.getLong("PARENT_CITYOBJECT_ID");

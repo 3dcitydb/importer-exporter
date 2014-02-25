@@ -49,10 +49,9 @@ import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.database.DatabaseConnectionPool;
-import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCache;
 import de.tub.citydb.modules.common.event.StatusDialogMessage;
@@ -183,9 +182,9 @@ public class DBSplitter {
 				boolean overlap = tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode();
 				bboxFilter = dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().getBoundingBoxPredicate("ENVELOPE", "co", bbox, overlap);
 
-				// check whether a no_index hint for the class_id column improves query performance
+				// check whether a no_index hint for the objectclass_id column improves query performance
 				if (dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().spatialPredicateRequiresNoIndexHint())
-					optimizerHint = "/*+ no_index(co cityobject_fkx) */";
+					optimizerHint = "/*+ no_index(co cityobject_objectclass_fkx) */";
 
 			} else {
 				LOG.warn("Bounding box filter is enabled although spatial indexes are disabled.");
@@ -244,141 +243,67 @@ public class DBSplitter {
 		if (!shouldRun)
 			return;
 
+		// build query string...
+		StringBuilder query = new StringBuilder();
+
+		if (expFilterConfig.isSetSimpleFilter()) {
+			query.append("select co.ID, co.OBJECTCLASS_ID from CITYOBJECT co where co.OBJECTCLASS_ID <> ").append(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP)).append(" ");
+			if (gmlIdFilter != null)
+				query.append("and ").append(gmlIdFilter);
+
+		} else {
+			query.append("select ").append(optimizerHint).append(" co.ID, co.OBJECTCLASS_ID from CITYOBJECT co where ");
+
+			List<Integer> classIds = new ArrayList<Integer>();
+			List<CityGMLClass> allowedFeature = featureClassFilter.getNotFilterState();
+			for (CityGMLClass featureClass : allowedFeature) {
+				if (featureClass == CityGMLClass.CITY_OBJECT_GROUP)
+					continue;
+
+				classIds.add(Util.cityObject2classId(featureClass));
+			}
+			
+			if (classIds.isEmpty())
+				return;
+
+			String classIdQuery = Util.collection2string(classIds, ", ");
+			query.append("co.OBJECTCLASS_ID in (").append(classIdQuery).append(") "); 
+
+			if (gmlNameFilter != null)
+				query.append("and upper(co.NAME) like '%").append(gmlNameFilter).append("%' ");
+
+			if (bboxFilter != null)
+				query.append("and ").append(bboxFilter);
+
+			if (featureCounterFilter.isActive())
+				query.append("order by ID");
+		}
+
 		Statement stmt = null;
 		ResultSet rs = null;
 
-		List<String> queryList = new ArrayList<String>();
-
-		// build query strings...
-		if (gmlNameFilter != null) {
-			String tableName = null;
-			String additionalWhere = null;
-
-			for (CityGMLClass featureClass : featureClassFilter.getNotFilterState()) {
-				additionalWhere = null;
-
-				switch (featureClass) {
-				case BUILDING:
-					tableName = TableEnum.BUILDING.toString();
-					break;
-				case CITY_FURNITURE:
-					tableName = TableEnum.CITY_FURNITURE.toString();
-					break;
-				case LAND_USE:
-					tableName = TableEnum.LAND_USE.toString();
-					break;
-				case WATER_BODY:
-					tableName = TableEnum.WATERBODY.toString();
-					break;
-				case PLANT_COVER:
-					tableName = TableEnum.PLANT_COVER.toString();
-					break;
-				case SOLITARY_VEGETATION_OBJECT:
-					tableName = TableEnum.SOLITARY_VEGETAT_OBJECT.toString();
-					break;
-				case TRANSPORTATION_COMPLEX:
-				case ROAD:
-				case RAILWAY:
-				case TRACK:
-				case SQUARE:
-					tableName = TableEnum.TRANSPORTATION_COMPLEX.toString();
-					additionalWhere = "co.CLASS_ID=" + Util.cityObject2classId(featureClass);
-					break;
-				case RELIEF_FEATURE:
-					tableName = TableEnum.RELIEF_FEATURE.toString();
-					additionalWhere = "co.CLASS_ID=" + Util.cityObject2classId(featureClass);
-					break;
-				case GENERIC_CITY_OBJECT:
-					tableName = TableEnum.GENERIC_CITYOBJECT.toString();
-					break;
-				default:
-					continue;
-				}
-
-				StringBuilder query = new StringBuilder("select ").append(optimizerHint).append(" co.ID, co.CLASS_ID from CITYOBJECT co, ")
-						.append(tableName).append(" j where co.ID=j.ID and ");
-
-				query.append("upper(j.NAME) like '%").append(gmlNameFilter).append("%' ");
-
-				if (additionalWhere != null)
-					query.append("and ").append(additionalWhere).append(" ");
-
-				if (bboxFilter != null)
-					query.append("and ").append(bboxFilter);
-
-				if (featureCounterFilter.isActive())
-					query.append("order by co.ID");
-
-				queryList.add(query.toString());
-			}
-
-		} else {
-			StringBuilder query = new StringBuilder();
-
-			if (expFilterConfig.isSetSimpleFilter()) {
-				query.append("select co.ID, co.CLASS_ID from CITYOBJECT co where co.CLASS_ID <> 23 ");
-				if (gmlIdFilter != null)
-					query.append("and ").append(gmlIdFilter);
-
-				queryList.add(query.toString());
-			} else {
-				query.append("select ").append(optimizerHint).append(" co.ID, co.CLASS_ID from CITYOBJECT co where ");
-
-				List<Integer> classIds = new ArrayList<Integer>();
-				List<CityGMLClass> allowedFeature = featureClassFilter.getNotFilterState();
-				for (CityGMLClass featureClass : allowedFeature) {
-					if (featureClass == CityGMLClass.CITY_OBJECT_GROUP)
-						continue;
-
-					classIds.add(Util.cityObject2classId(featureClass));
-				}
-
-				if (!classIds.isEmpty()) {
-					String classIdQuery = Util.collection2string(classIds, ", ");
-
-					query.append("co.CLASS_ID in (").append(classIdQuery).append(") "); 
-
-					if (bboxFilter != null)
-						query.append("and ").append(bboxFilter);
-
-					if (featureCounterFilter.isActive())
-						query.append("order by ID");
-
-					queryList.add(query.toString());
-				}				
-			}
-		}
-
-		if (queryList.size() == 0)
-			return;
-
 		try {
+			stmt = connection.createStatement();
+			rs = stmt.executeQuery(query.toString());
 
-			for (String query : queryList) {
-				stmt = connection.createStatement();				
-				rs = stmt.executeQuery(query);
+			while (rs.next() && shouldRun) {
+				elementCounter++;
 
-				while (rs.next() && shouldRun) {
-					elementCounter++;
+				if (firstElement != null && elementCounter < firstElement)
+					continue;
 
-					if (firstElement != null && elementCounter < firstElement)
-						continue;
+				if (lastElement != null && elementCounter > lastElement)
+					break;
 
-					if (lastElement != null && elementCounter > lastElement)
-						break;
+				long primaryKey = rs.getLong(1);
+				int classId = rs.getInt(2);
+				CityGMLClass cityObjectType = Util.classId2cityObject(classId);
 
-					long primaryKey = rs.getLong(1);
-					int classId = rs.getInt(2);
-					CityGMLClass cityObjectType = Util.classId2cityObject(classId);
-
-					// set initial context...
-					DBSplittingResult splitter = new DBSplittingResult(primaryKey, cityObjectType);
-					dbWorkerPool.addWork(splitter);
-				}
-
-				rs.close();
-				stmt.close();
+				// set initial context...
+				DBSplittingResult splitter = new DBSplittingResult(primaryKey, cityObjectType);
+				dbWorkerPool.addWork(splitter);
 			}
+
 		} catch (SQLException sqlEx) {
 			throw sqlEx;
 		} finally {
@@ -414,29 +339,24 @@ public class DBSplitter {
 		LOG.info("Processing CityObjectGroup features.");
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.group.msg"), this));
 
-		Statement groupStmt = null;
-		PreparedStatement memberStmt = null;
-		ResultSet rs = null;
-
 		StringBuilder groupQuery = new StringBuilder();
 		String classIdsString = "";
 
 		if (expFilterConfig.isSetSimpleFilter()) {
-			groupQuery.append("select co.ID, co.GMLID from CITYOBJECT co where co.CLASS_ID=23 ");
+			groupQuery.append("select co.ID, co.GMLID from CITYOBJECT co where co.OBJECTCLASS_ID=").append(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP)).append(" ");
 			if (gmlIdFilter != null)
 				groupQuery.append("and ").append(gmlIdFilter);
 		} else {
-			groupQuery.append("select ").append(optimizerHint).append(" co.ID, co.GMLID from CITYOBJECT co");
+			groupQuery.append("select ").append(optimizerHint).append(" co.ID, co.GMLID from CITYOBJECT co ")
+			.append("where co.OBJECTCLASS_ID=").append(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP)).append(" ");
 
 			if (gmlNameFilter != null)
-				groupQuery.append(", CITYOBJECTGROUP j where co.ID=j.ID ")
-				.append("and upper(j.NAME) like '%").append(gmlNameFilter).append("%' ");
-			else
-				groupQuery.append(" where co.CLASS_ID=23 ");
+				groupQuery.append("and upper(co.NAME) like '%").append(gmlNameFilter).append("%' ");
 
 			if (bboxFilter != null)
 				groupQuery.append("and ").append(bboxFilter);
 
+			// build list of class ids for querying group members
 			List<Integer> classIds = new ArrayList<Integer>();
 			for (CityGMLClass featureClass : featureClassFilter.getNotFilterState()) {
 				if (featureClass == CityGMLClass.CITY_OBJECT_GROUP)
@@ -446,8 +366,12 @@ public class DBSplitter {
 			}
 
 			if (!classIds.isEmpty())
-				classIdsString = "and co.CLASS_ID in (" + Util.collection2string(classIds, ",") + ")";
+				classIdsString = "and co.OBJECTCLASS_ID in (" + Util.collection2string(classIds, ",") + ")";
 		}
+
+		Statement groupStmt = null;
+		PreparedStatement memberStmt = null;
+		ResultSet rs = null;
 
 		try {
 			// first step: retrieve group ids
@@ -470,6 +394,7 @@ public class DBSplitter {
 				// register group in gml:id cache
 				if (gmlId.length() > 0)
 					featureGmlIdCache.put(gmlId, groupId, -1, false, null, CityGMLClass.CITY_OBJECT_GROUP);
+
 				groupIds.add(groupId);				
 			}
 
@@ -477,7 +402,7 @@ public class DBSplitter {
 			groupStmt.close();
 
 			// second step: export group members
-			StringBuilder memberQuery = new StringBuilder("select co.ID, co.CLASS_ID, co.GMLID from CITYOBJECT co ")
+			StringBuilder memberQuery = new StringBuilder("select co.ID, co.OBJECTCLASS_ID, co.GMLID from CITYOBJECT co ")
 			.append("where co.ID in (select co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co ")
 			.append("where gtc.CITYOBJECT_ID=co.ID ")
 			.append("and gtc.CITYOBJECTGROUP_ID=? ")

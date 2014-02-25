@@ -42,6 +42,7 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 import de.tub.citydb.api.geometry.GeometryObject;
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
@@ -109,7 +110,7 @@ public class DBImplicitGeometry implements DBImporter {
 			} else if (property.isSetGeometry()) {
 				relativeGeometry = property.getGeometry();
 				gmlId = relativeGeometry.getId();
-				updateTable = true;
+				updateTable = !relativeGeometry.hasLocalProperty(Internal.GEOMETRY_ORIGINAL);
 			}
 		}
 

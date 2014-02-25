@@ -33,13 +33,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
-import org.citygml4j.model.gml.base.StringOrRef;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
@@ -62,6 +60,7 @@ public class DBSolitaryVegetatObject implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 	private DBImplicitGeometry implicitGeometryExporter;
+	private DBOtherGeometry geometryExporter;
 	private FeatureClassFilter featureClassFilter;
 
 	public DBSolitaryVegetatObject(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
@@ -75,14 +74,28 @@ public class DBSolitaryVegetatObject implements DBExporter {
 
 	private void init() throws SQLException {
 		if (!config.getInternal().isTransformCoordinates()) {
-			psSolVegObject = connection.prepareStatement("select * from SOLITARY_VEGETAT_OBJECT where ID = ?");
+			StringBuilder query = new StringBuilder()
+			.append("select CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, ")
+			.append("SPECIES, SPECIES_CODESPACE, HEIGHT, HEIGHT_UNIT, TRUNC_DIAMETER, TRUNC_DIAMETER_UNIT, CROWN_DIAMETER, CROWN_DIAMETER_UNIT, ")
+			.append("LOD1_BREP_ID, LOD2_BREP_ID, LOD3_BREP_ID, LOD4_BREP_ID, ")
+			.append("LOD1_OTHER_GEOM, LOD2_OTHER_GEOM, LOD3_OTHER_GEOM, LOD4_OTHER_GEOM, ")
+			.append("LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID, ")
+			.append("LOD1_IMPLICIT_REF_POINT, LOD2_IMPLICIT_REF_POINT, LOD3_IMPLICIT_REF_POINT, LOD4_IMPLICIT_REF_POINT, ")
+			.append("LOD1_IMPLICIT_TRANSFORMATION, LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION ")
+			.append("from SOLITARY_VEGETAT_OBJECT where ID = ?");
+			psSolVegObject = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
-			.append("select NAME, NAME_CODESPACE, DESCRIPTION, CLASS, SPECIES, FUNCTION, HEIGHT, TRUNC_DIAMETER, CROWN_DIAMETER,")
-			.append("LOD1_GEOMETRY_ID, LOD2_GEOMETRY_ID, LOD3_GEOMETRY_ID, LOD4_GEOMETRY_ID, ")
+			.append("select CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE,")
+			.append("SPECIES, SPECIES_CODESPACE, HEIGHT, HEIGHT_UNIT, TRUNC_DIAMETER, TRUNC_DIAMETER_UNIT, CROWN_DIAMETER, CROWN_DIAMETER_UNIT, ")
+			.append("LOD1_BREP_ID, LOD2_BREP_ID, LOD3_BREP_ID, LOD4_BREP_ID, ")
+			.append(transformOrNull).append("(LOD1_OTHER_GEOM, ").append(srid).append(") AS LOD1_OTHER_GEOM, ")
+			.append(transformOrNull).append("(LOD2_OTHER_GEOM, ").append(srid).append(") AS LOD2_OTHER_GEOM, ")
+			.append(transformOrNull).append("(LOD3_OTHER_GEOM, ").append(srid).append(") AS LOD3_OTHER_GEOM, ")
+			.append(transformOrNull).append("(LOD4_OTHER_GEOM, ").append(srid).append(") AS LOD4_OTHER_GEOM, ")
 			.append("LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID,")
 			.append(transformOrNull).append("(LOD1_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD1_IMPLICIT_REF_POINT, ")
 			.append(transformOrNull).append("(LOD2_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD2_IMPLICIT_REF_POINT, ")
@@ -95,6 +108,7 @@ public class DBSolitaryVegetatObject implements DBExporter {
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 		implicitGeometryExporter = (DBImplicitGeometry)dbExporterManager.getDBExporter(DBExporterEnum.IMPLICIT_GEOMETRY);
+		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
@@ -113,103 +127,110 @@ public class DBSolitaryVegetatObject implements DBExporter {
 			rs = psSolVegObject.executeQuery();
 
 			if (rs.next()) {
-				String gmlName = rs.getString("NAME");
-				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
-
-				Util.string2codeList(solVegObject, gmlName, gmlNameCodespace);
-
-				String description = rs.getString("DESCRIPTION");
-				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRef();
-					stringOrRef.setValue(description);
-					solVegObject.setDescription(stringOrRef);
-				}
-
-				String clazz = rs.getString("CLASS");
+				String clazz = rs.getString(1);
 				if (clazz != null) {
-					solVegObject.setClazz(new Code(clazz));
+					Code code = new Code(clazz);
+					code.setCodeSpace(rs.getString(2));
+					solVegObject.setClazz(code);
 				}
 
-				String species = rs.getString("SPECIES");
+				String function = rs.getString(3);
+				String functionCodeSpace = rs.getString(4);
+				if (function != null)
+					solVegObject.setFunction(Util.string2codeList(function, functionCodeSpace));
+
+				String usage = rs.getString(5);
+				String usageCodeSpace = rs.getString(6);
+				if (usage != null)
+					solVegObject.setUsage(Util.string2codeList(usage, usageCodeSpace));
+				
+				String species = rs.getString(7);
 				if (species != null) {
-					solVegObject.setSpecies(new Code(species));
+					Code code = new Code(species);
+					code.setCodeSpace(rs.getString(8));
+					solVegObject.setSpecies(code);
 				}
-
-				String function = rs.getString("FUNCTION");
-				if (function != null) {
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(function.trim()))
-						solVegObject.addFunction(new Code(value));
-				}
-
-				double height = rs.getDouble("HEIGHT");
+				
+				double height = rs.getDouble(9);
 				if (!rs.wasNull()) {
 					Length length = new Length();
 					length.setValue(height);
-					length.setUom("urn:ogc:def:uom:UCUM::m");
+					length.setUom(rs.getString(10));
 					solVegObject.setHeight(length);
 				}
-
-				double truncDiameter = rs.getDouble("TRUNC_DIAMETER");
+				
+				double truncDiameter = rs.getDouble(11);
 				if (!rs.wasNull()) {
 					Length length = new Length();
 					length.setValue(truncDiameter);
-					length.setUom("urn:ogc:def:uom:UCUM::m");
+					length.setUom(rs.getString(12));
 					solVegObject.setTrunkDiameter(length);
 				}
 
-				double crownDiameter = rs.getDouble("CROWN_DIAMETER");
+				double crownDiameter = rs.getDouble(13);
 				if (!rs.wasNull()) {
 					Length length = new Length();
 					length.setValue(crownDiameter);
-					length.setUom("urn:ogc:def:uom:UCUM::m");
+					length.setUom(rs.getString(14));
 					solVegObject.setCrownDiameter(length);
 				}
 
-				for (int lod = 1; lod < 5 ; lod++) {
-					long geometryId = rs.getLong("LOD" + lod + "_GEOMETRY_ID");
+				// geometry
+				for (int lod = 0; lod < 4; lod++) {
+					long surfaceGeometryId = rs.getLong(15 + lod);
+					Object geomObj = rs.getObject(19 + lod);
+					if (surfaceGeometryId == 0 && geomObj == null)
+						continue;
 
-					if (!rs.wasNull() && geometryId != 0) {
-						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
+					GeometryProperty<AbstractGeometry> geometryProperty = null;
 
+					if (surfaceGeometryId != 0) {
+						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
 						if (geometry != null) {
-							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
-
+							geometryProperty = new GeometryProperty<AbstractGeometry>();
 							if (geometry.getAbstractGeometry() != null)
 								geometryProperty.setGeometry(geometry.getAbstractGeometry());
 							else
 								geometryProperty.setHref(geometry.getTarget());
+						}
+					} else {
+						GeometryObject geometry = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(geomObj);
+						if (geometry != null) {
+							geometryProperty = new GeometryProperty<AbstractGeometry>();
+							geometryProperty.setGeometry(geometryExporter.getPointOrCurveGeometry(geometry, true));
+						}	
+					}
 
-							switch (lod) {
-							case 1:
-								solVegObject.setLod1Geometry(geometryProperty);
-								break;
-							case 2:
-								solVegObject.setLod2Geometry(geometryProperty);
-								break;
-							case 3:
-								solVegObject.setLod3Geometry(geometryProperty);
-								break;
-							case 4:
-								solVegObject.setLod4Geometry(geometryProperty);
-								break;
-							}
+					if (geometryProperty != null) {
+						switch (lod) {
+						case 0:
+							solVegObject.setLod1Geometry(geometryProperty);
+							break;
+						case 1:
+							solVegObject.setLod2Geometry(geometryProperty);
+							break;
+						case 2:
+							solVegObject.setLod3Geometry(geometryProperty);
+							break;
+						case 3:
+							solVegObject.setLod4Geometry(geometryProperty);
+							break;
 						}
 					}
 				}
-
-				for (int lod = 1; lod < 5 ; lod++) {
-					// get implicit geometry details
-					long implicitGeometryId = rs.getLong("LOD" + lod + "_IMPLICIT_REP_ID");
+				
+				// implicit geometry
+				for (int lod = 0; lod < 4; lod++) {
+					long implicitGeometryId = rs.getLong(23 + lod);
 					if (rs.wasNull())
 						continue;
 
 					GeometryObject referencePoint = null;
-					Object object = rs.getObject("LOD" + lod +"_IMPLICIT_REF_POINT");
-					if (!rs.wasNull() && object != null)
-						referencePoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPoint(object);
+					Object referencePointObj = rs.getObject(27 + lod);
+					if (!rs.wasNull() && referencePointObj != null)
+						referencePoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
 
-					String transformationMatrix = rs.getString("LOD" + lod + "_IMPLICIT_TRANSFORMATION");
+					String transformationMatrix = rs.getString(31 + lod);
 
 					ImplicitGeometry implicit = implicitGeometryExporter.read(implicitGeometryId, referencePoint, transformationMatrix);
 					if (implicit != null) {
@@ -217,16 +238,16 @@ public class DBSolitaryVegetatObject implements DBExporter {
 						implicitProperty.setObject(implicit);
 
 						switch (lod) {
-						case 1:
+						case 0:
 							solVegObject.setLod1ImplicitRepresentation(implicitProperty);
 							break;
-						case 2:
+						case 1:
 							solVegObject.setLod2ImplicitRepresentation(implicitProperty);
 							break;
-						case 3:
+						case 2:
 							solVegObject.setLod3ImplicitRepresentation(implicitProperty);
 							break;
-						case 4:
+						case 3:
 							solVegObject.setLod4ImplicitRepresentation(implicitProperty);
 							break;
 						}

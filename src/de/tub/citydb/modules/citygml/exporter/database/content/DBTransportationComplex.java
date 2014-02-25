@@ -33,9 +33,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.transportation.AbstractTransportationObject;
@@ -49,7 +46,6 @@ import org.citygml4j.model.citygml.transportation.TrafficArea;
 import org.citygml4j.model.citygml.transportation.TrafficAreaProperty;
 import org.citygml4j.model.citygml.transportation.TransportationComplex;
 import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.base.StringOrRef;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
@@ -86,25 +82,26 @@ public class DBTransportationComplex implements DBExporter {
 	private void init() throws SQLException {
 		if (!config.getInternal().isTransformCoordinates()) {
 			StringBuilder query = new StringBuilder()
-			.append("select tc.ID as TC_ID, tc.NAME as TC_NAME, tc.NAME_CODESPACE as TC_NAME_CODESPACE, tc.DESCRIPTION as TC_DESCRIPTION, tc.FUNCTION as TC_FUNCTION, tc.USAGE as TC_USAGE, ")
-			.append("upper(tc.TYPE) as TC_TYPE, tc.LOD1_MULTI_SURFACE_ID as TC_LOD1_MULTI_SURFACE_ID, tc.LOD2_MULTI_SURFACE_ID as TC_LOD2_MULTI_SURFACE_ID, tc.LOD3_MULTI_SURFACE_ID as TC_LOD3_MULTI_SURFACE_ID, ")
-			.append("tc.LOD4_MULTI_SURFACE_ID as TC_LOD4_MULTI_SURFACE_ID, tc.LOD0_NETWORK as TC_LOD0_NETWORK, ")
-			.append("ta.ID as TA_ID, ta.IS_AUXILIARY, ta.NAME as TA_NAME, ta.NAME_CODESPACE as TA_NAME_CODESPACE, ta.DESCRIPTION as TA_DESCRIPTION, ta.FUNCTION as TA_FUNCTION, ta.USAGE as TA_USAGE, ")
-			.append("ta.SURFACE_MATERIAL, ta.LOD2_MULTI_SURFACE_ID as TA_LOD2_MULTI_SURFACE_ID, ta.LOD3_MULTI_SURFACE_ID as TA_LOD3_MULTI_SURFACE_ID, ")
-			.append("ta.LOD4_MULTI_SURFACE_ID as TA_LOD4_MULTI_SURFACE_ID from TRANSPORTATION_COMPLEX tc left join TRAFFIC_AREA ta on tc.ID=ta.TRANSPORTATION_COMPLEX_ID where tc.ID=?");
+			.append("select tc.CLASS as TC_CLASS, tc.CLASS_CODESPACE as TC_CLASS_CODESPACE, tc.FUNCTION as TC_FUNCTION, tc.FUNCTION_CODESPACE as TC_FUNCTION_CODESPACE, tc.USAGE as TC_USAGE, tc.USAGE_CODESPACE as TC_USAGE_CODESPACE, ")
+			.append("tc.LOD0_NETWORK, ")
+			.append("tc.LOD1_MULTI_SURFACE_ID as TC_LOD1_MULTI_SURFACE_ID, tc.LOD2_MULTI_SURFACE_ID as TC_LOD2_MULTI_SURFACE_ID, tc.LOD3_MULTI_SURFACE_ID as TC_LOD3_MULTI_SURFACE_ID, tc.LOD4_MULTI_SURFACE_ID as TC_LOD4_MULTI_SURFACE_ID,  ")
+			.append("ta.ID as TA_ID, ta.OBJECTCLASS_ID, ta.CLASS as TA_CLASS, ta.CLASS_CODESPACE as TA_CLASS_CODESPACE, ta.FUNCTION as TA_FUNCTION, ta.FUNCTION_CODESPACE as TA_FUNCTION_CODESPACE, ta.USAGE as TA_USAGE, ta.USAGE_CODESPACE as TA_USAGE_CODESPACE, ")
+			.append("ta.SURFACE_MATERIAL, ta.SURFACE_MATERIAL_CODESPACE, ")
+			.append("ta.LOD2_MULTI_SURFACE_ID as TA_LOD2_MULTI_SURFACE_ID, ta.LOD3_MULTI_SURFACE_ID as TA_LOD3_MULTI_SURFACE_ID, ta.LOD4_MULTI_SURFACE_ID as TA_LOD4_MULTI_SURFACE_ID ")
+			.append("from TRANSPORTATION_COMPLEX tc left join TRAFFIC_AREA ta on tc.ID=ta.TRANSPORTATION_COMPLEX_ID where tc.ID=?");
 			psTranComplex = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
-			.append("select tc.ID as TC_ID, tc.NAME as TC_NAME, tc.NAME_CODESPACE as TC_NAME_CODESPACE, tc.DESCRIPTION as TC_DESCRIPTION, tc.FUNCTION as TC_FUNCTION, tc.USAGE as TC_USAGE, ")
-			.append("upper(tc.TYPE) as TC_TYPE, tc.LOD1_MULTI_SURFACE_ID as TC_LOD1_MULTI_SURFACE_ID, tc.LOD2_MULTI_SURFACE_ID as TC_LOD2_MULTI_SURFACE_ID, tc.LOD3_MULTI_SURFACE_ID as TC_LOD3_MULTI_SURFACE_ID, ")
-			.append("tc.LOD4_MULTI_SURFACE_ID as TC_LOD4_MULTI_SURFACE_ID, ")
-			.append(transformOrNull).append("(tc.LOD0_NETWORK, ").append(srid).append(") as TC_LOD0_NETWORK, ")
-			.append("ta.ID as TA_ID, ta.IS_AUXILIARY, ta.NAME as TA_NAME, ta.NAME_CODESPACE as TA_NAME_CODESPACE, ta.DESCRIPTION as TA_DESCRIPTION, ta.FUNCTION as TA_FUNCTION, ta.USAGE as TA_USAGE, ")
-			.append("ta.SURFACE_MATERIAL, ta.LOD2_MULTI_SURFACE_ID as TA_LOD2_MULTI_SURFACE_ID, ta.LOD3_MULTI_SURFACE_ID as TA_LOD3_MULTI_SURFACE_ID, ")
-			.append("ta.LOD4_MULTI_SURFACE_ID as TA_LOD4_MULTI_SURFACE_ID from TRANSPORTATION_COMPLEX tc left join TRAFFIC_AREA ta on tc.ID=ta.TRANSPORTATION_COMPLEX_ID where tc.ID=?");
+			.append("select tc.CLASS as TC_CLASS, tc.CLASS_CODESPACE as TC_CLASS_CODESPACE, tc.FUNCTION as TC_FUNCTION, tc.FUNCTION_CODESPACE as TC_FUNCTION_CODESPACE, tc.USAGE as TC_USAGE, tc.USAGE_CODESPACE as TC_USAGE_CODESPACE, ")
+			.append(transformOrNull).append("(tc.LOD0_NETWORK, ").append(srid).append(") as LOD0_NETWORK, ")
+			.append("tc.LOD1_MULTI_SURFACE_ID as TC_LOD1_MULTI_SURFACE_ID, tc.LOD2_MULTI_SURFACE_ID as TC_LOD2_MULTI_SURFACE_ID, tc.LOD3_MULTI_SURFACE_ID as TC_LOD3_MULTI_SURFACE_ID, tc.LOD4_MULTI_SURFACE_ID as TC_LOD4_MULTI_SURFACE_ID,  ")
+			.append("ta.ID as TA_ID, ta.OBJECTCLASS_ID, ta.CLASS as TA_CLASS, ta.CLASS_CODESPACE as TA_CLASS_CODESPACE, ta.FUNCTION as TA_FUNCTION, ta.FUNCTION_CODESPACE as TA_FUNCTION_CODESPACE, ta.USAGE as TA_USAGE, ta.USAGE_CODESPACE as TA_USAGE_CODESPACE, ")
+			.append("ta.SURFACE_MATERIAL, ta.SURFACE_MATERIAL_CODESPACE, ")
+			.append("ta.LOD2_MULTI_SURFACE_ID as TA_LOD2_MULTI_SURFACE_ID, ta.LOD3_MULTI_SURFACE_ID as TA_LOD3_MULTI_SURFACE_ID, ta.LOD4_MULTI_SURFACE_ID as TA_LOD4_MULTI_SURFACE_ID ")
+			.append("from TRANSPORTATION_COMPLEX tc left join TRAFFIC_AREA ta on tc.ID=ta.TRANSPORTATION_COMPLEX_ID where tc.ID=?");
 			psTranComplex = connection.prepareStatement(query.toString());
 		}
 
@@ -149,176 +146,172 @@ public class DBTransportationComplex implements DBExporter {
 
 			while (rs.next()) {
 				if (!isInited) {
-					String gmlName = rs.getString("TC_NAME");
-					String gmlNameCodespace = rs.getString("TC_NAME_CODESPACE");
-
-					Util.string2codeList(transComplex, gmlName, gmlNameCodespace);
-
-					String description = rs.getString("TC_DESCRIPTION");
-					if (description != null) {
-						StringOrRef stringOrRef = new StringOrRef();
-						stringOrRef.setValue(description);
-						transComplex.setDescription(stringOrRef);
+					String clazz = rs.getString(1);
+					if (clazz != null) {
+						Code code = new Code(clazz);
+						code.setCodeSpace(rs.getString(2));
+						transComplex.setClazz(code);
 					}
 
-					String function = rs.getString("TC_FUNCTION");
-					if (function != null) {
-						Pattern p = Pattern.compile("\\s+");
-						for (String value : p.split(function.trim()))
-							transComplex.addFunction(new Code(value));
-					}
+					String function = rs.getString(3);
+					String functionCodeSpace = rs.getString(4);
+					if (function != null)
+						transComplex.setFunction(Util.string2codeList(function, functionCodeSpace));
 
-					String usage = rs.getString("TC_USAGE");
-					if (usage != null) {
-						Pattern p = Pattern.compile("\\s+");
-						for (String value : p.split(usage.trim()))
-							transComplex.addUsage(new Code(value));
-					}
-
-					for (int lod = 1; lod < 5 ; lod++) {
-						long multiSurfaceId = rs.getLong("TC_LOD" + lod + "_MULTI_SURFACE_ID");
-
-						if (!rs.wasNull() && multiSurfaceId != 0) {
-							DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(multiSurfaceId);
-
-							if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-
-								if (geometry.getAbstractGeometry() != null)
-									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
-								else
-									multiSurfaceProperty.setHref(geometry.getTarget());
-
-								switch (lod) {
-								case 1:
-									transComplex.setLod1MultiSurface(multiSurfaceProperty);
-									break;
-								case 2:
-									transComplex.setLod2MultiSurface(multiSurfaceProperty);
-									break;
-								case 3:
-									transComplex.setLod3MultiSurface(multiSurfaceProperty);
-									break;
-								case 4:
-									transComplex.setLod4MultiSurface(multiSurfaceProperty);
-									break;
-								}
-							}
-						}
-					}
+					String usage = rs.getString(5);
+					String usageCodeSpace = rs.getString(6);
+					if (usage != null)
+						transComplex.setUsage(Util.string2codeList(usage, usageCodeSpace));
 
 					// lod0Network
-					Object object = rs.getObject("TC_LOD0_NETWORK");
+					Object object = rs.getObject(7);
 					if (!rs.wasNull() && object != null) {
 						GeometryObject lod0Network = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(object);
 						GeometricComplexProperty complexProperty = geometryExporter.getPointOrCurveComplexProperty(lod0Network, false);
 						transComplex.addLod0Network(complexProperty);
 					}
+					
+					// multiSurface
+					for (int lod = 0; lod < 4; lod++) {
+						long surfaceGeometryId = rs.getLong(8 + lod);
+						if (rs.wasNull() || surfaceGeometryId == 0)
+							continue;
 
-					isInited = true;
-				}
-
-				long trafficAreaId = rs.getLong("TA_ID");
-				if (rs.wasNull())
-					continue;
-
-				AbstractTransportationObject transObject = null;
-				boolean isAuxiliary = rs.getBoolean("IS_AUXILIARY");
-
-				if (isAuxiliary)
-					transObject = new AuxiliaryTrafficArea();
-				else
-					transObject = new TrafficArea();
-
-				// cityobject stuff
-				cityObjectExporter.read(transObject, trafficAreaId);
-
-				String gmlName = rs.getString("TA_NAME");
-				String gmlNameCodespace = rs.getString("TA_NAME_CODESPACE");
-
-				Util.string2codeList(transObject, gmlName, gmlNameCodespace);
-
-				String description = rs.getString("TA_DESCRIPTION");
-				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRef();
-					stringOrRef.setValue(description);
-					transObject.setDescription(stringOrRef);
-				}
-
-				String function = rs.getString("TA_FUNCTION");
-				if (function != null) {
-					List<Code> functionList = new ArrayList<Code>();
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(function.trim()))
-						functionList.add(new Code(value));
-
-					if (isAuxiliary)
-						((AuxiliaryTrafficArea)transObject).setFunction(functionList);
-					else
-						((TrafficArea)transObject).setFunction(functionList);
-				}
-
-				String usage = rs.getString("TA_USAGE");
-				if (usage != null && !isAuxiliary) {
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(usage.trim()))
-						((TrafficArea)transObject).addUsage(new Code(value));
-				}
-
-				String surfaceMaterial = rs.getString("SURFACE_MATERIAL");
-				if (surfaceMaterial != null) {
-					if (isAuxiliary)
-						((AuxiliaryTrafficArea)transObject).setSurfaceMaterial(new Code(surfaceMaterial));
-					else
-						((TrafficArea)transObject).setSurfaceMaterial(new Code(surfaceMaterial));
-				}
-
-				for (int lod = 2; lod < 5 ; lod++) {
-					long multiSurfaceId = rs.getLong("TA_LOD" + lod + "_MULTI_SURFACE_ID");
-
-					if (!rs.wasNull() && multiSurfaceId != 0) {
-						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(multiSurfaceId);
-
+						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
 						if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
 							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-
 							if (geometry.getAbstractGeometry() != null)
 								multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
 							else
 								multiSurfaceProperty.setHref(geometry.getTarget());
 
 							switch (lod) {
+							case 0:
+								transComplex.setLod1MultiSurface(multiSurfaceProperty);
+								break;
+							case 1:
+								transComplex.setLod2MultiSurface(multiSurfaceProperty);
+								break;
 							case 2:
-								if (isAuxiliary)
-									((AuxiliaryTrafficArea)transObject).setLod2MultiSurface(multiSurfaceProperty);
-								else
-									((TrafficArea)transObject).setLod2MultiSurface(multiSurfaceProperty);
+								transComplex.setLod3MultiSurface(multiSurfaceProperty);
 								break;
 							case 3:
-								if (isAuxiliary)
-									((AuxiliaryTrafficArea)transObject).setLod3MultiSurface(multiSurfaceProperty);
-								else
-									((TrafficArea)transObject).setLod3MultiSurface(multiSurfaceProperty);
-								break;
-							case 4:
-								if (isAuxiliary)
-									((AuxiliaryTrafficArea)transObject).setLod4MultiSurface(multiSurfaceProperty);
-								else
-									((TrafficArea)transObject).setLod4MultiSurface(multiSurfaceProperty);
+								transComplex.setLod4MultiSurface(multiSurfaceProperty);
 								break;
 							}
+						}
+					}					
+
+					isInited = true;
+				}
+
+				long trafficAreaId = rs.getLong(12);
+				if (rs.wasNull())
+					continue;
+
+				AbstractTransportationObject transObject = null;
+				int classId = rs.getInt(13);
+				if (rs.wasNull() || classId == 0)
+					continue;
+
+				CityGMLClass type = Util.classId2cityObject(classId);
+				switch (type) {
+				case TRAFFIC_AREA:
+					transObject = new TrafficArea();
+					break;
+				case AUXILIARY_TRAFFIC_AREA:
+					transObject = new AuxiliaryTrafficArea();
+					break;
+				default:
+					continue;
+				}
+
+				// cityobject stuff
+				cityObjectExporter.read(transObject, trafficAreaId);
+
+				String clazz = rs.getString(14);
+				if (clazz != null) {
+					Code code = new Code(clazz);
+					code.setCodeSpace(rs.getString(15));
+					if (type == CityGMLClass.TRAFFIC_AREA)
+						((TrafficArea)transObject).setClazz(code);
+					else
+						((AuxiliaryTrafficArea)transObject).setClazz(code);
+				}
+
+				String function = rs.getString(16);
+				String functionCodeSpace = rs.getString(17);
+				if (function != null) {
+					if (type == CityGMLClass.TRAFFIC_AREA)
+						((TrafficArea)transObject).setFunction(Util.string2codeList(function, functionCodeSpace));
+					else
+						((AuxiliaryTrafficArea)transObject).setFunction(Util.string2codeList(function, functionCodeSpace));
+				}
+					
+				String usage = rs.getString(18);
+				String usageCodeSpace = rs.getString(19);
+				if (usage != null) {
+					if (type == CityGMLClass.TRAFFIC_AREA)
+						((TrafficArea)transObject).setUsage(Util.string2codeList(usage, usageCodeSpace));
+					else
+						((AuxiliaryTrafficArea)transObject).setUsage(Util.string2codeList(usage, usageCodeSpace));
+				}
+				
+				String surfaceMaterial = rs.getString(20);
+				if (surfaceMaterial != null) {
+					Code code = new Code(surfaceMaterial);
+					code.setCodeSpace(rs.getString(21));
+					if (type == CityGMLClass.TRAFFIC_AREA)
+						((TrafficArea)transObject).setSurfaceMaterial(code);
+					else
+						((AuxiliaryTrafficArea)transObject).setSurfaceMaterial(code);
+				}
+				
+				// multiSurface
+				for (int lod = 0; lod < 3; lod++) {
+					long surfaceGeometryId = rs.getLong(22 + lod);
+					if (rs.wasNull() || surfaceGeometryId == 0)
+						continue;
+
+					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
+					if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
+						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
+						if (geometry.getAbstractGeometry() != null)
+							multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
+						else
+							multiSurfaceProperty.setHref(geometry.getTarget());
+
+						switch (lod) {
+						case 0:
+							if (type == CityGMLClass.TRAFFIC_AREA)
+								((TrafficArea)transObject).setLod2MultiSurface(multiSurfaceProperty);
+							else
+								((AuxiliaryTrafficArea)transObject).setLod2MultiSurface(multiSurfaceProperty);
+							break;
+						case 1:
+							if (type == CityGMLClass.TRAFFIC_AREA)
+								((TrafficArea)transObject).setLod3MultiSurface(multiSurfaceProperty);
+							else
+								((AuxiliaryTrafficArea)transObject).setLod3MultiSurface(multiSurfaceProperty);
+							break;
+						case 2:
+							if (type == CityGMLClass.TRAFFIC_AREA)
+								((TrafficArea)transObject).setLod4MultiSurface(multiSurfaceProperty);
+							else
+								((AuxiliaryTrafficArea)transObject).setLod4MultiSurface(multiSurfaceProperty);
+							break;
 						}
 					}
 				}
 
-				if (isAuxiliary) {
-					AuxiliaryTrafficAreaProperty auxProperty  = new AuxiliaryTrafficAreaProperty();
-					auxProperty.setObject((AuxiliaryTrafficArea)transObject);
-					transComplex.addAuxiliaryTrafficArea(auxProperty);
-				} else {
+				if (type == CityGMLClass.TRAFFIC_AREA) {
 					TrafficAreaProperty trafficProperty = new TrafficAreaProperty();
 					trafficProperty.setObject((TrafficArea)transObject);
 					transComplex.addTrafficArea(trafficProperty);
+				} else {
+					AuxiliaryTrafficAreaProperty auxProperty  = new AuxiliaryTrafficAreaProperty();
+					auxProperty.setObject((AuxiliaryTrafficArea)transObject);
+					transComplex.addAuxiliaryTrafficArea(auxProperty);
 				}
 			}
 

@@ -99,7 +99,6 @@ public class DBSurfaceGeometry implements DBImporter {
 	private int dbSrid;
 	private boolean replaceGmlId;
 	private boolean importAppearance;
-	private boolean useTransformation;
 	private boolean applyTransformation;
 	private boolean isImplicit;
 	private int batchCounter;
@@ -119,7 +118,7 @@ public class DBSurfaceGeometry implements DBImporter {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
 		importAppearance = config.getProject().getImporter().getAppearances().isSetImportAppearance();
-		useTransformation = applyTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
+		applyTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		nullGeometryType = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 
@@ -203,14 +202,15 @@ public class DBSurfaceGeometry implements DBImporter {
 		// if affine transformation is activated we apply the user-defined affine
 		// transformation to the transformation matrix associated with the implicit geometry.
 		// thus, we do not need to apply it to the coordinate values
+		boolean tmp = applyTransformation;
+		
 		try {
 			isImplicit = true;
 			applyTransformation = false;
 			return insert(surfaceGeometry, 0);
 		} finally {
 			isImplicit = false;
-			if (useTransformation)
-				applyTransformation = true;
+			applyTransformation = tmp;
 		}
 	}
 

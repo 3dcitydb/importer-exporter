@@ -62,6 +62,9 @@ public class DBXlinkImporterManager {
 			case SURFACE_GEOMETRY:
 				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.SURFACE_GEOMETRY);
 				break;
+			case LINEAR_RING:
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.LINEAR_RING);
+				break;
 			case XLINK_BASIC:
 				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.BASIC);
 				break;
@@ -93,6 +96,9 @@ public class DBXlinkImporterManager {
 				switch (xlinkType) {
 				case SURFACE_GEOMETRY:
 					dbImporter = new DBXlinkImporterSurfaceGeometry(tempTable, this);
+					break;
+				case LINEAR_RING:
+					dbImporter = new DBXlinkImporterLinearRing(tempTable, this);
 					break;
 				case XLINK_BASIC:
 					dbImporter = new DBXlinkImporterBasic(tempTable, this);

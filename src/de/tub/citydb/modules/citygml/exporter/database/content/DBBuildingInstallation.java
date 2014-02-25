@@ -33,25 +33,27 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
 
+import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.BuildingInstallation;
 import org.citygml4j.model.citygml.building.BuildingInstallationProperty;
 import org.citygml4j.model.citygml.building.IntBuildingInstallation;
 import org.citygml4j.model.citygml.building.IntBuildingInstallationProperty;
 import org.citygml4j.model.citygml.building.Room;
-import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.citygml.core.ImplicitGeometry;
+import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
+import de.tub.citydb.api.geometry.GeometryObject;
+import de.tub.citydb.config.Config;
 import de.tub.citydb.util.Util;
 
 public class DBBuildingInstallation implements DBExporter {
 	private final DBExporterManager dbExporterManager;
+	private final Config config;
 	private final Connection connection;
 
 	private PreparedStatement psBuildingInstallation;
@@ -59,20 +61,57 @@ public class DBBuildingInstallation implements DBExporter {
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectReader;
+	private DBThematicSurface thematicSurfaceExporter;
+	private DBImplicitGeometry implicitGeometryExporter;
+	private DBOtherGeometry geometryExporter;
 
-	public DBBuildingInstallation(Connection connection, DBExporterManager dbExporterManager) throws SQLException {
+	public DBBuildingInstallation(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
+		this.config = config;
 		this.dbExporterManager = dbExporterManager;
 
 		init();
 	}
 
 	private void init() throws SQLException {
-		psBuildingInstallation = connection.prepareStatement("select * from BUILDING_INSTALLATION where BUILDING_ID = ?");
-		psRoomInstallation = connection.prepareStatement("select * from BUILDING_INSTALLATION where ROOM_ID =  ?");
+		if (!config.getInternal().isTransformCoordinates()) {
+			StringBuilder query = new StringBuilder()
+			.append("select ID, OBJECTCLASS_ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, ")
+			.append("LOD2_BREP_ID, LOD3_BREP_ID, LOD4_BREP_ID, ")
+			.append("LOD2_OTHER_GEOM, LOD3_OTHER_GEOM, LOD4_OTHER_GEOM, ")
+			.append("LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID, ")
+			.append("LOD2_IMPLICIT_REF_POINT, LOD3_IMPLICIT_REF_POINT, LOD4_IMPLICIT_REF_POINT, ")
+			.append("LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION ")
+			.append("from BUILDING_INSTALLATION where ");
+
+			psBuildingInstallation = connection.prepareStatement(query.toString() + "BUILDING_ID = ?");
+			psRoomInstallation = connection.prepareStatement(query.toString() + "ROOM_ID =  ?");
+		} else {
+			int srid = config.getInternal().getExportTargetSRS().getSrid();
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
+
+			StringBuilder query = new StringBuilder()
+			.append("select ID, OBJECTCLASS_ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, ")
+			.append("LOD2_BREP_ID, LOD3_BREP_ID, LOD4_BREP_ID, ")
+			.append(transformOrNull).append("(LOD2_OTHER_GEOM, ").append(srid).append(") AS LOD2_OTHER_GEOM, ")
+			.append(transformOrNull).append("(LOD3_OTHER_GEOM, ").append(srid).append(") AS LOD3_OTHER_GEOM, ")
+			.append(transformOrNull).append("(LOD4_OTHER_GEOM, ").append(srid).append(") AS LOD4_OTHER_GEOM, ")
+			.append("LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID, ")
+			.append(transformOrNull).append("(LOD2_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD2_IMPLICIT_REF_POINT, ")
+			.append(transformOrNull).append("(LOD3_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD3_IMPLICIT_REF_POINT, ")
+			.append(transformOrNull).append("(LOD4_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD4_IMPLICIT_REF_POINT, ")
+			.append("LOD2_IMPLICIT_TRANSFORMATION, LOD3_IMPLICIT_TRANSFORMATION, LOD4_IMPLICIT_TRANSFORMATION ")
+			.append("from BUILDING_INSTALLATION where ");
+
+			psBuildingInstallation = connection.prepareStatement(query.toString() + "BUILDING_ID = ?");
+			psRoomInstallation = connection.prepareStatement(query.toString() + "ROOM_ID =  ?");
+		}
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectReader = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
+		thematicSurfaceExporter = (DBThematicSurface)dbExporterManager.getDBExporter(DBExporterEnum.THEMATIC_SURFACE);
+		implicitGeometryExporter = (DBImplicitGeometry)dbExporterManager.getDBExporter(DBExporterEnum.IMPLICIT_GEOMETRY);
+		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
 	public void read(AbstractBuilding building, long parentId) throws SQLException {
@@ -83,100 +122,138 @@ public class DBBuildingInstallation implements DBExporter {
 			rs = psBuildingInstallation.executeQuery();
 
 			while (rs.next()) {
-				long installationId = rs.getLong("ID");
-				int isExternal = rs.getInt("IS_EXTERNAL");
+				long installationId = rs.getLong(1);
+
+				int classId = rs.getInt(2);
+				if (rs.wasNull() || classId == 0)
+					continue;
 
 				BuildingInstallation buildingInstallation = null;
 				IntBuildingInstallation intBuildingInstallation = null;
 
-				if (isExternal == 1)
+				CityGMLClass type = Util.classId2cityObject(classId);
+				switch (type) {
+				case BUILDING_INSTALLATION:
 					buildingInstallation = new BuildingInstallation();
-				else
+					break;
+				case INT_BUILDING_INSTALLATION:
 					intBuildingInstallation = new IntBuildingInstallation();
-
-				String gmlName = rs.getString("NAME");
-				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
-
-				if (buildingInstallation != null)
-					Util.string2codeList(buildingInstallation, gmlName, gmlNameCodespace);
-				else
-					Util.string2codeList(intBuildingInstallation, gmlName, gmlNameCodespace);
-
-				String description = rs.getString("DESCRIPTION");
-				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRef();
-					stringOrRef.setValue(description);
-
-					if (buildingInstallation != null)
-						buildingInstallation.setDescription(stringOrRef);
-					else
-						intBuildingInstallation.setDescription(stringOrRef);
+					break;
+				default:
+					continue;
 				}
 
-				String clazz = rs.getString("CLASS");
+				String clazz = rs.getString(3);
 				if (clazz != null) {
+					Code code = new Code(clazz);
+					code.setCodeSpace(rs.getString(4));
 					if (buildingInstallation != null)
-						buildingInstallation.setClazz(new Code(clazz));
+						buildingInstallation.setClazz(code);
 					else
-						intBuildingInstallation.setClazz(new Code(clazz));
+						intBuildingInstallation.setClazz(code);
 				}
 
-				String function = rs.getString("FUNCTION");
+				String function = rs.getString(5);
+				String functionCodeSpace = rs.getString(6);
 				if (function != null) {
-					List<Code> functionList = new ArrayList<Code>();
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(function.trim()))
-						functionList.add(new Code(value));
-
 					if (buildingInstallation != null)
-						buildingInstallation.setFunction(functionList);
+						buildingInstallation.setFunction(Util.string2codeList(function, functionCodeSpace));
 					else
-						intBuildingInstallation.setFunction(functionList);
+						intBuildingInstallation.setFunction(Util.string2codeList(function, functionCodeSpace));
 				}
 
-				String usage = rs.getString("USAGE");
+				String usage = rs.getString(7);
+				String usageCodeSpace = rs.getString(8);
 				if (usage != null) {
-					List<Code> usageList = new ArrayList<Code>();
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(usage.trim()))
-						usageList.add(new Code(value));
-
 					if (buildingInstallation != null)
-						buildingInstallation.setUsage(usageList);
+						buildingInstallation.setUsage(Util.string2codeList(usage, usageCodeSpace));
 					else
-						intBuildingInstallation.setUsage(usageList);
+						intBuildingInstallation.setUsage(Util.string2codeList(usage, usageCodeSpace));
 				}
 
-				for (int lod = 2; lod < 5 ; lod++) {
-					long lodSurfaceGeometryId = rs.getLong("LOD" + lod + "_GEOMETRY_ID");
+				// boundarySurface
+				// geometry objects of _BoundarySurface elements have to be referenced by lodXGeometry 
+				// So we first export all _BoundarySurfaces
+				if (buildingInstallation != null)
+					thematicSurfaceExporter.read(buildingInstallation, installationId);
+				else
+					thematicSurfaceExporter.read(intBuildingInstallation, installationId);					
 
-					if (!rs.wasNull() && lodSurfaceGeometryId != 0) {
-						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodSurfaceGeometryId);
+				// geometry
+				for (int lod = 0; lod < 3; lod++) {
+					long surfaceGeometryId = rs.getLong(9 + lod);
+					Object geomObj = rs.getObject(12 + lod);
+					if (surfaceGeometryId == 0 && geomObj == null)
+						continue;
 
+					GeometryProperty<AbstractGeometry> geometryProperty = null;
+
+					if (surfaceGeometryId != 0) {
+						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
 						if (geometry != null) {
-							GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
-
+							geometryProperty = new GeometryProperty<AbstractGeometry>();
 							if (geometry.getAbstractGeometry() != null)
 								geometryProperty.setGeometry(geometry.getAbstractGeometry());
 							else
 								geometryProperty.setHref(geometry.getTarget());
+						}
+					} else {
+						GeometryObject geometry = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(geomObj);
+						if (geometry != null) {
+							geometryProperty = new GeometryProperty<AbstractGeometry>();
+							geometryProperty.setGeometry(geometryExporter.getPointOrCurveGeometry(geometry, true));
+						}	
+					}
 
-							switch (lod) {
-							case 2:
-								if (buildingInstallation != null)
-									buildingInstallation.setLod2Geometry(geometryProperty);
-								break;
-							case 3:
-								if (buildingInstallation != null)
-									buildingInstallation.setLod3Geometry(geometryProperty);
-								break;
-							case 4:
-								if (buildingInstallation != null)
-									buildingInstallation.setLod4Geometry(geometryProperty);
-								else
-									intBuildingInstallation.setLod4Geometry(geometryProperty);
-								break;
-							}
+					if (geometryProperty != null) {
+						switch (lod) {
+						case 0:
+							if (buildingInstallation != null)
+								buildingInstallation.setLod2Geometry(geometryProperty);
+							break;
+						case 1:
+							if (buildingInstallation != null)
+								buildingInstallation.setLod3Geometry(geometryProperty);
+							break;
+						case 2:
+							if (buildingInstallation != null)
+								buildingInstallation.setLod4Geometry(geometryProperty);
+							else
+								intBuildingInstallation.setLod4Geometry(geometryProperty);
+							break;
+						}
+					}
+				}
+
+				// implicit geometry
+				for (int lod = 0; lod < 3; lod++) {
+					long implicitGeometryId = rs.getLong(15 + lod);
+					if (rs.wasNull())
+						continue;
+
+					GeometryObject referencePoint = null;
+					Object referencePointObj = rs.getObject(18 + lod);
+					if (!rs.wasNull() && referencePointObj != null)
+						referencePoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
+
+					String transformationMatrix = rs.getString(21 + lod);
+
+					ImplicitGeometry implicit = implicitGeometryExporter.read(implicitGeometryId, referencePoint, transformationMatrix);
+					if (implicit != null) {
+						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
+						implicitProperty.setObject(implicit);
+
+						switch (lod) {
+						case 0:
+							if (buildingInstallation != null)
+								buildingInstallation.setLod3ImplicitRepresentation(implicitProperty);
+							break;
+						case 1:
+							if (buildingInstallation != null)
+								buildingInstallation.setLod4ImplicitRepresentation(implicitProperty);
+							else
+								intBuildingInstallation.setLod4ImplicitRepresentation(implicitProperty);
+							break;
 						}
 					}
 				}
@@ -209,54 +286,77 @@ public class DBBuildingInstallation implements DBExporter {
 			rs = psRoomInstallation.executeQuery();
 
 			while (rs.next()) {
-				long installationId = rs.getLong("ID");
+				long installationId = rs.getLong(1);
+
+				int classId = rs.getInt(2);
+				if (rs.wasNull() || classId == 0 || Util.classId2cityObject(classId) != CityGMLClass.INT_BUILDING_INSTALLATION)
+					continue;
+
 				IntBuildingInstallation intBuildingInstallation = new IntBuildingInstallation();
 
-				String gmlName = rs.getString("NAME");
-				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
-
-				Util.string2codeList(intBuildingInstallation, gmlName, gmlNameCodespace);
-
-				String description = rs.getString("DESCRIPTION");
-				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRef();
-					stringOrRef.setValue(description);
-
-					intBuildingInstallation.setDescription(stringOrRef);
-				}
-
-				String clazz = rs.getString("CLASS");
+				String clazz = rs.getString(3);
 				if (clazz != null) {
-					intBuildingInstallation.setClazz(new Code(clazz));
+					Code code = new Code(clazz);
+					code.setCodeSpace(rs.getString(4));
+					intBuildingInstallation.setClazz(code);
 				}
 
-				String function = rs.getString("FUNCTION");
-				if (function != null) {
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(function.trim()))
-						intBuildingInstallation.addFunction(new Code(value));
-				}
+				String function = rs.getString(5);
+				String functionCodeSpace = rs.getString(6);
+				if (function != null)
+					intBuildingInstallation.setFunction(Util.string2codeList(function, functionCodeSpace));
 
-				String usage = rs.getString("USAGE");
-				if (usage != null) {
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(usage.trim()))
-						intBuildingInstallation.addUsage(new Code(value));
-				}
+				String usage = rs.getString(7);
+				String usageCodeSpace = rs.getString(8);
+				if (usage != null)
+					intBuildingInstallation.setUsage(Util.string2codeList(usage, usageCodeSpace));
+				
+				// boundarySurface
+				// geometry objects of _BoundarySurface elements have to be referenced by lod4Geometry 
+				// So we first export all _BoundarySurfaces
+				thematicSurfaceExporter.read(intBuildingInstallation, installationId);	
 
-				long lodSurfaceGeometryId = rs.getLong("LOD4_GEOMETRY_ID");
-				if (!rs.wasNull() && lodSurfaceGeometryId != 0) {
-					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodSurfaceGeometryId);
+				// geometry
+				long surfaceGeometryId = rs.getLong(11);
+				Object geomObj = rs.getObject(14);
+				if (surfaceGeometryId != 0 || geomObj != null) {
+					GeometryProperty<AbstractGeometry> geometryProperty = null;
+					if (surfaceGeometryId != 0) {
+						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
+						if (geometry != null) {
+							geometryProperty = new GeometryProperty<AbstractGeometry>();
+							if (geometry.getAbstractGeometry() != null)
+								geometryProperty.setGeometry(geometry.getAbstractGeometry());
+							else
+								geometryProperty.setHref(geometry.getTarget());
+						}
+					} else {
+						GeometryObject geometry = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(geomObj);
+						if (geometry != null) {
+							geometryProperty = new GeometryProperty<AbstractGeometry>();
+							geometryProperty.setGeometry(geometryExporter.getPointOrCurveGeometry(geometry, true));
+						}	
+					}
 
-					if (geometry != null) {
-						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
-
-						if (geometry.getAbstractGeometry() != null)
-							geometryProperty.setGeometry(geometry.getAbstractGeometry());
-						else
-							geometryProperty.setHref(geometry.getTarget());
-
+					if (geometryProperty != null)
 						intBuildingInstallation.setLod4Geometry(geometryProperty);
+				}
+
+				// implicit geometry
+				long implicitGeometryId = rs.getLong(17);
+				if (implicitGeometryId != 0) {
+					GeometryObject referencePoint = null;
+					Object referencePointObj = rs.getObject(20);
+					if (!rs.wasNull() && referencePointObj != null)
+						referencePoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);
+
+					String transformationMatrix = rs.getString(23);
+
+					ImplicitGeometry implicit = implicitGeometryExporter.read(implicitGeometryId, referencePoint, transformationMatrix);
+					if (implicit != null) {
+						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
+						implicitProperty.setObject(implicit);
+						intBuildingInstallation.setLod4ImplicitRepresentation(implicitProperty);
 					}
 				}
 

@@ -43,6 +43,7 @@ import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGeome
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGlobalAppearance;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableGroupToCityObject;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableLibraryObject;
+import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableLinearRing;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModel;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableSurfaceDataToTexImage;
@@ -92,6 +93,9 @@ public class CacheTable extends AbstractCacheTable {
 			break;
 		case SURFACE_GEOMETRY:
 			this.model = CacheTableSurfaceGeometry.getInstance();
+			break;
+		case LINEAR_RING:
+			this.model = CacheTableLinearRing.getInstance();
 			break;
 		case TEXTUREASSOCIATION:
 			this.model = CacheTableTextureAssociation.getInstance();

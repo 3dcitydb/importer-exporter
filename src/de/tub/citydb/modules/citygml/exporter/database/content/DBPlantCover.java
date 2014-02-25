@@ -33,12 +33,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.vegetation.PlantCover;
 import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.base.StringOrRef;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
@@ -71,7 +69,12 @@ public class DBPlantCover implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		psPlantCover = connection.prepareStatement("select * from PLANT_COVER where ID = ?");
+		StringBuilder query = new StringBuilder()
+		.append("select CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, AVERAGE_HEIGHT, AVERAGE_HEIGHT_UNIT, ")
+		.append("LOD1_MULTI_SURFACE_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID, ")
+		.append("LOD1_MULTI_SOLID_ID, LOD2_MULTI_SOLID_ID, LOD3_MULTI_SOLID_ID, LOD4_MULTI_SOLID_ID ")
+		.append("from PLANT_COVER where ID = ?");
+		psPlantCover = connection.prepareStatement(query.toString());
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
@@ -93,89 +96,89 @@ public class DBPlantCover implements DBExporter {
 			rs = psPlantCover.executeQuery();
 
 			if (rs.next()) {
-				String gmlName = rs.getString("NAME");
-				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
-
-				Util.string2codeList(plantCover, gmlName, gmlNameCodespace);
-
-				String description = rs.getString("DESCRIPTION");
-				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRef();
-					stringOrRef.setValue(description);
-					plantCover.setDescription(stringOrRef);
-				}
-
-				String clazz = rs.getString("CLASS");
+				String clazz = rs.getString(1);
 				if (clazz != null) {
-					plantCover.setClazz(new Code(clazz));
+					Code code = new Code(clazz);
+					code.setCodeSpace(rs.getString(2));
+					plantCover.setClazz(code);
 				}
 
-				String function = rs.getString("FUNCTION");
-				if (function != null) {
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(function.trim()))
-						plantCover.addFunction(new Code(value));
-				}
+				String function = rs.getString(3);
+				String functionCodeSpace = rs.getString(4);
+				if (function != null)
+					plantCover.setFunction(Util.string2codeList(function, functionCodeSpace));
 
-				double averageHeight = rs.getDouble("AVERAGE_HEIGHT");
+				String usage = rs.getString(5);
+				String usageCodeSpace = rs.getString(6);
+				if (usage != null)
+					plantCover.setUsage(Util.string2codeList(usage, usageCodeSpace));
+				
+				double averageHeight = rs.getDouble(7);
 				if (!rs.wasNull()) {
 					Length length = new Length();
 					length.setValue(averageHeight);
-					length.setUom("urn:ogc:def:uom:UCUM::m");
+					length.setUom(rs.getString(8));
 					plantCover.setAverageHeight(length);
 				}
 
-				for (int lod = 1; lod < 5 ; lod++) {
-					long geometryId = rs.getLong("LOD" + lod + "_GEOMETRY_ID");
+				// multiSurface
+				for (int lod = 0; lod < 4; lod++) {
+					long surfaceGeometryId = rs.getLong(9 + lod);
+					if (rs.wasNull() || surfaceGeometryId == 0)
+						continue;
 
-					if (!rs.wasNull() && geometryId != 0) {
-						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
+					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
+					if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
+						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
+						if (geometry.getAbstractGeometry() != null)
+							multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
+						else
+							multiSurfaceProperty.setHref(geometry.getTarget());
 
-						if (geometry != null) {
-							if (geometry.getType() == GMLClass.MULTI_SURFACE) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
+						switch (lod) {
+						case 0:
+							plantCover.setLod1MultiSurface(multiSurfaceProperty);
+							break;
+						case 1:
+							plantCover.setLod2MultiSurface(multiSurfaceProperty);
+							break;
+						case 2:
+							plantCover.setLod3MultiSurface(multiSurfaceProperty);
+							break;
+						case 3:
+							plantCover.setLod4MultiSurface(multiSurfaceProperty);
+							break;
+						}
+					}
+				}
+				
+				// solid
+				for (int lod = 0; lod < 4; lod++) {
+					long surfaceGeometryId = rs.getLong(13 + lod);
+					if (rs.wasNull() || surfaceGeometryId == 0)
+						continue;
 
-								if (geometry.getAbstractGeometry() != null)
-									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
-								else
-									multiSurfaceProperty.setHref(geometry.getTarget());
+					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
+					if (geometry != null && geometry.getType() == GMLClass.MULTI_SOLID) {
+						MultiSolidProperty multiSolidProperty = new MultiSolidProperty();
+						if (geometry.getAbstractGeometry() != null)
+							multiSolidProperty.setMultiSolid((MultiSolid)geometry.getAbstractGeometry());
+						else
+							multiSolidProperty.setHref(geometry.getTarget());
 
-								switch (lod) {
-								case 1:
-									plantCover.setLod1MultiSurface(multiSurfaceProperty);
-									break;
-								case 2:
-									plantCover.setLod2MultiSurface(multiSurfaceProperty);
-									break;
-								case 3:
-									plantCover.setLod3MultiSurface(multiSurfaceProperty);
-									break;
-								case 4:
-									plantCover.setLod4MultiSurface(multiSurfaceProperty);
-									break;
-								}
-							}
-
-							else if (geometry.getType() == GMLClass.MULTI_SOLID) {
-								MultiSolidProperty multiSolidProperty = new MultiSolidProperty();
-
-								if (geometry.getAbstractGeometry() != null)
-									multiSolidProperty.setMultiSolid((MultiSolid)geometry.getAbstractGeometry());
-								else
-									multiSolidProperty.setHref(geometry.getTarget());
-
-								switch (lod) {
-								case 1:
-									plantCover.setLod1MultiSolid(multiSolidProperty);
-									break;
-								case 2:
-									plantCover.setLod2MultiSolid(multiSolidProperty);
-									break;
-								case 3:
-									plantCover.setLod3MultiSolid(multiSolidProperty);
-									break;
-								}
-							}
+						switch (lod) {
+						case 0:
+							plantCover.setLod1MultiSolid(multiSolidProperty);
+							break;
+						case 1:
+							plantCover.setLod2MultiSolid(multiSolidProperty);
+							break;
+						case 2:
+							plantCover.setLod3MultiSolid(multiSolidProperty);
+							break;
+						case 3:
+							plantCover.setLod4MultiSolid(multiSolidProperty);
+							break;
 						}
 					}
 				}

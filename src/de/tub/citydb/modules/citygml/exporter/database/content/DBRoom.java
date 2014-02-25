@@ -33,12 +33,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.InteriorRoomProperty;
 import org.citygml4j.model.citygml.building.Room;
-import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
@@ -67,7 +66,11 @@ public class DBRoom implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		psRoom = connection.prepareStatement("select * from ROOM where BUILDING_ID = ?");
+		StringBuilder query = new StringBuilder()
+		.append("select ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, ")
+		.append("LOD4_MULTI_SURFACE_ID, LOD4_SOLID_ID ")
+		.append("from ROOM where BUILDING_ID = ?");
+		psRoom = connection.prepareStatement(query.toString());
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
@@ -84,73 +87,58 @@ public class DBRoom implements DBExporter {
 			rs = psRoom.executeQuery();
 
 			while (rs.next()) {
-				long roomId = rs.getLong("ID");
+				long roomId = rs.getLong(1);
 				Room room = new Room();
 
-				String gmlName = rs.getString("NAME");
-				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
-
-				Util.string2codeList(room, gmlName, gmlNameCodespace);
-
-				String description = rs.getString("DESCRIPTION");
-				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRef();
-					stringOrRef.setValue(description);
-					room.setDescription(stringOrRef);
-				}
-
-				String clazz = rs.getString("CLASS");
+				String clazz = rs.getString(2);
 				if (clazz != null) {
-					room.setClazz(new Code(clazz));
+					Code code = new Code(clazz);
+					code.setCodeSpace(rs.getString(3));
+					room.setClazz(code);
 				}
 
-				String function = rs.getString("FUNCTION");
-				if (function != null) {
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(function.trim()))
-						room.addFunction(new Code(value));
-				}
+				String function = rs.getString(4);
+				String functionCodeSpace = rs.getString(5);
+				if (function != null)
+					room.setFunction(Util.string2codeList(function, functionCodeSpace));
 
-				String usage = rs.getString("USAGE");
-				if (usage != null) {
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(usage.trim()))
-						room.addUsage(new Code(value));
-				}
+				String usage = rs.getString(6);
+				String usageCodeSpace = rs.getString(7);
+				if (usage != null)
+					room.setUsage(Util.string2codeList(usage, usageCodeSpace));
 
 				// boundarySurface
-				// geometry objects of _BoundarySurface elements have to be referenced by lod4Solid 
+				// geometry objects of _BoundarySurface elements have to be referenced by lod4Solid / lod4MultiSurface
 				// So we first export all _BoundarySurfaces
 				thematicSurfaceExporter.read(room, roomId);
-				
-				long lodGeometryId = rs.getLong("LOD4_GEOMETRY_ID");
-				if (!rs.wasNull() && lodGeometryId != 0) {
-					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(lodGeometryId);
 
-					if (geometry != null) {
-						switch (geometry.getType()) {
-						case COMPOSITE_SOLID:
-						case SOLID:
-							SolidProperty solidProperty = new SolidProperty();
+				// lod4MultiSurface
+				long multiSurfaceGeometryId = rs.getLong(8);
+				if (!rs.wasNull() && multiSurfaceGeometryId != 0) {
+					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(multiSurfaceGeometryId);
+					if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
+						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
+						if (geometry.getAbstractGeometry() != null)
+							multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
+						else
+							multiSurfaceProperty.setHref(geometry.getTarget());
 
-							if (geometry.getAbstractGeometry() != null)
-								solidProperty.setSolid((AbstractSolid)geometry.getAbstractGeometry());
-							else
-								solidProperty.setHref(geometry.getTarget());
+						room.setLod4MultiSurface(multiSurfaceProperty);
+					}
+				}
 
-							room.setLod4Solid(solidProperty);
-							break;
-						case MULTI_SURFACE:
-							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
+				// lod4Solid
+				long solidGeometryId = rs.getLong(9);
+				if (!rs.wasNull() && solidGeometryId != 0) {
+					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(solidGeometryId);
+					if (geometry != null && (geometry.getType() == GMLClass.SOLID || geometry.getType() == GMLClass.COMPOSITE_SOLID)) {
+						SolidProperty solidProperty = new SolidProperty();
+						if (geometry.getAbstractGeometry() != null)
+							solidProperty.setSolid((AbstractSolid)geometry.getAbstractGeometry());
+						else
+							solidProperty.setHref(geometry.getTarget());
 
-							if (geometry.getAbstractGeometry() != null)
-								multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
-							else
-								multiSurfaceProperty.setHref(geometry.getTarget());
-
-							room.setLod4MultiSurface(multiSurfaceProperty);
-							break;
-						}
+						room.setLod4Solid(solidProperty);
 					}
 				}
 

@@ -33,12 +33,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.landuse.LandUse;
 import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.base.StringOrRef;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
@@ -68,7 +66,11 @@ public class DBLandUse implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		psLandUse = connection.prepareStatement("select * from LAND_USE where ID = ?");
+		StringBuilder query = new StringBuilder()
+		.append("select CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, ")
+		.append("LOD0_MULTI_SURFACE_ID, LOD1_MULTI_SURFACE_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID ")
+		.append("from LAND_USE where ID = ?");
+		psLandUse = connection.prepareStatement(query.toString());
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
@@ -90,68 +92,53 @@ public class DBLandUse implements DBExporter {
 			rs = psLandUse.executeQuery();
 
 			if (rs.next()) {
-				String gmlName = rs.getString("NAME");
-				String gmlNameCodespace = rs.getString("NAME_CODESPACE");
-
-				Util.string2codeList(landUse, gmlName, gmlNameCodespace);
-
-				String description = rs.getString("DESCRIPTION");
-				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRef();
-					stringOrRef.setValue(description);
-					landUse.setDescription(stringOrRef);
-				}
-
-				String clazz = rs.getString("CLASS");
+				String clazz = rs.getString(1);
 				if (clazz != null) {
-					landUse.setClazz(new Code(clazz));
+					Code code = new Code(clazz);
+					code.setCodeSpace(rs.getString(2));
+					landUse.setClazz(code);
 				}
 
-				String function = rs.getString("FUNCTION");
-				if (function != null) {
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(function.trim()))
-						landUse.addFunction(new Code(value));
-				}
+				String function = rs.getString(3);
+				String functionCodeSpace = rs.getString(4);
+				if (function != null)
+					landUse.setFunction(Util.string2codeList(function, functionCodeSpace));
 
-				String usage = rs.getString("USAGE");
-				if (usage != null) {
-					Pattern p = Pattern.compile("\\s+");
-					for (String value : p.split(usage.trim()))
-						landUse.addUsage(new Code(value));
-				}
+				String usage = rs.getString(5);
+				String usageCodeSpace = rs.getString(6);
+				if (usage != null)
+					landUse.setUsage(Util.string2codeList(usage, usageCodeSpace));
+				
+				// multiSurface
+				for (int lod = 0; lod < 5; lod++) {
+					long surfaceGeometryId = rs.getLong(7 + lod);
+					if (rs.wasNull() || surfaceGeometryId == 0)
+						continue;
 
-				for (int lod = 0; lod < 5 ; lod++) {
-					long multiSurfaceId = rs.getLong("LOD" + lod + "_MULTI_SURFACE_ID");
+					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
+					if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
+						MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
+						if (geometry.getAbstractGeometry() != null)
+							multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
+						else
+							multiSurfaceProperty.setHref(geometry.getTarget());
 
-					if (!rs.wasNull() && multiSurfaceId != 0) {
-						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(multiSurfaceId);
-
-						if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
-							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-
-							if (geometry.getAbstractGeometry() != null)
-								multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
-							else
-								multiSurfaceProperty.setHref(geometry.getTarget());
-
-							switch (lod) {
-							case 0:
-								landUse.setLod0MultiSurface(multiSurfaceProperty);
-								break;
-							case 1:
-								landUse.setLod1MultiSurface(multiSurfaceProperty);
-								break;
-							case 2:
-								landUse.setLod2MultiSurface(multiSurfaceProperty);
-								break;
-							case 3:
-								landUse.setLod3MultiSurface(multiSurfaceProperty);
-								break;
-							case 4:
-								landUse.setLod4MultiSurface(multiSurfaceProperty);
-								break;
-							}
+						switch (lod) {
+						case 0:
+							landUse.setLod0MultiSurface(multiSurfaceProperty);
+							break;
+						case 1:
+							landUse.setLod1MultiSurface(multiSurfaceProperty);
+							break;
+						case 2:
+							landUse.setLod2MultiSurface(multiSurfaceProperty);
+							break;
+						case 3:
+							landUse.setLod3MultiSurface(multiSurfaceProperty);
+							break;
+						case 4:
+							landUse.setLod4MultiSurface(multiSurfaceProperty);
+							break;
 						}
 					}
 				}

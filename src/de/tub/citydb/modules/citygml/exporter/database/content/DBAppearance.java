@@ -65,10 +65,8 @@ import org.citygml4j.xml.io.writer.CityGMLWriteException;
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFileEnum;
 import de.tub.citydb.util.Util;
 
 public class DBAppearance implements DBExporter {
@@ -90,7 +88,7 @@ public class DBAppearance implements DBExporter {
 	private String gmlIdPrefix;
 	private String pathSeparator;
 
-	private HashSet<String> textureNameCache;
+	private HashSet<Long> texImageIds;
 
 	public DBAppearance(DBExporterEnum type, Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		if (type != DBExporterEnum.LOCAL_APPEARANCE && type != DBExporterEnum.GLOBAL_APPEARANCE)
@@ -105,15 +103,14 @@ public class DBAppearance implements DBExporter {
 	}
 
 	private void init() throws SQLException {
-		textureNameCache = new HashSet<String>();
+		texImageIds = new HashSet<Long>();
 		exportTextureImage = config.getProject().getExporter().getAppearances().isSetExportTextureFiles();
 		uniqueFileNames = config.getProject().getExporter().getAppearances().isSetUniqueTextureFileNames();
 		noOfBuckets = config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets(); 
 		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() && noOfBuckets > 0;
 
 		texturePath = config.getInternal().getExportTextureFilePath();
-		pathSeparator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ?
-				File.separator : "/";
+		pathSeparator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ? File.separator : "/";
 
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
 		if (!useXLink) {
@@ -121,27 +118,29 @@ public class DBAppearance implements DBExporter {
 			gmlIdPrefix = config.getProject().getExporter().getXlink().getFeature().getIdPrefix();
 		}
 
-		String getTextureImageContentLength = dbExporterManager.getDatabaseAdapter().getSQLAdapter().getTextureImageContentLength("TEX_IMAGE", "sd");
+		String getTextureImageContentLength = dbExporterManager.getDatabaseAdapter().getSQLAdapter().getTextureImageContentLength("TEX_IMAGE", "ti");
 		
 		StringBuilder query = new StringBuilder();
 		if (!config.getInternal().isTransformCoordinates()) {		
 			query.append("select app.ID as APP_ID, app.GMLID as APP_GMLID, app.NAME as APP_NAME, app.NAME_CODESPACE as APP_NAME_CODESPACE, app.DESCRIPTION as APP_DESCRIPTION, app.THEME, ")
-			.append("sd.ID as SD_ID, sd.GMLID as SD_GMLID, sd.NAME as SD_NAME, sd.NAME_CODESPACE as SD_NAME_CODESPACE, sd.DESCRIPTION as SD_DESCRIPTION, sd.IS_FRONT, upper(sd.TYPE) as TYPE, ")
+			.append("sd.ID as SD_ID, sd.OBJECTCLASS_ID as SD_OBJECTCLASS_ID, sd.GMLID as SD_GMLID, sd.NAME as SD_NAME, sd.NAME_CODESPACE as SD_NAME_CODESPACE, sd.DESCRIPTION as SD_DESCRIPTION, sd.IS_FRONT, ")
 			.append("sd.X3D_SHININESS, sd.X3D_TRANSPARENCY, sd.X3D_AMBIENT_INTENSITY, sd.X3D_SPECULAR_COLOR, sd.X3D_DIFFUSE_COLOR, sd.X3D_EMISSIVE_COLOR, sd.X3D_IS_SMOOTH, ")
-			.append("sd.TEX_IMAGE_URI, COALESCE(").append(getTextureImageContentLength).append(", 0) as DB_TEX_IMAGE_SIZE, sd.TEX_MIME_TYPE, lower(sd.TEX_TEXTURE_TYPE) as TEX_TEXTURE_TYPE, lower(sd.TEX_WRAP_MODE) as TEX_WRAP_MODE, sd.TEX_BORDER_COLOR, ")
+			.append("sd.TEX_IMAGE_ID, COALESCE(").append(getTextureImageContentLength).append(", 0) as DB_TEX_IMAGE_SIZE, ti.TEX_IMAGE_URI, ti.TEX_MIME_TYPE, ti.TEX_MIME_TYPE_CODESPACE, ")
+			.append("lower(sd.TEX_TEXTURE_TYPE) as TEX_TEXTURE_TYPE, lower(sd.TEX_WRAP_MODE) as TEX_WRAP_MODE, sd.TEX_BORDER_COLOR, ")	
 			.append("sd.GT_PREFER_WORLDFILE, sd.GT_ORIENTATION, sd.GT_REFERENCE_POINT ")
-			.append("from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID where ");
+			.append("from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID left join TEX_IMAGE ti on sd.TEX_IMAGE_ID=ti.ID where ");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
 			query.append("select app.ID as APP_ID, app.GMLID as APP_GMLID, app.NAME as APP_NAME, app.NAME_CODESPACE as APP_NAME_CODESPACE, app.DESCRIPTION as APP_DESCRIPTION, app.THEME, ")
-			.append("sd.ID as SD_ID, sd.GMLID as SD_GMLID, sd.NAME as SD_NAME, sd.NAME_CODESPACE as SD_NAME_CODESPACE, sd.DESCRIPTION as SD_DESCRIPTION, sd.IS_FRONT, upper(sd.TYPE) as TYPE, ")
+			.append("sd.ID as SD_ID, sd.OBJECTCLASS_ID as SD_OBJECTCLASS_ID, sd.GMLID as SD_GMLID, sd.NAME as SD_NAME, sd.NAME_CODESPACE as SD_NAME_CODESPACE, sd.DESCRIPTION as SD_DESCRIPTION, sd.IS_FRONT, ")
 			.append("sd.X3D_SHININESS, sd.X3D_TRANSPARENCY, sd.X3D_AMBIENT_INTENSITY, sd.X3D_SPECULAR_COLOR, sd.X3D_DIFFUSE_COLOR, sd.X3D_EMISSIVE_COLOR, sd.X3D_IS_SMOOTH, ")
-			.append("sd.TEX_IMAGE_URI, COALESCE(").append(getTextureImageContentLength).append(", 0) as DB_TEX_IMAGE_SIZE, sd.TEX_MIME_TYPE, lower(sd.TEX_TEXTURE_TYPE) as TEX_TEXTURE_TYPE, lower(sd.TEX_WRAP_MODE) as TEX_WRAP_MODE, sd.TEX_BORDER_COLOR, ")
+			.append("sd.TEX_IMAGE_ID, COALESCE(").append(getTextureImageContentLength).append(", 0) as DB_TEX_IMAGE_SIZE, ti.TEX_IMAGE_URI, ti.TEX_MIME_TYPE, ti.TEX_MIME_TYPE_CODESPACE, ")
+			.append("lower(sd.TEX_TEXTURE_TYPE) as TEX_TEXTURE_TYPE, lower(sd.TEX_WRAP_MODE) as TEX_WRAP_MODE, sd.TEX_BORDER_COLOR, ")
 			.append("sd.GT_PREFER_WORLDFILE, sd.GT_ORIENTATION, ")
 			.append(transformOrNull).append("(sd.GT_REFERENCE_POINT, ").append(srid).append(") AS GT_REFERENCE_POINT ")
-			.append("from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID where ");
+			.append("from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID left join TEX_IMAGE ti on sd.TEX_IMAGE_ID=ti.ID where ");
 		}
 
 		if (type == DBExporterEnum.LOCAL_APPEARANCE)
@@ -167,7 +166,7 @@ public class DBAppearance implements DBExporter {
 			Appearance appearance = null;
 
 			while (rs.next()) {
-				long appearanceId = rs.getLong("APP_ID");
+				long appearanceId = rs.getLong(1);
 
 				if (appearanceId != currentAppearanceId) {
 					currentAppearanceId = appearanceId;
@@ -209,7 +208,7 @@ public class DBAppearance implements DBExporter {
 			while (rs.next()) {
 				if (!isInited) {
 					getAppearancePropeties(appearance, rs);
-					textureNameCache.clear();
+					texImageIds.clear();
 					isInited = true;
 				}
 
@@ -231,47 +230,53 @@ public class DBAppearance implements DBExporter {
 	}
 	
 	private void getAppearancePropeties(Appearance appearance, ResultSet rs) throws SQLException {
-		String gmlId = rs.getString("APP_GMLID");
+		String gmlId = rs.getString(2);
 		if (gmlId != null)
 			appearance.setId(gmlId);
 
-		String gmlName = rs.getString("APP_NAME");
-		String gmlNameCodespace = rs.getString("APP_NAME_CODESPACE");
+		String gmlName = rs.getString(3);
+		String gmlNameCodespace = rs.getString(4);
+		if (gmlName != null)
+			appearance.setName(Util.string2codeList(gmlName, gmlNameCodespace));
 
-		Util.string2codeList(appearance, gmlName, gmlNameCodespace);
-
-		String description = rs.getString("APP_DESCRIPTION");
+		String description = rs.getString(5);
 		if (description != null) {
 			StringOrRef stringOrRef = new StringOrRef();
 			stringOrRef.setValue(description);
 			appearance.setDescription(stringOrRef);
 		}
 
-		String theme = rs.getString("THEME");
+		String theme = rs.getString(6);
 		if (theme != null)
 			appearance.setTheme(theme);
 	}
 
 	private void addSurfaceData(Appearance appearance, ResultSet rs) throws SQLException {
-		long surfaceDataId = rs.getLong("SD_ID");
+		long surfaceDataId = rs.getLong(7);
 		if (rs.wasNull())
 			return;
 		
-		String surfaceDataType = rs.getString("TYPE");
-		if (rs.wasNull() || surfaceDataType == null || surfaceDataType.length() == 0)
+		int classId = rs.getInt(8);
+		if (rs.wasNull() || classId == 0)
 			return;
-
+		
 		AbstractSurfaceData surfaceData = null;		
-		if (surfaceDataType.equals(TypeAttributeValueEnum.X3D_MATERIAL.toString().toUpperCase()))
+		CityGMLClass type = Util.classId2cityObject(classId);
+		switch (type) {
+		case X3D_MATERIAL:
 			surfaceData = new X3DMaterial();
-		else if (surfaceDataType.equals(TypeAttributeValueEnum.PARAMETERIZED_TEXTURE.toString().toUpperCase()))
+			break;
+		case PARAMETERIZED_TEXTURE:
 			surfaceData = new ParameterizedTexture();
-		else if (surfaceDataType.equals(TypeAttributeValueEnum.GEOREFERENCED_TEXTURE.toString().toUpperCase()))
+			break;
+		case GEOREFERENCED_TEXTURE:
 			surfaceData = new GeoreferencedTexture();
-		else
+			break;
+		default:
 			return;
+		}
 
-		String gmlId = rs.getString("SD_GMLID");
+		String gmlId = rs.getString(9);
 		if (gmlId != null) {
 			// process xlink
 			if (dbExporterManager.lookupAndPutGmlId(gmlId, surfaceDataId, CityGMLClass.ABSTRACT_SURFACE_DATA)) {
@@ -298,53 +303,39 @@ public class DBAppearance implements DBExporter {
 		if (!hasTargets)
 			return;
 
-		String gmlName = rs.getString("SD_NAME");
-		String gmlNameCodespace = rs.getString("SD_NAME_CODESPACE");
+		String gmlName = rs.getString(10);
+		String gmlNameCodespace = rs.getString(11);
+		if (gmlName != null)
+			surfaceData.setName(Util.string2codeList(gmlName, gmlNameCodespace));
 
-		Util.string2codeList(surfaceData, gmlName, gmlNameCodespace);
-
-		String description = rs.getString("SD_DESCRIPTION");
+		String description = rs.getString(12);
 		if (description != null) {
 			StringOrRef stringOrRef = new StringOrRef();
 			stringOrRef.setValue(description);
 			surfaceData.setDescription(stringOrRef);
 		}
 
-		int isFront = rs.getInt("IS_FRONT");
+		int isFront = rs.getInt(13);
 		if (!rs.wasNull() && isFront == 0)
 			surfaceData.setIsFront(false);
 
-		if (surfaceData.getCityGMLClass() == CityGMLClass.X3D_MATERIAL) {
+		if (type == CityGMLClass.X3D_MATERIAL) {
 			X3DMaterial material = (X3DMaterial)surfaceData;
 
-			double shininess = rs.getDouble("X3D_SHININESS");
+			double shininess = rs.getDouble(14);
 			if (!rs.wasNull())
 				material.setShininess(shininess);
 
-			double transparency = rs.getDouble("X3D_TRANSPARENCY");
+			double transparency = rs.getDouble(15);
 			if (!rs.wasNull())
 				material.setTransparency(transparency);
 
-			double ambientIntensity = rs.getDouble("X3D_AMBIENT_INTENSITY");
+			double ambientIntensity = rs.getDouble(16);
 			if (!rs.wasNull())
 				material.setAmbientIntensity(ambientIntensity);
 
 			for (int i = 0; i < 3; i++) {
-				String columnName = null;
-
-				switch (i) {
-				case 0:
-					columnName = "X3D_SPECULAR_COLOR";
-					break;
-				case 1:
-					columnName = "X3D_DIFFUSE_COLOR";
-					break;
-				case 2:
-					columnName = "X3D_EMISSIVE_COLOR";
-					break;
-				}
-
-				String colorString = rs.getString(columnName);
+				String colorString = rs.getString(17 + i);
 				if (colorString != null) {
 					List<Double> colorList = Util.string2double(colorString, "\\s+");
 
@@ -368,18 +359,20 @@ public class DBAppearance implements DBExporter {
 				}
 			}
 
-			int isSmooth = rs.getInt("X3D_IS_SMOOTH");
+			int isSmooth = rs.getInt(20);
 			if (!rs.wasNull() && isSmooth == 1)
 				material.setIsSmooth(true);
 		}
 
-		else if (surfaceData.getCityGMLClass() == CityGMLClass.PARAMETERIZED_TEXTURE ||
-				surfaceData.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE) {
+		else if (type == CityGMLClass.PARAMETERIZED_TEXTURE ||
+				type == CityGMLClass.GEOREFERENCED_TEXTURE) {
 			AbstractTexture absTex = (AbstractTexture)surfaceData;
 
-			long dbImageSize = rs.getLong("DB_TEX_IMAGE_SIZE");
-			String imageURI = rs.getString("TEX_IMAGE_URI");
-			if (imageURI != null) {
+			long texImageId = rs.getLong(21);			
+			if (texImageId != 0) {
+				long dbImageSize = rs.getLong(22);
+				
+				String imageURI = rs.getString(23);
 				if (uniqueFileNames) {
 					String extension = Util.getFileExtension(imageURI);
 					imageURI = Internal.UNIQUE_TEXTURE_FILENAME_PREFIX + surfaceDataId + (extension != null ? "." + extension : "");
@@ -387,20 +380,18 @@ public class DBAppearance implements DBExporter {
 
 				File file = new File(imageURI);
 				String fileName = file.getName();
-				
 				if (useBuckets)
 					fileName = String.valueOf(Math.abs(surfaceDataId % noOfBuckets + 1)) + pathSeparator + fileName;
 				
 				absTex.setImageURI(texturePath != null ? texturePath + pathSeparator + fileName : fileName);
 
 				// export texture image from database
-				if (exportTextureImage && (uniqueFileNames || !textureNameCache.contains(imageURI))) {
+				if (exportTextureImage && (uniqueFileNames || !texImageIds.contains(texImageId))) {
 					if (dbImageSize > 0) {
-						DBXlinkTextureFile xlink = new DBXlinkTextureFile(
-								surfaceDataId,
+						dbExporterManager.propagateXlink(new DBXlinkTextureFile(
+								texImageId,
 								fileName,
-								DBXlinkTextureFileEnum.TEXTURE_IMAGE);
-						dbExporterManager.propagateXlink(xlink);
+								false));
 					} else {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 								absTex.getCityGMLClass(), 
@@ -413,27 +404,28 @@ public class DBAppearance implements DBExporter {
 					}
 
 					if (!uniqueFileNames)
-						textureNameCache.add(imageURI);
+						texImageIds.add(texImageId);
 				}
 			}
 
-			String mimeType = rs.getString("TEX_MIME_TYPE");
-			if (mimeType != null)
-				absTex.setMimeType(new Code(mimeType));
-
-			String textureType = rs.getString("TEX_TEXTURE_TYPE");
-			if (textureType != null) {
-				TextureType type = TextureType.fromValue(textureType);
-				absTex.setTextureType(type);
+			String mimeType = rs.getString(24);
+			if (mimeType != null) {
+				Code code = new Code(mimeType);
+				code.setCodeSpace(rs.getString(25));
+				absTex.setMimeType(code);
 			}
+			
+			String textureType = rs.getString(26);
+			if (textureType != null)
+				absTex.setTextureType(TextureType.fromValue(textureType));
 
-			String wrapMode = rs.getString("TEX_WRAP_MODE");
+			String wrapMode = rs.getString(27);
 			if (wrapMode != null) {
 				WrapMode mode = WrapMode.fromValue(wrapMode);
 				absTex.setWrapMode(mode);
 			}
 
-			String borderColorString = rs.getString("TEX_BORDER_COLOR");
+			String borderColorString = rs.getString(28);
 			if (borderColorString != null) {
 				List<Double> colorList = Util.string2double(borderColorString, "\\s+");
 
@@ -449,14 +441,14 @@ public class DBAppearance implements DBExporter {
 			}
 		}
 
-		if (surfaceData.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE) {
+		if (type == CityGMLClass.GEOREFERENCED_TEXTURE) {
 			GeoreferencedTexture geoTex = (GeoreferencedTexture)surfaceData;
 
-			int preferWorldFile = rs.getInt("GT_PREFER_WORLDFILE");
+			int preferWorldFile = rs.getInt(29);
 			if (!rs.wasNull() && preferWorldFile == 0)
 				geoTex.setPreferWorldFile(false);
 
-			String orientationString = rs.getString("GT_ORIENTATION");
+			String orientationString = rs.getString(30);
 			if (orientationString != null) {
 				List<Double> m = Util.string2double(orientationString, "\\s+");
 
@@ -468,7 +460,7 @@ public class DBAppearance implements DBExporter {
 				}
 			}
 
-			Object referencePointObj = rs.getObject("GT_REFERENCE_POINT");
+			Object referencePointObj = rs.getObject(31);
 			if (!rs.wasNull() && referencePointObj != null) {
 				GeometryObject pointObj = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPoint(referencePointObj);				
 
@@ -500,7 +492,7 @@ public class DBAppearance implements DBExporter {
 	}
 
 	public void clearLocalCache() {
-		textureNameCache.clear();
+		texImageIds.clear();
 	}
 
 	@Override

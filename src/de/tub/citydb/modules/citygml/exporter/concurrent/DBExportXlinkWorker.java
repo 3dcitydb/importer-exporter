@@ -43,7 +43,6 @@ import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFileEnum;
 import de.tub.citydb.modules.citygml.exporter.database.xlink.DBXlinkExporterEnum;
 import de.tub.citydb.modules.citygml.exporter.database.xlink.DBXlinkExporterLibraryObject;
 import de.tub.citydb.modules.citygml.exporter.database.xlink.DBXlinkExporterManager;
@@ -176,7 +175,7 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 				case TEXTURE_FILE:
 					DBXlinkTextureFile texFile = (DBXlinkTextureFile)work;
 
-					if (texFile.getType() == DBXlinkTextureFileEnum.TEXTURE_IMAGE) {
+					if (!texFile.isWorldFile()) {
 						DBXlinkExporterTextureImage imageExporter = (DBXlinkExporterTextureImage)xlinkExporterManager.getDBXlinkExporter(DBXlinkExporterEnum.TEXTURE_IMAGE);
 						if (imageExporter != null)
 							success = imageExporter.export(texFile);
@@ -191,6 +190,8 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 						success = libraryObject.export(libObject);
 
 					break;
+				default:
+					return;
 				}
 
 				if (!success)

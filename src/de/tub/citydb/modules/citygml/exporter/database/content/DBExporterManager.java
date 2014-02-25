@@ -136,10 +136,13 @@ public class DBExporterManager {
 				dbExporter = new DBSurfaceGeometry(connection, globalAppTempTable, config, this);
 				break;
 			case IMPLICIT_GEOMETRY:
-				dbExporter = new DBImplicitGeometry(connection, config, this);
+				dbExporter = new DBImplicitGeometry(connection, this);
 				break;
 			case CITYOBJECT:
 				dbExporter = new DBCityObject(connection, exportFilter, config, this);
+				break;
+			case CITYOBJECT_GENERICATTRIB:
+				dbExporter = new DBCityObjectGenericAttrib(connection);
 				break;
 			case BUILDING:
 				dbExporter = new DBBuilding(connection, exportFilter, config, this);
@@ -151,7 +154,7 @@ public class DBExporterManager {
 				dbExporter = new DBBuildingFurniture(connection, config, this);
 				break;
 			case BUILDING_INSTALLATION:
-				dbExporter = new DBBuildingInstallation(connection, this);
+				dbExporter = new DBBuildingInstallation(connection, config, this);
 				break;
 			case THEMATIC_SURFACE:
 				dbExporter = new DBThematicSurface(connection, config, this);
@@ -182,12 +185,12 @@ public class DBExporterManager {
 				dbExporter = new DBAppearance(dbExporterType, connection, config, this);
 				break;
 			case LOCAL_APPEARANCE_TEXTUREPARAM:
-				dbExporter = new DBTextureParam(dbExporterType, connection);
+				dbExporter = new DBTextureParam(dbExporterType, connection, this);
 				break;
 			case GLOBAL_APPEARANCE_TEXTUREPARAM:
 				globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
 				if (globalAppTempTable != null)
-					dbExporter = new DBTextureParam(dbExporterType, globalAppTempTable);
+					dbExporter = new DBTextureParam(dbExporterType, globalAppTempTable, this);
 				break;
 			case GENERIC_CITYOBJECT:
 				dbExporter = new DBGenericCityObject(connection, exportFilter, config, this);

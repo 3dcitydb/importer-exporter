@@ -30,6 +30,8 @@
 package de.tub.citydb.modules.citygml.exporter.database.content;
 
 import java.io.File;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -46,7 +48,6 @@ import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 
 import de.tub.citydb.api.geometry.GeometryObject;
-import de.tub.citydb.config.Config;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 import de.tub.citydb.util.Util;
 
@@ -58,24 +59,28 @@ public class DBImplicitGeometry implements DBExporter {
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBOtherGeometry geometryExporter;
-	private boolean transformCoords;
+	private MessageDigest md5;
 
-	public DBImplicitGeometry(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBImplicitGeometry(Connection connection, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.dbExporterManager = dbExporterManager;
 
-		transformCoords = config.getInternal().isTransformCoordinates();
 		init();
 	}
 
 	private void init() throws SQLException {
 		String getLength = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("blob.get_length");
 
-		StringBuilder query = new StringBuilder()
-		.append("select ID, MIME_TYPE, REFERENCE_TO_LIBRARY, ")
+		try {
+			md5 = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {
+			throw new SQLException(e);
+		}
+
+		StringBuilder query = new StringBuilder("select ID, MIME_TYPE, REFERENCE_TO_LIBRARY, ")
 		.append(getLength).append("(LIBRARY_OBJECT) as DB_LIBRARY_OBJECT_LENGTH, ")
-		.append("RELATIVE_GEOMETRY_ID from IMPLICIT_GEOMETRY where ID=?");
-		
+		.append("RELATIVE_BREP_ID, RELATIVE_OTHER_GEOM from IMPLICIT_GEOMETRY where ID=?");
+
 		psImplicitGeometry = connection.prepareStatement(query.toString());
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
@@ -94,8 +99,8 @@ public class DBImplicitGeometry implements DBExporter {
 
 			if (rs.next()) {
 				// library object
-				long dbBlobSize = rs.getLong("DB_LIBRARY_OBJECT_LENGTH");
-				String blobURI = rs.getString("REFERENCE_TO_LIBRARY");
+				String blobURI = rs.getString(3);
+				long dbBlobSize = rs.getLong(4);
 				if (blobURI != null) {
 					// export library object from database
 					isValid = true;
@@ -109,36 +114,45 @@ public class DBImplicitGeometry implements DBExporter {
 					} else
 						implicit.setLibraryObject(blobURI);
 
-					String mimeType = rs.getString("MIME_TYPE");
-					if (mimeType != null)
-						implicit.setMimeType(new Code(mimeType));
+					implicit.setMimeType(new Code(rs.getString(2)));
 				}
 
-				long surfaceGeometryId = rs.getLong("RELATIVE_GEOMETRY_ID");
-				if (!rs.wasNull() && surfaceGeometryId != 0) {
+				// geometry
+				long surfaceGeometryId = rs.getLong(5);
+				Object otherGeomObj = rs.getObject(6);
+
+				if (surfaceGeometryId != 0) {
 					isValid = true;
 
-					// if coordinate transformation is activated we need to ensure
-					// that the transformation is not applied to the prototype
-					if (transformCoords)
-						surfaceGeometryExporter.setApplyCoordinateTransformation(false);
-
-					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
-
+					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.readImplicitGeometry(surfaceGeometryId);
 					if (geometry != null) {
 						GeometryProperty<AbstractGeometry> geometryProperty = new GeometryProperty<AbstractGeometry>();
-
 						if (geometry.getAbstractGeometry() != null)
 							geometryProperty.setGeometry(geometry.getAbstractGeometry());
 						else
 							geometryProperty.setHref(geometry.getTarget());
 
 						implicit.setRelativeGeometry(geometryProperty);
-					}
+					} else
+						isValid = false;
+					
+				} else if (otherGeomObj != null) {
+					isValid = true;
 
-					// re-activate coordinate transformation on surface geometry writer if necessary
-					if (transformCoords)
-						surfaceGeometryExporter.setApplyCoordinateTransformation(true);
+					long implicitId = rs.getLong(1);
+					String uuid = toHexString(md5.digest(String.valueOf(implicitId).getBytes()));
+
+					if (dbExporterManager.lookupAndPutGmlId(uuid, implicitId, CityGMLClass.IMPLICIT_GEOMETRY)) {
+						implicit.setRelativeGeometry(new GeometryProperty<AbstractGeometry>("#UUID_" + uuid));
+					} else {
+						GeometryObject otherGeom = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(otherGeomObj);
+						AbstractGeometry geometry = geometryExporter.getPointOrCurveGeometry(otherGeom, true);
+						if (geometry != null) {
+							geometry.setId("UUID_" + uuid);
+							implicit.setRelativeGeometry(new GeometryProperty<AbstractGeometry>(geometry));
+						} else
+							isValid = false;
+					}
 				}
 			}
 
@@ -148,7 +162,6 @@ public class DBImplicitGeometry implements DBExporter {
 			// referencePoint
 			if (referencePoint != null) {
 				PointProperty pointProperty = geometryExporter.getPointProperty(referencePoint, false);
-
 				if (pointProperty != null)
 					implicit.setReferencePoint(pointProperty);
 			}
@@ -156,11 +169,9 @@ public class DBImplicitGeometry implements DBExporter {
 			// transformationMatrix
 			if (transformationMatrix != null) {
 				List<Double> m = Util.string2double(transformationMatrix, "\\s+");
-
 				if (m != null && m.size() >= 16) {
 					Matrix matrix = new Matrix(4, 4);
 					matrix.setMatrix(m.subList(0, 16));
-
 					implicit.setTransformationMatrix(new TransformationMatrix4x4(matrix));
 				}
 			}
@@ -175,6 +186,14 @@ public class DBImplicitGeometry implements DBExporter {
 			if (rs != null)
 				rs.close();
 		}
+	}
+
+	private String toHexString(byte[] bytes) {
+		StringBuilder hexString = new StringBuilder();
+		for (int i = 0; i < bytes.length; i++)
+			hexString.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+
+		return hexString.toString();
 	}
 
 	@Override

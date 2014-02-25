@@ -46,7 +46,6 @@ import org.citygml4j.model.citygml.relief.ReliefFeature;
 import org.citygml4j.model.citygml.relief.TINRelief;
 import org.citygml4j.model.citygml.relief.TinProperty;
 import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.base.StringOrRef;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
 import org.citygml4j.model.gml.geometry.primitives.ControlPoint;
@@ -106,11 +105,13 @@ public class DBReliefFeature implements DBExporter {
 
 		if (!config.getInternal().isTransformCoordinates()) {	
 			StringBuilder query = new StringBuilder()
-			.append("select rf.ID as RF_ID, rf.NAME as RF_NAME, rf.NAME_CODESPACE as RF_NAME_CODESPACE, rf.DESCRIPTION as RF_DESCRIPTION, rf.LOD as RF_LOD, ")
-			.append("rc.ID as RC_ID, rc.NAME as RC_NAME, rc.NAME_CODESPACE as RC_NAME_CODESPACE, rc.DESCRIPTION as RC_DESCRIPTION, rc.LOD as RC_LOD, rc.EXTENT as RC_EXTENT, ")
-			.append("tr.ID as TR_ID, tr.MAX_LENGTH as TR_MAX_LENGTH, tr.STOP_LINES as TR_STOP_LINES, tr.BREAK_LINES as TR_BREAK_LINES, tr.CONTROL_POINTS as TR_CONTROL_POINTS, tr.SURFACE_GEOMETRY_ID as TR_SURFACE_GEOMETRY_ID, ")
-			.append("mr.ID as MR_ID, mr.RELIEF_POINTS as MR_RELIEF_POINTS, ")
-			.append("br.ID as BR_ID, br.RIDGE_OR_VALLEY_LINES as BR_RIDGE_OR_VALLEY_LINES, br.BREAK_LINES as BR_BREAK_LINES ")
+			.append("select rf.LOD as RF_LOD, ")
+			.append("rc.ID as RC_ID, rc.OBJECTCLASS_ID, ")
+			.append("tr.ID as TR_ID, mr.ID as MR_ID, br.ID as BR_ID, ")
+			.append("rc.LOD as RC_LOD, rc.EXTENT, ")
+			.append("tr.MAX_LENGTH, tr.STOP_LINES, tr.BREAK_LINES as TR_BREAK_LINES, tr.CONTROL_POINTS, tr.SURFACE_GEOMETRY_ID, ")
+			.append("mr.RELIEF_POINTS, ")
+			.append("br.RIDGE_OR_VALLEY_LINES, br.BREAK_LINES as BR_BREAK_LINES ")
 			.append("from RELIEF_FEATURE rf inner join RELIEF_FEAT_TO_REL_COMP rf2rc on rf2rc.RELIEF_FEATURE_ID=rf.ID inner join RELIEF_COMPONENT rc on rf2rc.RELIEF_COMPONENT_ID=rc.ID ")
 			.append("left join TIN_RELIEF tr on tr.ID=rc.ID ")
 			.append("left join MASSPOINT_RELIEF mr on mr.ID=rc.ID ")
@@ -121,18 +122,18 @@ public class DBReliefFeature implements DBExporter {
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
-			.append("select rf.ID as RF_ID, rf.NAME as RF_NAME, rf.NAME_CODESPACE as RF_NAME_CODESPACE, rf.DESCRIPTION as RF_DESCRIPTION, rf.LOD as RF_LOD, ")
-			.append("rc.ID as RC_ID, rc.NAME as RC_NAME, rc.NAME_CODESPACE as RC_NAME_CODESPACE, rc.DESCRIPTION as RC_DESCRIPTION, rc.LOD as RC_LOD, ")
-			.append(transformOrNull).append("(rc.EXTENT, ").append(srid).append(") as RC_EXTENT, ")
-			.append("tr.ID as TR_ID, tr.MAX_LENGTH as TR_MAX_LENGTH, ")
-			.append(transformOrNull).append("(tr.STOP_LINES, ").append(srid).append(") as TR_STOP_LINES, ")
+			.append("select rf.LOD as RF_LOD, ")
+			.append("rc.ID as RC_ID, rc.OBJECTCLASS_ID, ")
+			.append("tr.ID as TR_ID, mr.ID as MR_ID, br.ID as BR_ID, ")
+			.append("rc.LOD as RC_LOD, ")
+			.append(transformOrNull).append("(rc.EXTENT, ").append(srid).append(") as EXTENT, ")
+			.append("tr.MAX_LENGTH, ")
+			.append(transformOrNull).append("(tr.STOP_LINES, ").append(srid).append(") as STOP_LINES, ")
 			.append(transformOrNull).append("(tr.BREAK_LINES, ").append(srid).append(") as TR_BREAK_LINES, ")
-			.append(transformOrNull).append("(tr.CONTROL_POINTS, ").append(srid).append(") as TR_CONTROL_POINTS, ")
-			.append("tr.SURFACE_GEOMETRY_ID as TR_SURFACE_GEOMETRY_ID, ")
-			.append("mr.ID as MR_ID, ")
-			.append(transformOrNull).append("(mr.RELIEF_POINTS, ").append(srid).append(") AS MR_RELIEF_POINTS, ")
-			.append("br.ID as BR_ID, ")
-			.append(transformOrNull).append("(br.RIDGE_OR_VALLEY_LINES, ").append(srid).append(") as BR_RIDGE_OR_VALLEY_LINES, ")
+			.append(transformOrNull).append("(tr.CONTROL_POINTS, ").append(srid).append(") as CONTROL_POINTS, ")
+			.append("tr.SURFACE_GEOMETRY_ID, ")
+			.append(transformOrNull).append("(mr.RELIEF_POINTS, ").append(srid).append(") AS RELIEF_POINTS, ")
+			.append(transformOrNull).append("(br.RIDGE_OR_VALLEY_LINES, ").append(srid).append(") as RIDGE_OR_VALLEY_LINES, ")
 			.append(transformOrNull).append("(br.BREAK_LINES, ").append(srid).append(") as BR_BREAK_LINES ")
 			.append("from RELIEF_FEATURE rf inner join RELIEF_FEAT_TO_REL_COMP rf2rc on rf2rc.RELIEF_FEATURE_ID=rf.ID inner join RELIEF_COMPONENT rc on rf2rc.RELIEF_COMPONENT_ID=rc.ID ")
 			.append("left join TIN_RELIEF tr on tr.ID=rc.ID ")
@@ -165,46 +166,36 @@ public class DBReliefFeature implements DBExporter {
 			boolean isInited = false;
 			String origGmlId = reliefFeature.getId();
 
-			while (rs.next()) {			
+			while (rs.next()) {				
 				if (!isInited) {
 					// reliefFeature object
 					// just handle once
-					String gmlName = rs.getString("RF_NAME");
-					String gmlNameCodespace = rs.getString("RF_NAME_CODESPACE");
-
-					Util.string2codeList(reliefFeature, gmlName, gmlNameCodespace);
-
-					String description = rs.getString("RF_DESCRIPTION");
-					if (description != null) {
-						StringOrRef stringOrRef = new StringOrRef();
-						stringOrRef.setValue(description);
-						reliefFeature.setDescription(stringOrRef);
-					}
-
-					int lod = rs.getInt("RF_LOD");
-					if (rs.wasNull())
-						reliefFeature.setLod(0);
-					else
-						reliefFeature.setLod(lod);
+					reliefFeature.setLod(rs.getInt(1));				
 
 					isInited = true;
 				}
 
 				// get reliefComponents content
-				long reliefComponentId = rs.getLong("RC_ID");
+				long reliefComponentId = rs.getLong(2);
 				if (rs.wasNull())
 					continue;
-
+				
+				int classId = rs.getInt(3);
+				if (rs.wasNull() || classId == 0)
+					continue;
+				
+				CityGMLClass type = Util.classId2cityObject(classId);
 				reliefComponent = null;
-				long tinReliefId = rs.getLong("TR_ID");
-				long massPointReliefId = rs.getLong("MR_ID");
-				long breaklineReliedId = rs.getLong("BR_ID");
+				
+				long tinReliefId = rs.getLong(4);
+				long massPointReliefId = rs.getLong(5);
+				long breaklineReliedId = rs.getLong(6);
 
-				if (tinReliefId != 0)
+				if (tinReliefId != 0 && type == CityGMLClass.TIN_RELIEF)
 					reliefComponent = new TINRelief();
-				else if (massPointReliefId != 0)
+				else if (massPointReliefId != 0 && type == CityGMLClass.MASSPOINT_RELIEF)
 					reliefComponent = new MassPointRelief();
-				else if (breaklineReliedId != 0)
+				else if (breaklineReliedId != 0 && type == CityGMLClass.BREAKLINE_RELIEF)
 					reliefComponent = new BreaklineRelief();
 
 				if (reliefComponent == null)
@@ -244,25 +235,9 @@ public class DBReliefFeature implements DBExporter {
 				}
 
 				// get common data for all kinds of relief components
-				String gmlName = rs.getString("RC_NAME");
-				String gmlNameCodespace = rs.getString("RC_NAME_CODESPACE");
+				reliefComponent.setLod(rs.getInt(7));
 
-				Util.string2codeList(reliefComponent, gmlName, gmlNameCodespace);
-
-				String description = rs.getString("RC_DESCRIPTION");
-				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRef();
-					stringOrRef.setValue(description);
-					reliefComponent.setDescription(stringOrRef);
-				}
-
-				int lod = rs.getInt("RC_LOD");
-				if (rs.wasNull())
-					reliefComponent.setLod(0);
-				else
-					reliefComponent.setLod(lod);
-
-				Object extentObj = rs.getObject("RC_EXTENT");
+				Object extentObj = rs.getObject(8);
 				if (!rs.wasNull() && extentObj != null) {
 					GeometryObject extent = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPolygon(extentObj);
 					PolygonProperty polygonProperty = geometryExporter.getPolygonProperty(extent, false);
@@ -272,30 +247,30 @@ public class DBReliefFeature implements DBExporter {
 
 				// ok, further content must be retrieved according to the
 				// subtype of reliefComponent
-				if (reliefComponent.getCityGMLClass() == CityGMLClass.TIN_RELIEF) {
+				if (type == CityGMLClass.TIN_RELIEF) {
 					TINRelief tinRelief = (TINRelief)reliefComponent;
 
 					// get TINRelief content
-					Double maxLength = rs.getDouble("TR_MAX_LENGTH");
+					Double maxLength = rs.getDouble(9);
 					if (rs.wasNull())
 						maxLength = null;
 
 					GeometryObject stopLines, breakLines, controlPoints;
 					stopLines = breakLines = controlPoints = null;
 
-					Object stopLinesObj = rs.getObject("TR_STOP_LINES");
+					Object stopLinesObj = rs.getObject(10);
 					if (!rs.wasNull() && stopLinesObj != null)
 						stopLines = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(stopLinesObj);
 
-					Object breakLinesObj = rs.getObject("TR_BREAK_LINES");
+					Object breakLinesObj = rs.getObject(11);
 					if (!rs.wasNull() && breakLinesObj != null)
 						breakLines = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(breakLinesObj);
 
-					Object controlPointsObj = rs.getObject("TR_CONTROL_POINTS");
+					Object controlPointsObj = rs.getObject(12);
 					if (!rs.wasNull() && controlPointsObj != null)
 						controlPoints = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(controlPointsObj);
 
-					long surfaceGeometryId = rs.getLong("TR_SURFACE_GEOMETRY_ID");
+					long surfaceGeometryId = rs.getLong(13);
 
 					// check for invalid content
 					if (maxLength == null && stopLines == null && breakLines == null && controlPoints == null && surfaceGeometryId == 0)
@@ -370,10 +345,10 @@ public class DBReliefFeature implements DBExporter {
 					}
 				}
 
-				else if (reliefComponent.getCityGMLClass() == CityGMLClass.MASSPOINT_RELIEF) {
+				else if (type == CityGMLClass.MASSPOINT_RELIEF) {
 					MassPointRelief massPointRelief = (MassPointRelief)reliefComponent;
 
-					Object reliefPointsObj = rs.getObject("MR_RELIEF_POINTS");
+					Object reliefPointsObj = rs.getObject(14);
 					if (!rs.wasNull() && reliefPointsObj != null) {
 						GeometryObject reliefPoints = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(reliefPointsObj);
 						MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(reliefPoints, false);
@@ -382,10 +357,10 @@ public class DBReliefFeature implements DBExporter {
 					}
 				}
 
-				else if (reliefComponent.getCityGMLClass() == CityGMLClass.BREAKLINE_RELIEF) {
+				else if (type == CityGMLClass.BREAKLINE_RELIEF) {
 					BreaklineRelief breaklineRelief = (BreaklineRelief)reliefComponent;
 
-					Object ridgeOrValleyLinesObj = rs.getObject("BR_RIDGE_OR_VALLEY_LINES");
+					Object ridgeOrValleyLinesObj = rs.getObject(15);
 					if (!rs.wasNull() && ridgeOrValleyLinesObj != null) {
 						GeometryObject ridgeOrValleyLines = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(ridgeOrValleyLinesObj);
 						MultiCurveProperty multiCurveProperty = geometryExporter.getMultiCurveProperty(ridgeOrValleyLines, false);
@@ -393,7 +368,7 @@ public class DBReliefFeature implements DBExporter {
 							breaklineRelief.setRidgeOrValleyLines(multiCurveProperty);
 					}
 					
-					Object breakLinesObj = rs.getObject("BR_BREAK_LINES");
+					Object breakLinesObj = rs.getObject(16);
 					if (!rs.wasNull() && breakLinesObj != null) {
 						GeometryObject breakLines = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(breakLinesObj);
 						MultiCurveProperty multiCurveProperty = geometryExporter.getMultiCurveProperty(breakLines, false);
@@ -402,7 +377,7 @@ public class DBReliefFeature implements DBExporter {
 					}
 				}
 
-				else if (reliefComponent.getCityGMLClass() == CityGMLClass.RASTER_RELIEF) {
+				else if (type == CityGMLClass.RASTER_RELIEF) {
 					StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 							reliefFeature.getCityGMLClass(), 
 							origGmlId));

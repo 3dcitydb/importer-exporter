@@ -33,7 +33,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.ExternalObject;
@@ -44,7 +43,7 @@ import org.citygml4j.model.citygml.waterbody.WaterBody;
 import org.citygml4j.model.citygml.waterbody.WaterClosureSurface;
 import org.citygml4j.model.citygml.waterbody.WaterGroundSurface;
 import org.citygml4j.model.citygml.waterbody.WaterSurface;
-import org.citygml4j.model.gml.base.StringOrRef;
+import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
@@ -58,7 +57,6 @@ import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
 import de.tub.citydb.util.Util;
@@ -101,10 +99,11 @@ public class DBWaterBody implements DBExporter {
 
 		if (!config.getInternal().isTransformCoordinates()) {		
 			StringBuilder query = new StringBuilder()
-			.append("select wb.NAME as WB_NAME, wb.NAME_CODESPACE as WB_NAME_CODESPACE, wb.DESCRIPTION as WB_DESCRIPTION, wb.CLASS, wb.FUNCTION, wb.USAGE, ")
-			.append("wb.LOD1_SOLID_ID, wb.LOD2_SOLID_ID, wb.LOD3_SOLID_ID, wb.LOD4_SOLID_ID, wb.LOD0_MULTI_SURFACE_ID, wb.LOD1_MULTI_SURFACE_ID, ")
+			.append("select wb.CLASS, wb.CLASS_CODESPACE, wb.FUNCTION, wb.FUNCTION_CODESPACE, wb.USAGE, wb.USAGE_CODESPACE, ")
 			.append("wb.LOD0_MULTI_CURVE, wb.LOD1_MULTI_CURVE, ")
-			.append("ws.ID as WS_ID, ws.NAME as WS_NAME, ws.NAME_CODESPACE as WS_NAME_CODESPACE, ws.DESCRIPTION as WS_DESCRIPTION, upper(ws.TYPE) as TYPE, ws.WATER_LEVEL, ")
+			.append("wb.LOD0_MULTI_SURFACE_ID, wb.LOD1_MULTI_SURFACE_ID, ")
+			.append("wb.LOD1_SOLID_ID, wb.LOD2_SOLID_ID, wb.LOD3_SOLID_ID, wb.LOD4_SOLID_ID, ")
+			.append("ws.ID, ws.OBJECTCLASS_ID, ws.WATER_LEVEL, ws.WATER_LEVEL_CODESPACE, ")
 			.append("ws.LOD2_SURFACE_ID, ws.LOD3_SURFACE_ID, ws.LOD4_SURFACE_ID ")
 			.append("from WATERBODY wb left join WATERBOD_TO_WATERBND_SRF w2s on wb.ID=w2s.WATERBODY_ID left join WATERBOUNDARY_SURFACE ws on ws.ID=w2s.WATERBOUNDARY_SURFACE_ID where wb.ID=?");
 			psWaterBody = connection.prepareStatement(query.toString());
@@ -113,11 +112,12 @@ public class DBWaterBody implements DBExporter {
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
-			.append("select wb.NAME as WB_NAME, wb.NAME_CODESPACE as WB_NAME_CODESPACE, wb.DESCRIPTION as WB_DESCRIPTION, wb.CLASS, wb.FUNCTION, wb.USAGE, ")
-			.append("wb.LOD1_SOLID_ID, wb.LOD2_SOLID_ID, wb.LOD3_SOLID_ID, wb.LOD4_SOLID_ID, wb.LOD0_MULTI_SURFACE_ID, wb.LOD1_MULTI_SURFACE_ID, ")
+			.append("select wb.CLASS, wb.CLASS_CODESPACE, wb.FUNCTION, wb.FUNCTION_CODESPACE, wb.USAGE, wb.USAGE_CODESPACE, ")
 			.append(transformOrNull).append("(wb.LOD0_MULTI_CURVE, ").append(srid).append(") AS LOD0_MULTI_CURVE, ")
 			.append(transformOrNull).append("(wb.LOD1_MULTI_CURVE, ").append(srid).append(") AS LOD1_MULTI_CURVE, ")
-			.append("ws.ID as WS_ID, ws.NAME as WS_NAME, ws.NAME_CODESPACE as WS_NAME_CODESPACE, ws.DESCRIPTION as WS_DESCRIPTION, upper(ws.TYPE) as TYPE, ws.WATER_LEVEL, ")
+			.append("wb.LOD0_MULTI_SURFACE_ID, wb.LOD1_MULTI_SURFACE_ID, ")
+			.append("wb.LOD1_SOLID_ID, wb.LOD2_SOLID_ID, wb.LOD3_SOLID_ID, wb.LOD4_SOLID_ID, ")
+			.append("ws.ID, ws.OBJECTCLASS_ID, ws.WATER_LEVEL, ws.WATER_LEVEL_CODESPACE, ")
 			.append("ws.LOD2_SURFACE_ID, ws.LOD3_SURFACE_ID, ws.LOD4_SURFACE_ID ")
 			.append("from WATERBODY wb left join WATERBOD_TO_WATERBND_SRF w2s on wb.ID=w2s.WATERBODY_ID left join WATERBOUNDARY_SURFACE ws on ws.ID=w2s.WATERBOUNDARY_SURFACE_ID where wb.ID=?");
 			psWaterBody = connection.prepareStatement(query.toString());
@@ -147,101 +147,31 @@ public class DBWaterBody implements DBExporter {
 			while (rs.next()) {
 
 				if (!waterBodyRead) {
-					// name and name_codespace
-					String gmlName = rs.getString("WB_NAME");
-					String gmlNameCodespace = rs.getString("WB_NAME_CODESPACE");
-
-					Util.string2codeList(waterBody, gmlName, gmlNameCodespace);
-
-					String description = rs.getString("WB_DESCRIPTION");
-					if (description != null) {
-						StringOrRef stringOrRef = new StringOrRef();
-						stringOrRef.setValue(description);
-						waterBody.setDescription(stringOrRef);
-					}
-
-					String clazz = rs.getString("CLASS");
+					String clazz = rs.getString(1);
 					if (clazz != null) {
-						waterBody.setClazz(new Code(clazz));
+						Code code = new Code(clazz);
+						code.setCodeSpace(rs.getString(2));
+						waterBody.setClazz(code);
 					}
 
-					String function = rs.getString("FUNCTION");
-					if (function != null) {
-						Pattern p = Pattern.compile("\\s+");
-						for (String value : p.split(function.trim()))
-							waterBody.addFunction(new Code(value));
-					}
+					String function = rs.getString(3);
+					String functionCodeSpace = rs.getString(4);
+					if (function != null)
+						waterBody.setFunction(Util.string2codeList(function, functionCodeSpace));
 
-					String usage = rs.getString("USAGE");
-					if (usage != null) {
-						Pattern p = Pattern.compile("\\s+");
-						for (String value : p.split(usage.trim()))
-							waterBody.addUsage(new Code(value));
-					}
-
-					for (int lod = 1; lod < 5 ; lod++) {
-						long geometryId = rs.getLong("LOD" + lod + "_SOLID_ID");
-
-						if (!rs.wasNull() && geometryId != 0) {
-							DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
-
-							if (geometry != null) {
-								SolidProperty solidProperty = new SolidProperty();
-
-								if (geometry.getAbstractGeometry() != null)
-									solidProperty.setSolid((AbstractSolid)geometry.getAbstractGeometry());
-								else
-									solidProperty.setHref(geometry.getTarget());
-
-								switch (lod) {
-								case 1:
-									waterBody.setLod1Solid(solidProperty);
-									break;
-								case 2:
-									waterBody.setLod2Solid(solidProperty);
-									break;
-								case 3:
-									waterBody.setLod3Solid(solidProperty);
-									break;
-								case 4:
-									waterBody.setLod4Solid(solidProperty);
-									break;
-								}
-							}
-						}
-					}
-
-					for (int lod = 0; lod < 2 ; lod++) {
-						long geometryId = rs.getLong("LOD" + lod + "_MULTI_SURFACE_ID");
-
-						if (!rs.wasNull() && geometryId != 0) {
-							DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
-
-							if (geometry != null) {
-								MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
-
-								if (geometry.getAbstractGeometry() != null)
-									multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
-								else
-									multiSurfaceProperty.setHref(geometry.getTarget());
-
-								switch (lod) {
-								case 0:
-									waterBody.setLod0MultiSurface(multiSurfaceProperty);
-									break;
-								case 1:
-									waterBody.setLod1MultiSurface(multiSurfaceProperty);
-									break;
-								}
-							}
-						}
-					}
-
-					// lodXMultiCurve
+					String usage = rs.getString(5);
+					String usageCodeSpace = rs.getString(6);
+					if (usage != null)
+						waterBody.setUsage(Util.string2codeList(usage, usageCodeSpace));
+					
+					// multiCurve
 					for (int lod = 0; lod < 2; lod++) {
-						Object multiCurveObj = rs.getObject("LOD" + lod + "_MULTI_CURVE");
-						if (!rs.wasNull() && multiCurveObj != null) {
-							GeometryObject multiCurve = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(multiCurveObj);
+						Object multiCurveObj = rs.getObject(7 + lod);
+						if (rs.wasNull() || multiCurveObj == null)
+							continue;
+
+						GeometryObject multiCurve = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(multiCurveObj);
+						if (multiCurve != null) {
 							MultiCurveProperty multiCurveProperty = geometryExporter.getMultiCurveProperty(multiCurve, false);
 							if (multiCurveProperty != null) {
 								switch (lod) {
@@ -255,30 +185,91 @@ public class DBWaterBody implements DBExporter {
 							}
 						}
 					}
+					
+					// multiSurface
+					for (int lod = 0; lod < 2; lod++) {
+						long surfaceGeometryId = rs.getLong(9 + lod);
+						if (rs.wasNull() || surfaceGeometryId == 0)
+							continue;
+
+						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
+						if (geometry != null && geometry.getType() == GMLClass.MULTI_SURFACE) {
+							MultiSurfaceProperty multiSurfaceProperty = new MultiSurfaceProperty();
+							if (geometry.getAbstractGeometry() != null)
+								multiSurfaceProperty.setMultiSurface((MultiSurface)geometry.getAbstractGeometry());
+							else
+								multiSurfaceProperty.setHref(geometry.getTarget());
+
+							switch (lod) {
+							case 0:
+								waterBody.setLod0MultiSurface(multiSurfaceProperty);
+								break;
+							case 1:
+								waterBody.setLod1MultiSurface(multiSurfaceProperty);
+								break;
+							}
+						}
+					}
+					
+					// solid
+					for (int lod = 0; lod < 4; lod++) {
+						long surfaceGeometryId = rs.getLong(11 + lod);
+						if (rs.wasNull() || surfaceGeometryId == 0)
+							continue;
+
+						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
+						if (geometry != null && (geometry.getType() == GMLClass.SOLID || geometry.getType() == GMLClass.COMPOSITE_SOLID)) {
+							SolidProperty solidProperty = new SolidProperty();
+							if (geometry.getAbstractGeometry() != null)
+								solidProperty.setSolid((AbstractSolid)geometry.getAbstractGeometry());
+							else
+								solidProperty.setHref(geometry.getTarget());
+
+							switch (lod) {
+							case 0:
+								waterBody.setLod1Solid(solidProperty);
+								break;
+							case 1:
+								waterBody.setLod2Solid(solidProperty);
+								break;
+							case 2:
+								waterBody.setLod3Solid(solidProperty);
+								break;
+							case 3:
+								waterBody.setLod4Solid(solidProperty);
+								break;
+							}
+						}
+					}
 
 					waterBodyRead = true;
 				}
 
 				// water boundary surfaces
-				long waterBoundarySurfaceId = rs.getLong("WS_ID");
+				long waterBoundarySurfaceId = rs.getLong(15);
 				if (rs.wasNull())
 					continue;
 
 				// create new water boundary object
 				AbstractWaterBoundarySurface waterBoundarySurface = null;
-				String type = rs.getString("TYPE");
-				if (rs.wasNull() || type == null || type.length() == 0)
+				int classId = rs.getInt(16);
+				if (rs.wasNull() || classId == 0)
 					continue;
 
-				if (type.equals(TypeAttributeValueEnum.WATER_SURFACE.toString().toUpperCase()))
+				CityGMLClass type = Util.classId2cityObject(classId);
+				switch (type) {
+				case WATER_SURFACE:
 					waterBoundarySurface = new WaterSurface();
-				else if (type.equals(TypeAttributeValueEnum.WATER_GROUND_SURFACE.toString().toUpperCase()))
+					break;
+				case WATER_GROUND_SURFACE:
 					waterBoundarySurface = new WaterGroundSurface();
-				else if (type.equals(TypeAttributeValueEnum.WATER_CLOSURE_SURFACE.toString().toUpperCase()))
+					break;
+				case WATER_CLOSURE_SURFACE:
 					waterBoundarySurface = new WaterClosureSurface();
-
-				if (waterBoundarySurface == null)
+					break;
+				default:
 					continue;
+				}
 
 				// cityobject stuff
 				cityObjectExporter.read(waterBoundarySurface, waterBoundarySurfaceId);
@@ -313,50 +304,39 @@ public class DBWaterBody implements DBExporter {
 					}
 				}
 
-				String gmlName = rs.getString("WS_NAME");
-				String gmlNameCodespace = rs.getString("WS_NAME_CODESPACE");
-
-				Util.string2codeList(waterBoundarySurface, gmlName, gmlNameCodespace);
-
-				String description = rs.getString("WS_DESCRIPTION");
-				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRef();
-					stringOrRef.setValue(description);
-
-					waterBoundarySurface.setDescription(stringOrRef);
+				if (type == CityGMLClass.WATER_SURFACE) {
+					String waterLevel = rs.getString(17);
+					if (waterLevel != null) {
+						Code code = new Code(waterLevel);
+						code.setCodeSpace(rs.getString(18));
+						((WaterSurface)waterBoundarySurface).setWaterLevel(code);
+					}
 				}
+				
+				// multiSurface
+				for (int lod = 0; lod < 3; lod++) {
+					long surfaceGeometryId = rs.getLong(19 + lod);
+					if (rs.wasNull() || surfaceGeometryId == 0)
+						continue;
 
-				if (waterBoundarySurface.getCityGMLClass() == CityGMLClass.WATER_SURFACE) {
-					String waterLevel = rs.getString("WATER_LEVEL");
-					if (waterLevel != null)
-						((WaterSurface)waterBoundarySurface).setWaterLevel(new Code(waterLevel));
-				}
+					DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
+					if (geometry != null && geometry.getType().isInstance(GMLClass.ABSTRACT_SURFACE)) {
+						SurfaceProperty surfaceProperty = new SurfaceProperty();
+						if (geometry.getAbstractGeometry() != null)
+							surfaceProperty.setSurface((AbstractSurface)geometry.getAbstractGeometry());
+						else
+							surfaceProperty.setHref(geometry.getTarget());
 
-				for (int lod = 2; lod < 5 ; lod++) {
-					long geometryId = rs.getLong("LOD" + lod + "_SURFACE_ID");
-
-					if (!rs.wasNull() && geometryId != 0) {
-						DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(geometryId);
-
-						if (geometry != null) {
-							SurfaceProperty surfaceProperty = new SurfaceProperty();
-
-							if (geometry.getAbstractGeometry() != null)
-								surfaceProperty.setSurface((AbstractSurface)geometry.getAbstractGeometry());
-							else
-								surfaceProperty.setHref(geometry.getTarget());
-
-							switch (lod) {
-							case 2:
-								waterBoundarySurface.setLod2Surface(surfaceProperty);
-								break;
-							case 3:
-								waterBoundarySurface.setLod3Surface(surfaceProperty);
-								break;
-							case 4:
-								waterBoundarySurface.setLod4Surface(surfaceProperty);
-								break;
-							}
+						switch (lod) {
+						case 0:
+							waterBoundarySurface.setLod2Surface(surfaceProperty);
+							break;
+						case 1:
+							waterBoundarySurface.setLod3Surface(surfaceProperty);
+							break;
+						case 2:
+							waterBoundarySurface.setLod4Surface(surfaceProperty);
+							break;
 						}
 					}
 				}

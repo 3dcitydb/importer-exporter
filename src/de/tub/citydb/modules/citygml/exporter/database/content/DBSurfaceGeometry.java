@@ -81,8 +81,8 @@ public class DBSurfaceGeometry implements DBExporter {
 	private boolean exportAppearance;
 	private boolean useXLink;
 	private boolean appendOldGmlId;
-	private boolean useTransformation;
 	private boolean applyTransformation;
+	private boolean isImplicit;
 	private String gmlIdPrefix;
 
 	private int commitAfter = 1000;
@@ -105,9 +105,8 @@ public class DBSurfaceGeometry implements DBExporter {
 			if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= dbExporterManager.getDatabaseAdapter().getMaxBatchSize())
 				commitAfter = commitAfterProp;
 
-			StringBuilder query = new StringBuilder()
-			.append("insert into ").append(tempTable.getTableName()).append(" ")
-			.append("select ? ");
+			StringBuilder query = new StringBuilder("insert into ").append(tempTable.getTableName()).append(" ")
+					.append("select ? ");
 			if (dbExporterManager.getDatabaseAdapter().getSQLAdapter().requiresPseudoTableInSelect())
 				query.append("from ").append(dbExporterManager.getDatabaseAdapter().getSQLAdapter().getPseudoTableName()).append(" ");
 
@@ -121,29 +120,27 @@ public class DBSurfaceGeometry implements DBExporter {
 			gmlIdPrefix = config.getProject().getExporter().getXlink().getGeometry().getIdPrefix();
 		}	
 
-		psSurfaceGeometry = connection.prepareStatement("select * from SURFACE_GEOMETRY where ROOT_ID = ?");
-		useTransformation = applyTransformation = config.getInternal().isTransformCoordinates();
-		if (useTransformation) {	
+		StringBuilder query = new StringBuilder("select ID, GMLID, PARENT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, ")
+		.append("GEOMETRY, IMPLICIT_GEOMETRY from SURFACE_GEOMETRY where ROOT_ID = ?");
+		psSurfaceGeometry = connection.prepareStatement(query.toString());
+
+		applyTransformation = config.getInternal().isTransformCoordinates();
+		if (applyTransformation) {	
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
-			StringBuilder query = new StringBuilder("select ID, GMLID, PARENT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, ")
-			.append(transformOrNull).append("(GEOMETRY, ").append(srid).append(") AS GEOMETRY ")
-			.append("from SURFACE_GEOMETRY where ROOT_ID = ?");
+			query = new StringBuilder("select ID, GMLID, PARENT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, ")
+			.append(transformOrNull).append("(GEOMETRY, ").append(srid).append(") AS GEOMETRY, ")
+			.append("IMPLICIT_GEOMETRY from SURFACE_GEOMETRY where ROOT_ID = ?");
 			psTransformSurfaceGeometry = connection.prepareStatement(query.toString());
 		}
-	}
-
-	public void setApplyCoordinateTransformation(boolean applyTransformation) {
-		if (useTransformation)
-			this.applyTransformation = applyTransformation;
 	}
 
 	public DBSurfaceGeometryResult read(long rootId) throws SQLException {
 		ResultSet rs = null;
 
 		try {
-			if (!useTransformation || !applyTransformation) {
+			if (!applyTransformation || isImplicit) {
 				psSurfaceGeometry.setLong(1, rootId);
 				rs = psSurfaceGeometry.executeQuery();
 			} else {
@@ -156,17 +153,17 @@ public class DBSurfaceGeometry implements DBExporter {
 			// firstly, read the geometry entries into a
 			// flat geometry tree structure
 			while (rs.next()) {
-				long id = rs.getLong("ID");
-				String gmlId = rs.getString("GMLID");
-				long parentId = rs.getLong("PARENT_ID");
-				int isSolid = rs.getInt("IS_SOLID");
-				int isComposite = rs.getInt("IS_COMPOSITE");
-				int isTriangulated = rs.getInt("IS_TRIANGULATED");
-				int isXlink = rs.getInt("IS_XLINK");
-				int isReverse = rs.getInt("IS_REVERSE");
+				long id = rs.getLong(1);
+				String gmlId = rs.getString(2);
+				long parentId = rs.getLong(3);
+				int isSolid = rs.getInt(4);
+				int isComposite = rs.getInt(5);
+				int isTriangulated = rs.getInt(6);
+				int isXlink = rs.getInt(7);
+				int isReverse = rs.getInt(8);
 
 				GeometryObject geometry = null;
-				Object object = rs.getObject("GEOMETRY");
+				Object object = rs.getObject(!isImplicit ? 9 : 10);
 				if (!rs.wasNull() && object != null)
 					geometry = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
 
@@ -196,6 +193,17 @@ public class DBSurfaceGeometry implements DBExporter {
 		} finally {
 			if (rs != null)
 				rs.close();
+		}
+	}
+	
+	public DBSurfaceGeometryResult readImplicitGeometry(long rootId) throws SQLException {
+		try {
+			// if coordinate transformation is activated we need to ensure
+			// that the transformation is not applied to the prototype
+			isImplicit = true;
+			return read(rootId);
+		} finally {
+			isImplicit = false;
 		}
 	}
 
@@ -585,8 +593,7 @@ public class DBSurfaceGeometry implements DBExporter {
 					// we are only expecting polygons...
 					AbstractGeometry absGeom = geomMember.getAbstractGeometry();					
 
-					switch (geomMember.getType()) {
-					case POLYGON:
+					if (geomMember.getType() == GMLClass.POLYGON) {
 						// we do not have to deal with xlinks here...
 						if (absGeom != null) {
 							// convert polygon to trianglePatch
@@ -598,8 +605,6 @@ public class DBSurfaceGeometry implements DBExporter {
 								triangleArray.addTriangle(triangle);
 							}							
 						}
-
-						break;
 					}
 				}
 			}
