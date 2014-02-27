@@ -85,7 +85,6 @@
 *   delete_waterbnd_surface(wbs_id INTEGER, schema_name VARCHAR DEFAULT 'public') RETURNS SETOF VOID
 *   delete_waterbody(wb_id INTEGER, schema_name VARCHAR DEFAULT 'public') RETURNS SETOF VOID
 *   intern_delete_cityobject(co_id INTEGER, schema_name VARCHAR DEFAULT 'public') RETURNS SETOF VOID
-*   intern_delete_surface_geometry(sg_id INTEGER, schema_name VARCHAR DEFAULT 'public') RETURNS SETOF VOID
 *   is_not_referenced(table_name VARCHAR, check_column VARCHAR, check_id INTEGER, not_column VARCHAR, 
 *     not_id INTEGER, schema_name VARCHAR DEFAULT 'public') RETURNS BOOLEAN
 ******************************************************************/

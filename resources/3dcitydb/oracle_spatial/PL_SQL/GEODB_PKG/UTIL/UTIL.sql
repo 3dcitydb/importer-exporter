@@ -87,6 +87,7 @@ AS
   PROCEDURE update_table_constraint(fkey_name VARCHAR2, table_name VARCHAR2, column_name VARCHAR2, ref_table VARCHAR2, ref_column VARCHAR2, on_delete_param VARCHAR2, deferrable_param VARCHAR2);
   FUNCTION get_seq_values(seq_name VARCHAR2, seq_count NUMBER) RETURN SEQ_TABLE;
   FUNCTION objectclass_id_to_table_name(class_id NUMBER) RETURN VARCHAR2;
+  PROCEDURE drop_user_tables(string_filter VARCHAR2);
 END geodb_util;
 /
 
@@ -362,7 +363,7 @@ AS
            class_id = 48 THEN table_name := 'traffic_area';
       WHEN class_id = 57 THEN table_name := 'citymodel';
       WHEN class_id = 63 OR
-           class_id = 62 THEN table_name := 'bridge';
+           class_id = 64 THEN table_name := 'bridge';
       WHEN class_id = 65 OR
            class_id = 66 THEN table_name := 'bridge_installation';
       WHEN class_id = 68 OR 
@@ -383,15 +384,15 @@ AS
            class_id = 85 THEN table_name := 'tunnel';
       WHEN class_id = 86 OR
            class_id = 87 THEN table_name := 'tunnel_installation';
-      WHEN class_id = 88 OR 
-           class_id = 89 OR 
+      WHEN class_id = 89 OR 
            class_id = 90 OR 
            class_id = 91 OR 
-           class_id = 92 OR
+           class_id = 92 OR 
            class_id = 93 OR
            class_id = 94 OR
            class_id = 95 OR
-           class_id = 96 THEN table_name := 'tunnel_thematic_surface';
+           class_id = 96 OR
+           class_id = 97 THEN table_name := 'tunnel_thematic_surface';
       WHEN class_id = 99 OR 
            class_id = 100 THEN table_name := 'tunnel_opening';		 
       WHEN class_id = 101 THEN table_name := 'tunnel_furniture';
@@ -404,5 +405,19 @@ AS
     RETURN table_name;
   END;
 
+
+  /******************************************************************
+  * drop_tmp_tables
+  *
+  ******************************************************************/
+  PROCEDURE drop_user_tables(string_pattern VARCHAR2)
+  IS
+    tablename VARCHAR2(30);
+  BEGIN
+    FOR tablename IN (SELECT table_name FROM user_tables WHERE table_name LIKE string_pattern) LOOP
+      EXECUTE IMMEDIATE 'DROP TABLE ' || tablename.table_name || ' CASCADE CONSTRAINTS';
+    END LOOP;
+  END;
+  
 END geodb_util;
 /
