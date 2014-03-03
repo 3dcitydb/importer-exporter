@@ -29,12 +29,12 @@
  */
 package de.tub.citydb.modules.citygml.common.database.xlink;
 
-public class DBXlinkTextureAssociation implements DBXlink {
+public class DBXlinkTextureAssociationTarget implements DBXlink {
 	private long surfaceDataId;
 	private long surfaceGeometryId;
 	private String gmlId;
 
-	public DBXlinkTextureAssociation(long surfaceDataId, long surfaceGeometryId, String gmlId) {
+	public DBXlinkTextureAssociationTarget(long surfaceDataId, long surfaceGeometryId, String gmlId) {
 		this.surfaceDataId = surfaceDataId;
 		this.surfaceGeometryId = surfaceGeometryId;
 		this.gmlId = gmlId;
@@ -66,7 +66,7 @@ public class DBXlinkTextureAssociation implements DBXlink {
 
 	@Override
 	public DBXlinkEnum getXlinkType() {
-		return DBXlinkEnum.TEXTUREASSOCIATION;
+		return DBXlinkEnum.TEXTUREASSOCIATION_TARGET;
 	}
 
 }

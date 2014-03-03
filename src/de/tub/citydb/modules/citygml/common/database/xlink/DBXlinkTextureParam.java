@@ -29,7 +29,6 @@
  */
 package de.tub.citydb.modules.citygml.common.database.xlink;
 
-import de.tub.citydb.api.geometry.GeometryObject;
 
 public class DBXlinkTextureParam implements DBXlink {
 	private long id;
@@ -39,9 +38,6 @@ public class DBXlinkTextureParam implements DBXlink {
 	private boolean isTextureParameterization;
 	private String texParamGmlId;
 	private String worldToTexture;
-	private GeometryObject textureCoord;
-	private String targetURI;
-	private int textureCoordId;
 
 	public DBXlinkTextureParam(long id, String gmlId, DBXlinkTextureParamEnum type) {
 		this.id = id;
@@ -96,31 +92,7 @@ public class DBXlinkTextureParam implements DBXlink {
 	public void setWorldToTexture(String worldToTexture) {
 		this.worldToTexture = worldToTexture;
 	}
-
-	public GeometryObject getTextureCoord() {
-		return textureCoord;
-	}
-
-	public void setTextureCoord(GeometryObject textureCoord) {
-		this.textureCoord = textureCoord;
-	}
-
-	public String getTargetURI() {
-		return targetURI;
-	}
-
-	public void setTargetURI(String targetURI) {
-		this.targetURI = targetURI;
-	}
-
-	public int getTextureCoordId() {
-		return textureCoordId;
-	}
-
-	public void setTextureCoordId(int textureCoordId) {
-		this.textureCoordId = textureCoordId;
-	}
-
+	
 	@Override
 	public DBXlinkEnum getXlinkType() {
 		return DBXlinkEnum.TEXTUREPARAM;

@@ -246,9 +246,13 @@ public class DBBuildingInstallation implements DBExporter {
 						switch (lod) {
 						case 0:
 							if (buildingInstallation != null)
-								buildingInstallation.setLod3ImplicitRepresentation(implicitProperty);
+								buildingInstallation.setLod2ImplicitRepresentation(implicitProperty);
 							break;
 						case 1:
+							if (buildingInstallation != null)
+								buildingInstallation.setLod3ImplicitRepresentation(implicitProperty);
+							break;
+						case 2:
 							if (buildingInstallation != null)
 								buildingInstallation.setLod4ImplicitRepresentation(implicitProperty);
 							else

@@ -43,7 +43,7 @@ import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
 import de.tub.citydb.util.Util;
 
 public class XlinkTextureAssociation implements DBXlinkResolver {
@@ -75,7 +75,7 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 		psSelectContent = batchConn.prepareStatement("select WORLD_TO_TEXTURE, TEXTURE_COORDINATES from TEXTUREPARAM where SURFACE_DATA_ID=? and SURFACE_GEOMETRY_ID=?");
 	}
 
-	public boolean insert(DBXlinkTextureParam xlink) throws SQLException {
+	public boolean insert(DBXlinkTextureAssociation xlink) throws SQLException {
 		String gmlId = xlink.getGmlId();
 		ResultSet rs = null;
 
@@ -93,17 +93,17 @@ public class XlinkTextureAssociation implements DBXlinkResolver {
 			psSelectParts.setString(1, gmlId);
 			rs = psSelectParts.executeQuery();
 
-			List<DBXlinkTextureAssociation> texAssList = new ArrayList<DBXlinkTextureAssociation>();
+			List<DBXlinkTextureAssociationTarget> texAssList = new ArrayList<DBXlinkTextureAssociationTarget>();
 			while (rs.next()) {
 				long surfaceDataId = rs.getLong("SURFACE_DATA_ID");
 				long surfaceGeometryId = rs.getLong("SURFACE_GEOMETRY_ID");
 
-				texAssList.add(new DBXlinkTextureAssociation(surfaceDataId, surfaceGeometryId, null));
+				texAssList.add(new DBXlinkTextureAssociationTarget(surfaceDataId, surfaceGeometryId, null));
 			}
 
 			rs.close();
 
-			for (DBXlinkTextureAssociation texAss : texAssList) {
+			for (DBXlinkTextureAssociationTarget texAss : texAssList) {
 				psSelectContent.setLong(1, texAss.getSurfaceDataId());
 				psSelectContent.setLong(2, texAss.getSurfaceGeometryId());
 				rs = psSelectContent.executeQuery();

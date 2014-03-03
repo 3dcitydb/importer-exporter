@@ -79,7 +79,7 @@ public class DBReliefComponent implements DBImporter {
 		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 
 		psReliefComponent = batchConn.prepareStatement("insert into RELIEF_COMPONENT (ID, OBJECTCLASS_ID, LOD, EXTENT) values (?, ?, ?, ?)");
-		psTinRelief = batchConn.prepareStatement("insert into TIN_RELIEF (ID, MAX_LENGTH, STOP_LINES, BREAK_LINES, CONTROL_POINTS, SURFACE_GEOMETRY_ID) values (?, ?, ?, ?, ?, ?)");
+		psTinRelief = batchConn.prepareStatement("insert into TIN_RELIEF (ID, MAX_LENGTH, MAX_LENGTH_UNIT, STOP_LINES, BREAK_LINES, CONTROL_POINTS, SURFACE_GEOMETRY_ID) values (?, ?, ?, ?, ?, ?, ?)");
 		psMassPointRelief = batchConn.prepareStatement("insert into MASSPOINT_RELIEF (ID, RELIEF_POINTS) values (?, ?)");
 		psBreaklineRelief = batchConn.prepareStatement("insert into BREAKLINE_RELIEF (ID, RIDGE_OR_VALLEY_LINES, BREAK_LINES) values (?, ?, ?)");
 
@@ -129,6 +129,7 @@ public class DBReliefComponent implements DBImporter {
 			psTinRelief.setLong(1, reliefComponentId);
 
 			double maxLength = -Double.MAX_VALUE;
+			String maxLengthUnit = null;
 			GeometryObject stopLines, breakLines, controlPoints;
 			stopLines = breakLines = controlPoints = null;
 			long geometryId = 0;
@@ -146,8 +147,10 @@ public class DBReliefComponent implements DBImporter {
 						Tin tin = (Tin)triangulatedSurface;
 
 						// maxLength
-						if (tin.isSetMaxLength()) 
+						if (tin.isSetMaxLength()) {
 							maxLength = tin.getMaxLength().getValue();
+							maxLengthUnit = tin.getMaxLength().getUom();
+						}
 
 						// stopLines
 						if (tin.isSetStopLines())
@@ -174,34 +177,37 @@ public class DBReliefComponent implements DBImporter {
 			}
 
 			// maxLength
-			if (maxLength != -Double.MAX_VALUE)
+			if (maxLength != -Double.MAX_VALUE) {
 				psTinRelief.setDouble(2, maxLength);
-			else
+				psTinRelief.setString(3, maxLengthUnit);
+			} else {
 				psTinRelief.setNull(2, Types.DOUBLE);
+				psTinRelief.setNull(3, Types.VARCHAR);
+			}
 
 			// stopLines
 			if (stopLines != null)
-				psTinRelief.setObject(3, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(stopLines, batchConn));
-			else
-				psTinRelief.setNull(3, nullGeometryType, nullGeometryTypeName);
-
-			// breakLines
-			if (breakLines != null)
-				psTinRelief.setObject(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(breakLines, batchConn));
+				psTinRelief.setObject(4, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(stopLines, batchConn));
 			else
 				psTinRelief.setNull(4, nullGeometryType, nullGeometryTypeName);
 
-			// controlPoints
-			if (controlPoints != null)
-				psTinRelief.setObject(5, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(controlPoints, batchConn));
+			// breakLines
+			if (breakLines != null)
+				psTinRelief.setObject(5, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(breakLines, batchConn));
 			else
 				psTinRelief.setNull(5, nullGeometryType, nullGeometryTypeName);
 
+			// controlPoints
+			if (controlPoints != null)
+				psTinRelief.setObject(6, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(controlPoints, batchConn));
+			else
+				psTinRelief.setNull(6, nullGeometryType, nullGeometryTypeName);
+
 			// triangle patches
 			if (geometryId != 0)
-				psTinRelief.setLong(6, geometryId);
+				psTinRelief.setLong(7, geometryId);
 			else
-				psTinRelief.setNull(6, 0);
+				psTinRelief.setNull(7, 0);
 
 			psTinRelief.addBatch();
 		}

@@ -91,9 +91,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	private final ImpExpGui topFrame;
 	private final DatabaseController databaseController;
 
-	private JComboBox connCombo;
+	private JComboBox<DBConnection> connCombo;
 	private JTextField descriptionText;
-	private JComboBox databaseTypeCombo;
+	private JComboBox<DatabaseType> databaseTypeCombo;
 	private JTextField serverText;
 	private JFormattedTextField portText;
 	private JTextField databaseText;
@@ -150,9 +150,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	private void initGui() {
-		connCombo = new JComboBox();
+		connCombo = new JComboBox<DBConnection>();
 		descriptionText = new JTextField();
-		databaseTypeCombo = new JComboBox();
+		databaseTypeCombo = new JComboBox<DatabaseType>();
 		serverText = new JTextField();
 		DecimalFormat df = new DecimalFormat("#####");
 		df.setMaximumIntegerDigits(5);

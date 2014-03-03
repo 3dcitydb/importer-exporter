@@ -48,14 +48,16 @@ import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModel
 public class CacheTableManager {
 	private final Logger LOG = Logger.getInstance();
 	private final AbstractDatabaseAdapter databaseAdapter;	
-	private final Connection connection;	
+	private final Connection connection;
+	private final Config config;
 
 	private String cacheDir;
+	private Connection dbConnection;
 
 	private ConcurrentHashMap<CacheTableModelEnum, CacheTable> cacheTables;
 	private ConcurrentHashMap<CacheTableModelEnum, BranchCacheTable> branchCacheTables;
 
-	public CacheTableManager(DatabaseConnectionPool dbPool, int concurrencyLevel, Config config) throws SQLException, IOException {
+	public CacheTableManager(DatabaseConnectionPool dbPool, int concurrencyLevel, Config config) throws SQLException, IOException {		
 		if (config.getProject().getGlobal().getCache().isUseDatabase()) {
 			databaseAdapter = dbPool.getActiveDatabaseAdapter();
 			connection = dbPool.getConnection();
@@ -64,7 +66,6 @@ public class CacheTableManager {
 		else {
 			File tempDir = checkTempDir(config.getProject().getGlobal().getCache().getLocalCachePath());
 			LOG.debug("Local cache directory is '" + tempDir.getAbsolutePath() + "'.");
-
 			databaseAdapter = new H2Adapter();
 
 			try {
@@ -81,14 +82,24 @@ public class CacheTableManager {
 
 		cacheTables = new ConcurrentHashMap<CacheTableModelEnum, CacheTable>(CacheTableModelEnum.values().length, 0.75f, concurrencyLevel);
 		branchCacheTables = new ConcurrentHashMap<CacheTableModelEnum, BranchCacheTable>(CacheTableModelEnum.values().length, 0.75f, concurrencyLevel);
+		this.config = config;
 	}
 
 	public AbstractDatabaseAdapter getDatabaseAdapter() {
 		return databaseAdapter;
 	}
-	
+
 	public CacheTable createCacheTable(CacheTableModelEnum model) throws SQLException {
-		CacheTable cacheTable = getOrCreateCacheTable(model);		
+		return createCacheTable(model, connection);		
+	}
+
+	public CacheTable createCacheTableInDatabase(CacheTableModelEnum model) throws SQLException {
+		initDatabaseConnection();
+		return createCacheTable(model, dbConnection);
+	}
+	
+	private CacheTable createCacheTable(CacheTableModelEnum model, Connection connection) throws SQLException {
+		CacheTable cacheTable = getOrCreateCacheTable(model, connection);		
 		if (!cacheTable.isCreated())
 			cacheTable.create();
 
@@ -96,7 +107,7 @@ public class CacheTableManager {
 	}
 
 	public CacheTable createAndIndexCacheTable(CacheTableModelEnum model) throws SQLException {
-		CacheTable cacheTable = getOrCreateCacheTable(model);
+		CacheTable cacheTable = getOrCreateCacheTable(model, connection);
 		if (!cacheTable.isCreated())
 			cacheTable.createAndIndex();
 
@@ -104,7 +115,7 @@ public class CacheTableManager {
 	}
 
 	public BranchCacheTable createBranchCacheTable(CacheTableModelEnum model) throws SQLException {
-		BranchCacheTable branchCacheTable = gerOrCreateBranchCacheTable(model);		
+		BranchCacheTable branchCacheTable = gerOrCreateBranchCacheTable(model, connection);		
 		if (!branchCacheTable.isCreated())
 			branchCacheTable.create();
 
@@ -112,7 +123,7 @@ public class CacheTableManager {
 	}
 
 	public BranchCacheTable createAndIndexBranchCacheTable(CacheTableModelEnum model) throws SQLException {
-		BranchCacheTable branchCacheTable = gerOrCreateBranchCacheTable(model);
+		BranchCacheTable branchCacheTable = gerOrCreateBranchCacheTable(model, connection);
 		if (!branchCacheTable.isCreated())
 			branchCacheTable.createAndIndex();
 
@@ -150,7 +161,19 @@ public class CacheTableManager {
 			cacheTables.clear();
 			branchCacheTables.clear();
 
-			connection.close();
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				//
+			}
+			
+			if (dbConnection != null) {
+				try {
+					dbConnection.close();
+				} catch (SQLException e) {
+					//
+				}
+			}
 
 			if (cacheDir != null) {
 				try {
@@ -162,7 +185,7 @@ public class CacheTableManager {
 		}
 	}
 
-	private CacheTable getOrCreateCacheTable(CacheTableModelEnum model) {
+	private CacheTable getOrCreateCacheTable(CacheTableModelEnum model, Connection connection) {
 		CacheTable cacheTable = cacheTables.get(model);
 		if (cacheTable == null) {
 			CacheTable tmp = new CacheTable(model, connection, databaseAdapter.getSQLAdapter());
@@ -174,7 +197,7 @@ public class CacheTableManager {
 		return cacheTable;
 	}
 
-	private BranchCacheTable gerOrCreateBranchCacheTable(CacheTableModelEnum model) {
+	private BranchCacheTable gerOrCreateBranchCacheTable(CacheTableModelEnum model, Connection connection) {
 		BranchCacheTable branchCacheTable = branchCacheTables.get(model);
 		if (branchCacheTable == null) {
 			BranchCacheTable tmp = new BranchCacheTable(model, connection, databaseAdapter.getSQLAdapter());
@@ -189,21 +212,21 @@ public class CacheTableManager {
 	private File checkTempDir(String tempDir) throws IOException {
 		if (tempDir == null || tempDir.trim().length() == 0)
 			throw new IOException("No temp directory for local cache provided.");
-		
+
 		File dir = new File(tempDir);
-	
+
 		if (!dir.exists() && !dir.mkdirs())
 			throw new IOException("Failed to create temp directory '" + dir.getAbsolutePath() + "'.");
 
 		if (!dir.isDirectory())
 			throw new IOException("The local cache setting '" + dir.getAbsolutePath() + "' is not a directory.");
-	
+
 		if (!dir.canRead() && !dir.setReadable(true, true))
 			throw new IOException("Lacking read permissions on temp directory '" + dir.getAbsolutePath() + "'.");
 
 		if (!dir.canWrite() && !dir.setWritable(true, true))
 			throw new IOException("Lacking write permissions on temp directory '" + dir.getAbsolutePath() + "'.");
-		
+
 		return dir;
 	}
 
@@ -214,6 +237,17 @@ public class CacheTableManager {
 		}
 
 		file.delete();
+	}
+	
+	private void initDatabaseConnection() throws SQLException {
+		if (dbConnection == null) {
+			if (config.getProject().getGlobal().getCache().isUseDatabase())
+				dbConnection = connection;
+			else {
+				dbConnection = DatabaseConnectionPool.getInstance().getConnection();
+				dbConnection.setAutoCommit(false);
+			}
+		}
 	}
 
 }

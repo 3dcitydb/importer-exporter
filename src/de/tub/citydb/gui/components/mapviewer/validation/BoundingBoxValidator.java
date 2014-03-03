@@ -119,6 +119,8 @@ public class BoundingBoxValidator {
 				return ValidationResult.SKIP;
 			case CLOSE:
 				return ValidationResult.CANCEL;
+			default:
+				return ValidationResult.CANCEL;
 			}			
 		} 
 
@@ -142,6 +144,8 @@ public class BoundingBoxValidator {
 				case SKIP:
 					return ValidationResult.SKIP;
 				case CLOSE:
+					return ValidationResult.CANCEL;
+				default:
 					return ValidationResult.CANCEL;
 				}				
 			}

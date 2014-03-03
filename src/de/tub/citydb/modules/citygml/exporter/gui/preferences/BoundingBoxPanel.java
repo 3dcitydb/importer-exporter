@@ -78,9 +78,9 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 	private JRadioButton expBBRadioIntersect;
 	private JLabel tilePathInfo;
 	private JLabel tilePathSuffixLabel;
-	private JComboBox tilePathSuffixComboBox;
+	private JComboBox<TileSuffixMode> tilePathSuffixComboBox;
 	private JLabel tileNameSuffixLabel;
-	private JComboBox tileNameSuffixComboBox;
+	private JComboBox<TileNameSuffixMode> tileNameSuffixComboBox;
 	private JLabel rowsLabel;
 	private JFormattedTextField rowsText;
 	private JLabel columnsLabel;
@@ -91,7 +91,7 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 	private JLabel genAttrNameLabel;
 	private JTextField genAttrNameText;
 	private JLabel genAttrValueLabel;
-	private JComboBox genAttrValueComboBox;
+	private JComboBox<TileSuffixMode> genAttrValueComboBox;
 
 	public BoundingBoxPanel(Config config) {
 		super(config);
@@ -142,9 +142,9 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 		
 		tilePathInfo = new JLabel();
 		tilePathSuffixLabel = new JLabel();
-		tilePathSuffixComboBox = new JComboBox();
+		tilePathSuffixComboBox = new JComboBox<TileSuffixMode>();
 		tileNameSuffixLabel = new JLabel();
-		tileNameSuffixComboBox = new JComboBox();
+		tileNameSuffixComboBox = new JComboBox<TileNameSuffixMode>();
 		tilePathNameLabel = new JLabel();
 		tilePathName = new JTextField();
 		
@@ -153,7 +153,7 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 		genAttrNameText = new JTextField("TILE");
 		genAttrNameText.setEditable(false);
 		genAttrValueLabel = new JLabel();
-		genAttrValueComboBox = new JComboBox();
+		genAttrValueComboBox = new JComboBox<TileSuffixMode>();
 		
 		PopupMenuDecorator.getInstance().decorate(rowsText, columnsText, tilePathName, genAttrNameText);
 		

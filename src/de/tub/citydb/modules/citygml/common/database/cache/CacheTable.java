@@ -49,6 +49,8 @@ import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModel
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableSurfaceGeometry;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableTextureAssociation;
+import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableTextureAssociationTarget;
+import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableTextureCoordList;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableTextureFile;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableTextureFileId;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableTextureParam;
@@ -99,6 +101,12 @@ public class CacheTable extends AbstractCacheTable {
 			break;
 		case TEXTUREASSOCIATION:
 			this.model = CacheTableTextureAssociation.getInstance();
+			break;
+		case TEXTUREASSOCIATION_TARGET:
+			this.model = CacheTableTextureAssociationTarget.getInstance();
+			break;
+		case TEXTURE_COORD_LIST:
+			this.model = CacheTableTextureCoordList.getInstance();
 			break;
 		case TEXTUREPARAM:
 			this.model = CacheTableTextureParam.getInstance();

@@ -81,8 +81,8 @@ import de.tub.citydb.util.gui.GuiUtil;
 @SuppressWarnings("serial")
 public class ProxyPanel extends AbstractPreferencesComponent implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
-	private JList proxyList;
-	private CheckBoxListDecorator listDecorator;
+	private JList<ProxyConfigImpl> proxyList;
+	private CheckBoxListDecorator<ProxyConfigImpl> listDecorator;
 	private DisabledListCellRenderer renderer;
 	private List<ProxyConfigImpl> proxies;
 
@@ -131,12 +131,12 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 	}
 
 	private void initGui() {
-		proxyList = new JList();
+		proxyList = new JList<ProxyConfigImpl>();
 		proxyList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		renderer = new DisabledListCellRenderer();
 		proxyList.setCellRenderer(renderer);
-		proxyList.setModel(new DefaultListModel());
-		listDecorator = new CheckBoxListDecorator(proxyList);		
+		proxyList.setModel(new DefaultListModel<ProxyConfigImpl>());
+		listDecorator = new CheckBoxListDecorator<ProxyConfigImpl>(proxyList);		
 
 		proxies = new ArrayList<ProxyConfigImpl>(config.getProject().getGlobal().getProxies().getProxyList().size());
 
@@ -271,7 +271,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		proxies.clear();
 		proxies.addAll(config.getProject().getGlobal().getProxies().getProxyList());
 
-		DefaultListModel model = (DefaultListModel)proxyList.getModel();
+		DefaultListModel<ProxyConfigImpl> model = (DefaultListModel<ProxyConfigImpl>)proxyList.getModel();
 		model.clear();
 		model.setSize(proxies.size());
 
@@ -410,8 +410,8 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 	private final class DisabledListCellRenderer extends DefaultListCellRenderer { 
 		private boolean enable = true;
 		private int singleIndex = 0;
-
-		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			boolean select = isSelected;
 			boolean focus = cellHasFocus;
 			if (!enable)

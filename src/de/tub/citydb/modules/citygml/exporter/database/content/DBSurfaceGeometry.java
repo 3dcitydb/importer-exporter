@@ -63,6 +63,7 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 
@@ -85,7 +86,7 @@ public class DBSurfaceGeometry implements DBExporter {
 	private boolean isImplicit;
 	private String gmlIdPrefix;
 
-	private int commitAfter = 1000;
+	private int commitAfter = Internal.DB_MAX_BATCH_SIZE;
 	private int batchCounter;
 
 	public DBSurfaceGeometry(Connection connection, CacheTable tempTable, Config config, DBExporterManager dbExporterManager) throws SQLException {
@@ -110,7 +111,7 @@ public class DBSurfaceGeometry implements DBExporter {
 			if (dbExporterManager.getDatabaseAdapter().getSQLAdapter().requiresPseudoTableInSelect())
 				query.append("from ").append(dbExporterManager.getDatabaseAdapter().getSQLAdapter().getPseudoTableName()).append(" ");
 
-			query.append("where exists (select 1 from TEXTUREPARAM tp inner join APPEAR_TO_SURFACE_DATA a2s on a2s.SURFACE_DATA_ID=tp.SURFACE_DATA_ID inner join APPEARANCE app on app.ID = a2s.APPEARANCE_ID where tp.SURFACE_GEOMETRY_ID = ? and app.CITYOBJECT_ID IS NULL)");
+			query.append("where exists (select 1 from TEXTUREPARAM where SURFACE_GEOMETRY_ID = ?)");
 			psImportGmlId = tempTable.getConnection().prepareStatement(query.toString());
 		}
 

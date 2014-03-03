@@ -37,7 +37,7 @@ import java.sql.Types;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParamEnum;
 import de.tub.citydb.util.Util;
@@ -89,7 +89,7 @@ public class XlinkTextureParam implements DBXlinkResolver {
 
 		if (xlink.getType() == DBXlinkTextureParamEnum.TEXCOORDGEN && xlink.getTexParamGmlId() != null) {
 			// make sure xlinks to the corresponding texture parameterization can be resolved
-			resolverManager.propagateXlink(new DBXlinkTextureAssociation(
+			resolverManager.propagateXlink(new DBXlinkTextureAssociationTarget(
 					xlink.getId(),
 					geometryEntry.getId(),
 					xlink.getTexParamGmlId()));

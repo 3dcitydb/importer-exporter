@@ -36,15 +36,15 @@ import java.sql.Statement;
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 
 
-public class CacheTableTextureAssociation extends CacheTableModel {
-	public static CacheTableTextureAssociation instance = null;
+public class CacheTableTextureAssociationTarget extends CacheTableModel {
+	public static CacheTableTextureAssociationTarget instance = null;
 	
-	private CacheTableTextureAssociation() {		
+	private CacheTableTextureAssociationTarget() {		
 	}
 	
-	public synchronized static CacheTableTextureAssociation getInstance() {
+	public synchronized static CacheTableTextureAssociationTarget getInstance() {
 		if (instance == null)
-			instance = new CacheTableTextureAssociation();
+			instance = new CacheTableTextureAssociationTarget();
 		
 		return instance;
 	}
@@ -67,7 +67,7 @@ public class CacheTableTextureAssociation extends CacheTableModel {
 
 	@Override
 	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.TEXTUREASSOCIATION;
+		return CacheTableModelEnum.TEXTUREASSOCIATION_TARGET;
 	}
 	
 	@Override

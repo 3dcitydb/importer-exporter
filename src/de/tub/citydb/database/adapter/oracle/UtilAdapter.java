@@ -151,7 +151,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 		try {		
 			String query = "select sdo_aggr_mbr(geodb_util.to_2d(ENVELOPE, (select srid from database_srs))) from CITYOBJECT where ENVELOPE is not NULL";
 			if (!classIds.isEmpty()) 
-				query += " and CLASS_ID in (" + Util.collection2string(classIds, ", ") +") ";
+				query += " and OBJECTCLASS_ID in (" + Util.collection2string(classIds, ", ") +") ";
 
 			BoundingBoxCorner lowerCorner = new BoundingBoxCorner(Double.MAX_VALUE);
 			BoundingBoxCorner upperCorner = new BoundingBoxCorner(-Double.MAX_VALUE);

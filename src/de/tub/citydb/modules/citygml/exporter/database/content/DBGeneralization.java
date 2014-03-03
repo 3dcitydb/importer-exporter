@@ -33,18 +33,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashSet;
 
 import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.GeneralizationRelation;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.BoundingBoxFilter;
 import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
@@ -82,13 +81,13 @@ public class DBGeneralization implements DBExporter {
 		boundingBoxFilter = exportFilter.getBoundingBoxFilter();
 
 		if (!config.getInternal().isTransformCoordinates()) {	
-			psGeneralization = connection.prepareStatement("select GMLID, CLASS_ID, ENVELOPE from CITYOBJECT where ID=?");
+			psGeneralization = connection.prepareStatement("select GMLID, OBJECTCLASS_ID, NAME, ENVELOPE from CITYOBJECT where ID=?");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
-			.append("select GMLID, CLASS_ID, ")
+			.append("select GMLID, OBJECTCLASS_ID, ")
 			.append(transformOrNull).append("(co.ENVELOPE, ").append(srid).append(") AS ENVELOPE ")
 			.append("from CITYOBJECT where ID=?");
 			psGeneralization = connection.prepareStatement(query.toString());
@@ -104,14 +103,19 @@ public class DBGeneralization implements DBExporter {
 				rs = psGeneralization.executeQuery();
 
 				if (rs.next()) {
-					String gmlId = rs.getString("GMLID");			
+					String gmlId = rs.getString(1);			
 					if (rs.wasNull() || gmlId == null)
 						continue;
 
-					int classId = rs.getInt("CLASS_ID");			
+					int classId = rs.getInt(2);
+					if (rs.wasNull() || classId == 0)
+						continue;
+					
 					CityGMLClass type = Util.classId2cityObject(classId);			
 					
-					Object object = rs.getObject("ENVELOPE");
+					String name = rs.getString(3);
+					
+					Object object = rs.getObject(4);
 					if (!rs.wasNull() && object != null && boundingBoxFilter.isActive()) {
 						GeometryObject geomObj = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getEnvelope(object);
 						double[] coordinates = geomObj.getCoordinates(0);
@@ -129,88 +133,11 @@ public class DBGeneralization implements DBExporter {
 
 					if (featureClassFilter.isActive() && featureClassFilter.filter(type))
 						continue;
-
+					
 					if (featureGmlNameFilter.isActive()) {
-						// we need to get the gml:name of the feature 
-						// we only check top-level features
-						TableEnum table = null;
-
-						switch (type) {
-						case BUILDING:
-							table = TableEnum.BUILDING;
-							break;
-						case CITY_FURNITURE:
-							table = TableEnum.CITY_FURNITURE;
-							break;
-						case LAND_USE:
-							table = TableEnum.LAND_USE;
-							break;
-						case WATER_BODY:
-							table = TableEnum.WATERBODY;
-							break;
-						case PLANT_COVER:
-							table = TableEnum.SOLITARY_VEGETAT_OBJECT;
-							break;
-						case SOLITARY_VEGETATION_OBJECT:
-							table = TableEnum.PLANT_COVER;
-							break;
-						case TRANSPORTATION_COMPLEX:
-						case ROAD:
-						case RAILWAY:
-						case TRACK:
-						case SQUARE:
-							table = TableEnum.TRANSPORTATION_COMPLEX;
-							break;
-						case RELIEF_FEATURE:
-							table = TableEnum.RELIEF_FEATURE;
-							break;
-						case GENERIC_CITY_OBJECT:
-							table = TableEnum.GENERIC_CITYOBJECT;
-							break;
-						case CITY_OBJECT_GROUP:
-							table = TableEnum.CITYOBJECTGROUP;
-							break;
-						}
-
-						if (table != null) {
-							Statement stmt = null;
-							ResultSet nameRs = null;
-
-							try {
-								String query = "select NAME from " + table.toString() + " where ID=" + generalizationId;
-								stmt = connection.createStatement();
-
-								nameRs = stmt.executeQuery(query);
-								if (nameRs.next()) {
-									String gmlName = nameRs.getString("NAME");
-									if (gmlName != null && featureGmlNameFilter.filter(gmlName))
-										continue;
-								}
-
-							} catch (SQLException sqlEx) {
-								continue;
-							} finally {
-								if (nameRs != null) {
-									try {
-										nameRs.close();
-									} catch (SQLException sqlEx) {
-										//
-									}
-
-									nameRs = null;
-								}
-
-								if (stmt != null) {
-									try {
-										stmt.close();
-									} catch (SQLException sqlEx) {
-										//
-									}
-
-									stmt = null;
-								}
-							}
-						}
+						for (Code code : Util.string2codeList(name, null))
+							if (code.getValue() != null && featureGmlNameFilter.filter(code.getValue()))
+								continue;						
 					}
 
 					GeneralizationRelation generalizesTo = new GeneralizationRelation();

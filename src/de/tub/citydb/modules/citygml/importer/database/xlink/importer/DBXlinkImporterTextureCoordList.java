@@ -29,19 +29,22 @@
  */
 package de.tub.citydb.modules.citygml.importer.database.xlink.importer;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLinearRing;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureCoordList;
 
-public class DBXlinkImporterLinearRing implements DBXlinkImporter {
+public class DBXlinkImporterTextureCoordList implements DBXlinkImporter {
 	private final CacheTable tempTable;
 	private final DBXlinkImporterManager xlinkImporterManager;
-	private PreparedStatement psLinearRing;
+	
+	private Connection connection;
+	private PreparedStatement psXlink;
 	private int batchCounter;
 
-	public DBXlinkImporterLinearRing(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+	public DBXlinkImporterTextureCoordList(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
 		this.tempTable = tempTable;
 		this.xlinkImporterManager = xlinkImporterManager;
 
@@ -49,18 +52,20 @@ public class DBXlinkImporterLinearRing implements DBXlinkImporter {
 	}
 
 	private void init() throws SQLException {
-		psLinearRing = tempTable.getConnection().prepareStatement(new StringBuilder()
-		.append("insert into ").append(tempTable.getTableName())
-		.append(" (GMLID, PARENT_ID, RING_NO, REVERSE) values (?, ?, ?, ?)").toString());
+		connection = tempTable.getConnection();
+		psXlink = connection.prepareStatement("insert into " + tempTable.getTableName() + 
+			" (ID, GMLID, TEXPARAM_GMLID, TEXTURE_COORDINATES, TARGET_ID) values " +
+			"(?, ?, ?, ?, ?)");
 	}
 
-	public boolean insert(DBXlinkLinearRing xlinkEntry) throws SQLException {
-		psLinearRing.setString(1, xlinkEntry.getGmlId());
-		psLinearRing.setLong(2, xlinkEntry.getParentId());
-		psLinearRing.setLong(3, xlinkEntry.getRingNo());
-		psLinearRing.setInt(4, xlinkEntry.isReverse() ? 1 : 0);
+	public boolean insert(DBXlinkTextureCoordList xlinkEntry) throws SQLException {
+		psXlink.setLong(1, xlinkEntry.getId());
+		psXlink.setString(2, xlinkEntry.getGmlId());
+		psXlink.setString(3, xlinkEntry.getTexParamGmlId());
+		psXlink.setObject(4, xlinkImporterManager.getCacheAdapter().getGeometryConverter().getDatabaseObject(xlinkEntry.getTextureCoord(), connection));
+		psXlink.setLong(5, xlinkEntry.getTargetId());
 
-		psLinearRing.addBatch();
+		psXlink.addBatch();
 		if (++batchCounter == xlinkImporterManager.getCacheAdapter().getMaxBatchSize())
 			executeBatch();
 
@@ -69,18 +74,18 @@ public class DBXlinkImporterLinearRing implements DBXlinkImporter {
 
 	@Override
 	public void executeBatch() throws SQLException {
-		psLinearRing.executeBatch();
+		psXlink.executeBatch();
 		batchCounter = 0;
 	}
 
 	@Override
 	public void close() throws SQLException {
-		psLinearRing.close();
+		psXlink.close();
 	}
 
 	@Override
 	public DBXlinkImporterEnum getDBXlinkImporterType() {
-		return DBXlinkImporterEnum.LINEAR_RING;
+		return DBXlinkImporterEnum.XLINK_TEXTURE_COORD_LIST;
 	}
 
 }

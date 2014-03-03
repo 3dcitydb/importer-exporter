@@ -33,15 +33,15 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
-import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
 
-public class DBXlinkImporterTextureAssociation implements DBXlinkImporter {
+public class DBXlinkImporterTextureAssociationTarget implements DBXlinkImporter {
 	private final CacheTable tempTable;
 	private final DBXlinkImporterManager xlinkImporterManager;
 	private PreparedStatement psXlink;
 	private int batchCounter;
 
-	public DBXlinkImporterTextureAssociation(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
+	public DBXlinkImporterTextureAssociationTarget(CacheTable tempTable, DBXlinkImporterManager xlinkImporterManager) throws SQLException {
 		this.tempTable = tempTable;
 		this.xlinkImporterManager = xlinkImporterManager;
 
@@ -54,7 +54,7 @@ public class DBXlinkImporterTextureAssociation implements DBXlinkImporter {
 			"(?, ?, ?)");
 	}
 
-	public boolean insert(DBXlinkTextureAssociation xlinkEntry) throws SQLException {
+	public boolean insert(DBXlinkTextureAssociationTarget xlinkEntry) throws SQLException {
 		psXlink.setLong(1, xlinkEntry.getSurfaceDataId());
 		psXlink.setLong(2, xlinkEntry.getSurfaceGeometryId());
 		psXlink.setString(3, xlinkEntry.getGmlId());
@@ -79,7 +79,7 @@ public class DBXlinkImporterTextureAssociation implements DBXlinkImporter {
 
 	@Override
 	public DBXlinkImporterEnum getDBXlinkImporterType() {
-		return DBXlinkImporterEnum.XLINK_TEXTUREASSOCIATION;
+		return DBXlinkImporterEnum.TEXTUREASSOCIATION_TARGET;
 	}
 
 }

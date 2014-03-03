@@ -49,6 +49,7 @@ import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBAppearance;
+import de.tub.citydb.modules.citygml.exporter.database.content.DBBridge;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBBuilding;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBCityFurniture;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBCityObjectGroup;
@@ -61,6 +62,7 @@ import de.tub.citydb.modules.citygml.exporter.database.content.DBReliefFeature;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBSolitaryVegetatObject;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBSplittingResult;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBTransportationComplex;
+import de.tub.citydb.modules.citygml.exporter.database.content.DBTunnel;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBWaterBody;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -233,6 +235,16 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 					if (dbBuilding != null)
 						success = dbBuilding.read(work);
 					break;
+				case BRIDGE:
+					DBBridge dbBridge = (DBBridge)dbExporterManager.getDBExporter(DBExporterEnum.BRIDGE);
+					if (dbBridge != null)
+						success = dbBridge.read(work);
+					break;
+				case TUNNEL:
+					DBTunnel dbTunnel = (DBTunnel)dbExporterManager.getDBExporter(DBExporterEnum.TUNNEL);
+					if (dbTunnel != null)
+						success = dbTunnel.read(work);
+					break;
 				case CITY_FURNITURE:
 					DBCityFurniture dbCityFurniture = (DBCityFurniture)dbExporterManager.getDBExporter(DBExporterEnum.CITY_FURNITURE);
 					if (dbCityFurniture != null)
@@ -288,6 +300,8 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 					if (dbCityObjectGroup != null)
 						success = dbCityObjectGroup.read(work);
 					break;
+				default:
+					return;
 				}
 
 				if (success)

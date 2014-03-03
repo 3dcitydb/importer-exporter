@@ -73,7 +73,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 	private JPanel component;
 	private JLabel featureLabel;
-	private JComboBox featureComboBox;
+	private JComboBox<FeatureClassMode> featureComboBox;
 	private BoundingBoxPanelImpl bboxPanel;
 	private JButton bboxButton;
 
@@ -95,7 +95,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		bboxPanel.setEditable(false);
 		bboxButton = new JButton();
 
-		featureComboBox = new JComboBox();
+		featureComboBox = new JComboBox<FeatureClassMode>();
 		for (FeatureClassMode type : FeatureClassMode.values())
 			featureComboBox.addItem(type);
 

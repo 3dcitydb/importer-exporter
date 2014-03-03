@@ -63,11 +63,11 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 	private JPanel block2;
 
 	private JLabel logLevelConsoleLabel;
-	private JComboBox logLevelConsoleCombo;
+	private JComboBox<LogLevel> logLevelConsoleCombo;
 	private JCheckBox wrapTextConsole;
 	private JCheckBox useLogFile;
 	private JLabel logLevelFileLabel;
-	private JComboBox logLevelFileCombo;
+	private JComboBox<LogLevel> logLevelFileCombo;
 	private JCheckBox useLogPath;
 	private JTextField logPathText;
 	private JButton logPathButton;
@@ -106,11 +106,11 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
 	private void initGui() {
 		logLevelConsoleLabel = new JLabel();
-		logLevelConsoleCombo = new JComboBox();
+		logLevelConsoleCombo = new JComboBox<LogLevel>();
 		wrapTextConsole = new JCheckBox();
 		useLogFile = new JCheckBox();
 		logLevelFileLabel = new JLabel();
-		logLevelFileCombo = new JComboBox();
+		logLevelFileCombo = new JComboBox<LogLevel>();
 		useLogPath = new JCheckBox();
 		logPathText = new JTextField();
 		logPathButton = new JButton();

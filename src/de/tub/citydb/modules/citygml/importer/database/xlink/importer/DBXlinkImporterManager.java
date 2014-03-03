@@ -68,8 +68,14 @@ public class DBXlinkImporterManager {
 			case XLINK_BASIC:
 				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.BASIC);
 				break;
+			case XLINK_TEXTURE_COORD_LIST:
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTURE_COORD_LIST);
+				break;
 			case XLINK_TEXTUREPARAM:
 				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTUREPARAM);
+				break;
+			case TEXTUREASSOCIATION_TARGET:
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION_TARGET);
 				break;
 			case XLINK_TEXTUREASSOCIATION:
 				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION);
@@ -103,8 +109,14 @@ public class DBXlinkImporterManager {
 				case XLINK_BASIC:
 					dbImporter = new DBXlinkImporterBasic(tempTable, this);
 					break;
+				case XLINK_TEXTURE_COORD_LIST:
+					dbImporter = new DBXlinkImporterTextureCoordList(tempTable, this);
+					break;
 				case XLINK_TEXTUREPARAM:
 					dbImporter = new DBXlinkImporterTextureParam(tempTable, this);
+					break;
+				case TEXTUREASSOCIATION_TARGET:
+					dbImporter = new DBXlinkImporterTextureAssociationTarget(tempTable, this);
 					break;
 				case XLINK_TEXTUREASSOCIATION:
 					dbImporter = new DBXlinkImporterTextureAssociation(tempTable, this);

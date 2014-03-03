@@ -45,9 +45,12 @@ import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObject;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLinearRing;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureCoordList;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterBasic;
@@ -55,10 +58,13 @@ import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImp
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterEnum;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterGroupToCityObject;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterLibraryObject;
+import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterLinearRing;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterManager;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterSurfaceGeometry;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureAssociation;
+import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureAssociationTarget;
+import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureCoordList;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureFile;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureParam;
 
@@ -181,12 +187,26 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 						success = dbSurfaceGeometry.insert(xlinkSurfaceGeometry);
 
 					break;
+				case LINEAR_RING:
+					DBXlinkLinearRing xlinkLinearRing = (DBXlinkLinearRing)work;
+					DBXlinkImporterLinearRing dbLinearRing = (DBXlinkImporterLinearRing)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.LINEAR_RING);
+					if (dbLinearRing != null)
+						success = dbLinearRing.insert(xlinkLinearRing);
+					
+					break;
 				case BASIC:
 					DBXlinkBasic xlinkBasic = (DBXlinkBasic)work;
 					DBXlinkImporterBasic dbBasic = (DBXlinkImporterBasic)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_BASIC);
 					if (dbBasic != null)
 						success = dbBasic.insert(xlinkBasic);
 
+					break;
+				case TEXTURE_COORD_LIST:
+					DBXlinkTextureCoordList xlinkTexCoord = (DBXlinkTextureCoordList)work;
+					DBXlinkImporterTextureCoordList dbTexCoord = (DBXlinkImporterTextureCoordList)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_TEXTURE_COORD_LIST);
+					if (dbTexCoord != null)
+						success = dbTexCoord.insert(xlinkTexCoord);
+					
 					break;
 				case TEXTUREPARAM:
 					DBXlinkTextureParam xlinkAppearance = (DBXlinkTextureParam)work;
@@ -196,10 +216,17 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 
 					break;
 				case TEXTUREASSOCIATION:
-					DBXlinkTextureAssociation xlinkTextureAssociation = (DBXlinkTextureAssociation)work;
+					DBXlinkTextureAssociation xlinkTextureAss = (DBXlinkTextureAssociation)work;
 					DBXlinkImporterTextureAssociation dbTexAss = (DBXlinkImporterTextureAssociation)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.XLINK_TEXTUREASSOCIATION);
 					if (dbTexAss != null)
-						success = dbTexAss.insert(xlinkTextureAssociation);
+						success = dbTexAss.insert(xlinkTextureAss);
+
+					break;
+				case TEXTUREASSOCIATION_TARGET:
+					DBXlinkTextureAssociationTarget xlinkTextureAssTarget = (DBXlinkTextureAssociationTarget)work;
+					DBXlinkImporterTextureAssociationTarget dbTexAssTarget = (DBXlinkImporterTextureAssociationTarget)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.TEXTUREASSOCIATION_TARGET);
+					if (dbTexAssTarget != null)
+						success = dbTexAssTarget.insert(xlinkTextureAssTarget);
 
 					break;
 				case TEXTURE_FILE:

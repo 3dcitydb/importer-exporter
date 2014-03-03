@@ -100,7 +100,7 @@ public class DBBuilding implements DBExporter {
 		if (!config.getInternal().isTransformCoordinates()) {
 			StringBuilder query = new StringBuilder()
 			.append("select b.ID, b.BUILDING_PARENT_ID, b.CLASS, b.CLASS_CODESPACE, b.FUNCTION, b.FUNCTION_CODESPACE, b.USAGE, b.USAGE_CODESPACE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, ")
-			.append("b.ROOF_TYPE, b.ROOF_TYPE_CODESPACE, b.MEASURED_HEIGHT, b.MEASURED_HEIGHT_UNIT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_BELOW_GROUND, ")
+			.append("b.ROOF_TYPE, b.ROOF_TYPE_CODESPACE, b.MEASURED_HEIGHT, b.MEASURED_HEIGHT_UNIT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_ABOVE_GRND_UNIT, b.STOREY_HEIGHTS_BELOW_GROUND, b.STOREY_HEIGHTS_BELOW_GRND_UNIT, ")
 			.append("b.LOD1_TERRAIN_INTERSECTION, b.LOD2_TERRAIN_INTERSECTION, b.LOD3_TERRAIN_INTERSECTION, b.LOD4_TERRAIN_INTERSECTION, ")
 			.append("b.LOD2_MULTI_CURVE, b.LOD3_MULTI_CURVE, b.LOD4_MULTI_CURVE, ")
 			.append("LOD0_FOOTPRINT_ID, LOD0_ROOFPRINT_ID, ")
@@ -115,7 +115,7 @@ public class DBBuilding implements DBExporter {
 
 			StringBuilder query = new StringBuilder()
 			.append("select b.ID, b.BUILDING_PARENT_ID, b.CLASS, b.CLASS_CODESPACE, b.FUNCTION, b.FUNCTION_CODESPACE, b.USAGE, b.USAGE_CODESPACE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, ")
-			.append("b.ROOF_TYPE, b.ROOF_TYPE_CODESPACE, b.MEASURED_HEIGHT, b.MEASURED_HEIGHT_UNIT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_BELOW_GROUND, ")
+			.append("b.ROOF_TYPE, b.ROOF_TYPE_CODESPACE, b.MEASURED_HEIGHT, b.MEASURED_HEIGHT_UNIT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_ABOVE_GRND_UNIT, b.STOREY_HEIGHTS_BELOW_GROUND, b.STOREY_HEIGHTS_BELOW_GRND_UNIT, ")
 			.append(transformOrNull).append("(b.LOD1_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD1_TERRAIN_INTERSECTION, ")
 			.append(transformOrNull).append("(b.LOD2_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD2_TERRAIN_INTERSECTION, ")
 			.append(transformOrNull).append("(b.LOD3_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD3_TERRAIN_INTERSECTION, ")
@@ -254,11 +254,11 @@ public class DBBuilding implements DBExporter {
 						}
 
 						measureList.setDoubleOrNull(storeyHeightsAboveGroundList);
-						measureList.setUom("urn:ogc:def:uom:UCUM::m");
+						measureList.setUom(rs.getString(18));
 						abstractBuilding.setStoreyHeightsAboveGround(measureList);
 					}
 
-					String storeyHeightsBelowGround = rs.getString(18);
+					String storeyHeightsBelowGround = rs.getString(19);
 					if (storeyHeightsBelowGround != null) {
 						List<DoubleOrNull> storeyHeightsBelowGroundList = new ArrayList<DoubleOrNull>();
 						MeasureOrNullList measureList = new MeasureOrNullList();
@@ -274,13 +274,13 @@ public class DBBuilding implements DBExporter {
 						}
 
 						measureList.setDoubleOrNull(storeyHeightsBelowGroundList);
-						measureList.setUom("urn:ogc:def:uom:UCUM::m");
+						measureList.setUom(rs.getString(20));
 						abstractBuilding.setStoreyHeightsBelowGround(measureList);
 					}
 
 					// terrainIntersection
 					for (int lod = 0; lod < 4; lod++) {
-						Object terrainIntersectionObj = rs.getObject(19 + lod);
+						Object terrainIntersectionObj = rs.getObject(21 + lod);
 						if (rs.wasNull() || terrainIntersectionObj == null)
 							continue;
 
@@ -308,7 +308,7 @@ public class DBBuilding implements DBExporter {
 
 					// multiCurve
 					for (int lod = 0; lod < 3; lod++) {
-						Object multiCurveObj = rs.getObject(23 + lod);
+						Object multiCurveObj = rs.getObject(25 + lod);
 						if (rs.wasNull() || multiCurveObj == null)
 							continue;
 
@@ -333,7 +333,7 @@ public class DBBuilding implements DBExporter {
 
 					// footPrint and roofEdge
 					for (int i = 0; i < 2; i++) {
-						long surfaceGeometryId = rs.getLong(26 + i);
+						long surfaceGeometryId = rs.getLong(28 + i);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
 
@@ -364,7 +364,7 @@ public class DBBuilding implements DBExporter {
 
 					// solid
 					for (int lod = 0; lod < 4; lod++) {
-						long surfaceGeometryId = rs.getLong(28 + lod);
+						long surfaceGeometryId = rs.getLong(30 + lod);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
 
@@ -395,7 +395,7 @@ public class DBBuilding implements DBExporter {
 
 					// multiSurface
 					for (int lod = 0; lod < 4; lod++) {
-						long surfaceGeometryId = rs.getLong(32 + lod);
+						long surfaceGeometryId = rs.getLong(34 + lod);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
 

@@ -53,16 +53,16 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class CheckBoxListDecorator extends MouseAdapter implements ListSelectionListener, ActionListener, PropertyChangeListener {
-	private final JList list;
+public class CheckBoxListDecorator<T> extends MouseAdapter implements ListSelectionListener, ActionListener, PropertyChangeListener {
+	private final JList<T> list;
 	private final ListSelectionModel checkBoxSelectionModel;
 	private final Map<Integer, Boolean> enabled;
 	private final int width;
 
-	public CheckBoxListDecorator(JList list) {
+	public CheckBoxListDecorator(JList<T> list) {
 		this.list = list;
 
-		list.setCellRenderer(new CheckBoxListCellRenderer());
+		list.setCellRenderer(new CheckBoxListCellRenderer<T>());
 		list.addMouseListener(this); 
 		list.addPropertyChangeListener(this);
 		list.registerKeyboardAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), JComponent.WHEN_FOCUSED); 
@@ -139,8 +139,8 @@ public class CheckBoxListDecorator extends MouseAdapter implements ListSelection
 	}
 
 	@SuppressWarnings("serial")
-	private final class CheckBoxListCellRenderer extends JPanel implements ListCellRenderer { 
-		private final ListCellRenderer renderer; 
+	private final class CheckBoxListCellRenderer<E extends T> extends JPanel implements ListCellRenderer<E> { 
+		private final ListCellRenderer<? super T> renderer; 
 		private final JCheckBox checkBox; 
 
 		public CheckBoxListCellRenderer() { 
@@ -155,9 +155,9 @@ public class CheckBoxListDecorator extends MouseAdapter implements ListSelection
 			box.add(checkBox);
 			box.add(Box.createHorizontalStrut(5));
 			add(box, BorderLayout.WEST);
-		} 
+		}
 
-		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList<? extends E> list, E value, int index, boolean isSelected, boolean cellHasFocus) {
 			Component component = renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); 
 			add(component, BorderLayout.CENTER); 
 

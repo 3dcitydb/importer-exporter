@@ -52,6 +52,8 @@ import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObj
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureCoordList;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParamEnum;
@@ -247,23 +249,18 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 						success = xlinkBasic.insert(basic);
 
 					break;
+				case TEXTURE_COORD_LIST:
+					DBXlinkTextureCoordList texCoord = (DBXlinkTextureCoordList)work;
+					XlinkTexCoordList xlinkTexCoordList = (XlinkTexCoordList)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXCOORDLIST);
+					if (xlinkTexCoordList != null)
+						success = xlinkTexCoordList.insert(texCoord);
+
+					break;					
 				case TEXTUREPARAM:
 					DBXlinkTextureParam textureParam = (DBXlinkTextureParam)work;
 					DBXlinkTextureParamEnum subType = textureParam.getType();
 
 					switch (subType) {
-					case TEXCOORDLIST:
-						XlinkTexCoordList xlinkTexCoordList = (XlinkTexCoordList)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXCOORDLIST);
-						if (xlinkTexCoordList != null)
-							success = xlinkTexCoordList.insert(textureParam);
-
-						break;
-					case XLINK_TEXTUREASSOCIATION:
-						XlinkTextureAssociation xlinkTextureAssociation = (XlinkTextureAssociation)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.XLINK_TEXTUREASSOCIATION);
-						if (xlinkTextureAssociation != null)
-							success = xlinkTextureAssociation.insert(textureParam);
-
-						break;
 					case X3DMATERIAL:
 					case GEOREFERENCEDTEXTURE:
 					case TEXCOORDGEN:
@@ -275,6 +272,13 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 					case UNDEFINED:
 						// nothing to do
 					}
+
+					break;
+				case TEXTUREASSOCIATION:
+					DBXlinkTextureAssociation textureAssociation = (DBXlinkTextureAssociation)work;
+					XlinkTextureAssociation xlinkTextureAssociation = (XlinkTextureAssociation)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.XLINK_TEXTUREASSOCIATION);
+					if (xlinkTextureAssociation != null)
+						success = xlinkTextureAssociation.insert(textureAssociation);
 
 					break;
 				case TEXTURE_FILE:

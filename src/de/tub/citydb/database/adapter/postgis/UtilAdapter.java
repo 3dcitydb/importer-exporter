@@ -152,7 +152,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 		try {		
 			String query = "select ST_Extent(ST_Force_2d(envelope))::geometry from cityobject where envelope is not null";
 			if (!classIds.isEmpty()) 
-				query += " and class_id in (" + Util.collection2string(classIds, ", ") +") ";
+				query += " and OBJECTCLASS_ID in (" + Util.collection2string(classIds, ", ") +") ";
 
 			BoundingBoxCorner lowerCorner = new BoundingBoxCorner(Double.MAX_VALUE);
 			BoundingBoxCorner upperCorner = new BoundingBoxCorner(-Double.MAX_VALUE);

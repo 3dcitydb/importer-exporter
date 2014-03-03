@@ -101,15 +101,16 @@ public class DBXlinkResolverManager {
 				dbResolver = new XlinkBasic(connection, this);
 				break;
 			case TEXCOORDLIST:
-				CacheTable texParamTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
-				if (texParamTable != null)
-					dbResolver = new XlinkTexCoordList(connection, texParamTable, this);
+				CacheTable texCoords = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTURE_COORD_LIST);
+				CacheTable linearRings = cacheTableManager.getCacheTable(CacheTableModelEnum.LINEAR_RING);
+				if (texCoords != null && linearRings != null)
+					dbResolver = new XlinkTexCoordList(connection, texCoords, linearRings, this);
 				break;
 			case TEXTUREPARAM:
 				dbResolver = new XlinkTextureParam(connection, this);
 				break;
 			case XLINK_TEXTUREASSOCIATION:
-				CacheTable texAssHeapView = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION);
+				CacheTable texAssHeapView = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION_TARGET);
 				if (texAssHeapView != null)
 					dbResolver = new XlinkTextureAssociation(connection, texAssHeapView, this);
 				break;

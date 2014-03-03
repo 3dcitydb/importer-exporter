@@ -35,19 +35,20 @@ import java.sql.Statement;
 
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 
-public class CacheTableLinearRing extends CacheTableModel {
-	public static CacheTableLinearRing instance = null;
 
-	private CacheTableLinearRing() {		
-	}
-
-	public synchronized static CacheTableLinearRing getInstance() {
-		if (instance == null)
-			instance = new CacheTableLinearRing();
-
-		return instance;
+public class CacheTableTextureCoordList extends CacheTableModel {
+	public static CacheTableTextureCoordList instance = null;
+	
+	private CacheTableTextureCoordList() {		
 	}
 	
+	public synchronized static CacheTableTextureCoordList getInstance() {
+		if (instance == null)
+			instance = new CacheTableTextureCoordList();
+		
+		return instance;
+	}
+
 	@Override
 	public void createIndexes(Connection conn, String tableName, String properties) throws SQLException {
 		Statement stmt = null;
@@ -55,9 +56,9 @@ public class CacheTableLinearRing extends CacheTableModel {
 		try {
 			stmt = conn.createStatement();
 			
-			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (GMLID) " + properties);
-			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (PARENT_ID) " + properties);
-			stmt.executeUpdate("create index idx3_" + tableName + " on " + tableName + " (RING_NO) " + properties);
+			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (ID) " + properties);
+			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (GMLID) " + properties);
+			stmt.executeUpdate("create index idx3_" + tableName + " on " + tableName + " (TARGET_ID) " + properties);
 		} finally {
 			if (stmt != null) {
 				stmt.close();
@@ -68,16 +69,17 @@ public class CacheTableLinearRing extends CacheTableModel {
 
 	@Override
 	public CacheTableModelEnum getType() {
-		return CacheTableModelEnum.LINEAR_RING;
+		return CacheTableModelEnum.TEXTURE_COORD_LIST;
 	}
-
+	
 	@Override
 	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
 		StringBuilder builder = new StringBuilder("(")
+		.append("ID ").append(sqlAdapter.getInteger()).append(", ")
 		.append("GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
-		.append("PARENT_ID ").append(sqlAdapter.getInteger()).append(", ")
-		.append("RING_NO ").append(sqlAdapter.getInteger()).append(", ")
-		.append("REVERSE ").append(sqlAdapter.getNumeric(1, 0))
+		.append("TEXPARAM_GMLID ").append(sqlAdapter.getCharacterVarying(256)).append(", ")
+		.append("TEXTURE_COORDINATES ").append(sqlAdapter.getPolygon2D()).append(", ")
+		.append("TARGET_ID ").append(sqlAdapter.getInteger())
 		.append(")");
 		
 		return builder.toString();

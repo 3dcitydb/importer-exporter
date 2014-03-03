@@ -109,7 +109,7 @@ public class DBReliefFeature implements DBExporter {
 			.append("rc.ID as RC_ID, rc.OBJECTCLASS_ID, ")
 			.append("tr.ID as TR_ID, mr.ID as MR_ID, br.ID as BR_ID, ")
 			.append("rc.LOD as RC_LOD, rc.EXTENT, ")
-			.append("tr.MAX_LENGTH, tr.STOP_LINES, tr.BREAK_LINES as TR_BREAK_LINES, tr.CONTROL_POINTS, tr.SURFACE_GEOMETRY_ID, ")
+			.append("tr.MAX_LENGTH, tr.MAX_LENGTH_UNIT, tr.STOP_LINES, tr.BREAK_LINES as TR_BREAK_LINES, tr.CONTROL_POINTS, tr.SURFACE_GEOMETRY_ID, ")
 			.append("mr.RELIEF_POINTS, ")
 			.append("br.RIDGE_OR_VALLEY_LINES, br.BREAK_LINES as BR_BREAK_LINES ")
 			.append("from RELIEF_FEATURE rf inner join RELIEF_FEAT_TO_REL_COMP rf2rc on rf2rc.RELIEF_FEATURE_ID=rf.ID inner join RELIEF_COMPONENT rc on rf2rc.RELIEF_COMPONENT_ID=rc.ID ")
@@ -127,7 +127,7 @@ public class DBReliefFeature implements DBExporter {
 			.append("tr.ID as TR_ID, mr.ID as MR_ID, br.ID as BR_ID, ")
 			.append("rc.LOD as RC_LOD, ")
 			.append(transformOrNull).append("(rc.EXTENT, ").append(srid).append(") as EXTENT, ")
-			.append("tr.MAX_LENGTH, ")
+			.append("tr.MAX_LENGTH, tr.MAX_LENGTH_UNIT, ")
 			.append(transformOrNull).append("(tr.STOP_LINES, ").append(srid).append(") as STOP_LINES, ")
 			.append(transformOrNull).append("(tr.BREAK_LINES, ").append(srid).append(") as TR_BREAK_LINES, ")
 			.append(transformOrNull).append("(tr.CONTROL_POINTS, ").append(srid).append(") as CONTROL_POINTS, ")
@@ -258,19 +258,19 @@ public class DBReliefFeature implements DBExporter {
 					GeometryObject stopLines, breakLines, controlPoints;
 					stopLines = breakLines = controlPoints = null;
 
-					Object stopLinesObj = rs.getObject(10);
+					Object stopLinesObj = rs.getObject(11);
 					if (!rs.wasNull() && stopLinesObj != null)
 						stopLines = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(stopLinesObj);
 
-					Object breakLinesObj = rs.getObject(11);
+					Object breakLinesObj = rs.getObject(12);
 					if (!rs.wasNull() && breakLinesObj != null)
 						breakLines = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(breakLinesObj);
 
-					Object controlPointsObj = rs.getObject(12);
+					Object controlPointsObj = rs.getObject(13);
 					if (!rs.wasNull() && controlPointsObj != null)
 						controlPoints = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(controlPointsObj);
 
-					long surfaceGeometryId = rs.getLong(13);
+					long surfaceGeometryId = rs.getLong(14);
 
 					// check for invalid content
 					if (maxLength == null && stopLines == null && breakLines == null && controlPoints == null && surfaceGeometryId == 0)
@@ -321,7 +321,7 @@ public class DBReliefFeature implements DBExporter {
 						if (maxLength != null) {
 							Length length = new Length();
 							length.setValue(maxLength);
-							length.setUom("urn:ogc:def:uom:UCUM::m");
+							length.setUom(rs.getString(10));
 							tin.setMaxLength(length);
 						}
 
@@ -348,7 +348,7 @@ public class DBReliefFeature implements DBExporter {
 				else if (type == CityGMLClass.MASSPOINT_RELIEF) {
 					MassPointRelief massPointRelief = (MassPointRelief)reliefComponent;
 
-					Object reliefPointsObj = rs.getObject(14);
+					Object reliefPointsObj = rs.getObject(15);
 					if (!rs.wasNull() && reliefPointsObj != null) {
 						GeometryObject reliefPoints = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(reliefPointsObj);
 						MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(reliefPoints, false);
@@ -360,7 +360,7 @@ public class DBReliefFeature implements DBExporter {
 				else if (type == CityGMLClass.BREAKLINE_RELIEF) {
 					BreaklineRelief breaklineRelief = (BreaklineRelief)reliefComponent;
 
-					Object ridgeOrValleyLinesObj = rs.getObject(15);
+					Object ridgeOrValleyLinesObj = rs.getObject(16);
 					if (!rs.wasNull() && ridgeOrValleyLinesObj != null) {
 						GeometryObject ridgeOrValleyLines = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(ridgeOrValleyLinesObj);
 						MultiCurveProperty multiCurveProperty = geometryExporter.getMultiCurveProperty(ridgeOrValleyLines, false);
@@ -368,7 +368,7 @@ public class DBReliefFeature implements DBExporter {
 							breaklineRelief.setRidgeOrValleyLines(multiCurveProperty);
 					}
 					
-					Object breakLinesObj = rs.getObject(16);
+					Object breakLinesObj = rs.getObject(17);
 					if (!rs.wasNull() && breakLinesObj != null) {
 						GeometryObject breakLines = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(breakLinesObj);
 						MultiCurveProperty multiCurveProperty = geometryExporter.getMultiCurveProperty(breakLines, false);

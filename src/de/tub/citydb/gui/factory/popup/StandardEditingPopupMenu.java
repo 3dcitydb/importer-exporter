@@ -126,7 +126,7 @@ public class StandardEditingPopupMenu extends AbstractStandardPopupMenu implemen
 		public void actionPerformed(ActionEvent e) {
 			final Component c = getInvoker();
 			if (c instanceof JList) {
-				JList list = (JList)c;
+				JList<?> list = (JList<?>)c;
 				int end = list.getModel().getSize() - 1;
 				if (end >= 0)
 					list.setSelectionInterval(0, end);

@@ -494,7 +494,6 @@ public class Importer implements EventHandler {
 					tmpSplitter = new DBXlinkSplitter(cacheTableManager, 
 							xlinkResolverPool, 
 							tmpXlinkPool,
-							cacheTableManager.getDatabaseAdapter(),
 							eventDispatcher);
 
 					// resolve xlinks

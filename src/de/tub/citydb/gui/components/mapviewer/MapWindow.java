@@ -138,7 +138,7 @@ public class MapWindow extends JDialog implements EventHandler {
 	private final Config config;
 
 	private Map map;	
-	private JComboBox searchBox;
+	private JComboBox<Location> searchBox;
 	private JLabel searchResult;
 	private ImageIcon loadIcon;
 	private volatile boolean updateSearchBox = true;
@@ -243,7 +243,7 @@ public class MapWindow extends JDialog implements EventHandler {
 		top.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor));
 
 		goButton = new JButton();
-		searchBox = new JComboBox();
+		searchBox = new JComboBox<Location>();
 		searchResult = new JLabel();
 		searchResult.setPreferredSize(new Dimension(searchResult.getPreferredSize().width, loadIcon.getIconHeight()));
 

@@ -192,10 +192,10 @@ public class DBBridge implements DBImporter {
 		}
 
 		// isMovable
-		if (bridge.isSetIsMovable() && bridge.getIsMovable())
-			psBridge.setInt(12, 1);
+		if (bridge.isSetIsMovable())
+			psBridge.setInt(12, bridge.getIsMovable() ? 1 : 0);
 		else
-			psBridge.setInt(12, 0);
+			psBridge.setNull(12, Types.NULL);
 
 		// Geometry
 		// lodXTerrainIntersectionCurve

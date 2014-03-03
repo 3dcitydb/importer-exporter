@@ -159,6 +159,30 @@ public class DBExporterManager {
 			case THEMATIC_SURFACE:
 				dbExporter = new DBThematicSurface(connection, config, this);
 				break;
+			case BRIDGE:
+				dbExporter = new DBBridge(connection, exportFilter, config, this);
+				break;
+			case BRIDGE_INSTALLATION:
+				dbExporter = new DBBridgeInstallation(connection, config, this);
+				break;
+			case BRIDGE_CONSTR_ELEMENT:
+				dbExporter = new DBBridgeConstrElement(connection, config, this);
+				break;
+			case BRIDGE_THEMATIC_SURFACE:
+				dbExporter = new DBBridgeThematicSurface(connection, config, this);
+				break;
+			case BRIDGE_ROOM:
+				dbExporter = new DBBridgeRoom(connection, this);
+				break;
+			case BRIDGE_FURNITURE:
+				dbExporter = new DBBridgeFurniture(connection, config, this);
+				break;
+			case TUNNEL:
+				dbExporter = new DBTunnel(connection, exportFilter, config, this);
+				break;
+			case TUNNEL_THEMATIC_SURFACE:
+				dbExporter = new DBTunnelThematicSurface(connection, this);
+				break;
 			case CITY_FURNITURE:
 				dbExporter = new DBCityFurniture(connection, exportFilter, config, this);
 				break;

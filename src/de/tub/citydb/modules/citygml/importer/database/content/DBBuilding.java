@@ -96,11 +96,11 @@ public class DBBuilding implements DBImporter {
 
 		StringBuilder stmt = new StringBuilder()
 		.append("insert into BUILDING (ID, BUILDING_PARENT_ID, BUILDING_ROOT_ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, YEAR_OF_CONSTRUCTION, YEAR_OF_DEMOLITION, ")
-		.append("ROOF_TYPE, ROOF_TYPE_CODESPACE, MEASURED_HEIGHT, MEASURED_HEIGHT_UNIT, STOREYS_ABOVE_GROUND, STOREYS_BELOW_GROUND, STOREY_HEIGHTS_ABOVE_GROUND, STOREY_HEIGHTS_BELOW_GROUND, ")
+		.append("ROOF_TYPE, ROOF_TYPE_CODESPACE, MEASURED_HEIGHT, MEASURED_HEIGHT_UNIT, STOREYS_ABOVE_GROUND, STOREYS_BELOW_GROUND, STOREY_HEIGHTS_ABOVE_GROUND, STOREY_HEIGHTS_ABOVE_GRND_UNIT, STOREY_HEIGHTS_BELOW_GROUND, STOREY_HEIGHTS_BELOW_GRND_UNIT, ")
 		.append("LOD1_TERRAIN_INTERSECTION, LOD2_TERRAIN_INTERSECTION, LOD3_TERRAIN_INTERSECTION, LOD4_TERRAIN_INTERSECTION, LOD2_MULTI_CURVE, LOD3_MULTI_CURVE, LOD4_MULTI_CURVE, ")
 		.append("LOD0_FOOTPRINT_ID, LOD0_ROOFPRINT_ID, LOD1_MULTI_SURFACE_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID, ")
 		.append("LOD1_SOLID_ID, LOD2_SOLID_ID, LOD3_SOLID_ID, LOD4_SOLID_ID) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psBuilding = batchConn.prepareStatement(stmt.toString());
 
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
@@ -225,6 +225,7 @@ public class DBBuilding implements DBImporter {
 		}
 
 		// bldg:storeyHeightsAboveGround
+		String heights = null;
 		if (building.isSetStoreyHeightsAboveGround()) {
 			MeasureOrNullList measureOrNullList = building.getStoreyHeightsAboveGround();
 			if (measureOrNullList.isSetDoubleOrNull()) {
@@ -236,14 +237,20 @@ public class DBBuilding implements DBImporter {
 						doubleOrNull.getNull().getValue();			
 				}
 
-				psBuilding.setString(18, Util.collection2string(values, " "));
-			} else
-				psBuilding.setNull(18, Types.VARCHAR);
+				heights = Util.collection2string(values, " ");
+			} 
+		}
+
+		if (heights != null) {
+			psBuilding.setString(18, heights);
+			psBuilding.setString(19, building.getStoreyHeightsAboveGround().getUom());
 		} else {
 			psBuilding.setNull(18, Types.VARCHAR);
+			psBuilding.setNull(19, Types.VARCHAR);
 		}
 
 		// bldg:storeyHeightsBelowGround
+		heights = null;
 		if (building.isSetStoreyHeightsBelowGround()) {
 			MeasureOrNullList measureOrNullList = building.getStoreyHeightsBelowGround();
 			if (measureOrNullList.isSetDoubleOrNull()) {
@@ -255,11 +262,16 @@ public class DBBuilding implements DBImporter {
 						doubleOrNull.getNull().getValue();			
 				}
 
-				psBuilding.setString(19, Util.collection2string(values, " "));
-			} else
-				psBuilding.setNull(19, Types.VARCHAR);
+				heights = Util.collection2string(values, " ");
+			} 
+		}
+
+		if (heights != null) {
+			psBuilding.setString(20, heights);
+			psBuilding.setString(21, building.getStoreyHeightsBelowGround().getUom());
 		} else {
-			psBuilding.setNull(19, Types.VARCHAR);
+			psBuilding.setNull(20, Types.VARCHAR);
+			psBuilding.setNull(21, Types.VARCHAR);
 		}
 
 		// Geometry
@@ -290,9 +302,9 @@ public class DBBuilding implements DBImporter {
 
 			if (multiLine != null) {
 				Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-				psBuilding.setObject(20 + i, multiLineObj);
+				psBuilding.setObject(22 + i, multiLineObj);
 			} else
-				psBuilding.setNull(20 + i, nullGeometryType, nullGeometryTypeName);
+				psBuilding.setNull(22 + i, nullGeometryType, nullGeometryTypeName);
 		}
 
 		// lodXMultiCurve
@@ -319,9 +331,9 @@ public class DBBuilding implements DBImporter {
 
 			if (multiLine != null) {
 				Object multiLineObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiLine, batchConn);
-				psBuilding.setObject(24 + i, multiLineObj);
+				psBuilding.setObject(26 + i, multiLineObj);
 			} else
-				psBuilding.setNull(24 + i, nullGeometryType, nullGeometryTypeName);
+				psBuilding.setNull(26 + i, nullGeometryType, nullGeometryTypeName);
 		}
 
 		// lod0FootPrint and lod0RoofEdge
@@ -357,9 +369,9 @@ public class DBBuilding implements DBImporter {
 			}
 
 			if (multiSurfaceId != 0)
-				psBuilding.setLong(27 + i, multiSurfaceId);
+				psBuilding.setLong(29 + i, multiSurfaceId);
 			else
-				psBuilding.setNull(27 + i, Types.NULL);
+				psBuilding.setNull(29 + i, Types.NULL);
 		}
 
 		// lodXMultiSurface
@@ -401,9 +413,9 @@ public class DBBuilding implements DBImporter {
 			}
 
 			if (multiGeometryId != 0)
-				psBuilding.setLong(29 + i, multiGeometryId);
+				psBuilding.setLong(31 + i, multiGeometryId);
 			else
-				psBuilding.setNull(29 + i, Types.NULL);
+				psBuilding.setNull(31 + i, Types.NULL);
 		}
 
 		// lodXSolid
@@ -444,9 +456,9 @@ public class DBBuilding implements DBImporter {
 			}
 
 			if (solidGeometryId != 0)
-				psBuilding.setLong(33 + i, solidGeometryId);
+				psBuilding.setLong(35 + i, solidGeometryId);
 			else
-				psBuilding.setNull(33 + i, Types.NULL);
+				psBuilding.setNull(35 + i, Types.NULL);
 		}
 
 		psBuilding.addBatch();

@@ -69,6 +69,7 @@ public class DBSplitter {
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<DBSplittingResult> dbWorkerPool;
 	private final UIDCache featureGmlIdCache;
+	private final CacheTableManager cacheTableManager;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 	private volatile boolean shouldRun = true;
@@ -101,6 +102,7 @@ public class DBSplitter {
 		this.dbConnectionPool = dbConnectionPool;
 		this.dbWorkerPool = dbWorkerPool;
 		this.featureGmlIdCache = featureGmlIdCache;
+		this.cacheTableManager = cacheTableManager;
 		this.eventDispatcher = eventDispatcher;
 		this.config = config;
 
@@ -119,7 +121,7 @@ public class DBSplitter {
 
 		// create temporary table for global appearances if needed
 		if (config.getInternal().isExportGlobalAppearances()) {
-			CacheTable temp = cacheTableManager.createAndIndexCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+			CacheTable temp = cacheTableManager.createCacheTableInDatabase(CacheTableModelEnum.GLOBAL_APPEARANCE);
 
 			// try and change workspace for temporary table
 			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport()) {
@@ -515,6 +517,8 @@ public class DBSplitter {
 		ResultSet rs = null;
 
 		try {
+			cacheTableManager.createCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE).createIndexes();
+
 			stmt = connection.createStatement();
 			String query = "select ID from APPEARANCE where CITYOBJECT_ID is NULL";
 			rs = stmt.executeQuery(query);

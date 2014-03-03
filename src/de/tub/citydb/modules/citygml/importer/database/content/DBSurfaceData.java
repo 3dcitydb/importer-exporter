@@ -59,6 +59,8 @@ import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociationTarget;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureCoordList;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParamEnum;
 import de.tub.citydb.modules.citygml.importer.util.LocalTextureCoordinatesResolver;
@@ -318,6 +320,7 @@ public class DBSurfaceData implements DBImporter {
 				ParameterizedTexture paraTex = (ParameterizedTexture)abstractSurfData;
 				if (paraTex.isSetTarget()) {
 					HashSet<String> duplicateTargets = new HashSet<String>(paraTex.getTarget().size());
+					int targetId = 0;
 
 					for (TextureAssociation target : paraTex.getTarget()) {
 						String targetURI = target.getUri();
@@ -356,7 +359,7 @@ public class DBSurfaceData implements DBImporter {
 
 										if (texParamGmlId != null) {
 											// make sure xlinks to this texture parameterization can be resolved
-											dbImporterManager.propagateXlink(new DBXlinkTextureAssociation(
+											dbImporterManager.propagateXlink(new DBXlinkTextureAssociationTarget(
 													surfaceDataId,
 													surfaceGeometryId,
 													texParamGmlId));
@@ -381,7 +384,8 @@ public class DBSurfaceData implements DBImporter {
 								TexCoordList texCoordList = (TexCoordList)texPara;
 								if (!texCoordList.isSetTextureCoordinates())
 									continue;
-
+								
+								targetId++;
 								int texCoordId = 0;
 								
 								for (TextureCoordinates texCoord : texCoordList.getTextureCoordinates()) {
@@ -433,17 +437,12 @@ public class DBSurfaceData implements DBImporter {
 										for (int i = 0; i < texCoord.getValue().size(); i++)
 											coordinates[i] = texCoord.getValue().get(i);
 											
-										DBXlinkTextureParam xlink = new DBXlinkTextureParam(
-												surfaceDataId,
-												targetURI,
-												DBXlinkTextureParamEnum.TEXCOORDLIST);
-
-										xlink.setTextureParameterization(true);
-										xlink.setTexParamGmlId(texParamGmlId);
-										xlink.setTextureCoord(GeometryObject.createPolygon(coordinates, 2, 0));
-										xlink.setTextureCoordId(texCoordId++);
-										
-										dbImporterManager.propagateXlink(xlink);	
+										dbImporterManager.propagateXlink(new DBXlinkTextureCoordList(
+												surfaceDataId, 
+												ringId, 
+												texCoordId++ == 0 ? texParamGmlId : null, 
+												GeometryObject.createPolygon(coordinates, 2, 0),
+												targetId));
 									}
 								}
 
@@ -458,7 +457,7 @@ public class DBSurfaceData implements DBImporter {
 
 										// make sure xlinks to this texture parameterization can be resolved
 										if (texParamGmlId != null) {
-											dbImporterManager.propagateXlink(new DBXlinkTextureAssociation(
+											dbImporterManager.propagateXlink(new DBXlinkTextureAssociationTarget(
 													surfaceDataId,
 													tmp.getSurfaceGeometryId(),
 													texParamGmlId));
@@ -473,14 +472,10 @@ public class DBSurfaceData implements DBImporter {
 							String href = target.getHref();
 
 							if (href != null && href.length() != 0) {
-								DBXlinkTextureParam xlink = new DBXlinkTextureParam(
+								dbImporterManager.propagateXlink(new DBXlinkTextureAssociation(
 										surfaceDataId,
 										href,
-										DBXlinkTextureParamEnum.XLINK_TEXTUREASSOCIATION
-										);
-
-								xlink.setTargetURI(targetURI);
-								dbImporterManager.propagateXlink(xlink);
+										targetURI));
 							}
 						}
 					}
