@@ -181,7 +181,16 @@ public class DBExporterManager {
 				dbExporter = new DBTunnel(connection, exportFilter, config, this);
 				break;
 			case TUNNEL_THEMATIC_SURFACE:
-				dbExporter = new DBTunnelThematicSurface(connection, this);
+				dbExporter = new DBTunnelThematicSurface(connection, config, this);
+				break;
+			case TUNNEL_INSTALLATION:
+				dbExporter = new DBTunnelInstallation(connection, config, this);
+				break;
+			case TUNNEL_HOLLOW_SPACE:
+				dbExporter = new DBTunnelHollowSpace(connection, this);
+				break;
+			case TUNNEL_FURNITURE:
+				dbExporter = new DBTunnelFurniture(connection, config, this);
 				break;
 			case CITY_FURNITURE:
 				dbExporter = new DBCityFurniture(connection, exportFilter, config, this);

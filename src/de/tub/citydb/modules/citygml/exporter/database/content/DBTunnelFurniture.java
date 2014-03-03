@@ -34,11 +34,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.citygml4j.model.citygml.bridge.BridgeFurniture;
-import org.citygml4j.model.citygml.bridge.BridgeRoom;
-import org.citygml4j.model.citygml.bridge.InteriorFurnitureProperty;
+import org.citygml4j.model.citygml.tunnel.InteriorFurnitureProperty;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
+import org.citygml4j.model.citygml.tunnel.HollowSpace;
+import org.citygml4j.model.citygml.tunnel.TunnelFurniture;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
@@ -47,19 +47,19 @@ import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.util.Util;
 
-public class DBBridgeFurniture implements DBExporter {
+public class DBTunnelFurniture implements DBExporter {
 	private final DBExporterManager dbExporterManager;
 	private final Config config;
 	private final Connection connection;
 
-	private PreparedStatement psBridgeFurniture;
+	private PreparedStatement psTunnelFurniture;
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 	private DBImplicitGeometry implicitGeometryExporter;
 	private DBOtherGeometry geometryExporter;
 
-	public DBBridgeFurniture(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	public DBTunnelFurniture(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
@@ -73,8 +73,8 @@ public class DBBridgeFurniture implements DBExporter {
 			.append("select ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, ")
 			.append("LOD4_BREP_ID, LOD4_OTHER_GEOM, ")
 			.append("LOD4_IMPLICIT_REP_ID, LOD4_IMPLICIT_REF_POINT, LOD4_IMPLICIT_TRANSFORMATION ")
-			.append("from BRIDGE_FURNITURE where BRIDGE_ROOM_ID = ?");
-			psBridgeFurniture = connection.prepareStatement(query.toString());
+			.append("from TUNNEL_FURNITURE where TUNNEL_HOLLOW_SPACE_ID = ?");
+			psTunnelFurniture = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
@@ -86,8 +86,8 @@ public class DBBridgeFurniture implements DBExporter {
 			.append("LOD4_IMPLICIT_REP_ID, ")
 			.append(transformOrNull).append("(LOD4_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD4_IMPLICIT_REF_POINT, ")
 			.append("LOD4_IMPLICIT_TRANSFORMATION ")
-			.append("from BRIDGE_FURNITURE where BRIDGE_ROOM_ID = ?");
-			psBridgeFurniture = connection.prepareStatement(query.toString());
+			.append("from TUNNEL_FURNITURE where TUNNEL_HOLLOW_SPACE_ID = ?");
+			psTunnelFurniture = connection.prepareStatement(query.toString());
 		}
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
@@ -96,33 +96,33 @@ public class DBBridgeFurniture implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public void read(BridgeRoom bridgeRoom, long parentId) throws SQLException {
+	public void read(HollowSpace hollowSpace, long parentId) throws SQLException {
 		ResultSet rs = null;
 
 		try {
-			psBridgeFurniture.setLong(1, parentId);
-			rs = psBridgeFurniture.executeQuery();
+			psTunnelFurniture.setLong(1, parentId);
+			rs = psTunnelFurniture.executeQuery();
 
 			while (rs.next()) {
-				long buildingFurnitureId = rs.getLong(1);
-				BridgeFurniture bridgeFurniture = new BridgeFurniture();
+				long tunnelFurnitureId = rs.getLong(1);
+				TunnelFurniture hollowSpaceFurniture = new TunnelFurniture();
 
 				String clazz = rs.getString(2);
 				if (clazz != null) {
 					Code code = new Code(clazz);
 					code.setCodeSpace(rs.getString(3));
-					bridgeFurniture.setClazz(code);
+					hollowSpaceFurniture.setClazz(code);
 				}
 
 				String function = rs.getString(4);
 				String functionCodeSpace = rs.getString(5);
 				if (function != null)
-					bridgeFurniture.setFunction(Util.string2codeList(function, functionCodeSpace));
+					hollowSpaceFurniture.setFunction(Util.string2codeList(function, functionCodeSpace));
 
 				String usage = rs.getString(6);
 				String usageCodeSpace = rs.getString(7);
 				if (usage != null)
-					bridgeFurniture.setUsage(Util.string2codeList(usage, usageCodeSpace));
+					hollowSpaceFurniture.setUsage(Util.string2codeList(usage, usageCodeSpace));
 
 				// geometry
 				long surfaceGeometryId = rs.getLong(8);
@@ -147,7 +147,7 @@ public class DBBridgeFurniture implements DBExporter {
 					}
 
 					if (geometryProperty != null)
-						bridgeFurniture.setLod4Geometry(geometryProperty);
+						hollowSpaceFurniture.setLod4Geometry(geometryProperty);
 				}
 
 				// implicit geometry
@@ -164,16 +164,16 @@ public class DBBridgeFurniture implements DBExporter {
 					if (implicit != null) {
 						ImplicitRepresentationProperty implicitProperty = new ImplicitRepresentationProperty();
 						implicitProperty.setObject(implicit);
-						bridgeFurniture.setLod4ImplicitRepresentation(implicitProperty);
+						hollowSpaceFurniture.setLod4ImplicitRepresentation(implicitProperty);
 					}
 				}
 
 				// cityObject stuff
-				cityObjectExporter.read(bridgeFurniture, buildingFurnitureId);
+				cityObjectExporter.read(hollowSpaceFurniture, tunnelFurnitureId);
 
-				InteriorFurnitureProperty bridgeFurnitureProp = new InteriorFurnitureProperty();
-				bridgeFurnitureProp.setObject(bridgeFurniture);
-				bridgeRoom.addInteriorFurniture(bridgeFurnitureProp);
+				InteriorFurnitureProperty tunnelFurnitureProp = new InteriorFurnitureProperty();
+				tunnelFurnitureProp.setObject(hollowSpaceFurniture);
+				hollowSpace.addInteriorFurniture(tunnelFurnitureProp);
 			}
 		} finally {
 			if (rs != null)
@@ -183,12 +183,12 @@ public class DBBridgeFurniture implements DBExporter {
 
 	@Override
 	public void close() throws SQLException {
-		psBridgeFurniture.close();
+		psTunnelFurniture.close();
 	}
 
 	@Override
 	public DBExporterEnum getDBExporterType() {
-		return DBExporterEnum.BRIDGE_FURNITURE;
+		return DBExporterEnum.TUNNEL_FURNITURE;
 	}
 
 }

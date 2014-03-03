@@ -67,9 +67,8 @@ public class DBTunnel implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 	private DBTunnelThematicSurface thematicSurfaceExporter;
-	private DBBridgeInstallation bridgeInstallationExporter;
-	private DBBridgeConstrElement bridgeContrElemExporter;
-	private DBBridgeRoom bridgeRoomExporter;
+	private DBTunnelInstallation tunnelInstallationExporter;
+	private DBTunnelHollowSpace hollowSpaceExporter;
 	private DBOtherGeometry geometryExporter;
 
 	private HashMap<Long, AbstractTunnel> tunnels;
@@ -118,9 +117,8 @@ public class DBTunnel implements DBExporter {
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 		thematicSurfaceExporter = (DBTunnelThematicSurface)dbExporterManager.getDBExporter(DBExporterEnum.TUNNEL_THEMATIC_SURFACE);
-		bridgeInstallationExporter = (DBBridgeInstallation)dbExporterManager.getDBExporter(DBExporterEnum.BRIDGE_INSTALLATION);
-		bridgeContrElemExporter = (DBBridgeConstrElement)dbExporterManager.getDBExporter(DBExporterEnum.BRIDGE_CONSTR_ELEMENT);
-		bridgeRoomExporter = (DBBridgeRoom)dbExporterManager.getDBExporter(DBExporterEnum.BRIDGE_ROOM);
+		tunnelInstallationExporter = (DBTunnelInstallation)dbExporterManager.getDBExporter(DBExporterEnum.TUNNEL_INSTALLATION);
+		hollowSpaceExporter = (DBTunnelHollowSpace)dbExporterManager.getDBExporter(DBExporterEnum.TUNNEL_HOLLOW_SPACE);
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
@@ -318,14 +316,11 @@ public class DBTunnel implements DBExporter {
 						}
 					}
 
-					// BridgeInstallation
-//					bridgeInstallationExporter.read(abstractTunnel, id);
+					// TunnelInstallation
+					tunnelInstallationExporter.read(abstractTunnel, id);
 					
-					// BridgeConstructionElement
-//					bridgeContrElemExporter.read(abstractTunnel, id);
-
-					// room
-//					bridgeRoomExporter.read(abstractTunnel, id);
+					// HollowSpace
+					hollowSpaceExporter.read(abstractTunnel, id);
 
 					// add tunnel part to parent tunnel
 					if (parentTunnel != null)
