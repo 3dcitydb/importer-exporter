@@ -334,7 +334,7 @@ public class DBBridge implements DBExporter {
 
 					// BridgeInstallation
 					bridgeInstallationExporter.read(abstractBridge, id);
-					
+
 					// BridgeConstructionElement
 					bridgeContrElemExporter.read(abstractBridge, id);
 

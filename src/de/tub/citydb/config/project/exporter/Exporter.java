@@ -53,7 +53,7 @@ public class Exporter {
 	private ExportAddress address;
 	private ExportAppearance appearances;
 	private ExportFilterConfig filter;
-	private CityGMLVersionType cityGMLVersion = CityGMLVersionType.v1_0_0;
+	private CityGMLVersionType cityGMLVersion = CityGMLVersionType.v2_0_0;
 	private XLink xlink;
 	private System system;
 
