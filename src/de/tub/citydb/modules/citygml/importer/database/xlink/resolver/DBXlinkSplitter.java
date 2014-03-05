@@ -276,14 +276,15 @@ public class DBXlinkSplitter {
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.appXlink.msg"), this));
 
 			CacheTable texCoordTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTURE_COORD_LIST);
-			CacheTable texParamTableTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);				
+			CacheTable texParamTableTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
+			boolean existsLinearRingTable = cacheTableManager.existsCacheTable(CacheTableModelEnum.LINEAR_RING);
 			
 			int max = 0, current = 0;
-			if (texCoordTable != null) max += (int)texCoordTable.size();
+			if (texCoordTable != null && existsLinearRingTable) max += (int)texCoordTable.size();
 			if (texParamTableTable != null) max += (int)texParamTableTable.size();
 			
 			// first step: resolve texture coordinates
-			if (texCoordTable != null) {
+			if (texCoordTable != null && existsLinearRingTable) {
 				CacheTable linearRingTable = cacheTableManager.getCacheTable(CacheTableModelEnum.LINEAR_RING);
 				texCoordTable.createIndexes();
 				linearRingTable.createIndexes();
