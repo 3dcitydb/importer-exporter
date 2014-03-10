@@ -160,12 +160,11 @@ public class KmlSplitter {
 				try {
 					query = connection.prepareStatement(Queries.GET_ID_AND_OBJECTCLASS_FROM_GMLID);
 					query.setString(1, gmlId);
-					rs = query.executeQuery();
-
+					rs = query.executeQuery();					
 					if (rs.next()) {
 						long id = rs.getLong("id");
 						if (KmlExporter.getAlreadyExported().containsKey(id)) continue;
-						CityGMLClass cityObjectType = Util.classId2cityObject(rs.getInt("class_id"));
+						CityGMLClass cityObjectType = Util.classId2cityObject(rs.getInt("objectclass_id"));
 						addWorkToQueue(id, gmlId, cityObjectType, 0, 0);
 					}
 				}
@@ -228,14 +227,13 @@ public class KmlSplitter {
 				while (rs.next() && shouldRun) {
 					long id = rs.getLong("id");
 					String gmlId = rs.getString("gmlId");
-					CityGMLClass cityObjectType = Util.classId2cityObject(rs.getInt("class_id"));
+					CityGMLClass cityObjectType = Util.classId2cityObject(rs.getInt("objectclass_id"));
 					addWorkToQueue(id, gmlId, cityObjectType, 
 							exportFilter.getBoundingBoxFilter().getTileRow(),
 							exportFilter.getBoundingBoxFilter().getTileColumn());
 
 					objectCount++;
 				}
-
 				Logger.getInstance().debug("Tile_" + exportFilter.getBoundingBoxFilter().getTileRow()
 						+ "_" + exportFilter.getBoundingBoxFilter().getTileColumn()
 						+ " contained " + objectCount + " objects.");
@@ -339,7 +337,7 @@ public class KmlSplitter {
 					while (rs.next() && shouldRun) {
 						addWorkToQueue(rs.getLong("id"), // recursion for recursive groups
 								rs.getString("gmlId"),
-								Util.classId2cityObject(rs.getInt("class_id")), 
+								Util.classId2cityObject(rs.getInt("objectclass_id")), 
 								row,
 								column);
 					}

@@ -45,13 +45,13 @@ public class Queries {
 	// ----------------------------------------------------------------------
 
 	public static final String GET_IDS(DatabaseType type) {
-		String query = "SELECT co.id, co.gmlid, co.class_id FROM CITYOBJECT co WHERE ";
+		String query = "SELECT co.id, co.gmlid, co.objectclass_id FROM CITYOBJECT co WHERE ";
 
 		switch (type) {
 		case ORACLE:
 			query += "(SDO_RELATE(co.envelope, ?, 'mask=overlapbdydisjoint') = 'TRUE') "
 					+ "UNION ALL "
-					+ "SELECT co.id, co.gmlid, co.class_id FROM CITYOBJECT co WHERE "
+					+ "SELECT co.id, co.gmlid, co.objectclass_id FROM CITYOBJECT co WHERE "
 					+ "(SDO_RELATE(co.envelope, ?, 'mask=inside+coveredby+equal') = 'TRUE') ";
 			break;
 		case POSTGIS:
@@ -60,7 +60,7 @@ public class Queries {
 			break;
 		}
 
-		query += "ORDER BY 3"; // ORDER BY co.class_id
+		query += "ORDER BY 3"; // ORDER BY co.objectclass_id
 		return query;
 	}
 
@@ -90,10 +90,10 @@ public class Queries {
 			"SELECT id FROM CITYOBJECT WHERE gmlid = ?";
 
 	public static final String GET_ID_AND_OBJECTCLASS_FROM_GMLID =
-			"SELECT id, class_id FROM CITYOBJECT WHERE gmlid = ?";
+			"SELECT id, objectclass_id FROM CITYOBJECT WHERE gmlid = ?";
 
 	public static final String GET_GMLID_AND_OBJECTCLASS_FROM_ID =
-			"SELECT gmlid, class_id FROM CITYOBJECT WHERE id = ?";
+			"SELECT gmlid, objectclass_id FROM CITYOBJECT WHERE id = ?";
 
 	public static final String INSERT_GE_ZOFFSET(AbstractSQLAdapter sqlAdapter) {
 		return "INSERT INTO CITYOBJECT_GENERICATTRIB (ID, ATTRNAME, DATATYPE, STRVAL, CITYOBJECT_ID) " +
@@ -582,7 +582,7 @@ public class Queries {
 					"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
 					"WHERE " +
 					"ts.building_id = ? " +
-					"AND ts.type = 'GroundSurface' " +
+					"AND ts.objectclass_id = '35' " +
 					"AND sg.root_id = ts.lod2_multi_surface_id " +
 					"AND sg.geometry IS NOT NULL " +
 					"ORDER BY ts.building_id";
@@ -727,25 +727,19 @@ public class Queries {
 			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
 			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
 			"FROM (" +
-
 						"SELECT * FROM (" +
 						"SELECT * FROM (" +
-
 				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-				    	//				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-				    	//						"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
-				    	//						"SELECT sg.geometry AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +
-				    	"SELECT b.lod<LoD>_geometry_id " +
+				    	"SELECT b.lod<LoD>_multi_surface_id " +
 				    	"FROM BUILDING b " +
 				    	"WHERE "+
 				    	"b.id = ? " +
-				    	"AND b.lod<LoD>_geometry_id IS NOT NULL " +
+				    	"AND b.lod<LoD>_multi_surface_id IS NOT NULL " +
 				    	") " +
 				    	"AND sg.geometry IS NOT NULL" +
-
 						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
 						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
 
@@ -761,18 +755,21 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-
 				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
-				        "SELECT b.lod<LoD>_geometry_id " +
+				        "SELECT b.lod<LoD>_solid_id " +
 				        "FROM BUILDING b " +
 				        "WHERE b.id = ? " +
-				        "AND b.lod<LoD>_geometry_id IS NOT NULL " +
+				        "AND b.lod<LoD>_solid_id IS NOT NULL " +
+/*				        "UNION " +				        
+				        "SELECT b.lod<LoD>_solid_id " +
+				        "FROM BUILDING b " +
+				        "WHERE b.id = ? " +
+				        "AND b.lod<LoD>_solid_id IS NOT NULL " +		*/		        
 				        ") " +
 				        "AND sg.geometry IS NOT NULL) AS get_geoms " +
-
 				    	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
 				    	// ST_Area for WGS84 only works correctly if the geometry is a geography data type
 				    	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE>) AS get_valid_area";
@@ -814,9 +811,10 @@ public class Queries {
 					.replace("<GROUP_BY_1>", "256")
 					.replace("<GROUP_BY_2>", "64")
 					.replace("<GROUP_BY_3>", "16");
-		case POSTGIS:
+		case POSTGIS:		
 			return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", "0.001")
 					.replace("<LoD>", "1");
+			
 		default:
 			return null;
 		}
@@ -856,8 +854,9 @@ public class Queries {
 		String query = null;
 		switch (lodToExportFrom) {
 		case 1:
-			if (displayForm.getForm() == DisplayForm.FOOTPRINT || displayForm.getForm() == DisplayForm.EXTRUDED)
-				query = BUILDING_PART_FOOTPRINT_LOD1(type);
+			if (displayForm.getForm() == DisplayForm.FOOTPRINT || displayForm.getForm() == DisplayForm.EXTRUDED){
+				query = BUILDING_PART_FOOTPRINT_LOD1(type);		
+			}
 			else 
 				query = buildingPartQueriesLod1.get(displayForm.getForm());
 			break;
@@ -924,14 +923,14 @@ public class Queries {
 	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX(DatabaseType type) { 
 		switch (type) {
 		case ORACLE:
-			return "SELECT co.id, co.gmlid, co.class_id " + 
+			return "SELECT co.id, co.gmlid, co.objectclass_id " + 
 			"FROM CITYOBJECT co " +
 			"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
 			"FROM GROUP_TO_CITYOBJECT g2co "+ 
 			"WHERE g2co.cityobjectgroup_id = ?) " +
 			"AND (SDO_RELATE(co.envelope, ?, 'mask=overlapbdydisjoint') = 'TRUE') " +
 			"UNION ALL " +
-			"SELECT co.id, co.gmlid, co.class_id " + 
+			"SELECT co.id, co.gmlid, co.objectclass_id " + 
 			"FROM CITYOBJECT co " +
 			"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
 			"FROM GROUP_TO_CITYOBJECT g2co "+ 
@@ -939,7 +938,7 @@ public class Queries {
 			"AND (SDO_RELATE(co.envelope, ?, 'mask=inside+coveredby+equal') = 'TRUE') " +
 			"ORDER BY 3"; // ORDER BY co.class_id
 		case POSTGIS:
-			return "SELECT co.id, co.gmlid, co.class_id " +
+			return "SELECT co.id, co.gmlid, co.objectclass_id " +
 			"FROM cityobject co " +
 			"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
 			"FROM group_to_cityobject g2co " + 

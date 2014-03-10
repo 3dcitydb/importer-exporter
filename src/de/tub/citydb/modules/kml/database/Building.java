@@ -108,20 +108,22 @@ public class Building extends KmlGenericObject{
 		List<PlacemarkType> placemarks = new ArrayList<PlacemarkType>();
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
-
 		try {
 			psQuery = connection.prepareStatement(Queries.BUILDING_PARTS_FROM_BUILDING);
 
 			for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 				psQuery.setLong(i, work.getId());
 			}
-
+			
 			rs = psQuery.executeQuery();
+						
 			while (rs.next()) {
 				long buildingPartId = rs.getLong(1);
 				List<PlacemarkType> placemarkBPart = readBuildingPart(buildingPartId, work);
-				if (placemarkBPart != null) 
+				if (placemarkBPart != null){
 					placemarks.addAll(placemarkBPart);
+				} 
+					
 			}
 		}
 		catch (SQLException sqlEx) {
@@ -183,19 +185,15 @@ public class Building extends KmlGenericObject{
 			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
 			int minLod = lodToExportFrom == 5 ? 1: lodToExportFrom;
-
 			while (currentLod >= minLod) {
 				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
-
 				try {
 					psQuery = connection.prepareStatement(Queries.getBuildingPartQuery(currentLod, work.getDisplayForm(), databaseAdapter.getDatabaseType()),
 							ResultSet.TYPE_SCROLL_INSENSITIVE,
 							ResultSet.CONCUR_READ_ONLY);
-
 					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 						psQuery.setLong(i, buildingPartId);
 					}
-
 					rs = psQuery.executeQuery();
 					if (rs.isBeforeFirst()) {
 						break; // result set not empty
@@ -207,6 +205,7 @@ public class Building extends KmlGenericObject{
 					}
 				}
 				catch (Exception e2) {
+					
 					try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
 					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
@@ -258,7 +257,7 @@ public class Building extends KmlGenericObject{
 			}
 
 			if (rs != null) { // result not empty
-
+				
 				switch (work.getDisplayForm().getForm()) {
 				case DisplayForm.FOOTPRINT:
 					return createPlacemarksForFootprint(rs, work);
@@ -270,10 +269,10 @@ public class Building extends KmlGenericObject{
 					}
 					ResultSet rs2 = psQuery2.executeQuery();
 					rs2.next();
+					
 					double measuredHeight = rs2.getDouble("envelope_measured_height");
 					try { rs2.close(); /* release cursor on DB */ } catch (SQLException e) {}
 					try { psQuery2.close(); /* release cursor on DB */ } catch (SQLException e) {}
-
 					return createPlacemarksForExtruded(rs, work, measuredHeight, reversePointOrder);
 
 				case DisplayForm.GEOMETRY:
