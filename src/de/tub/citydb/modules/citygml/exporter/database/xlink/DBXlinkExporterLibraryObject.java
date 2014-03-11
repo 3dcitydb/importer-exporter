@@ -37,6 +37,7 @@ import java.sql.SQLException;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.adapter.BlobExportAdapter;
+import de.tub.citydb.database.adapter.BlobType;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 import de.tub.citydb.util.Util;
@@ -62,7 +63,7 @@ public class DBXlinkExporterLibraryObject implements DBXlinkExporter {
 	private void init() throws SQLException {
 		localPath = config.getInternal().getExportPath();
 
-		blobExportAdapter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getBlobExportAdapter(connection);
+		blobExportAdapter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getBlobExportAdapter(connection, BlobType.LIBRARY_OBJECT);
 	}
 
 	public boolean export(DBXlinkLibraryObject xlink) throws SQLException {

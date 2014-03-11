@@ -55,7 +55,8 @@ import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
-import de.tub.citydb.database.adapter.TextureImageExportAdapter;
+import de.tub.citydb.database.adapter.BlobExportAdapter;
+import de.tub.citydb.database.adapter.BlobType;
 import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import de.tub.citydb.modules.kml.database.Building;
 import de.tub.citydb.modules.kml.database.CityFurniture;
@@ -84,7 +85,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 
 	// instance members needed to do work
 	private AbstractDatabaseAdapter databaseAdapter;
-	private TextureImageExportAdapter textureExportAdapter;
+	private BlobExportAdapter textureExportAdapter;
 	private final ObjectFactory kmlFactory; 
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -123,7 +124,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		}
 		
 		databaseAdapter = dbConnectionPool.getActiveDatabaseAdapter();
-		textureExportAdapter = databaseAdapter.getSQLAdapter().getTextureImageExportAdapter(connection);
+		textureExportAdapter = databaseAdapter.getSQLAdapter().getBlobExportAdapter(connection, BlobType.TEXTURE_IMAGE);
 
 		kmlExporterManager = new KmlExporterManager(jaxbKmlContext,
 				jaxbColladaContext,

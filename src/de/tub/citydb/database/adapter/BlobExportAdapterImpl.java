@@ -1,4 +1,4 @@
-package de.tub.citydb.database.adapter.postgis;
+package de.tub.citydb.database.adapter;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
@@ -9,18 +9,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import de.tub.citydb.database.adapter.BlobExportAdapter;
-import de.tub.citydb.database.adapter.TextureImageExportAdapter;
-import de.tub.citydb.database.adapter.postgis.SQLAdapter.BlobType;
+import de.tub.citydb.database.adapter.BlobType;
 import de.tub.citydb.log.Logger;
 
-public class BlobExportAdapterImpl implements TextureImageExportAdapter, BlobExportAdapter {
+public class BlobExportAdapterImpl implements BlobExportAdapter {
 	protected final Logger LOG = Logger.getInstance();
 	protected final Connection connection;
 
 	private PreparedStatement psExport;
 	private BlobType blobType;
 
-	protected BlobExportAdapterImpl(Connection connection, BlobType blobType) {
+	public BlobExportAdapterImpl(Connection connection, BlobType blobType) {
 		this.connection = connection;
 		this.blobType = blobType;		
 	}

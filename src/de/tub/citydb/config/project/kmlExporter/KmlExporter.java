@@ -38,7 +38,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.general.Path;
-import de.tub.citydb.config.project.system.System;
+import de.tub.citydb.config.project.resources.Resources;
 
 @XmlType(name="KmlExportType", propOrder={
 		"path",
@@ -89,7 +89,7 @@ import de.tub.citydb.config.project.system.System;
 		"altitudeOffsetValue",
 		"callGElevationService",
 		"useOriginalZCoords",
-		"system"
+		"resources"
 })
 public class KmlExporter {
 	private Path path;
@@ -158,7 +158,7 @@ public class KmlExporter {
 	private double altitudeOffsetValue;
 	private boolean callGElevationService;
 	private boolean useOriginalZCoords;
-	private System system;
+	private Resources resources;
 
 	public static final String THEME_NONE = "none";
 
@@ -211,7 +211,7 @@ public class KmlExporter {
 		altitudeOffsetValue = 0;
 		callGElevationService = true;
 		setUseOriginalZCoords(false);
-		system = new System();
+		resources = new Resources();
 	}
 
 	public Path getPath() {
@@ -223,13 +223,13 @@ public class KmlExporter {
 			this.path = path;
 	}
 
-	public System getSystem() {
-		return system;
+	public Resources getResources() {
+		return resources;
 	}
 
-	public void setSystem(System system) {
-		if (system != null)
-			this.system = system;
+	public void setResources(Resources resources) {
+		if (resources != null)
+			this.resources = resources;
 	}
 
 	public void setFilter(ExportFilterConfig filter) {

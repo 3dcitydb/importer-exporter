@@ -41,6 +41,7 @@ import java.sql.SQLException;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.adapter.BlobImportAdapter;
+import de.tub.citydb.database.adapter.BlobType;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 
@@ -67,7 +68,7 @@ public class XlinkLibraryObject implements DBXlinkResolver {
 		localPath = config.getInternal().getImportPath();
 		replacePathSeparator = File.separatorChar == '/';
 
-		blobImportAdapter = resolverManager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(externalFileConn);
+		blobImportAdapter = resolverManager.getDatabaseAdapter().getSQLAdapter().getBlobImportAdapter(externalFileConn, BlobType.LIBRARY_OBJECT);
 	}
 
 	public boolean insert(DBXlinkLibraryObject xlink) throws SQLException {

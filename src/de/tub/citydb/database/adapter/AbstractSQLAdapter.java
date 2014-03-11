@@ -34,7 +34,6 @@ public abstract class AbstractSQLAdapter {
 	public abstract String getBoundingBoxPredicate(String attributeName, BoundingBox bbox, boolean overlap);
 	public abstract boolean spatialPredicateRequiresNoIndexHint();
 	public abstract String getHierarchicalGeometryQuery();
-	public abstract String getTextureImageContentLength(String columName);
 	public abstract String getNextSequenceValue(DBSequencerEnum sequence);
 	public abstract String getCurrentSequenceValue(DBSequencerEnum sequence);
 	public abstract String getNextSequenceValuesQuery(DBSequencerEnum sequence);
@@ -42,15 +41,9 @@ public abstract class AbstractSQLAdapter {
 	public String getBoundingBoxPredicate(String attributeName, String tablePrefix, BoundingBox bbox, boolean overlap) {
 		return getBoundingBoxPredicate(tablePrefix + '.' + attributeName, bbox, overlap);
 	}
-
-	public String getTextureImageContentLength(String columName, String tablePrefix) {
-		return getTextureImageContentLength(tablePrefix + '.' + columName);
-	}
 	
-	public abstract TextureImageImportAdapter getTextureImageImportAdapter(Connection connection) throws SQLException;
-	public abstract TextureImageExportAdapter getTextureImageExportAdapter(Connection connection);
-	public abstract BlobImportAdapter getBlobImportAdapter(Connection connection) throws SQLException;
-	public abstract BlobExportAdapter getBlobExportAdapter(Connection connection);
+	public abstract BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException;
+	public abstract BlobExportAdapter getBlobExportAdapter(Connection connection, BlobType type);
 	
 	protected String getSequenceName(DBSequencerEnum sequence) {
 		switch (sequence) {

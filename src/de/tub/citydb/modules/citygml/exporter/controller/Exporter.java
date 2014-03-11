@@ -73,6 +73,7 @@ import de.tub.citydb.config.project.filter.TileNameSuffixMode;
 import de.tub.citydb.config.project.filter.TileSuffixMode;
 import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
+import de.tub.citydb.config.project.resources.Resources;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.IndexStatusInfo.IndexType;
 import de.tub.citydb.log.Logger;
@@ -139,12 +140,12 @@ public class Exporter implements EventHandler {
 
 	public boolean doProcess() {
 		// get config shortcuts
-		de.tub.citydb.config.project.system.System system = config.getProject().getExporter().getSystem();
+		Resources resources = config.getProject().getExporter().getResources();
 		Database database = config.getProject().getDatabase();
 
 		// worker pool settings
-		int minThreads = system.getThreadPool().getDefaultPool().getMinThreads();
-		int maxThreads = system.getThreadPool().getDefaultPool().getMaxThreads();
+		int minThreads = resources.getThreadPool().getDefaultPool().getMinThreads();
+		int maxThreads = resources.getThreadPool().getDefaultPool().getMaxThreads();
 
 		// calc queueSize
 		// how to properly calculate?
@@ -395,19 +396,19 @@ public class Exporter implements EventHandler {
 						uidCacheManager.initCache(
 								UIDCacheType.GEOMETRY,
 								new GeometryGmlIdCache(cacheTableManager, 
-										system.getGmlIdCache().getGeometry().getPartitions(),
+										resources.getGmlIdCache().getGeometry().getPartitions(),
 										lookupCacheBatchSize),
-										system.getGmlIdCache().getGeometry().getCacheSize(),
-										system.getGmlIdCache().getGeometry().getPageFactor(),
+										resources.getGmlIdCache().getGeometry().getCacheSize(),
+										resources.getGmlIdCache().getGeometry().getPageFactor(),
 										maxThreads);
 
 						uidCacheManager.initCache(
 								UIDCacheType.FEATURE,
 								new FeatureGmlIdCache(cacheTableManager, 
-										system.getGmlIdCache().getFeature().getPartitions(), 
+										resources.getGmlIdCache().getFeature().getPartitions(), 
 										lookupCacheBatchSize),
-										system.getGmlIdCache().getFeature().getCacheSize(),
-										system.getGmlIdCache().getFeature().getPageFactor(),
+										resources.getGmlIdCache().getFeature().getCacheSize(),
+										resources.getGmlIdCache().getFeature().getPageFactor(),
 										maxThreads);
 					} catch (SQLException sqlEx) {
 						LOG.error("SQL error while initializing database export: " + sqlEx.getMessage());

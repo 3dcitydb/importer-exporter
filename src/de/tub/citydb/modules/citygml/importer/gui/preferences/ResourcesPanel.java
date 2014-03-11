@@ -45,8 +45,8 @@ import javax.swing.border.TitledBorder;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.UpdateBatching;
-import de.tub.citydb.config.project.system.UIDCacheConfig;
-import de.tub.citydb.config.project.system.ThreadPoolConfig;
+import de.tub.citydb.config.project.resources.ThreadPoolConfig;
+import de.tub.citydb.config.project.resources.UIDCacheConfig;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -56,6 +56,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	private JPanel block1;
 	private JPanel block2;
 	private JPanel block3;
+	private JPanel block4;
 	private JLabel impResMinThreadsLabel;
 	private JFormattedTextField impResMinThreadsText;
 	private JLabel impResMaxThreadsLabel;
@@ -81,6 +82,14 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	private JLabel impResFeatDrainLabel;
 	private JLabel impResFeatPartLabel;
 	private JFormattedTextField impResFeatPartText;
+	private JLabel impResTexLabel;
+	private JFormattedTextField impResTexCacheText;
+	private JLabel impResTexCacheLabel;	
+	private JFormattedTextField impResTexDrainText;
+	private JLabel impResTexDrainLabel;
+	private JLabel impResTexPartLabel;
+	private JFormattedTextField impResTexPartText;
+
 	
 	public ResourcesPanel(Config config) {
 		super(config);
@@ -89,11 +98,12 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public boolean isModified() {
-		ThreadPoolConfig threadPool = config.getProject().getImporter().getSystem().getThreadPool().getDefaultPool();
+		ThreadPoolConfig threadPool = config.getProject().getImporter().getResources().getThreadPool().getDefaultPool();
 		UpdateBatching commit = config.getProject().getDatabase().getUpdateBatching();
-		UIDCacheConfig geometry = config.getProject().getImporter().getSystem().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getProject().getImporter().getSystem().getGmlIdCache().getFeature();
-
+		UIDCacheConfig geometry = config.getProject().getImporter().getResources().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getProject().getImporter().getResources().getGmlIdCache().getFeature();
+		UIDCacheConfig texImage = config.getProject().getImporter().getResources().getTexImageCache();
+		
 		try { impResMinThreadsText.commitEdit(); } catch (ParseException e) { }
 		try { impResMaxThreadsText.commitEdit(); } catch (ParseException e) { }
 		try { impResTransaktFeatureText.commitEdit(); } catch (ParseException e) { }
@@ -105,6 +115,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		try { impResFeatCacheText.commitEdit(); } catch (ParseException e) { }
 		try { impResFeatDrainText.commitEdit(); } catch (ParseException e) { }
 		try { impResFeatPartText.commitEdit(); } catch (ParseException e) { }
+		try { impResTexCacheText.commitEdit(); } catch (ParseException e) { }
+		try { impResTexDrainText.commitEdit(); } catch (ParseException e) { }
+		try { impResTexPartText.commitEdit(); } catch (ParseException e) { }
 		
 		if (((Number)impResMinThreadsText.getValue()).intValue() != threadPool.getMinThreads()) return true;
 		if (((Number)impResMaxThreadsText.getValue()).intValue() != threadPool.getMaxThreads()) return true;
@@ -117,6 +130,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		if (((Number)impResFeatCacheText.getValue()).intValue() != feature.getCacheSize()) return true;
 		if (((Number)impResFeatDrainText.getValue()).intValue() != (int)(feature.getPageFactor() * 100)) return true;
 		if (((Number)impResFeatPartText.getValue()).intValue() != feature.getPartitions()) return true;
+		if (((Number)impResTexCacheText.getValue()).intValue() != texImage.getCacheSize()) return true;
+		if (((Number)impResTexDrainText.getValue()).intValue() != (int)(texImage.getPageFactor() * 100)) return true;
+		if (((Number)impResTexPartText.getValue()).intValue() != texImage.getPartitions()) return true;
 
 		return false;
 	}
@@ -125,6 +141,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		block1 = new JPanel();
 		block2 = new JPanel();
 		block3 = new JPanel();
+		block4 = new JPanel();
 		impResMinThreadsLabel = new JLabel();
 		impResMaxThreadsLabel = new JLabel();
 		impResTransaktLabel = new JLabel();
@@ -139,6 +156,10 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		impResFeatCacheLabel = new JLabel();
 		impResFeatDrainLabel = new JLabel();
 		impResFeatPartLabel = new JLabel();
+		impResTexLabel = new JLabel();
+		impResTexCacheLabel = new JLabel();
+		impResTexDrainLabel = new JLabel();
+		impResTexPartLabel = new JLabel();
 		
 		DecimalFormat threeIntFormat = new DecimalFormat("###");	
 		threeIntFormat.setMaximumIntegerDigits(3);
@@ -149,7 +170,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		impResFeatDrainText = new JFormattedTextField(threeIntFormat);
 		impResGeomPartText = new JFormattedTextField(threeIntFormat);
 		impResFeatPartText = new JFormattedTextField(threeIntFormat);
-	
+		impResTexDrainText = new JFormattedTextField(threeIntFormat);
+		impResTexPartText = new JFormattedTextField(threeIntFormat);
+		
 		DecimalFormat batchFormat = new DecimalFormat("#####");
 		batchFormat.setMaximumIntegerDigits(5);
 		batchFormat.setMinimumIntegerDigits(1);		
@@ -161,12 +184,13 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		cacheEntryFormat.setMaximumIntegerDigits(8);
 		cacheEntryFormat.setMinimumIntegerDigits(1);		
 		impResGeomCacheText = new JFormattedTextField(cacheEntryFormat);
-		impResFeatCacheText = new JFormattedTextField(cacheEntryFormat);		
+		impResFeatCacheText = new JFormattedTextField(cacheEntryFormat);	
+		impResTexCacheText = new JFormattedTextField(cacheEntryFormat);
 
 		PopupMenuDecorator.getInstance().decorate(impResMinThreadsText, impResMaxThreadsText,
-				impResGeomDrainText, impResFeatDrainText, impResGeomPartText, impResFeatPartText,
+				impResGeomDrainText, impResFeatDrainText, impResTexDrainText, impResGeomPartText, impResFeatPartText, impResTexPartText,
 				impResTransaktFeatureText, impResTransaktCacheText, impResTransaktTempText,
-				impResGeomCacheText, impResFeatCacheText);
+				impResGeomCacheText, impResFeatCacheText, impResTexCacheText);
 		
 		impResMinThreadsText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -209,6 +233,12 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 				checkNonNegative(impResFeatCacheText, 200000);
 			}
 		});
+		
+		impResTexCacheText.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent evt) {
+				checkNonNegative(impResTexCacheText, 200000);
+			}
+		});
 
 		impResGeomDrainText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -222,6 +252,12 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 			}
 		});
 		
+		impResTexDrainText.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent evt) {
+				checkNonNegativeRange(impResTexDrainText, 85, 100);
+			}
+		});
+		
 		impResGeomPartText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				checkNonNegativeRange(impResGeomPartText, 10, 100);
@@ -231,6 +267,12 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		impResFeatPartText.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				checkNonNegativeRange(impResFeatPartText, 10, 100);
+			}
+		});
+		
+		impResTexPartText.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent evt) {
+				checkNonNegativeRange(impResTexPartText, 10, 100);
 			}
 		});
 		
@@ -275,6 +317,18 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 			block3.add(impResFeatPartText, GuiUtil.setConstraints(1,5,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
 			block3.add(impResFeatPartLabel, GuiUtil.setConstraints(2,5,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
 		}
+		add(block4, GuiUtil.setConstraints(0,3,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
+		block4.setBorder(BorderFactory.createTitledBorder(""));
+		block4.setLayout(new GridBagLayout());
+		{
+			block4.add(impResTexLabel, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block4.add(impResTexCacheText, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block4.add(impResTexCacheLabel, GuiUtil.setConstraints(2,0,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block4.add(impResTexDrainText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block4.add(impResTexDrainLabel, GuiUtil.setConstraints(2,1,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block4.add(impResTexPartText, GuiUtil.setConstraints(1,2,1.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+			block4.add(impResTexPartLabel, GuiUtil.setConstraints(2,2,0.0,1.0,GridBagConstraints.BOTH,0,5,5,5));
+		}
 	}
 	
 	private void checkNonNegative(JFormattedTextField field, int defaultValue) {
@@ -294,6 +348,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("common.pref.resources.border.multiCPU"));	
 		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.import.resources.border.commit"));	
 		((TitledBorder)block3.getBorder()).setTitle(Internal.I18N.getString("common.pref.resources.border.idCache"));	
+		((TitledBorder)block4.getBorder()).setTitle(Internal.I18N.getString("pref.import.resources.border.texImageCache"));	
 
 		impResMinThreadsLabel.setText(Internal.I18N.getString("common.pref.resources.label.minThreads"));
 		impResMaxThreadsLabel.setText(Internal.I18N.getString("common.pref.resources.label.maxThreads"));
@@ -304,21 +359,26 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		impResTransaktTempLabel.setText(Internal.I18N.getString("pref.import.resources.label.commit.temp"));
 
 		impResGeomLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry"));
-		impResGeomCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry.entry"));
-		impResGeomDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry.drain"));
-		impResGeomPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry.partition"));
+		impResGeomCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.entry"));
+		impResGeomDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.drain"));
+		impResGeomPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.partition"));
 		impResFeatLabel.setText(Internal.I18N.getString("common.pref.resources.label.feature"));
-		impResFeatCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.feature.entry"));
-		impResFeatDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.feature.drain"));
-		impResFeatPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.feature.partition"));
+		impResFeatCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.entry"));
+		impResFeatDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.drain"));
+		impResFeatPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.partition"));
+		impResTexLabel.setText(Internal.I18N.getString("pref.import.resources.label.texImageCache"));
+		impResTexCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.entry"));
+		impResTexDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.drain"));
+		impResTexPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.partition"));
 	}
 
 	@Override
 	public void loadSettings() {
-		ThreadPoolConfig threadPool = config.getProject().getImporter().getSystem().getThreadPool().getDefaultPool();
+		ThreadPoolConfig threadPool = config.getProject().getImporter().getResources().getThreadPool().getDefaultPool();
 		UpdateBatching commit = config.getProject().getDatabase().getUpdateBatching();
-		UIDCacheConfig geometry = config.getProject().getImporter().getSystem().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getProject().getImporter().getSystem().getGmlIdCache().getFeature();
+		UIDCacheConfig geometry = config.getProject().getImporter().getResources().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getProject().getImporter().getResources().getGmlIdCache().getFeature();
+		UIDCacheConfig texImage = config.getProject().getImporter().getResources().getTexImageCache();
 
 		int commitFeature = commit.getFeatureBatchValue();
 		if (commitFeature > Internal.DB_MAX_BATCH_SIZE)
@@ -339,18 +399,22 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		impResTransaktTempText.setValue(commitTemp);		
 		impResGeomCacheText.setValue(geometry.getCacheSize());
 		impResFeatCacheText.setValue(feature.getCacheSize());		
+		impResTexCacheText.setValue(texImage.getCacheSize());		
 		impResGeomDrainText.setValue((int)(geometry.getPageFactor() * 100));
 		impResFeatDrainText.setValue((int)(feature.getPageFactor() * 100));		
+		impResTexDrainText.setValue((int)(texImage.getPageFactor() * 100));		
 		impResGeomPartText.setValue(geometry.getPartitions());
 		impResFeatPartText.setValue(feature.getPartitions());
+		impResTexPartText.setValue(texImage.getPartitions());
 	}
 
 	@Override
 	public void setSettings() {
-		ThreadPoolConfig threadPool = config.getProject().getImporter().getSystem().getThreadPool().getDefaultPool();
+		ThreadPoolConfig threadPool = config.getProject().getImporter().getResources().getThreadPool().getDefaultPool();
 		UpdateBatching commit = config.getProject().getDatabase().getUpdateBatching();
-		UIDCacheConfig geometry = config.getProject().getImporter().getSystem().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getProject().getImporter().getSystem().getGmlIdCache().getFeature();
+		UIDCacheConfig geometry = config.getProject().getImporter().getResources().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getProject().getImporter().getResources().getGmlIdCache().getFeature();
+		UIDCacheConfig texImage = config.getProject().getImporter().getResources().getTexImageCache();
 
 		int minThreads = ((Number)impResMinThreadsText.getValue()).intValue();
 		int maxThreads = ((Number)impResMaxThreadsText.getValue()).intValue();
@@ -387,10 +451,13 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 		geometry.setCacheSize(((Number)impResGeomCacheText.getValue()).intValue());			
 		feature.setCacheSize(((Number)impResFeatCacheText.getValue()).intValue());
+		texImage.setCacheSize(((Number)impResTexCacheText.getValue()).intValue());
 		geometry.setPageFactor(((Number)impResGeomDrainText.getValue()).floatValue() / 100);
 		feature.setPageFactor(((Number)impResFeatDrainText.getValue()).floatValue() / 100);
+		texImage.setPageFactor(((Number)impResTexDrainText.getValue()).floatValue() / 100);
 		geometry.setPartitions(((Number)impResGeomPartText.getValue()).intValue());
 		feature.setPartitions(((Number)impResFeatPartText.getValue()).intValue());
+		texImage.setPartitions(((Number)impResTexPartText.getValue()).intValue());
 	}
 	
 	@Override

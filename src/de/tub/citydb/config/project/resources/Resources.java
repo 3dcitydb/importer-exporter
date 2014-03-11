@@ -27,22 +27,22 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.system;
+package de.tub.citydb.config.project.resources;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name="SystemType", propOrder={
+@XmlType(name="ResourcesType", propOrder={
 		"gmlIdCache",
 		"threadPool"
 })
-public class System {
+public class Resources {
 	@XmlElement(required=true)
 	private UIDCache gmlIdCache;
 	@XmlElement(required=true)
 	private ThreadPool threadPool;
 
-	public System() {
+	public Resources() {
 		gmlIdCache = new UIDCache();
 		threadPool = new ThreadPool();
 	}

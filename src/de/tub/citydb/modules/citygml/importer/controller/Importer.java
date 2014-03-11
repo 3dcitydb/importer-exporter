@@ -65,6 +65,7 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.AffineTransformation;
+import de.tub.citydb.config.project.importer.ImportResources;
 import de.tub.citydb.config.project.importer.Index;
 import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.database.DatabaseConnectionPool;
@@ -162,13 +163,13 @@ public class Importer implements EventHandler {
 		final de.tub.citydb.config.project.importer.Importer importer = config.getProject().getImporter();
 		Database database = config.getProject().getDatabase();
 		Internal intConfig = config.getInternal();		
-		de.tub.citydb.config.project.system.System system = importer.getSystem();
+		ImportResources resources = importer.getResources();
 
 		Index index = importer.getIndexes();
 
 		// worker pool settings 
-		int minThreads = system.getThreadPool().getDefaultPool().getMinThreads();
-		int maxThreads = system.getThreadPool().getDefaultPool().getMaxThreads();
+		int minThreads = resources.getThreadPool().getDefaultPool().getMinThreads();
+		int maxThreads = resources.getThreadPool().getDefaultPool().getMaxThreads();
 		int queueSize = maxThreads * 2;
 
 		// gml:id lookup cache update
@@ -341,19 +342,19 @@ public class Importer implements EventHandler {
 					uidCacheManager.initCache(
 							UIDCacheType.GEOMETRY,
 							new GeometryGmlIdCache(cacheTableManager, 
-									system.getGmlIdCache().getGeometry().getPartitions(), 
+									resources.getGmlIdCache().getGeometry().getPartitions(), 
 									lookupCacheBatchSize),
-									system.getGmlIdCache().getGeometry().getCacheSize(),
-									system.getGmlIdCache().getGeometry().getPageFactor(),
+									resources.getGmlIdCache().getGeometry().getCacheSize(),
+									resources.getGmlIdCache().getGeometry().getPageFactor(),
 									maxThreads);
 
 					uidCacheManager.initCache(
 							UIDCacheType.FEATURE,
 							new FeatureGmlIdCache(cacheTableManager, 
-									system.getGmlIdCache().getFeature().getPartitions(),
+									resources.getGmlIdCache().getFeature().getPartitions(),
 									lookupCacheBatchSize),
-									system.getGmlIdCache().getFeature().getCacheSize(),
-									system.getGmlIdCache().getFeature().getPageFactor(),
+									resources.getGmlIdCache().getFeature().getCacheSize(),
+									resources.getGmlIdCache().getFeature().getPageFactor(),
 									maxThreads);
 
 					if (config.getProject().getImporter().getAppearances().isSetImportAppearance() &&
@@ -361,10 +362,10 @@ public class Importer implements EventHandler {
 						uidCacheManager.initCache(
 								UIDCacheType.TEX_IMAGE,
 								new TextureImageCache(cacheTableManager, 
-										10,
-										20),
-										200000,
-										90,
+										resources.getTexImageCache().getPartitions(),
+										lookupCacheBatchSize),
+										resources.getTexImageCache().getCacheSize(),
+										resources.getTexImageCache().getPageFactor(),
 										maxThreads);
 					}
 				} catch (SQLException sqlEx) {

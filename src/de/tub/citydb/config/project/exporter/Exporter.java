@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.config.project.general.Path;
-import de.tub.citydb.config.project.system.System;
+import de.tub.citydb.config.project.resources.Resources;
 
 @XmlType(name="ExportType", propOrder={
 		"path",
@@ -44,7 +44,7 @@ import de.tub.citydb.config.project.system.System;
 		"filter",
 		"cityGMLVersion",
 		"xlink",
-		"system"
+		"resources"
 })
 public class Exporter {
 	private Path path;
@@ -55,7 +55,7 @@ public class Exporter {
 	private ExportFilterConfig filter;
 	private CityGMLVersionType cityGMLVersion = CityGMLVersionType.v2_0_0;
 	private XLink xlink;
-	private System system;
+	private Resources resources;
 
 	public Exporter() {
 		path = new Path();
@@ -63,7 +63,7 @@ public class Exporter {
 		appearances = new ExportAppearance();
 		filter = new ExportFilterConfig();
 		xlink = new XLink();
-		system = new System();
+		resources = new Resources();
 	}
 
 	public Path getPath() {
@@ -128,13 +128,13 @@ public class Exporter {
 			this.xlink = xlink;
 	}
 
-	public System getSystem() {
-		return system;
+	public Resources getResources() {
+		return resources;
 	}
 
-	public void setSystem(System system) {
+	public void setResources(Resources system) {
 		if (system != null)
-			this.system = system;
+			this.resources = system;
 	}
 
 }

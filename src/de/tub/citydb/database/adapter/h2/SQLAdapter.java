@@ -7,8 +7,7 @@ import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 import de.tub.citydb.database.adapter.BlobExportAdapter;
 import de.tub.citydb.database.adapter.BlobImportAdapter;
-import de.tub.citydb.database.adapter.TextureImageExportAdapter;
-import de.tub.citydb.database.adapter.TextureImageImportAdapter;
+import de.tub.citydb.database.adapter.BlobType;
 import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
 
 public class SQLAdapter extends AbstractSQLAdapter {
@@ -128,12 +127,6 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public String getTextureImageContentLength(String columName) {
-		// not required for cache tables
-		return "";
-	}
-
-	@Override
 	public String getNextSequenceValue(DBSequencerEnum sequence) {
 		// not required for cache tables
 		return "";
@@ -158,25 +151,13 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public TextureImageImportAdapter getTextureImageImportAdapter(Connection connection) throws SQLException {
+	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException {
 		// not required for cache tables
 		return null;
 	}
 
 	@Override
-	public TextureImageExportAdapter getTextureImageExportAdapter(Connection connection) {
-		// not required for cache tables
-		return null;
-	}
-
-	@Override
-	public BlobImportAdapter getBlobImportAdapter(Connection connection) throws SQLException {
-		// not required for cache tables
-		return null;
-	}
-
-	@Override
-	public BlobExportAdapter getBlobExportAdapter(Connection connection) {
+	public BlobExportAdapter getBlobExportAdapter(Connection connection, BlobType type) {
 		// not required for cache tables
 		return null;
 	}

@@ -33,7 +33,6 @@ import javax.xml.bind.annotation.XmlType;
 
 import de.tub.citydb.config.project.general.AffineTransformation;
 import de.tub.citydb.config.project.general.Path;
-import de.tub.citydb.config.project.system.System;
 
 @XmlType(name="ImportType", propOrder={
 		"continuation",
@@ -45,7 +44,7 @@ import de.tub.citydb.config.project.system.System;
 		"affineTransformation",
 		"indexes",
 		"xmlValidation",
-		"system"
+		"resources"
 })
 public class Importer {
 	private Continuation continuation;
@@ -57,7 +56,7 @@ public class Importer {
 	private AffineTransformation affineTransformation;
 	private Index indexes;
 	private XMLValidation xmlValidation;
-	private System system;
+	private ImportResources resources;
 
 	public Importer() {
 		continuation = new Continuation();
@@ -69,7 +68,7 @@ public class Importer {
 		affineTransformation = new AffineTransformation();
 		indexes = new Index();
 		xmlValidation = new XMLValidation();
-		system = new System();
+		resources = new ImportResources();
 	}
 
 	public Continuation getContinuation() {
@@ -156,13 +155,13 @@ public class Importer {
 		this.affineTransformation = affineTransformation;
 	}
 
-	public System getSystem() {
-		return system;
+	public ImportResources getResources() {
+		return resources;
 	}
 
-	public void setSystem(System system) {
-		if (system != null)
-			this.system = system;
+	public void setResources(ImportResources resources) {
+		if (resources != null)
+			this.resources = resources;
 	}	
 
 }

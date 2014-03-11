@@ -139,7 +139,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		rootNode = new PreferencesTreeNode(new RootPreferencesEntry());
 		generalPreferences = new GeneralPreferences(mainView, config);
 
-		PreferencesTreeNode initialNode = rootNode.add(pluginService.getInternalPlugin(CityGMLImportPlugin.class).getPreferences().getPreferencesEntry());
+		rootNode.add(pluginService.getInternalPlugin(CityGMLImportPlugin.class).getPreferences().getPreferencesEntry());
 		rootNode.add(pluginService.getInternalPlugin(CityGMLExportPlugin.class).getPreferences().getPreferencesEntry());
 		rootNode.add(pluginService.getInternalPlugin(KMLExportPlugin.class).getPreferences().getPreferencesEntry());
 
@@ -152,7 +152,9 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		menuTree = new JTree(rootNode);
 		menuTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		menuTree.addTreeSelectionListener(this);
-
+		menuTree.setRootVisible(false);
+		menuTree.setShowsRootHandles(true);
+		
 		// get rid of icons
 		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
 		renderer.setLeafIcon(null);
@@ -170,7 +172,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 				JScrollPane scroll = new JScrollPane(menuTree);
 				scroll.setBorder(BorderFactory.createEmptyBorder());
 				scroll.setViewportBorder(BorderFactory.createEmptyBorder());
-				col1.add(scroll, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,2,2,2,2));
+				col1.add(scroll, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,8,4,4,4));
 			}
 		}
 		{
@@ -221,17 +223,18 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setContinuousLayout(true);
-		splitPane.setBorder(BorderFactory.createEtchedBorder());
+		splitPane.setBorder(BorderFactory.createEmptyBorder());
 
 		splitPane.setLeftComponent(col1);
 		splitPane.setRightComponent(col2);
-		splitPane.setDividerLocation(menuTree.getPreferredSize().width + 6);
-
-		add(splitPane, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,2,2,2,2));
+		splitPane.setDividerLocation(menuTree.getPreferredSize().width + 10);
+		splitPane.setDividerSize(1);
+		
+		add(splitPane, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,0,0,0));
 		setBorder(BorderFactory.createEmptyBorder());
 
-		menuTree.setSelectionPath(new TreePath(new Object[]{rootNode, initialNode}));
-		for (int i = 1; i < menuTree.getRowCount(); i++)
+		menuTree.setSelectionPath(new TreePath(new Object[]{rootNode}));
+		for (int i = 0; i < menuTree.getRowCount(); i++)
 			performActionOnNodes(menuTree.getPathForRow(i), false, true);
 
 		PopupMenuDecorator.getInstance().decorate(menuTree);
