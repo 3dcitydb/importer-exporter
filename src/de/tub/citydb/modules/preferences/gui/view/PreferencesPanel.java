@@ -172,7 +172,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 				JScrollPane scroll = new JScrollPane(menuTree);
 				scroll.setBorder(BorderFactory.createEmptyBorder());
 				scroll.setViewportBorder(BorderFactory.createEmptyBorder());
-				col1.add(scroll, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,8,4,4,4));
+				col1.add(scroll, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,9,4,4,4));
 			}
 		}
 		{
