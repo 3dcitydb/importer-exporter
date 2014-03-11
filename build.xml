@@ -106,14 +106,7 @@
 		<delete file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" />
 	</target>
 
-	<target name="generate_plugins" description="generate plugins">
-		<subant target="dist">
-			<property name="build.number" value="${build.number}" />
-			<fileset dir="${dir.plugin.devel}" includes="**/build.xml" />
-		</subant>
-	</target>
-
-	<target name="dist" depends="clean, generate_plugin_api, generate_plugins" description="generate the distribution">
+	<target name="dist" depends="clean, generate_plugin_api" description="generate the distribution">
 		<!-- create the build directory structure used by compile -->
 		<mkdir dir="${dir.build.base}" />
 		<mkdir dir="${dir.dest}" />
