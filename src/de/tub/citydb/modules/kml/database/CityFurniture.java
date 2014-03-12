@@ -262,11 +262,8 @@ public class CityFurniture extends KmlGenericObject{
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
 								work,
 								getBalloonSettings().isBalloonContentInSeparateFile());
-						//						kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
+
 						if (work.getDisplayForm().isHighlightingEnabled()) {
-							//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
-							//							 						 work,
-							//							 						 getBalloonSetings().isBalloonContentInSeparateFile());
 							kmlExporterManager.print(createPlacemarksForHighlighting(work),
 									work,
 									getBalloonSettings().isBalloonContentInSeparateFile());

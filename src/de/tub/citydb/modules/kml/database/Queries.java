@@ -414,63 +414,90 @@ public class Queries {
 					"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
 					"WHERE " +
 					"ts.building_id = ? " +
-					"AND ts.type = 'GroundSurface' " +
+					"AND ts.objectclass_id = '35' " +
 					"AND sg.root_id = ts.lod4_multi_surface_id " +
-					"AND sg.geometry IS NOT NULL "; // +
-	//			"ORDER BY ts.building_id";
+					"AND sg.geometry IS NOT NULL "; 
+
 
 	private static final String BUILDING_PART_COLLADA_LOD4_ROOT_IDS =
-			"SELECT geom.gid FROM (SELECT ts.lod4_multi_surface_id as gid " + 
+			"SELECT geom.gid FROM (" + 
+					// Building
+					"SELECT ts.lod4_multi_surface_id as gid " + 					
 					"FROM THEMATIC_SURFACE ts " + 
 					"WHERE " +  
 					"ts.building_id = ? " +
 					"AND ts.lod4_multi_surface_id IS NOT NULL " +
 					"UNION " + 
-					/*
-			"SELECT r.lod4_geometry_id " + 
-			"FROM ROOM r " + 
-			"WHERE " +  
-	  			"r.building_id = ? " +
-				"AND r.lod4_geometry_id IS NOT NULL " +
-					 */
-					 "SELECT ts.lod4_multi_surface_id as gid " + 
-					 "FROM ROOM r, THEMATIC_SURFACE ts " + 
-					 "WHERE " +  
-					 "r.building_id = ? " +
-					 "AND ts.room_id = r.id " +
-					 "AND ts.lod4_multi_surface_id IS NOT NULL " +
-					 "UNION " + 
-					 "SELECT bf.lod4_geometry_id as gid " + 
-					 "FROM ROOM r, BUILDING_FURNITURE bf " + 
-					 "WHERE " +  
-					 "r.building_id = ? " +
-					 "AND bf.room_id = r.id " +
-					 "AND bf.lod4_geometry_id IS NOT NULL " +
-					 "UNION " + 
-					 "SELECT bi.lod4_geometry_id as gid " + 
-					 "FROM ROOM r, BUILDING_INSTALLATION bi " + 
-					 "WHERE " +  
-					 "r.building_id = ? " +
-					 "AND bi.room_id = r.id " +
-					 "AND bi.lod4_geometry_id IS NOT NULL " +
-					 "UNION " + 
-					 "SELECT o.lod4_multi_surface_id as gid " + 
-					 "FROM THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
-					 "WHERE " +  
-					 "ts.building_id = ? " +
-					 "AND ts.lod4_multi_surface_id IS NOT NULL " +
-					 "AND o2ts.thematic_surface_id = ts.id " +
-					 "AND o.id = o2ts.opening_id " +
-					 "UNION " + 
-					 "SELECT b.lod4_geometry_id as gid " + 
-					 "FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
-					 "WHERE " +  
-					 "b.id = ? " +
-					 "AND b.lod4_geometry_id IS NOT NULL " +
-					 "AND ts.lod4_multi_surface_id IS NULL) geom";
+					"SELECT b.lod4_solid_id as gid " + 
+					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod4_solid_id IS NOT NULL " +
+					"AND ts.lod4_multi_surface_id IS NULL " +
+					"UNION " +					 
+					"SELECT b.lod4_multi_surface_id as gid " + 
+					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod4_multi_surface_id IS NOT NULL " +
+					"AND ts.lod4_multi_surface_id IS NULL "	+	
+					"UNION " + 
+					// Room
+					"SELECT ts.lod4_multi_surface_id as gid " + 
+					"FROM ROOM r, THEMATIC_SURFACE ts " + 
+					"WHERE " +  
+					"r.building_id = ? " +
+					"AND ts.room_id = r.id " +
+					"AND ts.lod4_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+			        "SELECT r.lod4_solid_id as gid " + 
+			        "FROM ROOM r LEFT JOIN THEMATIC_SURFACE ts ON ts.room_id = r.id " + 
+			        "WHERE " +  
+	  			    "r.building_id = ? " +
+				    "AND r.lod4_solid_id IS NOT NULL " +
+	  			    "AND ts.lod4_multi_surface_id IS NULL " + 
+				    "UNION " + 
+			        "SELECT r.lod4_multi_surface_id as gid " + 
+			        "FROM ROOM r LEFT JOIN THEMATIC_SURFACE ts ON ts.room_id = r.id " + 
+			        "WHERE " +  
+	  			    "r.building_id = ? " +
+				    "AND r.lod4_multi_surface_id IS NOT NULL " +
+	  			    "AND ts.lod4_multi_surface_id IS NULL " + 
+				    "UNION " + 
+	  			    // Building Furniture
+					"SELECT bf.lod4_brep_id as gid " + 
+					"FROM ROOM r, BUILDING_FURNITURE bf " + 
+					"WHERE " +  
+					"r.building_id = ? " +
+					"AND bf.room_id = r.id " +
+					"AND bf.lod4_brep_id IS NOT NULL " +
+					"UNION " + 			
+					// Building  Installation
+					"SELECT ts.lod4_multi_surface_id as gid " + 
+					"FROM BUILDING_INSTALLATION bi, THEMATIC_SURFACE ts " + 
+					"WHERE bi.building_id = ? " +  
+					"AND ts.building_installation_id = bi.id " +
+					"AND ts.lod4_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT bi.lod4_brep_id as gid " + 
+					"FROM BUILDING_INSTALLATION bi LEFT JOIN THEMATIC_SURFACE ts ON ts.building_installation_id = bi.id " +
+					"WHERE " +  
+					"bi.building_id = ? " +
+					"AND bi.lod4_brep_id IS NOT NULL " +
+					"AND ts.lod4_multi_surface_id IS NULL " + 
+					"UNION " + 
+					// Opening
+					"SELECT o.lod4_multi_surface_id as gid " + 
+					"FROM THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
+					"WHERE " +  
+					"ts.building_id = ? " +
+					"AND ts.lod4_multi_surface_id IS NOT NULL " +
+					"AND o2ts.thematic_surface_id = ts.id " +
+					"AND o.id = o2ts.opening_id) geom";
+
 
 	private static final String BUILDING_PART_GEOMETRY_LOD4 =
-			"SELECT sg.geometry, ts.type, sg.id " +
+			"SELECT sg.geometry, ts.objectclass_id, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
 					"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod4_multi_surface_id = sg.root_id " +
 					"WHERE " +
@@ -482,100 +509,65 @@ public class Queries {
 					"FROM SURFACE_GEOMETRY sg, THEMATIC_SURFACE ts " +
 					"WHERE " +
 					"ts.building_id = ? " +
-					"AND ts.type = 'GroundSurface' " +
+					"AND ts.objectclass_id = '35' " +
 					"AND sg.root_id = ts.lod3_multi_surface_id " +
-					"AND sg.geometry IS NOT NULL "; // +
-	//			"ORDER BY ts.building_id";
+					"AND sg.geometry IS NOT NULL "; 
 
 	private static final String BUILDING_PART_COLLADA_LOD3_ROOT_IDS =
-			"SELECT geom.gid FROM (SELECT ts.lod3_multi_surface_id as gid " + 
+			"SELECT geom.gid FROM (" + 
+					// Building
+					"SELECT ts.lod3_multi_surface_id as gid " + 
 					"FROM THEMATIC_SURFACE ts " + 
 					"WHERE " +  
 					"ts.building_id = ? " +
 					"AND ts.lod3_multi_surface_id IS NOT NULL " +
 					"UNION " + 
-					"SELECT bi.lod3_geometry_id as gid " + 
-					"FROM BUILDING_INSTALLATION bi " + 
+					"SELECT b.lod3_solid_id as gid " + 
+					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod3_solid_id IS NOT NULL " +
+					"AND ts.lod3_multi_surface_id IS NULL " +
+					"UNION " + 
+					"SELECT b.lod3_multi_surface_id as gid " + 
+					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod3_multi_surface_id IS NOT NULL " +
+					"AND ts.lod3_multi_surface_id IS NULL " + 
+					"UNION " + 
+					// Building Installation
+					"SELECT ts.lod3_multi_surface_id as gid " + 
+					"FROM BUILDING_INSTALLATION bi, THEMATIC_SURFACE ts " + 
+					"WHERE bi.building_id = ? " +  
+					"AND ts.building_installation_id = bi.id " +
+					"AND ts.lod3_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT bi.lod3_brep_id as gid " + 
+					"FROM BUILDING_INSTALLATION bi LEFT JOIN THEMATIC_SURFACE ts ON ts.building_installation_id = bi.id " +
 					"WHERE " +  
 					"bi.building_id = ? " +
-					"AND bi.lod3_geometry_id IS NOT NULL " +
+					"AND bi.lod3_brep_id IS NOT NULL " +
+					"AND ts.lod3_multi_surface_id IS NULL " + 
 					"UNION " + 
+					// Opening
 					"SELECT o.lod3_multi_surface_id as gid " + 
 					"FROM THEMATIC_SURFACE ts, OPENING_TO_THEM_SURFACE o2ts, OPENING o " + 
 					"WHERE " +  
 					"ts.building_id = ? " +
 					"AND ts.lod3_multi_surface_id IS NOT NULL " +
 					"AND o2ts.thematic_surface_id = ts.id " +
-					"AND o.id = o2ts.opening_id " +
-					"UNION " + 
-					"SELECT b.lod3_geometry_id as gid " + 
-					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
-					"WHERE " +  
-					"b.id = ? " +
-					"AND b.lod3_geometry_id IS NOT NULL " +
-					"AND ts.lod3_multi_surface_id IS NULL) geom";
+					"AND o.id = o2ts.opening_id) geom";
 
+	
 	private static final String BUILDING_PART_GEOMETRY_LOD3 =
-			"SELECT sg.geometry, ts.type, sg.id " +
+			"SELECT sg.geometry, ts.objectclass_id, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
 					"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod3_multi_surface_id = sg.root_id " +
 					"WHERE " +
 					"sg.geometry IS NOT NULL " +
 					"AND sg.root_id IN (" + BUILDING_PART_COLLADA_LOD3_ROOT_IDS	+ ")";
-
-	private static final String BUILDING_PART_COLLADA_LOD2_ROOT_IDS =
-			"SELECT geom.gid FROM (SELECT ts.lod2_multi_surface_id as gid " + 
-					"FROM THEMATIC_SURFACE ts " + 
-					"WHERE " +  
-					"ts.building_id = ? " +
-					"AND ts.lod2_multi_surface_id IS NOT NULL " +
-					"UNION " + 
-					"SELECT bi.lod2_geometry_id as gid " + 
-					"FROM BUILDING_INSTALLATION bi " + 
-					"WHERE " +  
-					"bi.building_id = ? " +
-					"AND bi.lod2_geometry_id IS NOT NULL " +
-					"UNION " + 
-					"SELECT b.lod2_geometry_id as gid " + 
-					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
-					"WHERE " +  
-					"b.id = ? " +
-					"AND b.lod2_geometry_id IS NOT NULL " +
-					"AND ts.lod2_multi_surface_id IS NULL) geom";
-
-	private static final String BUILDING_PART_COLLADA_LOD1_ROOT_IDS =
-			"SELECT b.lod1_geometry_id " +
-					"FROM BUILDING b " +
-					"WHERE " +
-					"b.id = ? " +
-					"AND b.lod1_geometry_id IS NOT NULL";
-
-	private static final String COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 =
-			"SELECT sg.geometry, sg.id, sg.parent_id, sd.type, sd.id as sd_id, " +
-					"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
-					"sd.tex_image_uri, sd.tex_image, tp.texture_coordinates, a.theme " +
-					"FROM SURFACE_GEOMETRY sg " +
-					"LEFT JOIN TEXTUREPARAM tp ON tp.surface_geometry_id = sg.id " + 
-					"LEFT JOIN SURFACE_DATA sd ON sd.id = tp.surface_data_id " +
-					"LEFT JOIN APPEAR_TO_SURFACE_DATA a2sd ON a2sd.surface_data_id = sd.id " +
-					"LEFT JOIN APPEARANCE a ON a2sd.appearance_id = a.id " +
-					"WHERE " +
-					"sg.root_id = ? "; // +
-	//				"AND (a.theme = ? OR a.theme IS NULL) " +
-	//				"ORDER BY sg.parent_id ASC"; // own root surfaces first
-
-	public static final String[] COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID = new String[] {
-		COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NULL ORDER BY sg.id", // parents
-		COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NOT NULL" // elementary surfaces
-	};
-
-	private static final String BUILDING_PART_GEOMETRY_LOD2 =
-			"SELECT sg.geometry, ts.type, sg.id " +
-					"FROM SURFACE_GEOMETRY sg " +
-					"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod2_multi_surface_id = sg.root_id " +
-					"WHERE " +
-					"sg.geometry IS NOT NULL " +
-					"AND sg.root_id IN (" + BUILDING_PART_COLLADA_LOD2_ROOT_IDS	+ ")";
+	
 
 	private static final String BUILDING_PART_FOOTPRINT_LOD2 =
 			"SELECT sg.geometry " +
@@ -586,22 +578,120 @@ public class Queries {
 					"AND sg.root_id = ts.lod2_multi_surface_id " +
 					"AND sg.geometry IS NOT NULL " +
 					"ORDER BY ts.building_id";
+	
+	
+	private static final String BUILDING_PART_COLLADA_LOD2_ROOT_IDS =
+			"SELECT geom.gid FROM ( " + 
+					// Building
+					"SELECT ts.lod2_multi_surface_id as gid " + 
+					"FROM THEMATIC_SURFACE ts " + 
+					"WHERE " +  
+					"ts.building_id = ? " +
+					"AND ts.lod2_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT b.lod2_multi_surface_id as gid " + 
+					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod2_multi_surface_id IS NOT NULL " +
+					"AND ts.lod2_multi_surface_id IS NULL " +
+					"UNION " + 
+					"SELECT b.lod2_solid_id as gid " + 
+					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod2_solid_id IS NOT NULL " +
+					"AND ts.lod2_multi_surface_id IS NULL " +					
+					"UNION " +			
+					// Building Installation	
+					"SELECT ts.lod2_multi_surface_id as gid " + 
+					"FROM BUILDING_INSTALLATION bi, THEMATIC_SURFACE ts " + 
+					"WHERE bi.building_id = ? " +  
+					"AND ts.building_installation_id = bi.id " +
+					"AND ts.lod2_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT bi.lod2_brep_id as gid " + 
+					"FROM BUILDING_INSTALLATION bi LEFT JOIN THEMATIC_SURFACE ts ON ts.building_installation_id = bi.id " +
+					"WHERE " +  
+					"bi.building_id = ? " +
+					"AND bi.lod2_brep_id IS NOT NULL " +
+					"AND ts.lod2_multi_surface_id IS NULL) geom";
+	
+	
+	private static final String BUILDING_PART_GEOMETRY_LOD2 =
+			"SELECT sg.geometry, ts.objectclass_id, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"LEFT JOIN THEMATIC_SURFACE ts ON ts.lod2_multi_surface_id = sg.root_id " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + BUILDING_PART_COLLADA_LOD2_ROOT_IDS	+ ")";
 
-	private static final String BUILDING_PART_GEOMETRY_LOD1 =
-			"SELECT sg.geometry, NULL as type, sg.id " +
-					"FROM SURFACE_GEOMETRY sg, BUILDING b " +
+	
+	private static final String BUILDING_PART_FOOTPRINT_LOD1(DatabaseType type) {		
+		switch (type) {
+		case ORACLE:
+			return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", "0.001")
+					.replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
+					.replace("<LoD>", "1")
+					.replace("<GROUP_BY_1>", "256")
+					.replace("<GROUP_BY_2>", "64")
+					.replace("<GROUP_BY_3>", "16");
+		case POSTGIS:		
+			return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", "0.001")
+					.replace("<LoD>", "1");			
+		default:
+			return null;
+		}
+	}	
+	
+	private static final String BUILDING_PART_COLLADA_LOD1_ROOT_IDS =
+			"SELECT geom.gid FROM (SELECT b.lod1_multi_surface_id as gid " +			
+					"FROM BUILDING b " +
 					"WHERE " +
 					"b.id = ? " +
-					"AND sg.root_id = b.lod1_geometry_id " +
-					"AND sg.geometry IS NOT NULL "; // +
-	//			"ORDER BY b.id";
+					"AND b.lod1_multi_surface_id IS NOT NULL " + 
+					"UNION " + 
+					"SELECT b.lod1_solid_id as gid " +			
+					"FROM BUILDING b " +
+					"WHERE " +
+					"b.id = ? " +
+					"AND b.lod1_solid_id IS NOT NULL) geom"; 
+	
+	
+	private static final String BUILDING_PART_GEOMETRY_LOD1 =
+			"SELECT sg.geometry, NULL as objectclass_id, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + BUILDING_PART_COLLADA_LOD1_ROOT_IDS	+ ")";
+	
+	
+	private static final String COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 =
+			"SELECT sg.geometry, sg.id, sg.parent_id, sd.objectclass_id, sd.id as sd_id, " +
+					"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
+					"ti.tex_image_uri, ti.tex_image, tp.texture_coordinates, a.theme " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"LEFT JOIN TEXTUREPARAM tp ON tp.surface_geometry_id = sg.id " + 
+					"LEFT JOIN SURFACE_DATA sd ON sd.id = tp.surface_data_id " +
+					"LEFT JOIN TEX_IMAGE ti ON ti.id = sd.tex_image_id " +
+					"LEFT JOIN APPEAR_TO_SURFACE_DATA a2sd ON a2sd.surface_data_id = sd.id " +
+					"LEFT JOIN APPEARANCE a ON a2sd.appearance_id = a.id " +
+					"WHERE " +
+					"sg.root_id = ? "; 
+	
+
+	public static final String[] COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID = new String[] {
+			COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NULL ORDER BY sg.id", // parents
+			COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NOT NULL" // elementary surfaces
+	};
 
 	private static final String BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD1 =
 			"SELECT sg.geometry, sg.id " +
 					"FROM SURFACE_GEOMETRY sg, BUILDING b " +
 					"WHERE " +
 					"b.id = ? " +
-					"AND sg.root_id = b.lod1_geometry_id " +
+					"AND (sg.root_id = b.lod1_solid_id " +
+						"OR sg.root_id = b.lod1_multi_surface_id) " +
 					"AND sg.geometry IS NOT NULL ";
 
 	private static final String BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD2 =
@@ -638,11 +728,18 @@ public class Queries {
 					"AND o2ts.thematic_surface_id = ts.id " +
 					"AND o.id = o2ts.opening_id " +
 					"UNION " + 
-					"SELECT b.lod4_geometry_id as gid " + 
+					"SELECT b.lod4_solid_id as gid " + 
 					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
 					"WHERE " +  
 					"b.id = ? " +
-					"AND b.lod4_geometry_id IS NOT NULL " +
+					"AND b.lod4_solid_id IS NOT NULL " +
+					"AND ts.lod4_multi_surface_id IS NULL " +
+					"UNION " +						
+					"SELECT b.lod4_multi_surface_id as gid " + 
+					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod4_multi_surface_id IS NOT NULL " +
 					"AND ts.lod4_multi_surface_id IS NULL) geom)";
 
 
@@ -694,15 +791,19 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-
 				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
-				        "SELECT b.lod<LoD>_geometry_id " +
+				        "SELECT b.lod<LoD>_multi_surface_id " +
 				        "FROM BUILDING b " +
 				        "WHERE b.id = ? " +
-				        "AND b.lod<LoD>_geometry_id IS NOT NULL " +
+				        "AND b.lod<LoD>_multi_surface_id IS NOT NULL " +
+				        "UNION " +
+				        "SELECT b.lod<LoD>_solid_id " +
+				        "FROM BUILDING b " +
+				        "WHERE b.id = ? " +
+				        "AND b.lod<LoD>_solid_id IS NOT NULL " +
 				        "UNION " +
 				        "SELECT ts.lod<LoD>_multi_surface_id " +
 				        "FROM THEMATIC_SURFACE ts " +
@@ -710,7 +811,6 @@ public class Queries {
 				        "AND ts.lod<LoD>_multi_surface_id IS NOT NULL "+
 				        ") " +
 				        "AND sg.geometry IS NOT NULL) AS get_geoms " +
-
 				    	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
 				    	// ST_Area for WGS84 only works correctly if the geometry is a geography data type
 				    	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE>) AS get_valid_area";
@@ -759,15 +859,15 @@ public class Queries {
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
+				        "SELECT b.lod<LoD>_multi_surface_id " +
+				        "FROM BUILDING b " +
+				        "WHERE b.id = ? " +
+				        "AND b.lod<LoD>_multi_surface_id IS NOT NULL " +
+				        "UNION " +				        
 				        "SELECT b.lod<LoD>_solid_id " +
 				        "FROM BUILDING b " +
 				        "WHERE b.id = ? " +
-				        "AND b.lod<LoD>_solid_id IS NOT NULL " +
-/*				        "UNION " +				        
-				        "SELECT b.lod<LoD>_solid_id " +
-				        "FROM BUILDING b " +
-				        "WHERE b.id = ? " +
-				        "AND b.lod<LoD>_solid_id IS NOT NULL " +		*/		        
+				        "AND b.lod<LoD>_solid_id IS NOT NULL " +				        
 				        ") " +
 				        "AND sg.geometry IS NOT NULL) AS get_geoms " +
 				    	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
@@ -777,7 +877,65 @@ public class Queries {
 			return null;
 		}
 	}
+	
+	private static final String BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD0(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (" +
+						"SELECT * FROM (" +
+						"SELECT * FROM (" +
+				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"FROM SURFACE_GEOMETRY sg " +
+				    	"WHERE " +
+				    	"sg.root_id IN( " +
+				    	"SELECT b.lod<LoD>_multi_surface_id " +
+				    	"FROM BUILDING b " +
+				    	"WHERE "+
+				    	"b.id = ? " +
+				    	"AND b.lod<LoD>_multi_surface_id IS NOT NULL " +
+				    	") " +
+				    	"AND sg.geometry IS NOT NULL" +
+						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
+						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
 
+						") " +
+						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_2>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_3>) " +
+						")";
+		case POSTGIS:
+			return "SELECT ST_Union(get_valid_area.simple_geom) " +
+			"FROM (" +
+			"SELECT * FROM (" +
+			"SELECT * FROM (" +
+				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "FROM SURFACE_GEOMETRY sg " +
+				        "WHERE " +
+				        "sg.root_id IN( " +
+				        "SELECT b.lod0_footprint_id " +
+				        "FROM BUILDING b " +
+				        "WHERE b.id = ? " +
+				        "AND b.lod0_footprint_id IS NOT NULL " +
+				        "UNION " +				        
+				        "SELECT b.lod0_roofprint_id " +
+				        "FROM BUILDING b " +
+				        "WHERE b.id = ? " +
+				        "AND b.lod0_roofprint_id IS NOT NULL " +				        
+				        ") " +
+				        "AND sg.geometry IS NOT NULL) AS get_geoms " +
+				    	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
+				    	// ST_Area for WGS84 only works correctly if the geometry is a geography data type
+				    	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE>) AS get_valid_area";
+		default:
+			return null;
+		}
+	}
 	public static String getBuildingPartAggregateGeometries (double tolerance,
 			int srid2D,
 			int lodToExportFrom,
@@ -793,32 +951,24 @@ public class Queries {
 					.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
 					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));
 		}
-		// else
-		return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", String.valueOf(tolerance))
-				.replace("<2D_SRID>", String.valueOf(srid2D))
-				.replace("<LoD>", String.valueOf(lodToExportFrom))
-				.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
-				.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
-				.replace("<GROUP_BY_3>", String.valueOf(groupBy3));
-	}
-
-	private static final String BUILDING_PART_FOOTPRINT_LOD1(DatabaseType type) {
-		switch (type) {
-		case ORACLE:
-			return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", "0.001")
-					.replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
-					.replace("<LoD>", "1")
-					.replace("<GROUP_BY_1>", "256")
-					.replace("<GROUP_BY_2>", "64")
-					.replace("<GROUP_BY_3>", "16");
-		case POSTGIS:		
-			return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", "0.001")
-					.replace("<LoD>", "1");
-			
-		default:
-			return null;
+		else if (lodToExportFrom == 1){
+			return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", String.valueOf(tolerance))
+					.replace("<2D_SRID>", String.valueOf(srid2D))
+					.replace("<LoD>", String.valueOf(lodToExportFrom))
+					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
+					.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
+					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));			
+		}
+		else {
+			return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD0(type).replace("<TOLERANCE>", String.valueOf(tolerance))
+					.replace("<2D_SRID>", String.valueOf(srid2D))
+					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
+					.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
+					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));					
 		}
 	}
+
+
 
 	private static final HashMap<Integer, String> buildingPartQueriesLod4 = new HashMap<Integer, String>();
 	static {
@@ -849,10 +999,21 @@ public class Queries {
 		buildingPartQueriesLod1.put(DisplayForm.GEOMETRY, BUILDING_PART_GEOMETRY_LOD1);
 		buildingPartQueriesLod1.put(DisplayForm.COLLADA, BUILDING_PART_COLLADA_LOD1_ROOT_IDS);
 	}
+	
+	private static final String BUILDING_PART_FOOTPRINT_LOD0 = 
+			"SELECT sg.geometry " +
+					"FROM SURFACE_GEOMETRY sg, BUILDING b " +
+					"WHERE " +
+					"b.id = ? " +
+					"AND sg.root_id = b.lod0_footprint_id " +
+					"AND sg.geometry IS NOT NULL ";
 
 	public static String getBuildingPartQuery (int lodToExportFrom, DisplayForm displayForm, DatabaseType type) {
 		String query = null;
 		switch (lodToExportFrom) {
+		case 0: 
+			query = BUILDING_PART_FOOTPRINT_LOD0;
+			break;
 		case 1:
 			if (displayForm.getForm() == DisplayForm.FOOTPRINT || displayForm.getForm() == DisplayForm.EXTRUDED){
 				query = BUILDING_PART_FOOTPRINT_LOD1(type);		
@@ -872,8 +1033,6 @@ public class Queries {
 		default:
 			Logger.getInstance().log(LogLevel.INFO, "No BuildingPart query found for LoD" + lodToExportFrom);
 		}
-
-		//	    	Logger.getInstance().log(LogLevelType.DEBUG, query);
 		return query;
 	}
 
@@ -1099,8 +1258,6 @@ public class Queries {
 		default:
 			Logger.getInstance().log(LogLevel.INFO, "No GenericCityObject query found");
 		}
-
-		//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
 		return query;
 	}
 
@@ -1127,8 +1284,8 @@ public class Queries {
 	// ----------------------------------------------------------------------
 
 	private static final String CITY_FURNITURE_BASIS_DATA =
-			"SELECT ig.relative_geometry_id, cf.lod<LoD>_implicit_ref_point, " +
-					"cf.lod<LoD>_implicit_transformation, cf.lod<LoD>_geometry_id " +
+			"SELECT ig.relative_brep_id, cf.lod<LoD>_implicit_ref_point, " +
+					"cf.lod<LoD>_implicit_transformation, cf.lod<LoD>_brep_id " +
 					"FROM CITY_FURNITURE cf " + 
 					"LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = cf.lod<LoD>_implicit_rep_id " + 
 					"WHERE cf.id = ?";
@@ -1138,7 +1295,7 @@ public class Queries {
 	}
 
 	private static final String CITY_FURNITURE_FOOTPRINT_EXTRUDED_GEOMETRY =
-			"SELECT sg.geometry, 'Furniture' as type, sg.id " +
+			"SELECT sg.geometry, '21' as objectclass_id, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
 					"WHERE sg.root_id = ? " + 
 					"AND sg.geometry IS NOT NULL";
@@ -1165,8 +1322,6 @@ public class Queries {
 		default:
 			Logger.getInstance().log(LogLevel.INFO, "No city furniture query found");
 		}
-
-		//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
 		return query;
 	}
 
@@ -1179,7 +1334,7 @@ public class Queries {
 					"WHERE cf.id = ? " +
 					"AND ig.id = cf.lod<LoD>_implicit_rep_id " +
 					"UNION " +
-					"SELECT cf.lod<LoD>_geometry_id as gid " +
+					"SELECT cf.lod<LoD>_brep_id as gid " +
 					"FROM CITY_FURNITURE cf " + 
 					"WHERE cf.id = ?) geom) " +
 					"AND sg.geometry IS NOT NULL";

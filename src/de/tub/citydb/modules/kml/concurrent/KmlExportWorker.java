@@ -399,59 +399,56 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						eventDispatcher,
 						config);
 				break;
-				/*
-				case RASTER_RELIEF:
-				case MASSPOINT_RELIEF:
-				case BREAKLINE_RELIEF:
-				case TIN_RELIEF:
-				 */
-				case RELIEF_FEATURE:
-					singleObject = new Relief(connection,
-							kmlExporterManager,
-							kmlFactory,
-							databaseAdapter,
-							textureExportAdapter,
-							elevationServiceHandler,
-							getBalloonTemplateHandler(featureClass),
-							eventDispatcher,
-							config);
-					break;
+				
+			case RELIEF_FEATURE:
+				singleObject = new Relief(connection,
+						kmlExporterManager,
+						kmlFactory,
+						databaseAdapter,
+						textureExportAdapter,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
 
-				case GENERIC_CITY_OBJECT:
-					singleObject = new GenericCityObject(connection,
-							kmlExporterManager,
-							kmlFactory,
-							databaseAdapter,
-							textureExportAdapter,
-							elevationServiceHandler,
-							getBalloonTemplateHandler(featureClass),
-							eventDispatcher,
-							config);
-					break;
+			case GENERIC_CITY_OBJECT:
+				singleObject = new GenericCityObject(connection,
+						kmlExporterManager,
+						kmlFactory,
+						databaseAdapter,
+						textureExportAdapter,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
 
-				case CITY_FURNITURE:
-					singleObject = new CityFurniture(connection,
-							kmlExporterManager,
-							kmlFactory,
-							databaseAdapter,
-							textureExportAdapter,
-							elevationServiceHandler,
-							getBalloonTemplateHandler(featureClass),
-							eventDispatcher,
-							config);
-					break;
+			case CITY_FURNITURE:
+				singleObject = new CityFurniture(connection,
+						kmlExporterManager,
+						kmlFactory,
+						databaseAdapter,
+						textureExportAdapter,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
 
-				case CITY_OBJECT_GROUP:
-					singleObject = new CityObjectGroup(connection,
-							kmlExporterManager,
-							kmlFactory,
-							databaseAdapter,
-							textureExportAdapter,
-							elevationServiceHandler,
-							getBalloonTemplateHandler(featureClass),
-							eventDispatcher,
-							config);
-					break;
+			case CITY_OBJECT_GROUP:
+				singleObject = new CityObjectGroup(connection,
+						kmlExporterManager,
+						kmlFactory,
+						databaseAdapter,
+						textureExportAdapter,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
+			default:
+				break;
 
 			}
 

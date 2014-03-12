@@ -77,6 +77,7 @@ import org.citygml.textureAtlas.model.TextureImage;
 import org.citygml.textureAtlas.model.TextureImagesInfo;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Color;
+import org.citygml4j.model.citygml.appearance.TextureCoordinates;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 import org.collada._2005._11.colladaschema.Accessor;
 import org.collada._2005._11.colladaschema.Asset;
@@ -1458,13 +1459,16 @@ public abstract class KmlGenericObject {
 				lowestPointCandidates.get(0).z/100}) [2];
 
 		while (rs.next()) {
-			//			Long surfaceId = rs.getLong("id");
-
-			String surfaceType = rs.getString("type");
+			int objectclass_id = rs.getInt("objectclass_id");
+			String surfaceType = null;
+			if (objectclass_id != 0){
+				if (rs.getInt("objectclass_id") != 60 && rs.getInt("objectclass_id") != 61 && rs.getInt("objectclass_id") != 21){
+					surfaceType = TypeAttributeValueEnum.fromCityGMLClass(Util.classId2cityObject(rs.getInt("objectclass_id"))).toString();
+				}				
+			}
 			if (surfaceType != null && !surfaceType.endsWith("Surface")) {
 				surfaceType = surfaceType + "Surface";
 			}
-
 			if ((!includeGroundSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) ||
 					(!includeClosureSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType)))	{
 				continue;
@@ -1636,14 +1640,25 @@ public abstract class KmlGenericObject {
 						}
 						else {
 							texImageUri = rs2.getString("tex_image_uri");
-							String texCoords = rs2.getString("texture_coordinates");
+
+							StringBuffer sb =  new StringBuffer();
+							Object texCoordsObject = rs2.getObject("texture_coordinates"); 
+							if (texCoordsObject != null){
+								GeometryObject texCoordsGeometryObject = geometryConverterAdapter.getGeometry(texCoordsObject);
+								for (int i = 0; i < texCoordsGeometryObject.getNumElements(); i++) {
+									double[] coordinates = texCoordsGeometryObject.getCoordinates(i);
+									for (double coordinate : coordinates){
+										sb.append(String.valueOf(coordinate));
+										sb.append(" ");
+									}									
+								}									
+							}
+							String texCoords = sb.toString();
 
 							if (texImageUri != null && texImageUri.trim().length() != 0
 									&&  texCoords != null && texCoords.trim().length() != 0) {
-
 								int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
-								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
-
+								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1); // for example: _tex4712047.jpeg
 								addTexImageUri(surfaceId, texImageUri);
 								if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
 									// not already marked as wrapping texture && not already read in
@@ -1665,8 +1680,6 @@ public abstract class KmlGenericObject {
 										texImageCounter = 0;
 									}
 								}
-
-								texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
 								texCoordsTokenized = new StringTokenizer(texCoords.trim(), " ");
 							}
 							else {

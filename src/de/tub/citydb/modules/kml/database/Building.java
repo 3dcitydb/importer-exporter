@@ -213,9 +213,7 @@ public class Building extends KmlGenericObject{
 
 				// when for EXTRUDED or FOOTPRINT there is no ground surface modelled, try to find it out indirectly
 				if (rs == null && (work.getDisplayForm().getForm() <= DisplayForm.EXTRUDED)) {
-
 					reversePointOrder = true;
-
 					int groupBasis = 4;
 					try {
 						psQuery = connection.prepareStatement(Queries.getBuildingPartAggregateGeometries(0.001,
@@ -246,12 +244,12 @@ public class Building extends KmlGenericObject{
 
 					}
 					catch (Exception e2) {
+						System.out.println(e2.getMessage());
 						try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
 						rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 						try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 					}
 				}
-
 				currentLod--;
 				reversePointOrder = false;
 			}
