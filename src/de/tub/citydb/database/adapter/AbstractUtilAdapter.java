@@ -122,6 +122,12 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 			case BUILDING:
 				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING));
 				break;
+			case BRIDGE:
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE));
+				break;
+			case TUNNEL:
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL));
+				break;				
 			case CITYFURNITURE:
 				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
 				break;
