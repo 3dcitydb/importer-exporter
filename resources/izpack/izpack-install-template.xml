@@ -108,10 +108,6 @@
         <pack name="plugins" id="plugins" required="no" preselected="no">
             <description/>            
         </pack>
-        <pack name="plugin.match" id="plugin.match" parent="plugins" required="no" preselected="no">
-            <description/>
-            <fileset dir="!dir.dest.plugins!/!plugin.match.dir.dest.relative!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!/!plugin.match.dir.dest.relative!" override="true"/>
-        </pack>
         <pack name="plugin-api" id="plugin-api" parent="plugins" required="no" preselected="no">
             <description/>
             <fileset dir="!dir.dest.plugin.api!" targetdir="$INSTALL_PATH/!dir.dest.plugin.api.relative!" override="true"/>

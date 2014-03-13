@@ -27,45 +27,42 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.plugins.matching_merging.util;
+package de.tub.citydb.config.project.resources;
 
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.text.SimpleDateFormat;
-import java.util.ResourceBundle;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.plugins.matching_merging.config.Workspace;
+@XmlType(name="UIDCacheType", propOrder={
+		"feature",
+		"geometry"		
+})
+public class UIDCache {
+	@XmlElement(required=true)
+	private UIDCacheConfig feature;
+	@XmlElement(required=true)
+	private UIDCacheConfig geometry;
 
-public class Util {
-	public static ResourceBundle I18N;
-
-	public static GridBagConstraints setConstraints(int gridx, int gridy, double weightx, double weighty, int fill,
-			int insetTop, int insetLeft, int insetBottom, int insetRight) {
-		GridBagConstraints constraint = new GridBagConstraints();
-		constraint.gridx = gridx;
-		constraint.gridy = gridy;
-		constraint.weightx = weightx;
-		constraint.weighty = weighty;
-		constraint.fill = fill;
-		constraint.insets = new Insets(insetTop, insetLeft, insetBottom, insetRight);
-		return constraint;
+	public UIDCache() {
+		feature = new UIDCacheConfig();
+		geometry = new UIDCacheConfig();
 	}
-	
-	public static boolean checkWorkspaceTimestamp(Workspace workspace) {
-		String timestamp = workspace.getTimestamp().trim();
-		boolean success = true;
-		
-		if (timestamp.length() > 0) {		
-			SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
-			format.setLenient(false);
-			try {
-				format.parse(timestamp);				
-			} catch (java.text.ParseException e) {
-				success = false;
-			}
-		}
 
-		workspace.setTimestamp(timestamp);
-		return success;
+	public UIDCacheConfig getFeature() {
+		return feature;
 	}
+
+	public void setFeature(UIDCacheConfig feature) {
+		if (feature != null)
+			this.feature = feature;
+	}
+
+	public UIDCacheConfig getGeometry() {
+		return geometry;
+	}
+
+	public void setGeometry(UIDCacheConfig geometry) {
+		if (geometry != null)
+			this.geometry = geometry;
+	}
+
 }

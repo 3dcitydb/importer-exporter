@@ -157,7 +157,7 @@ public class UIDCache {
 
 	private void drainToDB() {
 		try {
-			LOG.debug("Writing gml:ids to " + cacheModel.getType() + " cache.");
+			LOG.debug("Writing entries to " + cacheModel.getType() + " cache.");
 			backUp = true;
 			
 			int drain = Math.round(capacity * drainFactor);
@@ -165,10 +165,10 @@ public class UIDCache {
 				cacheModel.drainToDB(map, drain);
 				entries.set(map.size());
 
-				LOG.debug("gml:ids written to " + cacheModel.getType() + " cache.");
+				LOG.debug("Entries written to " + cacheModel.getType() + " cache.");
 
 			} catch (SQLException sqlEx) {
-				LOG.error("SQL error while writing gml:ids to " + cacheModel.getType() + " cache: " + sqlEx.getMessage());
+				LOG.error("SQL error while writing entries to " + cacheModel.getType() + " cache: " + sqlEx.getMessage());
 			}
 		} finally {
 			final ReentrantLock lock = this.mainLock;

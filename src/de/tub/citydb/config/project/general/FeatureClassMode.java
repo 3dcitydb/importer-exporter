@@ -42,24 +42,24 @@ public enum FeatureClassMode {
     BUILDING("Building"),
     @XmlEnumValue("Bridge")
     BRIDGE("Bridge"),
-    @XmlEnumValue("Tunnel")
-    TUNNEL("Tunnel"),
-	@XmlEnumValue("WaterBody")
-    WATERBODY("WaterBody"),
-	@XmlEnumValue("LandUse")
-    LANDUSE("LandUse"),
-	@XmlEnumValue("Vegetation")
-    VEGETATION("Vegetation"),
-	@XmlEnumValue("Transportation")
-    TRANSPORTATION("Transportation"),
-	@XmlEnumValue("ReliefFeature")
-    RELIEFFEATURE("ReliefFeature"),
 	@XmlEnumValue("CityFurniture")
     CITYFURNITURE("CityFurniture"),
+	@XmlEnumValue("CityObjectGroup")
+    CITYOBJECTGROUP("CityObjectGroup"),
 	@XmlEnumValue("GenericCityObject")
     GENERICCITYOBJECT("GenericCityObject"),
-	@XmlEnumValue("CityObjectGroup")
-    CITYOBJECTGROUP("CityObjectGroup");
+	@XmlEnumValue("LandUse")
+    LANDUSE("LandUse"),
+	@XmlEnumValue("ReliefFeature")
+    RELIEFFEATURE("ReliefFeature"),
+	@XmlEnumValue("Transportation")
+    TRANSPORTATION("Transportation"),
+    @XmlEnumValue("Tunnel")
+    TUNNEL("Tunnel"),
+	@XmlEnumValue("Vegetation")
+    VEGETATION("Vegetation"),
+	@XmlEnumValue("WaterBody")
+    WATERBODY("WaterBody");
 	
 	private final String value;
 

@@ -53,7 +53,7 @@ import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
-import de.tub.citydb.database.adapter.TextureImageExportAdapter;
+import de.tub.citydb.database.adapter.BlobExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -66,7 +66,7 @@ public class Building extends KmlGenericObject{
 			KmlExporterManager kmlExporterManager,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
 			AbstractDatabaseAdapter databaseAdapter,
-			TextureImageExportAdapter textureExportAdapter,
+			BlobExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
 			EventDispatcher eventDispatcher,

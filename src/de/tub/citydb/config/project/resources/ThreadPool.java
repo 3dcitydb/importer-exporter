@@ -27,8 +27,30 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-@javax.xml.bind.annotation.XmlAccessorType(javax.xml.bind.annotation.XmlAccessType.FIELD)
-@javax.xml.bind.annotation.XmlSchema(namespace="http://www.gis.tu-berlin.de/3dcitydb-impexp/config/matching-merging", 
-		xmlns = { @javax.xml.bind.annotation.XmlNs(prefix = "match", namespaceURI = "http://www.gis.tu-berlin.de/3dcitydb-impexp/config/matching-merging") },
-		elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
-package de.tub.citydb.plugins.matching_merging.config;
+package de.tub.citydb.config.project.resources;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
+
+@XmlType(name="ThreadPoolType", propOrder={
+		"defaultPool"		
+})
+public class ThreadPool {
+	@XmlElement(name="default", required=true)
+	private ThreadPoolConfig defaultPool;
+
+	public ThreadPool() {
+		defaultPool = new ThreadPoolConfig();
+	}
+
+	public ThreadPoolConfig getDefaultPool() {
+		return defaultPool;
+	}
+
+	public void setDefaultPool(ThreadPoolConfig defaultPool) {
+		if (defaultPool != null)
+			this.defaultPool = defaultPool;
+	}
+	
+	
+}

@@ -27,20 +27,43 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.plugins.matching_merging.events;
+package de.tub.citydb.config.project.resources;
 
-import de.tub.citydb.api.event.Event;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 
-public class CounterEvent extends Event {
-	private long counter = 0;
-	
-	public CounterEvent(int counter, Object source) {
-		super(EventType.RELEVANT_MATCHES, source);
-		this.counter = counter;
+@XmlType(name="ResourcesType", propOrder={
+		"gmlIdCache",
+		"threadPool"
+})
+public class Resources {
+	@XmlElement(required=true)
+	private UIDCache gmlIdCache;
+	@XmlElement(required=true)
+	private ThreadPool threadPool;
+
+	public Resources() {
+		gmlIdCache = new UIDCache();
+		threadPool = new ThreadPool();
 	}
 
-	public long getCounter() {
-		return counter;
+	public UIDCache getGmlIdCache() {
+		return gmlIdCache;
 	}
-	
+
+	public void setGmlIdCache(UIDCache gmlIdCache) {
+		if (gmlIdCache != null)
+			this.gmlIdCache = gmlIdCache;
+	}
+
+	public ThreadPool getThreadPool() {
+		return threadPool;
+	}
+
+	public void setThreadPool(ThreadPool threadPool) {
+		if (threadPool != null)
+			this.threadPool = threadPool;
+	}
+
+
 }

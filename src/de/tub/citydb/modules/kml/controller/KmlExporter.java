@@ -102,6 +102,7 @@ import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.config.project.resources.Resources;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.log.Logger;
@@ -192,11 +193,11 @@ public class KmlExporter implements EventHandler {
 		geometryCounter = 0;
 		
 		// get config shortcuts
-		de.tub.citydb.config.project.system.System system = config.getProject().getKmlExporter().getSystem();
+		Resources resources = config.getProject().getKmlExporter().getResources();
 
 		// worker pool settings
-		int minThreads = system.getThreadPool().getDefaultPool().getMinThreads();
-		int maxThreads = system.getThreadPool().getDefaultPool().getMaxThreads();
+		int minThreads = resources.getThreadPool().getDefaultPool().getMinThreads();
+		int maxThreads = resources.getThreadPool().getDefaultPool().getMaxThreads();
 
 		// adding listener
 		eventDispatcher.addEventHandler(EventType.COUNTER, this);

@@ -36,7 +36,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.database.adapter.TextureImageExportAdapter;
+import de.tub.citydb.database.adapter.BlobExportAdapter;
+import de.tub.citydb.database.adapter.BlobType;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -49,7 +50,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 	private final Config config;
 	private final Connection connection;
 
-	private TextureImageExportAdapter textureImageExportAdapter;
+	private BlobExportAdapter textureImageExportAdapter;
 	private String localPath;
 	private String texturePath;
 	private boolean texturePathIsLocal;
@@ -78,7 +79,7 @@ public class DBXlinkExporterTextureImage implements DBXlinkExporter {
 		if (useBuckets)
 			buckets = new boolean[config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets()];
 
-		textureImageExportAdapter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getTextureImageExportAdapter(connection);
+		textureImageExportAdapter = xlinkExporterManager.getDatabaseAdapter().getSQLAdapter().getBlobExportAdapter(connection, BlobType.TEXTURE_IMAGE);
 	}
 
 	public boolean export(DBXlinkTextureFile xlink) throws SQLException {

@@ -6,13 +6,14 @@ import java.sql.SQLException;
 import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 import de.tub.citydb.database.adapter.BlobExportAdapter;
+import de.tub.citydb.database.adapter.BlobExportAdapterImpl;
 import de.tub.citydb.database.adapter.BlobImportAdapter;
-import de.tub.citydb.database.adapter.TextureImageExportAdapter;
-import de.tub.citydb.database.adapter.TextureImageImportAdapter;
+import de.tub.citydb.database.adapter.BlobImportAdapterImpl;
+import de.tub.citydb.database.adapter.BlobType;
 import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
 
 public class SQLAdapter extends AbstractSQLAdapter {
-
+	
 	@Override
 	public String getInteger() {
 		return "NUMBER";
@@ -160,28 +161,13 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	}
 
 	@Override
-	public String getTextureImageContentLength(String columName) {
-		return new StringBuilder(columName).append(".getContentLength()").toString();
+	public BlobImportAdapter getBlobImportAdapter(Connection connection, BlobType type) throws SQLException {
+		return new BlobImportAdapterImpl(connection, type);
 	}
 
 	@Override
-	public TextureImageImportAdapter getTextureImageImportAdapter(Connection connection) throws SQLException {
-		return new TextureImageImportAdapterImpl(connection);
-	}
-
-	@Override
-	public TextureImageExportAdapter getTextureImageExportAdapter(Connection connection) {
-		return new TextureImageExportAdapterImpl(connection);
-	}
-
-	@Override
-	public BlobImportAdapter getBlobImportAdapter(Connection connection) throws SQLException {
-		return new BlobImportAdapterImpl(connection);
-	}
-
-	@Override
-	public BlobExportAdapter getBlobExportAdapter(Connection connection) {
-		return new BlobExportAdapterImpl(connection);
+	public BlobExportAdapter getBlobExportAdapter(Connection connection, BlobType type) {
+		return new BlobExportAdapterImpl(connection, type);
 	}
 
 }

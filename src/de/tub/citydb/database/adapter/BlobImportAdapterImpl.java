@@ -1,4 +1,4 @@
-package de.tub.citydb.database.adapter.oracle;
+package de.tub.citydb.database.adapter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import de.tub.citydb.database.adapter.BlobImportAdapter;
+import de.tub.citydb.database.adapter.BlobType;
 import de.tub.citydb.log.Logger;
 
 public class BlobImportAdapterImpl implements BlobImportAdapter {
@@ -14,10 +15,14 @@ public class BlobImportAdapterImpl implements BlobImportAdapter {
 	protected final Connection connection;
 
 	private PreparedStatement psUpdate;
+	private BlobType blobType;
 
-	protected BlobImportAdapterImpl(Connection connection) throws SQLException {
+	public BlobImportAdapterImpl(Connection connection, BlobType blobType) throws SQLException {
 		this.connection = connection;
-		psUpdate = connection.prepareStatement("update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=? where ID=?");
+		this.blobType = blobType;
+
+		psUpdate = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
+				"update TEX_IMAGE set TEX_IMAGE=? where ID=?" : "update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=? where ID=?");
 	}
 
 	@Override
@@ -29,10 +34,10 @@ public class BlobImportAdapterImpl implements BlobImportAdapter {
 
 			return true;
 		} catch (IOException e) {
-			LOG.error("Failed to read library object file '" + fileName + "': " + e.getMessage());
+			LOG.error("Failed to read " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file '" + fileName + "': " + e.getMessage());
 			return false;
 		} catch (SQLException e) {
-			LOG.error("SQL error while importing library object file '" + fileName + "': " + e.getMessage());
+			LOG.error("SQL error while importing " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file '" + fileName + "': " + e.getMessage());
 			return false;
 		}
 	}

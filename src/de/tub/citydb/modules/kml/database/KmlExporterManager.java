@@ -65,7 +65,7 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
-import de.tub.citydb.database.adapter.TextureImageExportAdapter;
+import de.tub.citydb.database.adapter.BlobExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.kml.controller.KmlExporter;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
@@ -75,7 +75,7 @@ public class KmlExporterManager {
 	private final JAXBContext jaxbColladaContext;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final ObjectFactory kmlFactory; 
-	private final TextureImageExportAdapter textureExportAdapter;
+	private final BlobExportAdapter textureExportAdapter;
 	private final Config config;
 	
 	private boolean isBBoxActive;
@@ -89,7 +89,7 @@ public class KmlExporterManager {
 							  JAXBContext jaxbColladaContext,
 							  WorkerPool<SAXEventBuffer> ioWriterPool,
 							  ObjectFactory kmlFactory,
-							  TextureImageExportAdapter textureExportAdapter,
+							  BlobExportAdapter textureExportAdapter,
 							  Config config) {
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;

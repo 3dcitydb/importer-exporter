@@ -134,7 +134,7 @@ import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
-import de.tub.citydb.database.adapter.TextureImageExportAdapter;
+import de.tub.citydb.database.adapter.BlobExportAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
@@ -202,7 +202,7 @@ public abstract class KmlGenericObject {
 	protected KmlExporterManager kmlExporterManager;
 	protected net.opengis.kml._2.ObjectFactory kmlFactory;
 	protected AbstractDatabaseAdapter databaseAdapter;
-	protected TextureImageExportAdapter textureExportAdapter;
+	protected BlobExportAdapter textureExportAdapter;
 	protected DatabaseGeometryConverter geometryConverterAdapter;
 	protected ElevationServiceHandler elevationServiceHandler;
 	protected BalloonTemplateHandlerImpl balloonTemplateHandler;
@@ -219,7 +219,7 @@ public abstract class KmlGenericObject {
 			KmlExporterManager kmlExporterManager,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
 			AbstractDatabaseAdapter databaseAdapter,
-			TextureImageExportAdapter textureExportAdapter,
+			BlobExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
 			BalloonTemplateHandlerImpl balloonTemplateHandler,
 			EventDispatcher eventDispatcher,

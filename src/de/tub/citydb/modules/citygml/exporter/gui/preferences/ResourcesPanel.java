@@ -44,8 +44,8 @@ import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.system.UIDCacheConfig;
-import de.tub.citydb.config.project.system.ThreadPoolConfig;
+import de.tub.citydb.config.project.resources.ThreadPoolConfig;
+import de.tub.citydb.config.project.resources.UIDCacheConfig;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -80,9 +80,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public boolean isModified() {
-		ThreadPoolConfig threadPool = config.getProject().getExporter().getSystem().getThreadPool().getDefaultPool();
-		UIDCacheConfig geometry = config.getProject().getExporter().getSystem().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getProject().getExporter().getSystem().getGmlIdCache().getFeature();
+		ThreadPoolConfig threadPool = config.getProject().getExporter().getResources().getThreadPool().getDefaultPool();
+		UIDCacheConfig geometry = config.getProject().getExporter().getResources().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getProject().getExporter().getResources().getGmlIdCache().getFeature();
 
 		try { expResMinThreadsText.commitEdit(); } catch (ParseException e) { }
 		try { expResMaxThreadsText.commitEdit(); } catch (ParseException e) { }
@@ -239,20 +239,20 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		expResMaxThreadsLabel.setText(Internal.I18N.getString("common.pref.resources.label.maxThreads"));
 
 		expResGeomLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry"));
-		expResGeomCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry.entry"));
-		expResGeomDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry.drain"));
-		expResGeomPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry.partition"));
+		expResGeomCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.entry"));
+		expResGeomDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.drain"));
+		expResGeomPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.partition"));
 		expResFeatLabel.setText(Internal.I18N.getString("common.pref.resources.label.feature"));
-		expResFeatCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.feature.entry"));
-		expResFeatDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.feature.drain"));
-		expResFeatPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.feature.partition"));
+		expResFeatCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.entry"));
+		expResFeatDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.drain"));
+		expResFeatPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.partition"));
 	}
 
 	@Override
 	public void loadSettings() {
-		ThreadPoolConfig threadPool = config.getProject().getExporter().getSystem().getThreadPool().getDefaultPool();
-		UIDCacheConfig geometry = config.getProject().getExporter().getSystem().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getProject().getExporter().getSystem().getGmlIdCache().getFeature();
+		ThreadPoolConfig threadPool = config.getProject().getExporter().getResources().getThreadPool().getDefaultPool();
+		UIDCacheConfig geometry = config.getProject().getExporter().getResources().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getProject().getExporter().getResources().getGmlIdCache().getFeature();
 
 		expResMinThreadsText.setValue(threadPool.getMinThreads());
 		expResMaxThreadsText.setValue(threadPool.getMaxThreads());
@@ -266,9 +266,9 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void setSettings() {
-		ThreadPoolConfig threadPool = config.getProject().getExporter().getSystem().getThreadPool().getDefaultPool();
-		UIDCacheConfig geometry = config.getProject().getExporter().getSystem().getGmlIdCache().getGeometry();
-		UIDCacheConfig feature = config.getProject().getExporter().getSystem().getGmlIdCache().getFeature();
+		ThreadPoolConfig threadPool = config.getProject().getExporter().getResources().getThreadPool().getDefaultPool();
+		UIDCacheConfig geometry = config.getProject().getExporter().getResources().getGmlIdCache().getGeometry();
+		UIDCacheConfig feature = config.getProject().getExporter().getResources().getGmlIdCache().getFeature();
 
 		int minThreads = ((Number)expResMinThreadsText.getValue()).intValue();
 		int maxThreads = ((Number)expResMaxThreadsText.getValue()).intValue();
