@@ -80,7 +80,9 @@ public class GenericCityObject extends KmlGenericObject{
 
 	private long sgRootId;
 	private Matrix transformation;
-
+	private boolean isPointOrCurve;
+	private boolean isPoint;
+	
 	private double refPointX;
 	private double refPointY;
 	private double refPointZ;
@@ -115,7 +117,14 @@ public class GenericCityObject extends KmlGenericObject{
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getGenericCityObjectBalloon();
+		if (isPointOrCurve) {
+			if (isPoint)
+				return config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getPointBalloon();
+			else
+				return config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getCurveBalloon();
+		}
+		// default
+		return config.getProject().getKmlExporter().getGenericCityObject3DBalloon();
 	}
 
 	public String getStyleBasisName() {

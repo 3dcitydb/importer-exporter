@@ -1,6 +1,6 @@
 /*
  * This file is part of the 3D City Database Importer/Exporter.
- * Copyright (c) 2007 - 2013
+ * Copyright (c) 2007 - 2012
  * Institute for Geodesy and Geoinformation Science
  * Technische Universitaet Berlin, Germany
  * http://www.gis.tu-berlin.de/
@@ -26,7 +26,7 @@
  * Business Location Center, Berlin <http://www.businesslocationcenter.de/>
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
- 
+ */
 package de.tub.citydb.modules.kml.gui.preferences;
 
 import java.awt.GridBagConstraints;
@@ -57,7 +57,7 @@ import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class GenericCityObjectBalloonPanel extends AbstractPreferencesComponent {
+public class ThreeDBalloonPanel extends AbstractPreferencesComponent {
 
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
@@ -74,18 +74,20 @@ public class GenericCityObjectBalloonPanel extends AbstractPreferencesComponent 
 
 	private Balloon internalBalloon = new Balloon();
 
-	public GenericCityObjectBalloonPanel(Config config) {
+	public ThreeDBalloonPanel(Config config) {
 		super(config);
 		initGui();
 	}
 
 	private Balloon getConfigBalloon() {
-		return config.getProject().getKmlExporter().getGenericCityObjectBalloon();
+		// todo
+		return internalBalloon;
+//		return config.getProject().getKmlExporter().getGenericCityObject3DBalloon();
 	}
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.genericCityObjectBalloon");
+		return Internal.I18N.getString("pref.tree.kmlExport.gco3DBalloon");
 	}
 
 	@Override
@@ -221,6 +223,9 @@ public class GenericCityObjectBalloonPanel extends AbstractPreferencesComponent 
 		setInternalBalloonValues();
 		Balloon configBalloon = getConfigBalloon();
 		copyBalloonContents(internalBalloon, configBalloon);
+		// todo
+	//	config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getPointBalloon().setBalloonContentInSeparateFile(configBalloon.isBalloonContentInSeparateFile());
+	//	config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getCurveBalloon().setBalloonContentInSeparateFile(configBalloon.isBalloonContentInSeparateFile());
 	}
 	
 	private void loadFile() {
@@ -274,4 +279,3 @@ public class GenericCityObjectBalloonPanel extends AbstractPreferencesComponent 
 	}
 	
 }
-*/

@@ -588,7 +588,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			balloonSettings = config.getProject().getKmlExporter().getReliefBalloon();
 			break;
 		case GENERIC_CITY_OBJECT:
-			balloonSettings = config.getProject().getKmlExporter().getGenericCityObjectBalloon();
+			balloonSettings = config.getProject().getKmlExporter().getGenericCityObject3DBalloon();
 			break;
 		case CITY_FURNITURE:
 			balloonSettings = config.getProject().getKmlExporter().getCityFurnitureBalloon();

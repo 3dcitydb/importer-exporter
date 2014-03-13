@@ -47,7 +47,14 @@ public class KMLExportPreferences extends AbstractPreferences {
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new TransportationRenderingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new ReliefRenderingPanel(config)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new CityFurnitureRenderingPanel(config)));
-		renderingNode.addChildEntry(new DefaultPreferencesEntry(new GenericCityObjectRenderingPanel(config)));
+		
+//		renderingNode.addChildEntry(new DefaultPreferencesEntry(new GenericCityObjectRenderingPanel(config)));
+		
+		DefaultPreferencesEntry genericCityObjectRenderingNode = new GenericCityObjectBalloonPanel_2();
+		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel(config)));
+		genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveRenderingPanel(config)));
+		renderingNode.addChildEntry(genericCityObjectRenderingNode);
+		
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupRenderingPanel(config)));
 
 		DefaultPreferencesEntry balloonNode = new BalloonPanel();
@@ -58,7 +65,13 @@ public class KMLExportPreferences extends AbstractPreferences {
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new TransportationBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new ReliefBalloonPanel(config)));
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new CityFurnitureBalloonPanel(config)));
-		balloonNode.addChildEntry(new DefaultPreferencesEntry(new GenericCityObjectBalloonPanel(config)));
+		
+//		balloonNode.addChildEntry(new DefaultPreferencesEntry(new GenericCityObjectBalloonPanel(config)));
+		DefaultPreferencesEntry genericCityObjectBalloonNode = new GenericCityObjectBalloonPanel_2();
+		genericCityObjectBalloonNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDBalloonPanel(config)));
+		genericCityObjectBalloonNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveBalloonPanel(config)));
+		balloonNode.addChildEntry(genericCityObjectBalloonNode);		
+		
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupBalloonPanel(config)));
 
 		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(config)));

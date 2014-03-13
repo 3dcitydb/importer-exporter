@@ -68,7 +68,8 @@ import de.tub.citydb.config.project.resources.Resources;
 		"cityFurnitureBalloon",
 		"genericCityObjectDisplayForms",
 		"genericCityObjectColladaOptions",
-		"genericCityObjectBalloon",
+		"genericCityObject3DBalloon",
+		"genericCityObjectPointAndCurve",
 		"cityObjectGroupDisplayForms",
 		"cityObjectGroupBalloon",
 
@@ -135,7 +136,8 @@ public class KmlExporter {
 	@XmlElementWrapper(name="genericCityObjectDisplayForms")	
 	private List<DisplayForm> genericCityObjectDisplayForms;
 	private ColladaOptions genericCityObjectColladaOptions;
-	private Balloon genericCityObjectBalloon;
+	private Balloon genericCityObject3DBalloon;
+	private PointAndCurve genericCityObjectPointAndCurve;
 	@XmlElement(name="displayForm", required=true)
 	@XmlElementWrapper(name="cityObjectGroupDisplayForms")	
 	private List<DisplayForm> cityObjectGroupDisplayForms;
@@ -190,7 +192,8 @@ public class KmlExporter {
 		setCityFurnitureBalloon(new Balloon());
 		setGenericCityObjectDisplayForms(new ArrayList<DisplayForm>());
 		setGenericCityObjectColladaOptions(new ColladaOptions());
-		setGenericCityObjectBalloon(new Balloon());
+		setGenericCityObject3DBalloon(new Balloon());
+		setGenericCityObjectPointAndCurve(new PointAndCurve());
 		setCityObjectGroupDisplayForms(new ArrayList<DisplayForm>());
 		setCityObjectGroupBalloon(new Balloon());
 
@@ -507,12 +510,20 @@ public class KmlExporter {
 		return genericCityObjectColladaOptions;
 	}
 
-	public void setGenericCityObjectBalloon(Balloon genericCityObjectBalloon) {
-		this.genericCityObjectBalloon = genericCityObjectBalloon;
+	public void setGenericCityObject3DBalloon(Balloon genericCityObject3DBalloon) {
+		this.genericCityObject3DBalloon = genericCityObject3DBalloon;
 	}
 
-	public Balloon getGenericCityObjectBalloon() {
-		return genericCityObjectBalloon;
+	public Balloon getGenericCityObject3DBalloon() {
+		return genericCityObject3DBalloon;
+	}
+
+	public void setGenericCityObjectPointAndCurve(PointAndCurve genericCityObjectPointAndCurve) {
+		this.genericCityObjectPointAndCurve = genericCityObjectPointAndCurve;
+	}
+
+	public PointAndCurve getGenericCityObjectPointAndCurve() {
+		return genericCityObjectPointAndCurve;
 	}
 
 	public void setCityFurnitureDisplayForms(

@@ -1271,62 +1271,67 @@ public class KmlExporter implements EventHandler {
 	}
 
 	private boolean checkBalloonSettings (CityGMLClass cityObjectType) {
-		Balloon balloonSettings = null;
+		Balloon[] balloonSettings = null;
 		boolean settingsMustBeChecked = false;
 		switch (cityObjectType) {
 			case BUILDING:
-				balloonSettings = config.getProject().getKmlExporter().getBuildingBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getBuildingBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetBuilding();
 				break;
 			case WATER_BODY:
-				balloonSettings = config.getProject().getKmlExporter().getWaterBodyBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getWaterBodyBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetWaterBody();
 				break;
 			case LAND_USE:
-				balloonSettings = config.getProject().getKmlExporter().getLandUseBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getLandUseBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetLandUse();
 				break;
 			case SOLITARY_VEGETATION_OBJECT:
-				balloonSettings = config.getProject().getKmlExporter().getVegetationBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getVegetationBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetVegetation();
 				break;
 			case TRANSPORTATION_COMPLEX:
-				balloonSettings = config.getProject().getKmlExporter().getTransportationBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getTransportationBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetTransportation();
 				break;
 			case RELIEF_FEATURE:
-				balloonSettings = config.getProject().getKmlExporter().getReliefBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getReliefBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetReliefFeature();
 				break;
 			case CITY_FURNITURE:
-				balloonSettings = config.getProject().getKmlExporter().getCityFurnitureBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getCityFurnitureBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetCityFurniture();
 				break;
 			case GENERIC_CITY_OBJECT:
-				balloonSettings = config.getProject().getKmlExporter().getGenericCityObjectBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getGenericCityObject3DBalloon(),
+						config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getPointBalloon(),
+						config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getCurveBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetGenericCityObject();
 				break;
 			case CITY_OBJECT_GROUP:
-				balloonSettings = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getCityObjectGroupBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetCityObjectGroup();
 				break;
 			default:
 				return false;
 		}
 		
-		if (settingsMustBeChecked &&
-			balloonSettings.isIncludeDescription() &&
-			balloonSettings.getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
-			String balloonTemplateFilename = balloonSettings.getBalloonContentTemplateFile();
-			if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
-				File ballonTemplateFile = new File(balloonTemplateFilename);
-				if (!ballonTemplateFile.exists()) {
-					Logger.getInstance().error("Balloon template file \"" + balloonTemplateFilename + "\" not found.");
-					return false;
+		boolean success = true;
+		for (Balloon balloon: balloonSettings) {
+			if (settingsMustBeChecked &&
+					balloon.isIncludeDescription() &&
+					balloon.getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
+				String balloonTemplateFilename = balloon.getBalloonContentTemplateFile();
+				if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
+					File ballonTemplateFile = new File(balloonTemplateFilename);
+					if (!ballonTemplateFile.exists()) {
+						Logger.getInstance().error("Balloon template file \"" + balloonTemplateFilename + "\" not found.");
+						success = false;
+					}
 				}
 			}
 		}
-		return true;
+		return success;
 	}
 
 	private static void getAllFiles(File startFolder, List<File> fileList) {

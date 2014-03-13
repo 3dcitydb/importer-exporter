@@ -27,46 +27,20 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.kmlExporter;
-
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.bind.annotation.XmlType;
+package de.tub.citydb.modules.kml.gui.preferences;
 
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.gui.preferences.DefaultPreferencesEntry;
+import de.tub.citydb.gui.preferences.NullComponent;
 
-@XmlType(name="AltitudeMode")
-@XmlEnum
-public enum AltitudeMode {
-	@XmlEnumValue("relative")
-    RELATIVE("relative"),
-    @XmlEnumValue("absolute")
-    ABSOLUTE("absolute"),
-    @XmlEnumValue("clampToGround")
-    CLAMP_TO_GROUND("clampToGround");
-    
-    private final String value;
+public class GenericCityObjectBalloonPanel_2 extends DefaultPreferencesEntry {
 
-    AltitudeMode(String v) {
-        value = v;
-    }
-
-    public String value() {
-        return value;
-    }
-
-    public static AltitudeMode fromValue(String v) {
-        for (AltitudeMode c: AltitudeMode.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-
-        return ABSOLUTE;
-    }
-    
-	public String toString() {
-		return Internal.I18N.getString("pref.kmlexport.altitude.mode.label." + value());
+	public GenericCityObjectBalloonPanel_2() {
+		super(NullComponent.getInstance());
 	}
 
+	@Override
+	public String getLocalizedTitle() {
+		return Internal.I18N.getString("pref.tree.kmlExport.genericCityObjectBalloon");
+	}
 }
