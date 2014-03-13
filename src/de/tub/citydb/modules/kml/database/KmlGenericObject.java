@@ -133,7 +133,6 @@ import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
-import de.tub.citydb.database.TypeAttributeValueEnum;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.TextureImageExportAdapter;
 import de.tub.citydb.log.Logger;
@@ -141,6 +140,7 @@ import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.GeometryCounterEvent;
 import de.tub.citydb.util.Util;
+import de.tub.citydb.modules.kml.datatype.TypeAttributeValueEnum;
 
 public abstract class KmlGenericObject {
 
