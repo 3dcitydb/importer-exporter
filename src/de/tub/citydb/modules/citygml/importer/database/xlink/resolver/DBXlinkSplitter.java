@@ -278,21 +278,21 @@ public class DBXlinkSplitter {
 			CacheTable texCoordTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTURE_COORD_LIST);
 			CacheTable texParamTableTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
 			boolean existsLinearRingTable = cacheTableManager.existsCacheTable(CacheTableModelEnum.LINEAR_RING);
-			
+
 			int max = 0, current = 0;
 			if (texCoordTable != null && existsLinearRingTable) max += (int)texCoordTable.size();
 			if (texParamTableTable != null) max += (int)texParamTableTable.size();
-			
+
 			// first step: resolve texture coordinates
 			if (texCoordTable != null && existsLinearRingTable) {
 				CacheTable linearRingTable = cacheTableManager.getCacheTable(CacheTableModelEnum.LINEAR_RING);
 				texCoordTable.createIndexes();
 				linearRingTable.createIndexes();
-							
+
 				stmt = texCoordTable.getConnection().createStatement();
 				rs = stmt.executeQuery(new StringBuilder("select tc.ID, tc.GMLID, tc.TEXPARAM_GMLID, tc.TARGET_ID, lr.PARENT_ID, lr.REVERSE from ").append(texCoordTable.getTableName()).append(" tc ")
 						.append(" join ").append(linearRingTable.getTableName()).append(" lr on tc.GMLID=lr.GMLID where lr.RING_NO = 0").toString());
-				
+
 				while (rs.next() && shouldRun) {
 					eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
 
@@ -302,23 +302,23 @@ public class DBXlinkSplitter {
 					long targetId = rs.getLong("TARGET_ID");
 					long surfaceGeometryId = rs.getLong("PARENT_ID");
 					boolean reverse = rs.getBoolean("REVERSE");
-					
+
 					DBXlinkTextureCoordList xlink = new DBXlinkTextureCoordList(
 							id,
 							gmlId,
 							texParamGmlId,
 							targetId);
-					
+
 					xlink.setSurfaceGeometryId(surfaceGeometryId);
 					xlink.setReverse(reverse);
-					
+
 					xlinkResolverPool.addWork(xlink);
 				}
 
 				rs.close();
 				stmt.close();
 			}
-			
+
 			// second step: resolve texture param other than texture coordinates
 			if (texParamTableTable != null) {			
 				stmt = texParamTableTable.getConnection().createStatement();
@@ -333,7 +333,7 @@ public class DBXlinkSplitter {
 					int isTexPara = rs.getInt("IS_TEXTURE_PARAMETERIZATION");
 					String texParamGmlId = rs.getString("TEXPARAM_GMLID");
 					String worldToTexture = rs.getString("WORLD_TO_TEXTURE");
-					
+
 					// set initial context...
 					DBXlinkTextureParam xlink = new DBXlinkTextureParam(
 							id,
@@ -377,6 +377,14 @@ public class DBXlinkSplitter {
 
 				rs.close();
 				stmt.close();
+			}
+
+			// restart xlink worker pools
+			try {
+				xlinkResolverPool.join();
+				tmpXlinkPool.join();
+			} catch (InterruptedException e) {
+				//
 			}
 
 			// fourth step: linking surface data to texture images
