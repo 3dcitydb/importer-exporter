@@ -587,7 +587,7 @@ public class ImpExp {
 		out.println("            (to execute shell version)");
 		out.println();
 		out.println("where options include:");
-		parser.printUsage(System.out);
+		parser.printUsage(out);
 		out.println();
 	}
 
