@@ -125,7 +125,15 @@ public class KmlSplitter {
 				&& config.getProject().getKmlExporter().getLodToExportFrom() > 0) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
 		}
-
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetBridge()
+				&& config.getProject().getKmlExporter().getLodToExportFrom() > 0) {
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.BRIDGE);
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetTunnel()
+				&& config.getProject().getKmlExporter().getLodToExportFrom() > 0) {
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.TUNNEL);
+		}
+		
 		databaseAdapter = dbConnectionPool.getActiveDatabaseAdapter();
 		connection = dbConnectionPool.getConnection();
 		dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();
@@ -200,18 +208,7 @@ public class KmlSplitter {
 				spatialQuery.setObject(2, envelope);
 				
 				rs = spatialQuery.executeQuery();
-				/*
-				String absolutePath = config.getInternal().getExportFileName().trim();
-				String filename = absolutePath.substring(absolutePath.lastIndexOf(File.separator) + 1,
-														 absolutePath.lastIndexOf("."));
-				String tileName = filename + "_Tile_" 
-										   + exportFilter.getBoundingBoxFilter().getTileColumn()
-										   + "_" 
-										   + exportFilter.getBoundingBoxFilter().getTileRow();
 
-				Logger.getInstance().info("Spatial query for " + tileName + " resolved in " +
-										  (System.currentTimeMillis() - startTime) + " millis.");
-				 */
 				int objectCount = 0;
 
 				while (rs.next() && shouldRun) {

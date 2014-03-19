@@ -1059,6 +1059,1109 @@ public class Queries {
 		return query;
 	}
 
+
+	// ----------------------------------------------------------------------
+	// 	Bridge QUERIES
+	// ----------------------------------------------------------------------
+
+	public static final String BRIDGE_PARTS_FROM_BRIDGE =
+			"SELECT id FROM BRIDGE WHERE bridge_root_id = ?";
+
+	private static final String BRIDGE_PART_FOOTPRINT_LOD4 =
+			"SELECT sg.geometry " +
+					"FROM SURFACE_GEOMETRY sg, BRIDGE_THEMATIC_SURFACE bts " +
+					"WHERE " +
+					"bts.bridge_id = ? " +
+					"AND bts.objectclass_id = '73' " +  // BridgeGroundSurface
+					"AND sg.root_id = bts.lod4_multi_surface_id " +
+					"AND sg.geometry IS NOT NULL "; 
+
+	
+	private static final String BRIDGE_PART_COLLADA_LOD4_ROOT_IDS =
+			"SELECT geom.gid FROM (" + 
+					// bridge
+					"SELECT bts.lod4_multi_surface_id as gid " + 					
+					"FROM BRIDGE_THEMATIC_SURFACE bts " + 
+					"WHERE " +  
+					"bts.bridge_id = ? " +
+					"AND bts.lod4_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT b.lod4_solid_id as gid " + 
+					"FROM BRIDGE b LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod4_solid_id IS NOT NULL " +
+					"AND bts.lod4_multi_surface_id IS NULL " +
+					"UNION " +					 
+					"SELECT b.lod4_multi_surface_id as gid " + 
+					"FROM BRIDGE b LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod4_multi_surface_id IS NOT NULL " +
+					"AND bts.lod4_multi_surface_id IS NULL "	+	
+					"UNION " + 
+					// Room
+					"SELECT bts.lod4_multi_surface_id as gid " + 
+					"FROM BRIDGE_ROOM br, BRIDGE_THEMATIC_SURFACE bts " + 
+					"WHERE " +  
+					"br.bridge_id = ? " +
+					"AND bts.bridge_room_id = br.id " +
+					"AND bts.lod4_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+			        "SELECT br.lod4_solid_id as gid " + 
+			        "FROM BRIDGE_ROOM br LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_room_id = br.id " + 
+			        "WHERE " +  
+	  			    "br.bridge_id = ? " +
+				    "AND br.lod4_solid_id IS NOT NULL " +
+	  			    "AND bts.lod4_multi_surface_id IS NULL " + 
+				    "UNION " + 
+			        "SELECT br.lod4_multi_surface_id as gid " + 
+			        "FROM BRIDGE_ROOM br LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_room_id = br.id " + 
+			        "WHERE " +  
+	  			    "br.bridge_id = ? " +
+				    "AND br.lod4_multi_surface_id IS NOT NULL " +
+	  			    "AND bts.lod4_multi_surface_id IS NULL " + 
+				    "UNION " + 
+	  			    // Bridge Furniture
+					"SELECT bf.lod4_brep_id as gid " + 
+					"FROM BRIDGE_ROOM br, BRIDGE_FURNITURE bf " + 
+					"WHERE " +  
+					"br.bridge_id = ? " +
+					"AND bf.bridge_room_id = br.id " +
+					"AND bf.lod4_brep_id IS NOT NULL " +
+					"UNION " + 			
+					// Bridge  Installation
+					"SELECT bts.lod4_multi_surface_id as gid " + 
+					"FROM BRIDGE_INSTALLATION bi, BRIDGE_THEMATIC_SURFACE bts " + 
+					"WHERE bi.bridge_id = ? " +  
+					"AND bts.bridge_installation_id = bi.id " +
+					"AND bts.lod4_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT bi.lod4_brep_id as gid " + 
+					"FROM BRIDGE_INSTALLATION bi LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_installation_id = bi.id " +
+					"WHERE " +  
+					"bi.bridge_id = ? " +
+					"AND bi.lod4_brep_id IS NOT NULL " +
+					"AND bts.lod4_multi_surface_id IS NULL " + 
+					"UNION " + 
+					// Opening
+					"SELECT bo.lod4_multi_surface_id as gid " + 
+					"FROM BRIDGE_THEMATIC_SURFACE bts, BRIDGE_OPEN_TO_THEM_SRF botts, BRIDGE_OPENING bo " + 
+					"WHERE " +  
+					"bts.bridge_id = ? " +
+					"AND bts.lod4_multi_surface_id IS NOT NULL " +
+					"AND botts.bridge_thematic_surface_id = bts.id " +
+					"AND bo.id = botts.bridge_opening_id) geom";
+
+
+	private static final String BRIDGE_PART_GEOMETRY_LOD4 =
+			"SELECT sg.geometry, bts.objectclass_id, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.lod4_multi_surface_id = sg.root_id " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + BRIDGE_PART_COLLADA_LOD4_ROOT_IDS + ")";
+
+	private static final String BRIDGE_PART_FOOTPRINT_LOD3 =
+			"SELECT sg.geometry " +
+					"FROM SURFACE_GEOMETRY sg, BRIDGE_THEMATIC_SURFACE bts " +
+					"WHERE " +
+					"bts.bridge_id = ? " +
+					"AND bts.objectclass_id = '73' " +
+					"AND sg.root_id = bts.lod3_multi_surface_id " +
+					"AND sg.geometry IS NOT NULL "; 
+
+	private static final String BRIDGE_PART_COLLADA_LOD3_ROOT_IDS =
+			"SELECT geom.gid FROM (" + 
+					// Bridge
+					"SELECT bts.lod3_multi_surface_id as gid " + 
+					"FROM BRIDGE_THEMATIC_SURFACE bts " + 
+					"WHERE " +  
+					"bts.bridge_id = ? " +
+					"AND bts.lod3_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT b.lod3_solid_id as gid " + 
+					"FROM BRIDGE b LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod3_solid_id IS NOT NULL " +
+					"AND bts.lod3_multi_surface_id IS NULL " +
+					"UNION " + 
+					"SELECT b.lod3_multi_surface_id as gid " + 
+					"FROM BRIDGE b LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod3_multi_surface_id IS NOT NULL " +
+					"AND bts.lod3_multi_surface_id IS NULL " + 
+					"UNION " + 
+					// Bridge Installation
+					"SELECT bts.lod3_multi_surface_id as gid " + 
+					"FROM BRIDGE_INSTALLATION bi, BRIDGE_THEMATIC_SURFACE bts " + 
+					"WHERE bi.bridge_id = ? " +  
+					"AND bts.bridge_installation_id = bi.id " +
+					"AND bts.lod3_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT bi.lod3_brep_id as gid " + 
+					"FROM BRIDGE_INSTALLATION bi LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_installation_id = bi.id " +
+					"WHERE " +  
+					"bi.bridge_id = ? " +
+					"AND bi.lod3_brep_id IS NOT NULL " +
+					"AND bts.lod3_multi_surface_id IS NULL " + 
+					"UNION " + 
+					// Bridge Opening
+					"SELECT bo.lod3_multi_surface_id as gid " + 
+					"FROM BRIDGE_THEMATIC_SURFACE bts, BRIDGE_OPEN_TO_THEM_SRF botts, BRIDGE_OPENING bo " + 
+					"WHERE " +  
+					"bts.bridge_id = ? " +
+					"AND bts.lod3_multi_surface_id IS NOT NULL " +
+					"AND botts.bridge_thematic_surface_id = bts.id " +
+					"AND bo.id = botts.bridge_opening_id) geom";
+
+	
+	private static final String BRIDGE_PART_GEOMETRY_LOD3 =
+			"SELECT sg.geometry, bts.objectclass_id, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.lod3_multi_surface_id = sg.root_id " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + BRIDGE_PART_COLLADA_LOD3_ROOT_IDS	+ ")";
+	
+
+	private static final String BRIDGE_PART_FOOTPRINT_LOD2 =
+			"SELECT sg.geometry " +
+					"FROM SURFACE_GEOMETRY sg, BRIDGE_THEMATIC_SURFACE bts " +
+					"WHERE " +
+					"bts.bridge_id = ? " +
+					"AND bts.objectclass_id = '73' " +
+					"AND sg.root_id = bts.lod2_multi_surface_id " +
+					"AND sg.geometry IS NOT NULL " +
+					"ORDER BY bts.bridge_id";
+	
+	
+	private static final String BRIDGE_PART_COLLADA_LOD2_ROOT_IDS =
+			"SELECT geom.gid FROM ( " + 
+					// Bridge
+					"SELECT bts.lod2_multi_surface_id as gid " + 
+					"FROM BRIDGE_THEMATIC_SURFACE bts " + 
+					"WHERE " +  
+					"bts.bridge_id = ? " +
+					"AND bts.lod2_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT b.lod2_multi_surface_id as gid " + 
+					"FROM BRIDGE b LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod2_multi_surface_id IS NOT NULL " +
+					"AND bts.lod2_multi_surface_id IS NULL " +
+					"UNION " + 
+					"SELECT b.lod2_solid_id as gid " + 
+					"FROM BRIDGE b LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod2_solid_id IS NOT NULL " +
+					"AND bts.lod2_multi_surface_id IS NULL " +					
+					"UNION " +			
+					// Bridge Installation	
+					"SELECT bts.lod2_multi_surface_id as gid " + 
+					"FROM BRIDGE_INSTALLATION bi, BRIDGE_THEMATIC_SURFACE bts " + 
+					"WHERE bi.bridge_id = ? " +  
+					"AND bts.bridge_installation_id = bi.id " +
+					"AND bts.lod2_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT bi.lod2_brep_id as gid " + 
+					"FROM BRIDGE_INSTALLATION bi LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_installation_id = bi.id " +
+					"WHERE " +  
+					"bi.bridge_id = ? " +
+					"AND bi.lod2_brep_id IS NOT NULL " +
+					"AND bts.lod2_multi_surface_id IS NULL) geom";
+	
+	
+	private static final String BRIDGE_PART_GEOMETRY_LOD2 =
+			"SELECT sg.geometry, bts.objectclass_id, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.lod2_multi_surface_id = sg.root_id " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + BRIDGE_PART_COLLADA_LOD2_ROOT_IDS	+ ")";
+
+	
+	private static final String BRIDGE_PART_FOOTPRINT_LOD1(DatabaseType type) {		
+		switch (type) {
+		case ORACLE:
+			return BRIDGE_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", "0.001")
+					.replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
+					.replace("<LoD>", "1")
+					.replace("<GROUP_BY_1>", "256")
+					.replace("<GROUP_BY_2>", "64")
+					.replace("<GROUP_BY_3>", "16");
+		case POSTGIS:		
+			return BRIDGE_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", "0.001")
+					.replace("<LoD>", "1");			
+		default:
+			return null;
+		}
+	}	
+	
+	private static final String BRIDGE_PART_COLLADA_LOD1_ROOT_IDS =
+			"SELECT geom.gid FROM (SELECT b.lod1_multi_surface_id as gid " +			
+					"FROM BRIDGE b " +
+					"WHERE " +
+					"b.id = ? " +
+					"AND b.lod1_multi_surface_id IS NOT NULL " + 
+					"UNION " + 
+					"SELECT b.lod1_solid_id as gid " +			
+					"FROM BRIDGE b " +
+					"WHERE " +
+					"b.id = ? " +
+					"AND b.lod1_solid_id IS NOT NULL) geom"; 
+	
+	
+	private static final String BRIDGE_PART_GEOMETRY_LOD1 =
+			"SELECT sg.geometry, NULL as objectclass_id, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + BRIDGE_PART_COLLADA_LOD1_ROOT_IDS	+ ")";
+
+	private static final String BRIDGE_PART_GEOMETRY_HIGHLIGHTING_LOD1 =
+			"SELECT sg.geometry, sg.id " +
+					"FROM SURFACE_GEOMETRY sg, BRIDGE b " +
+					"WHERE " +
+					"b.id = ? " +
+					"AND (sg.root_id = b.lod1_solid_id " +
+						"OR sg.root_id = b.lod1_multi_surface_id) " +
+					"AND sg.geometry IS NOT NULL ";
+
+	private static final String BRIDGE_PART_GEOMETRY_HIGHLIGHTING_LOD2 =
+			"SELECT sg.geometry, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + BRIDGE_PART_COLLADA_LOD2_ROOT_IDS	+ ")";
+
+	private static final String BRIDGE_PART_GEOMETRY_HIGHLIGHTING_LOD3 =
+			"SELECT sg.geometry, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + BRIDGE_PART_COLLADA_LOD3_ROOT_IDS + ")";
+
+	private static final String BRIDGE_PART_GEOMETRY_HIGHLIGHTING_LOD4 =
+			"SELECT sg.geometry, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" +
+					"SELECT geom.gid FROM (SELECT bts.lod4_multi_surface_id as gid " + 
+					"FROM BRIDGE_THEMATIC_SURFACE bts " + 
+					"WHERE " +  
+					"bts.bridge_id = ? " +
+					"AND bts.lod4_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT bo.lod4_multi_surface_id as gid " + 
+					"FROM BRIDGE_THEMATIC_SURFACE bts, BRIDGE_OPEN_TO_THEM_SURF botts, BRIDGE_OPENING bo " + 
+					"WHERE " +  
+					"bts.bridge_id = ? " +
+					"AND bts.lod4_multi_surface_id IS NOT NULL " +
+					"AND botts.bridge_thematic_surface_id = bts.id " +
+					"AND bo.id = botts.bridge_opening_id " +
+					"UNION " + 
+					"SELECT b.lod4_solid_id as gid " + 
+					"FROM bridge b LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod4_solid_id IS NOT NULL " +
+					"AND bts.lod4_multi_surface_id IS NULL " +
+					"UNION " +						
+					"SELECT b.lod4_multi_surface_id as gid " + 
+					"FROM BRIDGE b LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_id = b.id " + 
+					"WHERE " +  
+					"b.id = ? " +
+					"AND b.lod4_multi_surface_id IS NOT NULL " +
+					"AND bts.lod4_multi_surface_id IS NULL) geom)";
+
+
+	private static final String BRIDGE_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (" +
+						"SELECT * FROM (" +
+						"SELECT * FROM (" +
+				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"FROM SURFACE_GEOMETRY sg " +
+				    	"WHERE " +
+				    	"sg.root_id IN( " +
+				    	"SELECT geom.gid FROM (SELECT b.lod<LoD>_geometry_id as gid " +
+				    	"FROM BRIDGE b " +
+				    	"WHERE "+
+				    	"b.id = ? " +
+				    	"AND b.lod<LoD>_geometry_id IS NOT NULL " +
+				    	"UNION " +
+				    	"SELECT ts.lod<LoD>_multi_surface_id as gid " +
+				    	"FROM BRIDGE_THEMATIC_SURFACE bts " +
+				    	"WHERE "+
+				    	"ts.building_id = ? " +
+				    	"AND ts.lod<LoD>_multi_surface_id IS NOT NULL) geom "+
+				    	") " +
+				    	"AND sg.geometry IS NOT NULL" +
+						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
+						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
+						") " +
+						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_2>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_3>) " +
+						")";
+		case POSTGIS:
+			return "SELECT ST_Union(get_valid_area.simple_geom) " +
+			"FROM (" +
+			"SELECT * FROM (" +
+			"SELECT * FROM (" +
+				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "FROM SURFACE_GEOMETRY sg " +
+				        "WHERE " +
+				        "sg.root_id IN( " +
+				        "SELECT b.lod<LoD>_multi_surface_id " +
+				        "FROM BRIDGE b " +
+				        "WHERE b.id = ? " +
+				        "AND b.lod<LoD>_multi_surface_id IS NOT NULL " +
+				        "UNION " +
+				        "SELECT b.lod<LoD>_solid_id " +
+				        "FROM BRIDGE b " +
+				        "WHERE b.id = ? " +
+				        "AND b.lod<LoD>_solid_id IS NOT NULL " +
+				        "UNION " +
+				        "SELECT bts.lod<LoD>_multi_surface_id " +
+				        "FROM BRIDGE_THEMATIC_SURFACE bts " +
+				        "WHERE bts.bridge_id = ? " +
+				        "AND bts.lod<LoD>_multi_surface_id IS NOT NULL "+
+				        ") " +
+				        "AND sg.geometry IS NOT NULL) AS get_geoms " +
+				    	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
+				    	// ST_Area for WGS84 only works correctly if the geometry is a geography data type
+				    	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE>) AS get_valid_area";
+		default:
+			return null;
+		}
+	}
+
+	private static final String BRIDGE_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (" +
+						"SELECT * FROM (" +
+						"SELECT * FROM (" +
+				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"FROM SURFACE_GEOMETRY sg " +
+				    	"WHERE " +
+				    	"sg.root_id IN( " +
+				    	"SELECT b.lod<LoD>_multi_surface_id " +
+				    	"FROM BRIDGE b " +
+				    	"WHERE "+
+				    	"b.id = ? " +
+				    	"AND b.lod<LoD>_multi_surface_id IS NOT NULL " +
+				    	") " +
+				    	"AND sg.geometry IS NOT NULL" +
+						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
+						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
+
+						") " +
+						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_2>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_3>) " +
+						")";
+		case POSTGIS:
+			return "SELECT ST_Union(get_valid_area.simple_geom) " +
+			"FROM (" +
+			"SELECT * FROM (" +
+			"SELECT * FROM (" +
+				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "FROM SURFACE_GEOMETRY sg " +
+				        "WHERE " +
+				        "sg.root_id IN( " +
+				        "SELECT b.lod<LoD>_multi_surface_id " +
+				        "FROM BRIDGE b " +
+				        "WHERE b.id = ? " +
+				        "AND b.lod<LoD>_multi_surface_id IS NOT NULL " +
+				        "UNION " +				        
+				        "SELECT b.lod<LoD>_solid_id " +
+				        "FROM BRIDGE b " +
+				        "WHERE b.id = ? " +
+				        "AND b.lod<LoD>_solid_id IS NOT NULL " +				        
+				        ") " +
+				        "AND sg.geometry IS NOT NULL) AS get_geoms " +
+				    	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
+				    	// ST_Area for WGS84 only works correctly if the geometry is a geography data type
+				    	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE>) AS get_valid_area";
+		default:
+			return null;
+		}
+	}
+	
+	public static String getBridgePartAggregateGeometries (double tolerance,
+			int srid2D,
+			int lodToExportFrom,
+			double groupBy1,
+			double groupBy2,
+			double groupBy3,
+			DatabaseType type) {
+		if (lodToExportFrom > 1) {
+			return BRIDGE_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER(type).replace("<TOLERANCE>", String.valueOf(tolerance))
+					.replace("<2D_SRID>", String.valueOf(srid2D))
+					.replace("<LoD>", String.valueOf(lodToExportFrom))
+					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
+					.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
+					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));
+		}
+		else {
+			return BRIDGE_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", String.valueOf(tolerance))
+					.replace("<2D_SRID>", String.valueOf(srid2D))
+					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
+					.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
+					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));					
+		}
+	}
+
+
+
+	private static final HashMap<Integer, String> bridgePartQueriesLod4 = new HashMap<Integer, String>();
+	static {
+		bridgePartQueriesLod4.put(DisplayForm.FOOTPRINT, BRIDGE_PART_FOOTPRINT_LOD4);
+		bridgePartQueriesLod4.put(DisplayForm.EXTRUDED, BRIDGE_PART_FOOTPRINT_LOD4);
+		bridgePartQueriesLod4.put(DisplayForm.GEOMETRY, BRIDGE_PART_GEOMETRY_LOD4);
+		bridgePartQueriesLod4.put(DisplayForm.COLLADA, BRIDGE_PART_COLLADA_LOD4_ROOT_IDS);
+	}
+
+	private static final HashMap<Integer, String> bridgePartQueriesLod3 = new HashMap<Integer, String>();
+	static {
+		bridgePartQueriesLod3.put(DisplayForm.FOOTPRINT, BRIDGE_PART_FOOTPRINT_LOD3);
+		bridgePartQueriesLod3.put(DisplayForm.EXTRUDED, BRIDGE_PART_FOOTPRINT_LOD3);
+		bridgePartQueriesLod3.put(DisplayForm.GEOMETRY, BRIDGE_PART_GEOMETRY_LOD3);
+		bridgePartQueriesLod3.put(DisplayForm.COLLADA, BRIDGE_PART_COLLADA_LOD3_ROOT_IDS);
+	}
+
+	private static final HashMap<Integer, String> bridgePartQueriesLod2 = new HashMap<Integer, String>();
+	static {
+		bridgePartQueriesLod2.put(DisplayForm.FOOTPRINT, BRIDGE_PART_FOOTPRINT_LOD2);
+		bridgePartQueriesLod2.put(DisplayForm.EXTRUDED, BRIDGE_PART_FOOTPRINT_LOD2);
+		bridgePartQueriesLod2.put(DisplayForm.GEOMETRY, BRIDGE_PART_GEOMETRY_LOD2);
+		bridgePartQueriesLod2.put(DisplayForm.COLLADA, BRIDGE_PART_COLLADA_LOD2_ROOT_IDS);
+	}
+
+	private static final HashMap<Integer, String> bridgePartQueriesLod1 = new HashMap<Integer, String>();
+	static {
+		bridgePartQueriesLod1.put(DisplayForm.GEOMETRY, BRIDGE_PART_GEOMETRY_LOD1);
+		bridgePartQueriesLod1.put(DisplayForm.COLLADA, BRIDGE_PART_COLLADA_LOD1_ROOT_IDS);
+	}
+	
+	public static String getBridgePartQuery (int lodToExportFrom, DisplayForm displayForm, DatabaseType type) {
+		String query = null;
+		switch (lodToExportFrom) {
+		case 1:
+			if (displayForm.getForm() == DisplayForm.FOOTPRINT || displayForm.getForm() == DisplayForm.EXTRUDED){
+				query = BRIDGE_PART_FOOTPRINT_LOD1(type);		
+			}
+			else 
+				query = bridgePartQueriesLod1.get(displayForm.getForm());
+			break;
+		case 2:
+			query = bridgePartQueriesLod2.get(displayForm.getForm());
+			break;
+		case 3:
+			query = bridgePartQueriesLod3.get(displayForm.getForm());
+			break;
+		case 4:
+			query = bridgePartQueriesLod4.get(displayForm.getForm());
+			break;
+		default:
+			Logger.getInstance().log(LogLevel.INFO, "No BuildingPart query found for LoD" + lodToExportFrom);
+		}
+		return query;
+	}
+
+	public static String getBridgePartHighlightingQuery (int lodToExportFrom) {
+		String query = null;
+		switch (lodToExportFrom) {
+		case 1:
+			query = BRIDGE_PART_GEOMETRY_HIGHLIGHTING_LOD1;
+			break;
+		case 2:
+			query = BRIDGE_PART_GEOMETRY_HIGHLIGHTING_LOD2;
+			break;
+		case 3:
+			query = BRIDGE_PART_GEOMETRY_HIGHLIGHTING_LOD3;
+			break;
+		case 4:
+			query = BRIDGE_PART_GEOMETRY_HIGHLIGHTING_LOD4;
+			break;
+		default:
+			Logger.getInstance().log(LogLevel.INFO, "No BridgePart highlighting query found for LoD" + lodToExportFrom);
+		}
+		return query;
+	}
+	// ----------------------------------------------------------------------
+	// 	Tunnel QUERIES
+	// ----------------------------------------------------------------------
+
+	public static final String TUNNEL_PARTS_FROM_TUNNEL =
+			"SELECT id FROM TUNNEL WHERE tunnel_root_id = ?";
+
+	private static final String TUNNEL_PART_FOOTPRINT_LOD4 =
+			"SELECT sg.geometry " +
+					"FROM SURFACE_GEOMETRY sg, TUNNEL_THEMATIC_SURFACE tts " +
+					"WHERE " +
+					"tts.tunnel_id = ? " +
+					"AND tts.objectclass_id = '94' " +  // TunnelGroundSurface
+					"AND sg.root_id = tts.lod4_multi_surface_id " +
+					"AND sg.geometry IS NOT NULL "; 
+
+	
+	private static final String TUNNEL_PART_COLLADA_LOD4_ROOT_IDS =
+			"SELECT geom.gid FROM (" + 
+					// tunnel
+					"SELECT tts.lod4_multi_surface_id as gid " + 					
+					"FROM TUNNEL_THEMATIC_SURFACE tts " + 
+					"WHERE " +  
+					"tts.tunnel_id = ? " +
+					"AND tts.lod4_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT t.lod4_solid_id as gid " + 
+					"FROM TUNNEL t LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_id = t.id " + 
+					"WHERE " +  
+					"t.id = ? " +
+					"AND t.lod4_solid_id IS NOT NULL " +
+					"AND tts.lod4_multi_surface_id IS NULL " +
+					"UNION " +					 
+					"SELECT t.lod4_multi_surface_id as gid " + 
+					"FROM TUNNEL t LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_id = t.id " + 
+					"WHERE " +  
+					"t.id = ? " +
+					"AND t.lod4_multi_surface_id IS NOT NULL " +
+					"AND tts.lod4_multi_surface_id IS NULL "	+	
+					"UNION " + 
+					// Tunnel Hollow Space
+					"SELECT tts.lod4_multi_surface_id as gid " + 
+					"FROM TUNNEL_HOLLOW_SPACE ths, TUNNEL_THEMATIC_SURFACE tts " + 
+					"WHERE " +  
+					"ths.tunnel_id = ? " +
+					"AND tts.tunnel_hollow_space_id = ths.id " +
+					"AND tts.lod4_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+			        "SELECT ths.lod4_solid_id as gid " + 
+			        "FROM TUNNEL_HOLLOW_SPACE ths LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_hollow_space_id = ths.id " + 
+			        "WHERE " +  
+	  			    "ths.tunnel_id = ? " +
+				    "AND ths.lod4_solid_id IS NOT NULL " +
+	  			    "AND tts.lod4_multi_surface_id IS NULL " + 
+				    "UNION " + 
+			        "SELECT ths.lod4_multi_surface_id as gid " + 
+			        "FROM TUNNEL_HOLLOW_SPACE ths LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_hollw_space_id = ths.id " + 
+			        "WHERE " +  
+	  			    "ths.tunnel_id = ? " +
+				    "AND ths.lod4_multi_surface_id IS NOT NULL " +
+	  			    "AND tts.lod4_multi_surface_id IS NULL " + 
+				    "UNION " + 
+	  			    // Tunnel Furniture
+					"SELECT tf.lod4_brep_id as gid " + 
+					"FROM TUNNEL_HOLLOW_SPACE ths, TUNNEL_FURNITURE tf " + 
+					"WHERE " +  
+					"ths.tunnel_id = ? " +
+					"AND tf.tunnel_hollow_space_id = ths.id " +
+					"AND tf.lod4_brep_id IS NOT NULL " +
+					"UNION " + 			
+					// Tunnel  Installation
+					"SELECT tts.lod4_multi_surface_id as gid " + 
+					"FROM TUNNEL_INSTALLATION ti, TUNNEL_THEMATIC_SURFACE tts " + 
+					"WHERE ti.tunnel_id = ? " +  
+					"AND tts.tunnel_installation_id = ti.id " +
+					"AND tts.lod4_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT ti.lod4_brep_id as gid " + 
+					"FROM TUNNEL_INSTALLATION ti LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_installation_id = ti.id " +
+					"WHERE " +  
+					"ti.tunnel_id = ? " +
+					"AND ti.lod4_brep_id IS NOT NULL " +
+					"AND tts.lod4_multi_surface_id IS NULL " + 
+					"UNION " + 
+					// Opening
+					"SELECT to.lod4_multi_surface_id as gid " + 
+					"FROM TUNNEL_THEMATIC_SURFACE tts, TUNNEL_OPEN_TO_THEM_SRF totts, TUNNEL_OPENING to " + 
+					"WHERE " +  
+					"tts.tunnel_id = ? " +
+					"AND tts.lod4_multi_surface_id IS NOT NULL " +
+					"AND totts.tunnel_thematic_surface_id = tts.id " +
+					"AND to.id = totts.tunnel_opening_id) geom";
+
+
+	private static final String TUNNEL_PART_GEOMETRY_LOD4 =
+			"SELECT sg.geometry, tts.objectclass_id, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.lod4_multi_surface_id = sg.root_id " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + TUNNEL_PART_COLLADA_LOD4_ROOT_IDS + ")";
+
+	private static final String TUNNEL_PART_FOOTPRINT_LOD3 =
+			"SELECT sg.geometry " +
+					"FROM SURFACE_GEOMETRY sg, TUNNEL_THEMATIC_SURFACE tts " +
+					"WHERE " +
+					"tts.tunnel_id = ? " +
+					"AND tts.objectclass_id = '94' " +
+					"AND sg.root_id = tts.lod3_multi_surface_id " +
+					"AND sg.geometry IS NOT NULL "; 
+
+	private static final String TUNNEL_PART_COLLADA_LOD3_ROOT_IDS =
+			"SELECT geom.gid FROM (" + 
+					// Tunnel
+					"SELECT tts.lod3_multi_surface_id as gid " + 
+					"FROM TUNNEL_THEMATIC_SURFACE tts " + 
+					"WHERE " +  
+					"tts.tunnel_id = ? " +
+					"AND tts.lod3_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT t.lod3_solid_id as gid " + 
+					"FROM TUNNEL t LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_id = t.id " + 
+					"WHERE " +  
+					"t.id = ? " +
+					"AND t.lod3_solid_id IS NOT NULL " +
+					"AND tts.lod3_multi_surface_id IS NULL " +
+					"UNION " + 
+					"SELECT t.lod3_multi_surface_id as gid " + 
+					"FROM TUNNEL t LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_id = t.id " + 
+					"WHERE " +  
+					"t.id = ? " +
+					"AND t.lod3_multi_surface_id IS NOT NULL " +
+					"AND tts.lod3_multi_surface_id IS NULL " + 
+					"UNION " + 
+					// Tunnel Installation
+					"SELECT tts.lod3_multi_surface_id as gid " + 
+					"FROM TUNNEL_INSTALLATION ti, TUNNEL_THEMATIC_SURFACE tts " + 
+					"WHERE ti.tunnel_id = ? " +  
+					"AND tts.tunnel_installation_id = ti.id " +
+					"AND tts.lod3_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT ti.lod3_brep_id as gid " + 
+					"FROM TUNNEL_INSTALLATION ti LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_installation_id = ti.id " +
+					"WHERE " +  
+					"ti.tunnel_id = ? " +
+					"AND ti.lod3_brep_id IS NOT NULL " +
+					"AND tts.lod3_multi_surface_id IS NULL " + 
+					"UNION " + 
+					// Tunnel Opening
+					"SELECT ot.lod3_multi_surface_id as gid " + 
+					"FROM TUNNEL_THEMATIC_SURFACE tts, TUNNEL_OPEN_TO_THEM_SRF totts, TUNNEL_OPENING ot " + 
+					"WHERE " +  
+					"tts.tunnel_id = ? " +
+					"AND tts.lod3_multi_surface_id IS NOT NULL " +
+					"AND totts.tunnel_thematic_surface_id = tts.id " +
+					"AND ot.id = totts.tunnel_opening_id) geom";
+
+	
+	private static final String TUNNEL_PART_GEOMETRY_LOD3 =
+			"SELECT sg.geometry, tts.objectclass_id, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.lod3_multi_surface_id = sg.root_id " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + TUNNEL_PART_COLLADA_LOD3_ROOT_IDS	+ ")";
+	
+
+	private static final String TUNNEL_PART_FOOTPRINT_LOD2 =
+			"SELECT sg.geometry " +
+					"FROM SURFACE_GEOMETRY sg, TUNNEL_THEMATIC_SURFACE tts " +
+					"WHERE " +
+					"tts.tunnel_id = ? " +
+					"AND tts.objectclass_id = '94' " +
+					"AND sg.root_id = tts.lod2_multi_surface_id " +
+					"AND sg.geometry IS NOT NULL " +
+					"ORDER BY tts.tunnel_id";
+	
+	
+	private static final String TUNNEL_PART_COLLADA_LOD2_ROOT_IDS =
+			"SELECT geom.gid FROM ( " + 
+					// Tunnel
+					"SELECT tts.lod2_multi_surface_id as gid " + 
+					"FROM TUNNEL_THEMATIC_SURFACE tts " + 
+					"WHERE " +  
+					"tts.tunnel_id = ? " +
+					"AND tts.lod2_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT t.lod2_multi_surface_id as gid " + 
+					"FROM TUNNEL t LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_id = t.id " + 
+					"WHERE " +  
+					"t.id = ? " +
+					"AND t.lod2_multi_surface_id IS NOT NULL " +
+					"AND tts.lod2_multi_surface_id IS NULL " +
+					"UNION " + 
+					"SELECT t.lod2_solid_id as gid " + 
+					"FROM TUNNEL t LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_id = t.id " + 
+					"WHERE " +  
+					"t.id = ? " +
+					"AND t.lod2_solid_id IS NOT NULL " +
+					"AND tts.lod2_multi_surface_id IS NULL " +					
+					"UNION " +			
+					// Tunnel Installation	
+					"SELECT tts.lod2_multi_surface_id as gid " + 
+					"FROM TUNNEL_INSTALLATION ti, TUNNEL_THEMATIC_SURFACE tts " + 
+					"WHERE ti.tunnel_id = ? " +  
+					"AND tts.tunnel_installation_id = ti.id " +
+					"AND tts.lod2_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT ti.lod2_brep_id as gid " + 
+					"FROM TUNNEL_INSTALLATION ti LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_installation_id = ti.id " +
+					"WHERE " +  
+					"ti.tunnel_id = ? " +
+					"AND ti.lod2_brep_id IS NOT NULL " +
+					"AND tts.lod2_multi_surface_id IS NULL) geom";
+	
+	
+	private static final String TUNNEL_PART_GEOMETRY_LOD2 =
+			"SELECT sg.geometry, tts.objectclass_id, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.lod2_multi_surface_id = sg.root_id " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + TUNNEL_PART_COLLADA_LOD2_ROOT_IDS	+ ")";
+
+	
+	private static final String TUNNEL_PART_FOOTPRINT_LOD1(DatabaseType type) {		
+		switch (type) {
+		case ORACLE:
+			return TUNNEL_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", "0.001")
+					.replace("<2D_SRID>", "(SELECT SRID FROM DATABASE_SRS)")
+					.replace("<LoD>", "1")
+					.replace("<GROUP_BY_1>", "256")
+					.replace("<GROUP_BY_2>", "64")
+					.replace("<GROUP_BY_3>", "16");
+		case POSTGIS:		
+			return TUNNEL_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", "0.001")
+					.replace("<LoD>", "1");			
+		default:
+			return null;
+		}
+	}	
+	
+	private static final String TUNNEL_PART_COLLADA_LOD1_ROOT_IDS =
+			"SELECT geom.gid FROM (SELECT t.lod1_multi_surface_id as gid " +			
+					"FROM TUNNEL t " +
+					"WHERE " +
+					"t.id = ? " +
+					"AND t.lod1_multi_surface_id IS NOT NULL " + 
+					"UNION " + 
+					"SELECT t.lod1_solid_id as gid " +			
+					"FROM TUNNEL t " +
+					"WHERE " +
+					"t.id = ? " +
+					"AND t.lod1_solid_id IS NOT NULL) geom"; 
+	
+	
+	private static final String TUNNEL_PART_GEOMETRY_LOD1 =
+			"SELECT sg.geometry, NULL as objectclass_id, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + TUNNEL_PART_COLLADA_LOD1_ROOT_IDS	+ ")";
+
+	private static final String TUNNEL_PART_GEOMETRY_HIGHLIGHTING_LOD1 =
+			"SELECT sg.geometry, sg.id " +
+					"FROM SURFACE_GEOMETRY sg, TUNNEL t " +
+					"WHERE " +
+					"t.id = ? " +
+					"AND (sg.root_id = t.lod1_solid_id " +
+						"OR sg.root_id = t.lod1_multi_surface_id) " +
+					"AND sg.geometry IS NOT NULL ";
+
+	private static final String TUNNEL_PART_GEOMETRY_HIGHLIGHTING_LOD2 =
+			"SELECT sg.geometry, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + TUNNEL_PART_COLLADA_LOD2_ROOT_IDS	+ ")";
+
+	private static final String TUNNEL_PART_GEOMETRY_HIGHLIGHTING_LOD3 =
+			"SELECT sg.geometry, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" + TUNNEL_PART_COLLADA_LOD3_ROOT_IDS + ")";
+
+	private static final String TUNNEL_PART_GEOMETRY_HIGHLIGHTING_LOD4 =
+			"SELECT sg.geometry, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"WHERE " +
+					"sg.geometry IS NOT NULL " +
+					"AND sg.root_id IN (" +
+					"SELECT geom.gid FROM (SELECT tts.lod4_multi_surface_id as gid " + 
+					"FROM TUNNEL_THEMATIC_SURFACE tts " + 
+					"WHERE " +  
+					"tts.tunnel_id = ? " +
+					"AND tts.lod4_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT to.lod4_multi_surface_id as gid " + 
+					"FROM TUNNEL_THEMATIC_SURFACE tts, TUNNEL_OPEN_TO_THEM_SURF totts, TUNNEL_OPENING to " + 
+					"WHERE " +  
+					"tts.tunnel_id = ? " +
+					"AND tts.lod4_multi_surface_id IS NOT NULL " +
+					"AND totts.tunnel_thematic_surface_id = tts.id " +
+					"AND to.id = totts.tunnel_opening_id " +
+					"UNION " + 
+					"SELECT t.lod4_solid_id as gid " + 
+					"FROM tunnel t LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_id = t.id " + 
+					"WHERE " +  
+					"t.id = ? " +
+					"AND t.lod4_solid_id IS NOT NULL " +
+					"AND tts.lod4_multi_surface_id IS NULL " +
+					"UNION " +						
+					"SELECT t.lod4_multi_surface_id as gid " + 
+					"FROM TUNNEL t LEFT JOIN TUNNEL_THEMATIC_SURFACE tts ON tts.tunnel_id = t.id " + 
+					"WHERE " +  
+					"t.id = ? " +
+					"AND t.lod4_multi_surface_id IS NOT NULL " +
+					"AND tts.lod4_multi_surface_id IS NULL) geom)";
+
+
+	private static final String TUNNEL_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (" +
+						"SELECT * FROM (" +
+						"SELECT * FROM (" +
+				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"FROM SURFACE_GEOMETRY sg " +
+				    	"WHERE " +
+				    	"sg.root_id IN( " +
+				    	"SELECT geom.gid FROM (SELECT t.lod<LoD>_geometry_id as gid " +
+				    	"FROM TUNNEL t " +
+				    	"WHERE "+
+				    	"t.id = ? " +
+				    	"AND t.lod<LoD>_geometry_id IS NOT NULL " +
+				    	"UNION " +
+				    	"SELECT tts.lod<LoD>_multi_surface_id as gid " +
+				    	"FROM TUNNEL_THEMATIC_SURFACE tts " +
+				    	"WHERE "+
+				    	"tts.tunnel_id = ? " +
+				    	"AND tts.lod<LoD>_multi_surface_id IS NOT NULL) geom "+
+				    	") " +
+				    	"AND sg.geometry IS NOT NULL" +
+						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
+						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
+						") " +
+						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_2>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_3>) " +
+						")";
+		case POSTGIS:
+			return "SELECT ST_Union(get_valid_area.simple_geom) " +
+			"FROM (" +
+			"SELECT * FROM (" +
+			"SELECT * FROM (" +
+				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "FROM SURFACE_GEOMETRY sg " +
+				        "WHERE " +
+				        "sg.root_id IN( " +
+				        "SELECT t.lod<LoD>_multi_surface_id " +
+				        "FROM TUNNEL t " +
+				        "WHERE t.id = ? " +
+				        "AND t.lod<LoD>_multi_surface_id IS NOT NULL " +
+				        "UNION " +
+				        "SELECT t.lod<LoD>_solid_id " +
+				        "FROM TUNNEL t " +
+				        "WHERE t.id = ? " +
+				        "AND t.lod<LoD>_solid_id IS NOT NULL " +
+				        "UNION " +
+				        "SELECT tts.lod<LoD>_multi_surface_id " +
+				        "FROM TUNNEL_THEMATIC_SURFACE tts " +
+				        "WHERE tts.tunnel_id = ? " +
+				        "AND tts.lod<LoD>_multi_surface_id IS NOT NULL "+
+				        ") " +
+				        "AND sg.geometry IS NOT NULL) AS get_geoms " +
+				    	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
+				    	// ST_Area for WGS84 only works correctly if the geometry is a geography data type
+				    	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE>) AS get_valid_area";
+		default:
+			return null;
+		}
+	}
+
+	private static final String TUNNEL_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(DatabaseType type) {
+		switch (type) {
+		case ORACLE:
+			return "SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
+			"FROM (" +
+						"SELECT * FROM (" +
+						"SELECT * FROM (" +
+				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"FROM SURFACE_GEOMETRY sg " +
+				    	"WHERE " +
+				    	"sg.root_id IN( " +
+				    	"SELECT t.lod<LoD>_multi_surface_id " +
+				    	"FROM TUNNEL t " +
+				    	"WHERE "+
+				    	"t.id = ? " +
+				    	"AND t.lod<LoD>_multi_surface_id IS NOT NULL " +
+				    	") " +
+				    	"AND sg.geometry IS NOT NULL" +
+						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
+						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
+
+						") " +
+						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_2>) " +
+						") " +
+						"GROUP BY mod (rownum, <GROUP_BY_3>) " +
+						")";
+		case POSTGIS:
+			return "SELECT ST_Union(get_valid_area.simple_geom) " +
+			"FROM (" +
+			"SELECT * FROM (" +
+			"SELECT * FROM (" +
+				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "FROM SURFACE_GEOMETRY sg " +
+				        "WHERE " +
+				        "sg.root_id IN( " +
+				        "SELECT t.lod<LoD>_multi_surface_id " +
+				        "FROM TUNNEL t " +
+				        "WHERE t.id = ? " +
+				        "AND t.lod<LoD>_multi_surface_id IS NOT NULL " +
+				        "UNION " +				        
+				        "SELECT t.lod<LoD>_solid_id " +
+				        "FROM TUNNEL t " +
+				        "WHERE t.id = ? " +
+				        "AND t.lod<LoD>_solid_id IS NOT NULL " +				        
+				        ") " +
+				        "AND sg.geometry IS NOT NULL) AS get_geoms " +
+				    	"WHERE ST_IsValid(get_geoms.simple_geom) = 'TRUE') AS get_valid_geoms " +
+				    	// ST_Area for WGS84 only works correctly if the geometry is a geography data type
+				    	"WHERE ST_Area(ST_Transform(get_valid_geoms.simple_geom,4326)::geography, true) > <TOLERANCE>) AS get_valid_area";
+		default:
+			return null;
+		}
+	}
+	
+
+	public static String getTunnelPartAggregateGeometries (double tolerance,
+			int srid2D,
+			int lodToExportFrom,
+			double groupBy1,
+			double groupBy2,
+			double groupBy3,
+			DatabaseType type) {
+		if (lodToExportFrom > 1) {
+			return TUNNEL_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD2_OR_HIGHER(type).replace("<TOLERANCE>", String.valueOf(tolerance))
+					.replace("<2D_SRID>", String.valueOf(srid2D))
+					.replace("<LoD>", String.valueOf(lodToExportFrom))
+					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
+					.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
+					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));
+		}
+		else {
+			return TUNNEL_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", String.valueOf(tolerance))
+					.replace("<2D_SRID>", String.valueOf(srid2D))
+					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
+					.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
+					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));					
+		}
+	}
+
+
+
+	private static final HashMap<Integer, String> tunnelPartQueriesLod4 = new HashMap<Integer, String>();
+	static {
+		tunnelPartQueriesLod4.put(DisplayForm.FOOTPRINT, TUNNEL_PART_FOOTPRINT_LOD4);
+		tunnelPartQueriesLod4.put(DisplayForm.EXTRUDED, TUNNEL_PART_FOOTPRINT_LOD4);
+		tunnelPartQueriesLod4.put(DisplayForm.GEOMETRY, TUNNEL_PART_GEOMETRY_LOD4);
+		tunnelPartQueriesLod4.put(DisplayForm.COLLADA, TUNNEL_PART_COLLADA_LOD4_ROOT_IDS);
+	}
+
+	private static final HashMap<Integer, String> tunnelPartQueriesLod3 = new HashMap<Integer, String>();
+	static {
+		tunnelPartQueriesLod3.put(DisplayForm.FOOTPRINT, TUNNEL_PART_FOOTPRINT_LOD3);
+		tunnelPartQueriesLod3.put(DisplayForm.EXTRUDED, TUNNEL_PART_FOOTPRINT_LOD3);
+		tunnelPartQueriesLod3.put(DisplayForm.GEOMETRY, TUNNEL_PART_GEOMETRY_LOD3);
+		tunnelPartQueriesLod3.put(DisplayForm.COLLADA, TUNNEL_PART_COLLADA_LOD3_ROOT_IDS);
+	}
+
+	private static final HashMap<Integer, String> tunnelPartQueriesLod2 = new HashMap<Integer, String>();
+	static {
+		tunnelPartQueriesLod2.put(DisplayForm.FOOTPRINT, TUNNEL_PART_FOOTPRINT_LOD2);
+		tunnelPartQueriesLod2.put(DisplayForm.EXTRUDED, TUNNEL_PART_FOOTPRINT_LOD2);
+		tunnelPartQueriesLod2.put(DisplayForm.GEOMETRY, TUNNEL_PART_GEOMETRY_LOD2);
+		tunnelPartQueriesLod2.put(DisplayForm.COLLADA, TUNNEL_PART_COLLADA_LOD2_ROOT_IDS);
+	}
+
+	private static final HashMap<Integer, String> tunnelPartQueriesLod1 = new HashMap<Integer, String>();
+	static {
+		tunnelPartQueriesLod1.put(DisplayForm.GEOMETRY, TUNNEL_PART_GEOMETRY_LOD1);
+		tunnelPartQueriesLod1.put(DisplayForm.COLLADA, TUNNEL_PART_COLLADA_LOD1_ROOT_IDS);
+	}
+
+	public static String getTunnelPartQuery (int lodToExportFrom, DisplayForm displayForm, DatabaseType type) {
+		String query = null;
+		switch (lodToExportFrom) {
+		case 1:
+			if (displayForm.getForm() == DisplayForm.FOOTPRINT || displayForm.getForm() == DisplayForm.EXTRUDED){
+				query = TUNNEL_PART_FOOTPRINT_LOD1(type);		
+			}
+			else 
+				query = tunnelPartQueriesLod1.get(displayForm.getForm());
+			break;
+		case 2:
+			query = tunnelPartQueriesLod2.get(displayForm.getForm());
+			break;
+		case 3:
+			query = tunnelPartQueriesLod3.get(displayForm.getForm());
+			break;
+		case 4:
+			query = tunnelPartQueriesLod4.get(displayForm.getForm());
+			break;
+		default:
+			Logger.getInstance().log(LogLevel.INFO, "No TunnelPart query found for LoD" + lodToExportFrom);
+		}
+		return query;
+	}
+
+	public static String getTunnelPartHighlightingQuery (int lodToExportFrom) {
+		String query = null;
+		switch (lodToExportFrom) {
+		case 1:
+			query = TUNNEL_PART_GEOMETRY_HIGHLIGHTING_LOD1;
+			break;
+		case 2:
+			query = TUNNEL_PART_GEOMETRY_HIGHLIGHTING_LOD2;
+			break;
+		case 3:
+			query = TUNNEL_PART_GEOMETRY_HIGHLIGHTING_LOD3;
+			break;
+		case 4:
+			query = TUNNEL_PART_GEOMETRY_HIGHLIGHTING_LOD4;
+			break;
+		default:
+			Logger.getInstance().log(LogLevel.INFO, "No TunnelPart highlighting query found for LoD" + lodToExportFrom);
+		}
+		return query;
+	}
+	
 	// ----------------------------------------------------------------------
 	// CITY OBJECT GROUP QUERIES
 	// ----------------------------------------------------------------------
@@ -1115,8 +2218,8 @@ public class Queries {
 	// ----------------------------------------------------------------------
 
 	private static final String SOLITARY_VEGETATION_OBJECT_BASIS_DATA =
-			"SELECT ig.relative_geometry_id, svo.lod<LoD>_implicit_ref_point, " +
-					"svo.lod<LoD>_implicit_transformation, svo.lod<LoD>_geometry_id " +
+			"SELECT ig.relative_brep_id, svo.lod<LoD>_implicit_ref_point, " +
+					"svo.lod<LoD>_implicit_transformation, svo.lod<LoD>_brep_id " +
 					"FROM SOLITARY_VEGETAT_OBJECT svo " + 
 					"LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = svo.lod<LoD>_implicit_rep_id " + 
 					"WHERE svo.id = ?";
@@ -1126,10 +2229,16 @@ public class Queries {
 	}
 
 	private static final String SOLITARY_VEGETATION_OBJECT_FOOTPRINT_EXTRUDED_GEOMETRY =
-			"SELECT sg.geometry, 'Vegetation' as type, sg.id " +
+			"SELECT sg.geometry, '7' as objectclass_id, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
 					"WHERE sg.root_id = ? " + 
 					"AND sg.geometry IS NOT NULL";
+	
+	private static final String SOLITARY_VEGETATION_OBJECT_FOOTPRINT_EXTRUDED_IMPLICIT_GEOMETRY =
+			"SELECT sg.implicit_geometry, '7' as objectclass_id, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"WHERE sg.root_id = ? " + 
+					"AND sg.implicit_geometry IS NOT NULL";
 
 	private static final String SOLITARY_VEGETATION_OBJECT_COLLADA_ROOT_IDS(AbstractSQLAdapter sqlAdapter) {
 		String query = "SELECT ? "; // dummy
@@ -1139,13 +2248,16 @@ public class Queries {
 		return query;
 	}
 
-	public static String getSolitaryVegetationObjectGeometryContents (DisplayForm displayForm, AbstractSQLAdapter sqlAdapter) {
+	public static String getSolitaryVegetationObjectGeometryContents (DisplayForm displayForm, AbstractSQLAdapter sqlAdapter, Boolean isImplcitGeometry) {
 		String query = null;
 		switch (displayForm.getForm()) {
 		case DisplayForm.FOOTPRINT:
 		case DisplayForm.EXTRUDED:
 		case DisplayForm.GEOMETRY:
-			query = SOLITARY_VEGETATION_OBJECT_FOOTPRINT_EXTRUDED_GEOMETRY;
+			if (isImplcitGeometry)
+				query = SOLITARY_VEGETATION_OBJECT_FOOTPRINT_EXTRUDED_IMPLICIT_GEOMETRY;
+			else
+				query = SOLITARY_VEGETATION_OBJECT_FOOTPRINT_EXTRUDED_GEOMETRY;			
 			break;
 		case DisplayForm.COLLADA:
 			query = SOLITARY_VEGETATION_OBJECT_COLLADA_ROOT_IDS(sqlAdapter);
@@ -1153,26 +2265,31 @@ public class Queries {
 		default:
 			Logger.getInstance().log(LogLevel.INFO, "No solitary vegetation object query found");
 		}
-
-		//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
 		return query;
 	}
 
 	private static final String SOLITARY_VEGETATION_OBJECT_GEOMETRY_HIGHLIGHTING =
 			"SELECT sg.geometry, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
+					"WHERE sg.root_id IN (" +
+					"SELECT svo.lod<LoD>_brep_id " +
+					"FROM SOLITARY_VEGETAT_OBJECT svo " + 
+					"WHERE svo.id = ?) " +
+					"AND sg.geometry IS NOT NULL";
+	
+	private static final String SOLITARY_VEGETATION_OBJECT_IMPLICIT_GEOMETRY_HIGHLIGHTING =
+			"SELECT sg.implicit_geometry, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
 					"WHERE sg.root_id IN ( " +
-					"SELECT geom.gid FROM (SELECT ig.relative_geometry_id as gid " + 
+					"SELECT ig.relative_brep_id " + 
 					"FROM SOLITARY_VEGETAT_OBJECT svo, IMPLICIT_GEOMETRY ig " + 
 					"WHERE svo.id = ? " +
-					"AND ig.id = svo.lod<LoD>_implicit_rep_id " +
-					"UNION " +
-					"SELECT svo.lod<LoD>_geometry_id as gid " +
-					"FROM SOLITARY_VEGETAT_OBJECT svo " + 
-					"WHERE svo.id = ?) geom) " +
-					"AND sg.geometry IS NOT NULL";
+					"AND ig.id = svo.lod<LoD>_implicit_rep_id) " +
+					"AND sg.implicit_geometry IS NOT NULL";
 
-	public static String getSolitaryVegetationObjectHighlightingQuery (int lodToExportFrom) {
+	public static String getSolitaryVegetationObjectHighlightingQuery (int lodToExportFrom, Boolean isImplicitGeometry) {
+		if (isImplicitGeometry)
+			return SOLITARY_VEGETATION_OBJECT_IMPLICIT_GEOMETRY_HIGHLIGHTING.replace("<LoD>", String.valueOf(lodToExportFrom));
 		return SOLITARY_VEGETATION_OBJECT_GEOMETRY_HIGHLIGHTING.replace("<LoD>", String.valueOf(lodToExportFrom));
 	}
 
@@ -1206,8 +2323,6 @@ public class Queries {
 		default:
 			Logger.getInstance().log(LogLevel.INFO, "No plant cover object query found");
 		}
-
-		//    	Logger.getInstance().log(LogLevelType.DEBUG, query);
 		return query.replace("<LoD>", String.valueOf(lodToExportFrom));
 	}
 
@@ -1220,8 +2335,8 @@ public class Queries {
 	// ----------------------------------------------------------------------
 
 	private static final String GENERIC_CITYOBJECT_BASIS_DATA =
-			"SELECT ig.relative_geometry_id, gco.lod<LoD>_implicit_ref_point, " +
-					"gco.lod<LoD>_implicit_transformation, gco.lod<LoD>_geometry_id " +
+			"SELECT ig.relative_brep_id, gco.lod<LoD>_implicit_ref_point, " +
+					"gco.lod<LoD>_implicit_transformation, gco.lod<LoD>_brep_id " +
 					"FROM GENERIC_CITYOBJECT gco " +
 					"LEFT JOIN IMPLICIT_GEOMETRY ig ON ig.id = gco.lod<LoD>_implicit_rep_id " + 
 					"WHERE gco.id = ?";
@@ -1231,7 +2346,7 @@ public class Queries {
 	}
 
 	private static final String GENERIC_CITYOBJECT_FOOTPRINT_EXTRUDED_GEOMETRY =
-			"SELECT sg.geometry, 'Generic' as type, sg.id " +
+			"SELECT sg.geometry, '5' as objectclass_id, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
 					"WHERE sg.root_id = ? " + 
 					"AND sg.geometry IS NOT NULL";
@@ -1265,12 +2380,12 @@ public class Queries {
 			"SELECT sg.geometry, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
 					"WHERE sg.root_id IN ( " +
-					"SELECT geom.gid FROM (SELECT ig.relative_geometry_id as gid " + 
+					"SELECT geom.gid FROM (SELECT ig.relative_brep_id as gid " + 
 					"FROM GENERIC_CITYOBJECT gco, IMPLICIT_GEOMETRY ig " + 
 					"WHERE gco.id = ? " +
 					"AND ig.id = gco.lod<LoD>_implicit_rep_id " +
 					"UNION " +
-					"SELECT gco.lod<LoD>_geometry_id as gid " +
+					"SELECT gco.lod<LoD>_brep_id as gid " +
 					"FROM GENERIC_CITYOBJECT gco " + 
 					"WHERE gco.id = ?) geom) " +
 					"AND sg.geometry IS NOT NULL";
@@ -1278,6 +2393,16 @@ public class Queries {
 	public static String getGenericCityObjectHighlightingQuery (int lodToExportFrom) {
 		return GENERIC_CITYOBJECT_GEOMETRY_HIGHLIGHTING.replace("<LoD>", String.valueOf(lodToExportFrom));
 	}
+	
+	private static final String GENERIC_CITYOBJECT_POINT_AND_CURVE =
+			"SELECT gco.lod<LoD>_other_geom " +
+			"FROM generic_cityobject gco " +
+			"WHERE gco.id = ? " +
+			"AND gco.lod<LoD>_other_geom IS NOT NULL";	
+	
+    public static String getGenericCityObjectPointAndCurveQuery (int lodToExportFrom) {
+    	return GENERIC_CITYOBJECT_POINT_AND_CURVE.replace("<LoD>", String.valueOf(lodToExportFrom));
+    }
 
 	// ----------------------------------------------------------------------
 	// CITY FURNITURE QUERIES

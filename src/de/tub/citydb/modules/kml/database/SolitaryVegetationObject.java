@@ -123,7 +123,9 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 	}
 
 	protected String getHighlightingQuery() {
-		return Queries.getSolitaryVegetationObjectHighlightingQuery(currentLod);
+		if (transformation == null)
+			return Queries.getSolitaryVegetationObjectHighlightingQuery(currentLod,false);
+		return Queries.getSolitaryVegetationObjectHighlightingQuery(currentLod,true);		
 	}
 
 	public void read(KmlSplittingResult work) {
@@ -208,8 +210,13 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 				rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 				try { psQuery.close(); // release cursor on DB
 				} catch (SQLException sqle) {}
+				
+				Boolean isImplcitGeometry = true;
+				if (transformation == null) { // no implicit geometry
+					isImplcitGeometry = false;
+				}
 
-				psQuery = connection.prepareStatement(Queries.getSolitaryVegetationObjectGeometryContents(work.getDisplayForm(), databaseAdapter.getSQLAdapter()),
+				psQuery = connection.prepareStatement(Queries.getSolitaryVegetationObjectGeometryContents(work.getDisplayForm(), databaseAdapter.getSQLAdapter(),isImplcitGeometry),
 						ResultSet.TYPE_SCROLL_INSENSITIVE,
 						ResultSet.CONCUR_READ_ONLY);
 				psQuery.setLong(1, sgRootId);
@@ -262,11 +269,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						kmlExporterManager.print(createPlacemarksForGeometry(rs, work),
 								work,
 								getBalloonSettings().isBalloonContentInSeparateFile());
-						//						kmlExporterManager.print(createPlacemarkForEachSurfaceGeometry(rs, work.getGmlId(), false));
 						if (work.getDisplayForm().isHighlightingEnabled()) {
-							//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
-							//							 						 work,
-							//							 						 getBalloonSetings().isBalloonContentInSeparateFile());
 							kmlExporterManager.print(createPlacemarksForHighlighting(work),
 									work,
 									getBalloonSettings().isBalloonContentInSeparateFile());
@@ -297,9 +300,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) {
-							//							kmlExporterManager.print(createPlacemarkForEachHighlingtingGeometry(work),
-							//													 work,
-							//													 getBalloonSetings().isBalloonContentInSeparateFile());
 							kmlExporterManager.print(createPlacemarksForHighlighting(work),
 									work,
 									getBalloonSettings().isBalloonContentInSeparateFile());
@@ -692,7 +692,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 				}
 
 				// now convert to WGS84
-				GeometryObject surface = convertToWGS84(unconvertedSurface);
+				GeometryObject surface = super.convertToWGS84(unconvertedSurface);
 				unconvertedSurface = null;
 
 				PolygonType polygon = kmlFactory.createPolygonType();

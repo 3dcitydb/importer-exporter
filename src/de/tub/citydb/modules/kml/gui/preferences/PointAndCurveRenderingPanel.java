@@ -30,28 +30,18 @@
 package de.tub.citydb.modules.kml.gui.preferences;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URL;
-// import java.io.File;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
-// import javax.swing.JFileChooser;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
-// import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.TitledBorder;
@@ -64,9 +54,6 @@ import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.kmlExporter.AltitudeMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.PointAndCurve;
-//todo...
-//import de.tub.citydb.config.project.kmlExporter.PointAndCurve;
-// import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -382,14 +369,6 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 														curveHighlightingColorButton.getBackground().getBlue(),
 														DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB()); //
 	}
-
-/*
-	@Override
-	public void resetSettings() {
-		config.getProject().getKmlExporter().setGenericCityObjectPointAndCurve(new PointAndCurve());
-		loadSettings(); // update GUI
-	}
-*/
 
 	private void setEnabledComponents() {
 		pointHighlightingColorLabel.setEnabled(pointHighlightingCheckbox.isSelected());

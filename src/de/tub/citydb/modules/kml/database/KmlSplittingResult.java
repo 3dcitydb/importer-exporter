@@ -134,4 +134,10 @@ public class KmlSplittingResult {
 				getCityObjectType().compareTo(CityGMLClass.BREAKLINE_RELIEF) == 0 ||
 				getCityObjectType().compareTo(CityGMLClass.TIN_RELIEF) == 0 */);
 	}
+	public boolean isBridge() {
+		return getCityObjectType().compareTo(CityGMLClass.BRIDGE) == 0;
+	}
+	public boolean isTunnel() {
+		return getCityObjectType().compareTo(CityGMLClass.TUNNEL) == 0;
+	}
 }

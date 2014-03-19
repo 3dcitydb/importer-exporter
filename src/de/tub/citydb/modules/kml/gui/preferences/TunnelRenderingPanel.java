@@ -1,6 +1,6 @@
 /*
  * This file is part of the 3D City Database Importer/Exporter.
- * Copyright (c) 2007 - 2012
+ * Copyright (c) 2007 - 2013
  * Institute for Geodesy and Geoinformation Science
  * Technische Universitaet Berlin, Germany
  * http://www.gis.tu-berlin.de/
@@ -65,7 +65,7 @@ import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
+public class TunnelRenderingPanel extends AbstractPreferencesComponent {
 
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
@@ -90,10 +90,12 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private JSpinner geometryAlphaSpinner;
 	private JLabel geometryWallFillColorLabel = new JLabel();
 	private JButton geometryWallFillColorButton = new JButton(" ");
-
+	private JLabel geometryRoofFillColorLabel = new JLabel();
+	private JButton geometryRoofFillColorButton = new JButton(" ");
 	private JLabel geometryWallLineColorLabel = new JLabel();
 	private JButton geometryWallLineColorButton = new JButton(" ");
-
+	private JLabel geometryRoofLineColorLabel = new JLabel();
+	private JButton geometryRoofLineColorButton = new JButton(" ");
 	private JCheckBox geometryHighlightingCheckbox = new JCheckBox();
 	private JLabel geometryHLSurfaceDistanceLabel = new JLabel();
 	private JTextField geometryHLSurfaceDistanceText = new JTextField("", 3);
@@ -121,26 +123,26 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 	private HashMap<String, Integer> packingAlgorithms = new HashMap<String, Integer>();  
 	private JComboBox packingAlgorithmsComboBox = new JComboBox();
 
-	public ThreeDRenderingPanel(Config config) {
+	public TunnelRenderingPanel(Config config) {
 		super(config);
 		initGui();
 	}
 
 	private ColladaOptions getConfigColladaOptions() {
-		return config.getProject().getKmlExporter().getGenericCityObjectColladaOptions();
+		return config.getProject().getKmlExporter().getTunnelColladaOptions();
 	}
 
 	private List<DisplayForm> getConfigDisplayForms() {
-		return config.getProject().getKmlExporter().getGenericCityObjectDisplayForms();
+		return config.getProject().getKmlExporter().getTunnelDisplayForms();
 	}
 
 	private void setConfigDisplayForms(List<DisplayForm> displayForms) {
-		config.getProject().getKmlExporter().setGenericCityObjectDisplayForms(displayForms);
+		config.getProject().getKmlExporter().setTunnelDisplayForms(displayForms);
 	}
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.gco3DRendering");
+		return Internal.I18N.getString("pref.tree.kmlExport.tunnelRendering");
 	}
 
 	@Override
@@ -206,6 +208,8 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 
 		SpinnerModel falphaValueModel = new SpinnerNumberModel(200, 0, 255, 1);
 		footprintAlphaSpinner = new JSpinner(falphaValueModel);
+//		footprintAlphaSpinner.setMinimumSize(new Dimension(footprintAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
+//		footprintAlphaSpinner.setMaximumSize(new Dimension(footprintAlphaSpinner.getPreferredSize().width, MAX_TEXTFIELD_HEIGHT));
 
         GridBagConstraints fal = GuiUtil.setConstraints(0,0,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
 		fal.anchor = GridBagConstraints.EAST;
@@ -292,12 +296,32 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		geometryWallLineColorButton.setOpaque(true);
 		geometryPanel.add(geometryWallLineColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
+		GridBagConstraints grfcl = GuiUtil.setConstraints(0,2,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		grfcl.anchor = GridBagConstraints.EAST;
+		geometryPanel.add(geometryRoofFillColorLabel, grfcl);
+
+		geometryRoofFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
+		geometryRoofFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_ROOF_FILL_COLOR, true));
+		geometryRoofFillColorButton.setContentAreaFilled(false);
+		geometryRoofFillColorButton.setOpaque(true);
+		geometryPanel.add(geometryRoofFillColorButton, GuiUtil.setConstraints(1,2,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0));
+
+		GridBagConstraints grlcl = GuiUtil.setConstraints(2,2,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		grlcl.anchor = GridBagConstraints.EAST;
+		geometryPanel.add(geometryRoofLineColorLabel, grlcl);
+		
+		geometryRoofLineColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
+		geometryRoofLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_ROOF_LINE_COLOR, true));
+		geometryRoofLineColorButton.setContentAreaFilled(false);
+		geometryRoofLineColorButton.setOpaque(true);
+		geometryPanel.add(geometryRoofLineColorButton, GuiUtil.setConstraints(3,2,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+
 		geometryHighlightingCheckbox.setIconTextGap(10);
-		GridBagConstraints ghcb = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
+		GridBagConstraints ghcb = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		ghcb.gridwidth = 2;
 		geometryPanel.add(geometryHighlightingCheckbox, ghcb);
 
-		GridBagConstraints ghlfcl = GuiUtil.setConstraints(0,3,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints ghlfcl = GuiUtil.setConstraints(0,4,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghlfcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryHLFillColorLabel, ghlfcl);
 
@@ -305,9 +329,9 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		geometryHLFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		geometryHLFillColorButton.setContentAreaFilled(false);
 		geometryHLFillColorButton.setOpaque(true);
-		geometryPanel.add(geometryHLFillColorButton, GuiUtil.setConstraints(1,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0));
+		geometryPanel.add(geometryHLFillColorButton, GuiUtil.setConstraints(1,4,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0));
 
-		GridBagConstraints ghllcl = GuiUtil.setConstraints(2,3,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints ghllcl = GuiUtil.setConstraints(2,4,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghllcl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryHLLineColorLabel, ghllcl);
 
@@ -315,13 +339,13 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		geometryHLLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		geometryHLLineColorButton.setContentAreaFilled(false);
 		geometryHLLineColorButton.setOpaque(true);
-		geometryPanel.add(geometryHLLineColorButton, GuiUtil.setConstraints(3,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		geometryPanel.add(geometryHLLineColorButton, GuiUtil.setConstraints(3,4,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
-		GridBagConstraints ghdl = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.NONE,0,2*BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints ghdl = GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.NONE,0,2*BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		ghdl.anchor = GridBagConstraints.EAST;
 		geometryPanel.add(geometryHLSurfaceDistanceLabel, ghdl);
 
-		GridBagConstraints ghdt = GuiUtil.setConstraints(1,4,0.0,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0);
+		GridBagConstraints ghdt = GuiUtil.setConstraints(1,5,0.0,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0);
 		geometryPanel.add(geometryHLSurfaceDistanceText, ghdt);
 
 		colladaPanel = new JPanel();
@@ -337,9 +361,9 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		packingAlgorithms.put("TPIM", TextureAtlasCreator.TPIM);
 		packingAlgorithms.put("TPIM w/o image rotation", TextureAtlasCreator.TPIM_WO_ROTATION);
 
-		for (String algorithm: packingAlgorithms.keySet()) {
-			packingAlgorithmsComboBox.addItem(algorithm);
-		}
+		packingAlgorithmsComboBox.addItem("BASIC");
+		packingAlgorithmsComboBox.addItem("TPIM");
+		packingAlgorithmsComboBox.addItem("TPIM w/o image rotation");
 
 		textureAtlasCheckbox.setIconTextGap(10);
 		colladaPanel.add(textureAtlasCheckbox, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
@@ -480,7 +504,25 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 					geometryWallLineColorButton.setBackground(wallLineColor);
 			}
 		});
-		
+
+		geometryRoofFillColorButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Color roofFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseRoofFillColor"),
+						geometryRoofFillColorButton.getBackground());
+				if (roofFillColor != null)
+					geometryRoofFillColorButton.setBackground(roofFillColor);
+			}
+		});
+
+		geometryRoofLineColorButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Color roofLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseRoofLineColor"),
+						geometryRoofLineColorButton.getBackground());
+				if (roofLineColor != null)
+					geometryRoofLineColorButton.setBackground(roofLineColor);
+			}
+		});
+
 		geometryHighlightingCheckbox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setEnabledHighlighting();
@@ -560,9 +602,10 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		footprintHLLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 
 		geometryAlphaLabel.setText(Internal.I18N.getString("pref.kmlexport.label.alpha"));
-		geometryWallFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.fillColor"));
-		geometryWallLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.lineColor"));
-
+		geometryWallFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.wallFillColor"));
+		geometryWallLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.wallLineColor"));
+		geometryRoofFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.roofFillColor"));
+		geometryRoofLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.roofLineColor"));
 		geometryHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
 		geometryHLSurfaceDistanceLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightingDistance"));
 		geometryHLFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
@@ -634,7 +677,10 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 				}
 				if (displayForm.isSetRgba1())
 					geometryWallLineColorButton.setBackground(new Color(displayForm.getRgba1()));
-
+				if (displayForm.isSetRgba2())
+					geometryRoofFillColorButton.setBackground(new Color(displayForm.getRgba2()));
+				if (displayForm.isSetRgba3())
+					geometryRoofLineColorButton.setBackground(new Color(displayForm.getRgba3()));
 				if (displayForm.isSetRgba4())
 					geometryHLFillColorButton.setBackground(new Color(displayForm.getRgba4()));
 				if (displayForm.isSetRgba5())
@@ -784,7 +830,16 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 					geometryWallLineColorButton.getBackground().getBlue(),
 					((Integer)geometryAlphaSpinner.getValue()).intValue());
 			df.setRgba1(rgba1.getRGB());
-			
+			Color rgba2 = new Color(geometryRoofFillColorButton.getBackground().getRed(),
+					geometryRoofFillColorButton.getBackground().getGreen(),
+					geometryRoofFillColorButton.getBackground().getBlue(),
+					((Integer)geometryAlphaSpinner.getValue()).intValue());
+			df.setRgba2(rgba2.getRGB());
+			Color rgba3 = new Color(geometryRoofLineColorButton.getBackground().getRed(),
+					geometryRoofLineColorButton.getBackground().getGreen(),
+					geometryRoofLineColorButton.getBackground().getBlue(),
+					((Integer)geometryAlphaSpinner.getValue()).intValue());
+			df.setRgba3(rgba3.getRGB());
 			Color rgba4 = new Color(geometryHLFillColorButton.getBackground().getRed(),
 					geometryHLFillColorButton.getBackground().getGreen(),
 					geometryHLFillColorButton.getBackground().getBlue(),
@@ -872,7 +927,7 @@ public class ThreeDRenderingPanel extends AbstractPreferencesComponent {
 		colladaOptions.setIgnoreSurfaceOrientation(false);
 		colladaOptions.setGenerateTextureAtlases(true);
 		colladaOptions.setTextureAtlasPots(true);
-		colladaOptions.setPackingAlgorithm(TextureAtlasCreator.TPIM); 
+		colladaOptions.setPackingAlgorithm(TextureAtlasCreator.BASIC); 
 
 		colladaOptions.setScaleImages(false);
 		colladaOptions.setImageScaleFactor(1);

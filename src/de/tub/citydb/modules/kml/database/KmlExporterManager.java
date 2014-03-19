@@ -147,14 +147,8 @@ public class KmlExporterManager {
 
 					if (placemark.getDescription() != null && balloonInSeparateFile) {
 						StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandlerImpl.parentFrameStart);
-/*
-						if (isBBoxActive && 
-	        				config.getProject().getKmlExporter().isOneFilePerObject() &&
-	        				!config.getProject().getKmlExporter().isExportAsKmz())
-	        				parentFrame.append(".."); // one up
-	        			else
-*/
-	        				parentFrame.append('.'); // same folder
+
+	        			parentFrame.append('.'); // same folder
 
         				parentFrame.append('/').append(BalloonTemplateHandlerImpl.balloonDirectoryName);
         				parentFrame.append('/').append(work.getGmlId());

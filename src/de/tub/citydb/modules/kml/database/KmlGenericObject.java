@@ -1462,12 +1462,9 @@ public abstract class KmlGenericObject {
 			int objectclass_id = rs.getInt("objectclass_id");
 			String surfaceType = null;
 			if (objectclass_id != 0){
-				if (rs.getInt("objectclass_id") != 60 && rs.getInt("objectclass_id") != 61 && rs.getInt("objectclass_id") != 21){
+				if (rs.getInt("objectclass_id") == 33 || rs.getInt("objectclass_id") == 34){
 					surfaceType = TypeAttributeValueEnum.fromCityGMLClass(Util.classId2cityObject(rs.getInt("objectclass_id"))).toString();
 				}				
-			}
-			if (surfaceType != null && !surfaceType.endsWith("Surface")) {
-				surfaceType = surfaceType + "Surface";
 			}
 			if ((!includeGroundSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) ||
 					(!includeClosureSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType)))	{
