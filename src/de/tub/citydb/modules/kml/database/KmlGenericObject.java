@@ -1472,6 +1472,7 @@ public abstract class KmlGenericObject {
 			}
 
 			Object buildingGeometryObj = rs.getObject(1); 
+			
 			GeometryObject surface = convertToWGS84(geometryConverterAdapter.getPolygon(buildingGeometryObj));
 
 			eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));

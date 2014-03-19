@@ -688,8 +688,8 @@ public class CityFurniture extends KmlGenericObject{
 					}
 				}
 
-				// now convert to WGS84
-				GeometryObject surface = convertToWGS84(unconvertedSurface);
+				// now convert to WGS84 without applying transformation matrix (already done)
+				GeometryObject surface = super.convertToWGS84(unconvertedSurface);
 				unconvertedSurface = null;
 
 				PolygonType polygon = kmlFactory.createPolygonType();

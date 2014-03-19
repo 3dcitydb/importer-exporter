@@ -335,7 +335,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 				for (int j = 0; j < originalCoords.length; j += 3) {
 					double[] vals = new double[]{originalCoords[j], originalCoords[j+1], originalCoords[j+2], 1};
 					Matrix v = new Matrix(vals, 4);
-
 					v = transformation.times(v);
 					originalCoords[j] = v.get(0, 0) + refPointX;
 					originalCoords[j+1] = v.get(1, 0) + refPointY;
@@ -345,7 +344,8 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		}
 		return geomObj;
 	}
-
+	
+	// this function will be called prior
 	protected GeometryObject convertToWGS84(GeometryObject geomObj) throws SQLException {
 		return super.convertToWGS84(applyTransformationMatrix(geomObj));
 	}
@@ -396,6 +396,8 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			break;
 		case RELATIVE:
 			model.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+			break;
+		default:
 			break;
 		}
 
@@ -691,7 +693,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					}
 				}
 
-				// now convert to WGS84
+				// now convert to WGS84 without applying transformation matrix (already done)
 				GeometryObject surface = super.convertToWGS84(unconvertedSurface);
 				unconvertedSurface = null;
 
@@ -702,6 +704,8 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					break;
 				case RELATIVE:
 					polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+					break;
+				default:
 					break;
 				}
 				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
