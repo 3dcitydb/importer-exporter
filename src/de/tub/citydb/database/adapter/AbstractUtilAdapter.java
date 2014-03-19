@@ -159,6 +159,8 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 				break;
 			default:
 				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL));
 				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
 				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP));
 				classIds.add(Util.cityObject2classId(CityGMLClass.GENERIC_CITY_OBJECT));
