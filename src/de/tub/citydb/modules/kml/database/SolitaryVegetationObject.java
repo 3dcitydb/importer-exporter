@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.imageio.ImageIO;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
@@ -193,7 +194,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						refPointX = ordinatesArray[0];
 						refPointY = ordinatesArray[1];
 						refPointZ = ordinatesArray[2];
-
 						String transformationString = rs.getString(3);
 						if (transformationString != null) {
 							List<Double> m = Util.string2double(transformationString, "\\s+");
@@ -329,7 +329,9 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 	}
 
 	protected GeometryObject applyTransformationMatrix(GeometryObject geomObj) throws SQLException {
+		
 		if (transformation != null) {
+			
 			for (int i = 0; i < geomObj.getNumElements(); i++) {
 				double[] originalCoords = geomObj.getCoordinates(i);
 				for (int j = 0; j < originalCoords.length; j += 3) {
@@ -362,6 +364,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		}
 
 		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {0, 0, 0}); // will be turned into refPointX,Y,Z by convertToWGS84
+
 		setLocationX(reducePrecisionForXorY(originInWGS84[0]));
 		setLocationY(reducePrecisionForXorY(originInWGS84[1]));
 		setLocationZ(reducePrecisionForZ(originInWGS84[2]));
@@ -426,16 +429,23 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		return placemark;
 	}
 
+	// Origin for Collada scene
 	protected List<Point3d> setOrigins() {
 		List<Point3d> coords = new ArrayList<Point3d>();
-
-		if (transformation != null) { // for implicit geometries
-			setOriginX(refPointX * 100); // trick for very close coordinates
-			setOriginY(refPointY * 100);
-			setOriginZ(refPointZ * 100);
+		
+		if (transformation != null) { 
+			// for implicit geometries, bugfix for the previous version (V1.6)
+			// the local coordinates of the Origin Point must be converted from the local
+			// Cartesian coordinate system to the world Coordinate reference System
+			double[] originalCoords = new double[]{0, 0, 0, 1};
+			Matrix v = new Matrix(originalCoords, 4);
+			v = transformation.times(v);
+			setOriginX ((v.get(0, 0) + refPointX)*100);
+			setOriginY ((v.get(1, 0) + refPointY)*100);
+			setOriginZ ((v.get(2, 0) + refPointZ)*100);
 			// dummy
 			Point3d point3d = new Point3d(getOriginX(), getOriginY(), getOriginZ());
-			coords.add(point3d);
+			coords.add(point3d);			
 		}
 		else {
 			coords = super.setOrigins();
@@ -456,13 +466,12 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
-			for (String colladaQuery: Queries.COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID) { // parent surfaces come first
+			for (String colladaQuery: Queries.COLLADA_IMPLICIT_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID) { // parent surfaces come first
 				PreparedStatement psQuery = null;
 				ResultSet rs2 = null;
 				try {
 					psQuery = connection.prepareStatement(colladaQuery);
 					psQuery.setLong(1, surfaceRootId);
-					//					psQuery.setString(2, selectedTheme);
 					rs2 = psQuery.executeQuery();
 
 					while (rs2.next()) {
@@ -507,7 +516,20 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						}
 						else {
 							texImageUri = rs2.getString("tex_image_uri");
-							String texCoords = rs2.getString("texture_coordinates");
+							
+							StringBuffer sb =  new StringBuffer();
+							Object texCoordsObject = rs2.getObject("texture_coordinates"); 
+							if (texCoordsObject != null){
+								GeometryObject texCoordsGeometryObject = geometryConverterAdapter.getGeometry(texCoordsObject);
+								for (int i = 0; i < texCoordsGeometryObject.getNumElements(); i++) {
+									double[] coordinates = texCoordsGeometryObject.getCoordinates(i);
+									for (double coordinate : coordinates){
+										sb.append(String.valueOf(coordinate));
+										sb.append(" ");
+									}									
+								}									
+							}
+							String texCoords = sb.toString();
 
 							if (texImageUri != null && texImageUri.trim().length() != 0
 									&&  texCoords != null && texCoords.trim().length() != 0) {
@@ -520,6 +542,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 									// not already marked as wrapping texture && not already read in
 									TextureImage texImage = null;
 									try {
+									//	ImageIO.read(textureExportAdapter.getInStream(rs2, "tex_image", texImageUri));
 										texImage = ImageReader.read(textureExportAdapter.getInStream(rs2, "tex_image", texImageUri));
 									}
 									catch (IOException ioe) {}
@@ -553,7 +576,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						}
 
 						GeometryObject surface = geometryConverterAdapter.getPolygon(buildingGeometryObj);
-						surface = applyTransformationMatrix(surface);
+						surface = applyTransformationMatrix(surface);						
 						GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
 
 						int contourCount = surface.getNumElements();

@@ -219,6 +219,24 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				objectGroupSize.put(CityGMLClass.CITY_FURNITURE, colladaOptions.getGroupSize());
 			}
 		}
+		objectGroupCounter.put(CityGMLClass.TUNNEL, 0);
+		objectGroupSize.put(CityGMLClass.TUNNEL, 1);
+		objectGroup.put(CityGMLClass.TUNNEL, null);
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetTunnel()) {
+			colladaOptions = config.getProject().getKmlExporter().getTunnelColladaOptions();
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.TUNNEL, colladaOptions.getGroupSize());
+			}
+		}
+		objectGroupCounter.put(CityGMLClass.BRIDGE, 0);
+		objectGroupSize.put(CityGMLClass.BRIDGE, 1);
+		objectGroup.put(CityGMLClass.BRIDGE, null);
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetBridge()) {
+			colladaOptions = config.getProject().getKmlExporter().getBridgeColladaOptions();
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.BRIDGE, colladaOptions.getGroupSize());
+			}
+		}
 		// CityGMLClass.CITY_OBJECT_GROUP is left out, it does not make sense to group it without COLLADA DisplayForm 
 	}
 
@@ -283,6 +301,11 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 
 			// last objectGroups may be not empty but not big enough
+			//
+			// here we have a small problem. since more than one Workers have been created by the Worker Factory,
+			// so that each worker may process few works (< group size). as a result the exported objects could be
+			// distributed in several groups, one of which may contain less Feature objects.
+			
 			for (CityGMLClass cityObjectType: objectGroup.keySet()) {
 				if (objectGroupCounter.get(cityObjectType) != 0) {  // group is not empty
 					KmlGenericObject currentObjectGroup = objectGroup.get(cityObjectType);

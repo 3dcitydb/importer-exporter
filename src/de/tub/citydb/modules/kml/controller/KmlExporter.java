@@ -105,7 +105,7 @@ import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.PointAndCurve;
 import de.tub.citydb.config.project.resources.Resources;
 import de.tub.citydb.database.DatabaseConnectionPool;
-import de.tub.citydb.database.TypeAttributeValueEnum;
+
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.concurrent.IOWriterWorkerFactory;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -132,6 +132,7 @@ import de.tub.citydb.modules.kml.database.Transportation;
 import de.tub.citydb.modules.kml.database.Tunnel;
 import de.tub.citydb.modules.kml.database.WaterBody;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
+import de.tub.citydb.modules.kml.datatype.TypeAttributeValueEnum;
 
 public class KmlExporter implements EventHandler {
 	private final JAXBContext jaxbKmlContext;
@@ -1143,7 +1144,9 @@ public class KmlExporter implements EventHandler {
 
 		case DisplayForm.GEOMETRY:
 
-			boolean isBuilding = Building.STYLE_BASIS_NAME.equals(styleBasisName); // buildings are most complex
+			boolean isBuilding = Building.STYLE_BASIS_NAME.equals(styleBasisName);
+			boolean isBridge = Bridge.STYLE_BASIS_NAME.equals(styleBasisName); 
+			boolean isTunnel = Tunnel.STYLE_BASIS_NAME.equals(styleBasisName); 
 
 			indexOfDf = displayFormsForObjectType.indexOf(currentDisplayForm);
 			String wallFillColor = Integer.toHexString(DisplayForm.DEFAULT_WALL_FILL_COLOR);
@@ -1176,25 +1179,38 @@ public class KmlExporter implements EventHandler {
 			styleWallNormal.setBalloonStyle(balloonStyle);
 			if (isBuilding)
 				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString() + "Normal");
+			else if (isBridge)
+				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_WALL_SURFACE).toString() + "Normal");
+			else if (isTunnel)
+				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString() + "Normal");
 			else
 				styleWallNormal.setId(styleBasisName + currentDisplayForm.getName() + "Normal");
 			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxBuffer);
 
+			
+			LineStyleType lineStyleRoofNormal = kmlFactory.createLineStyleType();
+			lineStyleRoofNormal.setColor(hexStringToByteArray(roofLineColor));
+			PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
+			polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
+			StyleType styleRoofNormal = kmlFactory.createStyleType();
+			
 			if (isBuilding) {
-				PolyStyleType polyStyleGroundSurface = kmlFactory.createPolyStyleType();
-				polyStyleGroundSurface.setColor(hexStringToByteArray("ff00aa00"));
-				StyleType styleGroundSurface = kmlFactory.createStyleType();
-				styleGroundSurface.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString() + "Style");
-				styleGroundSurface.setPolyStyle(polyStyleGroundSurface);
-				styleGroundSurface.setBalloonStyle(balloonStyle);
-				marshaller.marshal(kmlFactory.createStyle(styleGroundSurface), saxBuffer);
-
-				LineStyleType lineStyleRoofNormal = kmlFactory.createLineStyleType();
-				lineStyleRoofNormal.setColor(hexStringToByteArray(roofLineColor));
-				PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
-				polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
-				StyleType styleRoofNormal = kmlFactory.createStyleType();
 				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_ROOF_SURFACE).toString() + "Normal");
+				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
+				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
+				styleRoofNormal.setBalloonStyle(balloonStyle);
+				marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxBuffer);
+
+			}
+			else if (isBridge) {
+				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_ROOF_SURFACE).toString() + "Normal");
+				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
+				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
+				styleRoofNormal.setBalloonStyle(balloonStyle);
+				marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxBuffer);
+			}
+			else if (isTunnel) {
+				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_ROOF_SURFACE).toString() + "Normal");
 				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
 				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
 				styleRoofNormal.setBalloonStyle(balloonStyle);
