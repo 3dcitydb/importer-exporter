@@ -77,7 +77,6 @@ import org.citygml.textureAtlas.model.TextureImage;
 import org.citygml.textureAtlas.model.TextureImagesInfo;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Color;
-import org.citygml4j.model.citygml.appearance.TextureCoordinates;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 import org.collada._2005._11.colladaschema.Accessor;
 import org.collada._2005._11.colladaschema.Asset;
@@ -139,8 +138,8 @@ import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.GeometryCounterEvent;
-import de.tub.citydb.util.Util;
 import de.tub.citydb.modules.kml.datatype.TypeAttributeValueEnum;
+import de.tub.citydb.util.Util;
 
 public abstract class KmlGenericObject {
 
@@ -661,7 +660,11 @@ public abstract class KmlGenericObject {
 			byte[] edges = {0, 1, 1, 2, 2, 0};			
 			boolean hasFound = false;
 
-			for (int i = 0; !hasFound && i < indexes.length; i += 3) {			
+			for (int i = 0; !hasFound && i < indexes.length; i += 3) {				
+				// skip degenerated triangles
+				if (indexes[i] == indexes[i + 1] || indexes[i + 1] == indexes[i + 2] || indexes[i] == indexes[i + 2])
+					continue;
+				
 				for (int j = 0; j < edges.length; j += 2) {
 					int first = i + edges[j];
 					int second = i + edges[j + 1]; 
