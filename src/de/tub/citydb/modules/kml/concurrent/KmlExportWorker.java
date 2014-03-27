@@ -58,6 +58,7 @@ import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.BlobExportAdapter;
 import de.tub.citydb.database.adapter.BlobType;
 import de.tub.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
+import de.tub.citydb.modules.kml.database.Bridge;
 import de.tub.citydb.modules.kml.database.Building;
 import de.tub.citydb.modules.kml.database.CityFurniture;
 import de.tub.citydb.modules.kml.database.CityObjectGroup;
@@ -72,6 +73,7 @@ import de.tub.citydb.modules.kml.database.PlantCover;
 import de.tub.citydb.modules.kml.database.Relief;
 import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
 import de.tub.citydb.modules.kml.database.Transportation;
+import de.tub.citydb.modules.kml.database.Tunnel;
 import de.tub.citydb.modules.kml.database.WaterBody;
 
 public class KmlExportWorker implements Worker<KmlSplittingResult> {
@@ -217,6 +219,24 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				objectGroupSize.put(CityGMLClass.CITY_FURNITURE, colladaOptions.getGroupSize());
 			}
 		}
+		objectGroupCounter.put(CityGMLClass.TUNNEL, 0);
+		objectGroupSize.put(CityGMLClass.TUNNEL, 1);
+		objectGroup.put(CityGMLClass.TUNNEL, null);
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetTunnel()) {
+			colladaOptions = config.getProject().getKmlExporter().getTunnelColladaOptions();
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.TUNNEL, colladaOptions.getGroupSize());
+			}
+		}
+		objectGroupCounter.put(CityGMLClass.BRIDGE, 0);
+		objectGroupSize.put(CityGMLClass.BRIDGE, 1);
+		objectGroup.put(CityGMLClass.BRIDGE, null);
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetBridge()) {
+			colladaOptions = config.getProject().getKmlExporter().getBridgeColladaOptions();
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.BRIDGE, colladaOptions.getGroupSize());
+			}
+		}
 		// CityGMLClass.CITY_OBJECT_GROUP is left out, it does not make sense to group it without COLLADA DisplayForm 
 	}
 
@@ -281,6 +301,11 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			}
 
 			// last objectGroups may be not empty but not big enough
+			//
+			// here we have a small problem. since more than one Workers have been created by the Worker Factory,
+			// so that each worker may process few works (< group size). as a result the exported objects could be
+			// distributed in several groups, one of which may contain less Feature objects.
+			
 			for (CityGMLClass cityObjectType: objectGroup.keySet()) {
 				if (objectGroupCounter.get(cityObjectType) != 0) {  // group is not empty
 					KmlGenericObject currentObjectGroup = objectGroup.get(cityObjectType);
@@ -400,59 +425,78 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 						eventDispatcher,
 						config);
 				break;
-				/*
-				case RASTER_RELIEF:
-				case MASSPOINT_RELIEF:
-				case BREAKLINE_RELIEF:
-				case TIN_RELIEF:
-				 */
-				case RELIEF_FEATURE:
-					singleObject = new Relief(connection,
-							kmlExporterManager,
-							kmlFactory,
-							databaseAdapter,
-							textureExportAdapter,
-							elevationServiceHandler,
-							getBalloonTemplateHandler(featureClass),
-							eventDispatcher,
-							config);
-					break;
+				
+			case RELIEF_FEATURE:
+				singleObject = new Relief(connection,
+						kmlExporterManager,
+						kmlFactory,
+						databaseAdapter,
+						textureExportAdapter,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
 
-				case GENERIC_CITY_OBJECT:
-					singleObject = new GenericCityObject(connection,
-							kmlExporterManager,
-							kmlFactory,
-							databaseAdapter,
-							textureExportAdapter,
-							elevationServiceHandler,
-							getBalloonTemplateHandler(featureClass),
-							eventDispatcher,
-							config);
-					break;
+			case GENERIC_CITY_OBJECT:
+				singleObject = new GenericCityObject(connection,
+						kmlExporterManager,
+						kmlFactory,
+						databaseAdapter,
+						textureExportAdapter,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
 
-				case CITY_FURNITURE:
-					singleObject = new CityFurniture(connection,
-							kmlExporterManager,
-							kmlFactory,
-							databaseAdapter,
-							textureExportAdapter,
-							elevationServiceHandler,
-							getBalloonTemplateHandler(featureClass),
-							eventDispatcher,
-							config);
-					break;
+			case CITY_FURNITURE:
+				singleObject = new CityFurniture(connection,
+						kmlExporterManager,
+						kmlFactory,
+						databaseAdapter,
+						textureExportAdapter,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
 
-				case CITY_OBJECT_GROUP:
-					singleObject = new CityObjectGroup(connection,
-							kmlExporterManager,
-							kmlFactory,
-							databaseAdapter,
-							textureExportAdapter,
-							elevationServiceHandler,
-							getBalloonTemplateHandler(featureClass),
-							eventDispatcher,
-							config);
-					break;
+			case CITY_OBJECT_GROUP:
+				singleObject = new CityObjectGroup(connection,
+						kmlExporterManager,
+						kmlFactory,
+						databaseAdapter,
+						textureExportAdapter,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
+			case BRIDGE:
+				singleObject = new Bridge(connection,
+						kmlExporterManager,
+						kmlFactory,
+						databaseAdapter,
+						textureExportAdapter,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
+			case TUNNEL:
+				singleObject = new Tunnel(connection,
+						kmlExporterManager,
+						kmlFactory,
+						databaseAdapter,
+						textureExportAdapter,
+						elevationServiceHandler,
+						getBalloonTemplateHandler(featureClass),
+						eventDispatcher,
+						config);
+				break;
+			default:
+				break;
 
 			}
 
@@ -581,23 +625,23 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		case SQUARE:
 			balloonSettings = config.getProject().getKmlExporter().getTransportationBalloon();
 			break;
-			/*
-			case RASTER_RELIEF:
-			case MASSPOINT_RELIEF:
-			case BREAKLINE_RELIEF:
-			case TIN_RELIEF:
-			 */
 		case RELIEF_FEATURE:
 			balloonSettings = config.getProject().getKmlExporter().getReliefBalloon();
 			break;
 		case GENERIC_CITY_OBJECT:
-			balloonSettings = config.getProject().getKmlExporter().getGenericCityObjectBalloon();
+			balloonSettings = config.getProject().getKmlExporter().getGenericCityObject3DBalloon();
 			break;
 		case CITY_FURNITURE:
 			balloonSettings = config.getProject().getKmlExporter().getCityFurnitureBalloon();
 			break;
 		case CITY_OBJECT_GROUP:
 			balloonSettings = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
+			break;
+		case BRIDGE:
+			balloonSettings = config.getProject().getKmlExporter().getBridgeBalloon();
+			break;
+		case TUNNEL:
+			balloonSettings = config.getProject().getKmlExporter().getTunnelBalloon();
 			break;
 		default:
 			return null;

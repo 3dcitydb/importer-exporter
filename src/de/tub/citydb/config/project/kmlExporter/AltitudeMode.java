@@ -41,8 +41,10 @@ public enum AltitudeMode {
 	@XmlEnumValue("relative")
     RELATIVE("relative"),
     @XmlEnumValue("absolute")
-    ABSOLUTE("absolute");
-
+    ABSOLUTE("absolute"),
+    @XmlEnumValue("clampToGround")
+    CLAMP_TO_GROUND("clampToGround");
+    
     private final String value;
 
     AltitudeMode(String v) {

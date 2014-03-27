@@ -102,9 +102,10 @@ import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.config.project.kmlExporter.PointAndCurve;
 import de.tub.citydb.config.project.resources.Resources;
 import de.tub.citydb.database.DatabaseConnectionPool;
-import de.tub.citydb.database.TypeAttributeValueEnum;
+
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.concurrent.IOWriterWorkerFactory;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -116,6 +117,7 @@ import de.tub.citydb.modules.common.event.StatusDialogTitle;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.FilterMode;
 import de.tub.citydb.modules.kml.concurrent.KmlExportWorkerFactory;
+import de.tub.citydb.modules.kml.database.Bridge;
 import de.tub.citydb.modules.kml.database.Building;
 import de.tub.citydb.modules.kml.database.CityFurniture;
 import de.tub.citydb.modules.kml.database.CityObjectGroup;
@@ -127,8 +129,10 @@ import de.tub.citydb.modules.kml.database.PlantCover;
 import de.tub.citydb.modules.kml.database.Relief;
 import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
 import de.tub.citydb.modules.kml.database.Transportation;
+import de.tub.citydb.modules.kml.database.Tunnel;
 import de.tub.citydb.modules.kml.database.WaterBody;
 import de.tub.citydb.modules.kml.util.CityObject4JSON;
+import de.tub.citydb.modules.kml.datatype.TypeAttributeValueEnum;
 
 public class KmlExporter implements EventHandler {
 	private final JAXBContext jaxbKmlContext;
@@ -226,9 +230,11 @@ public class KmlExporter implements EventHandler {
 			return false;
 		}
 
+		// check whether the selected theme existed in the database,just for Building Class...
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
 		if (!selectedTheme.equals(de.tub.citydb.config.project.kmlExporter.KmlExporter.THEME_NONE)) {
 			try {
+				// displayForms Could be e.g. Footprint, Extruded, Geometry and COLLADA
 				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 					if (displayForm.getForm() == DisplayForm.COLLADA && displayForm.isActive()) {
 						if (!dbPool.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList(workspace).contains(selectedTheme)) {
@@ -244,6 +250,7 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 
+		// check whether the Balloon template files existed, if not, error message will be printed out: file not found! 
 		boolean balloonCheck = checkBalloonSettings(CityGMLClass.BUILDING);
 		balloonCheck = checkBalloonSettings(CityGMLClass.WATER_BODY) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.LAND_USE) && balloonCheck;
@@ -253,11 +260,14 @@ public class KmlExporter implements EventHandler {
 		balloonCheck = checkBalloonSettings(CityGMLClass.CITY_FURNITURE) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.GENERIC_CITY_OBJECT) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.CITY_OBJECT_GROUP) && balloonCheck;
+		balloonCheck = checkBalloonSettings(CityGMLClass.BRIDGE) && balloonCheck;
+		balloonCheck = checkBalloonSettings(CityGMLClass.TUNNEL) && balloonCheck;
 		if (!balloonCheck) return false;
 
 		// getting export filter
 		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
 		boolean isBBoxActive = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue();
+		
 		// bounding box config
 		Tiling tiling = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
 
@@ -310,7 +320,7 @@ public class KmlExporter implements EventHandler {
 			rows = 1;
 			columns = 1;
 		}
-
+		
 		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 			if (!displayForm.isActive()) continue;
 
@@ -542,12 +552,7 @@ public class KmlExporter implements EventHandler {
 							return false;
 						}
 					}
-/*
-					catch (FileNotFoundException fnfe) {
-						Logger.getInstance().error("Path \"" + path + "\" not found.");
-						return false;
-					}
-*/
+
 					finally {
 						// clean up
 						if (ioWriterPool != null && !ioWriterPool.isTerminated())
@@ -590,7 +595,6 @@ public class KmlExporter implements EventHandler {
 				Iterator<Long> iterator = alreadyExported.keySet().iterator();
 				while (iterator.hasNext()) {
 					Long id = iterator.next();
-//					outputStream.write(("\t\"" + id + "\": {").toString().getBytes(CHARSET));
 					outputStream.write(alreadyExported.get(id).toString().getBytes(CHARSET));
 					if (iterator.hasNext()) {
 						outputStream.write(",\n".getBytes(CHARSET));
@@ -605,7 +609,6 @@ public class KmlExporter implements EventHandler {
 			}
 			catch (IOException ioe) {
 				Logger.getInstance().error("I/O error: " + ioe.getMessage());
-//				ioe.printStackTrace();
 			}
 		}
 		
@@ -638,7 +641,6 @@ public class KmlExporter implements EventHandler {
 		if (bboxSrs == null) {
 			Logger.getInstance().warn("Could not read bbox reference system. DB reference system will be assumed.");
 			bboxSrs = dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
-//			throw new SQLException("Unknown BoundingBox srs");
 		}
 
 		if (bboxSrs.getSrid() != 0 && bboxSrs.getSrid() != dbSrs.getSrid()) {
@@ -779,6 +781,16 @@ public class KmlExporter implements EventHandler {
 							addStyle(displayForm, CityGMLClass.WATER_BODY);
 						}
 					}
+					if (featureFilter.isSetBridge()) {
+						for (DisplayForm displayForm : config.getProject().getKmlExporter().getBridgeDisplayForms()) {
+							addStyle(displayForm, CityGMLClass.BRIDGE);
+						}
+					}
+					if (featureFilter.isSetTunnel()) {
+						for (DisplayForm displayForm : config.getProject().getKmlExporter().getTunnelDisplayForms()) {
+							addStyle(displayForm, CityGMLClass.TUNNEL);
+						}
+					}
 				}
 				// make sure header has been written
 				saxWriter.flush();
@@ -914,13 +926,6 @@ public class KmlExporter implements EventHandler {
 						 config.getProject().getKmlExporter().getTransportationDisplayForms(),
 						 Transportation.STYLE_BASIS_NAME);
 				break;
-
-/*
-			case RASTER_RELIEF:
-			case MASSPOINT_RELIEF:
-			case BREAKLINE_RELIEF:
-			case TIN_RELIEF:
-*/
 			case RELIEF_FEATURE:
 				addStyle(currentDisplayForm,
 						 config.getProject().getKmlExporter().getReliefDisplayForms(),
@@ -940,6 +945,7 @@ public class KmlExporter implements EventHandler {
 				break;
 
 			case GENERIC_CITY_OBJECT:
+				addGenericCityObjectPointAndCurveStyle();
 				addStyle(currentDisplayForm,
 						 config.getProject().getKmlExporter().getGenericCityObjectDisplayForms(),
 						 GenericCityObject.STYLE_BASIS_NAME);
@@ -959,15 +965,105 @@ public class KmlExporter implements EventHandler {
 						 config.getProject().getKmlExporter().getWaterBodyDisplayForms(),
 						 WaterBody.STYLE_BASIS_NAME);
 				break;
-
-			case BUILDING: // must be last
+			case BRIDGE:
+				addStyle(currentDisplayForm, config.getProject().getKmlExporter().getBridgeDisplayForms(), 
+						Bridge.STYLE_BASIS_NAME);
+				break;
+			case TUNNEL:
+				addStyle(currentDisplayForm, config.getProject().getKmlExporter().getTunnelDisplayForms(), 
+						Tunnel.STYLE_BASIS_NAME);
+				break;
+			case BUILDING: // must be last, why?
 			default:
 				addStyle(currentDisplayForm,
 						 config.getProject().getKmlExporter().getBuildingDisplayForms(),
 						 Building.STYLE_BASIS_NAME);
 		}
 	}
+	
+	private void addGenericCityObjectPointAndCurveStyle() throws JAXBException {
 
+		SAXEventBuffer saxBuffer = new SAXEventBuffer();
+		Marshaller marshaller = jaxbKmlContext.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+
+		BalloonStyleType balloonStyle = new BalloonStyleType();
+		balloonStyle.setText("$[description]");
+
+		PointAndCurve pacSettings = config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve();
+
+		LineStyleType pointLineStyleNormal = kmlFactory.createLineStyleType();
+		pointLineStyleNormal.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointNormalColor()))));
+		pointLineStyleNormal.setWidth(pacSettings.getPointThickness());
+		StyleType pointStyleNormal = kmlFactory.createStyleType();
+		pointStyleNormal.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Normal");
+		pointStyleNormal.setLineStyle(pointLineStyleNormal);
+		pointStyleNormal.setBalloonStyle(balloonStyle);
+
+		marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxBuffer);
+		
+		if (pacSettings.isPointHighlightingEnabled()) {
+			LineStyleType pointLineStyleHighlight = kmlFactory.createLineStyleType();
+			pointLineStyleHighlight.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointHighlightedColor()))));
+			pointLineStyleHighlight.setWidth(pacSettings.getPointHighlightedThickness());
+			StyleType pointStyleHighlight = kmlFactory.createStyleType();
+			pointStyleHighlight.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Highlight");
+			pointStyleHighlight.setLineStyle(pointLineStyleHighlight);
+			pointStyleHighlight.setBalloonStyle(balloonStyle);
+
+			PairType pairPointNormal = kmlFactory.createPairType();
+			pairPointNormal.setKey(StyleStateEnumType.NORMAL);
+			pairPointNormal.setStyleUrl("#" + pointStyleNormal.getId());
+			PairType pairPointHighlight = kmlFactory.createPairType();
+			pairPointHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
+			pairPointHighlight.setStyleUrl("#" + pointStyleHighlight.getId());
+			StyleMapType styleMapPoint = kmlFactory.createStyleMapType();
+			styleMapPoint.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Style");
+			styleMapPoint.getPair().add(pairPointNormal);
+			styleMapPoint.getPair().add(pairPointHighlight);
+
+			marshaller.marshal(kmlFactory.createStyle(pointStyleHighlight), saxBuffer);
+			marshaller.marshal(kmlFactory.createStyleMap(styleMapPoint), saxBuffer);
+		}
+		
+		
+		LineStyleType lineStyleNormal = kmlFactory.createLineStyleType();
+		lineStyleNormal.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getCurveNormalColor()))));
+		lineStyleNormal.setWidth(pacSettings.getCurveThickness());
+		StyleType curveStyleNormal = kmlFactory.createStyleType();
+		curveStyleNormal.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.CURVE + "Normal");
+		curveStyleNormal.setLineStyle(lineStyleNormal);
+		curveStyleNormal.setBalloonStyle(balloonStyle);
+
+		marshaller.marshal(kmlFactory.createStyle(curveStyleNormal), saxBuffer);
+
+		if (pacSettings.isCurveHighlightingEnabled()) {
+			LineStyleType lineStyleHighlight = kmlFactory.createLineStyleType();
+			lineStyleHighlight.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getCurveHighlightedColor()))));
+			lineStyleHighlight.setWidth(pacSettings.getCurveHighlightedThickness());
+			StyleType curveStyleHighlight = kmlFactory.createStyleType();
+			curveStyleHighlight.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.CURVE + "Highlight");
+			curveStyleHighlight.setLineStyle(lineStyleHighlight);
+			curveStyleHighlight.setBalloonStyle(balloonStyle);
+
+			PairType pairCurveNormal = kmlFactory.createPairType();
+			pairCurveNormal.setKey(StyleStateEnumType.NORMAL);
+			pairCurveNormal.setStyleUrl("#" + curveStyleNormal.getId());
+			PairType pairCurveHighlight = kmlFactory.createPairType();
+			pairCurveHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
+			pairCurveHighlight.setStyleUrl("#" + curveStyleHighlight.getId());
+			StyleMapType styleMapCurve = kmlFactory.createStyleMapType();
+			styleMapCurve.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.CURVE + "Style");
+			styleMapCurve.getPair().add(pairCurveNormal);
+			styleMapCurve.getPair().add(pairCurveHighlight);
+
+			marshaller.marshal(kmlFactory.createStyle(curveStyleHighlight), saxBuffer);
+			marshaller.marshal(kmlFactory.createStyleMap(styleMapCurve), saxBuffer);
+		}
+
+		ioWriterPool.addWork(saxBuffer);
+	}
+	
 	private void addStyle(DisplayForm currentDisplayForm,
 						  List<DisplayForm> displayFormsForObjectType,
 						  String styleBasisName) throws JAXBException {
@@ -1048,7 +1144,9 @@ public class KmlExporter implements EventHandler {
 
 		case DisplayForm.GEOMETRY:
 
-			boolean isBuilding = Building.STYLE_BASIS_NAME.equals(styleBasisName); // buildings are most complex
+			boolean isBuilding = Building.STYLE_BASIS_NAME.equals(styleBasisName);
+			boolean isBridge = Bridge.STYLE_BASIS_NAME.equals(styleBasisName); 
+			boolean isTunnel = Tunnel.STYLE_BASIS_NAME.equals(styleBasisName); 
 
 			indexOfDf = displayFormsForObjectType.indexOf(currentDisplayForm);
 			String wallFillColor = Integer.toHexString(DisplayForm.DEFAULT_WALL_FILL_COLOR);
@@ -1081,25 +1179,38 @@ public class KmlExporter implements EventHandler {
 			styleWallNormal.setBalloonStyle(balloonStyle);
 			if (isBuilding)
 				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString() + "Normal");
+			else if (isBridge)
+				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_WALL_SURFACE).toString() + "Normal");
+			else if (isTunnel)
+				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString() + "Normal");
 			else
 				styleWallNormal.setId(styleBasisName + currentDisplayForm.getName() + "Normal");
 			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxBuffer);
 
+			
+			LineStyleType lineStyleRoofNormal = kmlFactory.createLineStyleType();
+			lineStyleRoofNormal.setColor(hexStringToByteArray(roofLineColor));
+			PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
+			polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
+			StyleType styleRoofNormal = kmlFactory.createStyleType();
+			
 			if (isBuilding) {
-				PolyStyleType polyStyleGroundSurface = kmlFactory.createPolyStyleType();
-				polyStyleGroundSurface.setColor(hexStringToByteArray("ff00aa00"));
-				StyleType styleGroundSurface = kmlFactory.createStyleType();
-				styleGroundSurface.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString() + "Style");
-				styleGroundSurface.setPolyStyle(polyStyleGroundSurface);
-				styleGroundSurface.setBalloonStyle(balloonStyle);
-				marshaller.marshal(kmlFactory.createStyle(styleGroundSurface), saxBuffer);
-
-				LineStyleType lineStyleRoofNormal = kmlFactory.createLineStyleType();
-				lineStyleRoofNormal.setColor(hexStringToByteArray(roofLineColor));
-				PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
-				polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
-				StyleType styleRoofNormal = kmlFactory.createStyleType();
 				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_ROOF_SURFACE).toString() + "Normal");
+				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
+				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
+				styleRoofNormal.setBalloonStyle(balloonStyle);
+				marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxBuffer);
+
+			}
+			else if (isBridge) {
+				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_ROOF_SURFACE).toString() + "Normal");
+				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
+				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
+				styleRoofNormal.setBalloonStyle(balloonStyle);
+				marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxBuffer);
+			}
+			else if (isTunnel) {
+				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_ROOF_SURFACE).toString() + "Normal");
 				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
 				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
 				styleRoofNormal.setBalloonStyle(balloonStyle);
@@ -1109,19 +1220,14 @@ public class KmlExporter implements EventHandler {
 			if (currentDisplayForm.isHighlightingEnabled()) {
 				String highlightFillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
 				String highlightLineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
-/*
-				if (indexOfDf != -1) {
-					currentDisplayForm = displayFormsForObjectType.get(indexOfDf);
-*/
-					if (currentDisplayForm.isSetRgba4()) {
-						highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba4()));
-					}
-					if (currentDisplayForm.isSetRgba5()) {
-						highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba5()));
-					}
-/*
+
+				if (currentDisplayForm.isSetRgba4()) {
+					highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba4()));
 				}
-*/
+				if (currentDisplayForm.isSetRgba5()) {
+					highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba5()));
+				}
+
 				LineStyleType lineStyleGeometryInvisible = kmlFactory.createLineStyleType();
 				lineStyleGeometryInvisible.setColor(hexStringToByteArray("01" + highlightLineColor.substring(2)));
 				PolyStyleType polyStyleGeometryInvisible = kmlFactory.createPolyStyleType();
@@ -1271,62 +1377,75 @@ public class KmlExporter implements EventHandler {
 	}
 
 	private boolean checkBalloonSettings (CityGMLClass cityObjectType) {
-		Balloon balloonSettings = null;
+		Balloon[] balloonSettings = null;
 		boolean settingsMustBeChecked = false;
 		switch (cityObjectType) {
 			case BUILDING:
-				balloonSettings = config.getProject().getKmlExporter().getBuildingBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getBuildingBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetBuilding();
 				break;
 			case WATER_BODY:
-				balloonSettings = config.getProject().getKmlExporter().getWaterBodyBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getWaterBodyBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetWaterBody();
 				break;
 			case LAND_USE:
-				balloonSettings = config.getProject().getKmlExporter().getLandUseBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getLandUseBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetLandUse();
 				break;
 			case SOLITARY_VEGETATION_OBJECT:
-				balloonSettings = config.getProject().getKmlExporter().getVegetationBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getVegetationBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetVegetation();
 				break;
 			case TRANSPORTATION_COMPLEX:
-				balloonSettings = config.getProject().getKmlExporter().getTransportationBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getTransportationBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetTransportation();
 				break;
 			case RELIEF_FEATURE:
-				balloonSettings = config.getProject().getKmlExporter().getReliefBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getReliefBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetReliefFeature();
 				break;
 			case CITY_FURNITURE:
-				balloonSettings = config.getProject().getKmlExporter().getCityFurnitureBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getCityFurnitureBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetCityFurniture();
 				break;
 			case GENERIC_CITY_OBJECT:
-				balloonSettings = config.getProject().getKmlExporter().getGenericCityObjectBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getGenericCityObject3DBalloon(),
+						config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getPointBalloon(),
+						config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getCurveBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetGenericCityObject();
 				break;
 			case CITY_OBJECT_GROUP:
-				balloonSettings = config.getProject().getKmlExporter().getCityObjectGroupBalloon();
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getCityObjectGroupBalloon()};
 				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetCityObjectGroup();
+				break;
+			case BRIDGE:
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getBridgeBalloon()};
+				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetBridge();
+				break;
+			case TUNNEL:
+				balloonSettings = new Balloon[]{config.getProject().getKmlExporter().getTunnelBalloon()};
+				settingsMustBeChecked = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass().isSetTunnel();
 				break;
 			default:
 				return false;
 		}
 		
-		if (settingsMustBeChecked &&
-			balloonSettings.isIncludeDescription() &&
-			balloonSettings.getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
-			String balloonTemplateFilename = balloonSettings.getBalloonContentTemplateFile();
-			if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
-				File ballonTemplateFile = new File(balloonTemplateFilename);
-				if (!ballonTemplateFile.exists()) {
-					Logger.getInstance().error("Balloon template file \"" + balloonTemplateFilename + "\" not found.");
-					return false;
+		boolean success = true;
+		for (Balloon balloon: balloonSettings) {
+			if (settingsMustBeChecked &&
+					balloon.isIncludeDescription() &&
+					balloon.getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
+				String balloonTemplateFilename = balloon.getBalloonContentTemplateFile();
+				if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
+					File ballonTemplateFile = new File(balloonTemplateFilename);
+					if (!ballonTemplateFile.exists()) {
+						Logger.getInstance().error("Balloon template file \"" + balloonTemplateFilename + "\" not found.");
+						success = false;
+					}
 				}
 			}
 		}
-		return true;
+		return success;
 	}
 
 	private static void getAllFiles(File startFolder, List<File> fileList) {
@@ -1390,6 +1509,12 @@ public class KmlExporter implements EventHandler {
 			}
 			else if (kmlExportObject instanceof CityFurniture) {
 				type = CityGMLClass.CITY_FURNITURE;
+			}
+			else if (kmlExportObject instanceof Bridge) {
+				type = CityGMLClass.BRIDGE;
+			}
+			else if (kmlExportObject instanceof Tunnel) {
+				type = CityGMLClass.TUNNEL;
 			}
 			else
 				return;

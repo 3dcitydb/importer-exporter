@@ -172,16 +172,20 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 	private JLabel featureClassesLabel = new JLabel();
 	private CheckboxTree fcTree;
-	private DefaultMutableTreeNode cityObject;
+	private DefaultMutableTreeNode cityObject;	
 	private DefaultMutableTreeNode building;
-	private DefaultMutableTreeNode waterBody;
-	private DefaultMutableTreeNode landUse;
-	private DefaultMutableTreeNode vegetation;
-	private DefaultMutableTreeNode transportation;
-	private DefaultMutableTreeNode relief;
 	private DefaultMutableTreeNode cityFurniture;
-	private DefaultMutableTreeNode genericCityObject;
 	private DefaultMutableTreeNode cityObjectGroup;
+	private DefaultMutableTreeNode genericCityObject;
+	private DefaultMutableTreeNode landUse;	
+	private DefaultMutableTreeNode relief;	
+	private DefaultMutableTreeNode transportation;	
+	private DefaultMutableTreeNode vegetation;
+	private DefaultMutableTreeNode waterBody;
+	private DefaultMutableTreeNode bridge;
+	private DefaultMutableTreeNode tunnel;
+	
+	
 
 	private JButton exportButton = new JButton("");
 
@@ -360,17 +364,21 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		cityFurniture = new DefaultMutableTreeNode(FeatureClassMode.CITYFURNITURE);
 		genericCityObject = new DefaultMutableTreeNode(FeatureClassMode.GENERICCITYOBJECT);
 		cityObjectGroup = new DefaultMutableTreeNode(FeatureClassMode.CITYOBJECTGROUP);
+		bridge = new DefaultMutableTreeNode(FeatureClassMode.BRIDGE);
+		tunnel = new DefaultMutableTreeNode(FeatureClassMode.TUNNEL);
 
+		cityObject.add(bridge);
 		cityObject.add(building);
-		cityObject.add(waterBody);
-		cityObject.add(landUse);
-		cityObject.add(vegetation);
-		cityObject.add(transportation);
-		cityObject.add(relief);
 		cityObject.add(cityFurniture);
-		cityObject.add(genericCityObject);
 		cityObject.add(cityObjectGroup);
-
+		cityObject.add(genericCityObject);
+		cityObject.add(landUse);
+		cityObject.add(relief);
+		cityObject.add(transportation);
+		cityObject.add(tunnel);		
+		cityObject.add(vegetation);
+		cityObject.add(waterBody);
+		
 		fcTree = new CheckboxTree(cityObject);
 		fcTree.setRowHeight((int)(new JCheckBox().getPreferredSize().getHeight()) - 4);		
 		fcTree.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), 
@@ -570,6 +578,18 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		else {
 			fcTree.getCheckingModel().removeCheckingPath(new TreePath(cityObjectGroup.getPath()));
 		}
+		if (kmlExporter.getFilter().getComplexFilter().getFeatureClass().isSetBridge()) {
+			fcTree.getCheckingModel().addCheckingPath(new TreePath(bridge.getPath()));
+		}
+		else {
+			fcTree.getCheckingModel().removeCheckingPath(new TreePath(bridge.getPath()));
+		}
+		if (kmlExporter.getFilter().getComplexFilter().getFeatureClass().isSetTunnel()) {
+			fcTree.getCheckingModel().addCheckingPath(new TreePath(tunnel.getPath()));
+		}
+		else {
+			fcTree.getCheckingModel().removeCheckingPath(new TreePath(tunnel.getPath()));
+		}
 		// end of block
 
 		boolean isFirst = true;
@@ -723,6 +743,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		setDisplayFormSettings(kmlExporter.getCityFurnitureDisplayForms());
 		setDisplayFormSettings(kmlExporter.getGenericCityObjectDisplayForms());
 		setDisplayFormSettings(kmlExporter.getCityObjectGroupDisplayForms());
+		setDisplayFormSettings(kmlExporter.getBridgeDisplayForms());
+		setDisplayFormSettings(kmlExporter.getTunnelDisplayForms());
 
 		//		if (themeComboBox.getItemCount() > 0) {
 		kmlExporter.setAppearanceTheme(themeComboBox.getSelectedItem().toString());
@@ -737,7 +759,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		kmlExportFilter.getComplexFilter().getFeatureClass().setCityFurniture(fcTree.getCheckingModel().isPathChecked(new TreePath(cityFurniture.getPath())));
 		kmlExportFilter.getComplexFilter().getFeatureClass().setGenericCityObject(fcTree.getCheckingModel().isPathChecked(new TreePath(genericCityObject.getPath())));
 		kmlExportFilter.getComplexFilter().getFeatureClass().setCityObjectGroup(fcTree.getCheckingModel().isPathChecked(new TreePath(cityObjectGroup.getPath())));
-
+		kmlExportFilter.getComplexFilter().getFeatureClass().setBridge(fcTree.getCheckingModel().isPathChecked(new TreePath(bridge.getPath())));
+		kmlExportFilter.getComplexFilter().getFeatureClass().setTunnel(fcTree.getCheckingModel().isPathChecked(new TreePath(tunnel.getPath())));
+		
 		config.getProject().setKmlExporter(kmlExporter);
 	}
 
@@ -985,7 +1009,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					!filter.getComplexFilter().getFeatureClass().isSetReliefFeature() &&
 					!filter.getComplexFilter().getFeatureClass().isSetTransportation() &&
 					!filter.getComplexFilter().getFeatureClass().isSetVegetation() &&
-					!filter.getComplexFilter().getFeatureClass().isSetWaterBody()) {
+					!filter.getComplexFilter().getFeatureClass().isSetWaterBody() &&
+					!filter.getComplexFilter().getFeatureClass().isSetBridge() &&
+					!filter.getComplexFilter().getFeatureClass().isSetTunnel()) {
 				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"),
 						Internal.I18N.getString("kmlExport.dialog.error.incorrectData.featureClass"));
 				return;
@@ -1088,6 +1114,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, cityFurniture}), boundingBoxRadioButton.isSelected());
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, genericCityObject}), boundingBoxRadioButton.isSelected());
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, cityObjectGroup}), boundingBoxRadioButton.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, bridge}), boundingBoxRadioButton.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, tunnel}), boundingBoxRadioButton.isSelected());
 		fcTree.repaint();
 
 		noTilingRadioButton.setEnabled(boundingBoxRadioButton.isSelected());
@@ -1133,7 +1161,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		themeComboBox.setEnabled(dbPool.isConnected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 		fetchThemesButton.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
-		fcTree.getCheckingModel().setPathEnabled(new TreePath(building.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
+	//	fcTree.getCheckingModel().setPathEnabled(new TreePath(building.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
 		fcTree.getCheckingModel().setPathEnabled(new TreePath(vegetation.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
 		fcTree.getCheckingModel().setPathEnabled(new TreePath(relief.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
 		fcTree.getCheckingModel().setPathEnabled(new TreePath(cityFurniture.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));

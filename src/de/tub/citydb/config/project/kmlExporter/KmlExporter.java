@@ -68,10 +68,18 @@ import de.tub.citydb.config.project.resources.Resources;
 		"cityFurnitureBalloon",
 		"genericCityObjectDisplayForms",
 		"genericCityObjectColladaOptions",
-		"genericCityObjectBalloon",
+		"genericCityObject3DBalloon",
+		"genericCityObjectPointAndCurve",
 		"cityObjectGroupDisplayForms",
 		"cityObjectGroupBalloon",
-
+		"bridgeDisplayForms",
+		"bridgeColladaOptions",
+		"bridgeBalloon",		
+		"tunnelDisplayForms",
+		"tunnelColladaOptions",
+		"tunnelBalloon",	
+		
+		
 		"exportAsKmz",
 		"showBoundingBox",
 		"showTileBorders",
@@ -135,11 +143,22 @@ public class KmlExporter {
 	@XmlElementWrapper(name="genericCityObjectDisplayForms")	
 	private List<DisplayForm> genericCityObjectDisplayForms;
 	private ColladaOptions genericCityObjectColladaOptions;
-	private Balloon genericCityObjectBalloon;
+	private Balloon genericCityObject3DBalloon;
+	private PointAndCurve genericCityObjectPointAndCurve;
 	@XmlElement(name="displayForm", required=true)
 	@XmlElementWrapper(name="cityObjectGroupDisplayForms")	
 	private List<DisplayForm> cityObjectGroupDisplayForms;
 	private Balloon cityObjectGroupBalloon;
+	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="bridgeDisplayForms")	
+	private List<DisplayForm> bridgeDisplayForms;
+	private ColladaOptions bridgeColladaOptions;
+	private Balloon bridgeBalloon;
+	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="tunnelDisplayForms")	
+	private List<DisplayForm> tunnelDisplayForms;
+	private ColladaOptions tunnelColladaOptions;
+	private Balloon tunnelBalloon;
 
 	private boolean exportAsKmz;
 	private boolean showBoundingBox;
@@ -190,9 +209,16 @@ public class KmlExporter {
 		setCityFurnitureBalloon(new Balloon());
 		setGenericCityObjectDisplayForms(new ArrayList<DisplayForm>());
 		setGenericCityObjectColladaOptions(new ColladaOptions());
-		setGenericCityObjectBalloon(new Balloon());
+		setGenericCityObject3DBalloon(new Balloon());
+		setGenericCityObjectPointAndCurve(new PointAndCurve());
 		setCityObjectGroupDisplayForms(new ArrayList<DisplayForm>());
 		setCityObjectGroupBalloon(new Balloon());
+		setBridgeDisplayForms(new ArrayList<DisplayForm>());
+		setBridgeColladaOptions(new ColladaOptions());
+		setBridgeBalloon(new Balloon());
+		setTunnelDisplayForms(new ArrayList<DisplayForm>());
+		setTunnelColladaOptions(new ColladaOptions());
+		setTunnelBalloon(new Balloon());
 
 		exportAsKmz = true;
 		showBoundingBox = true;
@@ -507,12 +533,20 @@ public class KmlExporter {
 		return genericCityObjectColladaOptions;
 	}
 
-	public void setGenericCityObjectBalloon(Balloon genericCityObjectBalloon) {
-		this.genericCityObjectBalloon = genericCityObjectBalloon;
+	public void setGenericCityObject3DBalloon(Balloon genericCityObject3DBalloon) {
+		this.genericCityObject3DBalloon = genericCityObject3DBalloon;
 	}
 
-	public Balloon getGenericCityObjectBalloon() {
-		return genericCityObjectBalloon;
+	public Balloon getGenericCityObject3DBalloon() {
+		return genericCityObject3DBalloon;
+	}
+
+	public void setGenericCityObjectPointAndCurve(PointAndCurve genericCityObjectPointAndCurve) {
+		this.genericCityObjectPointAndCurve = genericCityObjectPointAndCurve;
+	}
+
+	public PointAndCurve getGenericCityObjectPointAndCurve() {
+		return genericCityObjectPointAndCurve;
 	}
 
 	public void setCityFurnitureDisplayForms(
@@ -604,5 +638,52 @@ public class KmlExporter {
 	public void setCallbackNameJSONP(String callbackNameJSONP) {
 		this.callbackNameJSONP = callbackNameJSONP;
 	}
+	
+	public void setBridgeDisplayForms(List<DisplayForm> bridgeDisplayForms) {
+		this.bridgeDisplayForms = bridgeDisplayForms;
+	}
 
+	public List<DisplayForm> getBridgeDisplayForms() {
+		return bridgeDisplayForms;
+	}
+
+	public void setBridgeColladaOptions(ColladaOptions bridgeColladaOptions) {
+		this.bridgeColladaOptions = bridgeColladaOptions;
+	}
+
+	public ColladaOptions getBridgeColladaOptions() {
+		return bridgeColladaOptions;
+	}
+	
+	public void setBridgeBalloon(Balloon bridgeBalloon) {
+		this.bridgeBalloon = bridgeBalloon;
+	}
+
+	public Balloon getBridgeBalloon() {
+		return bridgeBalloon;
+	}
+	
+	public void setTunnelDisplayForms(List<DisplayForm> tunnelDisplayForms) {
+		this.tunnelDisplayForms = tunnelDisplayForms;
+	}
+
+	public List<DisplayForm> getTunnelDisplayForms() {
+		return tunnelDisplayForms;
+	}
+
+	public void setTunnelColladaOptions(ColladaOptions tunnelColladaOptions) {
+		this.tunnelColladaOptions = tunnelColladaOptions;
+	}
+
+	public ColladaOptions getTunnelColladaOptions() {
+		return tunnelColladaOptions;
+	}
+	
+	public void setTunnelBalloon(Balloon tunnelBalloon) {
+		this.tunnelBalloon = tunnelBalloon;
+	}
+
+	public Balloon getTunnelBalloon() {
+		return tunnelBalloon;
+	}
 }

@@ -58,11 +58,11 @@ import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 
-public class Building extends KmlGenericObject{
+public class Tunnel extends KmlGenericObject{
 
-	public static final String STYLE_BASIS_NAME = ""; // "Building"
+	public static final String STYLE_BASIS_NAME = "Tunnel"; // "TUNNEL"
 
-	public Building(Connection connection,
+	public Tunnel(Connection connection,
 			KmlExporterManager kmlExporterManager,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
 			AbstractDatabaseAdapter databaseAdapter,
@@ -84,15 +84,15 @@ public class Building extends KmlGenericObject{
 	}
 
 	protected List<DisplayForm> getDisplayForms() {
-		return config.getProject().getKmlExporter().getBuildingDisplayForms();
+		return config.getProject().getKmlExporter().getTunnelDisplayForms();
 	}
 
 	public ColladaOptions getColladaOptions() {
-		return config.getProject().getKmlExporter().getBuildingColladaOptions();
+		return config.getProject().getKmlExporter().getTunnelColladaOptions();
 	}
 
 	public Balloon getBalloonSettings() {
-		return config.getProject().getKmlExporter().getBuildingBalloon();
+		return config.getProject().getKmlExporter().getTunnelBalloon();
 	}
 
 	public String getStyleBasisName() {
@@ -100,7 +100,8 @@ public class Building extends KmlGenericObject{
 	}
 
 	protected String getHighlightingQuery() {
-		return Queries.getBuildingPartHighlightingQuery(currentLod);
+
+		return Queries.getTunnelPartHighlightingQuery(currentLod);
 	}
 
 	public void read(KmlSplittingResult work) {
@@ -109,7 +110,8 @@ public class Building extends KmlGenericObject{
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 		try {
-			psQuery = connection.prepareStatement(Queries.BUILDING_PARTS_FROM_BUILDING);
+
+			psQuery = connection.prepareStatement(Queries.TUNNEL_PARTS_FROM_TUNNEL);
 
 			for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 				psQuery.setLong(i, work.getId());
@@ -118,8 +120,8 @@ public class Building extends KmlGenericObject{
 			rs = psQuery.executeQuery();
 						
 			while (rs.next()) {
-				long buildingPartId = rs.getLong(1);
-				List<PlacemarkType> placemarkBPart = readBuildingPart(buildingPartId, work);
+				long tunnelPartId = rs.getLong(1);
+				List<PlacemarkType> placemarkBPart = readTunnelPart(tunnelPartId, work);
 				if (placemarkBPart != null){
 					placemarks.addAll(placemarkBPart);
 				} 
@@ -127,7 +129,7 @@ public class Building extends KmlGenericObject{
 			}
 		}
 		catch (SQLException sqlEx) {
-			Logger.getInstance().error("SQL error while getting building parts for building " + work.getGmlId() + ": " + sqlEx.getMessage());
+			Logger.getInstance().error("SQL error while getting tunnel parts for tunnel " + work.getGmlId() + ": " + sqlEx.getMessage());
 		}
 		finally {
 			try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
@@ -174,7 +176,7 @@ public class Building extends KmlGenericObject{
 		}
 	}
 
-	private List<PlacemarkType> readBuildingPart(long buildingPartId, KmlSplittingResult work) {
+	private List<PlacemarkType> readTunnelPart(long tunnelPartId, KmlSplittingResult work) {
 
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
@@ -188,11 +190,12 @@ public class Building extends KmlGenericObject{
 			while (currentLod >= minLod) {
 				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
 				try {
-					psQuery = connection.prepareStatement(Queries.getBuildingPartQuery(currentLod, work.getDisplayForm(), databaseAdapter.getDatabaseType()),
+					
+					psQuery = connection.prepareStatement(Queries.getTunnelPartQuery(currentLod, work.getDisplayForm(), databaseAdapter.getDatabaseType()),
 							ResultSet.TYPE_SCROLL_INSENSITIVE,
 							ResultSet.CONCUR_READ_ONLY);
 					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-						psQuery.setLong(i, buildingPartId);
+						psQuery.setLong(i, tunnelPartId);
 					}
 					rs = psQuery.executeQuery();
 					if (rs.isBeforeFirst()) {
@@ -216,7 +219,7 @@ public class Building extends KmlGenericObject{
 					reversePointOrder = true;
 					int groupBasis = 4;
 					try {
-						psQuery = connection.prepareStatement(Queries.getBuildingPartAggregateGeometries(0.001,
+						psQuery = connection.prepareStatement(Queries.getTunnelPartAggregateGeometries(0.001,
 								DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().get2DSrid(dbSrs),
 								currentLod,
 								Math.pow(groupBasis, 4),
@@ -227,7 +230,7 @@ public class Building extends KmlGenericObject{
 								ResultSet.CONCUR_READ_ONLY);
 
 						for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
-							psQuery.setLong(i, buildingPartId);
+							psQuery.setLong(i, tunnelPartId);
 						}
 						rs = psQuery.executeQuery();
 						if (rs.isBeforeFirst()) {
@@ -254,7 +257,12 @@ public class Building extends KmlGenericObject{
 				reversePointOrder = false;
 			}
 
-			if (rs != null) { // result not empty
+			if (rs != null) { // result not empty				
+				// get the proper displayForm (for highlighting)
+				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
+				if (indexOfDf != -1) {
+					work.setDisplayForm(getDisplayForms().get(indexOfDf));
+				}
 				
 				switch (work.getDisplayForm().getForm()) {
 				case DisplayForm.FOOTPRINT:
@@ -263,7 +271,7 @@ public class Building extends KmlGenericObject{
 				case DisplayForm.EXTRUDED:
 					PreparedStatement psQuery2 = connection.prepareStatement(Queries.GET_EXTRUDED_HEIGHT(databaseAdapter.getDatabaseType()));
 					for (int i = 1; i <= psQuery2.getParameterMetaData().getParameterCount(); i++) {
-						psQuery2.setLong(i, buildingPartId);
+						psQuery2.setLong(i, tunnelPartId);
 					}
 					ResultSet rs2 = psQuery2.executeQuery();
 					rs2.next();
@@ -278,13 +286,13 @@ public class Building extends KmlGenericObject{
 					setId(work.getId());
 					if (work.getDisplayForm().isHighlightingEnabled()) {
 						if (config.getProject().getKmlExporter().getFilter().isSetComplexFilter()) { // region
-							List<PlacemarkType> hlPlacemarks = createPlacemarksForHighlighting(buildingPartId, work);
+							List<PlacemarkType> hlPlacemarks = createPlacemarksForHighlighting(tunnelPartId, work);
 							hlPlacemarks.addAll(createPlacemarksForGeometry(rs, work));
 							return hlPlacemarks;
 						}
-						else { // reverse order for single buildings
+						else { // reverse order for single tunnels
 							List<PlacemarkType> placemarks = createPlacemarksForGeometry(rs, work);
-							placemarks.addAll(createPlacemarksForHighlighting(buildingPartId, work));
+							placemarks.addAll(createPlacemarksForHighlighting(tunnelPartId, work));
 							return placemarks;
 						}
 					}
@@ -310,7 +318,7 @@ public class Building extends KmlGenericObject{
 					setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
 					try {
 						if (work.getDisplayForm().isHighlightingEnabled()) {
-							return createPlacemarksForHighlighting(buildingPartId, work);
+							return createPlacemarksForHighlighting(tunnelPartId, work);
 						}
 						// just COLLADA, no KML
 						List<PlacemarkType> dummy = new ArrayList<PlacemarkType>();
@@ -348,7 +356,7 @@ public class Building extends KmlGenericObject{
 	}
 
 	// overloaded for just one line, but this is safest
-	protected List<PlacemarkType> createPlacemarksForHighlighting(long buildingPartId, KmlSplittingResult work) throws SQLException {
+	protected List<PlacemarkType> createPlacemarksForHighlighting(long tunnelPartId, KmlSplittingResult work) throws SQLException {
 
 		List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
 
@@ -377,7 +385,7 @@ public class Building extends KmlGenericObject{
 
 			for (int i = 1; i <= getGeometriesStmt.getParameterMetaData().getParameterCount(); i++) {
 				// this is THE LINE
-				getGeometriesStmt.setLong(i, buildingPartId);
+				getGeometriesStmt.setLong(i, tunnelPartId);
 			}
 			rs = getGeometriesStmt.executeQuery();
 

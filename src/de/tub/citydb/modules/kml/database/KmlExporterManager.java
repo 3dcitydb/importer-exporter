@@ -147,14 +147,8 @@ public class KmlExporterManager {
 
 					if (placemark.getDescription() != null && balloonInSeparateFile) {
 						StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandlerImpl.parentFrameStart);
-/*
-						if (isBBoxActive && 
-	        				config.getProject().getKmlExporter().isOneFilePerObject() &&
-	        				!config.getProject().getKmlExporter().isExportAsKmz())
-	        				parentFrame.append(".."); // one up
-	        			else
-*/
-	        				parentFrame.append('.'); // same folder
+
+	        			parentFrame.append('.'); // same folder
 
         				parentFrame.append('/').append(BalloonTemplateHandlerImpl.balloonDirectoryName);
         				parentFrame.append('/').append(work.getGmlId());
@@ -329,7 +323,10 @@ public class KmlExporterManager {
 				}
         	}
 
-			ioWriterPool.addWork(buffer); // placemark or region depending on isOneFilePerObject()
+        	// buffer should not be empty, otherwise cause an error exception in IO Worker
+        	if (!buffer.isEmpty()) {
+        		ioWriterPool.addWork(buffer); // placemark or region depending on isOneFilePerObject()
+        	}      		       		
         }
         catch (IOException ioe) {
         	ioe.printStackTrace();
@@ -385,7 +382,6 @@ public class KmlExporterManager {
 				document.setOpen(true);
 				document.setName(colladaBundle.getGmlId());
 				kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
-//				placemark.setStyleUrl(".." + File.separator + mainFilename + placemark.getStyleUrl());
 				document.getAbstractFeatureGroup().add(kmlFactory.createPlacemark(placemark));
 
 				String path = config.getInternal().getExportFileName().trim();
@@ -435,12 +431,7 @@ public class KmlExporterManager {
 
 				LodType lodType = kmlFactory.createLodType();
 				lodType.setMinLodPixels(config.getProject().getKmlExporter().getSingleObjectRegionSize());
-/*
-				if (work.getDisplayForm().getVisibleUpTo() == -1)
-					lodType.setMaxLodPixels(-1.0);
-				else
-					lodType.setMaxLodPixels((double)work.getDisplayForm().getVisibleUpTo() * (lodType.getMinLodPixels()/work.getDisplayForm().getVisibleFrom()));
-*/
+
 				regionType.setLatLonAltBox(latLonAltBoxType);
 				regionType.setLod(lodType);
 
@@ -470,6 +461,7 @@ public class KmlExporterManager {
 
 		if (config.getProject().getKmlExporter().isExportAsKmz() &&	isBBoxActive
 				&& config.getProject().getKmlExporter().isOneFilePerObject()) {
+			
 			// marshalling in parallel threads should save some time
 	        StringWriter sw = new StringWriter();
 	        colladaMarshaller.marshal(colladaBundle.getCollada(), sw);
@@ -488,17 +480,12 @@ public class KmlExporterManager {
 	        	Iterator<String> iterator = keySet.iterator();
 	        	while (iterator.hasNext()) {
 	        		String imageFilename = iterator.next();
-//	        		OrdImage texOrdImage = colladaBundle.getUnsupportedTexImageIds().get(imageFilename);
-//					byte[] ordImageBytes = texOrdImage.getDataInByteArray();
 	        		byte[] ordImageBytes = textureExportAdapter.getInByteArray(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, imageFilename);
-
-//					zipEntry = new ZipEntry(imageFilename);
 	        		zipEntry = imageFilename.startsWith("..") ?
 	        				   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
 	        				   new ZipEntry(colladaBundle.getGmlId() + "/" + imageFilename);
 	        		zipOut.putNextEntry(zipEntry);
 	        		zipOut.write(ordImageBytes, 0, ordImageBytes.length);
-//					zipOut.write(ordImageBytes, 0, bytes_read);
 	        		zipOut.closeEntry();
 	        	}
 	        }
@@ -511,7 +498,6 @@ public class KmlExporterManager {
 	        		BufferedImage texImage = colladaBundle.getTexImages().get(imageFilename).getBufferedImage();
 	        		String imageType = imageFilename.substring(imageFilename.lastIndexOf('.') + 1);
 
-//					zipEntry = new ZipEntry(imageFilename);
 					zipEntry = imageFilename.startsWith("..") ?
 							   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
 							   new ZipEntry(colladaBundle.getGmlId() + "/" + imageFilename);
@@ -535,6 +521,7 @@ public class KmlExporterManager {
 			String path = config.getInternal().getExportFileName().trim();
 			path = path.substring(0, path.lastIndexOf(File.separator));
 			if (config.getProject().getKmlExporter().isExportAsKmz()) {
+				
 				// export temporarily as kml, it will be later added to kmz if needed
 				File tempFolder = new File(path, TEMP_FOLDER);
 				if (!tempFolder.exists()) {
@@ -564,16 +551,8 @@ public class KmlExporterManager {
 				Iterator<String> iterator = keySet.iterator();
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
-//					OrdImage texOrdImage = colladaBundle.getUnsupportedTexImageIds().get(imageFilename);
-//					if (texOrdImage.getContentLength() < 1) continue;
-//					try {
-						String fileName = buildingDirectory + File.separator + imageFilename;
-						textureExportAdapter.getInFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, fileName);
-//					}
-//					catch (IOException ioEx) {}
-//					finally {
-//						texOrdImage.close();
-//					}
+					String fileName = buildingDirectory + File.separator + imageFilename;
+					textureExportAdapter.getInFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, fileName);
 				}
 			}
 
@@ -609,22 +588,6 @@ public class KmlExporterManager {
 			}
 		}
 	}
-
-/*
-	public void print(StyleType styleType) throws JAXBException {
-		SAXEventBuffer buffer = new SAXEventBuffer();
-		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
-		kmlMarshaller.marshal(kmlFactory.createStyle(styleType), buffer);
-		ioWriterPool.addWork(buffer);
-	}
-
-	public void print(StyleMapType styleMapType) throws JAXBException {
-		SAXEventBuffer buffer = new SAXEventBuffer();
-		Marshaller kmlMarshaller = jaxbKmlContext.createMarshaller();
-		kmlMarshaller.marshal(kmlFactory.createStyleMap(styleMapType), buffer);
-		ioWriterPool.addWork(buffer);
-	}
-*/
 
 }
 
