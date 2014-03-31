@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="resources/jar"/>
-	<classpathentry kind="lib" path="lib/ordim.jar"/>
 	<classpathentry kind="lib" path="lib/sdoapi.jar"/>
 	<classpathentry kind="lib" path="lib/swingx-ws.jar"/>
 	<classpathentry kind="lib" path="lib/kml-collada-jaxb.jar"/>
