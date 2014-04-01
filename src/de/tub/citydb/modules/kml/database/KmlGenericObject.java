@@ -1662,6 +1662,7 @@ public abstract class KmlGenericObject {
 						long surfaceId = rs2.getLong("id");
 						long surfaceDataId = rs2.getLong("sd_id");
 						long parentId = rs2.getLong("parent_id");
+						long rootId = rs2.getLong("root_id");
 
 						if (buildingGeometryObj == null) { // root or parent
 							if (selectedTheme.equalsIgnoreCase(theme)) {
@@ -1694,118 +1695,123 @@ public abstract class KmlGenericObject {
 						String texImageUri = null;
 						StringTokenizer texCoordsTokenized = null;
 
-						if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
+						if (selectedTheme.equals(KmlExporter.THEME_NONE))
 							addX3dMaterial(surfaceId, defaultX3dMaterial);
-						}
-						else if	(!selectedTheme.equalsIgnoreCase(theme) && // no surface data for this surface and theme
-								getX3dMaterial(parentId) != null) { // material for parent surface known
-							addX3dMaterial(surfaceId, getX3dMaterial(parentId));
-						}
 						else {
-							texImageUri = rs2.getString("tex_image_uri");
-
-							StringBuffer sb =  new StringBuffer();
-							Object texCoordsObject = rs2.getObject("texture_coordinates"); 
-							if (texCoordsObject != null){
-								GeometryObject texCoordsGeometryObject = geometryConverterAdapter.getGeometry(texCoordsObject);
-								for (int i = 0; i < texCoordsGeometryObject.getNumElements(); i++) {
-									double[] coordinates = texCoordsGeometryObject.getCoordinates(i);
-									for (double coordinate : coordinates){
-										sb.append(String.valueOf(coordinate));
-										sb.append(" ");
-									}									
-								}									
-							}
-							String texCoords = sb.toString();
-
-							if (texImageUri != null && texImageUri.trim().length() != 0
-									&&  texCoords != null && texCoords.trim().length() != 0) {
-								int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
-								texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1); // for example: _tex4712047.jpeg
-								addTexImageUri(surfaceId, texImageUri);
-								if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
-									// not already marked as wrapping texture && not already read in
-									TextureImage texImage = null;
-									try {
-										if (rs2.getObject("tex_image") != null){
-											texImage = ImageReader.read(textureExportAdapter.getInStream(rs2, "tex_image", texImageUri));
-										}
-										else {
-											// skip, this image in database has 0 byte
-										}																															
-									}
-									catch (IOException ioe) {
-										
-										texImage = null;
-									}
-									if (texImage != null) { // image in JPEG, PNG or another usual format
-										addTexImage(texImageUri, texImage);
-									}
-									else {
-										addUnsupportedTexImageId(texImageUri, surfaceDataId);
-									}
-
-									texImageCounter++;
-									if (texImageCounter > 20) {
-										eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
-										texImageCounter = 0;
-									}
-								}
-								texCoordsTokenized = new StringTokenizer(texCoords.trim(), " ");
+							if (!selectedTheme.equalsIgnoreCase(theme)) { // no surface data for this surface and theme
+								if (getX3dMaterial(parentId) != null) // material for parent surface known
+									addX3dMaterial(surfaceId, getX3dMaterial(parentId));
+								else if (getX3dMaterial(rootId) != null) // material for root surface known
+									addX3dMaterial(surfaceId, getX3dMaterial(rootId));
+								else
+									addX3dMaterial(surfaceId, defaultX3dMaterial);
 							}
 							else {
-								X3DMaterial x3dMaterial = new X3DMaterial();
-								fillX3dMaterialValues(x3dMaterial, rs2);
-								// x3dMaterial will only added if not all x3dMaterial members are null
-								addX3dMaterial(surfaceId, x3dMaterial);
-								if (getX3dMaterial(surfaceId) == null) {
-									// untextured surface and no x3dMaterial -> default x3dMaterial (gray)
-									addX3dMaterial(surfaceId, defaultX3dMaterial);
+								texImageUri = rs2.getString("tex_image_uri");
+	
+								StringBuffer sb =  new StringBuffer();
+								Object texCoordsObject = rs2.getObject("texture_coordinates"); 
+								if (texCoordsObject != null){
+									GeometryObject texCoordsGeometryObject = geometryConverterAdapter.getGeometry(texCoordsObject);
+									for (int i = 0; i < texCoordsGeometryObject.getNumElements(); i++) {
+										double[] coordinates = texCoordsGeometryObject.getCoordinates(i);
+										for (double coordinate : coordinates){
+											sb.append(String.valueOf(coordinate));
+											sb.append(" ");
+										}									
+									}									
+								}
+								String texCoords = sb.toString();
+
+								if (texImageUri != null && texImageUri.trim().length() != 0
+										&&  texCoords != null && texCoords.trim().length() != 0) {
+									int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
+									texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1); // for example: _tex4712047.jpeg
+									addTexImageUri(surfaceId, texImageUri);
+									if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
+										// not already marked as wrapping texture && not already read in
+										TextureImage texImage = null;
+										try {
+											if (rs2.getObject("tex_image") != null){
+												texImage = ImageReader.read(textureExportAdapter.getInStream(rs2, "tex_image", texImageUri));
+											}
+											else {
+												// skip, this image in database has 0 byte
+											}																															
+										}
+										catch (IOException ioe) {
+											
+											texImage = null;
+										}
+										if (texImage != null) { // image in JPEG, PNG or another usual format
+											addTexImage(texImageUri, texImage);
+										}
+										else {
+											addUnsupportedTexImageId(texImageUri, surfaceDataId);
+										}
+	
+										texImageCounter++;
+										if (texImageCounter > 20) {
+											eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
+											texImageCounter = 0;
+										}
+									}
+									texCoordsTokenized = new StringTokenizer(texCoords.trim(), " ");
+								}
+								else {
+									X3DMaterial x3dMaterial = new X3DMaterial();
+									fillX3dMaterialValues(x3dMaterial, rs2);
+									// x3dMaterial will only added if not all x3dMaterial members are null
+									addX3dMaterial(surfaceId, x3dMaterial);
+									if (getX3dMaterial(surfaceId) == null) {
+										// untextured surface and no x3dMaterial -> default x3dMaterial (gray)
+										addX3dMaterial(surfaceId, defaultX3dMaterial);
+									}
 								}
 							}
-						}
 
-						GeometryObject surface = geometryConverterAdapter.getPolygon(buildingGeometryObj);
-						GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
-
-						int contourCount = surface.getNumElements();
-						int[] stripCountArray = new int[contourCount];
-						int[] countourCountArray = {contourCount};
-
-						// last point of polygons in gml is identical to first and useless for GeometryInfo
-						double[] giOrdinatesArray = new double[surface.getNumCoordinates() - (contourCount * 3)];
-						int i = 0;
-
-						for (int currentContour = 0; currentContour < surface.getNumElements(); currentContour++) {
-							double[] ordinatesArray = surface.getCoordinates(currentContour);
-							for (int j = 0; j < ordinatesArray.length - 3; j = j+3, i = i+3) {
-
-								giOrdinatesArray[i] = ordinatesArray[j] * 100; // trick for very close coordinates
-								giOrdinatesArray[i+1] = ordinatesArray[j+1] * 100;
-								giOrdinatesArray[i+2] = ordinatesArray[j+2] * 100;
-
-								TexCoords texCoordsForThisSurface = null;
+							GeometryObject surface = geometryConverterAdapter.getPolygon(buildingGeometryObj);
+							GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
+	
+							int contourCount = surface.getNumElements();
+							int[] stripCountArray = new int[contourCount];
+							int[] countourCountArray = {contourCount};
+	
+							// last point of polygons in gml is identical to first and useless for GeometryInfo
+							double[] giOrdinatesArray = new double[surface.getNumCoordinates() - (contourCount * 3)];
+							int i = 0;
+	
+							for (int currentContour = 0; currentContour < surface.getNumElements(); currentContour++) {
+								double[] ordinatesArray = surface.getCoordinates(currentContour);
+								for (int j = 0; j < ordinatesArray.length - 3; j = j+3, i = i+3) {
+	
+									giOrdinatesArray[i] = ordinatesArray[j] * 100; // trick for very close coordinates
+									giOrdinatesArray[i+1] = ordinatesArray[j+1] * 100;
+									giOrdinatesArray[i+2] = ordinatesArray[j+2] * 100;
+	
+									TexCoords texCoordsForThisSurface = null;
+									if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
+										double s = Double.parseDouble(texCoordsTokenized.nextToken());
+										double t = Double.parseDouble(texCoordsTokenized.nextToken());
+										texCoordsForThisSurface = new TexCoords(s, t);
+									}
+									setVertexInfoForXYZ(surfaceId,
+											giOrdinatesArray[i],
+											giOrdinatesArray[i+1],
+											giOrdinatesArray[i+2],
+											texCoordsForThisSurface);
+								}
+								stripCountArray[currentContour] = (ordinatesArray.length - 3) / 3;
 								if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
-									double s = Double.parseDouble(texCoordsTokenized.nextToken());
-									double t = Double.parseDouble(texCoordsTokenized.nextToken());
-									texCoordsForThisSurface = new TexCoords(s, t);
+									texCoordsTokenized.nextToken(); // geometryInfo ignores last point in a polygon
+									texCoordsTokenized.nextToken(); // keep texture coordinates in sync
 								}
-								setVertexInfoForXYZ(surfaceId,
-										giOrdinatesArray[i],
-										giOrdinatesArray[i+1],
-										giOrdinatesArray[i+2],
-										texCoordsForThisSurface);
 							}
-							stripCountArray[currentContour] = (ordinatesArray.length - 3) / 3;
-							if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
-								texCoordsTokenized.nextToken(); // geometryInfo ignores last point in a polygon
-								texCoordsTokenized.nextToken(); // keep texture coordinates in sync
-							}
+							gi.setCoordinates(giOrdinatesArray);
+							gi.setContourCounts(countourCountArray);
+							gi.setStripCounts(stripCountArray);
+							addGeometryInfo(surfaceId, gi);
 						}
-						gi.setCoordinates(giOrdinatesArray);
-						gi.setContourCounts(countourCountArray);
-						gi.setStripCounts(stripCountArray);
-						addGeometryInfo(surfaceId, gi);
 					}
 				}
 				catch (SQLException sqlEx) {
