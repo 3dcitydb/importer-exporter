@@ -46,9 +46,9 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
 
 public class BoundingBoxClipboardHandler implements ClipboardOwner {
-	private static final Logger LOG = Logger.getInstance();
 	private static BoundingBoxClipboardHandler instance;
 
+	private final Logger LOG = Logger.getInstance();
 	private final Config config;
 	private boolean isMac;
 	private Clipboard systemClipboard;

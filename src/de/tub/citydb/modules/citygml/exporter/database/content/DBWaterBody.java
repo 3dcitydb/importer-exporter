@@ -52,13 +52,14 @@ import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
 import de.tub.citydb.modules.common.filter.ExportFilter;
-import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBWaterBody implements DBExporter {
@@ -71,19 +72,20 @@ public class DBWaterBody implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 	private DBOtherGeometry geometryExporter;
-	private FeatureClassFilter featureClassFilter;
 
 	private boolean useXLink;
 	private boolean appendOldGmlId;
 	private boolean keepOldGmlId;
 	private String gmlIdPrefix;
 	private String infoSys;
+	
+	private ProjectionPropertyFilter projectionFilter;
 
 	public DBWaterBody(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
-		this.featureClassFilter = exportFilter.getFeatureClassFilter();
+		projectionFilter = exportFilter.getProjectionPropertyFilter(CityGMLClass.WATER_BODY);
 
 		init();
 	}
@@ -128,12 +130,12 @@ public class DBWaterBody implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		WaterBody waterBody = new WaterBody();
 		long waterBodyId = splitter.getPrimaryKey();
 
 		// cityObject stuff
-		boolean success = cityObjectExporter.read(waterBody, waterBodyId, true);
+		boolean success = cityObjectExporter.read(waterBody, waterBodyId, true, projectionFilter);
 		if (!success)
 			return false;
 
@@ -147,25 +149,34 @@ public class DBWaterBody implements DBExporter {
 			while (rs.next()) {
 
 				if (!waterBodyRead) {
+					if (projectionFilter.pass(CityGMLModuleType.WATER_BODY, "class")) {
 					String clazz = rs.getString(1);
 					if (clazz != null) {
 						Code code = new Code(clazz);
 						code.setCodeSpace(rs.getString(2));
 						waterBody.setClazz(code);
 					}
+					}
 
+					if (projectionFilter.pass(CityGMLModuleType.WATER_BODY, "function")) {
 					String function = rs.getString(3);
 					String functionCodeSpace = rs.getString(4);
 					if (function != null)
 						waterBody.setFunction(Util.string2codeList(function, functionCodeSpace));
+					}
 
+					if (projectionFilter.pass(CityGMLModuleType.WATER_BODY, "usage")) {
 					String usage = rs.getString(5);
 					String usageCodeSpace = rs.getString(6);
 					if (usage != null)
 						waterBody.setUsage(Util.string2codeList(usage, usageCodeSpace));
+					}
 					
 					// multiCurve
 					for (int lod = 0; lod < 2; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.WATER_BODY, new StringBuilder("lod").append(lod).append("MultiCurve").toString()))
+							continue;
+						
 						Object multiCurveObj = rs.getObject(7 + lod);
 						if (rs.wasNull() || multiCurveObj == null)
 							continue;
@@ -188,6 +199,9 @@ public class DBWaterBody implements DBExporter {
 					
 					// multiSurface
 					for (int lod = 0; lod < 2; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.WATER_BODY, new StringBuilder("lod").append(lod).append("MultiSurface").toString()))
+							continue;
+						
 						long surfaceGeometryId = rs.getLong(9 + lod);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
@@ -213,6 +227,9 @@ public class DBWaterBody implements DBExporter {
 					
 					// solid
 					for (int lod = 0; lod < 4; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.WATER_BODY, new StringBuilder("lod").append(lod + 1).append("Solid").toString()))
+							continue;
+						
 						long surfaceGeometryId = rs.getLong(11 + lod);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
@@ -246,6 +263,9 @@ public class DBWaterBody implements DBExporter {
 				}
 
 				// water boundary surfaces
+				if (projectionFilter.filter(CityGMLModuleType.WATER_BODY, "boundedBy"))
+					break;
+				
 				long waterBoundarySurfaceId = rs.getLong(15);
 				if (rs.wasNull())
 					continue;
@@ -346,9 +366,11 @@ public class DBWaterBody implements DBExporter {
 				waterBody.addBoundedBySurface(boundedByProperty);
 			}
 
-			if (waterBody.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
+			dbExporterManager.processFeature(waterBody);
+
+			if (waterBody.isSetId() && config.getInternal().isRegisterGmlIdInCache())
 				dbExporterManager.putUID(waterBody.getId(), waterBodyId, waterBody.getCityGMLClass());
-			dbExporterManager.print(waterBody);
+
 			return true;
 		} finally {
 			if (rs != null)

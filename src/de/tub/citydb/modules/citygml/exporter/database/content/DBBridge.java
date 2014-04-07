@@ -52,16 +52,17 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.model.xal.AddressDetails;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.exporter.AddressMode;
 import de.tub.citydb.modules.citygml.common.xal.AddressExportFactory;
 import de.tub.citydb.modules.citygml.common.xal.AddressObject;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
 import de.tub.citydb.modules.common.filter.ExportFilter;
-import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBBridge implements DBExporter {
@@ -80,18 +81,21 @@ public class DBBridge implements DBExporter {
 	private DBOtherGeometry geometryExporter;
 
 	private HashMap<Long, AbstractBridge> bridges;
-	private FeatureClassFilter featureClassFilter;
+	private ProjectionPropertyFilter projectionFilter;
 
 	public DBBridge(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
 		this.config = config;
 		this.connection = connection;
-		this.featureClassFilter = exportFilter.getFeatureClassFilter();
+		projectionFilter = exportFilter.getProjectionPropertyFilter(CityGMLClass.BRIDGE);
 
 		init();
 	}
 
 	private void init() throws SQLException {
+		bridges = new HashMap<Long, AbstractBridge>();
+		String bridgeId = projectionFilter.pass(CityGMLModuleType.BRIDGE, "consistsOfBridgePart") ? "BRIDGE_ROOT_ID" : "ID";
+
 		if (!config.getInternal().isTransformCoordinates()) {
 			StringBuilder query = new StringBuilder()
 			.append("select b.ID, b.BRIDGE_PARENT_ID, b.CLASS, b.CLASS_CODESPACE, b.FUNCTION, b.FUNCTION_CODESPACE, b.USAGE, b.USAGE_CODESPACE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, b.IS_MOVABLE, ")
@@ -100,7 +104,7 @@ public class DBBridge implements DBExporter {
 			.append("b.LOD1_SOLID_ID, b.LOD2_SOLID_ID, b.LOD3_SOLID_ID, b.LOD4_SOLID_ID, ")
 			.append("b.LOD1_MULTI_SURFACE_ID, b.LOD2_MULTI_SURFACE_ID, b.LOD3_MULTI_SURFACE_ID, b.LOD4_MULTI_SURFACE_ID, ")
 			.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT, a.XAL_SOURCE ")
-			.append("from BRIDGE b left join ADDRESS_TO_BRIDGE a2b on b.ID=a2b.BRIDGE_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BRIDGE_ROOT_ID = ?");
+			.append("from BRIDGE b left join ADDRESS_TO_BRIDGE a2b on b.ID=a2b.BRIDGE_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.").append(bridgeId).append(" = ?");
 			psBridge = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
@@ -119,11 +123,9 @@ public class DBBridge implements DBExporter {
 			.append("b.LOD1_MULTI_SURFACE_ID, b.LOD2_MULTI_SURFACE_ID, b.LOD3_MULTI_SURFACE_ID, b.LOD4_MULTI_SURFACE_ID, ")
 			.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, ")
 			.append(transformOrNull).append("(a.MULTI_POINT, ").append(srid).append(") AS MULTI_POINT, a.XAL_SOURCE ")
-			.append("from BRIDGE b left join ADDRESS_TO_BRIDGE a2b on b.ID=a2b.BRIDGE_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BRIDGE_ROOT_ID = ?");
+			.append("from BRIDGE b left join ADDRESS_TO_BRIDGE a2b on b.ID=a2b.BRIDGE_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.").append(bridgeId).append(" = ?");
 			psBridge = connection.prepareStatement(query.toString());
 		}
-
-		bridges = new HashMap<Long, AbstractBridge>();
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
@@ -134,7 +136,7 @@ public class DBBridge implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		ResultSet rs = null;
 
 		try {
@@ -172,47 +174,62 @@ public class DBBridge implements DBExporter {
 					abstractBridge.setLocalProperty("isCreated", true);
 
 					// do cityObject stuff
-					boolean success = cityObjectExporter.read(abstractBridge, id, parentId == 0);
+					boolean success = cityObjectExporter.read(abstractBridge, id, parentId == 0, projectionFilter);
 					if (!success)
 						return false;
 
-					String clazz = rs.getString(3);
-					if (clazz != null) {
-						Code code = new Code(clazz);
-						code.setCodeSpace(rs.getString(4));
-						abstractBridge.setClazz(code);
+					if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "class")) {
+						String clazz = rs.getString(3);
+						if (clazz != null) {
+							Code code = new Code(clazz);
+							code.setCodeSpace(rs.getString(4));
+							abstractBridge.setClazz(code);
+						}
 					}
 
-					String function = rs.getString(5);
-					String functionCodeSpace = rs.getString(6);
-					if (function != null)
-						abstractBridge.setFunction(Util.string2codeList(function, functionCodeSpace));
-
-					String usage = rs.getString(7);
-					String usageCodeSpace = rs.getString(8);
-					if (usage != null)
-						abstractBridge.setUsage(Util.string2codeList(usage, usageCodeSpace));
-
-					Date yearOfConstruction = rs.getDate(9);				
-					if (yearOfConstruction != null) {
-						GregorianCalendar gregDate = new GregorianCalendar();
-						gregDate.setTime(yearOfConstruction);
-						abstractBridge.setYearOfConstruction(gregDate);
+					if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "function")) {
+						String function = rs.getString(5);
+						String functionCodeSpace = rs.getString(6);
+						if (function != null)
+							abstractBridge.setFunction(Util.string2codeList(function, functionCodeSpace));
 					}
 
-					Date yearOfDemolition = rs.getDate(10);
-					if (yearOfDemolition != null) {
-						GregorianCalendar gregDate = new GregorianCalendar();
-						gregDate.setTime(yearOfDemolition);
-						abstractBridge.setYearOfDemolition(gregDate);
+					if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "usage")) {
+						String usage = rs.getString(7);
+						String usageCodeSpace = rs.getString(8);
+						if (usage != null)
+							abstractBridge.setUsage(Util.string2codeList(usage, usageCodeSpace));
 					}
 
-					boolean isMovable = rs.getBoolean(11);
-					if (!rs.wasNull())
-						abstractBridge.setIsMovable(isMovable);
+					if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "yearOfConstruction")) {
+						Date yearOfConstruction = rs.getDate(9);				
+						if (yearOfConstruction != null) {
+							GregorianCalendar gregDate = new GregorianCalendar();
+							gregDate.setTime(yearOfConstruction);
+							abstractBridge.setYearOfConstruction(gregDate);
+						}
+					}
+
+					if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "yearOfDemolition")) {
+						Date yearOfDemolition = rs.getDate(10);
+						if (yearOfDemolition != null) {
+							GregorianCalendar gregDate = new GregorianCalendar();
+							gregDate.setTime(yearOfDemolition);
+							abstractBridge.setYearOfDemolition(gregDate);
+						}
+					}
+
+					if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "isMovable")) {
+						boolean isMovable = rs.getBoolean(11);
+						if (!rs.wasNull())
+							abstractBridge.setIsMovable(isMovable);
+					}
 
 					// terrainIntersection
 					for (int lod = 0; lod < 4; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.BRIDGE, new StringBuilder("lod").append(lod + 1).append("TerrainIntersection").toString()))
+							continue;
+
 						Object terrainIntersectionObj = rs.getObject(12 + lod);
 						if (rs.wasNull() || terrainIntersectionObj == null)
 							continue;
@@ -241,6 +258,9 @@ public class DBBridge implements DBExporter {
 
 					// multiCurve
 					for (int lod = 0; lod < 3; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.BRIDGE, new StringBuilder("lod").append(lod + 2).append("MultiCurve").toString()))
+							continue;
+
 						Object multiCurveObj = rs.getObject(16 + lod);
 						if (rs.wasNull() || multiCurveObj == null)
 							continue;
@@ -268,10 +288,14 @@ public class DBBridge implements DBExporter {
 					// according to conformance requirement no. 3 of the Bridge version 2.0.0 module
 					// geometry objects of _BoundarySurface elements have to be referenced by lodXSolid and
 					// lodXMultiSurface properties. So we first export all _BoundarySurfaces
-					thematicSurfaceExporter.read(abstractBridge, id);
+					if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "boundedBy"))
+						thematicSurfaceExporter.read(abstractBridge, id);
 
 					// solid
 					for (int lod = 0; lod < 4; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.BRIDGE, new StringBuilder("lod").append(lod + 1).append("Solid").toString()))
+							continue;
+
 						long surfaceGeometryId = rs.getLong(19 + lod);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
@@ -303,6 +327,9 @@ public class DBBridge implements DBExporter {
 
 					// multiSurface
 					for (int lod = 0; lod < 4; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.BRIDGE, new StringBuilder("lod").append(lod + 1).append("MultiSurface").toString()))
+							continue;
+
 						long surfaceGeometryId = rs.getLong(23 + lod);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
@@ -333,13 +360,15 @@ public class DBBridge implements DBExporter {
 					}
 
 					// BridgeInstallation
-					bridgeInstallationExporter.read(abstractBridge, id);
+					bridgeInstallationExporter.read(abstractBridge, id, projectionFilter);
 
 					// BridgeConstructionElement
-					bridgeContrElemExporter.read(abstractBridge, id);
+					if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "outerBridgeConstruction"))
+						bridgeContrElemExporter.read(abstractBridge, id);
 
 					// room
-					bridgeRoomExporter.read(abstractBridge, id);
+					if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "interiorBridgeRoom"))
+						bridgeRoomExporter.read(abstractBridge, id);
 
 					// add bridge part to parent bridge
 					if (parentBridge != null)
@@ -347,38 +376,42 @@ public class DBBridge implements DBExporter {
 				}
 
 				// address
-				rs.getLong(36);
-				if (!rs.wasNull()) {
-					AddressExportFactory factory = dbExporterManager.getAddressExportFactory();					
-					AddressObject addressObject = factory.newAddressObject();
+				if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "address")) {
+					rs.getLong(36);
+					if (!rs.wasNull()) {
+						AddressExportFactory factory = dbExporterManager.getAddressExportFactory();					
+						AddressObject addressObject = factory.newAddressObject();
 
-					fillAddressObject(addressObject, factory.getPrimaryMode(), rs);
-					if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
-						fillAddressObject(addressObject, factory.getFallbackMode(), rs);
+						fillAddressObject(addressObject, factory.getPrimaryMode(), rs);
+						if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
+							fillAddressObject(addressObject, factory.getFallbackMode(), rs);
 
-					if (addressObject.canCreate()) {
-						// multiPointGeometry
-						Object multiPointObj = rs.getObject(44);
-						if (!rs.wasNull() && multiPointObj != null) {
-							GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
-							MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(multiPoint, false);
-							if (multiPointProperty != null)
-								addressObject.setMultiPointProperty(multiPointProperty);
+						if (addressObject.canCreate()) {
+							// multiPointGeometry
+							Object multiPointObj = rs.getObject(44);
+							if (!rs.wasNull() && multiPointObj != null) {
+								GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
+								MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(multiPoint, false);
+								if (multiPointProperty != null)
+									addressObject.setMultiPointProperty(multiPointProperty);
+							}
+
+							// create xAL address
+							AddressProperty addressProperty = factory.create(addressObject);
+							if (addressProperty != null)
+								abstractBridge.addAddress(addressProperty);
 						}
-
-						// create xAL address
-						AddressProperty addressProperty = factory.create(addressObject);
-						if (addressProperty != null)
-							abstractBridge.addAddress(addressProperty);
 					}
-				}	
+				}
 			}
 
 			bridges.clear();
 
-			if (root.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
+			dbExporterManager.processFeature(root);
+
+			if (root.isSetId() && config.getInternal().isRegisterGmlIdInCache())
 				dbExporterManager.putUID(root.getId(), bridgeId, root.getCityGMLClass());
-			dbExporterManager.print(root);
+
 			return true;
 		} finally {
 			if (rs != null)

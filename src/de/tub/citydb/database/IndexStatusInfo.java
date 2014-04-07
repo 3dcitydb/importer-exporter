@@ -36,7 +36,7 @@ import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.log.Logger;
 
 public class IndexStatusInfo {
-	private static final Logger LOG = Logger.getInstance();
+	private final Logger LOG = Logger.getInstance();
 	private List<IndexInfoObject> indexes;
 	private IndexType type;
 

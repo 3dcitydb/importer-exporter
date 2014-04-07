@@ -47,6 +47,8 @@ import org.citygml4j.model.citygml.generics.StringAttribute;
 import org.citygml4j.model.gml.base.StringOrRef;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
+import org.citygml4j.model.module.gml.GMLModuleType;
 
 import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.api.geometry.GeometryObject;
@@ -55,6 +57,7 @@ import de.tub.citydb.config.project.filter.Tiling;
 import de.tub.citydb.config.project.filter.TilingMode;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 import de.tub.citydb.modules.common.filter.feature.BoundingBoxFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBCityObject implements DBExporter {
@@ -75,6 +78,7 @@ public class DBCityObject implements DBExporter {
 	private BoundingBoxFilter boundingBoxFilter;
 	private BoundingBox activeTile;
 	private Tiling tiling;
+	private ProjectionPropertyFilter dummyFilter;
 
 	private HashSet<Long> generalizesToSet;
 	private HashSet<Long> externalReferenceSet;
@@ -83,7 +87,7 @@ public class DBCityObject implements DBExporter {
 		this.dbExporterManager = dbExporterManager;
 		this.config = config;
 		this.connection = connection;
-		this.boundingBoxFilter = exportFilter.getBoundingBoxFilter();
+		boundingBoxFilter = exportFilter.getBoundingBoxFilter();
 
 		init();
 	}
@@ -93,11 +97,12 @@ public class DBCityObject implements DBExporter {
 		useInternalBBoxFilter = config.getInternal().isUseInternalBBoxFilter();
 
 		tiling = config.getProject().getExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
-		useTiling = boundingBoxFilter.isActive() && tiling.getMode() != TilingMode.NO_TILING;
+		useTiling = boundingBoxFilter != null && boundingBoxFilter.isActive() && tiling.getMode() != TilingMode.NO_TILING;
 		setTileInfoAsGenericAttribute = useTiling && tiling.isIncludeTileAsGenericAttribute();
 		if (setTileInfoAsGenericAttribute)
 			activeTile = boundingBoxFilter.getFilterState();
 
+		dummyFilter = new ProjectionPropertyFilter(null);
 		generalizesToSet = new HashSet<Long>();
 		externalReferenceSet = new HashSet<Long>();
 
@@ -131,10 +136,10 @@ public class DBCityObject implements DBExporter {
 
 
 	public boolean read(AbstractCityObject cityObject, long parentId) throws SQLException {
-		return read(cityObject, parentId, false);
+		return read(cityObject, parentId, false, dummyFilter);
 	}
 
-	public boolean read(AbstractCityObject cityObject, long parentId, boolean isTopLevelObject) throws SQLException {
+	public boolean read(AbstractCityObject cityObject, long parentId, boolean isTopLevelObject, ProjectionPropertyFilter projectionFilter) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -167,88 +172,107 @@ public class DBCityObject implements DBExporter {
 						return false;
 				}
 
+				if (projectionFilter.filter(GMLModuleType.CORE, "boundedBy"))
+					cityObject.unsetBoundedBy();
+
 				// gml:id
 				String gmlId = rs.getString(1);
 				if (gmlId != null)
 					cityObject.setId(gmlId);
 
 				// gml:name
-				String gmlName = rs.getString(2);
-				String gmlNameCodespace = rs.getString(3);
-				if (gmlName != null)
-					cityObject.setName(Util.string2codeList(gmlName, gmlNameCodespace));
-				
+				if (projectionFilter.pass(GMLModuleType.CORE, "name")) {
+					String gmlName = rs.getString(2);
+					String gmlNameCodespace = rs.getString(3);
+					if (gmlName != null)
+						cityObject.setName(Util.string2codeList(gmlName, gmlNameCodespace));
+				}
+
 				// gml:description
-				String description = rs.getString(4);
-				if (description != null) {
-					StringOrRef stringOrRef = new StringOrRef();
-					stringOrRef.setValue(description);
-					cityObject.setDescription(stringOrRef);
+				if (projectionFilter.pass(GMLModuleType.CORE, "description")) {
+					String description = rs.getString(4);
+					if (description != null) {
+						StringOrRef stringOrRef = new StringOrRef();
+						stringOrRef.setValue(description);
+						cityObject.setDescription(stringOrRef);
+					}
 				}
 
 				// creationDate
-				Date creationDate = rs.getDate(6);
-				if (creationDate != null) {
-					GregorianCalendar gregDate = new GregorianCalendar();
-					gregDate.setTime(creationDate);
-					cityObject.setCreationDate(gregDate);
+				if (projectionFilter.pass(CityGMLModuleType.CORE, "creationDate")) {
+					Date creationDate = rs.getDate(6);
+					if (creationDate != null) {
+						GregorianCalendar gregDate = new GregorianCalendar();
+						gregDate.setTime(creationDate);
+						cityObject.setCreationDate(gregDate);
+					}
 				}
 
 				// terminationDate
-				Date terminationDate = rs.getDate(7);
-				if (terminationDate != null) {
-					GregorianCalendar gregDate = new GregorianCalendar();
-					gregDate.setTime(terminationDate);
-					cityObject.setTerminationDate(gregDate);
+				if (projectionFilter.pass(CityGMLModuleType.CORE, "terminationDate")) {
+					Date terminationDate = rs.getDate(7);
+					if (terminationDate != null) {
+						GregorianCalendar gregDate = new GregorianCalendar();
+						gregDate.setTime(terminationDate);
+						cityObject.setTerminationDate(gregDate);
+					}
 				}
-				
+
 				// relativeToTerrain
-				String relativeToTerrain = rs.getString(8);
-				if (relativeToTerrain != null)
-					cityObject.setRelativeToTerrain(RelativeToTerrain.fromValue(relativeToTerrain));
+				if (projectionFilter.pass(CityGMLModuleType.CORE, "relativeToTerrain")) {
+					String relativeToTerrain = rs.getString(8);
+					if (relativeToTerrain != null)
+						cityObject.setRelativeToTerrain(RelativeToTerrain.fromValue(relativeToTerrain));
+				}
 
 				// relativeToWater
-				String relativeToWater = rs.getString(9);
-				if (relativeToWater != null)
-					cityObject.setRelativeToWater(RelativeToWater.fromValue(relativeToWater));
-				
+				if (projectionFilter.pass(CityGMLModuleType.CORE, "relativeToWater")) {
+					String relativeToWater = rs.getString(9);
+					if (relativeToWater != null)
+						cityObject.setRelativeToWater(RelativeToWater.fromValue(relativeToWater));
+				}
+
 				do {
 					// generalizesTo
-					long generalizesTo = rs.getLong(14);
-					if (!rs.wasNull())
-						generalizesToSet.add(generalizesTo);
+					if (projectionFilter.pass(CityGMLModuleType.CORE, "generalizesTo")) {
+						long generalizesTo = rs.getLong(14);
+						if (!rs.wasNull())
+							generalizesToSet.add(generalizesTo);
+					}
 
 					// externalReference
-					long externalReferenceId = rs.getLong(10);
-					if (!rs.wasNull() && !externalReferenceSet.contains(externalReferenceId)) {
-						externalReferenceSet.add(externalReferenceId);
+					if (projectionFilter.pass(CityGMLModuleType.CORE, "externalReference")) {
+						long externalReferenceId = rs.getLong(10);
+						if (!rs.wasNull() && !externalReferenceSet.contains(externalReferenceId)) {
+							externalReferenceSet.add(externalReferenceId);
 
-						ExternalReference externalReference = new ExternalReference();
-						ExternalObject externalObject = new ExternalObject();
+							ExternalReference externalReference = new ExternalReference();
+							ExternalObject externalObject = new ExternalObject();
 
-						String infoSys = rs.getString(11);
-						if (infoSys != null)
-							externalReference.setInformationSystem(infoSys);
+							String infoSys = rs.getString(11);
+							if (infoSys != null)
+								externalReference.setInformationSystem(infoSys);
 
-						String name = rs.getString(12);
-						String uri = rs.getString(13);
+							String name = rs.getString(12);
+							String uri = rs.getString(13);
 
-						if (name != null || uri != null) {
-							if (name != null)
-								externalObject.setName(name);
+							if (name != null || uri != null) {
+								if (name != null)
+									externalObject.setName(name);
 
-							if (uri != null)
-								externalObject.setUri(uri);
-						} else if (name == null && uri == null) {
-							externalObject.setUri("");
+								if (uri != null)
+									externalObject.setUri(uri);
+							} else if (name == null && uri == null) {
+								externalObject.setUri("");
+							}
+
+							externalReference.setExternalObject(externalObject);
+							cityObject.addExternalReference(externalReference);
 						}
-
-						externalReference.setExternalObject(externalObject);
-						cityObject.addExternalReference(externalReference);
 					}
 
 				} while (rs.next());
-				
+
 				generalizesToSet.clear();
 				externalReferenceSet.clear();
 
@@ -291,20 +315,21 @@ public class DBCityObject implements DBExporter {
 					generalizesToExporter.read(cityObject, parentId, generalizesToSet);
 
 				// generic attributes
-				genericAttributeExporter.read(cityObject, parentId);
-				
+				genericAttributeExporter.read(cityObject, parentId, projectionFilter);
+
 				// get appearance information associated with the cityobject
 				if (exportAppearance) {
 					if (isTopLevelObject)
 						appearanceExporter.clearLocalCache();
 
-					appearanceExporter.read(cityObject, parentId);
+					if (projectionFilter.pass(CityGMLModuleType.APPEARANCE, "appearance"))
+						appearanceExporter.read(cityObject, parentId);
 				}
 
 				// update feature counter
 				dbExporterManager.updateFeatureCounter(cityObject.getCityGMLClass());
 			}
-			
+
 			return true;
 		} finally {
 			if (rs != null)

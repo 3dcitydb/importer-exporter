@@ -151,5 +151,18 @@ public class ObjectRegistry {
 
 		this.cityGMLBuilder = cityGMLBuilder;
 	}
+	
+	public void cleanup() {
+		if (registry != null)
+			registry.clear();
+		
+		eventDispatcher = null;
+		viewController = null;
+		databaseController = null;
+		logController = null;
+		pluginConfigController = null;
+		ioController = null;
+		cityGMLBuilder = null;
+	}
 
 }

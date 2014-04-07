@@ -50,12 +50,13 @@ import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplexProperty;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
 import de.tub.citydb.modules.common.filter.ExportFilter;
-import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBTransportationComplex implements DBExporter {
@@ -68,13 +69,19 @@ public class DBTransportationComplex implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 	private DBOtherGeometry geometryExporter;
-	private FeatureClassFilter featureClassFilter;
+
+	private ProjectionPropertyFilter projectionFilter;
 
 	public DBTransportationComplex(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
-		this.featureClassFilter = exportFilter.getFeatureClassFilter();
+
+		projectionFilter = exportFilter.getProjectionPropertyFilter(CityGMLClass.TRANSPORTATION_COMPLEX);
+		projectionFilter.combine(exportFilter.getProjectionPropertyFilter(CityGMLClass.ROAD));
+		projectionFilter.combine(exportFilter.getProjectionPropertyFilter(CityGMLClass.RAILWAY));
+		projectionFilter.combine(exportFilter.getProjectionPropertyFilter(CityGMLClass.SQUARE));
+		projectionFilter.combine(exportFilter.getProjectionPropertyFilter(CityGMLClass.TRACK));
 
 		init();
 	}
@@ -110,7 +117,7 @@ public class DBTransportationComplex implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		TransportationComplex transComplex = null;
 		long transComplexId = splitter.getPrimaryKey();
 
@@ -132,7 +139,7 @@ public class DBTransportationComplex implements DBExporter {
 		}
 
 		// cityObject stuff
-		boolean success = cityObjectExporter.read(transComplex, transComplexId, true);
+		boolean success = cityObjectExporter.read(transComplex, transComplexId, true, projectionFilter);
 		if (!success)
 			return false;
 
@@ -146,33 +153,44 @@ public class DBTransportationComplex implements DBExporter {
 
 			while (rs.next()) {
 				if (!isInited) {
-					String clazz = rs.getString(1);
-					if (clazz != null) {
-						Code code = new Code(clazz);
-						code.setCodeSpace(rs.getString(2));
-						transComplex.setClazz(code);
+					if (projectionFilter.pass(CityGMLModuleType.TRANSPORTATION, "class")) {
+						String clazz = rs.getString(1);
+						if (clazz != null) {
+							Code code = new Code(clazz);
+							code.setCodeSpace(rs.getString(2));
+							transComplex.setClazz(code);
+						}
 					}
 
-					String function = rs.getString(3);
-					String functionCodeSpace = rs.getString(4);
-					if (function != null)
-						transComplex.setFunction(Util.string2codeList(function, functionCodeSpace));
+					if (projectionFilter.pass(CityGMLModuleType.TRANSPORTATION, "function")) {
+						String function = rs.getString(3);
+						String functionCodeSpace = rs.getString(4);
+						if (function != null)
+							transComplex.setFunction(Util.string2codeList(function, functionCodeSpace));
+					}
 
-					String usage = rs.getString(5);
-					String usageCodeSpace = rs.getString(6);
-					if (usage != null)
-						transComplex.setUsage(Util.string2codeList(usage, usageCodeSpace));
+					if (projectionFilter.pass(CityGMLModuleType.TRANSPORTATION, "usage")) {
+						String usage = rs.getString(5);
+						String usageCodeSpace = rs.getString(6);
+						if (usage != null)
+							transComplex.setUsage(Util.string2codeList(usage, usageCodeSpace));
+					}
 
 					// lod0Network
-					Object object = rs.getObject(7);
-					if (!rs.wasNull() && object != null) {
-						GeometryObject lod0Network = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(object);
-						GeometricComplexProperty complexProperty = geometryExporter.getPointOrCurveComplexProperty(lod0Network, false);
-						transComplex.addLod0Network(complexProperty);
+					if (projectionFilter.pass(CityGMLModuleType.TRANSPORTATION, "lod0Network")) {
+						Object object = rs.getObject(7);
+						if (!rs.wasNull() && object != null) {
+							GeometryObject lod0Network = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(object);
+							GeometricComplexProperty complexProperty = geometryExporter.getPointOrCurveComplexProperty(lod0Network, false);
+							transComplex.addLod0Network(complexProperty);
+						}
 					}
-					
+
 					// multiSurface
 					for (int lod = 0; lod < 4; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.TRANSPORTATION, new StringBuilder("lod").append(lod + 1).append("MultiSurface").toString()))
+							continue;
+
 						long surfaceGeometryId = rs.getLong(8 + lod);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
@@ -217,14 +235,19 @@ public class DBTransportationComplex implements DBExporter {
 				CityGMLClass type = Util.classId2cityObject(classId);
 				switch (type) {
 				case TRAFFIC_AREA:
-					transObject = new TrafficArea();
+					if (projectionFilter.pass(CityGMLModuleType.TRANSPORTATION, "trafficArea"))
+						transObject = new TrafficArea();
 					break;
 				case AUXILIARY_TRAFFIC_AREA:
-					transObject = new AuxiliaryTrafficArea();
+					if (projectionFilter.pass(CityGMLModuleType.TRANSPORTATION, "auxiliaryTrafficArea"))
+						transObject = new AuxiliaryTrafficArea();
 					break;
 				default:
 					continue;
 				}
+
+				if (transObject == null)
+					continue;
 
 				// cityobject stuff
 				cityObjectExporter.read(transObject, trafficAreaId);
@@ -247,7 +270,7 @@ public class DBTransportationComplex implements DBExporter {
 					else
 						((AuxiliaryTrafficArea)transObject).setFunction(Util.string2codeList(function, functionCodeSpace));
 				}
-					
+
 				String usage = rs.getString(18);
 				String usageCodeSpace = rs.getString(19);
 				if (usage != null) {
@@ -256,7 +279,7 @@ public class DBTransportationComplex implements DBExporter {
 					else
 						((AuxiliaryTrafficArea)transObject).setUsage(Util.string2codeList(usage, usageCodeSpace));
 				}
-				
+
 				String surfaceMaterial = rs.getString(20);
 				if (surfaceMaterial != null) {
 					Code code = new Code(surfaceMaterial);
@@ -266,7 +289,7 @@ public class DBTransportationComplex implements DBExporter {
 					else
 						((AuxiliaryTrafficArea)transObject).setSurfaceMaterial(code);
 				}
-				
+
 				// multiSurface
 				for (int lod = 0; lod < 3; lod++) {
 					long surfaceGeometryId = rs.getLong(22 + lod);
@@ -315,9 +338,11 @@ public class DBTransportationComplex implements DBExporter {
 				}
 			}
 
-			if (transComplex.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
+			dbExporterManager.processFeature(transComplex);
+
+			if (transComplex.isSetId() && config.getInternal().isRegisterGmlIdInCache())
 				dbExporterManager.putUID(transComplex.getId(), transComplexId, transComplex.getCityGMLClass());
-			dbExporterManager.print(transComplex);
+
 			return true;
 		} finally {
 			if (rs != null)

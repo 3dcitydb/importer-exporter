@@ -42,12 +42,13 @@ import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.measures.Length;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
 import de.tub.citydb.modules.common.filter.ExportFilter;
-import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBSolitaryVegetatObject implements DBExporter {
@@ -61,13 +62,14 @@ public class DBSolitaryVegetatObject implements DBExporter {
 	private DBCityObject cityObjectExporter;
 	private DBImplicitGeometry implicitGeometryExporter;
 	private DBOtherGeometry geometryExporter;
-	private FeatureClassFilter featureClassFilter;
+
+	private ProjectionPropertyFilter projectionFilter;
 
 	public DBSolitaryVegetatObject(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
-		this.featureClassFilter = exportFilter.getFeatureClassFilter();
+		projectionFilter = exportFilter.getProjectionPropertyFilter(CityGMLClass.SOLITARY_VEGETATION_OBJECT);
 
 		init();
 	}
@@ -111,12 +113,12 @@ public class DBSolitaryVegetatObject implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		SolitaryVegetationObject solVegObject = new SolitaryVegetationObject();
 		long solVegObjectId = splitter.getPrimaryKey();
 
 		// cityObject stuff
-		boolean success = cityObjectExporter.read(solVegObject, solVegObjectId, true);
+		boolean success = cityObjectExporter.read(solVegObject, solVegObjectId, true, projectionFilter);
 		if (!success)
 			return false;
 
@@ -127,56 +129,73 @@ public class DBSolitaryVegetatObject implements DBExporter {
 			rs = psSolVegObject.executeQuery();
 
 			if (rs.next()) {
-				String clazz = rs.getString(1);
-				if (clazz != null) {
-					Code code = new Code(clazz);
-					code.setCodeSpace(rs.getString(2));
-					solVegObject.setClazz(code);
+				if (projectionFilter.pass(CityGMLModuleType.VEGETATION, "class")) {
+					String clazz = rs.getString(1);
+					if (clazz != null) {
+						Code code = new Code(clazz);
+						code.setCodeSpace(rs.getString(2));
+						solVegObject.setClazz(code);
+					}
 				}
 
-				String function = rs.getString(3);
-				String functionCodeSpace = rs.getString(4);
-				if (function != null)
-					solVegObject.setFunction(Util.string2codeList(function, functionCodeSpace));
-
-				String usage = rs.getString(5);
-				String usageCodeSpace = rs.getString(6);
-				if (usage != null)
-					solVegObject.setUsage(Util.string2codeList(usage, usageCodeSpace));
-				
-				String species = rs.getString(7);
-				if (species != null) {
-					Code code = new Code(species);
-					code.setCodeSpace(rs.getString(8));
-					solVegObject.setSpecies(code);
-				}
-				
-				double height = rs.getDouble(9);
-				if (!rs.wasNull()) {
-					Length length = new Length();
-					length.setValue(height);
-					length.setUom(rs.getString(10));
-					solVegObject.setHeight(length);
-				}
-				
-				double truncDiameter = rs.getDouble(11);
-				if (!rs.wasNull()) {
-					Length length = new Length();
-					length.setValue(truncDiameter);
-					length.setUom(rs.getString(12));
-					solVegObject.setTrunkDiameter(length);
+				if (projectionFilter.pass(CityGMLModuleType.VEGETATION, "function")) {
+					String function = rs.getString(3);
+					String functionCodeSpace = rs.getString(4);
+					if (function != null)
+						solVegObject.setFunction(Util.string2codeList(function, functionCodeSpace));
 				}
 
-				double crownDiameter = rs.getDouble(13);
-				if (!rs.wasNull()) {
-					Length length = new Length();
-					length.setValue(crownDiameter);
-					length.setUom(rs.getString(14));
-					solVegObject.setCrownDiameter(length);
+				if (projectionFilter.pass(CityGMLModuleType.VEGETATION, "usage")) {
+					String usage = rs.getString(5);
+					String usageCodeSpace = rs.getString(6);
+					if (usage != null)
+						solVegObject.setUsage(Util.string2codeList(usage, usageCodeSpace));
+				}
+
+				if (projectionFilter.pass(CityGMLModuleType.VEGETATION, "species")) {
+					String species = rs.getString(7);
+					if (species != null) {
+						Code code = new Code(species);
+						code.setCodeSpace(rs.getString(8));
+						solVegObject.setSpecies(code);
+					}
+				}
+
+				if (projectionFilter.pass(CityGMLModuleType.VEGETATION, "height")) {
+					double height = rs.getDouble(9);
+					if (!rs.wasNull()) {
+						Length length = new Length();
+						length.setValue(height);
+						length.setUom(rs.getString(10));
+						solVegObject.setHeight(length);
+					}
+				}
+
+				if (projectionFilter.pass(CityGMLModuleType.VEGETATION, "trunkDiameter")) {
+					double truncDiameter = rs.getDouble(11);
+					if (!rs.wasNull()) {
+						Length length = new Length();
+						length.setValue(truncDiameter);
+						length.setUom(rs.getString(12));
+						solVegObject.setTrunkDiameter(length);
+					}
+				}
+
+				if (projectionFilter.pass(CityGMLModuleType.VEGETATION, "crownDiameter")) {
+					double crownDiameter = rs.getDouble(13);
+					if (!rs.wasNull()) {
+						Length length = new Length();
+						length.setValue(crownDiameter);
+						length.setUom(rs.getString(14));
+						solVegObject.setCrownDiameter(length);
+					}
 				}
 
 				// geometry
 				for (int lod = 0; lod < 4; lod++) {
+					if (projectionFilter.filter(CityGMLModuleType.VEGETATION, new StringBuilder("lod").append(lod + 1).append("Geometry").toString()))
+						continue;
+					
 					long surfaceGeometryId = rs.getLong(15 + lod);
 					Object geomObj = rs.getObject(19 + lod);
 					if (surfaceGeometryId == 0 && geomObj == null)
@@ -218,9 +237,12 @@ public class DBSolitaryVegetatObject implements DBExporter {
 						}
 					}
 				}
-				
+
 				// implicit geometry
 				for (int lod = 0; lod < 4; lod++) {
+					if (projectionFilter.filter(CityGMLModuleType.VEGETATION, new StringBuilder("lod").append(lod + 1).append("ImplicitRepresentation").toString()))
+						continue;
+					
 					long implicitGeometryId = rs.getLong(23 + lod);
 					if (rs.wasNull())
 						continue;
@@ -255,9 +277,11 @@ public class DBSolitaryVegetatObject implements DBExporter {
 				}
 			}
 
-			if (solVegObject.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
+			dbExporterManager.processFeature(solVegObject);
+
+			if (solVegObject.isSetId() && config.getInternal().isRegisterGmlIdInCache())
 				dbExporterManager.putUID(solVegObject.getId(), solVegObjectId, solVegObject.getCityGMLClass());
-			dbExporterManager.print(solVegObject);
+
 			return true;
 		} finally {
 			if (rs != null)

@@ -46,9 +46,11 @@ import org.citygml4j.model.citygml.tunnel.TunnelInstallationProperty;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBTunnelInstallation implements DBExporter {
@@ -114,7 +116,7 @@ public class DBTunnelInstallation implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public void read(AbstractTunnel tunnel, long parentId) throws SQLException {
+	public void read(AbstractTunnel tunnel, long parentId, ProjectionPropertyFilter projectionFilter) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -134,14 +136,19 @@ public class DBTunnelInstallation implements DBExporter {
 				CityGMLClass type = Util.classId2cityObject(classId);
 				switch (type) {
 				case TUNNEL_INSTALLATION:
-					tunnelInstallation = new TunnelInstallation();
+					if (projectionFilter.pass(CityGMLModuleType.TUNNEL, "outerTunnelInstallation"))
+						tunnelInstallation = new TunnelInstallation();
 					break;
 				case INT_TUNNEL_INSTALLATION:
-					intTunnelInstallation = new IntTunnelInstallation();
+					if (projectionFilter.pass(CityGMLModuleType.TUNNEL, "interiorTunnelInstallation"))
+						intTunnelInstallation = new IntTunnelInstallation();
 					break;
 				default:
 					continue;
 				}
+				
+				if (tunnelInstallation == null && intTunnelInstallation == null)
+					return;
 
 				String clazz = rs.getString(3);
 				if (clazz != null) {
@@ -314,7 +321,7 @@ public class DBTunnelInstallation implements DBExporter {
 				String usageCodeSpace = rs.getString(8);
 				if (usage != null)
 					intTunnelInstallation.setUsage(Util.string2codeList(usage, usageCodeSpace));
-				
+
 				// boundarySurface
 				// geometry objects of _BoundarySurface elements have to be referenced by lod4Geometry 
 				// So we first export all _BoundarySurfaces

@@ -404,7 +404,7 @@ public class ImpExp {
 			String logPath = logging.getFile().isSetUseAlternativeLogPath() ? logging.getFile().getAlternativeLogPath() : 
 				config.getInternal().getLogPath();
 
-			boolean success = LOG.appendLogFile(logPath);
+			boolean success = LOG.appendLogFile(logPath, true);
 			if (!success) {
 				logging.getFile().setActive(false);
 				logging.getFile().setUseAlternativeLogPath(false);

@@ -55,14 +55,15 @@ import org.citygml4j.model.gml.geometry.primitives.Tin;
 import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.model.gml.measures.Length;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.log.Logger;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
 import de.tub.citydb.modules.common.filter.ExportFilter;
-import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBReliefFeature implements DBExporter {
@@ -77,7 +78,6 @@ public class DBReliefFeature implements DBExporter {
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 	private DBOtherGeometry geometryExporter;
-	private FeatureClassFilter featureClassFilter;
 
 	private boolean useXLink;
 	private boolean appendOldGmlId;
@@ -85,11 +85,13 @@ public class DBReliefFeature implements DBExporter {
 	private String gmlIdPrefix;
 	private String infoSys;
 
+	private ProjectionPropertyFilter projectionFilter;
+
 	public DBReliefFeature(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
-		this.featureClassFilter = exportFilter.getFeatureClassFilter();
+		projectionFilter = exportFilter.getProjectionPropertyFilter(CityGMLClass.RELIEF_FEATURE);
 
 		init();
 	}
@@ -147,13 +149,13 @@ public class DBReliefFeature implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		ReliefFeature reliefFeature = new ReliefFeature();
 		AbstractReliefComponent reliefComponent = null;
 		long reliefFeatureId = splitter.getPrimaryKey();
 
 		// cityObject stuff
-		boolean success = cityObjectExporter.read(reliefFeature, reliefFeatureId, true);
+		boolean success = cityObjectExporter.read(reliefFeature, reliefFeatureId, true, projectionFilter);
 		if (!success)
 			return false;
 
@@ -170,23 +172,27 @@ public class DBReliefFeature implements DBExporter {
 				if (!isInited) {
 					// reliefFeature object
 					// just handle once
-					reliefFeature.setLod(rs.getInt(1));				
+					if (projectionFilter.pass(CityGMLModuleType.RELIEF, "lod"))
+						reliefFeature.setLod(rs.getInt(1));				
 
 					isInited = true;
 				}
 
 				// get reliefComponents content
+				if (projectionFilter.filter(CityGMLModuleType.RELIEF, "reliefComponent"))
+					break;
+				
 				long reliefComponentId = rs.getLong(2);
 				if (rs.wasNull())
 					continue;
-				
+
 				int classId = rs.getInt(3);
 				if (rs.wasNull() || classId == 0)
 					continue;
-				
+
 				CityGMLClass type = Util.classId2cityObject(classId);
 				reliefComponent = null;
-				
+
 				long tinReliefId = rs.getLong(4);
 				long massPointReliefId = rs.getLong(5);
 				long breaklineReliedId = rs.getLong(6);
@@ -202,7 +208,7 @@ public class DBReliefFeature implements DBExporter {
 					continue;
 
 				// cityobject stuff
-				cityObjectExporter.read(reliefComponent, reliefComponentId, false);
+				cityObjectExporter.read(reliefComponent, reliefComponentId);
 
 				if (reliefComponent.isSetId()) {
 					// process xlink
@@ -367,7 +373,7 @@ public class DBReliefFeature implements DBExporter {
 						if (multiCurveProperty != null)					
 							breaklineRelief.setRidgeOrValleyLines(multiCurveProperty);
 					}
-					
+
 					Object breakLinesObj = rs.getObject(17);
 					if (!rs.wasNull() && breakLinesObj != null) {
 						GeometryObject breakLines = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiCurve(breakLinesObj);
@@ -392,9 +398,11 @@ public class DBReliefFeature implements DBExporter {
 				reliefFeature.addReliefComponent(property);
 			}
 
-			if (reliefFeature.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
+			dbExporterManager.processFeature(reliefFeature);
+
+			if (reliefFeature.isSetId() && config.getInternal().isRegisterGmlIdInCache())
 				dbExporterManager.putUID(reliefFeature.getId(), reliefFeatureId, reliefFeature.getCityGMLClass());
-			dbExporterManager.print(reliefFeature);
+
 			return true;
 		} finally {
 			if (rs != null)

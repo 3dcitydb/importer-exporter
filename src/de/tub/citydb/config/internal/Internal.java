@@ -71,6 +71,7 @@ public class Internal {
 	private boolean useInternalBBoxFilter = false;
 	private boolean transformCoordinates = false;
 	private boolean exportGlobalAppearances = false;
+	private boolean registerGmlIdInCache = false;
 
 	public Internal() {
 	}
@@ -193,6 +194,14 @@ public class Internal {
 
 	public void setExportGlobalAppearances(boolean exportGlobalAppearances) {
 		this.exportGlobalAppearances = exportGlobalAppearances;
+	}
+	
+	public boolean isRegisterGmlIdInCache() {
+		return registerGmlIdInCache;
+	}
+
+	public void setRegisterGmlIdInCache(boolean registerGmlIdInCache) {
+		this.registerGmlIdInCache = registerGmlIdInCache;
 	}
 
 }

@@ -46,9 +46,11 @@ import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBBuildingInstallation implements DBExporter {
@@ -114,7 +116,7 @@ public class DBBuildingInstallation implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public void read(AbstractBuilding building, long parentId) throws SQLException {
+	public void read(AbstractBuilding building, long parentId, ProjectionPropertyFilter projectionFilter) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -134,14 +136,19 @@ public class DBBuildingInstallation implements DBExporter {
 				CityGMLClass type = Util.classId2cityObject(classId);
 				switch (type) {
 				case BUILDING_INSTALLATION:
-					buildingInstallation = new BuildingInstallation();
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "outerBuildingInstallation"))
+						buildingInstallation = new BuildingInstallation();
 					break;
 				case INT_BUILDING_INSTALLATION:
-					intBuildingInstallation = new IntBuildingInstallation();
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "interiorBuildingInstallation"))
+						intBuildingInstallation = new IntBuildingInstallation();
 					break;
 				default:
 					continue;
 				}
+				
+				if (buildingInstallation == null && intBuildingInstallation == null)
+					return;
 
 				String clazz = rs.getString(3);
 				if (clazz != null) {
@@ -314,7 +321,7 @@ public class DBBuildingInstallation implements DBExporter {
 				String usageCodeSpace = rs.getString(8);
 				if (usage != null)
 					intBuildingInstallation.setUsage(Util.string2codeList(usage, usageCodeSpace));
-				
+
 				// boundarySurface
 				// geometry objects of _BoundarySurface elements have to be referenced by lod4Geometry 
 				// So we first export all _BoundarySurfaces

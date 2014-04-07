@@ -60,13 +60,13 @@ import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
 import de.tub.citydb.util.Util;
 
 public class DBAppearance implements DBExporter {
@@ -194,7 +194,7 @@ public class DBAppearance implements DBExporter {
 		}
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		ResultSet rs = null;
 
 		try {
@@ -217,7 +217,7 @@ public class DBAppearance implements DBExporter {
 			}
 			
 			if (appearance.isSetSurfaceDataMember()) {
-				dbExporterManager.print(appearance);
+				dbExporterManager.processFeature(appearance);
 				dbExporterManager.updateFeatureCounter(CityGMLClass.APPEARANCE);
 				return true;
 			} 

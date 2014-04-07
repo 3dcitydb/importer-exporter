@@ -46,9 +46,11 @@ import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBBridgeInstallation implements DBExporter {
@@ -114,7 +116,7 @@ public class DBBridgeInstallation implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public void read(AbstractBridge bridge, long parentId) throws SQLException {
+	public void read(AbstractBridge bridge, long parentId, ProjectionPropertyFilter projectionFilter) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -134,14 +136,19 @@ public class DBBridgeInstallation implements DBExporter {
 				CityGMLClass type = Util.classId2cityObject(classId);
 				switch (type) {
 				case BRIDGE_INSTALLATION:
-					bridgeInstallation = new BridgeInstallation();
+					if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "outerBridgeInstallation"))
+						bridgeInstallation = new BridgeInstallation();
 					break;
 				case INT_BRIDGE_INSTALLATION:
-					intBridgeInstallation = new IntBridgeInstallation();
+					if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "interiorBridgeInstallation"))
+						intBridgeInstallation = new IntBridgeInstallation();
 					break;
 				default:
 					continue;
 				}
+
+				if (bridgeInstallation == null && intBridgeInstallation == null)
+					return;
 
 				String clazz = rs.getString(3);
 				if (clazz != null) {
@@ -314,7 +321,7 @@ public class DBBridgeInstallation implements DBExporter {
 				String usageCodeSpace = rs.getString(8);
 				if (usage != null)
 					intBridgeInstallation.setUsage(Util.string2codeList(usage, usageCodeSpace));
-				
+
 				// boundarySurface
 				// geometry objects of _BoundarySurface elements have to be referenced by lod4Geometry 
 				// So we first export all _BoundarySurfaces

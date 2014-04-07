@@ -58,16 +58,17 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.measures.Length;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.model.xal.AddressDetails;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.exporter.AddressMode;
 import de.tub.citydb.modules.citygml.common.xal.AddressExportFactory;
 import de.tub.citydb.modules.citygml.common.xal.AddressObject;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
 import de.tub.citydb.modules.common.filter.ExportFilter;
-import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBBuilding implements DBExporter {
@@ -85,18 +86,21 @@ public class DBBuilding implements DBExporter {
 	private DBOtherGeometry geometryExporter;
 
 	private HashMap<Long, AbstractBuilding> buildings;
-	private FeatureClassFilter featureClassFilter;
+	private ProjectionPropertyFilter projectionFilter;
 
 	public DBBuilding(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
 		this.config = config;
 		this.connection = connection;
-		this.featureClassFilter = exportFilter.getFeatureClassFilter();
+		projectionFilter = exportFilter.getProjectionPropertyFilter(CityGMLClass.BUILDING);
 
 		init();
 	}
 
 	private void init() throws SQLException {
+		buildings = new HashMap<Long, AbstractBuilding>();
+		String buildingId = projectionFilter.pass(CityGMLModuleType.BUILDING, "consistsOfBuildingPart") ? "BUILDING_ROOT_ID" : "ID";
+
 		if (!config.getInternal().isTransformCoordinates()) {
 			StringBuilder query = new StringBuilder()
 			.append("select b.ID, b.BUILDING_PARENT_ID, b.CLASS, b.CLASS_CODESPACE, b.FUNCTION, b.FUNCTION_CODESPACE, b.USAGE, b.USAGE_CODESPACE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, ")
@@ -107,7 +111,7 @@ public class DBBuilding implements DBExporter {
 			.append("b.LOD1_SOLID_ID, b.LOD2_SOLID_ID, b.LOD3_SOLID_ID, b.LOD4_SOLID_ID, ")
 			.append("b.LOD1_MULTI_SURFACE_ID, b.LOD2_MULTI_SURFACE_ID, b.LOD3_MULTI_SURFACE_ID, b.LOD4_MULTI_SURFACE_ID, ")
 			.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT, a.XAL_SOURCE ")
-			.append("from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
+			.append("from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.").append(buildingId).append(" = ?");
 			psBuilding = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
@@ -128,11 +132,9 @@ public class DBBuilding implements DBExporter {
 			.append("b.LOD1_MULTI_SURFACE_ID, b.LOD2_MULTI_SURFACE_ID, b.LOD3_MULTI_SURFACE_ID, b.LOD4_MULTI_SURFACE_ID, ")
 			.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, ")
 			.append(transformOrNull).append("(a.MULTI_POINT, ").append(srid).append(") AS MULTI_POINT, a.XAL_SOURCE ")
-			.append("from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.BUILDING_ROOT_ID = ?");
+			.append("from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.").append(buildingId).append(" = ?");
 			psBuilding = connection.prepareStatement(query.toString());
 		}
-
-		buildings = new HashMap<Long, AbstractBuilding>();
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
@@ -142,7 +144,7 @@ public class DBBuilding implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		ResultSet rs = null;
 
 		try {
@@ -180,106 +182,131 @@ public class DBBuilding implements DBExporter {
 					abstractBuilding.setLocalProperty("isCreated", true);
 
 					// do cityObject stuff
-					boolean success = cityObjectExporter.read(abstractBuilding, id, parentId == 0);
+					boolean success = cityObjectExporter.read(abstractBuilding, id, parentId == 0, projectionFilter);
 					if (!success)
 						return false;
 
-					String clazz = rs.getString(3);
-					if (clazz != null) {
-						Code code = new Code(clazz);
-						code.setCodeSpace(rs.getString(4));
-						abstractBuilding.setClazz(code);
-					}
-
-					String function = rs.getString(5);
-					String functionCodeSpace = rs.getString(6);
-					if (function != null)
-						abstractBuilding.setFunction(Util.string2codeList(function, functionCodeSpace));
-
-					String usage = rs.getString(7);
-					String usageCodeSpace = rs.getString(8);
-					if (usage != null)
-						abstractBuilding.setUsage(Util.string2codeList(usage, usageCodeSpace));
-
-					Date yearOfConstruction = rs.getDate(9);				
-					if (yearOfConstruction != null) {
-						GregorianCalendar gregDate = new GregorianCalendar();
-						gregDate.setTime(yearOfConstruction);
-						abstractBuilding.setYearOfConstruction(gregDate);
-					}
-
-					Date yearOfDemolition = rs.getDate(10);
-					if (yearOfDemolition != null) {
-						GregorianCalendar gregDate = new GregorianCalendar();
-						gregDate.setTime(yearOfDemolition);
-						abstractBuilding.setYearOfDemolition(gregDate);
-					}
-
-					String roofType = rs.getString(11);
-					if (roofType != null) {
-						Code code = new Code(roofType);
-						code.setCodeSpace(rs.getString(12));
-						abstractBuilding.setRoofType(code);
-					}
-
-					double measuredHeight = rs.getDouble(13);
-					if (!rs.wasNull()) {
-						Length length = new Length();
-						length.setValue(measuredHeight);
-						length.setUom(rs.getString(14));
-						abstractBuilding.setMeasuredHeight(length);
-					}
-
-					Integer storeysAboveGround = rs.getInt(15);
-					if (!rs.wasNull())
-						abstractBuilding.setStoreysAboveGround(storeysAboveGround);
-
-					Integer storeysBelowGround = rs.getInt(16);
-					if (!rs.wasNull())
-						abstractBuilding.setStoreysBelowGround(storeysBelowGround);
-
-					String storeyHeightsAboveGround = rs.getString(17);
-					if (storeyHeightsAboveGround != null) {
-						List<DoubleOrNull> storeyHeightsAboveGroundList = new ArrayList<DoubleOrNull>();
-						MeasureOrNullList measureList = new MeasureOrNullList();
-						Pattern p = Pattern.compile("\\s+");
-						String[] measureStrings = p.split(storeyHeightsAboveGround.trim());
-
-						for (String measureString : measureStrings) {
-							try {
-								storeyHeightsAboveGroundList.add(new DoubleOrNull(Double.parseDouble(measureString)));
-							} catch (NumberFormatException nfEx) {
-								//
-							}
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "class")) {
+						String clazz = rs.getString(3);
+						if (clazz != null) {
+							Code code = new Code(clazz);
+							code.setCodeSpace(rs.getString(4));
+							abstractBuilding.setClazz(code);
 						}
-
-						measureList.setDoubleOrNull(storeyHeightsAboveGroundList);
-						measureList.setUom(rs.getString(18));
-						abstractBuilding.setStoreyHeightsAboveGround(measureList);
 					}
 
-					String storeyHeightsBelowGround = rs.getString(19);
-					if (storeyHeightsBelowGround != null) {
-						List<DoubleOrNull> storeyHeightsBelowGroundList = new ArrayList<DoubleOrNull>();
-						MeasureOrNullList measureList = new MeasureOrNullList();
-						Pattern p = Pattern.compile("\\s+");
-						String[] measureStrings = p.split(storeyHeightsBelowGround.trim());
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "function")) {
+						String function = rs.getString(5);
+						String functionCodeSpace = rs.getString(6);
+						if (function != null)
+							abstractBuilding.setFunction(Util.string2codeList(function, functionCodeSpace));
+					}
 
-						for (String measureString : measureStrings) {
-							try {
-								storeyHeightsBelowGroundList.add(new DoubleOrNull(Double.parseDouble(measureString)));
-							} catch (NumberFormatException nfEx) {
-								//
-							}
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "usage")) {
+						String usage = rs.getString(7);
+						String usageCodeSpace = rs.getString(8);
+						if (usage != null)
+							abstractBuilding.setUsage(Util.string2codeList(usage, usageCodeSpace));
+					}
+
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "yearOfConstruction")) {
+						Date yearOfConstruction = rs.getDate(9);				
+						if (yearOfConstruction != null) {
+							GregorianCalendar gregDate = new GregorianCalendar();
+							gregDate.setTime(yearOfConstruction);
+							abstractBuilding.setYearOfConstruction(gregDate);
 						}
+					}
 
-						measureList.setDoubleOrNull(storeyHeightsBelowGroundList);
-						measureList.setUom(rs.getString(20));
-						abstractBuilding.setStoreyHeightsBelowGround(measureList);
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "yearOfDemolition")) {
+						Date yearOfDemolition = rs.getDate(10);
+						if (yearOfDemolition != null) {
+							GregorianCalendar gregDate = new GregorianCalendar();
+							gregDate.setTime(yearOfDemolition);
+							abstractBuilding.setYearOfDemolition(gregDate);
+						}
+					}
+
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "roofType")) {
+						String roofType = rs.getString(11);
+						if (roofType != null) {
+							Code code = new Code(roofType);
+							code.setCodeSpace(rs.getString(12));
+							abstractBuilding.setRoofType(code);
+						}
+					}
+
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "measuredHeight")) {
+						double measuredHeight = rs.getDouble(13);
+						if (!rs.wasNull()) {
+							Length length = new Length();
+							length.setValue(measuredHeight);
+							length.setUom(rs.getString(14));
+							abstractBuilding.setMeasuredHeight(length);
+						}
+					}
+
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "storeysAboveGround")) {
+						Integer storeysAboveGround = rs.getInt(15);
+						if (!rs.wasNull())
+							abstractBuilding.setStoreysAboveGround(storeysAboveGround);
+					}
+
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "storeysBelowGround")) {
+						Integer storeysBelowGround = rs.getInt(16);
+						if (!rs.wasNull())
+							abstractBuilding.setStoreysBelowGround(storeysBelowGround);
+					}
+
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "storeyHeightsAboveGround")) {
+						String storeyHeightsAboveGround = rs.getString(17);
+						if (storeyHeightsAboveGround != null) {
+							List<DoubleOrNull> storeyHeightsAboveGroundList = new ArrayList<DoubleOrNull>();
+							MeasureOrNullList measureList = new MeasureOrNullList();
+							Pattern p = Pattern.compile("\\s+");
+							String[] measureStrings = p.split(storeyHeightsAboveGround.trim());
+
+							for (String measureString : measureStrings) {
+								try {
+									storeyHeightsAboveGroundList.add(new DoubleOrNull(Double.parseDouble(measureString)));
+								} catch (NumberFormatException nfEx) {
+									//
+								}
+							}
+
+							measureList.setDoubleOrNull(storeyHeightsAboveGroundList);
+							measureList.setUom(rs.getString(18));
+							abstractBuilding.setStoreyHeightsAboveGround(measureList);
+						}
+					}
+
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "storeyHeightsBelowGround")) {
+						String storeyHeightsBelowGround = rs.getString(19);
+						if (storeyHeightsBelowGround != null) {
+							List<DoubleOrNull> storeyHeightsBelowGroundList = new ArrayList<DoubleOrNull>();
+							MeasureOrNullList measureList = new MeasureOrNullList();
+							Pattern p = Pattern.compile("\\s+");
+							String[] measureStrings = p.split(storeyHeightsBelowGround.trim());
+
+							for (String measureString : measureStrings) {
+								try {
+									storeyHeightsBelowGroundList.add(new DoubleOrNull(Double.parseDouble(measureString)));
+								} catch (NumberFormatException nfEx) {
+									//
+								}
+							}
+
+							measureList.setDoubleOrNull(storeyHeightsBelowGroundList);
+							measureList.setUom(rs.getString(20));
+							abstractBuilding.setStoreyHeightsBelowGround(measureList);
+						}
 					}
 
 					// terrainIntersection
 					for (int lod = 0; lod < 4; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.BUILDING, new StringBuilder("lod").append(lod + 1).append("TerrainIntersection").toString()))
+							continue;
+
 						Object terrainIntersectionObj = rs.getObject(21 + lod);
 						if (rs.wasNull() || terrainIntersectionObj == null)
 							continue;
@@ -308,6 +335,9 @@ public class DBBuilding implements DBExporter {
 
 					// multiCurve
 					for (int lod = 0; lod < 3; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.BUILDING, new StringBuilder("lod").append(lod + 2).append("MultiCurve").toString()))
+							continue;
+
 						Object multiCurveObj = rs.getObject(25 + lod);
 						if (rs.wasNull() || multiCurveObj == null)
 							continue;
@@ -333,6 +363,11 @@ public class DBBuilding implements DBExporter {
 
 					// footPrint and roofEdge
 					for (int i = 0; i < 2; i++) {
+						if (i == 0 && projectionFilter.filter(CityGMLModuleType.BUILDING, new StringBuilder("lod0FootPrint").toString()))
+							continue;
+						else if (i == 1 && projectionFilter.filter(CityGMLModuleType.BUILDING, new StringBuilder("lod0RoofEdge").toString()))
+							continue;
+
 						long surfaceGeometryId = rs.getLong(28 + i);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
@@ -360,10 +395,14 @@ public class DBBuilding implements DBExporter {
 					// according to conformance requirement no. 3 of the Building version 2.0.0 module
 					// geometry objects of _BoundarySurface elements have to be referenced by lodXSolid and
 					// lodXMultiSurface properties. So we first export all _BoundarySurfaces
-					thematicSurfaceExporter.read(abstractBuilding, id);
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "boundedBy"))
+						thematicSurfaceExporter.read(abstractBuilding, id);
 
 					// solid
 					for (int lod = 0; lod < 4; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.BUILDING, new StringBuilder("lod").append(lod + 1).append("Solid").toString()))
+							continue;
+
 						long surfaceGeometryId = rs.getLong(30 + lod);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
@@ -395,6 +434,9 @@ public class DBBuilding implements DBExporter {
 
 					// multiSurface
 					for (int lod = 0; lod < 4; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.BUILDING, new StringBuilder("lod").append(lod + 1).append("MultiSurface").toString()))
+							continue;
+
 						long surfaceGeometryId = rs.getLong(34 + lod);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
@@ -425,10 +467,11 @@ public class DBBuilding implements DBExporter {
 					}
 
 					// BuildingInstallation
-					buildingInstallationExporter.read(abstractBuilding, id);
+					buildingInstallationExporter.read(abstractBuilding, id, projectionFilter);
 
 					// room
-					roomExporter.read(abstractBuilding, id);
+					if (projectionFilter.pass(CityGMLModuleType.BUILDING, "interiorRoom"))
+						roomExporter.read(abstractBuilding, id);
 
 					// add building part to parent building
 					if (parentBuilding != null)
@@ -436,38 +479,42 @@ public class DBBuilding implements DBExporter {
 				}
 
 				// address
-				rs.getLong(36);
-				if (!rs.wasNull()) {
-					AddressExportFactory factory = dbExporterManager.getAddressExportFactory();					
-					AddressObject addressObject = factory.newAddressObject();
+				if (projectionFilter.pass(CityGMLModuleType.BUILDING, "address")) {
+					rs.getLong(36);
+					if (!rs.wasNull()) {
+						AddressExportFactory factory = dbExporterManager.getAddressExportFactory();					
+						AddressObject addressObject = factory.newAddressObject();
 
-					fillAddressObject(addressObject, factory.getPrimaryMode(), rs);
-					if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
-						fillAddressObject(addressObject, factory.getFallbackMode(), rs);
+						fillAddressObject(addressObject, factory.getPrimaryMode(), rs);
+						if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
+							fillAddressObject(addressObject, factory.getFallbackMode(), rs);
 
-					if (addressObject.canCreate()) {
-						// multiPointGeometry
-						Object multiPointObj = rs.getObject(44);
-						if (!rs.wasNull() && multiPointObj != null) {
-							GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
-							MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(multiPoint, false);
-							if (multiPointProperty != null)
-								addressObject.setMultiPointProperty(multiPointProperty);
+						if (addressObject.canCreate()) {
+							// multiPointGeometry
+							Object multiPointObj = rs.getObject(44);
+							if (!rs.wasNull() && multiPointObj != null) {
+								GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
+								MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(multiPoint, false);
+								if (multiPointProperty != null)
+									addressObject.setMultiPointProperty(multiPointProperty);
+							}
+
+							// create xAL address
+							AddressProperty addressProperty = factory.create(addressObject);
+							if (addressProperty != null)
+								abstractBuilding.addAddress(addressProperty);
 						}
-
-						// create xAL address
-						AddressProperty addressProperty = factory.create(addressObject);
-						if (addressProperty != null)
-							abstractBuilding.addAddress(addressProperty);
 					}
-				}	
+				}
 			}
 
 			buildings.clear();
 
-			if (root.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
+			dbExporterManager.processFeature(root);
+
+			if (root.isSetId() && config.getInternal().isRegisterGmlIdInCache())
 				dbExporterManager.putUID(root.getId(), buildingId, root.getCityGMLClass());
-			dbExporterManager.print(root);
+
 			return true;
 		} finally {
 			if (rs != null)

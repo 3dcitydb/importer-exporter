@@ -41,10 +41,13 @@ import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupParent;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
+import de.tub.citydb.modules.common.filter.ExportFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBCityObjectGroup implements DBExporter {
@@ -53,15 +56,18 @@ public class DBCityObjectGroup implements DBExporter {
 	private final Connection connection;
 
 	private PreparedStatement psCityObjectGroup;
-	
+
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
 	private DBOtherGeometry geometryExporter;
 
-	public DBCityObjectGroup(Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
+	private ProjectionPropertyFilter projectionFilter;
+
+	public DBCityObjectGroup(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
+		projectionFilter = exportFilter.getProjectionPropertyFilter(CityGMLClass.CITY_OBJECT_GROUP);
 
 		init();
 	}
@@ -93,12 +99,12 @@ public class DBCityObjectGroup implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		CityObjectGroup cityObjectGroup = new CityObjectGroup();
 		long cityObjectGroupId = splitter.getPrimaryKey();
 
 		// cityObject stuff
-		boolean success = cityObjectExporter.read(cityObjectGroup, cityObjectGroupId, true);
+		boolean success = cityObjectExporter.read(cityObjectGroup, cityObjectGroupId, true, projectionFilter);
 		if (!success)
 			return false;
 
@@ -111,81 +117,97 @@ public class DBCityObjectGroup implements DBExporter {
 
 			while (rs.next()) {
 				if (!isInited) {
-					String clazz = rs.getString(1);
-					if (clazz != null) {
-						Code code = new Code(clazz);
-						code.setCodeSpace(rs.getString(2));
-						cityObjectGroup.setClazz(code);
+					if (projectionFilter.pass(CityGMLModuleType.CITY_OBJECT_GROUP, "class")) {
+						String clazz = rs.getString(1);
+						if (clazz != null) {
+							Code code = new Code(clazz);
+							code.setCodeSpace(rs.getString(2));
+							cityObjectGroup.setClazz(code);
+						}
 					}
 
-					String function = rs.getString(3);
-					String functionCodeSpace = rs.getString(4);
-					if (function != null)
-						cityObjectGroup.setFunction(Util.string2codeList(function, functionCodeSpace));
+					if (projectionFilter.pass(CityGMLModuleType.CITY_OBJECT_GROUP, "function")) {
+						String function = rs.getString(3);
+						String functionCodeSpace = rs.getString(4);
+						if (function != null)
+							cityObjectGroup.setFunction(Util.string2codeList(function, functionCodeSpace));
+					}
 
-					String usage = rs.getString(5);
-					String usageCodeSpace = rs.getString(6);
-					if (usage != null)
-						cityObjectGroup.setUsage(Util.string2codeList(usage, usageCodeSpace));
+					if (projectionFilter.pass(CityGMLModuleType.CITY_OBJECT_GROUP, "usage")) {
+						String usage = rs.getString(5);
+						String usageCodeSpace = rs.getString(6);
+						if (usage != null)
+							cityObjectGroup.setUsage(Util.string2codeList(usage, usageCodeSpace));
+					}
 
 					// geometry
-					long surfaceGeometryId = rs.getLong(7);
-					Object geomObj = rs.getObject(8);
-					if (surfaceGeometryId != 0 || geomObj != null) {
-						GeometryProperty<AbstractGeometry> geometryProperty = null;
-						if (surfaceGeometryId != 0) {
-							DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
-							if (geometry != null) {
-								geometryProperty = new GeometryProperty<AbstractGeometry>();
-								if (geometry.getAbstractGeometry() != null)
-									geometryProperty.setGeometry(geometry.getAbstractGeometry());
-								else
-									geometryProperty.setHref(geometry.getTarget());
+					if (projectionFilter.pass(CityGMLModuleType.CITY_OBJECT_GROUP, "geometry")) {
+						long surfaceGeometryId = rs.getLong(7);
+						Object geomObj = rs.getObject(8);
+						if (surfaceGeometryId != 0 || geomObj != null) {
+							GeometryProperty<AbstractGeometry> geometryProperty = null;
+							if (surfaceGeometryId != 0) {
+								DBSurfaceGeometryResult geometry = surfaceGeometryExporter.read(surfaceGeometryId);
+								if (geometry != null) {
+									geometryProperty = new GeometryProperty<AbstractGeometry>();
+									if (geometry.getAbstractGeometry() != null)
+										geometryProperty.setGeometry(geometry.getAbstractGeometry());
+									else
+										geometryProperty.setHref(geometry.getTarget());
+								}
+							} else {
+								GeometryObject geometry = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(geomObj);
+								if (geometry != null) {
+									geometryProperty = new GeometryProperty<AbstractGeometry>();
+									geometryProperty.setGeometry(geometryExporter.getPointOrCurveGeometry(geometry, true));
+								}	
 							}
-						} else {
-							GeometryObject geometry = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getGeometry(geomObj);
-							if (geometry != null) {
-								geometryProperty = new GeometryProperty<AbstractGeometry>();
-								geometryProperty.setGeometry(geometryExporter.getPointOrCurveGeometry(geometry, true));
-							}	
-						}
 
-						if (geometryProperty != null)
-							cityObjectGroup.setGeometry(geometryProperty);
+							if (geometryProperty != null)
+								cityObjectGroup.setGeometry(geometryProperty);
+						}
 					}
 
-					long parentId = rs.getLong("PARENT_CITYOBJECT_ID");
-					if (!rs.wasNull() && parentId != 0) {
-						String gmlId = dbExporterManager.getUID(parentId, CityGMLClass.ABSTRACT_CITY_OBJECT);
+					if (projectionFilter.pass(CityGMLModuleType.CITY_OBJECT_GROUP, "parent")) {
+						long parentId = rs.getLong("PARENT_CITYOBJECT_ID");
+						if (!rs.wasNull() && parentId != 0) {
+							String gmlId = dbExporterManager.getUID(parentId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
-						if (gmlId != null) {
-							CityObjectGroupParent parent = new CityObjectGroupParent();
-							parent.setHref("#" + gmlId);
-							cityObjectGroup.setGroupParent(parent);
+							if (gmlId != null) {
+								CityObjectGroupParent parent = new CityObjectGroupParent();
+								parent.setHref("#" + gmlId);
+								cityObjectGroup.setGroupParent(parent);
+							}
 						}
 					}
 
 					isInited = true;
 				}
 
-				long groupMemberId = rs.getLong("CITYOBJECT_ID");
-				if (!rs.wasNull() && groupMemberId != 0) {
-					String gmlId = dbExporterManager.getUID(groupMemberId, CityGMLClass.ABSTRACT_CITY_OBJECT);
+				if (projectionFilter.pass(CityGMLModuleType.CITY_OBJECT_GROUP, "groupMember")) {
+					long groupMemberId = rs.getLong("CITYOBJECT_ID");
+					if (!rs.wasNull() && groupMemberId != 0) {
+						String gmlId = dbExporterManager.getUID(groupMemberId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
-					if (gmlId != null) {
-						CityObjectGroupMember groupMember = new CityObjectGroupMember();
-						groupMember.setHref("#" + gmlId);
+						if (gmlId != null) {
+							CityObjectGroupMember groupMember = new CityObjectGroupMember();
+							groupMember.setHref("#" + gmlId);
 
-						String role = rs.getString("ROLE");
-						if (role != null)
-							groupMember.setGroupRole(role);
+							String role = rs.getString("ROLE");
+							if (role != null)
+								groupMember.setGroupRole(role);
 
-						cityObjectGroup.addGroupMember(groupMember);
-					} 
+							cityObjectGroup.addGroupMember(groupMember);
+						} 
+					}
 				}
 			}
 
-			dbExporterManager.print(cityObjectGroup);
+			dbExporterManager.processFeature(cityObjectGroup);
+
+			if (cityObjectGroup.isSetId() && config.getInternal().isRegisterGmlIdInCache())
+				dbExporterManager.putUID(cityObjectGroup.getId(), cityObjectGroupId, cityObjectGroup.getCityGMLClass());
+
 			return true;
 		} finally {
 			if (rs != null)

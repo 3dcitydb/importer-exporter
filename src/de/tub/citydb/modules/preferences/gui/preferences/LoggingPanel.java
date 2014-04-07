@@ -259,7 +259,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 						config.getInternal().getLogPath();
 
 					if (!logPath.equals(config.getInternal().getCurrentLogPath())) {
-						boolean success = LOG.appendLogFile(logPath);
+						boolean success = LOG.appendLogFile(logPath, true);
 
 						if (!success) {
 							useLogFile.setSelected(false);

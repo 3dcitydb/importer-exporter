@@ -32,6 +32,7 @@ package de.tub.citydb.config;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -69,6 +70,10 @@ public class ConfigUtil {
 	}
 
 	public static Object unmarshal(File file, JAXBContext ctx) throws JAXBException, IOException {
+		return unmarshal(new FileInputStream(file), ctx);
+	}
+	
+	public static Object unmarshal(InputStream inputStream, JAXBContext ctx) throws JAXBException, IOException {
 		Unmarshaller um = ctx.createUnmarshaller();
 		UnmarshallerHandler handler = um.getUnmarshallerHandler();
 
@@ -84,7 +89,7 @@ public class ConfigUtil {
 			// read project files not declaring proper namespaces
 			Mapper mapper = new Mapper(reader);
 			mapper.setContentHandler(handler);
-			mapper.parse(new InputSource(new FileInputStream(file)));			
+			mapper.parse(new InputSource(inputStream));			
 		} catch (SAXException e) {
 			throw new JAXBException(e.getMessage());
 		} catch (ParserConfigurationException e) {

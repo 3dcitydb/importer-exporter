@@ -40,7 +40,14 @@ import javax.xml.bind.annotation.XmlType;
 		"waterBody",
 		"landUse",
 		"vegetation",
+		"plantCover",
+		"solitaryVegetationObject",
 		"transportation",
+		"transportationComplex",
+		"road",
+		"square",
+		"railway",
+		"track",
 		"reliefFeature",
 		"cityFurniture",
 		"genericCityObject",
@@ -60,7 +67,21 @@ public class FeatureClass {
 	@XmlElement(defaultValue="true")
 	private Boolean vegetation = true;
 	@XmlElement(defaultValue="true")
+	private Boolean plantCover = true;
+	@XmlElement(defaultValue="true")
+	private Boolean solitaryVegetationObject = true;
+	@XmlElement(defaultValue="true")
 	private Boolean transportation = true;
+	@XmlElement(defaultValue="true")
+	private Boolean transportationComplex = true;
+	@XmlElement(defaultValue="true")
+	private Boolean road = true;
+	@XmlElement(defaultValue="true")
+	private Boolean square = true;
+	@XmlElement(defaultValue="true")
+	private Boolean railway = true;
+	@XmlElement(defaultValue="true")
+	private Boolean track = true;
 	@XmlElement(defaultValue="true")
 	private Boolean reliefFeature = true;
 	@XmlElement(defaultValue="true")
@@ -178,6 +199,111 @@ public class FeatureClass {
 
 	public void setTransportation(Boolean transportation) {
 		this.transportation = transportation;
+	}
+	
+	public boolean isSetTransportationComplex() {
+		if (transportationComplex != null)
+			return transportationComplex.booleanValue();
+
+		return false;
+	}
+
+	public Boolean getTransportationComplex() {
+		return transportationComplex;
+	}
+
+	public void setTransportationComplex(Boolean transportationComplex) {
+		this.transportationComplex = transportationComplex;
+	}
+	
+	public Boolean getRoad() {
+		return road;
+	}
+
+	public void setRoad(Boolean road) {
+		this.road = road;
+	}
+	
+	public boolean isSetRoad() {
+		if (road != null)
+			return road.booleanValue();
+
+		return false;
+	}
+
+	public Boolean getSquare() {
+		return square;
+	}
+
+	public void setSquare(Boolean square) {
+		this.square = square;
+	}
+	
+	public boolean isSetSquare() {
+		if (square != null)
+			return square.booleanValue();
+
+		return false;
+	}
+
+	public Boolean getRailway() {
+		return railway;
+	}
+
+	public void setRailway(Boolean railway) {
+		this.railway = railway;
+	}
+	
+	public boolean isSetRailway() {
+		if (railway != null)
+			return railway.booleanValue();
+
+		return false;
+	}
+
+	public Boolean getTrack() {
+		return track;
+	}
+
+	public void setTrack(Boolean track) {
+		this.track = track;
+	}
+
+	public boolean isSetTrack() {
+		if (track != null)
+			return track.booleanValue();
+
+		return false;
+	}
+
+	public Boolean getPlantCover() {
+		return plantCover;
+	}
+
+	public void setPlantCover(Boolean plantCover) {
+		this.plantCover = plantCover;
+	}
+
+	public boolean isSetPlantCover() {
+		if (plantCover != null)
+			return plantCover.booleanValue();
+
+		return false;
+	}
+	
+	public Boolean getSolitaryVegetationObject() {
+		return solitaryVegetationObject;
+	}
+
+	public void setSolitaryVegetationObject(Boolean solitaryVegetationObject) {
+		this.solitaryVegetationObject = solitaryVegetationObject;
+	}
+	
+	public boolean isSetSolitaryVegetationObject() {
+		if (solitaryVegetationObject != null)
+			return solitaryVegetationObject.booleanValue();
+
+		return false;
 	}
 
 	public boolean isSetReliefFeature() {

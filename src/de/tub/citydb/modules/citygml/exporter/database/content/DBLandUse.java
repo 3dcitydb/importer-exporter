@@ -40,27 +40,31 @@ import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
+import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
 import de.tub.citydb.modules.common.filter.ExportFilter;
-import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBLandUse implements DBExporter {
 	private final DBExporterManager dbExporterManager;
+	private final Config config;
 	private final Connection connection;
 
 	private PreparedStatement psLandUse;
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
-	private FeatureClassFilter featureClassFilter;
+	
+	private ProjectionPropertyFilter projectionFilter;
 
-
-	public DBLandUse(Connection connection, ExportFilter exportFilter, DBExporterManager dbExporterManager) throws SQLException {
+	public DBLandUse(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
+		this.config = config;
 		this.dbExporterManager = dbExporterManager;
-		this.featureClassFilter = exportFilter.getFeatureClassFilter();
+		projectionFilter = exportFilter.getProjectionPropertyFilter(CityGMLClass.LAND_USE);
 
 		init();
 	}
@@ -76,12 +80,12 @@ public class DBLandUse implements DBExporter {
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		LandUse landUse = new LandUse();
 		long landUseId = splitter.getPrimaryKey();
 
 		// cityObject stuff
-		boolean success = cityObjectExporter.read(landUse, landUseId, true);
+		boolean success = cityObjectExporter.read(landUse, landUseId, true, projectionFilter);
 		if (!success)
 			return false;
 
@@ -92,25 +96,34 @@ public class DBLandUse implements DBExporter {
 			rs = psLandUse.executeQuery();
 
 			if (rs.next()) {
+				if (projectionFilter.pass(CityGMLModuleType.LAND_USE, "class")) {
 				String clazz = rs.getString(1);
 				if (clazz != null) {
 					Code code = new Code(clazz);
 					code.setCodeSpace(rs.getString(2));
 					landUse.setClazz(code);
 				}
+				}
 
+				if (projectionFilter.pass(CityGMLModuleType.LAND_USE, "function")) {
 				String function = rs.getString(3);
 				String functionCodeSpace = rs.getString(4);
 				if (function != null)
 					landUse.setFunction(Util.string2codeList(function, functionCodeSpace));
+				}
 
+				if (projectionFilter.pass(CityGMLModuleType.LAND_USE, "usage")) {
 				String usage = rs.getString(5);
 				String usageCodeSpace = rs.getString(6);
 				if (usage != null)
 					landUse.setUsage(Util.string2codeList(usage, usageCodeSpace));
+				}
 				
 				// multiSurface
 				for (int lod = 0; lod < 5; lod++) {
+					if (projectionFilter.filter(CityGMLModuleType.LAND_USE, new StringBuilder("lod").append(lod).append("MultiSurface").toString()))
+						continue;
+					
 					long surfaceGeometryId = rs.getLong(7 + lod);
 					if (rs.wasNull() || surfaceGeometryId == 0)
 						continue;
@@ -144,9 +157,11 @@ public class DBLandUse implements DBExporter {
 				}
 			}
 
-			if (landUse.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
+			dbExporterManager.processFeature(landUse);
+
+			if (landUse.isSetId() && config.getInternal().isRegisterGmlIdInCache())
 				dbExporterManager.putUID(landUse.getId(), landUseId, landUse.getCityGMLClass());
-			dbExporterManager.print(landUse);
+
 			return true;
 		} finally {
 			if (rs != null)

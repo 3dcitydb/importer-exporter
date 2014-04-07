@@ -42,12 +42,13 @@ import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
 import de.tub.citydb.modules.common.filter.ExportFilter;
-import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBGenericCityObject implements DBExporter {
@@ -61,13 +62,14 @@ public class DBGenericCityObject implements DBExporter {
 	private DBCityObject cityObjectExporter;
 	private DBImplicitGeometry implicitGeometryExporter;
 	private DBOtherGeometry geometryExporter;
-	private FeatureClassFilter featureClassFilter;
+	
+	private ProjectionPropertyFilter projectionFilter;
 
 	public DBGenericCityObject(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
-		this.featureClassFilter = exportFilter.getFeatureClassFilter();
+		projectionFilter = exportFilter.getProjectionPropertyFilter(CityGMLClass.GENERIC_CITY_OBJECT);
 
 		init();
 	}
@@ -117,12 +119,12 @@ public class DBGenericCityObject implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		GenericCityObject genericCityObject = new GenericCityObject();
 		long genericCityObjectId = splitter.getPrimaryKey();
 
 		// cityObject stuff
-		boolean success = cityObjectExporter.read(genericCityObject, genericCityObjectId, true);
+		boolean success = cityObjectExporter.read(genericCityObject, genericCityObjectId, true, projectionFilter);
 		if (!success)
 			return false;
 
@@ -133,25 +135,34 @@ public class DBGenericCityObject implements DBExporter {
 			rs = psGenericCityObject.executeQuery();
 
 			if (rs.next()) {
+				if (projectionFilter.pass(CityGMLModuleType.GENERICS, "class")) {
 				String clazz = rs.getString(1);
 				if (clazz != null) {
 					Code code = new Code(clazz);
 					code.setCodeSpace(rs.getString(2));
 					genericCityObject.setClazz(code);
 				}
+				}
 
+				if (projectionFilter.pass(CityGMLModuleType.GENERICS, "function")) {
 				String function = rs.getString(3);
 				String functionCodeSpace = rs.getString(4);
 				if (function != null)
 					genericCityObject.setFunction(Util.string2codeList(function, functionCodeSpace));
+				}
 
+				if (projectionFilter.pass(CityGMLModuleType.GENERICS, "usage")) {
 				String usage = rs.getString(5);
 				String usageCodeSpace = rs.getString(6);
 				if (usage != null)
 					genericCityObject.setUsage(Util.string2codeList(usage, usageCodeSpace));
+				}
 
 				// terrainIntersection
 				for (int lod = 0; lod < 5; lod++) {
+					if (projectionFilter.filter(CityGMLModuleType.GENERICS, new StringBuilder("lod").append(lod).append("TerrainIntersection").toString()))
+						continue;
+					
 					Object terrainIntersectionObj = rs.getObject(7 + lod);
 					if (rs.wasNull() || terrainIntersectionObj == null)
 						continue;
@@ -183,6 +194,9 @@ public class DBGenericCityObject implements DBExporter {
 				
 				// geometry
 				for (int lod = 0; lod < 5; lod++) {
+					if (projectionFilter.filter(CityGMLModuleType.GENERICS, new StringBuilder("lod").append(lod).append("Geometry").toString()))
+						continue;
+					
 					long surfaceGeometryId = rs.getLong(12 + lod);
 					Object geomObj = rs.getObject(17 + lod);
 					if (surfaceGeometryId == 0 && geomObj == null)
@@ -230,6 +244,9 @@ public class DBGenericCityObject implements DBExporter {
 				
 				// implicit geometry
 				for (int lod = 0; lod < 5; lod++) {
+					if (projectionFilter.filter(CityGMLModuleType.GENERICS, new StringBuilder("lod").append(lod).append("ImplicitRepresentation").toString()))
+						continue;
+					
 					long implicitGeometryId = rs.getLong(22 + lod);
 					if (rs.wasNull())
 						continue;
@@ -267,9 +284,11 @@ public class DBGenericCityObject implements DBExporter {
 				}
 			}
 
-			if (genericCityObject.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
+			dbExporterManager.processFeature(genericCityObject);
+
+			if (genericCityObject.isSetId() && config.getInternal().isRegisterGmlIdInCache())
 				dbExporterManager.putUID(genericCityObject.getId(), genericCityObjectId, genericCityObject.getCityGMLClass());
-			dbExporterManager.print(genericCityObject);
+
 			return true;
 		} finally {
 			if (rs != null)

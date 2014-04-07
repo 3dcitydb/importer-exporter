@@ -29,11 +29,17 @@
  */
 package de.tub.citydb.modules.common.filter;
 
+import java.util.EnumMap;
+
+import org.citygml4j.model.citygml.CityGMLClass;
+
 import de.tub.citydb.config.Config;
 import de.tub.citydb.modules.common.filter.feature.BoundingBoxFilter;
 import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
 import de.tub.citydb.modules.common.filter.feature.GmlIdFilter;
 import de.tub.citydb.modules.common.filter.feature.GmlNameFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertySet;
 import de.tub.citydb.modules.common.filter.statistic.FeatureCounterFilter;
 
 public class ExportFilter {
@@ -42,6 +48,7 @@ public class ExportFilter {
 	private GmlIdFilter gmlIdFilter;
 	private GmlNameFilter gmlNameFilter;
 	private BoundingBoxFilter boundingBoxFilter;
+	private EnumMap<CityGMLClass, ProjectionPropertySet> projectionMap;
 	
 	public ExportFilter(Config config) {
 		featureClassFilter = new FeatureClassFilter(config, FilterMode.EXPORT);
@@ -77,6 +84,34 @@ public class ExportFilter {
 
 	public BoundingBoxFilter getBoundingBoxFilter() {
 		return boundingBoxFilter;
+	}
+
+	public void setFeatureClassFilter(FeatureClassFilter featureClassFilter) {
+		this.featureClassFilter = featureClassFilter;
+	}
+
+	public void setFeatureCounterFilter(FeatureCounterFilter featureCounterFilter) {
+		this.featureCounterFilter = featureCounterFilter;
+	}
+
+	public void setGmlIdFilter(GmlIdFilter gmlIdFilter) {
+		this.gmlIdFilter = gmlIdFilter;
+	}
+
+	public void setGmlNameFilter(GmlNameFilter gmlNameFilter) {
+		this.gmlNameFilter = gmlNameFilter;
+	}
+
+	public void setBoundingBoxFilter(BoundingBoxFilter boundingBoxFilter) {
+		this.boundingBoxFilter = boundingBoxFilter;
+	}
+
+	public void setProjectionMap(EnumMap<CityGMLClass, ProjectionPropertySet> projectionMap) {
+		this.projectionMap = projectionMap;
+	}
+	
+	public ProjectionPropertyFilter getProjectionPropertyFilter(CityGMLClass cityGMLClass) {
+		return new ProjectionPropertyFilter(projectionMap != null ? projectionMap.get(cityGMLClass) : null);
 	}
 	
 }

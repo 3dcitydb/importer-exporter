@@ -75,7 +75,7 @@ public enum CityGMLVersionType {
 			if (type.toString().equals(value))
 				return type;
 		
-		return v1_0_0;
+		return v2_0_0;
 	}
 
 }

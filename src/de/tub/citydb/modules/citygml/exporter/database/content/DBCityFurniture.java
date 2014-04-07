@@ -42,12 +42,13 @@ import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
 import de.tub.citydb.modules.common.filter.ExportFilter;
-import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBCityFurniture implements DBExporter {
@@ -61,13 +62,14 @@ public class DBCityFurniture implements DBExporter {
 	private DBCityObject cityObjectExporter;
 	private DBImplicitGeometry implicitGeometryExporter;
 	private DBOtherGeometry geometryExporter;
-	private FeatureClassFilter featureClassFilter;
+
+	private ProjectionPropertyFilter projectionFilter;
 
 	public DBCityFurniture(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
 		this.config = config;
 		this.dbExporterManager = dbExporterManager;
-		this.featureClassFilter = exportFilter.getFeatureClassFilter();
+		projectionFilter = exportFilter.getProjectionPropertyFilter(CityGMLClass.CITY_FURNITURE);
 
 		init();
 	}
@@ -114,12 +116,12 @@ public class DBCityFurniture implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		CityFurniture cityFurniture = new CityFurniture();
 		long cityFurnitureId = splitter.getPrimaryKey();
 
 		// cityObject stuff
-		boolean success = cityObjectExporter.read(cityFurniture, cityFurnitureId, true);
+		boolean success = cityObjectExporter.read(cityFurniture, cityFurnitureId, true, projectionFilter);
 		if (!success)
 			return false;
 
@@ -130,25 +132,34 @@ public class DBCityFurniture implements DBExporter {
 			rs = psCityFurniture.executeQuery();
 
 			if (rs.next()) {
-				String clazz = rs.getString(1);
-				if (clazz != null) {
-					Code code = new Code(clazz);
-					code.setCodeSpace(rs.getString(2));
-					cityFurniture.setClazz(code);
+				if (projectionFilter.pass(CityGMLModuleType.CITY_FURNITURE, "class")) {
+					String clazz = rs.getString(1);
+					if (clazz != null) {
+						Code code = new Code(clazz);
+						code.setCodeSpace(rs.getString(2));
+						cityFurniture.setClazz(code);
+					}
 				}
 
-				String function = rs.getString(3);
-				String functionCodeSpace = rs.getString(4);
-				if (function != null)
-					cityFurniture.setFunction(Util.string2codeList(function, functionCodeSpace));
+				if (projectionFilter.pass(CityGMLModuleType.CITY_FURNITURE, "function")) {
+					String function = rs.getString(3);
+					String functionCodeSpace = rs.getString(4);
+					if (function != null)
+						cityFurniture.setFunction(Util.string2codeList(function, functionCodeSpace));
+				}
 
-				String usage = rs.getString(5);
-				String usageCodeSpace = rs.getString(6);
-				if (usage != null)
-					cityFurniture.setUsage(Util.string2codeList(usage, usageCodeSpace));
+				if (projectionFilter.pass(CityGMLModuleType.CITY_FURNITURE, "usage")) {
+					String usage = rs.getString(5);
+					String usageCodeSpace = rs.getString(6);
+					if (usage != null)
+						cityFurniture.setUsage(Util.string2codeList(usage, usageCodeSpace));
+				}
 
 				// terrainIntersection
 				for (int lod = 0; lod < 4; lod++) {
+					if (projectionFilter.filter(CityGMLModuleType.CITY_FURNITURE, new StringBuilder("lod").append(lod + 1).append("TerrainIntersection").toString()))
+						continue;
+					
 					Object terrainIntersectionObj = rs.getObject(7 + lod);
 					if (rs.wasNull() || terrainIntersectionObj == null)
 						continue;
@@ -174,9 +185,12 @@ public class DBCityFurniture implements DBExporter {
 						}
 					}
 				}
-				
+
 				// geometry
 				for (int lod = 0; lod < 4; lod++) {
+					if (projectionFilter.filter(CityGMLModuleType.CITY_FURNITURE, new StringBuilder("lod").append(lod + 1).append("Geometry").toString()))
+						continue;
+					
 					long surfaceGeometryId = rs.getLong(11 + lod);
 					Object geomObj = rs.getObject(15 + lod);
 					if (surfaceGeometryId == 0 && geomObj == null)
@@ -218,9 +232,12 @@ public class DBCityFurniture implements DBExporter {
 						}
 					}
 				}
-				
+
 				// implicit geometry
 				for (int lod = 0; lod < 4; lod++) {
+					if (projectionFilter.filter(CityGMLModuleType.CITY_FURNITURE, new StringBuilder("lod").append(lod + 1).append("ImplicitRepresentation").toString()))
+						continue;
+					
 					long implicitGeometryId = rs.getLong(19 + lod);
 					if (rs.wasNull())
 						continue;
@@ -255,9 +272,11 @@ public class DBCityFurniture implements DBExporter {
 				}
 			}
 
-			if (cityFurniture.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
+			dbExporterManager.processFeature(cityFurniture);
+
+			if (cityFurniture.isSetId() && config.getInternal().isRegisterGmlIdInCache())
 				dbExporterManager.putUID(cityFurniture.getId(), cityFurnitureId, cityFurniture.getCityGMLClass());
-			dbExporterManager.print(cityFurniture);
+
 			return true;
 		} finally {
 			if (rs != null)

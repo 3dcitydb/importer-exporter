@@ -40,7 +40,7 @@ import de.tub.citydb.api.controller.LogController;
 import de.tub.citydb.api.log.LogLevel;
 
 public class Logger implements LogController {
-	private static Logger INSTANCE = new Logger();
+	private static Logger instance = new Logger();
 
 	private LogLevel consoleLogLevel = LogLevel.INFO;
 	private LogLevel fileLogLevel = LogLevel.INFO;
@@ -48,6 +48,7 @@ public class Logger implements LogController {
 	private Calendar cal;
 	private DecimalFormat df = new DecimalFormat("00");
 
+	private boolean isLogToConsole = true;
 	private boolean isLogToFile = false;
 	private BufferedWriter logFile;
 
@@ -56,7 +57,7 @@ public class Logger implements LogController {
 	}
 
 	public static Logger getInstance() {
-		return INSTANCE;
+		return instance;
 	}
 
 	public void setDefaultConsoleLogLevel(LogLevel consoleLogLevel) {
@@ -103,7 +104,7 @@ public class Logger implements LogController {
 		StringBuffer buffer = new StringBuffer(getPrefix(type));
 		buffer.append(msg);
 
-		if (consoleLogLevel.ordinal() >= type.ordinal())
+		if (isLogToConsole && consoleLogLevel.ordinal() >= type.ordinal())
 			System.out.println(buffer.toString());
 
 		if (isLogToFile && fileLogLevel.ordinal() >= type.ordinal()) {
@@ -142,7 +143,7 @@ public class Logger implements LogController {
 		StringBuffer buffer = new StringBuffer(getPrefix(type));
 		buffer.append(message);
 
-		if (consoleLogLevel.ordinal() >= type.ordinal())
+		if (isLogToConsole && consoleLogLevel.ordinal() >= type.ordinal())
 			System.out.println(buffer.toString());
 
 		if (fileLogLevel.ordinal() >= type.ordinal())
@@ -151,7 +152,9 @@ public class Logger implements LogController {
 
 	@Override
 	public void print(String msg) {
-		System.out.println(msg);
+		if (isLogToConsole)
+			System.out.println(msg);
+
 		writeToFile(msg);
 	}
 
@@ -166,25 +169,32 @@ public class Logger implements LogController {
 			}
 		}
 	}
+	
+	public void logToConsole(boolean isLogToConsole) {
+		this.isLogToConsole = isLogToConsole;
+	}
 
 	public void logToFile(boolean isLogToFile) {		
 		this.isLogToFile = isLogToFile;
 	}
 
-	public boolean appendLogFile(String logPath) {
-		File createPath = new File(logPath);
-
-		if (!createPath.exists() && !createPath.mkdirs()) {
-			error("Could not create folder '" + createPath + "' for log file.");
+	public boolean appendLogFile(String logFile, boolean isDirectory) {
+		File file = new File(logFile);
+		
+		File path = isDirectory ? file : new File(file.getParent());
+		if (!path.exists() && !path.mkdirs()) {
+			error("Could not create folder '" + path.getAbsolutePath() + "' for log file.");
 			return false;
 		}
 
-		File file = new File(createPath.getAbsolutePath() + File.separator + getDefaultLogFile());
+		if (isDirectory)
+			file = new File(file.getAbsolutePath() + File.separator + getDefaultLogFile());
+		
 		try {
 			info("Writing log messages to file: '" + file.getAbsolutePath() + "'");
 			detachLogFile();
 
-			logFile = new BufferedWriter(new FileWriter(file, file.exists()));
+			this.logFile = new BufferedWriter(new FileWriter(file, file.exists()));
 			isLogToFile = true;
 		} catch (IOException e) {
 			error("Failed to open log file '" + logFile + "': " + e.getMessage());

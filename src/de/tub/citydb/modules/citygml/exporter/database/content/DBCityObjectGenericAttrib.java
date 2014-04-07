@@ -18,6 +18,9 @@ import org.citygml4j.model.citygml.generics.MeasureAttribute;
 import org.citygml4j.model.citygml.generics.StringAttribute;
 import org.citygml4j.model.citygml.generics.UriAttribute;
 import org.citygml4j.model.gml.basicTypes.Measure;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
+
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 
 public class DBCityObjectGenericAttrib implements DBExporter {
 	private final Connection connection;
@@ -36,11 +39,11 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 		.append("ATTRNAME, DATATYPE, STRVAL, INTVAL, REALVAL, URIVAL, DATEVAL, UNIT, GENATTRIBSET_CODESPACE ")
 		.append("from CITYOBJECT_GENERICATTRIB where DATATYPE < 8 and CITYOBJECT_ID = ?");
 		psGenericAttribute = connection.prepareStatement(query.toString());
-		
+
 		attributeSets = new HashMap<Long, GenericAttributeSet>();
 	}
 
-	public void read(AbstractCityObject cityObject, long cityObjectId) throws SQLException {
+	public void read(AbstractCityObject cityObject, long cityObjectId, ProjectionPropertyFilter projectionFilter) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -66,60 +69,74 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 
 				switch (dataType) {
 				case 1:
-					String strVal = rs.getString(5);
-					if (!rs.wasNull()) {
-						genericAttribute = new StringAttribute();
-						((StringAttribute)genericAttribute).setValue(strVal);
+					if (projectionFilter.pass(CityGMLModuleType.GENERICS, "stringAttribute")) {
+						String strVal = rs.getString(5);
+						if (!rs.wasNull()) {
+							genericAttribute = new StringAttribute();
+							((StringAttribute)genericAttribute).setValue(strVal);
+						}
 					}
 					break;
 				case 2:
-					Integer intVal = rs.getInt(6);
-					if (!rs.wasNull()) {
-						genericAttribute = new IntAttribute();
-						((IntAttribute)genericAttribute).setValue(intVal);
+					if (projectionFilter.pass(CityGMLModuleType.GENERICS, "intAttribute")) {
+						Integer intVal = rs.getInt(6);
+						if (!rs.wasNull()) {
+							genericAttribute = new IntAttribute();
+							((IntAttribute)genericAttribute).setValue(intVal);
+						}
 					}
 					break;
 				case 3:
-					Double realVal = rs.getDouble(7);
-					if (!rs.wasNull()) {							
-						genericAttribute = new DoubleAttribute();
-						((DoubleAttribute)genericAttribute).setValue(realVal);
+					if (projectionFilter.pass(CityGMLModuleType.GENERICS, "doubleAttribute")) {
+						Double realVal = rs.getDouble(7);
+						if (!rs.wasNull()) {							
+							genericAttribute = new DoubleAttribute();
+							((DoubleAttribute)genericAttribute).setValue(realVal);
+						}
 					}
 					break;
 				case 4:
-					String uriVal = rs.getString(8);
-					if (!rs.wasNull()) {
-						genericAttribute = new UriAttribute();
-						((UriAttribute)genericAttribute).setValue(uriVal);
+					if (projectionFilter.pass(CityGMLModuleType.GENERICS, "uriAttribute")) {
+						String uriVal = rs.getString(8);
+						if (!rs.wasNull()) {
+							genericAttribute = new UriAttribute();
+							((UriAttribute)genericAttribute).setValue(uriVal);
+						}
 					}
 					break;
 				case 5:
-					Date dateVal = rs.getDate(9);
-					if (!rs.wasNull()) {
-						genericAttribute = new DateAttribute();
-						GregorianCalendar gregDate = new GregorianCalendar();
-						gregDate.setTime(dateVal);	
-						((DateAttribute)genericAttribute).setValue(gregDate);
+					if (projectionFilter.pass(CityGMLModuleType.GENERICS, "dateAttribute")) {
+						Date dateVal = rs.getDate(9);
+						if (!rs.wasNull()) {
+							genericAttribute = new DateAttribute();
+							GregorianCalendar gregDate = new GregorianCalendar();
+							gregDate.setTime(dateVal);	
+							((DateAttribute)genericAttribute).setValue(gregDate);
+						}
 					}
 					break;
 				case 6:
-					Double measureVal = rs.getDouble(7);
-					if (!rs.wasNull()) {
-						genericAttribute = new MeasureAttribute();
-						Measure measure = new Measure();
-						measure.setValue(measureVal);
-						measure.setUom(rs.getString(10));
-						((MeasureAttribute)genericAttribute).setValue(measure);
+					if (projectionFilter.pass(CityGMLModuleType.GENERICS, "measureAttribute")) {
+						Double measureVal = rs.getDouble(7);
+						if (!rs.wasNull()) {
+							genericAttribute = new MeasureAttribute();
+							Measure measure = new Measure();
+							measure.setValue(measureVal);
+							measure.setUom(rs.getString(10));
+							((MeasureAttribute)genericAttribute).setValue(measure);
+						}
 					}
 					break;
 				case 7:
-					genericAttribute = attributeSets.get(id);
-					if (genericAttribute == null) {
-						genericAttribute = new GenericAttributeSet();
-						attributeSets.put(id, (GenericAttributeSet)genericAttribute);
-					}
+					if (projectionFilter.pass(CityGMLModuleType.GENERICS, "genericAttributeSet")) {
+						genericAttribute = attributeSets.get(id);
+						if (genericAttribute == null) {
+							genericAttribute = new GenericAttributeSet();
+							attributeSets.put(id, (GenericAttributeSet)genericAttribute);
+						}
 
-					((GenericAttributeSet)genericAttribute).setCodeSpace(rs.getString(11));
+						((GenericAttributeSet)genericAttribute).setCodeSpace(rs.getString(11));
+					}
 					break;
 				}
 

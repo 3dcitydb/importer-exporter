@@ -49,12 +49,13 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
 import de.tub.citydb.modules.common.filter.ExportFilter;
-import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBTunnel implements DBExporter {
@@ -72,18 +73,21 @@ public class DBTunnel implements DBExporter {
 	private DBOtherGeometry geometryExporter;
 
 	private HashMap<Long, AbstractTunnel> tunnels;
-	private FeatureClassFilter featureClassFilter;
+	private ProjectionPropertyFilter projectionFilter;
 
 	public DBTunnel(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
 		this.config = config;
 		this.connection = connection;
-		this.featureClassFilter = exportFilter.getFeatureClassFilter();
+		projectionFilter = exportFilter.getProjectionPropertyFilter(CityGMLClass.TUNNEL);
 
 		init();
 	}
 
 	private void init() throws SQLException {
+		tunnels = new HashMap<Long, AbstractTunnel>();
+		String tunnelId = projectionFilter.pass(CityGMLModuleType.TUNNEL, "consistsOfTunnelPart") ? "TUNNEL_ROOT_ID" : "ID";
+
 		if (!config.getInternal().isTransformCoordinates()) {
 			StringBuilder query = new StringBuilder()
 			.append("select ID, TUNNEL_PARENT_ID, CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, YEAR_OF_CONSTRUCTION, YEAR_OF_DEMOLITION, ")
@@ -91,7 +95,7 @@ public class DBTunnel implements DBExporter {
 			.append("LOD2_MULTI_CURVE, LOD3_MULTI_CURVE, LOD4_MULTI_CURVE, ")
 			.append("LOD1_SOLID_ID, LOD2_SOLID_ID, LOD3_SOLID_ID, LOD4_SOLID_ID, ")
 			.append("LOD1_MULTI_SURFACE_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID ")
-			.append("from TUNNEL where TUNNEL_ROOT_ID = ?");
+			.append("from TUNNEL where ").append(tunnelId).append(" = ?");
 			psTunnel = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
@@ -108,11 +112,9 @@ public class DBTunnel implements DBExporter {
 			.append(transformOrNull).append("(LOD4_MULTI_CURVE, ").append(srid).append(") AS LOD4_MULTI_CURVE, ")
 			.append("LOD1_SOLID_ID, LOD2_SOLID_ID, LOD3_SOLID_ID, LOD4_SOLID_ID, ")
 			.append("LOD1_MULTI_SURFACE_ID, LOD2_MULTI_SURFACE_ID, LOD3_MULTI_SURFACE_ID, LOD4_MULTI_SURFACE_ID ")
-			.append("from TUNNEL where TUNNEL_ROOT_ID = ?");
+			.append("from TUNNEL where ").append(tunnelId).append(" = ?");
 			psTunnel = connection.prepareStatement(query.toString());
 		}
-
-		tunnels = new HashMap<Long, AbstractTunnel>();
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
@@ -122,7 +124,7 @@ public class DBTunnel implements DBExporter {
 		geometryExporter = (DBOtherGeometry)dbExporterManager.getDBExporter(DBExporterEnum.OTHER_GEOMETRY);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		ResultSet rs = null;
 
 		try {
@@ -160,43 +162,56 @@ public class DBTunnel implements DBExporter {
 					abstractTunnel.setLocalProperty("isCreated", true);
 
 					// do cityObject stuff
-					boolean success = cityObjectExporter.read(abstractTunnel, id, parentId == 0);
+					boolean success = cityObjectExporter.read(abstractTunnel, id, parentId == 0, projectionFilter);
 					if (!success)
 						return false;
 
-					String clazz = rs.getString(3);
-					if (clazz != null) {
-						Code code = new Code(clazz);
-						code.setCodeSpace(rs.getString(4));
-						abstractTunnel.setClazz(code);
+					if (projectionFilter.pass(CityGMLModuleType.TUNNEL, "class")) {
+						String clazz = rs.getString(3);
+						if (clazz != null) {
+							Code code = new Code(clazz);
+							code.setCodeSpace(rs.getString(4));
+							abstractTunnel.setClazz(code);
+						}
 					}
 
-					String function = rs.getString(5);
-					String functionCodeSpace = rs.getString(6);
-					if (function != null)
-						abstractTunnel.setFunction(Util.string2codeList(function, functionCodeSpace));
-
-					String usage = rs.getString(7);
-					String usageCodeSpace = rs.getString(8);
-					if (usage != null)
-						abstractTunnel.setUsage(Util.string2codeList(usage, usageCodeSpace));
-
-					Date yearOfConstruction = rs.getDate(9);				
-					if (yearOfConstruction != null) {
-						GregorianCalendar gregDate = new GregorianCalendar();
-						gregDate.setTime(yearOfConstruction);
-						abstractTunnel.setYearOfConstruction(gregDate);
+					if (projectionFilter.pass(CityGMLModuleType.TUNNEL, "function")) {
+						String function = rs.getString(5);
+						String functionCodeSpace = rs.getString(6);
+						if (function != null)
+							abstractTunnel.setFunction(Util.string2codeList(function, functionCodeSpace));
 					}
 
-					Date yearOfDemolition = rs.getDate(10);
-					if (yearOfDemolition != null) {
-						GregorianCalendar gregDate = new GregorianCalendar();
-						gregDate.setTime(yearOfDemolition);
-						abstractTunnel.setYearOfDemolition(gregDate);
+					if (projectionFilter.pass(CityGMLModuleType.TUNNEL, "usage")) {
+						String usage = rs.getString(7);
+						String usageCodeSpace = rs.getString(8);
+						if (usage != null)
+							abstractTunnel.setUsage(Util.string2codeList(usage, usageCodeSpace));
+					}
+
+					if (projectionFilter.pass(CityGMLModuleType.TUNNEL, "yearOfConstruction")) {
+						Date yearOfConstruction = rs.getDate(9);				
+						if (yearOfConstruction != null) {
+							GregorianCalendar gregDate = new GregorianCalendar();
+							gregDate.setTime(yearOfConstruction);
+							abstractTunnel.setYearOfConstruction(gregDate);
+						}
+					}
+
+					if (projectionFilter.pass(CityGMLModuleType.TUNNEL, "yearOfDemolition")) {
+						Date yearOfDemolition = rs.getDate(10);
+						if (yearOfDemolition != null) {
+							GregorianCalendar gregDate = new GregorianCalendar();
+							gregDate.setTime(yearOfDemolition);
+							abstractTunnel.setYearOfDemolition(gregDate);
+						}
 					}
 
 					// terrainIntersection
 					for (int lod = 0; lod < 4; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.TUNNEL, new StringBuilder("lod").append(lod + 1).append("TerrainIntersection").toString()))
+							continue;
+
 						Object terrainIntersectionObj = rs.getObject(11 + lod);
 						if (rs.wasNull() || terrainIntersectionObj == null)
 							continue;
@@ -225,6 +240,9 @@ public class DBTunnel implements DBExporter {
 
 					// multiCurve
 					for (int lod = 0; lod < 3; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.TUNNEL, new StringBuilder("lod").append(lod + 2).append("MultiCurve").toString()))
+							continue;
+
 						Object multiCurveObj = rs.getObject(15 + lod);
 						if (rs.wasNull() || multiCurveObj == null)
 							continue;
@@ -252,10 +270,14 @@ public class DBTunnel implements DBExporter {
 					// according to conformance requirement no. 3 of the Bridge version 2.0.0 module
 					// geometry objects of _BoundarySurface elements have to be referenced by lodXSolid and
 					// lodXMultiSurface properties. So we first export all _BoundarySurfaces
-					thematicSurfaceExporter.read(abstractTunnel, id);
+					if (projectionFilter.pass(CityGMLModuleType.TUNNEL, "boundedBy"))
+						thematicSurfaceExporter.read(abstractTunnel, id);
 
 					// solid
 					for (int lod = 0; lod < 4; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.TUNNEL, new StringBuilder("lod").append(lod + 1).append("Solid").toString()))
+							continue;
+
 						long surfaceGeometryId = rs.getLong(18 + lod);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
@@ -287,6 +309,9 @@ public class DBTunnel implements DBExporter {
 
 					// multiSurface
 					for (int lod = 0; lod < 4; lod++) {
+						if (projectionFilter.filter(CityGMLModuleType.TUNNEL, new StringBuilder("lod").append(lod + 1).append("MultiSurface").toString()))
+							continue;
+
 						long surfaceGeometryId = rs.getLong(22 + lod);
 						if (rs.wasNull() || surfaceGeometryId == 0)
 							continue;
@@ -317,10 +342,11 @@ public class DBTunnel implements DBExporter {
 					}
 
 					// TunnelInstallation
-					tunnelInstallationExporter.read(abstractTunnel, id);
-					
+					tunnelInstallationExporter.read(abstractTunnel, id, projectionFilter);
+
 					// HollowSpace
-					hollowSpaceExporter.read(abstractTunnel, id);
+					if (projectionFilter.pass(CityGMLModuleType.TUNNEL, "interiorHollowSpace"))
+						hollowSpaceExporter.read(abstractTunnel, id);
 
 					// add tunnel part to parent tunnel
 					if (parentTunnel != null)
@@ -330,9 +356,11 @@ public class DBTunnel implements DBExporter {
 
 			tunnels.clear();
 
-			if (root.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
+			dbExporterManager.processFeature(root);
+
+			if (root.isSetId() && config.getInternal().isRegisterGmlIdInCache())
 				dbExporterManager.putUID(root.getId(), tunnelId, root.getCityGMLClass());
-			dbExporterManager.print(root);
+
 			return true;
 		} finally {
 			if (rs != null)

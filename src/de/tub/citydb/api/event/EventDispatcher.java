@@ -129,4 +129,20 @@ public class EventDispatcher {
 	public void flushEvents() throws InterruptedException {
 		eventDispatcherThread.join();
 	}
+	
+	public void shutdown() {
+		eventDispatcherThread.shutdown();
+		containerQueueMap.clear();
+	}
+	
+	public void shutdownNow() {
+		eventDispatcherThread.shutdownNow();
+		containerQueueMap.clear();
+	}
+	
+	public void shutdownAndWait() throws InterruptedException {
+		eventDispatcherThread.shutdownAndWait();
+		containerQueueMap.clear();
+	}
+	
 }

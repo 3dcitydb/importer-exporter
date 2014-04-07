@@ -146,6 +146,12 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 				state.add(CityGMLClass.PLANT_COVER);
 				state.add(CityGMLClass.SOLITARY_VEGETATION_OBJECT);
 			}
+			
+			if (inverse ^ featureClassFilter.isSetPlantCover())
+				state.add(CityGMLClass.PLANT_COVER);
+			
+			if (inverse ^ featureClassFilter.isSetSolitaryVegetationObject())
+				state.add(CityGMLClass.SOLITARY_VEGETATION_OBJECT);
 
 			if (inverse ^ featureClassFilter.isSetTransportation()) {
 				state.add(CityGMLClass.TRANSPORTATION_COMPLEX);
@@ -154,6 +160,21 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 				state.add(CityGMLClass.TRACK);
 				state.add(CityGMLClass.SQUARE);
 			}
+			
+			if (inverse ^ featureClassFilter.isSetTransportationComplex())
+				state.add(CityGMLClass.TRANSPORTATION_COMPLEX);
+			
+			if (inverse ^ featureClassFilter.isSetRoad())
+				state.add(CityGMLClass.ROAD);
+
+			if (inverse ^ featureClassFilter.isSetRailway())
+				state.add(CityGMLClass.RAILWAY);
+
+			if (inverse ^ featureClassFilter.isSetSquare())
+				state.add(CityGMLClass.SQUARE);
+
+			if (inverse ^ featureClassFilter.isSetTrack())
+				state.add(CityGMLClass.TRACK);
 
 			if (inverse ^ featureClassFilter.isSetReliefFeature())
 				state.add(CityGMLClass.RELIEF_FEATURE);

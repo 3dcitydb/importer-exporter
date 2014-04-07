@@ -87,6 +87,7 @@ import de.tub.citydb.modules.citygml.exporter.database.content.DBSplitter;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBSplittingResult;
 import de.tub.citydb.modules.citygml.exporter.database.uid.FeatureGmlIdCache;
 import de.tub.citydb.modules.citygml.exporter.database.uid.GeometryGmlIdCache;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureWriter;
 import de.tub.citydb.modules.common.concurrent.IOWriterWorkerFactory;
 import de.tub.citydb.modules.common.event.EventType;
 import de.tub.citydb.modules.common.event.FeatureCounterEvent;
@@ -255,7 +256,7 @@ public class Exporter implements EventHandler {
 		// bounding box config
 		Tiling tiling = config.getProject().getExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
 		useTiling = exportFilter.getBoundingBoxFilter().isActive() && tiling.getMode() != TilingMode.NO_TILING;
-
+		
 		int rows = useTiling ? tiling.getRows() : 1;  
 		int columns = useTiling ? tiling.getColumns() : 1;
 
@@ -267,7 +268,7 @@ public class Exporter implements EventHandler {
 
 					if (useTiling) {
 						exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
-
+						
 						// create suffix for folderName and fileName
 						TileSuffixMode suffixMode = tiling.getTilePathSuffix();
 						String suffix = "";
@@ -440,7 +441,7 @@ public class Exporter implements EventHandler {
 							new DBExportWorkerFactory(
 									dbPool,
 									jaxbBuilder,
-									ioWriterPool,
+									new FeatureWriter(ioWriterPool, jaxbBuilder, config),
 									xlinkExporterPool,
 									uidCacheManager,
 									cacheTableManager,

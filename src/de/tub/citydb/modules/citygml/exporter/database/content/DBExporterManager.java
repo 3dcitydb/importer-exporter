@@ -35,27 +35,15 @@ import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
-import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
 import org.citygml4j.builder.jaxb.unmarshal.JAXBUnmarshaller;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.appearance.AppearanceMember;
-import org.citygml4j.model.citygml.core.AbstractCityObject;
-import org.citygml4j.model.citygml.core.CityObjectMember;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.feature.AbstractFeature;
-import org.citygml4j.model.gml.feature.FeatureMember;
-import org.citygml4j.model.gml.feature.FeatureProperty;
-import org.citygml4j.model.module.citygml.CityGMLVersion;
-import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.xml.io.reader.MissingADESchemaException;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
 import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
@@ -63,20 +51,22 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
-import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
+import de.tub.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCache;
 import de.tub.citydb.modules.citygml.common.database.uid.UIDCacheManager;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlink;
 import de.tub.citydb.modules.citygml.common.xal.AddressExportFactory;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessor;
 import de.tub.citydb.modules.common.filter.ExportFilter;
 
 public class DBExporterManager {
 	private final Connection connection;
 	private final AbstractDatabaseAdapter databaseAdapter;
 	private final JAXBBuilder jaxbBuilder;
-	private final WorkerPool<SAXEventBuffer> ioWriterPool;
+	private final FeatureProcessor featureProcessor;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
 	private final UIDCacheManager uidCacheManager;
 	private final CacheTableManager cacheTableManager;
@@ -84,7 +74,6 @@ public class DBExporterManager {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
-	private final JAXBMarshaller jaxbMarshaller;
 	private final JAXBUnmarshaller jaxbUnmarshaller;
 	private AddressExportFactory addressExportFactory;
 	private EnumMap<DBExporterEnum, DBExporter> dbExporterMap;
@@ -94,7 +83,7 @@ public class DBExporterManager {
 	public DBExporterManager(Connection connection,
 			AbstractDatabaseAdapter databaseAdapter,
 			JAXBBuilder jaxbBuilder,
-			WorkerPool<SAXEventBuffer> ioWriterPool,
+			FeatureProcessor featureProcessor,
 			WorkerPool<DBXlink> xlinkExporterPool,
 			UIDCacheManager uidCacheManager,
 			CacheTableManager cacheTableManager,
@@ -104,7 +93,7 @@ public class DBExporterManager {
 		this.connection = connection;
 		this.databaseAdapter = databaseAdapter;
 		this.jaxbBuilder = jaxbBuilder;
-		this.ioWriterPool = ioWriterPool;
+		this.featureProcessor = featureProcessor;
 		this.xlinkExporterPool = xlinkExporterPool;
 		this.uidCacheManager = uidCacheManager;
 		this.cacheTableManager = cacheTableManager;
@@ -116,8 +105,6 @@ public class DBExporterManager {
 		featureCounterMap = new HashMap<CityGMLClass, Long>();
 		geometryCounterMap = new HashMap<GMLClass, Long>();
 
-		CityGMLVersion version = config.getProject().getExporter().getCityGMLVersion().toCityGMLVersion();
-		jaxbMarshaller = jaxbBuilder.createJAXBMarshaller(version);
 		jaxbUnmarshaller = jaxbBuilder.createJAXBUnmarshaller();
 		jaxbUnmarshaller.setThrowMissingADESchema(false);
 		jaxbUnmarshaller.setParseSchema(false);
@@ -196,13 +183,13 @@ public class DBExporterManager {
 				dbExporter = new DBCityFurniture(connection, exportFilter, config, this);
 				break;
 			case LAND_USE:
-				dbExporter = new DBLandUse(connection, exportFilter, this);
+				dbExporter = new DBLandUse(connection, exportFilter, config, this);
 				break;
 			case WATERBODY:
 				dbExporter = new DBWaterBody(connection, exportFilter, config, this);
 				break;
 			case PLANT_COVER:
-				dbExporter = new DBPlantCover(connection, exportFilter, this);
+				dbExporter = new DBPlantCover(connection, exportFilter, config, this);
 				break;
 			case SOLITARY_VEGETAT_OBJECT:
 				dbExporter = new DBSolitaryVegetatObject(connection, exportFilter, config, this);
@@ -229,7 +216,7 @@ public class DBExporterManager {
 				dbExporter = new DBGenericCityObject(connection, exportFilter, config, this);
 				break;
 			case CITYOBJECTGROUP:
-				dbExporter = new DBCityObjectGroup(connection, config, this);
+				dbExporter = new DBCityObjectGroup(connection, exportFilter, config, this);
 				break;
 			case GENERALIZATION:
 				dbExporter = new DBGeneralization(connection, exportFilter, config, this);
@@ -323,41 +310,8 @@ public class DBExporterManager {
 			exporter.close();
 	}
 
-	public void print(AbstractFeature abstractFeature) throws CityGMLWriteException {
-		FeatureProperty<? extends AbstractFeature> member = null;
-
-		// wrap feature with a feature property element
-		if (abstractFeature instanceof AbstractCityObject) {
-			member = new CityObjectMember();
-			((CityObjectMember)member).setCityObject((AbstractCityObject)abstractFeature);
-		} 
-
-		else if (abstractFeature instanceof Appearance) {
-			member = new AppearanceMember();
-			((AppearanceMember)member).setAppearance((Appearance)abstractFeature);
-		} 
-
-		else {
-			member = new FeatureMember();
-			((FeatureMember)member).setFeature(abstractFeature);
-		}
-
-		if (member != null) {
-			try {
-				SAXEventBuffer buffer = new SAXEventBuffer();
-				Marshaller marshaller = jaxbBuilder.getJAXBContext().createMarshaller();
-				marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
-
-				JAXBElement<?> jaxbElement = jaxbMarshaller.marshalJAXBElement(member);
-				if (jaxbElement != null)
-					marshaller.marshal(jaxbElement, buffer);
-
-				if (!buffer.isEmpty())
-					ioWriterPool.addWork(buffer);
-			} catch (JAXBException e) {
-				throw new CityGMLWriteException("Caused by: ", e);
-			}
-		}		
+	public void processFeature(AbstractFeature abstractFeature) throws FeatureProcessException {
+		featureProcessor.process(abstractFeature);		
 	}
 
 	public Object unmarshal(Reader reader) {

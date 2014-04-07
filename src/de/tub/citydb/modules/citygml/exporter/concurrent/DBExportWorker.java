@@ -34,8 +34,6 @@ import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.builder.jaxb.JAXBBuilder;
-import org.citygml4j.util.xml.SAXEventBuffer;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
 import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.Worker;
@@ -64,6 +62,8 @@ import de.tub.citydb.modules.citygml.exporter.database.content.DBSplittingResult
 import de.tub.citydb.modules.citygml.exporter.database.content.DBTransportationComplex;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBTunnel;
 import de.tub.citydb.modules.citygml.exporter.database.content.DBWaterBody;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessor;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.FeatureCounterEvent;
@@ -83,7 +83,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 	// instance members needed to do work
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final JAXBBuilder jaxbBuilder;
-	private final WorkerPool<SAXEventBuffer> ioWriterPool;
+	private final FeatureProcessor featureProcessor;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
 	private final UIDCacheManager uidCacheManager;
 	private final CacheTableManager cacheTableManager;
@@ -96,7 +96,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 
 	public DBExportWorker(DatabaseConnectionPool dbConnectionPool,
 			JAXBBuilder jaxbBuilder,
-			WorkerPool<SAXEventBuffer> ioWriterPool,
+			FeatureProcessor featureProcessor,
 			WorkerPool<DBXlink> xlinkExporterPool,
 			UIDCacheManager uidCacheManager,
 			CacheTableManager cacheTableManager,
@@ -105,7 +105,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 			EventDispatcher eventDispatcher) throws SQLException, SAXException {
 		this.dbConnectionPool = dbConnectionPool;
 		this.jaxbBuilder = jaxbBuilder;
-		this.ioWriterPool = ioWriterPool;
+		this.featureProcessor = featureProcessor;
 		this.xlinkExporterPool = xlinkExporterPool;
 		this.uidCacheManager = uidCacheManager;
 		this.cacheTableManager = cacheTableManager;
@@ -129,7 +129,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 				connection,
 				dbConnectionPool.getActiveDatabaseAdapter(),
 				jaxbBuilder,
-				ioWriterPool,
+				featureProcessor,
 				xlinkExporterPool,
 				uidCacheManager,
 				cacheTableManager,
@@ -310,7 +310,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 			} catch (SQLException sqlEx) {
 				LOG.error("SQL error while querying city object: " + sqlEx.getMessage());
 				return;
-			} catch (CityGMLWriteException e) {
+			} catch (FeatureProcessException e) {
 				LOG.error("Fatal error while writing CityGML document: " + e.getCause().getMessage());
 				return;
 			}

@@ -35,7 +35,7 @@ import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.log.Logger;
 
 public class DatabaseMetaDataImpl implements DatabaseMetaData {
-	private static final Logger LOG = Logger.getInstance();	
+	private final Logger LOG = Logger.getInstance();	
 	
 	// database related information
 	private String databaseProductName;

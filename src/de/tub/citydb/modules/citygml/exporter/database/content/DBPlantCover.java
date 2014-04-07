@@ -43,27 +43,31 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.measures.Length;
-import org.citygml4j.xml.io.writer.CityGMLWriteException;
+import org.citygml4j.model.module.citygml.CityGMLModuleType;
 
+import de.tub.citydb.config.Config;
+import de.tub.citydb.modules.citygml.exporter.util.FeatureProcessException;
 import de.tub.citydb.modules.common.filter.ExportFilter;
-import de.tub.citydb.modules.common.filter.feature.FeatureClassFilter;
+import de.tub.citydb.modules.common.filter.feature.ProjectionPropertyFilter;
 import de.tub.citydb.util.Util;
 
 public class DBPlantCover implements DBExporter {
 	private final DBExporterManager dbExporterManager;
+	private final Config config;
 	private final Connection connection;
 
 	private PreparedStatement psPlantCover;
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
-	private FeatureClassFilter featureClassFilter;
+	
+	private ProjectionPropertyFilter projectionFilter;
 
-
-	public DBPlantCover(Connection connection, ExportFilter exportFilter, DBExporterManager dbExporterManager) throws SQLException {
+	public DBPlantCover(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.connection = connection;
+		this.config = config;
 		this.dbExporterManager = dbExporterManager;
-		this.featureClassFilter = exportFilter.getFeatureClassFilter();
+		projectionFilter = exportFilter.getProjectionPropertyFilter(CityGMLClass.PLANT_COVER);
 
 		init();
 	}
@@ -80,12 +84,12 @@ public class DBPlantCover implements DBExporter {
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
 	}
 
-	public boolean read(DBSplittingResult splitter) throws SQLException, CityGMLWriteException {
+	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
 		PlantCover plantCover = new PlantCover();
 		long plantCoverId = splitter.getPrimaryKey();
 
 		// cityObject stuff
-		boolean success = cityObjectExporter.read(plantCover, plantCoverId, true);
+		boolean success = cityObjectExporter.read(plantCover, plantCoverId, true, projectionFilter);
 		if (!success)
 			return false;
 
@@ -96,23 +100,30 @@ public class DBPlantCover implements DBExporter {
 			rs = psPlantCover.executeQuery();
 
 			if (rs.next()) {
+				if (projectionFilter.pass(CityGMLModuleType.VEGETATION, "class")) {
 				String clazz = rs.getString(1);
 				if (clazz != null) {
 					Code code = new Code(clazz);
 					code.setCodeSpace(rs.getString(2));
 					plantCover.setClazz(code);
 				}
+				}
 
+				if (projectionFilter.pass(CityGMLModuleType.VEGETATION, "function")) {
 				String function = rs.getString(3);
 				String functionCodeSpace = rs.getString(4);
 				if (function != null)
 					plantCover.setFunction(Util.string2codeList(function, functionCodeSpace));
+				}
 
+				if (projectionFilter.pass(CityGMLModuleType.VEGETATION, "usage")) {
 				String usage = rs.getString(5);
 				String usageCodeSpace = rs.getString(6);
 				if (usage != null)
 					plantCover.setUsage(Util.string2codeList(usage, usageCodeSpace));
+				}
 				
+				if (projectionFilter.pass(CityGMLModuleType.VEGETATION, "averageHeight")) {
 				double averageHeight = rs.getDouble(7);
 				if (!rs.wasNull()) {
 					Length length = new Length();
@@ -120,9 +131,13 @@ public class DBPlantCover implements DBExporter {
 					length.setUom(rs.getString(8));
 					plantCover.setAverageHeight(length);
 				}
+				}
 
 				// multiSurface
 				for (int lod = 0; lod < 4; lod++) {
+					if (projectionFilter.filter(CityGMLModuleType.VEGETATION, new StringBuilder("lod").append(lod + 1).append("MultiSurface").toString()))
+						continue;
+					
 					long surfaceGeometryId = rs.getLong(9 + lod);
 					if (rs.wasNull() || surfaceGeometryId == 0)
 						continue;
@@ -154,6 +169,9 @@ public class DBPlantCover implements DBExporter {
 				
 				// solid
 				for (int lod = 0; lod < 4; lod++) {
+					if (projectionFilter.filter(CityGMLModuleType.VEGETATION, new StringBuilder("lod").append(lod + 1).append("MultiSolid").toString()))
+						continue;
+					
 					long surfaceGeometryId = rs.getLong(13 + lod);
 					if (rs.wasNull() || surfaceGeometryId == 0)
 						continue;
@@ -184,9 +202,11 @@ public class DBPlantCover implements DBExporter {
 				}
 			}
 
-			if (plantCover.isSetId() && !featureClassFilter.filter(CityGMLClass.CITY_OBJECT_GROUP))
+			dbExporterManager.processFeature(plantCover);
+
+			if (plantCover.isSetId() && config.getInternal().isRegisterGmlIdInCache())
 				dbExporterManager.putUID(plantCover.getId(), plantCoverId, plantCover.getCityGMLClass());
-			dbExporterManager.print(plantCover);
+
 			return true;
 		} finally {
 			if (rs != null)
