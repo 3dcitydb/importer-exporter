@@ -6,10 +6,17 @@ import javax.xml.bind.annotation.XmlType;
 		"exportMemberAsXLinks"
 })
 public class ExportCityObjectGroup {
-	private Boolean exportMemberAsXLinks = false;
+	private Boolean exportMemberAsXLinks;
 
-	public Boolean isExportMemberAsXLinks() {
+	public Boolean getExportMemberAsXLinks() {
 		return exportMemberAsXLinks;
+	}
+
+	public boolean isExportMemberAsXLinks() {
+		if (exportMemberAsXLinks != null)
+			return exportMemberAsXLinks.booleanValue();
+		
+		return false;
 	}
 
 	public void setExportMemberAsXLinks(Boolean exportMemberAsXLinks) {
