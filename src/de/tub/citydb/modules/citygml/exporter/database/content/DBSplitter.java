@@ -264,7 +264,7 @@ public class DBSplitter {
 
 				classIds.add(Util.cityObject2classId(featureClass));
 			}
-			
+
 			if (classIds.isEmpty())
 				return;
 
@@ -404,60 +404,62 @@ public class DBSplitter {
 			groupStmt.close();
 
 			// second step: export group members
-			StringBuilder memberQuery = new StringBuilder("select co.ID, co.OBJECTCLASS_ID, co.GMLID from CITYOBJECT co ")
-			.append("where co.ID in (select co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co ")
-			.append("where gtc.CITYOBJECT_ID=co.ID ")
-			.append("and gtc.CITYOBJECTGROUP_ID=? ")
-			.append(classIdsString).append(" ")
-			.append("union all ")
-			.append("select grp.PARENT_CITYOBJECT_ID from CITYOBJECTGROUP grp where grp.ID=?) ");
+			if (!config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks()) {
+				StringBuilder memberQuery = new StringBuilder("select co.ID, co.OBJECTCLASS_ID, co.GMLID from CITYOBJECT co ")
+				.append("where co.ID in (select co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co ")
+				.append("where gtc.CITYOBJECT_ID=co.ID ")
+				.append("and gtc.CITYOBJECTGROUP_ID=? ")
+				.append(classIdsString).append(" ")
+				.append("union all ")
+				.append("select grp.PARENT_CITYOBJECT_ID from CITYOBJECTGROUP grp where grp.ID=?) ");
 
-			if (bboxFilter != null)
-				memberQuery.append("and ").append(bboxFilter);
+				if (bboxFilter != null)
+					memberQuery.append("and ").append(bboxFilter);
 
-			memberStmt = connection.prepareStatement(memberQuery.toString());
+				memberStmt = connection.prepareStatement(memberQuery.toString());
 
-			for (int i = 0; shouldRun && i < groupIds.size(); ++i) {
-				long groupId = groupIds.get(i);
-				memberStmt.setLong(1, groupId);
-				memberStmt.setLong(2, groupId);
+				for (int i = 0; shouldRun && i < groupIds.size(); ++i) {
+					long groupId = groupIds.get(i);
+					memberStmt.setLong(1, groupId);
+					memberStmt.setLong(2, groupId);
 
-				rs = memberStmt.executeQuery();
+					rs = memberStmt.executeQuery();
 
-				while (rs.next() && shouldRun) {				
-					long memberId = rs.getLong(1);
-					int memberClassId = rs.getInt(2);
-					String gmlId = rs.getString(3);
-					CityGMLClass cityObjectType = Util.classId2cityObject(memberClassId);
+					while (rs.next() && shouldRun) {				
+						long memberId = rs.getLong(1);
+						int memberClassId = rs.getInt(2);
+						String gmlId = rs.getString(3);
+						CityGMLClass cityObjectType = Util.classId2cityObject(memberClassId);
 
-					if (cityObjectType == CityGMLClass.CITY_OBJECT_GROUP) {						
-						// register group in gml:id cache
-						if (gmlId.length() > 0)
-							featureGmlIdCache.put(gmlId, memberId, -1, false, null, CityGMLClass.CITY_OBJECT_GROUP);
+						if (cityObjectType == CityGMLClass.CITY_OBJECT_GROUP) {						
+							// register group in gml:id cache
+							if (gmlId.length() > 0)
+								featureGmlIdCache.put(gmlId, memberId, -1, false, null, CityGMLClass.CITY_OBJECT_GROUP);
 
-						if (!groupIds.contains(memberId))
-							groupIds.add(memberId);
+							if (!groupIds.contains(memberId))
+								groupIds.add(memberId);
 
-						continue;
-					}
+							continue;
+						}
 
-					// set initial context...
-					DBSplittingResult splitter = new DBSplittingResult(gmlId, memberId, cityObjectType);
-					splitter.setCheckIfAlreadyExported(true);
-					dbWorkerPool.addWork(splitter);
-				} 
+						// set initial context...
+						DBSplittingResult splitter = new DBSplittingResult(gmlId, memberId, cityObjectType);
+						splitter.setCheckIfAlreadyExported(true);
+						dbWorkerPool.addWork(splitter);
+					} 
 
-				rs.close();
+					rs.close();
+				}
+
+				memberStmt.close();
+
+				// wait for jobs to be done...
+				try {
+					dbWorkerPool.join();
+				} catch (InterruptedException e) {
+					//
+				}
 			}
-
-			memberStmt.close();
-
-			// wait for jobs to be done...
-			try {
-				dbWorkerPool.join();
-			} catch (InterruptedException e) {
-				//
-			}			
 
 			// finally export groups themselves
 			// we assume that all group members have been exported and their gml:ids

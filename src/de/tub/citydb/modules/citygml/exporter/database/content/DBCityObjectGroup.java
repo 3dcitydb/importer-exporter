@@ -56,6 +56,7 @@ public class DBCityObjectGroup implements DBExporter {
 	private final Connection connection;
 
 	private PreparedStatement psCityObjectGroup;
+	private PreparedStatement psParentGmlId;
 
 	private DBSurfaceGeometry surfaceGeometryExporter;
 	private DBCityObject cityObjectExporter;
@@ -77,8 +78,8 @@ public class DBCityObjectGroup implements DBExporter {
 			StringBuilder query = new StringBuilder()
 			.append("select grp.CLASS, grp.CLASS_CODESPACE, grp.FUNCTION, grp.FUNCTION_CODESPACE, grp.USAGE, grp.USAGE_CODESPACE, ")
 			.append("grp.BREP_ID, grp.OTHER_GEOM, grp.PARENT_CITYOBJECT_ID, ")
-			.append("gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp ")
-			.append("left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
+			.append("gtc.CITYOBJECT_ID, gtc.ROLE, co.GMLID from CITYOBJECTGROUP grp ")
+			.append("left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID left join CITYOBJECT co on co.ID=gtc.CITYOBJECT_ID where grp.ID=?");
 			psCityObjectGroup = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
@@ -89,10 +90,13 @@ public class DBCityObjectGroup implements DBExporter {
 			.append("grp.BREP_ID, ")
 			.append(transformOrNull).append("(grp.OTHER_GEOM, ").append(srid).append(") AS OTHER_GEOM, ")
 			.append("grp.PARENT_CITYOBJECT_ID, ")
-			.append("gtc.CITYOBJECT_ID, gtc.ROLE from CITYOBJECTGROUP grp ")
-			.append("left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID where grp.ID=?");
+			.append("gtc.CITYOBJECT_ID, gtc.ROLE, co.GMLID from CITYOBJECTGROUP grp ")
+			.append("left join GROUP_TO_CITYOBJECT gtc on gtc.CITYOBJECTGROUP_ID=grp.ID left join CITYOBJECT co on co.ID=gtc.CITYOBJECT_ID where grp.ID=?");
 			psCityObjectGroup = connection.prepareStatement(query.toString());
 		}
+
+		if (config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks())
+			psParentGmlId = connection.prepareStatement("select GMLID from CITYOBJECT where ID = ?");
 
 		surfaceGeometryExporter = (DBSurfaceGeometry)dbExporterManager.getDBExporter(DBExporterEnum.SURFACE_GEOMETRY);
 		cityObjectExporter = (DBCityObject)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECT);
@@ -169,9 +173,14 @@ public class DBCityObjectGroup implements DBExporter {
 					}
 
 					if (projectionFilter.pass(CityGMLModuleType.CITY_OBJECT_GROUP, "parent")) {
-						long parentId = rs.getLong("PARENT_CITYOBJECT_ID");
+						long parentId = rs.getLong(9);
 						if (!rs.wasNull() && parentId != 0) {
-							String gmlId = dbExporterManager.getUID(parentId, CityGMLClass.ABSTRACT_CITY_OBJECT);
+							String gmlId = null;
+
+							if (!config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks())
+								gmlId = dbExporterManager.getUID(parentId, CityGMLClass.ABSTRACT_CITY_OBJECT);						
+							else
+								gmlId = getParentGMLId(parentId);
 
 							if (gmlId != null) {
 								CityObjectGroupParent parent = new CityObjectGroupParent();
@@ -185,9 +194,14 @@ public class DBCityObjectGroup implements DBExporter {
 				}
 
 				if (projectionFilter.pass(CityGMLModuleType.CITY_OBJECT_GROUP, "groupMember")) {
-					long groupMemberId = rs.getLong("CITYOBJECT_ID");
+					long groupMemberId = rs.getLong(10);
 					if (!rs.wasNull() && groupMemberId != 0) {
-						String gmlId = dbExporterManager.getUID(groupMemberId, CityGMLClass.ABSTRACT_CITY_OBJECT);
+						String gmlId = null;
+
+						if (!config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks())
+							gmlId = dbExporterManager.getUID(groupMemberId, CityGMLClass.ABSTRACT_CITY_OBJECT);
+						else
+							gmlId = rs.getString(12);
 
 						if (gmlId != null) {
 							CityObjectGroupMember groupMember = new CityObjectGroupMember();
@@ -215,9 +229,31 @@ public class DBCityObjectGroup implements DBExporter {
 		}
 	}
 
+	private String getParentGMLId(long parentId) throws SQLException {
+		ResultSet rs = null;
+
+		try {
+			psParentGmlId.setLong(1, parentId);
+			rs = psParentGmlId.executeQuery();
+
+			if (rs.next()) {
+				String parentGMLId = rs.getString(1);
+				if (!rs.wasNull() && parentGMLId.length() > 0) 
+					return parentGMLId;
+			}
+
+			return null;
+		} finally {
+			if (rs != null)
+				rs.close();
+		}
+	}
+
 	@Override
 	public void close() throws SQLException {
 		psCityObjectGroup.close();
+		if (psParentGmlId != null)
+			psParentGmlId.close();
 	}
 
 	@Override

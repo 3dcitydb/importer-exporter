@@ -39,6 +39,7 @@ import de.tub.citydb.config.project.resources.Resources;
 @XmlType(name="ExportType", propOrder={
 		"path",
 		"targetSRS",
+		"cityObjectGroup",
 		"address",
 		"appearances",
 		"filter",
@@ -50,6 +51,7 @@ public class Exporter {
 	private Path path;
 	@XmlIDREF
 	private DatabaseSrs targetSRS = DatabaseSrs.createDefaultSrs();
+	private ExportCityObjectGroup cityObjectGroup;
 	private ExportAddress address;
 	private ExportAppearance appearances;
 	private ExportFilterConfig filter;
@@ -59,6 +61,7 @@ public class Exporter {
 
 	public Exporter() {
 		path = new Path();
+		cityObjectGroup = new ExportCityObjectGroup();
 		address = new ExportAddress();
 		appearances = new ExportAppearance();
 		filter = new ExportFilterConfig();
@@ -100,6 +103,15 @@ public class Exporter {
 	public void setAppearances(ExportAppearance appearances) {
 		if (appearances != null)
 			this.appearances = appearances;
+	}
+
+	public ExportCityObjectGroup getCityObjectGroup() {
+		return cityObjectGroup;
+	}
+
+	public void setCityObjectGroup(ExportCityObjectGroup cityObjectGroup) {
+		if (cityObjectGroup != null)
+			this.cityObjectGroup = cityObjectGroup;
 	}
 
 	public ExportFilterConfig getFilter() {
