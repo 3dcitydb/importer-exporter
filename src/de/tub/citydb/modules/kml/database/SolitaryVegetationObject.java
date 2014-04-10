@@ -210,7 +210,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 				rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 				try { psQuery.close(); // release cursor on DB
 				} catch (SQLException sqle) {}
-				
+
 				Boolean isImplcitGeometry = true;
 				if (transformation == null) { // no implicit geometry
 					isImplcitGeometry = false;
@@ -329,9 +329,9 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 	}
 
 	protected GeometryObject applyTransformationMatrix(GeometryObject geomObj) throws SQLException {
-		
+
 		if (transformation != null) {
-			
+
 			for (int i = 0; i < geomObj.getNumElements(); i++) {
 				double[] originalCoords = geomObj.getCoordinates(i);
 				for (int j = 0; j < originalCoords.length; j += 3) {
@@ -346,7 +346,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		}
 		return geomObj;
 	}
-	
+
 	// this function will be called prior
 	protected GeometryObject convertToWGS84(GeometryObject geomObj) throws SQLException {
 		return super.convertToWGS84(applyTransformationMatrix(geomObj));
@@ -432,7 +432,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 	// Origin for Collada scene
 	protected List<Point3d> setOrigins() {
 		List<Point3d> coords = new ArrayList<Point3d>();
-		
+
 		if (transformation != null) { 
 			// for implicit geometries, bugfix for the previous version (V1.6)
 			// the local coordinates of the Origin Point must be converted from the local
@@ -521,7 +521,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 							}
 							else {
 								texImageUri = rs2.getString("tex_image_uri");
-								
+
 								StringBuffer sb =  new StringBuffer();
 								Object texCoordsObject = rs2.getObject("texture_coordinates"); 
 								if (texCoordsObject != null){
@@ -535,13 +535,13 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 									}									
 								}
 								String texCoords = sb.toString();
-	
+
 								if (texImageUri != null && texImageUri.trim().length() != 0
 										&&  texCoords != null && texCoords.trim().length() != 0) {
-	
+
 									int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
 									texImageUri = ".." + File.separator + "_" + texImageUri.substring(fileSeparatorIndex + 1);
-	
+
 									addTexImageUri(surfaceId, texImageUri);
 									if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
 										// not already marked as wrapping texture && not already read in
@@ -552,21 +552,21 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 												texImage = ImageReader.read(new ByteArrayInputStream(imageBytes));
 											}																																
 										} catch (IOException ioe) {}
-										
+
 										if (texImage != null) { // image in JPEG, PNG or another usual format
 											addTexImage(texImageUri, texImage);
 										}
 										else {
 											addUnsupportedTexImageId(texImageUri, textureImageId);
 										}
-	
+
 										texImageCounter++;
 										if (texImageCounter > 20) {
 											eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
 											texImageCounter = 0;
 										}
 									}
-	
+
 									texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
 									texCoordsTokenized = new StringTokenizer(texCoords, " ");
 								}
@@ -581,50 +581,50 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 									}
 								}
 							}
-	
-							GeometryObject surface = geometryConverterAdapter.getPolygon(buildingGeometryObj);
-							surface = applyTransformationMatrix(surface);						
-							GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
-	
-							int contourCount = surface.getNumElements();
-							int[] stripCountArray = new int[contourCount];
-							int[] countourCountArray = {contourCount};
-	
-							// last point of polygons in gml is identical to first and useless for GeometryInfo
-							double[] giOrdinatesArray = new double[surface.getNumCoordinates() - (contourCount * 3)];
-							int i = 0;
-	
-							for (int currentContour = 0; currentContour < surface.getNumElements(); currentContour++) {
-								double[] ordinatesArray = surface.getCoordinates(currentContour);
-								for (int j = 0; j < ordinatesArray.length - 3; j = j+3, i = i+3) {
-	
-									giOrdinatesArray[i] = ordinatesArray[j] * 100; // trick for very close coordinates
-									giOrdinatesArray[i+1] = ordinatesArray[j+1] * 100;
-									giOrdinatesArray[i+2] = ordinatesArray[j+2] * 100;
-	
-									TexCoords texCoordsForThisSurface = null;
-									if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
-										double s = Double.parseDouble(texCoordsTokenized.nextToken());
-										double t = Double.parseDouble(texCoordsTokenized.nextToken());
-										texCoordsForThisSurface = new TexCoords(s, t);
-									}
-									setVertexInfoForXYZ(surfaceId,
-											giOrdinatesArray[i],
-											giOrdinatesArray[i+1],
-											giOrdinatesArray[i+2],
-											texCoordsForThisSurface);
-								}
-								stripCountArray[currentContour] = (ordinatesArray.length - 3) / 3;
-								if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
-									texCoordsTokenized.nextToken(); // geometryInfo ignores last point in a polygon
-									texCoordsTokenized.nextToken(); // keep texture coordinates in sync
-								}
-							}
-							gi.setCoordinates(giOrdinatesArray);
-							gi.setContourCounts(countourCountArray);
-							gi.setStripCounts(stripCountArray);
-							addGeometryInfo(surfaceId, gi);
 						}
+
+						GeometryObject surface = geometryConverterAdapter.getPolygon(buildingGeometryObj);
+						surface = applyTransformationMatrix(surface);						
+						GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
+
+						int contourCount = surface.getNumElements();
+						int[] stripCountArray = new int[contourCount];
+						int[] countourCountArray = {contourCount};
+
+						// last point of polygons in gml is identical to first and useless for GeometryInfo
+						double[] giOrdinatesArray = new double[surface.getNumCoordinates() - (contourCount * 3)];
+						int i = 0;
+
+						for (int currentContour = 0; currentContour < surface.getNumElements(); currentContour++) {
+							double[] ordinatesArray = surface.getCoordinates(currentContour);
+							for (int j = 0; j < ordinatesArray.length - 3; j = j+3, i = i+3) {
+
+								giOrdinatesArray[i] = ordinatesArray[j] * 100; // trick for very close coordinates
+								giOrdinatesArray[i+1] = ordinatesArray[j+1] * 100;
+								giOrdinatesArray[i+2] = ordinatesArray[j+2] * 100;
+
+								TexCoords texCoordsForThisSurface = null;
+								if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
+									double s = Double.parseDouble(texCoordsTokenized.nextToken());
+									double t = Double.parseDouble(texCoordsTokenized.nextToken());
+									texCoordsForThisSurface = new TexCoords(s, t);
+								}
+								setVertexInfoForXYZ(surfaceId,
+										giOrdinatesArray[i],
+										giOrdinatesArray[i+1],
+										giOrdinatesArray[i+2],
+										texCoordsForThisSurface);
+							}
+							stripCountArray[currentContour] = (ordinatesArray.length - 3) / 3;
+							if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
+								texCoordsTokenized.nextToken(); // geometryInfo ignores last point in a polygon
+								texCoordsTokenized.nextToken(); // keep texture coordinates in sync
+							}
+						}
+						gi.setCoordinates(giOrdinatesArray);
+						gi.setContourCounts(countourCountArray);
+						gi.setStripCounts(stripCountArray);
+						addGeometryInfo(surfaceId, gi);
 					}
 				}
 				catch (SQLException sqlEx) {

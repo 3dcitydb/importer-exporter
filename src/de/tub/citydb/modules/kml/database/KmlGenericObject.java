@@ -665,7 +665,7 @@ public abstract class KmlGenericObject {
 				// skip degenerated triangles
 				if (indexes[i] == indexes[i + 1] || indexes[i + 1] == indexes[i + 2] || indexes[i] == indexes[i + 2])
 					continue;
-				
+
 				for (int j = 0; j < edges.length; j += 2) {
 					int first = i + edges[j];
 					int second = i + edges[j + 1]; 
@@ -1465,7 +1465,7 @@ public abstract class KmlGenericObject {
 		while (rs.next()) {
 			int objectclass_id = rs.getInt("objectclass_id");
 			String surfaceType = null;
-			
+
 			// in case that the Building, Bridge or Tunnel don't have thematic Surface, but normal LODxSurface, the "surfaceType" variable will be null.
 			// in this case, the thematic surface e.g. WallSurface, RoofSurface can be determined by using a walk-around-way e.g. calculate the Normal-vector
 			if (objectclass_id != 0){
@@ -1477,19 +1477,19 @@ public abstract class KmlGenericObject {
 					(!includeClosureSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType)))	{
 				continue;
 			}
-			
+
 			// Bridge Closure Surfaces are not going to be exported for Visualization
 			if (!includeClosureSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType))	{
 				continue;
 			}
-			
+
 			// Tunnel Closure Surfaces are not going to be exported for Visualization
 			if (!includeClosureSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType))	{
 				continue;
 			}
 
 			Object buildingGeometryObj = rs.getObject(1); 
-			
+
 			GeometryObject surface = convertToWGS84(geometryConverterAdapter.getPolygon(buildingGeometryObj));
 
 			eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
@@ -1529,7 +1529,7 @@ public abstract class KmlGenericObject {
 
 					// not touching the ground
 					probablyRoof = probablyRoof && (reducePrecisionForZ(ordinatesArray[j+2] - lowestZCoordinate) > 0);
-					
+
 					if (currentLod == 1) {
 						// calculate normal
 						int current = j;
@@ -1625,7 +1625,7 @@ public abstract class KmlGenericObject {
 				placemark.setId(DisplayForm.GEOMETRY_PLACEMARK_ID + placemark.getName());
 				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.GEOMETRY_STR + "Normal");				
 			}
-			
+
 			if (getBalloonSettings().isIncludeDescription() &&
 					!work.getDisplayForm().isHighlightingEnabled()) { // avoid double description
 				addBalloonContents(placemark, work.getId());
@@ -1655,7 +1655,7 @@ public abstract class KmlGenericObject {
 					rs2 = psQuery.executeQuery();
 
 					while (rs2.next()) {
-						
+
 						String theme = rs2.getString("theme");
 
 						Object buildingGeometryObj = rs2.getObject(1); 
@@ -1686,11 +1686,11 @@ public abstract class KmlGenericObject {
 							if (Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BUILDING_CLOSURE_SURFACE ||
 									Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BRIDGE_CLOSURE_SURFACE ||
 									Util.classId2cityObject(surfaceTypeID)==CityGMLClass.TUNNEL_CLOSURE_SURFACE){
-								
+
 								continue;
 							}
 						}
-						
+
 						// from here on it is an elementary surfaceMember
 						eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
@@ -1710,7 +1710,7 @@ public abstract class KmlGenericObject {
 							}
 							else {
 								texImageUri = rs2.getString("tex_image_uri");
-	
+
 								StringBuffer sb =  new StringBuffer();
 								Object texCoordsObject = rs2.getObject("texture_coordinates"); 
 								if (texCoordsObject != null){
@@ -1739,14 +1739,14 @@ public abstract class KmlGenericObject {
 												texImage = ImageReader.read(new ByteArrayInputStream(imageBytes));
 											}																																
 										} catch (IOException ioe) {}
-										
+
 										if (texImage != null) { // image in JPEG, PNG or another usual format
 											addTexImage(texImageUri, texImage);
 										}
 										else {
 											addUnsupportedTexImageId(texImageUri, textureImageId);
 										}
-	
+
 										texImageCounter++;
 										if (texImageCounter > 20) {
 											eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
@@ -1766,49 +1766,49 @@ public abstract class KmlGenericObject {
 									}
 								}
 							}
-
-							GeometryObject surface = geometryConverterAdapter.getPolygon(buildingGeometryObj);
-							GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
-	
-							int contourCount = surface.getNumElements();
-							int[] stripCountArray = new int[contourCount];
-							int[] countourCountArray = {contourCount};
-	
-							// last point of polygons in gml is identical to first and useless for GeometryInfo
-							double[] giOrdinatesArray = new double[surface.getNumCoordinates() - (contourCount * 3)];
-							int i = 0;
-	
-							for (int currentContour = 0; currentContour < surface.getNumElements(); currentContour++) {
-								double[] ordinatesArray = surface.getCoordinates(currentContour);
-								for (int j = 0; j < ordinatesArray.length - 3; j = j+3, i = i+3) {
-	
-									giOrdinatesArray[i] = ordinatesArray[j] * 100; // trick for very close coordinates
-									giOrdinatesArray[i+1] = ordinatesArray[j+1] * 100;
-									giOrdinatesArray[i+2] = ordinatesArray[j+2] * 100;
-	
-									TexCoords texCoordsForThisSurface = null;
-									if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
-										double s = Double.parseDouble(texCoordsTokenized.nextToken());
-										double t = Double.parseDouble(texCoordsTokenized.nextToken());
-										texCoordsForThisSurface = new TexCoords(s, t);
-									}
-									setVertexInfoForXYZ(surfaceId,
-											giOrdinatesArray[i],
-											giOrdinatesArray[i+1],
-											giOrdinatesArray[i+2],
-											texCoordsForThisSurface);
-								}
-								stripCountArray[currentContour] = (ordinatesArray.length - 3) / 3;
-								if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
-									texCoordsTokenized.nextToken(); // geometryInfo ignores last point in a polygon
-									texCoordsTokenized.nextToken(); // keep texture coordinates in sync
-								}
-							}
-							gi.setCoordinates(giOrdinatesArray);
-							gi.setContourCounts(countourCountArray);
-							gi.setStripCounts(stripCountArray);
-							addGeometryInfo(surfaceId, gi);
 						}
+
+						GeometryObject surface = geometryConverterAdapter.getPolygon(buildingGeometryObj);
+						GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
+
+						int contourCount = surface.getNumElements();
+						int[] stripCountArray = new int[contourCount];
+						int[] countourCountArray = {contourCount};
+
+						// last point of polygons in gml is identical to first and useless for GeometryInfo
+						double[] giOrdinatesArray = new double[surface.getNumCoordinates() - (contourCount * 3)];
+						int i = 0;
+
+						for (int currentContour = 0; currentContour < surface.getNumElements(); currentContour++) {
+							double[] ordinatesArray = surface.getCoordinates(currentContour);
+							for (int j = 0; j < ordinatesArray.length - 3; j = j+3, i = i+3) {
+
+								giOrdinatesArray[i] = ordinatesArray[j] * 100; // trick for very close coordinates
+								giOrdinatesArray[i+1] = ordinatesArray[j+1] * 100;
+								giOrdinatesArray[i+2] = ordinatesArray[j+2] * 100;
+
+								TexCoords texCoordsForThisSurface = null;
+								if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
+									double s = Double.parseDouble(texCoordsTokenized.nextToken());
+									double t = Double.parseDouble(texCoordsTokenized.nextToken());
+									texCoordsForThisSurface = new TexCoords(s, t);
+								}
+								setVertexInfoForXYZ(surfaceId,
+										giOrdinatesArray[i],
+										giOrdinatesArray[i+1],
+										giOrdinatesArray[i+2],
+										texCoordsForThisSurface);
+							}
+							stripCountArray[currentContour] = (ordinatesArray.length - 3) / 3;
+							if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
+								texCoordsTokenized.nextToken(); // geometryInfo ignores last point in a polygon
+								texCoordsTokenized.nextToken(); // keep texture coordinates in sync
+							}
+						}
+						gi.setCoordinates(giOrdinatesArray);
+						gi.setContourCounts(countourCountArray);
+						gi.setStripCounts(stripCountArray);
+						addGeometryInfo(surfaceId, gi);
 					}
 				}
 				catch (SQLException sqlEx) {
@@ -2218,7 +2218,7 @@ public abstract class KmlGenericObject {
 			// we are only interested in the z coordinate 
 			for (int i = 0; i < buildingGeometryObj.getNumElements(); i++) {
 				double[] ordinatesArray = buildingGeometryObj.getCoordinates(i);
-				
+
 				for (int j = 2; j < ordinatesArray.length; j = j+3) {
 					if (ordinatesArray[j] < currentlyLowestZCoordinate) {
 						coords.clear();
