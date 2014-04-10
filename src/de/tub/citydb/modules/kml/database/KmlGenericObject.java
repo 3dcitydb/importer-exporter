@@ -1660,7 +1660,7 @@ public abstract class KmlGenericObject {
 						Object buildingGeometryObj = rs2.getObject(1); 
 						// surfaceId is the key to all Hashmaps in object
 						long surfaceId = rs2.getLong("id");
-						long surfaceDataId = rs2.getLong("sd_id");
+						long textureImageId = rs2.getLong("tex_image_id");
 						long parentId = rs2.getLong("parent_id");
 						long rootId = rs2.getLong("root_id");
 
@@ -1680,7 +1680,7 @@ public abstract class KmlGenericObject {
 						}
 
 						// Closure Surfaces are not going to be exported
-						int surfaceTypeID = rs2.getInt(6);
+						int surfaceTypeID = rs2.getInt("objectclass_id");
 						if (surfaceTypeID != 0){
 							if (Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BUILDING_CLOSURE_SURFACE ||
 									Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BRIDGE_CLOSURE_SURFACE ||
@@ -1689,7 +1689,8 @@ public abstract class KmlGenericObject {
 								continue;
 							}
 						}
-						// from hier on it is an elementary surfaceMember
+						
+						// from here on it is an elementary surfaceMember
 						eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
 						String texImageUri = null;
@@ -1747,7 +1748,7 @@ public abstract class KmlGenericObject {
 											addTexImage(texImageUri, texImage);
 										}
 										else {
-											addUnsupportedTexImageId(texImageUri, surfaceDataId);
+											addUnsupportedTexImageId(texImageUri, textureImageId);
 										}
 	
 										texImageCounter++;
