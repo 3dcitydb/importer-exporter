@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.modules.kml.database;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -39,7 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.imageio.ImageIO;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
@@ -483,7 +483,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						// gmlId.hashCode() in order to properly group objects
 						// otherwise surfaces with the same id would be overwritten
 						long surfaceId = rs2.getLong("id") + getGmlId().hashCode();
-						long surfaceDataId = rs2.getLong("sd_id");
+						long textureImageId = rs2.getLong("tex_image_id");
 						long parentId = rs2.getLong("parent_id");
 						long rootId = rs2.getLong("root_id");
 
@@ -547,15 +547,17 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 										// not already marked as wrapping texture && not already read in
 										TextureImage texImage = null;
 										try {
-										//	ImageIO.read(textureExportAdapter.getInStream(rs2, "tex_image", texImageUri));
-											texImage = ImageReader.read(textureExportAdapter.getInStream(rs2, "tex_image", texImageUri));
-										}
-										catch (IOException ioe) {}
+											byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, "tex_image", texImageUri);
+											if (imageBytes != null) {
+												texImage = ImageReader.read(new ByteArrayInputStream(imageBytes));
+											}																																
+										} catch (IOException ioe) {}
+										
 										if (texImage != null) { // image in JPEG, PNG or another usual format
 											addTexImage(texImageUri, texImage);
 										}
 										else {
-											addUnsupportedTexImageId(texImageUri, surfaceDataId);
+											addUnsupportedTexImageId(texImageUri, textureImageId);
 										}
 	
 										texImageCounter++;

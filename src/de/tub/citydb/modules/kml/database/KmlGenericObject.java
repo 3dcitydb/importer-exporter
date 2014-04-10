@@ -33,6 +33,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -1733,17 +1734,12 @@ public abstract class KmlGenericObject {
 										// not already marked as wrapping texture && not already read in
 										TextureImage texImage = null;
 										try {
-											if (rs2.getObject("tex_image") != null){
-												texImage = ImageReader.read(textureExportAdapter.getInStream(rs2, "tex_image", texImageUri));
-											}
-											else {
-												// skip, this image in database has 0 byte
-											}																															
-										}
-										catch (IOException ioe) {
-											
-											texImage = null;
-										}
+											byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, "tex_image", texImageUri);
+											if (imageBytes != null) {
+												texImage = ImageReader.read(new ByteArrayInputStream(imageBytes));
+											}																																
+										} catch (IOException ioe) {}
+										
 										if (texImage != null) { // image in JPEG, PNG or another usual format
 											addTexImage(texImageUri, texImage);
 										}
