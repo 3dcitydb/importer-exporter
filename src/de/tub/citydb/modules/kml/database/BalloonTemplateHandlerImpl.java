@@ -72,6 +72,12 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("XAL_SOURCE");
 	}};
 
+	private static final String ADDRESS_TO_BRIDGE_TABLE = "ADDRESS_TO_BRIDGE";
+	private static final LinkedHashSet<String> ADDRESS_TO_BRIDGE_COLUMNS = new LinkedHashSet<String>() {{
+		add("BRIDGE_ID");
+		add("ADDRESS_ID");
+	}};
+
 	private static final String ADDRESS_TO_BUILDING_TABLE = "ADDRESS_TO_BUILDING";
 	private static final LinkedHashSet<String> ADDRESS_TO_BUILDING_COLUMNS = new LinkedHashSet<String>() {{
 		add("BUILDING_ID");
@@ -88,7 +94,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final LinkedHashSet<String> APPEARANCE_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("GMLID");
-		add("GMLID_CODESPACE");
 		add("NAME");
 		add("NAME_CODESPACE");
 		add("DESCRIPTION");
@@ -104,25 +109,20 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("BREAK_LINES");
 	}};
 	 */
-	private static final String BUILDING_TABLE = "BUILDING";
-	private static final LinkedHashSet<String> BUILDING_COLUMNS = new LinkedHashSet<String>() {{
+	private static final String BRIDGE_TABLE = "BRIDGE";
+	private static final LinkedHashSet<String> BRIDGE_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("BUILDING_PARENT_ID");
-		add("BUILDING_ROOT_ID");
-		add("DESCRIPTION");
+		add("BRIDGE_PARENT_ID");
+		add("BRIDGE_ROOT_ID");
 		add("CLASS");
+		add("CLASS_CODESPACE");
 		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
 		add("USAGE");
+		add("USAGE_CODESPACE");
 		add("YEAR_OF_CONSTRUCTION");
 		add("YEAR_OF_DEMOLITION");
-		add("ROOF_TYPE");
-		add("MEASURED_HEIGHT");
-		add("STOREYS_ABOVE_GROUND");
-		add("STOREYS_BELOW_GROUND");
-		add("STOREY_HEIGHTS_ABOVE_GROUND");
-		add("STOREY_HEIGHTS_BELOW_GROUND");
+		add("IS_MOVABLE");
 		add("LOD1_TERRAIN_INTERSECTION");
 		add("LOD2_TERRAIN_INTERSECTION");
 		add("LOD3_TERRAIN_INTERSECTION");
@@ -130,45 +130,255 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("LOD2_MULTI_CURVE");
 		add("LOD3_MULTI_CURVE");
 		add("LOD4_MULTI_CURVE");
-		add("LOD1_GEOMETRY_ID");
-		add("LOD2_GEOMETRY_ID");
-		add("LOD3_GEOMETRY_ID");
-		add("LOD4_GEOMETRY_ID");
+		add("LOD1_MULTI_SURFACE_ID");
+		add("LOD2_MULTI_SURFACE_ID");
+		add("LOD3_MULTI_SURFACE_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+		add("LOD1_SOLID_ID");
+		add("LOD2_SOLID_ID");
+		add("LOD3_SOLID_ID");
+		add("LOD4_SOLID_ID");
+	}};
+	
+	private static final String BRIDGE_CONSTR_ELEMENT_TABLE = "BRIDGE_CONSTR_ELEMENT";
+	private static final LinkedHashSet<String> BRIDGE_CONSTR_ELEMENT_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
+		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("BRIDGE_ID");
+		add("LOD1_TERRAIN_INTERSECTION");
+		add("LOD2_TERRAIN_INTERSECTION");
+		add("LOD3_TERRAIN_INTERSECTION");
+		add("LOD4_TERRAIN_INTERSECTION");
+		add("LOD1_BREP_ID");
+		add("LOD2_BREP_ID");
+		add("LOD3_BREP_ID");
+		add("LOD4_BREP_ID");
+		add("LOD1_OTHER_GEOM");
+		add("LOD2_OTHER_GEOM");
+		add("LOD3_OTHER_GEOM");
+		add("LOD4_OTHER_GEOM");
+		add("LOD1_IMPLICIT_REP_ID");
+		add("LOD2_IMPLICIT_REP_ID");
+		add("LOD3_IMPLICIT_REP_ID");
+		add("LOD4_IMPLICIT_REP_ID");
+		add("LOD1_IMPLICIT_REF_POINT");
+		add("LOD2_IMPLICIT_REF_POINT");
+		add("LOD3_IMPLICIT_REF_POINT");
+		add("LOD4_IMPLICIT_REF_POINT");
+		add("LOD1_IMPLICIT_TRANSFORMATION");
+		add("LOD2_IMPLICIT_TRANSFORMATION");
+		add("LOD3_IMPLICIT_TRANSFORMATION");
+		add("LOD4_IMPLICIT_TRANSFORMATION");
+	}};
+	
+	private static final String BRIDGE_FURNITURE_TABLE = "BRIDGE_FURNITURE";
+	private static final LinkedHashSet<String> BRIDGE_FURNITURE_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
+		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("BRIDGE_ROOM_ID");
+		add("LOD4_BREP_ID");
+		add("LOD4_OTHER_GEOM");
+		add("LOD4_IMPLICIT_REP_ID");
+		add("LOD4_IMPLICIT_REF_POINT");
+		add("LOD4_IMPLICIT_TRANSFORMATION");
+	}};	
+	
+	private static final String BRIDGE_INSTALLATION_TABLE = "BRIDGE_INSTALLATION";
+	private static final LinkedHashSet<String> BRIDGE_INSTALLATION_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("OBJECTCLASS_ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
+		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("BRIDGE_ID");
+		add("BRIDGE_ROOM_ID");
+		add("LOD2_BREP_ID");
+		add("LOD3_BREP_ID");
+		add("LOD4_BREP_ID");
+		add("LOD2_OTHER_GEOM");
+		add("LOD3_OTHER_GEOM");
+		add("LOD4_OTHER_GEOM");
+		add("LOD2_IMPLICIT_REP_ID");
+		add("LOD3_IMPLICIT_REP_ID");
+		add("LOD4_IMPLICIT_REP_ID");
+		add("LOD2_IMPLICIT_REF_POINT");
+		add("LOD3_IMPLICIT_REF_POINT");
+		add("LOD4_IMPLICIT_REF_POINT");
+		add("LOD2_IMPLICIT_TRANSFORMATION");
+		add("LOD3_IMPLICIT_TRANSFORMATION");
+		add("LOD4_IMPLICIT_TRANSFORMATION");
+	}};	
+	
+	private static final String BRIDGE_OPEN_TO_THEM_SRF_TABLE = "BRIDGE_OPEN_TO_THEM_SRF";
+	private static final LinkedHashSet<String> BRIDGE_OPEN_TO_THEM_SRF_COLUMNS = new LinkedHashSet<String>() {{
+		add("BRIDGE_OPENING_ID");
+		add("BRIDGE_THEMATIC_SURFACE_ID");
+	}};	
+	
+	private static final String BRIDGE_OPENING_TABLE = "BRIDGE_OPENING";
+	private static final LinkedHashSet<String> BRIDGE_OPENING_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("OBJECTCLASS_ID");
+		add("ADDRESS_ID");
+		add("LOD3_MULTI_SURFACE_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+		add("LOD3_IMPLICIT_REP_ID");
+		add("LOD4_IMPLICIT_REP_ID");
+		add("LOD3_IMPLICIT_REF_POINT");
+		add("LOD4_IMPLICIT_REF_POINT");
+		add("LOD3_IMPLICIT_TRANSFORMATION");
+		add("LOD4_IMPLICIT_TRANSFORMATION");
+	}};	
+	
+	private static final String BRIDGE_ROOM_TABLE = "BRIDGE_ROOM";
+	private static final LinkedHashSet<String> BRIDGE_ROOM_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
+		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("BRIDGE_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+		add("LOD4_SOLID_ID");
+	}};	
+	
+	private static final String BRIDGE_THEMATIC_SURFACE_TABLE = "BRIDGE_THEMATIC_SURFACE";
+	private static final LinkedHashSet<String> BRIDGE_THEMATIC_SURFACE_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("OBJECTCLASS_ID");
+		add("BRIDGE_ID");
+		add("BRIDGE_ROOM_ID");
+		add("BRIDGE_INSTALLATION_ID");
+		add("BRIDGE_CONSTR_ELEMENT_ID");
+		add("LOD2_MULTI_SURFACE_ID");
+		add("LOD3_MULTI_SURFACE_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+	}};
+	
+	private static final String BUILDING_TABLE = "BUILDING";
+	private static final LinkedHashSet<String> BUILDING_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("BUILDING_PARENT_ID");
+		add("BUILDING_ROOT_ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
+		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("YEAR_OF_CONSTRUCTION");
+		add("YEAR_OF_DEMOLITION");
+		add("ROOF_TYPE");
+		add("ROOF_TYPE_CODESPACE");
+		add("MEASURED_HEIGHT");
+		add("MEASURED_HEIGHT_UNIT");
+		add("STOREYS_ABOVE_GROUND");
+		add("STOREYS_BELOW_GROUND");
+		add("STOREY_HEIGHTS_ABOVE_GROUND");
+		add("STOREY_HEIGHTS_AG_UNIT");
+		add("STOREY_HEIGHTS_BELOW_GROUND");
+		add("STOREY_HEIGHTS_BG_UNIT");
+		add("LOD1_TERRAIN_INTERSECTION");
+		add("LOD2_TERRAIN_INTERSECTION");
+		add("LOD3_TERRAIN_INTERSECTION");
+		add("LOD4_TERRAIN_INTERSECTION");
+		add("LOD2_MULTI_CURVE");
+		add("LOD3_MULTI_CURVE");
+		add("LOD4_MULTI_CURVE");
+		add("LOD0_FOOTPRINT_ID");
+		add("LOD0_ROOFPRINT_ID");
+		add("LOD1_MULTI_SURFACE_ID");
+		add("LOD2_MULTI_SURFACE_ID");
+		add("LOD3_MULTI_SURFACE_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+		add("LOD1_SOLID_ID");
+		add("LOD2_SOLID_ID");
+		add("LOD3_SOLID_ID");
+		add("LOD4_SOLID_ID");
+	}};
+	
+	private static final String BUILDING_FURNITURE_TABLE = "BUILDING_FURNITURE";
+	private static final LinkedHashSet<String> BUILDING_FURNITURE_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
+		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("ROOM_ID");
+		add("LOD4_BREP_ID");
+		add("LOD4_OTHER_GEOM");
+		add("LOD4_IMPLICIT_REP_ID");
+		add("LOD4_IMPLICIT_REF_POINT");
+		add("LOD4_IMPLICIT_TRANSFORMATION");
 	}};
 
 	private static final String BUILDING_INSTALLATION_TABLE = "BUILDING_INSTALLATION";
 	private static final LinkedHashSet<String> BUILDING_INSTALLATION_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("IS_EXTERNAL");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
+		add("OBJECTCLASS_ID");
 		add("CLASS");
+		add("CLASS_CODESPACE");
 		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
 		add("USAGE");
+		add("USAGE_CODESPACE");
 		add("BUILDING_ID");
 		add("ROOM_ID");
-		add("LOD2_GEOMETRY_ID");
-		add("LOD3_GEOMETRY_ID");
-		add("LOD4_GEOMETRY_ID");
+		add("LOD2_BREP_ID");
+		add("LOD3_BREP_ID");
+		add("LOD4_BREP_ID");
+		add("LOD2_OTHER_GEOM");
+		add("LOD3_OTHER_GEOM");
+		add("LOD4_OTHER_GEOM");
+		add("LOD2_IMPLICIT_REP_ID");
+		add("LOD3_IMPLICIT_REP_ID");
+		add("LOD4_IMPLICIT_REP_ID");
+		add("LOD2_IMPLICIT_REF_POINT");
+		add("LOD3_IMPLICIT_REF_POINT");
+		add("LOD4_IMPLICIT_REF_POINT");
+		add("LOD2_IMPLICIT_TRANSFORMATION");
+		add("LOD3_IMPLICIT_TRANSFORMATION");
+		add("LOD4_IMPLICIT_TRANSFORMATION");
 	}};
 
 	private static final String CITY_FURNITURE_TABLE = "CITY_FURNITURE";
 	private static final LinkedHashSet<String> CITY_FURNITURE_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
 		add("CLASS");
+		add("CLASS_CODESPACE");
 		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
 		add("LOD1_TERRAIN_INTERSECTION");
 		add("LOD2_TERRAIN_INTERSECTION");
 		add("LOD3_TERRAIN_INTERSECTION");
 		add("LOD4_TERRAIN_INTERSECTION");
-		add("LOD1_GEOMETRY_ID");
-		add("LOD2_GEOMETRY_ID");
-		add("LOD3_GEOMETRY_ID");
-		add("LOD4_GEOMETRY_ID");
+		add("LOD1_BREP_ID");
+		add("LOD2_BREP_ID");
+		add("LOD3_BREP_ID");
+		add("LOD4_BREP_ID");
+		add("LOD1_OTHER_GEOM");
+		add("LOD2_OTHER_GEOM");
+		add("LOD3_OTHER_GEOM");
+		add("LOD4_OTHER_GEOM");
 		add("LOD1_IMPLICIT_REP_ID");
 		add("LOD2_IMPLICIT_REP_ID");
 		add("LOD3_IMPLICIT_REP_ID");
@@ -187,7 +397,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final LinkedHashSet<String> CITYMODEL_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("GMLID");
-		add("GMLID_CODESPACE");
 		add("NAME");
 		add("NAME_CODESPACE");
 		add("DESCRIPTION");
@@ -203,12 +412,16 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final String CITYOBJECT_TABLE = "CITYOBJECT";
 	private static final LinkedHashSet<String> CITYOBJECT_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("CLASS_ID");
+		add("OBJECTCLASS_ID");
 		add("GMLID");
-		add("GMLID_CODESPACE");
+		add("NAME");
+		add("NAME_CODESPACE");
+		add("DESCRIPTION");
 		add("ENVELOPE");
 		add("CREATION_DATE");
 		add("TERMINATION_DATE");
+		add("RELATIVE_TO_TERRAIN");
+		add("RELATIVE_TO_WATER");
 		add("LAST_MODIFICATION_DATE");
 		add("UPDATING_PERSON");
 		add("REASON_FOR_UPDATE");
@@ -219,6 +432,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final String CITYOBJECT_GENERICATTRIB_TABLE = "CITYOBJECT_GENERICATTRIB";
 	private static final LinkedHashSet<String> CITYOBJECT_GENERICATTRIB_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
+		add("PARENT_GENATTRIB_ID");
+		add("ROOT_GENATTRIB_ID");
 		add("ATTRNAME");
 		add("DATATYPE");
 		add("STRVAL");
@@ -228,28 +443,30 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("DATEVAL");
 		add("GEOMVAL");
 		add("BLOBVAL");
-		add("CITYOBJECT_ID");
+		add("UNIT");
+		add("GENATTRIBSET_CODESPACE");
 		add("SURFACE_GEOMETRY_ID");
+		add("CITYOBJECT_ID");		
 	}};
-
-	private static final String CITYOBJECTGROUP_TABLE = "CITYOBJECTGROUP";
-	private static final LinkedHashSet<String> CITYOBJECTGROUP_COLUMNS = new LinkedHashSet<String>() {{
-		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
-		add("CLASS");
-		add("FUNCTION");
-		add("USAGE");
-		add("GEOMETRY");
-		add("SURFACE_GEOMETRY_ID");
-		add("PARENT_CITYOBJECT_ID");
-	}};
-
+	
 	private static final String CITYOBJECT_MEMBER_TABLE = "CITYOBJECT_MEMBER";
 	private static final LinkedHashSet<String> CITYOBJECT_MEMBER_COLUMNS = new LinkedHashSet<String>() {{
 		add("CITYMODEL_ID");
 		add("CITYOBJECT_ID");
+	}};
+	
+	private static final String CITYOBJECTGROUP_TABLE = "CITYOBJECTGROUP";
+	private static final LinkedHashSet<String> CITYOBJECTGROUP_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
+		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("BREP_ID");
+		add("OTHER_GEOM");
+		add("PARENT_CITYOBJECT_ID");
 	}};
 
 	private static final String COLLECT_GEOM_TABLE = "COLLECT_GEOM";
@@ -283,28 +500,38 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final String GENERIC_CITYOBJECT_TABLE = "GENERIC_CITYOBJECT";
 	private static final LinkedHashSet<String> GENERIC_CITYOBJECT_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
 		add("CLASS");
+		add("CLASS_CODESPACE");
 		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
 		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("LOD0_TERRAIN_INTERSECTION");
 		add("LOD1_TERRAIN_INTERSECTION");
 		add("LOD2_TERRAIN_INTERSECTION");
 		add("LOD3_TERRAIN_INTERSECTION");
 		add("LOD4_TERRAIN_INTERSECTION");
-		add("LOD1_GEOMETRY_ID");
-		add("LOD2_GEOMETRY_ID");
-		add("LOD3_GEOMETRY_ID");
-		add("LOD4_GEOMETRY_ID");
+		add("LOD0_BREP_ID");
+		add("LOD1_BREP_ID");
+		add("LOD2_BREP_ID");
+		add("LOD3_BREP_ID");
+		add("LOD4_BREP_ID");
+		add("LOD0_OTHER_ID");
+		add("LOD1_OTHER_ID");
+		add("LOD2_OTHER_ID");
+		add("LOD3_OTHER_ID");
+		add("LOD4_OTHER_ID");
+		add("LOD0_IMPLICIT_REP_ID");
 		add("LOD1_IMPLICIT_REP_ID");
 		add("LOD2_IMPLICIT_REP_ID");
 		add("LOD3_IMPLICIT_REP_ID");
 		add("LOD4_IMPLICIT_REP_ID");
+		add("LOD0_IMPLICIT_REF_POINT");
 		add("LOD1_IMPLICIT_REF_POINT");
 		add("LOD2_IMPLICIT_REF_POINT");
 		add("LOD3_IMPLICIT_REF_POINT");
 		add("LOD4_IMPLICIT_REF_POINT");
+		add("LOD0_IMPLICIT_TRANSFORMATION");
 		add("LOD1_IMPLICIT_TRANSFORMATION");
 		add("LOD2_IMPLICIT_TRANSFORMATION");
 		add("LOD3_IMPLICIT_TRANSFORMATION");
@@ -317,16 +544,25 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("CITYOBJECTGROUP_ID");
 		add("ROLE");
 	}};
+	
+	private static final String IMPLICIT_GEOMETRY_TABLE = "IMPLICIT_GEOMETRY";
+	private static final LinkedHashSet<String> IMPLICIT_GEOMETRY_COLUMNS = new LinkedHashSet<String>() {{
+		add("MIME_TYPE");
+		add("REFERENCE_TO_LIBRARY");
+		add("LIBRARY_OBJECT");
+		add("RELATIVE_BREP_ID");
+		add("RELATIVE_OTHER_GEOM");
+	}};
 
 	private static final String LAND_USE_TABLE = "LAND_USE";
 	private static final LinkedHashSet<String> LAND_USE_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
 		add("CLASS");
+		add("CLASS_CODESPACE");
 		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
 		add("USAGE");
+		add("USAGE_CODESPACE");
 		add("LOD0_MULTI_SURFACE_ID");
 		add("LOD1_MULTI_SURFACE_ID");
 		add("LOD2_MULTI_SURFACE_ID");
@@ -350,13 +586,16 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final String OPENING_TABLE = "OPENING";
 	private static final LinkedHashSet<String> OPENING_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
-		add("TYPE");
+		add("OBJECTCLASS_ID");
 		add("ADDRESS_ID");
 		add("LOD3_MULTI_SURFACE_ID");
 		add("LOD4_MULTI_SURFACE_ID");
+		add("LOD3_IMPLICIT_REP_ID");
+		add("LOD4_IMPLICIT_REP_ID");
+		add("LOD3_IMPLICIT_REF_POINT");
+		add("LOD4_IMPLICIT_REF_POINT");
+		add("LOD3_IMPLICIT_TRANSFORMATION");
+		add("LOD4_IMPLICIT_TRANSFORMATION");
 	}};
 
 	private static final String OPENING_TO_THEM_SURFACE_TABLE = "OPENING_TO_THEM_SURFACE";
@@ -368,40 +607,41 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final String PLANT_COVER_TABLE = "PLANT_COVER";
 	private static final LinkedHashSet<String> PLANT_COVER_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
 		add("CLASS");
+		add("CLASS_CODESPACE");
 		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
 		add("AVERAGE_HEIGHT");
-		add("LOD1_GEOMETRY_ID");
-		add("LOD2_GEOMETRY_ID");
-		add("LOD3_GEOMETRY_ID");
-		add("LOD4_GEOMETRY_ID");
+		add("AVERAGE_HEIGHT_UNIT");
+		add("LOD1_MULTI_SURFACE_ID");
+		add("LOD2_MULTI_SURFACE_ID");
+		add("LOD3_MULTI_SURFACE_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+		add("LOD1_SOLID_ID");
+		add("LOD2_SOLID_ID");
+		add("LOD3_SOLID_ID");
+		add("LOD4_SOLID_ID");
 	}};
 	/*
 	private static final String RASTER_RELIEF_TABLE = "RASTER_RELIEF";
 	private static final LinkedHashSet<String> RASTER_RELIEF_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("RASTERPROPERTY");
+		add("URI");
+		add("GEORASTER_ID");
 	}};
 	 */
-	private static final String RASTER_RELIEF_IMP_TABLE = "RASTER_RELIEF_IMP";
-	private static final LinkedHashSet<String> RASTER_RELIEF_IMP_COLUMNS = new LinkedHashSet<String>() {{
+	private static final String RASTER_RELIEF_GEORASTER_TABLE = "RASTER_RELIEF_GEORASTER";
+	private static final LinkedHashSet<String> RASTER_RELIEF_GEORASTER_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("RASTERPROPERTY");
-		add("RELIEF_ID");
-		add("RASTER_RELIEF_ID");
-		add("FILENAME");
-		add("FOOTPRINT");
 	}};
 
 	private static final String RELIEF_COMPONENT_TABLE = "RELIEF_COMPONENT";
 	private static final LinkedHashSet<String> RELIEF_COMPONENT_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
+		add("OBJECTCLASS_ID");
 		add("LOD");
 		add("EXTENT");
 	}};
@@ -415,41 +655,48 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final String RELIEF_FEATURE_TABLE = "RELIEF_FEATURE";
 	private static final LinkedHashSet<String> RELIEF_FEATURE_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
 		add("LOD");
 	}};
 
 	private static final String ROOM_TABLE = "ROOM";
 	private static final LinkedHashSet<String> ROOM_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
 		add("CLASS");
+		add("CLASS_CODESPACE");
 		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
 		add("USAGE");
+		add("USAGE_CODESPACE");
 		add("BUILDING_ID");
-		add("LOD4_GEOMETRY_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+		add("LOD4_SOLID_ID");
 	}};
 
 	private static final String SOLITARY_VEGETAT_OBJECT_TABLE = "SOLITARY_VEGETAT_OBJECT";
 	private static final LinkedHashSet<String> SOLITARY_VEGETAT_OBJECT_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
 		add("CLASS");
-		add("SPECIES");
+		add("CLASS_CODESPACE");
 		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("SPECIES");
+		add("SPECIES_CODESPACE");
 		add("HEIGHT");
+		add("HEIGHT_UNIT");
 		add("TRUNC_DIAMETER");
+		add("TRUNC_DIAMETER_UNIT");
 		add("CROWN_DIAMETER");
-		add("LOD1_GEOMETRY_ID");
-		add("LOD2_GEOMETRY_ID");
-		add("LOD3_GEOMETRY_ID");
-		add("LOD4_GEOMETRY_ID");
+		add("CROWN_DIAMETER_UNIT");
+		add("LOD1_BREP_ID");
+		add("LOD2_BREP_ID");
+		add("LOD3_BREP_ID");
+		add("LOD4_BREP_ID");
+		add("LOD1_OTHER_ID");
+		add("LOD2_OTHER_ID");
+		add("LOD3_OTHER_ID");
+		add("LOD4_OTHER_ID");
 		add("LOD1_IMPLICIT_REP_ID");
 		add("LOD2_IMPLICIT_REP_ID");
 		add("LOD3_IMPLICIT_REP_ID");
@@ -468,7 +715,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final LinkedHashSet<String> SURFACE_DATA_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("GMLID");
-		add("GMLID_CODESPACE");
 		add("NAME");
 		add("NAME_CODESPACE");
 		add("DESCRIPTION");
@@ -481,8 +727,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("X3D_DIFFUSE_COLOR");
 		add("X3D_EMISSIVE_COLOR");
 		add("X3D_IS_SMOOTH");
-		add("TEX_IMAGE_URI");
-		add("TEX_IMAGE");
+		add("TEX_IMAGE_ID");
 		add("TEX_MIME_TYPE");
 		add("TEX_TEXTURE_TYPE");
 		add("TEX_WRAP_MODE");
@@ -496,7 +741,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final LinkedHashSet<String> SURFACE_GEOMETRY_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("GMLID");
-		add("GMLID_CODESPACE");
 		add("PARENT_ID");
 		add("ROOT_ID");
 		add("IS_SOLID");
@@ -505,6 +749,17 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("IS_XLINK");
 		add("IS_REVERSE");
 		add("GEOMETRY");
+		add("SOLID_GEOMETRY");
+		add("IMPLICIT_GEOMETRY");
+		add("CITYOBJECT_ID");
+	}};
+	private static final String TEX_IMAGE_TABLE = "TEX_IMAGE";
+	private static final LinkedHashSet<String> TEX_IMAGE_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("TEX_IMAGE_URI");
+		add("TEX_IMAGE");
+		add("TEX_MIME_TYPE");
+		add("TEX_MIME_TYPE_CODESPACE");
 	}};
 
 	private static final String TEXTUREPARAM_TABLE = "TEXTUREPARAM";
@@ -519,12 +774,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final String THEMATIC_SURFACE_TABLE = "THEMATIC_SURFACE";
 	private static final LinkedHashSet<String> THEMATIC_SURFACE_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
-		add("TYPE");
+		add("OBJECTCLASS_ID");
 		add("BUILDING_ID");
 		add("ROOM_ID");
+		add("BUILDING_INSTALLATION_ID");
 		add("LOD2_MULTI_SURFACE_ID");
 		add("LOD3_MULTI_SURFACE_ID");
 		add("LOD4_MULTI_SURFACE_ID");
@@ -543,13 +796,15 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final String TRAFFIC_AREA_TABLE = "TRAFFIC_AREA";
 	private static final LinkedHashSet<String> TRAFFIC_AREA_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("IS_AUXILIARY");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
+		add("OBJECTCLASS_ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
 		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
 		add("USAGE");
+		add("USAGE_CODESPACE");
 		add("SURFACE_MATERIAL");
+		add("SURFACE_MATERIAL_CODESPACE");
 		add("LOD2_MULTI_SURFACE_ID");
 		add("LOD3_MULTI_SURFACE_ID");
 		add("LOD4_MULTI_SURFACE_ID");
@@ -559,12 +814,13 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final String TRANSPORTATION_COMPLEX_TABLE = "TRANSPORTATION_COMPLEX";
 	private static final LinkedHashSet<String> TRANSPORTATION_COMPLEX_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
+		add("OBJECTCLASS_ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
 		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
 		add("USAGE");
-		add("TYPE");
+		add("USAGE_CODESPACE");
 		add("LOD0_NETWORK");
 		add("LOD1_MULTI_SURFACE_ID");
 		add("LOD2_MULTI_SURFACE_ID");
@@ -572,6 +828,129 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("LOD4_MULTI_SURFACE_ID");
 	}};
 
+	private static final String TUNNEL_TABLE = "TUNNEL";
+	private static final LinkedHashSet<String> TUNNEL_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("TUNNEL_PARENT_ID");
+		add("TUNNEL_ROOT_ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
+		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("YEAR_OF_CONSTRUCTION");
+		add("YEAR_OF_DEMOLITION");
+		add("LOD1_TERRAIN_INTERSECTION");
+		add("LOD2_TERRAIN_INTERSECTION");
+		add("LOD3_TERRAIN_INTERSECTION");
+		add("LOD4_TERRAIN_INTERSECTION");
+		add("LOD1_MULTI_CURVE");
+		add("LOD2_MULTI_CURVE");
+		add("LOD3_MULTI_CURVE");
+		add("LOD4_MULTI_CURVE");
+		add("LOD1_MULTI_SURFACE_ID");
+		add("LOD2_MULTI_SURFACE_ID");
+		add("LOD3_MULTI_SURFACE_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+		add("LOD1_SOLID_ID");
+		add("LOD2_SOLID_ID");
+		add("LOD3_SOLID_ID");
+		add("LOD4_SOLID_ID");
+	}};
+	
+	private static final String TUNNEL_FURNITURE_TABLE = "TUNNEL_FURNITURE";
+	private static final LinkedHashSet<String> TUNNEL_FURNITURE_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
+		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("TUNNEL_HOLLOW_SPACE_ID");
+		add("LOD4_BREP_ID");
+		add("LOD4_OTHER_GEOM");
+		add("LOD4_IMPLICIT_REP_ID");
+		add("LOD4_IMPLICIT_REF_POINT");
+		add("LOD4_IMPLICIT_TRANSFORMATION");
+	}};	
+
+	private static final String TUNNEL_HOLLOW_SPACE_TABLE = "TUNNEL_HOLLOW_SPACE";
+	private static final LinkedHashSet<String> TUNNEL_HOLLOW_SPACE_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
+		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("TUNNEL_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+		add("LOD4_SOLID_ID");
+	}};	
+	
+	private static final String TUNNEL_INSTALLATION_TABLE = "TUNNEL_INSTALLATION";
+	private static final LinkedHashSet<String> TUNNEL_INSTALLATION_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("OBJECTCLASS_ID");
+		add("CLASS");
+		add("CLASS_CODESPACE");
+		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
+		add("USAGE");
+		add("USAGE_CODESPACE");
+		add("TUNNEL_ID");
+		add("TUNNEL_HOLLOW_SPACE_ID");
+		add("LOD2_BREP_ID");
+		add("LOD3_BREP_ID");
+		add("LOD4_BREP_ID");
+		add("LOD2_OTHER_GEOM");
+		add("LOD3_OTHER_GEOM");
+		add("LOD4_OTHER_GEOM");
+		add("LOD2_IMPLICIT_REP_ID");
+		add("LOD3_IMPLICIT_REP_ID");
+		add("LOD4_IMPLICIT_REP_ID");
+		add("LOD2_IMPLICIT_REF_POINT");
+		add("LOD3_IMPLICIT_REF_POINT");
+		add("LOD4_IMPLICIT_REF_POINT");
+		add("LOD2_IMPLICIT_TRANSFORMATION");
+		add("LOD3_IMPLICIT_TRANSFORMATION");
+		add("LOD4_IMPLICIT_TRANSFORMATION");
+	}};	
+	
+	private static final String TUNNEL_OPEN_TO_THEM_SRF_TABLE = "TUNNEL_OPEN_TO_THEM_SRF";
+	private static final LinkedHashSet<String> TUNNEL_OPEN_TO_THEM_SRF_COLUMNS = new LinkedHashSet<String>() {{
+		add("TUNNEL_OPENING_ID");
+		add("TUNNEL_THEMATIC_SURFACE_ID");
+	}};	
+	
+	private static final String TUNNEL_OPENING_TABLE = "TUNNEL_OPENING";
+	private static final LinkedHashSet<String> TUNNEL_OPENING_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("OBJECTCLASS_ID");
+		add("LOD3_MULTI_SURFACE_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+		add("LOD3_IMPLICIT_REP_ID");
+		add("LOD4_IMPLICIT_REP_ID");
+		add("LOD3_IMPLICIT_REF_POINT");
+		add("LOD4_IMPLICIT_REF_POINT");
+		add("LOD3_IMPLICIT_TRANSFORMATION");
+		add("LOD4_IMPLICIT_TRANSFORMATION");
+	}};	
+	
+	private static final String TUNNEL_THEMATIC_SURFACE_TABLE = "TUNNEL_THEMATIC_SURFACE";
+	private static final LinkedHashSet<String> TUNNEL_THEMATIC_SURFACE_COLUMNS = new LinkedHashSet<String>() {{
+		add("ID");
+		add("OBJECTCLASS_ID");
+		add("TUNNEL_ID");
+		add("TUNNEL_HOLLOW_SPACE_ID");
+		add("TUNNEL_INSTALLATION_ID");
+		add("LOD2_MULTI_SURFACE_ID");
+		add("LOD3_MULTI_SURFACE_ID");
+		add("LOD4_MULTI_SURFACE_ID");
+	}};
+	
 	private static final String WATERBODY_TO_WATERBOUNDARY_SURFACE_TABLE = "WATERBOD_TO_WATERBND_SRF";
 	private static final LinkedHashSet<String> WATERBODY_TO_WATERBOUNDARY_SURFACE_COLUMNS = new LinkedHashSet<String>() {{
 		add("WATERBOUNDARY_SURFACE_ID");
@@ -581,30 +960,28 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final String WATERBODY_TABLE = "WATERBODY";
 	private static final LinkedHashSet<String> WATERBODY_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
 		add("CLASS");
+		add("CLASS_CODESPACE");
 		add("FUNCTION");
+		add("FUNCTION_CODESPACE");
 		add("USAGE");
+		add("USAGE_CODESPACE");
 		add("LOD0_MULTI_CURVE");
 		add("LOD1_MULTI_CURVE");
+		add("LOD0_MULTI_SURFACE_ID");
+		add("LOD1_MULTI_SURFACE_ID");
 		add("LOD1_SOLID_ID");
 		add("LOD2_SOLID_ID");
 		add("LOD3_SOLID_ID");
 		add("LOD4_SOLID_ID");
-		add("LOD0_MULTI_SURFACE_ID");
-		add("LOD1_MULTI_SURFACE_ID");
 	}};
 
 	private static final String WATERBOUNDARY_SURFACE_TABLE = "WATERBOUNDARY_SURFACE";
 	private static final LinkedHashSet<String> WATERBOUNDARY_SURFACE_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
-		add("NAME");
-		add("NAME_CODESPACE");
-		add("DESCRIPTION");
-		add("TYPE");
+		add("OBJECTCLASS_ID");
 		add("WATER_LEVEL");
+		add("WATER_LEVEL_CODESPACE");
 		add("LOD2_SURFACE_ID");
 		add("LOD3_SURFACE_ID");
 		add("LOD4_SURFACE_ID");
@@ -661,12 +1038,24 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 
 	private static HashMap<String, Set<String>> _3DCITYDB_TABLES_AND_COLUMNS = new HashMap<String, Set<String>>() {{
 		put(ADDRESS_TABLE, ADDRESS_COLUMNS);
+		put(ADDRESS_TO_BRIDGE_TABLE, ADDRESS_TO_BRIDGE_COLUMNS);
 		put(ADDRESS_TO_BUILDING_TABLE, ADDRESS_TO_BUILDING_COLUMNS);
 		put(APPEAR_TO_SURFACE_DATA_TABLE, APPEAR_TO_SURFACE_DATA_COLUMNS);
 		put(APPEARANCE_TABLE, APPEARANCE_COLUMNS);
 		//		put(BREAKLINE_RELIEF_TABLE, BREAKLINE_RELIEF_COLUMNS);
+		put(BRIDGE_TABLE, BRIDGE_COLUMNS);
+		put(BRIDGE_CONSTR_ELEMENT_TABLE,BRIDGE_CONSTR_ELEMENT_COLUMNS);
+		put(BRIDGE_FURNITURE_TABLE, BRIDGE_FURNITURE_COLUMNS);
+		put(BRIDGE_INSTALLATION_TABLE, BRIDGE_INSTALLATION_COLUMNS);
+		put(BRIDGE_OPEN_TO_THEM_SRF_TABLE, BRIDGE_OPEN_TO_THEM_SRF_COLUMNS);
+		put(BRIDGE_OPENING_TABLE, BRIDGE_OPENING_COLUMNS);
+		put(BRIDGE_ROOM_TABLE, BRIDGE_ROOM_COLUMNS);
+		put(BRIDGE_THEMATIC_SURFACE_TABLE, BRIDGE_THEMATIC_SURFACE_COLUMNS);
+
 		put(BUILDING_TABLE, BUILDING_COLUMNS);
+		put(BUILDING_FURNITURE_TABLE, BUILDING_FURNITURE_COLUMNS);
 		put(BUILDING_INSTALLATION_TABLE, BUILDING_INSTALLATION_COLUMNS);
+		
 		put(CITY_FURNITURE_TABLE, CITY_FURNITURE_COLUMNS);
 		put(CITYMODEL_TABLE, CITYMODEL_COLUMNS);
 		put(CITYOBJECT_TABLE, CITYOBJECT_COLUMNS);
@@ -679,6 +1068,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(GENERALIZATION_TABLE, GENERALIZATION_COLUMNS);
 		put(GENERIC_CITYOBJECT_TABLE, GENERIC_CITYOBJECT_COLUMNS);
 		put(GROUP_TO_CITYOBJECT_TABLE, GROUP_TO_CITYOBJECT_COLUMNS);
+		put(IMPLICIT_GEOMETRY_TABLE, IMPLICIT_GEOMETRY_COLUMNS);
 		put(LAND_USE_TABLE, LAND_USE_COLUMNS);
 		//		put(MASSPOINT_RELIEF_TABLE, MASSPOINT_RELIEF_COLUMNS);
 		put(OBJECTCLASS_TABLE, OBJECTCLASS_COLUMNS);
@@ -686,7 +1076,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(OPENING_TO_THEM_SURFACE_TABLE, OPENING_TO_THEM_SURFACE_COLUMNS);
 		put(PLANT_COVER_TABLE, PLANT_COVER_COLUMNS);
 		//		put(RASTER_RELIEF_TABLE, RASTER_RELIEF_COLUMNS);
-		put(RASTER_RELIEF_IMP_TABLE, RASTER_RELIEF_IMP_COLUMNS);
+		put(RASTER_RELIEF_GEORASTER_TABLE, RASTER_RELIEF_GEORASTER_COLUMNS);
 		put(RELIEF_COMPONENT_TABLE, RELIEF_COMPONENT_COLUMNS);
 		put(RELIEF_FEATURE_TABLE, RELIEF_FEATURE_COLUMNS);
 		//		put(RELIEF_FEAT_TO_REL_COMP_TABLE, RELIEF_FEAT_TO_REL_COMP_COLUMNS);
@@ -695,11 +1085,22 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(SPECIAL_KEYWORDS, SPECIAL_KEYWORDS_SET);
 		put(SURFACE_DATA_TABLE, SURFACE_DATA_COLUMNS);
 		put(SURFACE_GEOMETRY_TABLE, SURFACE_GEOMETRY_COLUMNS);
+		put(TEX_IMAGE_TABLE, TEX_IMAGE_COLUMNS);
 		put(TEXTUREPARAM_TABLE, TEXTUREPARAM_COLUMNS);
 		put(THEMATIC_SURFACE_TABLE, THEMATIC_SURFACE_COLUMNS);
 		//		put(TIN_RELIEF_TABLE, TIN_RELIEF_COLUMNS);
+		
 		put(TRAFFIC_AREA_TABLE, TRAFFIC_AREA_COLUMNS);
 		put(TRANSPORTATION_COMPLEX_TABLE, TRANSPORTATION_COMPLEX_COLUMNS);
+				
+		put(TUNNEL_TABLE, TUNNEL_COLUMNS);
+		put(TUNNEL_FURNITURE_TABLE, TUNNEL_FURNITURE_COLUMNS);
+		put(TUNNEL_HOLLOW_SPACE_TABLE, TUNNEL_HOLLOW_SPACE_COLUMNS);
+		put(TUNNEL_INSTALLATION_TABLE, TUNNEL_INSTALLATION_COLUMNS);
+		put(TUNNEL_OPEN_TO_THEM_SRF_TABLE, TUNNEL_OPEN_TO_THEM_SRF_COLUMNS);
+		put(TUNNEL_OPENING_TABLE, TUNNEL_OPENING_COLUMNS);
+		put(TUNNEL_THEMATIC_SURFACE_TABLE, TUNNEL_THEMATIC_SURFACE_COLUMNS);
+		
 		put(WATERBODY_TO_WATERBOUNDARY_SURFACE_TABLE, WATERBODY_TO_WATERBOUNDARY_SURFACE_COLUMNS);
 		put(WATERBODY_TABLE, WATERBODY_COLUMNS);
 		put(WATERBOUNDARY_SURFACE_TABLE, WATERBOUNDARY_SURFACE_COLUMNS);
@@ -1156,7 +1557,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		int lastIndex = 0;
 		int index = 0;
 		while (template.indexOf(START_TAG, lastIndex) != -1) {
-
 			index = template.indexOf(START_TAG, lastIndex);
 			int nestingLevel = 1;
 			htmlChunkList.add(template.substring(lastIndex, index));
@@ -2063,7 +2463,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				int lod) throws Exception {
 			String sqlStatement = null; 
 
-			if (RASTER_RELIEF_IMP_TABLE.equalsIgnoreCase(table)) {
+			if (RASTER_RELIEF_GEORASTER_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM RASTER_RELIEF_IMP rri" +
 						" WHERE rri.id = ?";
@@ -2426,7 +2826,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			else if (PLANT_COVER_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "pc";
 			}
-			else if (RASTER_RELIEF_IMP_TABLE.equalsIgnoreCase(tablename)) {
+			else if (RASTER_RELIEF_GEORASTER_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "rri";
 				orderByColumnAllowed = (!columns.get(0).equals("RASTERPROPERTY") && !columns.get(0).equals("FOOTPRINT"));
 			}
