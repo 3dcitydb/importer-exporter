@@ -669,7 +669,7 @@ public class Queries {
 	private static final String COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 =
 			"SELECT sg.geometry, sg.id, sg.parent_id, sg.root_id, sd.objectclass_id, sd.tex_image_id, co.objectclass_id, " +
 					"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
-					"ti.tex_image_uri, ti.tex_image, tp.texture_coordinates, a.theme " +
+					"ti.tex_image_uri, tp.texture_coordinates, a.theme " +
 					"FROM SURFACE_GEOMETRY sg " +
 					"LEFT JOIN TEXTUREPARAM tp ON tp.surface_geometry_id = sg.id " + 
 					"LEFT JOIN SURFACE_DATA sd ON sd.id = tp.surface_data_id " +
@@ -683,7 +683,7 @@ public class Queries {
 	private static final String COLLADA_IMPLICIT_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 =
 			"SELECT sg.implicit_geometry, sg.id, sg.parent_id, sg.root_id, sd.objectclass_id, sd.tex_image_id, " +
 					"sd.x3d_shininess, sd.x3d_transparency, sd.x3d_ambient_intensity, sd.x3d_specular_color, sd.x3d_diffuse_color, sd.x3d_emissive_color, sd.x3d_is_smooth, " +
-					"ti.tex_image_uri, ti.tex_image, tp.texture_coordinates, a.theme " +
+					"ti.tex_image_uri, tp.texture_coordinates, a.theme " +
 					"FROM SURFACE_GEOMETRY sg " +
 					"LEFT JOIN TEXTUREPARAM tp ON tp.surface_geometry_id = sg.id " + 
 					"LEFT JOIN SURFACE_DATA sd ON sd.id = tp.surface_data_id " +

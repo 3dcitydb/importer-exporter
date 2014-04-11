@@ -29,6 +29,7 @@
  */
 package de.tub.citydb.modules.kml.database;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -87,7 +88,7 @@ public class GenericCityObject extends KmlGenericObject{
 	private Matrix transformation;
 	private boolean isPointOrCurve;
 	private boolean isPoint;
-	
+
 	private double refPointX;
 	private double refPointY;
 	private double refPointZ;
@@ -140,7 +141,7 @@ public class GenericCityObject extends KmlGenericObject{
 		if (transformation == null)
 			return Queries.getGenericCityObjectHighlightingQuery(currentLod, false);
 		return Queries.getGenericCityObjectHighlightingQuery(currentLod, true);
-		
+
 	}
 
 	public void read(KmlSplittingResult work) {
@@ -174,8 +175,8 @@ public class GenericCityObject extends KmlGenericObject{
 
 					// check for point or curve
 					psQuery = connection.prepareStatement(Queries.getGenericCityObjectPointAndCurveQuery(currentLod),
- 							  							  ResultSet.TYPE_SCROLL_INSENSITIVE,
- 							  							  ResultSet.CONCUR_READ_ONLY);
+							ResultSet.TYPE_SCROLL_INSENSITIVE,
+							ResultSet.CONCUR_READ_ONLY);
 					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 						psQuery.setLong(i, work.getId());
 					}
@@ -184,7 +185,7 @@ public class GenericCityObject extends KmlGenericObject{
 						isPointOrCurve = true;
 						break; // result set not empty
 					}
-					
+
 					try { rs.close(); // release cursor on DB
 					} catch (SQLException sqle) {}
 					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
@@ -203,15 +204,15 @@ public class GenericCityObject extends KmlGenericObject{
 
 			if ((rs == null) || // result empty
 					((!isPointOrCurve) && !work.getDisplayForm().isAchievableFromLoD(currentLod))) { // give up	
-					String fromMessage = " from LoD" + lodToExportFrom;
-					if (lodToExportFrom == 5) {
-						if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
-							fromMessage = ". LoD1 or higher required";
-						else
-							fromMessage = " from any LoD";
-					}
-					Logger.getInstance().info("Could not display object " + work.getGmlId() 
-							+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
+				String fromMessage = " from LoD" + lodToExportFrom;
+				if (lodToExportFrom == 5) {
+					if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
+						fromMessage = ". LoD1 or higher required";
+					else
+						fromMessage = " from any LoD";
+				}
+				Logger.getInstance().info("Could not display object " + work.getGmlId() 
+						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
 			}
 			else { // result not empty
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
@@ -219,8 +220,8 @@ public class GenericCityObject extends KmlGenericObject{
 				if (isPointOrCurve) { // point or curve geometry
 
 					kmlExporterManager.print(createPlacemarksForPointOrCurve(rs, work),
-							 				 work,
-							 				 getBalloonSettings().isBalloonContentInSeparateFile());
+							work,
+							getBalloonSettings().isBalloonContentInSeparateFile());
 				}
 				else {					
 					// decide whether explicit or implicit geometry
@@ -254,7 +255,7 @@ public class GenericCityObject extends KmlGenericObject{
 					if (transformation == null) { // no implicit geometry
 						isImplcitGeometry = false;
 					}
-					
+
 					psQuery = connection.prepareStatement(Queries.getGenericCityObjectGeometryContents(work.getDisplayForm(), databaseAdapter.getSQLAdapter(), isImplcitGeometry),
 							ResultSet.TYPE_SCROLL_INSENSITIVE,
 							ResultSet.CONCUR_READ_ONLY);
@@ -473,7 +474,7 @@ public class GenericCityObject extends KmlGenericObject{
 
 	protected List<Point3d> setOrigins() {
 		List<Point3d> coords = new ArrayList<Point3d>();
-		
+
 		if (transformation != null) { 
 			// for implicit geometries, bugfix for the previous version (V1.6)
 			// the local coordinates of the Origin Point must be converted from the local
@@ -525,8 +526,9 @@ public class GenericCityObject extends KmlGenericObject{
 						// gmlId.hashCode() in order to properly group objects
 						// otherwise surfaces with the same id would be overwritten
 						long surfaceId = rs2.getLong("id") + getGmlId().hashCode();
-						long surfaceDataId = rs2.getLong("sd_id");
+						long textureImageId = rs2.getLong("tex_image_id");
 						long parentId = rs2.getLong("parent_id");
+						long rootId = rs2.getLong("root_id");
 
 						if (buildingGeometryObj == null) { // root or parent
 							if (selectedTheme.equalsIgnoreCase(theme)) {
@@ -549,69 +551,77 @@ public class GenericCityObject extends KmlGenericObject{
 						String texImageUri = null;
 						StringTokenizer texCoordsTokenized = null;
 
-						if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
+						if (selectedTheme.equals(KmlExporter.THEME_NONE))
 							addX3dMaterial(surfaceId, defaultX3dMaterial);
-						}
-						else if	(!selectedTheme.equalsIgnoreCase(theme) && // no surface data for this surface and theme
-								getX3dMaterial(parentId) != null) { // material for parent surface known
-							addX3dMaterial(surfaceId, getX3dMaterial(parentId));
-						}
 						else {
-							texImageUri = rs2.getString("tex_image_uri");
-							
-							StringBuffer sb =  new StringBuffer();
-							Object texCoordsObject = rs2.getObject("texture_coordinates"); 
-							if (texCoordsObject != null){
-								GeometryObject texCoordsGeometryObject = geometryConverterAdapter.getGeometry(texCoordsObject);
-								for (int i = 0; i < texCoordsGeometryObject.getNumElements(); i++) {
-									double[] coordinates = texCoordsGeometryObject.getCoordinates(i);
-									for (double coordinate : coordinates){
-										sb.append(String.valueOf(coordinate));
-										sb.append(" ");
-									}									
-								}									
-							}
-							String texCoords = sb.toString();
-
-							if (texImageUri != null && texImageUri.trim().length() != 0
-									&&  texCoords != null && texCoords.trim().length() != 0) {
-
-								int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
-								texImageUri = ".." + File.separator + "_" + texImageUri.substring(fileSeparatorIndex + 1);
-
-								addTexImageUri(surfaceId, texImageUri);
-								if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
-									// not already marked as wrapping texture && not already read in
-									TextureImage texImage = null;
-									try {
-										texImage = ImageReader.read(textureExportAdapter.getInStream(rs2, "tex_image", texImageUri));
-									}
-									catch (IOException ioe) {}
-									if (texImage != null) { // image in JPEG, PNG or another usual format
-										addTexImage(texImageUri, texImage);
-									}
-									else {
-										addUnsupportedTexImageId(texImageUri, surfaceDataId);
-									}
-
-									texImageCounter++;
-									if (texImageCounter > 20) {
-										eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
-										texImageCounter = 0;
-									}
-								}
-
-								texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
-								texCoordsTokenized = new StringTokenizer(texCoords, " ");
+							if (!selectedTheme.equalsIgnoreCase(theme)) { // no surface data for this surface and theme
+								if (getX3dMaterial(parentId) != null) // material for parent surface known
+									addX3dMaterial(surfaceId, getX3dMaterial(parentId));
+								else if (getX3dMaterial(rootId) != null) // material for root surface known
+									addX3dMaterial(surfaceId, getX3dMaterial(rootId));
+								else
+									addX3dMaterial(surfaceId, defaultX3dMaterial);
 							}
 							else {
-								X3DMaterial x3dMaterial = new X3DMaterial();
-								fillX3dMaterialValues(x3dMaterial, rs2);
-								// x3dMaterial will only added if not all x3dMaterial members are null
-								addX3dMaterial(surfaceId, x3dMaterial);
-								if (getX3dMaterial(surfaceId) == null) {
-									// untextured surface and no x3dMaterial -> default x3dMaterial (gray)
-									addX3dMaterial(surfaceId, defaultX3dMaterial);
+								texImageUri = rs2.getString("tex_image_uri");
+
+								StringBuffer sb =  new StringBuffer();
+								Object texCoordsObject = rs2.getObject("texture_coordinates"); 
+								if (texCoordsObject != null){
+									GeometryObject texCoordsGeometryObject = geometryConverterAdapter.getGeometry(texCoordsObject);
+									for (int i = 0; i < texCoordsGeometryObject.getNumElements(); i++) {
+										double[] coordinates = texCoordsGeometryObject.getCoordinates(i);
+										for (double coordinate : coordinates){
+											sb.append(String.valueOf(coordinate));
+											sb.append(" ");
+										}									
+									}									
+								}
+								String texCoords = sb.toString();
+
+								if (texImageUri != null && texImageUri.trim().length() != 0
+										&&  texCoords != null && texCoords.trim().length() != 0) {
+
+									int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
+									texImageUri = ".." + File.separator + "_" + texImageUri.substring(fileSeparatorIndex + 1);
+
+									addTexImageUri(surfaceId, texImageUri);
+									if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
+										// not already marked as wrapping texture && not already read in
+										TextureImage texImage = null;
+										try {
+											byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, "tex_image", texImageUri);
+											if (imageBytes != null) {
+												texImage = ImageReader.read(new ByteArrayInputStream(imageBytes));
+											}																																
+										} catch (IOException ioe) {}
+
+										if (texImage != null) { // image in JPEG, PNG or another usual format
+											addTexImage(texImageUri, texImage);
+										}
+										else {
+											addUnsupportedTexImageId(texImageUri, textureImageId);
+										}
+
+										texImageCounter++;
+										if (texImageCounter > 20) {
+											eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
+											texImageCounter = 0;
+										}
+									}
+
+									texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
+									texCoordsTokenized = new StringTokenizer(texCoords, " ");
+								}
+								else {
+									X3DMaterial x3dMaterial = new X3DMaterial();
+									fillX3dMaterialValues(x3dMaterial, rs2);
+									// x3dMaterial will only added if not all x3dMaterial members are null
+									addX3dMaterial(surfaceId, x3dMaterial);
+									if (getX3dMaterial(surfaceId) == null) {
+										// untextured surface and no x3dMaterial -> default x3dMaterial (gray)
+										addX3dMaterial(surfaceId, defaultX3dMaterial);
+									}
 								}
 							}
 						}
@@ -802,9 +812,9 @@ public class GenericCityObject extends KmlGenericObject{
 
 		return placemarkList;
 	}
-	
+
 	protected List<PlacemarkType> createPlacemarksForPointOrCurve(ResultSet rs,
-			  KmlSplittingResult work) throws SQLException {
+			KmlSplittingResult work) throws SQLException {
 		PointAndCurve pacSettings = config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve();
 		List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
 
@@ -820,9 +830,9 @@ public class GenericCityObject extends KmlGenericObject{
 			LineStringType lineString = kmlFactory.createLineStringType();
 
 			Object buildingGeometryObj = rs.getObject(1); 
-						
+
 			GeometryObject pointOrCurveGeometry = geometryConverterAdapter.getGeometry(buildingGeometryObj);			
-			
+
 			eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
 			if (pointOrCurveGeometry.getGeometryType() == GeometryObject.GeometryType.POINT) { // point
@@ -841,32 +851,32 @@ public class GenericCityObject extends KmlGenericObject{
 
 				// draw an X
 				lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
-						 									 + reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
-						 									 + reducePrecisionForZ(ordinatesArray[2] + zOffset)));
+						+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
+						+ reducePrecisionForZ(ordinatesArray[2] + zOffset)));
 
 				lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
-						 									 + reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
-						 									 + reducePrecisionForZ(ordinatesArray[2] + zOffset)));
+						+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
+						+ reducePrecisionForZ(ordinatesArray[2] + zOffset)));
 
 				lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[0]) + "," 
-						 									 + reducePrecisionForXorY(ordinatesArray[1]) + ","
-						 									 + reducePrecisionForZ(ordinatesArray[2] + zOffset)));
+						+ reducePrecisionForXorY(ordinatesArray[1]) + ","
+						+ reducePrecisionForZ(ordinatesArray[2] + zOffset)));
 
 				lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
-						 									 + reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
-						 									 + reducePrecisionForZ(ordinatesArray[2] + zOffset)));
+						+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
+						+ reducePrecisionForZ(ordinatesArray[2] + zOffset)));
 
 				lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
-						 									 + reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
-						 									 + reducePrecisionForZ(ordinatesArray[2] + zOffset)));
+						+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
+						+ reducePrecisionForZ(ordinatesArray[2] + zOffset)));
 
 				placemark.setName(work.getGmlId() + "_" + POINT);
-				
+
 				if (pacSettings.isPointHighlightingEnabled())
 					placemark.setStyleUrl("#" + getStyleBasisName() + GenericCityObject.POINT + "Style");
 				else
 					placemark.setStyleUrl("#" + getStyleBasisName() + GenericCityObject.POINT + "Normal");
-	
+
 				// replace default BalloonTemplateHandler with a brand new one, this costs resources!
 				if (pacSettings.getPointBalloon() != null && pacSettings.getPointBalloon().isIncludeDescription() &&
 						pacSettings.getPointBalloon().getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
@@ -882,18 +892,18 @@ public class GenericCityObject extends KmlGenericObject{
 				double[] ordinatesArray = pointOrCurveGeometry.getCoordinates(0);
 				for (int j = 0; j < ordinatesArray.length; j = j+3){
 					lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + "," 
-							 + reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-							 + reducePrecisionForZ(ordinatesArray[j+2] + zOffset)));
+							+ reducePrecisionForXorY(ordinatesArray[j+1]) + ","
+							+ reducePrecisionForZ(ordinatesArray[j+2] + zOffset)));
 				}
-				
+
 				placemark.setName(work.getGmlId() + "_" + CURVE);
-	
+
 				// replace default BalloonTemplateHandler with a brand new one, this costs resources!
 				if (pacSettings.isCurveHighlightingEnabled())
 					placemark.setStyleUrl("#" + getStyleBasisName() + GenericCityObject.CURVE + "Style");
 				else
 					placemark.setStyleUrl("#" + getStyleBasisName() + GenericCityObject.CURVE + "Normal");
-	
+
 				if (pacSettings.getCurveBalloon() != null && pacSettings.getCurveBalloon().isIncludeDescription() &&
 						pacSettings.getCurveBalloon().getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
 					String balloonTemplateFilename = pacSettings.getCurveBalloon().getBalloonContentTemplateFile();
