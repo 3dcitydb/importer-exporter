@@ -2069,6 +2069,7 @@ public abstract class KmlGenericObject {
 				}
 			case FILE :
 				if (getBalloonTemplateHandler() != null) {
+					getBalloonTemplateHandler().getBalloonContent(id, currentLod);
 					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(id, currentLod));
 				}
 				break;

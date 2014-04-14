@@ -632,11 +632,11 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("GEORASTER_ID");
 	}};
 	 */
-	private static final String RASTER_RELIEF_GEORASTER_TABLE = "RASTER_RELIEF_GEORASTER";
+/*	private static final String RASTER_RELIEF_GEORASTER_TABLE = "RASTER_RELIEF_GEORASTER";
 	private static final LinkedHashSet<String> RASTER_RELIEF_GEORASTER_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("RASTERPROPERTY");
-	}};
+	}};*/
 
 	private static final String RELIEF_COMPONENT_TABLE = "RELIEF_COMPONENT";
 	private static final LinkedHashSet<String> RELIEF_COMPONENT_COLUMNS = new LinkedHashSet<String>() {{
@@ -1076,7 +1076,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(OPENING_TO_THEM_SURFACE_TABLE, OPENING_TO_THEM_SURFACE_COLUMNS);
 		put(PLANT_COVER_TABLE, PLANT_COVER_COLUMNS);
 		//		put(RASTER_RELIEF_TABLE, RASTER_RELIEF_COLUMNS);
-		put(RASTER_RELIEF_GEORASTER_TABLE, RASTER_RELIEF_GEORASTER_COLUMNS);
+		//      put(RASTER_RELIEF_GEORASTER_TABLE, RASTER_RELIEF_GEORASTER_COLUMNS);
 		put(RELIEF_COMPONENT_TABLE, RELIEF_COMPONENT_COLUMNS);
 		put(RELIEF_FEATURE_TABLE, RELIEF_FEATURE_COLUMNS);
 		//		put(RELIEF_FEAT_TO_REL_COMP_TABLE, RELIEF_FEAT_TO_REL_COMP_COLUMNS);
@@ -1311,7 +1311,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				rs = query.executeQuery();
 
 				if (rs.next()) {
-					cityObjectTypeForId = Util.classId2cityObject(rs.getInt("class_id"));
+					cityObjectTypeForId = Util.classId2cityObject(rs.getInt("objectclass_id"));
 				}
 			}
 			catch (SQLException sqlEx) {}
@@ -1846,6 +1846,12 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			case BUILDING:
 				sqlStatement = sqlStatementForBuilding(table, columns, aggregateString, aggregateClosingString, lod);
 				break;
+			case BRIDGE:
+				sqlStatement = sqlStatementForBridge(table, columns, aggregateString, aggregateClosingString, lod);
+				break;
+			case TUNNEL:
+				sqlStatement = sqlStatementForTunnel(table, columns, aggregateString, aggregateClosingString, lod);	
+				break;
 			default:
 				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
 				break;
@@ -1945,6 +1951,13 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" FROM BUILDING b" +
 						" WHERE b.id = ?";
 			}
+			else if (BUILDING_FURNITURE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM BUILDING b, BUILDING_FURNITURE bf, ROOM r" +
+						" WHERE b.building_root_id = ?" +
+						" AND b.id = r.building_id" + 
+						" AND bf.room_id = r.id";
+			}
 			else if (BUILDING_INSTALLATION_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM BUILDING b, BUILDING_INSTALLATION bi" +
@@ -1979,43 +1992,94 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND a2sd.appearance_id = a.id" +
 						" AND sd.id = a2sd.surface_data_id";
 			}
-			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-						" FROM SURFACE_GEOMETRY sg" +
-						" WHERE sg.id IN" +
-						" (SELECT sg.id" +
-						" FROM BUILDING b, SURFACE_GEOMETRY sg" +
-						" WHERE b.building_root_id = ?" +
-						" AND sg.root_id = b.lod" + lod + "_geometry_id";
-				if (lod > 1) {
-					sqlStatement = sqlStatement +
-							" UNION " +
-							"SELECT sg.id" +
-							" FROM BUILDING b, THEMATIC_SURFACE ts, SURFACE_GEOMETRY sg" +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
+			}
+			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
+				if (lod == 0) {
+					sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							" FROM SURFACE_GEOMETRY sg, BUILDING b" +
+							" WHERE sg.id IN" +
+							" (SELECT sg.id" +
+							" FROM BUILDING b, SURFACE_GEOMETRY sg" +
 							" WHERE b.building_root_id = ?" +
-							" AND ts.building_id = b.id" + 
-							" AND sg.root_id = ts.lod" + lod + "_multi_surface_id";
+							" AND sg.root_id = b.lod0_footprint_id" + 
+							" UNION" +
+							" SELECT sg.id" +
+							" FROM BUILDING b, SURFACE_GEOMETRY sg" +
+							" WHERE b.building_root_id = ?" +
+							" AND sg.root_id = b.lod0_roofprint_id)";					
 				}
-				sqlStatement = sqlStatement + ")";
+				else {
+					sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							" FROM SURFACE_GEOMETRY sg" +
+							" WHERE sg.id IN" +
+							" (SELECT sg.id" +
+							" FROM BUILDING b, SURFACE_GEOMETRY sg" +
+							" WHERE b.building_root_id = ?" +
+							" AND sg.root_id = b.lod" + lod + "_multi_surface_id" + 
+							" UNION" +
+							" SELECT sg.id" +
+							" FROM BUILDING b, SURFACE_GEOMETRY sg" +
+							" WHERE b.building_root_id = ?" +
+							" AND sg.root_id = b.lod" + lod + "_solid_id";
+					if (lod > 1) {
+						sqlStatement = sqlStatement +
+								" UNION" +
+								" SELECT sg.id" +
+								" FROM BUILDING b, THEMATIC_SURFACE ts, SURFACE_GEOMETRY sg" +
+								" WHERE b.building_root_id = ?" +
+								" AND ts.building_id = b.id" + 
+								" AND sg.root_id = ts.lod" + lod + "_multi_surface_id";
+					}
+					sqlStatement = sqlStatement + ")";					
+				}
 			}
 			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-						" FROM TEXTUREPARAM tp" +
-						" WHERE tp.surface_geometry_id IN" +
-						" (SELECT sg.id" + 
-						" FROM BUILDING b, SURFACE_GEOMETRY sg" + 
-						" WHERE b.building_root_id = ?" +
-						" AND sg.root_id = b.lod" + lod + "_geometry_id";
-				if (lod > 1) {
-					sqlStatement = sqlStatement +
-							" UNION " +
-							"SELECT sg.id" + 
-							" FROM BUILDING b, THEMATIC_SURFACE ts, SURFACE_GEOMETRY sg" +
+				if (lod == 0) {
+					sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							" FROM TEXTUREPARAM tp" +
+							" WHERE tp.surface_geometry_id IN" +
+							" (SELECT sg.id" +
+							" FROM BUILDING b, SURFACE_GEOMETRY sg" +
 							" WHERE b.building_root_id = ?" +
-							" AND ts.building_id = b.id" + 
-							" AND sg.root_id = ts.lod" + lod + "_multi_surface_id";
+							" AND sg.root_id = b.lod0_footprint_id" + 
+							" UNION" +
+							" SELECT sg.id" +
+							" FROM BUILDING b, SURFACE_GEOMETRY sg" +
+							" WHERE b.building_root_id = ?" +
+							" AND sg.root_id = b.lod0_roofprint_id)";				
 				}
-				sqlStatement = sqlStatement + ")";
+				else {
+					sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+							" FROM TEXTUREPARAM tp" +
+							" WHERE tp.surface_geometry_id IN" +
+							" (SELECT sg.id" + 
+							" FROM BUILDING b, SURFACE_GEOMETRY sg" + 
+							" WHERE b.building_root_id = ?" +
+							" AND sg.root_id = b.lod" + lod + "_multi_surface_id" + 
+							" UNION" +
+							" SELECT sg.id" +
+							" FROM BUILDING b, SURFACE_GEOMETRY sg" +
+							" WHERE b.building_root_id = ?" +
+							" AND sg.root_id = b.lod" + lod + "_solid_id";
+					if (lod > 1) {
+						sqlStatement = sqlStatement +
+								" UNION" +
+								" SELECT sg.id" + 
+								" FROM BUILDING b, THEMATIC_SURFACE ts, SURFACE_GEOMETRY sg" +
+								" WHERE b.building_root_id = ?" +
+								" AND ts.building_id = b.id" + 
+								" AND sg.root_id = ts.lod" + lod + "_multi_surface_id";
+					}
+					sqlStatement = sqlStatement + ")";				
+				}
+
 			}
 			else if (THEMATIC_SURFACE_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
@@ -2049,25 +2113,30 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND a2sd.appearance_id = a.id" +
 						" AND sd.id = a2sd.surface_data_id";
 			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
+			}
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM SURFACE_GEOMETRY sg, LAND_USE lu" + 
 						" WHERE lu.id = ?" +
-						" AND sg.root_id = lu.lod" + lod + "_multi_surface_id" + 
-						" AND sg.geometry IS NOT NULL";
+						" AND sg.root_id = lu.lod" + lod + "_multi_surface_id";
 			}
 			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM TEXTUREPARAM tp, SURFACE_GEOMETRY sg, LAND_USE lu" +
 						" WHERE lu.id = ?" +
 						" AND sg.root_id = lu.lod" + lod + "_multi_surface_id" + 
-						" AND sg.geometry IS NOT NULL" + 
 						" AND tp.surface_geometry_id = sg.id";
 			}
 			else {
 				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
 			}
-
 			return sqlStatement; 
 		}
 
@@ -2090,19 +2159,26 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND a2sd.appearance_id = a.id" +
 						" AND sd.id = a2sd.surface_data_id";
 			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
+			}
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM SURFACE_GEOMETRY sg" +
 						" WHERE sg.root_id IN" +
-						" (SELECT ig.relative_geometry_id" + 
+						" (SELECT ig.relative_brep_id" + 
 						" FROM SOLITARY_VEGETAT_OBJECT svo, IMPLICIT_GEOMETRY ig" + 
 						" WHERE svo.id = ?" +
 						" AND ig.id = svo.lod" + lod + "_implicit_rep_id" +
-						" UNION " +
-						"SELECT svo.lod" + lod + "_geometry_id" +
+						" UNION" +
+						" SELECT svo.lod" + lod + "_brep_id" +
 						" FROM SOLITARY_VEGETAT_OBJECT svo" + 
-						" WHERE svo.id = ?)" +
-						" AND sg.geometry IS NOT NULL";
+						" WHERE svo.id = ?)";
 			}
 			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
@@ -2111,15 +2187,14 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" (SELECT sg.id" + 
 						" FROM SURFACE_GEOMETRY sg" +
 						" WHERE sg.root_id IN" +
-						" (SELECT ig.relative_geometry_id" + 
+						" (SELECT ig.relative_brep_id" + 
 						" FROM SOLITARY_VEGETAT_OBJECT svo, IMPLICIT_GEOMETRY ig" + 
 						" WHERE svo.id = ?" +
 						" AND ig.id = svo.lod" + lod + "_implicit_rep_id" +
-						" UNION " +
-						"SELECT svo.lod" + lod + "_geometry_id" +
+						" UNION" +
+						" SELECT svo.lod" + lod + "_brep_id" +
 						" FROM SOLITARY_VEGETAT_OBJECT svo" + 
-						" WHERE svo.id = ?)" +
-						" AND sg.geometry IS NOT NULL)";
+						" WHERE svo.id = ?))";
 			}
 			else if (PLANT_COVER_TABLE.equalsIgnoreCase(table)) { } // tolerate but do nothing
 			else {
@@ -2148,20 +2223,41 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND a2sd.appearance_id = a.id" +
 						" AND sd.id = a2sd.surface_data_id";
 			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
+			}
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-						" FROM SURFACE_GEOMETRY sg, PLANT_COVER pc" + 
+						" FROM SURFACE_GEOMETRY sg" +
+						" WHERE sg.id IN" +
+						" (SELECT sg.id" +
+						" FROM PLANT_COVER pc, SURFACE_GEOMETRY sg" +
 						" WHERE pc.id = ?" +
-						" AND sg.root_id = pc.lod" + lod + "_geometry_id" + 
-						" AND sg.geometry IS NOT NULL";
+						" AND sg.root_id = pc.lod" + lod + "_multi_surface_id" + 
+						" UNION" +
+						" SELECT sg.id" +
+						" FROM PLANT_COVER pc, SURFACE_GEOMETRY sg" +
+						" WHERE pc.id = ?" +
+						" AND sg.root_id = pc.lod" + lod + "_solid_id";
 			}
 			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-						" FROM TEXTUREPARAM tp, SURFACE_GEOMETRY sg, PLANT_COVER pc" +
+						" FROM TEXTUREPARAM tp" +
+						" WHERE tp.surface_geometry_id IN" +
+						" (SELECT sg.id" + 
+						" FROM PLANT_COVER pc, SURFACE_GEOMETRY sg" + 
 						" WHERE pc.id = ?" +
-						" AND sg.root_id = pc.lod" + lod + "_geometry_id" + 
-						" AND sg.geometry IS NOT NULL" + 
-						" AND tp.surface_geometry_id = sg.id";
+						" AND sg.root_id = pc.lod" + lod + "_multi_surface_id" + 
+						" UNION" +
+						" SELECT sg.id" +
+						" FROM PLANT_COVER pc, SURFACE_GEOMETRY sg" +
+						" WHERE pc.id = ?" +
+						" AND sg.root_id = pc.lod" + lod + "_solid_id";
 			}
 			else if (SOLITARY_VEGETAT_OBJECT_TABLE.equalsIgnoreCase(table)) { } // tolerate but do nothing
 			else {
@@ -2185,6 +2281,14 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND a2sd.appearance_id = a.id" +
 						" AND sd.id = a2sd.surface_data_id";
 			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
+			}
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM SURFACE_GEOMETRY sg" +
@@ -2195,16 +2299,16 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND sg.root_id = wb.lod" + lod + "_solid_id";
 				if (lod < 2) {
 					sqlStatement = sqlStatement +
-							" UNION " +
-							"SELECT sg.id" +
+							" UNION" +
+							" SELECT sg.id" +
 							" FROM WATERBODY wb, SURFACE_GEOMETRY sg" +
 							" WHERE wb.id = ?" +
 							" AND sg.root_id = wb.lod" + lod + "_multi_surface_id";
 				}
 				else {
 					sqlStatement = sqlStatement +
-							" UNION " +
-							"SELECT sg.id" +
+							" UNION" +
+							" SELECT sg.id" +
 							" FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs, SURFACE_GEOMETRY sg" +
 							" WHERE wb2wbs.waterbody_id = ?" +
 							" AND wbs.id = wb2wbs.waterboundary_surface_id" +
@@ -2222,16 +2326,16 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND sg.root_id = wb.lod" + lod + "_solid_id";
 				if (lod < 2) {
 					sqlStatement = sqlStatement +
-							" UNION " +
-							"SELECT sg.id" +
+							" UNION" +
+							" SELECT sg.id" +
 							" FROM WATERBODY wb, SURFACE_GEOMETRY sg" +
 							" WHERE wb.id = ?" +
 							" AND sg.root_id = wb.lod" + lod + "_multi_surface_id";
 				}
 				else {
 					sqlStatement = sqlStatement +
-							" UNION " +
-							"SELECT sg.id" +
+							" UNION" +
+							" SELECT sg.id" +
 							" FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs, SURFACE_GEOMETRY sg" +
 							" WHERE wb2wbs.waterbody_id = ?" +
 							" AND wbs.id = wb2wbs.waterboundary_surface_id" +
@@ -2271,6 +2375,14 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND a2sd.appearance_id = a.id" +
 						" AND sd.id = a2sd.surface_data_id";
 			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
+			}
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM SURFACE_GEOMETRY sg" +
@@ -2281,8 +2393,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							" FROM WATERBOUNDARY_SURFACE wbs, SURFACE_GEOMETRY sg" +
 							" WHERE wbs.id = ?" +
 							" AND sg.root_id = wbs.lod" + lod + "_surface_id" +
-							" UNION " +
-							"SELECT sg.id" +
+							" UNION" +
+							" SELECT sg.id" +
 							" FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb, SURFACE_GEOMETRY sg" +
 							" WHERE wb2wbs.waterboundary_surface_id = ?" +
 							" AND wb2wbs.waterbody_id = wb.id" +
@@ -2307,8 +2419,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							" FROM WATERBOUNDARY_SURFACE wbs, SURFACE_GEOMETRY sg" +
 							" WHERE wbs.id = ?" +
 							" AND sg.root_id = wbs.lod" + lod + "_surface_id" +
-							" UNION " +
-							"SELECT sg.id" +
+							" UNION" +
+							" SELECT sg.id" +
 							" FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb, SURFACE_GEOMETRY sg" +
 							" WHERE wb2wbs.waterboundary_surface_id = ?" +
 							" AND wb2wbs.waterbody_id = wb.id" +
@@ -2355,6 +2467,14 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND a2sd.appearance_id = a.id" +
 						" AND sd.id = a2sd.surface_data_id";
 			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
+			}
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM SURFACE_GEOMETRY sg" +
@@ -2366,8 +2486,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND sg.root_id = tc.lod" + lod + "_multi_surface_id";
 				if (lod > 1) {
 					sqlStatement = sqlStatement +
-							" UNION " +
-							"SELECT sg.id" +
+							" UNION" +
+							" SELECT sg.id" +
 							" FROM TRAFFIC_AREA ta, SURFACE_GEOMETRY sg" +
 							" WHERE ta.id = ?" +
 							" AND sg.root_id = ta.lod" + lod + "_multi_surface_id";
@@ -2385,8 +2505,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND sg.root_id = tc.lod" + lod + "_multi_surface_id";
 				if (lod > 1) {
 					sqlStatement = sqlStatement +
-							" UNION " +
-							"SELECT sg.id" +
+							" UNION" +
+							" SELECT sg.id" +
 							" FROM TRAFFIC_AREA ta, SURFACE_GEOMETRY sg" +
 							" WHERE ta.id = ?" +
 							" AND sg.root_id = ta.lod" + lod + "_multi_surface_id";
@@ -2424,6 +2544,14 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" WHERE a.cityobject_id = ?" +
 						" AND a2sd.appearance_id = a.id" +
 						" AND sd.id = a2sd.surface_data_id";
+			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
 			}
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
@@ -2463,18 +2591,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				int lod) throws Exception {
 			String sqlStatement = null; 
 
-			if (RASTER_RELIEF_GEORASTER_TABLE.equalsIgnoreCase(table)) {
+
+			if (RELIEF_COMPONENT_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-						" FROM RASTER_RELIEF_IMP rri" +
-						" WHERE rri.id = ?";
-			}
-			else if (RELIEF_COMPONENT_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = /* "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM CITYOBJECT co, RELIEF_COMPONENT rc" +
-							   " WHERE co.gmlid = ?" +
-							   " AND rc.id = co.id" +
-							   " UNION " + */
-						"SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, RELIEF_COMPONENT rc" +
 						" WHERE rf.id = ?" +
 						" AND rf.lod = " + lod +
@@ -2486,12 +2605,21 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" FROM RELIEF_FEATURE rf" +
 						" WHERE rf.id = ?";
 			}
+
 			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
 						" WHERE a.cityobject_id = ?" +
 						" AND a2sd.appearance_id = a.id" +
 						" AND sd.id = a2sd.surface_data_id";
+			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
 			}
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
@@ -2511,14 +2639,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" WHERE tr.id = ?" +
 						" AND sg.root_id = tr.surface_geometry_id)";
 			}
-			/*
-			else if (TIN_RELIEF_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM CITYOBJECT co, TIN_RELIEF tr" +
-							   " WHERE co.gmlid = ?" +
-							   " AND tr.id = co.id";
-			}
-			 */
 			else {
 				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
 			}
@@ -2545,19 +2665,26 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND a2sd.appearance_id = a.id" +
 						" AND sd.id = a2sd.surface_data_id";
 			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
+			}
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM SURFACE_GEOMETRY sg" +
 						" WHERE sg.root_id IN" +
-						" (SELECT ig.relative_geometry_id" + 
+						" (SELECT ig.relative_brep_id" + 
 						" FROM GENERIC_CITYOBJECT gco, IMPLICIT_GEOMETRY ig" + 
 						" WHERE gco.id = ?" +
 						" AND ig.id = gco.lod" + lod + "_implicit_rep_id" +
-						" UNION " +
-						"SELECT gco.lod" + lod + "_geometry_id" +
+						" UNION" +
+						" SELECT gco.lod" + lod + "_brep_id" +
 						" FROM GENERIC_CITYOBJECT gco" + 
-						" WHERE gco.id = ?)" +
-						" AND sg.geometry IS NOT NULL";
+						" WHERE gco.id = ?)";
 			}
 			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
@@ -2566,15 +2693,14 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" (SELECT sg.id" + 
 						" FROM SURFACE_GEOMETRY sg" +
 						" WHERE sg.root_id IN" +
-						" (SELECT ig.relative_geometry_id" + 
+						" (SELECT ig.relative_brep_id" + 
 						" FROM GENERIC_CITYOBJECT gco, IMPLICIT_GEOMETRY ig" + 
 						" WHERE gco.id = ?" +
 						" AND ig.id = gco.lod" + lod + "_implicit_rep_id" +
-						" UNION " +
-						"SELECT gco.lod" + lod + "_geometry_id" +
+						" UNION" +
+						" SELECT gco.lod" + lod + "_brep_id" +
 						" FROM GENERIC_CITYOBJECT gco" + 
-						" WHERE gco.id = ?)" +
-						" AND sg.geometry IS NOT NULL)";
+						" WHERE gco.id = ?))";
 			}
 			else {
 				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
@@ -2602,19 +2728,26 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" AND a2sd.appearance_id = a.id" +
 						" AND sd.id = a2sd.surface_data_id";
 			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
+			}
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM SURFACE_GEOMETRY sg" +
 						" WHERE sg.root_id IN" +
-						" (SELECT ig.relative_geometry_id" + 
+						" (SELECT ig.relative_brep_id" + 
 						" FROM CITY_FURNITURE cf, IMPLICIT_GEOMETRY ig" + 
 						" WHERE cf.id = ?" +
 						" AND ig.id = cf.lod" + lod + "_implicit_rep_id" +
-						" UNION " +
-						"SELECT cf.lod" + lod + "_geometry_id" +
+						" UNION" +
+						" SELECT cf.lod" + lod + "_brep_id" +
 						" FROM CITY_FURNITURE cf" + 
-						" WHERE cf.id = ?)" +
-						" AND sg.geometry IS NOT NULL";
+						" WHERE cf.id = ?)";
 			}
 			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
@@ -2623,15 +2756,154 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						" (SELECT sg.id" + 
 						" FROM SURFACE_GEOMETRY sg" +
 						" WHERE sg.root_id IN" +
-						" (SELECT ig.relative_geometry_id" + 
+						" (SELECT ig.relative_brep_id" + 
 						" FROM CITY_FURNITURE cf, IMPLICIT_GEOMETRY ig" + 
 						" WHERE cf.id = ?" +
 						" AND ig.id = cf.lod" + lod + "_implicit_rep_id" +
-						" UNION " +
-						"SELECT cf.lod" + lod + "_geometry_id" +
+						" UNION" +
+						" SELECT cf.lod" + lod + "_brep_id" +
 						" FROM CITY_FURNITURE cf" + 
-						" WHERE cf.id = ?)" +
-						" AND sg.geometry IS NOT NULL)";
+						" WHERE cf.id = ?))";
+			}
+			else {
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
+			}
+
+			return sqlStatement; 
+		}
+		
+		// Bridge
+		private String sqlStatementForBridge(String table,
+				List<String> columns,
+				String aggregateString,
+				String aggregateClosingString,
+				int lod) throws Exception {
+			String sqlStatement = null; 
+
+			if (ADDRESS_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM ADDRESS_TO_BRIDGE a2b, ADDRESS a" +
+						" WHERE a2b.bridge_id = ?" +
+						" AND a.id = a2b.address_id";
+			}
+			else if (ADDRESS_TO_BRIDGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM ADDRESS_TO_BRIDGE a2b" +
+						" WHERE a2b.bridge_id = ?";
+			}
+			else if (BRIDGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM BRIDGE b" +
+						" WHERE b.id = ?";
+			}
+			else if (BRIDGE_FURNITURE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM BRIDGE b, BRIDGE_FURNITURE bf, BRIDGE_ROOM br" +
+						" WHERE b.bridge_root_id = ?" +
+						" AND b.id = br.bridge_id" + 
+						" AND bf.bridge_room_id = br.id";
+			}
+			else if (BRIDGE_INSTALLATION_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM BRIDGE b, BRIDGE_INSTALLATION bi" +
+						" WHERE b.bridge_root_id = ?" +
+						" AND bi.bridge_id = b.id";
+			}
+			else if (BRIDGE_CONSTR_ELEMENT_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM BRIDGE b, BRIDGE_CONSTR_ELEMENT bce" +
+						" WHERE b.bridge_root_id = ?" +
+						" AND bce.bridge_id = b.id";
+			}
+			else if (BRIDGE_OPENING_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM BRIDGE b, BRIDGE_THEMATIC_SURFACE bts, BRIDGE_OPEN_TO_THEM_SRF bo2ts, BRIDGE_OPENING bo" +
+						" WHERE b.bridge_root_id = ?" +
+						" AND bts.bridge_id = b.id" +
+						" AND bo2ts.bridge_thematic_surface_id = bts.id" +
+						" AND bo.id = bo2ts.bridge_opening_id";
+			}
+			else if (BRIDGE_OPEN_TO_THEM_SRF_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM BRIDGE b, BRIDGE_THEMATIC_SURFACE bts, BRIDGE_OPEN_TO_THEM_SRF bo2ts" +
+						" WHERE b.bridge_root_id = ?" +
+						" AND bts.bridge_id = b.id" +
+						" AND bo2ts.bridge_thematic_surface_id = bts.id";
+			}
+			else if (BRIDGE_ROOM_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM BRIDGE b, BRIDGE_ROOM br" +
+						" WHERE b.bridge_root_id = ?" +
+						" AND br.bridge_id = b.id";
+			}
+			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id";
+			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
+			}
+			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM SURFACE_GEOMETRY sg" +
+						" WHERE sg.id IN" +
+						" (SELECT sg.id" +
+						" FROM BRIDGE b, SURFACE_GEOMETRY sg" +
+						" WHERE b.bridge_root_id = ?" +
+						" AND sg.root_id = b.lod" + lod + "_multi_surface_id" + 
+						" UNION" +
+						" SELECT sg.id" +
+						" FROM BRIDGE b, SURFACE_GEOMETRY sg" +
+						" WHERE b.bridge_root_id = ?" +
+						" AND sg.root_id = b.lod" + lod + "_solid_id";
+				if (lod > 1) {
+					sqlStatement = sqlStatement +
+							" UNION" +
+							" SELECT sg.id" +
+							" FROM BRIDGE b, BRIDGE_THEMATIC_SURFACE bts, SURFACE_GEOMETRY sg" +
+							" WHERE b.bridge_root_id = ?" +
+							" AND bts.bridge_id = b.id" + 
+							" AND sg.root_id = bts.lod" + lod + "_multi_surface_id";
+				}
+				sqlStatement = sqlStatement + ")";
+			}
+			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM TEXTUREPARAM tp" +
+						" WHERE tp.surface_geometry_id IN" +
+						" (SELECT sg.id" + 
+						" FROM BRIDGE b, SURFACE_GEOMETRY sg" + 
+						" WHERE b.bridge_root_id = ?" +
+						" AND sg.root_id = b.lod" + lod + "_multi_surface_id" + 
+						" UNION" +
+						" SELECT sg.id" +
+						" FROM BRIDGE b, SURFACE_GEOMETRY sg" +
+						" WHERE b.bridge_root_id = ?" +
+						" AND sg.root_id = b.lod" + lod + "_solid_id";
+				if (lod > 1) {
+					sqlStatement = sqlStatement +
+							" UNION" +
+							" SELECT sg.id" + 
+							" FROM BRIDGE b, BRIDGE_THEMATIC_SURFACE ts, SURFACE_GEOMETRY sg" +
+							" WHERE b.bridge_root_id = ?" +
+							" AND bts.bridge_id = b.id" + 
+							" AND sg.root_id = bts.lod" + lod + "_multi_surface_id";
+				}
+				sqlStatement = sqlStatement + ")";
+			}
+			else if (BRIDGE_THEMATIC_SURFACE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM BRIDGE b, BRIDGE_THEMATIC_SURFACE bts" +
+						" WHERE b.bridge_root_id = ?" +
+						" AND bts.bridge_id = b.id";
 			}
 			else {
 				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
@@ -2640,6 +2912,129 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			return sqlStatement; 
 		}
 
+		// TUNNEL
+		private String sqlStatementForTunnel(String table,
+				List<String> columns,
+				String aggregateString,
+				String aggregateClosingString,
+				int lod) throws Exception {
+			String sqlStatement = null; 
+
+
+			if (TUNNEL_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM TUNNEL t" +
+						" WHERE t.id = ?";
+			}
+			else if (TUNNEL_FURNITURE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM TUNNEL t, TUNNEL_FURNITURE tf, TUNNEL_HOLLOW_SPACE ths" +
+						" WHERE t.tunnel_root_id = ?" +
+						" AND t.id = ths.tunnel_id" + 
+						" AND tf.TUNNEL_HOLLOW_SPACE_id = ths.id";
+			} 
+			else if (TUNNEL_INSTALLATION_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM TUNNEL t, TUNNEL_INSTALLATION ti" +
+						" WHERE t.tunnel_root_id = ?" +
+						" AND ti.tunnel_id = t.id";
+			}
+			else if (TUNNEL_OPENING_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM TUNNEL t, TUNNEL_THEMATIC_SURFACE tts, TUNNEL_OPEN_TO_THEM_SRF to2ts, TUNNEL_OPENING ot" +
+						" WHERE t.tunnel_root_id = ?" +
+						" AND tts.tunnel_id = t.id" +
+						" AND to2ts.tunnel_thematic_surface_id = tts.id" +
+						" AND ot.id = to2ts.tunnel_opening_id";
+			}
+			else if (TUNNEL_OPEN_TO_THEM_SRF_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM TUNNEL t, TUNNEL_THEMATIC_SURFACE tts, TUNNEL_OPEN_TO_THEM_SRF to2ts" +
+						" WHERE t.tunnel_root_id = ?" +
+						" AND tts.tunnel_id = b.id" +
+						" AND to2ts.tunnel_thematic_surface_id = tts.id";
+			}
+			else if (TUNNEL_HOLLOW_SPACE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM TUNNEL t, TUNNEL_HOLLOW_SPACE ths" +
+						" WHERE t.tunnel_root_id = ?" +
+						" AND ths.tunnel_id = t.id";
+			}
+			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id";
+			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd, TEX_IMAGE ti" +
+						" WHERE a.cityobject_id = ?" +
+						" AND a2sd.appearance_id = a.id" +
+						" AND sd.id = a2sd.surface_data_id" + 
+						" AND ti.id = sd.tex_image_id";
+			}
+			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM SURFACE_GEOMETRY sg" +
+						" WHERE sg.id IN" +
+						" (SELECT sg.id" +
+						" FROM TUNNEL t, SURFACE_GEOMETRY sg" +
+						" WHERE t.tunnel_root_id = ?" +
+						" AND sg.root_id = t.lod" + lod + "_multi_surface_id" + 
+						" UNION" +
+						" SELECT sg.id" +
+						" FROM TUNNEL t, SURFACE_GEOMETRY sg" +
+						" WHERE t.tunnel_root_id = ?" +
+						" AND sg.root_id = t.lod" + lod + "_solid_id";
+				if (lod > 1) {
+					sqlStatement = sqlStatement +
+							" UNION" +
+							" SELECT sg.id" +
+							" FROM TUNNEL t, TUNNEL_THEMATIC_SURFACE tts, SURFACE_GEOMETRY sg" +
+							" WHERE t.tunnel_root_id = ?" +
+							" AND tts.tunnel_id = b.id" + 
+							" AND sg.root_id = tts.lod" + lod + "_multi_surface_id";
+				}
+				sqlStatement = sqlStatement + ")";
+			}
+			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM TEXTUREPARAM tp" +
+						" WHERE tp.surface_geometry_id IN" +
+						" (SELECT sg.id" + 
+						" FROM TUNNEL t, SURFACE_GEOMETRY sg" + 
+						" WHERE t.tunnel_root_id = ?" +
+						" AND sg.root_id = t.lod" + lod + "_multi_surface_id" + 
+						" UNION" +
+						" SELECT sg.id" +
+						" FROM TUNNEL t, SURFACE_GEOMETRY sg" +
+						" WHERE t.tunnel_root_id = ?" +
+						" AND sg.root_id = t.lod" + lod + "_solid_id";
+				if (lod > 1) {
+					sqlStatement = sqlStatement +
+							" UNION" +
+							" SELECT sg.id" + 
+							" FROM TUNNEL t, TUNNEL_THEMATIC_SURFACE tts, SURFACE_GEOMETRY sg" +
+							" WHERE t.tunnel_root_id = ?" +
+							" AND tts.tunnel_id = b.id" + 
+							" AND sg.root_id = tts.lod" + lod + "_multi_surface_id";
+				}
+				sqlStatement = sqlStatement + ")";
+			}
+			else if (TUNNEL_THEMATIC_SURFACE_TABLE.equalsIgnoreCase(table)) {
+				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
+						" FROM TUNNEL t, TUNNEL_THEMATIC_SURFACE tts" +
+						" WHERE t.tunnel_root_id = ?" +
+						" AND tts.tunnel_id = t.id";
+			}
+			else {
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
+			}
+
+			return sqlStatement; 
+		}
 		private String sqlStatementForAnyObject(String table,
 				List<String> columns,
 				String aggregateString,
@@ -2712,7 +3107,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 						" FROM CITYOBJECT co, OBJECTCLASS oc" +
 						" WHERE co.id = ?" +
-						" AND oc.id = co.class_id";
+						" AND oc.id = co.objectclass_id";
 			}
 			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
@@ -2733,6 +3128,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				tableShortId = "a";
 				orderByColumnAllowed = (!columns.get(0).equals("MULTI_POINT") && !columns.get(0).equals("XAL_SOURCE"));
 			}
+			else if (ADDRESS_TO_BRIDGE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "a2b";
+			}
 			else if (ADDRESS_TO_BUILDING_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "a2b";
 			}
@@ -2742,6 +3140,61 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			else if (APPEARANCE_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "a";
 			}
+			/* Bridge */
+			else if (BRIDGE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "b";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD1_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD2_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD3_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD4_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD2_MULTI_CURVE") &&
+						!columns.get(0).equals("LOD3_MULTI_CURVE") &&
+						!columns.get(0).equals("LOD4_MULTI_CURVE"));
+			}	
+			else if (BRIDGE_CONSTR_ELEMENT_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "bce";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD1_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD2_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD3_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD4_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD1_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD2_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD3_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD4_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD1_IMPLICIT_REF_POINT") &&
+						!columns.get(0).equals("LOD2_IMPLICIT_REF_POINT") &&
+						!columns.get(0).equals("LOD3_IMPLICIT_REF_POINT") &&
+						!columns.get(0).equals("LOD4_IMPLICIT_REF_POINT"));
+			}
+			else if (BRIDGE_FURNITURE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "bf";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD4_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD4_IMPLICIT_REF_POINT"));
+			}
+			else if (BRIDGE_INSTALLATION_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "bi";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD2_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD3_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD4_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD2_IMPLICIT_REF_POINT") &&
+						!columns.get(0).equals("LOD3_IMPLICIT_REF_POINT") &&
+						!columns.get(0).equals("LOD4_IMPLICIT_REF_POINT"));
+			}
+			else if (BRIDGE_OPEN_TO_THEM_SRF_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "bo2ts";
+			}
+			else if (BRIDGE_OPENING_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "bo";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD3_IMPLICIT_REF_POINT") &&
+						!columns.get(0).equals("LOD4_IMPLICIT_REF_POINT"));	
+			}
+			else if (BRIDGE_ROOM_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "br";
+			}
+			else if (BRIDGE_THEMATIC_SURFACE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "bts";
+			}
+			/* Building */
 			else if (BUILDING_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "b";
 				orderByColumnAllowed = (!columns.get(0).equals("LOD1_TERRAIN_INTERSECTION") &&
@@ -2752,15 +3205,31 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						!columns.get(0).equals("LOD3_MULTI_CURVE") &&
 						!columns.get(0).equals("LOD4_MULTI_CURVE"));
 			}
+			else if (BUILDING_FURNITURE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "bf";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD4_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD4_IMPLICIT_REF_POINT"));
+			}
 			else if (BUILDING_INSTALLATION_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "bi";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD2_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD3_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD4_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD2_IMPLICIT_REF_POINT") &&
+						!columns.get(0).equals("LOD3_IMPLICIT_REF_POINT") &&
+						!columns.get(0).equals("LOD4_IMPLICIT_REF_POINT"));
 			}
+			/**/
 			else if (CITY_FURNITURE_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "cf";
 				orderByColumnAllowed = (!columns.get(0).equals("LOD1_TERRAIN_INTERSECTION") &&
 						!columns.get(0).equals("LOD2_TERRAIN_INTERSECTION") &&
 						!columns.get(0).equals("LOD3_TERRAIN_INTERSECTION") &&
 						!columns.get(0).equals("LOD4_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD1_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD2_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD3_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD4_OTHER_GEOM") &&
 						!columns.get(0).equals("LOD1_IMPLICIT_REF_POINT") &&
 						!columns.get(0).equals("LOD2_IMPLICIT_REF_POINT") &&
 						!columns.get(0).equals("LOD3_IMPLICIT_REF_POINT") &&
@@ -2780,7 +3249,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 			else if (CITYOBJECTGROUP_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "cog";
-				orderByColumnAllowed = (!columns.get(0).equals("GEOMETRY"));
+				orderByColumnAllowed = (!columns.get(0).equals("OTHER_GEOM"));
 			}
 			else if (CITYOBJECT_MEMBER_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "com";
@@ -2799,10 +3268,17 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 			else if (GENERIC_CITYOBJECT_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "gco";
-				orderByColumnAllowed = (!columns.get(0).equals("LOD1_TERRAIN_INTERSECTION") &&
+				orderByColumnAllowed = (!columns.get(0).equals("LOD0_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD1_TERRAIN_INTERSECTION") &&
 						!columns.get(0).equals("LOD2_TERRAIN_INTERSECTION") &&
 						!columns.get(0).equals("LOD3_TERRAIN_INTERSECTION") &&
 						!columns.get(0).equals("LOD4_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD0_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD1_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD2_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD3_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD4_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD0_IMPLICIT_REF_POINT") &&
 						!columns.get(0).equals("LOD1_IMPLICIT_REF_POINT") &&
 						!columns.get(0).equals("LOD2_IMPLICIT_REF_POINT") &&
 						!columns.get(0).equals("LOD3_IMPLICIT_REF_POINT") &&
@@ -2810,6 +3286,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 			else if (GROUP_TO_CITYOBJECT_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "g2co";
+			}
+			else if (IMPLICIT_GEOMETRY_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "ig";
+				orderByColumnAllowed = (!columns.get(0).equals("LIBRARY_OBJECT") && !columns.get(0).equals("RELATIVE_OTHER_GEOM"));
 			}
 			else if (LAND_USE_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "lu";
@@ -2819,6 +3299,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 			else if (OPENING_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "o";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD3_IMPLICIT_REF_POINT") &&
+						!columns.get(0).equals("LOD4_IMPLICIT_REF_POINT"));	
 			}
 			else if (OPENING_TO_THEM_SURFACE_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "o2ts";
@@ -2826,10 +3308,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			else if (PLANT_COVER_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "pc";
 			}
-			else if (RASTER_RELIEF_GEORASTER_TABLE.equalsIgnoreCase(tablename)) {
-				tableShortId = "rri";
-				orderByColumnAllowed = (!columns.get(0).equals("RASTERPROPERTY") && !columns.get(0).equals("FOOTPRINT"));
-			}
+/*			else if (RASTER_RELIEF_GEORASTER_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "rrg";
+				orderByColumnAllowed = (!columns.get(0).equals("RASTERPROPERTY"));
+			}*/
 			else if (RELIEF_COMPONENT_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "rc";
 				orderByColumnAllowed = (!columns.get(0).equals("EXTENT"));
@@ -2842,21 +3324,32 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 			else if (SOLITARY_VEGETAT_OBJECT_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "svo";
-				orderByColumnAllowed = (!columns.get(0).equals("LOD1_IMPLICIT_REF_POINT") &&
+				orderByColumnAllowed = (!columns.get(0).equals("LOD1_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD2_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD3_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD4_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD1_IMPLICIT_REF_POINT") &&
 						!columns.get(0).equals("LOD2_IMPLICIT_REF_POINT") &&
 						!columns.get(0).equals("LOD3_IMPLICIT_REF_POINT") &&
 						!columns.get(0).equals("LOD4_IMPLICIT_REF_POINT"));
 			}
 			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "sd";
-				orderByColumnAllowed = (!columns.get(0).equals("TEX_IMAGE") && !columns.get(0).equals("GT_REFERENCE_POINT"));
+				orderByColumnAllowed = (!columns.get(0).equals("GT_REFERENCE_POINT"));
 			}
 			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "sg";
-				orderByColumnAllowed = (!columns.get(0).equals("GEOMETRY"));
+				orderByColumnAllowed = (!columns.get(0).equals("GEOMETRY") &&
+						!columns.get(0).equals("SOLID_GEOMETRY") &&
+						!columns.get(0).equals("IMPLICIT_GEOMETRY"));
+			}
+			else if (TEX_IMAGE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "ti";
+				orderByColumnAllowed = (!columns.get(0).equals("TEX_IMAGE"));
 			}
 			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "tp";
+				orderByColumnAllowed = (!columns.get(0).equals("TEXTURE_COORDINATES"));
 			}
 			else if (THEMATIC_SURFACE_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "ts";
@@ -2876,6 +3369,47 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				orderByColumnAllowed = !columns.get(0).equals("LOD0_NETWORK");
 				tableShortId = "tc";
 			}
+			
+			/* TUNNEL */
+			else if (TUNNEL_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "t";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD1_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD2_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD3_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD4_TERRAIN_INTERSECTION") &&
+						!columns.get(0).equals("LOD2_MULTI_CURVE") &&
+						!columns.get(0).equals("LOD3_MULTI_CURVE") &&
+						!columns.get(0).equals("LOD4_MULTI_CURVE"));
+			}	
+			else if (TUNNEL_FURNITURE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "tf";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD4_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD4_IMPLICIT_REF_POINT"));
+			}
+			else if (TUNNEL_HOLLOW_SPACE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "ths";
+			}
+			else if (TUNNEL_INSTALLATION_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "ti";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD2_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD3_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD4_OTHER_GEOM") &&
+						!columns.get(0).equals("LOD2_IMPLICIT_REF_POINT") &&
+						!columns.get(0).equals("LOD3_IMPLICIT_REF_POINT") &&
+						!columns.get(0).equals("LOD4_IMPLICIT_REF_POINT"));
+			}
+			else if (TUNNEL_OPEN_TO_THEM_SRF_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "to2ts";
+			}
+			else if (TUNNEL_OPENING_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "ot";
+				orderByColumnAllowed = (!columns.get(0).equals("LOD3_IMPLICIT_REF_POINT") &&
+						!columns.get(0).equals("LOD4_IMPLICIT_REF_POINT"));	
+			}
+			else if (TUNNEL_THEMATIC_SURFACE_TABLE.equalsIgnoreCase(tablename)) {
+				tableShortId = "tts";
+			}
+			/* */
 			else if (WATERBODY_TO_WATERBOUNDARY_SURFACE_TABLE.equalsIgnoreCase(tablename)) {
 				tableShortId = "wb2wbs";
 			}
@@ -2904,7 +3438,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				}
 			}
 			else {
-				//				columnsClause = "(";
 				ListIterator<String> statementColumnIterator = statementColumns.listIterator();
 				while (statementColumnIterator.hasNext()) {
 					setTableShortIdAndOrderByColumnAllowed(tablename, statementColumns);
@@ -2913,7 +3446,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						columnsClause = columnsClause + ", ";
 					}
 				}
-				//				columnsClause = columnsClause + ")";
 			}
 			return columnsClause;
 		}
