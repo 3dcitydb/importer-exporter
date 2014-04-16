@@ -2179,8 +2179,13 @@ public abstract class KmlGenericObject {
 					coords[index++] = point3d.y / 100;
 					coords[index++] = point3d.z / 100;
 				}
-				GeometryObject geomObj = convertToWGS84(GeometryObject.createCurve(coords, 3, dbSrs.getSrid()));
-				coords = geomObj.getCoordinates(0);
+
+				if (candidates.size() == 1) {
+					coords = convertPointCoordinatesToWGS84(coords);
+				} else { 
+					GeometryObject geomObj = convertToWGS84(GeometryObject.createCurve(coords, 3, dbSrs.getSrid()));
+					coords = geomObj.getCoordinates(0);
+				}
 
 				Logger.getInstance().info("Getting zOffset from Google's elevation API for " + getGmlId() + " with " + candidates.size() + " points.");
 				zOffset = elevationServiceHandler.getZOffset(coords);
