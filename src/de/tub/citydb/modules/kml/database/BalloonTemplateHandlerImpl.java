@@ -1248,7 +1248,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				rs = query.executeQuery();
 
 				if (rs.next()) {
-					cityObjectTypeForGmlId = Util.classId2cityObject(rs.getInt("class_id"));
+					cityObjectTypeForGmlId = Util.classId2cityObject(rs.getInt("objectclass_id"));
 					id = rs.getLong("id");
 				}
 			}
