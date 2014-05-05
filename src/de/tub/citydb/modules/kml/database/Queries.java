@@ -34,6 +34,7 @@ import java.util.HashMap;
 import de.tub.citydb.api.database.DatabaseType;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.config.project.kmlExporter.Lod0FootprintMode;
 import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.importer.database.content.DBSequencerEnum;
@@ -1025,12 +1026,25 @@ public class Queries {
 					"b.id = ? " +
 					"AND sg.root_id = b.lod0_footprint_id " +
 					"AND sg.geometry IS NOT NULL ";
+	
+	private static final String BUILDING_PART_ROOFPRINT_LOD0 = 
+			"SELECT sg.geometry " +
+					"FROM SURFACE_GEOMETRY sg, BUILDING b " +
+					"WHERE " +
+					"b.id = ? " +
+					"AND sg.root_id = b.lod0_roofprint_id " +
+					"AND sg.geometry IS NOT NULL ";
 
-	public static String getBuildingPartQuery (int lodToExportFrom, DisplayForm displayForm, DatabaseType type) {
+	public static String getBuildingPartQuery (int lodToExportFrom, DisplayForm displayForm, Lod0FootprintMode lod0FootprintMode, DatabaseType type) {
 		String query = null;
 		switch (lodToExportFrom) {
 		case 0: 
-			query = BUILDING_PART_FOOTPRINT_LOD0;
+			if (lod0FootprintMode == Lod0FootprintMode.FOOTPRINT) {
+				query = BUILDING_PART_FOOTPRINT_LOD0;
+			}
+			else if (lod0FootprintMode == Lod0FootprintMode.ROOFPRINT || lod0FootprintMode == Lod0FootprintMode.ROOFPRINT_PRIOR_FOOTPRINT) {
+				query = BUILDING_PART_ROOFPRINT_LOD0;
+			}			
 			break;
 		case 1:
 			if (displayForm.getForm() == DisplayForm.FOOTPRINT || displayForm.getForm() == DisplayForm.EXTRUDED){

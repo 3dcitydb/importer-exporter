@@ -51,6 +51,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.config.project.kmlExporter.Lod0FootprintMode;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.BlobExportAdapter;
@@ -184,11 +185,12 @@ public class Building extends KmlGenericObject{
 		try {
 			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
 			currentLod = lodToExportFrom == 5 ? 4: lodToExportFrom;
-			int minLod = lodToExportFrom == 5 ? 1: lodToExportFrom;
+			int minLod = lodToExportFrom == 5 ? 0: lodToExportFrom;
 			while (currentLod >= minLod) {
 				if(!work.getDisplayForm().isAchievableFromLoD(currentLod)) break;
-				try {
-					psQuery = connection.prepareStatement(Queries.getBuildingPartQuery(currentLod, work.getDisplayForm(), databaseAdapter.getDatabaseType()),
+				Lod0FootprintMode lod0FootprintMode = config.getProject().getKmlExporter().getLod0FootprintMode();
+				try {					
+					psQuery = connection.prepareStatement(Queries.getBuildingPartQuery(currentLod, work.getDisplayForm(), lod0FootprintMode, databaseAdapter.getDatabaseType()),
 							ResultSet.TYPE_SCROLL_INSENSITIVE,
 							ResultSet.CONCUR_READ_ONLY);
 					for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
@@ -204,15 +206,16 @@ public class Building extends KmlGenericObject{
 						try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
 					}
 				}
-				catch (Exception e2) {
-					
+				catch (Exception e2) {					
 					try { if (rs != null) rs.close(); } catch (SQLException sqle) {}
 					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 				}
-
-				// when for EXTRUDED or FOOTPRINT there is no ground surface modelled, try to find it out indirectly
-				if (rs == null && (work.getDisplayForm().getForm() <= DisplayForm.EXTRUDED)) {
+				
+				// when for EXTRUDED or FOOTPRINT there is no ground surface modeled, try to find it out indirectly
+				// or when for FOOTPRINT there is not lod0roofprint modeled, try to find it using lod0footprint
+				if ((rs == null && currentLod > 1 && (work.getDisplayForm().getForm() <= DisplayForm.EXTRUDED)) || 
+						(rs == null && currentLod == 0 && lod0FootprintMode == Lod0FootprintMode.ROOFPRINT_PRIOR_FOOTPRINT)) {
 					reversePointOrder = true;
 					int groupBasis = 4;
 					try {

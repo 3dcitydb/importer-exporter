@@ -79,7 +79,7 @@ import de.tub.citydb.config.project.resources.Resources;
 		"tunnelColladaOptions",
 		"tunnelBalloon",	
 		
-		
+		"lod0FootprintMode",
 		"exportAsKmz",
 		"showBoundingBox",
 		"showTileBorders",
@@ -160,6 +160,7 @@ public class KmlExporter {
 	private ColladaOptions tunnelColladaOptions;
 	private Balloon tunnelBalloon;
 
+	private Lod0FootprintMode lod0FootprintMode;
 	private boolean exportAsKmz;
 	private boolean showBoundingBox;
 	private boolean showTileBorders;
@@ -220,6 +221,7 @@ public class KmlExporter {
 		setTunnelColladaOptions(new ColladaOptions());
 		setTunnelBalloon(new Balloon());
 
+		setLod0FootprintMode(Lod0FootprintMode.FOOTPRINT);
 		exportAsKmz = true;
 		showBoundingBox = true;
 		showTileBorders = true;
@@ -355,6 +357,15 @@ public class KmlExporter {
 		return activeAmount;
 	}
 
+
+	public Lod0FootprintMode getLod0FootprintMode() {
+		return lod0FootprintMode;
+	}
+
+	public void setLod0FootprintMode(Lod0FootprintMode lod0FootprintMode) {
+		this.lod0FootprintMode = lod0FootprintMode;
+	}
+	
 	public void setExportAsKmz(boolean exportAsKmz) {
 		this.exportAsKmz = exportAsKmz;
 	}
@@ -686,4 +697,5 @@ public class KmlExporter {
 	public Balloon getTunnelBalloon() {
 		return tunnelBalloon;
 	}
+
 }

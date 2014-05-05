@@ -60,6 +60,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
+import de.tub.citydb.config.project.kmlExporter.Lod0FootprintMode;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -84,6 +85,8 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 	private JButton footprintHLLineColorButton = new JButton(" ");
 	private JLabel footprintAlphaLabel = new JLabel();
 	private JSpinner footprintAlphaSpinner;
+	private JLabel lod0FootprintLabel = new JLabel();
+	private JComboBox lod0FootprintComboBox = new JComboBox();
 
 	private JPanel geometryPanel;
 	private JLabel geometryAlphaLabel = new JLabel();
@@ -262,6 +265,14 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		footprintHLLineColorButton.setOpaque(true);
 		footprintPanel.add(footprintHLLineColorButton, GuiUtil.setConstraints(3,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
+		// added for 3DCityDB V3.0
+		lod0FootprintComboBox.addItem("footprint");
+		lod0FootprintComboBox.addItem("roofprint");
+		lod0FootprintComboBox.addItem("roofprint - if none then footprint");
+	
+		footprintPanel.add(lod0FootprintLabel, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,2*BORDER_THICKNESS,2*BORDER_THICKNESS,0));
+		footprintPanel.add(lod0FootprintComboBox, GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,0,0,2*BORDER_THICKNESS,0));
+		
 		geometryPanel = new JPanel();
 		geometryPanel.setLayout(new GridBagLayout());
 		geometryPanel.setBorder(BorderFactory.createTitledBorder(""));
@@ -600,6 +611,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		footprintHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
 		footprintHLFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
 		footprintHLLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
+		lod0FootprintLabel.setText(Internal.I18N.getString("pref.kmlexport.label.footprintGeometry"));
 
 		geometryAlphaLabel.setText(Internal.I18N.getString("pref.kmlexport.label.alpha"));
 		geometryWallFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.wallFillColor"));
@@ -638,6 +650,8 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 			internalDfs.add(internalDf);
 		}
 
+		lod0FootprintComboBox.setSelectedItem(config.getProject().getKmlExporter().getLod0FootprintMode().toString());
+		
 		geometryHLSurfaceDistanceLabel.setEnabled(false);
 		geometryHLSurfaceDistanceText.setEnabled(false);
 
@@ -751,6 +765,8 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 			}
 		}
 
+		config.getProject().getKmlExporter().setLod0FootprintMode(Lod0FootprintMode.fromValue(lod0FootprintComboBox.getSelectedItem().toString()));
+		
 		colladaOptions.setIgnoreSurfaceOrientation(ignoreSurfaceOrientationCheckbox.isSelected());
 		colladaOptions.setGenerateTextureAtlases(textureAtlasCheckbox.isSelected());
 		colladaOptions.setTextureAtlasPots(textureAtlasPotsCheckbox.isSelected());
