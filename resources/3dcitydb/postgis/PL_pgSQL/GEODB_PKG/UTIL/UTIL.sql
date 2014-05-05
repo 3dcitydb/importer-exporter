@@ -35,7 +35,6 @@
 * CONTENT
 *
 * FUNCTIONS:
-*   db_info(OUT schema_srid INTEGER, OUT schema_gml_srs_name VARCHAR, OUT versioning VARCHAR) RETURNS RECORD
 *   db_metadata() RETURNS TABLE(
 *     srid INTEGER, 
 *     gml_srs_name VARCHAR(1000), 
@@ -43,16 +42,53 @@
 *     coord_ref_sys_kind VARCHAR(2048), 
 *     versioning VARCHAR(100)
 *     )
-*   drop_tmp_tables(schema_name VARCHAR DEFAULT 'public') RETURNS SETOF VOID
 *   get_seq_values(seq_name VARCHAR, seq_count INTEGER) RETURNS SETOF INTEGER
 *   min(a NUMERIC, b NUMERIC) RETURNS NUMERIC
 *   objectclass_id_to_table_name(class_id INTEGER) RETURNS VARCHAR
+*   db_info(OUT schema_srid INTEGER, OUT schema_gml_srs_name VARCHAR, OUT versioning VARCHAR) RETURNS RECORD AS 
 *   update_schema_constraints(on_delete_param VARCHAR DEFAULT 'CASCADE', schema_name VARCHAR DEFAULT 'public') RETURNS SETOF VOID
 *   update_table_constraint(fkey_name VARCHAR, table_name VARCHAR, column_name VARCHAR, ref_table VARCHAR, ref_column VARCHAR, 
 *     delete_param VARCHAR, deferrable_param VARCHAR, schema_name VARCHAR DEFAULT 'public') RETURNS SETOF VOID
 *   versioning_db() RETURNS VARCHAR
 *   versioning_table(table_name VARCHAR) RETURNS VARCHAR
 ******************************************************************/
+
+/*****************************************************************
+* versioning_table
+*
+* @param table_name name of table
+* @param schema_name name of schema
+* @RETURN VARCHAR 'ON' for version-enabled, 'OFF' otherwise
+******************************************************************/
+CREATE OR REPLACE FUNCTION geodb_pkg.versioning_table(
+  table_name VARCHAR,
+  schema_name VARCHAR DEFAULT 'public'
+  ) RETURNS VARCHAR AS 
+$$
+BEGIN
+  EXECUTE format('SELECT audit_id FROM %I.%I LIMIT 1', schema_name, table_name);
+  RETURN 'ON';
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      RETURN 'OFF';
+END;
+$$
+LANGUAGE plpgsql;
+
+
+/*****************************************************************
+* versioning_db
+*
+* @RETURN VARCHAR 'ON' for version-enabled, 'OFF' for version-disabled
+******************************************************************/
+CREATE OR REPLACE FUNCTION geodb_pkg.versioning_db() RETURNS VARCHAR AS 
+$$
+BEGIN
+  RETURN 'OFF';
+END;
+$$
+LANGUAGE plpgsql;
 
 
 /*****************************************************************
@@ -103,24 +139,6 @@ LANGUAGE plpgsql;
 
 
 /******************************************************************
-* drop_tmp_tables
-*
-* @param schema_name name of schema
-******************************************************************/
-CREATE OR REPLACE FUNCTION geodb_pkg.drop_tmp_tables(schema_name VARCHAR DEFAULT 'public') RETURNS SETOF void AS
-$$
-DECLARE
-  table_name VARCHAR(30);
-BEGIN
-  FOR table_name IN EXECUTE 'SELECT tablename FROM pg_tables WHERE schemaname = $1 AND tablename LIKE ''tmp_%''' USING schema_name LOOP
-    EXECUTE format('DROP TABLE %I.%I CASCADE', schema_name, table_name);
-  END LOOP;
-END;
-$$
-LANGUAGE plpgsql;
-
-
-/******************************************************************
 * min
 *
 * @param a first NUMERIC value
@@ -138,6 +156,83 @@ BEGIN
   ELSE
     RETURN b;
   END IF;
+END;
+$$
+LANGUAGE plpgsql;
+
+
+/******************************************************************
+* update_table_constraint
+*
+* Removes a contraint to add it again with parameters
+* ON UPDATE CASCADE ON DELETE CASCADE or RESTRICT
+*
+* @param fkey_name name of the foreign key that is updated 
+* @param table_name defines the table to which the constraint belongs to
+* @param column_name defines the column the constraint is relying on
+* @param ref_table name of referenced table
+* @param ref_column name of referencing column of referenced table
+* @param delete_param whether CASCADE or RESTRICT
+* @param deferrable_param whether set or not
+* @param schema_name name of schema
+******************************************************************/
+CREATE OR REPLACE FUNCTION geodb_pkg.update_table_constraint(
+  fkey_name VARCHAR,
+  table_name VARCHAR,
+  column_name VARCHAR,
+  ref_table VARCHAR,
+  ref_column VARCHAR,
+  delete_param VARCHAR,
+  deferrable_param VARCHAR,
+  schema_name VARCHAR DEFAULT 'public'
+  ) RETURNS SETOF VOID AS 
+$$
+BEGIN
+  EXECUTE format('ALTER TABLE %I.%I DROP CONSTRAINT %I, ADD CONSTRAINT %I FOREIGN KEY (%I) REFERENCES %I.%I (%I)
+                    ON UPDATE CASCADE ON DELETE ' || delete_param || ' ' || deferrable_param,
+                    schema_name, table_name, fkey_name, fkey_name, column_name, schema_name, ref_table, ref_column);
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE NOTICE 'Error on constraint %: %', fkey_name, SQLERRM;
+END;
+$$
+LANGUAGE plpgsql;
+
+
+/******************************************************************
+* update_schema_constraints
+*
+* calls update_table_constraint for updating all the contraints
+* in the specified schema
+*
+* @param on_delete_param whether CASCADE (default) or RESTRICT
+* @param schema_name name of schema
+******************************************************************/
+CREATE OR REPLACE FUNCTION geodb_pkg.update_schema_constraints(
+  on_delete_param VARCHAR DEFAULT 'CASCADE',
+  schema_name VARCHAR DEFAULT 'public'
+  ) RETURNS SETOF VOID AS 
+$$
+DECLARE
+  delete_param VARCHAR(30) := 'CASCADE';
+  deferrable_param VARCHAR(30);
+BEGIN
+  IF on_delete_param <> 'CASCADE' THEN
+    delete_param := 'RESTRICT';
+	deferrable_param := '';
+    RAISE NOTICE 'Constraints are set to ON DELETE RESTRICT';
+  ELSE
+    deferrable_param := 'INITIALLY DEFERRED';
+    RAISE NOTICE 'Constraints are set to ON DELETE CASCADE';
+  END IF;
+
+  EXECUTE 'SELECT geodb_pkg.update_table_constraint(tc.constraint_name, tc.table_name, kcu.column_name, ccu.table_name, ccu.column_name, $2, $3, tc.table_schema)
+             FROM information_schema.table_constraints AS tc
+             JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
+             JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
+               WHERE constraint_type = ''FOREIGN KEY'' AND tc.table_schema = $1'
+               USING schema_name, delete_param, deferrable_param;
 END;
 $$
 LANGUAGE plpgsql;
@@ -234,139 +329,24 @@ BEGIN
          class_id = 85 THEN table_name := 'tunnel';
     WHEN class_id = 86 OR
          class_id = 87 THEN table_name := 'tunnel_installation';
-    WHEN class_id = 89 OR 
+    WHEN class_id = 88 OR 
+         class_id = 89 OR 
          class_id = 90 OR 
          class_id = 91 OR 
-         class_id = 92 OR 
+         class_id = 92 OR
          class_id = 93 OR
          class_id = 94 OR
          class_id = 95 OR
-         class_id = 96 OR
-         class_id = 97 THEN table_name := 'tunnel_thematic_surface';
+         class_id = 96 THEN table_name := 'tunnel_thematic_surface';
     WHEN class_id = 99 OR 
          class_id = 100 THEN table_name := 'tunnel_opening';		 
     WHEN class_id = 101 THEN table_name := 'tunnel_furniture';
     WHEN class_id = 102 THEN table_name := 'tunnel_hollow_space';
   ELSE
-    RAISE EXCEPTION 'Table name unknown.';
+    RAISE NOTICE 'Table name unknown.';
   END CASE;
   
   RETURN table_name;
-END;
-$$
-LANGUAGE plpgsql;
-
-
-/******************************************************************
-* update_table_constraint
-*
-* Removes a contraint to add it again with parameters
-* ON UPDATE CASCADE ON DELETE CASCADE or RESTRICT
-*
-* @param fkey_name name of the foreign key that is updated 
-* @param table_name defines the table to which the constraint belongs to
-* @param column_name defines the column the constraint is relying on
-* @param ref_table name of referenced table
-* @param ref_column name of referencing column of referenced table
-* @param delete_param whether CASCADE or RESTRICT
-* @param deferrable_param whether set or not
-* @param schema_name name of schema
-******************************************************************/
-CREATE OR REPLACE FUNCTION geodb_pkg.update_table_constraint(
-  fkey_name VARCHAR,
-  table_name VARCHAR,
-  column_name VARCHAR,
-  ref_table VARCHAR,
-  ref_column VARCHAR,
-  delete_param VARCHAR,
-  deferrable_param VARCHAR,
-  schema_name VARCHAR DEFAULT 'public'
-  ) RETURNS SETOF VOID AS 
-$$
-BEGIN
-  EXECUTE format('ALTER TABLE %I.%I DROP CONSTRAINT %I, ADD CONSTRAINT %I FOREIGN KEY (%I) REFERENCES %I.%I (%I)
-                    ON UPDATE CASCADE ON DELETE ' || delete_param || ' ' || deferrable_param,
-                    schema_name, table_name, fkey_name, fkey_name, column_name, schema_name, ref_table, ref_column);
-
-  EXCEPTION
-    WHEN OTHERS THEN
-      RAISE NOTICE 'Error on constraint %: %', fkey_name, SQLERRM;
-END;
-$$
-LANGUAGE plpgsql;
-
-
-/******************************************************************
-* update_schema_constraints
-*
-* calls update_table_constraint for updating all the contraints
-* in the specified schema
-*
-* @param on_delete_param whether CASCADE (default) or RESTRICT
-* @param schema_name name of schema
-******************************************************************/
-CREATE OR REPLACE FUNCTION geodb_pkg.update_schema_constraints(
-  on_delete_param VARCHAR DEFAULT 'CASCADE',
-  schema_name VARCHAR DEFAULT 'public'
-  ) RETURNS SETOF VOID AS 
-$$
-DECLARE
-  delete_param VARCHAR(30) := 'CASCADE';
-  deferrable_param VARCHAR(30);
-BEGIN
-  IF on_delete_param <> 'CASCADE' THEN
-    delete_param := 'RESTRICT';
-	deferrable_param := '';
-    RAISE NOTICE 'Constraints are set to ON DELETE RESTRICT';
-  ELSE
-    deferrable_param := 'INITIALLY DEFERRED';
-    RAISE NOTICE 'Constraints are set to ON DELETE CASCADE';
-  END IF;
-
-  EXECUTE 'SELECT geodb_pkg.update_table_constraint(tc.constraint_name, tc.table_name, kcu.column_name, ccu.table_name, ccu.column_name, $2, $3, tc.table_schema)
-             FROM information_schema.table_constraints AS tc
-             JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
-             JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
-               WHERE constraint_type = ''FOREIGN KEY'' AND tc.table_schema = $1'
-               USING schema_name, delete_param, deferrable_param;
-END;
-$$
-LANGUAGE plpgsql;
-
-
-/*****************************************************************
-* versioning_table
-*
-* @param table_name name of table
-* @param schema_name name of schema
-* @RETURN VARCHAR 'ON' for version-enabled, 'OFF' otherwise
-******************************************************************/
-CREATE OR REPLACE FUNCTION geodb_pkg.versioning_table(
-  table_name VARCHAR,
-  schema_name VARCHAR DEFAULT 'public'
-  ) RETURNS VARCHAR AS 
-$$
-BEGIN
-  EXECUTE format('SELECT audit_id FROM %I.%I LIMIT 1', schema_name, table_name);
-  RETURN 'ON';
-
-  EXCEPTION
-    WHEN OTHERS THEN
-      RETURN 'OFF';
-END;
-$$
-LANGUAGE plpgsql;
-
-
-/*****************************************************************
-* versioning_db
-*
-* @RETURN VARCHAR 'ON' for version-enabled, 'OFF' for version-disabled
-******************************************************************/
-CREATE OR REPLACE FUNCTION geodb_pkg.versioning_db() RETURNS VARCHAR AS 
-$$
-BEGIN
-  RETURN 'OFF';
 END;
 $$
 LANGUAGE plpgsql;
