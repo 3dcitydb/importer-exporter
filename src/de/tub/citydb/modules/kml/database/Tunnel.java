@@ -213,7 +213,7 @@ public class Tunnel extends KmlGenericObject{
 					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 				}
-
+				
 				// when for EXTRUDED or FOOTPRINT there is no ground surface modelled, try to find it out indirectly
 				if (rs == null && (work.getDisplayForm().getForm() <= DisplayForm.EXTRUDED)) {
 					reversePointOrder = true;

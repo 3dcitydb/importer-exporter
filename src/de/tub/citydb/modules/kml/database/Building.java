@@ -211,7 +211,7 @@ public class Building extends KmlGenericObject{
 					rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 					try { if (psQuery != null) psQuery.close(); } catch (SQLException sqle) {}
 				}
-				
+
 				// when for EXTRUDED or FOOTPRINT there is no ground surface modeled, try to find it out indirectly
 				// or when for FOOTPRINT there is not lod0roofprint modeled, try to find it using lod0footprint
 				if ((rs == null && currentLod > 1 && (work.getDisplayForm().getForm() <= DisplayForm.EXTRUDED)) || 

@@ -770,22 +770,23 @@ public class Queries {
 			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(aggr_geom, <TOLERANCE>)) aggr_geom " +
 			"FROM (SELECT sdo_aggr_union(mdsys.sdoaggrtype(simple_geom, <TOLERANCE>)) aggr_geom " +
 			"FROM (" +
-
 						"SELECT * FROM (" +
 						"SELECT * FROM (" +
-
 				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-				    	//				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
-				    	//						"SELECT geodb_util.to_2d(sg.geometry, (select srid from database_srs)) AS simple_geom " +
-				    	//						"SELECT sg.geometry AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +
-				    	"SELECT geom.gid FROM (SELECT b.lod<LoD>_geometry_id as gid " +
+				    	"SELECT geom.gid FROM (SELECT b.lod<LoD>_multi_surface_id as gid " +
 				    	"FROM BUILDING b " +
 				    	"WHERE "+
 				    	"b.id = ? " +
-				    	"AND b.lod<LoD>_geometry_id IS NOT NULL " +
+				    	"AND b.lod<LoD>_multi_surface_id IS NOT NULL " +
+				    	"UNION " +
+				    	"SELECT b.lod<LoD>_solid_id as gid " +
+				    	"FROM BUILDING b " +
+				    	"WHERE "+
+				    	"b.id = ? " +
+				    	"AND b.lod<LoD>_solid_id IS NOT NULL " +				    	
 				    	"UNION " +
 				    	"SELECT ts.lod<LoD>_multi_surface_id as gid " +
 				    	"FROM THEMATIC_SURFACE ts " +
@@ -851,17 +852,22 @@ public class Queries {
 				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
-				    	"sg.root_id IN( " +
-				    	"SELECT b.lod<LoD>_multi_surface_id " +
+				    	"sg.root_id IN( " +				    	
+				    	"SELECT geom.gid FROM (SELECT b.lod<LoD>_multi_surface_id as gid " +
 				    	"FROM BUILDING b " +
 				    	"WHERE "+
 				    	"b.id = ? " +
 				    	"AND b.lod<LoD>_multi_surface_id IS NOT NULL " +
+				    	"UNION " +
+				    	"SELECT b.lod<LoD>_solid_id as gid " +
+				    	"FROM BUILDING b " +
+				    	"WHERE "+
+				    	"b.id = ? " +
+				    	"AND b.lod<LoD>_solid_id IS NOT NULL) geom "+
 				    	") " +
 				    	"AND sg.geometry IS NOT NULL" +
 						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
 						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
-
 						") " +
 						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
 						") " +
@@ -911,16 +917,21 @@ public class Queries {
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +
-				    	"SELECT b.lod<LoD>_multi_surface_id " +
+				    	"SELECT geom.gid FROM (SELECT b.lod0_footprint_id as gid " +
 				    	"FROM BUILDING b " +
 				    	"WHERE "+
 				    	"b.id = ? " +
-				    	"AND b.lod<LoD>_multi_surface_id IS NOT NULL " +
+				    	"AND b.lod0_footprint_id IS NOT NULL " +
+				    	"UNION " +
+				    	"SELECT b.lod0_roofprint_id as gid " +
+				    	"FROM BUILDING b " +
+				    	"WHERE "+
+				    	"b.id = ? " +
+				    	"AND b.lod0_roofprint_id IS NOT NULL) geom "+
 				    	") " +
 				    	"AND sg.geometry IS NOT NULL" +
 						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
 						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
-
 						") " +
 						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
 						") " +
@@ -1048,7 +1059,7 @@ public class Queries {
 			break;
 		case 1:
 			if (displayForm.getForm() == DisplayForm.FOOTPRINT || displayForm.getForm() == DisplayForm.EXTRUDED){
-				query = BUILDING_PART_FOOTPRINT_LOD1(type);		
+				query = BUILDING_PART_FOOTPRINT_LOD1(type);	
 			}
 			else 
 				query = buildingPartQueriesLod1.get(displayForm.getForm());
@@ -1427,21 +1438,29 @@ public class Queries {
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +
-				    	"SELECT geom.gid FROM (SELECT b.lod<LoD>_geometry_id as gid " +
+				    	"SELECT geom.gid FROM (SELECT b.lod<LoD>_multi_surface_id as gid " +
 				    	"FROM BRIDGE b " +
 				    	"WHERE "+
 				    	"b.id = ? " +
-				    	"AND b.lod<LoD>_geometry_id IS NOT NULL " +
+				    	"AND b.lod<LoD>_multi_surface_id IS NOT NULL " +
 				    	"UNION " +
-				    	"SELECT ts.lod<LoD>_multi_surface_id as gid " +
+				    	"SELECT b.lod<LoD>_solid_id as gid " +
+				    	"FROM BRIDGE b " +
+				    	"WHERE "+
+				    	"b.id = ? " +
+				    	"AND b.lod<LoD>_solid_id IS NOT NULL " +				    	
+				    	"UNION " +
+				    	"SELECT bts.lod<LoD>_multi_surface_id as gid " +
 				    	"FROM BRIDGE_THEMATIC_SURFACE bts " +
 				    	"WHERE "+
-				    	"ts.building_id = ? " +
-				    	"AND ts.lod<LoD>_multi_surface_id IS NOT NULL) geom "+
+				    	"bts.bridge_id = ? " +
+				    	"AND bts.lod<LoD>_multi_surface_id IS NOT NULL) geom "+
 				    	") " +
 				    	"AND sg.geometry IS NOT NULL" +
+
 						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
 						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
+
 						") " +
 						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
 						") " +
@@ -1495,17 +1514,22 @@ public class Queries {
 				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
-				    	"sg.root_id IN( " +
-				    	"SELECT b.lod<LoD>_multi_surface_id " +
+				    	"sg.root_id IN( " +				    	
+				    	"SELECT geom.gid FROM (SELECT b.lod<LoD>_multi_surface_id as gid " +
 				    	"FROM BRIDGE b " +
 				    	"WHERE "+
 				    	"b.id = ? " +
 				    	"AND b.lod<LoD>_multi_surface_id IS NOT NULL " +
+				    	"UNION " +
+				    	"SELECT b.lod<LoD>_solid_id as gid " +
+				    	"FROM BRIDGE b " +
+				    	"WHERE "+
+				    	"b.id = ? " +
+				    	"AND b.lod<LoD>_solid_id IS NOT NULL) geom "+
 				    	") " +
 				    	"AND sg.geometry IS NOT NULL" +
 						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
 						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
-
 						") " +
 						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
 						") " +
@@ -1977,11 +2001,17 @@ public class Queries {
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +
-				    	"SELECT geom.gid FROM (SELECT t.lod<LoD>_geometry_id as gid " +
+				    	"SELECT geom.gid FROM (SELECT t.lod<LoD>_multi_surface_id as gid " +
 				    	"FROM TUNNEL t " +
 				    	"WHERE "+
 				    	"t.id = ? " +
-				    	"AND t.lod<LoD>_geometry_id IS NOT NULL " +
+				    	"AND t.lod<LoD>_multi_surface_id IS NOT NULL " +
+				    	"UNION " +
+				    	"SELECT t.lod<LoD>_solid_id as gid " +
+				    	"FROM TUNNEL t " +
+				    	"WHERE "+
+				    	"t.id = ? " +
+				    	"AND t.lod<LoD>_solid_id IS NOT NULL " +				    	
 				    	"UNION " +
 				    	"SELECT tts.lod<LoD>_multi_surface_id as gid " +
 				    	"FROM TUNNEL_THEMATIC_SURFACE tts " +
@@ -1990,8 +2020,10 @@ public class Queries {
 				    	"AND tts.lod<LoD>_multi_surface_id IS NOT NULL) geom "+
 				    	") " +
 				    	"AND sg.geometry IS NOT NULL" +
+
 						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
 						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
+
 						") " +
 						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
 						") " +
@@ -2045,17 +2077,22 @@ public class Queries {
 				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
-				    	"sg.root_id IN( " +
-				    	"SELECT t.lod<LoD>_multi_surface_id " +
-				    	"FROM TUNNEL t " +
+				    	"sg.root_id IN( " +				    	
+				    	"SELECT geom.gid FROM (SELECT t.lod<LoD>_multi_surface_id as gid " +
+				    	"FROM TUNNEL t  " +
 				    	"WHERE "+
 				    	"t.id = ? " +
 				    	"AND t.lod<LoD>_multi_surface_id IS NOT NULL " +
+				    	"UNION " +
+				    	"SELECT t.lod<LoD>_solid_id as gid " +
+				    	"FROM TUNNEL t " +
+				    	"WHERE "+
+				    	"t.id = ? " +
+				    	"AND t.lod<LoD>_solid_id IS NOT NULL) geom "+
 				    	") " +
 				    	"AND sg.geometry IS NOT NULL" +
 						") WHERE sdo_geom.validate_geometry(simple_geom, <TOLERANCE>) = 'TRUE'" +
 						") WHERE sdo_geom.sdo_area(simple_geom, <TOLERANCE>) > <TOLERANCE>" +
-
 						") " +
 						"GROUP BY mod(rownum, <GROUP_BY_1>) " +
 						") " +
@@ -2110,6 +2147,7 @@ public class Queries {
 		else {
 			return TUNNEL_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD1(type).replace("<TOLERANCE>", String.valueOf(tolerance))
 					.replace("<2D_SRID>", String.valueOf(srid2D))
+					.replace("<LoD>", String.valueOf(lodToExportFrom))
 					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
 					.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
 					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));					
