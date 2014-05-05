@@ -1700,7 +1700,7 @@ public abstract class KmlGenericObject {
 						if (selectedTheme.equals(KmlExporter.THEME_NONE))
 							addX3dMaterial(surfaceId, defaultX3dMaterial);
 						else {
-							if (!selectedTheme.equalsIgnoreCase(theme)) { // no surface data for this surface and theme
+							if (!selectedTheme.equalsIgnoreCase(theme) && !selectedTheme.equalsIgnoreCase("<unknown>")) { // no surface data for this surface and theme
 								if (getX3dMaterial(parentId) != null) // material for parent surface known
 									addX3dMaterial(surfaceId, getX3dMaterial(parentId));
 								else if (getX3dMaterial(rootId) != null) // material for root surface known

@@ -696,7 +696,7 @@ public class Queries {
 	public static final String[] COLLADA_IMPLICIT_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID = new String[] {
 		COLLADA_IMPLICIT_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.implicit_geometry IS NULL ORDER BY sg.id", // parents
 		COLLADA_IMPLICIT_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.implicit_geometry IS NOT NULL" // elementary surfaces
-};
+	};
 	
 	public static final String[] COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID = new String[] {
 			COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NULL ORDER BY sg.id", // parents
@@ -2285,24 +2285,25 @@ public class Queries {
 		}
 		return query;
 	}
+	
 
 	private static final String SOLITARY_VEGETATION_OBJECT_GEOMETRY_HIGHLIGHTING =
 			"SELECT sg.geometry, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
 					"WHERE sg.root_id IN (" +
-					"SELECT svo.lod<LoD>_brep_id " +
+					"SELECT geom.gid FROM (SELECT svo.lod<LoD>_brep_id as gid " +
 					"FROM SOLITARY_VEGETAT_OBJECT svo " + 
-					"WHERE svo.id = ?) " +
+					"WHERE svo.id = ?) geom) " +
 					"AND sg.geometry IS NOT NULL";
 	
 	private static final String SOLITARY_VEGETATION_OBJECT_IMPLICIT_GEOMETRY_HIGHLIGHTING =
 			"SELECT sg.implicit_geometry, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
-					"WHERE sg.root_id IN ( " +
-					"SELECT ig.relative_brep_id " + 
+					"WHERE sg.root_id IN (" +
+					"SELECT geom.gid FROM (SELECT ig.relative_brep_id as gid " + 
 					"FROM SOLITARY_VEGETAT_OBJECT svo, IMPLICIT_GEOMETRY ig " + 
 					"WHERE svo.id = ? " +
-					"AND ig.id = svo.lod<LoD>_implicit_rep_id) " +
+					"AND ig.id = svo.lod<LoD>_implicit_rep_id) geom)" +
 					"AND sg.implicit_geometry IS NOT NULL";
 
 	public static String getSolitaryVegetationObjectHighlightingQuery (int lodToExportFrom, Boolean isImplicitGeometry) {
@@ -2406,21 +2407,21 @@ public class Queries {
 	private static final String GENERIC_CITYOBJECT_GEOMETRY_HIGHLIGHTING =
 			"SELECT sg.geometry, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
-					"WHERE sg.root_id IN ( " +
-					"SELECT gco.lod<LoD>_brep_id " +
+					"WHERE sg.root_id IN (" +
+					"SELECT geom.gid FROM (SELECT gco.lod<LoD>_brep_id as gid " +
 					"FROM GENERIC_CITYOBJECT gco " + 
-					"WHERE gco.id = ?) " +
+					"WHERE gco.id = ?) geom) " +
 					"AND sg.geometry IS NOT NULL";
 	
 	
 	private static final String GENERIC_CITYOBJECT_IMPLICIT_GEOMETRY_HIGHLIGHTING =			
 			"SELECT sg.implicit_geometry, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
-					"WHERE sg.root_id IN ( " +
-					"SELECT ig.relative_brep_id " + 
+					"WHERE sg.root_id IN (" +
+					"SELECT geom.gid FROM (SELECT ig.relative_brep_id as gid " + 
 					"FROM GENERIC_CITYOBJECT gco, IMPLICIT_GEOMETRY ig " + 
 					"WHERE gco.id = ? " +
-					"AND ig.id = gco.lod<LoD>_implicit_rep_id) " +
+					"AND ig.id = gco.lod<LoD>_implicit_rep_id) geom) " +
 					"AND sg.implicit_geometry IS NOT NULL";
 
 	
@@ -2499,21 +2500,21 @@ public class Queries {
 	private static final String CITY_FURNITURE_GEOMETRY_HIGHLIGHTING =
 			"SELECT sg.geometry, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
-					"WHERE sg.root_id IN ( " +
-					"SELECT cf.lod<LoD>_brep_id " +
+					"WHERE sg.root_id IN (" +
+					"SELECT geom.gid FROM (SELECT cf.lod<LoD>_brep_id as gid " +
 					"FROM CITY_FURNITURE cf " + 
-					"WHERE cf.id = ?) " +
+					"WHERE cf.id = ?) geom) " +
 					"AND sg.geometry IS NOT NULL";
 	
 	
 	private static final String CITY_FURNITURE_IMPLICIT_GEOMETRY_HIGHLIGHTING =
 			"SELECT sg.implicit_geometry, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
-					"WHERE sg.root_id IN ( " +
-					"SELECT ig.relative_brep_id " + 
+					"WHERE sg.root_id IN (" +
+					"SELECT geom.gid FROM (SELECT ig.relative_brep_id as gid " + 
 					"FROM CITY_FURNITURE cf, IMPLICIT_GEOMETRY ig " + 
 					"WHERE cf.id = ? " +
-					"AND ig.id = cf.lod<LoD>_implicit_rep_id) " +
+					"AND ig.id = cf.lod<LoD>_implicit_rep_id) geom) " +
 					"AND sg.implicit_geometry IS NOT NULL";
 
 

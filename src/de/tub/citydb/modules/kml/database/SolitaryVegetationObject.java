@@ -352,6 +352,25 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		return super.convertToWGS84(applyTransformationMatrix(geomObj));
 	}
 
+	
+	protected double[] convertPointWorldCoordinatesToWGS84(double[] coords) throws SQLException {
+		double[] pointCoords = null;
+		GeometryObject convertedPointGeom = null;
+		// this is a nasty hack for Oracle. In Oracle, transforming a single point to WGS84 does not change
+		// its z-value, whereas transforming a series of vertices does affect their z-value
+		switch (databaseAdapter.getDatabaseType()) {
+		case ORACLE:
+			convertedPointGeom = super.convertToWGS84(GeometryObject.createCurve(coords, coords.length, dbSrs.getSrid()));
+			break;
+		case POSTGIS:
+			convertedPointGeom = super.convertToWGS84(GeometryObject.createPoint(coords, coords.length, dbSrs.getSrid()));
+			break;
+		}
+		if (convertedPointGeom != null)
+			pointCoords = convertedPointGeom.getCoordinates(0);
+		return pointCoords;
+	}
+	
 	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
 
 		if (transformation == null) { // no implicit geometry
@@ -363,8 +382,8 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			return super.createPlacemarkForColladaModel();
 		}
 
-		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {0, 0, 0}); // will be turned into refPointX,Y,Z by convertToWGS84
-
+	//	double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {0, 0, 0}); // will be turned into refPointX,Y,Z by convertToWGS84
+		double[] originInWGS84 = convertPointWorldCoordinatesToWGS84(new double[] {getOriginX()/100, getOriginY()/100, getOriginZ()/100});
 		setLocationX(reducePrecisionForXorY(originInWGS84[0]));
 		setLocationY(reducePrecisionForXorY(originInWGS84[1]));
 		setLocationZ(reducePrecisionForZ(originInWGS84[2]));
@@ -429,7 +448,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		return placemark;
 	}
 
-	// Origin for Collada scene
+/*	// Origin for Collada scene
 	protected List<Point3d> setOrigins() {
 		List<Point3d> coords = new ArrayList<Point3d>();
 
@@ -445,14 +464,13 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			setOriginZ ((v.get(2, 0) + refPointZ)*100);
 			// dummy
 			Point3d point3d = new Point3d(getOriginX(), getOriginY(), getOriginZ());
-			coords.add(point3d);			
+			coords.add(point3d);	
 		}
 		else {
 			coords = super.setOrigins();
 		}
-
 		return coords;
-	}
+	}*/
 
 	protected void fillGenericObjectForCollada(ResultSet rs) throws SQLException {
 
@@ -511,7 +529,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						if (selectedTheme.equals(KmlExporter.THEME_NONE))
 							addX3dMaterial(surfaceId, defaultX3dMaterial);
 						else {
-							if (!selectedTheme.equalsIgnoreCase(theme)) { // no surface data for this surface and theme
+							if (!selectedTheme.equalsIgnoreCase(theme) && !selectedTheme.equalsIgnoreCase("<unknown>")) { // no surface data for this surface and theme
 								if (getX3dMaterial(parentId) != null) // material for parent surface known
 									addX3dMaterial(surfaceId, getX3dMaterial(parentId));
 								else if (getX3dMaterial(rootId) != null) // material for root surface known
