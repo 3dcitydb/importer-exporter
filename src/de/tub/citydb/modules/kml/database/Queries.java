@@ -1187,6 +1187,20 @@ public class Queries {
 					"AND bi.lod4_brep_id IS NOT NULL " +
 					"AND bts.lod4_multi_surface_id IS NULL " + 
 					"UNION " + 
+					// Bridge Construction Element
+					"SELECT bts.lod4_multi_surface_id as gid " + 
+					"FROM BRIDGE_CONSTR_ELEMENT bce, BRIDGE_THEMATIC_SURFACE bts " + 
+					"WHERE bce.bridge_id = ? " +  
+					"AND bts.bridge_constr_element_id = bce.id " +
+					"AND bts.lod4_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT bce.lod4_brep_id as gid " + 
+					"FROM BRIDGE_CONSTR_ELEMENT bce LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_constr_element_id = bce.id " +
+					"WHERE " +  
+					"bce.bridge_id = ? " +
+					"AND bce.lod4_brep_id IS NOT NULL " +
+					"AND bts.lod4_multi_surface_id IS NULL " + 
+					"UNION " + 
 					// Opening
 					"SELECT bo.lod4_multi_surface_id as gid " + 
 					"FROM BRIDGE_THEMATIC_SURFACE bts, BRIDGE_OPEN_TO_THEM_SRF botts, BRIDGE_OPENING bo " + 
@@ -1251,6 +1265,20 @@ public class Queries {
 					"AND bi.lod3_brep_id IS NOT NULL " +
 					"AND bts.lod3_multi_surface_id IS NULL " + 
 					"UNION " + 
+					// Bridge Construction Element
+					"SELECT bts.lod3_multi_surface_id as gid " + 
+					"FROM BRIDGE_CONSTR_ELEMENT bce, BRIDGE_THEMATIC_SURFACE bts " + 
+					"WHERE bce.bridge_id = ? " +  
+					"AND bts.bridge_constr_element_id = bce.id " +
+					"AND bts.lod3_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT bce.lod3_brep_id as gid " + 
+					"FROM BRIDGE_CONSTR_ELEMENT bce LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_constr_element_id = bce.id " +
+					"WHERE " +  
+					"bce.bridge_id = ? " +
+					"AND bce.lod3_brep_id IS NOT NULL " +
+					"AND bts.lod3_multi_surface_id IS NULL " + 
+					"UNION " + 
 					// Bridge Opening
 					"SELECT bo.lod3_multi_surface_id as gid " + 
 					"FROM BRIDGE_THEMATIC_SURFACE bts, BRIDGE_OPEN_TO_THEM_SRF botts, BRIDGE_OPENING bo " + 
@@ -1304,6 +1332,20 @@ public class Queries {
 					"AND b.lod2_solid_id IS NOT NULL " +
 					"AND bts.lod2_multi_surface_id IS NULL " +					
 					"UNION " +			
+					// Bridge Construction Element
+					"SELECT bts.lod2_multi_surface_id as gid " + 
+					"FROM BRIDGE_CONSTR_ELEMENT bce, BRIDGE_THEMATIC_SURFACE bts " + 
+					"WHERE bce.bridge_id = ? " +  
+					"AND bts.bridge_constr_element_id = bce.id " +
+					"AND bts.lod2_multi_surface_id IS NOT NULL " +
+					"UNION " + 
+					"SELECT bce.lod2_brep_id as gid " + 
+					"FROM BRIDGE_CONSTR_ELEMENT bce LEFT JOIN BRIDGE_THEMATIC_SURFACE bts ON bts.bridge_constr_element_id = bce.id " +
+					"WHERE " +  
+					"bce.bridge_id = ? " +
+					"AND bce.lod2_brep_id IS NOT NULL " +
+					"AND bts.lod2_multi_surface_id IS NULL " + 
+					"UNION " + 
 					// Bridge Installation	
 					"SELECT bts.lod2_multi_surface_id as gid " + 
 					"FROM BRIDGE_INSTALLATION bi, BRIDGE_THEMATIC_SURFACE bts " + 
@@ -1402,7 +1444,7 @@ public class Queries {
 					"AND bts.lod4_multi_surface_id IS NOT NULL " +
 					"UNION " + 
 					"SELECT bo.lod4_multi_surface_id as gid " + 
-					"FROM BRIDGE_THEMATIC_SURFACE bts, BRIDGE_OPEN_TO_THEM_SURF botts, BRIDGE_OPENING bo " + 
+					"FROM BRIDGE_THEMATIC_SURFACE bts, BRIDGE_OPEN_TO_THEM_SRF botts, BRIDGE_OPENING bo " + 
 					"WHERE " +  
 					"bts.bridge_id = ? " +
 					"AND bts.lod4_multi_surface_id IS NOT NULL " +
