@@ -58,6 +58,7 @@ import org.citygml.textureAtlas.TextureAtlasCreator;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.project.kmlExporter.AltitudeMode;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.Lod0FootprintMode;
@@ -169,6 +170,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 			if (areDisplayFormsContentsDifferent(internalDf, configDf)) return true;
 		}
 
+		if (lod0FootprintComboBox.getSelectedItem() != config.getProject().getKmlExporter().getLod0FootprintMode()) return true;
 		if (ignoreSurfaceOrientationCheckbox.isSelected() != colladaOptions.isIgnoreSurfaceOrientation()) return true;
 		if (textureAtlasCheckbox.isSelected() != colladaOptions.isGenerateTextureAtlases()) return true;
 		if (textureAtlasPotsCheckbox.isSelected() != colladaOptions.isTextureAtlasPots()) return true;
@@ -253,7 +255,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		footprintHLFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
 		footprintHLFillColorButton.setContentAreaFilled(false);
 		footprintHLFillColorButton.setOpaque(true);
-		footprintPanel.add(footprintHLFillColorButton, GuiUtil.setConstraints(1,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0));
+		footprintPanel.add(footprintHLFillColorButton, GuiUtil.setConstraints(1,3,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
 
 		GridBagConstraints fhllcl = GuiUtil.setConstraints(2,3,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		fhllcl.anchor = GridBagConstraints.EAST;
@@ -263,15 +265,20 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		footprintHLLineColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		footprintHLLineColorButton.setContentAreaFilled(false);
 		footprintHLLineColorButton.setOpaque(true);
-		footprintPanel.add(footprintHLLineColorButton, GuiUtil.setConstraints(3,3,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		footprintPanel.add(footprintHLLineColorButton, GuiUtil.setConstraints(3,3,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
 
 		// added for 3DCityDB V3.0
-		lod0FootprintComboBox.addItem("footprint");
-		lod0FootprintComboBox.addItem("roofprint");
-		lod0FootprintComboBox.addItem("roofprint - if none then footprint");
-	
-		footprintPanel.add(lod0FootprintLabel, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,2*BORDER_THICKNESS,2*BORDER_THICKNESS,0));
-		footprintPanel.add(lod0FootprintComboBox, GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,0,0,2*BORDER_THICKNESS,0));
+
+        for (Lod0FootprintMode c: Lod0FootprintMode.values()) {
+        	lod0FootprintComboBox.addItem(c);
+        }
+
+        GridBagConstraints lfpl = GuiUtil.setConstraints(0,4,1,1,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+        lfpl.anchor = GridBagConstraints.EAST;
+		footprintPanel.add(lod0FootprintLabel, lfpl);
+        GridBagConstraints lfpc = GuiUtil.setConstraints(1,4,2,1,0.5,1.0,GridBagConstraints.NONE,0,0,2*BORDER_THICKNESS,0);
+        lfpc.anchor = GridBagConstraints.WEST;
+		footprintPanel.add(lod0FootprintComboBox, lfpc);
 		
 		geometryPanel = new JPanel();
 		geometryPanel.setLayout(new GridBagLayout());
@@ -650,7 +657,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 			internalDfs.add(internalDf);
 		}
 
-		lod0FootprintComboBox.setSelectedItem(config.getProject().getKmlExporter().getLod0FootprintMode().toString());
+		lod0FootprintComboBox.setSelectedItem(config.getProject().getKmlExporter().getLod0FootprintMode());
 		
 		geometryHLSurfaceDistanceLabel.setEnabled(false);
 		geometryHLSurfaceDistanceText.setEnabled(false);
@@ -765,7 +772,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 			}
 		}
 
-		config.getProject().getKmlExporter().setLod0FootprintMode(Lod0FootprintMode.fromValue(lod0FootprintComboBox.getSelectedItem().toString()));
+		config.getProject().getKmlExporter().setLod0FootprintMode((Lod0FootprintMode)lod0FootprintComboBox.getSelectedItem());
 		
 		colladaOptions.setIgnoreSurfaceOrientation(ignoreSurfaceOrientationCheckbox.isSelected());
 		colladaOptions.setGenerateTextureAtlases(textureAtlasCheckbox.isSelected());

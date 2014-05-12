@@ -33,12 +33,15 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="PointAndCurve", propOrder={
 		"pointBalloon",
+		"pointDisplayMode",
 		"pointAltitudeMode",
 		"pointThickness",
 		"pointNormalColor",
 		"pointHighlightingEnabled",
 		"pointHighlightedThickness",
 		"pointHighlightedColor",
+		"pointIconColor",
+		"pointIconScale",		
 		"curveBalloon",
 		"curveAltitudeMode",
 		"curveThickness",
@@ -48,13 +51,17 @@ import javax.xml.bind.annotation.XmlType;
 		"curveHighlightedColor"
 })
 public class PointAndCurve {
+	public static final String DefaultIconHref = "http://maps.google.com/mapfiles/kml/paddle/wht-circle.png";
 	private Balloon pointBalloon;
 	private AltitudeMode pointAltitudeMode;
+	private PointDisplayMode pointDisplayMode;
 	private double pointThickness;
 	private int pointNormalColor = -1;
 	private boolean pointHighlightingEnabled = false;
 	private double pointHighlightedThickness;
 	private int pointHighlightedColor = -1;
+	private double pointIconScale;
+	private int pointIconColor = -1;		
 	private Balloon curveBalloon;
 	private AltitudeMode curveAltitudeMode;
 	private double curveThickness;
@@ -65,12 +72,15 @@ public class PointAndCurve {
 
 	public PointAndCurve() {
 		setPointBalloon(new Balloon());
+		setPointDisplayMode(PointDisplayMode.CROSS_LINE);
 		setPointAltitudeMode(AltitudeMode.CLAMP_TO_GROUND);
 		setPointThickness(3);
 		setPointNormalColor(DisplayForm.DEFAULT_LINE_COLOR);
 		setPointHighlightingEnabled(true);
 		setPointHighlightedThickness(6);
 		setPointNormalColor(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+		setPointIconColor(DisplayForm.DEFAULT_LINE_COLOR);
+		setPointIconScale(1);
 		setCurveBalloon(new Balloon());
 		setCurveAltitudeMode(AltitudeMode.CLAMP_TO_GROUND);
 		setCurveThickness(3);
@@ -86,6 +96,14 @@ public class PointAndCurve {
 
 	public Balloon getPointBalloon() {
 		return pointBalloon;
+	}
+	
+	public void setPointDisplayMode(PointDisplayMode pointDisplayMode) {
+		this.pointDisplayMode = pointDisplayMode;
+	}
+
+	public PointDisplayMode getPointDisplayMode() {
+		return pointDisplayMode;
 	}
 
 	public void setPointAltitudeMode(AltitudeMode pointAltitudeMode) {
@@ -190,6 +208,23 @@ public class PointAndCurve {
 
 	public void setCurveHighlightedThickness(double curveHighlightedThickness) {
 		this.curveHighlightedThickness = curveHighlightedThickness;
+	}
+
+
+	public int getPointIconColor() {
+		return pointIconColor;
+	}
+
+	public void setPointIconColor(int pointIconColor) {
+		this.pointIconColor = pointIconColor;
+	}
+
+	public double getPointIconScale() {
+		return pointIconScale;
+	}
+
+	public void setPointIconScale(double pointIconScale) {
+		this.pointIconScale = pointIconScale;
 	}
 
 }

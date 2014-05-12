@@ -35,12 +35,14 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
@@ -52,8 +54,10 @@ import de.tub.citydb.config.internal.Internal;
 // import de.tub.citydb.config.project.general.Path;
 // import de.tub.citydb.config.project.general.PathMode;
 import de.tub.citydb.config.project.kmlExporter.AltitudeMode;
+import de.tub.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.PointAndCurve;
+import de.tub.citydb.config.project.kmlExporter.PointDisplayMode;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -65,15 +69,24 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 	private JPanel pointPanel;
 	private JLabel pointAltitudeModeLabel = new JLabel();
 	private JComboBox pointAltitudeModeComboBox = new JComboBox();
-	private JLabel pointThicknessLabel = new JLabel();
-	private JSpinner pointThicknessSpinner;
-	private JLabel pointNormalColorLabel = new JLabel();
-	private JButton pointNormalColorButton = new JButton(" ");
-	private JCheckBox pointHighlightingCheckbox = new JCheckBox();
-	private JLabel pointHighlightingThicknessLabel = new JLabel();
-	private JSpinner pointHighlightingThicknessSpinner;
-	private JLabel pointHighlightingColorLabel = new JLabel();
-	private JButton pointHighlightingColorButton = new JButton(" ");
+	private JLabel pointIconColorLabel = new JLabel();
+	private JButton pointIconColorButton = new JButton(" ");
+	private JLabel pointIconScaleLabel = new JLabel();
+	private JSpinner pointIconScaleSpinner;	
+	
+	private JLabel pointCrossLineThicknessLabel = new JLabel();
+	private JSpinner pointCrossLineThicknessSpinner;
+	private JLabel pointCrossLineNormalColorLabel = new JLabel();
+	private JButton pointCrossLineNormalColorButton = new JButton(" ");
+	private JCheckBox pointCrossLineHighlightingCheckbox = new JCheckBox();
+	private JLabel pointCrossLineHighlightingThicknessLabel = new JLabel();
+	private JSpinner pointCrossLineHighlightingThicknessSpinner;
+	private JLabel pointCrossLineHighlightingColorLabel = new JLabel();
+	private JButton pointCrossLineHighlightingColorButton = new JButton(" ");
+	
+	private JRadioButton iconRButton = new JRadioButton();
+	private JRadioButton crossLineRButton = new JRadioButton();
+
 
 	private JPanel curvePanel;
 	private JLabel curveAltitudeModeLabel = new JLabel();
@@ -104,18 +117,36 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 
 		PointAndCurve pacSettings = config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve();
 
+		switch (pacSettings.getPointDisplayMode()) {
+		case CROSS_LINE:
+			if (!crossLineRButton.isSelected())
+				return true;
+			break;
+		case ICON:
+			if (!iconRButton.isSelected())
+				return true;
+			break;
+		}
+
 		if (!pacSettings.getPointAltitudeMode().equals(pointAltitudeModeComboBox.getSelectedItem())) return true;
-		if (pacSettings.getPointThickness() != ((Double)pointThicknessSpinner.getValue()).doubleValue()) return true;
-		if (pacSettings.getPointNormalColor() != (new Color(pointNormalColorButton.getBackground().getRed(),
-															pointNormalColorButton.getBackground().getGreen(),
-															pointNormalColorButton.getBackground().getBlue(),
+		if (pacSettings.getPointThickness() != ((Double)pointCrossLineThicknessSpinner.getValue()).doubleValue()) return true;
+		if (pacSettings.getPointNormalColor() != (new Color(pointCrossLineNormalColorButton.getBackground().getRed(),
+															pointCrossLineNormalColorButton.getBackground().getGreen(),
+															pointCrossLineNormalColorButton.getBackground().getBlue(),
 				  								   			DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB()) return true; //
-		if (pacSettings.isPointHighlightingEnabled() != pointHighlightingCheckbox.isSelected()) return true;
-		if (pacSettings.getPointHighlightedThickness() != ((Double)pointHighlightingThicknessSpinner.getValue()).doubleValue()) return true;
-		if (pacSettings.getPointHighlightedColor() != (new Color(pointHighlightingColorButton.getBackground().getRed(),
-																 pointHighlightingColorButton.getBackground().getGreen(),
-																 pointHighlightingColorButton.getBackground().getBlue(),
+		if (pacSettings.isPointHighlightingEnabled() != pointCrossLineHighlightingCheckbox.isSelected()) return true;
+		if (pacSettings.getPointHighlightedThickness() != ((Double)pointCrossLineHighlightingThicknessSpinner.getValue()).doubleValue()) return true;
+		if (pacSettings.getPointHighlightedColor() != (new Color(pointCrossLineHighlightingColorButton.getBackground().getRed(),
+																 pointCrossLineHighlightingColorButton.getBackground().getGreen(),
+																 pointCrossLineHighlightingColorButton.getBackground().getBlue(),
 																 DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB()) return true;
+		
+		if (pacSettings.getPointIconColor() != (new Color(pointIconColorButton.getBackground().getRed(),
+															pointIconColorButton.getBackground().getGreen(),
+															pointIconColorButton.getBackground().getBlue(),
+																 DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB()) return true;
+		if (pacSettings.getPointIconScale() != ((Double)pointIconScaleSpinner.getValue()).doubleValue()) return true;
+		
 
 		if (!pacSettings.getCurveAltitudeMode().equals(curveAltitudeModeComboBox.getSelectedItem())) return true;
 		if (pacSettings.getCurveThickness() != ((Double)curveThicknessSpinner.getValue()).doubleValue()) return true;
@@ -141,114 +172,166 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		pointPanel.setLayout(new GridBagLayout());
 		pointPanel.setBorder(BorderFactory.createTitledBorder(""));
 
-		pointPanel.add(pointAltitudeModeLabel, GuiUtil.setConstraints(0,0,0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,0));
-		pointPanel.add(pointAltitudeModeComboBox, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,BORDER_THICKNESS,BORDER_THICKNESS));
+		pointPanel.add(pointAltitudeModeLabel, GuiUtil.setConstraints(0,0,3,1,0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,0));
+		pointPanel.add(pointAltitudeModeComboBox, GuiUtil.setConstraints(0,1,3,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+		
+		ButtonGroup pointRadioGroup = new ButtonGroup();		
+		pointRadioGroup.add(crossLineRButton);
+		pointRadioGroup.add(iconRButton);
+		iconRButton.setIconTextGap(10);
+		crossLineRButton.setIconTextGap(10);
+		
+		GridBagConstraints gc = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);		
+		gc.anchor = GridBagConstraints.WEST;
+		pointPanel.add(crossLineRButton, gc);		
 
-		pointPanel.add(pointThicknessLabel, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+		pointPanel.add(pointCrossLineThicknessLabel, GuiUtil.setConstraints(1,3,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
 		SpinnerModel pointThicknessModel = new SpinnerNumberModel(1.0,0.1,9.9,0.1);
-		pointThicknessSpinner = new JSpinner(pointThicknessModel);
-        GridBagConstraints pts = GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,BORDER_THICKNESS);
+		pointCrossLineThicknessSpinner = new JSpinner(pointThicknessModel);
+        GridBagConstraints pts = GuiUtil.setConstraints(2,3,1.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,BORDER_THICKNESS);
         pts.anchor = GridBagConstraints.WEST;
-        pointPanel.add(pointThicknessSpinner, pts);
+        pointPanel.add(pointCrossLineThicknessSpinner, pts);
 
-        pointPanel.add(pointNormalColorLabel, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
-        pointNormalColorButton.setPreferredSize(pointThicknessSpinner.getPreferredSize());
-        pointNormalColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_COLOR, true));
-        pointNormalColorButton.setContentAreaFilled(false);
-        pointNormalColorButton.setOpaque(true);
-        GridBagConstraints pcb = GuiUtil.setConstraints(1,2,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
+        pointPanel.add(pointCrossLineNormalColorLabel, GuiUtil.setConstraints(1,4,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+        pointCrossLineNormalColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
+        pointCrossLineNormalColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_COLOR, true));
+        pointCrossLineNormalColorButton.setContentAreaFilled(false);
+        pointCrossLineNormalColorButton.setOpaque(true);
+        GridBagConstraints pcb = GuiUtil.setConstraints(2,4,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         pcb.anchor = GridBagConstraints.WEST;
-        pointPanel.add(pointNormalColorButton, pcb);
+        pointPanel.add(pointCrossLineNormalColorButton, pcb);
 		
-        pointHighlightingCheckbox.setIconTextGap(10);
-		GridBagConstraints phlc = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,0,BORDER_THICKNESS,0);
-		phlc.gridwidth = 2;
-		pointPanel.add(pointHighlightingCheckbox, phlc);
+        pointCrossLineHighlightingCheckbox.setIconTextGap(10);
+		GridBagConstraints phlc = GuiUtil.setConstraints(1,5,0.0,1.0,GridBagConstraints.BOTH,0,0,BORDER_THICKNESS,0);
+		phlc.gridwidth = 3;
+		pointPanel.add(pointCrossLineHighlightingCheckbox, phlc);
 
-		pointPanel.add(pointHighlightingThicknessLabel, GuiUtil.setConstraints(0,4,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
+		pointPanel.add(pointCrossLineHighlightingThicknessLabel, GuiUtil.setConstraints(1,6,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		SpinnerModel pointHighlightingThicknessModel = new SpinnerNumberModel(2.0,0.1,9.9,0.1);
-		pointHighlightingThicknessSpinner = new JSpinner(pointHighlightingThicknessModel);
-        GridBagConstraints phts = GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,BORDER_THICKNESS);
+		pointCrossLineHighlightingThicknessSpinner = new JSpinner(pointHighlightingThicknessModel);
+        GridBagConstraints phts = GuiUtil.setConstraints(2,6,1.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,BORDER_THICKNESS);
         phts.anchor = GridBagConstraints.WEST;
-        pointPanel.add(pointHighlightingThicknessSpinner, phts);
+        pointPanel.add(pointCrossLineHighlightingThicknessSpinner, phts);
 
-        pointPanel.add(pointHighlightingColorLabel, GuiUtil.setConstraints(0,5,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
-        pointHighlightingColorButton.setPreferredSize(pointThicknessSpinner.getPreferredSize());
-        pointHighlightingColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
-        pointHighlightingColorButton.setContentAreaFilled(false);
-        pointHighlightingColorButton.setOpaque(true);
-        GridBagConstraints phlcb = GuiUtil.setConstraints(1,5,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
+        pointPanel.add(pointCrossLineHighlightingColorLabel, GuiUtil.setConstraints(1,7,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
+        pointCrossLineHighlightingColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
+        pointCrossLineHighlightingColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
+        pointCrossLineHighlightingColorButton.setContentAreaFilled(false);
+        pointCrossLineHighlightingColorButton.setOpaque(true);
+        GridBagConstraints phlcb = GuiUtil.setConstraints(2,7,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         phlcb.anchor = GridBagConstraints.WEST;
-        pointPanel.add(pointHighlightingColorButton, phlcb);
+        pointPanel.add(pointCrossLineHighlightingColorButton, phlcb);       
+		pointPanel.add(iconRButton, GuiUtil.setConstraints(0,8,0.0,1.0,GridBagConstraints.BOTH,0,0,BORDER_THICKNESS,0));
 		
 		
+		pointPanel.add(pointIconColorLabel, GuiUtil.setConstraints(1,9,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+        pointIconColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
+        pointIconColorButton.setContentAreaFilled(false);
+        pointIconColorButton.setOpaque(true);
+        GridBagConstraints picb = GuiUtil.setConstraints(2,9,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
+        picb.anchor = GridBagConstraints.WEST;
+        pointPanel.add(pointIconColorButton, picb);
+        
+        pointPanel.add(pointIconScaleLabel, GuiUtil.setConstraints(1,10,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
+		SpinnerModel pointIconScaleModel = new SpinnerNumberModel(1.0,0.1,9.9,0.1);
+		pointIconScaleSpinner = new JSpinner(pointIconScaleModel);
+        GridBagConstraints piss = GuiUtil.setConstraints(2,10,1.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,BORDER_THICKNESS);
+        piss.anchor = GridBagConstraints.WEST;
+        pointPanel.add(pointIconScaleSpinner, piss);
+		
+		// Curve Panel...
 		curvePanel = new JPanel();
 		add(curvePanel, GuiUtil.setConstraints(0,1,2,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 		curvePanel.setLayout(new GridBagLayout());
 		curvePanel.setBorder(BorderFactory.createTitledBorder(""));
 
 		curvePanel.add(curveAltitudeModeLabel, GuiUtil.setConstraints(0,0,0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,0));
-		curvePanel.add(curveAltitudeModeComboBox, GuiUtil.setConstraints(1,0,1.0,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,BORDER_THICKNESS,BORDER_THICKNESS));
+		curvePanel.add(curveAltitudeModeComboBox, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
 
-		curvePanel.add(curveThicknessLabel, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+		JPanel curveDisplayFormPanel = new JPanel();
+		curveDisplayFormPanel.setLayout(new GridBagLayout());
+		curvePanel.add(curveDisplayFormPanel, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,BORDER_THICKNESS));
+		
+		curveDisplayFormPanel.add(curveThicknessLabel, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
 		SpinnerModel curveThicknessModel = new SpinnerNumberModel(1.0,0.1,9.9,0.1);
 		curveThicknessSpinner = new JSpinner(curveThicknessModel);
-        GridBagConstraints cts = GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,BORDER_THICKNESS);
+        GridBagConstraints cts = GuiUtil.setConstraints(1,2,1.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,BORDER_THICKNESS);
         cts.anchor = GridBagConstraints.WEST;
-        curvePanel.add(curveThicknessSpinner, cts);
+        curveDisplayFormPanel.add(curveThicknessSpinner, cts);
 
-		curvePanel.add(curveNormalColorLabel, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+        curveDisplayFormPanel.add(curveNormalColorLabel, GuiUtil.setConstraints(0,3,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
 		curveNormalColorButton.setPreferredSize(curveThicknessSpinner.getPreferredSize());
 		curveNormalColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_COLOR, true));
 		curveNormalColorButton.setContentAreaFilled(false);
 		curveNormalColorButton.setOpaque(true);
-        GridBagConstraints ccb = GuiUtil.setConstraints(1,2,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
+        GridBagConstraints ccb = GuiUtil.setConstraints(1,3,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         ccb.anchor = GridBagConstraints.WEST;
-		curvePanel.add(curveNormalColorButton, ccb);
+        curveDisplayFormPanel.add(curveNormalColorButton, ccb);
 		
 		curveHighlightingCheckbox.setIconTextGap(10);
-		GridBagConstraints chlc = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,0,BORDER_THICKNESS,0);
+		GridBagConstraints chlc = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,0,BORDER_THICKNESS,0);
 		chlc.gridwidth = 2;
-		curvePanel.add(curveHighlightingCheckbox, chlc);
+		curveDisplayFormPanel.add(curveHighlightingCheckbox, chlc);
 
-		curvePanel.add(curveHighlightingThicknessLabel, GuiUtil.setConstraints(0,4,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
+		curveDisplayFormPanel.add(curveHighlightingThicknessLabel, GuiUtil.setConstraints(0,5,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		SpinnerModel curveHighlightingThicknessModel = new SpinnerNumberModel(2.0,0.1,9.9,0.1);
 		curveHighlightingThicknessSpinner = new JSpinner(curveHighlightingThicknessModel);
-        GridBagConstraints chts = GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,BORDER_THICKNESS);
+        GridBagConstraints chts = GuiUtil.setConstraints(1,5,1.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,BORDER_THICKNESS);
         chts.anchor = GridBagConstraints.WEST;
-        curvePanel.add(curveHighlightingThicknessSpinner, chts);
+        curveDisplayFormPanel.add(curveHighlightingThicknessSpinner, chts);
 
-        curvePanel.add(curveHighlightingColorLabel, GuiUtil.setConstraints(0,5,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
+        curveDisplayFormPanel.add(curveHighlightingColorLabel, GuiUtil.setConstraints(0,6,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		curveHighlightingColorButton.setPreferredSize(curveThicknessSpinner.getPreferredSize());
 		curveHighlightingColorButton.setBackground(new Color(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR, true));
 		curveHighlightingColorButton.setContentAreaFilled(false);
 		curveHighlightingColorButton.setOpaque(true);
-        GridBagConstraints chlcb = GuiUtil.setConstraints(1,5,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
+        GridBagConstraints chlcb = GuiUtil.setConstraints(1,6,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
         chlcb.anchor = GridBagConstraints.WEST;
-		curvePanel.add(curveHighlightingColorButton, chlcb);
-		
+        curveDisplayFormPanel.add(curveHighlightingColorButton, chlcb);
 
-		pointNormalColorButton.addActionListener(new ActionListener() {
+        
+        iconRButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color pointNormalColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.choosePointColor"),
-													 pointNormalColorButton.getBackground());
-				if (pointNormalColor != null)
-					pointNormalColorButton.setBackground(pointNormalColor);
+				setEnabledComponents();
 			}
 		});
-
-		pointHighlightingCheckbox.addActionListener(new ActionListener() {
+        
+        crossLineRButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setEnabledComponents();
 			}
 		});
 
-		pointHighlightingColorButton.addActionListener(new ActionListener() {
+		pointCrossLineNormalColorButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Color pointNormalColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.choosePointColor"),
+													 pointCrossLineNormalColorButton.getBackground());
+				if (pointNormalColor != null)
+					pointCrossLineNormalColorButton.setBackground(pointNormalColor);
+			}
+		});
+
+		pointCrossLineHighlightingCheckbox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setEnabledComponents();
+			}
+		});
+
+		pointCrossLineHighlightingColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Color pointHighlightingColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.choosePointHighlightingColor"),
-														   pointHighlightingColorButton.getBackground());
+														   pointCrossLineHighlightingColorButton.getBackground());
 				if (pointHighlightingColor != null)
-					pointHighlightingColorButton.setBackground(pointHighlightingColor);
+					pointCrossLineHighlightingColorButton.setBackground(pointHighlightingColor);
+			}
+		});
+		
+		pointIconColorButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Color pointIconColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.choosePointIconColor"),
+						pointIconColorButton.getBackground());
+				if (pointIconColor != null)
+					pointIconColorButton.setBackground(pointIconColor);
 			}
 		});
 
@@ -292,13 +375,19 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         for (AltitudeMode c: AltitudeMode.values()) {
         	pointAltitudeModeComboBox.addItem(c);
         }
-
-        pointAltitudeModeComboBox.setSelectedItem(config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getCurveAltitudeMode());
-        pointThicknessLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveThickness"));
-        pointNormalColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveColor"));
-		pointHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
-		pointHighlightingThicknessLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveHighlightingThickness"));
-		pointHighlightingColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveHighlightingColor"));
+        
+        iconRButton.setText(Internal.I18N.getString("pref.kmlexport.pointdisplay.mode.label.icon"));
+        crossLineRButton.setText(Internal.I18N.getString("pref.kmlexport.pointdisplay.mode.label.cross"));
+        
+        pointIconColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.pointIconColor"));
+        pointIconScaleLabel.setText(Internal.I18N.getString("pref.kmlexport.label.pointIconScale"));
+        pointAltitudeModeComboBox.setSelectedItem(config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getPointAltitudeMode());
+       
+        pointCrossLineThicknessLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveThickness"));
+        pointCrossLineNormalColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveColor"));
+		pointCrossLineHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
+		pointCrossLineHighlightingThicknessLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveHighlightingThickness"));
+		pointCrossLineHighlightingColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveHighlightingColor"));
 
 		((TitledBorder)curvePanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.border.curve"));	
     	curveAltitudeModeLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveAltitudeMode"));
@@ -319,13 +408,25 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 	public void loadSettings() {
 
 		PointAndCurve pacSettings = config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve();
+		
+		switch (pacSettings.getPointDisplayMode()) {
+		case ICON:
+			iconRButton.setSelected(true);
+			break;
+		case CROSS_LINE:
+			crossLineRButton.setSelected(true);
+			break;
+		}
 
 		pointAltitudeModeComboBox.setSelectedItem(pacSettings.getPointAltitudeMode());
-		pointThicknessSpinner.setValue(pacSettings.getPointThickness());
-		pointNormalColorButton.setBackground(new Color(pacSettings.getPointNormalColor()));
-		pointHighlightingCheckbox.setSelected(pacSettings.isPointHighlightingEnabled());
-		pointHighlightingThicknessSpinner.setValue(pacSettings.getPointHighlightedThickness());
-		pointHighlightingColorButton.setBackground(new Color(pacSettings.getPointHighlightedColor()));
+		pointCrossLineThicknessSpinner.setValue(pacSettings.getPointThickness());
+		pointCrossLineNormalColorButton.setBackground(new Color(pacSettings.getPointNormalColor()));
+		pointCrossLineHighlightingCheckbox.setSelected(pacSettings.isPointHighlightingEnabled());
+		pointCrossLineHighlightingThicknessSpinner.setValue(pacSettings.getPointHighlightedThickness());
+		pointCrossLineHighlightingColorButton.setBackground(new Color(pacSettings.getPointHighlightedColor()));
+		
+		pointIconColorButton.setBackground(new Color(pacSettings.getPointIconColor()));
+		pointIconScaleSpinner.setValue(pacSettings.getPointIconScale());
 
 		curveAltitudeModeComboBox.setSelectedItem(pacSettings.getCurveAltitudeMode());
 		curveThicknessSpinner.setValue(pacSettings.getCurveThickness());
@@ -342,20 +443,33 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 
 		PointAndCurve pacSettings = config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve();
 
+		if (iconRButton.isSelected()) {
+			pacSettings.setPointDisplayMode(PointDisplayMode.ICON);
+		}
+		else if (crossLineRButton.isSelected()) {
+			pacSettings.setPointDisplayMode(PointDisplayMode.CROSS_LINE);
+		}
+		
 		pacSettings.setPointAltitudeMode((AltitudeMode)pointAltitudeModeComboBox.getSelectedItem());
-		pacSettings.setPointThickness(((Double)pointThicknessSpinner.getValue()).doubleValue());
-		pacSettings.setPointNormalColor((new Color(pointNormalColorButton.getBackground().getRed(),
-												   pointNormalColorButton.getBackground().getGreen(),
-												   pointNormalColorButton.getBackground().getBlue(),
+		pacSettings.setPointThickness(((Double)pointCrossLineThicknessSpinner.getValue()).doubleValue());
+		pacSettings.setPointNormalColor((new Color(pointCrossLineNormalColorButton.getBackground().getRed(),
+												   pointCrossLineNormalColorButton.getBackground().getGreen(),
+												   pointCrossLineNormalColorButton.getBackground().getBlue(),
 				  								   DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB()); //
-		pacSettings.setPointHighlightingEnabled(pointHighlightingCheckbox.isSelected());
-		pacSettings.setPointHighlightedThickness(((Double)pointHighlightingThicknessSpinner.getValue()).doubleValue());
-		pacSettings.setPointHighlightedColor((new Color(pointHighlightingColorButton.getBackground().getRed(),
-														pointHighlightingColorButton.getBackground().getGreen(),
-														pointHighlightingColorButton.getBackground().getBlue(),
+		pacSettings.setPointHighlightingEnabled(pointCrossLineHighlightingCheckbox.isSelected());
+		pacSettings.setPointHighlightedThickness(((Double)pointCrossLineHighlightingThicknessSpinner.getValue()).doubleValue());
+		pacSettings.setPointHighlightedColor((new Color(pointCrossLineHighlightingColorButton.getBackground().getRed(),
+														pointCrossLineHighlightingColorButton.getBackground().getGreen(),
+														pointCrossLineHighlightingColorButton.getBackground().getBlue(),
 														DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB()); //
 
-
+		pacSettings.setPointIconColor((new Color(pointIconColorButton.getBackground().getRed(),
+														pointIconColorButton.getBackground().getGreen(),
+														pointIconColorButton.getBackground().getBlue(),
+														DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB());
+		pacSettings.setPointIconScale(((Double)pointIconScaleSpinner.getValue()).doubleValue());
+		
+		
 		pacSettings.setCurveAltitudeMode((AltitudeMode)curveAltitudeModeComboBox.getSelectedItem());
 		pacSettings.setCurveThickness(((Double)curveThicknessSpinner.getValue()).doubleValue());
 		pacSettings.setCurveNormalColor((new Color(curveNormalColorButton.getBackground().getRed(),
@@ -371,11 +485,22 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 	}
 
 	private void setEnabledComponents() {
-		pointHighlightingColorLabel.setEnabled(pointHighlightingCheckbox.isSelected());
-		pointHighlightingColorButton.setEnabled(pointHighlightingCheckbox.isSelected());
-		pointHighlightingThicknessLabel.setEnabled(pointHighlightingCheckbox.isSelected());
-		pointHighlightingThicknessSpinner.setEnabled(pointHighlightingCheckbox.isSelected());
-
+		
+		pointIconColorLabel.setEnabled(!crossLineRButton.isSelected());
+		pointIconColorButton.setEnabled(!crossLineRButton.isSelected());
+		pointIconScaleLabel.setEnabled(!crossLineRButton.isSelected());
+		pointIconScaleSpinner.setEnabled(!crossLineRButton.isSelected());
+				
+		pointCrossLineThicknessLabel.setEnabled(crossLineRButton.isSelected());
+		pointCrossLineThicknessSpinner.setEnabled(crossLineRButton.isSelected());
+		pointCrossLineNormalColorLabel.setEnabled(crossLineRButton.isSelected());
+		pointCrossLineNormalColorButton.setEnabled(crossLineRButton.isSelected());
+		pointCrossLineHighlightingCheckbox.setEnabled(crossLineRButton.isSelected());
+		pointCrossLineHighlightingColorLabel.setEnabled(pointCrossLineHighlightingCheckbox.isSelected()&&crossLineRButton.isSelected());
+		pointCrossLineHighlightingColorButton.setEnabled(pointCrossLineHighlightingCheckbox.isSelected()&&crossLineRButton.isSelected());
+		pointCrossLineHighlightingThicknessLabel.setEnabled(pointCrossLineHighlightingCheckbox.isSelected()&&crossLineRButton.isSelected());
+		pointCrossLineHighlightingThicknessSpinner.setEnabled(pointCrossLineHighlightingCheckbox.isSelected()&&crossLineRButton.isSelected());
+		
 		curveHighlightingColorLabel.setEnabled(curveHighlightingCheckbox.isSelected());
 		curveHighlightingColorButton.setEnabled(curveHighlightingCheckbox.isSelected());
 		curveHighlightingThicknessLabel.setEnabled(curveHighlightingCheckbox.isSelected());

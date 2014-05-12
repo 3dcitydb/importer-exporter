@@ -52,6 +52,7 @@ import net.opengis.kml._2.LocationType;
 import net.opengis.kml._2.ModelType;
 import net.opengis.kml._2.MultiGeometryType;
 import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PointType;
 import net.opengis.kml._2.PolygonType;
 
 import org.citygml.textureAtlas.image.ImageReader;
@@ -71,6 +72,7 @@ import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.config.project.kmlExporter.PointAndCurve;
+import de.tub.citydb.config.project.kmlExporter.PointDisplayMode;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.BlobExportAdapter;
 import de.tub.citydb.log.Logger;
@@ -848,6 +850,7 @@ public class GenericCityObject extends KmlGenericObject{
 
 			PlacemarkType placemark = kmlFactory.createPlacemarkType();
 			LineStringType lineString = kmlFactory.createLineStringType();
+			PointType pointString = kmlFactory.createPointType();
 
 			Object buildingGeometryObj = rs.getObject(1); 
 
@@ -858,50 +861,81 @@ public class GenericCityObject extends KmlGenericObject{
 			if (pointOrCurveGeometry.getGeometryType() == GeometryObject.GeometryType.POINT) { // point
 				isPoint = true; // dirty hack, don't try this at home
 				double[] ordinatesArray = convertToWGS84(pointOrCurveGeometry).getCoordinates(0);
-
-				double[] ordinatesArrayTopLeft = new double[2];
-				ordinatesArrayTopLeft[0] = pointOrCurveGeometry.getCoordinates(0)[0] - 1; 
-				ordinatesArrayTopLeft[1] = pointOrCurveGeometry.getCoordinates(0)[1] + 1; 
-				ordinatesArrayTopLeft = super.convertPointCoordinatesToWGS84(ordinatesArrayTopLeft);
-
-				double[] ordinatesArrayBottomRight = new double[2];
-				ordinatesArrayBottomRight[0] = pointOrCurveGeometry.getCoordinates(0)[0] + 1; 
-				ordinatesArrayBottomRight[1] = pointOrCurveGeometry.getCoordinates(0)[1] - 1; 
-				ordinatesArrayBottomRight = super.convertPointCoordinatesToWGS84(ordinatesArrayBottomRight);
-
 				double zOrdinate = ordinatesArray[2] + zOffset;
-				if (pacSettings.getCurveAltitudeMode() == AltitudeMode.CLAMP_TO_GROUND) {
-					// tiny extrude above the ground
-					zOrdinate = 0.1;
+				
+				if (pacSettings.getPointDisplayMode() == PointDisplayMode.CROSS_LINE){
+					double[] ordinatesArrayTopLeft = new double[2];
+					ordinatesArrayTopLeft[0] = pointOrCurveGeometry.getCoordinates(0)[0] - 1; 
+					ordinatesArrayTopLeft[1] = pointOrCurveGeometry.getCoordinates(0)[1] + 1; 
+					ordinatesArrayTopLeft = super.convertPointCoordinatesToWGS84(ordinatesArrayTopLeft);
+
+					double[] ordinatesArrayBottomRight = new double[2];
+					ordinatesArrayBottomRight[0] = pointOrCurveGeometry.getCoordinates(0)[0] + 1; 
+					ordinatesArrayBottomRight[1] = pointOrCurveGeometry.getCoordinates(0)[1] - 1; 
+					ordinatesArrayBottomRight = super.convertPointCoordinatesToWGS84(ordinatesArrayBottomRight);
+
+					
+					if (pacSettings.getCurveAltitudeMode() == AltitudeMode.CLAMP_TO_GROUND) {
+						// tiny extrude above the ground
+						zOrdinate = 0.1;
+					}
+					// draw an X
+					lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
+							+ reducePrecisionForZ(zOrdinate)));
+
+					lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
+							+ reducePrecisionForZ(zOrdinate)));
+
+					lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArray[1]) + ","
+							+ reducePrecisionForZ(zOrdinate)));
+
+					lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
+							+ reducePrecisionForZ(zOrdinate)));
+
+					lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
+							+ reducePrecisionForZ(zOrdinate)));
+
+					if (pacSettings.isPointHighlightingEnabled())
+						placemark.setStyleUrl("#" + getStyleBasisName() + GenericCityObject.POINT + "Style");
+					else
+						placemark.setStyleUrl("#" + getStyleBasisName() + GenericCityObject.POINT + "Normal");
+
+					switch (pacSettings.getPointAltitudeMode()) {
+					case ABSOLUTE:
+						lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
+						break;
+					case RELATIVE:
+					case CLAMP_TO_GROUND: // to make point geometry over curve geometry
+						lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+						break;
+					}
+					placemark.setAbstractGeometryGroup(kmlFactory.createLineString(lineString));
 				}
-				// draw an X
-				lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
-						+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
-						+ reducePrecisionForZ(zOrdinate)));
-
-				lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
-						+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
-						+ reducePrecisionForZ(zOrdinate)));
-
-				lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[0]) + "," 
-						+ reducePrecisionForXorY(ordinatesArray[1]) + ","
-						+ reducePrecisionForZ(zOrdinate)));
-
-				lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
-						+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
-						+ reducePrecisionForZ(zOrdinate)));
-
-				lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
-						+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
-						+ reducePrecisionForZ(zOrdinate)));
-
-				placemark.setName(work.getGmlId() + "_" + POINT);
-
-				if (pacSettings.isPointHighlightingEnabled())
-					placemark.setStyleUrl("#" + getStyleBasisName() + GenericCityObject.POINT + "Style");
-				else
+				else if (pacSettings.getPointDisplayMode() == PointDisplayMode.ICON) {
+					pointString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArray[1]) + ","
+							+ reducePrecisionForZ(zOrdinate)));
 					placemark.setStyleUrl("#" + getStyleBasisName() + GenericCityObject.POINT + "Normal");
-
+					switch (pacSettings.getPointAltitudeMode()) {
+					case ABSOLUTE:
+						pointString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
+						break;
+					case RELATIVE:
+						pointString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+						break;
+					case CLAMP_TO_GROUND:
+						pointString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
+						break;
+					}
+					placemark.setAbstractGeometryGroup(kmlFactory.createPoint(pointString));
+				}
+				
+				placemark.setName(work.getGmlId() + "_" + POINT);
 				// replace default BalloonTemplateHandler with a brand new one, this costs resources!
 				if (pacSettings.getPointBalloon() != null && pacSettings.getPointBalloon().isIncludeDescription() &&
 						pacSettings.getPointBalloon().getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
@@ -911,15 +945,7 @@ public class GenericCityObject extends KmlGenericObject{
 					}
 					addBalloonContents(placemark, work.getId());
 				}
-				switch (pacSettings.getCurveAltitudeMode()) {
-				case ABSOLUTE:
-					lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
-					break;
-				case RELATIVE:
-				case CLAMP_TO_GROUND: // to make point geometry over curve geometry
-					lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
-					break;
-				}
+
 			}
 			else { // curve
 				pointOrCurveGeometry = convertToWGS84(pointOrCurveGeometry);
@@ -958,10 +984,9 @@ public class GenericCityObject extends KmlGenericObject{
 					lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
 					break;
 				}
+				placemark.setAbstractGeometryGroup(kmlFactory.createLineString(lineString));
 			}
 
-
-			placemark.setAbstractGeometryGroup(kmlFactory.createLineString(lineString));
 			placemark.setId(/* DisplayForm.GEOMETRY_PLACEMARK_ID + */ placemark.getName());
 			placemarkList.add(placemark);
 		}

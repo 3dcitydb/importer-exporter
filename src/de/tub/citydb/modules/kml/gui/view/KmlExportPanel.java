@@ -1161,11 +1161,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		themeComboBox.setEnabled(dbPool.isConnected() && colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 		fetchThemesButton.setEnabled(colladaCheckbox.isEnabled() && colladaCheckbox.isSelected());
 
-	//	fcTree.getCheckingModel().setPathEnabled(new TreePath(building.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
 		fcTree.getCheckingModel().setPathEnabled(new TreePath(vegetation.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
 		fcTree.getCheckingModel().setPathEnabled(new TreePath(relief.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
 		fcTree.getCheckingModel().setPathEnabled(new TreePath(cityFurniture.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
 		fcTree.getCheckingModel().setPathEnabled(new TreePath(cityObjectGroup.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
+		fcTree.getCheckingModel().setPathEnabled(new TreePath(bridge.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
+		fcTree.getCheckingModel().setPathEnabled(new TreePath(tunnel.getPath()), boundingBoxRadioButton.isSelected() && (lodComboBox.getSelectedIndex() > 0));
 		fcTree.repaint();
 
 	}

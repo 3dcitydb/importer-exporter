@@ -54,9 +54,12 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.namespace.QName;
 
 import net.opengis.kml._2.BalloonStyleType;
+import net.opengis.kml._2.BasicLinkType;
 import net.opengis.kml._2.DocumentType;
 import net.opengis.kml._2.FolderType;
+import net.opengis.kml._2.IconStyleType;
 import net.opengis.kml._2.KmlType;
+import net.opengis.kml._2.LabelStyleType;
 import net.opengis.kml._2.LatLonAltBoxType;
 import net.opengis.kml._2.LineStringType;
 import net.opengis.kml._2.LineStyleType;
@@ -67,8 +70,11 @@ import net.opengis.kml._2.NetworkLinkType;
 import net.opengis.kml._2.ObjectFactory;
 import net.opengis.kml._2.PairType;
 import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PointType;
 import net.opengis.kml._2.PolyStyleType;
 import net.opengis.kml._2.RegionType;
+import net.opengis.kml._2.ScaleElement;
+import net.opengis.kml._2.ScaleType;
 import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
@@ -79,6 +85,7 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXFragmentWriter;
 import org.citygml4j.util.xml.SAXFragmentWriter.WriteMode;
 import org.citygml4j.util.xml.SAXWriter;
+import org.jdesktop.swingx.border.IconBorder;
 import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.PoolSizeAdaptationStrategy;
@@ -103,6 +110,7 @@ import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.PointAndCurve;
+import de.tub.citydb.config.project.kmlExporter.PointDisplayMode;
 import de.tub.citydb.config.project.resources.Resources;
 import de.tub.citydb.database.DatabaseConnectionPool;
 
@@ -991,40 +999,61 @@ public class KmlExporter implements EventHandler {
 		balloonStyle.setText("$[description]");
 
 		PointAndCurve pacSettings = config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve();
-
-		LineStyleType pointLineStyleNormal = kmlFactory.createLineStyleType();
-		pointLineStyleNormal.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointNormalColor()))));
-		pointLineStyleNormal.setWidth(pacSettings.getPointThickness());
-		StyleType pointStyleNormal = kmlFactory.createStyleType();
-		pointStyleNormal.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Normal");
-		pointStyleNormal.setLineStyle(pointLineStyleNormal);
-		pointStyleNormal.setBalloonStyle(balloonStyle);
-
-		marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxBuffer);
 		
-		if (pacSettings.isPointHighlightingEnabled()) {
-			LineStyleType pointLineStyleHighlight = kmlFactory.createLineStyleType();
-			pointLineStyleHighlight.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointHighlightedColor()))));
-			pointLineStyleHighlight.setWidth(pacSettings.getPointHighlightedThickness());
-			StyleType pointStyleHighlight = kmlFactory.createStyleType();
-			pointStyleHighlight.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Highlight");
-			pointStyleHighlight.setLineStyle(pointLineStyleHighlight);
-			pointStyleHighlight.setBalloonStyle(balloonStyle);
-
-			PairType pairPointNormal = kmlFactory.createPairType();
-			pairPointNormal.setKey(StyleStateEnumType.NORMAL);
-			pairPointNormal.setStyleUrl("#" + pointStyleNormal.getId());
-			PairType pairPointHighlight = kmlFactory.createPairType();
-			pairPointHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
-			pairPointHighlight.setStyleUrl("#" + pointStyleHighlight.getId());
-			StyleMapType styleMapPoint = kmlFactory.createStyleMapType();
-			styleMapPoint.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Style");
-			styleMapPoint.getPair().add(pairPointNormal);
-			styleMapPoint.getPair().add(pairPointHighlight);
-
-			marshaller.marshal(kmlFactory.createStyle(pointStyleHighlight), saxBuffer);
-			marshaller.marshal(kmlFactory.createStyleMap(styleMapPoint), saxBuffer);
+		if (pacSettings.getPointDisplayMode() == PointDisplayMode.ICON) {
+			StyleType pointStyleNormal = kmlFactory.createStyleType();
+			LabelStyleType labelStyleType = kmlFactory.createLabelStyleType();
+			labelStyleType.setScale(0.0);
+			pointStyleNormal.setLabelStyle(labelStyleType);
+			
+			IconStyleType iconStyleType = kmlFactory.createIconStyleType();
+			iconStyleType.setScale(pacSettings.getPointIconScale());
+			iconStyleType.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointIconColor()))));
+			BasicLinkType icon = kmlFactory.createBasicLinkType();
+			icon.setHref(PointAndCurve.DefaultIconHref);
+			iconStyleType.setIcon(icon);
+			pointStyleNormal.setIconStyle(iconStyleType);
+			
+			pointStyleNormal.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Normal");
+			marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxBuffer);
 		}
+		else {
+			LineStyleType pointLineStyleNormal = kmlFactory.createLineStyleType();
+			pointLineStyleNormal.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointNormalColor()))));
+			pointLineStyleNormal.setWidth(pacSettings.getPointThickness());
+			StyleType pointStyleNormal = kmlFactory.createStyleType();
+			pointStyleNormal.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Normal");
+			pointStyleNormal.setLineStyle(pointLineStyleNormal);
+			pointStyleNormal.setBalloonStyle(balloonStyle);
+
+			marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxBuffer);
+			
+			if (pacSettings.isPointHighlightingEnabled()) {
+				LineStyleType pointLineStyleHighlight = kmlFactory.createLineStyleType();
+				pointLineStyleHighlight.setColor(hexStringToByteArray(DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointHighlightedColor()))));
+				pointLineStyleHighlight.setWidth(pacSettings.getPointHighlightedThickness());
+				StyleType pointStyleHighlight = kmlFactory.createStyleType();
+				pointStyleHighlight.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Highlight");
+				pointStyleHighlight.setLineStyle(pointLineStyleHighlight);
+				pointStyleHighlight.setBalloonStyle(balloonStyle);
+
+				PairType pairPointNormal = kmlFactory.createPairType();
+				pairPointNormal.setKey(StyleStateEnumType.NORMAL);
+				pairPointNormal.setStyleUrl("#" + pointStyleNormal.getId());
+				PairType pairPointHighlight = kmlFactory.createPairType();
+				pairPointHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
+				pairPointHighlight.setStyleUrl("#" + pointStyleHighlight.getId());
+				StyleMapType styleMapPoint = kmlFactory.createStyleMapType();
+				styleMapPoint.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Style");
+				styleMapPoint.getPair().add(pairPointNormal);
+				styleMapPoint.getPair().add(pairPointHighlight);
+
+				marshaller.marshal(kmlFactory.createStyle(pointStyleHighlight), saxBuffer);
+				marshaller.marshal(kmlFactory.createStyleMap(styleMapPoint), saxBuffer);
+			}			
+		}
+
+
 		
 		
 		LineStyleType lineStyleNormal = kmlFactory.createLineStyleType();
