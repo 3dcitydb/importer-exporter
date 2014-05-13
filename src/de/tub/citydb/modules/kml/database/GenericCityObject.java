@@ -934,6 +934,193 @@ public class GenericCityObject extends KmlGenericObject{
 					}
 					placemark.setAbstractGeometryGroup(kmlFactory.createPoint(pointString));
 				}
+				else if (pacSettings.getPointDisplayMode() == PointDisplayMode.CUBE) {
+					
+					double sideLength = pacSettings.getPointCubeLengthOfSide();
+					MultiGeometryType multiGeometry =  kmlFactory.createMultiGeometryType();					
+					double[] ordinatesArrayTopLeft = new double[2];
+					ordinatesArrayTopLeft[0] = pointOrCurveGeometry.getCoordinates(0)[0] - sideLength/2; 
+					ordinatesArrayTopLeft[1] = pointOrCurveGeometry.getCoordinates(0)[1] + sideLength/2; 
+					ordinatesArrayTopLeft = super.convertPointCoordinatesToWGS84(ordinatesArrayTopLeft);
+
+					double[] ordinatesArrayBottomRight = new double[2];
+					ordinatesArrayBottomRight[0] = pointOrCurveGeometry.getCoordinates(0)[0] + sideLength/2; 
+					ordinatesArrayBottomRight[1] = pointOrCurveGeometry.getCoordinates(0)[1] - sideLength/2; 
+					ordinatesArrayBottomRight = super.convertPointCoordinatesToWGS84(ordinatesArrayBottomRight);
+					
+					if (pacSettings.getCurveAltitudeMode() == AltitudeMode.CLAMP_TO_GROUND) {
+						zOrdinate = 0.0;
+					}
+					
+					String topLeftFootNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
+							+ reducePrecisionForZ(zOrdinate));
+					String bottomLeftFootNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
+							+ reducePrecisionForZ(zOrdinate));
+					String bottomRightFootNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
+							+ reducePrecisionForZ(zOrdinate));
+					String topRightFootNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
+							+ reducePrecisionForZ(zOrdinate));
+					String topLeftRoofNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
+							+ reducePrecisionForZ(zOrdinate + sideLength));
+					String bottomLeftRoofNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
+							+ reducePrecisionForZ(zOrdinate + sideLength));
+					String bottomRightRoofNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArrayBottomRight[1]) + ","
+							+ reducePrecisionForZ(zOrdinate + sideLength)); 
+					String topRightRoofNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
+							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
+							+ reducePrecisionForZ(zOrdinate + sideLength));				
+					
+					LinearRingType LinearRingElement = kmlFactory.createLinearRingType();
+					
+
+
+					// bottom side					
+					LinearRingElement.getCoordinates().add(topLeftFootNode);					
+					LinearRingElement.getCoordinates().add(bottomLeftFootNode);
+					LinearRingElement.getCoordinates().add(bottomRightFootNode);
+					LinearRingElement.getCoordinates().add(topRightFootNode);
+					LinearRingElement.getCoordinates().add(topLeftFootNode);
+					BoundaryType boundary = kmlFactory.createBoundaryType();
+					boundary.setLinearRing(LinearRingElement);
+					PolygonType polygon = kmlFactory.createPolygonType();
+					polygon.setOuterBoundaryIs(boundary);					
+					switch (pacSettings.getPointAltitudeMode()) {
+					case ABSOLUTE:
+						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
+						break;
+					case RELATIVE:
+					case CLAMP_TO_GROUND:
+						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+						break;
+					}
+					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+					
+					// top side
+					LinearRingElement = kmlFactory.createLinearRingType();
+					LinearRingElement.getCoordinates().add(topLeftRoofNode);
+					LinearRingElement.getCoordinates().add(bottomLeftRoofNode);
+					LinearRingElement.getCoordinates().add(bottomRightRoofNode);
+					LinearRingElement.getCoordinates().add(topRightRoofNode);
+					LinearRingElement.getCoordinates().add(topLeftRoofNode);					
+					boundary = kmlFactory.createBoundaryType();
+					boundary.setLinearRing(LinearRingElement);
+					polygon = kmlFactory.createPolygonType();
+					polygon.setOuterBoundaryIs(boundary);	
+					switch (pacSettings.getPointAltitudeMode()) {
+					case ABSOLUTE:
+						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
+						break;
+					case RELATIVE:
+					case CLAMP_TO_GROUND:
+						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+						break;
+					}
+					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+					
+					// left side
+					LinearRingElement = kmlFactory.createLinearRingType();
+					LinearRingElement.getCoordinates().add(topLeftRoofNode);
+					LinearRingElement.getCoordinates().add(topLeftFootNode);
+					LinearRingElement.getCoordinates().add(bottomLeftFootNode);
+					LinearRingElement.getCoordinates().add(bottomLeftRoofNode);
+					LinearRingElement.getCoordinates().add(topLeftRoofNode);	
+					boundary = kmlFactory.createBoundaryType();
+					boundary.setLinearRing(LinearRingElement);
+					polygon = kmlFactory.createPolygonType();
+					polygon.setOuterBoundaryIs(boundary);	
+					switch (pacSettings.getPointAltitudeMode()) {
+					case ABSOLUTE:
+						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
+						break;
+					case RELATIVE:
+					case CLAMP_TO_GROUND:
+						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+						break;
+					}
+					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+					
+					// right side
+					LinearRingElement = kmlFactory.createLinearRingType();
+					LinearRingElement.getCoordinates().add(topRightRoofNode);
+					LinearRingElement.getCoordinates().add(bottomRightRoofNode);
+					LinearRingElement.getCoordinates().add(bottomRightFootNode);
+					LinearRingElement.getCoordinates().add(topRightFootNode);
+					LinearRingElement.getCoordinates().add(topRightRoofNode);	
+					boundary = kmlFactory.createBoundaryType();
+					boundary.setLinearRing(LinearRingElement);
+					polygon = kmlFactory.createPolygonType();
+					polygon.setOuterBoundaryIs(boundary);	
+					switch (pacSettings.getPointAltitudeMode()) {
+					case ABSOLUTE:
+						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
+						break;
+					case RELATIVE:
+					case CLAMP_TO_GROUND:
+						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+						break;
+					}
+					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+					
+					// front side
+					LinearRingElement = kmlFactory.createLinearRingType();
+					LinearRingElement.getCoordinates().add(topLeftRoofNode);
+					LinearRingElement.getCoordinates().add(topRightRoofNode);
+					LinearRingElement.getCoordinates().add(topRightFootNode);
+					LinearRingElement.getCoordinates().add(topLeftFootNode);
+					LinearRingElement.getCoordinates().add(topLeftRoofNode);	
+					boundary = kmlFactory.createBoundaryType();
+					boundary.setLinearRing(LinearRingElement);
+					polygon = kmlFactory.createPolygonType();
+					polygon.setOuterBoundaryIs(boundary);	
+					switch (pacSettings.getPointAltitudeMode()) {
+					case ABSOLUTE:
+						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
+						break;
+					case RELATIVE:
+					case CLAMP_TO_GROUND:
+						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+						break;
+					}
+					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+					
+					// back side
+					LinearRingElement = kmlFactory.createLinearRingType();
+					LinearRingElement.getCoordinates().add(bottomLeftRoofNode);
+					LinearRingElement.getCoordinates().add(bottomLeftFootNode);
+					LinearRingElement.getCoordinates().add(bottomRightFootNode);
+					LinearRingElement.getCoordinates().add(bottomRightRoofNode);
+					LinearRingElement.getCoordinates().add(bottomLeftRoofNode);	
+					boundary = kmlFactory.createBoundaryType();
+					boundary.setLinearRing(LinearRingElement);
+					polygon = kmlFactory.createPolygonType();
+					polygon.setOuterBoundaryIs(boundary);	
+					switch (pacSettings.getPointAltitudeMode()) {
+					case ABSOLUTE:
+						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
+						break;
+					case RELATIVE:
+					case CLAMP_TO_GROUND:
+						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+						break;
+					}
+					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+
+					// setting Style references
+					if (pacSettings.isPointCubeHighlightingEnabled())
+						placemark.setStyleUrl("#" + getStyleBasisName() + GenericCityObject.POINT + "Style");
+					else
+						placemark.setStyleUrl("#" + getStyleBasisName() + GenericCityObject.POINT + "Normal");
+
+
+					placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));					
+				}
 				
 				placemark.setName(work.getGmlId() + "_" + POINT);
 				// replace default BalloonTemplateHandler with a brand new one, this costs resources!

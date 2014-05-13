@@ -84,9 +84,18 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 	private JLabel pointCrossLineHighlightingColorLabel = new JLabel();
 	private JButton pointCrossLineHighlightingColorButton = new JButton(" ");
 	
+	
 	private JRadioButton iconRButton = new JRadioButton();
 	private JRadioButton crossLineRButton = new JRadioButton();
+	private JRadioButton cubeRButton = new JRadioButton();
 
+	private JLabel pointCubeLengthOfSideLabel = new JLabel();
+	private JSpinner pointCubeLengthOfSideSpinner;
+	private JLabel pointCubeFillColorLabel = new JLabel();
+	private JButton pointCubeFillColorButton = new JButton(" ");
+	private JCheckBox pointCubeHighlightingCheckbox = new JCheckBox();
+	private JLabel pointCubeHighlightingColorLabel = new JLabel();
+	private JButton pointCubeHighlightingColorButton = new JButton(" ");
 
 	private JPanel curvePanel;
 	private JLabel curveAltitudeModeLabel = new JLabel();
@@ -126,6 +135,10 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 			if (!iconRButton.isSelected())
 				return true;
 			break;
+		case CUBE:
+			if (!cubeRButton.isSelected())
+				return true;
+			break;
 		}
 
 		if (!pacSettings.getPointAltitudeMode().equals(pointAltitudeModeComboBox.getSelectedItem())) return true;
@@ -147,6 +160,16 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 																 DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB()) return true;
 		if (pacSettings.getPointIconScale() != ((Double)pointIconScaleSpinner.getValue()).doubleValue()) return true;
 		
+		if (pacSettings.getPointCubeLengthOfSide() != ((Double)pointCubeLengthOfSideSpinner.getValue()).doubleValue()) return true;
+		if (pacSettings.getPointCubeFillColor() != (new Color(pointCubeFillColorButton.getBackground().getRed(),
+															pointCubeFillColorButton.getBackground().getGreen(),
+															pointCubeFillColorButton.getBackground().getBlue(),
+																 DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB()) return true;	
+		if (pacSettings.isPointCubeHighlightingEnabled() != pointCubeHighlightingCheckbox.isSelected()) return true;
+		if (pacSettings.getPointCubeHighlightedColor() != (new Color(pointCubeHighlightingColorButton.getBackground().getRed(),
+															pointCubeHighlightingColorButton.getBackground().getGreen(),
+															pointCubeHighlightingColorButton.getBackground().getBlue(),
+																 DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB()) return true;			
 
 		if (!pacSettings.getCurveAltitudeMode().equals(curveAltitudeModeComboBox.getSelectedItem())) return true;
 		if (pacSettings.getCurveThickness() != ((Double)curveThicknessSpinner.getValue()).doubleValue()) return true;
@@ -178,8 +201,10 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		ButtonGroup pointRadioGroup = new ButtonGroup();		
 		pointRadioGroup.add(crossLineRButton);
 		pointRadioGroup.add(iconRButton);
+		pointRadioGroup.add(cubeRButton);
 		iconRButton.setIconTextGap(10);
 		crossLineRButton.setIconTextGap(10);
+		cubeRButton.setIconTextGap(10);
 		
 		GridBagConstraints gc = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);		
 		gc.anchor = GridBagConstraints.WEST;
@@ -222,8 +247,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         phlcb.anchor = GridBagConstraints.WEST;
         pointPanel.add(pointCrossLineHighlightingColorButton, phlcb);       
 		pointPanel.add(iconRButton, GuiUtil.setConstraints(0,8,0.0,1.0,GridBagConstraints.BOTH,0,0,BORDER_THICKNESS,0));
-		
-		
+				
 		pointPanel.add(pointIconColorLabel, GuiUtil.setConstraints(1,9,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
         pointIconColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
         pointIconColorButton.setContentAreaFilled(false);
@@ -238,6 +262,39 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         GridBagConstraints piss = GuiUtil.setConstraints(2,10,1.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,BORDER_THICKNESS);
         piss.anchor = GridBagConstraints.WEST;
         pointPanel.add(pointIconScaleSpinner, piss);
+        
+        pointPanel.add(cubeRButton, GuiUtil.setConstraints(0,11,0.0,1.0,GridBagConstraints.BOTH,0,0,BORDER_THICKNESS,0));
+        
+		pointPanel.add(pointCubeLengthOfSideLabel, GuiUtil.setConstraints(1,12,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+		SpinnerModel pointCubeLengthOfSideModel = new SpinnerNumberModel(1.0,0.1,9.9,0.1);
+		pointCubeLengthOfSideSpinner = new JSpinner(pointCubeLengthOfSideModel);
+        GridBagConstraints pcloss = GuiUtil.setConstraints(2,12,1.0,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,BORDER_THICKNESS);
+        pcloss.anchor = GridBagConstraints.WEST;
+        pointPanel.add(pointCubeLengthOfSideSpinner, pcloss);
+        
+        pointPanel.add(pointCubeFillColorLabel, GuiUtil.setConstraints(1,13,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+        pointCubeFillColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
+        pointCubeFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_COLOR, true));
+        pointCubeFillColorButton.setContentAreaFilled(false);
+        pointCubeFillColorButton.setOpaque(true);
+        GridBagConstraints pcfcb = GuiUtil.setConstraints(2,13,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
+        pcfcb.anchor = GridBagConstraints.WEST;
+        pointPanel.add(pointCubeFillColorButton, pcfcb);
+        
+        pointCubeHighlightingCheckbox.setIconTextGap(10);
+		GridBagConstraints pchc = GuiUtil.setConstraints(1,14,0.0,1.0,GridBagConstraints.BOTH,0,0,BORDER_THICKNESS,0);
+		pchc.gridwidth = 3;
+		pointPanel.add(pointCubeHighlightingCheckbox, pchc);
+		
+        pointPanel.add(pointCubeHighlightingColorLabel, GuiUtil.setConstraints(1,15,0,0,GridBagConstraints.HORIZONTAL,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+        pointCubeHighlightingColorButton.setPreferredSize(pointCrossLineThicknessSpinner.getPreferredSize());
+        pointCubeHighlightingColorButton.setBackground(new Color(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR, true));
+        pointCubeHighlightingColorButton.setContentAreaFilled(false);
+        pointCubeHighlightingColorButton.setOpaque(true);
+        GridBagConstraints pchcb = GuiUtil.setConstraints(2,15,0.25,1.0,GridBagConstraints.NONE,0,0,BORDER_THICKNESS,0);
+        pchcb.anchor = GridBagConstraints.WEST;
+        pointPanel.add(pointCubeHighlightingColorButton, pchcb);
+
 		
 		// Curve Panel...
 		curvePanel = new JPanel();
@@ -301,6 +358,11 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 				setEnabledComponents();
 			}
 		});
+        cubeRButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setEnabledComponents();
+			}
+		});       
 
 		pointCrossLineNormalColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -334,7 +396,31 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 					pointIconColorButton.setBackground(pointIconColor);
 			}
 		});
-
+		
+		pointCubeHighlightingCheckbox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setEnabledComponents();
+			}
+		});
+		
+		pointCubeFillColorButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Color pointCubeFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseFillColor"),
+						pointCubeFillColorButton.getBackground());
+				if (pointCubeFillColor != null)
+					pointCubeFillColorButton.setBackground(pointCubeFillColor);
+			}
+		});	
+		
+		pointCubeHighlightingColorButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Color pointCubeHighlightingColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
+						pointCubeHighlightingColorButton.getBackground());
+				if (pointCubeHighlightingColor != null)
+					pointCubeHighlightingColorButton.setBackground(pointCubeHighlightingColor);
+			}
+		});	
+		
 		curveNormalColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Color curveNormalColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseCurveColor"),
@@ -378,6 +464,11 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
         
         iconRButton.setText(Internal.I18N.getString("pref.kmlexport.pointdisplay.mode.label.icon"));
         crossLineRButton.setText(Internal.I18N.getString("pref.kmlexport.pointdisplay.mode.label.cross"));
+        cubeRButton.setText("Cube");
+        pointCubeLengthOfSideLabel.setText("Length of Side");
+        pointCubeFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.fillColor"));
+        pointCubeHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
+        pointCubeHighlightingColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
         
         pointIconColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.pointIconColor"));
         pointIconScaleLabel.setText(Internal.I18N.getString("pref.kmlexport.label.pointIconScale"));
@@ -416,6 +507,9 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		case CROSS_LINE:
 			crossLineRButton.setSelected(true);
 			break;
+		case CUBE:
+			cubeRButton.setSelected(true);
+			break;
 		}
 
 		pointAltitudeModeComboBox.setSelectedItem(pacSettings.getPointAltitudeMode());
@@ -426,7 +520,12 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		pointCrossLineHighlightingColorButton.setBackground(new Color(pacSettings.getPointHighlightedColor()));
 		
 		pointIconColorButton.setBackground(new Color(pacSettings.getPointIconColor()));
-		pointIconScaleSpinner.setValue(pacSettings.getPointIconScale());
+		pointIconScaleSpinner.setValue(pacSettings.getPointIconScale());		
+		
+		pointCubeLengthOfSideSpinner.setValue(pacSettings.getPointCubeLengthOfSide());
+		pointCubeFillColorButton.setBackground(new Color(pacSettings.getPointCubeFillColor()));
+		pointCubeHighlightingCheckbox.setSelected(pacSettings.isPointCubeHighlightingEnabled());
+		pointCubeHighlightingColorButton.setBackground(new Color(pacSettings.getPointCubeHighlightedColor()));
 
 		curveAltitudeModeComboBox.setSelectedItem(pacSettings.getCurveAltitudeMode());
 		curveThicknessSpinner.setValue(pacSettings.getCurveThickness());
@@ -449,6 +548,9 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		else if (crossLineRButton.isSelected()) {
 			pacSettings.setPointDisplayMode(PointDisplayMode.CROSS_LINE);
 		}
+		else if (cubeRButton.isSelected()) {
+			pacSettings.setPointDisplayMode(PointDisplayMode.CUBE);
+		}
 		
 		pacSettings.setPointAltitudeMode((AltitudeMode)pointAltitudeModeComboBox.getSelectedItem());
 		pacSettings.setPointThickness(((Double)pointCrossLineThicknessSpinner.getValue()).doubleValue());
@@ -469,6 +571,17 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 														DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB());
 		pacSettings.setPointIconScale(((Double)pointIconScaleSpinner.getValue()).doubleValue());
 		
+		pacSettings.setPointCubeLengthOfSide(((Double)pointCubeLengthOfSideSpinner.getValue()).doubleValue());
+		pacSettings.setPointCubeFillColor((new Color(pointCubeFillColorButton.getBackground().getRed(),
+														pointCubeFillColorButton.getBackground().getGreen(),
+														pointCubeFillColorButton.getBackground().getBlue(),
+														DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB());
+		pacSettings.setPointCubeHighlightingEnabled(pointCubeHighlightingCheckbox.isSelected());
+		pacSettings.setPointCubeHighlightedColor((new Color(pointCubeHighlightingColorButton.getBackground().getRed(),
+														pointCubeHighlightingColorButton.getBackground().getGreen(),
+														pointCubeHighlightingColorButton.getBackground().getBlue(),
+														DisplayForm.DEFAULT_ALPHA_VALUE)).getRGB());
+						
 		
 		pacSettings.setCurveAltitudeMode((AltitudeMode)curveAltitudeModeComboBox.getSelectedItem());
 		pacSettings.setCurveThickness(((Double)curveThicknessSpinner.getValue()).doubleValue());
@@ -486,10 +599,10 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 
 	private void setEnabledComponents() {
 		
-		pointIconColorLabel.setEnabled(!crossLineRButton.isSelected());
-		pointIconColorButton.setEnabled(!crossLineRButton.isSelected());
-		pointIconScaleLabel.setEnabled(!crossLineRButton.isSelected());
-		pointIconScaleSpinner.setEnabled(!crossLineRButton.isSelected());
+		pointIconColorLabel.setEnabled(iconRButton.isSelected());
+		pointIconColorButton.setEnabled(iconRButton.isSelected());
+		pointIconScaleLabel.setEnabled(iconRButton.isSelected());
+		pointIconScaleSpinner.setEnabled(iconRButton.isSelected());
 				
 		pointCrossLineThicknessLabel.setEnabled(crossLineRButton.isSelected());
 		pointCrossLineThicknessSpinner.setEnabled(crossLineRButton.isSelected());
@@ -500,6 +613,14 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		pointCrossLineHighlightingColorButton.setEnabled(pointCrossLineHighlightingCheckbox.isSelected()&&crossLineRButton.isSelected());
 		pointCrossLineHighlightingThicknessLabel.setEnabled(pointCrossLineHighlightingCheckbox.isSelected()&&crossLineRButton.isSelected());
 		pointCrossLineHighlightingThicknessSpinner.setEnabled(pointCrossLineHighlightingCheckbox.isSelected()&&crossLineRButton.isSelected());
+		
+		pointCubeLengthOfSideLabel.setEnabled(cubeRButton.isSelected());
+		pointCubeLengthOfSideSpinner.setEnabled(cubeRButton.isSelected());
+		pointCubeFillColorLabel.setEnabled(cubeRButton.isSelected());
+		pointCubeFillColorButton.setEnabled(cubeRButton.isSelected());
+		pointCubeHighlightingCheckbox.setEnabled(cubeRButton.isSelected());
+		pointCubeHighlightingColorLabel.setEnabled(pointCubeHighlightingCheckbox.isSelected()&&cubeRButton.isSelected());
+		pointCubeHighlightingColorButton.setEnabled(pointCubeHighlightingCheckbox.isSelected()&&cubeRButton.isSelected());
 		
 		curveHighlightingColorLabel.setEnabled(curveHighlightingCheckbox.isSelected());
 		curveHighlightingColorButton.setEnabled(curveHighlightingCheckbox.isSelected());

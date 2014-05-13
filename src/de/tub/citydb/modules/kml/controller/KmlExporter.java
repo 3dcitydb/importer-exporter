@@ -1012,10 +1012,57 @@ public class KmlExporter implements EventHandler {
 			BasicLinkType icon = kmlFactory.createBasicLinkType();
 			icon.setHref(PointAndCurve.DefaultIconHref);
 			iconStyleType.setIcon(icon);
-			pointStyleNormal.setIconStyle(iconStyleType);
-			
+			pointStyleNormal.setIconStyle(iconStyleType);			
 			pointStyleNormal.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Normal");
+			pointStyleNormal.setBalloonStyle(balloonStyle);
+			
 			marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxBuffer);
+		}
+		else if (pacSettings.getPointDisplayMode() == PointDisplayMode.CUBE) {
+			String fillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
+			String lineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
+			String hlFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeHighlightedColor()));
+			String hlLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeHighlightedColor()));
+			
+			LineStyleType lineStyleCubeNormal = kmlFactory.createLineStyleType();
+			lineStyleCubeNormal.setColor(hexStringToByteArray(lineColor));
+			lineStyleCubeNormal.setWidth(1.5);
+			PolyStyleType polyStyleCubeNormal = kmlFactory.createPolyStyleType();
+			polyStyleCubeNormal.setColor(hexStringToByteArray(fillColor));
+			StyleType styleCubeNormal = kmlFactory.createStyleType();
+			styleCubeNormal.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Normal");
+			styleCubeNormal.setLineStyle(lineStyleCubeNormal);
+			styleCubeNormal.setPolyStyle(polyStyleCubeNormal);
+			styleCubeNormal.setBalloonStyle(balloonStyle);
+			
+			marshaller.marshal(kmlFactory.createStyle(styleCubeNormal), saxBuffer);
+			
+			if (pacSettings.isPointCubeHighlightingEnabled()) {
+				LineStyleType lineStyleCubeHighlight = kmlFactory.createLineStyleType();
+				lineStyleCubeHighlight.setColor(hexStringToByteArray(hlLineColor));
+				lineStyleCubeHighlight.setWidth(1.5);
+				PolyStyleType polyStyleCubeHighlight = kmlFactory.createPolyStyleType();
+				polyStyleCubeHighlight.setColor(hexStringToByteArray(hlFillColor));
+				StyleType styleCubeHighlight = kmlFactory.createStyleType();
+				styleCubeHighlight.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Highlight");
+				styleCubeHighlight.setLineStyle(lineStyleCubeHighlight);
+				styleCubeHighlight.setPolyStyle(polyStyleCubeHighlight);
+				styleCubeHighlight.setBalloonStyle(balloonStyle);
+
+				PairType pairCubeNormal = kmlFactory.createPairType();
+				pairCubeNormal.setKey(StyleStateEnumType.NORMAL);
+				pairCubeNormal.setStyleUrl("#" + styleCubeNormal.getId());
+				PairType pairCubeHighlight = kmlFactory.createPairType();
+				pairCubeHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
+				pairCubeHighlight.setStyleUrl("#" + styleCubeHighlight.getId());
+				StyleMapType styleMapCube = kmlFactory.createStyleMapType();
+				styleMapCube.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Style");
+				styleMapCube.getPair().add(pairCubeNormal);
+				styleMapCube.getPair().add(pairCubeHighlight);
+
+				marshaller.marshal(kmlFactory.createStyle(styleCubeHighlight), saxBuffer);
+				marshaller.marshal(kmlFactory.createStyleMap(styleMapCube), saxBuffer);
+			}
 		}
 		else {
 			LineStyleType pointLineStyleNormal = kmlFactory.createLineStyleType();

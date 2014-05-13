@@ -41,7 +41,9 @@ public enum PointDisplayMode {
 	@XmlEnumValue("icon")
     ICON("icon"),
     @XmlEnumValue("crossLine")
-    CROSS_LINE("crossLine");
+    CROSS_LINE("crossLine"),
+    @XmlEnumValue("cube")
+    CUBE("cube");
     
     private final String value;
 
