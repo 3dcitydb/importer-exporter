@@ -38,7 +38,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class ImportGmlId {
 	@XmlElement(required=true)
-	private UUIDMode uuidMode = UUIDMode.REPLACE;
+	private UUIDMode uuidMode = UUIDMode.COMPLEMENT;
 	@XmlElement(defaultValue="true")
 	private Boolean keepGmlIdAsExternalReference = true;
 
