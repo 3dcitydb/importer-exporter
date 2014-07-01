@@ -39,6 +39,7 @@ import org.citygml4j.model.citygml.CityGMLClass;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.database.DatabaseSrs;
+import de.tub.citydb.api.database.DatabaseType;
 import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
@@ -204,8 +205,20 @@ public class KmlSplitter {
 				Object envelope = databaseAdapter.getGeometryConverter().getDatabaseObject(GeometryObject.createEnvelope(tile), connection);
 				
 				// set spatial objects for query
+				
+				// coordinates for overlapbydisjoint
 				spatialQuery.setObject(1, curve);
+				
+				// coordinates for inside
 				spatialQuery.setObject(2, envelope);
+				
+				if (databaseAdapter.getDatabaseType() == DatabaseType.ORACLE) {
+					// coordinates for coveredby
+					spatialQuery.setObject(3, envelope);
+					
+					// coordinates for equal
+					spatialQuery.setObject(4, envelope);
+				}
 				
 				rs = spatialQuery.executeQuery();
 

@@ -184,7 +184,8 @@ public class GenericCityObject extends KmlGenericObject{
 						psQuery.setLong(i, work.getId());
 					}
 					rs = psQuery.executeQuery();
-					if (rs.isBeforeFirst()) {
+					
+					if (rs.isBeforeFirst()) {					
 						isPointOrCurve = true;
 						break; // result set not empty
 					}
@@ -860,7 +861,7 @@ public class GenericCityObject extends KmlGenericObject{
 
 			if (pointOrCurveGeometry.getGeometryType() == GeometryObject.GeometryType.POINT) { // point
 				isPoint = true; // dirty hack, don't try this at home
-				double[] ordinatesArray = convertToWGS84(pointOrCurveGeometry).getCoordinates(0);
+				double[] ordinatesArray = super.convertPointCoordinatesToWGS84(pointOrCurveGeometry.getCoordinates(0));
 				double zOrdinate = ordinatesArray[2] + zOffset;
 				
 				if (pacSettings.getPointDisplayMode() == PointDisplayMode.CROSS_LINE){
@@ -948,7 +949,7 @@ public class GenericCityObject extends KmlGenericObject{
 					ordinatesArrayBottomRight[1] = pointOrCurveGeometry.getCoordinates(0)[1] - sideLength/2; 
 					ordinatesArrayBottomRight = super.convertPointCoordinatesToWGS84(ordinatesArrayBottomRight);
 					
-					if (pacSettings.getCurveAltitudeMode() == AltitudeMode.CLAMP_TO_GROUND) {
+					if (pacSettings.getPointAltitudeMode() == AltitudeMode.CLAMP_TO_GROUND) {
 						zOrdinate = 0.0;
 					}
 					
@@ -978,8 +979,6 @@ public class GenericCityObject extends KmlGenericObject{
 							+ reducePrecisionForZ(zOrdinate + sideLength));				
 					
 					LinearRingType LinearRingElement = kmlFactory.createLinearRingType();
-					
-
 
 					// bottom side					
 					LinearRingElement.getCoordinates().add(topLeftFootNode);					
@@ -1106,7 +1105,7 @@ public class GenericCityObject extends KmlGenericObject{
 						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
 						break;
 					case RELATIVE:
-					case CLAMP_TO_GROUND:
+					case CLAMP_TO_GROUND: 
 						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
 						break;
 					}

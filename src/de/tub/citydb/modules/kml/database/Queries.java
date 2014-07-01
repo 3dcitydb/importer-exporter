@@ -50,10 +50,17 @@ public class Queries {
 
 		switch (type) {
 		case ORACLE:
+			// using "UNION ALL" instead of "mask=inside+converedby+equal" may result in better performance...
 			query += "(SDO_RELATE(co.envelope, ?, 'mask=overlapbdydisjoint') = 'TRUE') "
 					+ "UNION ALL "
 					+ "SELECT co.id, co.gmlid, co.objectclass_id FROM CITYOBJECT co WHERE "
-					+ "(SDO_RELATE(co.envelope, ?, 'mask=inside+coveredby+equal') = 'TRUE') ";
+					+ "(SDO_RELATE(co.envelope, ?, 'mask=inside') = 'TRUE') "
+					+ "UNION ALL "
+					+ "SELECT co.id, co.gmlid, co.objectclass_id FROM CITYOBJECT co WHERE "
+					+ "(SDO_RELATE(co.envelope, ?, 'mask=coveredby') = 'TRUE') "
+					+ "UNION ALL "
+					+ "SELECT co.id, co.gmlid, co.objectclass_id FROM CITYOBJECT co WHERE "
+					+ "(SDO_RELATE(co.envelope, ?, 'mask=equal') = 'TRUE') ";
 			break;
 		case POSTGIS:
 			query += "ST_Intersects(co.envelope, ?) = 'TRUE' "
