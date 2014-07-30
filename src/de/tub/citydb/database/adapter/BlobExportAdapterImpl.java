@@ -31,7 +31,7 @@ public class BlobExportAdapterImpl implements BlobExportAdapter {
 		try {
 			if (psExport == null)
 				psExport = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
-						"select TEX_IMAGE from TEX_IMAGE where ID=?" : "select LIBRARY_OBJECT from IMPLICIT_GEOMETRY where ID=?");
+						"select TEX_IMAGE_DATA from TEX_IMAGE where ID=?" : "select LIBRARY_OBJECT from IMPLICIT_GEOMETRY where ID=?");
 
 			// try and read texture image attribute from SURFACE_DATA table
 			psExport.setLong(1, id);

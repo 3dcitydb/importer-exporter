@@ -757,7 +757,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final LinkedHashSet<String> TEX_IMAGE_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("TEX_IMAGE_URI");
-		add("TEX_IMAGE");
+		add("TEX_IMAGE_DATA");
 		add("TEX_MIME_TYPE");
 		add("TEX_MIME_TYPE_CODESPACE");
 	}};

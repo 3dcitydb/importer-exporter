@@ -125,7 +125,7 @@ public class DBAppearance implements DBExporter {
 			query.append("select app.ID as APP_ID, app.GMLID as APP_GMLID, app.NAME as APP_NAME, app.NAME_CODESPACE as APP_NAME_CODESPACE, app.DESCRIPTION as APP_DESCRIPTION, app.THEME, ")
 			.append("sd.ID as SD_ID, sd.OBJECTCLASS_ID as SD_OBJECTCLASS_ID, sd.GMLID as SD_GMLID, sd.NAME as SD_NAME, sd.NAME_CODESPACE as SD_NAME_CODESPACE, sd.DESCRIPTION as SD_DESCRIPTION, sd.IS_FRONT, ")
 			.append("sd.X3D_SHININESS, sd.X3D_TRANSPARENCY, sd.X3D_AMBIENT_INTENSITY, sd.X3D_SPECULAR_COLOR, sd.X3D_DIFFUSE_COLOR, sd.X3D_EMISSIVE_COLOR, sd.X3D_IS_SMOOTH, ")
-			.append("sd.TEX_IMAGE_ID, COALESCE(").append(getLength).append("(ti.TEX_IMAGE)").append(", 0) as DB_TEX_IMAGE_SIZE, ti.TEX_IMAGE_URI, ti.TEX_MIME_TYPE, ti.TEX_MIME_TYPE_CODESPACE, ")
+			.append("sd.TEX_IMAGE_ID, COALESCE(").append(getLength).append("(ti.TEX_IMAGE_DATA)").append(", 0) as DB_TEX_IMAGE_SIZE, ti.TEX_IMAGE_URI, ti.TEX_MIME_TYPE, ti.TEX_MIME_TYPE_CODESPACE, ")
 			.append("lower(sd.TEX_TEXTURE_TYPE) as TEX_TEXTURE_TYPE, lower(sd.TEX_WRAP_MODE) as TEX_WRAP_MODE, sd.TEX_BORDER_COLOR, ")	
 			.append("sd.GT_PREFER_WORLDFILE, sd.GT_ORIENTATION, sd.GT_REFERENCE_POINT ")
 			.append("from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID left join TEX_IMAGE ti on sd.TEX_IMAGE_ID=ti.ID where ");
@@ -136,7 +136,7 @@ public class DBAppearance implements DBExporter {
 			query.append("select app.ID as APP_ID, app.GMLID as APP_GMLID, app.NAME as APP_NAME, app.NAME_CODESPACE as APP_NAME_CODESPACE, app.DESCRIPTION as APP_DESCRIPTION, app.THEME, ")
 			.append("sd.ID as SD_ID, sd.OBJECTCLASS_ID as SD_OBJECTCLASS_ID, sd.GMLID as SD_GMLID, sd.NAME as SD_NAME, sd.NAME_CODESPACE as SD_NAME_CODESPACE, sd.DESCRIPTION as SD_DESCRIPTION, sd.IS_FRONT, ")
 			.append("sd.X3D_SHININESS, sd.X3D_TRANSPARENCY, sd.X3D_AMBIENT_INTENSITY, sd.X3D_SPECULAR_COLOR, sd.X3D_DIFFUSE_COLOR, sd.X3D_EMISSIVE_COLOR, sd.X3D_IS_SMOOTH, ")
-			.append("sd.TEX_IMAGE_ID, COALESCE(").append(getLength).append("(ti.TEX_IMAGE)").append(", 0) as DB_TEX_IMAGE_SIZE, ti.TEX_IMAGE_URI, ti.TEX_MIME_TYPE, ti.TEX_MIME_TYPE_CODESPACE, ")
+			.append("sd.TEX_IMAGE_ID, COALESCE(").append(getLength).append("(ti.TEX_IMAGE_DATA)").append(", 0) as DB_TEX_IMAGE_SIZE, ti.TEX_IMAGE_URI, ti.TEX_MIME_TYPE, ti.TEX_MIME_TYPE_CODESPACE, ")
 			.append("lower(sd.TEX_TEXTURE_TYPE) as TEX_TEXTURE_TYPE, lower(sd.TEX_WRAP_MODE) as TEX_WRAP_MODE, sd.TEX_BORDER_COLOR, ")
 			.append("sd.GT_PREFER_WORLDFILE, sd.GT_ORIENTATION, ")
 			.append(transformOrNull).append("(sd.GT_REFERENCE_POINT, ").append(srid).append(") AS GT_REFERENCE_POINT ")

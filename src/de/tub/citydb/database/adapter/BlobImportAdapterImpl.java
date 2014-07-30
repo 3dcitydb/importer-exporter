@@ -22,7 +22,7 @@ public class BlobImportAdapterImpl implements BlobImportAdapter {
 		this.blobType = blobType;
 
 		psUpdate = connection.prepareStatement(blobType == BlobType.TEXTURE_IMAGE ?
-				"update TEX_IMAGE set TEX_IMAGE=? where ID=?" : "update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=? where ID=?");
+				"update TEX_IMAGE set TEX_IMAGE_DATA=? where ID=?" : "update IMPLICIT_GEOMETRY set LIBRARY_OBJECT=? where ID=?");
 	}
 
 	@Override
