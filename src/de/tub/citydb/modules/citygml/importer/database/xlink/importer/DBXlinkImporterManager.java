@@ -95,6 +95,9 @@ public class DBXlinkImporterManager {
 			case GROUP_TO_CITYOBJECT:
 				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.GROUP_TO_CITYOBJECT);
 				break;
+			case SOLID_GEOMETRY:
+				tempTable = cacheTableManager.createCacheTable(CacheTableModelEnum.SOLID_GEOMETRY);
+				break;
 			}
 
 			if (tempTable != null) {
@@ -135,6 +138,9 @@ public class DBXlinkImporterManager {
 					break;
 				case GROUP_TO_CITYOBJECT:
 					dbImporter = new DBXlinkImporterGroupToCityObject(tempTable, this);
+					break;
+				case SOLID_GEOMETRY:
+					dbImporter = new DBXlinkImporterSolidGeometry(tempTable, this);
 					break;
 				}
 

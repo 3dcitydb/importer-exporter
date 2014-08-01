@@ -46,6 +46,7 @@ import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkDeprecatedMate
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObject;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLinearRing;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSolidGeometry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
@@ -60,6 +61,7 @@ import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImp
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterLibraryObject;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterLinearRing;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterManager;
+import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterSolidGeometry;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterSurfaceGeometry;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureAssociation;
@@ -262,6 +264,13 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 					DBXlinkImporterGroupToCityObject dbGroup = (DBXlinkImporterGroupToCityObject)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.GROUP_TO_CITYOBJECT);
 					if (dbGroup != null)
 						success = dbGroup.insert(xlinkGroupToCityObject);
+					
+					break;
+				case SOLID_GEOMETRY:
+					DBXlinkSolidGeometry xlinkSolidGeometry = (DBXlinkSolidGeometry)work;
+					DBXlinkImporterSolidGeometry solidGeometry = (DBXlinkImporterSolidGeometry)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.SOLID_GEOMETRY);
+					if (solidGeometry != null)
+						success = solidGeometry.insert(xlinkSolidGeometry);
 					
 					break;
 				}

@@ -27,53 +27,35 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.global;
+package de.tub.citydb.modules.citygml.common.database.cache.model;
 
-import java.io.File;
+import de.tub.citydb.database.adapter.AbstractSQLAdapter;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
-
-
-@XmlType(name="CacheType", propOrder={
-		"mode",
-		"localPath"
-})
-public class Cache {
-	@XmlElement(required=true)
-	private CacheMode mode = CacheMode.DATABASE;
-	private String localPath;
-
-	public Cache() {
-		File tmp = new File(System.getProperty("java.io.tmpdir") + "3dcitydb.tmp");
-		if ((tmp.exists() || tmp.mkdir()) && tmp.canWrite()) {
-			localPath = tmp.getAbsolutePath();
-			mode = CacheMode.LOCAL;
-		}
+public class CacheTableSolidGeometry extends CacheTableModel {
+	public static CacheTableSolidGeometry instance = null;
+	
+	private CacheTableSolidGeometry() {		
+	}
+	
+	public synchronized static CacheTableSolidGeometry getInstance() {
+		if (instance == null)
+			instance = new CacheTableSolidGeometry();
+		
+		return instance;
 	}
 
-	public boolean isUseDatabase() {
-		return mode == CacheMode.DATABASE;
+	@Override
+	public CacheTableModelEnum getType() {
+		return CacheTableModelEnum.SOLID_GEOMETRY;
 	}
-
-	public boolean isUseLocal() {
-		return mode == CacheMode.LOCAL;
-	}
-
-	public CacheMode getCacheMode() {
-		return mode;
-	}
-
-	public void setCacheMode(CacheMode mode) {
-		this.mode = mode;
-	}
-
-	public String getLocalCachePath() {	
-		return localPath;
-	}
-
-	public void setLocalCachePath(String localPath) {
-		this.localPath = localPath;
+	
+	@Override
+	protected String getColumns(AbstractSQLAdapter sqlAdapter) {
+		StringBuilder builder = new StringBuilder("(")
+		.append("ID ").append(sqlAdapter.getInteger())
+		.append(")");
+		
+		return builder.toString();
 	}
 
 }

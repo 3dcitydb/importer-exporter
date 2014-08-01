@@ -135,6 +135,9 @@ public class DBXlinkResolverManager {
 					dbResolver = new XlinkGroupToCityObject(connection, groupHeapView, importFilter, this);
 
 				break;
+			case SOLID_GEOMETRY:
+				dbResolver = new XlinkSolidGeometry(connection, this);
+				break;
 			}
 
 			if (dbResolver != null)

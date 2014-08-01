@@ -44,7 +44,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 		return envelope;
 	}
-	
+
 	private GeometryObject getEnvelope(Geometry geometry) {
 		double[] coordinates = new double[]{Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
 
@@ -81,7 +81,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 		return point;
 	}
-	
+
 	private GeometryObject getPoint(Point point) {
 		return GeometryObject.createPoint(getPointCoordinates(point), point.getDimension(), point.getSrid());
 	}
@@ -119,7 +119,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 		return multiPoint;
 	}
-	
+
 	private GeometryObject getMultiPoint(MultiPoint multiPoint) {
 		double[][] coordinates = new double[multiPoint.numPoints()][];
 		int dimension = multiPoint.getDimension();
@@ -160,7 +160,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 		return curve;
 	}
-	
+
 	private GeometryObject getCurve(LineString lineString) {
 		return GeometryObject.createCurve(getCurveCoordinates(lineString), lineString.getDimension(), lineString.getSrid());
 	}
@@ -207,7 +207,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 		return multiCurve;
 	}
-	
+
 	private GeometryObject getMultiCurve(MultiLineString multiLineString) {
 		double[][] coordinates = new double[multiLineString.numLines()][];
 		int dimension = multiLineString.getDimension();
@@ -248,11 +248,11 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 		return polygon;
 	}
-	
+
 	private GeometryObject getPolygon(Polygon polygon) {
 		return GeometryObject.createPolygon(getPolygonCoordinates(polygon), polygon.getDimension(), polygon.getSrid());
 	}
-	
+
 	private double[][] getPolygonCoordinates(Polygon polygon) {
 		double[][] coordinates = new double[polygon.numRings()][];
 		int dimension = polygon.getDimension();
@@ -278,26 +278,26 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 		return coordinates;
 	}
-	
+
 	@Override
 	public GeometryObject getMultiPolygon(Object geomObj) throws SQLException {
 		GeometryObject multiPolygon = null;
-		
+
 		if (geomObj instanceof PGgeometry) {
 			Geometry geometry = ((PGgeometry)geomObj).getGeometry();
 			if (geometry.getType() == Geometry.MULTIPOLYGON) {
 				multiPolygon = getMultiPolygon((MultiPolygon)geometry);
 			}
-			
+
 			else if (geometry.getType() == Geometry.POLYGON) {
 				Polygon polygonObj = (Polygon)geometry;
 				double[][] coordinates = getPolygonCoordinates(polygonObj);
 				int[] exteriorRings = new int[]{ 0 };
-				
+
 				multiPolygon = GeometryObject.createMultiPolygon(coordinates, exteriorRings, polygonObj.getDimension(), polygonObj.getSrid());
 			}
 		}
-		
+
 		return multiPolygon;
 	}
 
@@ -305,16 +305,16 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		int numRings = 0;
 		for (Polygon polygon : multiPolygon.getPolygons())
 			numRings += polygon.numRings();
-		
+
 		int[] exteriorRings = new int[multiPolygon.numPolygons()];
 		double[][] coordinates = new double[numRings][];
 		int dimension = multiPolygon.getDimension();
-		
+
 		int ringNo = 0;
 		for (int i = 0; i < multiPolygon.numPolygons(); i++) {
 			Polygon polygon = multiPolygon.getPolygon(i);
 			exteriorRings[i] = ringNo;
-			
+
 			for (int j = 0; j < polygon.numRings(); j++, ringNo++) {
 				LinearRing ring = polygon.getRing(j);
 				coordinates[ringNo] = new double[ring.numPoints() * dimension];
@@ -334,10 +334,10 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 				}
 			}
 		}
-		
+
 		return GeometryObject.createMultiPolygon(coordinates, exteriorRings, dimension, multiPolygon.getSrid());
 	}
-	
+
 	@Override
 	public GeometryObject getGeometry(Object geomObj) throws SQLException {
 		if (geomObj instanceof PGgeometry) {
@@ -365,7 +365,32 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 	@Override
 	public Object getDatabaseObject(GeometryObject geomObj, Connection connection) throws SQLException {
-		return new PGgeometry(PGgeometry.geomFromString(convertToEWKT(geomObj)));
+		Object geometry = null;
+
+		switch (geomObj.getGeometryType()) {
+		case POLYGON:
+		case CURVE:
+		case POINT:
+		case MULTI_CURVE:
+		case MULTI_POINT:
+		case ENVELOPE:
+		case MULTI_POLYGON:
+			geometry = new PGgeometry(PGgeometry.geomFromString(convertToEWKT(geomObj)));
+			break;
+		case SOLID:
+			// the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface
+			// thus, we return the EWKT only
+			// TODO: rework as soon as the JDBC driver supports PolyhedralSurface
+			geometry = convertToEWKT(geomObj);
+			break;
+		case COMPOSITE_SOLID:
+			return null;
+		}
+
+		if (geometry == null)
+			throw new SQLException("Failed to convert geometry to internal database representation.");
+
+		return geometry;
 	}
 
 	private String convertToEWKT(GeometryObject geomObj) {
@@ -395,7 +420,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 			ewkt.append("POLYGON");
 			coordinates = new double[1][5 * dimension];
 			int i = 0;
-			
+
 			if (dimension == 3) {
 				coordinates[0][i++] = geomObj.getCoordinates()[0][0];
 				coordinates[0][i++] = geomObj.getCoordinates()[0][1];
@@ -422,7 +447,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 				coordinates[0][i++] = geomObj.getCoordinates()[0][2];
 				coordinates[0][i++] = geomObj.getCoordinates()[0][1];
-				
+
 				coordinates[0][i++] = geomObj.getCoordinates()[0][2];
 				coordinates[0][i++] = geomObj.getCoordinates()[0][3];
 
@@ -437,9 +462,16 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		case MULTI_POLYGON:
 			// MultiPolyon is different due to its complex structure
 			ewkt.append("MULTIPOLYGON");
-			return convertMultiPolygonToEWKT(geomObj, ewkt);
+			return convertPolygonCollectionToEWKT(geomObj, ewkt);
+		case SOLID:
+			// Solid is different due to its complex structure
+			ewkt.append("POLYHEDRALSURFACE");
+			return convertPolygonCollectionToEWKT(geomObj, ewkt);
+		case COMPOSITE_SOLID:
+			// CompositeSolids are not supported yet
+			return null;
 		}
-		
+
 		switch (geomObj.getGeometryType()) {
 		case POLYGON:
 		case MULTI_POINT:
@@ -480,14 +512,14 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		default:
 			break;
 		}
-			
+
 		return ewkt.toString();
 	}
-	
-	private String convertMultiPolygonToEWKT(GeometryObject geomObj, StringBuilder ewkt) {
+
+	private String convertPolygonCollectionToEWKT(GeometryObject geomObj, StringBuilder ewkt) {
 		double[][] coordinates = geomObj.getCoordinates();
 		int dimension = geomObj.getDimension();
-		
+
 		List<Integer> exteriorRings = new ArrayList<Integer>();
 		for (int i = 0; i < geomObj.getNumElements(); i++)
 			if (geomObj.getElementType(i) == ElementType.EXTERIOR_LINEAR_RING)
@@ -495,13 +527,13 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 		exteriorRings.add(coordinates.length);
 		ewkt.append("(");
-		
+
 		for (int i = 0; i < exteriorRings.size() - 1; i++) {
 			ewkt.append("(");
-			
+
 			for (int j = exteriorRings.get(i); j < exteriorRings.get(i + 1); j++) {
 				ewkt.append("(");
-				
+
 				for (int k = 0; k < coordinates[j].length; k += dimension) {
 					for (int l = 0; l < dimension; l++) {
 						ewkt.append(coordinates[j][k + l]);
@@ -512,19 +544,19 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 					if (k < coordinates[j].length - dimension)
 						ewkt.append(",");
 				}
-				
+
 				ewkt.append(")");
 				if (j < exteriorRings.get(i + 1) - 1)
 					ewkt.append(",");
 			}
-			
+
 			ewkt.append(")");
 			if (i < exteriorRings.size() - 2)
 				ewkt.append(",");
 		}
-		
+
 		ewkt.append(")");
-		
+
 		return ewkt.toString();
 	}
 

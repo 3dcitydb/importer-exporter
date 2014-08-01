@@ -27,53 +27,34 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package de.tub.citydb.config.project.global;
+package de.tub.citydb.modules.citygml.common.database.xlink;
 
-import java.io.File;
+public class DBXlinkSolidGeometry implements DBXlink {
+	private long id;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
-
-
-@XmlType(name="CacheType", propOrder={
-		"mode",
-		"localPath"
-})
-public class Cache {
-	@XmlElement(required=true)
-	private CacheMode mode = CacheMode.DATABASE;
-	private String localPath;
-
-	public Cache() {
-		File tmp = new File(System.getProperty("java.io.tmpdir") + "3dcitydb.tmp");
-		if ((tmp.exists() || tmp.mkdir()) && tmp.canWrite()) {
-			localPath = tmp.getAbsolutePath();
-			mode = CacheMode.LOCAL;
-		}
+	public DBXlinkSolidGeometry(long id) {
+		this.id = id;
 	}
 
-	public boolean isUseDatabase() {
-		return mode == CacheMode.DATABASE;
+	public long getId() {
+		return id;
 	}
 
-	public boolean isUseLocal() {
-		return mode == CacheMode.LOCAL;
+	public void setId(long id) {
+		this.id = id;
+	}
+	
+	public String getGmlId() {
+		// no need for gml:ids
+		return null;
 	}
 
-	public CacheMode getCacheMode() {
-		return mode;
+	public void setGmlId(String gmlId) {
+		// no need for gml:ids
 	}
 
-	public void setCacheMode(CacheMode mode) {
-		this.mode = mode;
+	@Override
+	public DBXlinkEnum getXlinkType() {
+		return DBXlinkEnum.SOLID_GEOMETRY;
 	}
-
-	public String getLocalCachePath() {	
-		return localPath;
-	}
-
-	public void setLocalCachePath(String localPath) {
-		this.localPath = localPath;
-	}
-
 }

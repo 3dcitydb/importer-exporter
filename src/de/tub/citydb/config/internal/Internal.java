@@ -40,6 +40,7 @@ public class Internal {
 	public static final String CODELIST_DELIMITER = "--/\\--";
 	public static final String GEOMETRY_XLINK = "isXlink";
 	public static final String GEOMETRY_ORIGINAL = "origGeom";
+	public static final String GEOMETRY_INVALID = "geomInvalid";
 	public static final String UNIQUE_TEXTURE_FILENAME_PREFIX = "tex_";
 
 	// language pack

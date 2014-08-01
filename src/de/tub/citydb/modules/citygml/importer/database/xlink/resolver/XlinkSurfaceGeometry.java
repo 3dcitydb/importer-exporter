@@ -81,7 +81,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 	}
 
 	private void init() throws SQLException {
-		psSelectTmpSurfGeom = cacheTable.getConnection().prepareStatement(new StringBuilder("select ID from ").append(cacheTable.getTableName()).append(" where PARENT_ID=?").toString());
+		psSelectTmpSurfGeom = cacheTable.getConnection().prepareStatement(new StringBuilder("select ID from ").append(cacheTable.getTableName()).append(" where PARENT_ID=? or ROOT_ID=?").toString());
 		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
 		psUpdateSurfGeom = batchConn.prepareStatement("update SURFACE_GEOMETRY set IS_XLINK=1 where ID=?");
 
@@ -111,6 +111,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 
 				// check whether this geometry is referenced by another xlink
 				psSelectTmpSurfGeom.setLong(1, rootGeometryEntry.getId());
+				psSelectTmpSurfGeom.setLong(2, rootGeometryEntry.getId());
 				rs = psSelectTmpSurfGeom.executeQuery();
 
 				if (rs.next()) {
@@ -177,7 +178,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			psMemberElem.setLong(3, rootId);
 			psMemberElem.setInt(4, node.isReverse ? 1 : 0);
 			psMemberElem.setObject(5, obj);
-			
+
 			if (cityObjectId != 0) 
 				psMemberElem.setLong(6, cityObjectId);
 			else
@@ -209,7 +210,12 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			psParentElem.setInt(8, node.isReverse ? 1 : 0);
 			psParentElem.setNull(9, resolverManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
 					resolverManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
-			psParentElem.setObject(10, node.solidGeometry);
+
+			if (node.solidGeometry != null)
+				psParentElem.setObject(10, node.solidGeometry);
+			else
+				psParentElem.setNull(10, resolverManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+						resolverManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 
 			if (parentId != 0)
 				psParentElem.setLong(3, parentId);
@@ -220,7 +226,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				psParentElem.setLong(11, cityObjectId);
 			else
 				psParentElem.setNull(11, Types.NULL);
-			
+
 			psParentElem.addBatch();
 			if (++parentBatchCounter == resolverManager.getDatabaseAdapter().getMaxBatchSize()) {
 				psParentElem.executeBatch();
@@ -242,7 +248,7 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 			rs = psSelectSurfGeom.executeQuery();
 
 			GeometryNode root = null;
-			HashMap<Integer, GeometryNode> parentMap = new HashMap<Integer, GeometryNode>();
+			HashMap<Long, GeometryNode> parentMap = new HashMap<Long, GeometryNode>();
 
 			// rebuild geometry hierarchy
 			while (rs.next()) {
@@ -250,8 +256,9 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				int isSolid = rs.getInt("IS_SOLID");
 				int isComposite = rs.getInt("IS_COMPOSITE");
 				int isTriangulated = rs.getInt("IS_TRIANGULATED");
-				int isReverse = rs.getInt("IS_REVERSE");
-				int level = rs.getInt("LEVEL");
+				int isReverse = rs.getInt("IS_REVERSE");				
+				long id = rs.getLong("ID");
+				long parent_id = rs.getInt("PARENT_ID");
 
 				Object solidGeometry = null;
 				if (isSolid == 1)
@@ -273,12 +280,13 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 				geomNode.solidGeometry = solidGeometry;
 
 				if (root != null)
-					parentMap.get(level).childNodes.add(geomNode);
+					parentMap.get(parent_id).childNodes.add(geomNode);
 				else
 					root = geomNode;
 
 				// make this node the parent for the next hierarchy level
-				parentMap.put(level + 1, geomNode);			
+				if (geomNode.geometry == null)
+					parentMap.put(id, geomNode);			
 			}
 
 			// interpret geometry tree

@@ -57,7 +57,6 @@ public class DBXlinkSurfaceDataToTexImage implements DBXlink {
 		this.toId = toId;
 	}
 
-
 	public String getGmlId() {
 		// no need for gml:ids
 		return null;

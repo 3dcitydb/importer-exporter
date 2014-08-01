@@ -6,6 +6,8 @@ import java.util.List;
 public class GeometryObject {
 
 	public enum GeometryType {
+		SOLID,
+		COMPOSITE_SOLID,
 		POLYGON,
 		MULTI_POLYGON,
 		CURVE,
@@ -16,6 +18,7 @@ public class GeometryObject {
 	};
 
 	public enum ElementType {
+		SHELL,
 		EXTERIOR_LINEAR_RING,
 		INTERIOR_LINEAR_RING,
 		LINE_STRING,
@@ -62,7 +65,7 @@ public class GeometryObject {
 
 		for (int i = 0; i < geometryObject.elementTypes.length; i++) {
 			if (coordinates[i].length != dimension)
-				throw new IllegalArgumentException("Number of coordinate values of " + (i + 1) + ". element does not match geometry dimension.");
+				throw new IllegalArgumentException("Number of coordinate values of " + (i + 1) + ". element must at least match geometry dimension.");
 
 			geometryObject.elementTypes[i] = ElementType.POINT;
 		}
@@ -125,10 +128,21 @@ public class GeometryObject {
 	}
 	
 	public static GeometryObject createMultiPolygon(double[][] coordinates, int[] exteriorRings, int dimension, int srid) {
+		return createPolygonCollection(GeometryType.MULTI_POLYGON, coordinates, exteriorRings, dimension, srid);
+	}
+	
+	public static GeometryObject createSolid(double[][] coordinates, int[] exteriorRings, int srid) {
+		return createPolygonCollection(GeometryType.SOLID, coordinates, exteriorRings, 3, srid);
+	}
+	
+	private static GeometryObject createPolygonCollection(GeometryType type, double[][] coordinates, int[] exteriorRings, int dimension, int srid) {
 		if (exteriorRings.length > coordinates.length)
 			throw new IllegalArgumentException("The number of exterior linear rings exceeds the number of coordinate arrays.");
-				
-		GeometryObject geometryObject = new GeometryObject(GeometryType.MULTI_POLYGON, dimension, srid);
+		
+		if (exteriorRings[0] != 0)
+			throw new IllegalArgumentException("First geometry element must be an exterior linear ring.");
+		
+		GeometryObject geometryObject = new GeometryObject(type, dimension, srid);
 		geometryObject.elementTypes = new ElementType[coordinates.length];
 		geometryObject.coordinates = coordinates;
 		
@@ -146,6 +160,36 @@ public class GeometryObject {
 			geometryObject.elementTypes[i] = ElementType.EXTERIOR_LINEAR_RING;			
 		}
 
+		return geometryObject;
+	}
+	
+	public static GeometryObject createCompositeSolid(GeometryObject[] solids, int srid) {
+		if (solids == null || solids.length == 0)
+			throw new IllegalArgumentException("No solid geometry objects provided.");
+			
+		int numElements = 0;
+		for (GeometryObject solid : solids) {
+			if (solid.getGeometryType() != GeometryType.SOLID)
+				throw new IllegalArgumentException("Only solid geometry objects are allowed for constructing a composite solid.");
+
+			numElements += solid.getNumElements();
+		}
+		
+		GeometryObject geometryObject = new GeometryObject(GeometryType.COMPOSITE_SOLID, 3, srid);
+		geometryObject.elementTypes = new ElementType[numElements + solids.length];
+		geometryObject.coordinates = new double[numElements + solids.length][];
+		
+		int i = 0;
+		for (GeometryObject solid : solids) {
+			geometryObject.elementTypes[i] = ElementType.SHELL;
+			geometryObject.coordinates[i++] = new double[0];
+			
+			for (int j = 0; j < solid.getNumElements(); j++) {
+				geometryObject.elementTypes[i] = solid.getElementType(j);
+				geometryObject.coordinates[i++] = solid.getCoordinates(j);
+			}
+		}
+		
 		return geometryObject;
 	}
 	

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oracle.jdbc.driver.OracleConnection;
+import oracle.spatial.geometry.J3D_Geometry;
 import oracle.spatial.geometry.JGeometry;
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.api.geometry.GeometryObject.ElementType;
@@ -289,6 +290,12 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		case MULTI_POLYGON:
 			geometry = convertMultiPolygonToJGeometry(geomObj);
 			break;
+		case SOLID:
+			geometry = convertSolidToJGeometry(geomObj);
+			break;
+		case COMPOSITE_SOLID:
+			geometry = convertCompositeSolidToJGeometry(geomObj);
+			break;
 		}
 
 		if (geometry == null)
@@ -355,6 +362,83 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		}
 		
 		return new JGeometry(JGeometry.GTYPE_MULTIPOLYGON, geomObj.getSrid(), elemInfo, ordinates);
+	}
+	
+	private J3D_Geometry convertSolidToJGeometry(GeometryObject geomObj) {
+		int[] elemInfo = new int[(geomObj.getNumElements() + 2) * 3];
+		double[] ordinates = new double[geomObj.getNumCoordinates()];
+		
+		// shell with one boundary component
+		elemInfo[0] = 1;
+		elemInfo[1] = 1007;
+		elemInfo[2] = 1;
+		
+		// shell made up by multiple polygons 
+		elemInfo[3] = 1;
+		elemInfo[4] = 1006;
+		elemInfo[5] = geomObj.getNumElements();
+		
+		int ordinatesIndex = 0;
+		int elemInfoIndex = 6;
+		
+		for (int i = 0; i < geomObj.getNumElements(); i++) {			
+			elemInfo[elemInfoIndex++] = ordinatesIndex + 1;
+			elemInfo[elemInfoIndex++] = geomObj.getElementType(i) == ElementType.EXTERIOR_LINEAR_RING ? 1003 : 2003;
+			elemInfo[elemInfoIndex++] = 1;
+			
+			double[] coordinates = geomObj.getCoordinates(i);
+			for (int j = 0; j < coordinates.length; j++)
+				ordinates[ordinatesIndex++] = coordinates[j];
+		}
+		
+		return new J3D_Geometry(J3D_Geometry.GTYPE_SOLID, geomObj.getSrid(), elemInfo, ordinates);
+	}
+	
+	private J3D_Geometry convertCompositeSolidToJGeometry(GeometryObject geomObj) {
+		List<Integer> shellIndexes = new ArrayList<>();
+		for (int i = 0; i < geomObj.getNumElements(); i++)
+			if (geomObj.getElementType(i) == ElementType.SHELL)
+				shellIndexes.add(i);
+				
+		int numSolids = shellIndexes.size();
+		shellIndexes.add(geomObj.getNumElements());
+		
+		int[] elemInfo = new int[geomObj.getNumElements() * 3 + shellIndexes.size() * 3];
+		double[] ordinates = new double[geomObj.getNumCoordinates()];
+
+		// composite solid consisting of simple solids
+		elemInfo[0] = 1;
+		elemInfo[1] = 1008;
+		elemInfo[2] = numSolids;
+		
+		int ordinatesIndex = 0;
+		int elemInfoIndex = 3;
+		int shellIndex = 0;	
+		
+		for (int i = 0; i < geomObj.getNumElements(); i++) {
+			if (geomObj.getElementType(i) == ElementType.SHELL) {
+				// shell with one boundary component
+				elemInfo[elemInfoIndex++] = ordinatesIndex + 1;
+				elemInfo[elemInfoIndex++] = 1007;
+				elemInfo[elemInfoIndex++] = 1;
+				
+				// shell made up by multiple polygons 
+				elemInfo[elemInfoIndex++] = ordinatesIndex + 1;
+				elemInfo[elemInfoIndex++] = 1006;				
+				elemInfo[elemInfoIndex++] = shellIndexes.get(shellIndex + 1) - shellIndexes.get(shellIndex) - 1;
+				shellIndex++;
+			} else {
+				elemInfo[elemInfoIndex++] = ordinatesIndex + 1;
+				elemInfo[elemInfoIndex++] = geomObj.getElementType(i) == ElementType.EXTERIOR_LINEAR_RING ? 1003 : 2003;
+				elemInfo[elemInfoIndex++] = 1;
+				
+				double[] coordinates = geomObj.getCoordinates(i);
+				for (int j = 0; j < coordinates.length; j++)
+					ordinates[ordinatesIndex++] = coordinates[j];				
+			}			
+		}
+		
+		return new J3D_Geometry(J3D_Geometry.GTYPE_SOLID, geomObj.getSrid(), elemInfo, ordinates);
 	}
 
 	private JGeometry convertEnvelopeToJGeometry(GeometryObject geomObj) {

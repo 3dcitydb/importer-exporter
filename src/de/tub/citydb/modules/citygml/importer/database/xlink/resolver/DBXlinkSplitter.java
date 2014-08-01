@@ -47,6 +47,7 @@ import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkDeprecatedMaterial;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObject;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSolidGeometry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
@@ -111,6 +112,10 @@ public class DBXlinkSplitter {
 		// we have to resolve the inner xlink firstly. afterwards we can deal with the
 		// outer xlink. thus, we need a recursive strategy here...
 		surfaceGeometryXlinks(true);
+		
+		// rebuild solid geometry objects referencing surfaces from other features
+		// this requires that we have resolved surface geometry xlinks first
+		solidGeometryXlinks();
 	}
 
 	private void basicXlinks() throws SQLException {
@@ -649,6 +654,49 @@ public class DBXlinkSplitter {
 						LOG.error("Illegal graph cycle in geometry detected. XLink references cannot be resolved.");
 					}
 				}
+			}
+		} finally {
+			if (rs != null) {
+				rs.close();
+				rs = null;
+			}
+
+			if (stmt != null) {
+				stmt.close();
+				stmt = null;
+			}
+		}
+	}
+	
+	private void solidGeometryXlinks() throws SQLException {
+		if (!shouldRun)
+			return;
+
+		Statement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			CacheTable cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.SOLID_GEOMETRY);
+			if (cacheTable == null)
+				return;
+
+			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.solidXLink.msg"), this));
+
+			int max = (int)cacheTable.size();
+			int current = 0;
+
+			stmt = cacheTable.getConnection().createStatement();
+			rs = stmt.executeQuery("select * from " + cacheTable.getTableName());
+
+			while (rs.next() && shouldRun) {
+				eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
+
+				long id = rs.getLong("ID");
+				
+				// set initial context
+				DBXlinkSolidGeometry xlink = new DBXlinkSolidGeometry(id);
+				xlinkResolverPool.addWork(xlink);
 			}
 		} finally {
 			if (rs != null) {

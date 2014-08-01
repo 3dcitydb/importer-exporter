@@ -31,6 +31,7 @@ package de.tub.citydb.modules.citygml.common.database.xlink;
 
 public enum DBXlinkEnum {
 	SURFACE_GEOMETRY,
+	SOLID_GEOMETRY,
 	BASIC,
 	LINEAR_RING,
 	TEXTURE_COORD_LIST,

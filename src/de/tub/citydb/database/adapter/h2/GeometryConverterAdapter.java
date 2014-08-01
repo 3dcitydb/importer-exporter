@@ -144,6 +144,8 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		case MULTI_POINT:
 		case ENVELOPE:
 		case MULTI_POLYGON:
+		case SOLID:
+		case COMPOSITE_SOLID:
 			break;
 		}
 

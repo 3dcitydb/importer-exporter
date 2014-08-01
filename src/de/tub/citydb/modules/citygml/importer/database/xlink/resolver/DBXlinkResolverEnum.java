@@ -31,6 +31,7 @@ package de.tub.citydb.modules.citygml.importer.database.xlink.resolver;
 
 public enum DBXlinkResolverEnum {
 	SURFACE_GEOMETRY,
+	SOLID_GEOMETRY,
 	TEXCOORDLIST,
 	TEXTUREPARAM,
 	XLINK_TEXTUREASSOCIATION,

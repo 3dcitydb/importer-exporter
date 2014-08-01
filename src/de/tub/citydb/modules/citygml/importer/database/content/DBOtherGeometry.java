@@ -36,11 +36,13 @@ import java.util.List;
 
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurve;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPoint;
 import org.citygml4j.model.gml.geometry.aggregates.MultiPointProperty;
 import org.citygml4j.model.gml.geometry.complexes.CompositeCurve;
+import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
 import org.citygml4j.model.gml.geometry.complexes.GeometricComplexProperty;
 import org.citygml4j.model.gml.geometry.primitives.AbstractCurve;
@@ -60,30 +62,34 @@ import org.citygml4j.model.gml.geometry.primitives.LineStringSegment;
 import org.citygml4j.model.gml.geometry.primitives.LineStringSegmentArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.LinearRing;
 import org.citygml4j.model.gml.geometry.primitives.OrientableCurve;
+import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
 import org.citygml4j.model.gml.geometry.primitives.Point;
 import org.citygml4j.model.gml.geometry.primitives.PointArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.PointProperty;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
+import org.citygml4j.model.gml.geometry.primitives.Sign;
+import org.citygml4j.model.gml.geometry.primitives.Solid;
+import org.citygml4j.util.walker.GeometryWalker;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.database.DatabaseConnectionPool;
-import de.tub.citydb.log.Logger;
-import de.tub.citydb.util.Util;
+import de.tub.citydb.modules.citygml.importer.util.RingValidator;
 
 public class DBOtherGeometry implements DBImporter {
-	private final Logger LOG = Logger.getInstance();
 	private final DBImporterManager dbImporterManager;
 
 	private int dbSrid;
 	private boolean affineTransformation;
+	private RingValidator ringValidator;
 
 	public DBOtherGeometry(Config config, DBImporterManager dbImporterManager) {
 		this.dbImporterManager = dbImporterManager;
 
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
+		ringValidator = new RingValidator();
 	}
 
 	public boolean isPointOrLineGeometry(AbstractGeometry abstractGeometry) {
@@ -103,7 +109,7 @@ public class DBOtherGeometry implements DBImporter {
 			return false;
 		}
 	}
-	
+
 	public GeometryObject getPoint(Point point) {
 		GeometryObject pointGeom = null;
 
@@ -329,12 +335,12 @@ public class DBOtherGeometry implements DBImporter {
 	public GeometryObject getMultiCurve(MultiCurveProperty multiCurveProperty) {
 		return multiCurveProperty != null ? getMultiCurve(multiCurveProperty.getMultiCurve()) : null;
 	}
-	
+
 	public GeometryObject getCurveGeometry(GeometricComplexProperty complexProperty) {
 		return (complexProperty != null && complexProperty.isSetGeometricComplex()) ? 
 				getCurveGeometry(complexProperty.getGeometricComplex()) : null;
 	}
-	
+
 	public GeometryObject getPointOrCurveGeometry(AbstractGeometry abstractGeometry) {
 		switch (abstractGeometry.getGMLClass()) {
 		case POINT:
@@ -422,7 +428,7 @@ public class DBOtherGeometry implements DBImporter {
 			}
 		}
 	}
-	
+
 	private double[] convertPrimitive(List<Double> pointList) {
 		if (affineTransformation)
 			dbImporterManager.getAffineTransformer().transformCoordinates(pointList);
@@ -432,10 +438,10 @@ public class DBOtherGeometry implements DBImporter {
 		int i = 0;
 		for (Double point : pointList)
 			result[i++] = point.doubleValue();
-			
+
 		return result;
 	}
-	
+
 	private double[][] convertAggregate(List<List<Double>> pointList) {
 		double[][] result = new double[pointList.size()][];
 		int i = 0;
@@ -451,168 +457,194 @@ public class DBOtherGeometry implements DBImporter {
 
 			result[i++] = coords;					
 		}
-		
+
 		return result;
 	}
 
-	public GeometryObject get2DPolygon(PolygonProperty polygonProperty) {
-		return getPolygon(polygonProperty, true);
+	public GeometryObject get2DPolygon(Polygon polygon) {
+		return getPolygon(polygon, true);
 	}
 
-	public GeometryObject getPolygon(PolygonProperty polygonProperty) {
-		return getPolygon(polygonProperty, false);
+	public GeometryObject getPolygon(Polygon polygon) {
+		return getPolygon(polygon, false);
 	}
 
-	private GeometryObject getPolygon(PolygonProperty polygonProperty, boolean is2d) {
+	private GeometryObject getPolygon(Polygon polygon, boolean is2d) {
 		GeometryObject polygonGeom = null;
 
-		if (polygonProperty != null && polygonProperty.isSetPolygon()) {
-			Polygon polygon = polygonProperty.getPolygon();
-
-			// exterior
-			if (polygon.isSetExterior()) {
-				List<List<Double>> pointList = new ArrayList<List<Double>>();
-				AbstractRing exteriorAbstractRing = polygon.getExterior().getRing();
-				if (exteriorAbstractRing instanceof LinearRing) {
-					LinearRing exteriorLinearRing = (LinearRing)exteriorAbstractRing;
-					List<Double> points = ((LinearRing)exteriorLinearRing).toList3d();
-
-					if (points != null && !points.isEmpty()) {
-						Double x = points.get(0);
-						Double y = points.get(1);
-						Double z = points.get(2);
-						int nrOfPoints = points.size();
-						int nrOfCoordinates = points.size() / 3;
-
-						if (!x.equals(points.get(nrOfPoints - 3)) ||
-								!y.equals(points.get(nrOfPoints - 2)) ||
-								!z.equals(points.get(nrOfPoints - 1))) {
-							// repair unclosed ring because sdoapi fails to do its job...
-							StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
-									exteriorLinearRing.getGMLClass(), 
-									polygon.getId()));
-							msg.append(": Exterior ring is not closed. Appending first coordinate to fix it.");
-							LOG.warn(msg.toString());
-
-							points.add(x);
-							points.add(y);
-							points.add(z);
-							++nrOfCoordinates;
-						}
-
-						if (nrOfCoordinates < 4) {
-							// invalid ring...
-							StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
-									exteriorLinearRing.getGMLClass(), 
-									polygon.getId()));
-							msg.append(": Exterior ring contains less than 4 coordinates. Skipping invalid ring.");
-							LOG.error(msg.toString());
-							return null;
-						}
-
-						if (affineTransformation)
-							dbImporterManager.getAffineTransformer().transformCoordinates(points);
-
-						pointList.add(points);
-
-						if (polygon.isSetInterior()) {
-							for (AbstractRingProperty abstractRingProperty : polygon.getInterior()) {
-								AbstractRing interiorAbstractRing = abstractRingProperty.getRing();
-								if (interiorAbstractRing instanceof LinearRing) {
-									LinearRing interiorLinearRing = (LinearRing)interiorAbstractRing;
-									List<Double> interiorPoints = ((LinearRing)interiorLinearRing).toList3d();
-
-									if (interiorPoints != null && !interiorPoints.isEmpty()) {
-										x = interiorPoints.get(0);
-										y = interiorPoints.get(1);
-										z = interiorPoints.get(2);
-										nrOfPoints = interiorPoints.size();
-										nrOfCoordinates = points.size() / 3;
-
-										if (!x.equals(interiorPoints.get(nrOfPoints - 3)) ||
-												!y.equals(interiorPoints.get(nrOfPoints - 2)) ||
-												!z.equals(interiorPoints.get(nrOfPoints - 1))) {
-											// repair unclosed ring because sdoapi fails to do its job...
-											StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
-													interiorLinearRing.getGMLClass(), 
-													polygon.getId()));
-											msg.append(": Interior ring is not closed. Appending first coordinate to fix it.");
-											LOG.warn(msg.toString());
-
-											interiorPoints.add(x);
-											interiorPoints.add(y);
-											interiorPoints.add(z);
-											++nrOfCoordinates;
-										}	
-
-										if (nrOfCoordinates < 4) {
-											// invalid ring...
-											StringBuilder msg = new StringBuilder(Util.getGeometrySignature(
-													interiorLinearRing.getGMLClass(), 
-													polygon.getId()));
-											msg.append(": Interior ring contains less than 4 coordinates. Skipping invalid ring.");
-											LOG.error(msg.toString());
-											return null;
-										}
-
-										if (affineTransformation)
-											dbImporterManager.getAffineTransformer().transformCoordinates(interiorPoints);
-
-										pointList.add(interiorPoints);			
-									}
-								}
-							}
-						}
-					}
-				}
-
-				if (!pointList.isEmpty()) {
-					double[][] pointArray = new double[pointList.size()][];
-					int dim = is2d ? 2 : 3;
-
-					// if we have to return a 2d polygon we first have to correct the
-					// double lists we retrieved from citygml4j as they are always 3d
-					if (is2d) {
-						for (List<Double> coordsList : pointList) {							
-							Iterator<Double> iter = coordsList.iterator();
-
-							int count = 0;							
-							while (iter.hasNext()) {
-								iter.next();
-
-								if (count++ == 2) {
-									count = 0;	
-									iter.remove();
-								}
-							}
-						}						
-					}					
-
-					int i = 0;
-					for (List<Double> coordsList : pointList) {
-						double[] coords = new double[coordsList.size()];
-
-						int j = 0;
-						for (Double coord : coordsList)
-							coords[j++] = coord.doubleValue();								
-
-						pointArray[i++] = coords;					
-					}
-
-					polygonGeom = GeometryObject.createPolygon(pointArray, dim, dbSrid);
-				}
-			}
+		if (polygon != null) {
+			List<List<Double>> pointList = generatePointList(polygon, is2d, false);
+			if (pointList != null && !pointList.isEmpty())
+				polygonGeom = GeometryObject.createPolygon(convertAggregate(pointList), is2d ? 2 : 3, dbSrid);
 		}
 
 		return polygonGeom;
 	}
-	
+
+	public GeometryObject get2DPolygon(PolygonProperty polygonProperty) {
+		return polygonProperty != null ? get2DPolygon(polygonProperty.getPolygon()) : null;
+	}
+
+	public GeometryObject getPolygon(PolygonProperty polygonProperty) {
+		return polygonProperty != null ? getPolygon(polygonProperty.getPolygon()) : null;
+	}
+
+	private List<List<Double>> generatePointList(Polygon polygon, boolean is2d, boolean reverse) {
+		List<List<Double>> pointList = new ArrayList<>();
+
+		if (polygon.isSetExterior()) {
+			AbstractRing exteriorAbstractRing = polygon.getExterior().getRing();
+			if (exteriorAbstractRing instanceof LinearRing) {
+				LinearRing exteriorLinearRing = (LinearRing)exteriorAbstractRing;
+				if (!ringValidator.validate(exteriorLinearRing, polygon.getId()))
+					return null;
+
+				pointList.add(exteriorLinearRing.toList3d(reverse));
+
+				if (polygon.isSetInterior()) {
+					for (AbstractRingProperty abstractRingProperty : polygon.getInterior()) {
+						AbstractRing interiorAbstractRing = abstractRingProperty.getRing();
+						if (interiorAbstractRing instanceof LinearRing) {
+							LinearRing interiorLinearRing = (LinearRing)interiorAbstractRing;
+							if (!ringValidator.validate(interiorLinearRing, polygon.getId()))
+								return null;
+
+							pointList.add(interiorLinearRing.toList3d(reverse));
+						}
+					}
+				}
+			}
+
+			if (is2d) {
+				// if we have to return a 2d polygon we first have to correct the
+				// double lists we retrieved from citygml4j as they are always 3d
+				for (List<Double> coordsList : pointList) {							
+					Iterator<Double> iter = coordsList.iterator();
+
+					int count = 0;							
+					while (iter.hasNext()) {
+						iter.next();
+
+						if (count++ == 2) {
+							count = 0;	
+							iter.remove();
+						}
+					}
+				}						
+			}
+		}
+
+		return pointList;
+	}
+
+	public GeometryObject getSolid(Solid solid) {
+		GeometryObject solidGeom = null;
+
+		if (solid != null) {
+			final List<List<Double>> pointList = new ArrayList<>();
+			final List<Integer> rings = new ArrayList<>();
+
+			solid.accept(new GeometryWalker() {
+				boolean reverse = false;
+				int ringNo = 0;
+
+				public <T extends AbstractGeometry> void visit(GeometryProperty<T> geometryProperty) {
+					if (geometryProperty.isSetHref()) {
+						setShouldWalk(false);
+						pointList.clear();
+						return;
+					}
+
+					super.visit(geometryProperty);
+				}
+
+				public void visit(OrientableSurface orientableSurface) {
+					if (orientableSurface.getOrientation() == Sign.MINUS) {
+						reverse = !reverse;
+						super.visit(orientableSurface);
+						reverse = !reverse;
+					} else
+						super.visit(orientableSurface);
+				}
+
+				public void visit(Polygon polygon) {
+					List<List<Double>> points = generatePointList(polygon, false, reverse);
+					if (points == null || points.isEmpty()) {
+						setShouldWalk(false);
+						pointList.clear();
+						return;
+					}
+
+					pointList.addAll(points);
+					rings.add(ringNo);
+					ringNo += points.size();
+				}
+
+				public void visit(LinearRing linearRing) {
+					// required to handle surface patches such as triangles and rectangles
+					if (ringValidator.validate(linearRing, null)) {
+						List<Double> points = linearRing.toList3d(reverse);
+						pointList.add(points);
+						rings.add(ringNo);
+						ringNo++;
+					}
+				}
+
+			});
+
+			if (!pointList.isEmpty()) {
+				int[] exteriorRings = new int[rings.size()];
+
+				int i = 0;
+				for (Integer ringNo : rings)
+					exteriorRings[i++] = ringNo.intValue();
+
+				solidGeom = GeometryObject.createSolid(convertAggregate(pointList), exteriorRings, dbSrid);
+			}
+		}
+
+		return solidGeom;
+	}
+
+	public GeometryObject getCompositeSolid(CompositeSolid compositeSolid) {
+		GeometryObject compositeSolidGeom = null;
+
+		if (compositeSolid != null) {
+			final List<GeometryObject> solidMembers = new ArrayList<>();
+
+			compositeSolid.accept(new GeometryWalker() {
+				public void visit(Solid solid) {
+					GeometryObject solidMember = getSolid(solid);
+					if (solidMember != null)
+						solidMembers.add(solidMember);
+					else {
+						setShouldWalk(false);
+						solidMembers.clear();
+						return;
+					}
+				}
+			});
+
+			if (!solidMembers.isEmpty()) {
+				GeometryObject[] tmp = new GeometryObject[solidMembers.size()];
+				
+				int i = 0;
+				for (GeometryObject solidMember : solidMembers)
+					tmp[i++] = solidMember;
+				
+				compositeSolidGeom = GeometryObject.createCompositeSolid(tmp, dbSrid);
+			}
+		}
+
+		return compositeSolidGeom;
+	}
+
 	private boolean containsPointPrimitives(GeometricComplex geometricComplex, boolean exclusive) {
 		if (geometricComplex != null && geometricComplex.isSetElement()) {
 			for (GeometricPrimitiveProperty primitiveProperty : geometricComplex.getElement()) {
 				if (primitiveProperty.isSetGeometricPrimitive()) {
 					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
-					
+
 					switch (primitive.getGMLClass()) {
 					case POINT:
 						if (!exclusive)
@@ -626,16 +658,16 @@ public class DBOtherGeometry implements DBImporter {
 				}
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	private boolean containsCurvePrimitives(GeometricComplex geometricComplex, boolean exclusive) {
 		if (geometricComplex != null && geometricComplex.isSetElement()) {
 			for (GeometricPrimitiveProperty primitiveProperty : geometricComplex.getElement()) {
 				if (primitiveProperty.isSetGeometricPrimitive()) {
 					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
-					
+
 					switch (primitive.getGMLClass()) {
 					case LINE_STRING:
 					case CURVE:
@@ -652,7 +684,7 @@ public class DBOtherGeometry implements DBImporter {
 				}
 			}
 		}
-		
+
 		return true;
 	}
 

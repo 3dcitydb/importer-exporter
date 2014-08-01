@@ -31,6 +31,7 @@ package de.tub.citydb.modules.citygml.importer.database.xlink.importer;
 
 public enum DBXlinkImporterEnum {
 	SURFACE_GEOMETRY,
+	SOLID_GEOMETRY,
 	LINEAR_RING,
 	XLINK_BASIC,
 	XLINK_TEXTURE_COORD_LIST,

@@ -50,6 +50,7 @@ import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkDeprecatedMate
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkEnum;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkGroupToCityObject;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
+import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSolidGeometry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.common.database.xlink.DBXlinkTextureAssociation;
@@ -63,6 +64,7 @@ import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkBasic
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkDeprecatedMaterial;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkGroupToCityObject;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkLibraryObject;
+import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkSolidGeometry;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkSurfaceDataToTexImage;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkSurfaceGeometry;
 import de.tub.citydb.modules.citygml.importer.database.xlink.resolver.XlinkTexCoordList;
@@ -325,6 +327,13 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 					if (xlinkGroupToCityObject != null)
 						success = xlinkGroupToCityObject.insert(groupMember);
 
+					break;
+				case SOLID_GEOMETRY:
+					DBXlinkSolidGeometry solidGeometry = (DBXlinkSolidGeometry)work;
+					XlinkSolidGeometry xlinkSolidGeometry = (XlinkSolidGeometry)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.SOLID_GEOMETRY);
+					if (xlinkSolidGeometry != null)
+						success = xlinkSolidGeometry.insert(solidGeometry);
+					
 					break;
 				default:
 					return;
