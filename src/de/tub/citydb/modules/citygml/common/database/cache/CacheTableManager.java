@@ -47,38 +47,39 @@ import de.tub.citydb.modules.citygml.common.database.cache.model.CacheTableModel
 
 public class CacheTableManager {
 	private final Logger LOG = Logger.getInstance();
-	private final AbstractDatabaseAdapter databaseAdapter;	
-	private final Connection connection;
+	private final AbstractDatabaseAdapter cacheAdapter;	
+	private final Connection cacheConnection;
 	private final Config config;
 
 	private String cacheDir;
-	private Connection dbConnection;
+	private AbstractDatabaseAdapter databaseAdapter;
+	private Connection databaseConnection;
 
 	private ConcurrentHashMap<CacheTableModelEnum, CacheTable> cacheTables;
 	private ConcurrentHashMap<CacheTableModelEnum, BranchCacheTable> branchCacheTables;
 
 	public CacheTableManager(DatabaseConnectionPool dbPool, int concurrencyLevel, Config config) throws SQLException, IOException {		
 		if (config.getProject().getGlobal().getCache().isUseDatabase()) {
-			databaseAdapter = dbPool.getActiveDatabaseAdapter();
-			connection = dbPool.getConnection();
+			cacheAdapter = dbPool.getActiveDatabaseAdapter();
+			cacheConnection = dbPool.getConnection();
 		}
 
 		else {
 			File tempDir = checkTempDir(config.getProject().getGlobal().getCache().getLocalCachePath());
 			LOG.debug("Local cache directory is '" + tempDir.getAbsolutePath() + "'.");
-			databaseAdapter = new H2Adapter();
+			cacheAdapter = new H2Adapter();
 
 			try {
-				Class.forName(databaseAdapter.getConnectionFactoryClassName());
+				Class.forName(cacheAdapter.getConnectionFactoryClassName());
 			} catch (ClassNotFoundException e) {
 				throw new SQLException(e);
 			}
 
 			cacheDir = tempDir.getAbsolutePath() + File.separator + DefaultGMLIdManager.getInstance().generateUUID("");		
-			connection = DriverManager.getConnection(databaseAdapter.getJDBCUrl(cacheDir + File.separator + "tmp", -1, null), "sa", "");			
+			cacheConnection = DriverManager.getConnection(cacheAdapter.getJDBCUrl(cacheDir + File.separator + "tmp", -1, null), "sa", "");			
 		}
 
-		connection.setAutoCommit(false);
+		cacheConnection.setAutoCommit(false);
 
 		cacheTables = new ConcurrentHashMap<CacheTableModelEnum, CacheTable>(CacheTableModelEnum.values().length, 0.75f, concurrencyLevel);
 		branchCacheTables = new ConcurrentHashMap<CacheTableModelEnum, BranchCacheTable>(CacheTableModelEnum.values().length, 0.75f, concurrencyLevel);
@@ -86,20 +87,20 @@ public class CacheTableManager {
 	}
 
 	public AbstractDatabaseAdapter getDatabaseAdapter() {
-		return databaseAdapter;
+		return cacheAdapter;
 	}
 
 	public CacheTable createCacheTable(CacheTableModelEnum model) throws SQLException {
-		return createCacheTable(model, connection);		
+		return createCacheTable(model, cacheConnection, cacheAdapter);		
 	}
 
 	public CacheTable createCacheTableInDatabase(CacheTableModelEnum model) throws SQLException {
 		initDatabaseConnection();
-		return createCacheTable(model, dbConnection);
+		return createCacheTable(model, databaseConnection, databaseAdapter);
 	}
-	
-	private CacheTable createCacheTable(CacheTableModelEnum model, Connection connection) throws SQLException {
-		CacheTable cacheTable = getOrCreateCacheTable(model, connection);		
+
+	private CacheTable createCacheTable(CacheTableModelEnum model, Connection connection, AbstractDatabaseAdapter adapter) throws SQLException {
+		CacheTable cacheTable = getOrCreateCacheTable(model, adapter, connection);		
 		if (!cacheTable.isCreated())
 			cacheTable.create();
 
@@ -107,7 +108,7 @@ public class CacheTableManager {
 	}
 
 	public CacheTable createAndIndexCacheTable(CacheTableModelEnum model) throws SQLException {
-		CacheTable cacheTable = getOrCreateCacheTable(model, connection);
+		CacheTable cacheTable = getOrCreateCacheTable(model, cacheAdapter, cacheConnection);
 		if (!cacheTable.isCreated())
 			cacheTable.createAndIndex();
 
@@ -115,7 +116,7 @@ public class CacheTableManager {
 	}
 
 	public BranchCacheTable createBranchCacheTable(CacheTableModelEnum model) throws SQLException {
-		BranchCacheTable branchCacheTable = gerOrCreateBranchCacheTable(model, connection);		
+		BranchCacheTable branchCacheTable = gerOrCreateBranchCacheTable(model, cacheAdapter, cacheConnection);		
 		if (!branchCacheTable.isCreated())
 			branchCacheTable.create();
 
@@ -123,7 +124,7 @@ public class CacheTableManager {
 	}
 
 	public BranchCacheTable createAndIndexBranchCacheTable(CacheTableModelEnum model) throws SQLException {
-		BranchCacheTable branchCacheTable = gerOrCreateBranchCacheTable(model, connection);
+		BranchCacheTable branchCacheTable = gerOrCreateBranchCacheTable(model, cacheAdapter, cacheConnection);
 		if (!branchCacheTable.isCreated())
 			branchCacheTable.createAndIndex();
 
@@ -162,16 +163,19 @@ public class CacheTableManager {
 			branchCacheTables.clear();
 
 			try {
-				connection.close();
+				cacheConnection.close();
 			} catch (SQLException e) {
 				//
 			}
-			
-			if (dbConnection != null) {
+
+			if (databaseConnection != null) {
 				try {
-					dbConnection.close();
+					databaseConnection.close();
 				} catch (SQLException e) {
 					//
+				} finally {
+					databaseConnection = null;
+					databaseAdapter = null;
 				}
 			}
 
@@ -181,14 +185,14 @@ public class CacheTableManager {
 				} catch (IOException e) {
 					LOG.error("Failed to delete temp directory: " + e.getMessage());
 				}
-			}
+			}			
 		}
 	}
 
-	private CacheTable getOrCreateCacheTable(CacheTableModelEnum model, Connection connection) {
+	private CacheTable getOrCreateCacheTable(CacheTableModelEnum model, AbstractDatabaseAdapter adapter, Connection connection) {
 		CacheTable cacheTable = cacheTables.get(model);
 		if (cacheTable == null) {
-			CacheTable tmp = new CacheTable(model, connection, databaseAdapter.getSQLAdapter());
+			CacheTable tmp = new CacheTable(model, connection, adapter.getSQLAdapter());
 			cacheTable = cacheTables.putIfAbsent(model, tmp);
 			if (cacheTable == null)
 				cacheTable = tmp;
@@ -197,10 +201,10 @@ public class CacheTableManager {
 		return cacheTable;
 	}
 
-	private BranchCacheTable gerOrCreateBranchCacheTable(CacheTableModelEnum model, Connection connection) {
+	private BranchCacheTable gerOrCreateBranchCacheTable(CacheTableModelEnum model, AbstractDatabaseAdapter adapter, Connection connection) {
 		BranchCacheTable branchCacheTable = branchCacheTables.get(model);
 		if (branchCacheTable == null) {
-			BranchCacheTable tmp = new BranchCacheTable(model, connection, databaseAdapter.getSQLAdapter());
+			BranchCacheTable tmp = new BranchCacheTable(model, connection, adapter.getSQLAdapter());
 			branchCacheTable = branchCacheTables.putIfAbsent(model, tmp);
 			if (branchCacheTable == null)
 				branchCacheTable = tmp;
@@ -238,14 +242,18 @@ public class CacheTableManager {
 
 		file.delete();
 	}
-	
+
 	private void initDatabaseConnection() throws SQLException {
-		if (dbConnection == null) {
-			if (config.getProject().getGlobal().getCache().isUseDatabase())
-				dbConnection = connection;
-			else {
-				dbConnection = DatabaseConnectionPool.getInstance().getConnection();
-				dbConnection.setAutoCommit(false);
+		// some cache tables need to be created in the database
+		// hence, if we use a local cache, we must create a database adapter and connection 
+		if (databaseConnection == null) {
+			if (config.getProject().getGlobal().getCache().isUseDatabase()) {
+				databaseConnection = cacheConnection;
+				databaseAdapter = cacheAdapter;
+			} else {
+				databaseConnection = DatabaseConnectionPool.getInstance().getConnection();
+				databaseConnection.setAutoCommit(false);
+				databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();
 			}
 		}
 	}
