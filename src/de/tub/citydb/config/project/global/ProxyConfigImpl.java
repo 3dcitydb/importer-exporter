@@ -37,13 +37,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.api.event.Event;
-import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.api.event.global.GlobalEvents;
-import de.tub.citydb.api.event.global.ProxyServerUnavailableEvent;
 import de.tub.citydb.api.io.ProxyConfig;
 import de.tub.citydb.api.io.ProxyType;
-import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.internal.Internal;
 
 @XmlType(name="ProxyConfigType", propOrder={
@@ -54,7 +49,7 @@ import de.tub.citydb.config.internal.Internal;
 		"password",
 		"savePassword"
 })
-public class ProxyConfigImpl implements ProxyConfig, EventHandler {
+public class ProxyConfigImpl implements ProxyConfig {
 	@XmlAttribute(required=true)
 	private Boolean isEnabled = false;
 	@XmlAttribute(required=true)
@@ -72,9 +67,8 @@ public class ProxyConfigImpl implements ProxyConfig, EventHandler {
 	private int failedConnectAttempts = 0;
 	@XmlTransient
 	private ProxyConfigImpl other = null;
-	
-	public ProxyConfigImpl() {
-		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.PROXY_SERVER_UNAVAILABLE, this);
+
+	public ProxyConfigImpl() {		
 	}
 	
 	public ProxyConfigImpl(ProxyType type, ProxyConfigImpl other) {
@@ -259,11 +253,5 @@ public class ProxyConfigImpl implements ProxyConfig, EventHandler {
 		default:
 			return "n/a";
 		}
-	}
-
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		ProxyConfigImpl proxy = (ProxyConfigImpl)((ProxyServerUnavailableEvent)event).getProxy();
-		proxy.setEnabled(false);
 	}
 }

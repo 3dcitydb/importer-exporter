@@ -41,7 +41,7 @@ import de.tub.citydb.api.controller.ViewController;
 import de.tub.citydb.api.event.EventDispatcher;
 
 public class ObjectRegistry {
-	private static final ObjectRegistry instance = new ObjectRegistry();
+	private static ObjectRegistry instance;
 
 	private ConcurrentHashMap<String, Object> registry;
 	private EventDispatcher eventDispatcher;
@@ -56,7 +56,10 @@ public class ObjectRegistry {
 		// just to thwart instantiation
 	}
 
-	public static ObjectRegistry getInstance() {
+	public static synchronized ObjectRegistry getInstance() {
+		if (instance == null)
+			instance = new ObjectRegistry();
+		
 		return instance;
 	}
 

@@ -123,6 +123,7 @@ public class InternalProxySelector extends ProxySelector {
 
 					if (connectAttempts == maxConnectAttempts) {
 						LOG.error("Failed " + maxConnectAttempts + " times to connect to " + proxy.getType().toString() + " proxy server.");
+						proxy.setEnabled(false);
 						eventDispatcher.triggerEvent(new ProxyServerUnavailableEventImpl(proxy, this));
 					}
 				} finally {
