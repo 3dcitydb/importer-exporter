@@ -374,13 +374,13 @@ public class DBAppearance implements DBExporter {
 				String imageURI = rs.getString(23);
 				if (uniqueFileNames) {
 					String extension = Util.getFileExtension(imageURI);
-					imageURI = Internal.UNIQUE_TEXTURE_FILENAME_PREFIX + surfaceDataId + (extension != null ? "." + extension : "");
+					imageURI = Internal.UNIQUE_TEXTURE_FILENAME_PREFIX + texImageId + (extension != null ? "." + extension : "");
 				}
 
 				File file = new File(imageURI);
 				String fileName = file.getName();
 				if (useBuckets)
-					fileName = String.valueOf(Math.abs(surfaceDataId % noOfBuckets + 1)) + pathSeparator + fileName;
+					fileName = String.valueOf(Math.abs(texImageId % noOfBuckets + 1)) + pathSeparator + fileName;
 				
 				absTex.setImageURI(texturePath != null ? texturePath + pathSeparator + fileName : fileName);
 
