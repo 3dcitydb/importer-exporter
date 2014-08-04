@@ -61,8 +61,8 @@ import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.Lod0FootprintMode;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
+import org.citydb.textureAtlas.TextureAtlasCreator;
 import org.citydb.util.gui.GuiUtil;
-import org.citygml.textureAtlas.TextureAtlasCreator;
 
 @SuppressWarnings("serial")
 public class BuildingRenderingPanel extends AbstractPreferencesComponent {

@@ -43,14 +43,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import net.opengis.kml._2.ViewRefreshModeEnumType;
+
 import org.citydb.config.Config;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.kmlExporter.KmlExporter;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.util.gui.GuiUtil;
-
-import net.opengis.kml._2.ViewRefreshModeEnumType;
 
 @SuppressWarnings("serial")
 public class GeneralPanel extends AbstractPreferencesComponent {

@@ -66,9 +66,9 @@ import org.citydb.log.Logger;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.GeometryCounterEvent;
+import org.citydb.textureAtlas.image.ImageReader;
+import org.citydb.textureAtlas.model.TextureImage;
 import org.citydb.util.Util;
-import org.citygml.textureAtlas.image.ImageReader;
-import org.citygml.textureAtlas.model.TextureImage;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 

@@ -50,7 +50,6 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.TitledBorder;
 // import javax.swing.filechooser.FileNameExtensionFilter;
 
-
 import org.citydb.config.Config;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.kmlExporter.AltitudeMode;

@@ -33,7 +33,7 @@ import java.util.HashMap;
 
 import net.opengis.kml._2.PlacemarkType;
 
-import org.citygml.textureAtlas.model.TextureImage;
+import org.citydb.textureAtlas.model.TextureImage;
 import org.collada._2005._11.colladaschema.COLLADA;
 
 public class ColladaBundle {
