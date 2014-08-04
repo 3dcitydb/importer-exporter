@@ -393,8 +393,8 @@ public class Util {
 			ModelObject parent = null;
 
 			while ((parent = child.getParent()) != null) {
-				if (parent instanceof AbstractCityObject && ((AbstractCityObject)child).isSetCreationDate())
-					return ((AbstractCityObject)child).getCreationDate();
+				if (parent instanceof AbstractCityObject && ((AbstractCityObject)parent).isSetCreationDate())
+					return ((AbstractCityObject)parent).getCreationDate();
 				else if (parent instanceof Child)
 					child = (Child)parent;
 				else 
@@ -417,8 +417,8 @@ public class Util {
 			ModelObject parent = null;
 
 			while ((parent = child.getParent()) != null) {
-				if (parent instanceof AbstractCityObject && ((AbstractCityObject)child).isSetTerminationDate())
-					return ((AbstractCityObject)child).getTerminationDate();
+				if (parent instanceof AbstractCityObject && ((AbstractCityObject)parent).isSetTerminationDate())
+					return ((AbstractCityObject)parent).getTerminationDate();
 				else if (parent instanceof Child)
 					child = (Child)parent;
 				else 
