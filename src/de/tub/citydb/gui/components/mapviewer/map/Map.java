@@ -53,7 +53,7 @@ import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.painter.CompoundPainter;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.components.mapviewer.MapWindow;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -221,7 +221,7 @@ public class Map {
 			public void mousePressed(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e)) {
 					boolean visible = !hints.isVisible();
-					String hintsText = !visible ? Internal.I18N.getString("map.hints.show") : Internal.I18N.getString("map.hints.hide");
+					String hintsText = !visible ? Language.I18N.getString("map.hints.show") : Language.I18N.getString("map.hints.hide");
 					hintsLabel.setText("<html><u>" + hintsText + "</u></html>");
 					hints.setVisible(visible);
 				}
@@ -249,16 +249,16 @@ public class Map {
 	}
 
 	public void doTranslation() {
-		String hintsText = !hints.isVisible() ? Internal.I18N.getString("map.hints.show") : Internal.I18N.getString("map.hints.hide");
+		String hintsText = !hints.isVisible() ? Language.I18N.getString("map.hints.show") : Language.I18N.getString("map.hints.hide");
 		hintsLabel.setText("<html><u>" + hintsText + "</u></html>");
 
-		hintLabels[0].setText("<html><b>" + Internal.I18N.getString("map.hints.selectBoundingBox")+ "</b><br/>" + Internal.I18N.getString("map.hints.selectBoundingBox.hint") + "</html>");
-		hintLabels[1].setText("<html><b>" + Internal.I18N.getString("map.hints.reverseGeocoder")+ "</b><br/>" + Internal.I18N.getString("map.hints.reverseGeocoder.hint") + "</html>");
-		hintLabels[2].setText("<html><b>" + Internal.I18N.getString("map.hints.zoom")+ "</b><br/>" + Internal.I18N.getString("map.hints.zoom.hint") + "</html>");
-		hintLabels[3].setText("<html><b>" + Internal.I18N.getString("map.hints.zoomSelected")+ "</b><br/>" + Internal.I18N.getString("map.hints.zoomSelected.hint") + "</html>");
-		hintLabels[4].setText("<html><b>" + Internal.I18N.getString("map.hints.move")+ "</b><br/>" + Internal.I18N.getString("map.hints.move.hint") + "</html>");
-		hintLabels[5].setText("<html><b>" + Internal.I18N.getString("map.hints.center")+ "</b><br/>" + Internal.I18N.getString("map.hints.center.hint") + "</html>");
-		hintLabels[6].setText("<html><b>" + Internal.I18N.getString("map.hints.popup")+ "</b><br/>" + Internal.I18N.getString("map.hints.popup.hint") + "</html>");
+		hintLabels[0].setText("<html><b>" + Language.I18N.getString("map.hints.selectBoundingBox")+ "</b><br/>" + Language.I18N.getString("map.hints.selectBoundingBox.hint") + "</html>");
+		hintLabels[1].setText("<html><b>" + Language.I18N.getString("map.hints.reverseGeocoder")+ "</b><br/>" + Language.I18N.getString("map.hints.reverseGeocoder.hint") + "</html>");
+		hintLabels[2].setText("<html><b>" + Language.I18N.getString("map.hints.zoom")+ "</b><br/>" + Language.I18N.getString("map.hints.zoom.hint") + "</html>");
+		hintLabels[3].setText("<html><b>" + Language.I18N.getString("map.hints.zoomSelected")+ "</b><br/>" + Language.I18N.getString("map.hints.zoomSelected.hint") + "</html>");
+		hintLabels[4].setText("<html><b>" + Language.I18N.getString("map.hints.move")+ "</b><br/>" + Language.I18N.getString("map.hints.move.hint") + "</html>");
+		hintLabels[5].setText("<html><b>" + Language.I18N.getString("map.hints.center")+ "</b><br/>" + Language.I18N.getString("map.hints.center.hint") + "</html>");
+		hintLabels[6].setText("<html><b>" + Language.I18N.getString("map.hints.popup")+ "</b><br/>" + Language.I18N.getString("map.hints.popup.hint") + "</html>");
 	
 		popupMenu.doTranslation();
 	}

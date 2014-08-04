@@ -43,7 +43,8 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
+import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.UpdateBatching;
 import de.tub.citydb.config.project.resources.ThreadPoolConfig;
 import de.tub.citydb.config.project.resources.UIDCacheConfig;
@@ -345,31 +346,31 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("common.pref.resources.border.multiCPU"));	
-		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.import.resources.border.commit"));	
-		((TitledBorder)block3.getBorder()).setTitle(Internal.I18N.getString("common.pref.resources.border.idCache"));	
-		((TitledBorder)block4.getBorder()).setTitle(Internal.I18N.getString("pref.import.resources.border.texImageCache"));	
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("common.pref.resources.border.multiCPU"));	
+		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.import.resources.border.commit"));	
+		((TitledBorder)block3.getBorder()).setTitle(Language.I18N.getString("common.pref.resources.border.idCache"));	
+		((TitledBorder)block4.getBorder()).setTitle(Language.I18N.getString("pref.import.resources.border.texImageCache"));	
 
-		impResMinThreadsLabel.setText(Internal.I18N.getString("common.pref.resources.label.minThreads"));
-		impResMaxThreadsLabel.setText(Internal.I18N.getString("common.pref.resources.label.maxThreads"));
+		impResMinThreadsLabel.setText(Language.I18N.getString("common.pref.resources.label.minThreads"));
+		impResMaxThreadsLabel.setText(Language.I18N.getString("common.pref.resources.label.maxThreads"));
 		
-		impResTransaktLabel.setText(Internal.I18N.getString("pref.import.resources.label.commit"));
-		impResTransaktFeatureLabel.setText(Internal.I18N.getString("pref.import.resources.label.commit.feature"));
-		impResTransaktCacheLabel.setText(Internal.I18N.getString("pref.import.resources.label.commit.cache"));
-		impResTransaktTempLabel.setText(Internal.I18N.getString("pref.import.resources.label.commit.temp"));
+		impResTransaktLabel.setText(Language.I18N.getString("pref.import.resources.label.commit"));
+		impResTransaktFeatureLabel.setText(Language.I18N.getString("pref.import.resources.label.commit.feature"));
+		impResTransaktCacheLabel.setText(Language.I18N.getString("pref.import.resources.label.commit.cache"));
+		impResTransaktTempLabel.setText(Language.I18N.getString("pref.import.resources.label.commit.temp"));
 
-		impResGeomLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry"));
-		impResGeomCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.entry"));
-		impResGeomDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.drain"));
-		impResGeomPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.partition"));
-		impResFeatLabel.setText(Internal.I18N.getString("common.pref.resources.label.feature"));
-		impResFeatCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.entry"));
-		impResFeatDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.drain"));
-		impResFeatPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.partition"));
-		impResTexLabel.setText(Internal.I18N.getString("pref.import.resources.label.texImageCache"));
-		impResTexCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.entry"));
-		impResTexDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.drain"));
-		impResTexPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.partition"));
+		impResGeomLabel.setText(Language.I18N.getString("common.pref.resources.label.geometry"));
+		impResGeomCacheLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.entry"));
+		impResGeomDrainLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.drain"));
+		impResGeomPartLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.partition"));
+		impResFeatLabel.setText(Language.I18N.getString("common.pref.resources.label.feature"));
+		impResFeatCacheLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.entry"));
+		impResFeatDrainLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.drain"));
+		impResFeatPartLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.partition"));
+		impResTexLabel.setText(Language.I18N.getString("pref.import.resources.label.texImageCache"));
+		impResTexCacheLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.entry"));
+		impResTexDrainLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.drain"));
+		impResTexPartLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.partition"));
 	}
 
 	@Override
@@ -381,16 +382,16 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 		UIDCacheConfig texImage = config.getProject().getImporter().getResources().getTexImageCache();
 
 		int commitFeature = commit.getFeatureBatchValue();
-		if (commitFeature > Internal.DB_MAX_BATCH_SIZE)
-			commitFeature = Internal.DB_MAX_BATCH_SIZE;
+		if (commitFeature > Database.MAX_BATCH_SIZE)
+			commitFeature = Database.MAX_BATCH_SIZE;
 		
 		int commitCache = commit.getGmlIdCacheBatchValue();
-		if (commitCache > Internal.DB_MAX_BATCH_SIZE)
-			commitCache = Internal.DB_MAX_BATCH_SIZE;
+		if (commitCache > Database.MAX_BATCH_SIZE)
+			commitCache = Database.MAX_BATCH_SIZE;
 		
 		int commitTemp = commit.getTempBatchValue();
-		if (commitTemp > Internal.DB_MAX_BATCH_SIZE)
-			commitTemp = Internal.DB_MAX_BATCH_SIZE;
+		if (commitTemp > Database.MAX_BATCH_SIZE)
+			commitTemp = Database.MAX_BATCH_SIZE;
 		
 		impResMinThreadsText.setValue(threadPool.getMinThreads());
 		impResMaxThreadsText.setValue(threadPool.getMaxThreads());
@@ -427,18 +428,18 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 			impResMinThreadsText.setValue(minThreads);
 		}
 
-		if (featBatch > Internal.DB_MAX_BATCH_SIZE) {
-			featBatch = Internal.DB_MAX_BATCH_SIZE;
+		if (featBatch > Database.MAX_BATCH_SIZE) {
+			featBatch = Database.MAX_BATCH_SIZE;
 			impResTransaktFeatureText.setValue(featBatch);
 		}
 		
-		if (lookupBatch > Internal.DB_MAX_BATCH_SIZE) {
-			lookupBatch = Internal.DB_MAX_BATCH_SIZE;
+		if (lookupBatch > Database.MAX_BATCH_SIZE) {
+			lookupBatch = Database.MAX_BATCH_SIZE;
 			impResTransaktCacheText.setValue(lookupBatch);
 		}
 		
-		if (tempBatch > Internal.DB_MAX_BATCH_SIZE) {
-			tempBatch = Internal.DB_MAX_BATCH_SIZE;
+		if (tempBatch > Database.MAX_BATCH_SIZE) {
+			tempBatch = Database.MAX_BATCH_SIZE;
 			impResTransaktTempText.setValue(tempBatch);
 		}
 		
@@ -462,6 +463,6 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.import.resources");
+		return Language.I18N.getString("pref.tree.import.resources");
 	}
 }

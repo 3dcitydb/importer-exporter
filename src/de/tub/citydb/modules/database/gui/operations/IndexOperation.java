@@ -51,7 +51,7 @@ import de.tub.citydb.api.controller.ViewController;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.DBOperationType;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.database.IndexStatusInfo;
@@ -153,7 +153,7 @@ public class IndexOperation extends DatabaseOperationView {
 
 	@Override
 	public String getLocalizedTitle() {
-		return Internal.I18N.getString("db.label.operation.index");
+		return Language.I18N.getString("db.label.operation.index");
 	}
 
 	@Override
@@ -178,11 +178,11 @@ public class IndexOperation extends DatabaseOperationView {
 
 	@Override
 	public void doTranslation() {
-		activate.setText(Internal.I18N.getString("db.button.index.activate"));
-		deactivate.setText(Internal.I18N.getString("db.button.index.deactivate"));
-		query.setText(Internal.I18N.getString("db.button.index.query"));
-		spatial.setText(Internal.I18N.getString("db.label.operation.index.spatial"));
-		normal.setText(Internal.I18N.getString("db.label.operation.index.normal"));
+		activate.setText(Language.I18N.getString("db.button.index.activate"));
+		deactivate.setText(Language.I18N.getString("db.button.index.deactivate"));
+		query.setText(Language.I18N.getString("db.button.index.query"));
+		spatial.setText(Language.I18N.getString("db.label.operation.index.spatial"));
+		normal.setText(Language.I18N.getString("db.label.operation.index.normal"));
 	}
 
 	@Override
@@ -212,13 +212,13 @@ public class IndexOperation extends DatabaseOperationView {
 
 		try {
 			viewController.clearConsole();
-			viewController.setStatusText(Internal.I18N.getString("main.status.database.activate.index.label"));
+			viewController.setStatusText(Language.I18N.getString("main.status.database.activate.index.label"));
 
 			final StatusDialog dialog = new StatusDialog(viewController.getTopFrame(), 
-					Internal.I18N.getString("db.dialog.index.window"), 
-					Internal.I18N.getString("db.dialog.index.activate"), 
+					Language.I18N.getString("db.dialog.index.window"), 
+					Language.I18N.getString("db.dialog.index.activate"), 
 					null, 
-					Internal.I18N.getString("db.dialog.index.activate.detail"), 
+					Language.I18N.getString("db.dialog.index.activate.detail"), 
 					false);			
 
 			SwingUtilities.invokeLater(new Runnable() {
@@ -271,20 +271,20 @@ public class IndexOperation extends DatabaseOperationView {
 				if (dbSqlEx.length() == 0) {
 					LOG.warn("Activating indexes aborted.");
 				} else  {
-					String text = Internal.I18N.getString("db.dialog.index.activate.error");
+					String text = Language.I18N.getString("db.dialog.index.activate.error");
 					Object[] args = new Object[]{ dbSqlEx };
 					String result = MessageFormat.format(text, args);
 
 					JOptionPane.showMessageDialog(
 							viewController.getTopFrame(), 
 							result, 
-							Internal.I18N.getString("common.dialog.error.db.title"),
+							Language.I18N.getString("common.dialog.error.db.title"),
 							JOptionPane.ERROR_MESSAGE);
 
 					LOG.error("Failed to activate indexes: " + dbSqlEx.trim());
 				}
 			} finally {
-				viewController.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 			}
 
 		} finally {
@@ -298,13 +298,13 @@ public class IndexOperation extends DatabaseOperationView {
 
 		try {
 			viewController.clearConsole();
-			viewController.setStatusText(Internal.I18N.getString("main.status.database.deactivate.label"));
+			viewController.setStatusText(Language.I18N.getString("main.status.database.deactivate.label"));
 
 			final StatusDialog dialog = new StatusDialog(viewController.getTopFrame(), 
-					Internal.I18N.getString("db.dialog.index.window"), 
-					Internal.I18N.getString("db.dialog.index.deactivate"), 
+					Language.I18N.getString("db.dialog.index.window"), 
+					Language.I18N.getString("db.dialog.index.deactivate"), 
 					null, 
-					Internal.I18N.getString("db.dialog.index.deactivate.detail"), 
+					Language.I18N.getString("db.dialog.index.deactivate.detail"), 
 					false);
 
 			SwingUtilities.invokeLater(new Runnable() {
@@ -357,20 +357,20 @@ public class IndexOperation extends DatabaseOperationView {
 				if (dbSqlEx.length() == 0) {
 					LOG.warn("Deactivating indexes aborted.");
 				} else  {
-					String text = Internal.I18N.getString("db.dialog.index.deactivate.error");
+					String text = Language.I18N.getString("db.dialog.index.deactivate.error");
 					Object[] args = new Object[]{ dbSqlEx };
 					String result = MessageFormat.format(text, args);
 
 					JOptionPane.showMessageDialog(
 							viewController.getTopFrame(), 
 							result, 
-							Internal.I18N.getString("common.dialog.error.db.title"),
+							Language.I18N.getString("common.dialog.error.db.title"),
 							JOptionPane.ERROR_MESSAGE);
 
 					LOG.error("Failed to deactivate indexes: " + dbSqlEx.trim());
 				}
 			} finally {
-				viewController.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 			}
 
 		} finally {
@@ -384,11 +384,11 @@ public class IndexOperation extends DatabaseOperationView {
 
 		try {
 			viewController.clearConsole();
-			viewController.setStatusText(Internal.I18N.getString("main.status.database.index.query"));
+			viewController.setStatusText(Language.I18N.getString("main.status.database.index.query"));
 
 			final StatusDialog dialog = new StatusDialog(viewController.getTopFrame(), 
-					Internal.I18N.getString("db.dialog.index.query.window"), 
-					Internal.I18N.getString("db.dialog.index.query.title"), 
+					Language.I18N.getString("db.dialog.index.query.window"), 
+					Language.I18N.getString("db.dialog.index.query.title"), 
 					null,
 					null, 
 					true);		
@@ -434,20 +434,20 @@ public class IndexOperation extends DatabaseOperationView {
 				});
 
 				String sqlExMsg = sqlEx.getMessage().trim();
-				String text = Internal.I18N.getString("db.dialog.index.query.error");
+				String text = Language.I18N.getString("db.dialog.index.query.error");
 				Object[] args = new Object[]{ sqlExMsg };
 				String result = MessageFormat.format(text, args);
 
 				JOptionPane.showMessageDialog(
 						viewController.getTopFrame(), 
 						result, 
-						Internal.I18N.getString("common.dialog.error.db.title"),
+						Language.I18N.getString("common.dialog.error.db.title"),
 						JOptionPane.ERROR_MESSAGE);
 
 				LOG.error("SQL error: " + sqlExMsg);
 
 			} finally {
-				viewController.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 			}
 
 		} finally {

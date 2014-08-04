@@ -45,7 +45,7 @@ import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.kmlExporter.AltitudeMode;
 import de.tub.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
@@ -173,8 +173,8 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)modePanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.altitude.mode.border"));	
-		((TitledBorder)offsetPanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.altitude.offset.border"));	
+		((TitledBorder)modePanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.altitude.mode.border"));	
+		((TitledBorder)offsetPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.altitude.offset.border"));	
 
 		modeComboBox.removeAllItems();
         for (AltitudeMode c: AltitudeMode.values()) {
@@ -182,11 +182,11 @@ public class AltitudePanel extends AbstractPreferencesComponent {
         }
 		modeComboBox.setSelectedItem(config.getProject().getKmlExporter().getAltitudeMode());
 		
-		noOffsetRadioButton.setText(Internal.I18N.getString("pref.kmlexport.altitude.label.noOffset"));
-		constantOffsetRadioButton.setText(Internal.I18N.getString("pref.kmlexport.altitude.label.constantOffset"));
-		genericAttributeRadioButton.setText(Internal.I18N.getString("pref.kmlexport.altitude.label.genericAttributeOffset"));
-		callGElevationService.setText(Internal.I18N.getString("pref.kmlexport.altitude.label.callGElevationService"));
-		useOriginalZCoords.setText(Internal.I18N.getString("pref.kmlexport.altitude.label.useOriginalZCoords"));
+		noOffsetRadioButton.setText(Language.I18N.getString("pref.kmlexport.altitude.label.noOffset"));
+		constantOffsetRadioButton.setText(Language.I18N.getString("pref.kmlexport.altitude.label.constantOffset"));
+		genericAttributeRadioButton.setText(Language.I18N.getString("pref.kmlexport.altitude.label.genericAttributeOffset"));
+		callGElevationService.setText(Language.I18N.getString("pref.kmlexport.altitude.label.callGElevationService"));
+		useOriginalZCoords.setText(Language.I18N.getString("pref.kmlexport.altitude.label.useOriginalZCoords"));
 	}
 
 	@Override
@@ -219,8 +219,8 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 			config.getProject().getKmlExporter().setAltitudeOffsetValue(altitudeOffsetValue);
 		}
 		catch (NumberFormatException nfe) {
-			JOptionPane.showMessageDialog(this, Internal.I18N.getString("pref.kmlexport.altitude.invalidOffsetValue"),
-					Internal.I18N.getString("pref.kmlexport.error.incorrectData"), JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, Language.I18N.getString("pref.kmlexport.altitude.invalidOffsetValue"),
+					Language.I18N.getString("pref.kmlexport.error.incorrectData"), JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 
@@ -239,7 +239,7 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.altitude");
+		return Language.I18N.getString("pref.tree.kmlExport.altitude");
 	}
 
 	private void setEnabledComponents() {

@@ -34,7 +34,7 @@ import java.awt.Insets;
 
 import javax.swing.JMenuItem;
 
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 
 public class GuiUtil {
 
@@ -80,7 +80,7 @@ public class GuiUtil {
 
 	public static void setMnemonic(JMenuItem item, String labelKey, String indexKey) {		
 		try {
-			setMnemonic(item, Internal.I18N.getString(labelKey), Integer.valueOf(Internal.I18N.getString(indexKey)));
+			setMnemonic(item, Language.I18N.getString(labelKey), Integer.valueOf(Language.I18N.getString(indexKey)));
 		} catch (NumberFormatException e) {
 			//
 		}

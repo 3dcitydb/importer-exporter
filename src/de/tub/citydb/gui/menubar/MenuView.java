@@ -40,7 +40,7 @@ import javax.swing.SwingUtilities;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.gui.Gui;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.components.mapviewer.MapWindow;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -107,9 +107,9 @@ public class MenuView extends JMenu {
 	}
 	
 	public void doTranslation() {
-		map.setText(Internal.I18N.getString("menu.view.map.label"));
-		detachConsole.setText(Internal.I18N.getString("menu.view.detach.label"));
-		defaults.setText(Internal.I18N.getString("menu.view.defaults.label"));
+		map.setText(Language.I18N.getString("menu.view.map.label"));
+		detachConsole.setText(Language.I18N.getString("menu.view.detach.label"));
+		defaults.setText(Language.I18N.getString("menu.view.defaults.label"));
 		
 		GuiUtil.setMnemonic(map, "menu.view.map.label", "menu.view.map.label.mnemonic");
 		GuiUtil.setMnemonic(detachConsole, "menu.view.detach.label", "menu.view.detach.label.mnemonic");

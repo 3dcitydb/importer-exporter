@@ -45,7 +45,7 @@ import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.global.Cache;
 import de.tub.citydb.config.project.global.CacheMode;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
@@ -89,7 +89,7 @@ public class CachePanel extends AbstractPreferencesComponent {
 		
 		browseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String dir = browseFile(Internal.I18N.getString("pref.general.cache.label.useLocal"), localCachePath.getText());
+				String dir = browseFile(Language.I18N.getString("pref.general.cache.label.useLocal"), localCachePath.getText());
 				if (!dir.isEmpty())
 					localCachePath.setText(dir);
 			}
@@ -132,10 +132,10 @@ public class CachePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.general.cache.border"));
-		useDatabase.setText(Internal.I18N.getString("pref.general.cache.label.useDatabase"));
-		useLocalCache.setText(Internal.I18N.getString("pref.general.cache.label.useLocal"));
-		browseButton.setText(Internal.I18N.getString("common.button.browse"));		
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.general.cache.border"));
+		useDatabase.setText(Language.I18N.getString("pref.general.cache.label.useDatabase"));
+		useLocalCache.setText(Language.I18N.getString("pref.general.cache.label.useLocal"));
+		browseButton.setText(Language.I18N.getString("common.button.browse"));		
 	}
 
 	@Override
@@ -160,7 +160,7 @@ public class CachePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.general.cache");
+		return Language.I18N.getString("pref.tree.general.cache");
 	}
 
 	private String browseFile(String title, String oldDir) {

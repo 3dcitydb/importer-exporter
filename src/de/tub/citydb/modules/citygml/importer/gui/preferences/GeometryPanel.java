@@ -54,8 +54,9 @@ import javax.swing.border.TitledBorder;
 import org.citygml4j.geometry.Matrix;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.general.AffineTransformation;
+import de.tub.citydb.config.project.general.TransformationMatrix;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.modules.common.filter.FilterMode;
@@ -88,7 +89,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 
 		if (useAffineTransformation.isSelected() != affineTransformation.isSetUseAffineTransformation()) return true;
 		
-		Matrix matrix = affineTransformation.getTransformationMatrix().toMatrix3x4();
+		Matrix matrix = toMatrix3x4(affineTransformation.getTransformationMatrix());
 		boolean isModified = false;
 		for (int i = 0; i < matrixField.length; i++) {
 			for (int j = 0; j < matrixField[i].length; j++) {
@@ -237,13 +238,13 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("common.pref.geometry.border.transformation"));	
-		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("common.pref.geometry.border.preset"));	
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("common.pref.geometry.border.transformation"));	
+		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("common.pref.geometry.border.preset"));	
 
-		useAffineTransformation.setText(Internal.I18N.getString("common.pref.geometry.label.useTransformation"));
-		matrixDescr.setText(Internal.I18N.getString("common.pref.geometry.label.matrix"));
-		identityMatrixButton.setText(Internal.I18N.getString("common.pref.geometry.button.identity"));
-		swapXYMatrixButton.setText(Internal.I18N.getString("common.pref.geometry.button.swapXY"));
+		useAffineTransformation.setText(Language.I18N.getString("common.pref.geometry.label.useTransformation"));
+		matrixDescr.setText(Language.I18N.getString("common.pref.geometry.label.matrix"));
+		identityMatrixButton.setText(Language.I18N.getString("common.pref.geometry.button.identity"));
+		swapXYMatrixButton.setText(Language.I18N.getString("common.pref.geometry.button.swapXY"));
 		
 		setEnabledBorderTitle();
 	}
@@ -256,7 +257,7 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 			
 		useAffineTransformation.setSelected(affineTransformation.isSetUseAffineTransformation());
 
-		Matrix matrix = affineTransformation.getTransformationMatrix().toMatrix3x4();
+		Matrix matrix = toMatrix3x4(affineTransformation.getTransformationMatrix());
 		double[][] values = matrix.getArray();
 
 		for (int i = 0; i < values.length; i++)
@@ -282,13 +283,18 @@ public class GeometryPanel extends AbstractPreferencesComponent {
 		affineTransformation.getTransformationMatrix().setValue(values);
 		
 		// disable affine transformation if transformation matrix equals identity matrix
-		if (affineTransformation.getTransformationMatrix().toMatrix3x4().eq(Matrix.identity(3, 4)))
+		if (toMatrix3x4(affineTransformation.getTransformationMatrix()).eq(Matrix.identity(3, 4)))
 			affineTransformation.setUseAffineTransformation(false);
 	}
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.import.geometry");
+		return Language.I18N.getString("pref.tree.import.geometry");
+	}
+	
+	private Matrix toMatrix3x4(TransformationMatrix transformationMatrix) {
+		return transformationMatrix.isSetValue() && transformationMatrix.getValue().size() == 12 ? 
+				new Matrix(transformationMatrix.getValue(), 3) : Matrix.identity(3, 4);
 	}
 
 }

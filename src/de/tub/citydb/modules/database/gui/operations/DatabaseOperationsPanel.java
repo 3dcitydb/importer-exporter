@@ -49,7 +49,7 @@ import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DatabaseConnectionPool;
@@ -122,8 +122,8 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	}
 
 	public void doTranslation() {
-		workspaceLabel.setText(Internal.I18N.getString("common.label.workspace"));
-		timestampLabel.setText(Internal.I18N.getString("common.label.timestamp"));
+		workspaceLabel.setText(Language.I18N.getString("common.label.workspace"));
+		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
 
 		for (int i = 0; i < operations.length; ++i) {
 			operationsTab.setTitleAt(i, operations[i].getLocalizedTitle());
@@ -192,8 +192,8 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 		if (!Util.checkWorkspaceTimestamp(workspace)) {
 			JOptionPane.showMessageDialog(
 					viewController.getTopFrame(), 
-					Internal.I18N.getString("common.dialog.error.incorrectData.date"), 
-					Internal.I18N.getString("db.dialog.error.operation.incorrectData"), 
+					Language.I18N.getString("common.dialog.error.incorrectData.date"), 
+					Language.I18N.getString("db.dialog.error.operation.incorrectData"), 
 					JOptionPane.ERROR_MESSAGE);
 
 			return null;

@@ -97,7 +97,7 @@ import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.gui.window.WindowSize;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Database.PredefinedSrsName;
 import de.tub.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
@@ -817,31 +817,31 @@ public class MapWindow extends JDialog implements EventHandler {
 						searchBox.setSelectedItem(response.getLocations()[0]);
 
 						if (response.getType() == ResponseType.LAT_LON)
-							resultMsg = Internal.I18N.getString("map.geocoder.search.latLon");
+							resultMsg = Language.I18N.getString("map.geocoder.search.latLon");
 						else {
-							String text = Internal.I18N.getString("map.geocoder.search.result");
+							String text = Language.I18N.getString("map.geocoder.search.result");
 							Object[] args = new Object[]{ response.getLocations().length };
 							resultMsg = MessageFormat.format(text, args);
 						}
 					} else if (response.getStatus() == StatusCode.ZERO_RESULTS) {
-						String text = Internal.I18N.getString("map.geocoder.search.result");
+						String text = Language.I18N.getString("map.geocoder.search.result");
 						Object[] args = new Object[]{ 0 };
 						resultMsg = MessageFormat.format(text, args);
 					} else {
 						switch (response.getStatus()) {
 						case OVER_QUERY_LIMIT:
-							resultMsg = Internal.I18N.getString("map.geocoder.search.overLimit");
+							resultMsg = Language.I18N.getString("map.geocoder.search.overLimit");
 							break;		
 						case REQUEST_DENIED:
-							resultMsg = Internal.I18N.getString("map.geocoder.search.denied");
+							resultMsg = Language.I18N.getString("map.geocoder.search.denied");
 							break;		
 						default:
 							LOG.error("Fatal service response from geocoder: " + response.getException().getMessage());
-							resultMsg = Internal.I18N.getString("map.geocoder.search.fatal");
+							resultMsg = Language.I18N.getString("map.geocoder.search.fatal");
 						}					
 					}
 
-					resultMsg += " (" + ((System.currentTimeMillis() - time) / 1000.0) + " " + Internal.I18N.getString("map.geocoder.search.sec") + ")";
+					resultMsg += " (" + ((System.currentTimeMillis() - time) / 1000.0) + " " + Language.I18N.getString("map.geocoder.search.sec") + ")";
 					searchResult.setText(resultMsg);
 					searchResult.setIcon(null);
 				} catch (InterruptedException e) {
@@ -895,22 +895,22 @@ public class MapWindow extends JDialog implements EventHandler {
 	}
 
 	private void doTranslation() {
-		setTitle(Internal.I18N.getString("map.window.title"));
-		applyButton.setText(Internal.I18N.getString("common.button.apply"));
-		cancelButton.setText(Internal.I18N.getString("common.button.cancel"));
-		goButton.setText(Internal.I18N.getString("map.button.go"));
-		bboxTitel.setText(Internal.I18N.getString("map.boundingBox.label"));
-		showBBox.setText(Internal.I18N.getString("map.boundingBox.show.button"));
-		showBBox.setToolTipText(Internal.I18N.getString("map.boundingBox.show.tooltip"));
-		clearBBox.setText(Internal.I18N.getString("map.boundingBox.clear.button"));
-		clearBBox.setToolTipText(Internal.I18N.getString("map.boundingBox.clear.tooltip"));
-		copyBBox.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.copy"));
-		pasteBBox.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.paste"));
-		reverseTitle.setText(Internal.I18N.getString("map.reverseGeocoder.label"));
-		reverseInfo.setText("<html>" + Internal.I18N.getString("map.reverseGeocoder.hint.label") + "</html>");
-		helpTitle.setText(Internal.I18N.getString("map.help.label"));
-		helpText.setText("<html>" + Internal.I18N.getString("map.help.hint") + "</html>");
-		googleMapsButton.setText(Internal.I18N.getString("map.google.label"));
+		setTitle(Language.I18N.getString("map.window.title"));
+		applyButton.setText(Language.I18N.getString("common.button.apply"));
+		cancelButton.setText(Language.I18N.getString("common.button.cancel"));
+		goButton.setText(Language.I18N.getString("map.button.go"));
+		bboxTitel.setText(Language.I18N.getString("map.boundingBox.label"));
+		showBBox.setText(Language.I18N.getString("map.boundingBox.show.button"));
+		showBBox.setToolTipText(Language.I18N.getString("map.boundingBox.show.tooltip"));
+		clearBBox.setText(Language.I18N.getString("map.boundingBox.clear.button"));
+		clearBBox.setToolTipText(Language.I18N.getString("map.boundingBox.clear.tooltip"));
+		copyBBox.setToolTipText(Language.I18N.getString("common.tooltip.boundingBox.copy"));
+		pasteBBox.setToolTipText(Language.I18N.getString("common.tooltip.boundingBox.paste"));
+		reverseTitle.setText(Language.I18N.getString("map.reverseGeocoder.label"));
+		reverseInfo.setText("<html>" + Language.I18N.getString("map.reverseGeocoder.hint.label") + "</html>");
+		helpTitle.setText(Language.I18N.getString("map.help.label"));
+		helpText.setText("<html>" + Language.I18N.getString("map.help.hint") + "</html>");
+		googleMapsButton.setText(Language.I18N.getString("map.google.label"));
 
 		map.doTranslation();		
 		for (int i = 0; i < bboxPopups.length; ++i)
@@ -1005,17 +1005,17 @@ public class MapWindow extends JDialog implements EventHandler {
 
 				switch (response.getStatus()) {
 				case ZERO_RESULTS:
-					info = Internal.I18N.getString("map.reverseGeocoder.search.noResult");
+					info = Language.I18N.getString("map.reverseGeocoder.search.noResult");
 					break;
 				case OVER_QUERY_LIMIT:
-					info = Internal.I18N.getString("map.geocoder.search.overLimit");
+					info = Language.I18N.getString("map.geocoder.search.overLimit");
 					break;		
 				case REQUEST_DENIED:
-					info = Internal.I18N.getString("map.geocoder.search.denied");
+					info = Language.I18N.getString("map.geocoder.search.denied");
 					break;		
 				default:
 					LOG.error("Fatal service response from reverse geocoder: " + response.getException().getMessage());
-					info = Internal.I18N.getString("map.geocoder.search.fatal");
+					info = Language.I18N.getString("map.geocoder.search.fatal");
 				}
 
 				SwingUtilities.invokeLater(new Runnable() {
@@ -1060,8 +1060,8 @@ public class MapWindow extends JDialog implements EventHandler {
 		}
 
 		private void doTranslation() {
-			copy.setText(Internal.I18N.getString("common.popup.boundingBox.copy"));
-			paste.setText(Internal.I18N.getString("common.popup.boundingBox.paste"));
+			copy.setText(Language.I18N.getString("common.popup.boundingBox.copy"));
+			paste.setText(Language.I18N.getString("common.popup.boundingBox.paste"));
 		}
 	}
 

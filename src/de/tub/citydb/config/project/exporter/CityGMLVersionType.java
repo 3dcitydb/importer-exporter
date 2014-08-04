@@ -33,8 +33,6 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-import org.citygml4j.model.module.citygml.CityGMLVersion;
-
 @XmlType(name="CityGMLVersionType")
 @XmlEnum
 public enum CityGMLVersionType {
@@ -52,22 +50,6 @@ public enum CityGMLVersionType {
 	@Override
 	public String toString() {
 		return value;
-	}
-	
-	public CityGMLVersion toCityGMLVersion() {
-		switch (this) {
-		case v1_0_0:
-			return CityGMLVersion.v1_0_0;
-		default:
-			return CityGMLVersion.v2_0_0;
-		}
-	}
-
-	public static CityGMLVersionType fromCityGMLVersion(CityGMLVersion version) {
-		if (version == CityGMLVersion.v1_0_0)
-			return v1_0_0;
-		else
-			return v2_0_0;
 	}
 	
 	public static CityGMLVersionType fromValue(String value) {

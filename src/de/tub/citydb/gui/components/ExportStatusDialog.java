@@ -51,7 +51,7 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.registry.ObjectRegistry;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.EventType;
@@ -106,9 +106,9 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 		fileName = new JLabel(impExpMessage);
 		fileName.setFont(fileName.getFont().deriveFont(Font.BOLD));
 		messageLabel = new JLabel(" ");
-		cancelButton = new JButton(Internal.I18N.getString("common.button.cancel"));
-		featureLabel = new JLabel(Internal.I18N.getString("common.status.dialog.featureCounter"));
-		textureLabel = new JLabel(Internal.I18N.getString("common.status.dialog.textureCounter"));
+		cancelButton = new JButton(Language.I18N.getString("common.button.cancel"));
+		featureLabel = new JLabel(Language.I18N.getString("common.status.dialog.featureCounter"));
+		textureLabel = new JLabel(Language.I18N.getString("common.status.dialog.textureCounter"));
 
 		featureCounterLabel = new JLabel("0", SwingConstants.TRAILING);
 		textureCounterLabel = new JLabel("0", SwingConstants.TRAILING);
@@ -144,7 +144,7 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 					row.add(textureCounterLabel, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
 
 					if (totalTileAmount > 0) {
-						tileLabel = new JLabel(Internal.I18N.getString("common.status.dialog.tileCounter"));
+						tileLabel = new JLabel(Language.I18N.getString("common.status.dialog.tileCounter"));
 						tileCounterLabel = new JLabel("0", SwingConstants.TRAILING);
 						tileCounterLabel.setPreferredSize(new Dimension(100, tileCounterLabel.getPreferredSize().height));
 
@@ -188,7 +188,7 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 
 		else if (e.getEventType() == EventType.INTERRUPT) {
 			acceptStatusUpdate = false;
-			messageLabel.setText(Internal.I18N.getString("common.dialog.msg.abort"));
+			messageLabel.setText(Language.I18N.getString("common.dialog.msg.abort"));
 			progressBar.setIndeterminate(true);
 		}
 

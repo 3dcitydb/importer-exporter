@@ -67,7 +67,7 @@ import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.io.ProxyConfig;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.global.Proxies;
 import de.tub.citydb.config.project.global.ProxyConfigImpl;
 import de.tub.citydb.event.ProxyServerUnavailableEventImpl;
@@ -320,14 +320,14 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 		ProxyConfigImpl proxy = (ProxyConfigImpl)proxyList.getSelectedValue();
 		proxySettingsPanel.setBorder(BorderFactory.createTitledBorder(proxy.toString()));
 
-		configureLabel.setText(Internal.I18N.getString("pref.proxy.label.configure"));
-		useSingleProxy.setText(Internal.I18N.getString("pref.proxy.label.singleProxy"));
-		requiresAuthenticationBox.setText(Internal.I18N.getString("pref.proxy.label.auth"));
-		proxyHostLabel.setText(Internal.I18N.getString("common.label.server"));
-		proxyPortLabel.setText(Internal.I18N.getString("common.label.port"));
-		proxyUserLabel.setText(Internal.I18N.getString("common.label.username"));
-		proxyPasswordLabel.setText(Internal.I18N.getString("common.label.password"));
-		passwordCheck.setText(Internal.I18N.getString("common.label.passwordCheck"));
+		configureLabel.setText(Language.I18N.getString("pref.proxy.label.configure"));
+		useSingleProxy.setText(Language.I18N.getString("pref.proxy.label.singleProxy"));
+		requiresAuthenticationBox.setText(Language.I18N.getString("pref.proxy.label.auth"));
+		proxyHostLabel.setText(Language.I18N.getString("common.label.server"));
+		proxyPortLabel.setText(Language.I18N.getString("common.label.port"));
+		proxyUserLabel.setText(Language.I18N.getString("common.label.username"));
+		proxyPasswordLabel.setText(Language.I18N.getString("common.label.password"));
+		passwordCheck.setText(Language.I18N.getString("common.label.passwordCheck"));
 	}
 
 	public void loadProxySettings(ProxyConfigImpl proxy) {
@@ -397,7 +397,7 @@ public class ProxyPanel extends AbstractPreferencesComponent implements EventHan
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.general.proxies");
+		return Language.I18N.getString("pref.tree.general.proxies");
 	}
 
 	@Override

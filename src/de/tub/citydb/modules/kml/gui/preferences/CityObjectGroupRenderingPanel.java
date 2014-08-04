@@ -49,7 +49,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -91,7 +91,7 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.cityObjectGroupRendering");
+		return Language.I18N.getString("pref.tree.kmlExport.cityObjectGroupRendering");
 	}
 
 	@Override
@@ -181,7 +181,7 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 
 		footprintFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color fillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseFillColor"),
+				Color fillColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseFillColor"),
 						footprintFillColorButton.getBackground());
 				if (fillColor != null)
 					footprintFillColorButton.setBackground(fillColor);
@@ -190,7 +190,7 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 
 		footprintLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color lineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseLineColor"),
+				Color lineColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseLineColor"),
 						footprintLineColorButton.getBackground());
 				if (lineColor != null)
 					footprintLineColorButton.setBackground(lineColor);
@@ -205,7 +205,7 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 
 		footprintHLFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color hlFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
+				Color hlFillColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
 						footprintHLFillColorButton.getBackground());
 				if (hlFillColor != null)
 					footprintHLFillColorButton.setBackground(hlFillColor);
@@ -214,7 +214,7 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 
 		footprintHLLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color hlLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
+				Color hlLineColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
 						footprintHLLineColorButton.getBackground());
 				if (hlLineColor != null)
 					footprintHLLineColorButton.setBackground(hlLineColor);
@@ -233,14 +233,14 @@ public class CityObjectGroupRenderingPanel extends AbstractPreferencesComponent 
 	@Override
 	public void doTranslation() {
 
-		((TitledBorder)footprintPanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.border.footprint"));	
+		((TitledBorder)footprintPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.footprint"));	
 
-		footprintAlphaLabel.setText(Internal.I18N.getString("pref.kmlexport.label.alpha"));
-		footprintFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.fillColor"));
-		footprintLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.lineColor"));
-		footprintHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
-		footprintHLFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
-		footprintHLLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
+		footprintAlphaLabel.setText(Language.I18N.getString("pref.kmlexport.label.alpha"));
+		footprintFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.fillColor"));
+		footprintLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.lineColor"));
+		footprintHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
+		footprintHLFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
+		footprintHLLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 
 	}
 

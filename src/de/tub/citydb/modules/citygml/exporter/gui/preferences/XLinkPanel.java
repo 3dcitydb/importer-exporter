@@ -47,7 +47,7 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.citygml4j.util.gmlid.GMLIdManager;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.exporter.XLinkConfig;
 import de.tub.citydb.config.project.exporter.XLinkFeatureConfig;
 import de.tub.citydb.config.project.exporter.XLinkMode;
@@ -210,19 +210,19 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.export.xlink.border.feature"));	
-		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.export.xlink.border.geometry"));	
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.export.xlink.border.feature"));	
+		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.export.xlink.border.geometry"));	
 
-		xlinkToFeature.setText(Internal.I18N.getString("pref.export.xlink.label.feature.export"));
-		copyFeature.setText(Internal.I18N.getString("pref.export.xlink.label.feature.copy"));	
-		featureIdPrefixLabel.setText(Internal.I18N.getString("pref.export.xlink.label.copy.prefix"));
-		featureAppendId.setText(Internal.I18N.getString("pref.export.xlink.label.append"));
-		featureKeepExtRef.setText(Internal.I18N.getString("pref.export.xlink.label.feature.keepId"));
+		xlinkToFeature.setText(Language.I18N.getString("pref.export.xlink.label.feature.export"));
+		copyFeature.setText(Language.I18N.getString("pref.export.xlink.label.feature.copy"));	
+		featureIdPrefixLabel.setText(Language.I18N.getString("pref.export.xlink.label.copy.prefix"));
+		featureAppendId.setText(Language.I18N.getString("pref.export.xlink.label.append"));
+		featureKeepExtRef.setText(Language.I18N.getString("pref.export.xlink.label.feature.keepId"));
 
-		xlinkToGeometry.setText(Internal.I18N.getString("pref.export.xlink.label.geometry.export"));
-		copyGeometry.setText(Internal.I18N.getString("pref.export.xlink.label.geometry.copy"));	
-		geometryIdPrefixLabel.setText(Internal.I18N.getString("pref.export.xlink.label.copy.prefix"));
-		geometryAppendId.setText(Internal.I18N.getString("pref.export.xlink.label.append"));
+		xlinkToGeometry.setText(Language.I18N.getString("pref.export.xlink.label.geometry.export"));
+		copyGeometry.setText(Language.I18N.getString("pref.export.xlink.label.geometry.copy"));	
+		geometryIdPrefixLabel.setText(Language.I18N.getString("pref.export.xlink.label.copy.prefix"));
+		geometryAppendId.setText(Language.I18N.getString("pref.export.xlink.label.append"));
 	}
 
 	@Override
@@ -300,7 +300,7 @@ public class XLinkPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.export.xlink");
+		return Language.I18N.getString("pref.tree.export.xlink");
 	}
 
 }

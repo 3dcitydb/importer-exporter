@@ -34,6 +34,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -50,11 +51,10 @@ import javax.swing.border.TitledBorder;
 // import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 // import de.tub.citydb.config.project.general.Path;
 // import de.tub.citydb.config.project.general.PathMode;
 import de.tub.citydb.config.project.kmlExporter.AltitudeMode;
-import de.tub.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.PointAndCurve;
 import de.tub.citydb.config.project.kmlExporter.PointDisplayMode;
@@ -118,7 +118,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.gcoPointAndCurveRendering");
+		return Language.I18N.getString("pref.tree.kmlExport.gcoPointAndCurveRendering");
 	}
 
 	@Override
@@ -366,7 +366,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 
 		pointCrossLineNormalColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color pointNormalColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.choosePointColor"),
+				Color pointNormalColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.choosePointColor"),
 													 pointCrossLineNormalColorButton.getBackground());
 				if (pointNormalColor != null)
 					pointCrossLineNormalColorButton.setBackground(pointNormalColor);
@@ -381,7 +381,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 
 		pointCrossLineHighlightingColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color pointHighlightingColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.choosePointHighlightingColor"),
+				Color pointHighlightingColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.choosePointHighlightingColor"),
 														   pointCrossLineHighlightingColorButton.getBackground());
 				if (pointHighlightingColor != null)
 					pointCrossLineHighlightingColorButton.setBackground(pointHighlightingColor);
@@ -390,7 +390,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		
 		pointIconColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color pointIconColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.choosePointIconColor"),
+				Color pointIconColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.choosePointIconColor"),
 						pointIconColorButton.getBackground());
 				if (pointIconColor != null)
 					pointIconColorButton.setBackground(pointIconColor);
@@ -405,7 +405,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		
 		pointCubeFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color pointCubeFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseFillColor"),
+				Color pointCubeFillColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseFillColor"),
 						pointCubeFillColorButton.getBackground());
 				if (pointCubeFillColor != null)
 					pointCubeFillColorButton.setBackground(pointCubeFillColor);
@@ -414,7 +414,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		
 		pointCubeHighlightingColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color pointCubeHighlightingColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
+				Color pointCubeHighlightingColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
 						pointCubeHighlightingColorButton.getBackground());
 				if (pointCubeHighlightingColor != null)
 					pointCubeHighlightingColorButton.setBackground(pointCubeHighlightingColor);
@@ -423,7 +423,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		
 		curveNormalColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color curveNormalColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseCurveColor"),
+				Color curveNormalColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseCurveColor"),
 													 curveNormalColorButton.getBackground());
 				if (curveNormalColor != null)
 					curveNormalColorButton.setBackground(curveNormalColor);
@@ -438,7 +438,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 
 		curveHighlightingColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color curveHighlightingColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseCurveHighlightingColor"),
+				Color curveHighlightingColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseCurveHighlightingColor"),
 														   curveHighlightingColorButton.getBackground());
 				if (curveHighlightingColor != null)
 					curveHighlightingColorButton.setBackground(curveHighlightingColor);
@@ -454,45 +454,45 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 	@Override
 	public void doTranslation() {
 
-		((TitledBorder)pointPanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.border.point"));	
+		((TitledBorder)pointPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.point"));	
 
-		pointAltitudeModeLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveAltitudeMode"));
+		pointAltitudeModeLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveAltitudeMode"));
 		pointAltitudeModeComboBox.removeAllItems();
         for (AltitudeMode c: AltitudeMode.values()) {
         	pointAltitudeModeComboBox.addItem(c);
         }
         
-        iconRButton.setText(Internal.I18N.getString("pref.kmlexport.pointdisplay.mode.label.icon"));
-        crossLineRButton.setText(Internal.I18N.getString("pref.kmlexport.pointdisplay.mode.label.cross"));
+        iconRButton.setText(Language.I18N.getString("pref.kmlexport.pointdisplay.mode.label.icon"));
+        crossLineRButton.setText(Language.I18N.getString("pref.kmlexport.pointdisplay.mode.label.cross"));
         cubeRButton.setText("Cube");
         pointCubeLengthOfSideLabel.setText("Length of Side");
-        pointCubeFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.fillColor"));
-        pointCubeHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
-        pointCubeHighlightingColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
+        pointCubeFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.fillColor"));
+        pointCubeHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
+        pointCubeHighlightingColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
         
-        pointIconColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.pointIconColor"));
-        pointIconScaleLabel.setText(Internal.I18N.getString("pref.kmlexport.label.pointIconScale"));
+        pointIconColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointIconColor"));
+        pointIconScaleLabel.setText(Language.I18N.getString("pref.kmlexport.label.pointIconScale"));
         pointAltitudeModeComboBox.setSelectedItem(config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getPointAltitudeMode());
        
-        pointCrossLineThicknessLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveThickness"));
-        pointCrossLineNormalColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveColor"));
-		pointCrossLineHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
-		pointCrossLineHighlightingThicknessLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveHighlightingThickness"));
-		pointCrossLineHighlightingColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveHighlightingColor"));
+        pointCrossLineThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveThickness"));
+        pointCrossLineNormalColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveColor"));
+		pointCrossLineHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
+		pointCrossLineHighlightingThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveHighlightingThickness"));
+		pointCrossLineHighlightingColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveHighlightingColor"));
 
-		((TitledBorder)curvePanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.border.curve"));	
-    	curveAltitudeModeLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveAltitudeMode"));
+		((TitledBorder)curvePanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.curve"));	
+    	curveAltitudeModeLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveAltitudeMode"));
 		curveAltitudeModeComboBox.removeAllItems();
         for (AltitudeMode c: AltitudeMode.values()) {
         	curveAltitudeModeComboBox.addItem(c);
         }
 
         curveAltitudeModeComboBox.setSelectedItem(config.getProject().getKmlExporter().getGenericCityObjectPointAndCurve().getCurveAltitudeMode());
-    	curveThicknessLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveThickness"));
-    	curveNormalColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveColor"));
-		curveHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
-    	curveHighlightingThicknessLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveHighlightingThickness"));
-    	curveHighlightingColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.curveHighlightingColor"));
+    	curveThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveThickness"));
+    	curveNormalColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveColor"));
+		curveHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
+    	curveHighlightingThicknessLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveHighlightingThickness"));
+    	curveHighlightingColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.curveHighlightingColor"));
 	}
 
 	@Override

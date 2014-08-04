@@ -53,7 +53,7 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.exporter.ExportAppearance;
 import de.tub.citydb.config.project.exporter.TexturePathMode;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
@@ -133,7 +133,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 		
 		pathAbsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String sImp = browseFile(Internal.I18N.getString("pref.export.appearance.label.absPath"), pathAbsText.getText());
+				String sImp = browseFile(Language.I18N.getString("pref.export.appearance.label.absPath"), pathAbsText.getText());
 				if (!sImp.isEmpty())
 					pathAbsText.setText(sImp);
 			}
@@ -243,17 +243,17 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.export.appearance.border.export"));
-		((TitledBorder)path1.getBorder()).setTitle(Internal.I18N.getString("pref.export.appearance.border.path"));
-		overwriteCheck.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithTexture.overwrite"));
-		generateUniqueCheck.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithTexture.unique"));
-		radioNoExp.setText(Internal.I18N.getString("pref.export.appearance.label.noExport"));
-		radioAppExp.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithoutTexture"));
-		radioExp.setText(Internal.I18N.getString("pref.export.appearance.label.exportWithTexture"));
-		radioPathAbs.setText(Internal.I18N.getString("pref.export.appearance.label.absPath"));
-		radioPathRel.setText(Internal.I18N.getString("pref.export.appearance.label.relPath"));
-		pathAbsButton.setText(Internal.I18N.getString("common.button.browse"));
-		useBuckets.setText(Internal.I18N.getString("pref.export.appearance.label.useBuckets"));
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.export.appearance.border.export"));
+		((TitledBorder)path1.getBorder()).setTitle(Language.I18N.getString("pref.export.appearance.border.path"));
+		overwriteCheck.setText(Language.I18N.getString("pref.export.appearance.label.exportWithTexture.overwrite"));
+		generateUniqueCheck.setText(Language.I18N.getString("pref.export.appearance.label.exportWithTexture.unique"));
+		radioNoExp.setText(Language.I18N.getString("pref.export.appearance.label.noExport"));
+		radioAppExp.setText(Language.I18N.getString("pref.export.appearance.label.exportWithoutTexture"));
+		radioExp.setText(Language.I18N.getString("pref.export.appearance.label.exportWithTexture"));
+		radioPathAbs.setText(Language.I18N.getString("pref.export.appearance.label.absPath"));
+		radioPathRel.setText(Language.I18N.getString("pref.export.appearance.label.relPath"));
+		pathAbsButton.setText(Language.I18N.getString("common.button.browse"));
+		useBuckets.setText(Language.I18N.getString("pref.export.appearance.label.useBuckets"));
 	}
 
 	@Override
@@ -316,7 +316,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.export.appearance");
+		return Language.I18N.getString("pref.tree.export.appearance");
 	}
 
 	private String browseFile(String title, String oldDir) {

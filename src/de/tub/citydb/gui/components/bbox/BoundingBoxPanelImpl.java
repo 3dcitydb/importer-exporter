@@ -60,7 +60,7 @@ import de.tub.citydb.api.gui.BoundingBoxPanel;
 import de.tub.citydb.api.gui.DatabaseSrsComboBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.components.mapviewer.MapWindow;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.factory.SrsComboBoxFactory;
@@ -217,10 +217,10 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 	}
 
 	private void doTranslation() {
-		map.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.map"));
-		copy.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.copy"));
-		paste.setToolTipText(Internal.I18N.getString("common.tooltip.boundingBox.paste"));
-		srsLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
+		map.setToolTipText(Language.I18N.getString("common.tooltip.boundingBox.map"));
+		copy.setToolTipText(Language.I18N.getString("common.tooltip.boundingBox.copy"));
+		paste.setToolTipText(Language.I18N.getString("common.tooltip.boundingBox.paste"));
+		srsLabel.setText(Language.I18N.getString("common.label.boundingBox.crs"));
 
 		for (int i = 0; i < bboxPopups.length; ++i)
 			bboxPopups[i].doTranslation();
@@ -379,8 +379,8 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		}
 
 		private void doTranslation() {
-			copy.setText(Internal.I18N.getString("common.popup.boundingBox.copy"));
-			paste.setText(Internal.I18N.getString("common.popup.boundingBox.paste"));
+			copy.setText(Language.I18N.getString("common.popup.boundingBox.copy"));
+			paste.setText(Language.I18N.getString("common.popup.boundingBox.paste"));
 		}
 	}
 

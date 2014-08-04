@@ -77,6 +77,7 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.ConfigUtil;
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.DatabaseSrsList;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
@@ -344,11 +345,11 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				DatabaseSrs refSys = srsComboBox.getSelectedItem();
 				int index = srsComboBox.getSelectedIndex();
 
-				String text = Internal.I18N.getString("pref.db.srs.dialog.delete.msg");
+				String text = Language.I18N.getString("pref.db.srs.dialog.delete.msg");
 				Object[] args = new Object[]{refSys.getDescription()};
 				String formattedMsg = MessageFormat.format(text, args);
 
-				if (JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, Internal.I18N.getString("pref.db.srs.dialog.delete.title"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+				if (JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, Language.I18N.getString("pref.db.srs.dialog.delete.title"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 					config.getProject().getDatabase().getReferenceSystems().remove(refSys);
 					updateSrsComboBoxes(false);
 					srsComboBox.setSelectedIndex(index < srsComboBox.getItemCount() ? index : index - 1);
@@ -385,7 +386,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 		browseFileButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				browseReferenceSystemFile(Internal.I18N.getString("pref.db.srs.label.file"));
+				browseReferenceSystemFile(Language.I18N.getString("pref.db.srs.label.file"));
 			}
 		});
 
@@ -410,26 +411,26 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)contentsPanel.getBorder()).setTitle(Internal.I18N.getString("pref.db.srs.border.currentlySupported"));	
-		((TitledBorder)impExpPanel.getBorder()).setTitle(Internal.I18N.getString("pref.db.srs.border.impexp"));	
+		((TitledBorder)contentsPanel.getBorder()).setTitle(Language.I18N.getString("pref.db.srs.border.currentlySupported"));	
+		((TitledBorder)impExpPanel.getBorder()).setTitle(Language.I18N.getString("pref.db.srs.border.impexp"));	
 
-		srsComboBoxLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));		
-		sridLabel.setText(Internal.I18N.getString("pref.db.srs.label.srid"));
-		srsNameLabel.setText(Internal.I18N.getString("pref.db.srs.label.srsName"));
-		descriptionLabel.setText(Internal.I18N.getString("pref.db.srs.label.description"));
-		dbSrsTypeLabel.setText(Internal.I18N.getString("pref.db.srs.label.dbSrsType"));		
-		dbSrsNameLabel.setText(Internal.I18N.getString("pref.db.srs.label.dbSrsName"));		
-		newButton.setText(Internal.I18N.getString("pref.db.srs.button.new"));
-		applyButton.setText(Internal.I18N.getString("common.button.apply"));
-		deleteButton.setText(Internal.I18N.getString("pref.db.srs.button.delete"));
-		copyButton.setText(Internal.I18N.getString("pref.db.srs.button.copy"));		
-		checkButton.setText(Internal.I18N.getString("pref.db.srs.button.check"));
+		srsComboBoxLabel.setText(Language.I18N.getString("common.label.boundingBox.crs"));		
+		sridLabel.setText(Language.I18N.getString("pref.db.srs.label.srid"));
+		srsNameLabel.setText(Language.I18N.getString("pref.db.srs.label.srsName"));
+		descriptionLabel.setText(Language.I18N.getString("pref.db.srs.label.description"));
+		dbSrsTypeLabel.setText(Language.I18N.getString("pref.db.srs.label.dbSrsType"));		
+		dbSrsNameLabel.setText(Language.I18N.getString("pref.db.srs.label.dbSrsName"));		
+		newButton.setText(Language.I18N.getString("pref.db.srs.button.new"));
+		applyButton.setText(Language.I18N.getString("common.button.apply"));
+		deleteButton.setText(Language.I18N.getString("pref.db.srs.button.delete"));
+		copyButton.setText(Language.I18N.getString("pref.db.srs.button.copy"));		
+		checkButton.setText(Language.I18N.getString("pref.db.srs.button.check"));
 
-		fileLabel.setText(Internal.I18N.getString("pref.db.srs.label.file"));
-		browseFileButton.setText(Internal.I18N.getString("common.button.browse"));
-		addFileButton.setText(Internal.I18N.getString("pref.db.srs.button.addFile"));
-		replaceWithFileButton.setText(Internal.I18N.getString("pref.db.srs.button.replaceWithFile"));
-		saveFileButton.setText(Internal.I18N.getString("pref.db.srs.button.saveFile"));
+		fileLabel.setText(Language.I18N.getString("pref.db.srs.label.file"));
+		browseFileButton.setText(Language.I18N.getString("common.button.browse"));
+		addFileButton.setText(Language.I18N.getString("pref.db.srs.button.addFile"));
+		replaceWithFileButton.setText(Language.I18N.getString("pref.db.srs.button.replaceWithFile"));
+		saveFileButton.setText(Language.I18N.getString("pref.db.srs.button.saveFile"));
 	}
 
 	@Override
@@ -473,7 +474,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.db.srs");
+		return Language.I18N.getString("pref.tree.db.srs");
 	}
 
 	private void displaySelectedValues() {
@@ -513,14 +514,14 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 		// so to retrieve referenceSystem, " - copy*" has to be deleted...
 
 		int nr = 0;
-		String name = refSys.getDescription().replaceAll("\\s*-\\s*" + Internal.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "");
-		String copy = name + " - " + Internal.I18N.getString("pref.db.srs.label.copyReferenceSystem");
+		String name = refSys.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "");
+		String copy = name + " - " + Language.I18N.getString("pref.db.srs.label.copyReferenceSystem");
 
-		if (Internal.I18N.getString("common.label.boundingBox.crs.sameAsInDB").replaceAll("\\s*-\\s*" + Internal.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
+		if (Language.I18N.getString("common.label.boundingBox.crs.sameAsInDB").replaceAll("\\s*-\\s*" + Language.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
 			nr++;
 
 		for (DatabaseSrs tmp : config.getProject().getDatabase().getReferenceSystems()) 
-			if (tmp.getDescription().replaceAll("\\s*-\\s*" + Internal.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
+			if (tmp.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("pref.db.srs.label.copyReferenceSystem") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
 				nr++;
 
 		if (nr > 1)
@@ -531,7 +532,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 	private String getNewRefSysDescription() {
 		int nr = 1;
-		String name = Internal.I18N.getString("pref.db.srs.label.newReferenceSystem");
+		String name = Language.I18N.getString("pref.db.srs.label.newReferenceSystem");
 		for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) 
 			if (refSys.getDescription().toLowerCase().startsWith(name.toLowerCase()))
 				nr++;
@@ -551,7 +552,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	private void importReferenceSystems(boolean replace) {
 		try {
 			topFrame.clearConsole();
-			topFrame.setStatusText(Internal.I18N.getString("main.status.database.srs.import.label"));
+			topFrame.setStatusText(Language.I18N.getString("main.status.database.srs.import.label"));
 
 			File file = new File(fileText.getText().trim());
 			String msg = "";
@@ -565,8 +566,8 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 
 			if (!file.exists() || !file.isFile() || !file.canRead()) {
 				LOG.error("Failed to open reference system file.");
-				topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
-						MessageFormat.format(Internal.I18N.getString("common.dialog.file.read.error"), Internal.I18N.getString("pref.db.srs.error.read.msg")));
+				topFrame.errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
+						MessageFormat.format(Language.I18N.getString("common.dialog.file.read.error"), Language.I18N.getString("pref.db.srs.error.read.msg")));
 				return;
 			}
 
@@ -612,15 +613,15 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				msg = jaxb.getLinkedException().getMessage();
 
 			LOG.error("Failed to parse file: " + msg);
-			topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
-					MessageFormat.format(Internal.I18N.getString("common.dialog.file.read.error"), msg));
+			topFrame.errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
+					MessageFormat.format(Language.I18N.getString("common.dialog.file.read.error"), msg));
 		} catch (IOException e) {
 			String msg = e.getMessage();
 			LOG.error("Failed to access file: " + msg);
-			topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
-					MessageFormat.format(Internal.I18N.getString("common.dialog.file.read.error"), msg));			
+			topFrame.errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
+					MessageFormat.format(Language.I18N.getString("common.dialog.file.read.error"), msg));			
 		} finally {
-			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+			topFrame.setStatusText(Language.I18N.getString("main.status.ready.label"));
 		}
 	}
 
@@ -634,12 +635,12 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 			}
 
 			topFrame.clearConsole();
-			topFrame.setStatusText(Internal.I18N.getString("main.status.database.srs.export.label"));
+			topFrame.setStatusText(Language.I18N.getString("main.status.database.srs.export.label"));
 
 			String fileName = fileText.getText().trim();
 			if (fileName.length() == 0) {
 				LOG.error("Please specify the export file for the reference systems.");
-				topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), Internal.I18N.getString("pref.db.srs.error.write.msg"));
+				topFrame.errorMessage(Language.I18N.getString("common.dialog.error.io.title"), Language.I18N.getString("pref.db.srs.error.write.msg"));
 				return;
 			}
 
@@ -668,21 +669,21 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 				msg = jaxb.getLinkedException().getMessage();
 
 			LOG.error("Failed to write file: " + msg);
-			topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
-					MessageFormat.format(Internal.I18N.getString("common.dialog.file.write.error"), msg));
+			topFrame.errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
+					MessageFormat.format(Language.I18N.getString("common.dialog.file.write.error"), msg));
 		} finally {
-			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+			topFrame.setStatusText(Language.I18N.getString("main.status.ready.label"));
 		}
 	}
 
 	private boolean requestChange() {
 		if (isModified()) {
-			String text = Internal.I18N.getString("pref.db.srs.apply.msg");
+			String text = Language.I18N.getString("pref.db.srs.apply.msg");
 			Object[] args = new Object[]{srsComboBox.getSelectedItem().getDescription()};
 			String formattedMsg = MessageFormat.format(text, args);
 
 			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), formattedMsg, 
-					Internal.I18N.getString("pref.db.srs.apply.title"), JOptionPane.YES_NO_CANCEL_OPTION);
+					Language.I18N.getString("pref.db.srs.apply.title"), JOptionPane.YES_NO_CANCEL_OPTION);
 			if (res == JOptionPane.CANCEL_OPTION) 
 				return false;
 			else if (res == JOptionPane.YES_OPTION) {

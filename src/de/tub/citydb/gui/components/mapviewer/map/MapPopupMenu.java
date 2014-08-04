@@ -49,7 +49,7 @@ import org.jdesktop.swingx.mapviewer.TileFactory;
 
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.registry.ObjectRegistry;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.components.mapviewer.geocoder.Geocoder;
 import de.tub.citydb.gui.components.mapviewer.geocoder.GeocoderResponse;
 import de.tub.citydb.gui.components.mapviewer.geocoder.Location;
@@ -202,11 +202,11 @@ public class MapPopupMenu extends JPopupMenu {
 	}
 
 	protected void doTranslation() {
-		zoomIn.setText(Internal.I18N.getString("map.popup.zoomIn"));
-		zoomOut.setText(Internal.I18N.getString("map.popup.zoomOut"));
-		centerMap.setText(Internal.I18N.getString("map.popup.centerMap"));
-		mapBounds.setText(Internal.I18N.getString("map.popup.mapBounds"));
-		geocode.setText(Internal.I18N.getString("map.popup.geocode"));
+		zoomIn.setText(Language.I18N.getString("map.popup.zoomIn"));
+		zoomOut.setText(Language.I18N.getString("map.popup.zoomOut"));
+		centerMap.setText(Language.I18N.getString("map.popup.centerMap"));
+		mapBounds.setText(Language.I18N.getString("map.popup.mapBounds"));
+		geocode.setText(Language.I18N.getString("map.popup.geocode"));
 	}
 
 }

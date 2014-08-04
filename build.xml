@@ -7,7 +7,8 @@
 	<!-- internal properties -->
 	<property name="dir.build.base" location="${dir.build}/base" />
 	<property name="dir.build.plugin.api" location="${dir.build}/plugin-api" />
-	
+	<property name="dir.build.config" location="${dir.build}/config" />
+
 	<!-- classpath -->
 	<path id="classpath">
 		<fileset dir="lib" includes="*.jar" />
@@ -36,6 +37,41 @@
 		<delete dir="${dir.dest.installer}" />
 	</target>
 
+	<target name="generate_standalone_config" depends="generate_plugin_api" description="generates a standalone config jar">
+		<!-- create the required directories -->
+		<mkdir dir="${dir.build.config}" />
+		<mkdir dir="${dir.dest.config}" />
+
+		<copy file="${dir.dest.plugin.api}/${impexp.plugin.api.jar.filename}" todir="${dir.dest.config}" />
+
+		<!-- compile the java code from ${dir.src.plugin.api} into ${dir.build.plugin.api} -->
+		<javac includeantruntime="false" srcdir="${dir.src.config}" destdir="${dir.build.config}" createMissingPackageInfoClass="false">
+			<exclude name="controller/**" />
+			<exclude name="internal/**" />
+			<exclude name="Config.java" />
+			<classpath>
+				<filelist>
+					<file name="${dir.dest.plugin.api}/${impexp.plugin.api.jar.filename}" />
+				</filelist>
+			</classpath>
+		</javac>
+
+		<!-- put everything in ${dir.build.plugin.api} into .jar file -->
+		<jar jarfile="${dir.dest.config}/${impexp.config.name.jar}" basedir="${dir.build.config}">
+			<manifest>
+				<attribute name="Built-Id" value="${user.name}-${impexp.config.name.short}-${impexp.version}" />
+				<attribute name="Built-Date" value="${TODAY}" />
+				<attribute name="Implementation-Title" value="${impexp.config.name}" />
+				<attribute name="Implementation-Version" value="${impexp.version}-b${build.number}" />
+				<attribute name="Implementation-Vendor" value="${vendor.shortinfo}" />
+			</manifest>
+		</jar>
+
+		<!-- clean up -->
+		<delete dir="${dir.build}" />
+		<delete dir="${dir.dest.plugin.api}" />
+	</target>
+
 	<target name="generate_plugin_api" depends="clean" description="generate the plugin API">
 		<!-- create the required directories -->
 		<mkdir dir="${dir.build.plugin.api}" />
@@ -61,7 +97,7 @@
 		<delete file="${dir.resources.plugin-api.doc}/overview_adapted.html" />
 
 		<!-- compile the java code from ${dir.src.plugin.api} into ${dir.build.plugin.api} -->
-		<javac includeantruntime="false" classpathref="classpath" srcdir="${dir.src.plugin.api}" destdir="${dir.build.plugin.api}" />
+		<javac includeantruntime="false" classpathref="classpath" srcdir="${dir.src.plugin.api}" destdir="${dir.build.plugin.api}" createMissingPackageInfoClass="false" />
 
 		<!-- copy LICENSE templates -->
 		<copy todir="${dir.dest.plugin.api.license}">
@@ -88,10 +124,11 @@
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.homepage!" value="${vendor.homepage}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.country!" value="${vendor.country}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!dir.dest.plugins.relative!" value="${dir.dest.plugins.relative}" />
-		
+
 		<!-- put everything in ${dir.build.plugin.api} into .jar file -->
 		<jar jarfile="${dir.dest.plugin.api}/${impexp.plugin.api.jar.filename}" basedir="${dir.build.plugin.api}">
-			<fileset dir="${dir.dest.plugin.api}" includes="**/*" />
+			<fileset dir="${dir.dest.plugin.api}" includes="README.txt" />
+			<fileset dir="${dir.dest.plugin.api.license}" includes="**/*" />
 			<manifest>
 				<attribute name="Built-Id" value="${user.name}-${impexp.plugin.api.name.short}-${impexp.version}" />
 				<attribute name="Built-Date" value="${TODAY}" />

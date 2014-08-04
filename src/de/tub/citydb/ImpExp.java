@@ -65,6 +65,7 @@ import de.tub.citydb.config.ConfigUtil;
 import de.tub.citydb.config.controller.PluginConfigControllerImpl;
 import de.tub.citydb.config.gui.Gui;
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.Project;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.config.project.global.Logging;
@@ -450,7 +451,7 @@ public class ImpExp {
 			config.getProject().getGlobal().setLanguage(lang);
 		}
 
-		Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", new Locale(lang.value()));
+		Language.I18N = ResourceBundle.getBundle("de.tub.citydb.config.language.Label", new Locale(lang.value()));
 
 		// start application
 		if (!shell) {

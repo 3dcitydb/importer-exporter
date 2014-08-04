@@ -40,7 +40,7 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.importer.XMLValidation;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -92,10 +92,10 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.import.xmlValidation.border.import"));	
-		useXMLValidation.setText(Internal.I18N.getString("pref.import.xmlValidation.label.useXMLValidation"));
-		useXMLValidationDescr.setText(Internal.I18N.getString("pref.import.xmlValidation.label.useXMLValidation.description"));
-		oneError.setText(Internal.I18N.getString("pref.import.xmlValidation.label.oneError"));
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.xmlValidation.border.import"));	
+		useXMLValidation.setText(Language.I18N.getString("pref.import.xmlValidation.label.useXMLValidation"));
+		useXMLValidationDescr.setText(Language.I18N.getString("pref.import.xmlValidation.label.useXMLValidation.description"));
+		oneError.setText(Language.I18N.getString("pref.import.xmlValidation.label.oneError"));
 	}
 
 	@Override
@@ -116,7 +116,7 @@ public class XMLValidationPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.import.xmlValidation");
+		return Language.I18N.getString("pref.tree.import.xmlValidation");
 	}
 
 }

@@ -35,7 +35,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -60,7 +60,7 @@ public class MenuFile extends JMenu {
 	}
 	
 	public void doTranslation() {
-		exit.setText(Internal.I18N.getString("menu.file.exit.label"));
+		exit.setText(Language.I18N.getString("menu.file.exit.label"));
 		GuiUtil.setMnemonic(exit, "menu.file.exit.label", "menu.file.exit.label.mnemonic");
 	}
 	

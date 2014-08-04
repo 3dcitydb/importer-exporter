@@ -52,7 +52,7 @@ import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Database.PredefinedSrsName;
 import de.tub.citydb.gui.components.mapviewer.MapWindow;
@@ -102,11 +102,11 @@ public class BoundingBoxValidator {
 
 		// unknown srs
 		else if (!bbox.isSetSrs()) {
-			ValidatorDialog validator = new ValidatorDialog(bbox, Internal.I18N.getString("map.dialog.title.error"), config);
-			validator.addErrorMessage(Internal.I18N.getString("map.dialog.label.error.noSRS"));
+			ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"), config);
+			validator.addErrorMessage(Language.I18N.getString("map.dialog.label.error.noSRS"));
 			validator.addBoundingBox();
-			validator.addAction(Internal.I18N.getString("map.dialog.label.error.noSRS.hint"), 
-					isDBConnected ? null : Internal.I18N.getString("map.dialog.label.note.text"));
+			validator.addAction(Language.I18N.getString("map.dialog.label.error.noSRS.hint"), 
+					isDBConnected ? null : Language.I18N.getString("map.dialog.label.note.text"));
 			validator.addSrsComboBox();
 			validator.addTransformButtons();
 			validator.showDialog();
@@ -131,10 +131,10 @@ public class BoundingBoxValidator {
 				if (bbox.getSrs().isSupported())
 					return transformBoundingBox(bbox);
 			} else {
-				ValidatorDialog validator = new ValidatorDialog(bbox, Internal.I18N.getString("map.dialog.title.error"), config);
-				validator.addErrorMessage(Internal.I18N.getString("map.dialog.label.error.wgs84"));
+				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"), config);
+				validator.addErrorMessage(Language.I18N.getString("map.dialog.label.error.wgs84"));
 				validator.addBoundingBox();
-				validator.addAction(Internal.I18N.getString("map.dialog.label.error.wgs84.hint"), Internal.I18N.getString("map.dialog.label.note.text"));
+				validator.addAction(Language.I18N.getString("map.dialog.label.error.wgs84.hint"), Language.I18N.getString("map.dialog.label.note.text"));
 				validator.addTransformButtons();
 				validator.showDialog();
 
@@ -162,8 +162,8 @@ public class BoundingBoxValidator {
 					bbox.getLowerLeftCorner().getY() != null && bbox.getLowerLeftCorner().getY() >= -90 && bbox.getLowerLeftCorner().getY() <= 90 &&
 					bbox.getUpperRightCorner().getY() != null && bbox.getUpperRightCorner().getY() >= -90 && bbox.getUpperRightCorner().getY() <= 90)) {
 
-				ValidatorDialog validator = new ValidatorDialog(bbox, Internal.I18N.getString("map.dialog.title.error"), config);
-				validator.addErrorMessage(Internal.I18N.getString("map.dialog.label.error.range"));
+				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"), config);
+				validator.addErrorMessage(Language.I18N.getString("map.dialog.label.error.range"));
 				validator.addBoundingBox();
 				validator.addOkButton();
 				validator.showDialog();
@@ -179,8 +179,8 @@ public class BoundingBoxValidator {
 			// ...but coordinate values are invalid
 			else if (bbox.getLowerLeftCorner().getX() >= bbox.getUpperRightCorner().getX() ||
 					bbox.getLowerLeftCorner().getY() >= bbox.getUpperRightCorner().getY()) {
-				ValidatorDialog validator = new ValidatorDialog(bbox, Internal.I18N.getString("map.dialog.title.error"), config);
-				validator.addErrorMessage(Internal.I18N.getString("map.dialog.label.error.noArea"));
+				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"), config);
+				validator.addErrorMessage(Language.I18N.getString("map.dialog.label.error.noArea"));
 				validator.addBoundingBox();
 				validator.addOkButton();
 				validator.showDialog();
@@ -195,8 +195,8 @@ public class BoundingBoxValidator {
 
 			// ...but bounding box is not visible on screen
 			else if (!map.isBoundingBoxVisible(bbox)) {
-				ValidatorDialog validator = new ValidatorDialog(bbox, Internal.I18N.getString("map.dialog.title.error"), config);
-				validator.addErrorMessage(Internal.I18N.getString("map.dialog.label.error.notVisible"));
+				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"), config);
+				validator.addErrorMessage(Language.I18N.getString("map.dialog.label.error.notVisible"));
 				validator.addBoundingBox();
 				validator.addOkButton();
 				validator.showDialog();
@@ -226,7 +226,7 @@ public class BoundingBoxValidator {
 			if (!dbController.isConnected()) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						transform.setMessage(Internal.I18N.getString("main.status.database.connect.label"));
+						transform.setMessage(Language.I18N.getString("main.status.database.connect.label"));
 					}
 				});
 
@@ -235,7 +235,7 @@ public class BoundingBoxValidator {
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					transform.setMessage(Internal.I18N.getString("map.dialog.label.transform"));
+					transform.setMessage(Language.I18N.getString("map.dialog.label.transform"));
 				}
 			});
 
@@ -264,13 +264,13 @@ public class BoundingBoxValidator {
 			LOG.error("Failed to transform bounding box to WGS 84: " + e.getMessage());
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					transform.setErrorMessage(Internal.I18N.getString("map.dialog.label.error.transform"));
+					transform.setErrorMessage(Language.I18N.getString("map.dialog.label.error.transform"));
 				}
 			});
 		} catch (DatabaseConfigurationException e) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					transform.setErrorMessage(Internal.I18N.getString("map.dialog.label.error.db"));
+					transform.setErrorMessage(Language.I18N.getString("map.dialog.label.error.db"));
 				}
 			});
 		}
@@ -312,7 +312,7 @@ public class BoundingBoxValidator {
 			JPanel bboxPanel = new JPanel();
 			bboxPanel.setLayout(new GridBagLayout());
 
-			JLabel title = new JLabel(Internal.I18N.getString("map.boundingBox.label"));
+			JLabel title = new JLabel(Language.I18N.getString("map.boundingBox.label"));
 			title.setFont(title.getFont().deriveFont(Font.BOLD));
 			title.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/selection.png")));
 			title.setIconTextGap(5);
@@ -343,13 +343,13 @@ public class BoundingBoxValidator {
 
 				c = GuiUtil.setConstraints(0,3,0.0,0.0,GridBagConstraints.NONE,5,5,0,5);
 				c.anchor = GridBagConstraints.EAST;
-				bboxPanel.add(new JLabel(Internal.I18N.getString("pref.db.srs.label.description")), c);				
+				bboxPanel.add(new JLabel(Language.I18N.getString("pref.db.srs.label.description")), c);				
 				bboxPanel.add(description, GuiUtil.setConstraints(1,3,1.0,0.0,GridBagConstraints.HORIZONTAL,5,20,0,5));
 
 
 				c = GuiUtil.setConstraints(0,4,0.0,0.0,GridBagConstraints.NONE,5,5,0,5);
 				c.anchor = GridBagConstraints.EAST;
-				bboxPanel.add(new JLabel(Internal.I18N.getString("pref.db.srs.label.srid")), c);
+				bboxPanel.add(new JLabel(Language.I18N.getString("pref.db.srs.label.srid")), c);
 				bboxPanel.add(srid, GuiUtil.setConstraints(1,4,1.0,0.0,GridBagConstraints.HORIZONTAL,5,20,0,5));
 			}
 
@@ -366,7 +366,7 @@ public class BoundingBoxValidator {
 			actionPanel.add(new JLabel("<html>" + action + "</html>"), c);
 
 			if (hint != null) {
-				JLabel note = new JLabel(Internal.I18N.getString("map.dialog.label.note") + ':');
+				JLabel note = new JLabel(Language.I18N.getString("map.dialog.label.note") + ':');
 				note.setFont(note.getFont().deriveFont(Font.ITALIC));
 				c = GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.NONE,5,5,0,5);
 				c.anchor = GridBagConstraints.NORTHWEST;
@@ -384,7 +384,7 @@ public class BoundingBoxValidator {
 		private void addSrsComboBox() {			
 			JPanel srsPanel = new JPanel();
 			srsPanel.setLayout(new GridBagLayout());
-			JLabel srsLabel = new JLabel(Internal.I18N.getString("common.label.boundingBox.crs"));
+			JLabel srsLabel = new JLabel(Language.I18N.getString("common.label.boundingBox.crs"));
 
 			srsPanel.add(srsLabel, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.HORIZONTAL, 5, 5, 5, 5));
 			srsPanel.add(srsComboBox, GuiUtil.setConstraints(1, 0, 1, 1, GridBagConstraints.HORIZONTAL, 5, 5, 5, 5));
@@ -396,9 +396,9 @@ public class BoundingBoxValidator {
 			JPanel buttons = new JPanel();
 			buttons.setLayout(new GridBagLayout());
 
-			JButton transform = new JButton(Internal.I18N.getString("map.dialog.button.transform"));
-			JButton skip = new JButton(Internal.I18N.getString("map.dialog.button.skip"));
-			JButton close = new JButton(Internal.I18N.getString("map.dialog.button.close"));
+			JButton transform = new JButton(Language.I18N.getString("map.dialog.button.transform"));
+			JButton skip = new JButton(Language.I18N.getString("map.dialog.button.skip"));
+			JButton close = new JButton(Language.I18N.getString("map.dialog.button.close"));
 
 			buttons.add(transform, GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 10, 5, 0, 5));
 			buttons.add(skip, GuiUtil.setConstraints(1, 0, 0, 0, GridBagConstraints.NONE, 10, 5, 0, 5));
@@ -432,8 +432,8 @@ public class BoundingBoxValidator {
 			JPanel buttons = new JPanel();
 			buttons.setLayout(new GridBagLayout());
 
-			JButton ok = new JButton(Internal.I18N.getString("common.button.ok"));
-			JButton close = new JButton(Internal.I18N.getString("map.dialog.button.close"));
+			JButton ok = new JButton(Language.I18N.getString("common.button.ok"));
+			JButton close = new JButton(Language.I18N.getString("map.dialog.button.close"));
 
 			buttons.add(ok, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.NONE, 10, 5, 0, 5));
 			GridBagConstraints c = GuiUtil.setConstraints(0, 0, 0, 0, GridBagConstraints.NONE, 10, 5, 0, 5);
@@ -472,7 +472,7 @@ public class BoundingBoxValidator {
 		private JButton button;
 
 		TransformDialog() {
-			super(map, Internal.I18N.getString("map.dialog.title.transform"), true);
+			super(map, Language.I18N.getString("map.dialog.title.transform"), true);
 			init();
 		}
 
@@ -486,7 +486,7 @@ public class BoundingBoxValidator {
 			messageLabel.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/loader.gif")));
 			messageLabel.setIconTextGap(10);
 
-			button = new JButton(Internal.I18N.getString("common.button.ok"));
+			button = new JButton(Language.I18N.getString("common.button.ok"));
 			button.setVisible(false);
 
 			add(messageLabel, GuiUtil.setConstraints(0, 0, 1, 0, GridBagConstraints.HORIZONTAL, 10, 10, 10, 10));
@@ -512,7 +512,7 @@ public class BoundingBoxValidator {
 
 		private void setErrorMessage(String message) {
 			message = message.replaceAll("\\n", "<br/>");
-			setTitle(Internal.I18N.getString("map.dialog.title.transform.error"));
+			setTitle(Language.I18N.getString("map.dialog.title.transform.error"));
 			messageLabel.setIcon(new ImageIcon(getClass().getResource("/resources/img/map/error.png")));
 			messageLabel.setIconTextGap(10);
 			messageLabel.setVerticalTextPosition(JLabel.TOP);

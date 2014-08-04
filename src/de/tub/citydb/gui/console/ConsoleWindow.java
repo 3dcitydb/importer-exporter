@@ -39,7 +39,7 @@ import javax.swing.JFrame;
 
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.gui.window.WindowSize;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -102,7 +102,7 @@ public class ConsoleWindow extends JFrame {
 	}
 
 	public void doTranslation() {
-		setTitle(Internal.I18N.getString("main.window.title") + " - " + Internal.I18N.getString("main.console.label"));
+		setTitle(Language.I18N.getString("main.window.title") + " - " + Language.I18N.getString("main.console.label"));
 	}
 
 }

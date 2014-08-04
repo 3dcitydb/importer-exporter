@@ -41,7 +41,7 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.registry.ObjectRegistry;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 
 @SuppressWarnings("serial")
 public class StandardTreePopupMenu extends AbstractStandardPopupMenu implements EventHandler {
@@ -122,10 +122,10 @@ public class StandardTreePopupMenu extends AbstractStandardPopupMenu implements 
 	}
 
 	public void doTranslation() {
-		expand.setText(Internal.I18N.getString("pref.popup.expand"));		
-		expandAll.setText(Internal.I18N.getString("pref.popup.expandAll"));		
-		collapse.setText(Internal.I18N.getString("pref.popup.collapse"));		
-		collapseAll.setText(Internal.I18N.getString("pref.popup.collapseAll"));		
+		expand.setText(Language.I18N.getString("pref.popup.expand"));		
+		expandAll.setText(Language.I18N.getString("pref.popup.expandAll"));		
+		collapse.setText(Language.I18N.getString("pref.popup.collapse"));		
+		collapseAll.setText(Language.I18N.getString("pref.popup.collapseAll"));		
 	}
 
 	private void performActionOnNodes(TreePath parent, boolean expand, boolean recursive) {

@@ -39,7 +39,7 @@ import javax.swing.JRadioButton;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.importer.Index;
 import de.tub.citydb.config.project.importer.IndexMode;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
@@ -125,16 +125,16 @@ public class IndexPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.import.index.spatial.border.handling"));	
-		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.import.index.normal.border.handling"));	
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.index.spatial.border.handling"));	
+		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.import.index.normal.border.handling"));	
 
-		impSIRadioDeacAc.setText(Internal.I18N.getString("pref.import.index.spatial.label.autoActivate"));
-		impSIRadioDeac.setText(Internal.I18N.getString("pref.import.index.spatial.label.manuActivate"));
-		impSIRadioNoDeac.setText(Internal.I18N.getString("pref.import.index.spatial.label.keepState"));
+		impSIRadioDeacAc.setText(Language.I18N.getString("pref.import.index.spatial.label.autoActivate"));
+		impSIRadioDeac.setText(Language.I18N.getString("pref.import.index.spatial.label.manuActivate"));
+		impSIRadioNoDeac.setText(Language.I18N.getString("pref.import.index.spatial.label.keepState"));
 
-		impNIRadioDeacAc.setText(Internal.I18N.getString("pref.import.index.normal.label.autoActivate"));
-		impNIRadioDeac.setText(Internal.I18N.getString("pref.import.index.normal.label.manuActivate"));
-		impNIRadioNoDeac.setText(Internal.I18N.getString("pref.import.index.normal.label.keepState"));
+		impNIRadioDeacAc.setText(Language.I18N.getString("pref.import.index.normal.label.autoActivate"));
+		impNIRadioDeac.setText(Language.I18N.getString("pref.import.index.normal.label.manuActivate"));
+		impNIRadioNoDeac.setText(Language.I18N.getString("pref.import.index.normal.label.keepState"));
 	}
 
 	@Override
@@ -177,7 +177,7 @@ public class IndexPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.import.index");
+		return Language.I18N.getString("pref.tree.import.index");
 	}
 
 }

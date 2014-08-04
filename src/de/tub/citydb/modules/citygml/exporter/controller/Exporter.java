@@ -66,6 +66,7 @@ import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.exporter.ExportAppearance;
@@ -169,7 +170,7 @@ public class Exporter implements EventHandler {
 			return false;
 
 		// set module context according to CityGML version and create SAX writer
-		CityGMLVersion version = config.getProject().getExporter().getCityGMLVersion().toCityGMLVersion();
+		CityGMLVersion version = Util.toCityGMLVersion(config.getProject().getExporter().getCityGMLVersion());
 		ModuleContext moduleContext = new ModuleContext(version);
 		CityModelInfo cityModel = new CityModelInfo();
 
@@ -319,7 +320,7 @@ public class Exporter implements EventHandler {
 					File path = new File(file.getAbsolutePath());
 					internalConfig.setExportPath(path.getParent());
 
-					eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.cityObj.msg"), this));
+					eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.cityObj.msg"), this));
 					eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
 
 					// checking export path for texture images
@@ -537,7 +538,7 @@ public class Exporter implements EventHandler {
 						return false;
 					}
 
-					eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.finish.msg"), this));
+					eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg"), this));
 
 					// cleaning up...
 					try {

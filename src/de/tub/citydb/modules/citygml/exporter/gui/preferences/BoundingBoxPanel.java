@@ -54,7 +54,7 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.filter.FilterBoundingBoxMode;
 import de.tub.citydb.config.project.filter.TileNameSuffixMode;
@@ -317,26 +317,26 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("common.pref.boundingBox.border.selection"));
-		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.export.boundingBox.border.tiling"));
-		((TitledBorder)block3.getBorder()).setTitle(Internal.I18N.getString("pref.export.boundingBox.border.path"));
-		((TitledBorder)block4.getBorder()).setTitle(Internal.I18N.getString("pref.export.boundingBox.border.options"));
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("common.pref.boundingBox.border.selection"));
+		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
+		((TitledBorder)block3.getBorder()).setTitle(Language.I18N.getString("pref.export.boundingBox.border.path"));
+		((TitledBorder)block4.getBorder()).setTitle(Language.I18N.getString("pref.export.boundingBox.border.options"));
 		
-		expBBRadioInside.setText(Internal.I18N.getString("common.pref.boundingBox.label.inside"));
-		expBBRadioIntersect.setText(Internal.I18N.getString("common.pref.boundingBox.label.overlap"));
+		expBBRadioInside.setText(Language.I18N.getString("common.pref.boundingBox.label.inside"));
+		expBBRadioIntersect.setText(Language.I18N.getString("common.pref.boundingBox.label.overlap"));
 
-		useTiling.setText(Internal.I18N.getString("pref.export.boundingBox.label.useTiling"));
-		rowsLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.rows"));
-		columnsLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.columns"));
-		tilePathNameLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.tile.pathName"));
+		useTiling.setText(Language.I18N.getString("pref.export.boundingBox.label.useTiling"));
+		rowsLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.rows"));
+		columnsLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.columns"));
+		tilePathNameLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.pathName"));
 		
-		setGenAttr.setText(Internal.I18N.getString("pref.export.boundingBox.label.tile.genericAttr"));
-		genAttrNameLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.tile.genericAttrName"));
-		genAttrValueLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.tile.genericAttrValue"));
+		setGenAttr.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.genericAttr"));
+		genAttrNameLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.genericAttrName"));
+		genAttrValueLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.genericAttrValue"));
 
-		tilePathInfo.setText(Internal.I18N.getString("pref.export.boundingBox.label.tile.pathInfo"));
-		tilePathSuffixLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.tile.pathSuffix"));
-		tileNameSuffixLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix"));
+		tilePathInfo.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.pathInfo"));
+		tilePathSuffixLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.pathSuffix"));
+		tileNameSuffixLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix"));
 	}
 
 	@Override
@@ -385,7 +385,7 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.export.boundingBox");
+		return Language.I18N.getString("pref.tree.export.boundingBox");
 	}
 
 }

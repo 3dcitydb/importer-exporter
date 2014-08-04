@@ -44,9 +44,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.opengis.kml._2.ViewRefreshModeEnumType;
-
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.kmlExporter.KmlExporter;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
@@ -222,18 +221,18 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		kmzCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.exportAsKmz"));
-		showBoundingBoxCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.showBoundingBox"));
-		showTileBordersCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.showTileBorders"));
-		autoTileSideLengthLabel.setText(Internal.I18N.getString("pref.kmlexport.label.autoTileSideLength"));
-		oneFilePerObjectCheckbox.setText(Internal.I18N.getString("kmlExport.label.oneFilePerObject"));
-		visibleFromLabel.setText(Internal.I18N.getString("kmlExport.label.visibleFrom"));
-		pixelsLabel.setText(Internal.I18N.getString("kmlExport.label.pixels"));
-		viewRefreshModeLabel.setText(Internal.I18N.getString("kmlExport.label.viewRefreshMode"));
-		viewRefreshTimeLabel.setText(Internal.I18N.getString("kmlExport.label.viewRefreshTime"));
-		writeJSONCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.writeJSONFile"));
-		writeJSONPCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.writeJSONPFile"));
-		callbackNameJSONPLabel.setText(Internal.I18N.getString("pref.kmlexport.label.callbackNameJSONP"));
+		kmzCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.exportAsKmz"));
+		showBoundingBoxCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.showBoundingBox"));
+		showTileBordersCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.showTileBorders"));
+		autoTileSideLengthLabel.setText(Language.I18N.getString("pref.kmlexport.label.autoTileSideLength"));
+		oneFilePerObjectCheckbox.setText(Language.I18N.getString("kmlExport.label.oneFilePerObject"));
+		visibleFromLabel.setText(Language.I18N.getString("kmlExport.label.visibleFrom"));
+		pixelsLabel.setText(Language.I18N.getString("kmlExport.label.pixels"));
+		viewRefreshModeLabel.setText(Language.I18N.getString("kmlExport.label.viewRefreshMode"));
+		viewRefreshTimeLabel.setText(Language.I18N.getString("kmlExport.label.viewRefreshTime"));
+		writeJSONCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.writeJSONFile"));
+		writeJSONPCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.writeJSONPFile"));
+		callbackNameJSONPLabel.setText(Language.I18N.getString("pref.kmlexport.label.callbackNameJSONP"));
 	}
 
 	@Override
@@ -307,7 +306,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.general");
+		return Language.I18N.getString("pref.tree.kmlExport.general");
 	}
 
 }

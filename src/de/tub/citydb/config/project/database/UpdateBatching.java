@@ -33,8 +33,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.internal.Internal;
-
 @XmlType(name="UpdateBatchingType", propOrder={
 		"featureBatchValue",
 		"gmlIdCacheBatchValue",
@@ -60,7 +58,7 @@ public class UpdateBatching {
 
 	public void setFeatureBatchValue(Integer featureBatchValue) {
 		if (featureBatchValue != null && featureBatchValue > 0 &&
-				featureBatchValue <= Internal.DB_MAX_BATCH_SIZE)
+				featureBatchValue <= Database.MAX_BATCH_SIZE)
 			this.featureBatchValue = featureBatchValue;
 	}
 
@@ -70,7 +68,7 @@ public class UpdateBatching {
 
 	public void setGmlIdCacheBatchValue(Integer gmlIdCacheBatchValue) {
 		if (gmlIdCacheBatchValue != null && gmlIdCacheBatchValue > 0 &&
-				gmlIdCacheBatchValue <= Internal.DB_MAX_BATCH_SIZE)
+				gmlIdCacheBatchValue <= Database.MAX_BATCH_SIZE)
 			this.gmlIdCacheBatchValue = gmlIdCacheBatchValue;
 	}
 
@@ -80,7 +78,7 @@ public class UpdateBatching {
 
 	public void setTempBatchValue(Integer tempBatchValue) {
 		if (tempBatchValue != null && tempBatchValue > 0 && 
-				tempBatchValue <= Internal.DB_MAX_BATCH_SIZE)
+				tempBatchValue <= Database.MAX_BATCH_SIZE)
 			this.tempBatchValue = tempBatchValue;
 	}
 	

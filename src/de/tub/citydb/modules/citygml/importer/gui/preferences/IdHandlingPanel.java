@@ -42,7 +42,7 @@ import javax.swing.JRadioButton;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.importer.ImportGmlId;
 import de.tub.citydb.config.project.importer.UUIDMode;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
@@ -112,10 +112,10 @@ public class IdHandlingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.import.idHandling.border.id"));	
-		impIdCheckExtRef.setText(Internal.I18N.getString("pref.import.idHandling.label.id.extReference"));
-		impIdRadioAdd.setText(Internal.I18N.getString("pref.import.idHandling.label.id.add"));
-		impIdRadioExchange.setText(Internal.I18N.getString("pref.import.idHandling.label.id.exchange"));
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.idHandling.border.id"));	
+		impIdCheckExtRef.setText(Language.I18N.getString("pref.import.idHandling.label.id.extReference"));
+		impIdRadioAdd.setText(Language.I18N.getString("pref.import.idHandling.label.id.add"));
+		impIdRadioExchange.setText(Language.I18N.getString("pref.import.idHandling.label.id.exchange"));
 	}
 
 	@Override
@@ -148,7 +148,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.import.idHandling");
+		return Language.I18N.getString("pref.tree.import.idHandling");
 	}
 
 }

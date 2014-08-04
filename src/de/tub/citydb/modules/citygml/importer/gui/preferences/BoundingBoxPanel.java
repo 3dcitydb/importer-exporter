@@ -39,7 +39,7 @@ import javax.swing.JRadioButton;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.filter.FilterBoundingBox;
 import de.tub.citydb.config.project.filter.FilterBoundingBoxMode;
 import de.tub.citydb.config.project.importer.ImportFilterConfig;
@@ -91,9 +91,9 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("common.pref.boundingBox.border.selection"));	
-		impBBRadioInside.setText(Internal.I18N.getString("common.pref.boundingBox.label.inside"));
-		impBBRadioIntersect.setText(Internal.I18N.getString("common.pref.boundingBox.label.overlap"));
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("common.pref.boundingBox.border.selection"));	
+		impBBRadioInside.setText(Language.I18N.getString("common.pref.boundingBox.label.inside"));
+		impBBRadioIntersect.setText(Language.I18N.getString("common.pref.boundingBox.label.overlap"));
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class BoundingBoxPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.import.boundingBox");
+		return Language.I18N.getString("pref.tree.import.boundingBox");
 	}
 
 }

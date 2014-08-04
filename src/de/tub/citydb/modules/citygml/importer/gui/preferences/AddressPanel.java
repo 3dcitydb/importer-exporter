@@ -38,7 +38,7 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.importer.ImportAddress;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -90,13 +90,13 @@ public class AddressPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)importXALPanel.getBorder()).setTitle(Internal.I18N.getString("pref.import.address.border.import"));	
-		importXAL.setText(Internal.I18N.getString("pref.import.address.label.importXAL"));
+		((TitledBorder)importXALPanel.getBorder()).setTitle(Language.I18N.getString("pref.import.address.border.import"));	
+		importXAL.setText(Language.I18N.getString("pref.import.address.label.importXAL"));
 	}
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.import.address");
+		return Language.I18N.getString("pref.tree.import.address");
 	}
 
 }

@@ -29,14 +29,14 @@
  */
 package de.tub.citydb.config.project.database;
 
+import java.util.UUID;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-
-import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.api.database.DatabaseConnectionDetails;
 import de.tub.citydb.api.database.DatabaseType;
@@ -128,7 +128,7 @@ public class DBConnection implements DatabaseConnectionDetails, Comparable<DBCon
 	private String internalPassword;
 		
 	public DBConnection() {
-		id = DefaultGMLIdManager.getInstance().generateUUID();
+		id = new StringBuilder("UUID_").append(UUID.randomUUID().toString()).toString();
 	}
 	
 	public String getId() {

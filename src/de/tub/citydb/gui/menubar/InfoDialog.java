@@ -57,7 +57,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.text.html.HTMLDocument;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -67,7 +67,7 @@ public class InfoDialog extends JDialog {
 	private final Config config;
 
 	public InfoDialog(Config config, JFrame frame) {
-		super(frame, Internal.I18N.getString("menu.help.info.label"), true);
+		super(frame, Language.I18N.getString("menu.help.info.label"), true);
 		this.config = config;
 		
 		initGUI();
@@ -75,7 +75,7 @@ public class InfoDialog extends JDialog {
 
 	private void initGUI() {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		JButton button = new JButton(Internal.I18N.getString("common.button.ok"));	
+		JButton button = new JButton(Language.I18N.getString("common.button.ok"));	
 
 		setLayout(new GridBagLayout());
 		{			
@@ -105,8 +105,8 @@ public class InfoDialog extends JDialog {
 			JTabbedPane tabs = new JTabbedPane();
 			add(tabs, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 
-			tabs.add(getGeneralTab(), Internal.I18N.getString("menu.help.info.tab.general"));			
-			tabs.add(getPartnerTab(), Internal.I18N.getString("menu.help.info.tab.partner"));			
+			tabs.add(getGeneralTab(), Language.I18N.getString("menu.help.info.tab.general"));			
+			tabs.add(getPartnerTab(), Language.I18N.getString("menu.help.info.tab.partner"));			
 
 			button.setMargin(new Insets(button.getMargin().top, 25, button.getMargin().bottom, 25));
 			add(button, GuiUtil.setConstraints(0,3,0.0,0.0,GridBagConstraints.NONE,5,5,5,5));
@@ -134,7 +134,7 @@ public class InfoDialog extends JDialog {
 			Border border = BorderFactory.createEtchedBorder();
 			Border margin = BorderFactory.createEmptyBorder(2, 2, 2, 2);
 
-			JLabel authorsHeader = new JLabel(Internal.I18N.getString("menu.help.info.authors"));
+			JLabel authorsHeader = new JLabel(Language.I18N.getString("menu.help.info.authors"));
 			general.add(authorsHeader, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,15,5,0,5));
 			JTextArea authors = new JTextArea();
 			authors.setBorder(new CompoundBorder(border, margin));				
@@ -175,7 +175,7 @@ public class InfoDialog extends JDialog {
 		JPanel partner = new JPanel();
 		partner.setLayout(new GridBagLayout());
 		{
-			String text = Internal.I18N.getString("menu.help.info.partner");
+			String text = Language.I18N.getString("menu.help.info.partner");
 			Object[] args = new Object[]{ this.getClass().getPackage().getImplementationTitle() };
 			String result = MessageFormat.format(text, args);
 			

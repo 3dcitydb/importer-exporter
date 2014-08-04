@@ -30,21 +30,16 @@
 package de.tub.citydb.config.internal;
 
 import java.io.File;
-import java.util.ResourceBundle;
 
 import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.modules.citygml.importer.util.AffineTransformer;
 
 public class Internal {
-	public static final int DB_MAX_BATCH_SIZE = 65535;
 	public static final String CODELIST_DELIMITER = "--/\\--";
 	public static final String GEOMETRY_XLINK = "isXlink";
 	public static final String GEOMETRY_ORIGINAL = "origGeom";
 	public static final String GEOMETRY_INVALID = "geomInvalid";
 	public static final String UNIQUE_TEXTURE_FILENAME_PREFIX = "tex_";
-
-	// language pack
-	public static ResourceBundle I18N;
 	
 	// path names and files
 	public static final String USER_PATH = System.getProperty("user.home") + File.separator + "3DCityDB-Importer-Exporter";	

@@ -36,7 +36,7 @@ import java.text.MessageFormat;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.api.event.EventDispatcher;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.database.TableEnum;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
@@ -132,7 +132,7 @@ public class DBXlinkSplitter {
 
 			LOG.info("Resolving feature XLinks...");
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.basicXLink.msg"), this));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.basicXLink.msg"), this));
 
 			int max = (int)cacheTable.size();
 			int current = 0;
@@ -196,7 +196,7 @@ public class DBXlinkSplitter {
 
 		try {					
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
-			String text = Internal.I18N.getString("import.dialog.groupXLink.msg");
+			String text = Language.I18N.getString("import.dialog.groupXLink.msg");
 			Object[] args = new Object[]{ pass };
 			eventDispatcher.triggerEvent(new StatusDialogMessage(MessageFormat.format(text, args), this));
 
@@ -278,7 +278,7 @@ public class DBXlinkSplitter {
 
 			LOG.info("Resolving appearance XLinks...");
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.appXlink.msg"), this));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.appXlink.msg"), this));
 
 			CacheTable texCoordTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTURE_COORD_LIST);
 			CacheTable texParamTableTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREPARAM);
@@ -360,7 +360,7 @@ public class DBXlinkSplitter {
 			if (cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTURE_FILE)) {		
 				LOG.info("Importing texture images...");
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.texImg.msg"), this));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.texImg.msg"), this));
 
 				CacheTable temporaryTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTURE_FILE);
 
@@ -397,7 +397,7 @@ public class DBXlinkSplitter {
 
 				LOG.info("Linking texture images to surface data...");
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.linkTexImg.msg"), this));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.linkTexImg.msg"), this));
 
 				CacheTable temporaryTable = cacheTableManager.getCacheTable(CacheTableModelEnum.SURFACE_DATA_TO_TEX_IMAGE);
 
@@ -435,7 +435,7 @@ public class DBXlinkSplitter {
 			if (cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION) && 
 					cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION_TARGET)) {
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.appXlink.msg"), this));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.appXlink.msg"), this));
 
 				CacheTable cacheTable = cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION);
 				cacheTableManager.getCacheTable(CacheTableModelEnum.TEXTUREASSOCIATION_TARGET).createIndexes();
@@ -487,7 +487,7 @@ public class DBXlinkSplitter {
 
 			LOG.info("Importing library objects...");
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.libObj.msg"), this));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.libObj.msg"), this));
 
 			int max = (int)cacheTable.size();
 			int current = 0;
@@ -535,7 +535,7 @@ public class DBXlinkSplitter {
 
 			LOG.info("Resolving TexturedSurface XLinks...");
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.depMat.msg"), this));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.depMat.msg"), this));
 
 			int max = (int)cacheTable.size();
 			int current = 0;
@@ -593,7 +593,7 @@ public class DBXlinkSplitter {
 
 		try {
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
-			String text = Internal.I18N.getString("import.dialog.geomXLink.msg");
+			String text = Language.I18N.getString("import.dialog.geomXLink.msg");
 			Object[] args = new Object[]{ pass };
 			eventDispatcher.triggerEvent(new StatusDialogMessage(MessageFormat.format(text, args), this));
 
@@ -681,7 +681,7 @@ public class DBXlinkSplitter {
 				return;
 
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.solidXLink.msg"), this));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.solidXLink.msg"), this));
 
 			int max = (int)cacheTable.size();
 			int current = 0;

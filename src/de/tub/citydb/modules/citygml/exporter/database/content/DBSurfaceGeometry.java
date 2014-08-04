@@ -63,7 +63,6 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 import de.tub.citydb.api.geometry.GeometryObject;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.citygml.common.database.cache.CacheTable;
 
@@ -86,7 +85,7 @@ public class DBSurfaceGeometry implements DBExporter {
 	private boolean isImplicit;
 	private String gmlIdPrefix;
 
-	private int commitAfter = Internal.DB_MAX_BATCH_SIZE;
+	private int commitAfter;
 	private int batchCounter;
 
 	public DBSurfaceGeometry(Connection connection, CacheTable tempTable, Config config, DBExporterManager dbExporterManager) throws SQLException {
@@ -102,6 +101,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		exportAppearance = config.getInternal().isExportGlobalAppearances();
 
 		if (exportAppearance) {
+			commitAfter = dbExporterManager.getDatabaseAdapter().getMaxBatchSize();
 			Integer commitAfterProp = config.getProject().getDatabase().getUpdateBatching().getTempBatchValue();
 			if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= dbExporterManager.getDatabaseAdapter().getMaxBatchSize())
 				commitAfter = commitAfterProp;

@@ -44,7 +44,7 @@ import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.filter.TiledBoundingBox;
 import de.tub.citydb.config.project.filter.TilingMode;
@@ -339,7 +339,7 @@ public class DBSplitter {
 			return;
 
 		LOG.info("Processing CityObjectGroup features.");
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.group.msg"), this));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.group.msg"), this));
 
 		StringBuilder groupQuery = new StringBuilder();
 		String classIdsString = "";
@@ -513,7 +513,7 @@ public class DBSplitter {
 			return;
 
 		LOG.info("Processing global appearance features.");
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.globalApp.msg"), this));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.globalApp.msg"), this));
 
 		Statement stmt = null;
 		ResultSet rs = null;

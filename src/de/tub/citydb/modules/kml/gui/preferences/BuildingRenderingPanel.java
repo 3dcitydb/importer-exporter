@@ -57,8 +57,7 @@ import javax.swing.border.TitledBorder;
 import org.citygml.textureAtlas.TextureAtlasCreator;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
-import de.tub.citydb.config.project.kmlExporter.AltitudeMode;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.kmlExporter.ColladaOptions;
 import de.tub.citydb.config.project.kmlExporter.DisplayForm;
 import de.tub.citydb.config.project.kmlExporter.Lod0FootprintMode;
@@ -146,7 +145,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.buildingRendering");
+		return Language.I18N.getString("pref.tree.kmlExport.buildingRendering");
 	}
 
 	@Override
@@ -465,7 +464,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		footprintFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color fillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseFillColor"),
+				Color fillColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseFillColor"),
 						footprintFillColorButton.getBackground());
 				if (fillColor != null)
 					footprintFillColorButton.setBackground(fillColor);
@@ -474,7 +473,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		footprintLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color lineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseLineColor"),
+				Color lineColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseLineColor"),
 						footprintLineColorButton.getBackground());
 				if (lineColor != null)
 					footprintLineColorButton.setBackground(lineColor);
@@ -489,7 +488,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		footprintHLFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color hlFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
+				Color hlFillColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
 						footprintHLFillColorButton.getBackground());
 				if (hlFillColor != null)
 					footprintHLFillColorButton.setBackground(hlFillColor);
@@ -498,7 +497,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		footprintHLLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color hlLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
+				Color hlLineColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
 						footprintHLLineColorButton.getBackground());
 				if (hlLineColor != null)
 					footprintHLLineColorButton.setBackground(hlLineColor);
@@ -507,7 +506,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		geometryWallFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color wallFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseWallFillColor"),
+				Color wallFillColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseWallFillColor"),
 						geometryWallFillColorButton.getBackground());
 				if (wallFillColor != null)
 					geometryWallFillColorButton.setBackground(wallFillColor);
@@ -516,7 +515,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		geometryWallLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color wallLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseWallLineColor"),
+				Color wallLineColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseWallLineColor"),
 						geometryWallLineColorButton.getBackground());
 				if (wallLineColor != null)
 					geometryWallLineColorButton.setBackground(wallLineColor);
@@ -525,7 +524,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		geometryRoofFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color roofFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseRoofFillColor"),
+				Color roofFillColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseRoofFillColor"),
 						geometryRoofFillColorButton.getBackground());
 				if (roofFillColor != null)
 					geometryRoofFillColorButton.setBackground(roofFillColor);
@@ -534,7 +533,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		geometryRoofLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color roofLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseRoofLineColor"),
+				Color roofLineColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseRoofLineColor"),
 						geometryRoofLineColorButton.getBackground());
 				if (roofLineColor != null)
 					geometryRoofLineColorButton.setBackground(roofLineColor);
@@ -549,7 +548,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		geometryHLFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color hlFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
+				Color hlFillColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
 						geometryHLFillColorButton.getBackground());
 				if (hlFillColor != null)
 					geometryHLFillColorButton.setBackground(hlFillColor);
@@ -558,7 +557,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		geometryHLLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color hlLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
+				Color hlLineColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
 						geometryHLLineColorButton.getBackground());
 				if (hlLineColor != null)
 					geometryHLLineColorButton.setBackground(hlLineColor);
@@ -579,7 +578,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		colladaHLFillColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color hlFillColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
+				Color hlFillColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseHighlightedFillColor"),
 						colladaHLFillColorButton.getBackground());
 				if (hlFillColor != null)
 					colladaHLFillColorButton.setBackground(hlFillColor);
@@ -588,7 +587,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		colladaHLLineColorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Color hlLineColor = chooseColor(Internal.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
+				Color hlLineColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseHighlightedLineColor"),
 						colladaHLLineColorButton.getBackground());
 				if (hlLineColor != null)
 					colladaHLLineColorButton.setBackground(hlLineColor);
@@ -608,37 +607,37 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 	@Override
 	public void doTranslation() {
 
-		((TitledBorder)footprintPanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.border.footprint"));	
-		((TitledBorder)geometryPanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.border.geometry"));	
-		((TitledBorder)colladaPanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.border.collada"));	
+		((TitledBorder)footprintPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.footprint"));	
+		((TitledBorder)geometryPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.geometry"));	
+		((TitledBorder)colladaPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.border.collada"));	
 
-		footprintAlphaLabel.setText(Internal.I18N.getString("pref.kmlexport.label.alpha"));
-		footprintFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.fillColor"));
-		footprintLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.lineColor"));
-		footprintHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
-		footprintHLFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
-		footprintHLLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
-		lod0FootprintLabel.setText(Internal.I18N.getString("pref.kmlexport.label.footprintGeometry"));
+		footprintAlphaLabel.setText(Language.I18N.getString("pref.kmlexport.label.alpha"));
+		footprintFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.fillColor"));
+		footprintLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.lineColor"));
+		footprintHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
+		footprintHLFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
+		footprintHLLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
+		lod0FootprintLabel.setText(Language.I18N.getString("pref.kmlexport.label.footprintGeometry"));
 
-		geometryAlphaLabel.setText(Internal.I18N.getString("pref.kmlexport.label.alpha"));
-		geometryWallFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.wallFillColor"));
-		geometryWallLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.wallLineColor"));
-		geometryRoofFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.roofFillColor"));
-		geometryRoofLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.roofLineColor"));
-		geometryHighlightingCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
-		geometryHLSurfaceDistanceLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightingDistance"));
-		geometryHLFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
-		geometryHLLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
+		geometryAlphaLabel.setText(Language.I18N.getString("pref.kmlexport.label.alpha"));
+		geometryWallFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.wallFillColor"));
+		geometryWallLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.wallLineColor"));
+		geometryRoofFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.roofFillColor"));
+		geometryRoofLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.roofLineColor"));
+		geometryHighlightingCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
+		geometryHLSurfaceDistanceLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightingDistance"));
+		geometryHLFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
+		geometryHLLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 
-		ignoreSurfaceOrientationCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.ignoreSurfaceOrientation"));
-		textureAtlasCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.generateTextureAtlases"));
-		textureAtlasPotsCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.textureAtlasPots"));
-		scaleTexImagesCheckbox.setText(Internal.I18N.getString("pref.kmlexport.label.scaleTexImages"));
-		groupObjectsRButton.setText(Internal.I18N.getString("pref.kmlexport.label.groupObjects"));
-		colladaHighlightingRButton.setText(Internal.I18N.getString("pref.kmlexport.label.highlighting"));
-		colladaHLSurfaceDistanceLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightingDistance"));
-		colladaHLFillColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
-		colladaHLLineColorLabel.setText(Internal.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
+		ignoreSurfaceOrientationCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.ignoreSurfaceOrientation"));
+		textureAtlasCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.generateTextureAtlases"));
+		textureAtlasPotsCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.textureAtlasPots"));
+		scaleTexImagesCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.scaleTexImages"));
+		groupObjectsRButton.setText(Language.I18N.getString("pref.kmlexport.label.groupObjects"));
+		colladaHighlightingRButton.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
+		colladaHLSurfaceDistanceLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightingDistance"));
+		colladaHLFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
+		colladaHLLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 	}
 
 	@Override

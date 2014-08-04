@@ -43,7 +43,7 @@ import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.importer.Continuation;
 import de.tub.citydb.config.project.importer.CreationDateMode;
 import de.tub.citydb.config.project.importer.TerminationDateMode;
@@ -198,24 +198,24 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.import.continuation.border.lineage"));	
-		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.import.continuation.border.updatingPerson"));	
-		((TitledBorder)block3.getBorder()).setTitle(Internal.I18N.getString("pref.import.continuation.border.creationDate"));	
-		((TitledBorder)block4.getBorder()).setTitle(Internal.I18N.getString("pref.import.continuation.border.terminationDate"));	
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.continuation.border.lineage"));	
+		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.import.continuation.border.updatingPerson"));	
+		((TitledBorder)block3.getBorder()).setTitle(Language.I18N.getString("pref.import.continuation.border.creationDate"));	
+		((TitledBorder)block4.getBorder()).setTitle(Language.I18N.getString("pref.import.continuation.border.terminationDate"));	
 
-		lineageLabel.setText(Internal.I18N.getString("pref.import.continuation.label.lineage"));
-		reasonForUpdateLabel.setText(Internal.I18N.getString("pref.import.continuation.label.reasonForUpdate"));
+		lineageLabel.setText(Language.I18N.getString("pref.import.continuation.label.lineage"));
+		reasonForUpdateLabel.setText(Language.I18N.getString("pref.import.continuation.label.reasonForUpdate"));
 
-		updatingPersonDBAccount.setText(Internal.I18N.getString("pref.import.continuation.label.updatingPerson.database"));
-		updatingPersonUser.setText(Internal.I18N.getString("pref.import.continuation.label.updatingPerson.user"));		
+		updatingPersonDBAccount.setText(Language.I18N.getString("pref.import.continuation.label.updatingPerson.database"));
+		updatingPersonUser.setText(Language.I18N.getString("pref.import.continuation.label.updatingPerson.user"));		
 
-		creDateRadioInherit.setText(Internal.I18N.getString("pref.import.continuation.label.creationDate.inherit"));
-		creDateRadioOnlyMissing.setText(Internal.I18N.getString("pref.import.continuation.label.creationDate.onlyMissing"));
-		creDateRadioAll.setText(Internal.I18N.getString("pref.import.continuation.label.creationDate.all"));
+		creDateRadioInherit.setText(Language.I18N.getString("pref.import.continuation.label.creationDate.inherit"));
+		creDateRadioOnlyMissing.setText(Language.I18N.getString("pref.import.continuation.label.creationDate.onlyMissing"));
+		creDateRadioAll.setText(Language.I18N.getString("pref.import.continuation.label.creationDate.all"));
     
-		termDateRadioInherit.setText(Internal.I18N.getString("pref.import.continuation.label.terminationDate.inherit"));
-		termDateRadioOnlyMissing.setText(Internal.I18N.getString("pref.import.continuation.label.terminationDate.onlyMissing"));
-		termDateRadioAll.setText(Internal.I18N.getString("pref.import.continuation.label.terminationDate.all"));
+		termDateRadioInherit.setText(Language.I18N.getString("pref.import.continuation.label.terminationDate.inherit"));
+		termDateRadioOnlyMissing.setText(Language.I18N.getString("pref.import.continuation.label.terminationDate.onlyMissing"));
+		termDateRadioAll.setText(Language.I18N.getString("pref.import.continuation.label.terminationDate.all"));
 	}
 
 	@Override
@@ -278,7 +278,7 @@ public class ContinuationPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.import.continuation");
+		return Language.I18N.getString("pref.tree.import.continuation");
 	}
 
 }

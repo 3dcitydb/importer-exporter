@@ -58,7 +58,7 @@ import de.tub.citydb.api.plugin.extension.preferences.PreferencesEntry;
 import de.tub.citydb.api.plugin.extension.preferences.PreferencesEvent;
 import de.tub.citydb.api.plugin.extension.preferences.PreferencesExtension;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.NullComponent;
@@ -241,10 +241,10 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 	}
 
 	public void doTranslation() {
-		restoreButton.setText(Internal.I18N.getString("pref.button.restore"));
-		standardButton.setText(Internal.I18N.getString("pref.button.standard"));
-		applyButton.setText(Internal.I18N.getString("common.button.apply"));
-		noticeLabel.setText(Internal.I18N.getString("common.pref.menu.expand.label"));
+		restoreButton.setText(Language.I18N.getString("pref.button.restore"));
+		standardButton.setText(Language.I18N.getString("pref.button.standard"));
+		applyButton.setText(Language.I18N.getString("common.button.apply"));
+		noticeLabel.setText(Language.I18N.getString("common.pref.menu.expand.label"));
 
 		resetPreferencesMenu();
 		menuTree.repaint();
@@ -288,13 +288,13 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 
 			if (config.getGui().isShowPreferencesConfirmDialog()) {
 				confirmPanel = new JPanel(new GridBagLayout());
-				confirmDialogNoShow = new JCheckBox(Internal.I18N.getString("common.dialog.msg.noShow"));
-				confirmPanel.add(new JLabel(Internal.I18N.getString("pref.dialog.apply.msg")), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
+				confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
+				confirmPanel.add(new JLabel(Language.I18N.getString("pref.dialog.apply.msg")), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
 				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
 
 				res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), 
 						confirmPanel, 
-						Internal.I18N.getString("pref.dialog.apply.title"), 
+						Language.I18N.getString("pref.dialog.apply.title"), 
 						JOptionPane.YES_NO_CANCEL_OPTION);
 
 				config.getGui().setShowPreferencesConfirmDialog(!confirmDialogNoShow.isSelected());

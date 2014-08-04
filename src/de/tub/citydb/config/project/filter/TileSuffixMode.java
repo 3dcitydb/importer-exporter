@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 
 @XmlType(name="TileSuffixModeType")
 @XmlEnum
@@ -64,7 +64,7 @@ public enum TileSuffixMode {
     public String toString() {
     	switch (this) {
     	case ROW_COLUMN:
-    		return Internal.I18N.getString("pref.export.boundingBox.label.tile.pathSuffix.rowColumn");
+    		return Language.I18N.getString("pref.export.boundingBox.label.tile.pathSuffix.rowColumn");
     	case XMIN_YMIN:
     		return "Xmin / Ymin";
     	case XMIN_YMAX:

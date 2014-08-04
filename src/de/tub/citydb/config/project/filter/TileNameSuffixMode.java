@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 
 @XmlType(name="TileNameSuffixModeType")
 @XmlEnum
@@ -56,9 +56,9 @@ public enum TileNameSuffixMode {
     public String toString() {
     	switch (this) {
     	case NONE:
-    		return Internal.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix.none");
+    		return Language.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix.none");
     	case SAME_AS_PATH:
-    		return Internal.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix.sameAsPath");
+    		return Language.I18N.getString("pref.export.boundingBox.label.tile.nameSuffix.sameAsPath");
     	default:
     		return null;
     	}

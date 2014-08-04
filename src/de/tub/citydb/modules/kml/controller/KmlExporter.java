@@ -70,11 +70,8 @@ import net.opengis.kml._2.NetworkLinkType;
 import net.opengis.kml._2.ObjectFactory;
 import net.opengis.kml._2.PairType;
 import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PointType;
 import net.opengis.kml._2.PolyStyleType;
 import net.opengis.kml._2.RegionType;
-import net.opengis.kml._2.ScaleElement;
-import net.opengis.kml._2.ScaleType;
 import net.opengis.kml._2.StyleMapType;
 import net.opengis.kml._2.StyleStateEnumType;
 import net.opengis.kml._2.StyleType;
@@ -85,7 +82,6 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXFragmentWriter;
 import org.citygml4j.util.xml.SAXFragmentWriter.WriteMode;
 import org.citygml4j.util.xml.SAXWriter;
-import org.jdesktop.swingx.border.IconBorder;
 import org.xml.sax.SAXException;
 
 import de.tub.citydb.api.concurrent.PoolSizeAdaptationStrategy;
@@ -98,7 +94,7 @@ import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.api.geometry.BoundingBoxCorner;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Database.PredefinedSrsName;
 import de.tub.citydb.config.project.database.Workspace;
@@ -113,7 +109,6 @@ import de.tub.citydb.config.project.kmlExporter.PointAndCurve;
 import de.tub.citydb.config.project.kmlExporter.PointDisplayMode;
 import de.tub.citydb.config.project.resources.Resources;
 import de.tub.citydb.database.DatabaseConnectionPool;
-
 import de.tub.citydb.log.Logger;
 import de.tub.citydb.modules.common.concurrent.IOWriterWorkerFactory;
 import de.tub.citydb.modules.common.event.CounterEvent;
@@ -139,8 +134,8 @@ import de.tub.citydb.modules.kml.database.SolitaryVegetationObject;
 import de.tub.citydb.modules.kml.database.Transportation;
 import de.tub.citydb.modules.kml.database.Tunnel;
 import de.tub.citydb.modules.kml.database.WaterBody;
-import de.tub.citydb.modules.kml.util.CityObject4JSON;
 import de.tub.citydb.modules.kml.datatype.TypeAttributeValueEnum;
+import de.tub.citydb.modules.kml.util.CityObject4JSON;
 
 public class KmlExporter implements EventHandler {
 	private final JAXBContext jaxbKmlContext;
@@ -501,7 +496,7 @@ public class KmlExporter implements EventHandler {
 							return false;
 						}
 
-						eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.writingToFile"), this));
+						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("kmlExport.dialog.writingToFile"), this));
 
 						// flush sax writer and close file
 						try {
@@ -581,7 +576,7 @@ public class KmlExporter implements EventHandler {
 		if (isBBoxActive) {
 			try {
 				eventDispatcher.triggerEvent(new StatusDialogTitle(filename + ".kml", this));
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.writingMainFile"), this));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("kmlExport.dialog.writingMainFile"), this));
 				generateMasterFile();
 			}
 			catch (Exception ex) {
@@ -620,7 +615,7 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 		
-		eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("export.dialog.finish.msg"), this));
+		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg"), this));
 
 		// show exported features
 		if (!featureCounterMap.isEmpty()) {

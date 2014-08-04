@@ -45,7 +45,7 @@ import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.general.Path;
 import de.tub.citydb.config.project.general.PathMode;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
@@ -107,7 +107,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 		
 		importPathButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String sImp = browseFile(Internal.I18N.getString("pref.general.path.label.importDefaultPath"), importPathText.getText());
+				String sImp = browseFile(Language.I18N.getString("pref.general.path.label.importDefaultPath"), importPathText.getText());
 				if (!sImp.isEmpty())
 					importPathText.setText(sImp);
 			}
@@ -115,7 +115,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 		
 		exportPathButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String sExp = browseFile(Internal.I18N.getString("pref.general.path.label.exportDefaultPath"), exportPathText.getText());
+				String sExp = browseFile(Language.I18N.getString("pref.general.path.label.exportDefaultPath"), exportPathText.getText());
 				if (!sExp.isEmpty())
 					exportPathText.setText(sExp);
 			}
@@ -187,14 +187,14 @@ public class PathPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.general.path.border.importPath"));
-		importPathRadioLast.setText(Internal.I18N.getString("pref.general.path.label.importLastUsedPath"));
-		importPathRadioDef.setText(Internal.I18N.getString("pref.general.path.label.importDefaultPath"));
-		importPathButton.setText(Internal.I18N.getString("common.button.browse"));		
-		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.general.path.border.exportPath"));
-		exportPathRadioLast.setText(Internal.I18N.getString("pref.general.path.label.exportLastUsedPath"));
-		exportPathRadioDef.setText(Internal.I18N.getString("pref.general.path.label.exportDefaultPath"));
-		exportPathButton.setText(Internal.I18N.getString("common.button.browse"));
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.general.path.border.importPath"));
+		importPathRadioLast.setText(Language.I18N.getString("pref.general.path.label.importLastUsedPath"));
+		importPathRadioDef.setText(Language.I18N.getString("pref.general.path.label.importDefaultPath"));
+		importPathButton.setText(Language.I18N.getString("common.button.browse"));		
+		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.general.path.border.exportPath"));
+		exportPathRadioLast.setText(Language.I18N.getString("pref.general.path.label.exportLastUsedPath"));
+		exportPathRadioDef.setText(Language.I18N.getString("pref.general.path.label.exportDefaultPath"));
+		exportPathButton.setText(Language.I18N.getString("common.button.browse"));
 	}
 
 	@Override
@@ -246,7 +246,7 @@ public class PathPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.general.path");
+		return Language.I18N.getString("pref.tree.general.path");
 	}
 
 	private String browseFile(String title, String oldDir) {

@@ -49,7 +49,7 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.registry.ObjectRegistry;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 
 @SuppressWarnings("serial")
 public class StandardEditingPopupMenu extends AbstractStandardPopupMenu implements EventHandler {
@@ -104,10 +104,10 @@ public class StandardEditingPopupMenu extends AbstractStandardPopupMenu implemen
 	}
 
 	public void doTranslation() {
-		cut.setText(Internal.I18N.getString("common.popup.textfield.cut"));		
-		copy.setText(Internal.I18N.getString("common.popup.textfield.copy"));		
-		paste.setText(Internal.I18N.getString("common.popup.textfield.paste"));		
-		selectAll.setText(Internal.I18N.getString("common.popup.textfield.selectAll"));		
+		cut.setText(Language.I18N.getString("common.popup.textfield.cut"));		
+		copy.setText(Language.I18N.getString("common.popup.textfield.copy"));		
+		paste.setText(Language.I18N.getString("common.popup.textfield.paste"));		
+		selectAll.setText(Language.I18N.getString("common.popup.textfield.selectAll"));		
 	}
 
 	private final class TextSelectAllAction extends AbstractAction {

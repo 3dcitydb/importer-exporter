@@ -52,7 +52,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.filter.AbstractFilterConfig;
 import de.tub.citydb.config.project.filter.FeatureClass;
 import de.tub.citydb.config.project.filter.FeatureCount;
@@ -406,16 +406,16 @@ public class FilterPanel extends JPanel {
 	}
 
 	public void doTranslation() {
-		gmlNameLabel.setText(Internal.I18N.getString("filter.label.gmlName"));
-		gmlIdLabel.setText(Internal.I18N.getString("filter.label.gmlId"));
-		coStartLabel.setText(Internal.I18N.getString("filter.label.counter.start"));
-		coEndLabel.setText(Internal.I18N.getString("filter.label.counter.end"));	
-		((TitledBorder)row3col2.getBorder()).setTitle(Internal.I18N.getString("filter.border.gmlId"));
-		((TitledBorder)row4col2.getBorder()).setTitle(Internal.I18N.getString("filter.border.complexFilter"));
-		cityObjectFilter.setText(Internal.I18N.getString("filter.border.counter"));
-		gmlNameFilter.setText(Internal.I18N.getString("filter.border.gmlName"));
-		boundingBoxFilter.setText(Internal.I18N.getString("filter.border.boundingBox"));
-		featureClassFilter.setText(Internal.I18N.getString("filter.border.featureClass"));
+		gmlNameLabel.setText(Language.I18N.getString("filter.label.gmlName"));
+		gmlIdLabel.setText(Language.I18N.getString("filter.label.gmlId"));
+		coStartLabel.setText(Language.I18N.getString("filter.label.counter.start"));
+		coEndLabel.setText(Language.I18N.getString("filter.label.counter.end"));	
+		((TitledBorder)row3col2.getBorder()).setTitle(Language.I18N.getString("filter.border.gmlId"));
+		((TitledBorder)row4col2.getBorder()).setTitle(Language.I18N.getString("filter.border.complexFilter"));
+		cityObjectFilter.setText(Language.I18N.getString("filter.border.counter"));
+		gmlNameFilter.setText(Language.I18N.getString("filter.border.gmlName"));
+		boundingBoxFilter.setText(Language.I18N.getString("filter.border.boundingBox"));
+		featureClassFilter.setText(Language.I18N.getString("filter.border.featureClass"));
 	}
 
 	public void loadSettings() {

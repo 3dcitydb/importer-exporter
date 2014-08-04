@@ -39,7 +39,7 @@ import javax.swing.JRadioButton;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.global.Global;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.gui.ImpExpGui;
@@ -92,9 +92,9 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public void doTranslation() {
-		((TitledBorder)language.getBorder()).setTitle(Internal.I18N.getString("pref.general.language.border.selection"));
-		importLanguageRadioDe.setText(Internal.I18N.getString("pref.general.language.label.de"));
-		importLanguageRadioEn.setText(Internal.I18N.getString("pref.general.language.label.en"));
+		((TitledBorder)language.getBorder()).setTitle(Language.I18N.getString("pref.general.language.border.selection"));
+		importLanguageRadioDe.setText(Language.I18N.getString("pref.general.language.label.de"));
+		importLanguageRadioEn.setText(Language.I18N.getString("pref.general.language.label.en"));
 	}
 	
 	@Override
@@ -125,6 +125,6 @@ public class LanguagePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.general.language");
+		return Language.I18N.getString("pref.tree.general.language");
 	}
 }

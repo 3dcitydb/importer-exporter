@@ -37,7 +37,7 @@ import org.citygml4j.builder.jaxb.JAXBBuilder;
 
 import de.tub.citydb.api.plugin.extension.view.View;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.ImpExpGui;
 
 public class CityGMLImportView extends View {
@@ -49,7 +49,7 @@ public class CityGMLImportView extends View {
 	
 	@Override
 	public String getLocalizedTitle() {
-		return Internal.I18N.getString("main.tabbedPane.import");
+		return Language.I18N.getString("main.tabbedPane.import");
 	}
 
 	@Override

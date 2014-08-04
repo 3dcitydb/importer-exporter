@@ -41,9 +41,10 @@ import javax.swing.border.TitledBorder;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.exporter.CityGMLVersionType;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
+import de.tub.citydb.util.Util;
 import de.tub.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -77,7 +78,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 			cityGMLVersionBox[i].setIconTextGap(10);
 			group.add(cityGMLVersionBox[i]);
 
-			if (CityGMLVersionType.values()[i].toCityGMLVersion() == CityGMLVersion.DEFAULT)
+			if (Util.toCityGMLVersion(CityGMLVersionType.values()[i]) == CityGMLVersion.DEFAULT)
 				cityGMLVersionBox[i].setSelected(true);
 		}
 
@@ -94,7 +95,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.export.version.border.versions"));	
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.export.version.border.versions"));	
 	}
 
 	@Override
@@ -102,7 +103,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 		CityGMLVersionType version = config.getProject().getExporter().getCityGMLVersion();
 		if (version != null) {
 			for (int i = 0; i < CityGMLVersionType.values().length; i++) {
-				if (CityGMLVersionType.values()[i].toCityGMLVersion() == version.toCityGMLVersion()) {
+				if (CityGMLVersionType.values()[i] == version) {
 					cityGMLVersionBox[i].setSelected(true);
 					break;
 				}
@@ -123,7 +124,7 @@ public class VersionPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.export.version");
+		return Language.I18N.getString("pref.tree.export.version");
 	}
 
 }

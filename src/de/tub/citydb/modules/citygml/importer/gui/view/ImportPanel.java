@@ -86,7 +86,7 @@ import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.importer.ImportFilterConfig;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.gui.ImpExpGui;
@@ -170,7 +170,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 		browseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				loadFile(Internal.I18N.getString("main.tabbedPane.import"));
+				loadFile(Language.I18N.getString("main.tabbedPane.import"));
 			}
 		});
 
@@ -266,12 +266,12 @@ public class ImportPanel extends JPanel implements EventHandler {
 	}
 
 	public void doTranslation() {
-		browseButton.setText(Internal.I18N.getString("common.button.browse"));
-		removeButton.setText(Internal.I18N.getString("import.button.remove"));
-		importButton.setText(Internal.I18N.getString("import.button.import"));
-		validateButton.setText(Internal.I18N.getString("import.button.validate"));
-		((TitledBorder)workspacePanel.getBorder()).setTitle(Internal.I18N.getString("common.border.versioning"));
-		row2_1.setText(Internal.I18N.getString("common.label.workspace"));
+		browseButton.setText(Language.I18N.getString("common.button.browse"));
+		removeButton.setText(Language.I18N.getString("import.button.remove"));
+		importButton.setText(Language.I18N.getString("import.button.import"));
+		validateButton.setText(Language.I18N.getString("import.button.validate"));
+		((TitledBorder)workspacePanel.getBorder()).setTitle(Language.I18N.getString("common.border.versioning"));
+		row2_1.setText(Language.I18N.getString("common.label.workspace"));
 
 		filterPanel.doTranslation();
 	}
@@ -303,16 +303,16 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			// check all input values...
 			if (config.getInternal().getImportFiles() == null || config.getInternal().getImportFiles().length == 0) {
-				mainView.errorMessage(Internal.I18N.getString("import.dialog.error.incompleteData"), 
-						Internal.I18N.getString("import.dialog.error.incompleteData.dataset"));
+				mainView.errorMessage(Language.I18N.getString("import.dialog.error.incompleteData"), 
+						Language.I18N.getString("import.dialog.error.incompleteData.dataset"));
 				return;
 			}
 
 			// gmlId
 			if (filter.isSetSimpleFilter() &&
 					filter.getSimpleFilter().getGmlIdFilter().getGmlIds().isEmpty()) {
-				mainView.errorMessage(Internal.I18N.getString("import.dialog.error.incorrectData"), 
-						Internal.I18N.getString("common.dialog.error.incorrectData.gmlId"));
+				mainView.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"), 
+						Language.I18N.getString("common.dialog.error.incorrectData.gmlId"));
 				return;
 			}
 
@@ -324,20 +324,20 @@ public class ImportPanel extends JPanel implements EventHandler {
 				String coEndValue = String.valueOf(filter.getComplexFilter().getFeatureCount().getTo());
 
 				if (coStart == null || (!coEndValue.trim().equals("") && coEnd == null)) {
-					mainView.errorMessage(Internal.I18N.getString("import.dialog.error.incorrectData"), 
-							Internal.I18N.getString("import.dialog.error.incorrectData.range"));
+					mainView.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"), 
+							Language.I18N.getString("import.dialog.error.incorrectData.range"));
 					return;
 				}
 
 				if ((coStart != null && coStart <= 0) || (coEnd != null && coEnd <= 0)) {
-					mainView.errorMessage(Internal.I18N.getString("import.dialog.error.incorrectData"),
-							Internal.I18N.getString("import.dialog.error.incorrectData.range"));
+					mainView.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
+							Language.I18N.getString("import.dialog.error.incorrectData.range"));
 					return;
 				}
 
 				if (coEnd != null && coEnd < coStart) {
-					mainView.errorMessage(Internal.I18N.getString("import.dialog.error.incorrectData"),
-							Internal.I18N.getString("import.dialog.error.incorrectData.range"));
+					mainView.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
+							Language.I18N.getString("import.dialog.error.incorrectData.range"));
 					return;
 				}
 			}
@@ -346,8 +346,8 @@ public class ImportPanel extends JPanel implements EventHandler {
 			if (filter.isSetComplexFilter() &&
 					filter.getComplexFilter().getGmlName().isSet() &&
 					filter.getComplexFilter().getGmlName().getValue().trim().equals("")) {
-				mainView.errorMessage(Internal.I18N.getString("import.dialog.error.incorrectData"),
-						Internal.I18N.getString("common.dialog.error.incorrectData.gmlName"));
+				mainView.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
+						Language.I18N.getString("common.dialog.error.incorrectData.gmlName"));
 				return;
 			}
 
@@ -360,8 +360,8 @@ public class ImportPanel extends JPanel implements EventHandler {
 				Double yMax = filter.getComplexFilter().getBoundingBox().getUpperRightCorner().getY();
 
 				if (xMin == null || yMin == null || xMax == null || yMax == null) {
-					mainView.errorMessage(Internal.I18N.getString("import.dialog.error.incorrectData"),
-							Internal.I18N.getString("common.dialog.error.incorrectData.bbox"));
+					mainView.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),
+							Language.I18N.getString("common.dialog.error.incorrectData.bbox"));
 					return;
 				}
 			}
@@ -370,8 +370,8 @@ public class ImportPanel extends JPanel implements EventHandler {
 			if (config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation()) {
 				if (JOptionPane.showConfirmDialog(
 						mainView, 
-						Internal.I18N.getString("import.dialog.warning.affineTransformation"),
-						Internal.I18N.getString("common.dialog.warning.title"), 
+						Language.I18N.getString("import.dialog.warning.affineTransformation"),
+						Language.I18N.getString("common.dialog.warning.title"), 
 						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION)
 					return;				
 			}
@@ -383,14 +383,14 @@ public class ImportPanel extends JPanel implements EventHandler {
 					return;
 			}
 
-			mainView.setStatusText(Internal.I18N.getString("main.status.import.label"));
+			mainView.setStatusText(Language.I18N.getString("main.status.import.label"));
 			LOG.info("Initializing database import...");
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			final ImportStatusDialog importDialog = new ImportStatusDialog(mainView, 
-					Internal.I18N.getString("import.dialog.window"), 
-					Internal.I18N.getString("import.dialog.msg"));
+					Language.I18N.getString("import.dialog.window"), 
+					Language.I18N.getString("import.dialog.msg"));
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -438,7 +438,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 				LOG.warn("Database import aborted.");
 			}
 
-			mainView.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+			mainView.setStatusText(Language.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}
@@ -454,21 +454,21 @@ public class ImportPanel extends JPanel implements EventHandler {
 
 			// check for input files...
 			if (config.getInternal().getImportFiles() == null || config.getInternal().getImportFiles().length == 0) {
-				mainView.errorMessage(Internal.I18N.getString("validate.dialog.error.incompleteData"),
-						Internal.I18N.getString("validate.dialog.error.incompleteData.dataset"));
+				mainView.errorMessage(Language.I18N.getString("validate.dialog.error.incompleteData"),
+						Language.I18N.getString("validate.dialog.error.incompleteData.dataset"));
 				return;
 			}
 
-			mainView.setStatusText(Internal.I18N.getString("main.status.validate.label"));
+			mainView.setStatusText(Language.I18N.getString("main.status.validate.label"));
 			LOG.info("Initializing XML validation...");
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			final XMLValidationStatusDialog validatorDialog = new XMLValidationStatusDialog(mainView, 
-					Internal.I18N.getString("validate.dialog.window"), 
-					Internal.I18N.getString("validate.dialog.title"), 
+					Language.I18N.getString("validate.dialog.window"), 
+					Language.I18N.getString("validate.dialog.title"), 
 					" ", 
-					Internal.I18N.getString("validate.dialog.details") , 
+					Language.I18N.getString("validate.dialog.details") , 
 					true, 
 					eventDispatcher);
 
@@ -518,7 +518,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 				LOG.warn("XML validation aborted.");
 			}
 
-			mainView.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+			mainView.setStatusText(Language.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}

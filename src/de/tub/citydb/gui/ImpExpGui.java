@@ -100,7 +100,7 @@ import de.tub.citydb.config.Config;
 import de.tub.citydb.config.ConfigUtil;
 import de.tub.citydb.config.gui.window.MainWindow;
 import de.tub.citydb.config.gui.window.WindowSize;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.global.LanguageType;
 import de.tub.citydb.database.DatabaseConnectionPool;
 import de.tub.citydb.event.SwitchLocaleEventImpl;
@@ -438,12 +438,12 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 				return;
 
 			Locale locale = new Locale(lang.value());
-			Internal.I18N = ResourceBundle.getBundle("de.tub.citydb.gui.Label", locale);
+			Language.I18N = ResourceBundle.getBundle("de.tub.citydb.config.language.Label", locale);
 			currentLang = lang;
 
 			setDatabaseStatus(dbPool.isConnected());
-			statusText.setText(Internal.I18N.getString("main.status.ready.label"));
-			consoleLabel.setText(Internal.I18N.getString("main.console.label"));
+			statusText.setText(Language.I18N.getString("main.status.ready.label"));
+			consoleLabel.setText(Language.I18N.getString("main.console.label"));
 
 			// fire translation notification to plugins
 			for (Plugin plugin : pluginService.getPlugins())
@@ -506,11 +506,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		String configPath = ConfigUtil.createConfigPath(config.getInternal().getConfigPath());
 
 		if (configPath == null) {
-			String text = Internal.I18N.getString("common.dialog.error.io.configPath");
+			String text = Language.I18N.getString("common.dialog.error.io.configPath");
 			Object[] args = new Object[]{ config.getInternal().getConfigPath() };
 			String result = MessageFormat.format(text, args);
 
-			errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), result);
+			errorMessage(Language.I18N.getString("common.dialog.error.io.title"), result);
 			return false;
 		}
 
@@ -519,8 +519,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		try {
 			ConfigUtil.marshal(config.getProject(), projectFile, jaxbProjectContext);
 		} catch (JAXBException jaxbE) {
-			errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
-					Internal.I18N.getString("common.dialog.error.io.general"));
+			errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
+					Language.I18N.getString("common.dialog.error.io.general"));
 			return false;
 		}
 
@@ -531,11 +531,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		String configPath = ConfigUtil.createConfigPath(config.getInternal().getConfigPath());
 
 		if (configPath == null) {
-			String text = Internal.I18N.getString("common.dialog.error.io.configPath");
+			String text = Language.I18N.getString("common.dialog.error.io.configPath");
 			Object[] args = new Object[]{ config.getInternal().getConfigPath() };
 			String result = MessageFormat.format(text, args);
 
-			errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), result);
+			errorMessage(Language.I18N.getString("common.dialog.error.io.title"), result);
 			return false;
 		}
 
@@ -556,8 +556,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		try {
 			ConfigUtil.marshal(config.getGui(), guiFile, jaxbGuiContext);
 		} catch (JAXBException jaxbE) {
-			errorMessage(Internal.I18N.getString("common.dialog.error.io.title"), 
-					Internal.I18N.getString("common.dialog.error.io.general"));
+			errorMessage(Language.I18N.getString("common.dialog.error.io.title"), 
+					Language.I18N.getString("common.dialog.error.io.general"));
 			return false;
 		}
 
@@ -576,7 +576,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	@Override
 	public void setDefaultStatus() {
-		statusText.setText(Internal.I18N.getString("main.status.ready.label"));
+		statusText.setText(Language.I18N.getString("main.status.ready.label"));
 	}
 
 	@Override
@@ -609,11 +609,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 	private void setDatabaseStatus(boolean isConnected) {
 		if (!isConnected) {
-			setTitle(Internal.I18N.getString("main.window.title"));
-			connectText.setText(Internal.I18N.getString("main.status.database.disconnected.label"));
+			setTitle(Language.I18N.getString("main.window.title"));
+			connectText.setText(Language.I18N.getString("main.status.database.disconnected.label"));
 		} else {
-			setTitle(Internal.I18N.getString("main.window.title") + " : " + dbPool.getActiveDatabaseAdapter().getConnectionDetails().getDescription());
-			String text = Internal.I18N.getString("main.status.database.connected.label");
+			setTitle(Language.I18N.getString("main.window.title") + " : " + dbPool.getActiveDatabaseAdapter().getConnectionDetails().getDescription());
+			String text = Language.I18N.getString("main.status.database.connected.label");
 			Object[] args = new Object[]{ dbPool.getActiveDatabaseAdapter().getDatabaseType().toString() };
 			String result = MessageFormat.format(text, args);
 			connectText.setText(result);
@@ -741,7 +741,7 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		}
 
 		private void doTranslation() {
-			clear.setText(Internal.I18N.getString("main.console.popup.clear"));
+			clear.setText(Language.I18N.getString("main.console.popup.clear"));
 		}
 	}
 }

@@ -49,7 +49,7 @@ import javax.swing.SwingUtilities;
 import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.EventType;
@@ -123,9 +123,9 @@ public class XMLValidationStatusDialog extends JDialog implements EventHandler {
 		titleLabel = new JLabel(statusTitle);
 		titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
 		messageLabel = new JLabel(statusMessage);
-		fileCounter = new JLabel(Internal.I18N.getString("common.status.dialog.fileCounter"));
+		fileCounter = new JLabel(Language.I18N.getString("common.status.dialog.fileCounter"));
 		fileCounterLabel = new JLabel("n/a", SwingConstants.TRAILING);
-		button = new JButton(Internal.I18N.getString("common.button.cancel"));		
+		button = new JButton(Language.I18N.getString("common.button.cancel"));		
 		progressBar = new JProgressBar();
 
 		setLayout(new GridBagLayout()); {
@@ -193,7 +193,7 @@ public class XMLValidationStatusDialog extends JDialog implements EventHandler {
 	public void handleEvent(Event e) throws Exception {
 		if (e.getEventType() == EventType.INTERRUPT) {
 			acceptStatusUpdate = false;
-			messageLabel.setText(Internal.I18N.getString("common.dialog.msg.abort"));
+			messageLabel.setText(Language.I18N.getString("common.dialog.msg.abort"));
 			progressBar.setIndeterminate(true);
 		}
 

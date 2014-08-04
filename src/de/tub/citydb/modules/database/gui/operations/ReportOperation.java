@@ -46,7 +46,7 @@ import javax.swing.SwingUtilities;
 
 import de.tub.citydb.api.controller.ViewController;
 import de.tub.citydb.api.registry.ObjectRegistry;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.DBOperationType;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.database.DatabaseConnectionPool;
@@ -94,7 +94,7 @@ public class ReportOperation extends DatabaseOperationView {
 
 	@Override
 	public String getLocalizedTitle() {
-		return Internal.I18N.getString("db.label.operation.report");
+		return Language.I18N.getString("db.label.operation.report");
 	}
 
 	@Override
@@ -119,7 +119,7 @@ public class ReportOperation extends DatabaseOperationView {
 
 	@Override
 	public void doTranslation() {
-		reportButton.setText(Internal.I18N.getString("db.button.report"));
+		reportButton.setText(Language.I18N.getString("db.button.report"));
 	}
 
 	@Override
@@ -147,17 +147,17 @@ public class ReportOperation extends DatabaseOperationView {
 				return;
 
 			viewController.clearConsole();
-			viewController.setStatusText(Internal.I18N.getString("main.status.database.report.label"));
+			viewController.setStatusText(Language.I18N.getString("main.status.database.report.label"));
 
 			LOG.info("Generating database report...");			
 			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.existsWorkspace())
 				return;
 
 			final StatusDialog reportDialog = new StatusDialog(viewController.getTopFrame(), 
-					Internal.I18N.getString("db.dialog.report.window"), 
-					Internal.I18N.getString("db.dialog.report.title"), 
+					Language.I18N.getString("db.dialog.report.window"), 
+					Language.I18N.getString("db.dialog.report.title"), 
 					null,
-					Internal.I18N.getString("db.dialog.report.details"), 
+					Language.I18N.getString("db.dialog.report.details"), 
 					true);
 
 			SwingUtilities.invokeLater(new Runnable() {
@@ -209,19 +209,19 @@ public class ReportOperation extends DatabaseOperationView {
 				});
 
 				dbSqlEx = sqlEx.getMessage().trim();
-				String text = Internal.I18N.getString("db.dialog.error.report");
+				String text = Language.I18N.getString("db.dialog.error.report");
 				Object[] args = new Object[]{ dbSqlEx };
 				String result = MessageFormat.format(text, args);
 
 				JOptionPane.showMessageDialog(
 						viewController.getTopFrame(), 
 						result, 
-						Internal.I18N.getString("common.dialog.error.db.title"),
+						Language.I18N.getString("common.dialog.error.db.title"),
 						JOptionPane.ERROR_MESSAGE);
 
 				LOG.error("SQL error: " + dbSqlEx);
 			} finally {			
-				viewController.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 			}
 
 		} finally {

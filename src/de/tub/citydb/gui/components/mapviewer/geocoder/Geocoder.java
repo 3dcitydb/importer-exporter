@@ -47,7 +47,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.components.mapviewer.MapWindow;
 
 public class Geocoder {
@@ -67,7 +67,7 @@ public class Geocoder {
 		GeocoderResponse geocodingResult = new GeocoderResponse(ResponseType.ADDRESS);
 		
 		// get language from GUI settings
-		String language = Internal.I18N.getLocale().getLanguage();
+		String language = Language.I18N.getLocale().getLanguage();
 		if (language.length() != 0)
 			language = "&language=" + language;
 		

@@ -37,7 +37,7 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -75,8 +75,8 @@ public class MenuHelp extends JMenu {
 	}
 	
 	public void doTranslation() {
-		info.setText(Internal.I18N.getString("menu.help.info.label"));		
-		readMe.setText(Internal.I18N.getString("menu.help.readMe.label"));
+		info.setText(Language.I18N.getString("menu.help.info.label"));		
+		readMe.setText(Language.I18N.getString("menu.help.readMe.label"));
 		
 		GuiUtil.setMnemonic(info, "menu.help.info.label", "menu.help.info.label.mnemonic");
 		GuiUtil.setMnemonic(readMe, "menu.help.readMe.label", "menu.help.readMe.label.mnemonic");

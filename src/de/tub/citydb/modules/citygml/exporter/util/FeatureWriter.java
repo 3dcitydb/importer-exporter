@@ -18,6 +18,7 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 
 import de.tub.citydb.api.concurrent.WorkerPool;
 import de.tub.citydb.config.Config;
+import de.tub.citydb.util.Util;
 
 public class FeatureWriter implements FeatureProcessor {
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
@@ -28,7 +29,7 @@ public class FeatureWriter implements FeatureProcessor {
 		this.ioWriterPool = ioWriterPool;
 		this.jaxbBuilder = jaxbBuilder;
 				
-		CityGMLVersion version = config.getProject().getExporter().getCityGMLVersion().toCityGMLVersion();
+		CityGMLVersion version = Util.toCityGMLVersion(config.getProject().getExporter().getCityGMLVersion());
 		jaxbMarshaller = jaxbBuilder.createJAXBMarshaller(version);
 	}
 	

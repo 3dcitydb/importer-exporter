@@ -73,7 +73,7 @@ import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.plugin.extension.view.ViewListener;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.database.ConnectionStateEnum;
@@ -326,29 +326,29 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	}
 
 	public void doTranslation() {
-		((TitledBorder)connectionDetails.getBorder()).setTitle(Internal.I18N.getString("db.border.connectionDetails"));
-		connLabel.setText(Internal.I18N.getString("db.label.connection"));
-		descriptionLabel.setText(Internal.I18N.getString("db.label.description"));
-		databaseTypeLabel.setText(Internal.I18N.getString("db.label.databaseType"));
-		userLabel.setText(Internal.I18N.getString("common.label.username"));
-		passwordLabel.setText(Internal.I18N.getString("common.label.password"));
-		serverLabel.setText(Internal.I18N.getString("common.label.server"));
-		portLabel.setText(Internal.I18N.getString("common.label.port"));
-		databaseLabel.setText(Internal.I18N.getString("db.label.sid"));
-		passwordCheck.setText(Internal.I18N.getString("common.label.passwordCheck"));
-		applyButton.setText(Internal.I18N.getString("common.button.apply"));
-		newButton.setText(Internal.I18N.getString("db.button.new"));
-		copyButton.setText(Internal.I18N.getString("db.button.copy"));
-		deleteButton.setText(Internal.I18N.getString("db.button.delete"));
-		infoButton.setText(Internal.I18N.getString("db.button.info"));
+		((TitledBorder)connectionDetails.getBorder()).setTitle(Language.I18N.getString("db.border.connectionDetails"));
+		connLabel.setText(Language.I18N.getString("db.label.connection"));
+		descriptionLabel.setText(Language.I18N.getString("db.label.description"));
+		databaseTypeLabel.setText(Language.I18N.getString("db.label.databaseType"));
+		userLabel.setText(Language.I18N.getString("common.label.username"));
+		passwordLabel.setText(Language.I18N.getString("common.label.password"));
+		serverLabel.setText(Language.I18N.getString("common.label.server"));
+		portLabel.setText(Language.I18N.getString("common.label.port"));
+		databaseLabel.setText(Language.I18N.getString("db.label.sid"));
+		passwordCheck.setText(Language.I18N.getString("common.label.passwordCheck"));
+		applyButton.setText(Language.I18N.getString("common.button.apply"));
+		newButton.setText(Language.I18N.getString("db.button.new"));
+		copyButton.setText(Language.I18N.getString("db.button.copy"));
+		deleteButton.setText(Language.I18N.getString("db.button.delete"));
+		infoButton.setText(Language.I18N.getString("db.button.info"));
 
-		((TitledBorder)operations.getBorder()).setTitle(Internal.I18N.getString("db.border.databaseOperations"));
+		((TitledBorder)operations.getBorder()).setTitle(Language.I18N.getString("db.border.databaseOperations"));
 		operationsPanel.doTranslation();
 
 		if (!databaseController.isConnected())
-			connectButton.setText(Internal.I18N.getString("db.button.connect"));
+			connectButton.setText(Language.I18N.getString("db.button.connect"));
 		else
-			connectButton.setText(Internal.I18N.getString("db.button.disconnect"));
+			connectButton.setText(Language.I18N.getString("db.button.disconnect"));
 	}
 
 	private void selectConnection() {
@@ -439,7 +439,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 		switch (state) {
 		case INIT_CONNECT:
-			topFrame.setStatusText(Internal.I18N.getString("main.status.database.connect.label"));
+			topFrame.setStatusText(Language.I18N.getString("main.status.database.connect.label"));
 			LOG.info("Connecting to database profile '" + conn.getDescription() + "'.");
 			break;
 		case FINISH_CONNECT:
@@ -456,14 +456,14 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 				}					
 			}
 
-			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
+			topFrame.setStatusText(Language.I18N.getString("main.status.ready.label"));	
 			break;
 		case INIT_DISCONNECT:
-			topFrame.setStatusText(Internal.I18N.getString("main.status.database.disconnect.label"));
+			topFrame.setStatusText(Language.I18N.getString("main.status.database.disconnect.label"));
 			break;
 		case FINISH_DISCONNECT:
 			LOG.info("Disconnected from database.");
-			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+			topFrame.setStatusText(Language.I18N.getString("main.status.ready.label"));
 			break;
 		}
 	}
@@ -471,21 +471,21 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	@Override
 	public void printError(DatabaseConfigurationException e, boolean showErrorDialog) {
 		if (showErrorDialog)
-			topFrame.errorMessage(Internal.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
+			topFrame.errorMessage(Language.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
 
 		LOG.error("Connection to database could not be established.");
-		topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+		topFrame.setStatusText(Language.I18N.getString("main.status.ready.label"));
 	}
 
 	@Override
 	public void printError(SQLException e, boolean showErrorDialog) {
 		if (showErrorDialog) {
-			String text = Internal.I18N.getString("db.dialog.error.openConn");
+			String text = Language.I18N.getString("db.dialog.error.openConn");
 			Object[] args = new Object[]{ e.getMessage() };
 			String result = MessageFormat.format(text, args);					
 
-			topFrame.setStatusText(Internal.I18N.getString("main.status.ready.label"));	
-			topFrame.errorMessage(Internal.I18N.getString("common.dialog.error.db.title"), result);
+			topFrame.setStatusText(Language.I18N.getString("main.status.ready.label"));	
+			topFrame.errorMessage(Language.I18N.getString("common.dialog.error.db.title"), result);
 		}
 
 		LOG.error("Connection to database could not be established.");
@@ -511,7 +511,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 				dbConnection = dbConnectionList.get(0);
 			else {
 				dbConnection = new DBConnection();
-				dbConnection.setDescription(Internal.I18N.getString("db.label.newConnection"));
+				dbConnection.setDescription(Language.I18N.getString("db.label.newConnection"));
 				databaseConfig.addConnection(dbConnection);
 			}
 		}
@@ -588,10 +588,10 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		// so to retrieve connectionName, " - copy*" has to be deleted...
 
 		int nr = 0;
-		String name = dbConnection.getDescription().replaceAll("\\s*-\\s*" + Internal.I18N.getString("db.label.copyConnection") + ".*$", "");
-		String copy = name + " - " + Internal.I18N.getString("db.label.copyConnection");
+		String name = dbConnection.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("db.label.copyConnection") + ".*$", "");
+		String copy = name + " - " + Language.I18N.getString("db.label.copyConnection");
 		for (DBConnection conn : databaseConfig.getConnections()) 
-			if (conn.getDescription().replaceAll("\\s*-\\s*" + Internal.I18N.getString("db.label.copyConnection") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
+			if (conn.getDescription().replaceAll("\\s*-\\s*" + Language.I18N.getString("db.label.copyConnection") + ".*$", "").toLowerCase().equals(name.toLowerCase()))
 				nr++;
 
 		if (nr > 1)
@@ -602,7 +602,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	private String getNewConnDescription() {
 		int nr = 1;
-		String name = Internal.I18N.getString("db.label.newConnection");
+		String name = Language.I18N.getString("db.label.newConnection");
 		for (DBConnection conn : databaseConfig.getConnections()) 
 			if (conn.getDescription().toLowerCase().startsWith(name.toLowerCase()))
 				nr++;
@@ -615,8 +615,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	private boolean requestChange() {
 		if (isModified()) {
-			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), Internal.I18N.getString("db.dialog.apply.msg"), 
-					Internal.I18N.getString("db.dialog.apply.title"), JOptionPane.YES_NO_CANCEL_OPTION);
+			int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), Language.I18N.getString("db.dialog.apply.msg"), 
+					Language.I18N.getString("db.dialog.apply.title"), JOptionPane.YES_NO_CANCEL_OPTION);
 			if (res==JOptionPane.CANCEL_OPTION) 
 				return false;
 			else if (res==JOptionPane.YES_OPTION)
@@ -630,11 +630,11 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	private boolean requestDelete() {
 		DBConnection dbConnection = (DBConnection)connCombo.getSelectedItem();
-		String text = Internal.I18N.getString("db.dialog.delete.msg");
+		String text = Language.I18N.getString("db.dialog.delete.msg");
 		Object[] args = new Object[]{ dbConnection.getDescription() };
 		String result = MessageFormat.format(text, args);
 
-		int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), result, Internal.I18N.getString("db.dialog.delete.title"), JOptionPane.YES_NO_OPTION);
+		int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), result, Language.I18N.getString("db.dialog.delete.title"), JOptionPane.YES_NO_OPTION);
 		return res==JOptionPane.YES_OPTION;
 	}
 
@@ -653,9 +653,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		boolean isConnected = ((DatabaseConnectionStateEvent)event).isConnected();
 
 		if (!isConnected)
-			connectButton.setText(Internal.I18N.getString("db.button.connect"));
+			connectButton.setText(Language.I18N.getString("db.button.connect"));
 		else
-			connectButton.setText(Internal.I18N.getString("db.button.disconnect"));
+			connectButton.setText(Language.I18N.getString("db.button.disconnect"));
 
 		connectButton.repaint();
 		setEnabledDBOperations(isConnected);

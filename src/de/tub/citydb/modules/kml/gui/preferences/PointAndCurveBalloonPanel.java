@@ -48,7 +48,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.general.PathMode;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
@@ -95,7 +95,7 @@ public class PointAndCurveBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.gcoPointAndCurveBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.gcoPointAndCurveBalloon");
 	}
 
 	@Override
@@ -271,26 +271,26 @@ public class PointAndCurveBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)pointContentSourcePanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.balloon.contentSourceForPoint.border"));	
-		pointIncludeDescription.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.includeDescription"));
-		pointGenAttribRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.genAttrib"));
-		pointFileRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.file"));
-		pointGenAttribAndFileRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.genAttribAndFile"));
-		pointBrowseButton.setText(Internal.I18N.getString("common.button.browse"));
-//		pointContentInSeparateFile.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.contentInSeparateFile"));
-//		pointWarningLabel.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.warningLabel"));
+		((TitledBorder)pointContentSourcePanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.balloon.contentSourceForPoint.border"));	
+		pointIncludeDescription.setText(Language.I18N.getString("pref.kmlexport.balloon.label.includeDescription"));
+		pointGenAttribRadioButton.setText(Language.I18N.getString("pref.kmlexport.balloon.label.genAttrib"));
+		pointFileRadioButton.setText(Language.I18N.getString("pref.kmlexport.balloon.label.file"));
+		pointGenAttribAndFileRadioButton.setText(Language.I18N.getString("pref.kmlexport.balloon.label.genAttribAndFile"));
+		pointBrowseButton.setText(Language.I18N.getString("common.button.browse"));
+//		pointContentInSeparateFile.setText(Language.I18N.getString("pref.kmlexport.balloon.label.contentInSeparateFile"));
+//		pointWarningLabel.setText(Language.I18N.getString("pref.kmlexport.balloon.label.warningLabel"));
 
-		((TitledBorder)curveContentSourcePanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.balloon.contentSourceForCurve.border"));	
-		curveIncludeDescription.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.includeDescription"));
-		curveGenAttribRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.genAttrib"));
-		curveFileRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.file"));
-		curveGenAttribAndFileRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.genAttribAndFile"));
-		curveBrowseButton.setText(Internal.I18N.getString("common.button.browse"));
-//		curveContentInSeparateFile.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.contentInSeparateFile"));
-//		curveWarningLabel.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.warningLabel"));
+		((TitledBorder)curveContentSourcePanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.balloon.contentSourceForCurve.border"));	
+		curveIncludeDescription.setText(Language.I18N.getString("pref.kmlexport.balloon.label.includeDescription"));
+		curveGenAttribRadioButton.setText(Language.I18N.getString("pref.kmlexport.balloon.label.genAttrib"));
+		curveFileRadioButton.setText(Language.I18N.getString("pref.kmlexport.balloon.label.file"));
+		curveGenAttribAndFileRadioButton.setText(Language.I18N.getString("pref.kmlexport.balloon.label.genAttribAndFile"));
+		curveBrowseButton.setText(Language.I18N.getString("common.button.browse"));
+//		curveContentInSeparateFile.setText(Language.I18N.getString("pref.kmlexport.balloon.label.contentInSeparateFile"));
+//		curveWarningLabel.setText(Language.I18N.getString("pref.kmlexport.balloon.label.warningLabel"));
 
-		warningLabel1.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.settingsApplyFrom1"));
-		warningLabel2.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.settingsApplyFrom2"));
+		warningLabel1.setText(Language.I18N.getString("pref.kmlexport.balloon.label.settingsApplyFrom1"));
+		warningLabel2.setText(Language.I18N.getString("pref.kmlexport.balloon.label.settingsApplyFrom2"));
 	}
 
 	@Override

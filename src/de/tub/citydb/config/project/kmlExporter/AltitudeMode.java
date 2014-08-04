@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 
 @XmlType(name="AltitudeMode")
 @XmlEnum
@@ -66,7 +66,7 @@ public enum AltitudeMode {
     }
     
 	public String toString() {
-		return Internal.I18N.getString("pref.kmlexport.altitude.mode.label." + value());
+		return Language.I18N.getString("pref.kmlexport.altitude.mode.label." + value());
 	}
 
 }

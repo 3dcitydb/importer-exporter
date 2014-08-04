@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 
 @XmlType(name="Lod0FootprintMode")
 @XmlEnum
@@ -65,7 +65,7 @@ public enum Lod0FootprintMode {
     }
     
 	public String toString() {
-		return Internal.I18N.getString("pref.kmlexport.lod0footprint.mode.label." + this.name().toLowerCase());
+		return Language.I18N.getString("pref.kmlexport.lod0footprint.mode.label." + this.name().toLowerCase());
 	}
 
 }

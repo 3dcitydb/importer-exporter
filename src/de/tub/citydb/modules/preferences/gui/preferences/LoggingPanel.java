@@ -47,7 +47,7 @@ import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
@@ -119,7 +119,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 		
 		logPathButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String sExp = browseFile(Internal.I18N.getString("pref.general.logging.label.useLogPath"), logPathText.getText());
+				String sExp = browseFile(Language.I18N.getString("pref.general.logging.label.useLogPath"), logPathText.getText());
 				if (!sExp.isEmpty())
 					logPathText.setText(sExp);
 			}
@@ -190,15 +190,15 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.general.logging.border.console"));
-		wrapTextConsole.setText(Internal.I18N.getString("pref.general.logging.label.wrapTextConsole"));
-		logLevelConsoleLabel.setText(Internal.I18N.getString("pref.general.logging.label.logLevel"));
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.general.logging.border.console"));
+		wrapTextConsole.setText(Language.I18N.getString("pref.general.logging.label.wrapTextConsole"));
+		logLevelConsoleLabel.setText(Language.I18N.getString("pref.general.logging.label.logLevel"));
 
-		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.general.logging.border.file"));
-		useLogFile.setText(Internal.I18N.getString("pref.general.logging.label.useLogFile"));
-		logLevelFileLabel.setText(Internal.I18N.getString("pref.general.logging.label.logLevel"));
-		useLogPath.setText(Internal.I18N.getString("pref.general.logging.label.useLogPath"));
-		logPathButton.setText(Internal.I18N.getString("common.button.browse"));
+		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.general.logging.border.file"));
+		useLogFile.setText(Language.I18N.getString("pref.general.logging.label.useLogFile"));
+		logLevelFileLabel.setText(Language.I18N.getString("pref.general.logging.label.logLevel"));
+		useLogPath.setText(Language.I18N.getString("pref.general.logging.label.useLogPath"));
+		logPathButton.setText(Language.I18N.getString("common.button.browse"));
 	}
 
 	@Override
@@ -279,7 +279,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.general.logging");
+		return Language.I18N.getString("pref.tree.general.logging");
 	}
 
 	private String browseFile(String title, String oldDir) {

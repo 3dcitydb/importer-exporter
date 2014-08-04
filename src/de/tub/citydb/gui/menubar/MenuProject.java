@@ -54,7 +54,7 @@ import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.ConfigUtil;
 import de.tub.citydb.config.controller.PluginConfigControllerImpl;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.Project;
 import de.tub.citydb.config.project.global.Logging;
 import de.tub.citydb.event.ProjectChangedEventImpl;
@@ -103,7 +103,7 @@ public class MenuProject extends JMenu {
 
 		openProject.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File file = loadDialog(Internal.I18N.getString("menu.project.open.label"));
+				File file = loadDialog(Language.I18N.getString("menu.project.open.label"));
 
 				if (file != null) {
 					openProject(file);
@@ -135,7 +135,7 @@ public class MenuProject extends JMenu {
 
 		saveProjectAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File file = saveDialog(Internal.I18N.getString("menu.project.saveAs.label"), true);
+				File file = saveDialog(Language.I18N.getString("menu.project.saveAs.label"), true);
 
 				if (file != null) {
 					LOG.info("Saving project settings as file '" + file.toString() + "'.");
@@ -164,8 +164,8 @@ public class MenuProject extends JMenu {
 		defaults.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {				
 				int res = JOptionPane.showConfirmDialog(getTopLevelAncestor(), 
-						Internal.I18N.getString("menu.project.defaults.msg"), 
-						Internal.I18N.getString("menu.project.defaults.msg.title"), JOptionPane.YES_NO_OPTION);
+						Language.I18N.getString("menu.project.defaults.msg"), 
+						Language.I18N.getString("menu.project.defaults.msg.title"), JOptionPane.YES_NO_OPTION);
 
 				if (res == JOptionPane.YES_OPTION) {
 					mainView.clearConsole();
@@ -195,7 +195,7 @@ public class MenuProject extends JMenu {
 
 		xsdProject.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File path = saveDialog(Internal.I18N.getString("menu.project.saveXSDas.label"), false);
+				File path = saveDialog(Language.I18N.getString("menu.project.saveXSDas.label"), false);
 
 				if (path != null) {
 					LOG.info("Saving project XSD at location '" + path.toString() + "'.");
@@ -229,12 +229,12 @@ public class MenuProject extends JMenu {
 	}
 
 	public void doTranslation() {
-		openProject.setText(Internal.I18N.getString("menu.project.open.label"));
-		saveProject.setText(Internal.I18N.getString("menu.project.save.label"));
-		saveProjectAs.setText(Internal.I18N.getString("menu.project.saveAs.label"));
-		defaults.setText(Internal.I18N.getString("menu.project.defaults.label"));
-		xsdProject.setText(Internal.I18N.getString("menu.project.saveXSDas.label"));
-		lastUsed.setText(Internal.I18N.getString("menu.project.lastUsed.label"));
+		openProject.setText(Language.I18N.getString("menu.project.open.label"));
+		saveProject.setText(Language.I18N.getString("menu.project.save.label"));
+		saveProjectAs.setText(Language.I18N.getString("menu.project.saveAs.label"));
+		defaults.setText(Language.I18N.getString("menu.project.defaults.label"));
+		xsdProject.setText(Language.I18N.getString("menu.project.saveXSDas.label"));
+		lastUsed.setText(Language.I18N.getString("menu.project.lastUsed.label"));
 
 		GuiUtil.setMnemonic(openProject, "menu.project.open.label", "menu.project.open.label.mnemonic");
 		GuiUtil.setMnemonic(saveProject, "menu.project.save.label", "menu.project.save.label.mnemonic");

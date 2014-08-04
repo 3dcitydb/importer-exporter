@@ -62,6 +62,7 @@ import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.AffineTransformation;
@@ -319,7 +320,7 @@ public class Importer implements EventHandler {
 				intConfig.setCurrentImportFile(file);
 
 				eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.cityObj.msg"), this));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.cityObj.msg"), this));
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
 
@@ -521,7 +522,7 @@ public class Importer implements EventHandler {
 					}
 				}
 
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("import.dialog.finish.msg"), this));
+				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.finish.msg"), this));
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 
 				// finally clean up and join eventDispatcher

@@ -70,7 +70,7 @@ import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.exporter.ExportFilterConfig;
 import de.tub.citydb.config.project.filter.TilingMode;
@@ -136,7 +136,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		timestampText.setEnabled(true);
 		browseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				saveFile(Internal.I18N.getString("main.tabbedPane.export"));
+				saveFile(Language.I18N.getString("main.tabbedPane.export"));
 			}
 		});
 
@@ -208,12 +208,12 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 	}
 
 	public void doTranslation() {
-		((TitledBorder)operations.getBorder()).setTitle(Internal.I18N.getString("export.border.settings"));
-		workspaceLabel.setText(Internal.I18N.getString("common.label.workspace"));
-		timestampLabel.setText(Internal.I18N.getString("common.label.timestamp"));
-		browseButton.setText(Internal.I18N.getString("common.button.browse"));
-		exportButton.setText(Internal.I18N.getString("export.button.export"));
-		srsComboBoxLabel.setText(Internal.I18N.getString("common.label.boundingBox.crs"));
+		((TitledBorder)operations.getBorder()).setTitle(Language.I18N.getString("export.border.settings"));
+		workspaceLabel.setText(Language.I18N.getString("common.label.workspace"));
+		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
+		browseButton.setText(Language.I18N.getString("common.button.browse"));
+		exportButton.setText(Language.I18N.getString("export.button.export"));
+		srsComboBoxLabel.setText(Language.I18N.getString("common.label.boundingBox.crs"));
 		filterPanel.doTranslation();
 	}
 
@@ -249,23 +249,23 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 
 			// check all input values...
 			if (config.getInternal().getExportFileName().trim().equals("")) {
-				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incompleteData"), 
-						Internal.I18N.getString("export.dialog.error.incompleteData.dataset"));
+				mainView.errorMessage(Language.I18N.getString("export.dialog.error.incompleteData"), 
+						Language.I18N.getString("export.dialog.error.incompleteData.dataset"));
 				return;
 			}
 
 			// workspace timestamp
 			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
-				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("common.dialog.error.incorrectData.date"));
+				mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
+						Language.I18N.getString("common.dialog.error.incorrectData.date"));
 				return;
 			}
 
 			// gmlId
 			if (filter.isSetSimpleFilter() &&
 					filter.getSimpleFilter().getGmlIdFilter().getGmlIds().isEmpty()) {
-				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("common.dialog.error.incorrectData.gmlId"));
+				mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
+						Language.I18N.getString("common.dialog.error.incorrectData.gmlId"));
 				return;
 			}
 
@@ -277,20 +277,20 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				String coEndValue = String.valueOf(filter.getComplexFilter().getFeatureCount().getTo());
 
 				if (coStart == null || (!coEndValue.trim().equals("") && coEnd == null)) {
-					mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-							Internal.I18N.getString("export.dialog.error.incorrectData.range"));
+					mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
+							Language.I18N.getString("export.dialog.error.incorrectData.range"));
 					return;
 				}
 
 				if ((coStart != null && coStart <= 0) || (coEnd != null && coEnd <= 0)) {
-					mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-							Internal.I18N.getString("export.dialog.error.incorrectData.range"));
+					mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
+							Language.I18N.getString("export.dialog.error.incorrectData.range"));
 					return;
 				}
 
 				if (coEnd != null && coEnd < coStart) {
-					mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-							Internal.I18N.getString("export.dialog.error.incorrectData.range"));
+					mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
+							Language.I18N.getString("export.dialog.error.incorrectData.range"));
 					return;
 				}
 			}
@@ -299,8 +299,8 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			if (filter.isSetComplexFilter() &&
 					filter.getComplexFilter().getGmlName().isSet() &&
 					filter.getComplexFilter().getGmlName().getValue().trim().equals("")) {
-				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"),
-						Internal.I18N.getString("common.dialog.error.incorrectData.gmlName"));
+				mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+						Language.I18N.getString("common.dialog.error.incorrectData.gmlName"));
 				return;
 			}
 
@@ -314,8 +314,8 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				Double yMax = filter.getComplexFilter().getTiledBoundingBox().getUpperRightCorner().getY();
 
 				if (xMin == null || yMin == null || xMax == null || yMax == null) {
-					mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"),
-							Internal.I18N.getString("common.dialog.error.incorrectData.bbox"));
+					mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+							Language.I18N.getString("common.dialog.error.incorrectData.bbox"));
 					return;
 				}
 
@@ -333,14 +333,14 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 					return;
 			}
 
-			mainView.setStatusText(Internal.I18N.getString("main.status.export.label"));
+			mainView.setStatusText(Language.I18N.getString("main.status.export.label"));
 			LOG.info("Initializing database export...");
 
 			// initialize event dispatcher
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(mainView, 
-					Internal.I18N.getString("export.dialog.window"),
-					Internal.I18N.getString("export.dialog.msg"),
+					Language.I18N.getString("export.dialog.window"),
+					Language.I18N.getString("export.dialog.msg"),
 					tileAmount);
 
 			SwingUtilities.invokeLater(new Runnable() {
@@ -389,7 +389,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				LOG.warn("Database export aborted.");
 			}
 
-			mainView.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+			mainView.setStatusText(Language.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}

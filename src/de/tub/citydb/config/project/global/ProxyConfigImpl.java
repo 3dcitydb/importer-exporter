@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import de.tub.citydb.api.io.ProxyConfig;
 import de.tub.citydb.api.io.ProxyType;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 
 @XmlType(name="ProxyConfigType", propOrder={
 		"type",
@@ -245,11 +245,11 @@ public class ProxyConfigImpl implements ProxyConfig {
 	public String toString() {
 		switch (type) {
 		case HTTP:
-			return Internal.I18N.getString("pref.proxy.label.http");
+			return Language.I18N.getString("pref.proxy.label.http");
 		case HTTPS:
-			return Internal.I18N.getString("pref.proxy.label.https");
+			return Language.I18N.getString("pref.proxy.label.https");
 		case SOCKS:
-			return Internal.I18N.getString("pref.proxy.label.socks");
+			return Language.I18N.getString("pref.proxy.label.socks");
 		default:
 			return "n/a";
 		}

@@ -74,7 +74,7 @@ import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.config.project.database.Database;
 import de.tub.citydb.config.project.database.Workspace;
@@ -293,7 +293,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 		for (int index = 0; index < 5; index++) {
 			lodComboBox.insertItemAt("LoD" + index, index);
 		}
-		lodComboBox.insertItemAt(Internal.I18N.getString("kmlExport.label.highestLODAvailable"), lodComboBox.getItemCount());
+		lodComboBox.insertItemAt(Language.I18N.getString("kmlExport.label.highestLODAvailable"), lodComboBox.getItemCount());
 		lodComboBox.setSelectedIndex(2);
 		GridBagConstraints lcb = GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS + footprintCheckbox.getPreferredSize().height,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
 		lcb.anchor = GridBagConstraints.NORTH;
@@ -431,55 +431,55 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 	public void doTranslation() {
 
 		//		browsePanel.setBorder(BorderFactory.createTitledBorder("Output path and filename"));
-		browseButton.setText(Internal.I18N.getString("common.button.browse"));
+		browseButton.setText(Language.I18N.getString("common.button.browse"));
 
-		((TitledBorder)versioningPanel.getBorder()).setTitle(Internal.I18N.getString("common.border.versioning"));
-		workspaceLabel.setText(Internal.I18N.getString("common.label.workspace"));
-		timestampLabel.setText(Internal.I18N.getString("common.label.timestamp"));
+		((TitledBorder)versioningPanel.getBorder()).setTitle(Language.I18N.getString("common.border.versioning"));
+		workspaceLabel.setText(Language.I18N.getString("common.label.workspace"));
+		timestampLabel.setText(Language.I18N.getString("common.label.timestamp"));
 
-		((TitledBorder)filterPanel.getBorder()).setTitle(Internal.I18N.getString("kmlExport.label.exportContents"));
-		singleBuildingRadioButton.setText(Internal.I18N.getString("kmlExport.label.singleBuilding"));
-		boundingBoxRadioButton.setText(Internal.I18N.getString("filter.border.boundingBox"));
+		((TitledBorder)filterPanel.getBorder()).setTitle(Language.I18N.getString("kmlExport.label.exportContents"));
+		singleBuildingRadioButton.setText(Language.I18N.getString("kmlExport.label.singleBuilding"));
+		boundingBoxRadioButton.setText(Language.I18N.getString("filter.border.boundingBox"));
 
-		((TitledBorder) tilingPanel.getBorder()).setTitle(Internal.I18N.getString("pref.export.boundingBox.border.tiling"));
-		noTilingRadioButton.setText(Internal.I18N.getString("kmlExport.label.noTiling"));
-		manualTilingRadioButton.setText(Internal.I18N.getString("kmlExport.label.manual"));
-		rowsLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.rows"));
-		columnsLabel.setText(Internal.I18N.getString("pref.export.boundingBox.label.columns"));
-		automaticTilingRadioButton.setText(Internal.I18N.getString("kmlExport.label.automatic"));
+		((TitledBorder) tilingPanel.getBorder()).setTitle(Language.I18N.getString("pref.export.boundingBox.border.tiling"));
+		noTilingRadioButton.setText(Language.I18N.getString("kmlExport.label.noTiling"));
+		manualTilingRadioButton.setText(Language.I18N.getString("kmlExport.label.manual"));
+		rowsLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.rows"));
+		columnsLabel.setText(Language.I18N.getString("pref.export.boundingBox.label.columns"));
+		automaticTilingRadioButton.setText(Language.I18N.getString("kmlExport.label.automatic"));
 
-		((TitledBorder)exportFromLODPanel.getBorder()).setTitle(Internal.I18N.getString("kmlExport.label.fromLOD"));
+		((TitledBorder)exportFromLODPanel.getBorder()).setTitle(Language.I18N.getString("kmlExport.label.fromLOD"));
 		/**/
 		int selectedIndex = lodComboBox.getSelectedIndex();
 		if (!lodComboBox.getItemAt(lodComboBox.getItemCount() - 1).toString().endsWith("4")) {
 			lodComboBox.removeItemAt(lodComboBox.getItemCount() - 1);
 		}
-		lodComboBox.insertItemAt(Internal.I18N.getString("kmlExport.label.highestLODAvailable"), lodComboBox.getItemCount());
+		lodComboBox.insertItemAt(Language.I18N.getString("kmlExport.label.highestLODAvailable"), lodComboBox.getItemCount());
 		lodComboBox.setSelectedIndex(selectedIndex);
 		lodComboBox.setMinimumSize(lodComboBox.getPreferredSize());
 		exportFromLODPanel.setMinimumSize(exportFromLODPanel.getPreferredSize());
 		/**/
-		((TitledBorder)displayAsPanel.getBorder()).setTitle(Internal.I18N.getString("kmlExport.label.displayAs"));
-		footprintCheckbox.setText(Internal.I18N.getString("kmlExport.label.footprint"));
-		extrudedCheckbox.setText(Internal.I18N.getString("kmlExport.label.extruded"));
-		geometryCheckbox.setText(Internal.I18N.getString("kmlExport.label.geometry"));
-		colladaCheckbox.setText(Internal.I18N.getString("kmlExport.label.collada"));
+		((TitledBorder)displayAsPanel.getBorder()).setTitle(Language.I18N.getString("kmlExport.label.displayAs"));
+		footprintCheckbox.setText(Language.I18N.getString("kmlExport.label.footprint"));
+		extrudedCheckbox.setText(Language.I18N.getString("kmlExport.label.extruded"));
+		geometryCheckbox.setText(Language.I18N.getString("kmlExport.label.geometry"));
+		colladaCheckbox.setText(Language.I18N.getString("kmlExport.label.collada"));
 
-		visibleFromFootprintLabel.setText(Internal.I18N.getString("kmlExport.label.visibleFrom"));
-		pixelsFootprintLabel.setText(Internal.I18N.getString("kmlExport.label.pixels"));
-		visibleFromExtrudedLabel.setText(Internal.I18N.getString("kmlExport.label.visibleFrom"));
-		pixelsExtrudedLabel.setText(Internal.I18N.getString("kmlExport.label.pixels"));
-		visibleFromGeometryLabel.setText(Internal.I18N.getString("kmlExport.label.visibleFrom"));
-		pixelsGeometryLabel.setText(Internal.I18N.getString("kmlExport.label.pixels"));
-		visibleFromColladaLabel.setText(Internal.I18N.getString("kmlExport.label.visibleFrom"));
-		pixelsColladaLabel.setText(Internal.I18N.getString("kmlExport.label.pixels"));
+		visibleFromFootprintLabel.setText(Language.I18N.getString("kmlExport.label.visibleFrom"));
+		pixelsFootprintLabel.setText(Language.I18N.getString("kmlExport.label.pixels"));
+		visibleFromExtrudedLabel.setText(Language.I18N.getString("kmlExport.label.visibleFrom"));
+		pixelsExtrudedLabel.setText(Language.I18N.getString("kmlExport.label.pixels"));
+		visibleFromGeometryLabel.setText(Language.I18N.getString("kmlExport.label.visibleFrom"));
+		pixelsGeometryLabel.setText(Language.I18N.getString("kmlExport.label.pixels"));
+		visibleFromColladaLabel.setText(Language.I18N.getString("kmlExport.label.visibleFrom"));
+		pixelsColladaLabel.setText(Language.I18N.getString("kmlExport.label.pixels"));
 
-		themeLabel.setText(Internal.I18N.getString("pref.kmlexport.label.theme"));
-		fetchThemesButton.setText(Internal.I18N.getString("pref.kmlexport.label.fetchTheme"));
+		themeLabel.setText(Language.I18N.getString("pref.kmlexport.label.theme"));
+		fetchThemesButton.setText(Language.I18N.getString("pref.kmlexport.label.fetchTheme"));
 
-		featureClassesLabel.setText(Internal.I18N.getString("filter.border.featureClass"));
+		featureClassesLabel.setText(Language.I18N.getString("filter.border.featureClass"));
 
-		exportButton.setText(Internal.I18N.getString("export.button.export"));
+		exportButton.setText(Language.I18N.getString("export.button.export"));
 	}
 
 	private void clearGui() {
@@ -951,23 +951,23 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 			// check all input values...
 			if (config.getInternal().getExportFileName().trim().equals("")) {
-				mainView.errorMessage(Internal.I18N.getString("kmlExport.dialog.error.incompleteData"), 
-						Internal.I18N.getString("kmlExport.dialog.error.incompleteData.dataset"));
+				mainView.errorMessage(Language.I18N.getString("kmlExport.dialog.error.incompleteData"), 
+						Language.I18N.getString("kmlExport.dialog.error.incompleteData.dataset"));
 				return;
 			}
 
 			// workspace timestamp
 			if (!Util.checkWorkspaceTimestamp(db.getWorkspaces().getExportWorkspace())) {
-				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("export.dialog.error.incorrectData.date"));
+				mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
+						Language.I18N.getString("export.dialog.error.incorrectData.date"));
 				return;
 			}
 
 			// gmlId
 			if (filter.isSetSimpleFilter() &&
 					filter.getSimpleFilter().getGmlIdFilter().getGmlIds().isEmpty()) {
-				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("common.dialog.error.incorrectData.gmlId"));
+				mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
+						Language.I18N.getString("common.dialog.error.incorrectData.gmlId"));
 				return;
 			}
 
@@ -975,8 +975,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			int activeDisplayFormsAmount =
 					KmlExporter.getActiveDisplayFormsAmount(config.getProject().getKmlExporter().getBuildingDisplayForms()); 
 			if (activeDisplayFormsAmount == 0) {
-				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"), 
-						Internal.I18N.getString("kmlExport.dialog.error.incorrectData.displayForms"));
+				mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
+						Language.I18N.getString("kmlExport.dialog.error.incorrectData.displayForms"));
 				return;
 			}
 
@@ -993,8 +993,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				Double yMax = filter.getComplexFilter().getTiledBoundingBox().getUpperRightCorner().getY();
 
 				if (xMin == null || yMin == null || xMax == null || yMax == null) {
-					mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"),
-							Internal.I18N.getString("common.dialog.error.incorrectData.bbox"));
+					mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+							Language.I18N.getString("common.dialog.error.incorrectData.bbox"));
 					return;
 				}
 			}
@@ -1012,8 +1012,8 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					!filter.getComplexFilter().getFeatureClass().isSetWaterBody() &&
 					!filter.getComplexFilter().getFeatureClass().isSetBridge() &&
 					!filter.getComplexFilter().getFeatureClass().isSetTunnel()) {
-				mainView.errorMessage(Internal.I18N.getString("export.dialog.error.incorrectData"),
-						Internal.I18N.getString("kmlExport.dialog.error.incorrectData.featureClass"));
+				mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),
+						Language.I18N.getString("kmlExport.dialog.error.incorrectData.featureClass"));
 				return;
 			}
 
@@ -1039,12 +1039,12 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			}
 			tileAmount = tileAmount * activeDisplayFormsAmount;
 
-			mainView.setStatusText(Internal.I18N.getString("main.status.kmlExport.label"));
+			mainView.setStatusText(Language.I18N.getString("main.status.kmlExport.label"));
 			Logger.getInstance().info("Initializing database export...");
 
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(mainView, 
-					Internal.I18N.getString("kmlExport.dialog.window"),
-					Internal.I18N.getString("export.dialog.msg"),
+					Language.I18N.getString("kmlExport.dialog.window"),
+					Language.I18N.getString("export.dialog.msg"),
 					tileAmount);
 
 			SwingUtilities.invokeLater(new Runnable() {
@@ -1091,7 +1091,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				Logger.getInstance().warn("Database export aborted.");
 			}
 
-			mainView.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+			mainView.setStatusText(Language.I18N.getString("main.status.ready.label"));
 		} finally {
 			lock.unlock();
 		}
@@ -1235,18 +1235,18 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			fetchThemesButton.setEnabled(false);
 
 			try {
-				String text = Internal.I18N.getString("pref.kmlexport.connectDialog.line2");
+				String text = Language.I18N.getString("pref.kmlexport.connectDialog.line2");
 				DBConnection conn = config.getProject().getDatabase().getActiveConnection();
 				Object[] args = new Object[]{conn.getDescription(), conn.toConnectString()};
 				String formattedMsg = MessageFormat.format(text, args);
-				String[] connectConfirm = {Internal.I18N.getString("pref.kmlexport.connectDialog.line1"),
+				String[] connectConfirm = {Language.I18N.getString("pref.kmlexport.connectDialog.line1"),
 						formattedMsg,
-						Internal.I18N.getString("pref.kmlexport.connectDialog.line3")};
+						Language.I18N.getString("pref.kmlexport.connectDialog.line3")};
 
 				if (!dbPool.isConnected() &&
 						JOptionPane.showConfirmDialog(getTopLevelAncestor(),
 								connectConfirm,
-								Internal.I18N.getString("pref.kmlexport.connectDialog.title"),
+								Language.I18N.getString("pref.kmlexport.connectDialog.title"),
 								JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 					mainView.connectToDatabase();
 				}

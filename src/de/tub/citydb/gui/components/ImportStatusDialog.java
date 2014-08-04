@@ -51,7 +51,7 @@ import de.tub.citydb.api.event.Event;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.registry.ObjectRegistry;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.modules.common.event.CounterEvent;
 import de.tub.citydb.modules.common.event.CounterType;
 import de.tub.citydb.modules.common.event.EventType;
@@ -101,10 +101,10 @@ public class ImportStatusDialog extends JDialog implements EventHandler {
 		fileName = new JLabel(impExpMessage);
 		fileName.setFont(fileName.getFont().deriveFont(Font.BOLD));
 		mesageLabel = new JLabel(" ");
-		cancelButton = new JButton(Internal.I18N.getString("common.button.cancel"));
-		featureLabel = new JLabel(Internal.I18N.getString("common.status.dialog.featureCounter"));
-		textureLabel = new JLabel(Internal.I18N.getString("common.status.dialog.textureCounter"));
-		fileCounter = new JLabel(Internal.I18N.getString("common.status.dialog.fileCounter"));
+		cancelButton = new JButton(Language.I18N.getString("common.button.cancel"));
+		featureLabel = new JLabel(Language.I18N.getString("common.status.dialog.featureCounter"));
+		textureLabel = new JLabel(Language.I18N.getString("common.status.dialog.textureCounter"));
+		fileCounter = new JLabel(Language.I18N.getString("common.status.dialog.fileCounter"));
 		fileCounterLabel = new JLabel("n/a", SwingConstants.TRAILING);
 		featureCounterLabel = new JLabel("0", SwingConstants.TRAILING);
 		textureCounterLabel = new JLabel("0", SwingConstants.TRAILING);
@@ -176,7 +176,7 @@ public class ImportStatusDialog extends JDialog implements EventHandler {
 
 		else if (e.getEventType() == EventType.INTERRUPT) {
 			acceptStatusUpdate = false;
-			mesageLabel.setText(Internal.I18N.getString("common.dialog.msg.abort"));
+			mesageLabel.setText(Language.I18N.getString("common.dialog.msg.abort"));
 			progressBar.setIndeterminate(true);
 		}
 

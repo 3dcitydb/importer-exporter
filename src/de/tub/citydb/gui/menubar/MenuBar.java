@@ -35,7 +35,7 @@ import javax.xml.bind.JAXBContext;
 
 import de.tub.citydb.api.plugin.extension.menu.MenuExtension;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.plugin.PluginService;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -95,10 +95,10 @@ public class MenuBar extends JMenuBar {
 	}
 
 	public void doTranslation() {
-		file.setText(Internal.I18N.getString("menu.file.label"));
-		project.setText(Internal.I18N.getString("menu.project.label"));
-		view.setText(Internal.I18N.getString("menu.view.label"));
-		help.setText(Internal.I18N.getString("menu.help.label"));
+		file.setText(Language.I18N.getString("menu.file.label"));
+		project.setText(Language.I18N.getString("menu.project.label"));
+		view.setText(Language.I18N.getString("menu.view.label"));
+		help.setText(Language.I18N.getString("menu.help.label"));
 
 		GuiUtil.setMnemonic(file, "menu.file.label", "menu.file.label.mnemonic");
 		GuiUtil.setMnemonic(project, "menu.project.label", "menu.project.label.mnemonic");
@@ -106,7 +106,7 @@ public class MenuBar extends JMenuBar {
 		GuiUtil.setMnemonic(help, "menu.help.label", "menu.help.label.mnemonic");
 
 		if (extensions != null) {
-			extensions.setText(Internal.I18N.getString("menu.extensions.label"));
+			extensions.setText(Language.I18N.getString("menu.extensions.label"));
 			GuiUtil.setMnemonic(extensions, "menu.extensions.label", "menu.extensions.label.mnemonic");
 
 			int index = 0;

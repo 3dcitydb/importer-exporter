@@ -40,7 +40,7 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.exporter.ExportCityObjectGroup;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
 import de.tub.citydb.util.gui.GuiUtil;
@@ -97,14 +97,14 @@ public class CityObjectGroupPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)exportGroupPanel.getBorder()).setTitle(Internal.I18N.getString("pref.export.group.border.member"));	
-		exportMemberAsXLink.setText(Internal.I18N.getString("pref.export.group.label.exportMember"));
-		exportMemberAsXLinkDescr.setText(Internal.I18N.getString("pref.export.group.label.exportMember.description"));
+		((TitledBorder)exportGroupPanel.getBorder()).setTitle(Language.I18N.getString("pref.export.group.border.member"));	
+		exportMemberAsXLink.setText(Language.I18N.getString("pref.export.group.label.exportMember"));
+		exportMemberAsXLinkDescr.setText(Language.I18N.getString("pref.export.group.label.exportMember.description"));
 	}
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.export.group");
+		return Language.I18N.getString("pref.tree.export.group");
 	}
 
 }

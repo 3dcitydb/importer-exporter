@@ -48,7 +48,7 @@ import de.tub.citydb.api.database.DatabaseSrs;
 import de.tub.citydb.api.event.EventDispatcher;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.DBConnection;
 import de.tub.citydb.database.adapter.AbstractDatabaseAdapter;
 import de.tub.citydb.database.adapter.DatabaseAdapterFactory;
@@ -80,19 +80,19 @@ public class DatabaseConnectionPool {
 
 		// check valid connection details
 		if (conn.getUser() == null || conn.getUser().trim().length() == 0)
-			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.user"));
+			throw new DatabaseConfigurationException(Language.I18N.getString("db.dialog.error.conn.user"));
 
 		if (conn.getInternalPassword() == null || conn.getInternalPassword().trim().length() == 0)
-			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.pass"));
+			throw new DatabaseConfigurationException(Language.I18N.getString("db.dialog.error.conn.pass"));
 
 		if (conn.getServer() == null || conn.getServer().trim().length() == 0)
-			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.server"));
+			throw new DatabaseConfigurationException(Language.I18N.getString("db.dialog.error.conn.server"));
 
 		if (conn.getPort() == null)
-			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.port"));
+			throw new DatabaseConfigurationException(Language.I18N.getString("db.dialog.error.conn.port"));
 
 		if (conn.getSid() == null || conn.getSid().trim().length() == 0)
-			throw new DatabaseConfigurationException(Internal.I18N.getString("db.dialog.error.conn.sid"));
+			throw new DatabaseConfigurationException(Language.I18N.getString("db.dialog.error.conn.sid"));
 
 		// disconnect if we are currently connected to another database
 		if (isConnected())

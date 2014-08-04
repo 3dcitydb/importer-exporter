@@ -46,9 +46,11 @@ import org.citygml4j.model.common.base.ModelObject;
 import org.citygml4j.model.common.child.Child;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.basicTypes.Code;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 import de.tub.citydb.config.internal.Internal;
 import de.tub.citydb.config.project.database.Workspace;
+import de.tub.citydb.config.project.exporter.CityGMLVersionType;
 
 public class Util {
 	private static final EnumMap<CityGMLClass, Integer> cityGMLClassMap = new EnumMap<CityGMLClass, Integer>(CityGMLClass.class);
@@ -425,6 +427,22 @@ public class Util {
 		}
 
 		return null;
+	}
+	
+	public static CityGMLVersion toCityGMLVersion(CityGMLVersionType version) {
+		switch (version) {
+		case v1_0_0:
+			return CityGMLVersion.v1_0_0;
+		default:
+			return CityGMLVersion.v2_0_0;
+		}
+	}
+
+	public static CityGMLVersionType fromCityGMLVersion(CityGMLVersion version) {
+		if (version == CityGMLVersion.v1_0_0)
+			return CityGMLVersionType.v1_0_0;
+		else
+			return CityGMLVersionType.v2_0_0;
 	}
 
 }

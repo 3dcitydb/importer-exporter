@@ -46,7 +46,7 @@ import de.tub.citydb.api.event.global.GlobalEvents;
 import de.tub.citydb.api.gui.DatabaseSrsComboBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.database.DatabaseConnectionPool;
 
 public class SrsComboBoxFactory {
@@ -215,7 +215,7 @@ public class SrsComboBoxFactory {
 		}
 
 		private void doTranslation() {
-			dbRefSys.setDescription(Internal.I18N.getString("common.label.boundingBox.crs.sameAsInDB"));
+			dbRefSys.setDescription(Language.I18N.getString("common.label.boundingBox.crs.sameAsInDB"));
 			DatabaseSrs selectedItem = getSelectedItem();
 			if (selectedItem == null)
 				selectedItem = dbRefSys;

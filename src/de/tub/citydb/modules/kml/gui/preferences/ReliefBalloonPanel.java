@@ -48,7 +48,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.general.PathMode;
 import de.tub.citydb.config.project.kmlExporter.Balloon;
 import de.tub.citydb.config.project.kmlExporter.BalloonContentMode;
@@ -85,7 +85,7 @@ public class ReliefBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.kmlExport.reliefBalloon");
+		return Language.I18N.getString("pref.tree.kmlExport.reliefBalloon");
 	}
 
 	@Override
@@ -167,15 +167,15 @@ public class ReliefBalloonPanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)contentSourcePanel.getBorder()).setTitle(Internal.I18N.getString("pref.kmlexport.balloon.contentSource.border"));	
+		((TitledBorder)contentSourcePanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.balloon.contentSource.border"));	
 
-		includeDescription.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.includeDescription"));
-		genAttribRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.genAttrib"));
-		fileRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.file"));
-		genAttribAndFileRadioButton.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.genAttribAndFile"));
-		browseButton.setText(Internal.I18N.getString("common.button.browse"));
-		contentInSeparateFile.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.contentInSeparateFile"));
-		warningLabel.setText(Internal.I18N.getString("pref.kmlexport.balloon.label.warningLabel"));
+		includeDescription.setText(Language.I18N.getString("pref.kmlexport.balloon.label.includeDescription"));
+		genAttribRadioButton.setText(Language.I18N.getString("pref.kmlexport.balloon.label.genAttrib"));
+		fileRadioButton.setText(Language.I18N.getString("pref.kmlexport.balloon.label.file"));
+		genAttribAndFileRadioButton.setText(Language.I18N.getString("pref.kmlexport.balloon.label.genAttribAndFile"));
+		browseButton.setText(Language.I18N.getString("common.button.browse"));
+		contentInSeparateFile.setText(Language.I18N.getString("pref.kmlexport.balloon.label.contentInSeparateFile"));
+		warningLabel.setText(Language.I18N.getString("pref.kmlexport.balloon.label.warningLabel"));
 	}
 
 	@Override

@@ -36,7 +36,7 @@ import javax.xml.bind.JAXBContext;
 
 import de.tub.citydb.api.plugin.extension.view.View;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.ImpExpGui;
 
 public class KMLExportView extends View {
@@ -48,7 +48,7 @@ public class KMLExportView extends View {
 	
 	@Override
 	public String getLocalizedTitle() {
-		return Internal.I18N.getString("main.tabbedPane.kmlExport");
+		return Language.I18N.getString("main.tabbedPane.kmlExport");
 	}
 
 	@Override

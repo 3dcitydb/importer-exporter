@@ -34,7 +34,7 @@ import java.util.List;
 import org.citygml4j.geometry.Matrix;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.project.general.AffineTransformation;
+import de.tub.citydb.config.project.general.TransformationMatrix;
 
 public class AffineTransformer {
 	private final Matrix matrix4x4;
@@ -43,8 +43,7 @@ public class AffineTransformer {
 	private final Matrix inverse2x2;
 	
 	public AffineTransformer(Config config) throws Exception {
-		AffineTransformation pref = config.getProject().getImporter().getAffineTransformation();
-		matrix4x4 = pref.getTransformationMatrix().toMatrix4x4();
+		matrix4x4 = toMatrix4x4(config.getProject().getImporter().getAffineTransformation().getTransformationMatrix());
 		matrix3x4 = matrix4x4.getMatrix(3, 4);
 		inverse4x4 = matrix4x4.inverse();
 		inverse2x2 = inverse4x4.getMatrix(2, 2);
@@ -81,6 +80,21 @@ public class AffineTransformer {
 	
 	public Matrix transformImplicitGeometryTransformationMatrix(Matrix transformationMatrix) {
 		return matrix4x4.times(transformationMatrix);
+	}
+	
+	public Matrix toMatrix4x4(TransformationMatrix transformationMatrix) {
+		Matrix tmp = transformationMatrix.isSetValue() && transformationMatrix.getValue().size() == 12 ? 
+				new Matrix(transformationMatrix.getValue(), 3) : Matrix.identity(3, 4);
+		
+		Matrix matrix = new Matrix(4, 4);
+		matrix.setMatrix(0, 2, 0, 3, tmp);
+		
+		matrix.set(3, 0, 0);
+		matrix.set(3, 1, 0);
+		matrix.set(3, 2, 0);
+		matrix.set(3, 3, 1);
+		
+		return matrix;
 	}
 	
 }

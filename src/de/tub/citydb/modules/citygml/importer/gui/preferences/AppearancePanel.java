@@ -46,7 +46,7 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.importer.ImportAppearance;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.gui.preferences.AbstractPreferencesComponent;
@@ -144,13 +144,13 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("pref.import.appearance.border.import"));	
-		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("pref.import.appearance.border.texturedSurface"));	
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.appearance.border.import"));	
+		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.import.appearance.border.texturedSurface"));	
 
-		impAppRadioNoImp.setText(Internal.I18N.getString("pref.import.appearance.label.noImport"));
-		impAppRadioAppImp.setText(Internal.I18N.getString("pref.import.appearance.label.importWithoutTexture"));
-		impAppRadioImp.setText(Internal.I18N.getString("pref.import.appearance.label.importWithTexture"));
-		impAppOldLabel.setText(Internal.I18N.getString("pref.import.appearance.label.theme"));
+		impAppRadioNoImp.setText(Language.I18N.getString("pref.import.appearance.label.noImport"));
+		impAppRadioAppImp.setText(Language.I18N.getString("pref.import.appearance.label.importWithoutTexture"));
+		impAppRadioImp.setText(Language.I18N.getString("pref.import.appearance.label.importWithTexture"));
+		impAppOldLabel.setText(Language.I18N.getString("pref.import.appearance.label.theme"));
 	}
 
 	@Override
@@ -196,7 +196,7 @@ public class AppearancePanel extends AbstractPreferencesComponent {
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.import.appearance");
+		return Language.I18N.getString("pref.tree.import.appearance");
 	}
 
 }

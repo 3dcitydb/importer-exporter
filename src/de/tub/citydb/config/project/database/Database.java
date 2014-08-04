@@ -50,6 +50,7 @@ import de.tub.citydb.api.database.DatabaseSrsType;
 		"operation"
 })
 public class Database {
+	public static final int MAX_BATCH_SIZE = 65535;
 	public static final EnumMap<PredefinedSrsName, DatabaseSrs> PREDEFINED_SRS = new EnumMap<PredefinedSrsName, DatabaseSrs>(PredefinedSrsName.class);
 
 	public enum PredefinedSrsName {

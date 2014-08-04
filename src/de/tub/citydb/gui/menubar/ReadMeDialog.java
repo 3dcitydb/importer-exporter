@@ -50,7 +50,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
 import de.tub.citydb.util.gui.GuiUtil;
 
@@ -58,20 +58,20 @@ import de.tub.citydb.util.gui.GuiUtil;
 public class ReadMeDialog extends JDialog {
 
 	public ReadMeDialog(JFrame frame) {
-		super(frame, Internal.I18N.getString("menu.help.readMe.label"), true);
+		super(frame, Language.I18N.getString("menu.help.readMe.label"), true);
 		initGUI();
 	}
 
 	private void initGUI() {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		JButton button = new JButton(Internal.I18N.getString("common.button.ok"));		
+		JButton button = new JButton(Language.I18N.getString("common.button.ok"));		
 
 		setLayout(new GridBagLayout()); {
 			JPanel main = new JPanel();
 			add(main, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 			main.setLayout(new GridBagLayout());
 			{
-				JLabel readMeHeader = new JLabel(Internal.I18N.getString("menu.help.readMe.information"));
+				JLabel readMeHeader = new JLabel(Language.I18N.getString("menu.help.readMe.information"));
 				main.add(readMeHeader, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,10,2,2,5));
 
 				JTextArea readMe = new JTextArea();

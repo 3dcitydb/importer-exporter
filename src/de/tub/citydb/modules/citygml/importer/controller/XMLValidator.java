@@ -52,6 +52,7 @@ import de.tub.citydb.api.event.EventHandler;
 import de.tub.citydb.api.log.LogLevel;
 import de.tub.citydb.config.Config;
 import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.io.DirectoryScanner;
 import de.tub.citydb.io.DirectoryScanner.CityGMLFilenameFilter;
 import de.tub.citydb.log.Logger;
@@ -134,7 +135,7 @@ public class XMLValidator implements EventHandler {
 			intConfig.setImportPath(file.getParent());
 
 			eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("validate.dialog.validate.msg"), this));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.validate.msg"), this));
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 			eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
 
@@ -153,7 +154,7 @@ public class XMLValidator implements EventHandler {
 					LOG.error("Failed to validate CityGML file: " + e.getMessage());
 			}
 
-			eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("validate.dialog.finish.msg"), this));
+			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.finish.msg"), this));
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 
 			// show XML validation errors

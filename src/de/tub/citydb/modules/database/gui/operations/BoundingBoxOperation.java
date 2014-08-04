@@ -52,7 +52,7 @@ import de.tub.citydb.api.event.global.DatabaseConnectionStateEvent;
 import de.tub.citydb.api.geometry.BoundingBox;
 import de.tub.citydb.api.registry.ObjectRegistry;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.database.DBOperationType;
 import de.tub.citydb.config.project.database.Workspace;
 import de.tub.citydb.config.project.general.FeatureClassMode;
@@ -125,7 +125,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 	@Override
 	public String getLocalizedTitle() {
-		return Internal.I18N.getString("db.label.operation.bbox");
+		return Language.I18N.getString("db.label.operation.bbox");
 	}
 
 	@Override
@@ -150,8 +150,8 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 	@Override
 	public void doTranslation() {
-		featureLabel.setText(Internal.I18N.getString("db.label.operation.bbox.feature"));
-		bboxButton.setText(Internal.I18N.getString("db.button.bbox"));
+		featureLabel.setText(Language.I18N.getString("db.label.operation.bbox.feature"));
+		bboxButton.setText(Language.I18N.getString("db.button.bbox"));
 	}
 
 	@Override
@@ -184,17 +184,17 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				return;
 
 			viewController.clearConsole();
-			viewController.setStatusText(Internal.I18N.getString("main.status.database.bbox.label"));
+			viewController.setStatusText(Language.I18N.getString("main.status.database.bbox.label"));
 
 			LOG.info("Calculating bounding box...");			
 			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.existsWorkspace())
 				return;
 
 			final StatusDialog bboxDialog = new StatusDialog(viewController.getTopFrame(), 
-					Internal.I18N.getString("db.dialog.bbox.window"), 
-					Internal.I18N.getString("db.dialog.bbox.title"), 
+					Language.I18N.getString("db.dialog.bbox.window"), 
+					Language.I18N.getString("db.dialog.bbox.title"), 
 					null,
-					Internal.I18N.getString("db.dialog.bbox.details"), 
+					Language.I18N.getString("db.dialog.bbox.details"), 
 					true);
 
 			SwingUtilities.invokeLater(new Runnable() {
@@ -265,19 +265,19 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				bboxPanel.clearBoundingBox();
 
 				String sqlExMsg = sqlEx.getMessage().trim();
-				String text = Internal.I18N.getString("db.dialog.error.bbox");
+				String text = Language.I18N.getString("db.dialog.error.bbox");
 				Object[] args = new Object[]{ sqlExMsg };
 				String result = MessageFormat.format(text, args);
 
 				JOptionPane.showMessageDialog(
 						viewController.getTopFrame(), 
 						result, 
-						Internal.I18N.getString("common.dialog.error.db.title"),
+						Language.I18N.getString("common.dialog.error.db.title"),
 						JOptionPane.ERROR_MESSAGE);
 
 				LOG.error("SQL error: " + sqlExMsg);
 			} finally {		
-				viewController.setStatusText(Internal.I18N.getString("main.status.ready.label"));
+				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
 			}
 
 		} finally {

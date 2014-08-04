@@ -43,7 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.config.project.resources.ThreadPoolConfig;
 import de.tub.citydb.config.project.resources.UIDCacheConfig;
 import de.tub.citydb.gui.factory.PopupMenuDecorator;
@@ -232,20 +232,20 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 
 	@Override
 	public void doTranslation() {
-		((TitledBorder)block1.getBorder()).setTitle(Internal.I18N.getString("common.pref.resources.border.multiCPU"));
-		((TitledBorder)block2.getBorder()).setTitle(Internal.I18N.getString("common.pref.resources.border.idCache"));
+		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("common.pref.resources.border.multiCPU"));
+		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("common.pref.resources.border.idCache"));
 
-		expResMinThreadsLabel.setText(Internal.I18N.getString("common.pref.resources.label.minThreads"));
-		expResMaxThreadsLabel.setText(Internal.I18N.getString("common.pref.resources.label.maxThreads"));
+		expResMinThreadsLabel.setText(Language.I18N.getString("common.pref.resources.label.minThreads"));
+		expResMaxThreadsLabel.setText(Language.I18N.getString("common.pref.resources.label.maxThreads"));
 
-		expResGeomLabel.setText(Internal.I18N.getString("common.pref.resources.label.geometry"));
-		expResGeomCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.entry"));
-		expResGeomDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.drain"));
-		expResGeomPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.partition"));
-		expResFeatLabel.setText(Internal.I18N.getString("common.pref.resources.label.feature"));
-		expResFeatCacheLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.entry"));
-		expResFeatDrainLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.drain"));
-		expResFeatPartLabel.setText(Internal.I18N.getString("common.pref.resources.label.cache.partition"));
+		expResGeomLabel.setText(Language.I18N.getString("common.pref.resources.label.geometry"));
+		expResGeomCacheLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.entry"));
+		expResGeomDrainLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.drain"));
+		expResGeomPartLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.partition"));
+		expResFeatLabel.setText(Language.I18N.getString("common.pref.resources.label.feature"));
+		expResFeatCacheLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.entry"));
+		expResFeatDrainLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.drain"));
+		expResFeatPartLabel.setText(Language.I18N.getString("common.pref.resources.label.cache.partition"));
 	}
 
 	@Override
@@ -291,7 +291,7 @@ public class ResourcesPanel extends AbstractPreferencesComponent{
 	
 	@Override
 	public String getTitle() {
-		return Internal.I18N.getString("pref.tree.export.resources");
+		return Language.I18N.getString("pref.tree.export.resources");
 	}
 }
 

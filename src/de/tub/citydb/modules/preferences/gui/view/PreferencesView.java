@@ -35,7 +35,7 @@ import javax.swing.Icon;
 
 import de.tub.citydb.api.plugin.extension.view.View;
 import de.tub.citydb.config.Config;
-import de.tub.citydb.config.internal.Internal;
+import de.tub.citydb.config.language.Language;
 import de.tub.citydb.gui.ImpExpGui;
 import de.tub.citydb.plugin.PluginService;
 
@@ -48,7 +48,7 @@ public class PreferencesView extends View {
 	
 	@Override
 	public String getLocalizedTitle() {
-		return Internal.I18N.getString("main.tabbedPane.preferences");
+		return Language.I18N.getString("main.tabbedPane.preferences");
 	}
 
 	@Override
