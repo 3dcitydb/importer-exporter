@@ -111,7 +111,11 @@ public class ConfigUtil {
 		@Override
 		public void startPrefixMapping(String prefix, String uri) throws SAXException {
 			if (uri == null || uri.length() == 0)
-				uri = "http://www.gis.tu-berlin.de/3dcitydb-impexp/config";
+				uri = "http://www.3dcitydb.org/importer-exporter/config";
+			
+			// support config files from previous releases 
+			else if (uri.startsWith("http://www.gis.tu-berlin.de/3dcitydb-impexp/config"))
+				uri = uri.replaceFirst("http://www.gis.tu-berlin.de/3dcitydb-impexp/config", "http://www.3dcitydb.org/importer-exporter/config");
 
 			super.startPrefixMapping(prefix, uri);
 		}
@@ -119,7 +123,11 @@ public class ConfigUtil {
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 			if (uri == null || uri.length() == 0)
-				uri = "http://www.gis.tu-berlin.de/3dcitydb-impexp/config";
+				uri = "http://www.3dcitydb.org/importer-exporter/config";
+			
+			// support config files from previous releases
+			else if (uri.startsWith("http://www.gis.tu-berlin.de/3dcitydb-impexp/config"))
+				uri = uri.replaceFirst("http://www.gis.tu-berlin.de/3dcitydb-impexp/config", "http://www.3dcitydb.org/importer-exporter/config");
 
 			super.startElement(uri, localName, qName, atts);
 		}
@@ -127,7 +135,11 @@ public class ConfigUtil {
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 			if (uri == null || uri.length() == 0)
-				uri = "http://www.gis.tu-berlin.de/3dcitydb-impexp/config";
+				uri = "http://www.3dcitydb.org/importer-exporter/config";
+			
+			// support config files from previous releases
+			else if (uri.startsWith("http://www.gis.tu-berlin.de/3dcitydb-impexp/config"))
+				uri = uri.replaceFirst("http://www.gis.tu-berlin.de/3dcitydb-impexp/config", "http://www.3dcitydb.org/importer-exporter/config");
 
 			super.endElement(uri, localName, qName);
 		}	
