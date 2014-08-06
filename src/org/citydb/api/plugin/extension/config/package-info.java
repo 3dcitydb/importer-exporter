@@ -27,5 +27,5 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-@javax.xml.bind.annotation.XmlSchema(namespace="http://www.gis.tu-berlin.de/3dcitydb-impexp/config", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@javax.xml.bind.annotation.XmlSchema(namespace="http://www.3dcitydb.org/importer-exporter/config", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.citydb.api.plugin.extension.config;
