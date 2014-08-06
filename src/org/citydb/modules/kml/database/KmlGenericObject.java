@@ -684,18 +684,18 @@ public abstract class KmlGenericObject {
 				gArray.getCoordinate(i, coordPoint);
 
 				VertexInfo vertexInfo = getVertexInfoForXYZ(coordPoint.x, coordPoint.y, coordPoint.z);
-				if (vertexInfo == null || (surfaceTextured && vertexInfo.getTexCoords(surfaceId) == null)) {
-					// no node or wrong node found
-					// use best fit only in extreme cases (it is slow)
-					if (surfaceTextured) {
-						vertexInfo = getVertexInfoBestFitForXYZ(coordPoint.x, coordPoint.y, coordPoint.z, surfaceId);
-					}
-					else  {
-						vertexInfo = getVertexInfoBestFitForXYZ(coordPoint.x, coordPoint.y, coordPoint.z);
-					}
+				if (vertexInfo == null) {					
+					vertexInfo = getVertexInfoBestFitForXYZ(coordPoint.x, coordPoint.y, coordPoint.z);					
 				}
+				
 				triangles.getP().add(vertexInfo.getVertexId());
 
+				if (surfaceTextured && vertexInfo.getTexCoords(surfaceId) == null) {
+					// no node or wrong node found
+					// use best fit only in extreme cases (it is slow)					
+					vertexInfo = getVertexInfoBestFitForXYZ(coordPoint.x, coordPoint.y, coordPoint.z, surfaceId);					
+				}
+				
 				if (surfaceTextured) {
 					TexCoords texCoords = vertexInfo.getTexCoords(surfaceId);
 					if (texCoords != null) {
