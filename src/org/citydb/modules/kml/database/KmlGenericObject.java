@@ -53,6 +53,7 @@ import java.util.StringTokenizer;
 
 import javax.media.j3d.GeometryArray;
 import javax.vecmath.Point3d;
+import javax.vecmath.Point3f;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
@@ -150,15 +151,8 @@ public abstract class KmlGenericObject {
 
 	protected static final int GEOMETRY_AMOUNT_WARNING = 10000;
 
-	/** Tolerance after triangulation must be bigger than before triangulation since some points
-	 * may deviate 0.00999999 before and 0.01000001 after. Using a single bigger tolerance value
-	 * does not help since the effect repeats itself (0.01999999 vs. 0.0200001).
-	 * 
-	 * Tolerance after triangulation must not be much bigger than tolerance before, otherwise
-	 * there is a risk of going up the wrong node tree when searching for a vertex
-	 */
-	private final static double TOLERANCE_BEFORE_TRIANGULATION = 0.015d; // this is very tolerant!!!
-	private final static double TOLERANCE_AFTER_TRIANGULATION = 0.0150005d; // this is very tolerant!!!
+	protected static final double CLOSE_COORDS_FACTOR = Math.pow(10, 4);
+	private final static double TOLERANCE= 0.1/(CLOSE_COORDS_FACTOR);
 
 	private final static String NO_TEXIMAGE = "default";
 
@@ -679,23 +673,23 @@ public abstract class KmlGenericObject {
 			}
 
 			GeometryArray gArray = ginfo.getGeometryArray();
-			Point3d coordPoint = new Point3d();
+			Point3f coordPoint = new Point3f();
 			for(int i = 0; i < gArray.getVertexCount(); i++){
 				gArray.getCoordinate(i, coordPoint);
 
 				VertexInfo vertexInfo = getVertexInfoForXYZ(coordPoint.x, coordPoint.y, coordPoint.z);
-				if (vertexInfo == null) {					
-					vertexInfo = getVertexInfoBestFitForXYZ(coordPoint.x, coordPoint.y, coordPoint.z);					
+				if (vertexInfo == null || (surfaceTextured && vertexInfo.getTexCoords(surfaceId) == null)) {
+					// no node or wrong node found
+					// use best fit only in extreme cases (it is slow)
+					if (surfaceTextured) {
+						vertexInfo = getVertexInfoBestFitForXYZ(coordPoint.x, coordPoint.y, coordPoint.z, surfaceId);
+					}
+					else  {
+						vertexInfo = getVertexInfoBestFitForXYZ(coordPoint.x, coordPoint.y, coordPoint.z);
+					}
 				}
-				
 				triangles.getP().add(vertexInfo.getVertexId());
 
-				if (surfaceTextured && vertexInfo.getTexCoords(surfaceId) == null) {
-					// no node or wrong node found
-					// use best fit only in extreme cases (it is slow)					
-					vertexInfo = getVertexInfoBestFitForXYZ(coordPoint.x, coordPoint.y, coordPoint.z, surfaceId);					
-				}
-				
 				if (surfaceTextured) {
 					TexCoords texCoords = vertexInfo.getTexCoords(surfaceId);
 					if (texCoords != null) {
@@ -717,7 +711,7 @@ public abstract class KmlGenericObject {
 						triangles.getP().add(texCoordsCounter); // wrong data is better than triangles out of sync
 						Logger.getInstance().log(LogLevel.DEBUG, 
 								"texCoords not found for (" + coordPoint.x + ", " + coordPoint.y + ", "
-										+ coordPoint.z + "). TOLERANCE = " + TOLERANCE_AFTER_TRIANGULATION);
+										+ coordPoint.z + "). TOLERANCE = " + TOLERANCE);
 					}
 				}
 			}
@@ -726,9 +720,9 @@ public abstract class KmlGenericObject {
 		VertexInfo vertexInfoIterator = firstVertexInfo;
 		while (vertexInfoIterator != null) {
 			// undo trick for very close coordinates
-			positionValues.add(new Double(reducePrecisionForXorY((vertexInfoIterator.getX() - originX)/100)));
-			positionValues.add(new Double(reducePrecisionForXorY((vertexInfoIterator.getY() - originY)/100)));
-			positionValues.add(new Double(reducePrecisionForZ((vertexInfoIterator.getZ() - originZ)/100)));
+			positionValues.add(new Double(reducePrecisionForXorY((vertexInfoIterator.getX() - originX)/CLOSE_COORDS_FACTOR)));
+			positionValues.add(new Double(reducePrecisionForXorY((vertexInfoIterator.getY() - originY)/CLOSE_COORDS_FACTOR)));
+			positionValues.add(new Double(reducePrecisionForZ((vertexInfoIterator.getZ() - originZ))));
 			vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
 		} 
 		positionArray.setCount(new BigInteger(String.valueOf(positionValues.size()))); // gotta love BigInteger!
@@ -889,7 +883,7 @@ public abstract class KmlGenericObject {
 		}
 	}
 
-	private VertexInfo getVertexInfoForXYZ(double x, double y, double z){
+	private VertexInfo getVertexInfoForXYZ(float x, float y, float z){
 		NodeY rootY = (NodeY) getValue(z, coordinateTree);
 		NodeX rootX = (NodeX) getValue(y, rootY);
 		VertexInfo vertexInfo = (VertexInfo) getValue(x, rootX);
@@ -897,7 +891,7 @@ public abstract class KmlGenericObject {
 	}
 
 	private void insertNode(Node currentBasis, Node nodeToInsert) {
-		int compareKeysResult = compareKeys(nodeToInsert.key, currentBasis.key, TOLERANCE_BEFORE_TRIANGULATION);
+		int compareKeysResult = compareKeys((float)nodeToInsert.key, (float)currentBasis.key, TOLERANCE);
 		if (compareKeysResult > 0) {
 			if (currentBasis.rightArc == null){
 				currentBasis.setRightArc(nodeToInsert);
@@ -921,11 +915,11 @@ public abstract class KmlGenericObject {
 		}
 	}
 
-	private Object getValue(double key, Node currentBasis) {
+	private Object getValue(float key, Node currentBasis) {
 		if (currentBasis == null) {
 			return null;
 		}
-		int compareKeysResult = compareKeys(key, currentBasis.key, TOLERANCE_AFTER_TRIANGULATION);
+		int compareKeysResult = compareKeys(key, (float)currentBasis.key, TOLERANCE);
 		if (compareKeysResult > 0) {
 			return getValue(key, currentBasis.rightArc);
 		}
@@ -936,7 +930,7 @@ public abstract class KmlGenericObject {
 	}
 
 
-	private VertexInfo getVertexInfoBestFitForXYZ(double x, double y, double z, long surfaceId) {
+	private VertexInfo getVertexInfoBestFitForXYZ(float x, float y, float z, long surfaceId) {
 		VertexInfo result = null;
 		VertexInfo vertexInfoIterator = firstVertexInfo;
 		double distancePow2 = Double.MAX_VALUE;
@@ -959,7 +953,7 @@ public abstract class KmlGenericObject {
 		return result;
 	}
 
-	private VertexInfo getVertexInfoBestFitForXYZ(double x, double y, double z) {
+	private VertexInfo getVertexInfoBestFitForXYZ(float x, float y, float z) {
 		VertexInfo result = null;
 		VertexInfo vertexInfoIterator = firstVertexInfo;
 		double distancePow2 = Double.MAX_VALUE;
@@ -1006,7 +1000,7 @@ public abstract class KmlGenericObject {
 		lastVertexInfo = currentVertexInfo;
 	}
 
-	private int compareKeys (double key1, double key2, double tolerance){
+	private int compareKeys (float key1, float key2, double tolerance){
 		int result = 0;
 		if (Math.abs(key1 - key2) > tolerance) {
 			result = key1 > key2 ? 1 : -1;
@@ -1457,9 +1451,9 @@ public abstract class KmlGenericObject {
 			zOffset = getZOffsetFromGEService(work.getId(), lowestPointCandidates);
 		}
 		double lowestZCoordinate = convertPointCoordinatesToWGS84(new double[] {
-				lowestPointCandidates.get(0).x/100, // undo trick for very close coordinates
-				lowestPointCandidates.get(0).y/100,	
-				lowestPointCandidates.get(0).z/100}) [2];
+				lowestPointCandidates.get(0).x/CLOSE_COORDS_FACTOR, // undo trick for very close coordinates
+				lowestPointCandidates.get(0).y/CLOSE_COORDS_FACTOR,	
+				lowestPointCandidates.get(0).z}) [2];
 
 		while (rs.next()) {
 			int objectclass_id = rs.getInt("objectclass_id");
@@ -1782,9 +1776,9 @@ public abstract class KmlGenericObject {
 							double[] ordinatesArray = surface.getCoordinates(currentContour);
 							for (int j = 0; j < ordinatesArray.length - 3; j = j+3, i = i+3) {
 
-								giOrdinatesArray[i] = ordinatesArray[j] * 100; // trick for very close coordinates
-								giOrdinatesArray[i+1] = ordinatesArray[j+1] * 100;
-								giOrdinatesArray[i+2] = ordinatesArray[j+2] * 100;
+								giOrdinatesArray[i] = ordinatesArray[j] * CLOSE_COORDS_FACTOR; // trick for very close coordinates
+								giOrdinatesArray[i+1] = ordinatesArray[j+1] * CLOSE_COORDS_FACTOR;
+								giOrdinatesArray[i+2] = ordinatesArray[j+2];
 
 								TexCoords texCoordsForThisSurface = null;
 								if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
@@ -1868,7 +1862,9 @@ public abstract class KmlGenericObject {
 		// correct heading value
 		double lat1 = Math.toRadians(getLocationY());
 		// undo trick for very close coordinates
-		double[] dummy = convertPointCoordinatesToWGS84(new double[] {getOriginX()/100, getOriginY()/100 - 20, getOriginZ()/100});
+		double[] dummy = convertPointCoordinatesToWGS84(new double[] {getOriginX()/CLOSE_COORDS_FACTOR,
+				getOriginY()/CLOSE_COORDS_FACTOR - 20,
+				getOriginZ()});
 		double lat2 = Math.toRadians(dummy[1]);
 		double dLon = Math.toRadians(dummy[0] - getLocationX());
 		double y = Math.sin(dLon) * Math.cos(lat2);
@@ -2174,9 +2170,9 @@ public abstract class KmlGenericObject {
 				double[] coords = new double[candidates.size()*3];
 				int index = 0;
 				for (Point3d point3d: candidates) {
-					coords[index++] = point3d.x / 100; // undo trick for very close coordinates
-					coords[index++] = point3d.y / 100;
-					coords[index++] = point3d.z / 100;
+					coords[index++] = point3d.x / CLOSE_COORDS_FACTOR; // undo trick for very close coordinates
+					coords[index++] = point3d.y / CLOSE_COORDS_FACTOR;
+					coords[index++] = point3d.z;
 				}
 
 				if (candidates.size() == 1) {
@@ -2245,9 +2241,9 @@ public abstract class KmlGenericObject {
 		while (true);
 
 		for (Point3d point3d: coords) {
-			point3d.x = point3d.x * 100; // trick for very close coordinates
-			point3d.y = point3d.y * 100;
-			point3d.z = point3d.z * 100;
+			point3d.x = point3d.x * CLOSE_COORDS_FACTOR; // trick for very close coordinates
+			point3d.y = point3d.y * CLOSE_COORDS_FACTOR;
+			point3d.z = point3d.z;
 		}
 		return coords;
 	}

@@ -284,7 +284,9 @@ public class Relief extends KmlGenericObject{
 
 	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
 		// undo trick for very close coordinates
-		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOriginX()/100, getOriginY()/100, getOriginZ()/100});
+		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOriginX()/CLOSE_COORDS_FACTOR,
+				getOriginY()/CLOSE_COORDS_FACTOR,
+				getOriginZ()});
 		setLocationX(reducePrecisionForXorY(originInWGS84[0]));
 		setLocationY(reducePrecisionForXorY(originInWGS84[1]));
 		setLocationZ(reducePrecisionForZ(originInWGS84[2]));

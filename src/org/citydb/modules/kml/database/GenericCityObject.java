@@ -423,7 +423,9 @@ public class GenericCityObject extends KmlGenericObject{
 
 		if (transformation == null) { // no implicit geometry
 			// undo trick for very close coordinates
-			double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOriginX()/100, getOriginY()/100, getOriginZ()/100});
+			double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOriginX()/CLOSE_COORDS_FACTOR,
+					getOriginY()/CLOSE_COORDS_FACTOR,
+					getOriginZ()});
 			setLocationX(reducePrecisionForXorY(originInWGS84[0]));
 			setLocationY(reducePrecisionForXorY(originInWGS84[1]));
 			setLocationZ(reducePrecisionForZ(originInWGS84[2]));
@@ -504,9 +506,9 @@ public class GenericCityObject extends KmlGenericObject{
 			double[] originalCoords = new double[]{0, 0, 0, 1};
 			Matrix v = new Matrix(originalCoords, 4);
 			v = transformation.times(v);
-			setOriginX ((v.get(0, 0) + refPointX)*100);
-			setOriginY ((v.get(1, 0) + refPointY)*100);
-			setOriginZ ((v.get(2, 0) + refPointZ)*100);
+			setOriginX ((v.get(0, 0) + refPointX)*CLOSE_COORDS_FACTOR);
+			setOriginY ((v.get(1, 0) + refPointY)*CLOSE_COORDS_FACTOR);
+			setOriginZ ((v.get(2, 0) + refPointZ));
 			// dummy
 			Point3d point3d = new Point3d(getOriginX(), getOriginY(), getOriginZ());
 			coords.add(point3d);			
@@ -664,9 +666,9 @@ public class GenericCityObject extends KmlGenericObject{
 							double[] ordinatesArray = surface.getCoordinates(currentContour);
 							for (int j = 0; j < ordinatesArray.length - 3; j = j+3, i = i+3) {
 
-								giOrdinatesArray[i] = ordinatesArray[j] * 100; // trick for very close coordinates
-								giOrdinatesArray[i+1] = ordinatesArray[j+1] * 100;
-								giOrdinatesArray[i+2] = ordinatesArray[j+2] * 100;
+								giOrdinatesArray[i] = ordinatesArray[j] * CLOSE_COORDS_FACTOR; // trick for very close coordinates
+								giOrdinatesArray[i+1] = ordinatesArray[j+1] * CLOSE_COORDS_FACTOR;
+								giOrdinatesArray[i+2] = ordinatesArray[j+2];
 
 								TexCoords texCoordsForThisSurface = null;
 								if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
