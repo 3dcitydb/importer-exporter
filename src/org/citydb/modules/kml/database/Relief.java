@@ -38,6 +38,8 @@ import java.util.List;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
+import net.opengis.kml._2.PlacemarkType;
+
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.Balloon;
@@ -48,8 +50,6 @@ import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
-
-import net.opengis.kml._2.PlacemarkType;
 
 public class Relief extends KmlGenericObject{
 
@@ -232,10 +232,11 @@ public class Relief extends KmlGenericObject{
 				case DisplayForm.COLLADA:
 					if (reliefQueryNumber == Queries.RELIEF_TIN_QUERY) { // all others not supported since they have no texture
 						fillGenericObjectForCollada(rs);
+						String currentgmlId = getGmlId();
 						setGmlId(work.getGmlId());
 						setId(work.getId());
 
-						if (getGeometryAmount() > GEOMETRY_AMOUNT_WARNING) {
+						if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING) {
 							Logger.getInstance().info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 						}
 

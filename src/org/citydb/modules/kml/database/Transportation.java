@@ -39,6 +39,11 @@ import java.util.List;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
+import net.opengis.kml._2.AltitudeModeEnumType;
+import net.opengis.kml._2.LineStringType;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PointType;
+
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.GeometryObject;
 import org.citydb.api.geometry.GeometryObject.GeometryType;
@@ -52,11 +57,6 @@ import org.citydb.log.Logger;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.GeometryCounterEvent;
-
-import net.opengis.kml._2.AltitudeModeEnumType;
-import net.opengis.kml._2.LineStringType;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PointType;
 
 public class Transportation extends KmlGenericObject{
 
@@ -224,10 +224,11 @@ public class Transportation extends KmlGenericObject{
 						break;
 					case DisplayForm.COLLADA:
 						fillGenericObjectForCollada(rs);
+						String currentgmlId = getGmlId();
 						setGmlId(work.getGmlId());
 						setId(work.getId());
 
-						if (getGeometryAmount() > GEOMETRY_AMOUNT_WARNING) {
+						if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING) {
 							Logger.getInstance().info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 						}
 
