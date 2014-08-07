@@ -87,64 +87,58 @@ public enum DBImporterEnum {
 
 	private DBImporterEnum[] dependencies;
 	public static List<DBImporterEnum> EXECUTION_PLAN = getExecutionPlan();
-	
+
 	private DBImporterEnum(DBImporterEnum... dependencies) {
 		this.dependencies = dependencies;
 	}
-	
+
 	public static List<DBImporterEnum> getExecutionPlan() {
 		Integer[] weights = new Integer[values().length];
-
-		for (DBImporterEnum type : values()) {			
-			if (weights[type.ordinal()] == null) {
-				weightDependencies(type, weights);
-				weights[type.ordinal()] = 0;
-			}
-		}
+		for (DBImporterEnum type : values())		
+			weightDependencies(type, weights);
 
 		return getExecutionPlan(weights);
 	}
-	
+
 	public static List<DBImporterEnum> getExecutionPlan(DBImporterEnum type) {
 		Integer[] weights = new Integer[values().length];
-		weights[type.ordinal()] = 0;
 		weightDependencies(type, weights);
-		
+
 		return getExecutionPlan(weights);
 	}
-	
+
 	private static List<DBImporterEnum> getExecutionPlan(Integer[] weights) {
 		LinkedList<DBImporterEnum> executionPlan = new LinkedList<DBImporterEnum>();
-		
+
 		int i, j;
 		for (i = 0; i < values().length; i++) {
 			if (weights[i] == null)
 				continue;
-			
+
 			j = 0;
 			for (DBImporterEnum item : executionPlan) {
 				if (weights[i] >= weights[item.ordinal()])
 					break;
-				
+
 				j++;
 			}
-			
+
 			executionPlan.add(j, DBImporterEnum.values()[i]);
 		}
-		
+
 		return executionPlan;
 	}
 
 	private static void weightDependencies(DBImporterEnum type, Integer[] weights) {
+		if (weights[type.ordinal()] == null)
+			weights[type.ordinal()] = 0;
+
 		for (DBImporterEnum dependence : type.dependencies) {
-			if (dependence != null) {				
-				if (weights[type.ordinal()] == null)
-					weights[type.ordinal()] = 0;
-				
+			if (dependence != null) {
 				if (weights[dependence.ordinal()] == null)
 					weights[dependence.ordinal()] = 0;
-				
-				weights[dependence.ordinal()]++;
+
+				weights[dependence.ordinal()] += weights[type.ordinal()] + 1;
 				weightDependencies(dependence, weights);
 			}
 		}

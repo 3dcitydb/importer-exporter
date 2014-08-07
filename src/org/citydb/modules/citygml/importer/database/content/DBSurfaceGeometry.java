@@ -1301,11 +1301,8 @@ public class DBSurfaceGeometry implements DBImporter {
 
 	private void addBatch() throws SQLException {
 		psGeomElem.addBatch();
-
-		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize()) {
+		if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 			dbImporterManager.executeBatch(DBImporterEnum.SURFACE_GEOMETRY);
-			batchCounter = 0;
-		}
 	}
 
 	@Override

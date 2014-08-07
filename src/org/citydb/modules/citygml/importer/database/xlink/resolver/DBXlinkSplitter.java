@@ -355,6 +355,9 @@ public class DBXlinkSplitter {
 				rs.close();
 				stmt.close();
 			}
+			
+			if (!shouldRun)
+				return;
 
 			// third step: import texture images and world files
 			if (cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTURE_FILE)) {		
