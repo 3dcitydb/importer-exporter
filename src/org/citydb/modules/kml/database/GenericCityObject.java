@@ -434,7 +434,9 @@ public class GenericCityObject extends KmlGenericObject{
 		}
 
 	//	double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {0, 0, 0}); // will be turned into refPointX,Y,Z by convertToWGS84
-		double[] originInWGS84 = convertPointWorldCoordinatesToWGS84(new double[] {getOriginX()/100, getOriginY()/100, getOriginZ()/100});
+		double[] originInWGS84 = convertPointWorldCoordinatesToWGS84(new double[] {getOriginX()/CLOSE_COORDS_FACTOR,
+				getOriginY()/CLOSE_COORDS_FACTOR,
+				getOriginZ()});
 		setLocationX(reducePrecisionForXorY(originInWGS84[0]));
 		setLocationY(reducePrecisionForXorY(originInWGS84[1]));
 		setLocationZ(reducePrecisionForZ(originInWGS84[2]));
