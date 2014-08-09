@@ -89,7 +89,7 @@ public class XlinkSolidGeometry implements DBXlinkResolver {
 			GeometryObject solidObj = null;
 
 			if (!root.isComposite) 
-				solidObj = solids.get(1);
+				solidObj = solids.get(0);
 			else {
 				GeometryObject[] tmp = new GeometryObject[solids.size()];
 
