@@ -42,6 +42,7 @@ import org.citydb.database.TableEnum;
 import org.citydb.log.Logger;
 import org.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
 import org.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
+import org.citydb.modules.citygml.importer.util.ConcurrentLockManager;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
@@ -49,7 +50,7 @@ import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 
 public class DBImplicitGeometry implements DBImporter {
-	private final static ReentrantLock mainLock = new ReentrantLock();
+	private final ConcurrentLockManager lockManager = ConcurrentLockManager.getInstance(DBImplicitGeometry.class);
 	private final Logger LOG = Logger.getInstance();
 
 	private final Connection batchConn;
@@ -58,7 +59,7 @@ public class DBImplicitGeometry implements DBImporter {
 	private PreparedStatement psImplicitGeometry;
 	private PreparedStatement psUpdateImplicitGeometry;
 	private PreparedStatement psSelectLibraryObject;
-	
+
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBOtherGeometry otherGeometryImporter;
 
@@ -113,8 +114,9 @@ public class DBImplicitGeometry implements DBImporter {
 			}
 		}
 
-		// we need to synchronize this check.
-		final ReentrantLock lock = mainLock;
+		// synchronize concurrent processing of the same implicit geometry
+		// different implicit geometries however may be processed concurrently
+		ReentrantLock lock = lockManager.putAndGetLock(gmlId != null ? gmlId : libraryURI);
 		lock.lock();
 
 		ResultSet rs = null;
@@ -166,7 +168,7 @@ public class DBImplicitGeometry implements DBImporter {
 
 				long geometryId = 0;
 				GeometryObject geometryObject = null;
-				
+
 				if (relativeGeometry != null) {
 					if (surfaceGeometryImporter.isSurfaceGeometry(relativeGeometry))
 						geometryId = surfaceGeometryImporter.insertImplicitGeometry(relativeGeometry);
@@ -181,15 +183,15 @@ public class DBImplicitGeometry implements DBImporter {
 
 						LOG.error(msg.toString());
 					}
-					
+
 					implicitGeometry.unsetRelativeGMLGeometry();
 				}
-				
+
 				if (geometryId != 0)
 					psUpdateImplicitGeometry.setLong(2, geometryId);
 				else
 					psUpdateImplicitGeometry.setNull(2, Types.NULL);
-				
+
 				if (geometryObject != null)
 					psUpdateImplicitGeometry.setObject(3, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(geometryObject, batchConn));
 				else
@@ -217,6 +219,7 @@ public class DBImplicitGeometry implements DBImporter {
 				rs = null;
 			}
 
+			lockManager.releaseLock(gmlId != null ? gmlId : libraryURI);
 			lock.unlock();
 		}
 
@@ -243,6 +246,7 @@ public class DBImplicitGeometry implements DBImporter {
 		psImplicitGeometry.close();
 		psUpdateImplicitGeometry.close();
 		psSelectLibraryObject.close();
+		lockManager.clear();
 	}
 
 	@Override

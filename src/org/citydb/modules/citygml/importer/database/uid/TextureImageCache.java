@@ -36,8 +36,6 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.modules.citygml.common.database.cache.BranchCacheTable;
@@ -48,44 +46,40 @@ import org.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
 import org.citydb.modules.citygml.common.database.uid.UIDCachingModel;
 import org.citygml4j.model.citygml.CityGMLClass;
 
-public class TextureImageCache implements UIDCachingModel {
+public class TextureImageCache 
+
+implements UIDCachingModel {
 	private final int partitions;
-	
+	private final CacheTableModelEnum cacheTableModel;
+	private final CacheTableManager cacheTableManager;
+
 	private final ReentrantLock mainLock = new ReentrantLock(true);
-	private final Condition indexingDone = mainLock.newCondition();
+	private BranchCacheTable branchTable;
 
 	private CacheTable[] backUpTables;
 	private PreparedStatement[] psLookupIds;
 	private PreparedStatement[] psDrains;
 	private ReentrantLock[] locks;
+	private boolean[] isIndexed;
 	private int[] batchCounters;
 
 	private int batchSize;
-	private AtomicBoolean enableIndexes = new AtomicBoolean(false);
-	private volatile boolean isIndexed = false;
 
 	public TextureImageCache(CacheTableManager cacheTableManager, int partitions, int batchSize) throws SQLException {
+		this.cacheTableManager = cacheTableManager;
 		this.partitions = partitions;
 		this.batchSize = batchSize;
 
-		BranchCacheTable branchTable = cacheTableManager.createBranchCacheTable(CacheTableModelEnum.TEXTURE_FILE_ID);
+		cacheTableModel = CacheTableModelEnum.TEXTURE_FILE_ID;
 		backUpTables = new CacheTable[partitions];
 		psLookupIds = new PreparedStatement[partitions];
 		psDrains = new PreparedStatement[partitions];
 		locks = new ReentrantLock[partitions];
+		isIndexed = new boolean[partitions];
 		batchCounters = new int[partitions];
 
-		for (int i = 0; i < partitions; i++) {
-			CacheTable tempTable = i == 0 ? branchTable.getMainTable() : branchTable.branch();
-
-			Connection conn = tempTable.getConnection();
-			String tableName = tempTable.getTableName();
-
-			backUpTables[i] = tempTable;
-			psDrains[i] = conn.prepareStatement("insert into " + tableName + " (FILE_URI, ID) values (?, ?)");
-			psLookupIds[i] = conn.prepareStatement("select ID from " + tableName + " where FILE_URI=?");
+		for (int i = 0; i < partitions; i++)
 			locks[i] = new ReentrantLock(true);
-		}		
 	}
 
 	@Override
@@ -101,6 +95,7 @@ public class TextureImageCache implements UIDCachingModel {
 
 				// determine partition for gml:id
 				int partition = Math.abs(fileURI.hashCode() % partitions);
+				initializePartition(partition);
 
 				// get corresponding prepared statement
 				PreparedStatement psDrain = psDrains[partition];
@@ -127,6 +122,7 @@ public class TextureImageCache implements UIDCachingModel {
 
 			// determine partition for gml:id
 			int partition = Math.abs(fileURI.hashCode() % partitions);
+			initializePartition(partition);
 
 			// get corresponding prepared statement
 			PreparedStatement psDrain = psDrains[partition];
@@ -152,40 +148,27 @@ public class TextureImageCache implements UIDCachingModel {
 
 	@Override
 	public UIDCacheEntry lookupDB(String key) throws SQLException {
-		if (enableIndexes.compareAndSet(false, true)) 
-			enableIndexesOnCacheTables();
-
-		// wait for tables to be indexed
-		if (!isIndexed) {
-			final ReentrantLock lock = this.mainLock;
-			lock.lock();
-
-			try {
-				while (!isIndexed)
-					indexingDone.await();
-			} catch (InterruptedException ie) {
-				//
-			} finally {
-				lock.unlock();
-			}
-		}
-		
-		// determine partition for gml:id
+		// determine partition for texture image
 		int partition = Math.abs(key.hashCode() % partitions);
+		initializePartition(partition);
+
+		// enable indexes upon first lookup
+		if (!isIndexed[partition])
+			enableIndexesOnCacheTable(partition);
 
 		// lock partition
 		final ReentrantLock tableLock = this.locks[partition];
 		tableLock.lock();
 
 		try {
-			ResultSet rs = null;	
+			ResultSet rs = null;
+
 			try {
 				psLookupIds[partition].setString(1, key);
 				rs = psLookupIds[partition].executeQuery();
 
 				if (rs.next()) {
 					long id = rs.getLong(1);
-
 					return new UIDCacheEntry(id, 0, false, null, CityGMLClass.ABSTRACT_TEXTURE);
 				}
 
@@ -217,30 +200,57 @@ public class TextureImageCache implements UIDCachingModel {
 		for (PreparedStatement ps : psDrains)
 			if (ps != null)
 				ps.close();
-
-		for (PreparedStatement ps : psLookupIds)
-			if (ps != null)
-				ps.close();
 	}
 
 	@Override
 	public String getType() {
 		return "texture image";
 	}
-	
-	private void enableIndexesOnCacheTables() throws SQLException {
-		// cache is indexed upon first database lookup
-		for (int i = 0; i < partitions; i++)		
-			backUpTables[i].createIndexes();		
 
+	private void enableIndexesOnCacheTable(int partition) throws SQLException {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
 		try {
-			isIndexed = true;
-			indexingDone.signalAll();
+			if (!isIndexed[partition]) {
+				backUpTables[partition].createIndexes();
+				isIndexed[partition] = true;
+			}
 		} finally {
 			lock.unlock();
+		}
+	}
+
+	private void initializePartition(int partition) throws SQLException {
+		if (branchTable == null) {
+			mainLock.lock();
+
+			try {
+				if (branchTable == null)
+					branchTable = cacheTableManager.createBranchCacheTable(cacheTableModel);
+			} finally {
+				mainLock.unlock();
+			}
+		}
+
+		if (backUpTables[partition] == null) {
+			final ReentrantLock tableLock = locks[partition];
+			tableLock.lock();
+
+			try {
+				if (backUpTables[partition] == null) {
+					CacheTable tempTable = partition == 0 ? branchTable.getMainTable() : branchTable.branch();
+
+					Connection conn = tempTable.getConnection();
+					String tableName = tempTable.getTableName();
+
+					backUpTables[partition] = tempTable;
+					psLookupIds[partition] = conn.prepareStatement("select ID from " + tableName + " where FILE_URI=?");
+					psDrains[partition] = conn.prepareStatement("insert into " + tableName + " (FILE_URI, ID) values (?, ?)");
+				}
+			} finally {
+				tableLock.unlock();
+			}
 		}
 	}
 

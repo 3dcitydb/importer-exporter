@@ -10,13 +10,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.config.Config;
 import org.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
+import org.citydb.modules.citygml.importer.util.ConcurrentLockManager;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.AbstractTexture;
 import org.citygml4j.model.citygml.appearance.GeoreferencedTexture;
 
 public class DBTexImage implements DBImporter {
-	private final static ReentrantLock mainLock = new ReentrantLock();
-
+	private final ConcurrentLockManager lockManager = ConcurrentLockManager.getInstance(DBTexImage.class);
 	private final Connection connection;
 	private final Config config;
 	private final DBImporterManager importerManager;
@@ -56,9 +56,9 @@ public class DBTexImage implements DBImporter {
 		String md5URI = toHexString(md5.digest(imageURI.getBytes()));
 		boolean insertTexImage = false;
 
-		// check whether the texture image is referenced from another surface data
-		// this check has to be synchronized though
-		final ReentrantLock lock = mainLock;
+		// synchronize concurrent processing of the same texture image
+		// different texture images however may be processed concurrently
+		ReentrantLock lock = lockManager.putAndGetLock(md5URI);
 		lock.lock();
 
 		try {
@@ -68,7 +68,9 @@ public class DBTexImage implements DBImporter {
 				importerManager.putUID(md5URI, texImageId, CityGMLClass.ABSTRACT_TEXTURE);
 				insertTexImage = true;
 			}
+
 		} finally {
+			lockManager.releaseLock(md5URI);
 			lock.unlock();
 		}
 
@@ -146,6 +148,7 @@ public class DBTexImage implements DBImporter {
 	@Override
 	public void close() throws SQLException {
 		psInsertStmt.close();
+		lockManager.clear();
 	}
 
 	@Override

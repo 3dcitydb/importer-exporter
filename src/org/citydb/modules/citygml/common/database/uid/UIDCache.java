@@ -200,6 +200,7 @@ public class UIDCache {
 		try {			
 			return cacheModel.lookupDB(key);
 		} catch (SQLException sqlEx) {
+			LOG.error("SQL error while querying the " + cacheModel.getType() + " cache: " + sqlEx.getMessage());
 			return null;
 		} 
 	}
@@ -222,6 +223,7 @@ public class UIDCache {
 		try {
 			return cacheModel.lookupDB(id, type);
 		} catch (SQLException sqlEx) {
+			LOG.error("SQL error while querying the " + cacheModel.getType() + " cache: " + sqlEx.getMessage());
 			return null;
 		} 
 	}
