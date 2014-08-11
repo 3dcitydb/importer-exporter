@@ -352,7 +352,7 @@ public class DBSurfaceGeometry implements DBImporter {
 					// the gml:id of linear rings in the database, we have to remember its id
 					if (importAppearance && !isCopy) {
 						if (exteriorLinearRing.isSetId()) {
-							if (localTexCoordResolver != null)
+							if (localTexCoordResolver != null && localTexCoordResolver.isActive())
 								localTexCoordResolver.registerLinearRing(exteriorLinearRing.getId(), surfaceGeometryId, reverse);
 
 							// the ring could also be the target of a global appearance
@@ -383,7 +383,7 @@ public class DBSurfaceGeometry implements DBImporter {
 								// also remember the gml:id of interior rings in case it is
 								// referenced by a <textureCoordinates> element
 								if (importAppearance && !isCopy && interiorLinearRing.isSetId()) {
-									if (localTexCoordResolver != null)
+									if (localTexCoordResolver != null && localTexCoordResolver.isActive())
 										localTexCoordResolver.registerLinearRing(interiorLinearRing.getId(), surfaceGeometryId, reverse);
 
 									// the ring could also be the target of a global appearance
