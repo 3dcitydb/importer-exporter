@@ -107,9 +107,11 @@ import org.collada._2005._11.colladaschema.COLLADA;
 import org.collada._2005._11.colladaschema.CommonColorOrTextureType;
 import org.collada._2005._11.colladaschema.CommonFloatOrParamType;
 import org.collada._2005._11.colladaschema.CommonNewparamType;
+import org.collada._2005._11.colladaschema.CommonTransparentType;
 import org.collada._2005._11.colladaschema.Effect;
 import org.collada._2005._11.colladaschema.Extra;
 import org.collada._2005._11.colladaschema.FloatArray;
+import org.collada._2005._11.colladaschema.FxOpaqueEnum;
 import org.collada._2005._11.colladaschema.FxSampler2DCommon;
 import org.collada._2005._11.colladaschema.FxSurfaceCommon;
 import org.collada._2005._11.colladaschema.FxSurfaceInitFromCommon;
@@ -236,6 +238,7 @@ public abstract class KmlGenericObject {
 		defaultX3dMaterial = new X3DMaterial();
 		defaultX3dMaterial.setAmbientIntensity(0.2d);
 		defaultX3dMaterial.setShininess(0.2d);
+		defaultX3dMaterial.setTransparency(0d);
 		defaultX3dMaterial.setTransparency(0d);
 		defaultX3dMaterial.setDiffuseColor(getX3dColorFromString("0.8 0.8 0.8"));
 		defaultX3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
@@ -539,9 +542,20 @@ public abstract class KmlGenericObject {
 					CommonFloatOrParamType cfopt = colladaFactory.createCommonFloatOrParamType();
 					CommonFloatOrParamType.Float cfoptf = colladaFactory.createCommonFloatOrParamTypeFloat();
 					if (x3dMaterial.isSetShininess()) {
-						cfoptf.setValue(x3dMaterial.getShininess());
+						cfopt = colladaFactory.createCommonFloatOrParamType();
+						cfoptf = colladaFactory.createCommonFloatOrParamTypeFloat();
+						cfoptf.setValue(1.0-x3dMaterial.getTransparency());
 						cfopt.setFloat(cfoptf);
-						lambert.setReflectivity(cfopt);
+						lambert.setTransparency(cfopt);
+						CommonTransparentType transparent = colladaFactory.createCommonTransparentType();
+						transparent.setOpaque(FxOpaqueEnum.A_ONE);
+						CommonColorOrTextureType.Color color = colladaFactory.createCommonColorOrTextureTypeColor();
+						color.getValue().add(1.0);
+						color.getValue().add(1.0);
+						color.getValue().add(1.0);
+						color.getValue().add(1.0);						
+						transparent.setColor(color);						
+						lambert.setTransparent(transparent);
 					}
 
 					if (x3dMaterial.isSetTransparency()) {
