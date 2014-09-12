@@ -112,7 +112,7 @@ public class DBTunnelInstallation implements DBImporter {
 		// OBJECTCLASS_ID
 		psTunnelInstallation.setLong(2, Util.cityObject2classId(tunnelInstallation.getCityGMLClass()));
 
-		// class
+		// tun:class
 		if (tunnelInstallation.isSetClazz() && tunnelInstallation.getClazz().isSetValue()) {
 			psTunnelInstallation.setString(3, tunnelInstallation.getClazz().getValue());
 			psTunnelInstallation.setString(4, tunnelInstallation.getClazz().getCodeSpace());
@@ -121,7 +121,7 @@ public class DBTunnelInstallation implements DBImporter {
 			psTunnelInstallation.setNull(4, Types.VARCHAR);
 		}
 
-		// function
+		// tun:function
 		if (tunnelInstallation.isSetFunction()) {
 			String[] function = Util.codeList2string(tunnelInstallation.getFunction());
 			psTunnelInstallation.setString(5, function[0]);
@@ -131,7 +131,7 @@ public class DBTunnelInstallation implements DBImporter {
 			psTunnelInstallation.setNull(6, Types.VARCHAR);
 		}
 
-		// usage
+		// tun:usage
 		if (tunnelInstallation.isSetUsage()) {
 			String[] usage = Util.codeList2string(tunnelInstallation.getUsage());
 			psTunnelInstallation.setString(7, usage[0]);

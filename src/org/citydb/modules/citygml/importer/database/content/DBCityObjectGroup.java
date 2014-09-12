@@ -103,7 +103,7 @@ public class DBCityObjectGroup implements DBImporter {
 		// ID
 		psCityObjectGroup.setLong(1, cityObjectId);
 
-		// class
+		// grp:class
 		if (cityObjectGroup.isSetClazz() && cityObjectGroup.getClazz().isSetValue()) {
 			psCityObjectGroup.setString(2, cityObjectGroup.getClazz().getValue());
 			psCityObjectGroup.setString(3, cityObjectGroup.getClazz().getCodeSpace());
@@ -112,7 +112,7 @@ public class DBCityObjectGroup implements DBImporter {
 			psCityObjectGroup.setNull(3, Types.VARCHAR);
 		}
 
-		// function
+		// grp:function
 		if (cityObjectGroup.isSetFunction()) {
 			String[] function = Util.codeList2string(cityObjectGroup.getFunction());
 			psCityObjectGroup.setString(4, function[0]);
@@ -122,7 +122,7 @@ public class DBCityObjectGroup implements DBImporter {
 			psCityObjectGroup.setNull(5, Types.VARCHAR);
 		}
 
-		// usage
+		// grp:usage
 		if (cityObjectGroup.isSetUsage()) {
 			String[] usage = Util.codeList2string(cityObjectGroup.getUsage());
 			psCityObjectGroup.setString(6, usage[0]);

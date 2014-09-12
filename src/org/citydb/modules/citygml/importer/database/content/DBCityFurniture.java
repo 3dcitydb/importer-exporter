@@ -117,7 +117,7 @@ public class DBCityFurniture implements DBImporter {
 		// ID
 		psCityFurniture.setLong(1, cityObjectId);
 
-		// class
+		// frn:class
 		if (cityFurniture.isSetClazz() && cityFurniture.getClazz().isSetValue()) {
 			psCityFurniture.setString(2, cityFurniture.getClazz().getValue());
 			psCityFurniture.setString(3, cityFurniture.getClazz().getCodeSpace());
@@ -126,7 +126,7 @@ public class DBCityFurniture implements DBImporter {
 			psCityFurniture.setNull(3, Types.VARCHAR);
 		}
 
-		// function
+		// frn:function
 		if (cityFurniture.isSetFunction()) {
 			String[] function = Util.codeList2string(cityFurniture.getFunction());
 			psCityFurniture.setString(4, function[0]);
@@ -136,7 +136,7 @@ public class DBCityFurniture implements DBImporter {
 			psCityFurniture.setNull(5, Types.VARCHAR);
 		}
 
-		// usage
+		// frn:usage
 		if (cityFurniture.isSetUsage()) {
 			String[] usage = Util.codeList2string(cityFurniture.getUsage());
 			psCityFurniture.setString(6, usage[0]);
@@ -146,6 +146,7 @@ public class DBCityFurniture implements DBImporter {
 			psCityFurniture.setNull(7, Types.VARCHAR);
 		}
 
+		// Geometry
 		// lodXTerrainIntersectionCurve
 		for (int i = 0; i < 4; i++) {
 			MultiCurveProperty multiCurveProperty = null;

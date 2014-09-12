@@ -91,7 +91,7 @@ public class DBLandUse implements DBImporter {
 		// ID
 		psLandUse.setLong(1, landUseId);
 
-		// class
+		// luse:class
 		if (landUse.isSetClazz() && landUse.getClazz().isSetValue()) {
 			psLandUse.setString(2, landUse.getClazz().getValue());
 			psLandUse.setString(3, landUse.getClazz().getCodeSpace());
@@ -100,7 +100,7 @@ public class DBLandUse implements DBImporter {
 			psLandUse.setNull(3, Types.VARCHAR);
 		}
 
-		// function
+		// luse:function
 		if (landUse.isSetFunction()) {
 			String[] function = Util.codeList2string(landUse.getFunction());
 			psLandUse.setString(4, function[0]);
@@ -110,7 +110,7 @@ public class DBLandUse implements DBImporter {
 			psLandUse.setNull(5, Types.VARCHAR);
 		}
 
-		// usage
+		// luse:usage
 		if (landUse.isSetUsage()) {
 			String[] usage = Util.codeList2string(landUse.getUsage());
 			psLandUse.setString(6, usage[0]);

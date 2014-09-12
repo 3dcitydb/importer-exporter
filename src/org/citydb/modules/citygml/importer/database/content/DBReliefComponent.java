@@ -103,10 +103,10 @@ public class DBReliefComponent implements DBImporter {
 		// OBJECTCLASS_ID
 		psReliefComponent.setLong(2, Util.cityObject2classId(reliefComponent.getCityGMLClass()));
 
-		// lod
+		// dem:lod
 		psReliefComponent.setInt(3, reliefComponent.getLod());
 
-		// extent
+		// dem:extent
 		GeometryObject extent = null;
 		if (reliefComponent.isSetExtent())
 			extent = otherGeometryImporter.get2DPolygon(reliefComponent.getExtent());

@@ -123,7 +123,7 @@ public class DBBridge implements DBImporter {
 			return 0;
 	}
 
-	private boolean insert(AbstractBridge bridge,
+	public boolean insert(AbstractBridge bridge,
 			long bridgeId,
 			long parentId,
 			long rootId) throws SQLException {
@@ -147,7 +147,7 @@ public class DBBridge implements DBImporter {
 		// BRIDGE_ROOT_ID
 		psBridge.setLong(3, rootId);
 
-		// class
+		// brid:class
 		if (bridge.isSetClazz() && bridge.getClazz().isSetValue()) {
 			psBridge.setString(4, bridge.getClazz().getValue());
 			psBridge.setString(5, bridge.getClazz().getCodeSpace());
@@ -156,7 +156,7 @@ public class DBBridge implements DBImporter {
 			psBridge.setNull(5, Types.VARCHAR);
 		}
 
-		// function
+		// brid:function
 		if (bridge.isSetFunction()) {
 			String[] function = Util.codeList2string(bridge.getFunction());
 			psBridge.setString(6, function[0]);
@@ -166,7 +166,7 @@ public class DBBridge implements DBImporter {
 			psBridge.setNull(7, Types.VARCHAR);
 		}
 
-		// usage
+		// brid:usage
 		if (bridge.isSetUsage()) {
 			String[] usage = Util.codeList2string(bridge.getUsage());
 			psBridge.setString(8, usage[0]);
@@ -176,21 +176,21 @@ public class DBBridge implements DBImporter {
 			psBridge.setNull(9, Types.VARCHAR);
 		}
 
-		// yearOfConstruction
+		// brid:yearOfConstruction
 		if (bridge.isSetYearOfConstruction()) {
 			psBridge.setDate(10, new Date(bridge.getYearOfConstruction().getTime().getTime()));
 		} else {
 			psBridge.setNull(10, Types.DATE);
 		}
 
-		// yearOfDemolition
+		// brid:yearOfDemolition
 		if (bridge.isSetYearOfDemolition()) {
 			psBridge.setDate(11, new Date(bridge.getYearOfDemolition().getTime().getTime()));
 		} else {
 			psBridge.setNull(11, Types.DATE);
 		}
 
-		// isMovable
+		// brid:isMovable
 		if (bridge.isSetIsMovable())
 			psBridge.setInt(12, bridge.getIsMovable() ? 1 : 0);
 		else

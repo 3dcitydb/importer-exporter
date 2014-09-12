@@ -134,7 +134,7 @@ public class DBAppearance implements DBImporter {
 			psAppearance.setNull(5, Types.VARCHAR);
 		}
 
-		// theme
+		// app:theme
 		psAppearance.setString(6, appearance.getTheme());
 
 		// cityobject or citymodel id

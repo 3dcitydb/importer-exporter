@@ -110,7 +110,7 @@ public class DBBridgeConstrElement implements DBImporter {
 		// ID
 		psBridgeConstruction.setLong(1, bridgeConstructionId);
 
-		// class
+		// brid:class
 		if (bridgeConstruction.isSetClazz() && bridgeConstruction.getClazz().isSetValue()) {
 			psBridgeConstruction.setString(2, bridgeConstruction.getClazz().getValue());
 			psBridgeConstruction.setString(3, bridgeConstruction.getClazz().getCodeSpace());
@@ -119,7 +119,7 @@ public class DBBridgeConstrElement implements DBImporter {
 			psBridgeConstruction.setNull(3, Types.VARCHAR);
 		}
 
-		// function
+		// brid:function
 		if (bridgeConstruction.isSetFunction()) {
 			String[] function = Util.codeList2string(bridgeConstruction.getFunction());
 			psBridgeConstruction.setString(4, function[0]);
@@ -129,7 +129,7 @@ public class DBBridgeConstrElement implements DBImporter {
 			psBridgeConstruction.setNull(5, Types.VARCHAR);
 		}
 
-		// usage
+		// brid:usage
 		if (bridgeConstruction.isSetUsage()) {
 			String[] usage = Util.codeList2string(bridgeConstruction.getUsage());
 			psBridgeConstruction.setString(6, usage[0]);

@@ -124,7 +124,7 @@ public class DBBuilding implements DBImporter {
 			return 0;
 	}
 
-	private boolean insert(AbstractBuilding building,
+	public boolean insert(AbstractBuilding building,
 			long buildingId,
 			long parentId,
 			long rootId) throws SQLException {

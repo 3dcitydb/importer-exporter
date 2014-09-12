@@ -117,7 +117,7 @@ public class DBGenericCityObject implements DBImporter {
 		// ID
 		psGenericCityObject.setLong(1, cityObjectId);
 
-		// class
+		// gen:class
 		if (genericCityObject.isSetClazz() && genericCityObject.getClazz().isSetValue()) {
 			psGenericCityObject.setString(2, genericCityObject.getClazz().getValue());
 			psGenericCityObject.setString(3, genericCityObject.getClazz().getCodeSpace());
@@ -126,7 +126,7 @@ public class DBGenericCityObject implements DBImporter {
 			psGenericCityObject.setNull(3, Types.VARCHAR);
 		}
 
-		// function
+		// gen:function
 		if (genericCityObject.isSetFunction()) {
 			String[] function = Util.codeList2string(genericCityObject.getFunction());
 			psGenericCityObject.setString(4, function[0]);
@@ -136,7 +136,7 @@ public class DBGenericCityObject implements DBImporter {
 			psGenericCityObject.setNull(5, Types.VARCHAR);
 		}
 
-		// usage
+		// gen:usage
 		if (genericCityObject.isSetUsage()) {
 			String[] usage = Util.codeList2string(genericCityObject.getUsage());
 			psGenericCityObject.setString(6, usage[0]);
@@ -146,6 +146,7 @@ public class DBGenericCityObject implements DBImporter {
 			psGenericCityObject.setNull(7, Types.VARCHAR);
 		}
 
+		// Geometry
 		// lodXTerrainIntersectionCurve
 		for (int i = 0; i < 5; i++) {
 			MultiCurveProperty multiCurveProperty = null;

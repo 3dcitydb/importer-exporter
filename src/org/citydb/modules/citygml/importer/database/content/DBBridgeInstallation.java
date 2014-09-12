@@ -112,7 +112,7 @@ public class DBBridgeInstallation implements DBImporter {
 		// OBJECTCLASS_ID
 		psBridgeInstallation.setLong(2, Util.cityObject2classId(bridgeInstallation.getCityGMLClass()));
 
-		// class
+		// brid:class
 		if (bridgeInstallation.isSetClazz() && bridgeInstallation.getClazz().isSetValue()) {
 			psBridgeInstallation.setString(3, bridgeInstallation.getClazz().getValue());
 			psBridgeInstallation.setString(4, bridgeInstallation.getClazz().getCodeSpace());
@@ -121,7 +121,7 @@ public class DBBridgeInstallation implements DBImporter {
 			psBridgeInstallation.setNull(4, Types.VARCHAR);
 		}
 
-		// function
+		// brid:function
 		if (bridgeInstallation.isSetFunction()) {
 			String[] function = Util.codeList2string(bridgeInstallation.getFunction());
 			psBridgeInstallation.setString(5, function[0]);
@@ -131,7 +131,7 @@ public class DBBridgeInstallation implements DBImporter {
 			psBridgeInstallation.setNull(6, Types.VARCHAR);
 		}
 
-		// usage
+		// brid:usage
 		if (bridgeInstallation.isSetUsage()) {
 			String[] usage = Util.codeList2string(bridgeInstallation.getUsage());
 			psBridgeInstallation.setString(7, usage[0]);

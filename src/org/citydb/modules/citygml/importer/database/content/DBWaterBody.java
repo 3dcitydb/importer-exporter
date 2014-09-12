@@ -58,7 +58,7 @@ public class DBWaterBody implements DBImporter {
 	private DBCityObject cityObjectImporter;
 	private DBSurfaceGeometry surfaceGeometryImporter;
 	private DBWaterBoundarySurface boundarySurfaceImporter;
-	private DBOtherGeometry otherGeoemtryImporter;
+	private DBOtherGeometry otherGeometryImporter;
 
 	private int batchCounter;
 	private int nullGeometryType;
@@ -85,7 +85,7 @@ public class DBWaterBody implements DBImporter {
 		surfaceGeometryImporter = (DBSurfaceGeometry)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_GEOMETRY);
 		cityObjectImporter = (DBCityObject)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECT);
 		boundarySurfaceImporter = (DBWaterBoundarySurface)dbImporterManager.getDBImporter(DBImporterEnum.WATERBOUNDARY_SURFACE);
-		otherGeoemtryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
+		otherGeometryImporter = (DBOtherGeometry)dbImporterManager.getDBImporter(DBImporterEnum.OTHER_GEOMETRY);
 	}
 
 	public long insert(WaterBody waterBody) throws SQLException {
@@ -113,7 +113,7 @@ public class DBWaterBody implements DBImporter {
 		// ID
 		psWaterBody.setLong(1, cityObjectId);
 
-		// class
+		// wtr:class
 		if (waterBody.isSetClazz() && waterBody.getClazz().isSetValue()) {
 			psWaterBody.setString(2, waterBody.getClazz().getValue());
 			psWaterBody.setString(3, waterBody.getClazz().getCodeSpace());
@@ -122,7 +122,7 @@ public class DBWaterBody implements DBImporter {
 			psWaterBody.setNull(3, Types.VARCHAR);
 		}
 
-		// function
+		// wtr:function
 		if (waterBody.isSetFunction()) {
 			String[] function = Util.codeList2string(waterBody.getFunction());
 			psWaterBody.setString(4, function[0]);
@@ -132,7 +132,7 @@ public class DBWaterBody implements DBImporter {
 			psWaterBody.setNull(5, Types.VARCHAR);
 		}
 
-		// usage
+		// wtr:usage
 		if (waterBody.isSetUsage()) {
 			String[] usage = Util.codeList2string(waterBody.getUsage());
 			psWaterBody.setString(6, usage[0]);
@@ -158,7 +158,7 @@ public class DBWaterBody implements DBImporter {
 			}
 
 			if (multiCurveProperty != null) {
-				multiLine = otherGeoemtryImporter.getMultiCurve(multiCurveProperty);
+				multiLine = otherGeometryImporter.getMultiCurve(multiCurveProperty);
 				multiCurveProperty.unsetMultiCurve();
 			}
 

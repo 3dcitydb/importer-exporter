@@ -93,7 +93,7 @@ public class DBReliefFeature implements DBImporter {
 		// ID
 		psReliefFeature.setLong(1, cityObjectId);
 
-		// lod
+		// dem:lod
 		psReliefFeature.setInt(2, reliefFeature.getLod());
 
 		psReliefFeature.addBatch();

@@ -118,7 +118,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 		// ID
 		psSolitVegObject.setLong(1, solVegObjectId);
 
-		// class
+		// veg:class
 		if (solVegObject.isSetClazz() && solVegObject.getClazz().isSetValue()) {
 			psSolitVegObject.setString(2, solVegObject.getClazz().getValue());
 			psSolitVegObject.setString(3, solVegObject.getClazz().getCodeSpace());
@@ -127,7 +127,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 			psSolitVegObject.setNull(3, Types.VARCHAR);
 		}
 
-		// function
+		// veg:function
 		if (solVegObject.isSetFunction()) {
 			String[] function = Util.codeList2string(solVegObject.getFunction());
 			psSolitVegObject.setString(4, function[0]);
@@ -137,7 +137,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 			psSolitVegObject.setNull(5, Types.VARCHAR);
 		}
 
-		// usage
+		// veg:usage
 		if (solVegObject.isSetUsage()) {
 			String[] usage = Util.codeList2string(solVegObject.getUsage());
 			psSolitVegObject.setString(6, usage[0]);
@@ -147,7 +147,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 			psSolitVegObject.setNull(7, Types.VARCHAR);
 		}
 
-		// species
+		// veg:species
 		if (solVegObject.isSetSpecies() && solVegObject.getSpecies().isSetValue()) {
 			psSolitVegObject.setString(8, solVegObject.getSpecies().getValue());
 			psSolitVegObject.setString(9, solVegObject.getSpecies().getCodeSpace());
@@ -156,7 +156,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 			psSolitVegObject.setNull(9, Types.VARCHAR);
 		}
 
-		// height
+		// veg:height
 		if (solVegObject.isSetHeight() && solVegObject.getHeight().isSetValue()) {
 			psSolitVegObject.setDouble(10, solVegObject.getHeight().getValue());
 			psSolitVegObject.setString(11, solVegObject.getHeight().getUom());
@@ -165,7 +165,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 			psSolitVegObject.setNull(11, Types.VARCHAR);
 		}
 		
-		// trunkDiameter
+		// veg:trunkDiameter
 		if (solVegObject.isSetTrunkDiameter() && solVegObject.getTrunkDiameter().isSetValue()) {
 			psSolitVegObject.setDouble(12, solVegObject.getTrunkDiameter().getValue());
 			psSolitVegObject.setString(13, solVegObject.getTrunkDiameter().getUom());
@@ -174,7 +174,7 @@ public class DBSolitaryVegetatObject implements DBImporter {
 			psSolitVegObject.setNull(13, Types.VARCHAR);
 		}
 
-		// crownDiameter
+		// veg:crownDiameter
 		if (solVegObject.isSetCrownDiameter() && solVegObject.getCrownDiameter().isSetValue()) {
 			psSolitVegObject.setDouble(14, solVegObject.getCrownDiameter().getValue());
 			psSolitVegObject.setString(15, solVegObject.getCrownDiameter().getUom());

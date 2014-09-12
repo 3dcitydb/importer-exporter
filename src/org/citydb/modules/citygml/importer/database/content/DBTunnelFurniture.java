@@ -98,7 +98,7 @@ public class DBTunnelFurniture implements DBImporter {
 		// ID
 		psTunnelFurniture.setLong(1, tunnelFurnitureId);
 
-		// class
+		// tun:class
 		if (tunnelFurniture.isSetClazz() && tunnelFurniture.getClazz().isSetValue()) {
 			psTunnelFurniture.setString(2, tunnelFurniture.getClazz().getValue());
 			psTunnelFurniture.setString(3, tunnelFurniture.getClazz().getCodeSpace());
@@ -107,7 +107,7 @@ public class DBTunnelFurniture implements DBImporter {
 			psTunnelFurniture.setNull(3, Types.VARCHAR);
 		}
 
-		// function
+		// tun:function
 		if (tunnelFurniture.isSetFunction()) {
 			String[] function = Util.codeList2string(tunnelFurniture.getFunction());
 			psTunnelFurniture.setString(4, function[0]);
@@ -117,7 +117,7 @@ public class DBTunnelFurniture implements DBImporter {
 			psTunnelFurniture.setNull(5, Types.VARCHAR);
 		}
 
-		// usage
+		// tun:usage
 		if (tunnelFurniture.isSetUsage()) {
 			String[] usage = Util.codeList2string(tunnelFurniture.getUsage());
 			psTunnelFurniture.setString(6, usage[0]);

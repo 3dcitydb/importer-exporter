@@ -97,7 +97,7 @@ public class DBTunnelHollowSpace implements DBImporter {
 		// ID
 		psHollowSpace.setLong(1, hollowSpaceId);
 
-		// class
+		// tun:class
 		if (hollowSpace.isSetClazz() && hollowSpace.getClazz().isSetValue()) {
 			psHollowSpace.setString(2, hollowSpace.getClazz().getValue());
 			psHollowSpace.setString(3, hollowSpace.getClazz().getCodeSpace());
@@ -106,7 +106,7 @@ public class DBTunnelHollowSpace implements DBImporter {
 			psHollowSpace.setNull(3, Types.VARCHAR);
 		}
 
-		// function
+		// tun:function
 		if (hollowSpace.isSetFunction()) {
 			String[] function = Util.codeList2string(hollowSpace.getFunction());
 			psHollowSpace.setString(4, function[0]);
@@ -116,7 +116,7 @@ public class DBTunnelHollowSpace implements DBImporter {
 			psHollowSpace.setNull(5, Types.VARCHAR);
 		}
 
-		// usage
+		// tun:usage
 		if (hollowSpace.isSetUsage()) {
 			String[] usage = Util.codeList2string(hollowSpace.getUsage());
 			psHollowSpace.setString(6, usage[0]);

@@ -114,7 +114,7 @@ public class DBTunnel implements DBImporter {
 			return 0;
 	}
 
-	private boolean insert(AbstractTunnel tunnel,
+	public boolean insert(AbstractTunnel tunnel,
 			long tunnelId,
 			long parentId,
 			long rootId) throws SQLException {
@@ -138,7 +138,7 @@ public class DBTunnel implements DBImporter {
 		// TUNNEL_ROOT_ID
 		psTunnel.setLong(3, rootId);
 
-		// class
+		// tun:class
 		if (tunnel.isSetClazz() && tunnel.getClazz().isSetValue()) {
 			psTunnel.setString(4, tunnel.getClazz().getValue());
 			psTunnel.setString(5, tunnel.getClazz().getCodeSpace());
@@ -147,7 +147,7 @@ public class DBTunnel implements DBImporter {
 			psTunnel.setNull(5, Types.VARCHAR);
 		}
 
-		// function
+		// tun:function
 		if (tunnel.isSetFunction()) {
 			String[] function = Util.codeList2string(tunnel.getFunction());
 			psTunnel.setString(6, function[0]);
@@ -157,7 +157,7 @@ public class DBTunnel implements DBImporter {
 			psTunnel.setNull(7, Types.VARCHAR);
 		}
 
-		// usage
+		// tun:usage
 		if (tunnel.isSetUsage()) {
 			String[] usage = Util.codeList2string(tunnel.getUsage());
 			psTunnel.setString(8, usage[0]);
@@ -167,14 +167,14 @@ public class DBTunnel implements DBImporter {
 			psTunnel.setNull(9, Types.VARCHAR);
 		}
 
-		// yearOfConstruction
+		// tun:yearOfConstruction
 		if (tunnel.isSetYearOfConstruction()) {
 			psTunnel.setDate(10, new Date(tunnel.getYearOfConstruction().getTime().getTime()));
 		} else {
 			psTunnel.setNull(10, Types.DATE);
 		}
 
-		// yearOfDemolition
+		// tun:yearOfDemolition
 		if (tunnel.isSetYearOfDemolition()) {
 			psTunnel.setDate(11, new Date(tunnel.getYearOfDemolition().getTime().getTime()));
 		} else {

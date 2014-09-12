@@ -85,7 +85,7 @@ public class DBTrafficArea implements DBImporter {
 		// OBJECTCLASS_ID
 		psTrafficArea.setLong(2, Util.cityObject2classId(trafficArea.getCityGMLClass()));
 
-		// class
+		// tran:class
 		if (trafficArea.isSetClazz() && trafficArea.getClazz().isSetValue()) {
 			psTrafficArea.setString(3, trafficArea.getClazz().getValue());
 			psTrafficArea.setString(4, trafficArea.getClazz().getCodeSpace());
@@ -94,7 +94,7 @@ public class DBTrafficArea implements DBImporter {
 			psTrafficArea.setNull(4, Types.VARCHAR);
 		}
 
-		// function
+		// tran:function
 		if (trafficArea.isSetFunction()) {
 			String[] function = Util.codeList2string(trafficArea.getFunction());
 			psTrafficArea.setString(5, function[0]);
@@ -104,7 +104,7 @@ public class DBTrafficArea implements DBImporter {
 			psTrafficArea.setNull(6, Types.VARCHAR);
 		}
 
-		// usage
+		// tran:usage
 		if (trafficArea.isSetUsage()) {
 			String[] usage = Util.codeList2string(trafficArea.getUsage());
 			psTrafficArea.setString(7, usage[0]);
@@ -114,7 +114,7 @@ public class DBTrafficArea implements DBImporter {
 			psTrafficArea.setNull(8, Types.VARCHAR);
 		}
 
-		// surface material
+		// tran:surface material
 		if (trafficArea.isSetSurfaceMaterial() && trafficArea.getSurfaceMaterial().isSetValue()) {
 			psTrafficArea.setString(9, trafficArea.getSurfaceMaterial().getValue());
 			psTrafficArea.setString(10, trafficArea.getSurfaceMaterial().getCodeSpace());
@@ -123,6 +123,7 @@ public class DBTrafficArea implements DBImporter {
 			psTrafficArea.setNull(10, Types.VARCHAR);
 		}
 
+		// Geometry
 		// lodXMultiSurface
 		for (int i = 0; i < 3; i++) {
 			MultiSurfaceProperty multiSurfaceProperty = null;

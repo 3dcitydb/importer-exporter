@@ -87,7 +87,7 @@ public class DBWaterBoundarySurface implements DBImporter {
 		// OBJECTCLASS_ID
 		psWaterBoundarySurface.setLong(2, Util.cityObject2classId(waterBoundarySurface.getCityGMLClass()));
 
-		// waterLevel
+		// wtr:waterLevel
 		if (waterBoundarySurface.getCityGMLClass() == CityGMLClass.WATER_SURFACE && 
 				((WaterSurface)waterBoundarySurface).isSetWaterLevel() && ((WaterSurface)waterBoundarySurface).getWaterLevel().isSetValue()) {
 			psWaterBoundarySurface.setString(3, ((WaterSurface)waterBoundarySurface).getWaterLevel().getValue());
@@ -97,6 +97,7 @@ public class DBWaterBoundarySurface implements DBImporter {
 			psWaterBoundarySurface.setNull(4, Types.VARCHAR);
 		}
 
+		// Geometry
 		// lodXMultiSurface
 		for (int i = 0; i < 3; i++) {
 			SurfaceProperty surfaceProperty = null;

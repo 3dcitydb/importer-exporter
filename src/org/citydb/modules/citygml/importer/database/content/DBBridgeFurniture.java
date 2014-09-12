@@ -98,7 +98,7 @@ public class DBBridgeFurniture implements DBImporter {
 		// ID
 		psBridgeFurniture.setLong(1, bridgeFurnitureId);
 
-		// class
+		// brid:class
 		if (bridgeFurniture.isSetClazz() && bridgeFurniture.getClazz().isSetValue()) {
 			psBridgeFurniture.setString(2, bridgeFurniture.getClazz().getValue());
 			psBridgeFurniture.setString(3, bridgeFurniture.getClazz().getCodeSpace());
@@ -107,7 +107,7 @@ public class DBBridgeFurniture implements DBImporter {
 			psBridgeFurniture.setNull(3, Types.VARCHAR);
 		}
 
-		// function
+		// brid:function
 		if (bridgeFurniture.isSetFunction()) {
 			String[] function = Util.codeList2string(bridgeFurniture.getFunction());
 			psBridgeFurniture.setString(4, function[0]);
@@ -117,7 +117,7 @@ public class DBBridgeFurniture implements DBImporter {
 			psBridgeFurniture.setNull(5, Types.VARCHAR);
 		}
 
-		// usage
+		// brid:usage
 		if (bridgeFurniture.isSetUsage()) {
 			String[] usage = Util.codeList2string(bridgeFurniture.getUsage());
 			psBridgeFurniture.setString(6, usage[0]);

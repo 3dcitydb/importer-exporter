@@ -194,7 +194,7 @@ public class DBSurfaceData implements DBImporter {
 			psSurfaceData.setNull(5, Types.VARCHAR);
 		}
 
-		// isFront
+		// app:isFront
 		if (abstractSurfData.isSetIsFront() && !abstractSurfData.getIsFront())
 			psSurfaceData.setInt(6, 0);
 		else
@@ -208,25 +208,25 @@ public class DBSurfaceData implements DBImporter {
 		if (abstractSurfData.getCityGMLClass() == CityGMLClass.X3D_MATERIAL) {
 			X3DMaterial material = (X3DMaterial)abstractSurfData;
 
-			// shininess
+			// app:shininess
 			if (material.isSetShininess())
 				psSurfaceData.setDouble(8, material.getShininess());
 			else
 				psSurfaceData.setNull(8, Types.DOUBLE);
 
-			// transparency
+			// app:transparency
 			if (material.isSetTransparency())
 				psSurfaceData.setDouble(9, material.getTransparency());
 			else
 				psSurfaceData.setNull(9, Types.DOUBLE);
 
-			// ambientIntensity
+			// app:ambientIntensity
 			if (material.isSetAmbientIntensity())
 				psSurfaceData.setDouble(10, material.getAmbientIntensity());
 			else
 				psSurfaceData.setNull(10, Types.DOUBLE);
 
-			// specular color
+			// app:specularColor
 			if (material.isSetSpecularColor()) {
 				Color color = material.getSpecularColor();
 				String colorString = color.getRed() + " " + color.getGreen() + " " + color.getBlue();
@@ -234,7 +234,7 @@ public class DBSurfaceData implements DBImporter {
 			} else
 				psSurfaceData.setNull(11, Types.VARCHAR);
 
-			// diffuse color
+			// app:diffuseColor
 			if (material.isSetDiffuseColor()) {
 				Color color = material.getDiffuseColor();
 				String colorString = color.getRed() + " " + color.getGreen() + " " + color.getBlue();
@@ -242,7 +242,7 @@ public class DBSurfaceData implements DBImporter {
 			} else
 				psSurfaceData.setNull(12, Types.VARCHAR);
 
-			// emissive color
+			// app:emissiveColor
 			if (material.isSetEmissiveColor()) {
 				Color color = material.getEmissiveColor();
 				String colorString = color.getRed() + " " + color.getGreen() + " " + color.getBlue();

@@ -97,7 +97,7 @@ public class DBBridgeRoom implements DBImporter {
 		// ID
 		psRoom.setLong(1, bridgeRoomId);
 
-		// class
+		// brid:class
 		if (bridgeRoom.isSetClazz() && bridgeRoom.getClazz().isSetValue()) {
 			psRoom.setString(2, bridgeRoom.getClazz().getValue());
 			psRoom.setString(3, bridgeRoom.getClazz().getCodeSpace());
@@ -106,7 +106,7 @@ public class DBBridgeRoom implements DBImporter {
 			psRoom.setNull(3, Types.VARCHAR);
 		}
 
-		// function
+		// brid:function
 		if (bridgeRoom.isSetFunction()) {
 			String[] function = Util.codeList2string(bridgeRoom.getFunction());
 			psRoom.setString(4, function[0]);
@@ -116,7 +116,7 @@ public class DBBridgeRoom implements DBImporter {
 			psRoom.setNull(5, Types.VARCHAR);
 		}
 
-		// usage
+		// brid:usage
 		if (bridgeRoom.isSetUsage()) {
 			String[] usage = Util.codeList2string(bridgeRoom.getUsage());
 			psRoom.setString(6, usage[0]);

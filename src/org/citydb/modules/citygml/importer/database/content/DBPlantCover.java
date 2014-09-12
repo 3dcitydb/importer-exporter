@@ -93,7 +93,7 @@ public class DBPlantCover implements DBImporter {
 		// ID
 		psPlantCover.setLong(1, plantCoverId);
 
-		// class
+		// veg:class
 		if (plantCover.isSetClazz() && plantCover.getClazz().isSetValue()) {
 			psPlantCover.setString(2, plantCover.getClazz().getValue());
 			psPlantCover.setString(3, plantCover.getClazz().getCodeSpace());
@@ -102,7 +102,7 @@ public class DBPlantCover implements DBImporter {
 			psPlantCover.setNull(3, Types.VARCHAR);
 		}
 
-		// function
+		// veg:function
 		if (plantCover.isSetFunction()) {
 			String[] function = Util.codeList2string(plantCover.getFunction());
 			psPlantCover.setString(4, function[0]);
@@ -112,7 +112,7 @@ public class DBPlantCover implements DBImporter {
 			psPlantCover.setNull(5, Types.VARCHAR);
 		}
 
-		// usage
+		// veg:usage
 		if (plantCover.isSetUsage()) {
 			String[] usage = Util.codeList2string(plantCover.getUsage());
 			psPlantCover.setString(6, usage[0]);
@@ -122,7 +122,7 @@ public class DBPlantCover implements DBImporter {
 			psPlantCover.setNull(7, Types.VARCHAR);
 		}
 
-		// averageHeight
+		// veg:averageHeight
 		if (plantCover.isSetAverageHeight() && plantCover.getAverageHeight().isSetValue()) {
 			psPlantCover.setDouble(8, plantCover.getAverageHeight().getValue());
 			psPlantCover.setString(9, plantCover.getAverageHeight().getUom());
@@ -131,6 +131,7 @@ public class DBPlantCover implements DBImporter {
 			psPlantCover.setNull(9, Types.VARCHAR);
 		}
 
+		// Geometry
 		// lodXMultiSurface
 		for (int i = 0; i < 4; i++) {
 			MultiSurfaceProperty multiSurfaceProperty = null;

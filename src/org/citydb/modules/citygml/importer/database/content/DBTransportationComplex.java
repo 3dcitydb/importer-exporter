@@ -118,7 +118,7 @@ public class DBTransportationComplex implements DBImporter {
 		// OBJECTCLASS_ID
 		psTransComplex.setInt(2, Util.cityObject2classId(transComplex.getCityGMLClass()));
 
-		// class
+		// tran:class
 		if (transComplex.isSetClazz() && transComplex.getClazz().isSetValue()) {
 			psTransComplex.setString(3, transComplex.getClazz().getValue());
 			psTransComplex.setString(4, transComplex.getClazz().getCodeSpace());
@@ -127,7 +127,7 @@ public class DBTransportationComplex implements DBImporter {
 			psTransComplex.setNull(4, Types.VARCHAR);
 		}
 
-		// function
+		// tran:function
 		if (transComplex.isSetFunction()) {
 			String[] function = Util.codeList2string(transComplex.getFunction());
 			psTransComplex.setString(5, function[0]);
@@ -137,7 +137,7 @@ public class DBTransportationComplex implements DBImporter {
 			psTransComplex.setNull(6, Types.VARCHAR);
 		}
 
-		// usage
+		// tran:usage
 		if (transComplex.isSetUsage()) {
 			String[] usage = Util.codeList2string(transComplex.getUsage());
 			psTransComplex.setString(7, usage[0]);
@@ -147,6 +147,7 @@ public class DBTransportationComplex implements DBImporter {
 			psTransComplex.setNull(8, Types.VARCHAR);
 		}
 
+		// Geometry
 		// lod0Network
 		GeometryObject multiCurve = null;
 
