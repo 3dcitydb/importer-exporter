@@ -479,7 +479,7 @@ public class DBBuilding implements DBExporter {
 
 				// address
 				if (projectionFilter.pass(CityGMLModuleType.BUILDING, "address")) {
-					rs.getLong(36);
+					rs.getLong(38);
 					if (!rs.wasNull()) {
 						AddressExportFactory factory = dbExporterManager.getAddressExportFactory();					
 						AddressObject addressObject = factory.newAddressObject();
@@ -490,7 +490,7 @@ public class DBBuilding implements DBExporter {
 
 						if (addressObject.canCreate()) {
 							// multiPointGeometry
-							Object multiPointObj = rs.getObject(44);
+							Object multiPointObj = rs.getObject(46);
 							if (!rs.wasNull() && multiPointObj != null) {
 								GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
 								MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(multiPoint, false);
@@ -523,15 +523,15 @@ public class DBBuilding implements DBExporter {
 
 	private void fillAddressObject(AddressObject addressObject, AddressMode mode, ResultSet rs) throws SQLException {
 		if (mode == AddressMode.DB) {
-			addressObject.setStreet(rs.getString(37));
-			addressObject.setHouseNumber(rs.getString(38));
-			addressObject.setPOBox(rs.getString(39));
-			addressObject.setZipCode(rs.getString(40));
-			addressObject.setCity(rs.getString(41));
-			addressObject.setState(rs.getString(42));
-			addressObject.setCountry(rs.getString(43));
+			addressObject.setStreet(rs.getString(39));
+			addressObject.setHouseNumber(rs.getString(40));
+			addressObject.setPOBox(rs.getString(41));
+			addressObject.setZipCode(rs.getString(42));
+			addressObject.setCity(rs.getString(43));
+			addressObject.setState(rs.getString(44));
+			addressObject.setCountry(rs.getString(45));
 		} else {
-			String xal = rs.getString(45);
+			String xal = rs.getString(47);
 			if (!rs.wasNull()) {
 				Object object = dbExporterManager.unmarshal(new StringReader(xal));
 				if (object instanceof AddressDetails)

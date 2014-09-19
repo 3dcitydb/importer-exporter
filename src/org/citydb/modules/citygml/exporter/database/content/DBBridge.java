@@ -376,7 +376,7 @@ public class DBBridge implements DBExporter {
 
 				// address
 				if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "address")) {
-					rs.getLong(36);
+					rs.getLong(27);
 					if (!rs.wasNull()) {
 						AddressExportFactory factory = dbExporterManager.getAddressExportFactory();					
 						AddressObject addressObject = factory.newAddressObject();
@@ -387,7 +387,7 @@ public class DBBridge implements DBExporter {
 
 						if (addressObject.canCreate()) {
 							// multiPointGeometry
-							Object multiPointObj = rs.getObject(44);
+							Object multiPointObj = rs.getObject(35);
 							if (!rs.wasNull() && multiPointObj != null) {
 								GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
 								MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(multiPoint, false);
@@ -420,15 +420,15 @@ public class DBBridge implements DBExporter {
 
 	private void fillAddressObject(AddressObject addressObject, AddressMode mode, ResultSet rs) throws SQLException {
 		if (mode == AddressMode.DB) {
-			addressObject.setStreet(rs.getString(37));
-			addressObject.setHouseNumber(rs.getString(38));
-			addressObject.setPOBox(rs.getString(39));
-			addressObject.setZipCode(rs.getString(40));
-			addressObject.setCity(rs.getString(41));
-			addressObject.setState(rs.getString(42));
-			addressObject.setCountry(rs.getString(43));
+			addressObject.setStreet(rs.getString(28));
+			addressObject.setHouseNumber(rs.getString(29));
+			addressObject.setPOBox(rs.getString(30));
+			addressObject.setZipCode(rs.getString(31));
+			addressObject.setCity(rs.getString(32));
+			addressObject.setState(rs.getString(33));
+			addressObject.setCountry(rs.getString(34));
 		} else {
-			String xal = rs.getString(45);
+			String xal = rs.getString(36);
 			if (!rs.wasNull()) {
 				Object object = dbExporterManager.unmarshal(new StringReader(xal));
 				if (object instanceof AddressDetails)
