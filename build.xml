@@ -11,7 +11,7 @@
 
 	<!-- classpath -->
 	<path id="classpath">
-		<fileset dir="lib" includes="*.jar" />
+		<fileset dir="lib" includes="**/*.jar" />
 	</path>
 
 	<!-- build number -->
@@ -163,7 +163,7 @@
 		</copy>
 
 		<!-- copy library files -->
-		<copy todir="${dir.dest.lib}">
+		<copy todir="${dir.dest.lib}" flatten="true">
 			<fileset dir="${dir.lib}" includes="**/*.jar" />
 		</copy>
 
@@ -198,8 +198,11 @@
 		<replace file="${dir.dest}/README.txt" token="!vendor.country!" value="${vendor.country}" />
 
 		<!-- set package variables -->
-		<pathconvert property="manifest.classpath" dirsep="/" pathsep=" " refid="classpath">
-			<map from="${basedir}${file.separator}lib${file.separator}" to="" />
+		<fileset dir="${dir.dest.lib}" id="lib.files">
+			<include name="*.jar" />
+		</fileset>
+		<pathconvert property="manifest.classpath" dirsep="/" pathsep=" " refid="lib.files">
+			<map from="${dir.dest.lib}${file.separator}" to="" />
 		</pathconvert>
 
 		<!-- put everything in ${dir.build} into .jar file -->
