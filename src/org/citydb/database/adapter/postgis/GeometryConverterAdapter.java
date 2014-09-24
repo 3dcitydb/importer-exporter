@@ -345,7 +345,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 			case Geometry.POINT:
 				return getPoint((Point)geometry);
 			case Geometry.MULTIPOINT:
-				return getMultiPoint((MultiLineString)geometry);
+				return getMultiPoint((MultiPoint)geometry);
 			case Geometry.LINESTRING:
 				return getCurve((LineString)geometry);
 			case Geometry.MULTILINESTRING:
