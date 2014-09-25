@@ -542,11 +542,17 @@ public abstract class KmlGenericObject {
 					CommonFloatOrParamType cfopt = colladaFactory.createCommonFloatOrParamType();
 					CommonFloatOrParamType.Float cfoptf = colladaFactory.createCommonFloatOrParamTypeFloat();
 					if (x3dMaterial.isSetShininess()) {
+						cfoptf.setValue(x3dMaterial.getShininess());
+						cfopt.setFloat(cfoptf);
+						lambert.setReflectivity(cfopt);
+					}
+
+					if (x3dMaterial.isSetTransparency()) {
 						cfopt = colladaFactory.createCommonFloatOrParamType();
 						cfoptf = colladaFactory.createCommonFloatOrParamTypeFloat();
 						cfoptf.setValue(1.0-x3dMaterial.getTransparency());
 						cfopt.setFloat(cfoptf);
-						lambert.setTransparency(cfopt);
+						lambert.setTransparency(cfopt);						
 						CommonTransparentType transparent = colladaFactory.createCommonTransparentType();
 						transparent.setOpaque(FxOpaqueEnum.A_ONE);
 						CommonColorOrTextureType.Color color = colladaFactory.createCommonColorOrTextureTypeColor();
@@ -556,14 +562,6 @@ public abstract class KmlGenericObject {
 						color.getValue().add(1.0);						
 						transparent.setColor(color);						
 						lambert.setTransparent(transparent);
-					}
-
-					if (x3dMaterial.isSetTransparency()) {
-						cfopt = colladaFactory.createCommonFloatOrParamType();
-						cfoptf = colladaFactory.createCommonFloatOrParamTypeFloat();
-						cfoptf.setValue(x3dMaterial.getTransparency());
-						cfopt.setFloat(cfoptf);
-						lambert.setTransparency(cfopt);
 					}
 
 					if (x3dMaterial.isSetDiffuseColor()) {
