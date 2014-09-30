@@ -130,7 +130,7 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 	@Override
 	public void run() {
 		try {
-			if (firstWork != null && shouldRun) {
+			if (firstWork != null) {
 				doWork(firstWork);
 				firstWork = null;
 			}

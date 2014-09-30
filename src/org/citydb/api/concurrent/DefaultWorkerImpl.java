@@ -86,7 +86,7 @@ public abstract class DefaultWorkerImpl<T> implements Worker<T> {
 	@Override
 	public void run() {
 		try {
-			if (firstWork != null && shouldRun) {
+			if (firstWork != null) {
 				lockAndDoWork(firstWork);
 				firstWork = null;
 			}

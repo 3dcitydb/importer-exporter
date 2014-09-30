@@ -97,7 +97,7 @@ public class IOWriterWorker implements Worker<SAXEventBuffer> {
 
 	@Override
 	public void run() {
-    	if (firstWork != null && shouldRun) {
+    	if (firstWork != null) {
     		doWork(firstWork);
     		firstWork = null;
     	}

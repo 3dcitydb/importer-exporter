@@ -210,7 +210,7 @@ public class DBImportWorker implements Worker<CityGML> {
 	@Override
 	public void run() {
 		try {
-			if (firstWork != null && shouldRun) {
+			if (firstWork != null) {
 				doWork(firstWork);
 				firstWork = null;
 			}

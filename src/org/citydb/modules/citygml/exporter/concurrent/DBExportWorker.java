@@ -180,7 +180,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 	@Override
 	public void run() {
 		try {
-			if (firstWork != null && shouldRun) {
+			if (firstWork != null) {
 				doWork(firstWork);
 				firstWork = null;
 			}

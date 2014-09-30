@@ -110,7 +110,7 @@ public class FeatureReaderWorker implements Worker<XMLChunk> {
 
 	@Override
 	public void run() {
-		if (firstWork != null && shouldRun) {
+		if (firstWork != null) {
 			doWork(firstWork);
 			firstWork = null;
 		}

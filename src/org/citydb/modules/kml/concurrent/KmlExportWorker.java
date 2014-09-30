@@ -283,7 +283,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	@Override
 	public void run() {
 		try {
-			if (firstWork != null && shouldRun) {
+			if (firstWork != null) {
 				doWork(firstWork);
 				firstWork = null;
 			}

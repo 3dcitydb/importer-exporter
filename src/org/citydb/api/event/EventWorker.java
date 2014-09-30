@@ -96,7 +96,7 @@ public class EventWorker implements Worker<Event> {
 
 	@Override
 	public void run() {
-		if (firstWork != null && shouldRun) {
+		if (firstWork != null) {
 			doWork(firstWork);
 			firstWork = null;
 		}

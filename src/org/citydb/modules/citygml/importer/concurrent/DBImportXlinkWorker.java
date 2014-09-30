@@ -146,7 +146,7 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 
 	@Override
 	public void run() {
-		if (firstWork != null && shouldRun) {
+		if (firstWork != null) {
 			doWork(firstWork);
 			firstWork = null;
 		}
