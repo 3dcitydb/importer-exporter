@@ -43,7 +43,6 @@ import org.citydb.modules.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.modules.citygml.common.database.xlink.DBXlink;
 import org.citydb.modules.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.modules.citygml.exporter.util.FeatureProcessorFactory;
-import org.citydb.modules.citygml.exporter.util.FeatureWriter;
 import org.citydb.modules.common.filter.ExportFilter;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.xml.sax.SAXException;
@@ -53,7 +52,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final JAXBBuilder jaxbBuilder;
-	private final FeatureProcessorFactory<FeatureWriter> featureProcessorFactory;
+	private final FeatureProcessorFactory featureProcessorFactory;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
 	private final UIDCacheManager uidCacheManager;
 	private final CacheTableManager cacheTableManager;
@@ -64,7 +63,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	public DBExportWorkerFactory(
 			DatabaseConnectionPool dbConnectionPool,
 			JAXBBuilder jaxbBuilder,
-			FeatureProcessorFactory<FeatureWriter> featureProcessorFactory,
+			FeatureProcessorFactory featureProcessorFactory,
 			WorkerPool<DBXlink> xlinkExporterPool,
 			UIDCacheManager uidCacheManager,
 			CacheTableManager cacheTableManager,

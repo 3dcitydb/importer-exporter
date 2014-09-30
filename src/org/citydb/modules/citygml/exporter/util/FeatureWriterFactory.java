@@ -5,7 +5,7 @@ import org.citydb.config.Config;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
-public class FeatureWriterFactory implements FeatureProcessorFactory<FeatureWriter> {
+public class FeatureWriterFactory implements FeatureProcessorFactory {
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
 	private final JAXBBuilder jaxbBuilder;
 	private final Config config;
@@ -17,7 +17,7 @@ public class FeatureWriterFactory implements FeatureProcessorFactory<FeatureWrit
 	}
 
 	@Override
-	public FeatureWriter createFeatureProcessor() {
+	public FeatureProcessor createFeatureProcessor() {
 		return new FeatureWriter(ioWriterPool, jaxbBuilder, config);
 	}
 
