@@ -240,7 +240,7 @@ public class Relief extends KmlGenericObject{
 							Logger.getInstance().info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 						}
 
-						List<Point3d> anchorCandidates = setOrigins(); // setOrigins() called mainly for the side-effect
+						List<Point3d> anchorCandidates = getOrigins(); // setOrigins() called mainly for the side-effect
 						double zOffset = getZOffsetFromConfigOrDB(work.getId());
 						if (zOffset == Double.MAX_VALUE) {
 							zOffset = getZOffsetFromGEService(work.getId(), anchorCandidates);
@@ -285,12 +285,12 @@ public class Relief extends KmlGenericObject{
 
 	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
 		// undo trick for very close coordinates
-		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOriginX()/CLOSE_COORDS_FACTOR,
-				getOriginY()/CLOSE_COORDS_FACTOR,
-				getOriginZ()});
-		setLocationX(reducePrecisionForXorY(originInWGS84[0]));
-		setLocationY(reducePrecisionForXorY(originInWGS84[1]));
-		setLocationZ(reducePrecisionForZ(originInWGS84[2]));
+		double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOrigin().x,
+				getOrigin().y,
+				getOrigin().z});
+		setLocation(reducePrecisionForXorY(originInWGS84[0]),
+				reducePrecisionForXorY(originInWGS84[1]),
+				reducePrecisionForZ(originInWGS84[2]));
 
 		return super.createPlacemarkForColladaModel();
 	}

@@ -72,8 +72,6 @@ import org.citydb.util.Util;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 
-import com.sun.j3d.utils.geometry.GeometryInfo;
-
 public class CityFurniture extends KmlGenericObject{
 
 	public static final String STYLE_BASIS_NAME = "Furniture";
@@ -287,7 +285,7 @@ public class CityFurniture extends KmlGenericObject{
 						Logger.getInstance().info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 					}
 
-					List<Point3d> anchorCandidates = setOrigins(); // setOrigins() called mainly for the side-effect
+					List<Point3d> anchorCandidates = getOrigins(); // setOrigins() called mainly for the side-effect
 					double zOffset = getZOffsetFromConfigOrDB(work.getId());
 					if (zOffset == Double.MAX_VALUE) {
 						if (transformation != null) {
@@ -378,22 +376,22 @@ public class CityFurniture extends KmlGenericObject{
 
 		if (transformation == null) { // no implicit geometry
 			// undo trick for very close coordinates
-			double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOriginX()/CLOSE_COORDS_FACTOR,
-					getOriginY()/CLOSE_COORDS_FACTOR,
-					getOriginZ()});
-			setLocationX(reducePrecisionForXorY(originInWGS84[0]));
-			setLocationY(reducePrecisionForXorY(originInWGS84[1]));
-			setLocationZ(reducePrecisionForZ(originInWGS84[2]));
+			double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {getOrigin().x,
+					getOrigin().y,
+					getOrigin().z});
+			setLocation(reducePrecisionForXorY(originInWGS84[0]),
+					reducePrecisionForXorY(originInWGS84[1]),
+					reducePrecisionForZ(originInWGS84[2]));
 			return super.createPlacemarkForColladaModel();
 		}
 
 	//	double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {0, 0, 0}); // will be turned into refPointX,Y,Z by convertToWGS84
-		double[] originInWGS84 = convertPointWorldCoordinatesToWGS84(new double[] {getOriginX()/CLOSE_COORDS_FACTOR,
-				getOriginY()/CLOSE_COORDS_FACTOR,
-				getOriginZ()});
-		setLocationX(reducePrecisionForXorY(originInWGS84[0]));
-		setLocationY(reducePrecisionForXorY(originInWGS84[1]));
-		setLocationZ(reducePrecisionForZ(originInWGS84[2]));
+		double[] originInWGS84 = convertPointWorldCoordinatesToWGS84(new double[] {getOrigin().x,
+				getOrigin().y,
+				getOrigin().z});
+		setLocation(reducePrecisionForXorY(originInWGS84[0]),
+				reducePrecisionForXorY(originInWGS84[1]),
+				reducePrecisionForZ(originInWGS84[2]));
 
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(getGmlId());
@@ -428,9 +426,9 @@ public class CityFurniture extends KmlGenericObject{
 			break;
 		}
 
-		location.setLatitude(getLocationY());
-		location.setLongitude(getLocationX());
-		location.setAltitude(getLocationZ() + reducePrecisionForZ(getZOffset()));
+		location.setLatitude(getLocation().y);
+		location.setLongitude(getLocation().x);
+		location.setAltitude(getLocation().z + reducePrecisionForZ(getZOffset()));
 		model.setLocation(location);
 
 		// no heading value to correct
@@ -608,47 +606,45 @@ public class CityFurniture extends KmlGenericObject{
 						}
 
 						GeometryObject surface = geometryConverterAdapter.getPolygon(buildingGeometryObj);
-						surface = applyTransformationMatrix(surface);
-						GeometryInfo gi = new GeometryInfo(GeometryInfo.POLYGON_ARRAY);
+						List<VertexInfo> vertexInfos = new ArrayList<VertexInfo>();
+						
+						int ringCount = surface.getNumElements();
+						int[] vertexCount = new int[ringCount];
 
-						int contourCount = surface.getNumElements();
-						int[] stripCountArray = new int[contourCount];
-						int[] countourCountArray = {contourCount};
+						for (int i = 0; i < surface.getNumElements(); i++) {
+							double[] ordinatesArray = surface.getCoordinates(i);
+							int vertices = 0;
 
-						// last point of polygons in gml is identical to first and useless for GeometryInfo
-						double[] giOrdinatesArray = new double[surface.getNumCoordinates() - (contourCount * 3)];
-						int i = 0;
+							for (int j = 0; j < ordinatesArray.length - 3; j = j+3) {
 
-						for (int currentContour = 0; currentContour < surface.getNumElements(); currentContour++) {
-							double[] ordinatesArray = surface.getCoordinates(currentContour);
-							for (int j = 0; j < ordinatesArray.length - 3; j = j+3, i = i+3) {
+								// calculate origin and list of lowest points
+								updateOrigins(ordinatesArray[j], ordinatesArray[j + 1], ordinatesArray[j + 2]);
 
-								giOrdinatesArray[i] = ordinatesArray[j] * CLOSE_COORDS_FACTOR; // trick for very close coordinates
-								giOrdinatesArray[i+1] = ordinatesArray[j+1] * CLOSE_COORDS_FACTOR;
-								giOrdinatesArray[i+2] = ordinatesArray[j+2];
+								// get or create node in vertex info tree
+								VertexInfo vertexInfo = setVertexInfoForXYZ(surfaceId,
+										ordinatesArray[j],
+										ordinatesArray[j+1],
+										ordinatesArray[j+2]);
 
-								TexCoords texCoordsForThisSurface = null;
 								if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
 									double s = Double.parseDouble(texCoordsTokenized.nextToken());
 									double t = Double.parseDouble(texCoordsTokenized.nextToken());
-									texCoordsForThisSurface = new TexCoords(s, t);
+									vertexInfo.addTexCoords(surfaceId, new TexCoords(s, t));
 								}
-								setVertexInfoForXYZ(surfaceId,
-										giOrdinatesArray[i],
-										giOrdinatesArray[i+1],
-										giOrdinatesArray[i+2],
-										texCoordsForThisSurface);
+		
+								vertexInfos.add(vertexInfo);
+								vertices++;
 							}
-							stripCountArray[currentContour] = (ordinatesArray.length - 3) / 3;
+							
+							vertexCount[i] = vertices;
+
 							if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
 								texCoordsTokenized.nextToken(); // geometryInfo ignores last point in a polygon
 								texCoordsTokenized.nextToken(); // keep texture coordinates in sync
 							}
 						}
-						gi.setCoordinates(giOrdinatesArray);
-						gi.setContourCounts(countourCountArray);
-						gi.setStripCounts(stripCountArray);
-						addGeometryInfo(surfaceId, gi);
+
+						addSurfaceInfo(surfaceId, new SurfaceInfo(ringCount, vertexCount, vertexInfos));
 					}
 				}
 				catch (SQLException sqlEx) {

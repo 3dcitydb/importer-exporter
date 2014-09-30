@@ -35,8 +35,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class VertexInfo {
-	
-
 	private BigInteger vertexId;
 	private double x;
 	private double y;
@@ -44,22 +42,13 @@ public class VertexInfo {
 	private HashMap<Long, TexCoords> texCoords;
 	private VertexInfo nextVertexInfo = null;
 
-	
 	protected VertexInfo (BigInteger vertexId, double x, double y, double z) {
 		setVertexId(vertexId);
 		setX(x);
 		setY(y);
 		setZ(z);
 	}
-/*
-	protected VertexInfo (BigInteger vertexId, long surfaceId, double s, double t) {
-		setVertexId(vertexId);
-		if (texCoords == null) {
-			texCoords = new HashMap<Long, TexCoords>();
-		}
-		texCoords.put(new Long(surfaceId), new TexCoords(s, t));
-	}
-*/
+
 	protected VertexInfo (BigInteger vertexId) {
 		setVertexId(vertexId);
 	}
@@ -102,7 +91,7 @@ public class VertexInfo {
 	}
 	
 
-	private void setVertexId(BigInteger vertexId) {
+	protected void setVertexId(BigInteger vertexId) {
 		this.vertexId = vertexId;
 	}
 
