@@ -70,7 +70,7 @@ import org.citydb.modules.citygml.exporter.database.content.DBSplitter;
 import org.citydb.modules.citygml.exporter.database.content.DBSplittingResult;
 import org.citydb.modules.citygml.exporter.database.uid.FeatureGmlIdCache;
 import org.citydb.modules.citygml.exporter.database.uid.GeometryGmlIdCache;
-import org.citydb.modules.citygml.exporter.util.FeatureWriter;
+import org.citydb.modules.citygml.exporter.util.FeatureWriterFactory;
 import org.citydb.modules.common.concurrent.IOWriterWorkerFactory;
 import org.citydb.modules.common.event.EventType;
 import org.citydb.modules.common.event.FeatureCounterEvent;
@@ -441,7 +441,7 @@ public class Exporter implements EventHandler {
 							new DBExportWorkerFactory(
 									dbPool,
 									jaxbBuilder,
-									new FeatureWriter(ioWriterPool, jaxbBuilder, config),
+									new FeatureWriterFactory(ioWriterPool, jaxbBuilder, config),
 									xlinkExporterPool,
 									uidCacheManager,
 									cacheTableManager,

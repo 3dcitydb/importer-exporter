@@ -42,7 +42,8 @@ import org.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import org.citydb.modules.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.modules.citygml.common.database.xlink.DBXlink;
 import org.citydb.modules.citygml.exporter.database.content.DBSplittingResult;
-import org.citydb.modules.citygml.exporter.util.FeatureProcessor;
+import org.citydb.modules.citygml.exporter.util.FeatureProcessorFactory;
+import org.citydb.modules.citygml.exporter.util.FeatureWriter;
 import org.citydb.modules.common.filter.ExportFilter;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.xml.sax.SAXException;
@@ -52,7 +53,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final JAXBBuilder jaxbBuilder;
-	private final FeatureProcessor featureProcessor;
+	private final FeatureProcessorFactory<FeatureWriter> featureProcessorFactory;
 	private final WorkerPool<DBXlink> xlinkExporterPool;
 	private final UIDCacheManager uidCacheManager;
 	private final CacheTableManager cacheTableManager;
@@ -63,7 +64,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 	public DBExportWorkerFactory(
 			DatabaseConnectionPool dbConnectionPool,
 			JAXBBuilder jaxbBuilder,
-			FeatureProcessor featureProcessor,
+			FeatureProcessorFactory<FeatureWriter> featureProcessorFactory,
 			WorkerPool<DBXlink> xlinkExporterPool,
 			UIDCacheManager uidCacheManager,
 			CacheTableManager cacheTableManager,
@@ -72,7 +73,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 			EventDispatcher eventDispatcher) {
 		this.dbConnectionPool = dbConnectionPool;
 		this.jaxbBuilder = jaxbBuilder;
-		this.featureProcessor = featureProcessor;
+		this.featureProcessorFactory = featureProcessorFactory;
 		this.xlinkExporterPool = xlinkExporterPool;
 		this.uidCacheManager = uidCacheManager;
 		this.cacheTableManager = cacheTableManager;
@@ -89,7 +90,7 @@ public class DBExportWorkerFactory implements WorkerFactory<DBSplittingResult> {
 			dbWorker = new DBExportWorker(
 					dbConnectionPool,
 					jaxbBuilder,
-					featureProcessor,
+					featureProcessorFactory.createFeatureProcessor(),
 					xlinkExporterPool,
 					uidCacheManager,
 					cacheTableManager,
