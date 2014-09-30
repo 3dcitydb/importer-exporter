@@ -544,7 +544,7 @@ public class CityFurniture extends KmlGenericObject{
 							else {
 								texImageUri = rs2.getString("tex_image_uri");
 
-								StringBuffer sb =  new StringBuffer();
+								StringBuilder sb =  new StringBuilder();
 								Object texCoordsObject = rs2.getObject("texture_coordinates"); 
 								if (texCoordsObject != null){
 									GeometryObject texCoordsGeometryObject = geometryConverterAdapter.getGeometry(texCoordsObject);

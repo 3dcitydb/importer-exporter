@@ -239,7 +239,7 @@ public class Util {
 	}
 
 	public static <T> String collection2string(Collection<T> list, String delimiter) {
-		StringBuffer string = new StringBuffer();
+		StringBuilder string = new StringBuilder();
 
 		int i = 1;
 		for (T object : list) {

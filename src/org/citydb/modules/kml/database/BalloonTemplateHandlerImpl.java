@@ -1229,7 +1229,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		if (connection == null) throw new SQLException("Null or invalid connection");
 		if (statementList == null && htmlChunkList == null) throw new Exception("Invalid template file"); 
 
-		StringBuffer balloonContent = new StringBuffer();
+		StringBuilder balloonContent = new StringBuilder();
 
 		if (statementList != null) {
 			// when properly initialized this happens only at the first object
@@ -1293,7 +1293,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		if (connection == null) throw new SQLException("Null or invalid connection");
 		if (statementList == null && htmlChunkList == null) throw new Exception("Invalid template file"); 
 
-		StringBuffer balloonContent = new StringBuffer();
+		StringBuilder balloonContent = new StringBuilder();
 
 		if (statementList != null) {
 			// when properly initialized this happens only at the first object
@@ -1396,7 +1396,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					}
 					textBetweenNestedStatements.add(rawStatement.substring(index));
 
-					StringBuffer notNestedAnymore = new StringBuffer();
+					StringBuilder notNestedAnymore = new StringBuilder();
 					if (nestedStatementList != null) {
 						List<String> resultList = new ArrayList<String>();
 						for (BalloonStatement nestedStatement: nestedStatementList) {

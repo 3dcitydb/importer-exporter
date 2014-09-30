@@ -145,7 +145,7 @@ public class KmlExporterManager {
 					String displayFormName = work.getDisplayForm().getName();
 
 					if (placemark.getDescription() != null && balloonInSeparateFile) {
-						StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandlerImpl.parentFrameStart);
+						StringBuilder parentFrame = new StringBuilder(BalloonTemplateHandlerImpl.parentFrameStart);
 
 	        			parentFrame.append('.'); // same folder
 
@@ -360,7 +360,7 @@ public class KmlExporterManager {
 			String placemarkDescription = placemark.getDescription();
 			if (placemarkDescription != null && balloonInSeparateFile) {
 
-				StringBuffer parentFrame = new StringBuffer(BalloonTemplateHandlerImpl.parentFrameStart);
+				StringBuilder parentFrame = new StringBuilder(BalloonTemplateHandlerImpl.parentFrameStart);
     			if (isBBoxActive && 
        				config.getProject().getKmlExporter().isOneFilePerObject() &&
        				!config.getProject().getKmlExporter().isExportAsKmz())

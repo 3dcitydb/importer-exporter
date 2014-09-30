@@ -223,7 +223,6 @@ public abstract class KmlGenericObject {
 		defaultX3dMaterial.setAmbientIntensity(0.2d);
 		defaultX3dMaterial.setShininess(0.2d);
 		defaultX3dMaterial.setTransparency(0d);
-		defaultX3dMaterial.setTransparency(0d);
 		defaultX3dMaterial.setDiffuseColor(getX3dColorFromString("0.8 0.8 0.8"));
 		defaultX3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
 		defaultX3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
@@ -1585,7 +1584,7 @@ public abstract class KmlGenericObject {
 							else {
 								texImageUri = rs2.getString("tex_image_uri");
 
-								StringBuffer sb =  new StringBuffer();
+								StringBuilder sb =  new StringBuilder();
 								Object texCoordsObject = rs2.getObject("texture_coordinates"); 
 								if (texCoordsObject != null){
 									GeometryObject texCoordsGeometryObject = geometryConverterAdapter.getGeometry(texCoordsObject);

@@ -58,7 +58,7 @@ public class ElevationServiceHandler {
 
 	SAXParser saxParser = null;
 	String currentElement = "";
-	StringBuffer textBuffer = null;
+	StringBuilder textBuffer = null;
 
 	String status = "";
 	double elevation = 0;
@@ -224,7 +224,7 @@ public class ElevationServiceHandler {
 		{
 			String s = new String(buf, offset, len);
 			if (textBuffer == null) {
-				textBuffer = new StringBuffer(s);
+				textBuffer = new StringBuilder(s);
 			}
 			else {
 				textBuffer.append(s);
