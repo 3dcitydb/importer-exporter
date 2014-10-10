@@ -127,7 +127,7 @@ public class DBThematicSurface implements DBExporter {
 			psRoomThematicSurface = connection.prepareStatement(query.toString() + "ts.ROOM_ID = ?");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_util.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
 			.append("select ts.ID as TSID, ts.OBJECTCLASS_ID, ts.LOD2_MULTI_SURFACE_ID, ts.LOD3_MULTI_SURFACE_ID, ts.LOD4_MULTI_SURFACE_ID, ")

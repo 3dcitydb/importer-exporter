@@ -779,7 +779,7 @@ public class Queries {
 			"FROM (" +
 						"SELECT * FROM (" +
 						"SELECT * FROM (" +
-				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +
@@ -856,7 +856,7 @@ public class Queries {
 			"FROM (" +
 						"SELECT * FROM (" +
 						"SELECT * FROM (" +
-				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +				    	
@@ -920,7 +920,7 @@ public class Queries {
 			"FROM (" +
 						"SELECT * FROM (" +
 						"SELECT * FROM (" +
-				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +
@@ -1483,7 +1483,7 @@ public class Queries {
 			"FROM (" +
 						"SELECT * FROM (" +
 						"SELECT * FROM (" +
-				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +
@@ -1560,7 +1560,7 @@ public class Queries {
 			"FROM (" +
 						"SELECT * FROM (" +
 						"SELECT * FROM (" +
-				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +				    	
@@ -2046,7 +2046,7 @@ public class Queries {
 			"FROM (" +
 						"SELECT * FROM (" +
 						"SELECT * FROM (" +
-				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +
@@ -2123,7 +2123,7 @@ public class Queries {
 			"FROM (" +
 						"SELECT * FROM (" +
 						"SELECT * FROM (" +
-				    	"SELECT geodb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +				    	

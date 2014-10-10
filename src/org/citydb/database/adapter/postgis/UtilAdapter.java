@@ -30,13 +30,51 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
+	protected void getCityDBVersion(DatabaseMetaDataImpl metaData, Connection connection) throws SQLException {
+		Statement statement = null;
+		ResultSet rs = null;
+
+		try {
+			statement = connection.createStatement();
+			rs = statement.executeQuery("select * from " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.citydb_version") + "()");
+			if (rs.next()) {
+				metaData.setCityDBVersion(rs.getString("VERSION"));
+				metaData.setCityDBMajorVersion(rs.getInt("MAJOR_VERSION"));
+				metaData.setCityDBMinorVersion(rs.getInt("MINOR_VERSION"));
+				metaData.setCityDBMinorRevision(rs.getInt("MINOR_REVISION"));
+			} else
+				throw new SQLException("Failed to retrieve version information from 3D City Database instance.");
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+
+				rs = null;
+			}
+
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+
+				statement = null;
+			}
+		}
+	}
+	
+	@Override
 	protected void getDatabaseMetaData(DatabaseMetaDataImpl metaData, Connection connection) throws SQLException {
 		Statement statement = null;
 		ResultSet rs = null;
 
 		try {
 			statement = connection.createStatement();
-			rs = statement.executeQuery("select * from " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geodb_util.db_metadata") + "()");
+			rs = statement.executeQuery("select * from " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.db_metadata") + "()");
 			if (rs.next()) {
 				DatabaseSrs srs = metaData.getReferenceSystem();
 				srs.setSrid(rs.getInt("SCHEMA_SRID"));
@@ -117,7 +155,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	@Override
 	protected String[] createDatabaseReport(Connection connection) throws SQLException {
 		try {
-			interruptableCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geodb_stat.table_contents") + "()}");
+			interruptableCallableStatement = connection.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_stat.table_contents") + "()}");
 			interruptableCallableStatement.registerOutParameter(1, Types.ARRAY);
 			interruptableCallableStatement.executeUpdate();
 

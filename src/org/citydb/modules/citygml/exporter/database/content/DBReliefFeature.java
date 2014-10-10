@@ -120,7 +120,7 @@ public class DBReliefFeature implements DBExporter {
 			psReliefFeature = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_util.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
 			.append("select rf.LOD as RF_LOD, ")

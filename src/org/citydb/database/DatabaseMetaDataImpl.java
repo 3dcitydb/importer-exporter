@@ -38,6 +38,10 @@ public class DatabaseMetaDataImpl implements DatabaseMetaData {
 	private final Logger LOG = Logger.getInstance();	
 	
 	// database related information
+	private String cityDBVersion;
+	private int cityDBMajorVersion;
+	private int cityDBMinorVersion;
+	private int cityDBMinorRevision;
 	private String databaseProductName;
 	private String databaseProductString;
 	private int databaseMajorVersion;
@@ -56,6 +60,42 @@ public class DatabaseMetaDataImpl implements DatabaseMetaData {
 		versioning = Versioning.OFF;
 	}
 
+	@Override
+	public String getCityDBVersion() {
+		return cityDBVersion;
+	}
+	
+	public void setCityDBVersion(String cityDBVersion) {
+		this.cityDBVersion = cityDBVersion;
+	}
+
+	@Override
+	public int getCityDBMajorVersion() {
+		return cityDBMajorVersion;
+	}
+	
+	public void setCityDBMajorVersion(int cityDBMajorVersion) {
+		this.cityDBMajorVersion = cityDBMajorVersion;
+	}
+
+	@Override
+	public int getCityDBMinorVersion() {
+		return cityDBMinorVersion;
+	}
+	
+	public void setCityDBMinorVersion(int cityDBMinorVersion) {
+		this.cityDBMinorVersion = cityDBMinorVersion;
+	}
+
+	@Override
+	public int getCityDBMinorRevision() {
+		return cityDBMinorRevision;
+	}
+	
+	public void setCityDBMinorRevision(int cityDBMinorRevision) {
+		this.cityDBMinorRevision = cityDBMinorRevision;
+	}
+	
 	@Override
 	public String getDatabaseProductName() {
 		return databaseProductName;
@@ -129,6 +169,7 @@ public class DatabaseMetaDataImpl implements DatabaseMetaData {
 
 	@Override
 	public void printToConsole() {
+        LOG.all(LogLevel.INFO, "3D City Database: " + getCityDBVersion());
 		LOG.all(LogLevel.INFO, "Database: " + getDatabaseProductName());
 		LOG.all(LogLevel.INFO, "Version: " + getDatabaseProductVersion());
 		LOG.all(LogLevel.INFO, "SRID: " + srs.getSrid() + " (" + srs.getType() + ')');

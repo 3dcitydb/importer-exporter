@@ -105,7 +105,7 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	@Override
 	public String getNextSequenceValuesQuery(DBSequencerEnum sequence) {
 		return new StringBuilder("select * from table(")
-		.append(resolveDatabaseOperationName("geodb_util.get_seq_values")).append("(")
+		.append(resolveDatabaseOperationName("citydb_util.get_seq_values")).append("(")
 		.append("'").append(getSequenceName(sequence)).append("'").append(",")
 		.append("?").append("))").toString();
 	}

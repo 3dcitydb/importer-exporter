@@ -98,7 +98,7 @@ public class DBTransportationComplex implements DBExporter {
 			psTranComplex = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_util.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
 			.append("select tc.CLASS as TC_CLASS, tc.CLASS_CODESPACE as TC_CLASS_CODESPACE, tc.FUNCTION as TC_FUNCTION, tc.FUNCTION_CODESPACE as TC_FUNCTION_CODESPACE, tc.USAGE as TC_USAGE, tc.USAGE_CODESPACE as TC_USAGE_CODESPACE, ")

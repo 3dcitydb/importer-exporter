@@ -32,6 +32,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 		this.databaseAdapter = databaseAdapter;
 	}
 	
+	protected abstract void getCityDBVersion(DatabaseMetaDataImpl metaData, Connection connection) throws SQLException;
 	protected abstract void getDatabaseMetaData(DatabaseMetaDataImpl metaData, Connection connection) throws SQLException;
 	protected abstract void getSrsInfo(DatabaseSrs srs, Connection connection) throws SQLException;
 	protected abstract String[] createDatabaseReport(Connection connection) throws SQLException;
@@ -51,7 +52,8 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 
 			// get 3dcitydb specific meta data
 			DatabaseMetaDataImpl metaData = new DatabaseMetaDataImpl();
-			getDatabaseMetaData(metaData, conn);			
+			getCityDBVersion(metaData, conn);
+			getDatabaseMetaData(metaData, conn);
 			metaData.setDatabaseProductName(vendorMetaData.getDatabaseProductName());
 			metaData.setDatabaseProductVersion(vendorMetaData.getDatabaseProductVersion());
 			metaData.setDatabaseMajorVersion(vendorMetaData.getDatabaseMajorVersion());
@@ -212,17 +214,17 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 	}
 	
 	public IndexStatusInfo getIndexStatus(IndexType type) throws SQLException {
-		String operation = type == IndexType.SPATIAL ? "geodb_idx.status_spatial_indexes" : "geodb_idx.status_normal_indexes";
+		String operation = type == IndexType.SPATIAL ? "citydb_idx.status_spatial_indexes" : "citydb_idx.status_normal_indexes";
 		return manageIndexes(operation, type);
 	}
 
 	private IndexStatusInfo createIndexes(IndexType type) throws SQLException {
-		String operation = type == IndexType.SPATIAL ? "geodb_idx.create_spatial_indexes" : "geodb_idx.create_normal_indexes";
+		String operation = type == IndexType.SPATIAL ? "citydb_idx.create_spatial_indexes" : "citydb_idx.create_normal_indexes";
 		return manageIndexes(operation, type);
 	}
 
 	private IndexStatusInfo dropIndexes(IndexType type) throws SQLException {
-		String operation = type == IndexType.SPATIAL ? "geodb_idx.drop_spatial_indexes" : "geodb_idx.drop_normal_indexes";
+		String operation = type == IndexType.SPATIAL ? "citydb_idx.drop_spatial_indexes" : "citydb_idx.drop_normal_indexes";
 		return manageIndexes(operation, type);
 	}
 
@@ -251,7 +253,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 		try {
 			conn = databaseAdapter.connectionPool.getConnection();
 
-			interruptableCallableStatement = conn.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("geodb_idx.index_status") + "(?, ?)}");
+			interruptableCallableStatement = conn.prepareCall("{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_idx.index_status") + "(?, ?)}");
 			interruptableCallableStatement.setString(2, tableName);
 			interruptableCallableStatement.setString(3, columnName);
 			interruptableCallableStatement.registerOutParameter(1, Types.VARCHAR);

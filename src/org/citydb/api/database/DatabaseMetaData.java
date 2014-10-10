@@ -30,7 +30,11 @@
 package org.citydb.api.database;
 
 
-public interface DatabaseMetaData {	
+public interface DatabaseMetaData {
+	public String getCityDBVersion();
+	public int getCityDBMajorVersion();
+	public int getCityDBMinorVersion();
+	public int getCityDBMinorRevision();
 	public String getDatabaseProductName();	
 	public String getShortDatabaseProductVersion();
 	public String getDatabaseProductVersion();

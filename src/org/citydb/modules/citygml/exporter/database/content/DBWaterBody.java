@@ -110,7 +110,7 @@ public class DBWaterBody implements DBExporter {
 			psWaterBody = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("geodb_util.transform_or_null");
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_util.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
 			.append("select wb.CLASS, wb.CLASS_CODESPACE, wb.FUNCTION, wb.FUNCTION_CODESPACE, wb.USAGE, wb.USAGE_CODESPACE, ")
