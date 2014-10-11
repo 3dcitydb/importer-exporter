@@ -77,7 +77,7 @@ public class DBSolitaryVegetatObject implements DBExporter {
 		if (!config.getInternal().isTransformCoordinates()) {
 			StringBuilder query = new StringBuilder()
 			.append("select CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE, ")
-			.append("SPECIES, SPECIES_CODESPACE, HEIGHT, HEIGHT_UNIT, TRUNC_DIAMETER, TRUNC_DIAMETER_UNIT, CROWN_DIAMETER, CROWN_DIAMETER_UNIT, ")
+			.append("SPECIES, SPECIES_CODESPACE, HEIGHT, HEIGHT_UNIT, TRUNK_DIAMETER, TRUNK_DIAMETER_UNIT, CROWN_DIAMETER, CROWN_DIAMETER_UNIT, ")
 			.append("LOD1_BREP_ID, LOD2_BREP_ID, LOD3_BREP_ID, LOD4_BREP_ID, ")
 			.append("LOD1_OTHER_GEOM, LOD2_OTHER_GEOM, LOD3_OTHER_GEOM, LOD4_OTHER_GEOM, ")
 			.append("LOD1_IMPLICIT_REP_ID, LOD2_IMPLICIT_REP_ID, LOD3_IMPLICIT_REP_ID, LOD4_IMPLICIT_REP_ID, ")
@@ -91,7 +91,7 @@ public class DBSolitaryVegetatObject implements DBExporter {
 
 			StringBuilder query = new StringBuilder()
 			.append("select CLASS, CLASS_CODESPACE, FUNCTION, FUNCTION_CODESPACE, USAGE, USAGE_CODESPACE,")
-			.append("SPECIES, SPECIES_CODESPACE, HEIGHT, HEIGHT_UNIT, TRUNC_DIAMETER, TRUNC_DIAMETER_UNIT, CROWN_DIAMETER, CROWN_DIAMETER_UNIT, ")
+			.append("SPECIES, SPECIES_CODESPACE, HEIGHT, HEIGHT_UNIT, TRUNK_DIAMETER, TRUNK_DIAMETER_UNIT, CROWN_DIAMETER, CROWN_DIAMETER_UNIT, ")
 			.append("LOD1_BREP_ID, LOD2_BREP_ID, LOD3_BREP_ID, LOD4_BREP_ID, ")
 			.append(transformOrNull).append("(LOD1_OTHER_GEOM, ").append(srid).append(") AS LOD1_OTHER_GEOM, ")
 			.append(transformOrNull).append("(LOD2_OTHER_GEOM, ").append(srid).append(") AS LOD2_OTHER_GEOM, ")
@@ -171,10 +171,10 @@ public class DBSolitaryVegetatObject implements DBExporter {
 				}
 
 				if (projectionFilter.pass(CityGMLModuleType.VEGETATION, "trunkDiameter")) {
-					double truncDiameter = rs.getDouble(11);
+					double trunkDiameter = rs.getDouble(11);
 					if (!rs.wasNull()) {
 						Length length = new Length();
-						length.setValue(truncDiameter);
+						length.setValue(trunkDiameter);
 						length.setUom(rs.getString(12));
 						solVegObject.setTrunkDiameter(length);
 					}
