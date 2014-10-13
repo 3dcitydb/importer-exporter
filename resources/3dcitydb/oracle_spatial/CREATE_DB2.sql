@@ -1,13 +1,18 @@
-
 -- CREATE_DB2.sql
 --
 -- Authors:     Prof. Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
---              Gerhard KÃ¶nig <gerhard.koenig@tu-berlin.de>
+--              Zhihang Yao <zhihang.yao@tum.de>
 --              Claus Nagel <cnagel@virtualcitysystems.de>
---              Alexandra Stadler <stroh@igg.tu-berlin.de>
+--              Philipp Willkomm <pwillkomm@moss.de>
+--              Gerhard König <gerhard.koenig@tu-berlin.de>
+--              Alexandra Lorenz <di.alex.lorenz@googlemail.com>
 --
--- Copyright:   (c) 2007-2008, Institute for Geodesy and Geoinformation Science,
---                             Technische Universitï¿½t Berlin, Germany
+-- Copyright:   (c) 2012-2014  Chair of Geoinformatics,
+--                             Technische Universität München, Germany
+--                             http://www.gis.bv.tum.de
+--
+--              (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
+--                             Technische Universität Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -23,11 +28,17 @@
 -- ChangeLog:
 --
 -- Version | Date       | Description                               | Author
+-- 3.0.0     2013-12-06   new version for 3DCityDB V3                 ZYao
+--                                                                    TKol
+--                                                                    CNag
+--                                                                    PWil
 -- 2.0.1     2008-06-28   versioning is enabled depending on var      TKol
 -- 2.0.0     2007-11-23   release version                             TKol
 --                                                                    GKoe
 --                                                                    CNag
---                                                                    ASta
+--                                                                    ALor
+--
+
 --
 SET SERVEROUTPUT ON
 SET FEEDBACK ON
@@ -35,90 +46,29 @@ SET VER OFF
 
 VARIABLE VERSIONBATCHFILE VARCHAR2(50);
 
+
+--// create tables
+@@SCHEMA/TABLES/TABLES.sql
+
 -- This script is called from CREATE_DB.sql and it
 -- is required that the three substitution variables
 -- &SRSNO, &GMLSRSNAME, and &VERSIONING are set properly.
 
---// create database srs
-@@SCHEMA/TABLES/METADATA/DATABASE_SRS.sql
-
 INSERT INTO DATABASE_SRS(SRID,GML_SRS_NAME) VALUES (&SRSNO,'&GMLSRSNAME');
 COMMIT;
 
---// create tables
-@@SCHEMA/TABLES/METADATA/OBJECTCLASS.sql
-@@SCHEMA/TABLES/CORE/CITYMODEL.sql
-@@SCHEMA/TABLES/CORE/CITYOBJECT.sql
-@@SCHEMA/TABLES/CORE/CITYOBJECT_MEMBER.sql
-@@SCHEMA/TABLES/CORE/EXTERNAL_REFERENCE.sql
-@@SCHEMA/TABLES/CORE/GENERALIZATION.sql
-@@SCHEMA/TABLES/CORE/IMPLICIT_GEOMETRY.sql
-@@SCHEMA/TABLES/GEOMETRY/SURFACE_GEOMETRY.sql
-@@SCHEMA/TABLES/CITYFURNITURE/CITY_FURNITURE.sql
-@@SCHEMA/TABLES/GENERICS/CITYOBJECT_GENERICATTRIB.sql
-@@SCHEMA/TABLES/GENERICS/GENERIC_CITYOBJECT.sql
-@@SCHEMA/TABLES/CITYOBJECTGROUP/CITYOBJECTGROUP.sql
-@@SCHEMA/TABLES/CITYOBJECTGROUP/GROUP_TO_CITYOBJECT.sql
-@@SCHEMA/TABLES/BUILDING/ADDRESS.sql
-@@SCHEMA/TABLES/BUILDING/ADDRESS_TO_BUILDING.sql
-@@SCHEMA/TABLES/BUILDING/BUILDING.sql
-@@SCHEMA/TABLES/BUILDING/BUILDING_FURNITURE.sql
-@@SCHEMA/TABLES/BUILDING/BUILDING_INSTALLATION.sql
-@@SCHEMA/TABLES/BUILDING/OPENING.sql
-@@SCHEMA/TABLES/BUILDING/OPENING_TO_THEM_SURFACE.sql
-@@SCHEMA/TABLES/BUILDING/ROOM.sql
-@@SCHEMA/TABLES/BUILDING/THEMATIC_SURFACE.sql
-@@SCHEMA/TABLES/APPEARANCE/APPEARANCE.sql
-@@SCHEMA/TABLES/APPEARANCE/SURFACE_DATA.sql
-@@SCHEMA/TABLES/APPEARANCE/TEXTUREPARAM.sql
-@@SCHEMA/TABLES/APPEARANCE/APPEAR_TO_SURFACE_DATA.sql
-@@SCHEMA/TABLES/RELIEF/BREAKLINE_RELIEF.sql
-@@SCHEMA/TABLES/RELIEF/MASSPOINT_RELIEF.sql
-@@SCHEMA/TABLES/RELIEF/RASTER_RELIEF.sql
-@@SCHEMA/TABLES/RELIEF/RASTER_RELIEF_IMP.sql
-@@SCHEMA/TABLES/RELIEF/RASTER_RELIEF_IMP_RDT.sql
-@@SCHEMA/TABLES/RELIEF/RASTER_RELIEF_RDT.sql
-@@SCHEMA/TABLES/RELIEF/RELIEF.sql
-@@SCHEMA/TABLES/RELIEF/RELIEF_COMPONENT.sql
-@@SCHEMA/TABLES/RELIEF/RELIEF_FEAT_TO_REL_COMP.sql
-@@SCHEMA/TABLES/RELIEF/RELIEF_FEATURE.sql
-@@SCHEMA/TABLES/RELIEF/TIN_RELIEF.sql
-@@SCHEMA/TABLES/ORTHOPHOTO/ORTHOPHOTO_RDT.sql;
-@@SCHEMA/TABLES/ORTHOPHOTO/ORTHOPHOTO.sql;
-@@SCHEMA/TABLES/ORTHOPHOTO/ORTHOPHOTO_RDT_IMP.sql;
-@@SCHEMA/TABLES/ORTHOPHOTO/ORTHOPHOTO_IMP.sql;
-@@SCHEMA/TABLES/TRANSPORTATION/TRANSPORTATION_COMPLEX.sql
-@@SCHEMA/TABLES/TRANSPORTATION/TRAFFIC_AREA.sql
-@@SCHEMA/TABLES/LANDUSE/LAND_USE.sql
-@@SCHEMA/TABLES/VEGETATION/PLANT_COVER.sql
-@@SCHEMA/TABLES/VEGETATION/SOLITARY_VEGETAT_OBJECT.sql
-@@SCHEMA/TABLES/WATERBODY/WATERBODY.sql
-@@SCHEMA/TABLES/WATERBODY/WATERBOD_TO_WATERBND_SRF.sql
-@@SCHEMA/TABLES/WATERBODY/WATERBOUNDARY_SURFACE.sql
-
 --// create sequences
-@@SCHEMA/SEQUENCES/CITYMODEL_SEQ.sql
-@@SCHEMA/SEQUENCES/CITYOBJECT_SEQ.sql
-@@SCHEMA/SEQUENCES/EXTERNAL_REF_SEQ.sql
-@@SCHEMA/SEQUENCES/IMPLICIT_GEOMETRY_SEQ.sql
-@@SCHEMA/SEQUENCES/SURFACE_GEOMETRY_SEQ.sql
-@@SCHEMA/SEQUENCES/CITYOBJECT_GENERICATT_SEQ.sql
-@@SCHEMA/SEQUENCES/ADDRESS_SEQ.sql
-@@SCHEMA/SEQUENCES/APPEARANCE_SEQ.sql
-@@SCHEMA/SEQUENCES/SURFACE_DATA_SEQ.sql
-@@SCHEMA/SEQUENCES/DTM_SEQ.sql
-@@SCHEMA/SEQUENCES/ORTHOPHOTO_SEQ.sql
+@@SCHEMA/SEQUENCES/SEQUENCES.sql
 
 --// activate constraints
 @@SCHEMA/CONSTRAINTS/CONSTRAINTS.sql
 
---// BUILD INDEXES
+--// build indexes
 @@SCHEMA/INDEXES/SIMPLE_INDEX.sql
 @@SCHEMA/INDEXES/SPATIAL_INDEX.sql
 
+--// create objectclass instances
 @@UTIL/CREATE_DB/OBJECTCLASS_INSTANCES.sql
-@@UTIL/CREATE_DB/IMPORT_PROCEDURES.sql
-@@UTIL/CREATE_DB/DUMMY_IMPORT.sql
 
 --// (possibly) activate versioning
 BEGIN
@@ -136,15 +86,8 @@ column mc2 new_value VERSIONBATCHFILE2 print
 select :VERSIONBATCHFILE mc2 from dual;
 @@&VERSIONBATCHFILE2
 
---// DML TRIGGER FOR RASTER TABLES
-@@SCHEMA/TRIGGER/RASTER_ORTHOPHOTO/TRIGGER.sql;
-
---// CREATE TABLES & PROCEDURES OF THE PLANNINGMANAGER
-@@PL_SQL/MOSAIC/MOSAIC.sql;
-@@CREATE_PLANNING_MANAGER.sql
-
---// geodb packages
-@@CREATE_GEODB_PKG.sql
+--// citydb packages
+@@CREATE_CITYDB_PKG.sql
 
 SHOW ERRORS;
 COMMIT;
