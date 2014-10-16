@@ -30,10 +30,10 @@
 package org.citydb.modules.citygml.exporter.database.content;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 
@@ -199,7 +199,7 @@ public class DBCityObject implements DBExporter {
 
 				// creationDate
 				if (projectionFilter.pass(CityGMLModuleType.CORE, "creationDate")) {
-					Date creationDate = rs.getDate(6);
+					Timestamp creationDate = rs.getTimestamp(6);
 					if (creationDate != null) {
 						GregorianCalendar gregDate = new GregorianCalendar();
 						gregDate.setTime(creationDate);
@@ -209,7 +209,7 @@ public class DBCityObject implements DBExporter {
 
 				// terminationDate
 				if (projectionFilter.pass(CityGMLModuleType.CORE, "terminationDate")) {
-					Date terminationDate = rs.getDate(7);
+					Timestamp terminationDate = rs.getTimestamp(7);
 					if (terminationDate != null) {
 						GregorianCalendar gregDate = new GregorianCalendar();
 						gregDate.setTime(terminationDate);

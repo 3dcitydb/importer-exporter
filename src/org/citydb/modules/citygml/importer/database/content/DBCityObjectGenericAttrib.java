@@ -33,6 +33,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 
 import org.citydb.api.geometry.GeometryObject;
@@ -191,9 +192,9 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 
 				DateAttribute dateAttribute = (DateAttribute)genericAttribute;
 				if (dateAttribute.isSetValue())
-					ps.setDate(7, new Date(dateAttribute.getValue().getTimeInMillis()));
+					ps.setTimestamp(7, new Timestamp(dateAttribute.getValue().getTime().getTime()));
 				else
-					ps.setNull(7, Types.DATE);
+					ps.setNull(7, Types.TIMESTAMP);
 
 				ps.setNull(3, Types.VARCHAR);
 				ps.setNull(4, Types.NULL);

@@ -1,10 +1,10 @@
 package org.citydb.modules.citygml.exporter.database.content;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 
@@ -105,7 +105,7 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 					break;
 				case 5:
 					if (projectionFilter.pass(CityGMLModuleType.GENERICS, "dateAttribute")) {
-						Date dateVal = rs.getDate(9);
+						Timestamp dateVal = rs.getTimestamp(9);
 						if (!rs.wasNull()) {
 							genericAttribute = new DateAttribute();
 							GregorianCalendar gregDate = new GregorianCalendar();

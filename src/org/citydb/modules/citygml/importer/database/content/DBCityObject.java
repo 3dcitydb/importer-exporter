@@ -32,6 +32,7 @@ package org.citydb.modules.citygml.importer.database.content;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -89,11 +90,7 @@ public class DBCityObject implements DBImporter {
 		this.batchConn = batchConn;
 		this.config = config;
 		this.dbImporterManager = dbImporterManager;
-
-		init();
-	}
-
-	private void init() throws SQLException {
+		
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		rememberGmlId = config.getProject().getImporter().getGmlId().isSetKeepGmlIdAsExternalReference();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
@@ -126,12 +123,15 @@ public class DBCityObject implements DBImporter {
 			updatingPerson = "'" + updatingPerson + "'";
 		else
 			updatingPerson = null;
+		
+		init();
+	}
 
+	private void init() throws SQLException {
 		StringBuilder stmt = new StringBuilder()
 		.append("insert into CITYOBJECT (ID, OBJECTCLASS_ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, ENVELOPE, CREATION_DATE, TERMINATION_DATE, ")
 		.append("RELATIVE_TO_TERRAIN, RELATIVE_TO_WATER, LAST_MODIFICATION_DATE, UPDATING_PERSON, REASON_FOR_UPDATE, LINEAGE, XML_SOURCE) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ")
-		.append(dbImporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("date.current_date_and_time")).append(", ")
+		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ")
 		.append(updatingPerson).append(", ")
 		.append(reasonForUpdate).append(", ")
 		.append(lineage).append(", null)");
@@ -267,8 +267,8 @@ public class DBCityObject implements DBImporter {
 			// creationDate is not set: use current date
 			creationDate = new java.util.Date();
 		}
-
-		psCityObject.setDate(8, new java.sql.Date(creationDate.getTime()));
+				
+		psCityObject.setTimestamp(8, new Timestamp(creationDate.getTime()));
 
 		// terminationDate (null is allowed)
 		java.util.Date terminationDate = null;
@@ -281,9 +281,9 @@ public class DBCityObject implements DBImporter {
 		}
 
 		if (terminationDate == null) {
-			psCityObject.setNull(9, Types.DATE);
+			psCityObject.setNull(9, Types.TIMESTAMP);
 		} else {
-			psCityObject.setDate(9, new java.sql.Date(terminationDate.getTime()));
+			psCityObject.setTimestamp(9, new Timestamp(terminationDate.getTime()));
 		}
 
 		// relativeToTerrain
