@@ -64,7 +64,6 @@ public class DBCityObject implements DBImporter {
 	private final Logger LOG = Logger.getInstance();
 
 	private final Connection batchConn;
-	private final Config config;
 	private final DBImporterManager dbImporterManager;
 
 	private PreparedStatement psCityObject;
@@ -88,7 +87,6 @@ public class DBCityObject implements DBImporter {
 
 	public DBCityObject(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
-		this.config = config;
 		this.dbImporterManager = dbImporterManager;
 		
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
