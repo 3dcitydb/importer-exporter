@@ -66,7 +66,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	private JTextField workspace;
 	private JFormattedTextField timestamp;
 
-	private DatabaseConnectionPool dbConncetionPool;
+	private DatabaseConnectionPool dbConnectionPool;
 	private ViewController viewController;
 
 	private JTabbedPane operationsTab;
@@ -74,7 +74,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 
 	public DatabaseOperationsPanel(Config config) {
 		this.config = config;
-		dbConncetionPool = DatabaseConnectionPool.getInstance();
+		dbConnectionPool = DatabaseConnectionPool.getInstance();
 		viewController = ObjectRegistry.getInstance().getViewController();
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
 
@@ -167,7 +167,7 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	}
 	
 	public void setEnabledWorkspace(boolean enable) {
-		if (enable && dbConncetionPool.isConnected() && !dbConncetionPool.getActiveDatabaseAdapter().hasVersioningSupport())
+		if (enable && dbConnectionPool.isConnected() && !dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport())
 			enable = false;
 		
 		workspaceLabel.setEnabled(enable);
@@ -177,9 +177,9 @@ public class DatabaseOperationsPanel extends JPanel implements EventHandler {
 	}
 
 	public boolean existsWorkspace() {		
-		if (!dbConncetionPool.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getText())) {
+		if (!dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getText())) {
 			Workspace tmp = new Workspace(workspace.getText().trim(), timestamp.getText().trim());
-			return dbConncetionPool.getActiveDatabaseAdapter().getWorkspaceManager().existsWorkspace(tmp, true);
+			return dbConnectionPool.getActiveDatabaseAdapter().getWorkspaceManager().existsWorkspace(tmp, true);
 		}
 
 		return true;
