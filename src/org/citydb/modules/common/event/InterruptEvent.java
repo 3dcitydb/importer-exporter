@@ -33,22 +33,22 @@ import org.citydb.api.event.Event;
 import org.citydb.api.log.LogLevel;
 
 public class InterruptEvent extends Event {
-	private InterruptEnum interruptType;
+	private InterruptReason interruptType;
 	private String logMessage;
 	private LogLevel logLevelType;
 	
-	public InterruptEvent(InterruptEnum interruptType, Object source) {
+	public InterruptEvent(InterruptReason interruptType, Object source) {
 		super(EventType.INTERRUPT, source);
 		this.interruptType = interruptType;
 	}
 	
-	public InterruptEvent(InterruptEnum interruptType, String logMessage, LogLevel logLevelType, Object source) {
+	public InterruptEvent(InterruptReason interruptType, String logMessage, LogLevel logLevelType, Object source) {
 		this(interruptType, source);
 		this.logMessage = logMessage;
 		this.logLevelType = logLevelType;
 	}
 
-	public InterruptEnum getInterruptType() {
+	public InterruptReason getInterruptReason() {
 		return interruptType;
 	}
 

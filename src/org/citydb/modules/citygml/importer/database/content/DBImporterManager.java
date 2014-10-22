@@ -33,7 +33,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -49,6 +51,7 @@ import org.citydb.modules.citygml.common.database.uid.UIDCacheEntry;
 import org.citydb.modules.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.modules.citygml.common.database.xlink.DBXlink;
 import org.citydb.modules.citygml.importer.util.AffineTransformer;
+import org.citydb.modules.citygml.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.modules.citygml.importer.util.LocalTextureCoordinatesResolver;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.builder.jaxb.marshal.JAXBMarshaller;
@@ -72,13 +75,15 @@ public class DBImporterManager {
 	private final HashMap<DBImporterEnum, DBImporter> dbImporterMap;
 	private final HashMap<CityGMLClass, Long> featureCounterMap;
 	private final HashMap<GMLClass, Long> geometryCounterMap;
+	private final List<ImportLogEntry> importedFeatures;
 	private final DBSequencer dbSequencer;
-	
+
 	private AffineTransformer affineTransformer;
 	private LocalTextureCoordinatesResolver localTexCoordResolver;
 	private CityGMLVersion cityGMLVersion;
 	private JAXBMarshaller jaxbMarshaller;
 	private SAXWriter saxWriter;
+	private boolean isLogImportedFeatures;
 
 	public DBImporterManager(Connection batchConn,
 			AbstractDatabaseAdapter databaseAdapter,
@@ -98,11 +103,12 @@ public class DBImporterManager {
 		dbImporterMap = new HashMap<DBImporterEnum, DBImporter>();
 		featureCounterMap = new HashMap<CityGMLClass, Long>();
 		geometryCounterMap = new HashMap<GMLClass, Long>();
+		importedFeatures = new ArrayList<ImportLogEntry>();
 		dbSequencer = new DBSequencer(batchConn, databaseAdapter);
 
 		if (config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation())
 			affineTransformer = config.getInternal().getAffineTransformer();
-		
+
 		if (config.getProject().getImporter().getAppearances().isSetImportAppearance())
 			localTexCoordResolver = new LocalTextureCoordinatesResolver();
 
@@ -111,6 +117,8 @@ public class DBImporterManager {
 			jaxbMarshaller = jaxbBuilder.createJAXBMarshaller(cityGMLVersion);
 			saxWriter = new SAXWriter();
 		}
+		
+		isLogImportedFeatures = config.getProject().getImporter().getImportLog().isSetLogImportedFeatures();
 	}
 
 	public DBImporter getDBImporter(DBImporterEnum dbImporterType) throws SQLException {
@@ -294,7 +302,7 @@ public class DBImporterManager {
 	public void putUID(String gmlId, long id, CityGMLClass type) {
 		putUID(gmlId, id, -1, false, null, type);
 	}
-	
+
 	public boolean lookupAndPutUID(String gmlId, long id, CityGMLClass type) {
 		UIDCache cache = uidCacheManager.getCache(type);
 
@@ -315,7 +323,7 @@ public class DBImporterManager {
 
 		return 0;
 	}
-	
+
 	public long getDBIdFromMemory(String gmlId, CityGMLClass type) {
 		UIDCache cache = uidCacheManager.getCache(type);
 
@@ -336,14 +344,6 @@ public class DBImporterManager {
 		eventDipatcher.triggerEvent(event);
 	}
 
-	public void updateFeatureCounter(CityGMLClass featureType) {
-		Long counter = featureCounterMap.get(featureType);
-		if (counter == null)
-			featureCounterMap.put(featureType, new Long(1));
-		else
-			featureCounterMap.put(featureType, counter + 1);
-	}
-
 	public AffineTransformer getAffineTransformer() {
 		return affineTransformer;
 	}
@@ -351,9 +351,22 @@ public class DBImporterManager {
 	public LocalTextureCoordinatesResolver getLocalTextureCoordinatesResolver() {
 		return localTexCoordResolver;
 	}
+	
+	public void updateFeatureCounter(CityGMLClass featureType, long id, String gmlId, boolean isTopLevel) {
+		Long counter = featureCounterMap.get(featureType);
+		if (counter == null)
+			featureCounterMap.put(featureType, new Long(1));
+		else
+			featureCounterMap.put(featureType, counter + 1);
+		
+		if (isLogImportedFeatures && isTopLevel)
+			importedFeatures.add(new ImportLogEntry(featureType, id, gmlId));
+	}
 
-	public HashMap<CityGMLClass, Long> getFeatureCounter() {
-		return featureCounterMap;
+	public HashMap<CityGMLClass, Long> getAndResetFeatureCounter() {
+		HashMap<CityGMLClass, Long> tmp = new HashMap<CityGMLClass, Long>(featureCounterMap);
+		featureCounterMap.clear();
+		return tmp;
 	}
 
 	public void updateGeometryCounter(GMLClass geometryType) {
@@ -364,8 +377,16 @@ public class DBImporterManager {
 			geometryCounterMap.put(geometryType, counter + 1);
 	}
 
-	public HashMap<GMLClass, Long> getGeometryCounter() {
-		return geometryCounterMap;
+	public HashMap<GMLClass, Long> getAndResetGeometryCounter() {
+		HashMap<GMLClass, Long> tmp = new HashMap<GMLClass, Long>(geometryCounterMap);
+		geometryCounterMap.clear();
+		return tmp;
+	}
+	
+	public List<ImportLogEntry> getAndResetImportedFeatures() {
+		List<ImportLogEntry> tmp = new ArrayList<ImportLogEntry>(importedFeatures);
+		importedFeatures.clear();
+		return tmp;
 	}
 
 	public String marshal(Object object, ModuleType... moduleTypes) {
@@ -417,7 +438,7 @@ public class DBImporterManager {
 				importer.executeBatch();
 		}
 	}
-	
+
 	public AbstractDatabaseAdapter getDatabaseAdapter() {
 		return databaseAdapter;
 	}

@@ -29,6 +29,7 @@
  */
 package org.citydb.modules.citygml.importer.concurrent;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -36,7 +37,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool;
 import org.citydb.api.concurrent.WorkerPool.WorkQueue;
+import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
+import org.citydb.api.event.EventHandler;
+import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Workspace;
@@ -59,10 +63,15 @@ import org.citydb.modules.citygml.importer.database.content.DBSolitaryVegetatObj
 import org.citydb.modules.citygml.importer.database.content.DBTransportationComplex;
 import org.citydb.modules.citygml.importer.database.content.DBTunnel;
 import org.citydb.modules.citygml.importer.database.content.DBWaterBody;
+import org.citydb.modules.citygml.importer.util.ImportLogger;
+import org.citydb.modules.citygml.importer.util.ImportLogger.ImportLogEntry;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
+import org.citydb.modules.common.event.EventType;
 import org.citydb.modules.common.event.FeatureCounterEvent;
 import org.citydb.modules.common.event.GeometryCounterEvent;
+import org.citydb.modules.common.event.InterruptReason;
+import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.modules.common.filter.ImportFilter;
 import org.citydb.modules.common.filter.feature.BoundingBoxFilter;
 import org.citydb.modules.common.filter.feature.GmlIdFilter;
@@ -87,10 +96,9 @@ import org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject;
 import org.citygml4j.model.citygml.waterbody.WaterBody;
 import org.citygml4j.model.common.base.ModelType;
 import org.citygml4j.model.gml.basicTypes.Code;
-import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
-public class DBImportWorker implements Worker<CityGML> {
+public class DBImportWorker implements Worker<CityGML>, EventHandler {
 	private final Logger LOG = Logger.getInstance();
 
 	// instance members needed for WorkPool
@@ -108,10 +116,13 @@ public class DBImportWorker implements Worker<CityGML> {
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 	private final ImportFilter importFilter;
+	private final ImportLogger importLogger;
+
 	private Connection batchConn;
 	private DBImporterManager dbImporterManager;
 	private int updateCounter = 0;
 	private int commitAfter = 20;
+	private volatile boolean shouldWork = true;
 
 	// filter
 	private BoundingBoxFilter featureBoundingBoxFilter;
@@ -123,6 +134,7 @@ public class DBImportWorker implements Worker<CityGML> {
 			WorkerPool<DBXlink> tmpXlinkPool,
 			UIDCacheManager uidCacheManager,
 			ImportFilter importFilter,
+			ImportLogger importLogger,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
 		this.dbConnectionPool = dbConnectionPool;
@@ -130,6 +142,7 @@ public class DBImportWorker implements Worker<CityGML> {
 		this.tmpXlinkPool = tmpXlinkPool;
 		this.uidCacheManager = uidCacheManager;
 		this.importFilter = importFilter;
+		this.importLogger = importLogger;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
@@ -165,6 +178,8 @@ public class DBImportWorker implements Worker<CityGML> {
 		Integer commitAfterProp = database.getUpdateBatching().getFeatureBatchValue();
 		if (commitAfterProp != null && commitAfterProp > 0)
 			commitAfter = commitAfterProp;
+
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 
 	@Override
@@ -227,213 +242,246 @@ public class DBImportWorker implements Worker<CityGML> {
 			try {
 				dbImporterManager.executeBatch();
 				batchConn.commit();
+				updateImportContext();				
+			} catch (SQLException e) {
+				LOG.error("SQL error: " + e.getMessage());
+				while ((e = e.getNextException()) != null)
+					LOG.error("SQL error: " + e.getMessage());
 
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter, this));
-			} catch (SQLException sqlEx) {
-				LOG.error("SQL error: " + sqlEx.getMessage());
-			}
-
-			try {
-				dbImporterManager.close();
-			} catch (SQLException sqlEx) {
-				LOG.error("SQL error: " + sqlEx.getMessage());
-			}
-
-			eventDispatcher.triggerEvent(new FeatureCounterEvent(dbImporterManager.getFeatureCounter(), this));
-			eventDispatcher.triggerEvent(new GeometryCounterEvent(dbImporterManager.getGeometryCounter(), this));
-		} finally {
-			if (batchConn != null) {
 				try {
-					batchConn.close();
-				} catch (SQLException sqlEx) {
+					batchConn.rollback();
+				} catch (SQLException sql) {
 					//
 				}
 
-				batchConn = null;
+				// fire interrupt event to stop other import workers
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+			} catch (IOException e) {
+				LOG.error("Failed to log imported top-level features: " + e.getMessage());
+
+				// fire interrupt event to stop other import workers
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, this));
 			}
+
+		} finally {
+			try {
+				dbImporterManager.close();
+			} catch (SQLException e) {
+				// 
+			}
+
+			try {
+				batchConn.close();
+			} catch (SQLException e) {
+				//
+			}
+
+			batchConn = null;
+			eventDispatcher.removeEventHandler(this);
 		}
 	}
 
 	private void doWork(CityGML work) {
+		if (!shouldWork)
+			return;
+
 		final ReentrantLock runLock = this.runLock;
 		runLock.lock();
 
 		try {
-			try {
-				long id = 0;
+			long id = 0;
 
-				if (work.getCityGMLClass() == CityGMLClass.APPEARANCE) {
-					// global appearances
-					DBAppearance dbAppearance = (DBAppearance)dbImporterManager.getDBImporter(DBImporterEnum.APPEARANCE);
-					if (dbAppearance != null)
-						id = dbAppearance.insert((Appearance)work, CityGMLClass.CITY_MODEL, 0);
+			if (work.getCityGMLClass() == CityGMLClass.APPEARANCE) {
+				// global appearances
+				DBAppearance dbAppearance = (DBAppearance)dbImporterManager.getDBImporter(DBImporterEnum.APPEARANCE);
+				if (dbAppearance != null)
+					id = dbAppearance.insert((Appearance)work, CityGMLClass.CITY_MODEL, 0);
 
-				} else if (work.getModelType() == ModelType.CITYGML) {
-					AbstractCityObject cityObject = (AbstractCityObject)work;
+			} else if (work.getModelType() == ModelType.CITYGML) {
+				AbstractCityObject cityObject = (AbstractCityObject)work;
 
-					// gml:id filter
-					if (featureGmlIdFilter.isActive()) {
-						if (cityObject.isSetId()) {
-							if (featureGmlIdFilter.filter(cityObject.getId()))
-								return;
-						} else
+				// gml:id filter
+				if (featureGmlIdFilter.isActive()) {
+					if (cityObject.isSetId()) {
+						if (featureGmlIdFilter.filter(cityObject.getId()))
 							return;
-					}
+					} else
+						return;
+				}
 
-					// gml:name filter
-					if (featureGmlNameFilter.isActive()) {
-						if (cityObject.isSetName()) {
-							boolean success = false;
+				// gml:name filter
+				if (featureGmlNameFilter.isActive()) {
+					if (cityObject.isSetName()) {
+						boolean success = false;
 
-							for (Code code : cityObject.getName()) {
-								if (code.isSetValue() && !featureGmlNameFilter.filter(code.getValue())) {
-									success = true;
-									break;
-								}
+						for (Code code : cityObject.getName()) {
+							if (code.isSetValue() && !featureGmlNameFilter.filter(code.getValue())) {
+								success = true;
+								break;
 							}
+						}
 
-							if (!success)
-								return;
-
-						} else
+						if (!success)
 							return;
-					}
 
-					// bounding box filter
-					// first of all compute bounding box for cityobject since we need it anyways
-					if (!cityObject.isSetBoundedBy() || !cityObject.getBoundedBy().isSetEnvelope())
-						cityObject.calcBoundedBy(true);
-					else if (!cityObject.getBoundedBy().getEnvelope().isSetLowerCorner() ||
-							!cityObject.getBoundedBy().getEnvelope().isSetUpperCorner()){
-						Envelope envelope = cityObject.getBoundedBy().getEnvelope().convert3d();
-						if (envelope != null)
-							cityObject.getBoundedBy().setEnvelope(envelope);
-						else
-							cityObject.calcBoundedBy(true);
-					}
-
-					// filter
-					if (cityObject.isSetBoundedBy() && 
-							featureBoundingBoxFilter.filter(cityObject.getBoundedBy().getEnvelope()))
+					} else
 						return;
-
-					// if the cityobject did pass all filters, let us further work on it
-					switch (work.getCityGMLClass()) {
-					case BUILDING:
-						DBBuilding dbBuilding = (DBBuilding)dbImporterManager.getDBImporter(DBImporterEnum.BUILDING);
-						if (dbBuilding != null)
-							id = dbBuilding.insert((Building)work);
-
-						break;
-					case BRIDGE:
-						DBBridge dbBridge = (DBBridge)dbImporterManager.getDBImporter(DBImporterEnum.BRIDGE);
-						if (dbBridge != null)
-							id = dbBridge.insert((Bridge)work);
-						
-						break;
-					case TUNNEL:
-						DBTunnel dbTunnel = (DBTunnel)dbImporterManager.getDBImporter(DBImporterEnum.TUNNEL);
-						if (dbTunnel != null)
-							id = dbTunnel.insert((Tunnel)work);
-						
-						break;
-					case CITY_FURNITURE:
-						DBCityFurniture dbCityFurniture = (DBCityFurniture)dbImporterManager.getDBImporter(DBImporterEnum.CITY_FURNITURE);
-						if (dbCityFurniture != null)
-							id = dbCityFurniture.insert((CityFurniture)work);
-
-						break;
-					case LAND_USE:
-						DBLandUse dbLandUse = (DBLandUse)dbImporterManager.getDBImporter(DBImporterEnum.LAND_USE);
-						if (dbLandUse != null)
-							id = dbLandUse.insert((LandUse)work);
-
-						break;
-					case WATER_BODY:
-						DBWaterBody dbWaterBody = (DBWaterBody)dbImporterManager.getDBImporter(DBImporterEnum.WATERBODY);
-						if (dbWaterBody != null)
-							id = dbWaterBody.insert((WaterBody)work);
-
-						break;
-					case PLANT_COVER:
-						DBPlantCover dbPlantCover = (DBPlantCover)dbImporterManager.getDBImporter(DBImporterEnum.PLANT_COVER);
-						if (dbPlantCover != null)
-							id = dbPlantCover.insert((PlantCover)work);
-
-						break;
-					case SOLITARY_VEGETATION_OBJECT:
-						DBSolitaryVegetatObject dbSolVegObject = (DBSolitaryVegetatObject)dbImporterManager.getDBImporter(DBImporterEnum.SOLITARY_VEGETAT_OBJECT);
-						if (dbSolVegObject != null)
-							id = dbSolVegObject.insert((SolitaryVegetationObject)work);
-
-						break;
-					case TRANSPORTATION_COMPLEX:
-					case ROAD:
-					case RAILWAY:
-					case TRACK:
-					case SQUARE:
-						DBTransportationComplex dbTransComplex = (DBTransportationComplex)dbImporterManager.getDBImporter(DBImporterEnum.TRANSPORTATION_COMPLEX);
-						if (dbTransComplex != null)
-							id = dbTransComplex.insert((TransportationComplex)work);
-
-						break;
-					case RELIEF_FEATURE:
-						DBReliefFeature dbReliefFeature = (DBReliefFeature)dbImporterManager.getDBImporter(DBImporterEnum.RELIEF_FEATURE);
-						if (dbReliefFeature != null)
-							id = dbReliefFeature.insert((ReliefFeature)work);
-
-						break;
-					case GENERIC_CITY_OBJECT:
-						DBGenericCityObject dbGenericCityObject = (DBGenericCityObject)dbImporterManager.getDBImporter(DBImporterEnum.GENERIC_CITYOBJECT);
-						if (dbGenericCityObject != null)
-							id = dbGenericCityObject.insert((GenericCityObject)work);
-
-						break;
-					case CITY_OBJECT_GROUP:
-						DBCityObjectGroup dbCityObjectGroup = (DBCityObjectGroup)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECTGROUP);
-						if (dbCityObjectGroup != null)
-							id = dbCityObjectGroup.insert((CityObjectGroup)work);
-
-						break;
-					default:
-						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-								cityObject.getCityGMLClass(), 
-								cityObject.getId()));
-						LOG.error(msg.append(": Skipping import since this is not a top-level feature type.").toString());
-						return;
-					}
 				}
 
-				if (id != 0)
-					updateCounter++;
+				// bounding box filter
+				// first of all compute bounding box for cityobject since we need it anyways
+				if (!cityObject.isSetBoundedBy() || !cityObject.getBoundedBy().isSetEnvelope())
+					cityObject.calcBoundedBy(true);
+				else if (!cityObject.getBoundedBy().getEnvelope().isSetLowerCorner() ||
+						!cityObject.getBoundedBy().getEnvelope().isSetUpperCorner()){
+					Envelope envelope = cityObject.getBoundedBy().getEnvelope().convert3d();
+					if (envelope != null)
+						cityObject.getBoundedBy().setEnvelope(envelope);
+					else
+						cityObject.calcBoundedBy(true);
+				}
 
-			} catch (SQLException sqlEx) {
-				AbstractFeature feature = (AbstractFeature)work;
+				// filter
+				if (cityObject.isSetBoundedBy() && 
+						featureBoundingBoxFilter.filter(cityObject.getBoundedBy().getEnvelope()))
+					return;
 
-				if (feature.isSetId())
-					LOG.error("SQL error for feature with gml:id '" + feature.getId() + "': " + sqlEx.getMessage());
-				else
-					LOG.error("SQL error: " + sqlEx.getMessage());
+				// if the cityobject did pass all filters, let us further work on it
+				switch (work.getCityGMLClass()) {
+				case BUILDING:
+					DBBuilding dbBuilding = (DBBuilding)dbImporterManager.getDBImporter(DBImporterEnum.BUILDING);
+					if (dbBuilding != null)
+						id = dbBuilding.insert((Building)work);
 
-				return;
+					break;
+				case BRIDGE:
+					DBBridge dbBridge = (DBBridge)dbImporterManager.getDBImporter(DBImporterEnum.BRIDGE);
+					if (dbBridge != null)
+						id = dbBridge.insert((Bridge)work);
+
+					break;
+				case TUNNEL:
+					DBTunnel dbTunnel = (DBTunnel)dbImporterManager.getDBImporter(DBImporterEnum.TUNNEL);
+					if (dbTunnel != null)
+						id = dbTunnel.insert((Tunnel)work);
+
+					break;
+				case CITY_FURNITURE:
+					DBCityFurniture dbCityFurniture = (DBCityFurniture)dbImporterManager.getDBImporter(DBImporterEnum.CITY_FURNITURE);
+					if (dbCityFurniture != null)
+						id = dbCityFurniture.insert((CityFurniture)work);
+
+					break;
+				case LAND_USE:
+					DBLandUse dbLandUse = (DBLandUse)dbImporterManager.getDBImporter(DBImporterEnum.LAND_USE);
+					if (dbLandUse != null)
+						id = dbLandUse.insert((LandUse)work);
+
+					break;
+				case WATER_BODY:
+					DBWaterBody dbWaterBody = (DBWaterBody)dbImporterManager.getDBImporter(DBImporterEnum.WATERBODY);
+					if (dbWaterBody != null)
+						id = dbWaterBody.insert((WaterBody)work);
+
+					break;
+				case PLANT_COVER:
+					DBPlantCover dbPlantCover = (DBPlantCover)dbImporterManager.getDBImporter(DBImporterEnum.PLANT_COVER);
+					if (dbPlantCover != null)
+						id = dbPlantCover.insert((PlantCover)work);
+
+					break;
+				case SOLITARY_VEGETATION_OBJECT:
+					DBSolitaryVegetatObject dbSolVegObject = (DBSolitaryVegetatObject)dbImporterManager.getDBImporter(DBImporterEnum.SOLITARY_VEGETAT_OBJECT);
+					if (dbSolVegObject != null)
+						id = dbSolVegObject.insert((SolitaryVegetationObject)work);
+
+					break;
+				case TRANSPORTATION_COMPLEX:
+				case ROAD:
+				case RAILWAY:
+				case TRACK:
+				case SQUARE:
+					DBTransportationComplex dbTransComplex = (DBTransportationComplex)dbImporterManager.getDBImporter(DBImporterEnum.TRANSPORTATION_COMPLEX);
+					if (dbTransComplex != null)
+						id = dbTransComplex.insert((TransportationComplex)work);
+
+					break;
+				case RELIEF_FEATURE:
+					DBReliefFeature dbReliefFeature = (DBReliefFeature)dbImporterManager.getDBImporter(DBImporterEnum.RELIEF_FEATURE);
+					if (dbReliefFeature != null)
+						id = dbReliefFeature.insert((ReliefFeature)work);
+
+					break;
+				case GENERIC_CITY_OBJECT:
+					DBGenericCityObject dbGenericCityObject = (DBGenericCityObject)dbImporterManager.getDBImporter(DBImporterEnum.GENERIC_CITYOBJECT);
+					if (dbGenericCityObject != null)
+						id = dbGenericCityObject.insert((GenericCityObject)work);
+
+					break;
+				case CITY_OBJECT_GROUP:
+					DBCityObjectGroup dbCityObjectGroup = (DBCityObjectGroup)dbImporterManager.getDBImporter(DBImporterEnum.CITYOBJECTGROUP);
+					if (dbCityObjectGroup != null)
+						id = dbCityObjectGroup.insert((CityObjectGroup)work);
+
+					break;
+				default:
+					StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+							cityObject.getCityGMLClass(), 
+							cityObject.getId()));
+					LOG.error(msg.append(": Skipping import since this is not a top-level feature type.").toString());
+					return;
+				}
 			}
+
+			if (id != 0)
+				updateCounter++;
+
+			if (updateCounter == commitAfter) {
+				dbImporterManager.executeBatch();
+				batchConn.commit();
+				updateImportContext();
+			}
+
+		} catch (SQLException e) {
+			LOG.error("SQL error: " + e.getMessage());
+			while ((e = e.getNextException()) != null)
+				LOG.error("SQL error: " + e.getMessage());
 
 			try {
-				if (updateCounter == commitAfter) {
-					dbImporterManager.executeBatch();
-					batchConn.commit();
-
-					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter, this));
-					updateCounter = 0;
-				}
-			} catch (SQLException sqlEx) {
-				// uh, batch update did not work. this is serious...
-				LOG.error("SQL error: " + sqlEx.getMessage());
-				return;
+				batchConn.rollback();
+			} catch (SQLException sql) {
+				//
 			}
 
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+		} catch (IOException e) {
+			LOG.error("Failed to log imported top-level features: " + e.getMessage());
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, this));
+		} catch (Exception e) {
+			// this is to catch general exceptions that may occur during the import
+			e.printStackTrace();
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, this));
 		} finally {
 			runLock.unlock();
 		}
 	}
+
+	private void updateImportContext() throws IOException {
+		eventDispatcher.triggerEvent(new FeatureCounterEvent(dbImporterManager.getAndResetFeatureCounter(), this));
+		eventDispatcher.triggerEvent(new GeometryCounterEvent(dbImporterManager.getAndResetGeometryCounter(), this));
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter, this));
+		updateCounter = 0;
+
+		// log imported top-level features
+		if (importLogger != null) {
+			for (ImportLogEntry entry : dbImporterManager.getAndResetImportedFeatures())
+				importLogger.write(entry);
+		}
+	}
+
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		shouldWork = false;
+	}
+
 }

@@ -47,6 +47,7 @@ public class CityGMLImportPreferences extends AbstractPreferences {
 		root.addChildEntry(new DefaultPreferencesEntry(new GeometryPanel(FilterMode.IMPORT, config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new IndexPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new XMLValidationPanel(config)));
+		root.addChildEntry(new DefaultPreferencesEntry(new ImportLogPanel(config)));
 		root.addChildEntry(new DefaultPreferencesEntry(new ResourcesPanel(config)));
 	}
 

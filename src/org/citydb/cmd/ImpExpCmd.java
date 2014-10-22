@@ -48,6 +48,7 @@ import org.citydb.config.project.exporter.ExportFilterConfig;
 import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.log.Logger;
 import org.citydb.modules.citygml.exporter.controller.Exporter;
+import org.citydb.modules.citygml.importer.controller.CityGMLImportException;
 import org.citydb.modules.citygml.importer.controller.Importer;
 import org.citydb.modules.citygml.importer.controller.XMLValidator;
 import org.citydb.modules.kml.controller.KmlExporter;
@@ -96,8 +97,18 @@ public class ImpExpCmd {
 		config.getInternal().setImportFiles(files.toArray(new File[0]));
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		Importer importer = new Importer(cityGMLBuilder, dbPool, config, eventDispatcher);
-		boolean success = importer.doProcess();
-
+		
+		boolean success = false;
+		try {
+			success = importer.doProcess();
+		} catch (CityGMLImportException e) {
+			LOG.error("Aborting due to an internal error: " + e.getMessage());
+			success = false;
+			
+			Throwable cause = null;
+			while ((cause = e.getCause()) != null)
+				LOG.error("Cause: " + cause.getMessage());
+		}
 		try {
 			eventDispatcher.flushEvents();
 		} catch (InterruptedException e) {

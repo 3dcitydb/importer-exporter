@@ -40,6 +40,7 @@ import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.log.Logger;
 import org.citydb.modules.citygml.common.database.uid.UIDCacheManager;
 import org.citydb.modules.citygml.common.database.xlink.DBXlink;
+import org.citydb.modules.citygml.importer.util.ImportLogger;
 import org.citydb.modules.common.filter.ImportFilter;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.model.citygml.CityGML;
@@ -52,6 +53,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 	private final WorkerPool<DBXlink> xlinkWorkerPool;
 	private final UIDCacheManager uidCacheManager;
 	private final ImportFilter importFilter;
+	private final ImportLogger importLogger;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
 
@@ -60,6 +62,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 			WorkerPool<DBXlink> xlinkWorkerPool,
 			UIDCacheManager uidCacheManager,
 			ImportFilter importFilter,
+			ImportLogger importLogger,
 			Config config,
 			EventDispatcher eventDispatcher) {
 		this.dbConnectionPool = dbConnectionPool;
@@ -67,6 +70,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 		this.xlinkWorkerPool = xlinkWorkerPool;
 		this.uidCacheManager = uidCacheManager;
 		this.importFilter = importFilter;
+		this.importLogger = importLogger;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 	}
@@ -81,6 +85,7 @@ public class DBImportWorkerFactory implements WorkerFactory<CityGML> {
 					xlinkWorkerPool, 
 					uidCacheManager,
 					importFilter,
+					importLogger,
 					config, 
 					eventDispatcher);
 		} catch (SQLException e) {

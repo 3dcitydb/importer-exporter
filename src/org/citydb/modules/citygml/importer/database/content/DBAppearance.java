@@ -191,7 +191,7 @@ public class DBAppearance implements DBImporter {
 			}
 		}
 
-		dbImporterManager.updateFeatureCounter(CityGMLClass.APPEARANCE);
+		dbImporterManager.updateFeatureCounter(CityGMLClass.APPEARANCE, appearanceId, origGmlId, parent == CityGMLClass.CITY_MODEL);
 		return true;
 	}
 

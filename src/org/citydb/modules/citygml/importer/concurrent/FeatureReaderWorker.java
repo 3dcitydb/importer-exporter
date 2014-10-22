@@ -35,9 +35,10 @@ import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool;
 import org.citydb.api.concurrent.WorkerPool.WorkQueue;
 import org.citydb.api.event.EventDispatcher;
+import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
 import org.citydb.log.Logger;
-import org.citydb.modules.common.event.InterruptEnum;
+import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.event.InterruptEvent;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.xml.io.reader.MissingADESchemaException;
@@ -142,7 +143,11 @@ public class FeatureReaderWorker implements Worker<XMLChunk> {
 				}
 			} catch (MissingADESchemaException e) {
 				LOG.error(e.getMessage());				
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptEnum.ADE_SCHEMA_READ_ERROR, this));
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.ADE_SCHEMA_READ_ERROR, this));
+			} catch (Exception e) {
+				// this is to catch general exceptions that may occur during the import
+				e.printStackTrace();
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, this));
 			}
 		} finally {
 			runLock.unlock();

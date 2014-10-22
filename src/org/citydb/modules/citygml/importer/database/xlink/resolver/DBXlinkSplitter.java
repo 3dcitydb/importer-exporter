@@ -35,7 +35,10 @@ import java.sql.Statement;
 import java.text.MessageFormat;
 
 import org.citydb.api.concurrent.WorkerPool;
+import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
+import org.citydb.api.event.EventHandler;
+import org.citydb.api.log.LogLevel;
 import org.citydb.config.language.Language;
 import org.citydb.database.TableEnum;
 import org.citydb.log.Logger;
@@ -55,10 +58,13 @@ import org.citydb.modules.citygml.common.database.xlink.DBXlinkTextureCoordList;
 import org.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import org.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParam;
 import org.citydb.modules.citygml.common.database.xlink.DBXlinkTextureParamEnum;
+import org.citydb.modules.common.event.EventType;
+import org.citydb.modules.common.event.InterruptEvent;
+import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.event.StatusDialogMessage;
 import org.citydb.modules.common.event.StatusDialogProgressBar;
 
-public class DBXlinkSplitter {
+public class DBXlinkSplitter implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
 
 	private final CacheTableManager cacheTableManager;
@@ -75,47 +81,56 @@ public class DBXlinkSplitter {
 		this.xlinkResolverPool = xlinkResolverPool;
 		this.tmpXlinkPool = tmpXlinkPool;
 		this.eventDispatcher = eventDispatcher;
-	}
-
-	public void shutdown() {
-		shouldRun = false;
-	}
-
-	public void startQuery() throws SQLException {	
-		basicXlinks();
-		groupMemberXLinks(true);
-		appearanceXlinks();
-		libraryObjectXLinks();
-
-		if (!shouldRun)
-			return;
-
-		// restart xlink worker pools
-		// just to make sure all appearance xlinks have been handled
-		// before starting to work on geometry xlinks
-		try {
-			xlinkResolverPool.join();
-			tmpXlinkPool.join();
-		} catch (InterruptedException e) {
-			//
-		}
-
-		// xlinks to deprecated appearances can only be handled if
-		// appearances have been fully written - otherwise information is
-		// missing in tables SURFACE_DATA and TEXTURPARAM
-		deprecatedMaterialXlinks();
-
-		// handling geometry xlinks is more tricky...
-		// the reason is that we really hard copy the entries within the database.
-		// now imagine the following situation: a geometry referenced by an xlink
-		// itself points to another geometry. in order to really copy any information
-		// we have to resolve the inner xlink firstly. afterwards we can deal with the
-		// outer xlink. thus, we need a recursive strategy here...
-		surfaceGeometryXlinks(true);
 		
-		// rebuild solid geometry objects referencing surfaces from other features
-		// this requires that we have resolved surface geometry xlinks first
-		solidGeometryXlinks();
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+	}
+
+	public void startQuery() {
+		try {
+			basicXlinks();
+			groupMemberXLinks(true);
+			appearanceXlinks();
+			libraryObjectXLinks();
+
+			if (!shouldRun)
+				return;
+
+			// restart xlink worker pools
+			// just to make sure all appearance xlinks have been handled
+			// before starting to work on geometry xlinks
+			try {
+				xlinkResolverPool.join();
+				tmpXlinkPool.join();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			// xlinks to deprecated appearances can only be handled if
+			// appearances have been fully written - otherwise information is
+			// missing in tables SURFACE_DATA and TEXTURPARAM
+			deprecatedMaterialXlinks();
+
+			// handling geometry xlinks is more tricky...
+			// the reason is that we really hard copy the entries within the database.
+			// now imagine the following situation: a geometry referenced by an xlink
+			// itself points to another geometry. in order to really copy any information
+			// we have to resolve the inner xlink firstly. afterwards we can deal with the
+			// outer xlink. thus, we need a recursive strategy here...
+			surfaceGeometryXlinks(true);
+
+			// rebuild solid geometry objects referencing surfaces from other features
+			// this requires that we have resolved surface geometry xlinks first
+			solidGeometryXlinks();
+		} catch (SQLException e) {
+			LOG.error("SQL error: " + e.getMessage());
+			while ((e = e.getNextException()) != null)
+				LOG.error("SQL error: " + e.getMessage());
+
+			// fire interrupt event to stop other import workers
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+		} finally {
+			eventDispatcher.removeEventHandler(this);
+		}
 	}
 
 	private void basicXlinks() throws SQLException {
@@ -355,7 +370,7 @@ public class DBXlinkSplitter {
 				rs.close();
 				stmt.close();
 			}
-			
+
 			if (!shouldRun)
 				return;
 
@@ -670,7 +685,7 @@ public class DBXlinkSplitter {
 			}
 		}
 	}
-	
+
 	private void solidGeometryXlinks() throws SQLException {
 		if (!shouldRun)
 			return;
@@ -696,7 +711,7 @@ public class DBXlinkSplitter {
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(++current, max, this));
 
 				long id = rs.getLong("ID");
-				
+
 				// set initial context
 				DBXlinkSolidGeometry xlink = new DBXlinkSolidGeometry(id);
 				xlinkResolverPool.addWork(xlink);
@@ -713,4 +728,10 @@ public class DBXlinkSplitter {
 			}
 		}
 	}
+
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		shouldRun = false;
+	}
+	
 }

@@ -93,7 +93,7 @@ import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import org.citydb.gui.components.checkboxtree.DefaultTreeCheckingModel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.log.Logger;
-import org.citydb.modules.common.event.InterruptEnum;
+import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.util.Util;
 import org.citydb.util.gui.GuiUtil;
@@ -1059,7 +1059,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							eventDispatcher.triggerEvent(new InterruptEvent(
-									InterruptEnum.USER_ABORT, 
+									InterruptReason.USER_ABORT, 
 									"User abort of database export.", 
 									LogLevel.INFO, 
 									this));

@@ -368,7 +368,7 @@ public class DBCityObject implements DBImporter {
 			dbImporterManager.getLocalTextureCoordinatesResolver().setActive(cityObject.accept(walker) != null);
 		}
 
-		dbImporterManager.updateFeatureCounter(cityObject.getCityGMLClass());
+		dbImporterManager.updateFeatureCounter(cityObject.getCityGMLClass(), cityObjectId, origGmlId, isTopLevelFeature);
 		return cityObjectId;
 	}
 

@@ -82,7 +82,7 @@ import org.citydb.log.Logger;
 import org.citydb.modules.citygml.common.gui.view.FilterPanel;
 import org.citydb.modules.citygml.common.gui.view.FilterPanel.FilterPanelType;
 import org.citydb.modules.citygml.exporter.controller.Exporter;
-import org.citydb.modules.common.event.InterruptEnum;
+import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.util.Util;
 import org.citydb.util.gui.GuiUtil;
@@ -356,7 +356,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							eventDispatcher.triggerEvent(new InterruptEvent(
-									InterruptEnum.USER_ABORT, 
+									InterruptReason.USER_ABORT, 
 									"User abort of database export.", 
 									LogLevel.INFO, 
 									this));

@@ -145,7 +145,7 @@ public class DBImplicitGeometry implements DBImporter {
 				if (gmlId != null)
 					dbImporterManager.putUID(gmlId, implicitGeometryId, CityGMLClass.ABSTRACT_CITY_OBJECT);
 
-				dbImporterManager.updateFeatureCounter(CityGMLClass.IMPLICIT_GEOMETRY);
+				dbImporterManager.updateFeatureCounter(CityGMLClass.IMPLICIT_GEOMETRY, implicitGeometryId, gmlId, false);
 			}
 
 			if (updateTable) {

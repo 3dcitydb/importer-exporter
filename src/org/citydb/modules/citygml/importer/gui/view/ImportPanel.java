@@ -94,9 +94,10 @@ import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.log.Logger;
 import org.citydb.modules.citygml.common.gui.view.FilterPanel;
 import org.citydb.modules.citygml.common.gui.view.FilterPanel.FilterPanelType;
+import org.citydb.modules.citygml.importer.controller.CityGMLImportException;
 import org.citydb.modules.citygml.importer.controller.Importer;
 import org.citydb.modules.citygml.importer.controller.XMLValidator;
-import org.citydb.modules.common.event.InterruptEnum;
+import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.util.gui.GuiUtil;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -405,16 +406,26 @@ public class ImportPanel extends JPanel implements EventHandler {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							eventDispatcher.triggerEvent(new InterruptEvent(
-									InterruptEnum.USER_ABORT, 
+									InterruptReason.USER_ABORT, 
 									"User abort of database import.", 
-									LogLevel.INFO, 
+									LogLevel.WARN, 
 									this));
 						}
 					});
 				}
 			});
 
-			boolean success = importer.doProcess();
+			boolean success = false;
+			try {
+				success = importer.doProcess();
+			} catch (CityGMLImportException e) {
+				LOG.error("Aborting due to an internal error: " + e.getMessage());
+				success = false;
+				
+				Throwable cause = null;
+				while ((cause = e.getCause()) != null)
+					LOG.error("Cause: " + cause.getMessage());
+			}
 
 			try {
 				eventDispatcher.flushEvents();
@@ -485,7 +496,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							eventDispatcher.triggerEvent(new InterruptEvent(
-									InterruptEnum.USER_ABORT, 
+									InterruptReason.USER_ABORT, 
 									"User abort of XML validation.", 
 									LogLevel.INFO, 
 									this));

@@ -401,8 +401,7 @@ public class ImpExp {
 					logging.getFile().getAlternativeLogPath().trim().length() == 0)
 				logging.getFile().setUseAlternativeLogPath(false);
 
-			String logPath = logging.getFile().isSetUseAlternativeLogPath() ? logging.getFile().getAlternativeLogPath() : 
-				config.getInternal().getLogPath();
+			String logPath = logging.getFile().isSetUseAlternativeLogPath() ? logging.getFile().getAlternativeLogPath() : Internal.DEFAULT_LOG_PATH;
 
 			boolean success = LOG.appendLogFile(logPath, true);
 			if (!success) {

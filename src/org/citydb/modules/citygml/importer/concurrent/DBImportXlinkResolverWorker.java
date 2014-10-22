@@ -36,7 +36,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool;
 import org.citydb.api.concurrent.WorkerPool.WorkQueue;
+import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
+import org.citydb.api.event.EventHandler;
+import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Workspace;
@@ -72,9 +75,12 @@ import org.citydb.modules.citygml.importer.database.xlink.resolver.XlinkTextureA
 import org.citydb.modules.citygml.importer.database.xlink.resolver.XlinkTextureImage;
 import org.citydb.modules.citygml.importer.database.xlink.resolver.XlinkTextureParam;
 import org.citydb.modules.citygml.importer.database.xlink.resolver.XlinkWorldFile;
+import org.citydb.modules.common.event.EventType;
+import org.citydb.modules.common.event.InterruptReason;
+import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.modules.common.filter.ImportFilter;
 
-public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
+public class DBImportXlinkResolverWorker implements Worker<DBXlink>, EventHandler {
 	private final Logger LOG = Logger.getInstance();
 
 	// instance members needed for WorkPool
@@ -92,6 +98,7 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 	private final ImportFilter importFilter;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
+	private volatile boolean shouldWork = true;
 
 	private Connection connection;
 	private DBXlinkResolverManager xlinkResolverManager;
@@ -141,6 +148,8 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 				importFilter,
 				config,
 				eventDispatcher);
+
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 
 	@Override
@@ -203,168 +212,186 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink> {
 			try {
 				xlinkResolverManager.executeBatch();
 				connection.commit();
-			} catch (SQLException sqlEx) {
-				LOG.error("SQL error: " + sqlEx.getMessage());
-			}
-
-			try {
 				xlinkResolverManager.close();
-			} catch (SQLException sqlEx) {
-				LOG.error("SQL error: " + sqlEx.getMessage());
-			}
+			} catch (SQLException e) {
+				LOG.error("SQL error: " + e.getMessage());
+				while ((e = e.getNextException()) != null)
+					LOG.error("SQL error: " + e.getMessage());
 
-		} finally {
-			if (connection != null) {
 				try {
-					connection.close();
-				} catch (SQLException e) {
+					connection.rollback();
+				} catch (SQLException sql) {
 					//
 				}
 
-				connection = null;
+				// fire interrupt event to stop other import workers
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
 			}
+
+		} finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				//
+			}
+
+			connection = null;
+			eventDispatcher.removeEventHandler(this);
 		}
 	}
 
 	private void doWork(DBXlink work) {
+		if (!shouldWork)
+			return;
+
 		final ReentrantLock runLock = this.runLock;
 		runLock.lock();
 
 		try {
 
-			try {
-				boolean success = false;
-				DBXlinkEnum type = work.getXlinkType();
+			boolean success = false;
+			DBXlinkEnum type = work.getXlinkType();
 
-				switch (type) {
-				case SURFACE_GEOMETRY:
-					DBXlinkSurfaceGeometry surfaceGeometry = (DBXlinkSurfaceGeometry)work;
-					XlinkSurfaceGeometry xlinkSurfaceGeometry = (XlinkSurfaceGeometry)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.SURFACE_GEOMETRY);
-					if (xlinkSurfaceGeometry != null)
-						success = xlinkSurfaceGeometry.insert(surfaceGeometry);
+			switch (type) {
+			case SURFACE_GEOMETRY:
+				DBXlinkSurfaceGeometry surfaceGeometry = (DBXlinkSurfaceGeometry)work;
+				XlinkSurfaceGeometry xlinkSurfaceGeometry = (XlinkSurfaceGeometry)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.SURFACE_GEOMETRY);
+				if (xlinkSurfaceGeometry != null)
+					success = xlinkSurfaceGeometry.insert(surfaceGeometry);
 
-					break;
-				case BASIC:
-					DBXlinkBasic basic = (DBXlinkBasic)work;
-					XlinkBasic xlinkBasic = (XlinkBasic)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.BASIC);
-					if (xlinkBasic != null)
-						success = xlinkBasic.insert(basic);
+				break;
+			case BASIC:
+				DBXlinkBasic basic = (DBXlinkBasic)work;
+				XlinkBasic xlinkBasic = (XlinkBasic)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.BASIC);
+				if (xlinkBasic != null)
+					success = xlinkBasic.insert(basic);
 
-					break;
-				case TEXTURE_COORD_LIST:
-					DBXlinkTextureCoordList texCoord = (DBXlinkTextureCoordList)work;
-					XlinkTexCoordList xlinkTexCoordList = (XlinkTexCoordList)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXCOORDLIST);
-					if (xlinkTexCoordList != null)
-						success = xlinkTexCoordList.insert(texCoord);
+				break;
+			case TEXTURE_COORD_LIST:
+				DBXlinkTextureCoordList texCoord = (DBXlinkTextureCoordList)work;
+				XlinkTexCoordList xlinkTexCoordList = (XlinkTexCoordList)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXCOORDLIST);
+				if (xlinkTexCoordList != null)
+					success = xlinkTexCoordList.insert(texCoord);
 
-					break;					
-				case TEXTUREPARAM:
-					DBXlinkTextureParam textureParam = (DBXlinkTextureParam)work;
-					DBXlinkTextureParamEnum subType = textureParam.getType();
+				break;					
+			case TEXTUREPARAM:
+				DBXlinkTextureParam textureParam = (DBXlinkTextureParam)work;
+				DBXlinkTextureParamEnum subType = textureParam.getType();
 
-					switch (subType) {
-					case X3DMATERIAL:
-					case GEOREFERENCEDTEXTURE:
-					case TEXCOORDGEN:
-						XlinkTextureParam xlinkTextureParam = (XlinkTextureParam)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXTUREPARAM);
-						if (xlinkTextureParam != null)
-							success = xlinkTextureParam.insert(textureParam);
-
-						break;
-					case UNDEFINED:
-						// nothing to do
-					}
+				switch (subType) {
+				case X3DMATERIAL:
+				case GEOREFERENCEDTEXTURE:
+				case TEXCOORDGEN:
+					XlinkTextureParam xlinkTextureParam = (XlinkTextureParam)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXTUREPARAM);
+					if (xlinkTextureParam != null)
+						success = xlinkTextureParam.insert(textureParam);
 
 					break;
-				case TEXTUREASSOCIATION:
-					DBXlinkTextureAssociation textureAssociation = (DBXlinkTextureAssociation)work;
-					XlinkTextureAssociation xlinkTextureAssociation = (XlinkTextureAssociation)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.XLINK_TEXTUREASSOCIATION);
-					if (xlinkTextureAssociation != null)
-						success = xlinkTextureAssociation.insert(textureAssociation);
-
-					break;
-				case TEXTURE_FILE:
-					DBXlinkTextureFile externalFile = (DBXlinkTextureFile)work;
-
-					if (!externalFile.isWorldFile()) {
-						XlinkTextureImage xlinkTextureImage = (XlinkTextureImage)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXTURE_IMAGE);
-						if (xlinkTextureImage != null)
-							xlinkTextureImage.insert(externalFile);
-					} else {
-						XlinkWorldFile xlinkWorldFile = (XlinkWorldFile)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.WORLD_FILE);
-						if (xlinkWorldFile != null)
-							xlinkWorldFile.insert(externalFile);
-					}
-
-					// we generate error messages within the modules, so no need for
-					// a global warning
-					success = true;
-					break;
-				case SURFACE_DATA_TO_TEX_IMAGE:
-					DBXlinkSurfaceDataToTexImage surfData = (DBXlinkSurfaceDataToTexImage)work;
-					XlinkSurfaceDataToTexImage xlinkSurfData = (XlinkSurfaceDataToTexImage)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.SURFACE_DATA_TO_TEX_IMAGE);
-					if (xlinkSurfData != null)
-						success = xlinkSurfData.insert(surfData);
-
-					break;
-				case LIBRARY_OBJECT:
-					DBXlinkLibraryObject libObject = (DBXlinkLibraryObject)work;
-					XlinkLibraryObject xlinkLibraryObject = (XlinkLibraryObject)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.LIBRARY_OBJECT);
-					if (xlinkLibraryObject != null)
-						success = xlinkLibraryObject.insert(libObject);
-
-					break;
-				case DEPRECATED_MATERIAL:
-					DBXlinkDeprecatedMaterial depMaterial = (DBXlinkDeprecatedMaterial)work;
-					XlinkDeprecatedMaterial xlinkDeprecatedMaterial = (XlinkDeprecatedMaterial)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.XLINK_DEPRECATED_MATERIAL);
-					if (xlinkDeprecatedMaterial != null)
-						success = xlinkDeprecatedMaterial.insert(depMaterial);
-
-					break;
-				case GROUP_TO_CITYOBJECT:
-					DBXlinkGroupToCityObject groupMember = (DBXlinkGroupToCityObject)work;
-					XlinkGroupToCityObject xlinkGroupToCityObject = (XlinkGroupToCityObject)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.GROUP_TO_CITYOBJECT);
-					if (xlinkGroupToCityObject != null)
-						success = xlinkGroupToCityObject.insert(groupMember);
-
-					break;
-				case SOLID_GEOMETRY:
-					DBXlinkSolidGeometry solidGeometry = (DBXlinkSolidGeometry)work;
-					XlinkSolidGeometry xlinkSolidGeometry = (XlinkSolidGeometry)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.SOLID_GEOMETRY);
-					if (xlinkSolidGeometry != null)
-						success = xlinkSolidGeometry.insert(solidGeometry);
-					
-					break;
-				default:
-					return;
+				case UNDEFINED:
+					// nothing to do
 				}
 
-				if (!success) {
-					LOG.error("Failed to resolve XLink reference '" + work.getGmlId() + "'.");
-				} else
-					updateCounter++;
+				break;
+			case TEXTUREASSOCIATION:
+				DBXlinkTextureAssociation textureAssociation = (DBXlinkTextureAssociation)work;
+				XlinkTextureAssociation xlinkTextureAssociation = (XlinkTextureAssociation)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.XLINK_TEXTUREASSOCIATION);
+				if (xlinkTextureAssociation != null)
+					success = xlinkTextureAssociation.insert(textureAssociation);
 
-			} catch (SQLException sqlEx) {
-				LOG.error("SQL error: " + sqlEx.getMessage());
+				break;
+			case TEXTURE_FILE:
+				DBXlinkTextureFile externalFile = (DBXlinkTextureFile)work;
+
+				if (!externalFile.isWorldFile()) {
+					XlinkTextureImage xlinkTextureImage = (XlinkTextureImage)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.TEXTURE_IMAGE);
+					if (xlinkTextureImage != null)
+						xlinkTextureImage.insert(externalFile);
+				} else {
+					XlinkWorldFile xlinkWorldFile = (XlinkWorldFile)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.WORLD_FILE);
+					if (xlinkWorldFile != null)
+						xlinkWorldFile.insert(externalFile);
+				}
+
+				// we generate error messages within the modules, so no need for
+				// a global warning
+				success = true;
+				break;
+			case SURFACE_DATA_TO_TEX_IMAGE:
+				DBXlinkSurfaceDataToTexImage surfData = (DBXlinkSurfaceDataToTexImage)work;
+				XlinkSurfaceDataToTexImage xlinkSurfData = (XlinkSurfaceDataToTexImage)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.SURFACE_DATA_TO_TEX_IMAGE);
+				if (xlinkSurfData != null)
+					success = xlinkSurfData.insert(surfData);
+
+				break;
+			case LIBRARY_OBJECT:
+				DBXlinkLibraryObject libObject = (DBXlinkLibraryObject)work;
+				XlinkLibraryObject xlinkLibraryObject = (XlinkLibraryObject)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.LIBRARY_OBJECT);
+				if (xlinkLibraryObject != null)
+					success = xlinkLibraryObject.insert(libObject);
+
+				break;
+			case DEPRECATED_MATERIAL:
+				DBXlinkDeprecatedMaterial depMaterial = (DBXlinkDeprecatedMaterial)work;
+				XlinkDeprecatedMaterial xlinkDeprecatedMaterial = (XlinkDeprecatedMaterial)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.XLINK_DEPRECATED_MATERIAL);
+				if (xlinkDeprecatedMaterial != null)
+					success = xlinkDeprecatedMaterial.insert(depMaterial);
+
+				break;
+			case GROUP_TO_CITYOBJECT:
+				DBXlinkGroupToCityObject groupMember = (DBXlinkGroupToCityObject)work;
+				XlinkGroupToCityObject xlinkGroupToCityObject = (XlinkGroupToCityObject)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.GROUP_TO_CITYOBJECT);
+				if (xlinkGroupToCityObject != null)
+					success = xlinkGroupToCityObject.insert(groupMember);
+
+				break;
+			case SOLID_GEOMETRY:
+				DBXlinkSolidGeometry solidGeometry = (DBXlinkSolidGeometry)work;
+				XlinkSolidGeometry xlinkSolidGeometry = (XlinkSolidGeometry)xlinkResolverManager.getDBXlinkResolver(DBXlinkResolverEnum.SOLID_GEOMETRY);
+				if (xlinkSolidGeometry != null)
+					success = xlinkSolidGeometry.insert(solidGeometry);
+
+				break;
+			default:
 				return;
 			}
 
-			try {
-				if (updateCounter == commitAfter) {
-					xlinkResolverManager.executeBatch();
-					connection.commit();
+			if (!success) {
+				LOG.error("Failed to resolve XLink reference '" + work.getGmlId() + "'.");
+			} else
+				updateCounter++;
+			
+			if (updateCounter == commitAfter) {
+				xlinkResolverManager.executeBatch();
+				connection.commit();
 
-					updateCounter = 0;
-				}
-			} catch (SQLException sqlEx) {
-				// uh, batch update did not work. this is serious...
-				LOG.error("SQL error: " + sqlEx.getMessage());
-				return;
+				updateCounter = 0;
 			}
 
+		} catch (SQLException e) {
+			LOG.error("SQL error: " + e.getMessage());
+			while ((e = e.getNextException()) != null)
+				LOG.error("SQL error: " + e.getMessage());
+			
+			try {
+				connection.rollback();
+			} catch (SQLException sql) {
+				//
+			}
 
+			// fire interrupt event to stop other import workers
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+		} catch (Exception e) {
+			// this is to catch general exceptions that may occur during the import
+			e.printStackTrace();
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, this));
 		} finally {
 			runLock.unlock();
 		}
 	}
+	
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		shouldWork = false;
+	}
+	
 }

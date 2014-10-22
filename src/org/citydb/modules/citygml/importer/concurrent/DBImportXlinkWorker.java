@@ -34,7 +34,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool.WorkQueue;
+import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
+import org.citydb.api.event.EventHandler;
+import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.Database;
 import org.citydb.database.DatabaseConnectionPool;
@@ -69,8 +72,11 @@ import org.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImport
 import org.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureCoordList;
 import org.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureFile;
 import org.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureParam;
+import org.citydb.modules.common.event.EventType;
+import org.citydb.modules.common.event.InterruptReason;
+import org.citydb.modules.common.event.InterruptEvent;
 
-public class DBImportXlinkWorker implements Worker<DBXlink> {
+public class DBImportXlinkWorker implements Worker<DBXlink>, EventHandler {
 	private final Logger LOG = Logger.getInstance();
 	
 	// instance members needed for WorkPool
@@ -83,14 +89,17 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 	// instance members needed to do work
 	private final Config config;
 	private DBXlinkImporterManager dbXlinkManager;
+	private final EventDispatcher eventDispatcher;
 	private int updateCounter = 0;
 	private int commitAfter = 1000;
+	private volatile boolean shouldWork = true;
 
 	public DBImportXlinkWorker(DatabaseConnectionPool dbPool,
 			CacheTableManager cacheTableManager, 
 			Config config, 
 			EventDispatcher eventDispatcher) {
 		this.config = config;
+		this.eventDispatcher = eventDispatcher;
 		dbXlinkManager = new DBXlinkImporterManager(cacheTableManager, eventDispatcher);
 		
 		init(dbPool);		
@@ -101,7 +110,9 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 		
 		Integer commitAfterProp = database.getUpdateBatching().getTempBatchValue();
 		if (commitAfterProp != null && commitAfterProp > 0 && commitAfterProp <= dbPool.getActiveDatabaseAdapter().getMaxBatchSize())
-			commitAfter = commitAfterProp;		
+			commitAfter = commitAfterProp;
+		
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 	
 	@Override
@@ -162,23 +173,27 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 
 		try {
 			dbXlinkManager.executeBatch();
-		} catch (SQLException sqlEx) {
-			LOG.error("SQL error: " + sqlEx.getMessage());
-		}
-		
-		try {
 			dbXlinkManager.close();
-		} catch (SQLException sqlEx) {
-			LOG.error("SQL error: " + sqlEx.getMessage());
+		} catch (SQLException e) {
+			LOG.error("SQL error: " + e.getMessage());
+			while ((e = e.getNextException()) != null)
+				LOG.error("SQL error: " + e.getMessage());
+			
+			// fire interrupt event to stop other import workers
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+		} finally {
+			eventDispatcher.removeEventHandler(this);
 		}
 	}
 
 	private void doWork(DBXlink work) {
+		if (!shouldWork)
+			return;
+		
 		final ReentrantLock runLock = this.runLock;
 		runLock.lock();
 
 		try {
-			try {
 				boolean success = false;
 
 				switch (work.getXlinkType()) {
@@ -278,25 +293,31 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 				if (success)
 					updateCounter++;
 
-			} catch (SQLException sqlEx) {
-				LOG.error("SQL error: " + sqlEx.getMessage());
-				return;
-			}
-
-			try {
 				if (updateCounter == commitAfter) {
 					dbXlinkManager.executeBatch();
 
 					updateCounter = 0;
 				}
-			} catch (SQLException sqlEx) {
-				LOG.error("SQL error: " + sqlEx.getMessage());
-				return;
-			}
 
+		} catch (SQLException e) {
+			LOG.error("SQL error: " + e.getMessage());
+			while ((e = e.getNextException()) != null)
+				LOG.error("SQL error: " + e.getMessage());
+
+			// fire interrupt event to stop other import workers
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+		} catch (Exception e) {
+			// this is to catch general exceptions that may occur during the import
+			e.printStackTrace();
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, this));
 		} finally {
 			runLock.unlock();
 		}
+	}
+	
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		shouldWork = false;
 	}
 
 }

@@ -44,6 +44,7 @@ import org.citydb.config.project.general.Path;
 		"affineTransformation",
 		"indexes",
 		"xmlValidation",
+		"importLog",
 		"resources"
 })
 public class Importer {
@@ -56,6 +57,7 @@ public class Importer {
 	private AffineTransformation affineTransformation;
 	private Index indexes;
 	private XMLValidation xmlValidation;
+	private ImportLog importLog;
 	private ImportResources resources;
 
 	public Importer() {
@@ -68,6 +70,7 @@ public class Importer {
 		affineTransformation = new AffineTransformation();
 		indexes = new Index();
 		xmlValidation = new XMLValidation();
+		importLog = new ImportLog();
 		resources = new ImportResources();
 	}
 
@@ -147,12 +150,18 @@ public class Importer {
 		return affineTransformation;
 	}
 
-	public boolean isSetAffineTransformation() {
-		return false;
+	public void setAffineTransformation(AffineTransformation affineTransformation) {
+		if (affineTransformation != null)
+			this.affineTransformation = affineTransformation;
 	}
 
-	public void AffineTransformation(AffineTransformation affineTransformation) {
-		this.affineTransformation = affineTransformation;
+	public ImportLog getImportLog() {
+		return importLog;
+	}
+
+	public void setImportLog(ImportLog importLog) {
+		if (importLog != null)
+			this.importLog = importLog;
 	}
 
 	public ImportResources getResources() {

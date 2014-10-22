@@ -47,6 +47,7 @@ import javax.swing.border.TitledBorder;
 
 import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
+import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.global.Logging;
 import org.citydb.gui.ImpExpGui;
@@ -232,8 +233,10 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 		Logging logging = config.getProject().getGlobal().getLogging();
 		boolean isModified = isLogFileModified();
 
-		if (useLogPath.isSelected() && logPathText.getText().trim().length() == 0)
+		if (useLogPath.isSelected() && logPathText.getText().trim().length() == 0) {
 			useLogPath.setSelected(false);
+			setEnabledLogFile();
+		}
 
 		logging.getFile().setActive(useLogFile.isSelected());
 		logging.getFile().setUseAlternativeLogPath(useLogPath.isSelected());
@@ -255,8 +258,7 @@ public class LoggingPanel extends AbstractPreferencesComponent {
 		// change log file
 		if (isModified && useLogFile.isSelected()) {
 			String logPath = useLogPath.isSelected() ? 
-					logging.getFile().getAlternativeLogPath() : 
-						config.getInternal().getLogPath();
+					logging.getFile().getAlternativeLogPath() : Internal.DEFAULT_LOG_PATH;
 
 					if (!logPath.equals(config.getInternal().getCurrentLogPath())) {
 						boolean success = LOG.appendLogFile(logPath, true);
