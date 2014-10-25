@@ -115,7 +115,7 @@ public class DBCityObject implements DBExporter {
 			psCityObject = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_util.transform_or_null");
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
 			.append("select co.GMLID, co.NAME, co.NAME_CODESPACE, co.DESCRIPTION, ")

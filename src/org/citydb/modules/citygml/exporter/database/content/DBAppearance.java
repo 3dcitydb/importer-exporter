@@ -130,7 +130,7 @@ public class DBAppearance implements DBExporter {
 			.append("from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID left join TEX_IMAGE ti on sd.TEX_IMAGE_ID=ti.ID where ");
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_util.transform_or_null");
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null");
 
 			query.append("select app.ID as APP_ID, app.GMLID as APP_GMLID, app.NAME as APP_NAME, app.NAME_CODESPACE as APP_NAME_CODESPACE, app.DESCRIPTION as APP_DESCRIPTION, app.THEME, ")
 			.append("sd.ID as SD_ID, sd.OBJECTCLASS_ID as SD_OBJECTCLASS_ID, sd.GMLID as SD_GMLID, sd.NAME as SD_NAME, sd.NAME_CODESPACE as SD_NAME_CODESPACE, sd.DESCRIPTION as SD_DESCRIPTION, sd.IS_FRONT, ")

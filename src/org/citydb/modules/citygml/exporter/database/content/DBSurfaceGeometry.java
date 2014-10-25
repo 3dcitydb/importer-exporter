@@ -127,7 +127,7 @@ public class DBSurfaceGeometry implements DBExporter {
 		applyTransformation = config.getInternal().isTransformCoordinates();
 		if (applyTransformation) {	
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
-			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_util.transform_or_null");
+			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null");
 
 			query = new StringBuilder("select ID, GMLID, PARENT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, ")
 			.append(transformOrNull).append("(GEOMETRY, ").append(srid).append(") AS GEOMETRY, ")
