@@ -37,9 +37,10 @@ import org.citydb.api.database.DatabaseAdapter;
 import org.citydb.api.database.DatabaseConfigurationException;
 import org.citydb.api.database.DatabaseConnectionDetails;
 import org.citydb.api.database.DatabaseSrs;
+import org.citydb.api.database.DatabaseVersionException;
 
 public interface DatabaseController {
-	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException;
+	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, DatabaseVersionException, SQLException;
 	public void disconnect();
 	public boolean isConnected();
 

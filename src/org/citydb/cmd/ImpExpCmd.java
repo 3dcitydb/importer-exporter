@@ -40,6 +40,7 @@ import javax.xml.bind.JAXBContext;
 
 import org.citydb.api.database.DatabaseConfigurationException;
 import org.citydb.api.database.DatabaseSrs;
+import org.citydb.api.database.DatabaseVersionException;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
@@ -245,6 +246,8 @@ public class ImpExpCmd {
 
 		} catch (DatabaseConfigurationException e) {
 			LOG.error("Connection to database could not be established: " + e.getMessage());
+		} catch (DatabaseVersionException e) {
+			LOG.error("Unsupported version of the 3D City Database instance.");
 		} catch (SQLException e) {
 			LOG.error("Connection to database could not be established: " + e.getMessage());
 		} 

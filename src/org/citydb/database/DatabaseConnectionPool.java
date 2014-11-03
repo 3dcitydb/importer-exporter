@@ -43,9 +43,11 @@ import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.citydb.api.database.DatabaseConfigurationException;
 import org.citydb.api.database.DatabaseSrs;
+import org.citydb.api.database.DatabaseVersionException;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
+import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -55,7 +57,7 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 public class DatabaseConnectionPool {
 	private static DatabaseConnectionPool instance = new DatabaseConnectionPool();
-	private static final int LOGIN_TIMEOUT = 120;
+	private final int LOGIN_TIMEOUT = 120;
 
 	private final String poolName = DefaultGMLIdManager.getInstance().generateUUID();
 	private final EventDispatcher eventDispatcher;
@@ -71,7 +73,7 @@ public class DatabaseConnectionPool {
 		return instance;
 	}
 
-	public synchronized void connect(Config config) throws DatabaseConfigurationException, SQLException {
+	public synchronized void connect(Config config) throws DatabaseConfigurationException, DatabaseVersionException, SQLException {
 		DBConnection conn = config.getProject().getDatabase().getActiveConnection();
 
 		if (conn == null)
@@ -149,12 +151,16 @@ public class DatabaseConnectionPool {
 
 			// retrieve connection metadata
 			databaseAdapter.setConnectionMetaData(databaseAdapter.getUtil().getDatabaseInfo());
+			
+			// check for supported 3DCityDB version
+			if (!Internal.CITYDB_ACCEPT_VERSIONS.contains(databaseAdapter.getConnectionMetaData().getCityDBVersion()))
+				throw new DatabaseVersionException(databaseAdapter.getConnectionMetaData().getCityDBVersion());
 
 			// check whether user-defined reference systems are supported
 			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
 				databaseAdapter.getUtil().getSrsInfo(refSys);
 
-		} catch (SQLException e) {
+		} catch (SQLException | DatabaseVersionException e) {
 			disconnect();
 			throw e;
 		}

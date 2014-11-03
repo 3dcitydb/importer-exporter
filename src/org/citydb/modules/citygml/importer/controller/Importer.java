@@ -565,7 +565,8 @@ public class Importer implements EventHandler {
 		for (long counter : geometryCounterMap.values())
 			geometryObjects += counter;
 
-		LOG.info("Processed geometry objects: " + geometryObjects);
+		if (geometryObjects != 0)
+			LOG.info("Processed geometry objects: " + geometryObjects);
 
 		return shouldRun;
 	}

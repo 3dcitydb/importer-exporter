@@ -30,6 +30,9 @@
 package org.citydb.config.internal;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.modules.citygml.importer.util.AffineTransformer;
@@ -40,6 +43,7 @@ public class Internal {
 	public static final String GEOMETRY_ORIGINAL = "origGeom";
 	public static final String GEOMETRY_INVALID = "geomInvalid";
 	public static final String UNIQUE_TEXTURE_FILENAME_PREFIX = "tex_";
+	public static final List<String> CITYDB_ACCEPT_VERSIONS = new ArrayList<String>(Arrays.asList(new String[]{"3.0.0"}));
 	
 	// path names and files
 	public static final String USER_PATH = System.getProperty("user.home") + File.separator + "3dcitydb" + File.separator + "importer-exporter-3.0";	

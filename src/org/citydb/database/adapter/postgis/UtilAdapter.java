@@ -42,8 +42,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				metaData.setCityDBMajorVersion(rs.getInt("MAJOR_VERSION"));
 				metaData.setCityDBMinorVersion(rs.getInt("MINOR_VERSION"));
 				metaData.setCityDBMinorRevision(rs.getInt("MINOR_REVISION"));
-			} else
-				throw new SQLException("Failed to retrieve version information from 3D City Database instance.");
+			} 
+		} catch (SQLException e) {
+			throw new SQLException("Failed to retrieve version information from 3D City Database instance.", e);
 		} finally {
 			if (rs != null) {
 				try {
@@ -66,7 +67,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			}
 		}
 	}
-	
+
 	@Override
 	protected void getDatabaseMetaData(DatabaseMetaDataImpl metaData, Connection connection) throws SQLException {
 		Statement statement = null;
@@ -303,7 +304,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
 			StringBuilder query = new StringBuilder()
 			.append("select ST_Transform(ST_GeomFromEWKT(?), ").append(targetSrid).append(')');
-			
+
 			psQuery = connection.prepareStatement(query.toString());			
 			psQuery.setString(1, boxGeom.toString());
 

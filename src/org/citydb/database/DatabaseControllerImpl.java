@@ -39,6 +39,7 @@ import org.citydb.api.database.DatabaseAdapter;
 import org.citydb.api.database.DatabaseConfigurationException;
 import org.citydb.api.database.DatabaseConnectionDetails;
 import org.citydb.api.database.DatabaseSrs;
+import org.citydb.api.database.DatabaseVersionException;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
 
@@ -58,7 +59,7 @@ public class DatabaseControllerImpl implements DatabaseController {
 	}
 
 	@Override
-	public synchronized void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException {
+	public synchronized void connect(boolean showErrorDialog) throws DatabaseConfigurationException, DatabaseVersionException, SQLException {
 		if (!dbPool.isConnected()) {
 			viewHandler.commitConnectionDetails();
 			viewHandler.printConnectionState(ConnectionStateEnum.INIT_CONNECT);
@@ -66,6 +67,9 @@ public class DatabaseControllerImpl implements DatabaseController {
 			try {
 				dbPool.connect(config);
 			} catch (DatabaseConfigurationException e) {
+				viewHandler.printError(e, showErrorDialog);
+				throw e;
+			} catch (DatabaseVersionException e) {
 				viewHandler.printError(e, showErrorDialog);
 				throw e;
 			} catch (SQLException e) {

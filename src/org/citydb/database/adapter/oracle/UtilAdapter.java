@@ -43,8 +43,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				metaData.setCityDBMajorVersion(rs.getInt("MAJOR_VERSION"));
 				metaData.setCityDBMinorVersion(rs.getInt("MINOR_VERSION"));
 				metaData.setCityDBMinorRevision(rs.getInt("MINOR_REVISION"));
-			} else
-				throw new SQLException("Failed to retrieve version information from 3D City Database instance.");
+			} 
+		} catch (SQLException e) {
+			throw new SQLException("Failed to retrieve version information from 3D City Database instance.", e);
 		} finally {
 			if (rs != null) {
 				try {

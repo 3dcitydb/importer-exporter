@@ -49,6 +49,7 @@ import javax.swing.SwingUtilities;
 import org.citydb.api.controller.DatabaseController;
 import org.citydb.api.database.DatabaseConfigurationException;
 import org.citydb.api.database.DatabaseSrs;
+import org.citydb.api.database.DatabaseVersionException;
 import org.citydb.api.geometry.BoundingBox;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
@@ -267,7 +268,7 @@ public class BoundingBoxValidator {
 					transform.setErrorMessage(Language.I18N.getString("map.dialog.label.error.transform"));
 				}
 			});
-		} catch (DatabaseConfigurationException e) {
+		} catch (DatabaseConfigurationException | DatabaseVersionException e) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					transform.setErrorMessage(Language.I18N.getString("map.dialog.label.error.db"));

@@ -64,6 +64,7 @@ import org.citydb.api.controller.DatabaseController;
 import org.citydb.api.database.DatabaseConfigurationException;
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseType;
+import org.citydb.api.database.DatabaseVersionException;
 import org.citydb.api.event.Event;
 import org.citydb.api.event.EventHandler;
 import org.citydb.api.event.global.DatabaseConnectionStateEvent;
@@ -73,6 +74,7 @@ import org.citydb.api.log.LogLevel;
 import org.citydb.api.plugin.extension.view.ViewListener;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
+import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.Database;
@@ -82,6 +84,7 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.log.Logger;
 import org.citydb.modules.database.gui.operations.DatabaseOperationsPanel;
+import org.citydb.util.Util;
 import org.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -296,6 +299,8 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 								connect(true);
 							} catch (DatabaseConfigurationException e) {
 								//
+							} catch (DatabaseVersionException e) {
+								//
 							} catch (SQLException e) {
 								//
 							}
@@ -406,7 +411,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			connCombo.setSelectedIndex(index < connCombo.getItemCount() ? index : index - 1);		
 	}
 
-	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, SQLException {
+	public void connect(boolean showErrorDialog) throws DatabaseConfigurationException, DatabaseVersionException, SQLException {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
@@ -474,6 +479,20 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			topFrame.errorMessage(Language.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
 
 		LOG.error("Connection to database could not be established.");
+		topFrame.setStatusText(Language.I18N.getString("main.status.ready.label"));
+	}
+
+	@Override
+	public void printError(DatabaseVersionException e, boolean showErrorDialog) {
+		if (showErrorDialog) {
+			String text = Language.I18N.getString("db.dialog.error.version.error");
+			Object[] args = new Object[]{ e.getUnsupportedVersion(), Util.collection2string(Internal.CITYDB_ACCEPT_VERSIONS, ", ") };
+			String result = MessageFormat.format(text, args);					
+
+			topFrame.errorMessage(Language.I18N.getString("db.dialog.error.version.title"), result);
+		}
+		
+		LOG.error("Unsupported version of the 3D City Database instance.");
 		topFrame.setStatusText(Language.I18N.getString("main.status.ready.label"));
 	}
 

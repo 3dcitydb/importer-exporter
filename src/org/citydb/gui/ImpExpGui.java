@@ -84,6 +84,7 @@ import javax.xml.bind.JAXBException;
 
 import org.citydb.api.controller.ViewController;
 import org.citydb.api.database.DatabaseConfigurationException;
+import org.citydb.api.database.DatabaseVersionException;
 import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.event.EventHandler;
@@ -597,6 +598,8 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		try {
 			ObjectRegistry.getInstance().getDatabaseController().connect(true);
 		} catch (DatabaseConfigurationException e) {
+			//
+		} catch (DatabaseVersionException e) {
 			//
 		} catch (SQLException e) {
 			//
