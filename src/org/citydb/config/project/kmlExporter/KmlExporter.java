@@ -223,8 +223,8 @@ public class KmlExporter {
 
 		setLod0FootprintMode(Lod0FootprintMode.FOOTPRINT);
 		exportAsKmz = true;
-		showBoundingBox = true;
-		showTileBorders = true;
+		showBoundingBox = false;
+		showTileBorders = false;
 		autoTileSideLength = 125.0;
 		oneFilePerObject = false;
 		singleObjectRegionSize = 50.0;

@@ -49,7 +49,7 @@ public class Balloon {
 	private boolean balloonContentInSeparateFile;
 
 	public Balloon() {
-		includeDescription = true;
+		includeDescription = false;
 		setBalloonContentMode(BalloonContentMode.GEN_ATTRIB);
 		balloonContentPath = new Path();
 		balloonContentTemplateFile = "";
