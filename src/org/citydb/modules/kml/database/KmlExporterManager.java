@@ -80,9 +80,9 @@ public class KmlExporterManager {
 	private boolean isBBoxActive;
 	private String mainFilename;
 	
-	private static final String ENCODING = "UTF-8";
-	private static final Charset CHARSET = Charset.forName(ENCODING);
-	private static final String TEMP_FOLDER = "__temp";
+	private final String ENCODING = "UTF-8";
+	private final Charset CHARSET = Charset.forName(ENCODING);
+	private final String TEMP_FOLDER = "__temp";
 
 	public KmlExporterManager(JAXBContext jaxbKmlContext,
 							  JAXBContext jaxbColladaContext,
@@ -150,7 +150,7 @@ public class KmlExporterManager {
 	        			parentFrame.append('.'); // same folder
 
         				parentFrame.append('/').append(BalloonTemplateHandlerImpl.balloonDirectoryName);
-        				parentFrame.append('/').append(work.getGmlId());
+        				parentFrame.append('/').append(work.getGmlId()).append('-').append(work.getId());
         				parentFrame.append(BalloonTemplateHandlerImpl.parentFrameEnd);
 
         				if (!balloonExtracted) {
@@ -173,20 +173,20 @@ public class KmlExporterManager {
 							}
 							else { // export as kml
 								if (config.getProject().getKmlExporter().isOneFilePerObject()) {
-									directory = new File(path, work.getGmlId());
+									directory = new File(path, String.valueOf(work.getId()));
 		        					if (!directory.exists()) {
 		        						directory.mkdir();
 		        					}
     							}
     						}
 
-    						if (!config.getProject().getKmlExporter().isOneFilePerObject() || !config.getProject().getKmlExporter().isExportAsKmz()) {
+    						if (!isBBoxActive || !config.getProject().getKmlExporter().isOneFilePerObject() || !config.getProject().getKmlExporter().isExportAsKmz()) {
 	       						try {
 	       							File balloonsDirectory = new File(directory, BalloonTemplateHandlerImpl.balloonDirectoryName);
 	       							if (!balloonsDirectory.exists()) {
 	       								balloonsDirectory.mkdir();
 	       							}
-	       							File htmlFile = new File(balloonsDirectory, placemark.getName() + ".html");
+	       							File htmlFile = new File(balloonsDirectory, work.getGmlId() + '-' + work.getId() + ".html");
 	       							FileOutputStream outputStream = new FileOutputStream(htmlFile);
 	       							outputStream.write(placemarkDescription.getBytes(CHARSET));
 	       							outputStream.close();
@@ -214,7 +214,7 @@ public class KmlExporterManager {
 								isHighlighting = true;
 							}
 
-							File placemarkDirectory = new File(path + File.separator + gmlId);
+							File placemarkDirectory = new File(path + File.separator + work.getId());
 							if (!placemarkDirectory.exists()) {
 								placemarkDirectory.mkdir();
 							}
@@ -246,11 +246,11 @@ public class KmlExporterManager {
 
 							if (isHighlighting) {
 								networkLinkType.setName(gmlId + " " + displayFormName + " " + DisplayForm.HIGHLIGTHTED_STR);
-								linkType.setHref(gmlId + "/" + gmlId + "_" + displayFormName + "_" + DisplayForm.HIGHLIGTHTED_STR + fileExtension);
+								linkType.setHref(work.getId() + "/" + gmlId + "_" + displayFormName + "_" + DisplayForm.HIGHLIGTHTED_STR + fileExtension);
 							}
 							else { // actual placemark, non-highlighting
 								networkLinkType.setName(gmlId + " " + displayFormName);
-								linkType.setHref(gmlId + "/" + gmlId + "_" + displayFormName + fileExtension);
+								linkType.setHref(work.getId() + "/" + gmlId + "_" + displayFormName + fileExtension);
 							}
 
 							linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
@@ -303,7 +303,7 @@ public class KmlExporterManager {
 					if (balloonInSeparateFile) {
 						for (PlacemarkType placemark: placemarkList) {
 							if (placemark != null) {
-								ZipEntry zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + work.getGmlId() + ".html");
+								ZipEntry zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + work.getGmlId() + '-' + work.getId() + ".html");
 								if (placemarkDescription != null) {
 									zipOut.putNextEntry(zipEntry);
 									zipOut.write(placemarkDescription.getBytes(CHARSET));
@@ -368,7 +368,7 @@ public class KmlExporterManager {
     			else
     				parentFrame.append("."); // same folder
 				parentFrame.append('/').append(BalloonTemplateHandlerImpl.balloonDirectoryName);
-				parentFrame.append('/').append(colladaBundle.getGmlId());
+   				parentFrame.append('/').append(colladaBundle.getGmlId()).append('-').append(colladaBundle.getId());
 				parentFrame.append(BalloonTemplateHandlerImpl.parentFrameEnd);
 				placemark.setDescription(parentFrame.toString());
 				colladaBundle.setExternalBalloonFileContent(placemarkDescription);
@@ -385,7 +385,7 @@ public class KmlExporterManager {
 
 				String path = config.getInternal().getExportFileName().trim();
 				path = path.substring(0, path.lastIndexOf(File.separator));
-				File placemarkDirectory = new File(path + File.separator + colladaBundle.getGmlId());
+				File placemarkDirectory = new File(path + File.separator + colladaBundle.getId());
 				if (!placemarkDirectory.exists()) {
 					placemarkDirectory.mkdir();
 				}
@@ -435,7 +435,7 @@ public class KmlExporterManager {
 				regionType.setLod(lodType);
 
 				LinkType linkType = kmlFactory.createLinkType();
-				linkType.setHref(colladaBundle.getGmlId() + "/" + colladaBundle.getGmlId() + "_" + DisplayForm.COLLADA_STR + fileExtension);
+				linkType.setHref(colladaBundle.getId() + "/" + colladaBundle.getGmlId() + "_" + DisplayForm.COLLADA_STR + fileExtension);
 				linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
 				linkType.setViewFormat("");
 				if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
@@ -468,7 +468,7 @@ public class KmlExporterManager {
 	        colladaBundle.setCollada(null); // free heap space
 
 	        // ----------------- model saving -----------------
-	        ZipEntry zipEntry = new ZipEntry(colladaBundle.getGmlId() + "/" + colladaBundle.getGmlId() + ".dae");
+	        ZipEntry zipEntry = new ZipEntry(colladaBundle.getId() + "/" + colladaBundle.getGmlId() + ".dae");
 	        zipOut.putNextEntry(zipEntry);
 	        zipOut.write(colladaBundle.getColladaAsString().getBytes(CHARSET));
 	        zipOut.closeEntry();
@@ -482,7 +482,7 @@ public class KmlExporterManager {
 	        		byte[] ordImageBytes = textureExportAdapter.getInByteArray(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, imageFilename);
 	        		zipEntry = imageFilename.startsWith("..") ?
 	        				   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
-	        				   new ZipEntry(colladaBundle.getGmlId() + "/" + imageFilename);
+	        					   new ZipEntry(colladaBundle.getId() + "/" + imageFilename);
 	        		zipOut.putNextEntry(zipEntry);
 	        		zipOut.write(ordImageBytes, 0, ordImageBytes.length);
 	        		zipOut.closeEntry();
@@ -499,7 +499,7 @@ public class KmlExporterManager {
 
 					zipEntry = imageFilename.startsWith("..") ?
 							   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
-							   new ZipEntry(colladaBundle.getGmlId() + "/" + imageFilename);
+								   new ZipEntry(colladaBundle.getId() + "/" + imageFilename);
 					zipOut.putNextEntry(zipEntry);
 					ImageIO.write(texImage, imageType, zipOut);
 					zipOut.closeEntry();
@@ -508,7 +508,7 @@ public class KmlExporterManager {
 
 			// ----------------- balloon saving -----------------
 			if (colladaBundle.getExternalBalloonFileContent() != null) {
-				zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + colladaBundle.getGmlId() + ".html");
+	        	zipEntry = new ZipEntry(BalloonTemplateHandlerImpl.balloonDirectoryName + "/" + colladaBundle.getGmlId() + '-' + colladaBundle.getId() + ".html");
 				zipOut.putNextEntry(zipEntry);
 				zipOut.write(colladaBundle.getExternalBalloonFileContent().getBytes(CHARSET));
 				zipOut.closeEntry();
@@ -531,7 +531,7 @@ public class KmlExporterManager {
 			}
 
 			// --------------- create subfolder ---------------
-			File buildingDirectory = new File(path, colladaBundle.getGmlId());
+			File buildingDirectory = new File(path, String.valueOf(colladaBundle.getId()));
 			if (!buildingDirectory.exists()) {
 				buildingDirectory.mkdir();
 			}
@@ -576,7 +576,7 @@ public class KmlExporterManager {
 					if (!balloonsDirectory.exists()) {
 						balloonsDirectory.mkdir();
 					}
-					File htmlFile = new File(balloonsDirectory, placemark.getName() + ".html");
+					File htmlFile = new File(balloonsDirectory, colladaBundle.getGmlId() + '-' + colladaBundle.getId() + ".html");
 					FileOutputStream outputStream = new FileOutputStream(htmlFile);
 					outputStream.write(colladaBundle.getExternalBalloonFileContent().getBytes(CHARSET));
 					outputStream.close();

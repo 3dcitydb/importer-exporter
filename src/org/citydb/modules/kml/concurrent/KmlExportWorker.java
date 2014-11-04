@@ -568,6 +568,7 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 			colladaBundle.setUnsupportedTexImageIds(objectGroup.getUnsupportedTexImageIds());
 			colladaBundle.setPlacemark(objectGroup.createPlacemarkForColladaModel());
 			colladaBundle.setGmlId(objectGroup.getGmlId());
+			colladaBundle.setId(objectGroup.getId());
 
 			kmlExporterManager.print(colladaBundle,
 					objectGroup.getId(),					

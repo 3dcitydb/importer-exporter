@@ -1762,7 +1762,7 @@ public abstract class KmlGenericObject {
 		}
 		else {
 			// File.separator would be wrong here, it MUST be "/"
-			link.setHref(getGmlId() + "/" + getGmlId() + ".dae");
+			link.setHref(getId() + "/" + getGmlId() + ".dae");
 		}
 		model.setLink(link);
 
