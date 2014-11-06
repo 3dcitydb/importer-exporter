@@ -80,11 +80,12 @@ public class IndexStatusInfo {
 						obj.status = IndexStatus.ERROR;
 
 					obj.name = parts[1].toUpperCase();
-					obj.table = parts[2].toUpperCase();
-					obj.column = parts[3].toUpperCase();
+					// parts[2] is the schema name
+					obj.table = parts[3].toUpperCase();
+					obj.column = parts[4].toUpperCase();
 
-					if (parts.length > 4 && !parts[4].equals("0"))
-						obj.errorMessage = parts[4];
+					if (parts.length > 5 && !parts[5].equals("0"))
+						obj.errorMessage = parts[5];
 					else
 						obj.errorMessage = "";
 					
