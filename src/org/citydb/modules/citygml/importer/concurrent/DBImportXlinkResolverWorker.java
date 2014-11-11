@@ -76,8 +76,8 @@ import org.citydb.modules.citygml.importer.database.xlink.resolver.XlinkTextureI
 import org.citydb.modules.citygml.importer.database.xlink.resolver.XlinkTextureParam;
 import org.citydb.modules.citygml.importer.database.xlink.resolver.XlinkWorldFile;
 import org.citydb.modules.common.event.EventType;
-import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.event.InterruptEvent;
+import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.filter.ImportFilter;
 
 public class DBImportXlinkResolverWorker implements Worker<DBXlink>, EventHandler {
@@ -210,9 +210,10 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink>, EventHandle
 			}
 
 			try {
-				xlinkResolverManager.executeBatch();
-				connection.commit();
-				xlinkResolverManager.close();
+				if (shouldWork) {
+					xlinkResolverManager.executeBatch();
+					connection.commit();
+				}
 			} catch (SQLException e) {
 				LOG.error("SQL error: " + e.getMessage());
 				while ((e = e.getNextException()) != null)
@@ -224,11 +225,16 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink>, EventHandle
 					//
 				}
 
-				// fire interrupt event to stop other import workers
 				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
 			}
 
 		} finally {
+			try {
+				xlinkResolverManager.close();
+			} catch (SQLException e1) {
+				//
+			}
+
 			try {
 				connection.close();
 			} catch (SQLException e) {
@@ -359,11 +365,10 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink>, EventHandle
 				LOG.error("Failed to resolve XLink reference '" + work.getGmlId() + "'.");
 			} else
 				updateCounter++;
-			
+
 			if (updateCounter == commitAfter) {
 				xlinkResolverManager.executeBatch();
 				connection.commit();
-
 				updateCounter = 0;
 			}
 
@@ -371,27 +376,26 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink>, EventHandle
 			LOG.error("SQL error: " + e.getMessage());
 			while ((e = e.getNextException()) != null)
 				LOG.error("SQL error: " + e.getMessage());
-			
+
 			try {
 				connection.rollback();
 			} catch (SQLException sql) {
 				//
 			}
 
-			// fire interrupt event to stop other import workers
-			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
 		} catch (Exception e) {
 			// this is to catch general exceptions that may occur during the import
 			e.printStackTrace();
-			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, this));
 		} finally {
 			runLock.unlock();
 		}
 	}
-	
+
 	@Override
 	public void handleEvent(Event event) throws Exception {
 		shouldWork = false;
 	}
-	
+
 }

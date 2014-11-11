@@ -70,8 +70,8 @@ import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.EventType;
 import org.citydb.modules.common.event.FeatureCounterEvent;
 import org.citydb.modules.common.event.GeometryCounterEvent;
-import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.event.InterruptEvent;
+import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.filter.ImportFilter;
 import org.citydb.modules.common.filter.feature.BoundingBoxFilter;
 import org.citydb.modules.common.filter.feature.GmlIdFilter;
@@ -240,9 +240,11 @@ public class DBImportWorker implements Worker<CityGML>, EventHandler {
 			}
 
 			try {
-				dbImporterManager.executeBatch();
-				batchConn.commit();
-				updateImportContext();				
+				if (shouldWork) {
+					dbImporterManager.executeBatch();
+					batchConn.commit();
+					updateImportContext();
+				}
 			} catch (SQLException e) {
 				LOG.error("SQL error: " + e.getMessage());
 				while ((e = e.getNextException()) != null)
@@ -254,12 +256,9 @@ public class DBImportWorker implements Worker<CityGML>, EventHandler {
 					//
 				}
 
-				// fire interrupt event to stop other import workers
 				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
 			} catch (IOException e) {
 				LOG.error("Failed to log imported top-level features: " + e.getMessage());
-
-				// fire interrupt event to stop other import workers
 				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, this));
 			}
 
@@ -453,14 +452,14 @@ public class DBImportWorker implements Worker<CityGML>, EventHandler {
 				//
 			}
 
-			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
 		} catch (IOException e) {
 			LOG.error("Failed to log imported top-level features: " + e.getMessage());
-			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, this));
 		} catch (Exception e) {
 			// this is to catch general exceptions that may occur during the import
 			e.printStackTrace();
-			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, this));
 		} finally {
 			runLock.unlock();
 		}
