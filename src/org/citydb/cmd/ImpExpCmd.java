@@ -106,9 +106,11 @@ public class ImpExpCmd {
 			LOG.error("Aborting due to an internal error: " + e.getMessage());
 			success = false;
 			
-			Throwable cause = null;
-			while ((cause = e.getCause()) != null)
+			Throwable cause = e.getCause();
+			while (cause != null) {
 				LOG.error("Cause: " + cause.getMessage());
+				cause = cause.getCause();
+			}
 		}
 		try {
 			eventDispatcher.flushEvents();
