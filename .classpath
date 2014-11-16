@@ -4,7 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="resources/jar"/>
 	<classpathentry kind="lib" path="lib/args4j/args4j-2.0.21.jar"/>
-	<classpathentry kind="lib" path="lib/citygml4j/citygml4j-2.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/citygml4j/relaxngDatatype.jar"/>
 	<classpathentry kind="lib" path="lib/citygml4j/stax2-api-3.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/citygml4j/woodstox-core-lgpl-4.2.0.jar"/>
@@ -24,5 +23,6 @@
 	<classpathentry kind="lib" path="lib/swingx-ws/swingx-ws.jar"/>
 	<classpathentry kind="lib" path="lib/tomcat-juli/tomcat-jdbc.jar"/>
 	<classpathentry kind="lib" path="lib/tomcat-juli/tomcat-juli.jar"/>
+	<classpathentry kind="lib" path="lib/citygml4j/citygml4j-2.1.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

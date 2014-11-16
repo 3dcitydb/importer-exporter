@@ -99,7 +99,7 @@ public class DBCityObject implements DBImporter {
 		creationDateMode = config.getProject().getImporter().getContinuation().getCreationDateMode();
 		terminationDateMode = config.getProject().getImporter().getContinuation().getTerminationDateMode();
 
-		if (rememberGmlId)
+		if (replaceGmlId && rememberGmlId)
 			importFileName = config.getInternal().getCurrentImportFile().getAbsolutePath();
 
 		if (config.getProject().getImporter().getContinuation().isUpdatingPersonModeDatabase())
