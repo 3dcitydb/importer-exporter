@@ -628,11 +628,11 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private static final LinkedHashSet<String> RASTER_RELIEF_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("URI");
-		add("GEORASTER_ID");
+		add("COVERAGE_ID");
 	}};
 	 */
-/*	private static final String RASTER_RELIEF_GEORASTER_TABLE = "RASTER_RELIEF_GEORASTER";
-	private static final LinkedHashSet<String> RASTER_RELIEF_GEORASTER_COLUMNS = new LinkedHashSet<String>() {{
+/*	private static final String GRID_COVERAGE_TABLE = "GRID_COVERAGE";
+	private static final LinkedHashSet<String> GRID_COVERAGE_COLUMNS = new LinkedHashSet<String>() {{
 		add("ID");
 		add("RASTERPROPERTY");
 	}};*/
@@ -1075,7 +1075,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(OPENING_TO_THEM_SURFACE_TABLE, OPENING_TO_THEM_SURFACE_COLUMNS);
 		put(PLANT_COVER_TABLE, PLANT_COVER_COLUMNS);
 		//		put(RASTER_RELIEF_TABLE, RASTER_RELIEF_COLUMNS);
-		//      put(RASTER_RELIEF_GEORASTER_TABLE, RASTER_RELIEF_GEORASTER_COLUMNS);
+		//      put(GRID_COVERAGE_TABLE, GRID_COVERAGE_COLUMNS);
 		put(RELIEF_COMPONENT_TABLE, RELIEF_COMPONENT_COLUMNS);
 		put(RELIEF_FEATURE_TABLE, RELIEF_FEATURE_COLUMNS);
 		//		put(RELIEF_FEAT_TO_REL_COMP_TABLE, RELIEF_FEAT_TO_REL_COMP_COLUMNS);
