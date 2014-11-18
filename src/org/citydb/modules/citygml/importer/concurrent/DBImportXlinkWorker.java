@@ -192,13 +192,13 @@ public class DBImportXlinkWorker implements Worker<DBXlink>, EventHandler {
 	}
 
 	private void doWork(DBXlink work) {
-		if (!shouldWork)
-			return;
-
 		final ReentrantLock runLock = this.runLock;
 		runLock.lock();
 
 		try {
+			if (!shouldWork)
+				return;
+			
 			boolean success = false;
 
 			switch (work.getXlinkType()) {

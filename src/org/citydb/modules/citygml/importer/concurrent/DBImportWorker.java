@@ -281,13 +281,13 @@ public class DBImportWorker implements Worker<CityGML>, EventHandler {
 	}
 
 	private void doWork(CityGML work) {
-		if (!shouldWork)
-			return;
-
 		final ReentrantLock runLock = this.runLock;
 		runLock.lock();
 
 		try {
+			if (!shouldWork)
+				return;
+			
 			long id = 0;
 
 			if (work.getCityGMLClass() == CityGMLClass.APPEARANCE) {

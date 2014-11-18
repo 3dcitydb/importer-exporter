@@ -247,13 +247,12 @@ public class DBImportXlinkResolverWorker implements Worker<DBXlink>, EventHandle
 	}
 
 	private void doWork(DBXlink work) {
-		if (!shouldWork)
-			return;
-
 		final ReentrantLock runLock = this.runLock;
 		runLock.lock();
 
 		try {
+			if (!shouldWork)
+				return;
 
 			boolean success = false;
 			DBXlinkEnum type = work.getXlinkType();
