@@ -701,14 +701,24 @@ public class Queries {
 					"WHERE " +
 					"sg.root_id = ? "; 
 	
-	public static final String[] COLLADA_IMPLICIT_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID = new String[] {
+	public static final String[] COLLADA_IMPLICIT_GEOMETRY_FROM_ROOT_ID = new String[] {
 		COLLADA_IMPLICIT_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.implicit_geometry IS NULL ORDER BY sg.id", // parents
 		COLLADA_IMPLICIT_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.implicit_geometry IS NOT NULL" // elementary surfaces
 	};
 	
-	public static final String[] COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID = new String[] {
+	public static final String[] COLLADA_GEOMETRY_FROM_ROOT_ID = new String[] {
 			COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NULL ORDER BY sg.id", // parents
 			COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND sg.geometry IS NOT NULL" // elementary surfaces
+	};
+	
+	public static final String[] COLLADA_IMPLICIT_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID = new String[] {
+		COLLADA_IMPLICIT_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND a.theme = ? AND sg.implicit_geometry IS NULL ORDER BY sg.id", // parents
+		COLLADA_IMPLICIT_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND a.theme = ? AND sg.implicit_geometry IS NOT NULL" // elementary surfaces
+	};
+	
+	public static final String[] COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID = new String[] {
+			COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND a.theme = ? AND sg.geometry IS NULL ORDER BY sg.id", // parents
+			COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID_0 + "AND a.theme = ? AND sg.geometry IS NOT NULL" // elementary surfaces
 	};
 
 	private static final String BUILDING_PART_GEOMETRY_HIGHLIGHTING_LOD1 =

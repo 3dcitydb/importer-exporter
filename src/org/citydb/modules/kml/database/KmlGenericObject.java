@@ -1514,17 +1514,26 @@ public abstract class KmlGenericObject {
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
 		int texImageCounter = 0;
+		String[] queries = null;
+		
+		if (selectedTheme.equals(KmlExporter.THEME_NONE))
+			queries = Queries.COLLADA_GEOMETRY_FROM_ROOT_ID;
+		else
+			queries = Queries.COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID;
 
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
-			for (String colladaQuery: Queries.COLLADA_GEOMETRY_AND_APPEARANCE_FROM_ROOT_ID) { // parent surfaces come first
+			for (String colladaQuery: queries) { // parent surfaces come first
 				PreparedStatement psQuery = null;
 				ResultSet rs2 = null;
 
 				try {
 					psQuery = connection.prepareStatement(colladaQuery);
 					psQuery.setLong(1, surfaceRootId);
-					//				psQuery.setString(2, selectedTheme);
+					
+					if (!selectedTheme.equals(KmlExporter.THEME_NONE))
+						psQuery.setString(2, selectedTheme);
+					
 					rs2 = psQuery.executeQuery();
 
 					while (rs2.next()) {
