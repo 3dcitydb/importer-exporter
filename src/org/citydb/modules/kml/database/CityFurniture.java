@@ -605,7 +605,7 @@ public class CityFurniture extends KmlGenericObject{
 							}
 						}
 
-						GeometryObject surface = geometryConverterAdapter.getPolygon(buildingGeometryObj);
+						GeometryObject surface = applyTransformationMatrix(geometryConverterAdapter.getPolygon(buildingGeometryObj));
 						List<VertexInfo> vertexInfos = new ArrayList<VertexInfo>();
 						
 						int ringCount = surface.getNumElements();
