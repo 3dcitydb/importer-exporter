@@ -210,7 +210,7 @@ public class LandUse extends KmlGenericObject{
 					}
 					break;
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs);
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getLandUseColladaOptions().isGenerateTextureAtlases());
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());

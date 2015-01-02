@@ -231,7 +231,7 @@ public class Relief extends KmlGenericObject{
 					break;
 				case DisplayForm.COLLADA:
 					if (reliefQueryNumber == Queries.RELIEF_TIN_QUERY) { // all others not supported since they have no texture
-						fillGenericObjectForCollada(rs);
+						fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getReliefColladaOptions().isGenerateTextureAtlases());
 						String currentgmlId = getGmlId();
 						setGmlId(work.getGmlId());
 						setId(work.getId());

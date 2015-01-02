@@ -66,7 +66,6 @@ import org.citydb.log.Logger;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.GeometryCounterEvent;
-import org.citydb.textureAtlas.image.ImageReader;
 import org.citydb.textureAtlas.model.TextureImage;
 import org.citydb.util.Util;
 import org.citygml4j.geometry.Matrix;
@@ -277,7 +276,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId()); // must be set before fillGenericObjectForCollada
 					setId(work.getId());	   // due to implicit geometries randomized with gmlId.hashCode()
-					fillGenericObjectForCollada(rs);
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getVegetationColladaOptions().isGenerateTextureAtlases());
 
 					if (currentgmlId != work.getGmlId() && getGeometryAmount() > GEOMETRY_AMOUNT_WARNING) {
 						Logger.getInstance().info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
@@ -474,10 +473,10 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		return coords;
 	}*/
 
-	protected void fillGenericObjectForCollada(ResultSet rs) throws SQLException {
+	protected void fillGenericObjectForCollada(ResultSet rs, boolean generateTextureAtlas) throws SQLException {
 
 		if (transformation == null) { // no implicit geometry
-			super.fillGenericObjectForCollada(rs);
+			super.fillGenericObjectForCollada(rs, generateTextureAtlas);
 			return;
 		}
 
@@ -569,7 +568,8 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 										try {
 											byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, "tex_image", texImageUri);
 											if (imageBytes != null) {
-												texImage = ImageReader.read(new ByteArrayInputStream(imageBytes));
+												imageReader.setSupportRGB(generateTextureAtlas);
+												texImage = imageReader.read(new ByteArrayInputStream(imageBytes));
 											}																																
 										} catch (IOException ioe) {}
 

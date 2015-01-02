@@ -193,6 +193,7 @@ public abstract class KmlGenericObject {
 	protected X3DMaterial defaultX3dMaterial;
 
 	private SimpleDateFormat dateFormatter;
+	protected final ImageReader imageReader;
 
 	protected KmlGenericObject(Connection connection,
 			KmlExporterManager kmlExporterManager,
@@ -226,6 +227,8 @@ public abstract class KmlGenericObject {
 		defaultX3dMaterial.setDiffuseColor(getX3dColorFromString("0.8 0.8 0.8"));
 		defaultX3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
 		defaultX3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
+		
+		imageReader = new ImageReader();
 	}
 
 	public abstract void read(KmlSplittingResult work);
@@ -1510,7 +1513,7 @@ public abstract class KmlGenericObject {
 		return placemarkList;
 	}
 
-	protected void fillGenericObjectForCollada(ResultSet rs) throws SQLException {
+	protected void fillGenericObjectForCollada(ResultSet rs, boolean generateTextureAtlas) throws SQLException {
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
 		int texImageCounter = 0;
@@ -1609,8 +1612,10 @@ public abstract class KmlGenericObject {
 										TextureImage texImage = null;
 										try {
 											byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, "tex_image", texImageUri);
-											if (imageBytes != null)
-												texImage = ImageReader.read(new ByteArrayInputStream(imageBytes));
+											if (imageBytes != null) {
+												imageReader.setSupportRGB(generateTextureAtlas);
+												texImage = imageReader.read(new ByteArrayInputStream(imageBytes));
+											}
 										} catch (IOException ioe) {
 											//
 										}

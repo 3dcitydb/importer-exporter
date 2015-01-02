@@ -210,7 +210,7 @@ public class WaterBody extends KmlGenericObject{
 					}
 					break;
 				case DisplayForm.COLLADA:
-					fillGenericObjectForCollada(rs);
+					fillGenericObjectForCollada(rs, config.getProject().getKmlExporter().getWaterBodyColladaOptions().isGenerateTextureAtlases());
 					String currentgmlId = getGmlId();
 					setGmlId(work.getGmlId());
 					setId(work.getId());
