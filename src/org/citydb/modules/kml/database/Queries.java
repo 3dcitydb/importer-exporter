@@ -2310,13 +2310,7 @@ public class Queries {
 			"FROM GROUP_TO_CITYOBJECT g2co "+ 
 			"WHERE g2co.cityobjectgroup_id = ?) " +
 			"AND (SDO_RELATE(co.envelope, ?, 'mask=overlapbdydisjoint') = 'TRUE') " +
-			"UNION ALL " +
-			"SELECT co.id, co.gmlid, co.objectclass_id " + 
-			"FROM CITYOBJECT co " +
-			"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-			"FROM GROUP_TO_CITYOBJECT g2co "+ 
-			"WHERE g2co.cityobjectgroup_id = ?) " +
-			"AND (SDO_RELATE(co.envelope, ?, 'mask=inside+coveredby+equal') = 'TRUE') " +
+			"OR (SDO_RELATE(co.envelope, ?, 'mask=inside+coveredby+equal') = 'TRUE') " +
 			"ORDER BY 3"; // ORDER BY co.objectclass_id
 		case POSTGIS:
 			return "SELECT co.id, co.gmlid, co.objectclass_id " +

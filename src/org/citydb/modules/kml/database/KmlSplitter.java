@@ -325,8 +325,8 @@ public class KmlSplitter {
 						query.setLong(1, id);
 
 						// set spatial objects for query
-						query.setObject(1, curve);
-						query.setObject(2, envelope);
+						query.setObject(2, curve);
+						query.setObject(3, envelope);
 					}
 					else {
 						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS);
