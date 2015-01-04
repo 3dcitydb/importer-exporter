@@ -426,7 +426,6 @@ public class KmlExporter implements EventHandler {
 						Marshaller marshaller = null;						
 						try {
 							marshaller = jaxbKmlContext.createMarshaller();
-							marshaller.setProperty(Marshaller.JAXB_FRAGMENT, new Boolean(true));
 						} catch (JAXBException e) {
 							Logger.getInstance().error("Failed to create JAXB marshaller object.");
 							return false;
@@ -695,8 +694,6 @@ public class KmlExporter implements EventHandler {
 		saxWriter.setPrefix("xal", "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0");
 
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
-		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
-
 		TilingMode tilingMode = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode();
 
 		try {
