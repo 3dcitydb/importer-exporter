@@ -34,9 +34,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.citydb.api.database.DatabaseType;
 import org.citydb.api.geometry.GeometryObject;
 import org.citydb.config.Config;
-import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.modules.citygml.importer.util.RingValidator;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -81,14 +81,19 @@ public class DBOtherGeometry implements DBImporter {
 
 	private int dbSrid;
 	private boolean affineTransformation;
+	private boolean hasSolidSupport;
 	private RingValidator ringValidator;
 
 	public DBOtherGeometry(Config config, DBImporterManager dbImporterManager) {
 		this.dbImporterManager = dbImporterManager;
 
-		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
-		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		ringValidator = new RingValidator();
+		dbSrid = dbImporterManager.getDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
+		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
+		
+		// solid geometries are only supported in Oracle 11g or higher
+		hasSolidSupport = dbImporterManager.getDatabaseAdapter().getDatabaseType() != DatabaseType.ORACLE ||
+				dbImporterManager.getDatabaseAdapter().getConnectionMetaData().getDatabaseMajorVersion() > 10;
 	}
 
 	public boolean isPointOrLineGeometry(AbstractGeometry abstractGeometry) {
@@ -414,7 +419,7 @@ public class DBOtherGeometry implements DBImporter {
 
 		else if (abstractCurve.getGMLClass() == GMLClass.ORIENTABLE_CURVE) {			
 			OrientableCurve orientableCurve = (OrientableCurve)abstractCurve;
-			if (orientableCurve.isSetOrientation() && orientableCurve.getOrientation().equals("-"))
+			if (orientableCurve.isSetOrientation() && orientableCurve.getOrientation() == Sign.MINUS)
 				reverse = !reverse;
 
 			if (orientableCurve.isSetBaseCurve()) {
@@ -537,6 +542,9 @@ public class DBOtherGeometry implements DBImporter {
 	}
 
 	public GeometryObject getSolid(Solid solid) {
+		if (!hasSolidSupport)
+			return null;
+		
 		GeometryObject solidGeom = null;
 
 		if (solid != null) {
@@ -606,6 +614,9 @@ public class DBOtherGeometry implements DBImporter {
 	}
 
 	public GeometryObject getCompositeSolid(CompositeSolid compositeSolid) {
+		if (!hasSolidSupport)
+			return null;
+		
 		GeometryObject compositeSolidGeom = null;
 
 		if (compositeSolid != null) {
@@ -626,11 +637,11 @@ public class DBOtherGeometry implements DBImporter {
 
 			if (!solidMembers.isEmpty()) {
 				GeometryObject[] tmp = new GeometryObject[solidMembers.size()];
-				
+
 				int i = 0;
 				for (GeometryObject solidMember : solidMembers)
 					tmp[i++] = solidMember;
-				
+
 				compositeSolidGeom = GeometryObject.createCompositeSolid(tmp, dbSrid);
 			}
 		}
