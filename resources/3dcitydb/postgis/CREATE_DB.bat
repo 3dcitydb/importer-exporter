@@ -3,10 +3,10 @@ REM on PostgreSQL/PostGIS
 
 REM Provide your database details here
 set PGPORT=5432
-set PGHOST=your_host_address
-set PGUSER=your_username
-set CITYDB=your_database
-set PGBIN=path_to_psql.exe
+set PGUSER=test_user
+set PGHOST=vsrv4
+set CITYDB=3dcitydb_test
+set PGBIN=C:\PostgreSQL\9.3\bin
 
 REM cd to path of the shell script
 cd /d %~dp0

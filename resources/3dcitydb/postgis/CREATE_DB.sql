@@ -40,12 +40,16 @@
 -- This script is called from CREATE_DB.bat
 \pset footer off
 SET client_min_messages TO WARNING;
+\set ON_ERROR_STOP ON
 
 \echo
 \prompt 'Please enter a valid SRID (e.g., 3068 for DHDN/Soldner Berlin): ' SRS_NO
 \prompt 'Please enter the corresponding SRSName to be used in GML exports (e.g., urn:ogc:def:crs,crs:EPSG::3068,crs:EPSG::5783): ' GMLSRSNAME
 
 \set SRSNO :SRS_NO
+
+--// check if the PostGIS extension is available 
+SELECT postgis_version();
 
 --// create TABLES, SEQUENCES, CONSTRAINTS, INDEXES
 \echo
@@ -65,8 +69,6 @@ ALTER DATABASE :"DBNAME" SET search_path TO citydb,citydb_pkg,public;
 
 \echo
 \echo '3DCityDB creation complete!'
-
-\set ON_ERROR_STOP ON
 
 --// checks if the chosen SRID is provided by the spatial_ref_sys table
 \echo

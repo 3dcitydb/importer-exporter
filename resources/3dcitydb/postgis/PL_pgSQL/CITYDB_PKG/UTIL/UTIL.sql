@@ -136,10 +136,10 @@ CREATE OR REPLACE FUNCTION citydb_pkg.db_info(
 $$
 BEGIN
   EXECUTE 'SELECT srid, gml_srs_name FROM database_srs' INTO schema_srid, schema_gml_srs_name;
-  versioning := citydb_pkg.util_versioning_db(current_schema());
+  versioning := citydb_pkg.versioning_db(current_schema());
 END;
 $$ 
-LANGUAGE plpgsql;
+LANGUAGE plpgsql IMMUTABLE;
 
 
 /******************************************************************
@@ -204,7 +204,6 @@ LANGUAGE plpgsql;
 * @param ref_table name of referenced table
 * @param ref_column name of referencing column of referenced table
 * @param delete_param whether CASCADE or RESTRICT
-* @param deferrable_param whether set or not
 * @param schema_name name of schema of target constraints
 ******************************************************************/
 CREATE OR REPLACE FUNCTION citydb_pkg.update_table_constraint(
@@ -214,13 +213,12 @@ CREATE OR REPLACE FUNCTION citydb_pkg.update_table_constraint(
   ref_table TEXT,
   ref_column TEXT,
   delete_param TEXT DEFAULT 'CASCADE',
-  deferrable_param TEXT DEFAULT 'INITIALLY DEFERRED',
   schema_name TEXT DEFAULT 'citydb'
   ) RETURNS SETOF VOID AS 
 $$
 BEGIN
   EXECUTE format('ALTER TABLE %I.%I DROP CONSTRAINT %I, ADD CONSTRAINT %I FOREIGN KEY (%I) REFERENCES %I.%I (%I)
-                    ON UPDATE CASCADE ON DELETE ' || delete_param || ' ' || deferrable_param,
+                    ON UPDATE CASCADE ON DELETE ' || delete_param,
                     schema_name, table_name, fkey_name, fkey_name, column_name, schema_name, ref_table, ref_column);
 
   EXCEPTION
@@ -247,23 +245,20 @@ CREATE OR REPLACE FUNCTION citydb_pkg.update_schema_constraints(
 $$
 DECLARE
   delete_param TEXT := 'CASCADE';
-  deferrable_param TEXT;
 BEGIN
   IF on_delete_param <> 'CASCADE' THEN
     delete_param := 'RESTRICT';
-	deferrable_param := '';
     RAISE NOTICE 'Constraints are set to ON DELETE RESTRICT';
   ELSE
-    deferrable_param := 'INITIALLY DEFERRED';
     RAISE NOTICE 'Constraints are set to ON DELETE CASCADE';
   END IF;
 
-  EXECUTE 'SELECT citydb_pkg.update_table_constraint(tc.constraint_name, tc.table_name, kcu.column_name, ccu.table_name, ccu.column_name, $2, $3, tc.table_schema)
+  EXECUTE 'SELECT citydb_pkg.update_table_constraint(tc.constraint_name, tc.table_name, kcu.column_name, ccu.table_name, ccu.column_name, $2, tc.table_schema)
              FROM information_schema.table_constraints AS tc
              JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
              JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
-               WHERE constraint_type = ''FOREIGN KEY'' AND tc.table_schema = $1'
-               USING schema_name, delete_param, deferrable_param;
+               WHERE constraint_type = ''FOREIGN KEY'' AND tc.table_schema = $1 AND kcu.table_schema = $1'
+               USING schema_name, delete_param;
 END;
 $$
 LANGUAGE plpgsql;
@@ -283,43 +278,6 @@ CREATE OR REPLACE FUNCTION citydb_pkg.get_seq_values(
   ) RETURNS SETOF INTEGER AS $$
 BEGIN
   RETURN QUERY EXECUTE 'SELECT nextval($1)::int FROM generate_series(1, $2)' USING schema_name || '.' || seq_name, seq_count;
-END;
-$$
-LANGUAGE plpgsql;
-
-
-/*****************************************************************
-* get_id_array
-*
-* low-level function that returns the result set of a passed query
-*
-* @param     @description       
-* query      passed query string
-*
-* @return
-* result set of the query as an array of IDs
-******************************************************************/
-CREATE OR REPLACE FUNCTION citydb_pkg.get_id_array(query VARCHAR) RETURNS INTEGER[] AS
-$$
-DECLARE
-  id_cursor refcursor;
-  id_value INTEGER;
-  id_array INTEGER[ ] := '{}';
-BEGIN
-  OPEN id_cursor FOR EXECUTE query;
-  LOOP
-    FETCH id_cursor INTO id_value;
-    EXIT WHEN NOT FOUND;
-    id_array := array_append(id_array, id_value);
-  END LOOP;
-  CLOSE id_cursor;
-
-  RETURN id_array;
-
-  EXCEPTION
-    WHEN OTHERS THEN
-      RAISE NOTICE 'An error occured when executing function "get_id_array": %', SQLERRM;
-      RETURN id_array;
 END;
 $$
 LANGUAGE plpgsql;
@@ -373,7 +331,7 @@ BEGIN
     WHEN class_id = 43 OR 
          class_id = 44 OR 
          class_id = 45 OR 
-         class_id = 46 THEN table_name := 'transportion_complex';
+         class_id = 46 THEN table_name := 'transportation_complex';
     WHEN class_id = 47 OR 
          class_id = 48 THEN table_name := 'traffic_area';
     WHEN class_id = 57 THEN table_name := 'citymodel';

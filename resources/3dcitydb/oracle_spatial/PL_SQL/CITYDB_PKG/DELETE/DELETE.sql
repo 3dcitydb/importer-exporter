@@ -82,7 +82,7 @@ AS
   function delete_tunnel_furniture(pid number, schema_name varchar2 := user) return number;
   function delete_tunnel_hollow_space(pid number, schema_name varchar2 := user) return number;
   function delete_cityobject(pid number, delete_members int := 0, cleanup int := 0, schema_name varchar2 := user) return number;
-  function delete_cityobject_cascade(pid number, schema_name varchar2 := user) return number;
+  function delete_cityobject_cascade(pid number, cleanup int := 0, schema_name varchar2 := user) return number;
 
   function cleanup_appearances(only_global int :=1, schema_name varchar2 := user) return id_array;
   function cleanup_addresses(schema_name varchar2 := user) return id_array;
@@ -365,6 +365,7 @@ AS
             dbms_output.put_line('pre_delete_citymodel: deletion of cityobject_member with ID ' || member_id || ' threw: ' || SQLERRM);
         end;
       end loop;
+      close member_cur;
 
       -- cleanup
       dummy_ids := cleanup_implicit_geometries(1, schema_name);
@@ -484,6 +485,7 @@ AS
             dbms_output.put_line('pre_delete_cityobjectgroup: deletion of group_member with ID ' || member_id || ' threw: ' || SQLERRM);
         end;
       end loop;
+      close member_cur;
 
       -- cleanup
       dummy_ids := citydb_delete.cleanup_implicit_geometries(1, schema_name);
@@ -3443,7 +3445,6 @@ AS
            objectclass_id = 46 then deleted_id := delete_transport_complex(pid, schema_name);
       when objectclass_id = 47 or 
            objectclass_id = 48 then deleted_id := delete_traffic_area(pid, schema_name);
-      when objectclass_id = 57 then deleted_id := delete_citymodel(pid, delete_members, schema_name);
       when objectclass_id = 60 or 
            objectclass_id = 61 then deleted_id := delete_thematic_surface(pid, schema_name);
       when objectclass_id = 63 or 
@@ -3502,23 +3503,24 @@ AS
 
   -- delete a cityobject using its foreign key relations
   -- NOTE: all constraints have to be set to ON DELETE CASCADE (function: citydb_util.update_schema_constraints)
-  function delete_cityobject_cascade(pid number, schema_name varchar2 := user) return number
+  function delete_cityobject_cascade(pid number, cleanup int := 0, schema_name varchar2 := user) return number
   is
     deleted_id number;
     dummy_ids id_array := id_array();
-  begin  
+  begin
     -- delete cityobject and all entries from other tables referencing the cityobject_id
     execute immediate 'delete from ' || schema_name || '.cityobject where id = :1 returning id into :2' using pid, out deleted_id;
 
-    -- cleanup
-    dummy_ids := cleanup_implicit_geometries(1, schema_name);
-    dummy_ids := cleanup_appearances(0, schema_name);
-    dummy_ids := cleanup_grid_coverages(schema_name);	
-    dummy_ids := cleanup_addresses(schema_name);
-    dummy_ids := cleanup_cityobjectgroups(schema_name);
-    dummy_ids := cleanup_citymodels(schema_name);
+    if cleanup <> 0 then
+      dummy_ids := cleanup_implicit_geometries(1, schema_name);
+      dummy_ids := cleanup_appearances(0, schema_name);
+      dummy_ids := cleanup_grid_coverages(schema_name);
+      dummy_ids := cleanup_addresses(schema_name);
+      dummy_ids := cleanup_cityobjectgroups(schema_name);
+      dummy_ids := cleanup_citymodels(schema_name);
+    end if;
 
-    return deleted_id;	
+    return deleted_id;
   exception
     when others then
       dbms_output.put_line('delete_cityobject_cascade (id: ' || pid || '): ' || SQLERRM);
@@ -3534,14 +3536,11 @@ AS
     cityobject_id number;
     seq_value number;
   begin
+    -- disable spatial indexes
+    citydb_idx.drop_spatial_indexes(schema_name);
+
     -- clear tables
-    open cityobject_cur for 'select id from ' || schema_name || '.cityobject';
-    loop
-      fetch cityobject_cur into cityobject_id;
-      exit when cityobject_cur%notfound;
-      dummy_id := delete_cityobject_cascade(cityobject_id, schema_name);
-    end loop;
-    close cityobject_cur;
+    execute immediate 'delete from ' || schema_name || '.cityobject';
 
     dummy_ids := cleanup_appearances(0, schema_name);
     dummy_ids := cleanup_grid_coverages(schema_name);	
@@ -3644,6 +3643,9 @@ AS
     execute immediate 'alter sequence ' || schema_name || '.tex_image_seq increment by ' || (seq_value-1)*-1;
     execute immediate 'select ' || schema_name || '.tex_image_seq.nextval from dual';
     execute immediate 'alter sequence ' || schema_name || '.tex_image_seq increment by 1';
+
+    -- recreate spatial indexes
+    citydb_idx.create_spatial_indexes(schema_name);
 
   exception
     when others then

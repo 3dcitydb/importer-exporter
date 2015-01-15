@@ -1,6 +1,6 @@
 -- Database generated with pgModeler (PostgreSQL Database Modeler).
--- pgModeler  version: 0.7.0-alpha
--- PostgreSQL version: 9.3
+-- pgModeler  version: 0.7.2
+-- PostgreSQL version: 9.1
 -- Project Site: pgmodeler.com.br
 -- Model Author: Prof. Dr. Thomas H. Kolbe <thomas.kolbe@tum.de>
 --               Zhihang Yao <zhihang.yao@tum.de>
@@ -31,13 +31,13 @@ SET check_function_bodies = false;
 CREATE SCHEMA citydb;
 -- ddl-end --
 
--- object: postgis | type: EXTENSION --
--- DROP EXTENSION postgis CASCADE;
-CREATE EXTENSION postgis
-      WITH SCHEMA public;
-COMMENT ON EXTENSION postgis IS 'PostGIS geometry, geography, and raster spatial types and functions';
--- ddl-end --
-
+-- -- object: postgis | type: EXTENSION --
+-- -- DROP EXTENSION postgis CASCADE;
+-- CREATE EXTENSION postgis
+--       WITH SCHEMA public;
+-- COMMENT ON EXTENSION postgis IS 'PostGIS geometry, geography, and raster spatial types and functions';
+-- -- ddl-end --
+-- 
 -- object: citydb.citymodel_seq | type: SEQUENCE --
 -- DROP SEQUENCE citydb.citymodel_seq;
 CREATE SEQUENCE citydb.citymodel_seq
@@ -2453,10 +2453,10 @@ CREATE TABLE citydb.tunnel(
 	lod2_multi_surface_id integer,
 	lod3_multi_surface_id integer,
 	lod4_multi_surface_id integer,
-	lod1_solid_id smallint,
-	lod2_solid_id smallint,
-	lod3_solid_id smallint,
-	lod4_solid_id smallint,
+	lod1_solid_id integer,
+	lod2_solid_id integer,
+	lod3_solid_id integer,
+	lod4_solid_id integer,
 	CONSTRAINT tunnel_pk PRIMARY KEY (id)
 
 );
@@ -2894,7 +2894,7 @@ CREATE TABLE citydb.tunnel_installation(
 -- ddl-end --
 -- object: tunnel_inst_objclass_fk | type: INDEX --
 -- DROP INDEX citydb.tunnel_inst_objclass_fk;
-CREATE INDEX tunnel_inst_objclass_fk ON citydb.tunnel_installation
+CREATE INDEX tunnel_inst_objclass_fkx ON citydb.tunnel_installation
 	USING btree
 	(
 	  objectclass_id ASC NULLS LAST
@@ -4001,8 +4001,8 @@ CREATE INDEX bridge_const_lod4refpt_spx ON citydb.bridge_constr_element
 -- object: citydb.address_to_bridge | type: TABLE --
 -- DROP TABLE citydb.address_to_bridge;
 CREATE TABLE citydb.address_to_bridge(
-	bridge_id integer,
-	address_id integer,
+	bridge_id integer NOT NULL,
+	address_id integer NOT NULL,
 	CONSTRAINT address_to_bridge_pk PRIMARY KEY (bridge_id,address_id)
 
 );
@@ -4185,9 +4185,9 @@ CREATE TABLE citydb.surface_geometry(
 	is_triangulated numeric,
 	is_xlink numeric,
 	is_reverse numeric,
+	solid_geometry geometry(POLYHEDRALSURFACEZ),
 	geometry geometry(POLYGONZ),
-	solid_geometry geometry(GEOMETRYZ),
-	implicit_geometry geometry(GEOMETRYZ),
+	implicit_geometry geometry(POLYGONZ),
 	cityobject_id integer,
 	CONSTRAINT surface_geometry_pk PRIMARY KEY (id)
 
@@ -4372,10 +4372,10 @@ CREATE TABLE citydb.cityobject_genericattrib(
 	realval real,
 	urival character varying(4000),
 	dateval timestamp with time zone,
-	geomval geometry(GEOMETRYZ),
-	blobval bytea,
 	unit character varying(4000),
 	genattribset_codespace character varying(4000),
+	blobval bytea,
+	geomval geometry(GEOMETRYZ),
 	surface_geometry_id integer,
 	cityobject_id integer NOT NULL,
 	CONSTRAINT cityobj_genericattrib_pk PRIMARY KEY (id)
@@ -5162,7 +5162,7 @@ ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ALTER TABLE citydb.relief_component DROP CONSTRAINT relief_comp_objclass_fk;
 ALTER TABLE citydb.relief_component ADD CONSTRAINT relief_comp_objclass_fk FOREIGN KEY (objectclass_id)
 REFERENCES citydb.objectclass (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
+ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ddl-end --
 
 
@@ -5426,7 +5426,7 @@ ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ALTER TABLE citydb.solitary_vegetat_object DROP CONSTRAINT sol_veg_obj_cityobject_fk;
 ALTER TABLE citydb.solitary_vegetat_object ADD CONSTRAINT sol_veg_obj_cityobject_fk FOREIGN KEY (id)
 REFERENCES citydb.cityobject (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
+ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ddl-end --
 
 
@@ -5730,7 +5730,7 @@ ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ALTER TABLE citydb.tunnel_hollow_space DROP CONSTRAINT tun_hspace_cityobj_fk;
 ALTER TABLE citydb.tunnel_hollow_space ADD CONSTRAINT tun_hspace_cityobj_fk FOREIGN KEY (id)
 REFERENCES citydb.cityobject (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
+ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ddl-end --
 
 
@@ -5738,7 +5738,7 @@ ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ALTER TABLE citydb.tunnel_hollow_space DROP CONSTRAINT tun_hspace_tunnel_fk;
 ALTER TABLE citydb.tunnel_hollow_space ADD CONSTRAINT tun_hspace_tunnel_fk FOREIGN KEY (tunnel_id)
 REFERENCES citydb.tunnel (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
+ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ddl-end --
 
 
@@ -5746,7 +5746,7 @@ ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ALTER TABLE citydb.tunnel_hollow_space DROP CONSTRAINT tun_hspace_lod4msrf_fk;
 ALTER TABLE citydb.tunnel_hollow_space ADD CONSTRAINT tun_hspace_lod4msrf_fk FOREIGN KEY (lod4_multi_surface_id)
 REFERENCES citydb.surface_geometry (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
+ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ddl-end --
 
 
@@ -5754,7 +5754,7 @@ ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ALTER TABLE citydb.tunnel_hollow_space DROP CONSTRAINT tun_hspace_lod4solid_fk;
 ALTER TABLE citydb.tunnel_hollow_space ADD CONSTRAINT tun_hspace_lod4solid_fk FOREIGN KEY (lod4_solid_id)
 REFERENCES citydb.surface_geometry (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
+ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ddl-end --
 
 
