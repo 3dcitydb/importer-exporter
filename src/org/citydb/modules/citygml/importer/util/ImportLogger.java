@@ -30,7 +30,7 @@ public class ImportLogger {
 		date = Calendar.getInstance().getTime();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss_SSS");
 
-		logFile = Paths.get(path.toString(), "imported_features-" + dateFormat.format(date) + ".txt");
+		logFile = Paths.get(path.toString(), "imported_features-" + dateFormat.format(date) + ".log");
 		if (Files.exists(logFile))
 			throw new IOException("The log file '" + logFile.getFileName() + "' for imported-top level features already exists.");
 
@@ -46,8 +46,7 @@ public class ImportLogger {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
 
 		writer.write('#' + this.getClass().getPackage().getImplementationTitle() + ", version \"" +
-				this.getClass().getPackage().getImplementationVersion() + "\", " +
-				this.getClass().getPackage().getImplementationVendor());
+				this.getClass().getPackage().getImplementationVersion() + "\"");
 		writer.newLine();		
 		writer.write("#Imported top-level features from file: ");
 		writer.write(fileName.getAbsolutePath());
