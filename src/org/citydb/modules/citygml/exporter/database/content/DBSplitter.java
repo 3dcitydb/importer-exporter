@@ -514,15 +514,14 @@ public class DBSplitter {
 		LOG.info("Processing global appearance features.");
 		eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.globalApp.msg"), this));
 
-		Statement stmt = null;
+		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
 		try {
 			cacheTableManager.createCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE).createIndexes();
 
-			stmt = connection.createStatement();
-			String query = "select ID from APPEARANCE where CITYOBJECT_ID is NULL";
-			rs = stmt.executeQuery(query);
+			stmt = connection.prepareStatement("select ID from APPEARANCE where CITYOBJECT_ID is NULL");
+			rs = stmt.executeQuery();
 
 			while (rs.next() && shouldRun) {
 				elementCounter++;

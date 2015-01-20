@@ -173,7 +173,7 @@ public class DBAppearance implements DBExporter {
 					int index = appearanceIds.indexOf(appearanceId);
 					if (index == -1) {
 						appearance = new Appearance();
-						getAppearancePropeties(appearance, rs);
+						getAppearanceProperties(appearance, rs);
 
 						// add appearance to cityobject
 						cityObject.addAppearance(new AppearanceProperty(appearance));
@@ -206,7 +206,7 @@ public class DBAppearance implements DBExporter {
 
 			while (rs.next()) {
 				if (!isInited) {
-					getAppearancePropeties(appearance, rs);
+					getAppearanceProperties(appearance, rs);
 					texImageIds.clear();
 					isInited = true;
 				}
@@ -228,7 +228,7 @@ public class DBAppearance implements DBExporter {
 		}
 	}
 	
-	private void getAppearancePropeties(Appearance appearance, ResultSet rs) throws SQLException {
+	private void getAppearanceProperties(Appearance appearance, ResultSet rs) throws SQLException {
 		String gmlId = rs.getString(2);
 		if (gmlId != null)
 			appearance.setId(gmlId);
