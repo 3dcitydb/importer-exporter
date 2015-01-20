@@ -518,7 +518,7 @@ public class DBSplitter {
 		ResultSet rs = null;
 
 		try {
-			cacheTableManager.createCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE).createIndexes();
+			cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE).createIndexes();
 
 			stmt = connection.prepareStatement("select ID from APPEARANCE where CITYOBJECT_ID is NULL");
 			rs = stmt.executeQuery();
