@@ -29,20 +29,31 @@
  */
 package org.citydb.modules.citygml.exporter.database.content;
 
+import org.citydb.modules.citygml.exporter.util.GlobalAppearanceResolver;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 public class DBSplittingResult {
 	private final long primaryKey;
 	private final CityGMLClass cityObjectType;
 	private final String gmlId;
+	private final GlobalAppearanceResolver globalAppResolver;
 	
 	private boolean checkIfAlreadyExported = false;
 
 	public DBSplittingResult(long primaryKey, CityGMLClass cityObjectType) {
-		this(null, primaryKey, cityObjectType);
+		this(null, null, primaryKey, cityObjectType);
+	}
+		
+	public DBSplittingResult(String gmlId, long primaryKey, CityGMLClass cityObjectType) {
+		this(null, gmlId, primaryKey, cityObjectType);
 	}
 	
-	public DBSplittingResult(String gmlId, long primaryKey, CityGMLClass cityObjectType) {
+	public  DBSplittingResult(GlobalAppearanceResolver globalAppResolver) {
+		this(globalAppResolver, globalAppResolver.getGmlId(), globalAppResolver.getId(), CityGMLClass.APPEARANCE);
+	}
+
+	private DBSplittingResult(GlobalAppearanceResolver globalAppResolver, String gmlId, long primaryKey, CityGMLClass cityObjectType) {
+		this.globalAppResolver = globalAppResolver;
 		this.gmlId = gmlId;
 		this.primaryKey = primaryKey;
 		this.cityObjectType = cityObjectType;
@@ -67,5 +78,9 @@ public class DBSplittingResult {
 	public void setCheckIfAlreadyExported(boolean checkIfAlreadyExported) {
 		this.checkIfAlreadyExported = checkIfAlreadyExported;
 	}
-		
+
+	public GlobalAppearanceResolver getGlobalAppearanceResolver() {
+		return globalAppResolver;
+	}
+	
 }

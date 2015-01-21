@@ -52,6 +52,7 @@ import org.citydb.modules.citygml.common.database.cache.CacheTable;
 import org.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import org.citydb.modules.citygml.common.database.cache.model.CacheTableModelEnum;
 import org.citydb.modules.citygml.common.database.uid.UIDCache;
+import org.citydb.modules.citygml.exporter.util.GlobalAppearanceResolver;
 import org.citydb.modules.common.event.StatusDialogMessage;
 import org.citydb.modules.common.filter.ExportFilter;
 import org.citydb.modules.common.filter.feature.BoundingBoxFilter;
@@ -518,24 +519,55 @@ public class DBSplitter {
 		ResultSet rs = null;
 
 		try {
-			cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE).createIndexes();
+			CacheTable globalAppTemplTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+			globalAppTemplTable.createIndexes();
 
-			stmt = connection.prepareStatement("select ID from APPEARANCE where CITYOBJECT_ID is NULL");
+			StringBuilder query = new StringBuilder("select a.ID as APP_ID, a.GMLID as APP_GMLID, sd.ID as SD_ID, sg.ID as SG_ID, sg.GMLID as SG_GMLID, sg.IS_REVERSE ")
+			.append("from APPEARANCE a ")
+			.append("inner join APPEAR_TO_SURFACE_DATA asd on asd.APPEARANCE_ID = a.ID ")
+			.append("inner join SURFACE_DATA sd on sd.ID = asd.SURFACE_DATA_ID ")
+			.append("inner join TEXTUREPARAM tp on tp.SURFACE_DATA_ID = sd.ID ")
+			.append("inner join " + globalAppTemplTable.getTableName() + " tmp on tmp.ID = tp.SURFACE_GEOMETRY_ID ")
+			.append("inner join SURFACE_GEOMETRY sg on sg.ID = tmp.ID ")
+			.append("where a.CITYOBJECT_ID is null order by a.ID");
+
+			stmt = globalAppTemplTable.getConnection().prepareStatement(query.toString());
 			rs = stmt.executeQuery();
 
+			GlobalAppearanceResolver globalAppResolver = null;
+			long previousId = -1;
+
 			while (rs.next() && shouldRun) {
-				elementCounter++;
+				long appearanceId = rs.getLong(1);
+				long surfaceDataId = rs.getLong(3);
+				long surfaceGeometryId = rs.getLong(4);
+				String gmlId = rs.getString(5);
+				boolean isReverse = rs.getInt(6) == 1;
 
-				if (firstElement != null && elementCounter < firstElement)
-					continue;
+				if (appearanceId != previousId) {
+					if (globalAppResolver != null) {
+						// send appearance resolver to export workers
+						DBSplittingResult splitter = new DBSplittingResult(globalAppResolver);
+						dbWorkerPool.addWork(splitter);
+					}
+					
+					elementCounter++;
+					previousId = appearanceId;
 
-				if (lastElement != null && elementCounter > lastElement)
-					break;
+					if (lastElement != null && elementCounter > lastElement) {
+						globalAppResolver = null;
+						break;
+					}
 
-				long id = rs.getLong(1);
+					globalAppResolver = new GlobalAppearanceResolver(appearanceId, rs.getString(2));
+				}
 
-				// set initial context
-				DBSplittingResult splitter = new DBSplittingResult(id, CityGMLClass.APPEARANCE);
+				globalAppResolver.registerSurfaceData(surfaceDataId, surfaceGeometryId, gmlId, isReverse);
+			}
+
+			if (shouldRun && globalAppResolver != null) {
+				// send final appearance resolver to export workers
+				DBSplittingResult splitter = new DBSplittingResult(globalAppResolver);
 				dbWorkerPool.addWork(splitter);
 			}
 

@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.PatternSyntaxException;
@@ -316,6 +317,34 @@ public class Util {
 		}
 
 		return codeList;
+	}
+	
+	public static String buildInOperator(Collection<? extends Object> items, String columnName, String logicalOperator, int maxItems) {		
+		StringBuilder predicate = new StringBuilder();
+		if (items.size() == 1)
+			return predicate.append(columnName).append(" = ").append(items.iterator().next()).toString();
+
+		if (items.size() > maxItems)
+			predicate.append("(");
+
+		predicate.append(columnName).append(" in (");
+		Iterator<? extends Object> iter = items.iterator();
+		int i = 0;
+
+		while (iter.hasNext()) {
+			predicate.append(iter.next());
+
+			if (++i == maxItems)
+				predicate.append(") ").append(logicalOperator).append(" ").append(columnName).append(" in (");
+			else if (iter.hasNext())
+				predicate.append(", ");
+		}
+
+		predicate.append(")");
+		if (items.size() > maxItems)
+			predicate.append(")");
+
+		return predicate.toString();
 	}
 
 	public static String getFeatureSignature(CityGMLClass featureType, String gmlId) {
