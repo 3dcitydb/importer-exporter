@@ -124,6 +124,11 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	public String getPseudoTableName() {
 		return "dual";
 	}
+	
+	@Override
+	public int getMaximumNumberOfItemsForInOperator() {
+		return 1000;
+	}
 
 	@Override
 	public String getBoundingBoxPredicate(String attributeName, BoundingBox bbox, boolean overlap) {

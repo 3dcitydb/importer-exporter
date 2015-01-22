@@ -37,6 +37,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.citydb.api.geometry.GeometryObject;
 import org.citydb.config.Config;
@@ -44,6 +45,7 @@ import org.citydb.config.internal.Internal;
 import org.citydb.log.Logger;
 import org.citydb.modules.citygml.common.database.xlink.DBXlinkTextureFile;
 import org.citydb.modules.citygml.exporter.util.FeatureProcessException;
+import org.citydb.modules.citygml.exporter.util.GlobalAppearanceResolver;
 import org.citydb.util.Util;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -76,6 +78,8 @@ public class DBAppearance implements DBExporter {
 	private final DBExporterEnum type;
 
 	private PreparedStatement psAppearance;
+	private String queryTemplate;
+
 	private DBTextureParam textureParamExporter;
 	private boolean exportTextureImage;
 	private boolean uniqueFileNames;
@@ -86,8 +90,8 @@ public class DBAppearance implements DBExporter {
 	private boolean appendOldGmlId;
 	private String gmlIdPrefix;
 	private String pathSeparator;
-
 	private HashSet<Long> texImageIds;
+	private int maxItems;
 
 	public DBAppearance(DBExporterEnum type, Connection connection, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		if (type != DBExporterEnum.LOCAL_APPEARANCE && type != DBExporterEnum.GLOBAL_APPEARANCE)
@@ -107,6 +111,7 @@ public class DBAppearance implements DBExporter {
 		uniqueFileNames = config.getProject().getExporter().getAppearances().isSetUniqueTextureFileNames();
 		noOfBuckets = config.getProject().getExporter().getAppearances().getTexturePath().getNoOfBuckets(); 
 		useBuckets = config.getProject().getExporter().getAppearances().getTexturePath().isUseBuckets() && noOfBuckets > 0;
+		maxItems = dbExporterManager.getDatabaseAdapter().getSQLAdapter().getMaximumNumberOfItemsForInOperator();
 
 		texturePath = config.getInternal().getExportTextureFilePath();
 		pathSeparator = config.getProject().getExporter().getAppearances().getTexturePath().isAbsolute() ? File.separator : "/";
@@ -142,13 +147,12 @@ public class DBAppearance implements DBExporter {
 			.append("from APPEARANCE app inner join APPEAR_TO_SURFACE_DATA a2s on app.ID = a2s.APPEARANCE_ID inner join SURFACE_DATA sd on sd.ID=a2s.SURFACE_DATA_ID left join TEX_IMAGE ti on sd.TEX_IMAGE_ID=ti.ID where ");
 		}
 
-		if (type == DBExporterEnum.LOCAL_APPEARANCE)
+		if (type == DBExporterEnum.LOCAL_APPEARANCE) {
 			query.append("app.CITYOBJECT_ID=?");
-		else
-			query.append("app.ID=?");
+			psAppearance = connection.prepareStatement(query.toString());
+		} else
+			queryTemplate = query.toString();
 
-		psAppearance = connection.prepareStatement(query.toString());
-		
 		textureParamExporter = (DBTextureParam)dbExporterManager.getDBExporter(
 				type == DBExporterEnum.LOCAL_APPEARANCE ? DBExporterEnum.LOCAL_APPEARANCE_TEXTUREPARAM : DBExporterEnum.GLOBAL_APPEARANCE_TEXTUREPARAM);
 	}
@@ -173,7 +177,7 @@ public class DBAppearance implements DBExporter {
 					int index = appearanceIds.indexOf(appearanceId);
 					if (index == -1) {
 						appearance = new Appearance();
-						getAppearancePropeties(appearance, rs);
+						getAppearanceProperties(appearance, rs);
 
 						// add appearance to cityobject
 						cityObject.addAppearance(new AppearanceProperty(appearance));
@@ -185,7 +189,7 @@ public class DBAppearance implements DBExporter {
 				}
 
 				// add surface data to appearance
-				addSurfaceData(appearance, rs);
+				addSurfaceData(appearance, rs, null);
 			}
 		} finally {
 			if (rs != null)
@@ -194,41 +198,64 @@ public class DBAppearance implements DBExporter {
 	}
 
 	public boolean read(DBSplittingResult splitter) throws SQLException, FeatureProcessException {
+		GlobalAppearanceResolver globalAppResolver = splitter.getGlobalAppearanceResolver();
+		if (globalAppResolver == null)
+			return false;
+
+		long appearanceId = globalAppResolver.getId();
+		Set<Long> ids = globalAppResolver.getSurfaceDataIds();
+
+		StringBuilder query = new StringBuilder(queryTemplate)
+		.append("app.ID=").append(appearanceId).append(" and ").append(Util.buildInOperator(ids, "sd.ID", "or", maxItems));
+
+		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
 		try {
 			Appearance appearance = new Appearance();
 			boolean isInited = false;
 
-			long appearanceId = splitter.getPrimaryKey();
-			psAppearance.setLong(1, appearanceId);
-			rs = psAppearance.executeQuery();
+			stmt = connection.prepareStatement(query.toString());
+			rs = stmt.executeQuery();
 
 			while (rs.next()) {
 				if (!isInited) {
-					getAppearancePropeties(appearance, rs);
+					getAppearanceProperties(appearance, rs);
 					texImageIds.clear();
 					isInited = true;
 				}
 
 				// add surface data to appearance
-				addSurfaceData(appearance, rs);
+				addSurfaceData(appearance, rs, globalAppResolver);
 			}
-			
+
 			if (appearance.isSetSurfaceDataMember()) {
 				dbExporterManager.processFeature(appearance);
 				dbExporterManager.updateFeatureCounter(CityGMLClass.APPEARANCE);
 				return true;
-			} 
+			}
 
 			return false;
 		} finally {
-			if (rs != null)
-				rs.close();
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					//
+				}
+			}
+
+			if (stmt != null) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					//
+				}
+			}
 		}
 	}
-	
-	private void getAppearancePropeties(Appearance appearance, ResultSet rs) throws SQLException {
+
+	private void getAppearanceProperties(Appearance appearance, ResultSet rs) throws SQLException {
 		String gmlId = rs.getString(2);
 		if (gmlId != null)
 			appearance.setId(gmlId);
@@ -250,15 +277,15 @@ public class DBAppearance implements DBExporter {
 			appearance.setTheme(theme);
 	}
 
-	private void addSurfaceData(Appearance appearance, ResultSet rs) throws SQLException {
+	private void addSurfaceData(Appearance appearance, ResultSet rs, GlobalAppearanceResolver globalAppResolver) throws SQLException {
 		long surfaceDataId = rs.getLong(7);
 		if (rs.wasNull())
 			return;
-		
+
 		int classId = rs.getInt(8);
 		if (rs.wasNull() || classId == 0)
 			return;
-		
+
 		AbstractSurfaceData surfaceData = null;		
 		CityGMLClass type = Util.classId2cityObject(classId);
 		switch (type) {
@@ -296,9 +323,10 @@ public class DBAppearance implements DBExporter {
 
 			surfaceData.setId(gmlId);
 		}
-		
+
 		// retrieve targets. if there are no targets we suppress this surface data object
-		boolean hasTargets = textureParamExporter.read(surfaceData, surfaceDataId);
+		boolean hasTargets = globalAppResolver == null ? textureParamExporter.read(surfaceData, surfaceDataId) : 
+			textureParamExporter.read(surfaceData, surfaceDataId, globalAppResolver.getSurfaceDataTarget(surfaceDataId));
 		if (!hasTargets)
 			return;
 
@@ -370,7 +398,7 @@ public class DBAppearance implements DBExporter {
 			long texImageId = rs.getLong(21);			
 			if (texImageId != 0) {
 				long dbImageSize = rs.getLong(22);
-				
+
 				String imageURI = rs.getString(23);
 				if (uniqueFileNames) {
 					String extension = Util.getFileExtension(imageURI);
@@ -381,7 +409,7 @@ public class DBAppearance implements DBExporter {
 				String fileName = file.getName();
 				if (useBuckets)
 					fileName = String.valueOf(Math.abs(texImageId % noOfBuckets + 1)) + pathSeparator + fileName;
-				
+
 				absTex.setImageURI(texturePath != null ? texturePath + pathSeparator + fileName : fileName);
 
 				// export texture image from database
@@ -413,7 +441,7 @@ public class DBAppearance implements DBExporter {
 				code.setCodeSpace(rs.getString(25));
 				absTex.setMimeType(code);
 			}
-			
+
 			String textureType = rs.getString(26);
 			if (textureType != null)
 				absTex.setTextureType(TextureType.fromValue(textureType));
@@ -481,7 +509,7 @@ public class DBAppearance implements DBExporter {
 				}
 			}
 		}
-		
+
 		// finally add surface data to appearance
 		SurfaceDataProperty surfaceDataProperty = new SurfaceDataProperty();
 		surfaceDataProperty.setSurfaceData(surfaceData);
@@ -496,7 +524,8 @@ public class DBAppearance implements DBExporter {
 
 	@Override
 	public void close() throws SQLException {
-		psAppearance.close();
+		if (psAppearance != null)
+			psAppearance.close();
 	}
 
 	@Override

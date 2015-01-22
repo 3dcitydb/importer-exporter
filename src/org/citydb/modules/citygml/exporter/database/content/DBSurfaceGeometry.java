@@ -110,7 +110,7 @@ public class DBSurfaceGeometry implements DBExporter {
 			if (dbExporterManager.getDatabaseAdapter().getSQLAdapter().requiresPseudoTableInSelect())
 				query.append("from ").append(dbExporterManager.getDatabaseAdapter().getSQLAdapter().getPseudoTableName()).append(" ");
 
-			query.append("where exists (select 1 from TEXTUREPARAM where SURFACE_GEOMETRY_ID = ?)");
+			query.append("where exists (select 1 from TEXTUREPARAM where SURFACE_GEOMETRY_ID = ? limit 1)");
 			psImportGmlId = tempTable.getConnection().prepareStatement(query.toString());
 		}
 

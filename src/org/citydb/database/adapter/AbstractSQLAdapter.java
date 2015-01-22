@@ -37,6 +37,7 @@ public abstract class AbstractSQLAdapter {
 	public abstract String getNextSequenceValue(DBSequencerEnum sequence);
 	public abstract String getCurrentSequenceValue(DBSequencerEnum sequence);
 	public abstract String getNextSequenceValuesQuery(DBSequencerEnum sequence);
+	public abstract int getMaximumNumberOfItemsForInOperator();
 	
 	public String getBoundingBoxPredicate(String attributeName, String tablePrefix, BoundingBox bbox, boolean overlap) {
 		return getBoundingBoxPredicate(tablePrefix + '.' + attributeName, bbox, overlap);

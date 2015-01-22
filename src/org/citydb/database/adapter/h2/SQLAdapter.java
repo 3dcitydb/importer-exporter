@@ -108,6 +108,12 @@ public class SQLAdapter extends AbstractSQLAdapter {
 	public String getPseudoTableName() {
 		return "";
 	}
+	
+	@Override
+	public int getMaximumNumberOfItemsForInOperator() {
+		// not required for cache tables
+		return 0;
+	}
 
 	@Override
 	public String getBoundingBoxPredicate(String attributeName, BoundingBox bbox, boolean overlap) {

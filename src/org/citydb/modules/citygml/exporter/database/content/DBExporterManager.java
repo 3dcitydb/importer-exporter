@@ -204,12 +204,8 @@ public class DBExporterManager {
 				dbExporter = new DBAppearance(dbExporterType, connection, config, this);
 				break;
 			case LOCAL_APPEARANCE_TEXTUREPARAM:
-				dbExporter = new DBTextureParam(dbExporterType, connection, this);
-				break;
 			case GLOBAL_APPEARANCE_TEXTUREPARAM:
-				globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
-				if (globalAppTempTable != null)
-					dbExporter = new DBTextureParam(dbExporterType, globalAppTempTable, this);
+				dbExporter = new DBTextureParam(dbExporterType, connection, this);
 				break;
 			case GENERIC_CITYOBJECT:
 				dbExporter = new DBGenericCityObject(connection, exportFilter, config, this);

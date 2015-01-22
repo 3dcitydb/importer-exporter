@@ -283,12 +283,6 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 					if (dbReliefFeature != null)
 						success = dbReliefFeature.read(work);
 					break;
-				case APPEARANCE:
-					// we are working on global appearances here
-					DBAppearance dbAppearance = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.GLOBAL_APPEARANCE);
-					if (dbAppearance != null)
-						success = dbAppearance.read(work);
-					break;
 				case GENERIC_CITY_OBJECT:
 					DBGenericCityObject dbGenericCityObject = (DBGenericCityObject)dbExporterManager.getDBExporter(DBExporterEnum.GENERIC_CITYOBJECT);
 					if (dbGenericCityObject != null)
@@ -298,6 +292,12 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 					DBCityObjectGroup dbCityObjectGroup = (DBCityObjectGroup)dbExporterManager.getDBExporter(DBExporterEnum.CITYOBJECTGROUP);
 					if (dbCityObjectGroup != null)
 						success = dbCityObjectGroup.read(work);
+					break;
+				case APPEARANCE:
+					// we are working on global appearances here
+					DBAppearance dbAppearance = (DBAppearance)dbExporterManager.getDBExporter(DBExporterEnum.GLOBAL_APPEARANCE);
+					if (dbAppearance != null)
+						success = dbAppearance.read(work);
 					break;
 				default:
 					return;
