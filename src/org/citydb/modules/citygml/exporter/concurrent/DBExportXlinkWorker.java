@@ -34,7 +34,6 @@ import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.concurrent.Worker;
-import org.citydb.api.concurrent.WorkerPool.WorkQueue;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.config.Config;
 import org.citydb.database.DatabaseConnectionPool;
@@ -48,22 +47,15 @@ import org.citydb.modules.citygml.exporter.database.xlink.DBXlinkExporterLibrary
 import org.citydb.modules.citygml.exporter.database.xlink.DBXlinkExporterManager;
 import org.citydb.modules.citygml.exporter.database.xlink.DBXlinkExporterTextureImage;
 
-public class DBExportXlinkWorker implements Worker<DBXlink> {
+public class DBExportXlinkWorker extends Worker<DBXlink> {
 	private final Logger LOG = Logger.getInstance();
-
-	// instance members needed for WorkPool
+	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
-	private ReentrantLock runLock = new ReentrantLock();
-	private WorkQueue<DBXlink> workQueue = null;
-	private DBXlink firstWork;
-	private Thread workerThread = null;
 
-	// instance members needed to do work
 	private final DatabaseConnectionPool dbConnectionPool;
+	private final EventDispatcher eventDispatcher;
 	private final Config config;
 	private Connection connection;
-	private final EventDispatcher eventDispatcher;
-
 	private DBXlinkExporterManager xlinkExporterManager;
 
 	public DBExportXlinkWorker(DatabaseConnectionPool dbConnectionPool, Config config, EventDispatcher eventDispatcher) throws SQLException {
@@ -88,11 +80,6 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 	}
 
 	@Override
-	public Thread getThread() {
-		return workerThread;
-	}
-
-	@Override
 	public void interrupt() {
 		shouldRun = false;
 		workerThread.interrupt();
@@ -110,21 +97,6 @@ public class DBExportXlinkWorker implements Worker<DBXlink> {
 				runLock.unlock();
 			}
 		}
-	}
-
-	@Override
-	public void setFirstWork(DBXlink firstWork) {
-		this.firstWork = firstWork;
-	}
-
-	@Override
-	public void setThread(Thread workerThread) {
-		this.workerThread = workerThread;
-	}
-
-	@Override
-	public void setWorkQueue(WorkQueue<DBXlink> workQueue) {
-		this.workQueue = workQueue;
 	}
 
 	@Override

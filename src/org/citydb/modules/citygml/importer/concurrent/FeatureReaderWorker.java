@@ -33,29 +33,22 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool;
-import org.citydb.api.concurrent.WorkerPool.WorkQueue;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
 import org.citydb.log.Logger;
-import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.event.InterruptEvent;
+import org.citydb.modules.common.event.InterruptReason;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.xml.io.reader.MissingADESchemaException;
 import org.citygml4j.xml.io.reader.UnmarshalException;
 import org.citygml4j.xml.io.reader.XMLChunk;
 
-public class FeatureReaderWorker implements Worker<XMLChunk> {
+public class FeatureReaderWorker extends Worker<XMLChunk> {
 	private final Logger LOG = Logger.getInstance();
-
-	// instance members needed for WorkPool
+	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
-	private ReentrantLock runLock = new ReentrantLock();
-	private WorkQueue<XMLChunk> workQueue = null;
-	private XMLChunk firstWork;
-	private Thread workerThread = null;
 
-	// instance members needed to do work
 	private final WorkerPool<CityGML> dbWorkerPool;
 	private final EventDispatcher eventDispatcher;
 	private final boolean useValidation;
@@ -68,12 +61,7 @@ public class FeatureReaderWorker implements Worker<XMLChunk> {
 
 		useValidation = config.getProject().getImporter().getXMLValidation().isSetUseXMLValidation();
 	}
-
-	@Override
-	public Thread getThread() {
-		return workerThread;
-	}
-
+	
 	@Override
 	public void interrupt() {
 		shouldRun = false;
@@ -92,21 +80,6 @@ public class FeatureReaderWorker implements Worker<XMLChunk> {
 				runLock.unlock();
 			}
 		}
-	}
-
-	@Override
-	public void setFirstWork(XMLChunk firstWork) {
-		this.firstWork = firstWork;
-	}
-
-	@Override
-	public void setThread(Thread workerThread) {
-		this.workerThread = workerThread;
-	}
-
-	@Override
-	public void setWorkQueue(WorkQueue<XMLChunk> workQueue) {
-		this.workQueue = workQueue;
 	}
 
 	@Override
@@ -143,11 +116,11 @@ public class FeatureReaderWorker implements Worker<XMLChunk> {
 				}
 			} catch (MissingADESchemaException e) {
 				LOG.error(e.getMessage());				
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.ADE_SCHEMA_READ_ERROR, this));
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.ADE_SCHEMA_READ_ERROR, eventSource));
 			} catch (Exception e) {
 				// this is to catch general exceptions that may occur during the import
 				e.printStackTrace();
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, this));
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, eventSource));
 			}
 		} finally {
 			runLock.unlock();

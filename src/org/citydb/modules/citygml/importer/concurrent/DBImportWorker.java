@@ -36,7 +36,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool;
-import org.citydb.api.concurrent.WorkerPool.WorkQueue;
 import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.event.EventHandler;
@@ -98,17 +97,11 @@ import org.citygml4j.model.common.base.ModelType;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
-public class DBImportWorker implements Worker<CityGML>, EventHandler {
+public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
-
-	// instance members needed for WorkPool
+	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
-	private ReentrantLock runLock = new ReentrantLock();
-	private WorkQueue<CityGML> workQueue = null;
-	private CityGML firstWork;
-	private Thread workerThread = null;
 
-	// instance members needed to do work
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final JAXBBuilder jaxbBuilder;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
@@ -183,11 +176,6 @@ public class DBImportWorker implements Worker<CityGML>, EventHandler {
 	}
 
 	@Override
-	public Thread getThread() {
-		return workerThread;
-	}
-
-	@Override
 	public void interrupt() {
 		shouldRun = false;
 		workerThread.interrupt();
@@ -205,21 +193,6 @@ public class DBImportWorker implements Worker<CityGML>, EventHandler {
 				runLock.unlock();
 			}
 		}
-	}
-
-	@Override
-	public void setFirstWork(CityGML firstWork) {
-		this.firstWork = firstWork;
-	}
-
-	@Override
-	public void setThread(Thread workerThread) {
-		this.workerThread = workerThread;
-	}
-
-	@Override
-	public void setWorkQueue(WorkQueue<CityGML> workQueue) {
-		this.workQueue = workQueue;
 	}
 
 	@Override
@@ -256,10 +229,10 @@ public class DBImportWorker implements Worker<CityGML>, EventHandler {
 					//
 				}
 
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, eventSource));
 			} catch (IOException e) {
 				LOG.error("Failed to log imported top-level features: " + e.getMessage());
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, this));
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, eventSource));
 			}
 
 		} finally {
@@ -452,23 +425,23 @@ public class DBImportWorker implements Worker<CityGML>, EventHandler {
 				//
 			}
 
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, eventSource));
 		} catch (IOException e) {
 			LOG.error("Failed to log imported top-level features: " + e.getMessage());
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, eventSource));
 		} catch (Exception e) {
 			// this is to catch general exceptions that may occur during the import
 			e.printStackTrace();
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, eventSource));
 		} finally {
 			runLock.unlock();
 		}
 	}
 
 	private void updateImportContext() throws IOException {
-		eventDispatcher.triggerEvent(new FeatureCounterEvent(dbImporterManager.getAndResetFeatureCounter(), this));
-		eventDispatcher.triggerEvent(new GeometryCounterEvent(dbImporterManager.getAndResetGeometryCounter(), this));
-		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter, this));
+		eventDispatcher.triggerEvent(new FeatureCounterEvent(dbImporterManager.getAndResetFeatureCounter(), eventSource));
+		eventDispatcher.triggerEvent(new GeometryCounterEvent(dbImporterManager.getAndResetGeometryCounter(), eventSource));
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter, eventSource));
 		updateCounter = 0;
 
 		// log imported top-level features

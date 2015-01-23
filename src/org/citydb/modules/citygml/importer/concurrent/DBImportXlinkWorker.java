@@ -33,7 +33,6 @@ import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.concurrent.Worker;
-import org.citydb.api.concurrent.WorkerPool.WorkQueue;
 import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.event.EventHandler;
@@ -76,17 +75,11 @@ import org.citydb.modules.common.event.EventType;
 import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.modules.common.event.InterruptReason;
 
-public class DBImportXlinkWorker implements Worker<DBXlink>, EventHandler {
+public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
-
-	// instance members needed for WorkPool
+	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
-	private ReentrantLock runLock = new ReentrantLock();
-	private WorkQueue<DBXlink> workQueue = null;
-	private DBXlink firstWork;
-	private Thread workerThread = null;
-
-	// instance members needed to do work
+	
 	private final Config config;
 	private DBXlinkImporterManager dbXlinkManager;
 	private final EventDispatcher eventDispatcher;
@@ -116,11 +109,6 @@ public class DBImportXlinkWorker implements Worker<DBXlink>, EventHandler {
 	}
 
 	@Override
-	public Thread getThread() {
-		return workerThread;
-	}
-
-	@Override
 	public void interrupt() {
 		shouldRun = false;
 		workerThread.interrupt();
@@ -138,21 +126,6 @@ public class DBImportXlinkWorker implements Worker<DBXlink>, EventHandler {
 				runLock.unlock();
 			}
 		}
-	}
-
-	@Override
-	public void setFirstWork(DBXlink firstWork) {
-		this.firstWork = firstWork;
-	}
-
-	@Override
-	public void setThread(Thread workerThread) {
-		this.workerThread = workerThread;
-	}
-
-	@Override
-	public void setWorkQueue(WorkQueue<DBXlink> workQueue) {
-		this.workQueue = workQueue;
 	}
 
 	@Override
@@ -179,7 +152,7 @@ public class DBImportXlinkWorker implements Worker<DBXlink>, EventHandler {
 			while ((e = e.getNextException()) != null)
 				LOG.error("SQL error: " + e.getMessage());
 
-			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, eventSource));
 		} finally {
 			try {
 				dbXlinkManager.close();
@@ -308,11 +281,11 @@ public class DBImportXlinkWorker implements Worker<DBXlink>, EventHandler {
 			while ((e = e.getNextException()) != null)
 				LOG.error("SQL error: " + e.getMessage());
 
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, eventSource));
 		} catch (Exception e) {
 			// this is to catch general exceptions that may occur during the import
 			e.printStackTrace();
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, eventSource));
 		} finally {
 			runLock.unlock();
 		}

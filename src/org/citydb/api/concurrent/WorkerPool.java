@@ -69,6 +69,7 @@ public class WorkerPool<T> {
 	private int poolSize;
 	private byte poolSizeAdaptationFailure;
 	private byte threadNo;
+	private Object eventSource;
 
 	// WorkQueue
 	public static final class WorkQueue<E> {
@@ -461,7 +462,11 @@ public class WorkerPool<T> {
 	public void setContextClassLoader(ClassLoader contextClassLoader) {
 		this.contextClassLoader = contextClassLoader;
 	}
-
+	
+	public void setEventSource(Object eventSource) {
+		this.eventSource = eventSource;
+	}
+	
 	private boolean addWorker(T firstWork) {
 		final ReentrantLock mainLock = this.mainLock;
 		mainLock.lock();
@@ -477,11 +482,13 @@ public class WorkerPool<T> {
 					if (contextClassLoader != null)
 						workerThread.setContextClassLoader(contextClassLoader);
 
-					worker.setWorkQueue(workQueue);
-					worker.setThread(workerThread);
+					// set context
+					worker.workQueue = workQueue;
+					worker.workerThread = workerThread;
+					worker.eventSource = eventSource != null ? eventSource : worker;
 					if (firstWork != null)
-						worker.setFirstWork(firstWork);
-
+						worker.firstWork = firstWork;
+					
 					workers.put(worker, DUMMY);
 					workerThread.start();
 					++poolSize;
@@ -792,7 +799,7 @@ public class WorkerPool<T> {
 		mainLock.lock();
 		try {
 			for (Worker<T> worker : workers.keySet())
-				worker.getThread().join();
+				worker.workerThread.join();
 		} finally {
 			mainLock.unlock();
 		}
