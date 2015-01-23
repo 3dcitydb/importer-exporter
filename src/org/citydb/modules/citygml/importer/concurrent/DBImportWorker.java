@@ -101,6 +101,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
 	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
+	private volatile boolean shouldWork = true;
 
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final JAXBBuilder jaxbBuilder;
@@ -115,7 +116,6 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 	private DBImporterManager dbImporterManager;
 	private int updateCounter = 0;
 	private int commitAfter = 20;
-	private volatile boolean shouldWork = true;
 
 	// filter
 	private BoundingBoxFilter featureBoundingBoxFilter;

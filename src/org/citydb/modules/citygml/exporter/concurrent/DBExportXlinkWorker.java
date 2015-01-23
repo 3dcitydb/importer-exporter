@@ -34,10 +34,12 @@ import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.concurrent.Worker;
+import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
+import org.citydb.api.event.EventHandler;
+import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
 import org.citydb.database.DatabaseConnectionPool;
-import org.citydb.log.Logger;
 import org.citydb.modules.citygml.common.database.xlink.DBXlink;
 import org.citydb.modules.citygml.common.database.xlink.DBXlinkEnum;
 import org.citydb.modules.citygml.common.database.xlink.DBXlinkLibraryObject;
@@ -46,11 +48,14 @@ import org.citydb.modules.citygml.exporter.database.xlink.DBXlinkExporterEnum;
 import org.citydb.modules.citygml.exporter.database.xlink.DBXlinkExporterLibraryObject;
 import org.citydb.modules.citygml.exporter.database.xlink.DBXlinkExporterManager;
 import org.citydb.modules.citygml.exporter.database.xlink.DBXlinkExporterTextureImage;
+import org.citydb.modules.common.event.EventType;
+import org.citydb.modules.common.event.InterruptEvent;
+import org.citydb.modules.common.event.InterruptReason;
 
-public class DBExportXlinkWorker extends Worker<DBXlink> {
-	private final Logger LOG = Logger.getInstance();
+public class DBExportXlinkWorker extends Worker<DBXlink> implements EventHandler {
 	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
+	private volatile boolean shouldWork = true;
 
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final EventDispatcher eventDispatcher;
@@ -77,6 +82,7 @@ public class DBExportXlinkWorker extends Worker<DBXlink> {
 		}
 
 		xlinkExporterManager = new DBXlinkExporterManager(connection, dbConnectionPool.getActiveDatabaseAdapter(), config, eventDispatcher);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 
 	@Override
@@ -139,43 +145,47 @@ public class DBExportXlinkWorker extends Worker<DBXlink> {
 		runLock.lock();
 
 		try {
-			try {
-				boolean success = false;
-				DBXlinkEnum type = work.getXlinkType();
+			if (!shouldWork)
+				return;
+			
+			boolean success = false;
+			DBXlinkEnum type = work.getXlinkType();
 
-				switch (type) {
-				case TEXTURE_FILE:
-					DBXlinkTextureFile texFile = (DBXlinkTextureFile)work;
+			switch (type) {
+			case TEXTURE_FILE:
+				DBXlinkTextureFile texFile = (DBXlinkTextureFile)work;
 
-					if (!texFile.isWorldFile()) {
-						DBXlinkExporterTextureImage imageExporter = (DBXlinkExporterTextureImage)xlinkExporterManager.getDBXlinkExporter(DBXlinkExporterEnum.TEXTURE_IMAGE);
-						if (imageExporter != null)
-							success = imageExporter.export(texFile);
-					}
-
-					break;
-
-				case LIBRARY_OBJECT:
-					DBXlinkLibraryObject libObject = (DBXlinkLibraryObject)work;
-					DBXlinkExporterLibraryObject libraryObject = (DBXlinkExporterLibraryObject)xlinkExporterManager.getDBXlinkExporter(DBXlinkExporterEnum.LIBRARY_OBJECT);
-					if (libraryObject != null)
-						success = libraryObject.export(libObject);
-
-					break;
-				default:
-					return;
+				if (!texFile.isWorldFile()) {
+					DBXlinkExporterTextureImage imageExporter = (DBXlinkExporterTextureImage)xlinkExporterManager.getDBXlinkExporter(DBXlinkExporterEnum.TEXTURE_IMAGE);
+					if (imageExporter != null)
+						success = imageExporter.export(texFile);
 				}
 
-				if (!success)
-					; // do sth reasonable
+				break;
 
-			} catch (SQLException sqlEx) {
-				LOG.error("SQL error: " + sqlEx.getMessage());
+			case LIBRARY_OBJECT:
+				DBXlinkLibraryObject libObject = (DBXlinkLibraryObject)work;
+				DBXlinkExporterLibraryObject libraryObject = (DBXlinkExporterLibraryObject)xlinkExporterManager.getDBXlinkExporter(DBXlinkExporterEnum.LIBRARY_OBJECT);
+				if (libraryObject != null)
+					success = libraryObject.export(libObject);
+
+				break;
+			default:
 				return;
 			}
 
+			if (!success)
+				; // do sth reasonable
+
+		} catch (SQLException e) {
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting export due to SQL errors.", LogLevel.WARN, e, eventSource));
 		} finally {
 			runLock.unlock();
 		}
+	}
+
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		shouldWork = false;
 	}
 }

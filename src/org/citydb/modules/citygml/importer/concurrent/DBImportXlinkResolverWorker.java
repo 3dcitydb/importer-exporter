@@ -83,6 +83,7 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 	private final Logger LOG = Logger.getInstance();
 	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
+	private volatile boolean shouldWork = true;
 
 	private final DatabaseConnectionPool dbPool;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
@@ -91,7 +92,6 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 	private final ImportFilter importFilter;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
-	private volatile boolean shouldWork = true;
 
 	private Connection connection;
 	private DBXlinkResolverManager xlinkResolverManager;

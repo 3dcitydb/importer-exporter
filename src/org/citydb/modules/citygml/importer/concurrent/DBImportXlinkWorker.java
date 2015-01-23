@@ -77,13 +77,13 @@ import org.citydb.modules.common.event.InterruptReason;
 public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler {
 	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
+	private volatile boolean shouldWork = true;
 	
 	private final Config config;
 	private DBXlinkImporterManager dbXlinkManager;
 	private final EventDispatcher eventDispatcher;
 	private int updateCounter = 0;
 	private int commitAfter = 1000;
-	private volatile boolean shouldWork = true;
 
 	public DBImportXlinkWorker(DatabaseConnectionPool dbPool,
 			CacheTableManager cacheTableManager, 
