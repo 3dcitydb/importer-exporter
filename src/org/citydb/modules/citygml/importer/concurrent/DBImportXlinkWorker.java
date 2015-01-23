@@ -40,7 +40,6 @@ import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.Database;
 import org.citydb.database.DatabaseConnectionPool;
-import org.citydb.log.Logger;
 import org.citydb.modules.citygml.common.database.cache.CacheTableManager;
 import org.citydb.modules.citygml.common.database.xlink.DBXlink;
 import org.citydb.modules.citygml.common.database.xlink.DBXlinkBasic;
@@ -76,7 +75,6 @@ import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.modules.common.event.InterruptReason;
 
 public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler {
-	private final Logger LOG = Logger.getInstance();
 	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
 	
@@ -148,11 +146,7 @@ public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler
 			if (shouldWork)
 				dbXlinkManager.executeBatch();
 		} catch (SQLException e) {
-			LOG.error("SQL error: " + e.getMessage());
-			while ((e = e.getNextException()) != null)
-				LOG.error("SQL error: " + e.getMessage());
-
-			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, eventSource));
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventSource));
 		} finally {
 			try {
 				dbXlinkManager.close();
@@ -277,15 +271,10 @@ public class DBImportXlinkWorker extends Worker<DBXlink> implements EventHandler
 			}
 
 		} catch (SQLException e) {
-			LOG.error("SQL error: " + e.getMessage());
-			while ((e = e.getNextException()) != null)
-				LOG.error("SQL error: " + e.getMessage());
-
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, eventSource));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventSource));
 		} catch (Exception e) {
 			// this is to catch general exceptions that may occur during the import
-			e.printStackTrace();
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, eventSource));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventSource));
 		} finally {
 			runLock.unlock();
 		}

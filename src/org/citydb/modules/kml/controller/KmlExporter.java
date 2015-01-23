@@ -1598,10 +1598,18 @@ public class KmlExporter implements EventHandler {
 		else if (e.getEventType() == EventType.INTERRUPT) {
 			if (isInterrupted.compareAndSet(false, true)) {
 				shouldRun = false;
+				InterruptEvent interruptEvent = (InterruptEvent)e;
 
-				String log = ((InterruptEvent)e).getLogMessage();
+				if (interruptEvent.getCause() != null) {
+					Throwable cause = interruptEvent.getCause();
+					Logger.getInstance().error("An error occured: " + cause.getMessage());
+					while ((cause = cause.getCause()) != null)
+						Logger.getInstance().error("Cause: " + cause.getMessage());
+				}
+				
+				String log = interruptEvent.getLogMessage();
 				if (log != null)
-					Logger.getInstance().log(((InterruptEvent)e).getLogLevelType(), log);
+					Logger.getInstance().log(interruptEvent.getLogLevelType(), log);
 
 				Logger.getInstance().info("Waiting for objects being currently processed to end...");
 

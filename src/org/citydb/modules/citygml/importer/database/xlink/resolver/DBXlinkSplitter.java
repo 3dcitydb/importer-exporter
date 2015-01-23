@@ -122,12 +122,8 @@ public class DBXlinkSplitter implements EventHandler {
 			// this requires that we have resolved surface geometry xlinks first
 			solidGeometryXlinks();
 		} catch (SQLException e) {
-			LOG.error("SQL error: " + e.getMessage());
-			while ((e = e.getNextException()) != null)
-				LOG.error("SQL error: " + e.getMessage());
-
 			// fire interrupt event to stop other import workers
-			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, this));
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, this));
 		} finally {
 			eventDispatcher.removeEventHandler(this);
 		}

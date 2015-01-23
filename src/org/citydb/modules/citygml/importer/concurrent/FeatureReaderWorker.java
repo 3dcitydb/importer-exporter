@@ -115,12 +115,10 @@ public class FeatureReaderWorker extends Worker<XMLChunk> {
 					LOG.error(msg.toString());
 				}
 			} catch (MissingADESchemaException e) {
-				LOG.error(e.getMessage());				
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.ADE_SCHEMA_READ_ERROR, eventSource));
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.ADE_SCHEMA_READ_ERROR, "Failed to read an ADE XML Schema.", LogLevel.ERROR, e, eventSource));
 			} catch (Exception e) {
 				// this is to catch general exceptions that may occur during the import
-				e.printStackTrace();
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, eventSource));
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventSource));
 			}
 		} finally {
 			runLock.unlock();

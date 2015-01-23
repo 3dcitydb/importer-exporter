@@ -170,11 +170,19 @@ public class XMLValidator implements EventHandler {
 	public void handleEvent(Event e) throws Exception {
 		if (e.getEventType() == EventType.INTERRUPT) {
 			shouldRun = false;
+			InterruptEvent interruptEvent = (InterruptEvent)e;
 
-			String log = ((InterruptEvent)e).getLogMessage();
+			if (interruptEvent.getCause() != null) {
+				Throwable cause = interruptEvent.getCause();
+				LOG.error("An error occured: " + cause.getMessage());
+				while ((cause = cause.getCause()) != null)
+					LOG.error("Cause: " + cause.getMessage());
+			}
+			
+			String log = interruptEvent.getLogMessage();
 			if (log != null)
-				LOG.log(((InterruptEvent)e).getLogLevelType(), log);
-
+				LOG.log(interruptEvent.getLogLevelType(), log);
+			
 			if (runState == PREPARING && directoryScanner != null)
 				directoryScanner.stopScanning();
 
