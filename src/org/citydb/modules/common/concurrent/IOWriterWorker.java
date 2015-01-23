@@ -32,32 +32,20 @@ package org.citydb.modules.common.concurrent;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.concurrent.Worker;
-import org.citydb.api.concurrent.WorkerPool.WorkQueue;
 import org.citydb.log.Logger;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
 import org.xml.sax.SAXException;
 
-public class IOWriterWorker implements Worker<SAXEventBuffer> {
+public class IOWriterWorker extends Worker<SAXEventBuffer> {
 	private final Logger LOG = Logger.getInstance();
-	
-	// instance members needed for WorkPool
+	private final ReentrantLock runLock = new ReentrantLock();	
 	private volatile boolean shouldRun = true;
-	private ReentrantLock runLock = new ReentrantLock();
-	private WorkQueue<SAXEventBuffer> workQueue = null;
-	private SAXEventBuffer firstWork;
-	private Thread workerThread = null;
 
-	// instance members needed to do work
 	private final SAXWriter saxWriter;
 
 	public IOWriterWorker(SAXWriter saxWriter) {
 		this.saxWriter = saxWriter;
-	}
-
-	@Override
-	public Thread getThread() {
-		return workerThread;
 	}
 
 	@Override
@@ -78,21 +66,6 @@ public class IOWriterWorker implements Worker<SAXEventBuffer> {
 				runLock.unlock();
 			}
 		}
-	}
-
-	@Override
-	public void setFirstWork(SAXEventBuffer firstWork) {
-		this.firstWork = firstWork;
-	}
-
-	@Override
-	public void setThread(Thread workerThread) {
-		this.workerThread = workerThread;
-	}
-
-	@Override
-	public void setWorkQueue(WorkQueue<SAXEventBuffer> workQueue) {
-		this.workQueue = workQueue;
 	}
 
 	@Override

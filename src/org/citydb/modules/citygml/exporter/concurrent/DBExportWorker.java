@@ -35,7 +35,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool;
-import org.citydb.api.concurrent.WorkerPool.WorkQueue;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.config.Config;
 import org.citydb.database.DatabaseConnectionPool;
@@ -69,17 +68,11 @@ import org.citydb.modules.common.filter.ExportFilter;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.xml.sax.SAXException;
 
-public class DBExportWorker implements Worker<DBSplittingResult> {
+public class DBExportWorker extends Worker<DBSplittingResult> {
 	private final Logger LOG = Logger.getInstance();
-
-	// instance members needed for WorkPool
+	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
-	private ReentrantLock runLock = new ReentrantLock();
-	private WorkQueue<DBSplittingResult> workQueue = null;
-	private DBSplittingResult firstWork;
-	private Thread workerThread = null;
 
-	// instance members needed to do work
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final JAXBBuilder jaxbBuilder;
 	private final FeatureProcessor featureProcessor;
@@ -138,11 +131,6 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 	}
 
 	@Override
-	public Thread getThread() {
-		return workerThread;
-	}
-
-	@Override
 	public void interrupt() {
 		shouldRun = false;
 		workerThread.interrupt();
@@ -160,21 +148,6 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 				runLock.unlock();
 			}
 		}
-	}
-
-	@Override
-	public void setFirstWork(DBSplittingResult firstWork) {
-		this.firstWork = firstWork;
-	}
-
-	@Override
-	public void setThread(Thread workerThread) {
-		this.workerThread = workerThread;
-	}
-
-	@Override
-	public void setWorkQueue(WorkQueue<DBSplittingResult> workQueue) {
-		this.workQueue = workQueue;
 	}
 
 	@Override
@@ -200,9 +173,9 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 				//
 			}
 
-			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
-			eventDispatcher.triggerEvent(new FeatureCounterEvent(dbExporterManager.getFeatureCounter(), this));
-			eventDispatcher.triggerEvent(new GeometryCounterEvent(dbExporterManager.getGeometryCounter(), this));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, eventSource));
+			eventDispatcher.triggerEvent(new FeatureCounterEvent(dbExporterManager.getFeatureCounter(), eventSource));
+			eventDispatcher.triggerEvent(new GeometryCounterEvent(dbExporterManager.getGeometryCounter(), eventSource));
 		} finally {
 			if (connection != null) {
 				try {
@@ -315,7 +288,7 @@ public class DBExportWorker implements Worker<DBSplittingResult> {
 			}
 
 			if (exportCounter == 20) {
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
+				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, eventSource));
 				exportCounter = 0;
 			}
 

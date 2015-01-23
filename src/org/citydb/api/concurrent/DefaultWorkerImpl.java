@@ -31,32 +31,9 @@ package org.citydb.api.concurrent;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.citydb.api.concurrent.WorkerPool.WorkQueue;
-
-public abstract class DefaultWorkerImpl<T> implements Worker<T> {
+public abstract class DefaultWorkerImpl<T> extends Worker<T> {
 	private final ReentrantLock mainLock = new ReentrantLock();
-
-	// instance members needed for interaction with WorkerPool
-	private WorkQueue<T> workQueue;
-	private Thread workerThread;
-	private T firstWork;
-
 	private volatile boolean shouldRun = true;
-
-	@Override
-	public void setWorkQueue(WorkQueue<T> workQueue) {
-		this.workQueue = workQueue;
-	}
-
-	@Override
-	public void setThread(Thread workerThread) {
-		this.workerThread = workerThread;
-	}
-
-	@Override
-	public Thread getThread() {
-		return workerThread;
-	}
 
 	@Override
 	public void interrupt() {
@@ -76,11 +53,6 @@ public abstract class DefaultWorkerImpl<T> implements Worker<T> {
 				runLock.unlock();
 			}
 		}
-	}
-
-	@Override
-	public void setFirstWork(T firstWork) {
-		this.firstWork = firstWork;
 	}
 
 	@Override

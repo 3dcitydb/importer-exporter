@@ -32,31 +32,19 @@ package org.citydb.api.event;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.concurrent.Worker;
-import org.citydb.api.concurrent.WorkerPool.WorkQueue;
 import org.citydb.api.controller.LogController;
 import org.citydb.api.registry.ObjectRegistry;
 
-public class EventWorker implements Worker<Event> {
+public class EventWorker extends Worker<Event> {
 	private final LogController LOG;
-	
-	// instance members needed for WorkPool
+	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
-	private ReentrantLock runLock = new ReentrantLock();
-	private WorkQueue<Event> workQueue = null;
-	private Event firstWork;
-	private Thread workerThread = null;
-
-	// instance members needed to do work
+	
 	private final EventDispatcher eventDispatcher;
 
 	public EventWorker(EventDispatcher eventDispatcher) {
 		this.eventDispatcher = eventDispatcher;
 		LOG = ObjectRegistry.getInstance().getLogController();
-	}
-
-	@Override
-	public Thread getThread() {
-		return workerThread;
 	}
 
 	@Override
@@ -77,21 +65,6 @@ public class EventWorker implements Worker<Event> {
 				runLock.unlock();
 			}
 		}
-	}
-
-	@Override
-	public void setFirstWork(Event firstWork) {
-		this.firstWork = firstWork;
-	}
-
-	@Override
-	public void setThread(Thread workerThread) {
-		this.workerThread = workerThread;
-	}
-
-	@Override
-	public void setWorkQueue(WorkQueue<Event> workQueue) {
-		this.workQueue = workQueue;
 	}
 
 	@Override

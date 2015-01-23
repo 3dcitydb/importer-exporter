@@ -323,9 +323,24 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		});
 
 		connCombo.addItemListener(new ItemListener() {
-			public void itemStateChanged( ItemEvent e ) {
+			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED)
 					selectConnection();
+			}
+		});
+		
+		databaseTypeCombo.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					switch ((DatabaseType)e.getItem()) {
+					case ORACLE:
+						portText.setValue(1521);
+						break;
+					case POSTGIS:
+						portText.setValue(5432);
+						break;
+					}
+				}
 			}
 		});
 	}

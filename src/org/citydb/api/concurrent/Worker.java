@@ -31,11 +31,12 @@ package org.citydb.api.concurrent;
 
 import org.citydb.api.concurrent.WorkerPool.WorkQueue;
 
-public interface Worker<T> extends Runnable {
-	public void setWorkQueue(WorkQueue<T> workQueue);
-	public void setFirstWork(T firstWork);
-	public void setThread(Thread workerThread);
-	public Thread getThread();
-	public void interruptIfIdle();
-	public void interrupt();
+public abstract class Worker<T> implements Runnable {
+	protected WorkQueue<T> workQueue;
+	protected Thread workerThread;
+	protected T firstWork;
+	protected Object eventSource;
+	
+	public abstract void interruptIfIdle();
+	public abstract void interrupt();
 }

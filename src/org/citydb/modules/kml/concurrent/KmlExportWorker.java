@@ -41,7 +41,6 @@ import net.opengis.kml._2.ObjectFactory;
 
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool;
-import org.citydb.api.concurrent.WorkerPool.WorkQueue;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.Database;
@@ -75,16 +74,10 @@ import org.citydb.modules.kml.database.WaterBody;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
-public class KmlExportWorker implements Worker<KmlSplittingResult> {
-
-	// instance members needed for WorkPool
+public class KmlExportWorker extends Worker<KmlSplittingResult> {
+	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
-	private ReentrantLock runLock = new ReentrantLock();
-	private WorkQueue<KmlSplittingResult> workQueue = null;
-	private KmlSplittingResult firstWork;
-	private Thread workerThread = null;
 
-	// instance members needed to do work
 	private AbstractDatabaseAdapter databaseAdapter;
 	private BlobExportAdapter textureExportAdapter;
 	private final ObjectFactory kmlFactory; 
@@ -94,7 +87,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 	private Connection connection;
 	private ExportFilterConfig filterConfig;
 	private KmlExporterManager kmlExporterManager;
-
 	private KmlGenericObject singleObject = null;
 
 	private EnumMap<CityGMLClass, Integer>objectGroupCounter = new EnumMap<CityGMLClass, Integer>(CityGMLClass.class);
@@ -239,12 +231,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 		// CityGMLClass.CITY_OBJECT_GROUP is left out, it does not make sense to group it without COLLADA DisplayForm 
 	}
 
-
-	@Override
-	public Thread getThread() {
-		return workerThread;
-	}
-
 	@Override
 	public void interrupt() {
 		shouldRun = false;
@@ -263,21 +249,6 @@ public class KmlExportWorker implements Worker<KmlSplittingResult> {
 				runLock.unlock();
 			}
 		}
-	}
-
-	@Override
-	public void setFirstWork(KmlSplittingResult firstWork) {
-		this.firstWork = firstWork;
-	}
-
-	@Override
-	public void setThread(Thread workerThread) {
-		this.workerThread = workerThread;
-	}
-
-	@Override
-	public void setWorkQueue(WorkQueue<KmlSplittingResult> workQueue) {
-		this.workQueue = workQueue;
 	}
 
 	@Override
