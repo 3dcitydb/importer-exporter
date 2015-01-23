@@ -38,16 +38,24 @@ public final class GenericEvent extends Event {
 	private final String id;
 	private HashMap<String, Object> properties;
 
-	public GenericEvent(String id, Map<String, Object> properties, Object source) {
-		super(GlobalEvents.GENERIC_EVENT, source);
+	public GenericEvent(String id, Map<String, Object> properties, Object channel, Object source) {
+		super(GlobalEvents.GENERIC_EVENT, channel, source);
 		this.id = id;
 
 		if (properties != null)
 			this.properties = new HashMap<String, Object>(properties);
 	}
+
+	public GenericEvent(String id, Map<String, Object> properties, Object source) {
+		this(id, properties, GLOBAL_CHANNEL, source);
+	}
+	
+	public GenericEvent(String id, Object channel, Object source) {
+		this(id, null, channel, source);
+	}
 	
 	public GenericEvent(String id, Object source) {
-		this(id, null, source);
+		this(id, null, GLOBAL_CHANNEL, source);
 	}
 
 	public String getId() {

@@ -194,7 +194,7 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 					//
 				}
 
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventSource));
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
 			}
 
 		} finally {
@@ -347,10 +347,10 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 				//
 			}
 
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventSource));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
 		} catch (Exception e) {
 			// this is to catch general exceptions that may occur during the import
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventSource));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			runLock.unlock();
 		}
@@ -358,7 +358,8 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		shouldWork = false;
+		if (event.getChannel() == eventChannel)
+			shouldWork = false;
 	}
 
 }

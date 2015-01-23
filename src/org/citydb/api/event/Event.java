@@ -32,11 +32,14 @@ package org.citydb.api.event;
 import java.lang.ref.WeakReference;
 
 public abstract class Event {
+	public static Object GLOBAL_CHANNEL = new Object();
+	
 	private final Enum<?> eventType;
 	private final WeakReference<Object> source;
+	private final WeakReference<Object> channel;
 	private boolean cancelled;
 
-	public Event(Enum<?> eventType, Object source) {
+	public Event(Enum<?> eventType, Object channel, Object source) {
 		if (eventType == null)
 			throw new IllegalArgumentException("The type of an event may not be null.");
 			
@@ -45,6 +48,7 @@ public abstract class Event {
 		
 		this.eventType = eventType;
 		this.source = new WeakReference<Object>(source);
+		this.channel = new WeakReference<Object>(channel);
 		cancelled = false;
 	}
 
@@ -62,6 +66,10 @@ public abstract class Event {
 
 	public Object getSource() {
 		return source.get();
+	}
+
+	public Object getChannel() {
+		return channel.get();
 	}
 	
 }

@@ -39,7 +39,7 @@ public class SwitchLocaleEventImpl extends Event implements SwitchLocaleEvent {
 	private final Locale locale;
 	
 	public SwitchLocaleEventImpl(Locale locale, Object source) {
-		super(GlobalEvents.SWITCH_LOCALE, source);
+		super(GlobalEvents.SWITCH_LOCALE, GLOBAL_CHANNEL, source);
 		this.locale = locale;
 	}
 	

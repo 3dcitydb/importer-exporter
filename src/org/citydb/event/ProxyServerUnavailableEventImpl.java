@@ -38,7 +38,7 @@ public class ProxyServerUnavailableEventImpl extends Event implements ProxyServe
 	private final ProxyConfig proxy;
 	
 	public ProxyServerUnavailableEventImpl(ProxyConfig proxy, Object source) {
-		super(GlobalEvents.PROXY_SERVER_UNAVAILABLE, source);
+		super(GlobalEvents.PROXY_SERVER_UNAVAILABLE, GLOBAL_CHANNEL, source);
 		this.proxy = proxy;
 	}
 

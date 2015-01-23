@@ -36,7 +36,7 @@ public class MapBoundsSelectionEvent extends Event {
 	private final GeoPosition[] boundingBox;
 	
 	public MapBoundsSelectionEvent(GeoPosition[] boundingBox, Object source) {
-		super(MapEvents.MAP_BOUNDS, source);
+		super(MapEvents.MAP_BOUNDS, GLOBAL_CHANNEL, source);
 		this.boundingBox = boundingBox;
 	}
 

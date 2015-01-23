@@ -45,21 +45,21 @@ public class ReverseGeocoderEvent extends Event {
 	}	
 	
 	public ReverseGeocoderEvent(Object source) {
-		super(MapEvents.REVERSE_GEOCODER, source);
+		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL, source);
 		this.status = ReverseGeocoderStatus.SEARCHING;
 		location = null;
 		response = null;
 	}
 	
 	public ReverseGeocoderEvent(Location location, Object source) {
-		super(MapEvents.REVERSE_GEOCODER, source);
+		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL, source);
 		this.status = ReverseGeocoderStatus.RESULT;
 		this.location = location;
 		response = null;
 	}
 	
 	public ReverseGeocoderEvent(GeocoderResponse response, Object source) {
-		super(MapEvents.REVERSE_GEOCODER, source);
+		super(MapEvents.REVERSE_GEOCODER, GLOBAL_CHANNEL, source);
 		this.status = ReverseGeocoderStatus.ERROR;
 		location = null;
 		this.response = response;

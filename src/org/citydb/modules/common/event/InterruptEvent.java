@@ -38,12 +38,12 @@ public class InterruptEvent extends Event {
 	private final LogLevel logLevelType;
 	private final Throwable cause;
 	
-	public InterruptEvent(InterruptReason interruptType, String logMessage, LogLevel logLevelType, Object source) {
-		this(interruptType, logMessage, logLevelType, null, source);
+	public InterruptEvent(InterruptReason interruptType, String logMessage, LogLevel logLevelType, Object channel, Object source) {
+		this(interruptType, logMessage, logLevelType, null, channel, source);
 	}
 	
-	public InterruptEvent(InterruptReason interruptType, String logMessage, LogLevel logLevelType, Throwable cause, Object source) {
-		super(EventType.INTERRUPT, source);
+	public InterruptEvent(InterruptReason interruptType, String logMessage, LogLevel logLevelType, Throwable cause, Object channel, Object source) {
+		super(EventType.INTERRUPT, channel, source);
 		this.interruptType = interruptType;
 		this.logMessage = logMessage;
 		this.logLevelType = logLevelType;

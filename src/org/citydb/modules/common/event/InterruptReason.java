@@ -31,8 +31,9 @@ package org.citydb.modules.common.event;
 
 public enum InterruptReason {
 	SQL_ERROR,
-	USER_ABORT,
 	IMPORT_LOG_ERROR,
+	FEATURE_PROCESS_ERROR,
 	ADE_SCHEMA_READ_ERROR,
+	USER_ABORT,
 	UNKNOWN_ERROR
 }

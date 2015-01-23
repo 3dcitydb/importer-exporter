@@ -225,9 +225,9 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 					//
 				}
 
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventSource));
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
 			} catch (IOException e) {
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, e, eventSource));
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, e, eventChannel, this));
 			}
 
 		} finally {
@@ -255,7 +255,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 		try {
 			if (!shouldWork)
 				return;
-			
+
 			long id = 0;
 
 			if (work.getCityGMLClass() == CityGMLClass.APPEARANCE) {
@@ -416,21 +416,21 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 				//
 			}
 
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventSource));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
 		} catch (IOException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, e, eventSource));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, e, eventChannel, this));
 		} catch (Exception e) {
 			// this is to catch general exceptions that may occur during the import
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventSource));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			runLock.unlock();
 		}
 	}
 
 	private void updateImportContext() throws IOException {
-		eventDispatcher.triggerEvent(new FeatureCounterEvent(dbImporterManager.getAndResetFeatureCounter(), eventSource));
-		eventDispatcher.triggerEvent(new GeometryCounterEvent(dbImporterManager.getAndResetGeometryCounter(), eventSource));
-		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter, eventSource));
+		eventDispatcher.triggerEvent(new FeatureCounterEvent(dbImporterManager.getAndResetFeatureCounter(), this));
+		eventDispatcher.triggerEvent(new GeometryCounterEvent(dbImporterManager.getAndResetGeometryCounter(), this));
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, updateCounter, this));
 		updateCounter = 0;
 
 		// log imported top-level features
@@ -442,7 +442,8 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		shouldWork = false;
+		if (event.getChannel() == eventChannel)
+			shouldWork = false;
 	}
 
 }

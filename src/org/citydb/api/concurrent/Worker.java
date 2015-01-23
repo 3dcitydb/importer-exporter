@@ -35,7 +35,7 @@ public abstract class Worker<T> implements Runnable {
 	protected WorkQueue<T> workQueue;
 	protected Thread workerThread;
 	protected T firstWork;
-	protected Object eventSource;
+	protected Object eventChannel;
 	
 	public abstract void interruptIfIdle();
 	public abstract void interrupt();

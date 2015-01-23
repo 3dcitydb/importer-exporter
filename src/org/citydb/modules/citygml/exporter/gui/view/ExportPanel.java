@@ -359,6 +359,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 									InterruptReason.USER_ABORT, 
 									"User abort of database export.", 
 									LogLevel.INFO, 
+									Event.GLOBAL_CHANNEL,
 									this));
 						}
 					});

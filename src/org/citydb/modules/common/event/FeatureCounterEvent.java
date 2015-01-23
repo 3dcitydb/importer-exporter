@@ -38,7 +38,7 @@ public class FeatureCounterEvent extends Event {
 	private HashMap<CityGMLClass, Long> featureCounterMap;
 
 	public FeatureCounterEvent(HashMap<CityGMLClass, Long> featureCounterMap, Object source) {
-		super(EventType.FEATURE_COUNTER, source);
+		super(EventType.FEATURE_COUNTER, GLOBAL_CHANNEL, source);
 		this.featureCounterMap = featureCounterMap;
 	}
 

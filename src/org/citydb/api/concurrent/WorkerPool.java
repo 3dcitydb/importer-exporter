@@ -40,6 +40,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.controller.LogController;
+import org.citydb.api.event.Event;
 import org.citydb.api.registry.ObjectRegistry;
 
 public class WorkerPool<T> {
@@ -49,6 +50,7 @@ public class WorkerPool<T> {
 	private final WorkQueue<T> workQueue;
 	private final ConcurrentHashMap<Worker<T>, Object> workers;
 	private final WorkerFactory<T> workerFactory;
+	private final String poolName;
 	private final Object DUMMY = new Object();
 
 	private volatile int runState;
@@ -60,7 +62,6 @@ public class WorkerPool<T> {
 	private ClassLoader contextClassLoader;
 	private ClassLoader defaultClassLoader;
 
-	private String poolName;
 	private PoolSizeAdaptationStrategy adaptationStrategy = PoolSizeAdaptationStrategy.AGGRESSIVE;
 	private volatile int corePoolSize;
 	private volatile int maximumPoolSize;
@@ -485,7 +486,7 @@ public class WorkerPool<T> {
 					// set context
 					worker.workQueue = workQueue;
 					worker.workerThread = workerThread;
-					worker.eventSource = eventSource != null ? eventSource : worker;
+					worker.eventChannel = eventSource != null ? eventSource : Event.GLOBAL_CHANNEL;
 					if (firstWork != null)
 						worker.firstWork = firstWork;
 					
@@ -920,10 +921,6 @@ public class WorkerPool<T> {
 
 	public String getName() {
 		return poolName;
-	}
-
-	public void setName(String poolName) {
-		this.poolName = poolName;
 	}
 
 	protected void finalize() {

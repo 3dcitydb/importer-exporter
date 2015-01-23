@@ -36,7 +36,7 @@ public class CounterEvent extends Event {
 	private CounterType type;
 	
 	public CounterEvent(CounterType type, int counter, Object source) {
-		super(EventType.COUNTER, source);
+		super(EventType.COUNTER, GLOBAL_CHANNEL, source);
 		this.type = type;
 		this.counter = counter;
 	}

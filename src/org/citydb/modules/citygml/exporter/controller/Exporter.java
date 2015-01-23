@@ -148,11 +148,6 @@ public class Exporter implements EventHandler {
 		int minThreads = resources.getThreadPool().getDefaultPool().getMinThreads();
 		int maxThreads = resources.getThreadPool().getDefaultPool().getMaxThreads();
 
-		// calc queueSize
-		// how to properly calculate?
-		//int dbQueueSize = maxThreads * 20;
-		//int writerQueueSize = maxThreads * 100;
-
 		// gml:id lookup cache update
 		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdCacheBatchValue();		
 

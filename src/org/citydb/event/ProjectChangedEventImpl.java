@@ -36,7 +36,7 @@ import org.citydb.api.event.global.ProjectChangedEvent;
 public final class ProjectChangedEventImpl extends Event implements ProjectChangedEvent {
 
 	public ProjectChangedEventImpl(Object source) {
-		super(GlobalEvents.PROJECT_CHANGED, source);
+		super(GlobalEvents.PROJECT_CHANGED, GLOBAL_CHANNEL, source);
 	}
 	
 }

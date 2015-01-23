@@ -42,7 +42,7 @@ public class ViewEvent extends Event {
 	private final ViewState viewState;
 	
 	public ViewEvent(View view, ViewState viewState, Object source) {
-		super(GlobalEvents.VIEW_STATE, source);
+		super(GlobalEvents.VIEW_STATE, GLOBAL_CHANNEL, source);
 		this.view = view;
 		this.viewState = viewState;
 	}

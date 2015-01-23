@@ -35,7 +35,7 @@ public class StatusDialogMessage extends Event {
 	private String message;
 	
 	public StatusDialogMessage(String message, Object source) {
-		super(EventType.STATUS_DIALOG_MESSAGE, source);
+		super(EventType.STATUS_DIALOG_MESSAGE, GLOBAL_CHANNEL, source);
 		this.message = message;
 	}
 

@@ -70,16 +70,19 @@ public class DBXlinkSplitter implements EventHandler {
 	private final CacheTableManager cacheTableManager;
 	private final WorkerPool<DBXlink> xlinkResolverPool;
 	private final WorkerPool<DBXlink> tmpXlinkPool;
+	private final Object eventChannel;
 	private final EventDispatcher eventDispatcher;
 	private volatile boolean shouldRun = true;
 
 	public DBXlinkSplitter(CacheTableManager cacheTableManager, 
 			WorkerPool<DBXlink> xlinkResolverPool, 
-			WorkerPool<DBXlink> tmpXlinkPool, 
+			WorkerPool<DBXlink> tmpXlinkPool,
+			Object eventChannel,
 			EventDispatcher eventDispatcher) {
 		this.cacheTableManager = cacheTableManager;
 		this.xlinkResolverPool = xlinkResolverPool;
 		this.tmpXlinkPool = tmpXlinkPool;
+		this.eventChannel = eventChannel;
 		this.eventDispatcher = eventDispatcher;
 		
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
@@ -123,7 +126,7 @@ public class DBXlinkSplitter implements EventHandler {
 			solidGeometryXlinks();
 		} catch (SQLException e) {
 			// fire interrupt event to stop other import workers
-			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, this));
+			eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
 		} finally {
 			eventDispatcher.removeEventHandler(this);
 		}

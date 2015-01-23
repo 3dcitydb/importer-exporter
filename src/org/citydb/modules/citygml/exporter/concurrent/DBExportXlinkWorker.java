@@ -178,7 +178,7 @@ public class DBExportXlinkWorker extends Worker<DBXlink> implements EventHandler
 				; // do sth reasonable
 
 		} catch (SQLException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting export due to SQL errors.", LogLevel.WARN, e, eventSource));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting export due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
 		} finally {
 			runLock.unlock();
 		}
@@ -186,6 +186,7 @@ public class DBExportXlinkWorker extends Worker<DBXlink> implements EventHandler
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		shouldWork = false;
+		if (event.getChannel() == eventChannel)
+			shouldWork = false;
 	}
 }

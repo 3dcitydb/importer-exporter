@@ -180,9 +180,9 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				//
 			}
 
-			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, eventSource));
-			eventDispatcher.triggerEvent(new FeatureCounterEvent(dbExporterManager.getFeatureCounter(), eventSource));
-			eventDispatcher.triggerEvent(new GeometryCounterEvent(dbExporterManager.getGeometryCounter(), eventSource));
+			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
+			eventDispatcher.triggerEvent(new FeatureCounterEvent(dbExporterManager.getFeatureCounter(), this));
+			eventDispatcher.triggerEvent(new GeometryCounterEvent(dbExporterManager.getGeometryCounter(), this));
 		} finally {
 			if (connection != null) {
 				try {
@@ -289,14 +289,14 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 				++exportCounter;
 
 			if (exportCounter == 20) {
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, eventSource));
+				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, exportCounter, this));
 				exportCounter = 0;
 			}
 
 		} catch (SQLException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting export due to SQL errors.", LogLevel.WARN, e, eventSource));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting export due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
 		} catch (FeatureProcessException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Fatal error while processing CityGML features.", LogLevel.WARN, e, eventSource));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.FEATURE_PROCESS_ERROR, "Fatal error while processing CityGML features.", LogLevel.WARN, e, eventChannel, this));
 		} finally {
 			runLock.unlock();
 		}
@@ -304,7 +304,8 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		shouldWork = false;
+		if (event.getChannel() == eventChannel)
+			shouldWork = false;
 	}
 
 }

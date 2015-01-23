@@ -1062,6 +1062,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 									InterruptReason.USER_ABORT, 
 									"User abort of database export.", 
 									LogLevel.INFO, 
+									Event.GLOBAL_CHANNEL,
 									this));
 						}
 					});

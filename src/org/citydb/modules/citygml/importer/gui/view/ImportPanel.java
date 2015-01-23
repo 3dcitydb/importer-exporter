@@ -409,6 +409,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 									InterruptReason.USER_ABORT, 
 									"User abort of database import.", 
 									LogLevel.WARN, 
+									Event.GLOBAL_CHANNEL,
 									this));
 						}
 					});
@@ -501,6 +502,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 									InterruptReason.USER_ABORT, 
 									"User abort of XML validation.", 
 									LogLevel.INFO, 
+									Event.GLOBAL_CHANNEL,
 									this));
 						}
 					});
