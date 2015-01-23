@@ -188,17 +188,13 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 					connection.commit();
 				}
 			} catch (SQLException e) {
-				LOG.error("SQL error: " + e.getMessage());
-				while ((e = e.getNextException()) != null)
-					LOG.error("SQL error: " + e.getMessage());
-
 				try {
 					connection.rollback();
 				} catch (SQLException sql) {
 					//
 				}
 
-				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, eventSource));
+				eventDispatcher.triggerEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventSource));
 			}
 
 		} finally {
@@ -345,21 +341,16 @@ public class DBImportXlinkResolverWorker extends Worker<DBXlink> implements Even
 			}
 
 		} catch (SQLException e) {
-			LOG.error("SQL error: " + e.getMessage());
-			while ((e = e.getNextException()) != null)
-				LOG.error("SQL error: " + e.getMessage());
-
 			try {
 				connection.rollback();
 			} catch (SQLException sql) {
 				//
 			}
 
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, eventSource));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventSource));
 		} catch (Exception e) {
 			// this is to catch general exceptions that may occur during the import
-			e.printStackTrace();
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, eventSource));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventSource));
 		} finally {
 			runLock.unlock();
 		}

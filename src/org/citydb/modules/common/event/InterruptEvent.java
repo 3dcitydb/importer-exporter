@@ -33,19 +33,21 @@ import org.citydb.api.event.Event;
 import org.citydb.api.log.LogLevel;
 
 public class InterruptEvent extends Event {
-	private InterruptReason interruptType;
-	private String logMessage;
-	private LogLevel logLevelType;
-	
-	public InterruptEvent(InterruptReason interruptType, Object source) {
-		super(EventType.INTERRUPT, source);
-		this.interruptType = interruptType;
-	}
+	private final InterruptReason interruptType;
+	private final String logMessage;
+	private final LogLevel logLevelType;
+	private final Throwable cause;
 	
 	public InterruptEvent(InterruptReason interruptType, String logMessage, LogLevel logLevelType, Object source) {
-		this(interruptType, source);
+		this(interruptType, logMessage, logLevelType, null, source);
+	}
+	
+	public InterruptEvent(InterruptReason interruptType, String logMessage, LogLevel logLevelType, Throwable cause, Object source) {
+		super(EventType.INTERRUPT, source);
+		this.interruptType = interruptType;
 		this.logMessage = logMessage;
 		this.logLevelType = logLevelType;
+		this.cause = cause;
 	}
 
 	public InterruptReason getInterruptReason() {
@@ -58,6 +60,10 @@ public class InterruptEvent extends Event {
 
 	public LogLevel getLogLevelType() {
 		return logLevelType;
+	}
+
+	public Throwable getCause() {
+		return cause;
 	}
 	
 }

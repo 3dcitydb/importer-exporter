@@ -680,10 +680,18 @@ public class Exporter implements EventHandler {
 		else if (e.getEventType() == EventType.INTERRUPT) {
 			if (isInterrupted.compareAndSet(false, true)) {
 				shouldRun = false;
+				InterruptEvent interruptEvent = (InterruptEvent)e;
 
-				String log = ((InterruptEvent)e).getLogMessage();
+				if (interruptEvent.getCause() != null) {
+					Throwable cause = interruptEvent.getCause();
+					LOG.error("An error occured: " + cause.getMessage());
+					while ((cause = cause.getCause()) != null)
+						LOG.error("Cause: " + cause.getMessage());
+				}
+				
+				String log = interruptEvent.getLogMessage();
 				if (log != null)
-					LOG.log(((InterruptEvent)e).getLogLevelType(), log);
+					LOG.log(interruptEvent.getLogLevelType(), log);
 
 				if (dbSplitter != null)
 					dbSplitter.shutdown();

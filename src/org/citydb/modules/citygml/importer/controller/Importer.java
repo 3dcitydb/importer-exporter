@@ -627,12 +627,20 @@ public class Importer implements EventHandler {
 		else if (e.getEventType() == EventType.INTERRUPT) {
 			if (isInterrupted.compareAndSet(false, true)) {
 				shouldRun = false;
-				interruptReason = ((InterruptEvent)e).getInterruptReason();
+				InterruptEvent interruptEvent = (InterruptEvent)e;
+				interruptReason = interruptEvent.getInterruptReason();
 
-				String log = ((InterruptEvent)e).getLogMessage();
+				if (interruptEvent.getCause() != null) {
+					Throwable cause = interruptEvent.getCause();
+					LOG.error("An error occured: " + cause.getMessage());
+					while ((cause = cause.getCause()) != null)
+						LOG.error("Cause: " + cause.getMessage());
+				}
+				
+				String log = interruptEvent.getLogMessage();
 				if (log != null)
-					LOG.log(((InterruptEvent)e).getLogLevelType(), log);
-
+					LOG.log(interruptEvent.getLogLevelType(), log);
+				
 				if (directoryScanner != null)
 					directoryScanner.stopScanning();
 			}
