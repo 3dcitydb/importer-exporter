@@ -31,6 +31,8 @@ package org.citydb.modules.citygml.exporter.gui.preferences;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -38,10 +40,12 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.border.TitledBorder;
 
+import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.exporter.CityGMLVersionType;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
+import org.citydb.modules.common.event.PropertyChangeEvent;
 import org.citydb.util.Util;
 import org.citydb.util.gui.GuiUtil;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
@@ -79,6 +83,19 @@ public class VersionPanel extends AbstractPreferencesComponent {
 
 			if (Util.toCityGMLVersion(CityGMLVersionType.values()[i]) == CityGMLVersion.DEFAULT)
 				cityGMLVersionBox[i].setSelected(true);
+			
+			// fire property change event
+			cityGMLVersionBox[i].addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					for (int i = 0; i < CityGMLVersionType.values().length; i++) {
+						if (cityGMLVersionBox[i] == e.getSource()) {
+							ObjectRegistry.getInstance().getEventDispatcher().triggerEvent(
+									new PropertyChangeEvent("citygml.version", null, CityGMLVersionType.values()[i], VersionPanel.this));
+							break;
+						}
+					}
+				}
+			});
 		}
 
 		setLayout(new GridBagLayout());

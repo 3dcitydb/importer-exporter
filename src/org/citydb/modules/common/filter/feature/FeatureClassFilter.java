@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.citydb.config.Config;
+import org.citydb.config.project.exporter.CityGMLVersionType;
 import org.citydb.config.project.filter.AbstractFilterConfig;
 import org.citydb.config.project.filter.FeatureClass;
 import org.citydb.modules.common.filter.Filter;
@@ -46,9 +47,15 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 	private FeatureClass featureClassFilter;
 
 	public FeatureClassFilter(Config config, FilterMode mode) {
-		if (mode == FilterMode.EXPORT)
+		if (mode == FilterMode.EXPORT) {
 			filterConfig = config.getProject().getExporter().getFilter();
-		else
+			
+			// export of bridges and tunnels is not supported for CityGML 1.0
+			if (config.getProject().getExporter().getCityGMLVersion() == CityGMLVersionType.v1_0_0) {
+				filterConfig.getComplexFilter().getFeatureClass().setBridge(true);
+				filterConfig.getComplexFilter().getFeatureClass().setTunnel(true);
+			}
+		} else
 			filterConfig = config.getProject().getImporter().getFilter();
 
 		init();

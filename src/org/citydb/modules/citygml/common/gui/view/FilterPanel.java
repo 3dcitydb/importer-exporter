@@ -33,7 +33,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -51,8 +50,12 @@ import javax.swing.border.TitledBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import org.citydb.api.event.Event;
+import org.citydb.api.event.EventHandler;
+import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
 import org.citydb.config.language.Language;
+import org.citydb.config.project.exporter.CityGMLVersionType;
 import org.citydb.config.project.filter.AbstractFilterConfig;
 import org.citydb.config.project.filter.FeatureClass;
 import org.citydb.config.project.filter.FeatureCount;
@@ -65,14 +68,16 @@ import org.citydb.gui.components.checkboxtree.CheckboxTree;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import org.citydb.gui.components.checkboxtree.DefaultTreeCheckingModel;
 import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.modules.common.event.EventType;
+import org.citydb.modules.common.event.PropertyChangeEvent;
 import org.citydb.util.Util;
 import org.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class FilterPanel extends JPanel {
-	private Config config;
-	private FilterPanelType type;
-
+public class FilterPanel extends JPanel implements EventHandler {
+	private final Config config;
+	private final FilterPanelType type;
+	
 	private JCheckBox gmlNameFilter;
 	private JRadioButton gmlIdFilter;
 	private JRadioButton complexFilter;
@@ -116,6 +121,7 @@ public class FilterPanel extends JPanel {
 		this.config = config;
 		this.type = type;
 
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(EventType.PROPERTY_CHANGE_EVENT, this);		
 		initGui();
 	}
 
@@ -271,14 +277,14 @@ public class FilterPanel extends JPanel {
 		}
 
 		coStartText.addPropertyChangeListener(new PropertyChangeListener() {			
-			public void propertyChange(PropertyChangeEvent evt) {
+			public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				if (coStartText.getValue() != null && ((Number)coStartText.getValue()).longValue() < 0)
 					coStartText.setValue(null);
 			}
 		});
 
 		coEndText.addPropertyChangeListener(new PropertyChangeListener() {			
-			public void propertyChange(PropertyChangeEvent evt) {
+			public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				if (coEndText.getValue() != null && ((Number)coEndText.getValue()).longValue() < 0)
 					coEndText.setValue(null);
 			}
@@ -356,11 +362,12 @@ public class FilterPanel extends JPanel {
 
 		featureClassFilter.setEnabled(complexFilter.isSelected());
 		enable = complexFilter.isSelected() && featureClassFilter.isSelected();
+		boolean isSupported = type != FilterPanelType.EXPORT || config.getProject().getExporter().getCityGMLVersion() == CityGMLVersionType.v2_0_0;
 		DefaultTreeCheckingModel model = (DefaultTreeCheckingModel)fcTree.getCheckingModel();
 		model.setPathEnabled(new TreePath(cityObject), enable);
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, building}), enable);
-		model.setPathEnabled(new TreePath(new Object[]{cityObject, bridge}), enable);
-		model.setPathEnabled(new TreePath(new Object[]{cityObject, tunnel}), enable);
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, bridge}), enable && isSupported);
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, tunnel}), enable && isSupported);
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, water}), enable);
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, landuse}), enable);
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, vegetation}), enable);
@@ -390,10 +397,11 @@ public class FilterPanel extends JPanel {
 
 	private void setEnabledClassFilter() {
 		DefaultTreeCheckingModel model = (DefaultTreeCheckingModel)fcTree.getCheckingModel();
+		boolean isSupported = type != FilterPanelType.EXPORT || config.getProject().getExporter().getCityGMLVersion() == CityGMLVersionType.v2_0_0;
 		model.setPathEnabled(new TreePath(cityObject), featureClassFilter.isSelected());
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, building}), featureClassFilter.isSelected());
-		model.setPathEnabled(new TreePath(new Object[]{cityObject, bridge}), featureClassFilter.isSelected());
-		model.setPathEnabled(new TreePath(new Object[]{cityObject, tunnel}), featureClassFilter.isSelected());
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, bridge}), featureClassFilter.isSelected() && isSupported);
+		model.setPathEnabled(new TreePath(new Object[]{cityObject, tunnel}), featureClassFilter.isSelected() && isSupported);
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, water}), featureClassFilter.isSelected());
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, landuse}), featureClassFilter.isSelected());
 		model.setPathEnabled(new TreePath(new Object[]{cityObject, vegetation}), featureClassFilter.isSelected());
@@ -551,4 +559,19 @@ public class FilterPanel extends JPanel {
 		featureClass.setGenericCityObject(!fcTree.getCheckingModel().isPathChecked(new TreePath(genericCityObject.getPath())));
 		featureClass.setCityObjectGroup(!fcTree.getCheckingModel().isPathChecked(new TreePath(cityObjectGroup.getPath())));
 	}
+
+	
+	
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		PropertyChangeEvent e = (PropertyChangeEvent)event;
+		if (type == FilterPanelType.EXPORT && featureClassFilter.isSelected() && e.getPropertyName().equals("citygml.version")) {
+			CityGMLVersionType version = (CityGMLVersionType)e.getNewValue();
+			DefaultTreeCheckingModel model = (DefaultTreeCheckingModel)fcTree.getCheckingModel();
+			model.setPathEnabled(new TreePath(new Object[]{cityObject, bridge}), version == CityGMLVersionType.v2_0_0);
+			model.setPathEnabled(new TreePath(new Object[]{cityObject, tunnel}), version == CityGMLVersionType.v2_0_0);
+			fcTree.repaint();
+		}
+	}
+
 }
