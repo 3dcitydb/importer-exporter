@@ -219,15 +219,18 @@ public class DBSurfaceGeometry implements DBImporter {
 		// if affine transformation is activated we apply the user-defined affine
 		// transformation to the transformation matrix associated with the implicit geometry.
 		// thus, we do not need to apply it to the coordinate values
-		boolean tmp = applyTransformation;
+		boolean _applyTransformation = applyTransformation;
+		int _dbSrid = dbSrid;
 
 		try {
 			isImplicit = true;
 			applyTransformation = false;
+			dbSrid = 0;
 			return insert(surfaceGeometry, 0);
 		} finally {
 			isImplicit = false;
-			applyTransformation = tmp;
+			applyTransformation = _applyTransformation;
+			dbSrid = _dbSrid;
 		}
 	}
 
