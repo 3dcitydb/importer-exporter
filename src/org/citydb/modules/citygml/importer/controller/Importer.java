@@ -92,6 +92,7 @@ import org.citydb.modules.common.event.StatusDialogTitle;
 import org.citydb.modules.common.filter.FilterMode;
 import org.citydb.modules.common.filter.ImportFilter;
 import org.citydb.modules.common.filter.statistic.FeatureCounterFilter;
+import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -268,7 +269,8 @@ public class Importer implements EventHandler {
 		WorkerPool<DBXlink> xlinkResolverPool = null;
 		DBXlinkSplitter tmpSplitter = null;
 		ImportLogger importLogger = null;
-
+		long start = System.currentTimeMillis();
+		
 		while (shouldRun && fileCounter < importFiles.size()) {
 			try {
 				// check whether we reached the counter limit
@@ -568,6 +570,9 @@ public class Importer implements EventHandler {
 
 		if (geometryObjects != 0)
 			LOG.info("Processed geometry objects: " + geometryObjects);
+		
+		if (shouldRun)
+			LOG.info("Total import time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 
 		return shouldRun;
 	}

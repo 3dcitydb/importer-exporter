@@ -254,7 +254,8 @@ public class Exporter implements EventHandler {
 		
 		int rows = useTiling ? tiling.getRows() : 1;  
 		int columns = useTiling ? tiling.getColumns() : 1;
-
+		long start = System.currentTimeMillis();
+		
 		for (int i = 0; shouldRun && i < rows; i++) {
 			for (int j = 0; shouldRun && j < columns; j++) {
 
@@ -620,7 +621,10 @@ public class Exporter implements EventHandler {
 			if (geometryObjects != 0)
 				LOG.info("Total processed geometry objects: " + geometryObjects);
 		}
-
+		
+		if (shouldRun)
+			LOG.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+		
 		return shouldRun;
 	}
 

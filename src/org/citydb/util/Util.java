@@ -39,6 +39,7 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.PatternSyntaxException;
 
 import org.citydb.config.internal.Internal;
@@ -318,7 +319,7 @@ public class Util {
 
 		return codeList;
 	}
-	
+
 	public static String buildInOperator(Collection<? extends Object> items, String columnName, String logicalOperator, int maxItems) {		
 		StringBuilder predicate = new StringBuilder();
 		if (items.size() == 1)
@@ -391,6 +392,22 @@ public class Util {
 		return file;
 	}
 
+	public static String formatElapsedTime(long millis) {
+		long d = TimeUnit.MILLISECONDS.toDays(millis);
+		long h = TimeUnit.MILLISECONDS.toHours(millis) % TimeUnit.DAYS.toHours(1);
+	    long m = TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1);
+	    long s = TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1);
+	    
+	    if (d > 0)
+	    	return String.format("%02d d, %02d h, %02d m, %02d s", d, h, m, s);
+	    if (h > 0)
+	    	return String.format("%02d h, %02d m, %02d s", h, m, s);
+	    if (m > 0)
+	    	return String.format("%02d m, %02d s", m, s);
+	    
+	    return String.format("%02d s", s);
+	}
+
 	public static boolean checkWorkspaceTimestamp(Workspace workspace) {
 		String timestamp = workspace.getTimestamp().trim();
 		boolean success = true;
@@ -456,7 +473,7 @@ public class Util {
 
 		return null;
 	}
-	
+
 	public static CityGMLVersion toCityGMLVersion(CityGMLVersionType version) {
 		switch (version) {
 		case v1_0_0:

@@ -58,6 +58,7 @@ import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.modules.common.event.StatusDialogMessage;
 import org.citydb.modules.common.event.StatusDialogProgressBar;
 import org.citydb.modules.common.event.StatusDialogTitle;
+import org.citydb.util.Util;
 import org.citygml4j.xml.schema.SchemaHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -74,10 +75,6 @@ public class XMLValidator implements EventHandler {
 	private boolean reportAllErrors;
 	private InputStream inputStream;
 	
-	private int runState;
-	private final int PREPARING = 1;
-	private final int VALIDATING = 2;
-
 	public XMLValidator(Config config, EventDispatcher eventDispatcher) {
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -88,8 +85,6 @@ public class XMLValidator implements EventHandler {
 	}
 
 	public boolean doProcess() {
-		runState = PREPARING;
-
 		// adding listeners
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
@@ -127,8 +122,8 @@ public class XMLValidator implements EventHandler {
 			return false;
 		}
 
-		runState = VALIDATING;
-
+		long start = System.currentTimeMillis();
+		
 		while (shouldRun && fileCounter < importFiles.size()) {			
 			File file = importFiles.get(fileCounter++);
 			intConfig.setImportPath(file.getParent());
@@ -161,7 +156,10 @@ public class XMLValidator implements EventHandler {
 				LOG.warn(errorHandler.errors + " error(s) reported while validating the document.");
 			else if (errorHandler.errors == 0 && shouldRun)
 				LOG.info("The CityGML file is valid.");
-		} 	
+		}
+		
+		if (shouldRun)
+			LOG.info("Total validation time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 
 		return shouldRun;
 	}
@@ -183,10 +181,10 @@ public class XMLValidator implements EventHandler {
 			if (log != null)
 				LOG.log(interruptEvent.getLogLevelType(), log);
 			
-			if (runState == PREPARING && directoryScanner != null)
+			if (directoryScanner != null)
 				directoryScanner.stopScanning();
 
-			if (runState == VALIDATING && inputStream != null)
+			if (inputStream != null)
 				inputStream.close();
 		}
 	}

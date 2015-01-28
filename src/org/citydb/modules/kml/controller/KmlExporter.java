@@ -129,6 +129,7 @@ import org.citydb.modules.kml.database.Tunnel;
 import org.citydb.modules.kml.database.WaterBody;
 import org.citydb.modules.kml.datatype.TypeAttributeValueEnum;
 import org.citydb.modules.kml.util.CityObject4JSON;
+import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXFragmentWriter;
@@ -322,6 +323,8 @@ public class KmlExporter implements EventHandler {
 			rows = 1;
 			columns = 1;
 		}
+		
+		long start = System.currentTimeMillis();
 		
 		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 			if (!displayForm.isActive()) continue;
@@ -625,6 +628,9 @@ public class KmlExporter implements EventHandler {
 
 		if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
 		
+		if (shouldRun)
+			Logger.getInstance().info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+
 		return shouldRun;
 	}
 
