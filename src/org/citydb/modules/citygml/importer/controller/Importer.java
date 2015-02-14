@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -270,7 +271,7 @@ public class Importer implements EventHandler {
 		DBXlinkSplitter tmpSplitter = null;
 		ImportLogger importLogger = null;
 		long start = System.currentTimeMillis();
-		
+
 		while (shouldRun && fileCounter < importFiles.size()) {
 			try {
 				// check whether we reached the counter limit
@@ -499,7 +500,7 @@ public class Importer implements EventHandler {
 
 				if (tmpXlinkPool != null && !tmpXlinkPool.isTerminated())
 					tmpXlinkPool.shutdownNow();
-				
+
 				try {
 					eventDispatcher.flushEvents();
 				} catch (InterruptedException e) {
@@ -570,7 +571,7 @@ public class Importer implements EventHandler {
 
 		if (geometryObjects != 0)
 			LOG.info("Processed geometry objects: " + geometryObjects);
-		
+
 		if (shouldRun)
 			LOG.info("Total import time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 
@@ -638,15 +639,23 @@ public class Importer implements EventHandler {
 
 				if (interruptEvent.getCause() != null) {
 					Throwable cause = interruptEvent.getCause();
-					LOG.error("An error occured: " + cause.getMessage());
-					while ((cause = cause.getCause()) != null)
-						LOG.error("Cause: " + cause.getMessage());
+
+					if (cause instanceof SQLException) {
+						Iterator<Throwable> iter = ((SQLException)cause).iterator();
+						LOG.error("A SQL error occured: " + iter.next().getMessage().trim());
+						while (iter.hasNext())
+							LOG.error("Cause: " + iter.next().getMessage().trim());
+					} else {
+						LOG.error("An error occured: " + cause.getMessage().trim());
+						while ((cause = cause.getCause()) != null)
+							LOG.error("Cause: " + cause.getMessage().trim());
+					}
 				}
-				
+
 				String log = interruptEvent.getLogMessage();
 				if (log != null)
 					LOG.log(interruptEvent.getLogLevelType(), log);
-				
+
 				if (directoryScanner != null)
 					directoryScanner.stopScanning();
 			}

@@ -36,6 +36,7 @@ import java.io.OutputStreamWriter;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.citydb.api.concurrent.PoolSizeAdaptationStrategy;
@@ -683,9 +684,17 @@ public class Exporter implements EventHandler {
 
 				if (interruptEvent.getCause() != null) {
 					Throwable cause = interruptEvent.getCause();
-					LOG.error("An error occured: " + cause.getMessage());
-					while ((cause = cause.getCause()) != null)
-						LOG.error("Cause: " + cause.getMessage());
+
+					if (cause instanceof SQLException) {
+						Iterator<Throwable> iter = ((SQLException)cause).iterator();
+						LOG.error("A SQL error occured: " + iter.next().getMessage().trim());
+						while (iter.hasNext())
+							LOG.error("Cause: " + iter.next().getMessage().trim());
+					} else {
+						LOG.error("An error occured: " + cause.getMessage().trim());
+						while ((cause = cause.getCause()) != null)
+							LOG.error("Cause: " + cause.getMessage().trim());
+					}
 				}
 				
 				String log = interruptEvent.getLogMessage();

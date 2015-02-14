@@ -1608,9 +1608,17 @@ public class KmlExporter implements EventHandler {
 
 				if (interruptEvent.getCause() != null) {
 					Throwable cause = interruptEvent.getCause();
-					Logger.getInstance().error("An error occured: " + cause.getMessage());
-					while ((cause = cause.getCause()) != null)
-						Logger.getInstance().error("Cause: " + cause.getMessage());
+
+					if (cause instanceof SQLException) {
+						Iterator<Throwable> iter = ((SQLException)cause).iterator();
+						Logger.getInstance().error("A SQL error occured: " + iter.next().getMessage().trim());
+						while (iter.hasNext())
+							Logger.getInstance().error("Cause: " + iter.next().getMessage().trim());
+					} else {
+						Logger.getInstance().error("An error occured: " + cause.getMessage().trim());
+						while ((cause = cause.getCause()) != null)
+							Logger.getInstance().error("Cause: " + cause.getMessage().trim());
+					}
 				}
 				
 				String log = interruptEvent.getLogMessage();
