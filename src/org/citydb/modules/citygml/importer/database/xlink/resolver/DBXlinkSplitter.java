@@ -84,7 +84,7 @@ public class DBXlinkSplitter implements EventHandler {
 		this.tmpXlinkPool = tmpXlinkPool;
 		this.eventChannel = eventChannel;
 		this.eventDispatcher = eventDispatcher;
-		
+
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 
@@ -730,7 +730,8 @@ public class DBXlinkSplitter implements EventHandler {
 
 	@Override
 	public void handleEvent(Event event) throws Exception {
-		shouldRun = false;
+		if (event.getChannel() == eventChannel)
+			shouldRun = false;
 	}
-	
+
 }
