@@ -33,29 +33,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.citydb.config.Config;
-import org.citydb.config.project.exporter.CityGMLVersionType;
 import org.citydb.config.project.filter.AbstractFilterConfig;
 import org.citydb.config.project.filter.FeatureClass;
 import org.citydb.modules.common.filter.Filter;
 import org.citydb.modules.common.filter.FilterMode;
+import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.module.citygml.CityGMLVersion;
 
 public class FeatureClassFilter implements Filter<CityGMLClass> {
 	private final AbstractFilterConfig filterConfig;
+	private final CityGMLVersion version;
 
 	boolean isActive;
 	private FeatureClass featureClassFilter;
 
 	public FeatureClassFilter(Config config, FilterMode mode) {
-		if (mode == FilterMode.EXPORT) {
+		version = Util.toCityGMLVersion(config.getProject().getExporter().getCityGMLVersion());
+
+		if (mode == FilterMode.EXPORT)
 			filterConfig = config.getProject().getExporter().getFilter();
-			
-			// export of bridges and tunnels is not supported for CityGML 1.0
-			if (config.getProject().getExporter().getCityGMLVersion() == CityGMLVersionType.v1_0_0) {
-				filterConfig.getComplexFilter().getFeatureClass().setBridge(true);
-				filterConfig.getComplexFilter().getFeatureClass().setTunnel(true);
-			}
-		} else
+		else
 			filterConfig = config.getProject().getImporter().getFilter();
 
 		init();
@@ -63,8 +61,8 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 
 	private void init() {
 		isActive = filterConfig.isSetComplexFilter() &&
-			filterConfig.getComplexFilter().getFeatureClass().isSet();
-		
+				filterConfig.getComplexFilter().getFeatureClass().isSet();
+
 		if (isActive)
 			featureClassFilter = filterConfig.getComplexFilter().getFeatureClass();
 	}
@@ -85,9 +83,9 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 			case BUILDING:
 				return featureClassFilter.isSetBuilding();
 			case BRIDGE:
-				return featureClassFilter.isSetBridge();
+				return featureClassFilter.isSetBridge() && version == CityGMLVersion.v2_0_0;
 			case TUNNEL:
-				return featureClassFilter.isSetTunnel();
+				return featureClassFilter.isSetTunnel() && version == CityGMLVersion.v2_0_0;
 			case CITY_FURNITURE:
 				return featureClassFilter.isSetCityFurniture();
 			case LAND_USE:
@@ -132,11 +130,11 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 			// get state
 			if (inverse ^ featureClassFilter.isSetBuilding())
 				state.add(CityGMLClass.BUILDING);
-			
-			if (inverse ^ featureClassFilter.isSetBridge())
+
+			if (version == CityGMLVersion.v2_0_0 && (inverse ^ featureClassFilter.isSetBridge()))
 				state.add(CityGMLClass.BRIDGE);
 
-			if (inverse ^ featureClassFilter.isSetTunnel())
+			if (version == CityGMLVersion.v2_0_0 && (inverse ^ featureClassFilter.isSetTunnel()))
 				state.add(CityGMLClass.TUNNEL);
 
 			if (inverse ^ featureClassFilter.isSetCityFurniture())
@@ -152,10 +150,10 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 				state.add(CityGMLClass.PLANT_COVER);
 				state.add(CityGMLClass.SOLITARY_VEGETATION_OBJECT);
 			}
-			
+
 			if (inverse ^ featureClassFilter.isSetPlantCover())
 				state.add(CityGMLClass.PLANT_COVER);
-			
+
 			if (inverse ^ featureClassFilter.isSetSolitaryVegetationObject())
 				state.add(CityGMLClass.SOLITARY_VEGETATION_OBJECT);
 
@@ -166,10 +164,10 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 				state.add(CityGMLClass.TRACK);
 				state.add(CityGMLClass.SQUARE);
 			}
-			
+
 			if (inverse ^ featureClassFilter.isSetTransportationComplex())
 				state.add(CityGMLClass.TRANSPORTATION_COMPLEX);
-			
+
 			if (inverse ^ featureClassFilter.isSetRoad())
 				state.add(CityGMLClass.ROAD);
 
@@ -194,8 +192,6 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 
 		else if (inverse) {
 			state.add(CityGMLClass.BUILDING);
-			state.add(CityGMLClass.BRIDGE);
-			state.add(CityGMLClass.TUNNEL);
 			state.add(CityGMLClass.CITY_FURNITURE);
 			state.add(CityGMLClass.LAND_USE);
 			state.add(CityGMLClass.WATER_BODY);
@@ -209,6 +205,11 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 			state.add(CityGMLClass.RELIEF_FEATURE);
 			state.add(CityGMLClass.GENERIC_CITY_OBJECT);
 			state.add(CityGMLClass.CITY_OBJECT_GROUP);
+
+			if (version == CityGMLVersion.v2_0_0) {
+				state.add(CityGMLClass.BRIDGE);
+				state.add(CityGMLClass.TUNNEL);
+			}
 		}
 
 		return state;
