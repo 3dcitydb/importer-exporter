@@ -373,7 +373,7 @@ public class DBSurfaceGeometry implements DBImporter {
 							if (interiorAbstractRing instanceof LinearRing) {								
 								LinearRing interiorLinearRing = (LinearRing)interiorAbstractRing;
 								if (!ringValidator.validate(interiorLinearRing, origGmlId))
-									return;
+									continue;
 
 								List<Double> interiorPoints = interiorLinearRing.toList3d(reverse);
 								if (applyTransformation)
