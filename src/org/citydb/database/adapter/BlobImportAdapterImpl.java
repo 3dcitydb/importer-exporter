@@ -28,8 +28,9 @@ public class BlobImportAdapterImpl implements BlobImportAdapter {
 		try {
 			psUpdate.setBinaryStream(1, in, in.available());
 			psUpdate.setLong(2, id);
-			psUpdate.execute();		
-
+			psUpdate.executeUpdate();		
+			connection.commit();
+			
 			return true;
 		} catch (IOException e) {
 			LOG.error("Failed to read " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file '" + fileName + "': " + e.getMessage());
