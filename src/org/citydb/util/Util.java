@@ -277,16 +277,18 @@ public class Util {
 			List<String> codespaces = new ArrayList<String>(codeList.size());
 
 			for (Code code : codeList) {
-				String value = code.getValue();
+				String value = code.getValue().trim();
 				String codespace = code.getCodeSpace();
-				if (value != null) {
+				if (value != null && value.length() != 0) {
 					values.add(value.trim());
 					codespaces.add(codespace);
 				}
 			}
 
-			result[0] = collection2string(values, Internal.CODELIST_DELIMITER);
-			result[1] = collection2string(codespaces, Internal.CODELIST_DELIMITER);
+			if (!values.isEmpty()) {
+				result[0] = collection2string(values, Internal.CODELIST_DELIMITER);
+				result[1] = collection2string(codespaces, Internal.CODELIST_DELIMITER);
+			}
 		}
 
 		return result;
@@ -395,17 +397,17 @@ public class Util {
 	public static String formatElapsedTime(long millis) {
 		long d = TimeUnit.MILLISECONDS.toDays(millis);
 		long h = TimeUnit.MILLISECONDS.toHours(millis) % TimeUnit.DAYS.toHours(1);
-	    long m = TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1);
-	    long s = TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1);
-	    
-	    if (d > 0)
-	    	return String.format("%02d d, %02d h, %02d m, %02d s", d, h, m, s);
-	    if (h > 0)
-	    	return String.format("%02d h, %02d m, %02d s", h, m, s);
-	    if (m > 0)
-	    	return String.format("%02d m, %02d s", m, s);
-	    
-	    return String.format("%02d s", s);
+		long m = TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1);
+		long s = TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1);
+
+		if (d > 0)
+			return String.format("%02d d, %02d h, %02d m, %02d s", d, h, m, s);
+		if (h > 0)
+			return String.format("%02d h, %02d m, %02d s", h, m, s);
+		if (m > 0)
+			return String.format("%02d m, %02d s", m, s);
+
+		return String.format("%02d s", s);
 	}
 
 	public static boolean checkWorkspaceTimestamp(Workspace workspace) {
