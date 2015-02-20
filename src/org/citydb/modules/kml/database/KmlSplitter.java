@@ -185,7 +185,7 @@ public class KmlSplitter {
 		else if (filterConfig.isSetComplexFilter() &&
 				filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
 
-			BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
+			BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterStateForWGS84();
 			ResultSet rs = null;
 			PreparedStatement spatialQuery = null;
 			try {
@@ -307,7 +307,7 @@ public class KmlSplitter {
 							filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
 
 						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS_IN_BBOX(databaseAdapter.getDatabaseType()));
-						BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
+						BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterStateForWGS84();
 						int srid = dbSrs.getSrid();
 
 						Object curve = databaseAdapter.getGeometryConverter().getDatabaseObject(GeometryObject.createCurve(new double[] {
