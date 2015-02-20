@@ -436,19 +436,23 @@ public class Queries {
 					"ts.building_id = ? " +
 					"AND ts.lod4_multi_surface_id IS NOT NULL " +
 					"UNION " + 
-					"SELECT b.lod4_solid_id as gid " + 
-					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
-					"WHERE " +  
-					"b.id = ? " +
-					"AND b.lod4_solid_id IS NOT NULL " +
-					"AND ts.lod4_multi_surface_id IS NULL " +
+					"SELECT lod4_solid_id AS gid  FROM BUILDING " +
+					"WHERE " +
+						"id = ? AND lod4_solid_id IS NOT NULL " +
+						"AND id NOT IN " +
+						"(SELECT building_id FROM THEMATIC_SURFACE " +
+							"WHERE building_id = ? " +
+							"AND lod4_multi_surface_id IS NOT NULL " +
+						") " +
 					"UNION " +					 
-					"SELECT b.lod4_multi_surface_id as gid " + 
-					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
-					"WHERE " +  
-					"b.id = ? " +
-					"AND b.lod4_multi_surface_id IS NOT NULL " +
-					"AND ts.lod4_multi_surface_id IS NULL "	+	
+					"SELECT lod4_multi_surface_id AS gid  FROM BUILDING " +
+					"WHERE " +
+						"id = ? AND lod4_multi_surface_id IS NOT NULL " +
+						"AND id NOT IN " +
+						"(SELECT building_id FROM THEMATIC_SURFACE " +
+							"WHERE building_id = ? " +
+							"AND lod4_multi_surface_id IS NOT NULL " +
+						") " +
 					"UNION " + 
 					// Room
 					"SELECT ts.lod4_multi_surface_id as gid " + 
@@ -470,7 +474,7 @@ public class Queries {
 			        "WHERE " +  
 	  			    "r.building_id = ? " +
 				    "AND r.lod4_multi_surface_id IS NOT NULL " +
-	  			    "AND ts.lod4_multi_surface_id IS NULL " + 
+	  			    "AND ts.lod4_multi_surface_id IS NULL " +
 				    "UNION " + 
 	  			    // Building Furniture
 					"SELECT bf.lod4_brep_id as gid " + 
@@ -530,19 +534,23 @@ public class Queries {
 					"ts.building_id = ? " +
 					"AND ts.lod3_multi_surface_id IS NOT NULL " +
 					"UNION " + 
-					"SELECT b.lod3_solid_id as gid " + 
-					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
-					"WHERE " +  
-					"b.id = ? " +
-					"AND b.lod3_solid_id IS NOT NULL " +
-					"AND ts.lod3_multi_surface_id IS NULL " +
-					"UNION " + 
-					"SELECT b.lod3_multi_surface_id as gid " + 
-					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
-					"WHERE " +  
-					"b.id = ? " +
-					"AND b.lod3_multi_surface_id IS NOT NULL " +
-					"AND ts.lod3_multi_surface_id IS NULL " + 
+					"SELECT lod3_solid_id AS gid FROM BUILDING " +
+					"WHERE " +
+						"id = ? AND lod3_solid_id IS NOT NULL " +
+						"AND id NOT IN " +
+						"(SELECT building_id FROM THEMATIC_SURFACE " +
+							"WHERE building_id = ? " +
+							"AND lod3_multi_surface_id IS NOT NULL " +
+						") " +
+					"UNION " +					 
+					"SELECT lod3_multi_surface_id AS gid  FROM BUILDING " +
+					"WHERE " +
+						"id = ? AND lod3_multi_surface_id IS NOT NULL " +
+						"AND id NOT IN " +
+						"(SELECT building_id FROM THEMATIC_SURFACE " +
+							"WHERE building_id = ? " +
+							"AND lod3_multi_surface_id IS NOT NULL " +
+						") " +
 					"UNION " + 
 					// Building Installation
 					"SELECT ts.lod3_multi_surface_id as gid " + 
@@ -597,19 +605,23 @@ public class Queries {
 					"ts.building_id = ? " +
 					"AND ts.lod2_multi_surface_id IS NOT NULL " +
 					"UNION " + 
-					"SELECT b.lod2_multi_surface_id as gid " + 
-					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
-					"WHERE " +  
-					"b.id = ? " +
-					"AND b.lod2_multi_surface_id IS NOT NULL " +
-					"AND ts.lod2_multi_surface_id IS NULL " +
-					"UNION " + 
-					"SELECT b.lod2_solid_id as gid " + 
-					"FROM BUILDING b LEFT JOIN THEMATIC_SURFACE ts ON ts.building_id = b.id " + 
-					"WHERE " +  
-					"b.id = ? " +
-					"AND b.lod2_solid_id IS NOT NULL " +
-					"AND ts.lod2_multi_surface_id IS NULL " +					
+					"SELECT lod2_solid_id AS gid FROM BUILDING " +
+					"WHERE " +
+						"id = ? AND lod2_solid_id IS NOT NULL " +
+						"AND id NOT IN " +
+						"(SELECT building_id FROM THEMATIC_SURFACE " +
+							"WHERE building_id = ? " +
+							"AND lod2_multi_surface_id IS NOT NULL " +
+						") " +
+					"UNION " +					 
+					"SELECT lod2_multi_surface_id AS gid FROM BUILDING " +
+					"WHERE " +
+						"id = ? AND lod2_multi_surface_id IS NOT NULL " +
+						"AND id NOT IN " +
+						"(SELECT building_id FROM THEMATIC_SURFACE " +
+							"WHERE building_id = ? " +
+							"AND lod2_multi_surface_id IS NOT NULL " +
+						") " +				
 					"UNION " +			
 					// Building Installation	
 					"SELECT ts.lod2_multi_surface_id as gid " + 
