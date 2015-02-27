@@ -232,7 +232,7 @@ public class KmlExporter {
 		viewRefreshTime = 1;
 		writeJSONFile = false;
 		writeJSONPFile = false;
-		callbackNameJSONP = "";
+		callbackNameJSONP = "handle_3DCityDB_data";
 		setAppearanceTheme(THEME_NONE);
 		setAltitudeMode(AltitudeMode.ABSOLUTE);
 		setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
