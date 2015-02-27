@@ -36,6 +36,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -60,6 +61,7 @@ import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.RegionType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 
+import org.citydb.ImpExp;
 import org.citydb.api.concurrent.WorkerPool;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.DisplayForm;
@@ -67,6 +69,7 @@ import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.controller.KmlExporter;
 import org.citydb.modules.kml.util.CityObject4JSON;
+import org.citydb.util.gui.OSXAdapter;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 public class KmlExporterManager {
@@ -550,6 +553,12 @@ public class KmlExporterManager {
 			FileOutputStream fos = new FileOutputStream(buildingModelFile);
 	        colladaMarshaller.marshal(colladaBundle.getCollada(), fos);
 	        fos.close();
+	        
+	        URL collada2gltfExeUrl = ImpExp.class.getResource("/resources/collada2gltf.exe");
+	        if (collada2gltfExeUrl != null) {
+	      	   ProcessBuilder pb = new ProcessBuilder(collada2gltfExeUrl.getPath(), "-f", buildingDirectory + File.separator + colladaBundle.getGmlId() + ".dae",  "-e", "true"); 
+	      	   pb.start();
+	        }
 
 			// ----------------- image saving -----------------
 
