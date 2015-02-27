@@ -79,6 +79,7 @@ import org.citydb.api.geometry.GeometryObject.ElementType;
 import org.citydb.api.geometry.GeometryObject.GeometryType;
 import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
+import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
 import org.citydb.config.project.kmlExporter.DisplayForm;
@@ -1998,7 +1999,7 @@ public abstract class KmlGenericObject {
 
 	protected double getZOffsetFromConfigOrDB (long id) {
 
-		double zOffset = Double.MAX_VALUE;;
+		double zOffset = Double.MAX_VALUE;
 
 		switch (config.getProject().getKmlExporter().getAltitudeOffsetMode()) {
 		case NO_OFFSET:
@@ -2006,6 +2007,9 @@ public abstract class KmlGenericObject {
 			break;
 		case CONSTANT:
 			zOffset = config.getProject().getKmlExporter().getAltitudeOffsetValue();
+			break;
+		case BOTTOM_ZERO:
+			zOffset = Double.MAX_VALUE;
 			break;
 		case GENERIC_ATTRIBUTE:
 			PreparedStatement selectQuery = null;
@@ -2042,8 +2046,37 @@ public abstract class KmlGenericObject {
 	protected double getZOffsetFromGEService (long id, List<Point3d> candidates) {
 
 		double zOffset = 0;
+		
+		if (config.getProject().getKmlExporter().getAltitudeOffsetMode() == AltitudeOffsetMode.BOTTOM_ZERO) {
+			try {
+				// convert candidate points to WGS84
+				double[] coords = new double[candidates.size()*3];
+				int index = 0;
+				for (Point3d point3d: candidates) {
+					coords[index++] = point3d.x;
+					coords[index++] = point3d.y;
+					coords[index++] = point3d.z;
+				}
 
-		if (config.getProject().getKmlExporter().isCallGElevationService()) { // allowed to query
+				if (candidates.size() == 1) {
+					coords = convertPointCoordinatesToWGS84(coords);
+				} else { 
+					GeometryObject geomObj = convertToWGS84(GeometryObject.createCurve(coords, 3, dbSrs.getSrid()));
+					coords = geomObj.getCoordinates(0);
+				}
+				
+				double minElevation = Double.MAX_VALUE;
+				for (int i = 0; i < coords.length; i = i + 3) {
+					if (minElevation > coords[i+2]) {
+						minElevation = coords[i+2];
+					}					
+				}
+				zOffset = 0 - minElevation;
+			}
+			catch (Exception e) {}
+		}
+
+		else if (config.getProject().getKmlExporter().isCallGElevationService()) { // allowed to query
 			PreparedStatement insertQuery = null;
 			ResultSet rs = null;
 
