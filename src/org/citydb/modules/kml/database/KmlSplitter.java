@@ -58,13 +58,10 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
 public class KmlSplitter {
-
-	private static HashSet<CityGMLClass> CURRENTLY_ALLOWED_CITY_OBJECT_TYPES = new HashSet<CityGMLClass>();
-
+	private final HashSet<CityGMLClass> CURRENTLY_ALLOWED_CITY_OBJECT_TYPES = new HashSet<CityGMLClass>();
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
 	private final DisplayForm displayForm;
 	private final ExportFilter exportFilter;
-	//	private final Config config;
 	private ExportFilterConfig filterConfig;
 	private volatile boolean shouldRun = true;
 
