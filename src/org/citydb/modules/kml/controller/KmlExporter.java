@@ -31,7 +31,6 @@ package org.citydb.modules.kml.controller;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -52,7 +51,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.namespace.QName;
 
 import net.opengis.kml._2.BalloonStyleType;
@@ -158,21 +156,15 @@ public class KmlExporter implements EventHandler {
 	private final String ENCODING = "UTF-8";
 	private final Charset CHARSET = Charset.forName(ENCODING);
 	private final String TEMP_FOLDER = "__temp";
+	private File lastTempFolder = null;
 
 	private BoundingBox extent;
 	private GeometryObject wgs84Extent;
-	private GeometryObject[][] wgs84Tiles;
-	private int rows;
-	private int columns;
-
-	private String path;
-	private String filename;
+	private int rows = 1;
+	private int columns = 1;
 
 	private EnumMap<CityGMLClass, Long>featureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
 	private long geometryCounter;
-
-	private File lastTempFolder;
-	private ExportTracker tracker;
 
 	public KmlExporter (JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
@@ -186,7 +178,6 @@ public class KmlExporter implements EventHandler {
 		this.eventDispatcher = eventDispatcher;
 
 		kmlFactory = new ObjectFactory();
-		tracker = new ExportTracker();
 	}
 
 	public void cleanup() {
@@ -223,8 +214,7 @@ public class KmlExporter implements EventHandler {
 				Logger.getInstance().error("Please use the database tab to activate the spatial indexes.");
 				return false;
 			}
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			Logger.getInstance().error("Failed to retrieve status of spatial indexes: " + e.getMessage());
 			return false;
 		}
@@ -242,8 +232,7 @@ public class KmlExporter implements EventHandler {
 						}
 					}
 				}
-			}
-			catch (SQLException e) {
+			} catch (SQLException e) {
 				Logger.getInstance().error("Generic DB error: " + e.getMessage());
 				return false;
 			}
@@ -263,11 +252,9 @@ public class KmlExporter implements EventHandler {
 		balloonCheck = checkBalloonSettings(CityGMLClass.TUNNEL) && balloonCheck;
 		if (!balloonCheck) return false;
 
-		// getting export filter
+		// get export filter and bounding box config
 		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
 		boolean isBBoxActive = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue();
-
-		// bounding box config
 		Tiling tiling = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
 
 		// create a saxWriter instance 
@@ -282,84 +269,75 @@ public class KmlExporter implements EventHandler {
 		saxWriter.setPrefix("atom", "http://www.w3.org/2005/Atom");
 		saxWriter.setPrefix("xal", "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0");
 
+		// set export filename and path
+		String path = config.getInternal().getExportFileName().trim();
 		String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
-		path = config.getInternal().getExportFileName().trim();
+		String fileName = null;
+		
 		if (path.lastIndexOf(File.separator) == -1) {
-			if (path.lastIndexOf(".") == -1) {
-				filename = path;
-			}
-			else {
-				filename = path.substring(0, path.lastIndexOf("."));
-			}
+			fileName = path.lastIndexOf(".") == -1 ? path : path.substring(0, path.lastIndexOf("."));			
 			path = ".";
-		}
-		else {
-			if (path.lastIndexOf(".") == -1) {
-				filename = path.substring(path.lastIndexOf(File.separator) + 1);
-			}
-			else {
-				filename = path.substring(path.lastIndexOf(File.separator) + 1, path.lastIndexOf("."));
-			}
+		} else {
+			fileName = path.lastIndexOf(".") == -1 ? path.substring(path.lastIndexOf(File.separator) + 1) : path.substring(path.lastIndexOf(File.separator) + 1, path.lastIndexOf("."));
 			path = path.substring(0, path.lastIndexOf(File.separator));
 		}
 
-		if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
+		// start writing KML master file if required
+		SAXWriter masterFileWriter = null;
+		if (isBBoxActive) {
 			try {
-				int activeDisplayFormsAmount = 
-						org.citydb.config.project.kmlExporter.KmlExporter.getActiveDisplayFormsAmount(config.getProject().getKmlExporter().getBuildingDisplayForms());
-				Logger.getInstance().info(String.valueOf(rows * columns * activeDisplayFormsAmount) +
-						" (" + rows + "x" + columns + "x" + activeDisplayFormsAmount +
-						") tiles will be generated."); 
-			}
-			catch (Exception ex) {
-				ex.printStackTrace();
+				masterFileWriter = writeMasterFileHeader(fileName, path);
+			} catch (JAXBException | IOException | SAXException e) {
+				Logger.getInstance().error("Failed to write KML master file header: " + e.getMessage());
 				return false;
 			}
 		}
-		else {
-			rows = 1;
-			columns = 1;
+		
+		// track exported objects
+		ExportTracker tracker = null;
+		
+		// display number of tiles to be exporter
+		if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
+			int activeDisplayFormsAmount = config.getProject().getKmlExporter().getActiveDisplayFormsAmount(config.getProject().getKmlExporter().getBuildingDisplayForms());
+			Logger.getInstance().info(String.valueOf(rows * columns * activeDisplayFormsAmount) +
+					" (" + rows + "x" + columns + "x" + activeDisplayFormsAmount +
+					") tiles will be generated."); 
 		}
 
-		// set up cache of tile extents in WGS84
-		wgs84Tiles = new GeometryObject[rows][columns];
-		
 		long start = System.currentTimeMillis();
 
 		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
-			if (!displayForm.isActive()) continue;
+			if (!displayForm.isActive()) 
+				continue;
 
 			tracker = new ExportTracker();
 
 			for (int i = 0; shouldRun && i < rows; i++) {
 				for (int j = 0; shouldRun && j < columns; j++) {
-
-					if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
+					if (lastTempFolder != null && lastTempFolder.exists()) 
+						deleteFolder(lastTempFolder); // just in case
 
 					File file = null;
 					OutputStreamWriter fileWriter = null;
 					ZipOutputStream zipOut = null;
+					GeometryObject wgs84Tile = null;
 
 					try {
 						if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
 							exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
-						
+
 							// transform tile extent to WGS84
-							if (wgs84Tiles[i][j] == null) {
-								try {
-									wgs84Tiles[i][j] = convertTileToWGS84(exportFilter.getBoundingBoxFilter().getFilterState());
-								} catch (SQLException e) {
-									Logger.getInstance().error("Failed to transform tile extent to WGS84: " + e.getMessage());
-									return false;
-								}
+							try {
+								wgs84Tile = convertTileToWGS84(exportFilter.getBoundingBoxFilter().getFilterState());
+							} catch (SQLException e) {
+								Logger.getInstance().error("Failed to transform tile extent to WGS84: " + e.getMessage());
+								return false;
 							}
-								
-							file = new File(path + File.separator + filename + "_Tile_"
+
+							file = new File(path + File.separator + fileName + "_Tile_"
 									+ i + "_" + j + "_" + displayForm.getName() + fileExtension);
-						}
-						else {
-							file = new File(path + File.separator + filename + "_" + displayForm.getName() + fileExtension);
-						}
+						} else
+							file = new File(path + File.separator + fileName + "_" + displayForm.getName() + fileExtension);
 
 						eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
 
@@ -370,10 +348,8 @@ public class KmlExporter implements EventHandler {
 								ZipEntry zipEntry = new ZipEntry("doc.kml");
 								zipOut.putNextEntry(zipEntry);
 								fileWriter = new OutputStreamWriter(zipOut, CHARSET);
-							}
-							else {
+							} else
 								fileWriter = new OutputStreamWriter(new FileOutputStream(file), CHARSET);
-							}
 
 							// set output for SAXWriter
 							saxWriter.setOutput(fileWriter);	
@@ -428,36 +404,30 @@ public class KmlExporter implements EventHandler {
 						JAXBElement<KmlType> kml = kmlFactory.createKml(kmlType);
 
 						DocumentType document = kmlFactory.createDocumentType();
-						if (isBBoxActive &&	tiling.getMode() != TilingMode.NO_TILING) {
-							document.setName(filename + "_Tile_" + i + "_" + j + "_" + displayForm.getName());
-						}
-						else {
-							document.setName(filename + "_" + displayForm.getName());
-						}
+						if (isBBoxActive &&	tiling.getMode() != TilingMode.NO_TILING)
+							document.setName(fileName + "_Tile_" + i + "_" + j + "_" + displayForm.getName());
+						else 
+							document.setName(fileName + "_" + displayForm.getName());
+
 						document.setOpen(false);
 						kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
 
-						Marshaller marshaller = null;						
+						// write file header
+						Marshaller marshaller = null;
 						try {
 							marshaller = jaxbKmlContext.createMarshaller();
-						} catch (JAXBException e) {
-							Logger.getInstance().error("Failed to create JAXB marshaller object.");
-							return false;
-						}
-
-						try {
 							fragmentWriter.setWriteMode(WriteMode.HEAD);
 							marshaller.marshal(kml, fragmentWriter);
-							saxWriter.flush();
 
 							if (isBBoxActive 
 									&&	tiling.getMode() != TilingMode.NO_TILING 
 									&& config.getProject().getKmlExporter().getFilter().isSetComplexFilter() 
 									&& config.getProject().getKmlExporter().isShowTileBorders())
-								addBorder(wgs84Tiles[i][j], null);
-							
+								addBorder(wgs84Tile, null, saxWriter);
+
+							saxWriter.flush();
 						} catch (JAXBException jaxBE) {
-							Logger.getInstance().error("I/O error: " + jaxBE.getMessage());
+							Logger.getInstance().error("JAXB error: " + jaxBE.getMessage());
 							return false;
 						} catch (SAXException saxE) {
 							Logger.getInstance().error("I/O error: " + saxE.getMessage());
@@ -465,7 +435,6 @@ public class KmlExporter implements EventHandler {
 						}
 
 						// get database splitter and start query
-						kmlSplitter = null;
 						try {
 							kmlSplitter = new KmlSplitter(
 									dbPool,
@@ -485,17 +454,17 @@ public class KmlExporter implements EventHandler {
 
 						try {
 							kmlWorkerPool.shutdownAndWait();
+							ioWriterPool.shutdownAndWait();
 
 							if (!featureCounterMap.isEmpty() &&
 									(!config.getProject().getKmlExporter().isOneFilePerObject() ||
 											config.getProject().getKmlExporter().getFilter().isSetSimpleFilter())) {
 								for (CityGMLClass type : featureCounterMap.keySet()) {
 									if (featureCounterMap.get(type) > 0)
-										addStyle(displayForm, type);
+										addStyle(displayForm, type, saxWriter);
 								}
 							}
 
-							ioWriterPool.shutdownAndWait();
 						} catch (InterruptedException e) {
 							System.out.println(e.getMessage());
 						} catch (JAXBException jaxBE) {
@@ -551,14 +520,23 @@ public class KmlExporter implements EventHandler {
 								zipOut.close();
 							}
 							fileWriter.close();
-						}
-						catch (Exception ioe) {
+						} catch (Exception ioe) {
 							Logger.getInstance().error("I/O error: " + ioe.getMessage());
 							try {
 								fileWriter.close();
 							}
 							catch (Exception e) {}
 							return false;
+						}
+
+						// create reference to tile file in master file
+						if (masterFileWriter != null) {
+							try {
+								writeMasterFileTileReference(fileName, i, j, wgs84Tile, masterFileWriter);
+							} catch (JAXBException e) {
+								Logger.getInstance().error("Failed to write tile reference to master file: " + e.getMessage());
+								return false;
+							}
 						}
 
 						eventDispatcher.triggerEvent(new StatusDialogMessage(" ", this));
@@ -589,22 +567,21 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 
-		if (isBBoxActive) {
+		// complete KML master file
+		if (masterFileWriter != null) {
 			try {
-				eventDispatcher.triggerEvent(new StatusDialogTitle(filename + ".kml", this));
-				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("kmlExport.dialog.writingMainFile"), this));
-				generateMasterFile();
-			}
-			catch (Exception ex) {
-				ex.printStackTrace();
+				writeMasterFileFooter(masterFileWriter);
+				masterFileWriter.close();
+			} catch (JAXBException | SAXException e) {
+				Logger.getInstance().error("Failed to write KML master file footer: " + e.getMessage());
 				return false;
 			}
 		}
 
 		if (config.getProject().getKmlExporter().isWriteJSONFile()) {
 			try {
-				Logger.getInstance().info("Writing file: " + filename + ".json");
-				File jsonFile = new File(path + File.separator + filename + ".json");
+				Logger.getInstance().info("Writing file: " + fileName + ".json");
+				File jsonFile = new File(path + File.separator + fileName + ".json");
 				FileOutputStream outputStream = new FileOutputStream(jsonFile);
 				if (config.getProject().getKmlExporter().isWriteJSONPFile())
 					outputStream.write((config.getProject().getKmlExporter().getCallbackNameJSONP() + "({\n").getBytes(CHARSET));
@@ -637,11 +614,14 @@ public class KmlExporter implements EventHandler {
 			for (CityGMLClass type : featureCounterMap.keySet())
 				Logger.getInstance().info(type + ": " + featureCounterMap.get(type));
 		}
+		
 		Logger.getInstance().info("Processed geometry objects: " + geometryCounter);
 
-		if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
-		tracker.clear();
+		if (lastTempFolder != null && lastTempFolder.exists()) 
+			deleteFolder(lastTempFolder); // just in case
 		
+		tracker.clear();
+
 		if (shouldRun)
 			Logger.getInstance().info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 
@@ -660,7 +640,7 @@ public class KmlExporter implements EventHandler {
 
 		// retrieve WGS84 extent of bbox
 		wgs84Extent = convertTileToWGS84(extent);
-		
+
 		// determine tile sizes and derive number of rows and columns
 		switch (bbox.getTiling().getMode()) {
 		case AUTOMATIC:
@@ -683,9 +663,7 @@ public class KmlExporter implements EventHandler {
 		return rows * columns;
 	}
 
-	private void generateMasterFile() throws FileNotFoundException, SQLException, JAXBException, DatatypeConfigurationException {
-		// create a saxWriter instance 
-		// define indent for xml output and namespace mappings
+	private SAXWriter writeMasterFileHeader(String fileName, String path) throws JAXBException, IOException, SAXException {
 		SAXWriter saxWriter = new SAXWriter();
 		saxWriter.setIndentString("  ");
 		saxWriter.setHeaderComment("Written by " + this.getClass().getPackage().getImplementationTitle() + ", version \"" +
@@ -697,212 +675,197 @@ public class KmlExporter implements EventHandler {
 		saxWriter.setPrefix("xal", "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0");
 
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
-		TilingMode tilingMode = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode();
-	
-		try {
-			File mainFile = new File(path + File.separator + filename + ".kml");
-			FileOutputStream outputStream = new FileOutputStream(mainFile);
-			saxWriter.setOutput(outputStream, ENCODING);	
 
-			ioWriterPool = new SingleWorkerPool<SAXEventBuffer>(
-					"kml_master_file_writer_pool",
-					new IOWriterWorkerFactory(saxWriter),
-					100,
-					true);
+		File mainFile = new File(path, fileName + ".kml");
+		FileOutputStream outputStream = new FileOutputStream(mainFile);
+		saxWriter.setOutput(outputStream, ENCODING);
 
-			ioWriterPool.prestartCoreWorkers();
+		// create file header
+		SAXFragmentWriter fragmentWriter = new SAXFragmentWriter(new QName("http://www.opengis.net/kml/2.2", "Document"), saxWriter);						
 
-			// create file header
-			SAXFragmentWriter fragmentWriter = new SAXFragmentWriter(
-					new QName("http://www.opengis.net/kml/2.2", "Document"), saxWriter);						
+		// create kml root element
+		KmlType kmlType = kmlFactory.createKmlType();
+		JAXBElement<KmlType> kml = kmlFactory.createKml(kmlType);
+		DocumentType document = kmlFactory.createDocumentType();
+		document.setOpen(true);
+		document.setName(fileName);
+		LookAtType lookAtType = kmlFactory.createLookAtType();
 
-			// create kml root element
-			KmlType kmlType = kmlFactory.createKmlType();
-			JAXBElement<KmlType> kml = kmlFactory.createKml(kmlType);
-			DocumentType document = kmlFactory.createDocumentType();
-			document.setOpen(true);
-			document.setName(filename);
-			LookAtType lookAtType = kmlFactory.createLookAtType();
-			
-			// create bounding box of wgs84 extent
-			BoundingBox bbox = getBBox(wgs84Extent);
-			
-			lookAtType.setLongitude(bbox.getLowerLeftCorner().getX() + Math.abs((bbox.getUpperRightCorner().getX() - bbox.getLowerLeftCorner().getX())/2));
-			lookAtType.setLatitude(bbox.getLowerLeftCorner().getY() + Math.abs((bbox.getUpperRightCorner().getY() - bbox.getLowerLeftCorner().getY())/2));
-			lookAtType.setAltitude(0.0);
-			lookAtType.setHeading(0.0);
-			lookAtType.setTilt(60.0);
-			lookAtType.setRange(970.0);
-			document.setAbstractViewGroup(kmlFactory.createLookAt(lookAtType));
-			kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
+		// create bounding box of wgs84 extent
+		BoundingBox bbox = getBBox(wgs84Extent);
 
-			try {
-				fragmentWriter.setWriteMode(WriteMode.HEAD);
-				marshaller.marshal(kml, fragmentWriter);				
+		lookAtType.setLongitude(bbox.getLowerLeftCorner().getX() + Math.abs((bbox.getUpperRightCorner().getX() - bbox.getLowerLeftCorner().getX())/2));
+		lookAtType.setLatitude(bbox.getLowerLeftCorner().getY() + Math.abs((bbox.getUpperRightCorner().getY() - bbox.getLowerLeftCorner().getY())/2));
+		lookAtType.setAltitude(0.0);
+		lookAtType.setHeading(0.0);
+		lookAtType.setTilt(60.0);
+		lookAtType.setRange(970.0);
+		document.setAbstractViewGroup(kmlFactory.createLookAt(lookAtType));
+		kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
 
-				if (config.getProject().getKmlExporter().isOneFilePerObject()) {
-					FeatureClass featureFilter = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass();
-					if (featureFilter.isSetBuilding()) {
-						for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
-							addStyle(displayForm, CityGMLClass.BUILDING);
-						}
-					}
-					if (featureFilter.isSetCityFurniture()) {
-						for (DisplayForm displayForm : config.getProject().getKmlExporter().getCityFurnitureDisplayForms()) {
-							addStyle(displayForm, CityGMLClass.CITY_FURNITURE);
-						}
-					}
-					if (featureFilter.isSetCityObjectGroup()) {
-						for (DisplayForm displayForm : config.getProject().getKmlExporter().getCityObjectGroupDisplayForms()) {
-							addStyle(displayForm, CityGMLClass.CITY_OBJECT_GROUP);
-						}
-					}
-					if (featureFilter.isSetGenericCityObject()) {
-						for (DisplayForm displayForm : config.getProject().getKmlExporter().getGenericCityObjectDisplayForms()) {
-							addStyle(displayForm, CityGMLClass.GENERIC_CITY_OBJECT);
-						}
-					}
-					if (featureFilter.isSetLandUse()) {
-						for (DisplayForm displayForm : config.getProject().getKmlExporter().getLandUseDisplayForms()) {
-							addStyle(displayForm, CityGMLClass.LAND_USE);
-						}
-					}
-					if (featureFilter.isSetReliefFeature()) {
-						for (DisplayForm displayForm : config.getProject().getKmlExporter().getReliefDisplayForms()) {
-							addStyle(displayForm, CityGMLClass.RELIEF_FEATURE);
-						}
-					}
-					if (featureFilter.isSetTransportation()) {
-						for (DisplayForm displayForm : config.getProject().getKmlExporter().getTransportationDisplayForms()) {
-							addStyle(displayForm, CityGMLClass.TRANSPORTATION_COMPLEX);
-						}
-					}
-					if (featureFilter.isSetVegetation()) {
-						for (DisplayForm displayForm : config.getProject().getKmlExporter().getVegetationDisplayForms()) {
-							addStyle(displayForm, CityGMLClass.SOLITARY_VEGETATION_OBJECT);
-						}
-					}
-					if (featureFilter.isSetWaterBody()) {
-						for (DisplayForm displayForm : config.getProject().getKmlExporter().getWaterBodyDisplayForms()) {
-							addStyle(displayForm, CityGMLClass.WATER_BODY);
-						}
-					}
-					if (featureFilter.isSetBridge()) {
-						for (DisplayForm displayForm : config.getProject().getKmlExporter().getBridgeDisplayForms()) {
-							addStyle(displayForm, CityGMLClass.BRIDGE);
-						}
-					}
-					if (featureFilter.isSetTunnel()) {
-						for (DisplayForm displayForm : config.getProject().getKmlExporter().getTunnelDisplayForms()) {
-							addStyle(displayForm, CityGMLClass.TUNNEL);
-						}
-					}
-				}
-				// make sure header has been written
-				saxWriter.flush();
-			}
-			catch (SAXException saxE) {
-				Logger.getInstance().error("I/O error: " + saxE.getMessage());
-			}
+		fragmentWriter.setWriteMode(WriteMode.HEAD);
+		marshaller.marshal(kml, fragmentWriter);				
 
-			if (config.getProject().getKmlExporter().isShowBoundingBox()) {
-				StyleType style = kmlFactory.createStyleType();
-				style.setId("frameStyle");
-				LineStyleType frameLineStyleType = kmlFactory.createLineStyleType();
-				frameLineStyleType.setWidth(4.0);
-				style.setLineStyle(frameLineStyleType);
-
-				addBorder(wgs84Extent, style);
-			}
-
-			for (int i = 0; i < rows; i++) {
-				for (int j = 0; j < columns; j++) {
-					
-					if (wgs84Tiles[i][j] == null)
-						continue;
-
-					// create bounding box of wgs84 tile extent
-					bbox = getBBox(wgs84Tiles[i][j]);
-
-					// tileName should not contain special characters,
-					// since it will be used as filename for all displayForm files
-					String tileName = filename;
-					if (tilingMode != TilingMode.NO_TILING) {
-						tileName = tileName + "_Tile_" + i + "_" + j;
-					}
-					FolderType folderType = kmlFactory.createFolderType();
-					folderType.setName(tileName);
-
-					for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
-
-						if (!displayForm.isActive()) continue;
-
-						String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
-						String tilenameForDisplayForm = tileName + "_" + displayForm.getName() + fileExtension; 
-
-						NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
-						networkLinkType.setName("Display as " + displayForm.getName());
-
-						RegionType regionType = kmlFactory.createRegionType();
-
-						LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
-						latLonAltBoxType.setNorth(bbox.getUpperRightCorner().getY());
-						latLonAltBoxType.setSouth(bbox.getLowerLeftCorner().getY());
-						latLonAltBoxType.setEast(bbox.getUpperRightCorner().getX());
-						latLonAltBoxType.setWest(bbox.getLowerLeftCorner().getX());
-
-						LodType lodType = kmlFactory.createLodType();
-						lodType.setMinLodPixels((double)displayForm.getVisibleFrom());
-						lodType.setMaxLodPixels((double)displayForm.getVisibleUpTo());
-
-						regionType.setLatLonAltBox(latLonAltBoxType);
-						regionType.setLod(lodType);
-
-						LinkType linkType = kmlFactory.createLinkType();
-						linkType.setHref(tilenameForDisplayForm);
-						linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
-						linkType.setViewFormat("");
-						if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP) {
-							linkType.setViewRefreshTime(config.getProject().getKmlExporter().getViewRefreshTime());
-						}
-
-						// confusion between atom:link and kml:Link in ogckml22.xsd
-						networkLinkType.getRest().add(kmlFactory.createLink(linkType));
-						networkLinkType.setRegion(regionType);
-						folderType.getAbstractFeatureGroup().add(kmlFactory.createNetworkLink(networkLinkType));
-					}
-					SAXEventBuffer tmp = new SAXEventBuffer();
-					marshaller.marshal(kmlFactory.createFolder(folderType), tmp);
-					ioWriterPool.addWork(tmp);
+		if (config.getProject().getKmlExporter().isOneFilePerObject()) {
+			FeatureClass featureFilter = config.getProject().getKmlExporter().getFilter().getComplexFilter().getFeatureClass();
+			if (featureFilter.isSetBuilding()) {
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
+					addStyle(displayForm, CityGMLClass.BUILDING, saxWriter);
 				}
 			}
-
-			try {
-				ioWriterPool.shutdownAndWait();
-				fragmentWriter.setWriteMode(WriteMode.TAIL);
-				marshaller.marshal(kml, fragmentWriter);
-				saxWriter.flush();
-			} catch (SAXException saxE) {
-				Logger.getInstance().error("I/O error: " + saxE.getMessage());
-			} catch (InterruptedException e) {
-				System.out.println(e.getMessage());
+			if (featureFilter.isSetCityFurniture()) {
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getCityFurnitureDisplayForms()) {
+					addStyle(displayForm, CityGMLClass.CITY_FURNITURE, saxWriter);
+				}
 			}
-			outputStream.close();
-		}
-		catch (IOException ioe) {
-			ioe.printStackTrace();
+			if (featureFilter.isSetCityObjectGroup()) {
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getCityObjectGroupDisplayForms()) {
+					addStyle(displayForm, CityGMLClass.CITY_OBJECT_GROUP, saxWriter);
+				}
+			}
+			if (featureFilter.isSetGenericCityObject()) {
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getGenericCityObjectDisplayForms()) {
+					addStyle(displayForm, CityGMLClass.GENERIC_CITY_OBJECT, saxWriter);
+				}
+			}
+			if (featureFilter.isSetLandUse()) {
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getLandUseDisplayForms()) {
+					addStyle(displayForm, CityGMLClass.LAND_USE, saxWriter);
+				}
+			}
+			if (featureFilter.isSetReliefFeature()) {
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getReliefDisplayForms()) {
+					addStyle(displayForm, CityGMLClass.RELIEF_FEATURE, saxWriter);
+				}
+			}
+			if (featureFilter.isSetTransportation()) {
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getTransportationDisplayForms()) {
+					addStyle(displayForm, CityGMLClass.TRANSPORTATION_COMPLEX, saxWriter);
+				}
+			}
+			if (featureFilter.isSetVegetation()) {
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getVegetationDisplayForms()) {
+					addStyle(displayForm, CityGMLClass.SOLITARY_VEGETATION_OBJECT, saxWriter);
+				}
+			}
+			if (featureFilter.isSetWaterBody()) {
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getWaterBodyDisplayForms()) {
+					addStyle(displayForm, CityGMLClass.WATER_BODY, saxWriter);
+				}
+			}
+			if (featureFilter.isSetBridge()) {
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBridgeDisplayForms()) {
+					addStyle(displayForm, CityGMLClass.BRIDGE, saxWriter);
+				}
+			}
+			if (featureFilter.isSetTunnel()) {
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getTunnelDisplayForms()) {
+					addStyle(displayForm, CityGMLClass.TUNNEL, saxWriter);
+				}
+			}
 		}
 
+		if (config.getProject().getKmlExporter().isShowBoundingBox()) {
+			StyleType style = kmlFactory.createStyleType();
+			style.setId("frameStyle");
+			LineStyleType frameLineStyleType = kmlFactory.createLineStyleType();
+			frameLineStyleType.setWidth(4.0);
+			style.setLineStyle(frameLineStyleType);
+
+			addBorder(wgs84Extent, style, saxWriter);
+		}
+
+		// make sure header has been written
+		saxWriter.flush();
+		return saxWriter;
 	}
 
-	private void addStyle(DisplayForm currentDisplayForm, CityGMLClass featureClass) throws JAXBException {
+	private void writeMasterFileTileReference(String tileName, int row, int column, GeometryObject wgs84Tile, SAXWriter saxWriter) throws JAXBException {
+		if (wgs84Tile == null)
+			return;
+
+		TilingMode tilingMode = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode();
+		Marshaller marshaller = jaxbKmlContext.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+
+		// create bounding box of wgs84 tile extent
+		BoundingBox bbox = getBBox(wgs84Tile);
+
+		// tileName should not contain special characters,
+		// since it will be used as filename for all displayForm files
+		if (tilingMode != TilingMode.NO_TILING)
+			tileName = tileName + "_Tile_" + row + "_" + column;
+
+		FolderType folderType = kmlFactory.createFolderType();
+		folderType.setName(tileName);
+
+		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
+			if (!displayForm.isActive()) 
+				continue;
+
+			String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
+			String tilenameForDisplayForm = tileName + "_" + displayForm.getName() + fileExtension; 
+
+			NetworkLinkType networkLinkType = kmlFactory.createNetworkLinkType();
+			networkLinkType.setName("Display as " + displayForm.getName());
+
+			RegionType regionType = kmlFactory.createRegionType();
+
+			LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
+			latLonAltBoxType.setNorth(bbox.getUpperRightCorner().getY());
+			latLonAltBoxType.setSouth(bbox.getLowerLeftCorner().getY());
+			latLonAltBoxType.setEast(bbox.getUpperRightCorner().getX());
+			latLonAltBoxType.setWest(bbox.getLowerLeftCorner().getX());
+
+			LodType lodType = kmlFactory.createLodType();
+			lodType.setMinLodPixels((double)displayForm.getVisibleFrom());
+			lodType.setMaxLodPixels((double)displayForm.getVisibleUpTo());
+
+			regionType.setLatLonAltBox(latLonAltBoxType);
+			regionType.setLod(lodType);
+
+			LinkType linkType = kmlFactory.createLinkType();
+			linkType.setHref(tilenameForDisplayForm);
+			linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
+			linkType.setViewFormat("");
+			if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP)
+				linkType.setViewRefreshTime(config.getProject().getKmlExporter().getViewRefreshTime());
+
+			// confusion between atom:link and kml:Link in ogckml22.xsd
+			networkLinkType.getRest().add(kmlFactory.createLink(linkType));
+			networkLinkType.setRegion(regionType);
+			folderType.getAbstractFeatureGroup().add(kmlFactory.createNetworkLink(networkLinkType));
+		}
+
+		marshaller.marshal(kmlFactory.createFolder(folderType), saxWriter);
+	}
+
+	private void writeMasterFileFooter(SAXWriter saxWriter) throws JAXBException, SAXException {
+		Marshaller marshaller = jaxbKmlContext.createMarshaller();
+
+		// create file header
+		SAXFragmentWriter fragmentWriter = new SAXFragmentWriter(new QName("http://www.opengis.net/kml/2.2", "Document"), saxWriter);						
+		fragmentWriter.setWriteMode(WriteMode.TAIL);
+
+		// create kml root element
+		KmlType kmlType = kmlFactory.createKmlType();
+		JAXBElement<KmlType> kml = kmlFactory.createKml(kmlType);
+		DocumentType document = kmlFactory.createDocumentType();
+		kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
+
+		marshaller.marshal(kml, fragmentWriter);
+		saxWriter.flush();
+	}
+
+	private void addStyle(DisplayForm currentDisplayForm, CityGMLClass featureClass, SAXWriter saxWriter) throws JAXBException {
 		if (!currentDisplayForm.isActive()) return;
 		switch (featureClass) {
 		case SOLITARY_VEGETATION_OBJECT:
 		case PLANT_COVER:
 			addStyle(currentDisplayForm,
 					config.getProject().getKmlExporter().getVegetationDisplayForms(),
-					SolitaryVegetationObject.STYLE_BASIS_NAME);
+					SolitaryVegetationObject.STYLE_BASIS_NAME,
+					saxWriter);
 			break;
 
 		case TRAFFIC_AREA:
@@ -914,37 +877,43 @@ public class KmlExporter implements EventHandler {
 		case SQUARE:
 			addStyle(currentDisplayForm,
 					config.getProject().getKmlExporter().getTransportationDisplayForms(),
-					Transportation.STYLE_BASIS_NAME);
+					Transportation.STYLE_BASIS_NAME,
+					saxWriter);
 			break;
 		case RELIEF_FEATURE:
 			addStyle(currentDisplayForm,
 					config.getProject().getKmlExporter().getReliefDisplayForms(),
-					Relief.STYLE_BASIS_NAME);
+					Relief.STYLE_BASIS_NAME,
+					saxWriter);
 			break;
 
 		case CITY_OBJECT_GROUP:
 			addStyle(new DisplayForm(DisplayForm.FOOTPRINT, -1, -1), // hard-coded for groups
 					config.getProject().getKmlExporter().getCityObjectGroupDisplayForms(),
-					CityObjectGroup.STYLE_BASIS_NAME);
+					CityObjectGroup.STYLE_BASIS_NAME,
+					saxWriter);
 			break;
 
 		case CITY_FURNITURE:
 			addStyle(currentDisplayForm,
 					config.getProject().getKmlExporter().getCityFurnitureDisplayForms(),
-					CityFurniture.STYLE_BASIS_NAME);
+					CityFurniture.STYLE_BASIS_NAME,
+					saxWriter);
 			break;
 
 		case GENERIC_CITY_OBJECT:
-			addGenericCityObjectPointAndCurveStyle();
+			addGenericCityObjectPointAndCurveStyle(saxWriter);
 			addStyle(currentDisplayForm,
 					config.getProject().getKmlExporter().getGenericCityObjectDisplayForms(),
-					GenericCityObject.STYLE_BASIS_NAME);
+					GenericCityObject.STYLE_BASIS_NAME,
+					saxWriter);
 			break;
 
 		case LAND_USE:
 			addStyle(currentDisplayForm,
 					config.getProject().getKmlExporter().getLandUseDisplayForms(),
-					LandUse.STYLE_BASIS_NAME);
+					LandUse.STYLE_BASIS_NAME,
+					saxWriter);
 			break;
 
 		case WATER_BODY:
@@ -953,27 +922,31 @@ public class KmlExporter implements EventHandler {
 		case WATER_SURFACE:
 			addStyle(currentDisplayForm,
 					config.getProject().getKmlExporter().getWaterBodyDisplayForms(),
-					WaterBody.STYLE_BASIS_NAME);
+					WaterBody.STYLE_BASIS_NAME,
+					saxWriter);
 			break;
 		case BRIDGE:
-			addStyle(currentDisplayForm, config.getProject().getKmlExporter().getBridgeDisplayForms(), 
-					Bridge.STYLE_BASIS_NAME);
+			addStyle(currentDisplayForm, 
+					config.getProject().getKmlExporter().getBridgeDisplayForms(), 
+					Bridge.STYLE_BASIS_NAME,
+					saxWriter);
 			break;
 		case TUNNEL:
-			addStyle(currentDisplayForm, config.getProject().getKmlExporter().getTunnelDisplayForms(), 
-					Tunnel.STYLE_BASIS_NAME);
+			addStyle(currentDisplayForm, 
+					config.getProject().getKmlExporter().getTunnelDisplayForms(), 
+					Tunnel.STYLE_BASIS_NAME,
+					saxWriter);
 			break;
 		case BUILDING: // must be last, why?
 		default:
 			addStyle(currentDisplayForm,
 					config.getProject().getKmlExporter().getBuildingDisplayForms(),
-					Building.STYLE_BASIS_NAME);
+					Building.STYLE_BASIS_NAME,
+					saxWriter);
 		}
 	}
 
-	private void addGenericCityObjectPointAndCurveStyle() throws JAXBException {
-
-		SAXEventBuffer saxBuffer = new SAXEventBuffer();
+	private void addGenericCityObjectPointAndCurveStyle(SAXWriter saxWriter) throws JAXBException {
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
@@ -998,7 +971,7 @@ public class KmlExporter implements EventHandler {
 			pointStyleNormal.setId(GenericCityObject.STYLE_BASIS_NAME + GenericCityObject.POINT + "Normal");
 			pointStyleNormal.setBalloonStyle(balloonStyle);
 
-			marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxBuffer);
+			marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxWriter);
 		}
 		else if (pacSettings.getPointDisplayMode() == PointDisplayMode.CUBE) {
 			String fillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(pacSettings.getPointCubeFillColor()));
@@ -1017,7 +990,7 @@ public class KmlExporter implements EventHandler {
 			styleCubeNormal.setPolyStyle(polyStyleCubeNormal);
 			styleCubeNormal.setBalloonStyle(balloonStyle);
 
-			marshaller.marshal(kmlFactory.createStyle(styleCubeNormal), saxBuffer);
+			marshaller.marshal(kmlFactory.createStyle(styleCubeNormal), saxWriter);
 
 			if (pacSettings.isPointCubeHighlightingEnabled()) {
 				LineStyleType lineStyleCubeHighlight = kmlFactory.createLineStyleType();
@@ -1042,8 +1015,8 @@ public class KmlExporter implements EventHandler {
 				styleMapCube.getPair().add(pairCubeNormal);
 				styleMapCube.getPair().add(pairCubeHighlight);
 
-				marshaller.marshal(kmlFactory.createStyle(styleCubeHighlight), saxBuffer);
-				marshaller.marshal(kmlFactory.createStyleMap(styleMapCube), saxBuffer);
+				marshaller.marshal(kmlFactory.createStyle(styleCubeHighlight), saxWriter);
+				marshaller.marshal(kmlFactory.createStyleMap(styleMapCube), saxWriter);
 			}
 		}
 		else {
@@ -1055,7 +1028,7 @@ public class KmlExporter implements EventHandler {
 			pointStyleNormal.setLineStyle(pointLineStyleNormal);
 			pointStyleNormal.setBalloonStyle(balloonStyle);
 
-			marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxBuffer);
+			marshaller.marshal(kmlFactory.createStyle(pointStyleNormal), saxWriter);
 
 			if (pacSettings.isPointHighlightingEnabled()) {
 				LineStyleType pointLineStyleHighlight = kmlFactory.createLineStyleType();
@@ -1077,8 +1050,8 @@ public class KmlExporter implements EventHandler {
 				styleMapPoint.getPair().add(pairPointNormal);
 				styleMapPoint.getPair().add(pairPointHighlight);
 
-				marshaller.marshal(kmlFactory.createStyle(pointStyleHighlight), saxBuffer);
-				marshaller.marshal(kmlFactory.createStyleMap(styleMapPoint), saxBuffer);
+				marshaller.marshal(kmlFactory.createStyle(pointStyleHighlight), saxWriter);
+				marshaller.marshal(kmlFactory.createStyleMap(styleMapPoint), saxWriter);
 			}			
 		}
 
@@ -1090,7 +1063,7 @@ public class KmlExporter implements EventHandler {
 		curveStyleNormal.setLineStyle(lineStyleNormal);
 		curveStyleNormal.setBalloonStyle(balloonStyle);
 
-		marshaller.marshal(kmlFactory.createStyle(curveStyleNormal), saxBuffer);
+		marshaller.marshal(kmlFactory.createStyle(curveStyleNormal), saxWriter);
 
 		if (pacSettings.isCurveHighlightingEnabled()) {
 			LineStyleType lineStyleHighlight = kmlFactory.createLineStyleType();
@@ -1112,18 +1085,16 @@ public class KmlExporter implements EventHandler {
 			styleMapCurve.getPair().add(pairCurveNormal);
 			styleMapCurve.getPair().add(pairCurveHighlight);
 
-			marshaller.marshal(kmlFactory.createStyle(curveStyleHighlight), saxBuffer);
-			marshaller.marshal(kmlFactory.createStyleMap(styleMapCurve), saxBuffer);
+			marshaller.marshal(kmlFactory.createStyle(curveStyleHighlight), saxWriter);
+			marshaller.marshal(kmlFactory.createStyleMap(styleMapCurve), saxWriter);
 		}
-
-		ioWriterPool.addWork(saxBuffer);
 	}
 
 	private void addStyle(DisplayForm currentDisplayForm,
 			List<DisplayForm> displayFormsForObjectType,
-			String styleBasisName) throws JAXBException {
+			String styleBasisName,
+			SAXWriter saxWriter) throws JAXBException {
 
-		SAXEventBuffer saxBuffer = new SAXEventBuffer();
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
@@ -1165,7 +1136,7 @@ public class KmlExporter implements EventHandler {
 			styleFootprintNormal.setPolyStyle(polyStyleFootprintNormal);
 			styleFootprintNormal.setBalloonStyle(balloonStyle);
 
-			marshaller.marshal(kmlFactory.createStyle(styleFootprintNormal), saxBuffer);
+			marshaller.marshal(kmlFactory.createStyle(styleFootprintNormal), saxWriter);
 
 			if (currentDisplayForm.isHighlightingEnabled()) {
 				LineStyleType lineStyleFootprintHighlight = kmlFactory.createLineStyleType();
@@ -1190,11 +1161,10 @@ public class KmlExporter implements EventHandler {
 				styleMapFootprint.getPair().add(pairFootprintNormal);
 				styleMapFootprint.getPair().add(pairFootprintHighlight);
 
-				marshaller.marshal(kmlFactory.createStyle(styleFootprintHighlight), saxBuffer);
-				marshaller.marshal(kmlFactory.createStyleMap(styleMapFootprint), saxBuffer);
+				marshaller.marshal(kmlFactory.createStyle(styleFootprintHighlight), saxWriter);
+				marshaller.marshal(kmlFactory.createStyleMap(styleMapFootprint), saxWriter);
 			}
 
-			ioWriterPool.addWork(saxBuffer);
 			break;
 
 		case DisplayForm.GEOMETRY:
@@ -1243,7 +1213,7 @@ public class KmlExporter implements EventHandler {
 			else
 				styleWallNormal.setId(styleBasisName + currentDisplayForm.getName() + "Normal");
 
-			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxBuffer);
+			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxWriter);
 
 			if (isBuilding)
 				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString() + "Normal");
@@ -1252,7 +1222,7 @@ public class KmlExporter implements EventHandler {
 			else if (isTunnel)
 				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_GROUND_SURFACE).toString() + "Normal");
 
-			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxBuffer);
+			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxWriter);
 
 			LineStyleType lineStyleRoofNormal = kmlFactory.createLineStyleType();
 			lineStyleRoofNormal.setColor(hexStringToByteArray(roofLineColor));
@@ -1271,7 +1241,7 @@ public class KmlExporter implements EventHandler {
 			else if (isTunnel)
 				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_ROOF_SURFACE).toString() + "Normal");
 
-			marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxBuffer);
+			marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxWriter);
 
 			if (currentDisplayForm.isHighlightingEnabled()) {
 				String highlightFillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
@@ -1315,12 +1285,11 @@ public class KmlExporter implements EventHandler {
 				styleMapGeometry.getPair().add(pairGeometryNormal);
 				styleMapGeometry.getPair().add(pairGeometryHighlight);
 
-				marshaller.marshal(kmlFactory.createStyle(styleGeometryInvisible), saxBuffer);
-				marshaller.marshal(kmlFactory.createStyle(styleGeometryHighlight), saxBuffer);
-				marshaller.marshal(kmlFactory.createStyleMap(styleMapGeometry), saxBuffer);
+				marshaller.marshal(kmlFactory.createStyle(styleGeometryInvisible), saxWriter);
+				marshaller.marshal(kmlFactory.createStyle(styleGeometryHighlight), saxWriter);
+				marshaller.marshal(kmlFactory.createStyleMap(styleMapGeometry), saxWriter);
 			}
 
-			ioWriterPool.addWork(saxBuffer);
 			break;
 
 		case DisplayForm.COLLADA:
@@ -1369,10 +1338,9 @@ public class KmlExporter implements EventHandler {
 					styleMapCollada.getPair().add(pairColladaNormal);
 					styleMapCollada.getPair().add(pairColladaHighlight);
 
-					marshaller.marshal(kmlFactory.createStyle(styleColladaInvisible), saxBuffer);
-					marshaller.marshal(kmlFactory.createStyle(styleColladaHighlight), saxBuffer);
-					marshaller.marshal(kmlFactory.createStyleMap(styleMapCollada), saxBuffer);
-					ioWriterPool.addWork(saxBuffer);
+					marshaller.marshal(kmlFactory.createStyle(styleColladaInvisible), saxWriter);
+					marshaller.marshal(kmlFactory.createStyle(styleColladaHighlight), saxWriter);
+					marshaller.marshal(kmlFactory.createStyleMap(styleMapCollada), saxWriter);
 				}
 			}
 			break;
@@ -1383,8 +1351,7 @@ public class KmlExporter implements EventHandler {
 		}
 	}
 
-	private void addBorder(GeometryObject tile, StyleType style) throws JAXBException {
-		SAXEventBuffer saxBuffer = new SAXEventBuffer();
+	private void addBorder(GeometryObject tile, StyleType style, SAXWriter saxWriter) throws JAXBException {
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
@@ -1402,13 +1369,12 @@ public class KmlExporter implements EventHandler {
 
 		if (style != null) {
 			placemark.setStyleUrl("#" + style.getId());
-			marshaller.marshal(kmlFactory.createStyle(style), saxBuffer);
+			marshaller.marshal(kmlFactory.createStyle(style), saxWriter);
 		}
-		
-		marshaller.marshal(kmlFactory.createPlacemark(placemark), saxBuffer);
-		ioWriterPool.addWork(saxBuffer);
+
+		marshaller.marshal(kmlFactory.createPlacemark(placemark), saxWriter);
 	}
-		
+
 	private GeometryObject convertTileToWGS84(BoundingBox bbox) throws SQLException {
 		GeometryObject convertedGeomObj = null;
 		Connection conn = null;
@@ -1446,14 +1412,14 @@ public class KmlExporter implements EventHandler {
 			if (conn != null) try { conn.close(); } catch (SQLException e) { }
 		}
 	}
-	
+
 	private BoundingBox getBBox(GeometryObject tile) {	
 		double[] coordinates = tile.getCoordinates(0);		
 		double xmin = Math.max(coordinates[0], coordinates[6]);
 		double ymin = Math.max(coordinates[1], coordinates[3]);
 		double xmax = Math.min(coordinates[2], coordinates[4]);
 		double ymax = Math.min(coordinates[5], coordinates[7]);
-		
+
 		return new BoundingBox(new BoundingBoxCorner(xmin, ymin), new BoundingBoxCorner(xmax, ymax));
 	}
 
