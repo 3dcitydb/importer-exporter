@@ -71,6 +71,7 @@ import org.citydb.modules.kml.database.SolitaryVegetationObject;
 import org.citydb.modules.kml.database.Transportation;
 import org.citydb.modules.kml.database.Tunnel;
 import org.citydb.modules.kml.database.WaterBody;
+import org.citydb.modules.kml.util.ExportTracker;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
@@ -100,6 +101,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 			JAXBContext jaxbColladaContext,
 			DatabaseConnectionPool dbConnectionPool,
 			WorkerPool<SAXEventBuffer> ioWriterPool,
+			ExportTracker tracker,
 			ObjectFactory kmlFactory,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
@@ -122,6 +124,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		kmlExporterManager = new KmlExporterManager(jaxbKmlContext,
 				jaxbColladaContext,
 				ioWriterPool,
+				tracker,
 				kmlFactory,
 				textureExportAdapter,
 				config);

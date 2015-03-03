@@ -42,7 +42,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -132,6 +131,7 @@ import org.citydb.modules.kml.database.Tunnel;
 import org.citydb.modules.kml.database.WaterBody;
 import org.citydb.modules.kml.datatype.TypeAttributeValueEnum;
 import org.citydb.modules.kml.util.CityObject4JSON;
+import org.citydb.modules.kml.util.ExportTracker;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
@@ -172,7 +172,7 @@ public class KmlExporter implements EventHandler {
 	private long geometryCounter;
 
 	private File lastTempFolder;
-	private static HashMap<Long, CityObject4JSON> alreadyExported;
+	private ExportTracker tracker;
 
 	public KmlExporter (JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
@@ -185,7 +185,8 @@ public class KmlExporter implements EventHandler {
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
 
-		kmlFactory = new ObjectFactory();		
+		kmlFactory = new ObjectFactory();
+		tracker = new ExportTracker();
 	}
 
 	public void cleanup() {
@@ -328,7 +329,7 @@ public class KmlExporter implements EventHandler {
 		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 			if (!displayForm.isActive()) continue;
 
-			alreadyExported = new HashMap<Long, CityObject4JSON>();
+			tracker = new ExportTracker();
 
 			for (int i = 0; shouldRun && i < rows; i++) {
 				for (int j = 0; shouldRun && j < columns; j++) {
@@ -399,6 +400,7 @@ public class KmlExporter implements EventHandler {
 										jaxbColladaContext,
 										dbPool,
 										ioWriterPool,
+										tracker,
 										kmlFactory,
 										config,
 										eventDispatcher),
@@ -468,6 +470,7 @@ public class KmlExporter implements EventHandler {
 							kmlSplitter = new KmlSplitter(
 									dbPool,
 									kmlWorkerPool,
+									tracker,
 									exportFilter,
 									displayForm,
 									config);
@@ -608,13 +611,11 @@ public class KmlExporter implements EventHandler {
 				else
 					outputStream.write("{\n".getBytes(CHARSET));
 
-				Iterator<Long> iterator = alreadyExported.keySet().iterator();
-				while (iterator.hasNext()) {
-					Long id = iterator.next();
-					outputStream.write(alreadyExported.get(id).toString().getBytes(CHARSET));
-					if (iterator.hasNext()) {
+				Iterator<CityObject4JSON> iter = tracker.values().iterator();
+				while (iter.hasNext()) {
+					outputStream.write(iter.next().toString().getBytes(CHARSET));
+					if (iter.hasNext())
 						outputStream.write(",\n".getBytes(CHARSET));
-					}
 				}
 
 				if (config.getProject().getKmlExporter().isWriteJSONPFile())
@@ -639,7 +640,8 @@ public class KmlExporter implements EventHandler {
 		Logger.getInstance().info("Processed geometry objects: " + geometryCounter);
 
 		if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
-
+		tracker.clear();
+		
 		if (shouldRun)
 			Logger.getInstance().info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 
@@ -1664,9 +1666,4 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 	}
-
-	public static HashMap<Long, CityObject4JSON> getAlreadyExported() {
-		return alreadyExported;
-	}
-
 }

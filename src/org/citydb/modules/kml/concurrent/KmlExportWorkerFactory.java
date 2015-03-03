@@ -43,6 +43,7 @@ import org.citydb.config.Config;
 import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.log.Logger;
 import org.citydb.modules.kml.database.KmlSplittingResult;
+import org.citydb.modules.kml.util.ExportTracker;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult> {
@@ -52,6 +53,7 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 	private final JAXBContext jaxbColladaContext;
 	private final DatabaseConnectionPool dbConnectionPool;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
+	private final ExportTracker tracker;
 	private final ObjectFactory kmlFactory;
 	private final Config config;
 	private final EventDispatcher eventDispatcher;
@@ -61,6 +63,7 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 			JAXBContext jaxbColladaContext,
 			DatabaseConnectionPool dbConnectionPool,
 			WorkerPool<SAXEventBuffer> ioWriterPool,
+			ExportTracker tracker,
 			ObjectFactory kmlFactory,
 			Config config,
 			EventDispatcher eventDispatcher) {
@@ -68,6 +71,7 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.dbConnectionPool = dbConnectionPool;
 		this.ioWriterPool = ioWriterPool;
+		this.tracker = tracker;
 		this.kmlFactory = kmlFactory;
 		this.config = config;
 		this.eventDispatcher = eventDispatcher;
@@ -83,6 +87,7 @@ public class KmlExportWorkerFactory implements WorkerFactory<KmlSplittingResult>
 					jaxbColladaContext,
 					dbConnectionPool,
 					ioWriterPool,
+					tracker,
 					kmlFactory,
 					config,
 					eventDispatcher);

@@ -65,14 +65,15 @@ import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
-import org.citydb.modules.kml.controller.KmlExporter;
 import org.citydb.modules.kml.util.CityObject4JSON;
+import org.citydb.modules.kml.util.ExportTracker;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 public class KmlExporterManager {
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
 	private final WorkerPool<SAXEventBuffer> ioWriterPool;
+	private final ExportTracker tracker;
 	private final ObjectFactory kmlFactory; 
 	private final BlobExportAdapter textureExportAdapter;
 	private final Config config;
@@ -87,12 +88,14 @@ public class KmlExporterManager {
 	public KmlExporterManager(JAXBContext jaxbKmlContext,
 							  JAXBContext jaxbColladaContext,
 							  WorkerPool<SAXEventBuffer> ioWriterPool,
+							  ExportTracker tracker,
 							  ObjectFactory kmlFactory,
 							  BlobExportAdapter textureExportAdapter,
 							  Config config) {
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.ioWriterPool = ioWriterPool;
+		this.tracker = tracker;
 		this.kmlFactory = kmlFactory;
 		this.textureExportAdapter = textureExportAdapter;
 		this.config = config;
@@ -260,7 +263,7 @@ public class KmlExporterManager {
 							}
 
 							LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
-							CityObject4JSON cityObject4JSON = KmlExporter.getAlreadyExported().get(work.getId());
+							CityObject4JSON cityObject4JSON = tracker.get(work.getId());
 							if (cityObject4JSON != null) { // avoid NPE when aborting large KML/COLLADA exports
 								latLonAltBoxType.setNorth(cityObject4JSON.getEnvelopeYmax());
 								latLonAltBoxType.setSouth(cityObject4JSON.getEnvelopeYmin());
@@ -420,7 +423,7 @@ public class KmlExporterManager {
 				RegionType regionType = kmlFactory.createRegionType();
 				
 				LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
-				CityObject4JSON cityObject4JSON = KmlExporter.getAlreadyExported().get(id);
+				CityObject4JSON cityObject4JSON = tracker.get(id);
 				if (cityObject4JSON != null) { // avoid NPE when aborting large KML/COLLADA exports
 					latLonAltBoxType.setNorth(cityObject4JSON.getEnvelopeYmax());
 					latLonAltBoxType.setSouth(cityObject4JSON.getEnvelopeYmin());
