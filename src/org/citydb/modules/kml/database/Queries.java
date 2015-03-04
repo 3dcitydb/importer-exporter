@@ -46,30 +46,19 @@ public class Queries {
 	// ----------------------------------------------------------------------
 
 	public static final String GET_IDS(DatabaseType type) {
-		String query = "SELECT co.id, co.gmlid, co.objectclass_id FROM CITYOBJECT co WHERE ";
-
+		StringBuilder query = new StringBuilder()
+		.append("SELECT co.id, co.gmlid, co.objectclass_id, co.envelope FROM CITYOBJECT co WHERE ");
+		
 		switch (type) {
 		case ORACLE:
-			// using "UNION ALL" instead of "mask=inside+converedby+equal" may result in better performance...
-			query += "(SDO_RELATE(co.envelope, ?, 'mask=overlapbdydisjoint') = 'TRUE') "
-					+ "UNION ALL "
-					+ "SELECT co.id, co.gmlid, co.objectclass_id FROM CITYOBJECT co WHERE "
-					+ "(SDO_RELATE(co.envelope, ?, 'mask=inside') = 'TRUE') "
-					+ "UNION ALL "
-					+ "SELECT co.id, co.gmlid, co.objectclass_id FROM CITYOBJECT co WHERE "
-					+ "(SDO_RELATE(co.envelope, ?, 'mask=coveredby') = 'TRUE') "
-					+ "UNION ALL "
-					+ "SELECT co.id, co.gmlid, co.objectclass_id FROM CITYOBJECT co WHERE "
-					+ "(SDO_RELATE(co.envelope, ?, 'mask=equal') = 'TRUE') ";
+			query.append("SDO_ANYINTERACT(co.envelope, ?) = 'TRUE'");
 			break;
 		case POSTGIS:
-			query += "ST_Intersects(co.envelope, ?) = 'TRUE' "
-					+ "or ST_CoveredBy(co.envelope, ?) = 'TRUE' ";
+			query.append("co.envelope && ?");
 			break;
-		}
-
-		query += "ORDER BY 3"; // ORDER BY co.objectclass_id
-		return query;
+		}		
+		
+		return query.toString();
 	}
 
 	public static final String GET_EXTRUDED_HEIGHT(DatabaseType type) {
@@ -122,18 +111,6 @@ public class Queries {
 			query += " FROM " + sqlAdapter.getPseudoTableName();
 
 		return query;
-	}
-
-	public static final String GET_ENVELOPE_IN_WGS84_FROM_ID(AbstractSQLAdapter sqlAdapter) {
-		return "SELECT " + sqlAdapter.resolveDatabaseOperationName("geom_transform") + "(co.envelope, 4326) " +
-				"FROM CITYOBJECT co " +
-				"WHERE co.id = ?";
-	}
-
-	public static final String GET_ENVELOPE_IN_WGS84_3D_FROM_ID(AbstractSQLAdapter sqlAdapter) {
-		return "SELECT " + sqlAdapter.resolveDatabaseOperationName("geom_transform") + "(co.envelope, 4329) " +
-				"FROM CITYOBJECT co " +
-				"WHERE co.id = ?";
 	}
 
 	public static final String GET_CENTROID_IN_WGS84_FROM_ID(DatabaseType type) {
@@ -2310,32 +2287,27 @@ public class Queries {
 					"FROM CITYOBJECT co " +
 					"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
 					"FROM GROUP_TO_CITYOBJECT g2co "+ 
-					"WHERE g2co.cityobjectgroup_id = ?) " +
-					"ORDER BY co.objectclass_id";
+					"WHERE g2co.cityobjectgroup_id = ?)";
 
-	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX(DatabaseType type) { 
+	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX(DatabaseType type) {
+		StringBuilder query = new StringBuilder()
+		.append("SELECT co.id, co.gmlid, co.objectclass_id, co.envelope ")
+		.append("FROM CITYOBJECT co ")
+		.append("WHERE co.ID IN (SELECT g2co.cityobject_id ")
+		.append("FROM GROUP_TO_CITYOBJECT g2co ")
+		.append("WHERE g2co.cityobjectgroup_id = ?) ")
+		.append("AND ");
+				
 		switch (type) {
 		case ORACLE:
-			return "SELECT co.id, co.gmlid, co.objectclass_id " + 
-			"FROM CITYOBJECT co " +
-			"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-			"FROM GROUP_TO_CITYOBJECT g2co "+ 
-			"WHERE g2co.cityobjectgroup_id = ?) " +
-			"AND (SDO_RELATE(co.envelope, ?, 'mask=overlapbdydisjoint') = 'TRUE') " +
-			"OR (SDO_RELATE(co.envelope, ?, 'mask=inside+coveredby+equal') = 'TRUE') " +
-			"ORDER BY 3"; // ORDER BY co.objectclass_id
+			query.append("SDO_ANYINTERACT(co.envelope, ?) = 'TRUE'");
+			break;
 		case POSTGIS:
-			return "SELECT co.id, co.gmlid, co.objectclass_id " +
-			"FROM cityobject co " +
-			"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
-			"FROM group_to_cityobject g2co " + 
-			"WHERE g2co.cityobjectgroup_id = ?) " +
-			"AND (ST_Intersects(co.envelope, ?) = 'TRUE' " +
-			" or ST_CoveredBy(co.envelope, ?) = 'TRUE') " +
-			"ORDER BY 3"; // ORDER BY co.objectclass_id*/
-		default:
-			return null;
-		}
+			query.append("co.envelope && ?");
+			break;
+		}	
+		
+		return query.toString();
 	}
 
 	// ----------------------------------------------------------------------

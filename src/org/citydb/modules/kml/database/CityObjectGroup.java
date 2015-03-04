@@ -117,8 +117,6 @@ public class CityObjectGroup extends KmlGenericObject{
 				Logger.getInstance().info("Could not display CityObjectGroup " + work.getGmlId());
 			}
 			else { // result not empty
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
-
 				// get the proper displayForm (colors, highlighting) when not building
 				DisplayForm displayForm = new DisplayForm(DisplayForm.FOOTPRINT, -1, -1);
 				int indexOfDf = getDisplayForms().indexOf(displayForm);
@@ -130,6 +128,8 @@ public class CityObjectGroup extends KmlGenericObject{
 				kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
 										 work,
 										 getBalloonSettings().isBalloonContentInSeparateFile());
+				
+				kmlExporterManager.updateFeatureTracker(work);
 			}
 		}
 		catch (SQLException sqlEx) {

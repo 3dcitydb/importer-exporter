@@ -192,9 +192,9 @@ public class ImpExpCmd {
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		KmlExporter kmlExporter = new KmlExporter(jaxbKmlContext, jaxbColladaContext, dbPool, config, eventDispatcher);
 		ExportFilterConfig filter = config.getProject().getKmlExporter().getFilter();
-		if (filter.isSetComplexFilter()) {
+		if (filter.isSetComplexFilter() && filter.getComplexFilter().getTiledBoundingBox().isSet()) {
 			try {
-				kmlExporter.calculateRowsColumnsAndDelta();
+				kmlExporter.calculateRowsColumns();
 			}
 			catch (SQLException sqle) {
 				String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs() == null ?

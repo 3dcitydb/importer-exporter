@@ -349,7 +349,7 @@ public class KmlExporter {
 		return vegetationColladaOptions;
 	}
 
-	public static int getActiveDisplayFormsAmount(List<DisplayForm> displayForms) {
+	public int getActiveDisplayFormsAmount(List<DisplayForm> displayForms) {
 		int activeAmount = 0; 
 		for (DisplayForm displayForm : displayForms) {
 			if (displayForm.isActive()) activeAmount++;

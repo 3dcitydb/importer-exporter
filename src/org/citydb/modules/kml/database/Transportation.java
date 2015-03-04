@@ -158,8 +158,6 @@ public class Transportation extends KmlGenericObject{
 						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
 			}
 			else { // result not empty
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
-
 				// get the proper displayForm (for highlighting)
 				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
 				if (indexOfDf != -1) {
@@ -258,6 +256,8 @@ public class Transportation extends KmlGenericObject{
 						break;
 					}
 				}
+				
+				kmlExporterManager.updateFeatureTracker(work);
 			}
 		}
 		catch (SQLException sqlEx) {

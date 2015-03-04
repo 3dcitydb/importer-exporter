@@ -106,7 +106,6 @@ public class Building extends KmlGenericObject{
 	}
 
 	public void read(KmlSplittingResult work) {
-
 		List<PlacemarkType> placemarks = new ArrayList<PlacemarkType>();
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
@@ -116,63 +115,64 @@ public class Building extends KmlGenericObject{
 			for (int i = 1; i <= psQuery.getParameterMetaData().getParameterCount(); i++) {
 				psQuery.setLong(i, work.getId());
 			}
-			
+
 			rs = psQuery.executeQuery();
-						
+
 			while (rs.next()) {
 				long buildingPartId = rs.getLong(1);
 				List<PlacemarkType> placemarkBPart = readBuildingPart(buildingPartId, work);
 				if (placemarkBPart != null){
 					placemarks.addAll(placemarkBPart);
 				} 
-					
+
 			}
 		}
 		catch (SQLException sqlEx) {
 			Logger.getInstance().error("SQL error while getting building parts for building " + work.getGmlId() + ": " + sqlEx.getMessage());
+			return;
 		}
 		finally {
 			try { rs.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
 			rs = null; // workaround for jdbc library: rs.isClosed() throws SQLException!
 			try { psQuery.close(); /* release cursor on DB */ } catch (SQLException sqle) {}
+		}
 
-			if (placemarks.size() == 0) {
-				int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
-				String fromMessage = " from LoD" + lodToExportFrom;
-				if (lodToExportFrom == 5) {
-					if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
-						fromMessage = ". LoD1 or higher required";
-					else
-						fromMessage = " from any LoD";
-				}
-				Logger.getInstance().info("Could not display object " + work.getGmlId() 
-						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
+		if (placemarks.size() == 0) {
+			int lodToExportFrom = config.getProject().getKmlExporter().getLodToExportFrom();
+			String fromMessage = " from LoD" + lodToExportFrom;
+			if (lodToExportFrom == 5) {
+				if (work.getDisplayForm().getForm() == DisplayForm.COLLADA)
+					fromMessage = ". LoD1 or higher required";
+				else
+					fromMessage = " from any LoD";
 			}
-			else {
-				try {
-					// compact list before exporting
-					for (int i = 0; i < placemarks.size(); i++) {
-						PlacemarkType placemark1 = placemarks.get(i);
-						if (placemark1 == null) continue;
-						MultiGeometryType multiGeometry1 = (MultiGeometryType) placemark1.getAbstractGeometryGroup().getValue();
-						for (int j = i+1; j < placemarks.size(); j++) {
-							PlacemarkType placemark2 = placemarks.get(j);
-							if (placemark2 == null || !placemark1.getId().equals(placemark2.getId())) continue;
-							// compact since ids are identical
-							MultiGeometryType multiGeometry2 = (MultiGeometryType) placemark2.getAbstractGeometryGroup().getValue();
-							multiGeometry1.getAbstractGeometryGroup().addAll(multiGeometry2.getAbstractGeometryGroup());
-							placemarks.set(j, null); // polygons transfered, placemark exhausted
-						}
+			Logger.getInstance().info("Could not display object " + work.getGmlId() 
+					+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
+		}
+		else {
+			try {
+				// compact list before exporting
+				for (int i = 0; i < placemarks.size(); i++) {
+					PlacemarkType placemark1 = placemarks.get(i);
+					if (placemark1 == null) continue;
+					MultiGeometryType multiGeometry1 = (MultiGeometryType) placemark1.getAbstractGeometryGroup().getValue();
+					for (int j = i+1; j < placemarks.size(); j++) {
+						PlacemarkType placemark2 = placemarks.get(j);
+						if (placemark2 == null || !placemark1.getId().equals(placemark2.getId())) continue;
+						// compact since ids are identical
+						MultiGeometryType multiGeometry2 = (MultiGeometryType) placemark2.getAbstractGeometryGroup().getValue();
+						multiGeometry1.getAbstractGeometryGroup().addAll(multiGeometry2.getAbstractGeometryGroup());
+						placemarks.set(j, null); // polygons transfered, placemark exhausted
 					}
-
-					kmlExporterManager.print(placemarks,
-							work,
-							getBalloonSettings().isBalloonContentInSeparateFile());
-
-					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
 				}
-				catch (JAXBException jaxbEx) {}
+
+				kmlExporterManager.print(placemarks,
+						work,
+						getBalloonSettings().isBalloonContentInSeparateFile());
+
+				kmlExporterManager.updateFeatureTracker(work);
 			}
+			catch (JAXBException jaxbEx) {}
 		}
 	}
 
@@ -259,7 +259,7 @@ public class Building extends KmlGenericObject{
 			}
 
 			if (rs != null) { // result not empty
-				
+
 				switch (work.getDisplayForm().getForm()) {
 				case DisplayForm.FOOTPRINT:
 					return createPlacemarksForFootprint(rs, work);
@@ -271,7 +271,7 @@ public class Building extends KmlGenericObject{
 					}
 					ResultSet rs2 = psQuery2.executeQuery();
 					rs2.next();
-					
+
 					double measuredHeight = rs2.getDouble("envelope_measured_height");
 					try { rs2.close(); /* release cursor on DB */ } catch (SQLException e) {}
 					try { psQuery2.close(); /* release cursor on DB */ } catch (SQLException e) {}

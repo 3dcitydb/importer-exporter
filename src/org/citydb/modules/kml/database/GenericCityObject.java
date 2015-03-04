@@ -215,8 +215,6 @@ public class GenericCityObject extends KmlGenericObject{
 						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
 			}
 			else { // result not empty
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
-
 				if (isPointOrCurve) { // point or curve geometry
 
 					kmlExporterManager.print(createPlacemarksForPointOrCurve(rs, work),
@@ -359,6 +357,8 @@ public class GenericCityObject extends KmlGenericObject{
 
 						break;
 					}
+					
+					kmlExporterManager.updateFeatureTracker(work);
 				}				
 			}
 		}

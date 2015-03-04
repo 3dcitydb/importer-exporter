@@ -53,6 +53,7 @@ import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobType;
+import org.citydb.modules.common.event.FeatureCounterEvent;
 import org.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import org.citydb.modules.kml.database.Bridge;
 import org.citydb.modules.kml.database.Building;
@@ -71,6 +72,7 @@ import org.citydb.modules.kml.database.SolitaryVegetationObject;
 import org.citydb.modules.kml.database.Transportation;
 import org.citydb.modules.kml.database.Tunnel;
 import org.citydb.modules.kml.database.WaterBody;
+import org.citydb.modules.kml.util.ExportTracker;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
@@ -100,6 +102,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 			JAXBContext jaxbColladaContext,
 			DatabaseConnectionPool dbConnectionPool,
 			WorkerPool<SAXEventBuffer> ioWriterPool,
+			ExportTracker tracker,
 			ObjectFactory kmlFactory,
 			Config config,
 			EventDispatcher eventDispatcher) throws SQLException {
@@ -122,8 +125,10 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		kmlExporterManager = new KmlExporterManager(jaxbKmlContext,
 				jaxbColladaContext,
 				ioWriterPool,
+				tracker,
 				kmlFactory,
 				textureExportAdapter,
+				eventDispatcher,
 				config);
 		
 		elevationServiceHandler = new ElevationServiceHandler();
@@ -286,6 +291,8 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 					objectGroupCounter.put(cityObjectType, 0);
 				}
 			}
+			
+			eventDispatcher.triggerEvent(new FeatureCounterEvent(kmlExporterManager.getFeatureCounter(), this));
 		}
 		finally {
 			if (textureExportAdapter != null) {

@@ -93,8 +93,8 @@ import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import org.citydb.gui.components.checkboxtree.DefaultTreeCheckingModel;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.log.Logger;
-import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.event.InterruptEvent;
+import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.util.Util;
 import org.citydb.util.gui.GuiUtil;
 
@@ -972,8 +972,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			}
 
 			// DisplayForms
-			int activeDisplayFormsAmount =
-					KmlExporter.getActiveDisplayFormsAmount(config.getProject().getKmlExporter().getBuildingDisplayForms()); 
+			int activeDisplayFormsAmount = config.getProject().getKmlExporter().getActiveDisplayFormsAmount(config.getProject().getKmlExporter().getBuildingDisplayForms()); 
 			if (activeDisplayFormsAmount == 0) {
 				mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"), 
 						Language.I18N.getString("kmlExport.dialog.error.incorrectData.displayForms"));
@@ -1026,10 +1025,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 
 			// tile amount calculation
 			int tileAmount = 1;
-			if (filter.isSetComplexFilter() &&
-					filter.getComplexFilter().getTiledBoundingBox().isSet()) {
+			if (filter.isSetComplexFilter() && filter.getComplexFilter().getTiledBoundingBox().isSet()) {
 				try {
-					tileAmount = kmlExporter.calculateRowsColumnsAndDelta();
+					tileAmount = kmlExporter.calculateRowsColumns();
 				}
 				catch (SQLException sqle) {
 					String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs().getDescription();

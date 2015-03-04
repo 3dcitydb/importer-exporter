@@ -139,18 +139,15 @@ public class SQLAdapter extends AbstractSQLAdapter {
 		.append(bbox.getLowerLeftCorner().getX()).append(", ").append(bbox.getLowerLeftCorner().getY()).append(", ")
 		.append(bbox.getUpperRightCorner().getX()).append(", ").append(bbox.getUpperRightCorner().getY()).append("))");
 
-		StringBuilder predicate = new StringBuilder()
-		.append("(SDO_INSIDE(").append(attributeName).append(", ").append(geometry).append(") = 'TRUE' ")
-		.append("or SDO_COVEREDBY(").append(attributeName).append(", ").append(geometry).append(") = 'TRUE' ")
-		.append("or SDO_EQUAL(").append(attributeName).append(", ").append(geometry).append(") = 'TRUE' ");
+		StringBuilder predicate = new StringBuilder();
 
-		if (!overlap)
-			predicate.append(')');
-		else {
-			predicate.append("or SDO_OVERLAPBDYINTERSECT(").append(attributeName).append(", ").append(geometry).append(") = 'TRUE' ");
-			predicate.append("or SDO_OVERLAPBDYDISJOINT(").append(attributeName).append(", ").append(geometry).append(") = 'TRUE' ");
-			predicate.append("or SDO_CONTAINS(").append(attributeName).append(", ").append(geometry).append(") = 'TRUE')");
-		}
+		if (!overlap) {
+			predicate.append("(SDO_INSIDE(").append(attributeName).append(", ").append(geometry).append(") = 'TRUE' ")
+			.append("or SDO_COVEREDBY(").append(attributeName).append(", ").append(geometry).append(") = 'TRUE' ")
+			.append("or SDO_EQUAL(").append(attributeName).append(", ").append(geometry).append(") = 'TRUE' ")
+			.append(')');
+		} else
+			predicate.append("SDO_ANYINTERACT(").append(attributeName).append(", ").append(geometry).append(") = 'TRUE' ");
 
 		return predicate.toString();
 	}

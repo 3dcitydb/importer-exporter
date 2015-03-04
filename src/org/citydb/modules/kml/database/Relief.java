@@ -169,8 +169,8 @@ public class Relief extends KmlGenericObject{
 			}
 			else { // result not empty
 				if (!alreadyCounted) { // in order to display it immediately
-					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
 					alreadyCounted = true;
+					kmlExporterManager.updateFeatureTracker(work);
 				}
 
 				// get the proper displayForm (for highlighting)

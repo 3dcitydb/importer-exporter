@@ -143,7 +143,6 @@ import org.w3c.dom.Element;
 import com.sun.j3d.utils.geometry.GeometryInfo;
 
 public abstract class KmlGenericObject {
-
 	protected final int GEOMETRY_AMOUNT_WARNING = 10000;
 	private final double TOLERANCE = Math.pow(10, -7);
 	private final double PRECISION = Math.pow(10, 7);
