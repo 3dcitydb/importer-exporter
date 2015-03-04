@@ -38,6 +38,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -61,12 +62,16 @@ import net.opengis.kml._2.RegionType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 
 import org.citydb.api.concurrent.WorkerPool;
+import org.citydb.api.event.EventDispatcher;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
+import org.citydb.modules.common.event.CounterEvent;
+import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
+import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
 public class KmlExporterManager {
@@ -76,10 +81,12 @@ public class KmlExporterManager {
 	private final ExportTracker tracker;
 	private final ObjectFactory kmlFactory; 
 	private final BlobExportAdapter textureExportAdapter;
+	private final EventDispatcher eventDispatcher;
 	private final Config config;
 	
 	private boolean isBBoxActive;
 	private String mainFilename;
+	private HashMap<CityGMLClass, Long> featureCounterMap;
 	
 	private final String ENCODING = "UTF-8";
 	private final Charset CHARSET = Charset.forName(ENCODING);
@@ -91,6 +98,7 @@ public class KmlExporterManager {
 							  ExportTracker tracker,
 							  ObjectFactory kmlFactory,
 							  BlobExportAdapter textureExportAdapter,
+							  EventDispatcher eventDispatcher,
 							  Config config) {
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
@@ -98,6 +106,7 @@ public class KmlExporterManager {
 		this.tracker = tracker;
 		this.kmlFactory = kmlFactory;
 		this.textureExportAdapter = textureExportAdapter;
+		this.eventDispatcher = eventDispatcher;
 		this.config = config;
 
 		isBBoxActive = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue();
@@ -116,8 +125,24 @@ public class KmlExporterManager {
 			}
 		}
 		mainFilename = mainFilename + ".kml";
+		
+		featureCounterMap = new HashMap<CityGMLClass, Long>();
 	}
-
+	
+	public void updateFeatureTracker(KmlSplittingResult work) {
+		Long counter = featureCounterMap.get(work.getCityObjectType());
+		if (counter == null)
+			featureCounterMap.put(work.getCityObjectType(), new Long(1));
+		else
+			featureCounterMap.put(work.getCityObjectType(), counter + 1);		
+		
+		tracker.put(work.getId(), work.getJson());
+		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
+	}
+	
+	public HashMap<CityGMLClass, Long> getFeatureCounter() {
+		return featureCounterMap;
+	}
 
 	public void print(List<PlacemarkType> placemarkList,
 					  KmlSplittingResult work,
@@ -335,9 +360,7 @@ public class KmlExporterManager {
         }
 	}
 
-	public void print(ColladaBundle colladaBundle,
-					  long id,
-					  boolean balloonInSeparateFile) throws JAXBException, 
+	public void print(ColladaBundle colladaBundle, long id, boolean balloonInSeparateFile) throws JAXBException, 
 														  	FileNotFoundException,
 														  	IOException,
 														  	SQLException {

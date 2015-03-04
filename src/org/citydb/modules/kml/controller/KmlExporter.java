@@ -41,6 +41,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -103,9 +104,8 @@ import org.citydb.config.project.resources.Resources;
 import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.concurrent.IOWriterWorkerFactory;
-import org.citydb.modules.common.event.CounterEvent;
-import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.EventType;
+import org.citydb.modules.common.event.FeatureCounterEvent;
 import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.modules.common.event.StatusDialogMessage;
 import org.citydb.modules.common.event.StatusDialogTitle;
@@ -120,7 +120,6 @@ import org.citydb.modules.kml.database.GenericCityObject;
 import org.citydb.modules.kml.database.KmlSplitter;
 import org.citydb.modules.kml.database.KmlSplittingResult;
 import org.citydb.modules.kml.database.LandUse;
-import org.citydb.modules.kml.database.PlantCover;
 import org.citydb.modules.kml.database.Queries;
 import org.citydb.modules.kml.database.Relief;
 import org.citydb.modules.kml.database.SolitaryVegetationObject;
@@ -185,8 +184,6 @@ public class KmlExporter implements EventHandler {
 	}
 
 	public boolean doProcess() {
-		geometryCounter = 0;
-
 		// get config shortcuts
 		Resources resources = config.getProject().getKmlExporter().getResources();
 
@@ -194,7 +191,7 @@ public class KmlExporter implements EventHandler {
 		int maxThreads = resources.getThreadPool().getDefaultPool().getMaxThreads();
 
 		// adding listener
-		eventDispatcher.addEventHandler(EventType.COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.FEATURE_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
@@ -273,7 +270,7 @@ public class KmlExporter implements EventHandler {
 		String path = config.getInternal().getExportFileName().trim();
 		String fileExtension = config.getProject().getKmlExporter().isExportAsKmz() ? ".kmz" : ".kml";
 		String fileName = null;
-		
+
 		if (path.lastIndexOf(File.separator) == -1) {
 			fileName = path.lastIndexOf(".") == -1 ? path : path.substring(0, path.lastIndexOf("."));			
 			path = ".";
@@ -292,11 +289,25 @@ public class KmlExporter implements EventHandler {
 				return false;
 			}
 		}
-		
-		// track exported objects
-		ExportTracker tracker = null;
-		
-		// display number of tiles to be exporter
+
+		// start writing JSON file if required
+		FileOutputStream jsonFileWriter = null;
+		boolean jsonHasContent = false;
+		if (config.getProject().getKmlExporter().isWriteJSONFile()) {
+			try {
+				File jsonFile = new File(path + File.separator + fileName + ".json");
+				jsonFileWriter = new FileOutputStream(jsonFile);
+				if (config.getProject().getKmlExporter().isWriteJSONPFile())
+					jsonFileWriter.write((config.getProject().getKmlExporter().getCallbackNameJSONP() + "({\n").getBytes(CHARSET));
+				else
+					jsonFileWriter.write("{\n".getBytes(CHARSET));
+			} catch (IOException e) {
+				Logger.getInstance().error("Failed to write JSON file header: " + e.getMessage());
+				return false;
+			}
+		}
+
+		// display number of tiles to be exported
 		if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
 			int activeDisplayFormsAmount = config.getProject().getKmlExporter().getActiveDisplayFormsAmount(config.getProject().getKmlExporter().getBuildingDisplayForms());
 			Logger.getInstance().info(String.valueOf(rows * columns * activeDisplayFormsAmount) +
@@ -306,14 +317,16 @@ public class KmlExporter implements EventHandler {
 
 		long start = System.currentTimeMillis();
 
-		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
-			if (!displayForm.isActive()) 
-				continue;
+		for (int i = 0; shouldRun && i < rows; i++) {
+			for (int j = 0; shouldRun && j < columns; j++) {
 
-			tracker = new ExportTracker();
+				// track exported objects
+				ExportTracker tracker = new ExportTracker();
 
-			for (int i = 0; shouldRun && i < rows; i++) {
-				for (int j = 0; shouldRun && j < columns; j++) {
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
+					if (!displayForm.isActive()) 
+						continue;
+
 					if (lastTempFolder != null && lastTempFolder.exists()) 
 						deleteFolder(lastTempFolder); // just in case
 
@@ -439,7 +452,6 @@ public class KmlExporter implements EventHandler {
 							kmlSplitter = new KmlSplitter(
 									dbPool,
 									kmlWorkerPool,
-									tracker,
 									exportFilter,
 									displayForm,
 									config);
@@ -524,8 +536,7 @@ public class KmlExporter implements EventHandler {
 							Logger.getInstance().error("I/O error: " + ioe.getMessage());
 							try {
 								fileWriter.close();
-							}
-							catch (Exception e) {}
+							} catch (Exception e) {}
 							return false;
 						}
 
@@ -564,6 +575,28 @@ public class KmlExporter implements EventHandler {
 						kmlSplitter = null;
 					}
 				}
+				
+				// fill JSON file after tile has been processed
+				if (jsonFileWriter != null) {
+					try {
+						Iterator<CityObject4JSON> iter = tracker.values().iterator();
+						if (iter.hasNext()) {
+							if (jsonHasContent)
+								jsonFileWriter.write(",\n".getBytes(CHARSET));
+							else
+								jsonHasContent = true;
+						}
+						
+						while (iter.hasNext()) {
+							jsonFileWriter.write(iter.next().toString().getBytes(CHARSET));
+							if (iter.hasNext())
+								jsonFileWriter.write(",\n".getBytes(CHARSET));
+						}
+					} catch (IOException ioe) {
+						Logger.getInstance().error("I/O error: " + ioe.getMessage());
+						return false;
+					}
+				}
 			}
 		}
 
@@ -578,31 +611,18 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 
-		if (config.getProject().getKmlExporter().isWriteJSONFile()) {
+		// close JSON file
+		if (jsonFileWriter != null) {
 			try {
-				Logger.getInstance().info("Writing file: " + fileName + ".json");
-				File jsonFile = new File(path + File.separator + fileName + ".json");
-				FileOutputStream outputStream = new FileOutputStream(jsonFile);
 				if (config.getProject().getKmlExporter().isWriteJSONPFile())
-					outputStream.write((config.getProject().getKmlExporter().getCallbackNameJSONP() + "({\n").getBytes(CHARSET));
+					jsonFileWriter.write("\n});\n".getBytes(CHARSET));
 				else
-					outputStream.write("{\n".getBytes(CHARSET));
-
-				Iterator<CityObject4JSON> iter = tracker.values().iterator();
-				while (iter.hasNext()) {
-					outputStream.write(iter.next().toString().getBytes(CHARSET));
-					if (iter.hasNext())
-						outputStream.write(",\n".getBytes(CHARSET));
-				}
-
-				if (config.getProject().getKmlExporter().isWriteJSONPFile())
-					outputStream.write("\n});\n".getBytes(CHARSET));
-				else
-					outputStream.write("\n}\n".getBytes(CHARSET));
-				outputStream.close();
-			}
-			catch (IOException ioe) {
-				Logger.getInstance().error("I/O error: " + ioe.getMessage());
+					jsonFileWriter.write("\n}\n".getBytes(CHARSET));
+				
+				jsonFileWriter.close();
+			} catch (IOException ioe) {
+				Logger.getInstance().error("Failed to close JSON file: " + ioe.getMessage());
+				return false;
 			}
 		}
 
@@ -614,13 +634,11 @@ public class KmlExporter implements EventHandler {
 			for (CityGMLClass type : featureCounterMap.keySet())
 				Logger.getInstance().info(type + ": " + featureCounterMap.get(type));
 		}
-		
+
 		Logger.getInstance().info("Processed geometry objects: " + geometryCounter);
 
 		if (lastTempFolder != null && lastTempFolder.exists()) 
 			deleteFolder(lastTempFolder); // just in case
-		
-		tracker.clear();
 
 		if (shouldRun)
 			Logger.getInstance().info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
@@ -1441,7 +1459,7 @@ public class KmlExporter implements EventHandler {
 		return bytes;
 	}
 
-	private boolean checkBalloonSettings (CityGMLClass cityObjectType) {
+	private boolean checkBalloonSettings(CityGMLClass cityObjectType) {
 		Balloon[] balloonSettings = null;
 		boolean settingsMustBeChecked = false;
 		switch (cityObjectType) {
@@ -1538,59 +1556,18 @@ public class KmlExporter implements EventHandler {
 
 	@Override
 	public void handleEvent(Event e) throws Exception {
+		if (e.getEventType() == EventType.FEATURE_COUNTER) {
+			HashMap<CityGMLClass, Long> counterMap = ((FeatureCounterEvent)e).getCounter();
 
-		if (e.getEventType() == EventType.COUNTER &&
-				((CounterEvent)e).getType() == CounterType.TOPLEVEL_FEATURE) {
+			for (CityGMLClass type : counterMap.keySet()) {
+				Long counter = featureCounterMap.get(type);
+				Long update = counterMap.get(type);
 
-			CityGMLClass type = null;
-			Object kmlExportObject = e.getSource();
-
-			if (kmlExportObject instanceof Building) {
-				type = CityGMLClass.BUILDING;
+				if (counter == null)
+					featureCounterMap.put(type, update);
+				else
+					featureCounterMap.put(type, counter + update);
 			}
-			else if (kmlExportObject instanceof WaterBody) {
-				type = CityGMLClass.WATER_BODY;
-			}
-			else if (kmlExportObject instanceof LandUse) {
-				type = CityGMLClass.LAND_USE;
-			}
-			else if (kmlExportObject instanceof CityObjectGroup) {
-				type = CityGMLClass.CITY_OBJECT_GROUP;
-			}
-			else if (kmlExportObject instanceof Transportation) {
-				type = CityGMLClass.TRANSPORTATION_COMPLEX;
-			}
-			else if (kmlExportObject instanceof Relief) {
-				type = CityGMLClass.RELIEF_FEATURE;
-			}
-			else if (kmlExportObject instanceof SolitaryVegetationObject) {
-				type = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
-			}
-			else if (kmlExportObject instanceof PlantCover) {
-				type = CityGMLClass.PLANT_COVER;
-			}
-			else if (kmlExportObject instanceof GenericCityObject) {
-				type = CityGMLClass.GENERIC_CITY_OBJECT;
-			}
-			else if (kmlExportObject instanceof CityFurniture) {
-				type = CityGMLClass.CITY_FURNITURE;
-			}
-			else if (kmlExportObject instanceof Bridge) {
-				type = CityGMLClass.BRIDGE;
-			}
-			else if (kmlExportObject instanceof Tunnel) {
-				type = CityGMLClass.TUNNEL;
-			}
-			else
-				return;
-
-			Long counter = featureCounterMap.get(type);
-			Long update = ((CounterEvent)e).getCounter();
-
-			if (counter == null)
-				featureCounterMap.put(type, update);
-			else
-				featureCounterMap.put(type, counter + update);
 		}
 		else if (e.getEventType() == EventType.GEOMETRY_COUNTER) {
 			geometryCounter++;

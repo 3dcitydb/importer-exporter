@@ -11,11 +11,7 @@ public class ExportTracker {
 	}
 	
 	public void put(long id, CityObject4JSON json) {
-		map.put(id, json);
-	}
-	
-	public boolean contains(long id) {
-		return map.containsKey(id);
+		map.putIfAbsent(id, json);
 	}
 	
 	public CityObject4JSON get(long id) {

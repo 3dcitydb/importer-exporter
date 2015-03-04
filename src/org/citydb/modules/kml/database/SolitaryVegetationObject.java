@@ -179,8 +179,6 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
 			}
 			else { // result not empty
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
-
 				// decide whether explicit or implicit geometry
 				sgRootId = rs.getLong(4);
 				if (sgRootId == 0) {
@@ -308,6 +306,8 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 
 					break;
 				}
+				
+				kmlExporterManager.updateFeatureTracker(work);
 			}
 		}
 		catch (SQLException sqlEx) {

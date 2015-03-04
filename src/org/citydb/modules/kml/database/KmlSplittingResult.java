@@ -30,6 +30,7 @@
 package org.citydb.modules.kml.database;
 
 import org.citydb.config.project.kmlExporter.DisplayForm;
+import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 public class KmlSplittingResult {
@@ -38,12 +39,14 @@ public class KmlSplittingResult {
 	private String gmlId;
 	private DisplayForm displayForm;
 	private CityGMLClass cityObjectType;
+	private CityObject4JSON json;
 
-	public KmlSplittingResult(long id, String gmlId, CityGMLClass cityObjectType, DisplayForm displayForm) {
+	public KmlSplittingResult(long id, String gmlId, CityGMLClass cityObjectType, CityObject4JSON json, DisplayForm displayForm) {
 		this.setId(id);
 		this.setGmlId(gmlId);
 		this.setCityObjectType(cityObjectType);
 		this.setDisplayForm(displayForm);
+		this.setJson(json);
 	}
 
 	public long getId() {
@@ -78,6 +81,14 @@ public class KmlSplittingResult {
 		this.cityObjectType = cityObjectType;
 	}
 	
+	public CityObject4JSON getJson() {
+		return json;
+	}
+
+	public void setJson(CityObject4JSON json) {
+		this.json = json;
+	}
+
 	public boolean isBuilding() {
 		return getCityObjectType().compareTo(CityGMLClass.BUILDING) == 0;
 	}

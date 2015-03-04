@@ -97,7 +97,6 @@ public class WaterBody extends KmlGenericObject{
 	}
 
 	public void read(KmlSplittingResult work) {
-
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 		
@@ -151,8 +150,6 @@ public class WaterBody extends KmlGenericObject{
 						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
 			}
 			else { // result not empty
-				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
-
 				// get the proper displayForm (for highlighting)
 				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
 				if (indexOfDf != -1) {
@@ -244,6 +241,8 @@ public class WaterBody extends KmlGenericObject{
 
 					break;
 				}
+				
+				kmlExporterManager.updateFeatureTracker(work);
 			}
 		}
 		catch (SQLException sqlEx) {

@@ -51,7 +51,6 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.filter.ExportFilter;
 import org.citydb.modules.kml.util.CityObject4JSON;
-import org.citydb.modules.kml.util.ExportTracker;
 import org.citydb.util.Util;
 import org.citygml4j.geometry.Point;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -60,7 +59,6 @@ import org.citygml4j.model.gml.geometry.primitives.Envelope;
 public class KmlSplitter {
 	private final HashSet<CityGMLClass> CURRENTLY_ALLOWED_CITY_OBJECT_TYPES = new HashSet<CityGMLClass>();
 	private final WorkerPool<KmlSplittingResult> dbWorkerPool;
-	private final ExportTracker tracker;
 	private final DisplayForm displayForm;
 	private final ExportFilter exportFilter;
 	private ExportFilterConfig filterConfig;
@@ -72,12 +70,10 @@ public class KmlSplitter {
 
 	public KmlSplitter(DatabaseConnectionPool dbConnectionPool, 
 			WorkerPool<KmlSplittingResult> dbWorkerPool,
-			ExportTracker tracker,
 			ExportFilter exportFilter, 
 			DisplayForm displayForm,
 			Config config) throws SQLException {
 		this.dbWorkerPool = dbWorkerPool;
-		this.tracker = tracker;
 		this.exportFilter = exportFilter;
 		this.displayForm = displayForm;
 		this.filterConfig = config.getProject().getKmlExporter().getFilter();
@@ -164,7 +160,6 @@ public class KmlSplitter {
 					rs = query.executeQuery();					
 					if (rs.next()) {
 						long id = rs.getLong("id");
-						if (tracker.contains(id)) continue;
 						CityGMLClass cityObjectType = Util.classId2cityObject(rs.getInt("objectclass_id"));
 						addWorkToQueue(id, gmlId, cityObjectType, null, 0, 0);
 					}
@@ -263,10 +258,9 @@ public class KmlSplitter {
 
 	private void addWorkToQueue(long id, String gmlId, CityGMLClass cityObjectType, GeometryObject envelope, int row, int column) throws SQLException {
 
-		if (((filterConfig.isSetSimpleFilter() && CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType)) ||
-				CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType)) && 
-				!tracker.contains(id)) {
+		if (CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType)) {
 
+			// check whether center point of the feature's envelope is within the tile extent
 			if (envelope != null && envelope.getGeometryType() == GeometryType.ENVELOPE) {
 				double coordinates[] = envelope.getCoordinates(0);
 				
@@ -278,18 +272,17 @@ public class KmlSplitter {
 					return;
 			}
 			
+			// create json
 			CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
 			cityObject4Json.setTileRow(row);
 			cityObject4Json.setTileColumn(column);
-			double[] ordinatesArray = getEnvelopeInWGS84(envelope);
-			cityObject4Json.setEnvelope(ordinatesArray);
+			cityObject4Json.setEnvelope(getEnvelopeInWGS84(envelope));
 
-			KmlSplittingResult splitter = new KmlSplittingResult(id, gmlId, cityObjectType, displayForm);
+			// put on work queue
+			KmlSplittingResult splitter = new KmlSplittingResult(id, gmlId, cityObjectType, cityObject4Json, displayForm);
 			dbWorkerPool.addWork(splitter);
-			tracker.put(id, cityObject4Json);
 
-			if (splitter.isCityObjectGroup() && 
-					(filterConfig.isSetSimpleFilter() || CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.size() > 1)) {
+			if (splitter.isCityObjectGroup() &&  (filterConfig.isSetSimpleFilter() || CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.size() > 1)) {
 				ResultSet rs = null;
 				PreparedStatement query = null;
 				try {

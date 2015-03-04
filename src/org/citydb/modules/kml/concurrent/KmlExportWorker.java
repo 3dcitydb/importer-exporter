@@ -53,6 +53,7 @@ import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobType;
+import org.citydb.modules.common.event.FeatureCounterEvent;
 import org.citydb.modules.kml.database.BalloonTemplateHandlerImpl;
 import org.citydb.modules.kml.database.Bridge;
 import org.citydb.modules.kml.database.Building;
@@ -127,6 +128,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 				tracker,
 				kmlFactory,
 				textureExportAdapter,
+				eventDispatcher,
 				config);
 		
 		elevationServiceHandler = new ElevationServiceHandler();
@@ -289,6 +291,8 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 					objectGroupCounter.put(cityObjectType, 0);
 				}
 			}
+			
+			eventDispatcher.triggerEvent(new FeatureCounterEvent(kmlExporterManager.getFeatureCounter(), this));
 		}
 		finally {
 			if (textureExportAdapter != null) {
