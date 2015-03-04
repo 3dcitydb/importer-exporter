@@ -177,7 +177,6 @@ public class KmlExporter implements EventHandler {
 
 	private File lastTempFolder;
 	private static HashMap<Long, CityObject4JSON> alreadyExported;
-	public static String FoldernameOfActiveTile;
 
 	public KmlExporter (JAXBContext jaxbKmlContext,
 						JAXBContext jaxbColladaContext,
@@ -347,11 +346,9 @@ public class KmlExporter implements EventHandler {
 							exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
 							file = new File(path + File.separator + filename + "_Tile_"
 									 	 	+ i + "_" + j + "_" + displayForm.getName() + fileExtension);
-							FoldernameOfActiveTile = filename + "_Tile_" + i + "_" + j + "_" + displayForm.getName();
 						}
 						else {
 							file = new File(path + File.separator + filename + "_" + displayForm.getName() + fileExtension);
-							FoldernameOfActiveTile = filename + "_" + displayForm.getName();
 						}
 
 						eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
