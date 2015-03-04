@@ -40,8 +40,6 @@ public enum AltitudeOffsetMode {
     NO_OFFSET("no_offset"),
     @XmlEnumValue("constant")
     CONSTANT("constant"),
-    @XmlEnumValue("bottom_zero")
-    BOTTOM_ZERO("bottom_zero"),
     @XmlEnumValue("generic_attribute")
     GENERIC_ATTRIBUTE("generic_attribute");
 

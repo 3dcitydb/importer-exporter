@@ -63,7 +63,6 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 	private JRadioButton noOffsetRadioButton = new JRadioButton("");
 	private JRadioButton constantOffsetRadioButton = new JRadioButton("");
 	private JTextField constantOffsetText = new JTextField("", 3);
-	private JRadioButton bottomZeroRadioButton = new JRadioButton("");
 	private JRadioButton genericAttributeRadioButton = new JRadioButton("");
 	private JCheckBox callGElevationService = new JCheckBox();
 	private JCheckBox useOriginalZCoords = new JCheckBox();
@@ -96,10 +95,6 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 				break;
 			case CONSTANT:
 				if (!constantOffsetRadioButton.isSelected())
-					return true;
-				break;
-			case BOTTOM_ZERO:
-				if (!bottomZeroRadioButton.isSelected())
 					return true;
 				break;
 			case GENERIC_ATTRIBUTE:
@@ -140,8 +135,6 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 		noOffsetRadioButton.setIconTextGap(10);
 		offsetRadioGroup.add(constantOffsetRadioButton);
 		constantOffsetRadioButton.setIconTextGap(10);
-		offsetRadioGroup.add(bottomZeroRadioButton);
-		bottomZeroRadioButton.setIconTextGap(10);
 		offsetRadioGroup.add(genericAttributeRadioButton);
 		genericAttributeRadioButton.setIconTextGap(10);
 
@@ -150,11 +143,10 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 		offsetPanel.add(noOffsetRadioButton, norb);
 		offsetPanel.add(constantOffsetRadioButton, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		offsetPanel.add(constantOffsetText, GuiUtil.setConstraints(1,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		offsetPanel.add(bottomZeroRadioButton, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		GridBagConstraints garb = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		GridBagConstraints garb = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		garb.gridwidth = 2;
 		offsetPanel.add(genericAttributeRadioButton, garb);
-		GridBagConstraints cgesl = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,28,0,BORDER_THICKNESS);
+		GridBagConstraints cgesl = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,28,0,BORDER_THICKNESS);
 		cgesl.gridwidth = 2;
 		offsetPanel.add(callGElevationService, cgesl);
 
@@ -170,13 +162,7 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 				setEnabledComponents();
 			}
 		});
-		
-		bottomZeroRadioButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setEnabledComponents();
-			}
-		});
-		
+
 		genericAttributeRadioButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setEnabledComponents();
@@ -198,7 +184,6 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 		
 		noOffsetRadioButton.setText(Language.I18N.getString("pref.kmlexport.altitude.label.noOffset"));
 		constantOffsetRadioButton.setText(Language.I18N.getString("pref.kmlexport.altitude.label.constantOffset"));
-		bottomZeroRadioButton.setText(Language.I18N.getString("pref.kmlexport.altitude.label.bottomZero"));
 		genericAttributeRadioButton.setText(Language.I18N.getString("pref.kmlexport.altitude.label.genericAttributeOffset"));
 		callGElevationService.setText(Language.I18N.getString("pref.kmlexport.altitude.label.callGElevationService"));
 		useOriginalZCoords.setText(Language.I18N.getString("pref.kmlexport.altitude.label.useOriginalZCoords"));
@@ -214,9 +199,6 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 				break;
 			case CONSTANT:
 				constantOffsetRadioButton.setSelected(true);
-				break;
-			case BOTTOM_ZERO:
-				bottomZeroRadioButton.setSelected(true);
 				break;
 			case GENERIC_ATTRIBUTE:
 				genericAttributeRadioButton.setSelected(true);
@@ -247,9 +229,6 @@ public class AltitudePanel extends AbstractPreferencesComponent {
 		}
 		else if (constantOffsetRadioButton.isSelected()) {
 			config.getProject().getKmlExporter().setAltitudeOffsetMode(AltitudeOffsetMode.CONSTANT);
-		}
-		else if (bottomZeroRadioButton.isSelected()) {
-			config.getProject().getKmlExporter().setAltitudeOffsetMode(AltitudeOffsetMode.BOTTOM_ZERO);
 		}
 		else if (genericAttributeRadioButton.isSelected()) {
 			config.getProject().getKmlExporter().setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
