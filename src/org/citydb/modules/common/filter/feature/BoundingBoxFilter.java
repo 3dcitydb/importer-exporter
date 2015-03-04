@@ -36,8 +36,6 @@ import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.geometry.BoundingBox;
 import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.config.Config;
-import org.citydb.config.project.database.Database;
-import org.citydb.config.project.database.Database.PredefinedSrsName;
 import org.citydb.config.project.filter.AbstractFilterConfig;
 import org.citydb.config.project.filter.FilterBoundingBox;
 import org.citydb.config.project.filter.TiledBoundingBox;
@@ -61,7 +59,6 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	private FilterBoundingBox boundingBoxConfig;
 
 	private BoundingBox boundingBox;
-	private BoundingBox wgs84BoundingBox; 
 	private BoundingBox activeBoundingBox;
 
 	private double rowHeight = 0;  
@@ -123,12 +120,6 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 				}
 
 				activeBoundingBox = boundingBox;
-				
-				try {
-					wgs84BoundingBox = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().transformBoundingBox(boundingBox, boundingBox.getSrs(), Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D));
-				} catch (SQLException e) {
-					LOG.error("Failed to transform bounding box to WGS84 Reference System.");
-				}
 
 				if (useTiling) {
 					Tiling tiling = ((TiledBoundingBox)boundingBoxConfig).getTiling();					
@@ -213,32 +204,6 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 
 	public BoundingBox getFilterState() {
 		return activeBoundingBox;
-	}
-	
-	public BoundingBox getFilterStateForWGS84() {
-		double wgs84DeltaLatitude = (wgs84BoundingBox.getUpperRightCorner().getY() - wgs84BoundingBox.getLowerLeftCorner().getY()) / rows;
-		double wgs84DeltaLongitude = (wgs84BoundingBox.getUpperRightCorner().getX() - wgs84BoundingBox.getLowerLeftCorner().getX()) / columns;
-		
-		double wgs84TileSouthLimit = wgs84BoundingBox.getLowerLeftCorner().getY() + (activeRow * wgs84DeltaLatitude); 
-		double wgs84TileNorthLimit = wgs84BoundingBox.getLowerLeftCorner().getY() + ((activeRow+1) * wgs84DeltaLatitude); 
-		double wgs84TileWestLimit = wgs84BoundingBox.getLowerLeftCorner().getX() + (activeColumn * wgs84DeltaLongitude); 
-		double wgs84TileEastLimit = wgs84BoundingBox.getLowerLeftCorner().getX() + ((activeColumn+1) * wgs84DeltaLongitude); 
-		
-		BoundingBox activeWgs84BoundingBox = activeBoundingBox = new BoundingBox(
-				new BoundingBoxCorner(wgs84TileWestLimit, wgs84TileSouthLimit),
-				new BoundingBoxCorner(wgs84TileEastLimit, wgs84TileNorthLimit),
-				Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D)
-		);
-		
-		BoundingBox activeDbSrsBoundingBox = null;
-		
-		try {
-			activeDbSrsBoundingBox = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().transformBoundingBox(activeWgs84BoundingBox, Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D), boundingBox.getSrs());
-		} catch (SQLException e) {
-			LOG.error("Failed to transform WGS84 bounding box to database Reference System.");
-		}
-		
-		return activeDbSrsBoundingBox;
 	}
 
 	public void setActiveTile(int activeRow, int activeColumn) {
