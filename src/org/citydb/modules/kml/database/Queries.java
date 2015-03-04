@@ -32,7 +32,6 @@ package org.citydb.modules.kml.database;
 import java.util.HashMap;
 
 import org.citydb.api.database.DatabaseType;
-import org.citydb.api.geometry.BoundingBox;
 import org.citydb.api.log.LogLevel;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.Lod0FootprintMode;
@@ -46,11 +45,18 @@ public class Queries {
 	// 	GENERIC PURPOSE QUERIES
 	// ----------------------------------------------------------------------
 
-	public static final String GET_IDS(BoundingBox bbox, AbstractSQLAdapter sqlAdapter) {
+	public static final String GET_IDS(DatabaseType type) {
 		StringBuilder query = new StringBuilder()
-		.append("SELECT co.id, co.gmlid, co.objectclass_id, co.envelope FROM CITYOBJECT co WHERE ")
-		.append(sqlAdapter.getBoundingBoxPredicate("envelope", "co", bbox, true))
-		.append(" ORDER BY 3");
+		.append("SELECT co.id, co.gmlid, co.objectclass_id, co.envelope FROM CITYOBJECT co WHERE ");
+		
+		switch (type) {
+		case ORACLE:
+			query.append("SDO_ANYINTERACT(co.envelope, ?) = 'TRUE'");
+			break;
+		case POSTGIS:
+			query.append("co.envelope && ?");
+			break;
+		}		
 		
 		return query.toString();
 	}
@@ -2281,18 +2287,25 @@ public class Queries {
 					"FROM CITYOBJECT co " +
 					"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
 					"FROM GROUP_TO_CITYOBJECT g2co "+ 
-					"WHERE g2co.cityobjectgroup_id = ?) " +
-					"ORDER BY co.objectclass_id";
+					"WHERE g2co.cityobjectgroup_id = ?)";
 
-	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX(BoundingBox bbox, AbstractSQLAdapter sqlAdapter) {
+	public static final String CITYOBJECTGROUP_MEMBERS_IN_BBOX(DatabaseType type) {
 		StringBuilder query = new StringBuilder()
 		.append("SELECT co.id, co.gmlid, co.objectclass_id, co.envelope ")
 		.append("FROM CITYOBJECT co ")
 		.append("WHERE co.ID IN (SELECT g2co.cityobject_id ")
 		.append("FROM GROUP_TO_CITYOBJECT g2co ")
 		.append("WHERE g2co.cityobjectgroup_id = ?) ")
-		.append("AND (").append(sqlAdapter.getBoundingBoxPredicate("envelope", "co", bbox, true)).append(") ")
-		.append("ORDER BY 3");
+		.append("AND ");
+				
+		switch (type) {
+		case ORACLE:
+			query.append("SDO_ANYINTERACT(co.envelope, ?) = 'TRUE'");
+			break;
+		case POSTGIS:
+			query.append("co.envelope && ?");
+			break;
+		}	
 		
 		return query.toString();
 	}

@@ -186,7 +186,8 @@ public class KmlSplitter {
 			ResultSet rs = null;
 			PreparedStatement spatialQuery = null;
 			try {
-				spatialQuery = connection.prepareStatement(Queries.GET_IDS(exportFilter.getBoundingBoxFilter().getFilterState(), databaseAdapter.getSQLAdapter())); 				
+				spatialQuery = connection.prepareStatement(Queries.GET_IDS(databaseAdapter.getDatabaseType())); 				
+				spatialQuery.setObject(1, databaseAdapter.getGeometryConverter().getDatabaseObject(GeometryObject.createEnvelope(exportFilter.getBoundingBoxFilter().getFilterState()), connection));
 				rs = spatialQuery.executeQuery();
 
 				int objectCount = 0;
@@ -231,14 +232,6 @@ public class KmlSplitter {
 	public void startQuery() throws SQLException {
 		try {
 			queryObjects();
-
-			if (shouldRun) {
-				try {
-					dbWorkerPool.join();
-				}
-				catch (InterruptedException e) {}
-			}
-
 		}
 		finally {
 			if (connection != null) {
@@ -286,9 +279,10 @@ public class KmlSplitter {
 				ResultSet rs = null;
 				PreparedStatement query = null;
 				try {
-					if (filterConfig.isSetComplexFilter() && filterConfig.getComplexFilter().getTiledBoundingBox().isSet())
-						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS_IN_BBOX(exportFilter.getBoundingBoxFilter().getFilterState(), databaseAdapter.getSQLAdapter()));
-					else
+					if (filterConfig.isSetComplexFilter() && filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
+						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS_IN_BBOX(databaseAdapter.getDatabaseType()));
+						query.setObject(2, databaseAdapter.getGeometryConverter().getDatabaseObject(GeometryObject.createEnvelope(exportFilter.getBoundingBoxFilter().getFilterState()), connection));
+					} else
 						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS);
 
 					// set group's id
