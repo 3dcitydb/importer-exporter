@@ -1,10 +1,36 @@
-<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!-- 
+ * 3D City Database - The Open Source CityGML Database
+ * http://www.3dcitydb.org/
+ * 
+ * (C) 2013 - 2015,
+ * Chair of Geoinformatics,
+ * Technische Universitaet Muenchen, Germany
+ * http://www.gis.bgu.tum.de/
+ * 
+ * The 3D City Database is jointly developed with the following
+ * cooperation partners:
+ * 
+ * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+ * M.O.S.S. Computer Grafik Systeme GmbH, Muenchen <http://www.moss.de/>
+ * 
+ * The 3D City Database Importer/Exporter program is free software:
+ * you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+-->
 <langpack> 
     <str id="core" txt="Anwendungsdaten"/>
     <str id="core.description" txt="Die erforderlichen Anwendungsdaten des ${APP_NAME}"/>
             
     <str id="3dcitydb" txt="3D City Database"/>
-    <str id="3dcitydb.description" txt="SQL Skripte der ${3DCITYDB_NAME} ${3DCITYDB_VER} für Oracle Spatial 10G und 11G"/>
+    <str id="3dcitydb.description" txt="SQL Skripte der ${3DCITYDB_NAME} ${3DCITYDB_VER} fÃ¼r Oracle Spatial 10G und 11G"/>
     
     <str id="manual" txt="Dokumentation"/>
     <str id="manual.description" txt="Die Dokumentation der ${3DCITYDB_NAME} und des ${APP_NAME}"/>
@@ -13,8 +39,8 @@
     <str id="samples.description" txt="CityGML und KML/COLLADA Beispieldaten zum Testen des ${APP_NAME}"/>
     
     <str id="plugins" txt="Plugins"/>
-    <str id="plugins.description" txt="Optionale Erweiterungen für den ${APP_NAME}"/>
+    <str id="plugins.description" txt="Optionale Erweiterungen fÃ¼r den ${APP_NAME}"/>
         
-    <str id="plugin-api" txt="API für die Plugin-Entwicklung"/>
-    <str id="plugin-api.description" txt="Java-Programmierschnittstelle für die Entwicklung eigener Erweiterungen"/>
+    <str id="plugin-api" txt="API fÃ¼r die Plugin-Entwicklung"/>
+    <str id="plugin-api.description" txt="Java-Programmierschnittstelle fÃ¼r die Entwicklung eigener Erweiterungen"/>
 </langpack>
