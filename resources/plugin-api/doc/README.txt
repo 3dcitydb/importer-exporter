@@ -1,7 +1,9 @@
 !impexp.plugin.api.name! v!impexp.plugin.api.version!
 
-  This library is free software and comes WITHOUT ANY WARRANTY.
-  See the DISCLAIMER at the end of this document for more details.  
+  This library is free software and is distributed in the hope
+  that it will be useful, but WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE. See the LICENSE.txt file for more details. 
 
 
 0. Index
@@ -30,7 +32,7 @@ the files COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
 2. Copyright
 ------------
 
-(c) !vendor.copyright.year!
+(C) !vendor.copyright.year!,
 !vendor.name!
 !vendor.organisation!, !vendor.country!
 !vendor.homepage!
@@ -41,7 +43,7 @@ the files COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
 
 The !impexp.plugin.api.name! is a Java class library
 and API facilitating the development of own extensions for the
-!impexp.name! program.
+!impexp.name! software.
 
 
 4. Requirements
@@ -57,7 +59,7 @@ the !impexp.name!. Please always check the changelog.
 5. How to use
 -------------
 
-a) Make sure you are using a Java JDK >= 1.6.0_05.
+a) Make sure you are using a Java JDK >= 1.7.
 b) Put the "!impexp.plugin.api.jar.filename!" in your classpath.
 c) Implement the "!impexp.plugin.api.maininterface!" interface.
 d) Implement further extension interfaces required by your plugin.
@@ -84,20 +86,21 @@ http://java.sun.com/developer/technicalArticles/javase/extensible/index.html
 6. Developers
 -------------
 
-Claus Nagel <claus.nagel@tu-berlin.de>
+Claus Nagel <cnagel@virtualcitysystems.de>
 
 
 7. Contact
 ----------
 
-claus.nagel@tu-berlin.de
+cnagel@virtualcitysystems.de
 
 
 8. Websites
 -----------
 
-Official !impexp.plugin.api.name! website: 
+Official !impexp.plugin.api.name! websites: 
 !impexp.plugin.api.homepage!
+!impexp.plugin.api.git!
 
 Related websites:
 !vendor.homepage!

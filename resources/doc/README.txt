@@ -1,7 +1,9 @@
 !impexp.name! v!impexp.version!
 
-  This program is free software and comes WITHOUT ANY WARRANTY.
-  See the DISCLAIMER at the end of this document for more details.  
+  This software is free software and is distributed in the hope
+  that it will be useful, but WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE. See the LICENSE.txt file for more details.   
 
 
 0. Index
@@ -193,8 +195,9 @@ fkunde@virtualcitysystems.de
 10. Websites
 ------------
 
-Official !impexp.name! website: 
+Official !impexp.name! websites: 
 !impexp.homepage!
+!impexp.git!
 
 Related websites:
 !vendor.homepage!

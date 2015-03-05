@@ -143,6 +143,7 @@
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.jar.filename!" value="${impexp.plugin.api.jar.filename}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.version!" value="${impexp.plugin.api.version}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.homepage!" value="${impexp.plugin.api.homepage}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.git!" value="${impexp.plugin.api.git}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.maininterface!" value="${impexp.plugin.api.maininterface}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.name!" value="${vendor.name}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.organisation!" value="${vendor.organisation}" />
@@ -217,6 +218,7 @@
 		<replace file="${dir.dest}/README.txt" token="!impexp.jar.filename!" value="${impexp.jar.filename}" />
 		<replace file="${dir.dest}/README.txt" token="!impexp.version!" value="${impexp.version}" />
 		<replace file="${dir.dest}/README.txt" token="!impexp.homepage!" value="${impexp.homepage}" />
+		<replace file="${dir.dest}/README.txt" token="!impexp.git!" value="${impexp.git}" />
 		<replace file="${dir.dest}/README.txt" token="!vendor.name!" value="${vendor.name}" />
 		<replace file="${dir.dest}/README.txt" token="!vendor.organisation!" value="${vendor.organisation}" />
 		<replace file="${dir.dest}/README.txt" token="!vendor.copyright.year!" value="${vendor.copyright.year}" />
