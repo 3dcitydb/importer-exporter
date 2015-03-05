@@ -280,8 +280,11 @@
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.samples!" value="${dir.samples}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.version!" value="${3dcitydb.version}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugins!" value="${dir.dest.plugins}" />
+		
+		<!-- tokens related to plugins -->
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugins.relative!" value="${dir.dest.plugins.relative}" />
-		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!plugin.match.dir.dest.relative!" value="${plugin.match.dir.dest.relative}" />
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!plugin.spreadsheet.generator.dir!" value="${plugin.spreadsheet.generator.dir}" />
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!plugin.spreadsheet.generator.dir.dest.relative!" value="${plugin.spreadsheet.generator.dir.dest.relative}" />
 
 		<!-- call izpack to create installation package -->
 		<IzPack input="${dir.resources.izpack}/izpack-install.xml" output="${dir.dest.installer}/${izpack.installer.name}" basedir="${dir.resources.izpack}" />
