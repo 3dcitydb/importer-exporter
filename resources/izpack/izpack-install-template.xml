@@ -39,7 +39,7 @@
         </authors>
         <url>!3dcitydb.homepage!</url>
         <uninstaller write="yes" path="$INSTALL_PATH/uninstaller"/>
-        <javaversion>1.6</javaversion>
+        <javaversion>1.7</javaversion>
         <writeinstallationinformation>no</writeinstallationinformation>
     </info>
 
