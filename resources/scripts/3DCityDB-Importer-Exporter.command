@@ -1,8 +1,8 @@
 #!/bin/sh
-# Example shell script to execute the 3D City Database Importer/Exporter
+# Example shell script to execute the !impexp.name!
 # The tool can be started using a graphical user interface (default) or
 # as a shell version (using -shell switch, e.g., for batch processing)
-# Use '3dcitydb-impexp.jar -help' to get a list of available options
+# Use '!impexp.jar.filename! -help' to get a list of available options
 
 # cd to path of the starter script
 cd "$( cd "$( dirname "$0" )" && pwd )" > /dev/null
@@ -18,7 +18,7 @@ fi
 # Uncomment the following line to use this script as execution wrapper, 
 # e.g., from external programs. Command line arguments are passed to the 
 # jar file.
-# exec "$JAVA" -jar -Xms128m -Xmx1024m lib/3dcitydb-impexp.jar "$@"
+# exec "$JAVA" -jar -Xms128m -Xmx1024m lib/!impexp.jar.filename! "$@"
 
 # The following command executes the GUI version 
-exec "$JAVA" -jar -Xms128m -Xmx1024m -Xdock:name="3D City Database Importer/Exporter" lib/3dcitydb-impexp.jar
+exec "$JAVA" -jar -Xms128m -Xmx1024m !mac.os.x! lib/!impexp.jar.filename!
