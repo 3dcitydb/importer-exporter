@@ -140,12 +140,14 @@ public class InfoDialog extends JDialog {
 			authors.setFont(authorsHeader.getFont());
 
 			authors.setText("Claus Nagel <cnagel@virtualcitysystems.de>\n" +
-					"Javier Herreruela <javier.herreruela@tu-berlin.de>\n" +
 					"Felix Kunde <fkunde@virtualcitysystems.de>\n" +
-					"Alexandra Lorenz <alexandra.lorenz@tu-berlin.de>\n" +
-					"Gerhard König <gerhard.koenig@tu-berlin.de>\n" +
+					"Zhihang Yao <zhihang.yao@tum.de>\n" +
+					"György Hudra <ghudra@moss.de>\n" +
 			"Thomas H. Kolbe <thomas.kolbe@tum.de>");				
 			general.add(authors, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,2,5,5,5));
+
+			String tum_label_text = config.getProject().getGlobal().getLanguage() == LanguageType.EN ?
+					"Chair of Geoinformatics,\nTechnische Universität München, Germany" : "Lehrstuhl für Geoinformatik,\nTechnische Universität München, Deutschland";
 
 			JLabel copyHeader = new JLabel("Copyright");
 			general.add(copyHeader, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,15,5,0,5));
@@ -154,10 +156,9 @@ public class InfoDialog extends JDialog {
 			copy.setEditable(false);
 			copy.setBackground(new Color(255, 255, 255));
 			copy.setFont(authorsHeader.getFont());
-			copy.setText("(c) 2007 - 2013\n" +
-					"Institute for Geodesy and Geoinformation Science (IGG)\n" +
-					"Technische Universität Berlin, Germany\n" +
-					"http://www.igg.tu-berlin.de/\n\n" +
+			copy.setText("(C) 2013 - 2015\n" +
+					tum_label_text + "\n" +
+					"http://www.gis.bgu.tum.de/\n\n" +
 					"This program is free software under the GNU Lesser General\n" +
 			"Public License Version 3.0. For a copy of the GNU LGPL see\n<http://www.gnu.org/licenses/>.");				
 			general.add(copy, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,2,5,5,5));				
@@ -188,40 +189,33 @@ public class InfoDialog extends JDialog {
 				Font font = UIManager.getFont("Label.font");
 		        String bodyRule = "body { font-family: " + font.getFamily() + "; " + "font-size: " + font.getSize() + "pt; }";
 
-		        JLabel blc_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/blc_logo.png"))));
-				logos.add(blc_logo, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,5,0,5,0));
-				JEditorPane blc_label = new JEditorPane("text/html", "<html><b>Business Location Center, Berlin</b><br/>http://www.businesslocationcenter.de/</html>");
-		        ((HTMLDocument)blc_label.getDocument()).getStyleSheet().addRule(bodyRule);
-				blc_label.setEditable(false);
-		        logos.add(blc_label, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
+				String tum_label_text = config.getProject().getGlobal().getLanguage() == LanguageType.EN ?
+						"Chair of Geoinformatics,<br/>Technische Universität München" : "Lehrstuhl für Geoinformatik,<br/>Technische Universität München";
+				
+		        JLabel tum_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/tum_logo.png"))));
+				logos.add(tum_logo, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,10,0,10,0));
+				JEditorPane tum_label = new JEditorPane("text/html", "<html><b>" + tum_label_text + "</b><br/>http://www.gis.bgu.tum.de/</html>");
+		        ((HTMLDocument)tum_label.getDocument()).getStyleSheet().addRule(bodyRule);
+				tum_label.setEditable(false);
+		        logos.add(tum_label, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
 
 				JLabel vcs_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/vcs_logo.png"))));
-				logos.add(vcs_logo, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.NONE,5,0,5,0));
+				logos.add(vcs_logo, GuiUtil.setConstraints(0,1,0,0,GridBagConstraints.NONE,5,5,10,0));
 				JEditorPane vcs_label = new JEditorPane("text/html", "<html><b>virtualcitySYSTEMS GmbH, Berlin</b><br/>http://www.virtualcitysystems.de/</html>");
 		        ((HTMLDocument)vcs_label.getDocument()).getStyleSheet().addRule(bodyRule);
 		        vcs_label.setEditable(false);				
 				logos.add(vcs_label, GuiUtil.setConstraints(1,1,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
-
-				String wtf_label_text = config.getProject().getGlobal().getLanguage() == LanguageType.EN ?
-						"Berlin Senate of Business, <br/>Technology and Women" : "Senatsverwaltung für Wirtschaft, <br/>Technologie und Frauen, Berlin";
-				
-				JLabel wtf_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/wtf_logo.png"))));
-				logos.add(wtf_logo, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.NONE,5,0,5,0));
-				JEditorPane wtf_label = new JEditorPane("text/html", "<html><b>" + wtf_label_text + "</b><br/>http://www.berlin.de/sen/wtf/</html>");
-		        ((HTMLDocument)wtf_label.getDocument()).getStyleSheet().addRule(bodyRule);
-		        wtf_label.setEditable(false);
-				logos.add(wtf_label, GuiUtil.setConstraints(1,2,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
 				
 				JLabel moss_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/moss_logo.png"))));
-				logos.add(moss_logo, GuiUtil.setConstraints(0,3,0,0,GridBagConstraints.NONE,5,0,5,0));
+				logos.add(moss_logo, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.NONE,5,5,5,0));
 				JEditorPane moss_label = new JEditorPane("text/html", "<html><b>M.O.S.S. Computer Grafik Systeme GmbH,<br/>Taufkirchen, Germany</b><br/>http://www.moss.de/</html>");
 		        ((HTMLDocument)moss_label.getDocument()).getStyleSheet().addRule(bodyRule);
 		        vcs_label.setEditable(false);				
-				logos.add(moss_label, GuiUtil.setConstraints(1,3,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
+				logos.add(moss_label, GuiUtil.setConstraints(1,2,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
 
 				logos.add(new JLabel(), GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,5,5,0,5));
 	
-				PopupMenuDecorator.getInstance().decorate(blc_label, vcs_label, wtf_label);
+				PopupMenuDecorator.getInstance().decorate(tum_label, vcs_label, moss_label);
 			}		
 		}
 

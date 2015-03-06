@@ -32,13 +32,12 @@
         <appsubpath>!izpack.installation.folder!</appsubpath>
         <authors>
             <author name="Claus Nagel" email="cnagel@virtualcitysystems.de"/>
-            <author name="Javier Herreruela" email="javier.herreruela@tu-berlin.de"/>
             <author name="Felix Kunde" email="fkunde@virtualcitysystems.de"/>
-            <author name="Alexandra Lorenz" email="alexandra.lorenz@tu-berlin.de"/>
-            <author name="Gerhard König" email="gerhard.koenig@tu-berlin.de"/>
+            <author name="Zhihang Yao" email="zhihang.yao@tum.de"/>
+            <author name="György Hudra" email="ghudra@moss.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tum.de"/>
         </authors>
-        <url>!impexp.homepage!</url>
+        <url>!3dcitydb.homepage!</url>
         <uninstaller write="yes" path="$INSTALL_PATH/uninstaller"/>
         <javaversion>1.6</javaversion>
         <writeinstallationinformation>no</writeinstallationinformation>
@@ -47,7 +46,7 @@
     <variables>
         <variable name="DesktopShortcutCheckboxEnabled" value="true"/>
         <variable name="APP_SHORTCUT_NAME" value="!izpack.shortcut.impexp.name!"/>
-        <variable name="3DCITYDB_NAME" value="3D City Database"/>
+        <variable name="3DCITYDB_NAME" value="!3dcitydb.name!"/>
         <variable name="3DCITYDB_SHORTNAME" value="3DCityDB"/>
         <variable name="3DCITYDB_VER" value="v!3dcitydb.version!"/>
         <variable name="ApplicationShortcutPath" value="shortcuts"/>

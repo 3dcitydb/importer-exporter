@@ -114,7 +114,7 @@
 		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!vendor.country!" value="${vendor.country}" />
 		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!vendor.homepage!" value="${vendor.homepage}" />
 		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!impexp.name!" value="${impexp.name}" />
-		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!impexp.homepage!" value="${impexp.homepage}" />
+		<replace file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" token="!3dcitydb.homepage!" value="${3dcitydb.homepage}" />
 
 		<!-- create javadoc from source files -->
 		<javadoc access="public" author="true" classpathref="classpath" destdir="${dir.dest.plugin.api.javadoc}" doctitle="${impexp.plugin.api.name} - ${impexp.plugin.api.version}" maxmemory="256m" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" overview="${dir.resources.plugin-api.javadoc}/overview_adapted.html" packagenames="org.citydb.api.*" sourcepath="${dir.src}" splitindex="true" use="true" version="true" />
@@ -142,9 +142,10 @@
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.name!" value="${impexp.plugin.api.name}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.jar.filename!" value="${impexp.plugin.api.jar.filename}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.version!" value="${impexp.plugin.api.version}" />
-		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.homepage!" value="${impexp.plugin.api.homepage}" />
-		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.git!" value="${impexp.plugin.api.git}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!impexp.plugin.api.maininterface!" value="${impexp.plugin.api.maininterface}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!3dcitydb.name!" value="${3dcitydb.name}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!3dcitydb.homepage!" value="${3dcitydb.homepage}" />
+		<replace file="${dir.dest.plugin.api}/README.txt" token="!3dcitydb.git!" value="${3dcitydb.git}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.name!" value="${vendor.name}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.organisation!" value="${vendor.organisation}" />
 		<replace file="${dir.dest.plugin.api}/README.txt" token="!vendor.copyright.year!" value="${vendor.copyright.year}" />
@@ -214,11 +215,13 @@
 		<replace file="${dir.dest}/3DCityDB-Importer-Exporter-MacOSX.sh" token="!impexp.name!" value="${impexp.name}" />
 		<replace file="${dir.dest}/3DCityDB-Importer-Exporter-MacOSX.sh" token="!mac.os.x!" value="-Xdock:name=&quot;${impexp.name}&quot;" />
 		<replace file="${dir.dest.license}/LICENSE.txt" token="!software.name!" value="${impexp.name}" />
+		<replace file="${dir.dest}/README.txt" token="!3dcitydb.name!" value="${3dcitydb.name}" />
+		<replace file="${dir.dest}/README.txt" token="!3dcitydb.version!" value="${3dcitydb.version}" />
+		<replace file="${dir.dest}/README.txt" token="!3dcitydb.homepage!" value="${3dcitydb.homepage}" />
+		<replace file="${dir.dest}/README.txt" token="!3dcitydb.git!" value="${3dcitydb.git}" />
 		<replace file="${dir.dest}/README.txt" token="!impexp.name!" value="${impexp.name}" />
 		<replace file="${dir.dest}/README.txt" token="!impexp.jar.filename!" value="${impexp.jar.filename}" />
 		<replace file="${dir.dest}/README.txt" token="!impexp.version!" value="${impexp.version}" />
-		<replace file="${dir.dest}/README.txt" token="!impexp.homepage!" value="${impexp.homepage}" />
-		<replace file="${dir.dest}/README.txt" token="!impexp.git!" value="${impexp.git}" />
 		<replace file="${dir.dest}/README.txt" token="!vendor.name!" value="${vendor.name}" />
 		<replace file="${dir.dest}/README.txt" token="!vendor.organisation!" value="${vendor.organisation}" />
 		<replace file="${dir.dest}/README.txt" token="!vendor.copyright.year!" value="${vendor.copyright.year}" />
@@ -269,7 +272,6 @@
 		<copy file="${dir.resources.izpack}/izpack-install-template.xml" tofile="${dir.resources.izpack}/izpack-install.xml" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!impexp.name!" value="${impexp.name}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!impexp.version!" value="${impexp.version}" />
-		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!impexp.homepage!" value="${impexp.homepage}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!izpack.shortcut.impexp.name!" value="${izpack.shortcut.impexp.name}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!izpack.installation.folder!" value="${izpack.installation.folder}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.izpack.config!" value="${dir.resources.izpack.config}" />
@@ -280,7 +282,9 @@
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.manual!" value="${dir.resources.manual}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.templates!" value="${dir.resources.templates}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.samples!" value="${dir.samples}" />
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.name!" value="${3dcitydb.name}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.version!" value="${3dcitydb.version}" />
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.homepage!" value="${3dcitydb.homepage}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugins!" value="${dir.dest.plugins}" />
 		
 		<!-- tokens related to plugins -->
