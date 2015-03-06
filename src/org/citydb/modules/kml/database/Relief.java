@@ -45,8 +45,6 @@ import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
-import org.citydb.modules.common.event.CounterEvent;
-import org.citydb.modules.common.event.CounterType;
 
 public class Relief extends KmlGenericObject{
 
@@ -54,7 +52,6 @@ public class Relief extends KmlGenericObject{
 	private static final int FIRST_RELIEF_QUERY = Queries.RELIEF_TIN_QUERY;
 	private static final int LAST_RELIEF_QUERY = Queries.RELIEF_TIN_QUERY;
 	private int currentReliefQuery = FIRST_RELIEF_QUERY;
-	private boolean alreadyCounted = false;
 
 	public Relief(Connection connection,
 			KmlExporterManager kmlExporterManager,
@@ -98,7 +95,6 @@ public class Relief extends KmlGenericObject{
 	}
 
 	public void read(KmlSplittingResult work) {
-		alreadyCounted = false;
 		boolean resultNotEmpty = false;
 		for (currentReliefQuery = FIRST_RELIEF_QUERY; currentReliefQuery <= LAST_RELIEF_QUERY; currentReliefQuery++) {
 			resultNotEmpty = read(work, currentReliefQuery) || resultNotEmpty;
@@ -165,10 +161,7 @@ public class Relief extends KmlGenericObject{
 				return false;
 			}
 			else { // result not empty
-				if (!alreadyCounted) { // in order to display it immediately
-					alreadyCounted = true;
-					kmlExporterManager.updateFeatureTracker(work);
-				}
+				kmlExporterManager.updateFeatureTracker(work);
 
 				// get the proper displayForm (for highlighting)
 				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
