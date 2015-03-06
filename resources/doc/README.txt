@@ -120,8 +120,9 @@ a) Recommended:
    desktop and in the start menu of your preferred OS.
    
    Depending on the platform, please run one the following starter scripts:
-   - 3DCityDB-Importer-Exporter.bat (Microsoft Windows family)
-   - 3DCityDB-Importer-Exporter.sh  (UNIX/Linux family, Mac OS X) 
+   - 3DCityDB-Importer-Exporter.bat     (Microsoft Windows family)
+   - 3DCityDB-Importer-Exporter.sh      (UNIX/Linux family)
+   - 3DCityDB-Importer-Exporter.command (Mac OS X) 
    
    On most platforms, double-clicking the starter script or its shortcut
    runs the !impexp.name!. 
@@ -174,7 +175,7 @@ The !impexp.name! v!impexp.version! has been developed by
 and with the support from the following cooperation partners:
 
 * Chair of Geoinformatics, Technische Universität München
-  http://www.gis.bv.tum.de/
+  http://www.gis.bgu.tum.de/
 * virtualcitySYSTEMS GmbH, Berlin
   http://www.virtualcitysystems.de/
 * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen
