@@ -195,6 +195,11 @@
 			<fileset dir="${dir.lib}" includes="**/*.jar" />
 		</copy>
 
+		<!-- copy precompiled plugins -->
+		<copy todir="${dir.dest.plugins}">
+			<fileset dir="${dir.resources.plugins}" includes="**/*" />
+		</copy>
+
 		<!-- copy LICENSE templates -->
 		<copy todir="${dir.dest.license}">
 			<fileset dir="${dir.resources.license}" includes="**/*" />
@@ -285,11 +290,10 @@
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.name!" value="${3dcitydb.name}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.version!" value="${3dcitydb.version}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.homepage!" value="${3dcitydb.homepage}" />
-		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugins!" value="${dir.dest.plugins}" />
-		
+
 		<!-- tokens related to plugins -->
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugins!" value="${dir.dest.plugins}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugins.relative!" value="${dir.dest.plugins.relative}" />
-		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!plugin.spreadsheet.generator.dir!" value="${plugin.spreadsheet.generator.dir}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!plugin.spreadsheet.generator.dir.dest.relative!" value="${plugin.spreadsheet.generator.dir.dest.relative}" />
 
 		<!-- call izpack to create installation package -->
