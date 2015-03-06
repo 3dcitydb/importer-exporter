@@ -26,9 +26,10 @@
 ----------
 
 The !impexp.name! is free software under
-the GNU Lesser General Public License Version 3.0. See the file LICENSE 
-for more details. For a copy of the GNU Lesser General Public License see 
-the files COPYING and COPYING.LESSER or visit http://www.gnu.org/licenses/.
+the GNU Lesser General Public License Version 3.0. See the file 
+LICENSE.txt for more details. For a copy of the GNU Lesser General 
+Public License see the files COPYING.txt and COPYING.LESSER.txt or 
+visit http://www.gnu.org/licenses/.
 
 
 2. Copyright
@@ -210,7 +211,6 @@ Official !3dcitydb.name! website:
 Related websites:
 !3dcitydb.git!
 !vendor.homepage!
-http://www.opportunity.bv.tu-berlin.de/
 http://www.citygml.org/
 http://www.citygmlwiki.org/
 http://www.opengeospatial.org/standards/citygml
