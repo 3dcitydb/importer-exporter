@@ -24,7 +24,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  */
-package org.citydb.modules.kml.database;
+package org.citydb.modules.common.balloon;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -1239,7 +1239,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			ResultSet rs = null;
 			PreparedStatement query = null;
 			try {
-				query = connection.prepareStatement(Queries.GET_ID_AND_OBJECTCLASS_FROM_GMLID);
+				query = connection.prepareStatement("SELECT id, objectclass_id FROM CITYOBJECT WHERE gmlid = ?");
 				query.setString(1, gmlId);
 				rs = query.executeQuery();
 
@@ -1302,7 +1302,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			ResultSet rs = null;
 			PreparedStatement query = null;
 			try {
-				query = connection.prepareStatement(Queries.GET_GMLID_AND_OBJECTCLASS_FROM_ID);
+				query = connection.prepareStatement("SELECT gmlid, objectclass_id FROM CITYOBJECT WHERE id = ?");
 				query.setLong(1, id);
 				rs = query.executeQuery();
 
@@ -3445,75 +3445,47 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 			return columnsClause;
 		}
-
+		
 		private String checkForSpecialKeywords(String keyword) throws Exception {
 			String query = null;
 			if (CENTROID_WGS84.equalsIgnoreCase(keyword)) {
-				query = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ?
-						Queries.GET_CENTROID_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()):
-							Queries.GET_CENTROID_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType());
+				query = getCentroidInWGS84ById();
 			}
 			else if (CENTROID_WGS84_LAT.equalsIgnoreCase(keyword)) {
-				query = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ?
-						Queries.GET_CENTROID_LAT_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()):
-							Queries.GET_CENTROID_LAT_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType());
+				query = getCentroidLatInWGS84ById();
 			}
 			else if (CENTROID_WGS84_LON.equalsIgnoreCase(keyword)) {
-				query = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ?
-						Queries.GET_CENTROID_LON_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()):
-							Queries.GET_CENTROID_LON_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType());
+				query = getCentroidLonInWGS84ById();
 			}
 			else if (BBOX_WGS84_LAT_MIN.equalsIgnoreCase(keyword)) {
-				query = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ?
-						Queries.GET_ENVELOPE_LAT_MIN_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()):
-							Queries.GET_ENVELOPE_LAT_MIN_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType());
+				query = getEnvelopeLatMinInWGS84ById();
 			}
 			else if (BBOX_WGS84_LAT_MAX.equalsIgnoreCase(keyword)) {
-				query = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ?
-						Queries.GET_ENVELOPE_LAT_MAX_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()):
-							Queries.GET_ENVELOPE_LAT_MAX_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType());
+				query = getEnvelopeLatMaxInWGS84ById();
 			}
 			else if (BBOX_WGS84_LON_MIN.equalsIgnoreCase(keyword)) {
-				query = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ?
-						Queries.GET_ENVELOPE_LON_MIN_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()):
-							Queries.GET_ENVELOPE_LON_MIN_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType());
+				query = getEnvelopeLonMinInWGS84ById();
 			}
 			else if (BBOX_WGS84_LON_MAX.equalsIgnoreCase(keyword)) {
-				query = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ?
-						Queries.GET_ENVELOPE_LON_MAX_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()):
-							Queries.GET_ENVELOPE_LON_MAX_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType());
+				query = getEnvelopeLonMaxInWGS84ById();
 			}
 			else if (BBOX_WGS84_HEIGHT_MIN.equalsIgnoreCase(keyword)) {
-				query = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ?
-						Queries.GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()):
-							Queries.GET_ENVELOPE_HEIGHT_MIN_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType());
+				query = getEnvelopeHeightMinInWGS84ById();
 			}
 			else if (BBOX_WGS84_HEIGHT_MAX.equalsIgnoreCase(keyword)) {
-				query = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ?
-						Queries.GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()):
-							Queries.GET_ENVELOPE_HEIGHT_MAX_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType());
+				query = getEnvelopeHeightMaxInWGS84ById();
 			}
 			else if (BBOX_WGS84_LAT_LON.equalsIgnoreCase(keyword)) {
-				query = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ?
-						Queries.GET_ENVELOPE_LAT_MIN_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()) + " UNION ALL " +
-						Queries.GET_ENVELOPE_LON_MIN_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()) + " UNION ALL " +
-						Queries.GET_ENVELOPE_LAT_MAX_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()) + " UNION ALL " +
-						Queries.GET_ENVELOPE_LON_MAX_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()) :
-							Queries.GET_ENVELOPE_LAT_MIN_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType()) + " UNION ALL " +
-							Queries.GET_ENVELOPE_LON_MIN_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType()) + " UNION ALL " +
-							Queries.GET_ENVELOPE_LAT_MAX_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType()) + " UNION ALL " +
-							Queries.GET_ENVELOPE_LON_MAX_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType());
+				query = getEnvelopeLatMinInWGS84ById() + " UNION ALL " +
+						getEnvelopeLonMinInWGS84ById() + " UNION ALL " +
+						getEnvelopeLatMaxInWGS84ById() + " UNION ALL " +
+						getEnvelopeLonMaxInWGS84ById();
 			}
 			else if (BBOX_WGS84_LON_LAT.equalsIgnoreCase(keyword)) {
-				query = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ?
-						Queries.GET_ENVELOPE_LON_MIN_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()) + " UNION ALL " +
-						Queries.GET_ENVELOPE_LAT_MIN_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()) + " UNION ALL " +
-						Queries.GET_ENVELOPE_LON_MAX_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()) + " UNION ALL " +
-						Queries.GET_ENVELOPE_LAT_MAX_IN_WGS84_3D_FROM_ID(databaseAdapter.getDatabaseType()) :
-							Queries.GET_ENVELOPE_LON_MIN_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType()) + " UNION ALL " +
-							Queries.GET_ENVELOPE_LAT_MIN_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType()) + " UNION ALL " +
-							Queries.GET_ENVELOPE_LON_MAX_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType()) + " UNION ALL " +
-							Queries.GET_ENVELOPE_LAT_MAX_IN_WGS84_FROM_ID(databaseAdapter.getDatabaseType());
+				query = getEnvelopeLonMinInWGS84ById() + " UNION ALL " +
+						getEnvelopeLatMinInWGS84ById() + " UNION ALL " +
+						getEnvelopeLonMaxInWGS84ById() + " UNION ALL " +
+						getEnvelopeLatMaxInWGS84ById();
 			}
 			else {
 				throw new Exception("Unsupported keyword \"" + keyword + "\" in statement \"" + rawStatement + "\"");
@@ -3522,6 +3494,156 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			return query;
 		}
 
+	}
+	
+	private String getCentroidInWGS84ById() {
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		switch (databaseAdapter.getDatabaseType()) {
+		case ORACLE:
+			return new StringBuilder("SELECT SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), ")
+			.append(srid).append(") ")
+			.append("FROM CITYOBJECT co ")
+			.append("WHERE co.id = ?").toString();
+		case POSTGIS:
+			return new StringBuilder("SELECT ST_Transform(ST_Centroid(co.envelope), ")
+			.append(srid).append(") ")
+			.append("FROM CITYOBJECT co ")
+			.append("WHERE co.id = ?").toString();
+		default:
+			return null;
+		}		
+	}
+	
+	private String getCentroidLatInWGS84ById() {
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		switch (databaseAdapter.getDatabaseType()) {
+		case ORACLE:
+			return new StringBuilder("SELECT v.Y FROM TABLE(")
+			.append("SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), ").append(srid).append(")) ")
+			.append("FROM CITYOBJECT co ")
+			.append("WHERE co.id = ?) v").toString();
+		case POSTGIS:
+			return new StringBuilder("SELECT ST_Y(ST_Transform(ST_Centroid(co.envelope), ")
+			.append(srid).append(")) ")
+			.append("FROM CITYOBJECT co ")
+			.append("WHERE co.id = ?").toString();
+		default:
+			return null;
+		}
+	}
+	
+	private String getCentroidLonInWGS84ById() {
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		switch (databaseAdapter.getDatabaseType()) {
+		case ORACLE:
+			return new StringBuilder("SELECT v.X FROM TABLE(")
+			.append("SELECT SDO_UTIL.GETVERTICES(SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), ").append(srid).append(")) ")
+			.append("FROM CITYOBJECT co ")
+			.append("WHERE co.id = ?) v").toString();
+		case POSTGIS:
+			return new StringBuilder("SELECT ST_X(ST_Transform(ST_Centroid(co.envelope), ")
+			.append(srid).append(")) ")
+			.append("FROM CITYOBJECT co ")
+			.append("WHERE co.id = ?").toString();
+		default:
+			return null;
+		}
+	}
+	
+	private String getEnvelopeLatMinInWGS84ById() {
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		switch (databaseAdapter.getDatabaseType()) {
+		case ORACLE:
+			return new StringBuilder("SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, ").append(srid).append("), 2) ")
+					.append("FROM CITYOBJECT co ")
+					.append("WHERE co.id = ?").toString();
+		case POSTGIS:
+			return new StringBuilder("SELECT ST_YMin(Box3D(ST_Transform(co.envelope, ").append(srid).append("))) ")
+					.append("FROM CITYOBJECT co ")
+					.append("WHERE co.id = ?").toString();
+		default:
+			return null;
+		}
+	}
+	
+	private String getEnvelopeLatMaxInWGS84ById() {
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		switch (databaseAdapter.getDatabaseType()) {
+		case ORACLE:
+			return new StringBuilder("SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, ").append(srid).append("), 2) ")
+					.append("FROM CITYOBJECT co ")
+					.append("WHERE co.id = ?").toString();
+		case POSTGIS:
+			return new StringBuilder("SELECT ST_YMax(Box3D(ST_Transform(co.envelope, ").append(srid).append("))) ")
+					.append("FROM CITYOBJECT co ")
+					.append("WHERE co.id = ?").toString();
+		default:
+			return null;
+		}
+	}
+	
+	private String getEnvelopeLonMinInWGS84ById() {
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		switch (databaseAdapter.getDatabaseType()) {
+		case ORACLE:
+			return new StringBuilder("SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, ").append(srid).append("), 1) ")
+					.append("FROM CITYOBJECT co ")
+					.append("WHERE co.id = ?").toString();
+		case POSTGIS:
+			return new StringBuilder("SELECT ST_XMin(Box3D(ST_Transform(co.envelope, ").append(srid).append("))) ")
+					.append("FROM CITYOBJECT co ")
+					.append("WHERE co.id = ?").toString();
+		default:
+			return null;
+		}
+	}
+	
+	private String getEnvelopeLonMaxInWGS84ById() {
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		switch (databaseAdapter.getDatabaseType()) {
+		case ORACLE:
+			return new StringBuilder("SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, ").append(srid).append("), 1) ")
+					.append("FROM CITYOBJECT co ")
+					.append("WHERE co.id = ?").toString();
+		case POSTGIS:
+			return new StringBuilder("SELECT ST_XMax(Box3D(ST_Transform(co.envelope, ").append(srid).append("))) ")
+					.append("FROM CITYOBJECT co ")
+					.append("WHERE co.id = ?").toString();
+		default:
+			return null;
+		}
+	}
+	
+	private String getEnvelopeHeightMinInWGS84ById() {
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		switch (databaseAdapter.getDatabaseType()) {
+		case ORACLE:
+			return new StringBuilder("SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, ").append(srid).append("), 3) ")
+					.append("FROM CITYOBJECT co ")
+					.append("WHERE co.id = ?").toString();
+		case POSTGIS:
+			return new StringBuilder("SELECT ST_ZMin(Box3D(ST_Transform(co.envelope, ").append(srid).append("))) ")
+					.append("FROM CITYOBJECT co ")
+					.append("WHERE co.id = ?").toString();
+		default:
+			return null;
+		}
+	}
+	
+	private String getEnvelopeHeightMaxInWGS84ById() {
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		switch (databaseAdapter.getDatabaseType()) {
+		case ORACLE:
+			return new StringBuilder("SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, ").append(srid).append("), 3) ")
+					.append("FROM CITYOBJECT co ")
+					.append("WHERE co.id = ?").toString();
+		case POSTGIS:
+			return new StringBuilder("SELECT ST_ZMax(Box3D(ST_Transform(co.envelope, ").append(srid).append("))) ")
+					.append("FROM CITYOBJECT co ")
+					.append("WHERE co.id = ?").toString();
+		default:
+			return null;
+		}
 	}
 
 }

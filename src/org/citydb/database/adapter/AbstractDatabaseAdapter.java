@@ -31,7 +31,7 @@ import org.citydb.api.database.DatabaseAdapter;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.database.DatabaseMetaDataImpl;
-import org.citydb.modules.kml.database.BalloonTemplateFactoryImpl;
+import org.citydb.modules.common.balloon.BalloonTemplateFactoryImpl;
 
 public abstract class AbstractDatabaseAdapter implements DatabaseAdapter {
 	protected DatabaseConnectionPool connectionPool;	

@@ -24,7 +24,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  */
-package org.citydb.modules.kml.database;
+package org.citydb.modules.common.balloon;
 
 import java.io.File;
 import java.sql.Connection;
