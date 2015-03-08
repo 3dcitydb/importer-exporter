@@ -171,6 +171,57 @@
 		<delete file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" />
 	</target>
 
+	<target name="generate_wfs_library" depends="clean" description="generate the WFS interface">
+		<!-- create the build directory structure used by compile -->
+		<mkdir dir="${dir.build.base}" />
+		<mkdir dir="${dir.dest}" />
+
+		<!-- compile the java code from ${dir.src} into ${dir.build} -->
+		<javac includeantruntime="false" classpathref="classpath" srcdir="${dir.src}" destdir="${dir.build.base}" sourcepath="">
+			<exclude name="org/citydb/gui/**" />
+			<exclude name="org/citydb/cmd/**" />
+			<exclude name="org/citydb/plugin/**" />
+			<exclude name="org/citydb/io/**" />
+			<exclude name="org/citydb/modules/kml/**" />
+			<exclude name="org/citydb/modules/database/**" />
+			<exclude name="org/citydb/modules/preferences/**" />				
+			<exclude name="org/citydb/modules/**/gui/**" />
+			<exclude name="org/citydb/modules/**/*Plugin.java" />
+			<exclude name="org/citydb/modules/citygml/**/controller/**" />
+			<exclude name="org/citydb/ImpExp.java" />
+		</javac>
+
+		<!-- copy resources -->
+		<copy todir="${dir.build.base}">
+			<fileset dir="${dir.src}" includes="**/*.properties" />
+			<fileset dir="${dir.src}" includes="**/jaxb.index" />
+		</copy>
+
+		<!-- copy LICENSE templates -->
+		<copy todir="${dir.dest.license}">
+			<fileset dir="${dir.resources.license}" includes="**/*" />
+		</copy>
+
+		<!-- replace tokens in template files -->
+		<replace file="${dir.dest.license}/LICENSE.txt" token="!software.name!" value="${impexp.wfs.name}" />
+
+		<!-- put everything in ${dir.build} into .jar file -->
+		<jar jarfile="${dir.dest.lib}/${impexp.wfs.jar.filename}" basedir="${dir.build.base}">
+			<fileset dir="${dir.dest.license}" includes="**/*" />
+			<manifest>
+				<attribute name="Built-Id" value="${user.name}-${impexp.wfs.name.short}-${impexp.wfs.version}" />
+				<attribute name="Built-Date" value="${TODAY}" />
+				<attribute name="Implementation-Title" value="${impexp.wfs.name}" />
+				<attribute name="Implementation-Version" value="${impexp.wfs.version}-b${build.number}" />
+				<attribute name="Implementation-Vendor" value="${vendor.shortinfo}" />
+			</manifest>
+		</jar>
+
+		<!-- clean up -->
+		<delete dir="${dir.build}" />
+		<delete dir="${dir.dest.license}" />
+	</target>
+
 	<target name="dist" depends="clean, generate_plugin_api" description="generate the distribution">
 		<!-- create the build directory structure used by compile -->
 		<mkdir dir="${dir.build.base}" />
