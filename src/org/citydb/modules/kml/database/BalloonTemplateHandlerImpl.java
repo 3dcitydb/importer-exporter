@@ -681,8 +681,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("SPECIES_CODESPACE");
 		add("HEIGHT");
 		add("HEIGHT_UNIT");
-		add("TRUNC_DIAMETER");
-		add("TRUNC_DIAMETER_UNIT");
+		add("TRUNK_DIAMETER");
+		add("TRUNK_DIAMETER_UNIT");
 		add("CROWN_DIAMETER");
 		add("CROWN_DIAMETER_UNIT");
 		add("LOD1_BREP_ID");
