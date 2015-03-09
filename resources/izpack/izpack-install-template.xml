@@ -39,7 +39,7 @@
         </authors>
         <url>!3dcitydb.homepage!</url>
         <uninstaller write="yes" path="$INSTALL_PATH/uninstaller"/>
-        <javaversion>1.6</javaversion>
+        <javaversion>1.7</javaversion>
         <writeinstallationinformation>no</writeinstallationinformation>
     </info>
 
@@ -103,39 +103,42 @@
     <packs>
         <pack name="core" id="core" required="yes" preselected="yes">
             <description/>
-            <fileset dir="!dir.dest!" targetdir="$INSTALL_PATH" excludes="!dir.dest.plugin.api.relative!/ !dir.dest.plugins.relative!/ *.bat *.sh" override="true"/>
+            <fileset dir="!dir.dest!" targetdir="$INSTALL_PATH" excludes="!dir.dest.plugin.api.relative!/ !dir.dest.plugins.relative!/ *.bat *.sh *.command" override="true"/>
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH" os="windows" override="true"/>
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.sh" targetdir="$INSTALL_PATH" os="unix" override="true"/>
-            <singlefile src="!dir.dest!/3DCityDB-Importer-Exporter-MacOSX.sh" target="$INSTALL_PATH/3DCityDB-Importer-Exporter.sh" os="mac" override="true"/>
+            <file src="!dir.dest!/3DCityDB-Importer-Exporter.command" targetdir="$INSTALL_PATH" os="mac" override="true"/>
             <file src="!dir.resources.izpack.config!/img/impexp.ico" targetdir="$INSTALL_PATH" os="windows" override="true"/>
             <file src="!dir.resources.izpack.config!/img/uninstaller.ico" targetdir="$INSTALL_PATH/uninstaller" os="windows" override="true"/>
             <file src="!dir.resources.izpack.config!/img/impexp.png" targetdir="$INSTALL_PATH" os="unix" override="true"/>
             <file src="!dir.resources.izpack.config!/img/uninstaller.png" targetdir="$INSTALL_PATH/uninstaller" os="unix" override="true"/>
             <!-- the following fileset is just to create an empty plugins folder -->
             <fileset dir="!dir.dest.plugins!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!" excludes="**/*"/>
-            <fileset dir="!dir.resources.templates!" targetdir="$INSTALL_PATH/templates" excludes=".svn" override="true"/>
+            <fileset dir="!dir.resources.templates!" targetdir="$INSTALL_PATH/templates" override="true"/>
             <executable targetfile="$INSTALL_PATH/3DCityDB-Importer-Exporter.sh" stage="never">
-                <os family="unix|mac"/>
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/3DCityDB-Importer-Exporter.command" stage="never">
+                <os family="mac"/>
             </executable>
         </pack>
         <pack name="3dcitydb" id="3dcitydb" required="no" preselected="yes">
             <description/>
-            <fileset dir="!dir.resources.3dcitydb!" targetdir="$INSTALL_PATH/3dcitydb" excludes=".svn" override="true"/>
+            <fileset dir="!dir.resources.3dcitydb!" targetdir="$INSTALL_PATH/3dcitydb" override="true"/>
         </pack>
         <pack name="manual" id="manual" required="no" preselected="yes">
             <description/>
-            <fileset dir="!dir.resources.manual!" targetdir="$INSTALL_PATH/manual" excludes=".svn" override="true"/>
+            <fileset dir="!dir.resources.manual!" targetdir="$INSTALL_PATH/manual" override="true"/>
         </pack>
         <pack name="samples" id="samples" required="no" preselected="yes">
             <description/>
-            <fileset dir="!dir.samples!" targetdir="$INSTALL_PATH/samples" excludes=".svn" override="true"/>
+            <fileset dir="!dir.samples!" targetdir="$INSTALL_PATH/samples" override="true"/>
         </pack>
         <pack name="plugins" id="plugins" required="no" preselected="no">
             <description/>
         </pack>
         <pack name="plugin.spreadsheet.generator" id="plugin.spreadsheet.generator" parent="plugins" required="no" preselected="no">
             <description/>
-            <fileset dir="!plugin.spreadsheet.generator.dir!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!/!plugin.spreadsheet.generator.dir.dest.relative!" override="true"/>
+            <fileset dir="!dir.dest.plugins!/!plugin.spreadsheet.generator.dir.dest.relative!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!/!plugin.spreadsheet.generator.dir.dest.relative!" override="true"/>
         </pack>
         <pack name="plugin-api" id="plugin-api" parent="plugins" required="no" preselected="no">
             <description/>

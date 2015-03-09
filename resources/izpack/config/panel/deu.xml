@@ -43,7 +43,7 @@
     <str id="TreePacksPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Wählen Sie die zu installierenden Programmfunktionen aus.&lt;/body&gt;&lt;/html&gt;"/>
 
     <str id="SummaryPanel.headline" txt="Bereit zur Installation"/>
-    <str id="SummaryPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Das ${APP_NAME} kann nun installiert werden.&lt;/body&gt;&lt;/html&gt;"/>
+    <str id="SummaryPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Der ${APP_NAME} kann nun installiert werden.&lt;/body&gt;&lt;/html&gt;"/>
 
     <str id="InstallPanel.headline" txt="Installation läuft"/>
     <str id="InstallPanel.headinfo0" txt="&lt;html&gt;&lt;body&gt;Bitte warten Sie, bis der ${APP_NAME} installiert ist.&lt;/body&gt;&lt;/html&gt;"/>
