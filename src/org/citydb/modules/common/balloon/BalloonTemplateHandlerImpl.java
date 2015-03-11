@@ -1457,7 +1457,11 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							result = result + ")";
 						}
 						else {
-							result = result + rs.getObject(1).toString().replaceAll("\"", "&quot;"); // workaround, the JAXB KML marshaler does not escape " properly;
+							String tmp = rs.getObject(1).toString();
+							if (tmp.indexOf("oracle.sql.TIMESTAMPTZ") >= 0) {
+								tmp =  rs.getTimestamp(1).toString();
+							}
+							result = result + tmp.replaceAll("\"", "&quot;"); // workaround, the JAXB KML marshaler does not escape " properly;
 						}
 					}
 				}
