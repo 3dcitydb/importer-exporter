@@ -2,7 +2,7 @@
 REM Example shell script to execute the !impexp.name!
 REM The tool can be started using a graphical user interface (default) or
 REM as a shell version (using -shell switch, e.g., for batch processing)
-REM Use '!impexp.jar.filename! -help' to get a list of available options
+REM Use '!impexp.jar.filename! -help' to get a list of available arguments
 
 REM cd to path of the starter script
 cd /d %~dp0
