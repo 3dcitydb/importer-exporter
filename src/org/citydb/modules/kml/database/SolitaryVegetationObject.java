@@ -324,9 +324,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 	}
 
 	protected GeometryObject applyTransformationMatrix(GeometryObject geomObj) throws SQLException {
-
 		if (transformation != null) {
-
 			for (int i = 0; i < geomObj.getNumElements(); i++) {
 				double[] originalCoords = geomObj.getCoordinates(i);
 				for (int j = 0; j < originalCoords.length; j += 3) {
@@ -338,7 +336,12 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					originalCoords[j+2] = v.get(2, 0) + refPointZ;
 				}
 			}
+			
+			// implicit geometries are not associated with a crs (srid = 0)
+			// after transformation into world coordinates, we therefore have to assign the database crs
+			geomObj.setSrid(databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
 		}
+		
 		return geomObj;
 	}
 

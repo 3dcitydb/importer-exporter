@@ -309,7 +309,7 @@ public class CityFurniture extends KmlGenericObject{
 
 					break;
 				}
-				
+
 				kmlExporterManager.updateFeatureTracker(work);
 			}
 		}
@@ -342,14 +342,19 @@ public class CityFurniture extends KmlGenericObject{
 					originalCoords[j+2] = v.get(2, 0) + refPointZ;
 				}
 			}
+
+			// implicit geometries are not associated with a crs (srid = 0)
+			// after transformation into world coordinates, we therefore have to assign the database crs
+			geomObj.setSrid(databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
 		}
+
 		return geomObj;
 	}
 
 	protected GeometryObject convertToWGS84(GeometryObject geomObj) throws SQLException {
 		return super.convertToWGS84(applyTransformationMatrix(geomObj));
 	}
-	
+
 	protected double[] convertPointWorldCoordinatesToWGS84(double[] coords) throws SQLException {
 		double[] pointCoords = null;
 		GeometryObject convertedPointGeom = null;
@@ -382,7 +387,7 @@ public class CityFurniture extends KmlGenericObject{
 			return super.createPlacemarkForColladaModel();
 		}
 
-	//	double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {0, 0, 0}); // will be turned into refPointX,Y,Z by convertToWGS84
+		//	double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {0, 0, 0}); // will be turned into refPointX,Y,Z by convertToWGS84
 		double[] originInWGS84 = convertPointWorldCoordinatesToWGS84(new double[] {getOrigin().x,
 				getOrigin().y,
 				getOrigin().z});
@@ -448,7 +453,7 @@ public class CityFurniture extends KmlGenericObject{
 		return placemark;
 	}
 
-/*	protected List<Point3d> setOrigins() {
+	/*	protected List<Point3d> setOrigins() {
 		List<Point3d> coords = new ArrayList<Point3d>();
 
 		if (transformation != null) { 
@@ -605,7 +610,7 @@ public class CityFurniture extends KmlGenericObject{
 
 						GeometryObject surface = applyTransformationMatrix(geometryConverterAdapter.getPolygon(buildingGeometryObj));
 						List<VertexInfo> vertexInfos = new ArrayList<VertexInfo>();
-						
+
 						int ringCount = surface.getNumElements();
 						int[] vertexCount = new int[ringCount];
 
@@ -629,11 +634,11 @@ public class CityFurniture extends KmlGenericObject{
 									double t = Double.parseDouble(texCoordsTokenized.nextToken());
 									vertexInfo.addTexCoords(surfaceId, new TexCoords(s, t));
 								}
-		
+
 								vertexInfos.add(vertexInfo);
 								vertices++;
 							}
-							
+
 							vertexCount[i] = vertices;
 
 							if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
