@@ -314,12 +314,26 @@ public class KmlExporter implements EventHandler {
 
 		long start = System.currentTimeMillis();
 
+		// iterate over tiles
 		for (int i = 0; shouldRun && i < rows; i++) {
 			for (int j = 0; shouldRun && j < columns; j++) {
 
 				// track exported objects
 				ExportTracker tracker = new ExportTracker();
+				
+				// set active tile and get tile extent in WGS84
+				GeometryObject wgs84Tile = null;
+				if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
+					try {
+						exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
+						wgs84Tile = convertTileToWGS84(exportFilter.getBoundingBoxFilter().getFilterState());
+					} catch (SQLException e) {
+						Logger.getInstance().error("Failed to transform tile extent to WGS84: " + e.getMessage());
+						return false;
+					}
+				}
 
+				// iterate over display forms
 				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 					if (!displayForm.isActive()) 
 						continue;
@@ -330,20 +344,9 @@ public class KmlExporter implements EventHandler {
 					File file = null;
 					OutputStreamWriter fileWriter = null;
 					ZipOutputStream zipOut = null;
-					GeometryObject wgs84Tile = null;
 
 					try {
 						if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
-							exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
-
-							// transform tile extent to WGS84
-							try {
-								wgs84Tile = convertTileToWGS84(exportFilter.getBoundingBoxFilter().getFilterState());
-							} catch (SQLException e) {
-								Logger.getInstance().error("Failed to transform tile extent to WGS84: " + e.getMessage());
-								return false;
-							}
-
 							file = new File(path + File.separator + fileName + "_Tile_"
 									+ i + "_" + j + "_" + displayForm.getName() + fileExtension);
 						} else
@@ -537,16 +540,6 @@ public class KmlExporter implements EventHandler {
 							return false;
 						}
 
-						// create reference to tile file in master file
-						if (masterFileWriter != null) {
-							try {
-								writeMasterFileTileReference(fileName, i, j, wgs84Tile, masterFileWriter);
-							} catch (JAXBException e) {
-								Logger.getInstance().error("Failed to write tile reference to master file: " + e.getMessage());
-								return false;
-							}
-						}
-
 						eventDispatcher.triggerEvent(new StatusDialogMessage(" ", this));
 
 						// finally join eventDispatcher
@@ -570,6 +563,16 @@ public class KmlExporter implements EventHandler {
 						ioWriterPool = null;
 						kmlWorkerPool = null;
 						kmlSplitter = null;
+					}
+				}
+				
+				// create reference to tile file in master file
+				if (masterFileWriter != null) {
+					try {
+						writeMasterFileTileReference(fileName, i, j, wgs84Tile, masterFileWriter);
+					} catch (JAXBException e) {
+						Logger.getInstance().error("Failed to write tile reference to master file: " + e.getMessage());
+						return false;
 					}
 				}
 				
