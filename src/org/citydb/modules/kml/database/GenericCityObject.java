@@ -443,7 +443,7 @@ public class GenericCityObject extends KmlGenericObject{
 
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(getGmlId());
-		placemark.setId(DisplayForm.COLLADA_PLACEMARK_ID + placemark.getName());
+		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkCollada() + placemark.getName());
 
 		DisplayForm colladaDisplayForm = null;
 		for (DisplayForm displayForm: getDisplayForms()) {
@@ -722,7 +722,7 @@ public class GenericCityObject extends KmlGenericObject{
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setStyleUrl("#" + getStyleBasisName() + work.getDisplayForm().getName() + "Style");
 		placemark.setName(work.getGmlId());
-		placemark.setId(DisplayForm.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID + placemark.getName());
+		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkHighlight() + placemark.getName());
 		placemarkList.add(placemark);
 
 		if (getBalloonSettings().isIncludeDescription()) {

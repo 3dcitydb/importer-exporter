@@ -1186,7 +1186,7 @@ public abstract class KmlGenericObject {
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(work.getGmlId());
-		placemark.setId(DisplayForm.FOOTPRINT_PLACEMARK_ID + placemark.getName());
+		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkFootprint() + placemark.getName());
 
 		if (work.getDisplayForm().isHighlightingEnabled()) {
 			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Style");
@@ -1250,7 +1250,7 @@ public abstract class KmlGenericObject {
 		List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(work.getGmlId());
-		placemark.setId(DisplayForm.EXTRUDED_PLACEMARK_ID + placemark.getName());
+		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkExtruded() + placemark.getName());
 		if (work.getDisplayForm().isHighlightingEnabled()) {
 			placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.EXTRUDED_STR + "Style");
 		}
@@ -1490,12 +1490,12 @@ public abstract class KmlGenericObject {
 			PlacemarkType placemark = kmlFactory.createPlacemarkType();
 			if (work.isBuilding() || work.isBridge() || work.isTunnel()){
 				placemark.setName(work.getGmlId() + "_" + surfaceType);
-				placemark.setId(DisplayForm.GEOMETRY_PLACEMARK_ID + placemark.getName());
+				placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkGeometry() + placemark.getName());
 				placemark.setStyleUrl("#" + surfaceType + "Normal");			
 			}
 			else{
 				placemark.setName(work.getGmlId() + "_" + getStyleBasisName());
-				placemark.setId(DisplayForm.GEOMETRY_PLACEMARK_ID + placemark.getName());
+				placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkGeometry() + placemark.getName());
 				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.GEOMETRY_STR + "Normal");				
 			}
 
@@ -1705,7 +1705,7 @@ public abstract class KmlGenericObject {
 	public PlacemarkType createPlacemarkForColladaModel() throws SQLException {
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(getGmlId());
-		placemark.setId(DisplayForm.COLLADA_PLACEMARK_ID + placemark.getName());
+		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkCollada() + placemark.getName());
 
 		DisplayForm colladaDisplayForm = null;
 		for (DisplayForm displayForm: getDisplayForms()) {
@@ -1780,7 +1780,7 @@ public abstract class KmlGenericObject {
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setStyleUrl("#" + getStyleBasisName() + work.getDisplayForm().getName() + "Style");
 		placemark.setName(work.getGmlId());
-		placemark.setId(DisplayForm.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID + placemark.getName());
+		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkHighlight() + placemark.getName());
 		placemarkList.add(placemark);
 
 		if (getBalloonSettings().isIncludeDescription()) {

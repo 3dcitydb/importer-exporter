@@ -54,8 +54,6 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.balloon.BalloonTemplateHandlerImpl;
-import org.citydb.modules.common.event.CounterEvent;
-import org.citydb.modules.common.event.CounterType;
 
 public class Tunnel extends KmlGenericObject{
 
@@ -364,7 +362,7 @@ public class Tunnel extends KmlGenericObject{
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setStyleUrl("#" + getStyleBasisName() + work.getDisplayForm().getName() + "Style");
 		placemark.setName(work.getGmlId());
-		placemark.setId(DisplayForm.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID + placemark.getName());
+		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkHighlight() + placemark.getName());
 		placemarkList.add(placemark);
 
 		if (getBalloonSettings().isIncludeDescription()) {
