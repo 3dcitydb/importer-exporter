@@ -165,11 +165,10 @@ public class Tunnel extends KmlGenericObject{
 					}
 				}
 
+				kmlExporterManager.updateFeatureTracker(work);
 				kmlExporterManager.print(placemarks,
 						work,
 						getBalloonSettings().isBalloonContentInSeparateFile());
-
-				kmlExporterManager.updateFeatureTracker(work);
 			}
 			catch (JAXBException jaxbEx) {}
 		}

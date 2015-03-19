@@ -123,11 +123,10 @@ public class CityObjectGroup extends KmlGenericObject{
 				}
 
 				// hard-coded for groups
+				kmlExporterManager.updateFeatureTracker(work);
 				kmlExporterManager.print(createPlacemarksForFootprint(rs, work),
 										 work,
-										 getBalloonSettings().isBalloonContentInSeparateFile());
-				
-				kmlExporterManager.updateFeatureTracker(work);
+										 getBalloonSettings().isBalloonContentInSeparateFile());				
 			}
 		}
 		catch (SQLException sqlEx) {

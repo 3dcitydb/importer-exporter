@@ -148,6 +148,8 @@ public class WaterBody extends KmlGenericObject{
 						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
 			}
 			else { // result not empty
+				kmlExporterManager.updateFeatureTracker(work);
+
 				// get the proper displayForm (for highlighting)
 				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
 				if (indexOfDf != -1) {
@@ -238,9 +240,7 @@ public class WaterBody extends KmlGenericObject{
 					}
 
 					break;
-				}
-				
-				kmlExporterManager.updateFeatureTracker(work);
+				}				
 			}
 		}
 		catch (SQLException sqlEx) {

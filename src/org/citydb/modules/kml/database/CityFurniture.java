@@ -214,6 +214,8 @@ public class CityFurniture extends KmlGenericObject{
 						ResultSet.CONCUR_READ_ONLY);
 				psQuery.setLong(1, sgRootId);
 				rs = psQuery.executeQuery();
+				
+				kmlExporterManager.updateFeatureTracker(work);
 
 				// get the proper displayForm (for highlighting)
 				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
@@ -309,8 +311,6 @@ public class CityFurniture extends KmlGenericObject{
 
 					break;
 				}
-
-				kmlExporterManager.updateFeatureTracker(work);
 			}
 		}
 		catch (SQLException sqlEx) {
