@@ -1006,6 +1006,13 @@ public abstract class KmlGenericObject {
 	}
 
 	private void useExternalTAGenerator(int packingAlgorithm, double scaleFactor, boolean pots) throws SQLException, IOException {
+		
+		// in some cases, several buildings may share one monster texture image.
+		// This function is used to crop such big image into small pieces for each surface geometry before creating the TextureAltas	
+		// Currently, it is difficult to detect, if one image is shared by more than one building of not. 
+		// Therefore, this function is called in all cases. It should be improved in the future...
+		cropImages(packingAlgorithm);
+		
 		TextureAtlasCreator taCreator = new TextureAtlasCreator();
 		TextureImagesInfo tiInfo = new TextureImagesInfo();
 		tiInfo.setTexImageURIs(texImageUris);
@@ -1057,6 +1064,87 @@ public abstract class KmlGenericObject {
 				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
 			}
 		} 
+	}
+	
+	private void cropImages (int packingAlgorithm) {	
+		
+		if (texImageUris.size() > 1000 && (packingAlgorithm == TextureAtlasCreator.TPIM || packingAlgorithm == TextureAtlasCreator.TPIM_WO_ROTATION)) {
+			// too many pieces lead to crash when using TPIM algorithm
+			return;
+		}
+		
+		HashMap<String, TextureImage> newTexImages = new HashMap<String, TextureImage>();
+		
+		Set<Object> sgIdSet = texImageUris.keySet();
+		Iterator<Object> sgIdIterator = sgIdSet.iterator();
+		while (sgIdIterator.hasNext()) {
+			Long sgId = (Long) sgIdIterator.next();
+			
+			// step 1: get maximal and minimal coordinates
+			VertexInfo vertexInfoIterator = firstVertexInfo;			
+			double maxS = 0;
+			double minS = Double.MAX_VALUE;
+			double maxT = 0;
+			double minT = Double.MAX_VALUE;			
+			while (vertexInfoIterator != null) {
+				if (vertexInfoIterator.getAllTexCoords() != null && vertexInfoIterator.getAllTexCoords().containsKey(sgId)) {
+					double s = vertexInfoIterator.getTexCoords(sgId).getS();
+					double t = vertexInfoIterator.getTexCoords(sgId).getT();
+					if (s > maxS) {
+						maxS = s;
+					}
+					if (s < minS) {
+						minS = s;
+					}
+					if (t > maxT) {
+						maxT = t;
+					}
+					if (t < minT) {
+						minT = t;
+					}
+				}
+				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
+			}
+			
+			// step 2: crop images
+			try {
+				TextureImage texImage = texImages.get(texImageUris.get(sgId));
+				int imageWidth = texImage.getWidth();
+				int imageHeight = texImage.getHeight();
+				int startS = (int) Math.floor(imageWidth * minS);
+				int startT = (int) Math.floor(imageHeight * (1- maxT));
+				int newImageWidth = (int) Math.floor((maxS - minS) * imageWidth);
+				int newImageHeight = (int) Math.floor((maxT - minT) * imageHeight);	
+				if (startT < 0) startT = 0;
+				if (startS < 0) startS = 0;
+				if (newImageWidth <= 0) newImageWidth = 1;
+				if (newImageHeight <= 0) newImageHeight = 1;	
+				BufferedImage imageToCrop = texImage.getBufferedImage().getSubimage(startS, startT, newImageWidth, newImageHeight);
+				String newImageUri = sgId + "_" + texImageUris.get(sgId);
+				texImageUris.put(sgId, newImageUri);
+				newTexImages.put(newImageUri, new TextureImage(imageToCrop));
+			}
+			catch (Exception e) {
+				Logger.getInstance().error(e.getMessage());
+			}
+			
+			// step 3: update the vertex coordinate according to the cropped images 
+			vertexInfoIterator = firstVertexInfo;			
+			while (vertexInfoIterator != null) {
+				if (vertexInfoIterator.getAllTexCoords() != null && vertexInfoIterator.getAllTexCoords().containsKey(sgId)) {
+					double s = vertexInfoIterator.getTexCoords(sgId).getS();
+					double t = vertexInfoIterator.getTexCoords(sgId).getT();					
+					double newS = (s - minS) / (maxS - minS);
+					double newT = (t - minT) / (maxT - minT);
+					vertexInfoIterator.getTexCoords(sgId).setS(newS);
+					vertexInfoIterator.getTexCoords(sgId).setT(newT);
+				}
+				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
+			}
+		} 
+		
+		// step 4: update textImages
+		texImages = newTexImages;
 	}
 
 	public void resizeAllImagesByFactor (double factor) throws SQLException, IOException {
