@@ -178,7 +178,7 @@ public class GenericCityObject extends KmlGenericObject{
 						psQuery.setLong(i, work.getId());
 					}
 					rs = psQuery.executeQuery();
-					
+
 					if (rs.isBeforeFirst()) {					
 						isPointOrCurve = true;
 						break; // result set not empty
@@ -213,6 +213,8 @@ public class GenericCityObject extends KmlGenericObject{
 						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
 			}
 			else { // result not empty
+				kmlExporterManager.updateFeatureTracker(work);
+
 				if (isPointOrCurve) { // point or curve geometry
 
 					kmlExporterManager.print(createPlacemarksForPointOrCurve(rs, work),
@@ -355,8 +357,6 @@ public class GenericCityObject extends KmlGenericObject{
 
 						break;
 					}
-					
-					kmlExporterManager.updateFeatureTracker(work);
 				}				
 			}
 		}
@@ -389,7 +389,12 @@ public class GenericCityObject extends KmlGenericObject{
 					originalCoords[j+2] = v.get(2, 0) + refPointZ;
 				}
 			}
+
+			// implicit geometries are not associated with a crs (srid = 0)
+			// after transformation into world coordinates, we therefore have to assign the database crs
+			geomObj.setSrid(databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
 		}
+		
 		return geomObj;
 	}
 
@@ -428,7 +433,7 @@ public class GenericCityObject extends KmlGenericObject{
 			return super.createPlacemarkForColladaModel();
 		}
 
-	//	double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {0, 0, 0}); // will be turned into refPointX,Y,Z by convertToWGS84
+		//	double[] originInWGS84 = convertPointCoordinatesToWGS84(new double[] {0, 0, 0}); // will be turned into refPointX,Y,Z by convertToWGS84
 		double[] originInWGS84 = convertPointWorldCoordinatesToWGS84(new double[] {getOrigin().x,
 				getOrigin().y,
 				getOrigin().z});
@@ -438,7 +443,7 @@ public class GenericCityObject extends KmlGenericObject{
 
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(getGmlId());
-		placemark.setId(DisplayForm.COLLADA_PLACEMARK_ID + placemark.getName());
+		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkCollada() + placemark.getName());
 
 		DisplayForm colladaDisplayForm = null;
 		for (DisplayForm displayForm: getDisplayForms()) {
@@ -494,7 +499,7 @@ public class GenericCityObject extends KmlGenericObject{
 		return placemark;
 	}
 
-/*	protected List<Point3d> setOrigins() {
+	/*	protected List<Point3d> setOrigins() {
 		List<Point3d> coords = new ArrayList<Point3d>();
 
 		if (transformation != null) { 
@@ -517,7 +522,7 @@ public class GenericCityObject extends KmlGenericObject{
 
 		return coords;
 	}
-*/
+	 */
 	protected void fillGenericObjectForCollada(ResultSet rs, boolean generateTextureAtlas) throws SQLException {
 
 		if (transformation == null) { // no implicit geometry
@@ -651,7 +656,7 @@ public class GenericCityObject extends KmlGenericObject{
 
 						GeometryObject surface = applyTransformationMatrix(geometryConverterAdapter.getPolygon(buildingGeometryObj));
 						List<VertexInfo> vertexInfos = new ArrayList<VertexInfo>();
-						
+
 						int ringCount = surface.getNumElements();
 						int[] vertexCount = new int[ringCount];
 
@@ -675,11 +680,11 @@ public class GenericCityObject extends KmlGenericObject{
 									double t = Double.parseDouble(texCoordsTokenized.nextToken());
 									vertexInfo.addTexCoords(surfaceId, new TexCoords(s, t));
 								}
-		
+
 								vertexInfos.add(vertexInfo);
 								vertices++;
 							}
-							
+
 							vertexCount[i] = vertices;
 
 							if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {
@@ -717,7 +722,7 @@ public class GenericCityObject extends KmlGenericObject{
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setStyleUrl("#" + getStyleBasisName() + work.getDisplayForm().getName() + "Style");
 		placemark.setName(work.getGmlId());
-		placemark.setId(DisplayForm.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID + placemark.getName());
+		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkHighlight() + placemark.getName());
 		placemarkList.add(placemark);
 
 		if (getBalloonSettings().isIncludeDescription()) {
@@ -861,7 +866,7 @@ public class GenericCityObject extends KmlGenericObject{
 				isPoint = true; // dirty hack, don't try this at home
 				double[] ordinatesArray = super.convertPointCoordinatesToWGS84(pointOrCurveGeometry.getCoordinates(0));
 				double zOrdinate = ordinatesArray[2] + zOffset;
-				
+
 				if (pacSettings.getPointDisplayMode() == PointDisplayMode.CROSS_LINE){
 					double[] ordinatesArrayTopLeft = new double[2];
 					ordinatesArrayTopLeft[0] = pointOrCurveGeometry.getCoordinates(0)[0] - 1; 
@@ -873,7 +878,7 @@ public class GenericCityObject extends KmlGenericObject{
 					ordinatesArrayBottomRight[1] = pointOrCurveGeometry.getCoordinates(0)[1] - 1; 
 					ordinatesArrayBottomRight = super.convertPointCoordinatesToWGS84(ordinatesArrayBottomRight);
 
-					
+
 					if (pacSettings.getCurveAltitudeMode() == AltitudeMode.CLAMP_TO_GROUND) {
 						// tiny extrude above the ground
 						zOrdinate = 0.1;
@@ -934,7 +939,7 @@ public class GenericCityObject extends KmlGenericObject{
 					placemark.setAbstractGeometryGroup(kmlFactory.createPoint(pointString));
 				}
 				else if (pacSettings.getPointDisplayMode() == PointDisplayMode.CUBE) {
-					
+
 					double sideLength = pacSettings.getPointCubeLengthOfSide();
 					MultiGeometryType multiGeometry =  kmlFactory.createMultiGeometryType();					
 					double[] ordinatesArrayTopLeft = new double[2];
@@ -946,11 +951,11 @@ public class GenericCityObject extends KmlGenericObject{
 					ordinatesArrayBottomRight[0] = pointOrCurveGeometry.getCoordinates(0)[0] + sideLength/2; 
 					ordinatesArrayBottomRight[1] = pointOrCurveGeometry.getCoordinates(0)[1] - sideLength/2; 
 					ordinatesArrayBottomRight = super.convertPointCoordinatesToWGS84(ordinatesArrayBottomRight);
-					
+
 					if (pacSettings.getPointAltitudeMode() == AltitudeMode.CLAMP_TO_GROUND) {
 						zOrdinate = 0.0;
 					}
-					
+
 					String topLeftFootNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayTopLeft[0]) + "," 
 							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
 							+ reducePrecisionForZ(zOrdinate));
@@ -975,7 +980,7 @@ public class GenericCityObject extends KmlGenericObject{
 					String topRightRoofNode = String.valueOf(reducePrecisionForXorY(ordinatesArrayBottomRight[0]) + "," 
 							+ reducePrecisionForXorY(ordinatesArrayTopLeft[1]) + ","
 							+ reducePrecisionForZ(zOrdinate + sideLength));				
-					
+
 					LinearRingType LinearRingElement = kmlFactory.createLinearRingType();
 
 					// bottom side					
@@ -998,7 +1003,7 @@ public class GenericCityObject extends KmlGenericObject{
 						break;
 					}
 					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
-					
+
 					// top side
 					LinearRingElement = kmlFactory.createLinearRingType();
 					LinearRingElement.getCoordinates().add(topLeftRoofNode);
@@ -1020,7 +1025,7 @@ public class GenericCityObject extends KmlGenericObject{
 						break;
 					}
 					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
-					
+
 					// left side
 					LinearRingElement = kmlFactory.createLinearRingType();
 					LinearRingElement.getCoordinates().add(topLeftRoofNode);
@@ -1042,7 +1047,7 @@ public class GenericCityObject extends KmlGenericObject{
 						break;
 					}
 					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
-					
+
 					// right side
 					LinearRingElement = kmlFactory.createLinearRingType();
 					LinearRingElement.getCoordinates().add(topRightRoofNode);
@@ -1064,7 +1069,7 @@ public class GenericCityObject extends KmlGenericObject{
 						break;
 					}
 					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
-					
+
 					// front side
 					LinearRingElement = kmlFactory.createLinearRingType();
 					LinearRingElement.getCoordinates().add(topLeftRoofNode);
@@ -1086,7 +1091,7 @@ public class GenericCityObject extends KmlGenericObject{
 						break;
 					}
 					multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
-					
+
 					// back side
 					LinearRingElement = kmlFactory.createLinearRingType();
 					LinearRingElement.getCoordinates().add(bottomLeftRoofNode);
@@ -1118,7 +1123,7 @@ public class GenericCityObject extends KmlGenericObject{
 
 					placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));					
 				}
-				
+
 				placemark.setName(work.getGmlId() + "_" + POINT);
 				// replace default BalloonTemplateHandler with a brand new one, this costs resources!
 				if (pacSettings.getPointBalloon() != null && pacSettings.getPointBalloon().isIncludeDescription() &&

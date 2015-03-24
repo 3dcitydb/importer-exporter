@@ -26,7 +26,6 @@
  */
 package org.citydb.database.adapter;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -52,15 +51,12 @@ public class BlobImportAdapterImpl implements BlobImportAdapter {
 	@Override
 	public boolean insert(long id, InputStream in, String fileName) throws SQLException {
 		try {
-			psUpdate.setBinaryStream(1, in, in.available());
+			psUpdate.setBinaryStream(1, in);
 			psUpdate.setLong(2, id);
 			psUpdate.executeUpdate();		
 			connection.commit();
 			
 			return true;
-		} catch (IOException e) {
-			LOG.error("Failed to read " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file '" + fileName + "': " + e.getMessage());
-			return false;
 		} catch (SQLException e) {
 			LOG.error("SQL error while importing " + (blobType == BlobType.TEXTURE_IMAGE ? "texture" : "library object") + " file '" + fileName + "': " + e.getMessage());
 			return false;

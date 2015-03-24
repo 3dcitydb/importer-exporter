@@ -55,12 +55,6 @@ public class DisplayForm {
 	public static final String COLLADA_STR = "collada";
 	public static final String HIGHLIGTHTED_STR = "highlighted";
 
-	public static final String FOOTPRINT_PLACEMARK_ID = "KMLFootp_";  
-	public static final String EXTRUDED_PLACEMARK_ID = "KMLExtr_";  
-	public static final String GEOMETRY_PLACEMARK_ID = "KMLGeom_";
-	public static final String GEOMETRY_HIGHLIGHTED_PLACEMARK_ID = "KMLGeomHi_";
-	public static final String COLLADA_PLACEMARK_ID = "COLLADA_";
-
 	public static final int DEFAULT_FILL_COLOR = 0xc8ffcc00;
 	public static final int DEFAULT_LINE_COLOR = 0xc8ff6633;
 	public static final int DEFAULT_FILL_HIGHLIGHTED_COLOR = 0xc866ff66;

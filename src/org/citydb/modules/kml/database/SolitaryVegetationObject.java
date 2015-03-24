@@ -213,6 +213,8 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 						ResultSet.CONCUR_READ_ONLY);
 				psQuery.setLong(1, sgRootId);
 				rs = psQuery.executeQuery();
+				
+				kmlExporterManager.updateFeatureTracker(work);
 
 				// get the proper displayForm (for highlighting)
 				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
@@ -303,9 +305,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					}
 
 					break;
-				}
-				
-				kmlExporterManager.updateFeatureTracker(work);
+				}				
 			}
 		}
 		catch (SQLException sqlEx) {
@@ -324,9 +324,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 	}
 
 	protected GeometryObject applyTransformationMatrix(GeometryObject geomObj) throws SQLException {
-
 		if (transformation != null) {
-
 			for (int i = 0; i < geomObj.getNumElements(); i++) {
 				double[] originalCoords = geomObj.getCoordinates(i);
 				for (int j = 0; j < originalCoords.length; j += 3) {
@@ -338,7 +336,12 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 					originalCoords[j+2] = v.get(2, 0) + refPointZ;
 				}
 			}
+			
+			// implicit geometries are not associated with a crs (srid = 0)
+			// after transformation into world coordinates, we therefore have to assign the database crs
+			geomObj.setSrid(databaseAdapter.getConnectionMetaData().getReferenceSystem().getSrid());
 		}
+		
 		return geomObj;
 	}
 
@@ -389,7 +392,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setName(getGmlId());
-		placemark.setId(DisplayForm.COLLADA_PLACEMARK_ID + placemark.getName());
+		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkCollada() + placemark.getName());
 
 		DisplayForm colladaDisplayForm = null;
 		for (DisplayForm displayForm: getDisplayForms()) {
@@ -669,7 +672,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 		PlacemarkType placemark = kmlFactory.createPlacemarkType();
 		placemark.setStyleUrl("#" + getStyleBasisName() + work.getDisplayForm().getName() + "Style");
 		placemark.setName(work.getGmlId());
-		placemark.setId(DisplayForm.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID + placemark.getName());
+		placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkHighlight() + placemark.getName());
 		placemarkList.add(placemark);
 
 		if (getBalloonSettings().isIncludeDescription()) {

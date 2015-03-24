@@ -2500,11 +2500,11 @@ public class Queries {
 			"SELECT sg.geometry, '42' as objectclass_id, sg.id " +
 					"FROM SURFACE_GEOMETRY sg " +
 					"WHERE sg.root_id IN (" +
-					"SELECT tc.lod1_multi_surface_id " +
+					"select tmp.id from (SELECT tc.lod1_multi_surface_id as id " +
 					"FROM TRANSPORTATION_COMPLEX tc " +
 					"WHERE tc.id = ? " +
 					"AND tc.lod1_multi_surface_id IS NOT NULL" +
-					") AND sg.geometry IS NOT NULL";
+					") tmp ) AND sg.geometry IS NOT NULL";
 
 	private static final String TRANSPORTATION_COMPLEX_FOOTPRINT_LOD0 =
 			"SELECT tc.lod0_network " +

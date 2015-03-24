@@ -235,7 +235,7 @@ public class KmlExporterManager {
 							boolean isHighlighting = false;
 
 							String filename = gmlId + "_" + displayFormName;
-							if (placemark.getId().startsWith(DisplayForm.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID)) {
+							if (placemark.getId().startsWith(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkHighlight())) {
 								filename = filename + "_" + DisplayForm.HIGHLIGTHTED_STR;
 								isHighlighting = true;
 							}

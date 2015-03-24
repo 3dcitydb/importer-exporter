@@ -221,7 +221,7 @@ public class GeometryObject {
 	
 	private final GeometryType geometryType;
 	private final int dimension;
-	private final int srid;
+	private int srid;
 	private ElementType[] elementTypes;
 	private double[][] coordinates;
 
@@ -241,6 +241,10 @@ public class GeometryObject {
 
 	public int getSrid() {
 		return srid;
+	}
+
+	public void setSrid(int srid) {
+		this.srid = srid;
 	}
 
 	public int getNumElements() {

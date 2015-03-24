@@ -397,6 +397,15 @@ public class DBSurfaceData implements DBImporter {
 										LOG.debug(new StringBuilder(featureSignature).append(": Skipping duplicate target ring '").append(ringId).append("'.").toString());
 										continue;
 									}
+									
+									// fix unclosed texture coordinates
+									int nrOfCoord = texCoord.getValue().size();
+									if (!texCoord.getValue().get(0).equals(texCoord.getValue().get(nrOfCoord - 2)) ||
+											!texCoord.getValue().get(1).equals(texCoord.getValue().get(nrOfCoord - 1))) {
+										texCoord.getValue().add(texCoord.getValue().get(0));
+										texCoord.getValue().add(texCoord.getValue().get(1));
+										LOG.debug(new StringBuilder(featureSignature).append(": Fixed unclosed texture coordinates for ring '").append(ringId).append("'.").toString());										
+									}
 
 									// check for minimum number of texture coordinates
 									if (texCoord.getValue().size() < 8) {
@@ -408,15 +417,6 @@ public class DBSurfaceData implements DBImporter {
 									if ((texCoord.getValue().size() & 1) == 1) {
 										LOG.error(new StringBuilder(featureSignature).append(": Odd number of texture coordinates for ring '").append(ringId).append("'.").toString());										
 										continue;
-									}
-
-									// fix unclosed texture coordinates
-									int nrOfCoord = texCoord.getValue().size();
-									if (!texCoord.getValue().get(0).equals(texCoord.getValue().get(nrOfCoord - 2)) ||
-											!texCoord.getValue().get(1).equals(texCoord.getValue().get(nrOfCoord - 1))) {
-										texCoord.getValue().add(texCoord.getValue().get(0));
-										texCoord.getValue().add(texCoord.getValue().get(1));
-										LOG.debug(new StringBuilder(featureSignature).append(": Fixed unclosed texture coordinates for ring '").append(ringId).append("'.").toString());										
 									}
 
 									boolean isResolved = false;

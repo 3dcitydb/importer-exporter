@@ -2,7 +2,7 @@
 # Example shell script to execute the !impexp.name!
 # The tool can be started using a graphical user interface (default) or
 # as a shell version (using -shell switch, e.g., for batch processing)
-# Use '!impexp.jar.filename! -help' to get a list of available options
+# Use '!impexp.jar.filename! -help' to get a list of available arguments
 
 # cd to path of the starter script
 cd "$( cd "$( dirname "$0" )" && pwd )" > /dev/null

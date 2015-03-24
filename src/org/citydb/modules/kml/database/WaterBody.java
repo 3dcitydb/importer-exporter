@@ -46,8 +46,6 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.balloon.BalloonTemplateHandlerImpl;
-import org.citydb.modules.common.event.CounterEvent;
-import org.citydb.modules.common.event.CounterType;
 
 public class WaterBody extends KmlGenericObject{
 
@@ -148,6 +146,8 @@ public class WaterBody extends KmlGenericObject{
 						+ " as " + work.getDisplayForm().getName() + fromMessage + ".");
 			}
 			else { // result not empty
+				kmlExporterManager.updateFeatureTracker(work);
+
 				// get the proper displayForm (for highlighting)
 				int indexOfDf = getDisplayForms().indexOf(work.getDisplayForm());
 				if (indexOfDf != -1) {
@@ -238,9 +238,7 @@ public class WaterBody extends KmlGenericObject{
 					}
 
 					break;
-				}
-				
-				kmlExporterManager.updateFeatureTracker(work);
+				}				
 			}
 		}
 		catch (SQLException sqlEx) {

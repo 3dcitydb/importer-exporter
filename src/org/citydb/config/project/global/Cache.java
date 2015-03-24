@@ -43,10 +43,8 @@ public class Cache {
 
 	public Cache() {
 		File tmp = new File(System.getProperty("java.io.tmpdir") + "3dcitydb.tmp");
-		if ((tmp.exists() || tmp.mkdir()) && tmp.canWrite()) {
+		if ((tmp.exists() || tmp.mkdir()) && tmp.canWrite())
 			localPath = tmp.getAbsolutePath();
-			mode = CacheMode.LOCAL;
-		}
 	}
 
 	public boolean isUseDatabase() {

@@ -94,6 +94,7 @@ import org.citydb.config.project.resources.Resources;
 		"altitudeOffsetValue",
 		"callGElevationService",
 		"useOriginalZCoords",
+		"idPrefixes",
 		"resources"
 })
 public class KmlExporter {
@@ -175,6 +176,8 @@ public class KmlExporter {
 	private double altitudeOffsetValue;
 	private boolean callGElevationService;
 	private boolean useOriginalZCoords;
+	
+	private IdPrefixes idPrefixes;
 	private Resources resources;
 
 	public static final String THEME_NONE = "none";
@@ -236,6 +239,8 @@ public class KmlExporter {
 		altitudeOffsetValue = 0;
 		callGElevationService = true;
 		setUseOriginalZCoords(false);
+		
+		idPrefixes = new IdPrefixes();
 		resources = new Resources();
 	}
 
@@ -257,6 +262,15 @@ public class KmlExporter {
 			this.resources = resources;
 	}
 
+	public IdPrefixes getIdPrefixes() {
+		return idPrefixes;
+	}
+	
+	public void setIdPrefixes(IdPrefixes idPrefixes) {
+		if (idPrefixes != null)
+			this.idPrefixes = idPrefixes;
+	}
+	
 	public void setFilter(ExportFilterConfig filter) {
 		if (filter != null)
 			this.filter = filter;

@@ -2,8 +2,9 @@
 --
 -- Author:     Arda Muftuoglu <amueftueoglu@moss.de>
 --             Felix Kunde <fkunde@virtualcitysystems.de>
+--             Gyoergy Hudra <ghudra@moss.de>
 --
--- Copyright:  (c) 2012-2014  Chair of Geoinformatics,
+-- Copyright:  (c) 2012-2015  Chair of Geoinformatics,
 --                            Technische Universität München, Germany
 --                            http://www.gis.bv.tum.de
 --
@@ -22,6 +23,7 @@
 -- Version | Date       | Description                               | Author
 -- 1.0.0     2015-01-22   release version                             AM
 --                                                                    FKun
+--           2015-03-11   locator/spatial                             GHud
 --
 
 CREATE OR REPLACE PACKAGE citydb_migrate_v2_v3
@@ -35,7 +37,7 @@ AS
   PROCEDURE fillBuildingTable;
   PROCEDURE fillAddressToBuildingTable;
   PROCEDURE fillAppearanceTable;
-  PROCEDURE fillSurfaceDataTable;
+  PROCEDURE fillSurfaceDataTable(op CHAR);
   PROCEDURE fillAppearToSurfaceDataTable;
   PROCEDURE fillBreaklineReliefTable;
   PROCEDURE fillRoomTable;
@@ -57,7 +59,6 @@ AS
   PROCEDURE fillOpeningToThemSurfaceTable;
   PROCEDURE fillPlantCoverTable;
   PROCEDURE fillReliefComponentTable;
-  PROCEDURE fillRasterReliefTable;
   PROCEDURE fillReliefFeatToRelCompTable;
   PROCEDURE fillReliefFeatureTable;
   PROCEDURE fillSolitaryVegetatObjectTable;
@@ -74,8 +75,7 @@ AS
 END citydb_migrate_v2_v3;
 /
 
-CREATE OR REPLACE 
-PACKAGE BODY citydb_migrate_v2_v3
+CREATE OR REPLACE PACKAGE BODY citydb_migrate_v2_v3
 AS
   type ref_cursor is ref cursor;
 
@@ -122,14 +122,16 @@ AS
     IF (INSTR(polygon, ';')) > 0 THEN
       counter := length(polygon) - length(REPLACE(polygon, ';', '')) + 1;      
       FOR i IN 1 .. counter LOOP
-        polygon_temp := regexp_substr(polygon, '[^;]+', 1, i);
-        IF (i = counter) THEN 
-          polygon_converted := polygon_converted || TO_CLOB('(') ||
-                             TO_CLOB(convertPolygonToSdoForm(polygon_temp)) || TO_CLOB(')');
-        ELSE
-          polygon_converted := polygon_converted || TO_CLOB('(') ||
-                             TO_CLOB(convertPolygonToSdoForm(polygon_temp)) || TO_CLOB('),');
-        END IF;                
+        polygon_temp := trim(regexp_substr(replace(polygon, ';', '; '), '[^;]+', 1, i));
+        IF polygon_temp IS NOT NULL THEN
+          IF (i = counter) THEN 
+            polygon_converted := polygon_converted || TO_CLOB('(') ||
+                               TO_CLOB(convertPolygonToSdoForm(polygon_temp)) || TO_CLOB(')');
+          ELSE
+            polygon_converted := polygon_converted || TO_CLOB('(') ||
+                               TO_CLOB(convertPolygonToSdoForm(polygon_temp)) || TO_CLOB('),');
+          END IF;
+        END IF;               
       END LOOP;      
     ELSE
       polygon_converted := polygon_converted || TO_CLOB('(');
@@ -141,12 +143,9 @@ AS
     select SDO_GEOMETRY(polygon_converted) into texture_coordinates from dual;
     RETURN texture_coordinates;
 
---    EXCEPTION
---    WHEN others THEN
---      dbms_output.put_line('error: '||polygon);
---      dbms_output.put_line('polygon: '||polygon);
---      dbms_output.put_line('polygon_converted: '||polygon_converted);
---      RETURN NULL;
+    EXCEPTION
+      WHEN others THEN
+        RETURN NULL;
   END;
 
   PROCEDURE fillSurfaceGeometryTable
@@ -372,10 +371,13 @@ AS
     dbms_output.put_line('Appearance table copy is completed.');
   END;
 
-  PROCEDURE fillSurfaceDataTable
+  PROCEDURE fillSurfaceDataTable(op CHAR)
   IS
     -- variables --
     CURSOR surface_data_v2 IS select * from surface_data_v2 order by id;
+    CURSOR tex_image_v2 IS select sd_v2.tex_image_uri, sd_v2.tex_image, sd_v2.tex_mime_type
+      FROM surface_data_v2 sd_v2, (SELECT min(id) AS sample_id FROM surface_data_v2 WHERE tex_image_uri IS NOT NULL GROUP BY tex_image_uri) sample
+        WHERE sd_v2.id = sample.sample_id;
     classID NUMBER(10);
     texID NUMBER(10);
   BEGIN
@@ -386,17 +388,19 @@ AS
            select id into classID from OBJECTCLASS where classname = surface_data.type;
         END IF;
 
-        -- Add the Tex into the Tex Table
-        -- ORDIMAGE to BLOB conversion via ordsys.ordimage.getContent
-        IF (surface_data.tex_image_uri IS NOT NULL
-            OR surface_data.tex_image IS NOT NULL
-            OR surface_data.tex_mime_type IS NOT NULL) THEN
-           texID := TEX_IMAGE_SEQ.NEXTVAL;
-           insert into tex_image
-           (ID, TEX_IMAGE_URI, TEX_IMAGE_DATA, TEX_MIME_TYPE)
-           values
-           (texID,surface_data.TEX_IMAGE_URI,
-           ordsys.ordimage.getContent(surface_data.TEX_IMAGE),surface_data.TEX_MIME_TYPE) ;
+        IF upper(op) <> 'YES' AND upper(op) <> 'Y' THEN
+            -- Add the Tex into the Tex Table
+            -- ORDIMAGE to BLOB conversion via ordsys.ordimage.getContent
+            IF (surface_data.tex_image_uri IS NOT NULL
+                OR surface_data.tex_image IS NOT NULL
+                OR surface_data.tex_mime_type IS NOT NULL) THEN
+                texID := TEX_IMAGE_SEQ.NEXTVAL;
+                insert into tex_image
+                (ID, TEX_IMAGE_URI, TEX_IMAGE_DATA, TEX_MIME_TYPE)
+                values
+                (texID,surface_data.TEX_IMAGE_URI,
+                ordsys.ordimage.getContent(surface_data.TEX_IMAGE),surface_data.TEX_MIME_TYPE) ;
+            END IF;
         END IF;
 
         -- Insert into with objectclass_id, tex id and without gmlid_codespace
@@ -418,6 +422,22 @@ AS
         surface_data.GT_REFERENCE_POINT);
     END LOOP;
     dbms_output.put_line('Surface_data table copy is completed.');
+
+    IF upper(op) = 'YES' OR upper(op) = 'Y' THEN
+        FOR sd_tex_image IN tex_image_v2 LOOP
+            texID := TEX_IMAGE_SEQ.NEXTVAL;
+            insert into tex_image
+            (ID, TEX_IMAGE_URI, TEX_IMAGE_DATA, TEX_MIME_TYPE)
+            values
+            (texID,sd_tex_image.TEX_IMAGE_URI,
+            ordsys.ordimage.getContent(sd_tex_image.TEX_IMAGE),sd_tex_image.TEX_MIME_TYPE) ;
+        END LOOP;
+
+        UPDATE surface_data sd_v3 SET tex_image_id = (
+            SELECT t.id FROM tex_image t, surface_data_v2 sd_v2
+                WHERE sd_v3.id = sd_v2.id AND sd_v2.tex_image_uri = t.tex_image_uri
+        );
+    END IF;
   END;
 
   PROCEDURE fillAppearToSurfaceDataTable
@@ -1133,32 +1153,6 @@ AS
     dbms_output.put_line('Relief_Component table copy is completed.');
   END;
 
-  PROCEDURE fillRasterReliefTable
-  IS
-    -- variables --
-    CURSOR raster_relief_v2 IS select * from raster_relief_v2 order by id;
-    gridID NUMBER(10);
-  BEGIN
-    dbms_output.put_line('Raster_Relief table is being copied...');
-    FOR raster_relief IN raster_relief_v2 LOOP
-        -- Add the Raster Property into the Grid Coverage Table
-        IF (raster_relief.RASTERPROPERTY IS NOT NULL) THEN
-           gridID := GRID_COVERAGE_SEQ.NEXTVAL;
-           insert into grid_coverage
-           (ID,RASTERPROPERTY)
-           values
-           (gridID,raster_relief.RASTERPROPERTY) ;
-        END IF;
-
-        -- Is the raster relief id the same as raster component id?
-        insert into raster_relief
-        (ID,COVERAGE_ID)
-        values
-        (raster_relief.ID,gridID);
-    END LOOP;
-    dbms_output.put_line('Raster_Relief table copy is completed.');
-  END;
-
   PROCEDURE fillReliefFeatToRelCompTable
   IS
   BEGIN
@@ -1665,6 +1659,20 @@ AS
       END IF;
     END LOOP;
     CLOSE surface_geometry_cur;
+
+    -- loop stops when last solid is complete but before the corresponding update is commited
+    -- therefore it has to be done here
+    IF solid_geom IS NOT NULL THEN
+      BEGIN 
+        UPDATE surface_geometry 
+          SET solid_geometry = solid_geom 
+          WHERE id = root_element;
+
+          EXCEPTION 
+            WHEN OTHERS THEN
+              dbms_output.put_line('Could not create solid for root_id ' || root_element || '. Error: ' || SQLERRM);
+      END;
+    END IF;
   END;
 
   PROCEDURE updateSequences
