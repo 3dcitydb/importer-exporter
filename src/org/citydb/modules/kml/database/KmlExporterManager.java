@@ -566,6 +566,12 @@ public class KmlExporterManager {
 	        colladaMarshaller.marshal(colladaBundle.getCollada(), fos);
 	        fos.close();
 
+	        String collada2gltfPath = System.getProperty("user.dir") + "\\lib\\collada2gltf.exe";
+	        File collada2gltfFile = new File(collada2gltfPath);
+	        if (collada2gltfFile.exists()) {
+	      	   ProcessBuilder pb = new ProcessBuilder(collada2gltfPath, "-f", buildingDirectory + File.separator + colladaBundle.getGmlId() + ".dae",  "-e", "true"); 
+	      	   pb.start();
+	        }
 			// ----------------- image saving -----------------
 
 			// first those wrapped textures or images in unknown formats (like .rgb)
