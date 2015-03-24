@@ -125,6 +125,7 @@ import org.citydb.modules.kml.database.Tunnel;
 import org.citydb.modules.kml.database.WaterBody;
 import org.citydb.modules.kml.datatype.TypeAttributeValueEnum;
 import org.citydb.modules.kml.util.CityObject4JSON;
+import org.citydb.modules.kml.util.ThematicSurface4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -289,7 +290,9 @@ public class KmlExporter implements EventHandler {
 
 		// start writing JSON file if required
 		FileOutputStream jsonFileWriter = null;
+		FileOutputStream jsonFileWriterForThematicSurface = null;
 		boolean jsonHasContent = false;
+		boolean jsonForThematicSurfaceHasContent = false;
 		if (config.getProject().getKmlExporter().isWriteJSONFile()) {
 			try {
 				File jsonFile = new File(path + File.separator + fileName + ".json");
@@ -301,6 +304,17 @@ public class KmlExporter implements EventHandler {
 			} catch (IOException e) {
 				Logger.getInstance().error("Failed to write JSON file header: " + e.getMessage());
 				return false;
+			}
+			
+			try {
+				File jsonFileForThematicSurface = new File(path + File.separator + fileName + "_Debug" + ".json");
+				jsonFileWriterForThematicSurface = new FileOutputStream(jsonFileForThematicSurface);
+				if (config.getProject().getKmlExporter().isWriteJSONPFile())
+					jsonFileWriterForThematicSurface.write((config.getProject().getKmlExporter().getCallbackNameJSONP() + "({\n").getBytes(CHARSET));
+				else
+					jsonFileWriterForThematicSurface.write("{\n".getBytes(CHARSET));
+			} catch (IOException e) {
+				Logger.getInstance().error("Failed to write Thematic surface JSON file header: " + e.getMessage());
 			}
 		}
 
@@ -595,7 +609,28 @@ public class KmlExporter implements EventHandler {
 					} catch (IOException ioe) {
 						Logger.getInstance().error("I/O error: " + ioe.getMessage());
 						return false;
-					}
+					}															
+				}
+				
+				if (jsonFileWriterForThematicSurface != null) {
+					try {
+						Iterator<ThematicSurface4JSON> iter = tracker.valuesForThematicSurface().iterator();
+						if (iter.hasNext()) {
+							if (jsonForThematicSurfaceHasContent)
+								jsonFileWriterForThematicSurface.write(",\n".getBytes(CHARSET));
+							else
+								jsonForThematicSurfaceHasContent = true;
+						}
+						
+						while (iter.hasNext()) {
+							jsonFileWriterForThematicSurface.write(iter.next().toString().getBytes(CHARSET));
+							if (iter.hasNext())
+								jsonFileWriterForThematicSurface.write(",\n".getBytes(CHARSET));
+						}
+					} catch (IOException ioe) {
+						Logger.getInstance().error("I/O error: " + ioe.getMessage());
+						return false;
+					}															
 				}
 			}
 		}
@@ -622,6 +657,19 @@ public class KmlExporter implements EventHandler {
 				jsonFileWriter.close();
 			} catch (IOException ioe) {
 				Logger.getInstance().error("Failed to close JSON file: " + ioe.getMessage());
+				return false;
+			}
+		}
+		if (jsonFileWriterForThematicSurface != null) {
+			try {
+				if (config.getProject().getKmlExporter().isWriteJSONPFile())
+					jsonFileWriterForThematicSurface.write("\n});\n".getBytes(CHARSET));
+				else
+					jsonFileWriterForThematicSurface.write("\n}\n".getBytes(CHARSET));
+				
+				jsonFileWriterForThematicSurface.close();
+			} catch (IOException ioe) {
+				Logger.getInstance().error("Failed to close JSON file for thematic surface: " + ioe.getMessage());
 				return false;
 			}
 		}
