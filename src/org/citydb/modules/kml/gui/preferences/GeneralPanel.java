@@ -30,19 +30,26 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.CropImageFilter;
+import java.io.File;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 
 import org.citydb.config.Config;
+import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.kmlExporter.KmlExporter;
 import org.citydb.gui.factory.PopupMenuDecorator;
@@ -74,7 +81,11 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private JCheckBox writeJSONPCheckbox = new JCheckBox();
 	private JLabel callbackNameJSONPLabel = new JLabel("s.");
 	private JTextField callbackNameJSONPText = new JTextField();
+	private JCheckBox cropImageCheckbox = new JCheckBox();
 	
+	private JCheckBox createGltfCheckbox = new JCheckBox();
+	private JTextField gltfConverterBrowseText = new JTextField("");
+	private JButton gltfConverterBrowseButton = new JButton("");
 	
 	public GeneralPanel(Config config) {
 		super(config);
@@ -123,6 +134,11 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (writeJSONCheckbox.isSelected() != kmlExporter.isWriteJSONFile()) return true;
 		if (writeJSONPCheckbox.isSelected() != kmlExporter.isWriteJSONPFile()) return true;
 		if (!callbackNameJSONPText.getText().trim().equals(kmlExporter.getCallbackNameJSONP())) return true;
+		if (cropImageCheckbox.isSelected() != kmlExporter.isCropImage()) return true;
+		if (cropImageCheckbox.isSelected() != kmlExporter.isCropImage()) return true;
+		
+		if (createGltfCheckbox.isSelected() != kmlExporter.isCreateGltfModel()) return true;
+		if (!gltfConverterBrowseText.getText().equals(kmlExporter.getPathOfGltfConverter())) return true;
 
 		return false;
 	}
@@ -147,6 +163,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		oneFilePerObjectCheckbox.setIconTextGap(10);
 		writeJSONCheckbox.setIconTextGap(10);
 		writeJSONPCheckbox.setIconTextGap(10);
+		cropImageCheckbox.setIconTextGap(10);
 
 		generalPanel.add(kmzCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
 
@@ -193,6 +210,20 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		generalPanel.add(writeJSONPCheckbox, GuiUtil.setConstraints(0,9,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,0,0,1));
 		generalPanel.add(callbackNameJSONPLabel, GuiUtil.setConstraints(0,10,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		generalPanel.add(callbackNameJSONPText, GuiUtil.setConstraints(1,10,1.0,0.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		
+		JPanel cesiumPanel = new JPanel();
+		cesiumPanel.setBorder(BorderFactory.createTitledBorder("Settings for Cesium"));
+		cesiumPanel.setLayout(new GridBagLayout());
+		add(cesiumPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS*10,0,BORDER_THICKNESS,0));		
+		cesiumPanel.add(cropImageCheckbox, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,0));
+		
+		JPanel gltfConverterPanel = new JPanel();
+		gltfConverterPanel.setLayout(new GridBagLayout());
+		cesiumPanel.add(gltfConverterPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
+		createGltfCheckbox.setIconTextGap(10);
+		gltfConverterPanel.add(createGltfCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		gltfConverterPanel.add(gltfConverterBrowseText, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*6,0,BORDER_THICKNESS));
+		gltfConverterPanel.add(gltfConverterBrowseButton, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, visibleFromText, viewRefreshTimeText, callbackNameJSONPText);
 
@@ -219,6 +250,18 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 				setEnabledComponents();
 			}
 		});
+		
+		createGltfCheckbox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setEnabledComponents();
+			}
+		});
+		
+		gltfConverterBrowseButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				browseGltfConverterFile("select collada2Gltf converter program");
+			}
+		});
 	}
 
 	@Override
@@ -235,6 +278,9 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		writeJSONCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.writeJSONFile"));
 		writeJSONPCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.writeJSONPFile"));
 		callbackNameJSONPLabel.setText(Language.I18N.getString("pref.kmlexport.label.callbackNameJSONP"));
+		cropImageCheckbox.setText("Crop Images before generating texture atlas when exporting gltf/COLLADA model");
+		createGltfCheckbox.setText("Create gltf model when exporting COLLADA model; Path of the gltf converter:");
+		gltfConverterBrowseButton.setText("Browse");
 	}
 
 	@Override
@@ -252,6 +298,9 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		writeJSONCheckbox.setSelected(kmlExporter.isWriteJSONFile());
 		writeJSONPCheckbox.setSelected(kmlExporter.isWriteJSONPFile());
 		callbackNameJSONPText.setText(kmlExporter.getCallbackNameJSONP());
+		cropImageCheckbox.setSelected(kmlExporter.isCropImage());
+		createGltfCheckbox.setSelected(kmlExporter.isCreateGltfModel());
+		gltfConverterBrowseText.setText(kmlExporter.getPathOfGltfConverter());
 
 		setEnabledComponents();
 	}
@@ -287,6 +336,9 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		kmlExporter.setWriteJSONFile(writeJSONCheckbox.isSelected());
 		kmlExporter.setWriteJSONPFile(writeJSONPCheckbox.isSelected());
 		kmlExporter.setCallbackNameJSONP(callbackNameJSONPText.getText().trim());
+		kmlExporter.setCropImage(cropImageCheckbox.isSelected());
+		kmlExporter.setCreateGltfModel(createGltfCheckbox.isSelected());
+		kmlExporter.setPathOfGltfConverter(gltfConverterBrowseText.getText());
 	}
 
 	private void setEnabledComponents() {
@@ -304,6 +356,31 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		writeJSONPCheckbox.setEnabled(writeJSONCheckbox.isSelected());
 		callbackNameJSONPLabel.setEnabled(writeJSONPCheckbox.isEnabled() && writeJSONPCheckbox.isSelected());
 		callbackNameJSONPText.setEnabled(writeJSONPCheckbox.isEnabled() && writeJSONPCheckbox.isSelected());
+		
+		gltfConverterBrowseText.setEnabled(createGltfCheckbox.isSelected());
+		gltfConverterBrowseButton.setEnabled(createGltfCheckbox.isSelected());
+	}
+	
+	private void browseGltfConverterFile(String title) {
+		JFileChooser chooser = new JFileChooser();
+		chooser.setDialogTitle(title);
+		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("executable file (*.exe)", "exe");
+		chooser.addChoosableFileFilter(filter);
+		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
+		chooser.setFileFilter(filter);
+		
+		if (!gltfConverterBrowseText.getText().trim().isEmpty())
+			chooser.setCurrentDirectory(new File(gltfConverterBrowseText.getText()));
+		else
+			chooser.setCurrentDirectory(new File(Internal.USER_PATH));
+		
+		int result = chooser.showOpenDialog(getTopLevelAncestor());
+		if (result == JFileChooser.CANCEL_OPTION) 
+			return;
+
+		gltfConverterBrowseText.setText(chooser.getSelectedFile().toString());
 	}
 
 	@Override
