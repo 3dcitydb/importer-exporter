@@ -300,7 +300,7 @@
 				<attribute name="Built-Id" value="${user.name}-${impexp.name.short}-${impexp.version}" />
 				<attribute name="Built-Date" value="${TODAY}" />
 				<attribute name="Implementation-Title" value="${impexp.name}" />
-				<attribute name="Implementation-Version" value="${impexp.version}-b${build.number}" />
+				<attribute name="Implementation-Version" value="${impexp.version}-build${build.number}" />
 				<attribute name="Implementation-Vendor" value="${vendor.shortinfo}" />
 				<attribute name="Class-Path" value="${manifest.classpath}" />
 				<attribute name="Main-Class" value="${impexp.mainclass}" />
