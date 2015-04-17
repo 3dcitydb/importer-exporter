@@ -291,6 +291,7 @@ public class KmlExporter implements EventHandler {
 		// start writing JSON file if required
 		FileOutputStream jsonFileWriter = null;
 		FileOutputStream jsonFileWriterForThematicSurface = null;
+		FileOutputStream jsonFileWriterForMasterFile = null;
 		boolean jsonHasContent = false;
 		boolean jsonForThematicSurfaceHasContent = false;
 		if (config.getProject().getKmlExporter().isWriteJSONFile()) {
@@ -315,6 +316,21 @@ public class KmlExporter implements EventHandler {
 					jsonFileWriterForThematicSurface.write("{\n".getBytes(CHARSET));
 			} catch (IOException e) {
 				Logger.getInstance().error("Failed to write Thematic surface JSON file header: " + e.getMessage());
+			}
+			try {
+				File jsonFileForMasterFile = new File(path + File.separator + fileName + "_MasterJSON" + ".json");
+				jsonFileWriterForMasterFile = new FileOutputStream(jsonFileForMasterFile);
+				if (config.getProject().getKmlExporter().isWriteJSONPFile())
+					jsonFileWriterForMasterFile.write((config.getProject().getKmlExporter().getCallbackNameJSONP() + "({\n").getBytes(CHARSET));
+				else
+					jsonFileWriterForMasterFile.write("{\n".getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\t\"" + "layername" + "\": \"" + fileName + "\",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "fileextension" + "\": \"" + fileExtension + "\",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": \"" + columns + "\",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "rownum" + "\": \"" + rows + "\"").getBytes(CHARSET));
+
+			} catch (IOException e) {
+				Logger.getInstance().error("Failed to write Master JSON file header: " + e.getMessage());
 			}
 		}
 
@@ -670,6 +686,19 @@ public class KmlExporter implements EventHandler {
 				jsonFileWriterForThematicSurface.close();
 			} catch (IOException ioe) {
 				Logger.getInstance().error("Failed to close JSON file for thematic surface: " + ioe.getMessage());
+				return false;
+			}
+		}
+		if (jsonFileWriterForMasterFile != null) {
+			try {
+				if (config.getProject().getKmlExporter().isWriteJSONPFile())
+					jsonFileWriterForMasterFile.write("\n});\n".getBytes(CHARSET));
+				else
+					jsonFileWriterForMasterFile.write("\n}\n".getBytes(CHARSET));
+				
+				jsonFileWriterForMasterFile.close();
+			} catch (IOException ioe) {
+				Logger.getInstance().error("Failed to close JSON file for Master file: " + ioe.getMessage());
 				return false;
 			}
 		}
