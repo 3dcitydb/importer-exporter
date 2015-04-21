@@ -321,11 +321,11 @@ public class DBAppearance implements DBExporter {
 			surfaceData.setId(gmlId);
 		}
 
-		// retrieve targets. if there are no targets we suppress this surface data object
-		boolean hasTargets = globalAppResolver == null ? textureParamExporter.read(surfaceData, surfaceDataId) : 
+		// retrieve targets
+		if (globalAppResolver == null)
+			textureParamExporter.read(surfaceData, surfaceDataId);
+		else 
 			textureParamExporter.read(surfaceData, surfaceDataId, globalAppResolver.getSurfaceDataTarget(surfaceDataId));
-		if (!hasTargets)
-			return;
 
 		String gmlName = rs.getString(10);
 		String gmlNameCodespace = rs.getString(11);
