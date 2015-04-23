@@ -567,7 +567,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 										// not already marked as wrapping texture && not already read in
 										TextureImage texImage = null;
 										try {
-											byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, "tex_image", texImageUri);
+											byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, texImageUri);
 											if (imageBytes != null) {
 												imageReader.setSupportRGB(generateTextureAtlas);
 												texImage = imageReader.read(new ByteArrayInputStream(imageBytes));
