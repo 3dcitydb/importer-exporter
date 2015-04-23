@@ -420,7 +420,7 @@ public class DBAppearance implements DBExporter {
 						StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
 								absTex.getCityGMLClass(), 
 								absTex.getId()));
-						msg.append(": Skipping 0 byte texture file ' ");
+						msg.append(": Skipping 0 byte texture file '");
 						msg.append(imageURI);
 						msg.append("'.");
 
