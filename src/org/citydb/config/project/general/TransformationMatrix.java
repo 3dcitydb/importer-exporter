@@ -26,7 +26,6 @@
  */
 package org.citydb.config.project.general;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,13 +39,9 @@ public class TransformationMatrix {
 	@XmlValue
 	private List<Double> value;
 
-	public TransformationMatrix() {
-		value = Arrays.asList(new Double[]{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0});
-	}
-
 	public List<Double> getValue() {
 		if (value == null)
-			value = new ArrayList<Double>();
+			value = Arrays.asList(new Double[]{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0});
 
 		return value;
 	}
