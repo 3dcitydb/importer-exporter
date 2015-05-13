@@ -30,11 +30,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -44,8 +42,9 @@ import org.citydb.config.project.database.DBConnection;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 public class ImportLogger {
+	private static int counter;
 	private final ReentrantLock lock = new ReentrantLock();
-
+	
 	private Path logFile;
 	private BufferedWriter writer;
 	private Date date;
@@ -55,23 +54,14 @@ public class ImportLogger {
 		if (!Files.exists(path))
 			Files.createDirectories(path);
 
+		date = Calendar.getInstance().getTime();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss_SSS");
-		boolean success = false;
-		int attempt = 0;
-		
-		do {
-			date = Calendar.getInstance().getTime();
-			logFile = Paths.get(path.toString(), "imported_features-" + dateFormat.format(date) + ".log");
 
-			try {
-				writer = Files.newBufferedWriter(logFile, Charset.defaultCharset(), StandardOpenOption.CREATE_NEW);
-				success = true;
-			} catch (FileAlreadyExistsException e) {
-				if (attempt++ == 3)
-					throw new IOException("Failed to create log file '" + logFile.getFileName() + "' for imported-top level features.");
-			}
-		} while (!success);
-		
+		logFile = Paths.get(path.toString(), "imported_features-" + dateFormat.format(date) + "_" + (++counter) + ".log");
+		if (Files.exists(logFile))
+			throw new IOException("The log file '" + logFile.getFileName() + "' for imported-top level features already exists.");
+
+		writer = Files.newBufferedWriter(logFile, Charset.defaultCharset());
 		writeHeader(importFile, connection);
 	}
 
@@ -104,11 +94,11 @@ public class ImportLogger {
 		else
 			writer.write("#Import aborted.");
 	}
-
+	
 	public void write(ImportLogEntry entry) throws IOException {
 		final ReentrantLock lock = this.lock;
 		lock.lock();
-
+		
 		try {
 			writer.write(entry.type.toString());
 			writer.write(',');
