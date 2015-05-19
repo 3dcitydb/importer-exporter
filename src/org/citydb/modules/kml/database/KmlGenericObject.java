@@ -2300,7 +2300,7 @@ public abstract class KmlGenericObject {
 			catch (Exception e2) {}
 		}
 
-		if (config.getProject().getKmlExporter().isUseOriginalZCoords()) {
+		if (config.getProject().getKmlExporter().isUseOriginalZCoords() && geomObj.getDimension() == 3) {
 			double[][] originalCoords = geomObj.getCoordinates();			
 			double[][] convertedCoords = convertedGeomObj.getCoordinates();
 

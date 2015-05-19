@@ -184,7 +184,8 @@ public class KmlSplitter {
 			PreparedStatement spatialQuery = null;
 			try {
 				spatialQuery = connection.prepareStatement(Queries.GET_IDS(databaseAdapter.getDatabaseType())); 				
-				spatialQuery.setObject(1, databaseAdapter.getGeometryConverter().getDatabaseObject(GeometryObject.createEnvelope(exportFilter.getBoundingBoxFilter().getFilterState()), connection));
+			//	spatialQuery.setObject(1, databaseAdapter.getGeometryConverter().getDatabaseObject(GeometryObject.createEnvelope(exportFilter.getBoundingBoxFilter().getFilterState()), connection));
+				spatialQuery.setObject(1, databaseAdapter.getGeometryConverter().getDatabaseObject(exportFilter.getBoundingBoxFilter().getFilterState2(), connection));
 				rs = spatialQuery.executeQuery();
 
 				int objectCount = 0;
@@ -258,7 +259,7 @@ public class KmlSplitter {
 				tmp.setLowerCorner(new Point(coordinates[0], coordinates[1], 0));
 				tmp.setUpperCorner(new Point(coordinates[3], coordinates[4], 0));
 				
-				if (exportFilter.getBoundingBoxFilter().filter(tmp))
+				if (exportFilter.getBoundingBoxFilter().filter2(tmp))
 					return;
 			}
 			

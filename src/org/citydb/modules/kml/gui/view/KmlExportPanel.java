@@ -1024,7 +1024,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			int tileAmount = 1;
 			if (filter.isSetComplexFilter() && filter.getComplexFilter().getTiledBoundingBox().isSet()) {
 				try {
-					tileAmount = kmlExporter.calculateRowsColumns();
+					tileAmount = kmlExporter.calculateRowsColumns2();
 				}
 				catch (SQLException sqle) {
 					String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs().getDescription();

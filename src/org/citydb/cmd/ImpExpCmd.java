@@ -191,7 +191,7 @@ public class ImpExpCmd {
 		ExportFilterConfig filter = config.getProject().getKmlExporter().getFilter();
 		if (filter.isSetComplexFilter() && filter.getComplexFilter().getTiledBoundingBox().isSet()) {
 			try {
-				kmlExporter.calculateRowsColumns();
+				kmlExporter.calculateRowsColumns2();
 			}
 			catch (SQLException sqle) {
 				String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs() == null ?

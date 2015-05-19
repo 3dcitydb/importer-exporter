@@ -155,7 +155,6 @@ public class KmlExporter implements EventHandler {
 	private final String TEMP_FOLDER = "__temp";
 	private File lastTempFolder = null;
 
-	private BoundingBox extent;
 	private GeometryObject wgs84Extent;
 	private int rows = 1;
 	private int columns = 1;
@@ -355,9 +354,16 @@ public class KmlExporter implements EventHandler {
 				GeometryObject wgs84Tile = null;
 				if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
 					try {
-						exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
-						wgs84Tile = convertTileToWGS84(exportFilter.getBoundingBoxFilter().getFilterState());
-					} catch (SQLException e) {
+						exportFilter.getBoundingBoxFilter().setActiveTile2(i, j);
+						BoundingBox wgs84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
+						wgs84Tile = GeometryObject.createPolygon(new double[]{
+								wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
+								wgs84Bbox.getUpperRightCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
+								wgs84Bbox.getUpperRightCorner().getX(), wgs84Bbox.getUpperRightCorner().getY(),
+								wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getUpperRightCorner().getY(),
+								wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
+						}, 2, 4326);
+					} catch (Exception e) {
 						Logger.getInstance().error("Failed to transform tile extent to WGS84: " + e.getMessage());
 						return false;
 					}
@@ -726,7 +732,7 @@ public class KmlExporter implements EventHandler {
 	public int calculateRowsColumns() throws SQLException {
 		TiledBoundingBox bbox = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox();
 		double autoTileSideLength = config.getProject().getKmlExporter().getAutoTileSideLength();
-		extent = bbox;
+		BoundingBox extent = bbox;
 
 		// transform bbox into the database srs if required
 		DatabaseSrs dbSrs = dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
@@ -736,6 +742,49 @@ public class KmlExporter implements EventHandler {
 		// retrieve WGS84 extent of bbox
 		wgs84Extent = convertTileToWGS84(extent);
 
+		// determine tile sizes and derive number of rows and columns
+		switch (bbox.getTiling().getMode()) {
+		case AUTOMATIC:
+			// approximate
+			rows = (int)((extent.getUpperRightCorner().getY() - extent.getLowerLeftCorner().getY()) / autoTileSideLength) + 1;
+			columns = (int)((extent.getUpperRightCorner().getX() - extent.getLowerLeftCorner().getX()) / autoTileSideLength) + 1;
+			bbox.getTiling().setRows(rows);
+			bbox.getTiling().setColumns(columns);
+			break;
+		case NO_TILING:
+			// no_tiling is internally mapped to manual tiling with one tile
+			bbox.getTiling().setMode(TilingMode.MANUAL);
+			bbox.getTiling().setRows(1);
+			bbox.getTiling().setColumns(1);
+		default:
+			rows = bbox.getTiling().getRows();
+			columns = bbox.getTiling().getColumns();
+		}
+
+		return rows * columns;
+	}
+	
+	public int calculateRowsColumns2() throws SQLException {
+		TiledBoundingBox bbox = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox();
+		double autoTileSideLength = config.getProject().getKmlExporter().getAutoTileSideLength();
+		BoundingBox extent = bbox;
+
+		// transform bbox into the database srs if required
+		DatabaseSrs dbSrs = dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
+		if (bbox.isSetSrs() && bbox.getSrs().getSrid() != dbSrs.getSrid())
+			extent = dbPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(extent, extent.getSrs(), dbSrs);
+
+		// retrieve WGS84 extent of bbox
+		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
+		BoundingBox wgs84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
+		wgs84Extent = GeometryObject.createPolygon(new double[]{
+				wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
+				wgs84Bbox.getUpperRightCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
+				wgs84Bbox.getUpperRightCorner().getX(), wgs84Bbox.getUpperRightCorner().getY(),
+				wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getUpperRightCorner().getY(),
+				wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
+		}, 2, 4326);
+		
 		// determine tile sizes and derive number of rows and columns
 		switch (bbox.getTiling().getMode()) {
 		case AUTOMATIC:

@@ -101,6 +101,14 @@ public class Queries {
 
 		return query;
 	}
+	
+	public static final String TRANSFORM_GEOMETRY_TO_DBSRS(AbstractSQLAdapter sqlAdapter) {
+		String query = "SELECT " + sqlAdapter.resolveDatabaseOperationName("geom_transform") + "(?, ?)";
+		if (sqlAdapter.requiresPseudoTableInSelect())
+			query += " FROM " + sqlAdapter.getPseudoTableName();
+
+		return query;
+	}
 
 	public static final String TRANSFORM_GEOMETRY_TO_WGS84_3D(AbstractSQLAdapter sqlAdapter) {
 		String query = "SELECT " + sqlAdapter.resolveDatabaseOperationName("geom_transform") + "(?, 4329)";
