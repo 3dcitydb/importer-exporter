@@ -553,6 +553,15 @@ public class KmlExporterManager {
 				}
 				path = path + File.separator + TEMP_FOLDER;
 			}
+			else {		
+				if (!config.getProject().getKmlExporter().isOneFilePerObject()) {
+					File tileDirectory = new File(path, org.citydb.modules.kml.controller.KmlExporter.FoldernameOfActiveTile);
+					if (!tileDirectory.exists()) {
+						tileDirectory.mkdir();
+					}
+					path = path + File.separator + org.citydb.modules.kml.controller.KmlExporter.FoldernameOfActiveTile;
+				}
+			}
 
 			// --------------- create subfolder ---------------
 			File buildingDirectory = new File(path, String.valueOf(colladaBundle.getId()));

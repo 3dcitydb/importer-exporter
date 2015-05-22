@@ -154,6 +154,7 @@ public class KmlExporter implements EventHandler {
 	private final Charset CHARSET = Charset.forName(ENCODING);
 	private final String TEMP_FOLDER = "__temp";
 	private File lastTempFolder = null;
+	public static String FoldernameOfActiveTile;
 
 	private GeometryObject wgs84Extent;
 	private int rows = 1;
@@ -385,9 +386,11 @@ public class KmlExporter implements EventHandler {
 						if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
 							file = new File(path + File.separator + fileName + "_Tile_"
 									+ i + "_" + j + "_" + displayForm.getName() + fileExtension);
-						} else
+							FoldernameOfActiveTile = fileName + "_Tile_" + i + "_" + j + "_" + displayForm.getName();
+						} else {
 							file = new File(path + File.separator + fileName + "_" + displayForm.getName() + fileExtension);
-
+							FoldernameOfActiveTile = fileName + "_" + displayForm.getName();
+						}
 						eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
 
 						// open file for writing
