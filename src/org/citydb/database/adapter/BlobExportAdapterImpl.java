@@ -49,7 +49,7 @@ public class BlobExportAdapterImpl implements BlobExportAdapter {
 	}
 
 	@Override
-	public byte[] getInByteArray(long id, String objectName, String fileName) throws SQLException {
+	public byte[] getInByteArray(long id, String objectName) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -90,7 +90,7 @@ public class BlobExportAdapterImpl implements BlobExportAdapter {
 		try {
 			out = new FileOutputStream(fileName);
 
-			byte[] buf = getInByteArray(id, objectName, fileName);
+			byte[] buf = getInByteArray(id, objectName);
 			if (buf != null) {
 				out.write(buf);
 				return true;

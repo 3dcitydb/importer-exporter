@@ -42,6 +42,7 @@ import org.citydb.config.project.database.DBConnection;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 public class ImportLogger {
+	private static int counter;
 	private final ReentrantLock lock = new ReentrantLock();
 	
 	private Path logFile;
@@ -56,7 +57,7 @@ public class ImportLogger {
 		date = Calendar.getInstance().getTime();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss_SSS");
 
-		logFile = Paths.get(path.toString(), "imported_features-" + dateFormat.format(date) + ".log");
+		logFile = Paths.get(path.toString(), "imported_features-" + dateFormat.format(date) + "_" + (++counter) + ".log");
 		if (Files.exists(logFile))
 			throw new IOException("The log file '" + logFile.getFileName() + "' for imported-top level features already exists.");
 

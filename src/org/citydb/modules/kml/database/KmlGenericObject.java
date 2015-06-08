@@ -226,7 +226,7 @@ public abstract class KmlGenericObject {
 		defaultX3dMaterial.setDiffuseColor(getX3dColorFromString("0.8 0.8 0.8"));
 		defaultX3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
 		defaultX3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
-		
+
 		imageReader = new ImageReader();
 	}
 
@@ -261,7 +261,7 @@ public abstract class KmlGenericObject {
 	public String getGmlId() {
 		return gmlId;
 	}
-	
+
 	protected void updateOrigins(double x, double y, double z) {
 		// update origin and list of lowest points
 		if (z < origin.z) {
@@ -281,7 +281,7 @@ public abstract class KmlGenericObject {
 	protected List<Point3d> getOrigins() {
 		return origins;
 	}
-	
+
 	protected void setZOffset(double zOffset) {
 		this.zOffset = zOffset;
 	}
@@ -293,7 +293,7 @@ public abstract class KmlGenericObject {
 	protected Point3d getLocation() {
 		return location;
 	}
-	
+
 	protected void setLocation(double x, double y, double z) {
 		location.x = x;
 		location.y = y;
@@ -713,7 +713,7 @@ public abstract class KmlGenericObject {
 			positionValues.add(reducePrecisionForZ((vertexInfoIterator.getZ() - origin.z)));
 			vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
 		} 
-		
+
 		positionArray.setCount(new BigInteger(String.valueOf(positionValues.size()))); // gotta love BigInteger!
 		texCoordsArray.setCount(new BigInteger(String.valueOf(texCoordsValues.size())));
 		positionAccessor.setCount(positionArray.getCount().divide(positionAccessor.getStride()));
@@ -1677,6 +1677,7 @@ public abstract class KmlGenericObject {
 							}
 							else {
 								texImageUri = rs2.getString("tex_image_uri");
+								boolean hasTexture = false;
 
 								StringBuilder sb =  new StringBuilder();
 								Object texCoordsObject = rs2.getObject("texture_coordinates"); 
@@ -1696,36 +1697,39 @@ public abstract class KmlGenericObject {
 										&&  texCoords != null && texCoords.trim().length() != 0) {
 									int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
 									texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1); // for example: _tex4712047.jpeg
-									addTexImageUri(surfaceId, texImageUri);
+									hasTexture = true;
 
 									if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
 										// not already marked as wrapping texture && not already read in
 										TextureImage texImage = null;
-										try {
-											byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, "tex_image", texImageUri);
-											if (imageBytes != null) {
-												imageReader.setSupportRGB(generateTextureAtlas);
+										byte[] imageBytes = textureExportAdapter.getInByteArray(textureImageId, texImageUri);
+										if (imageBytes != null) {
+											imageReader.setSupportRGB(generateTextureAtlas);
+											try {
 												texImage = imageReader.read(new ByteArrayInputStream(imageBytes));
+
+												if (texImage != null) // image in JPEG, PNG or another usual format
+													addTexImage(texImageUri, texImage);
+												else
+													addUnsupportedTexImageId(texImageUri, textureImageId);
+
+												texImageCounter++;
+												if (texImageCounter > 20) {
+													eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
+													texImageCounter = 0;
+												}
+											} catch (IOException ioe) {
+												//
 											}
-										} catch (IOException ioe) {
-											//
-										}
-
-										if (texImage != null) // image in JPEG, PNG or another usual format
-											addTexImage(texImageUri, texImage);
-										else
-											addUnsupportedTexImageId(texImageUri, textureImageId);
-
-										texImageCounter++;
-										if (texImageCounter > 20) {
-											eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
-											texImageCounter = 0;
-										}
+										} else
+											hasTexture = false;
 									}
-
-									texCoordsTokenized = new StringTokenizer(texCoords.trim(), " ");
 								}
-								else {
+								
+								if (hasTexture) {
+									addTexImageUri(surfaceId, texImageUri);
+									texCoordsTokenized = new StringTokenizer(texCoords.trim(), " ");
+								} else {
 									X3DMaterial x3dMaterial = new X3DMaterial();
 									fillX3dMaterialValues(x3dMaterial, rs2);
 									// x3dMaterial will only added if not all x3dMaterial members are null
@@ -1740,7 +1744,7 @@ public abstract class KmlGenericObject {
 
 						GeometryObject surface = geometryConverterAdapter.getPolygon(buildingGeometryObj);
 						List<VertexInfo> vertexInfos = new ArrayList<VertexInfo>();
-						
+
 						int ringCount = surface.getNumElements();
 						int[] vertexCount = new int[ringCount];
 
@@ -1764,11 +1768,11 @@ public abstract class KmlGenericObject {
 									double t = Double.parseDouble(texCoordsTokenized.nextToken());
 									vertexInfo.addTexCoords(surfaceId, new TexCoords(s, t));
 								}
-		
+
 								vertexInfos.add(vertexInfo);
 								vertices++;
 							}
-							
+
 							vertexCount[i] = vertices;
 
 							if (texCoordsTokenized != null && texCoordsTokenized.hasMoreTokens()) {

@@ -31,7 +31,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public interface BlobExportAdapter {
-	public byte[] getInByteArray(long id, String objectName, String fileName) throws SQLException;
+	public byte[] getInByteArray(long id, String objectName) throws SQLException;
 	public boolean getInFile(long id, String objectName, String fileName) throws SQLException;
 	public InputStream getInStream(ResultSet rs, String columnName, String objectName) throws SQLException;
 	public void close() throws SQLException;

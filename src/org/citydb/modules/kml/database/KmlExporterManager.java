@@ -503,7 +503,7 @@ public class KmlExporterManager {
 	        	Iterator<String> iterator = keySet.iterator();
 	        	while (iterator.hasNext()) {
 	        		String imageFilename = iterator.next();
-	        		byte[] ordImageBytes = textureExportAdapter.getInByteArray(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, imageFilename);
+	        		byte[] ordImageBytes = textureExportAdapter.getInByteArray(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename);
 	        		zipEntry = imageFilename.startsWith("..") ?
 	        				   new ZipEntry(imageFilename.substring(3)): // skip .. and File.separator
 	        					   new ZipEntry(colladaBundle.getId() + "/" + imageFilename);

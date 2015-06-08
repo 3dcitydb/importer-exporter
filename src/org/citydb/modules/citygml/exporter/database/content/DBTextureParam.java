@@ -80,7 +80,7 @@ public class DBTextureParam implements DBExporter {
 		}
 	}
 
-	public boolean read(AbstractSurfaceData surfaceData, long surfaceDataId) throws SQLException {
+	public void read(AbstractSurfaceData surfaceData, long surfaceDataId) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -95,15 +95,13 @@ public class DBTextureParam implements DBExporter {
 
 				fillTextureParam(surfaceData, worldToTexture, texCoordsObj, target, isReverse);
 			}
-
-			return surfaceData.hasLocalProperty("hasTargets");
 		} finally {
 			if (rs != null)
 				rs.close();
 		}
 	}
 	
-	public boolean read(AbstractSurfaceData surfaceData, long surfaceDataId, SurfaceDataTarget target) throws SQLException {
+	public void read(AbstractSurfaceData surfaceData, long surfaceDataId, SurfaceDataTarget target) throws SQLException {
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
@@ -124,8 +122,6 @@ public class DBTextureParam implements DBExporter {
 				
 				fillTextureParam(surfaceData, worldToTexture, texCoordsObj, geometry.getGmlId(), geometry.isReverse());
 			}
-			
-			return surfaceData.hasLocalProperty("hasTargets");
 		} finally {
 			if (rs != null) {
 				try {
@@ -226,8 +222,6 @@ public class DBTextureParam implements DBExporter {
 				}
 			}
 		}
-
-		surfaceData.setLocalProperty("hasTargets", true);
 	}
 
 	@Override
