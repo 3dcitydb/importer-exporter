@@ -2375,12 +2375,12 @@ public class Queries {
 					"SELECT wb.lod1_multi_surface_id as gid " +
 					"FROM WATERBODY wb " +
 					"WHERE wb.id = ? " +
-					") geom) AND sg.geometry IS NOT NULL " +
-					"UNION " +
+					") geom) AND sg.geometry IS NOT NULL";
+/*					"UNION " +
 					"SELECT wb.lod1_multi_curve, 'Water' as type, -1 " +
 					"FROM WATERBODY wb " +
 					"WHERE wb.id = ? " + 
-					"AND wb.lod1_multi_curve IS NOT NULL";
+					"AND wb.lod1_multi_curve IS NOT NULL";*/
 
 	private static final String WATERBODY_FOOTPRINT_LOD0 =
 			"SELECT sg.geometry, '9' as objectclass_id, sg.id " +
