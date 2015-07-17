@@ -499,6 +499,17 @@ public abstract class KmlGenericObject {
 					texture.setTexcoord("TEXCOORD"); // ColladaConstants.INPUT_SEMANTIC_TEXCOORD
 					CommonColorOrTextureType ccott = colladaFactory.createCommonColorOrTextureType();
 					ccott.setTexture(texture);
+					
+					// added for Highlighting in Cesium
+					CommonColorOrTextureType.Color color = colladaFactory.createCommonColorOrTextureTypeColor();
+					color.getValue().add(0d);
+					color.getValue().add(0d);
+					color.getValue().add(0d);
+					color.getValue().add(1d); // alpha
+					CommonColorOrTextureType ccott2 = colladaFactory.createCommonColorOrTextureType();
+					ccott2.setColor(color);
+					lambert.setEmission(ccott2);					
+					
 					lambert.setDiffuse(ccott);
 					profileCommonTechnique.setLambert(lambert);
 					profileCommon.setTechnique(profileCommonTechnique);
