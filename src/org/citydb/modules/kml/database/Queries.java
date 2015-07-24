@@ -530,7 +530,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
@@ -599,7 +599,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
@@ -663,7 +663,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
@@ -1234,7 +1234,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
@@ -1303,7 +1303,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
@@ -1797,7 +1797,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
@@ -1866,7 +1866,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
