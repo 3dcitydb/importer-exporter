@@ -157,6 +157,7 @@ public class KmlExporter implements EventHandler {
 	public static String FoldernameOfActiveTile;
 
 	private GeometryObject wgs84Extent;
+	private BoundingBox globeWGS84Bbox; 
 	private int rows = 1;
 	private int columns = 1;
 
@@ -326,8 +327,23 @@ public class KmlExporter implements EventHandler {
 					jsonFileWriterForMasterFile.write("{\n".getBytes(CHARSET));
 				jsonFileWriterForMasterFile.write(("\t\"" + "layername" + "\": \"" + fileName + "\",").getBytes(CHARSET));
 				jsonFileWriterForMasterFile.write(("\n\t\"" + "fileextension" + "\": \"" + fileExtension + "\",").getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": \"" + columns + "\",").getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write(("\n\t\"" + "rownum" + "\": \"" + rows + "\"").getBytes(CHARSET));
+				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
+					if (displayForm.isActive()) {
+						jsonFileWriterForMasterFile.write(("\n\t\"" + "displayform" + "\": \"" + displayForm.getName() + "\",").getBytes(CHARSET));	
+						jsonFileWriterForMasterFile.write(("\n\t\"" + "minLodPixels" + "\": " + displayForm.getVisibleFrom() + ",").getBytes(CHARSET));
+						jsonFileWriterForMasterFile.write(("\n\t\"" + "maxLodPixels" + "\": " + displayForm.getVisibleUpTo() + ",").getBytes(CHARSET));
+						break;
+					}
+					
+				}
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": " + (columns -1) + ",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "rownum" + "\": " + (rows - 1) + ",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "bbox" + "\":{ ").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getX() + ",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getX() + ",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getY() + ",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getY()).getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t}").getBytes(CHARSET));
 
 			} catch (IOException e) {
 				Logger.getInstance().error("Failed to write Master JSON file header: " + e.getMessage());
@@ -779,13 +795,13 @@ public class KmlExporter implements EventHandler {
 
 		// retrieve WGS84 extent of bbox
 		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
-		BoundingBox wgs84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
+		globeWGS84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
 		wgs84Extent = GeometryObject.createPolygon(new double[]{
-				wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
-				wgs84Bbox.getUpperRightCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
-				wgs84Bbox.getUpperRightCorner().getX(), wgs84Bbox.getUpperRightCorner().getY(),
-				wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getUpperRightCorner().getY(),
-				wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
+				globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
+				globeWGS84Bbox.getUpperRightCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
+				globeWGS84Bbox.getUpperRightCorner().getX(), globeWGS84Bbox.getUpperRightCorner().getY(),
+				globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getUpperRightCorner().getY(),
+				globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
 		}, 2, 4326);
 		
 		// determine tile sizes and derive number of rows and columns
