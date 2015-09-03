@@ -80,7 +80,6 @@ public class DBSurfaceData implements DBImporter {
 
 	private int dbSrid;
 	private boolean replaceGmlId;
-	private boolean importTextureImage;
 	private boolean affineTransformation;
 	private int batchCounter;
 	private int nullGeometryType;
@@ -97,7 +96,6 @@ public class DBSurfaceData implements DBImporter {
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		dbSrid = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
-		importTextureImage = config.getProject().getImporter().getAppearances().isSetImportTextureFiles();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
 		nullGeometryType = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
@@ -282,7 +280,7 @@ public class DBSurfaceData implements DBImporter {
 
 			// handle texture image
 			long texImageId = 0;
-			if (importTextureImage && absTex.isSetImageURI()) {
+			if (absTex.isSetImageURI()) {
 				texImageId = textureImageImporter.insert(absTex, surfaceDataId);
 
 				if (texImageId != 0) {
