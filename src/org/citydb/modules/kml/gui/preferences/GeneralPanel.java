@@ -58,6 +58,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 	private JCheckBox kmzCheckbox = new JCheckBox();
 	private JCheckBox showBoundingBoxCheckbox = new JCheckBox();
 	private JCheckBox showTileBordersCheckbox = new JCheckBox();
+	private JCheckBox exportEmptyTilesCheckbox = new JCheckBox();
 	private JLabel autoTileSideLengthLabel = new JLabel();
 	private JFormattedTextField autoTileSideLengthText;
 	private JCheckBox oneFilePerObjectCheckbox = new JCheckBox();
@@ -88,6 +89,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (kmzCheckbox.isSelected() != kmlExporter.isExportAsKmz()) return true;
 		if (showBoundingBoxCheckbox.isSelected() != kmlExporter.isShowBoundingBox()) return true;
 		if (showTileBordersCheckbox.isSelected() != kmlExporter.isShowTileBorders()) return true;
+		if (exportEmptyTilesCheckbox.isSelected() != kmlExporter.isExportEmptyTiles()) return true;
 
 		try { autoTileSideLengthText.commitEdit(); } catch (ParseException e) {}
 		double autoTileSideLength = 125.0;
@@ -144,6 +146,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		kmzCheckbox.setIconTextGap(10);
 		showBoundingBoxCheckbox.setIconTextGap(10);
 		showTileBordersCheckbox.setIconTextGap(10);
+		exportEmptyTilesCheckbox.setIconTextGap(10);
 		oneFilePerObjectCheckbox.setIconTextGap(10);
 		writeJSONCheckbox.setIconTextGap(10);
 		writeJSONPCheckbox.setIconTextGap(10);
@@ -153,46 +156,48 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		generalPanel.add(showBoundingBoxCheckbox, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
 
 		generalPanel.add(showTileBordersCheckbox, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
+
+		generalPanel.add(exportEmptyTilesCheckbox, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0));
 		
 		autoTileSideLengthText = new JFormattedTextField(fourIntFormat);
-		generalPanel.add(autoTileSideLengthLabel, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.WEST,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
-		generalPanel.add(autoTileSideLengthText, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		GridBagConstraints ml = GuiUtil.setConstraints(2,3,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		generalPanel.add(autoTileSideLengthLabel, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.WEST,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS));
+		generalPanel.add(autoTileSideLengthText, GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		GridBagConstraints ml = GuiUtil.setConstraints(2,4,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		ml.anchor = GridBagConstraints.WEST;
 		generalPanel.add(mLabel, ml);
 
-		generalPanel.add(oneFilePerObjectCheckbox, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,0));
+		generalPanel.add(oneFilePerObjectCheckbox, GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,0));
 
 		visibleFromText = new JFormattedTextField(threeIntFormat);
-		GridBagConstraints vfl = GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
+		GridBagConstraints vfl = GuiUtil.setConstraints(0,6,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
 		vfl.anchor = GridBagConstraints.EAST;
 		generalPanel.add(visibleFromLabel, vfl);
 		generalPanel.add(visibleFromText, GuiUtil.setConstraints(1,5,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		GridBagConstraints pl = GuiUtil.setConstraints(2,5,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		GridBagConstraints pl = GuiUtil.setConstraints(2,6,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		pl.anchor = GridBagConstraints.WEST;
 		generalPanel.add(pixelsLabel, pl);
 
 		for (ViewRefreshModeEnumType refreshMode: ViewRefreshModeEnumType.values()) {
 			viewRefreshModeComboBox.addItem(refreshMode.value());
 		}
-		GridBagConstraints wrml = GuiUtil.setConstraints(0,6,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
+		GridBagConstraints wrml = GuiUtil.setConstraints(0,7,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
 		wrml.anchor = GridBagConstraints.EAST;
 		generalPanel.add(viewRefreshModeLabel, wrml);
-		generalPanel.add(viewRefreshModeComboBox, GuiUtil.setConstraints(1,6,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		generalPanel.add(viewRefreshModeComboBox, GuiUtil.setConstraints(1,7,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		viewRefreshTimeText = new JFormattedTextField(threeIntFormat);
-		GridBagConstraints vrtl = GuiUtil.setConstraints(0,7,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
+		GridBagConstraints vrtl = GuiUtil.setConstraints(0,8,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS * 2,0,BORDER_THICKNESS);
 		vrtl.anchor = GridBagConstraints.EAST;
 		generalPanel.add(viewRefreshTimeLabel, vrtl);
-		generalPanel.add(viewRefreshTimeText, GuiUtil.setConstraints(1,7,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		GridBagConstraints sl = GuiUtil.setConstraints(2,7,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
+		generalPanel.add(viewRefreshTimeText, GuiUtil.setConstraints(1,8,1.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		GridBagConstraints sl = GuiUtil.setConstraints(2,8,0.0,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS);
 		sl.anchor = GridBagConstraints.WEST;
 		generalPanel.add(sLabel, sl);
 
-		generalPanel.add(writeJSONCheckbox, GuiUtil.setConstraints(0,8,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,0));
-		generalPanel.add(writeJSONPCheckbox, GuiUtil.setConstraints(0,9,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,0,0,1));
-		generalPanel.add(callbackNameJSONPLabel, GuiUtil.setConstraints(0,10,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		generalPanel.add(callbackNameJSONPText, GuiUtil.setConstraints(1,10,1.0,0.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		generalPanel.add(writeJSONCheckbox, GuiUtil.setConstraints(0,9,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,0,0));
+		generalPanel.add(writeJSONPCheckbox, GuiUtil.setConstraints(0,10,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,0,0,1));
+		generalPanel.add(callbackNameJSONPLabel, GuiUtil.setConstraints(0,11,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		generalPanel.add(callbackNameJSONPText, GuiUtil.setConstraints(1,12,1.0,0.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, visibleFromText, viewRefreshTimeText, callbackNameJSONPText);
 
@@ -226,6 +231,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		kmzCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.exportAsKmz"));
 		showBoundingBoxCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.showBoundingBox"));
 		showTileBordersCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.showTileBorders"));
+		exportEmptyTilesCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.exportEmptyTiles"));
 		autoTileSideLengthLabel.setText(Language.I18N.getString("pref.kmlexport.label.autoTileSideLength"));
 		oneFilePerObjectCheckbox.setText(Language.I18N.getString("kmlExport.label.oneFilePerObject"));
 		visibleFromLabel.setText(Language.I18N.getString("kmlExport.label.visibleFrom"));
@@ -244,6 +250,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		kmzCheckbox.setSelected(kmlExporter.isExportAsKmz());
 		showBoundingBoxCheckbox.setSelected(kmlExporter.isShowBoundingBox());
 		showTileBordersCheckbox.setSelected(kmlExporter.isShowTileBorders());
+		exportEmptyTilesCheckbox.setSelected(kmlExporter.isExportEmptyTiles());
 		autoTileSideLengthText.setText(String.valueOf(kmlExporter.getAutoTileSideLength()));
 		oneFilePerObjectCheckbox.setSelected(kmlExporter.isOneFilePerObject());
 		visibleFromText.setText(String.valueOf(kmlExporter.getSingleObjectRegionSize()));
@@ -264,6 +271,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		kmlExporter.setShowBoundingBox(showBoundingBoxCheckbox.isEnabled() && showBoundingBoxCheckbox.isSelected());
 
 		kmlExporter.setShowTileBorders(showTileBordersCheckbox.isEnabled() && showTileBordersCheckbox.isSelected());
+		kmlExporter.setExportEmptyTiles(exportEmptyTilesCheckbox.isSelected());
+		
 		try {
 			kmlExporter.setAutoTileSideLength(Double.parseDouble(autoTileSideLengthText.getText().trim()));
 			if (kmlExporter.getAutoTileSideLength() <= 1.0) {
