@@ -80,6 +80,7 @@ import org.citydb.config.project.resources.Resources;
 		"exportAsKmz",
 		"showBoundingBox",
 		"showTileBorders",
+		"exportEmptyTiles",
 		"autoTileSideLength",
 		"oneFilePerObject",
 		"singleObjectRegionSize",
@@ -162,6 +163,7 @@ public class KmlExporter {
 	private boolean exportAsKmz;
 	private boolean showBoundingBox;
 	private boolean showTileBorders;
+	private boolean exportEmptyTiles;
 	private double autoTileSideLength;
 	private boolean oneFilePerObject;
 	private double singleObjectRegionSize;
@@ -225,6 +227,7 @@ public class KmlExporter {
 		exportAsKmz = true;
 		showBoundingBox = false;
 		showTileBorders = false;
+		exportEmptyTiles = true;
 		autoTileSideLength = 125.0;
 		oneFilePerObject = false;
 		singleObjectRegionSize = 50.0;
@@ -399,6 +402,14 @@ public class KmlExporter {
 
 	public boolean isShowTileBorders() {
 		return showTileBorders;
+	}
+
+	public boolean isExportEmptyTiles() {
+		return exportEmptyTiles;
+	}
+
+	public void setExportEmptyTiles(boolean exportEmptyTiles) {
+		this.exportEmptyTiles = exportEmptyTiles;
 	}
 
 	public void setAppearanceTheme(String appearanceTheme) {

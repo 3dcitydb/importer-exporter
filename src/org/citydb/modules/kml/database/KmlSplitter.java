@@ -206,9 +206,8 @@ public class KmlSplitter {
 
 					objectCount++;
 				}
-				Logger.getInstance().debug("Tile_" + exportFilter.getBoundingBoxFilter().getTileRow()
-						+ "_" + exportFilter.getBoundingBoxFilter().getTileColumn()
-						+ " contained " + objectCount + " objects.");
+				Logger.getInstance().debug(objectCount + " candidate objects found for Tile_" + exportFilter.getBoundingBoxFilter().getTileRow()
+						+ "_" + exportFilter.getBoundingBoxFilter().getTileColumn() + ".");
 			}
 			catch (SQLException sqlEx) {
 				throw sqlEx;

@@ -51,6 +51,7 @@ public class DBTexImage implements DBImporter {
 	private MessageDigest md5;
 	private String localPath;
 	private boolean replacePathSeparator;
+	private boolean importTextureImage;
 	private int batchCounter;
 
 	public DBTexImage(Connection connection, Config config, DBImporterManager importerManager) throws SQLException {
@@ -64,6 +65,7 @@ public class DBTexImage implements DBImporter {
 	private void init() throws SQLException {
 		localPath = config.getInternal().getImportPath();
 		replacePathSeparator = File.separatorChar == '/';
+		importTextureImage = config.getProject().getImporter().getAppearances().isSetImportTextureFiles();
 
 		try {
 			md5 = MessageDigest.getInstance("MD5");
@@ -80,7 +82,7 @@ public class DBTexImage implements DBImporter {
 		long texImageId = 0;
 		String imageURI = abstractTexture.getImageURI().trim();
 		String md5URI = toHexString(md5.digest(imageURI.getBytes()));
-		boolean insertTexImage = false;
+		boolean insertIntoTexImage = false;
 
 		// synchronize concurrent processing of the same texture image
 		// different texture images however may be processed concurrently
@@ -92,7 +94,7 @@ public class DBTexImage implements DBImporter {
 			if (texImageId == 0) {
 				texImageId = importerManager.getDBId(DBSequencerEnum.TEX_IMAGE_ID_SEQ);
 				importerManager.putUID(md5URI, texImageId, CityGMLClass.ABSTRACT_TEXTURE);
-				insertTexImage = true;
+				insertIntoTexImage = true;
 			}
 
 		} finally {
@@ -100,7 +102,7 @@ public class DBTexImage implements DBImporter {
 			lock.unlock();
 		}
 
-		if (insertTexImage) {
+		if (insertIntoTexImage) {
 			// fill TEX_IMAGE with texture file properties
 			String fileName = getFileName(imageURI);
 			String mimeType = null;
@@ -120,19 +122,21 @@ public class DBTexImage implements DBImporter {
 			if (++batchCounter == importerManager.getDatabaseAdapter().getMaxBatchSize())
 				importerManager.executeBatch(DBImporterEnum.TEX_IMAGE);
 
-			// propagte xlink to import the texture file itself
-			importerManager.propagateXlink(new DBXlinkTextureFile(
-					texImageId,
-					imageURI,
-					false));
-
-			// do we have a world file?!
-			if (abstractTexture.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE &&
-					!((GeoreferencedTexture)abstractTexture).isSetOrientation() && !((GeoreferencedTexture)abstractTexture).isSetReferencePoint()) {
+			if (importTextureImage) {
+				// propagte xlink to import the texture file itself
 				importerManager.propagateXlink(new DBXlinkTextureFile(
-						surfaceDataId,
+						texImageId,
 						imageURI,
-						true));
+						false));
+
+				// do we have a world file?!
+				if (abstractTexture.getCityGMLClass() == CityGMLClass.GEOREFERENCED_TEXTURE &&
+						!((GeoreferencedTexture)abstractTexture).isSetOrientation() && !((GeoreferencedTexture)abstractTexture).isSetReferencePoint()) {
+					importerManager.propagateXlink(new DBXlinkTextureFile(
+							surfaceDataId,
+							imageURI,
+							true));
+				}
 			}
 		}
 
