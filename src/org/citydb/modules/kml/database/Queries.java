@@ -538,7 +538,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
@@ -607,7 +607,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
@@ -640,7 +640,7 @@ public class Queries {
 			"FROM (" +
 						"SELECT * FROM (" +
 						"SELECT * FROM (" +
-				    	"SELECT citydb_util.to_2d(sg.geometry, <2D_SRID>) AS simple_geom " +
+				    	"SELECT sg.geometry AS simple_geom " +
 				    	"FROM SURFACE_GEOMETRY sg " +
 				    	"WHERE " +
 				    	"sg.root_id IN( " +
@@ -671,7 +671,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT sg.geometry AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
@@ -718,7 +718,6 @@ public class Queries {
 		}
 		else {
 			return BUILDING_PART_GET_AGGREGATE_GEOMETRIES_FOR_LOD0(type).replace("<TOLERANCE>", String.valueOf(tolerance))
-					.replace("<2D_SRID>", String.valueOf(srid2D))
 					.replace("<GROUP_BY_1>", String.valueOf(groupBy1))
 					.replace("<GROUP_BY_2>", String.valueOf(groupBy2))
 					.replace("<GROUP_BY_3>", String.valueOf(groupBy3));					
@@ -1242,7 +1241,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
@@ -1311,7 +1310,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
@@ -1805,7 +1804,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +
@@ -1874,7 +1873,7 @@ public class Queries {
 			"FROM (" +
 			"SELECT * FROM (" +
 			"SELECT * FROM (" +
-				        "SELECT ST_Force_2D(sg.geometry) AS simple_geom " +
+				        "SELECT ST_Force2D(sg.geometry) AS simple_geom " +
 				        "FROM SURFACE_GEOMETRY sg " +
 				        "WHERE " +
 				        "sg.root_id IN( " +

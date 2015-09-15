@@ -284,7 +284,7 @@ public class DBXlinkSplitter implements EventHandler {
 		try {
 			if (!cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTURE_COORD_LIST) && 
 					!cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTUREPARAM) &&
-					!cacheTableManager.existsCacheTable(CacheTableModelEnum.TEXTURE_FILE))
+					!cacheTableManager.existsCacheTable(CacheTableModelEnum.SURFACE_DATA_TO_TEX_IMAGE))
 				return;			
 
 			LOG.info("Resolving appearance XLinks...");
