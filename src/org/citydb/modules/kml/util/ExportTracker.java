@@ -31,39 +31,24 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ExportTracker {
 	private final ConcurrentHashMap<Long, CityObject4JSON> map;
-	private final ConcurrentHashMap<String, ThematicSurface4JSON> thematicSurfaceMap;
 	
 	public ExportTracker() {
 		map = new ConcurrentHashMap<Long, CityObject4JSON>();
-		thematicSurfaceMap = new ConcurrentHashMap<String, ThematicSurface4JSON>();
 	}
 	
 	public void put(long id, CityObject4JSON json) {
 		map.putIfAbsent(id, json);
 	}
 	
-	public void putJSON4ThematicSurface(String id, ThematicSurface4JSON json) {
-		thematicSurfaceMap.putIfAbsent(id, json);
-	}
-	
 	public CityObject4JSON get(long id) {
 		return map.get(id);
 	}
 	
-	public ThematicSurface4JSON getJSON4ThematicSurface(String id) {
-		return thematicSurfaceMap.get(id);
-	}
-	
 	public void clear() {
 		map.clear();
-		thematicSurfaceMap.clear();
 	}
 	
 	public Collection<CityObject4JSON> values() {
 		return map.values();
-	}
-	
-	public Collection<ThematicSurface4JSON> valuesForThematicSurface() {
-		return thematicSurfaceMap.values();
 	}
 }

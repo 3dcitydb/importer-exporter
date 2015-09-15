@@ -629,8 +629,5 @@ public class KmlExporterManager {
 		}
 	}
 
-	public ExportTracker getTracker() {
-		return this.tracker;
-	}
 }
 

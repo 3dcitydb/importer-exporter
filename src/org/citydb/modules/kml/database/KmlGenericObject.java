@@ -89,7 +89,6 @@ import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.GeometryCounterEvent;
 import org.citydb.modules.kml.datatype.TypeAttributeValueEnum;
-import org.citydb.modules.kml.util.ThematicSurface4JSON;
 import org.citydb.textureAtlas.TextureAtlasCreator;
 import org.citydb.textureAtlas.image.ImageReader;
 import org.citydb.textureAtlas.model.TextureImage;
@@ -1592,11 +1591,7 @@ public abstract class KmlGenericObject {
 			if (work.isBuilding() || work.isBridge() || work.isTunnel()){
 				placemark.setName(work.getGmlId() + "_" + surfaceType);
 				placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkGeometry() + placemark.getName());
-				placemark.setStyleUrl("#" + surfaceType + "Normal");	
-				
-				ThematicSurface4JSON cityObjectPart4Json = new ThematicSurface4JSON(work.getGmlId() + "_" + surfaceType);
-				cityObjectPart4Json.setParentId(work.getGmlId());				
-				kmlExporterManager.getTracker().putJSON4ThematicSurface(work.getGmlId() + "_" + surfaceType, cityObjectPart4Json);			
+				placemark.setStyleUrl("#" + surfaceType + "Normal");			
 			}
 			else{
 				placemark.setName(work.getGmlId() + "_" + getStyleBasisName());
