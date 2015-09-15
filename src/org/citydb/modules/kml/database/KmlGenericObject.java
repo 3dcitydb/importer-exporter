@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.vecmath.Point3d;
+import javax.vecmath.Vector3f;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
@@ -140,6 +141,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.sun.j3d.utils.geometry.GeometryInfo;
+import com.sun.j3d.utils.geometry.NormalGenerator;
 
 public abstract class KmlGenericObject {
 	protected final int GEOMETRY_AMOUNT_WARNING = 10000;
@@ -376,6 +378,24 @@ public abstract class KmlGenericObject {
 		Source.TechniqueCommon positionTechnique = colladaFactory.createSourceTechniqueCommon();
 		positionTechnique.setAccessor(positionAccessor);
 		positionSource.setTechniqueCommon(positionTechnique);
+		
+		Source normalSource = colladaFactory.createSource();
+		normalSource.setId("geometry0-normal");
+		
+		FloatArray normalArray = colladaFactory.createFloatArray();
+		normalArray.setId("geometry0-normal-array");
+		List<Double> normalValues = normalArray.getValue();
+		normalSource.setFloatArray(normalArray);
+		
+		Accessor normalAccessor = colladaFactory.createAccessor();
+		normalAccessor.setSource("#" + normalArray.getId());
+		normalAccessor.setStride(new BigInteger("3"));
+		normalAccessor.getParam().add(paramX);
+		normalAccessor.getParam().add(paramY);
+		normalAccessor.getParam().add(paramZ);
+		Source.TechniqueCommon normalTechnique = colladaFactory.createSourceTechniqueCommon();
+		normalTechnique.setAccessor(normalAccessor);
+		normalSource.setTechniqueCommon(normalTechnique);
 
 		Source texCoordsSource = colladaFactory.createSource();
 		texCoordsSource.setId("geometry0-texCoords");
@@ -409,8 +429,11 @@ public abstract class KmlGenericObject {
 
 		Mesh mesh = colladaFactory.createMesh();
 		mesh.getSource().add(positionSource);
-		mesh.getSource().add(texCoordsSource);
+		mesh.getSource().add(normalSource);
 		mesh.setVertices(vertices);
+		if (!config.getProject().getKmlExporter().getAppearanceTheme().equals(KmlExporter.THEME_NONE))
+			mesh.getSource().add(texCoordsSource);						
+		
 		geometry.setMesh(mesh);
 		libraryGeometries.getGeometry().add(geometry);
 		BigInteger texCoordsCounter = BigInteger.ZERO;
@@ -436,6 +459,8 @@ public abstract class KmlGenericObject {
 		// geometryInfos contains all surfaces, textured or not
 		Set<Long> keySet = surfaceInfos.keySet();
 		Iterator<Long> iterator = keySet.iterator();
+		int normalIndexOffset = 0;
+		
 		while (iterator.hasNext()) {
 			Long surfaceId = iterator.next();
 			String texImageName = texImageUris.get(surfaceId);
@@ -613,11 +638,17 @@ public abstract class KmlGenericObject {
 				inputV.setSource("#" + vertices.getId());
 				inputV.setOffset(BigInteger.ZERO);
 				triangles.getInput().add(inputV);
+				InputLocalOffset inputN = colladaFactory.createInputLocalOffset();
+				inputN.setSemantic("NORMAL"); // ColladaConstants.INPUT_NORMAL_VERTEX
+				inputN.setSource("#" + normalSource.getId());
+				inputN.setOffset(BigInteger.ONE);
+				triangles.getInput().add(inputN);
+				
 				if (surfaceTextured) {
 					InputLocalOffset inputT = colladaFactory.createInputLocalOffset();
 					inputT.setSemantic("TEXCOORD"); // ColladaConstants.INPUT_SEMANTIC_TEXCOORD
 					inputT.setSource("#" + texCoordsSource.getId());
-					inputT.setOffset(BigInteger.ONE);
+					inputT.setOffset(BigInteger.valueOf(2));
 					triangles.getInput().add(inputT);
 				}
 
@@ -645,11 +676,18 @@ public abstract class KmlGenericObject {
 			// triangulate the surface geometry
 			ginfo.convertToIndexedTriangles();
 
-			// fix a reversed orientation of the triangulated surface 
+			// generate normals
+			NormalGenerator ng = new NormalGenerator();
+			ng.generateNormals(ginfo);
+			
 			int[] indexes = ginfo.getCoordinateIndices();
+			int[] normalIndexes = ginfo.getNormalIndices();			
+			Vector3f[] normals = ginfo.getNormals();
+			
+			// fix a reversed orientation of the triangulated surface 
 			byte[] edges = {0, 1, 1, 2, 2, 0};			
 			boolean hasFound = false;
-			boolean reverseIndexes = false;
+			boolean reverse = false;
 
 			for (int i = 0; !hasFound && i < indexes.length; i += 3) {				
 				// skip degenerated triangles
@@ -665,31 +703,27 @@ public abstract class KmlGenericObject {
 						// ok, we found it. now check the order of the vertex indices
 						hasFound = true;						
 						if (indexes[first] > indexes[second])
-							reverseIndexes = true;
+							reverse = true;
 
 						break;
 					}
 				}
 			}
 
-			if (reverseIndexes) {
-				int[] tmp = new int[indexes.length];
-				int j = 0;
-				for (int i = 0; i < indexes.length; i+=3) {
-					tmp[j++] = indexes[i+2];
-					tmp[j++] = indexes[i+1];
-					tmp[j++] = indexes[i];
-				}
-
-				indexes = tmp;
+			// reverse indexes and normals
+			if (reverse) {
+				ginfo.reverse();
+				for (int i = 0; i < normals.length; i++)
+					normals[i].negate();
 			}
 
 			// use vertex indices of the triangulation to populate
 			// the vertex arrays in the collada file
-			for(int i = 0; i < indexes.length; i++) {				
+			for (int i = 0; i < indexes.length; i++) {				
 				VertexInfo vertexInfo = vertexInfos.get(indexes[i]);
 				triangles.getP().add(vertexInfo.getVertexId());
-
+				triangles.getP().add(BigInteger.valueOf(normalIndexes[i] + normalIndexOffset));
+				
 				if (surfaceTextured) {
 					TexCoords texCoords = vertexInfo.getTexCoords(surfaceId);
 					if (texCoords != null) {
@@ -714,6 +748,13 @@ public abstract class KmlGenericObject {
 					}
 				}
 			}
+			
+			for (Vector3f normal : normals) {
+				normalValues.add(reducePrecisionForXorY((double) normal.x));
+				normalValues.add(reducePrecisionForXorY((double) normal.y));
+				normalValues.add(reducePrecisionForXorY((double) normal.z));
+				normalIndexOffset++;
+			}
 		}
 
 		VertexInfo vertexInfoIterator = firstVertexInfo;
@@ -725,8 +766,10 @@ public abstract class KmlGenericObject {
 		} 
 
 		positionArray.setCount(new BigInteger(String.valueOf(positionValues.size()))); // gotta love BigInteger!
+		normalArray.setCount(new BigInteger(String.valueOf(normalValues.size()))); // gotta love BigInteger!
 		texCoordsArray.setCount(new BigInteger(String.valueOf(texCoordsValues.size())));
 		positionAccessor.setCount(positionArray.getCount().divide(positionAccessor.getStride()));
+		normalAccessor.setCount(normalArray.getCount().divide(normalAccessor.getStride()));
 		texCoordsAccessor.setCount(texCoordsArray.getCount().divide(texCoordsAccessor.getStride()));
 
 		Set<String> trianglesKeySet = trianglesByTexImageName.keySet();
@@ -948,7 +991,8 @@ public abstract class KmlGenericObject {
 			}
 			else {
 				Set<Long> keySet = vertexInfoIterator.getAllTexCoords().keySet();
-				Iterator<Long> iterator = keySet.iterator();
+				Iterator<Long> iterator = keySet.iterator();				
+				
 				while (iterator.hasNext()) {
 					Long surfaceId = iterator.next();
 					VertexInfo tmp = this.setVertexInfoForXYZ(surfaceId,
