@@ -19,10 +19,10 @@
 	<classpathentry kind="lib" path="lib/postgis/postgis-jdbc-2.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/postgis/postgresql-9.4-1201.jdbc41.jar"/>
 	<classpathentry kind="lib" path="lib/kml-collada/texture-atlas-creator-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/citygml4j/citygml4j-2.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/citygml4j/relaxngDatatype.jar"/>
 	<classpathentry kind="lib" path="lib/citygml4j/stax2-api-3.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/citygml4j/woodstox-core-lgpl-4.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/citygml4j/xsom.jar"/>
+	<classpathentry kind="lib" path="lib/citygml4j/citygml4j-2.2.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
