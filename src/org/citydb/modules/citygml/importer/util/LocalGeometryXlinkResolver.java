@@ -86,8 +86,6 @@ public class LocalGeometryXlinkResolver {
 		// we follow a three-phase resolving approach which is a 
 		// compromise between performance and memory consumption.
 
-		targets.clear();
-		geometries.clear();
 		circularTargets.clear();
 		
 		// phase 1: iterate through all elements and detect 
@@ -112,6 +110,7 @@ public class LocalGeometryXlinkResolver {
 		abstractGML.accept(resolver);
 
 		// clean up
+		targets.clear();
 		geometries.clear();
 		if (!resolver.hasCircularReference)
 			circularTargets.clear();
@@ -121,10 +120,6 @@ public class LocalGeometryXlinkResolver {
 
 	public List<String> getCircularReferences() {
 		return new ArrayList<String>(circularTargets);
-	}
-	
-	public List<String> getUnresolvedTargets() {
-		return new ArrayList<String>(targets);
 	}
 
 	private class ResolverWalker extends GMLWalker {
