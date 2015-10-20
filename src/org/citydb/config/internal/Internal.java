@@ -64,6 +64,7 @@ public class Internal {
 	private DatabaseSrs exportTargetSRS;
 
 	// internal variables
+	private String currentGmlIdCodespace = "";
 	private AffineTransformer affineTransformer;
 
 	// internal flags
@@ -175,6 +176,14 @@ public class Internal {
 		this.currentLogPath = currentLogPath;
 	}
 
+	public String getCurrentGmlIdCodespace() {
+		return currentGmlIdCodespace;
+	}
+
+	public void setCurrentGmlIdCodespace(String currentGmlIdCodespace) {
+		this.currentGmlIdCodespace = currentGmlIdCodespace;
+	}
+	
 	public AffineTransformer getAffineTransformer() {
 		return affineTransformer;
 	}

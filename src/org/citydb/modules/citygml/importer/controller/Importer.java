@@ -51,6 +51,7 @@ import org.citydb.config.language.Language;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.general.AffineTransformation;
+import org.citydb.config.project.importer.ImportGmlId;
 import org.citydb.config.project.importer.ImportResources;
 import org.citydb.config.project.importer.Index;
 import org.citydb.config.project.importer.XMLValidation;
@@ -103,6 +104,7 @@ import org.citygml4j.xml.io.reader.CityGMLReader;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
 import org.citygml4j.xml.io.reader.XMLChunk;
 
+
 public class Importer implements EventHandler {
 	private final Logger LOG = Logger.getInstance();
 
@@ -136,7 +138,7 @@ public class Importer implements EventHandler {
 		eventDispatcher.removeEventHandler(this);
 	}
 
-	public boolean doProcess() throws CityGMLImportException {		
+	public boolean doProcess() throws CityGMLImportException {
 		// adding listeners
 		eventDispatcher.addEventHandler(EventType.FEATURE_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
@@ -148,6 +150,7 @@ public class Importer implements EventHandler {
 		Internal internalConfig = config.getInternal();		
 		ImportResources resourcesConfig = importerConfig.getResources();
 		Index indexConfig = importerConfig.getIndexes();
+		ImportGmlId gmlIdConfig = importerConfig.getGmlId();
 
 		// worker pool settings 
 		int minThreads = resourcesConfig.getThreadPool().getDefaultPool().getMinThreads();
@@ -180,7 +183,7 @@ public class Importer implements EventHandler {
 
 			} catch (SQLException e) {
 				throw new CityGMLImportException("Database error while deactivating indexes.", e);
-			}			
+			}
 		} else {
 			try {
 				for (IndexType type : IndexType.values())
@@ -193,7 +196,7 @@ public class Importer implements EventHandler {
 		// build list of import files
 		LOG.info("Creating list of CityGML files to be imported...");	
 		directoryScanner = new DirectoryScanner(true);
-		directoryScanner.addFilenameFilter(new CityGMLFilenameFilter());		
+		directoryScanner.addFilenameFilter(new CityGMLFilenameFilter());
 		List<File> importFiles = directoryScanner.getFiles(internalConfig.getImportFiles());
 
 		if (importFiles.size() == 0) {
@@ -221,7 +224,7 @@ public class Importer implements EventHandler {
 
 		// prepare XML validation 
 		XMLValidation xmlValidation = importerConfig.getXMLValidation();
-		if (xmlValidation.isSetUseXMLValidation()) {			
+		if (xmlValidation.isSetUseXMLValidation()) {
 			LOG.info("Using XML validation during database import.");
 
 			in.setProperty(CityGMLInputFactory.USE_VALIDATION, true);
@@ -283,8 +286,18 @@ public class Importer implements EventHandler {
 				eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("import.dialog.cityObj.msg"), this));
 				eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
-				LOG.info("Importing file: " + file.toString());						
+				LOG.info("Importing file: " + file.toString());	
 
+				// set gml:id codespace
+				if (gmlIdConfig.isSetRelativeCodeSpaceMode())
+					internalConfig.setCurrentGmlIdCodespace(file.getName());
+				else if (gmlIdConfig.isSetAbsoluteCodeSpaceMode())
+					internalConfig.setCurrentGmlIdCodespace(file.toString());
+				else if (gmlIdConfig.isSetUserCodeSpaceMode())
+					internalConfig.setCurrentGmlIdCodespace(gmlIdConfig.getCodeSpace());
+				else if (!gmlIdConfig.isSetUserCodeSpaceMode())
+					internalConfig.setCurrentGmlIdCodespace(null);
+				
 				// create import logger
 				if (importerConfig.getImportLog().isSetLogImportedFeatures()) {
 					try {
@@ -294,7 +307,7 @@ public class Importer implements EventHandler {
 					} catch (IOException e) {
 						throw new CityGMLImportException("Failed to create log file for imported top-level features. Aborting.", e);
 					}
-				}				
+				}
 
 				// create instance of the cache table manager
 				try {
@@ -406,7 +419,7 @@ public class Importer implements EventHandler {
 							if (counterFirstElement != null && elementCounter < counterFirstElement)
 								continue;
 
-							if (counterLastElement != null && elementCounter > counterLastElement)				
+							if (counterLastElement != null && elementCounter > counterLastElement)
 								break;
 						}
 
@@ -588,7 +601,7 @@ public class Importer implements EventHandler {
 
 		if (indexStatus != null) {
 			IndexStatus expectedStatus = enable ? IndexStatus.VALID : IndexStatus.DROPPED;
-			for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {							
+			for (IndexInfoObject indexObj : indexStatus.getIndexObjects()) {
 				if (indexObj.getStatus() != expectedStatus) {
 					LOG.error("FAILED: " + indexObj.toString());
 					if (indexObj.hasErrorMessage())

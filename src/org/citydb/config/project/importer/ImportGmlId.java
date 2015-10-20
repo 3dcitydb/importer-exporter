@@ -31,13 +31,19 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="ImportGmlIdType", propOrder={
 		"uuidMode",
-		"keepGmlIdAsExternalReference"
+		"keepGmlIdAsExternalReference",
+		"codeSpaceMode",
+		"codeSpace"
 })
 public class ImportGmlId {
 	@XmlElement(required=true)
 	private UUIDMode uuidMode = UUIDMode.COMPLEMENT;
 	@XmlElement(defaultValue="true")
 	private Boolean keepGmlIdAsExternalReference = true;
+	@XmlElement(required=true)
+	private CodeSpaceMode codeSpaceMode = CodeSpaceMode.USER;
+	@XmlElement(defaultValue="UUID")
+	private String codeSpace = "UUID";
 
 	public ImportGmlId() {
 	}
@@ -71,6 +77,34 @@ public class ImportGmlId {
 
 	public void setKeepGmlIdAsExternalReference(Boolean keepGmlIdAsExternalReference) {
 		this.keepGmlIdAsExternalReference = keepGmlIdAsExternalReference;
+	}
+
+	public boolean isSetRelativeCodeSpaceMode() {
+		return codeSpaceMode == CodeSpaceMode.RELATIVE;
+	}
+
+	public boolean isSetAbsoluteCodeSpaceMode() {
+		return codeSpaceMode == CodeSpaceMode.ABSOLUTE;
+	}
+
+	public boolean isSetUserCodeSpaceMode() {
+		return codeSpaceMode == CodeSpaceMode.USER;
+	}
+
+	public CodeSpaceMode getCodeSpaceMode() {
+		return codeSpaceMode;
+	}
+
+	public void setCodeSpaceMode(CodeSpaceMode codeSpaceMode) {
+		this.codeSpaceMode = codeSpaceMode;
+	}
+
+	public String getCodeSpace() {
+		return codeSpace;
+	}
+
+	public void setCodeSpace(String codeSpace) {
+		this.codeSpace = codeSpace;
 	}
 
 }
