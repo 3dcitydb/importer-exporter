@@ -194,7 +194,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		pointPanel.setBorder(BorderFactory.createTitledBorder(""));
 
 		pointPanel.add(pointAltitudeModeLabel, GuiUtil.setConstraints(0,0,3,1,0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,0));
-		pointPanel.add(pointAltitudeModeComboBox, GuiUtil.setConstraints(0,1,3,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+		pointPanel.add(pointAltitudeModeComboBox, GuiUtil.setConstraints(0,1,3,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 		
 		ButtonGroup pointRadioGroup = new ButtonGroup();		
 		pointRadioGroup.add(crossLineRButton);
@@ -301,7 +301,7 @@ public class PointAndCurveRenderingPanel extends AbstractPreferencesComponent {
 		curvePanel.setBorder(BorderFactory.createTitledBorder(""));
 
 		curvePanel.add(curveAltitudeModeLabel, GuiUtil.setConstraints(0,0,0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,0));
-		curvePanel.add(curveAltitudeModeComboBox, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,0));
+		curvePanel.add(curveAltitudeModeComboBox, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
 
 		JPanel curveDisplayFormPanel = new JPanel();
 		curveDisplayFormPanel.setLayout(new GridBagLayout());
