@@ -311,6 +311,63 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
+	protected void updateTableStats(IndexType type, Connection connection) throws SQLException {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+
+		try {
+			pStmt = connection.prepareStatement("SELECT (obj).table_name, (obj).attribute_name FROM index_table WHERE (obj).type = ?");
+			
+			pStmt.setInt(1, type == IndexType.SPATIAL ? 1 : 0);
+			
+			rs = pStmt.executeQuery();
+			
+			while (rs.next()) {
+				Statement vacuumStmt = connection.createStatement();
+				String tableName = rs.getString(1);
+				String attributeName = rs.getString(2);
+				vacuumStmt.executeUpdate("VACUUM ANALYZE " + tableName + " (" + attributeName + ")");
+				
+				if (vacuumStmt != null) {
+					try {
+						vacuumStmt.close();
+					} catch (SQLException e) {
+						throw e;
+					}
+
+					vacuumStmt = null;
+				}
+			}
+		} catch (SQLException e) {
+			if (!isInterrupted)
+				throw e;
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+
+				rs = null;
+			}
+			if (pStmt != null) {
+				try {
+					pStmt.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+
+				pStmt = null;
+			}
+
+			isInterrupted = false;
+		}
+
+		return;
+	}
+	
+	@Override
 	protected BoundingBox transformBBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException {
 		BoundingBox result = new BoundingBox(bbox);
 		PreparedStatement psQuery = null;

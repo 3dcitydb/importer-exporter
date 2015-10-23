@@ -318,6 +318,11 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
 		return null;
 	}
+	
+	@Override
+	protected void updateTableStats(IndexType type, Connection connection) throws SQLException {
+		return;
+	}
 
 	@Override
 	protected BoundingBox transformBBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException {

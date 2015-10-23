@@ -66,6 +66,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 	protected abstract BoundingBox transformBBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException;
 	protected abstract int get2DSrid(DatabaseSrs srs, Connection connection) throws SQLException;	
 	protected abstract IndexStatusInfo manageIndexes(String operation, IndexType type, Connection connection) throws SQLException;
+	protected abstract void updateTableStats(IndexType type, Connection connection) throws SQLException;
 	
 	public DatabaseMetaDataImpl getDatabaseInfo() throws SQLException {
 		Connection conn = null;
@@ -136,6 +137,53 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 		}
 	}
 	
+	public boolean updateEnvelopes(Workspace workspace, FeatureClassMode featureClass, boolean onlyIfNull) throws SQLException {
+		Connection conn = null;
+
+		try {
+			conn = databaseAdapter.connectionPool.getConnection();
+			if (databaseAdapter.hasVersioningSupport())
+				databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
+			
+			List<Integer> classIds = getClassIds(featureClass);
+			try {
+				for (Integer classId : classIds) {
+					String call = "{call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.set_envelope_cityobjects") + "(?,?)}";
+					interruptableCallableStatement = conn.prepareCall(call);
+					interruptableCallableStatement.setInt(1, classId);
+					interruptableCallableStatement.setInt(2, onlyIfNull ? 1 : 0);
+					interruptableCallableStatement.executeUpdate();
+				}
+			} catch (SQLException e) {
+				if (!isInterrupted)
+					throw e;
+			} finally {
+				if (interruptableCallableStatement != null) {
+					try {
+						interruptableCallableStatement.close();
+					} catch (SQLException e) {
+						throw e;
+					}
+
+					interruptableCallableStatement = null;
+				}
+
+				isInterrupted = false;
+			}
+
+			return true;
+			
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+			}
+		}
+	}
+	
 	public BoundingBox calcBoundingBox(Workspace workspace, FeatureClassMode featureClass) throws SQLException {
 		Connection conn = null;
 
@@ -144,64 +192,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 			if (databaseAdapter.hasVersioningSupport())
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 			
-			List<Integer> classIds = new ArrayList<Integer>();
-			switch (featureClass) {
-			case BUILDING:
-				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING));
-				break;
-			case BRIDGE:
-				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE));
-				break;
-			case TUNNEL:
-				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL));
-				break;				
-			case CITYFURNITURE:
-				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
-				break;
-			case CITYOBJECTGROUP:
-				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP));
-				break;
-			case GENERICCITYOBJECT:
-				classIds.add(Util.cityObject2classId(CityGMLClass.GENERIC_CITY_OBJECT));
-				break;
-			case LANDUSE:
-				classIds.add(Util.cityObject2classId(CityGMLClass.LAND_USE));
-				break;
-			case RELIEFFEATURE:
-				classIds.add(Util.cityObject2classId(CityGMLClass.RELIEF_FEATURE));
-				break;
-			case TRANSPORTATION:
-				classIds.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATION_COMPLEX));
-				classIds.add(Util.cityObject2classId(CityGMLClass.ROAD));
-				classIds.add(Util.cityObject2classId(CityGMLClass.RAILWAY));
-				classIds.add(Util.cityObject2classId(CityGMLClass.TRACK));
-				classIds.add(Util.cityObject2classId(CityGMLClass.SQUARE));
-				break;
-			case VEGETATION:
-				classIds.add(Util.cityObject2classId(CityGMLClass.PLANT_COVER));
-				classIds.add(Util.cityObject2classId(CityGMLClass.SOLITARY_VEGETATION_OBJECT));
-				break;
-			case WATERBODY:
-				classIds.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
-				break;
-			default:
-				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING));
-				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE));
-				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL));
-				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
-				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP));
-				classIds.add(Util.cityObject2classId(CityGMLClass.GENERIC_CITY_OBJECT));
-				classIds.add(Util.cityObject2classId(CityGMLClass.LAND_USE));
-				classIds.add(Util.cityObject2classId(CityGMLClass.RELIEF_FEATURE));
-				classIds.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATION_COMPLEX));
-				classIds.add(Util.cityObject2classId(CityGMLClass.ROAD));
-				classIds.add(Util.cityObject2classId(CityGMLClass.RAILWAY));
-				classIds.add(Util.cityObject2classId(CityGMLClass.TRACK));
-				classIds.add(Util.cityObject2classId(CityGMLClass.SQUARE));
-				classIds.add(Util.cityObject2classId(CityGMLClass.PLANT_COVER));
-				classIds.add(Util.cityObject2classId(CityGMLClass.SOLITARY_VEGETATION_OBJECT));
-				classIds.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
-			}
+			List<Integer> classIds = getClassIds(featureClass);
 
 			return calcBoundingBox(classIds, conn);
 		} finally {
@@ -213,6 +204,70 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 				}
 			}
 		}
+	}
+	
+	private List<Integer> getClassIds(FeatureClassMode featureClass) {
+		
+		List<Integer> classIds = new ArrayList<Integer>();
+		switch (featureClass) {
+		case BUILDING:
+			classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING));
+			break;
+		case BRIDGE:
+			classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE));
+			break;
+		case TUNNEL:
+			classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL));
+			break;				
+		case CITYFURNITURE:
+			classIds.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
+			break;
+		case CITYOBJECTGROUP:
+			classIds.add(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP));
+			break;
+		case GENERICCITYOBJECT:
+			classIds.add(Util.cityObject2classId(CityGMLClass.GENERIC_CITY_OBJECT));
+			break;
+		case LANDUSE:
+			classIds.add(Util.cityObject2classId(CityGMLClass.LAND_USE));
+			break;
+		case RELIEFFEATURE:
+			classIds.add(Util.cityObject2classId(CityGMLClass.RELIEF_FEATURE));
+			break;
+		case TRANSPORTATION:
+			classIds.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATION_COMPLEX));
+			classIds.add(Util.cityObject2classId(CityGMLClass.ROAD));
+			classIds.add(Util.cityObject2classId(CityGMLClass.RAILWAY));
+			classIds.add(Util.cityObject2classId(CityGMLClass.TRACK));
+			classIds.add(Util.cityObject2classId(CityGMLClass.SQUARE));
+			break;
+		case VEGETATION:
+			classIds.add(Util.cityObject2classId(CityGMLClass.PLANT_COVER));
+			classIds.add(Util.cityObject2classId(CityGMLClass.SOLITARY_VEGETATION_OBJECT));
+			break;
+		case WATERBODY:
+			classIds.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
+			break;
+		default:
+			classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING));
+			classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE));
+			classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL));
+			classIds.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
+			classIds.add(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP));
+			classIds.add(Util.cityObject2classId(CityGMLClass.GENERIC_CITY_OBJECT));
+			classIds.add(Util.cityObject2classId(CityGMLClass.LAND_USE));
+			classIds.add(Util.cityObject2classId(CityGMLClass.RELIEF_FEATURE));
+			classIds.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATION_COMPLEX));
+			classIds.add(Util.cityObject2classId(CityGMLClass.ROAD));
+			classIds.add(Util.cityObject2classId(CityGMLClass.RAILWAY));
+			classIds.add(Util.cityObject2classId(CityGMLClass.TRACK));
+			classIds.add(Util.cityObject2classId(CityGMLClass.SQUARE));
+			classIds.add(Util.cityObject2classId(CityGMLClass.PLANT_COVER));
+			classIds.add(Util.cityObject2classId(CityGMLClass.SOLITARY_VEGETATION_OBJECT));
+			classIds.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
+		}
+		
+		return classIds;
 	}
 	
 	public IndexStatusInfo dropSpatialIndexes() throws SQLException {
@@ -260,6 +315,31 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 		try {
 			conn = databaseAdapter.connectionPool.getConnection();
 			return manageIndexes(operation, type, conn);
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+			}
+		}
+	}
+	
+	public void updateTableStatsSpatialColumns() throws SQLException {
+		updateTableStats(IndexType.SPATIAL);
+	}
+
+	public void updateTableStatsNormalColumns() throws SQLException {
+		updateTableStats(IndexType.NORMAL);
+	}
+	
+	private void updateTableStats(IndexType type) throws SQLException {
+		Connection conn = null;
+
+		try {
+			conn = databaseAdapter.connectionPool.getConnection();
+			updateTableStats(type, conn);
 		} finally {
 			if (conn != null) {
 				try {

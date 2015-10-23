@@ -30,6 +30,7 @@ package org.citydb.api.database;
 public interface DatabaseAdapter {
 	public DatabaseType getDatabaseType();
 	public boolean hasVersioningSupport();
+	public boolean hasTableStatsSupport();
 	
 	public DatabaseConnectionDetails getConnectionDetails();
 	public DatabaseMetaData getConnectionMetaData();

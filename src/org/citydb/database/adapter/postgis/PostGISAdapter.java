@@ -47,6 +47,12 @@ public class PostGISAdapter extends AbstractDatabaseAdapter {
 	public boolean hasVersioningSupport() {
 		return false;
 	}
+	
+	@Override
+	public boolean hasTableStatsSupport() {
+		return true;
+	}
+
 
 	@Override
 	public int getDefaultPort() {

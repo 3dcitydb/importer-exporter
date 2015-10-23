@@ -46,6 +46,11 @@ public class H2Adapter extends AbstractDatabaseAdapter {
 	public boolean hasVersioningSupport() {
 		return false;
 	}
+	
+	@Override
+	public boolean hasTableStatsSupport() {
+		return false;
+	}
 
 	@Override
 	public int getDefaultPort() {
