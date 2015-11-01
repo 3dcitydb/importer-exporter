@@ -37,8 +37,16 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
+import org.citydb.api.database.DatabaseAdapter;
+import org.citydb.api.database.DatabaseVersion;
+import org.citydb.api.event.Event;
+import org.citydb.api.event.EventHandler;
+import org.citydb.api.event.global.DatabaseConnectionStateEvent;
+import org.citydb.api.event.global.GlobalEvents;
+import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.importer.CodeSpaceMode;
@@ -48,7 +56,7 @@ import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
-public class IdHandlingPanel extends AbstractPreferencesComponent {
+public class IdHandlingPanel extends AbstractPreferencesComponent implements EventHandler {
 	private JPanel block1;
 	private JCheckBox impIdCheckExtRef;	
 	private JRadioButton impIdRadioAdd;
@@ -62,6 +70,8 @@ public class IdHandlingPanel extends AbstractPreferencesComponent {
 	public IdHandlingPanel(Config config) {
 		super(config);
 		initGui();
+		
+		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.DATABASE_CONNECTION_STATE, this);
 	}
 
 	@Override
@@ -154,6 +164,18 @@ public class IdHandlingPanel extends AbstractPreferencesComponent {
 		impIdCSUserText.setEnabled(impIdCSRadioUser.isSelected());
 	}
 	
+	private void setEnabledCodespaceDialog(boolean enable) {
+		((TitledBorder)block2.getBorder()).setTitleColor(enable ? 
+				UIManager.getColor("TitledBorder.titleColor"):
+					UIManager.getColor("Label.disabledForeground"));
+		block2.repaint();
+		
+		impIdCSRadioFile.setEnabled(enable);
+		impIdCSRadioFilePath.setEnabled(enable);
+		impIdCSRadioUser.setEnabled(enable);
+		impIdCSUserText.setEnabled(enable && impIdCSRadioUser.isSelected());
+	}
+	
 	@Override
 	public void doTranslation() {
 		((TitledBorder)block1.getBorder()).setTitle(Language.I18N.getString("pref.import.idHandling.border.id"));	
@@ -196,30 +218,44 @@ public class IdHandlingPanel extends AbstractPreferencesComponent {
 	public void setSettings() {
 		ImportGmlId gmlId = config.getProject().getImporter().getGmlId();
 		
-		if (impIdRadioAdd.isSelected()) {
+		if (impIdRadioAdd.isSelected())
 			gmlId.setUuidMode(UUIDMode.COMPLEMENT);
-		}
-		else {
+		else
 			gmlId.setUuidMode(UUIDMode.REPLACE);
-		}
 
 		gmlId.setKeepGmlIdAsExternalReference(impIdCheckExtRef.isSelected());
 		
-		if (impIdCSRadioFile.isSelected()) {
+		if (impIdCSRadioFile.isSelected())
 			gmlId.setCodeSpaceMode(CodeSpaceMode.RELATIVE);
-		}
-		else if (impIdCSRadioFilePath.isSelected()) {
+		else if (impIdCSRadioFilePath.isSelected())
 			gmlId.setCodeSpaceMode(CodeSpaceMode.ABSOLUTE);
-		}
-		else {
+		else
 			gmlId.setCodeSpaceMode(CodeSpaceMode.USER);
-		}
-		gmlId.setCodeSpace(impIdCSUserText.getText());
+		
+		String gmlIdCodeSpace = impIdCSUserText.getText().trim();
+		if (gmlIdCodeSpace.length() > 0)
+			gmlId.setCodeSpace(gmlIdCodeSpace);
+		else
+			gmlIdCodeSpace = gmlId.getCodeSpace();
+		
+		impIdCSUserText.setText(gmlIdCodeSpace);
 	}
 	
 	@Override
 	public String getTitle() {
 		return Language.I18N.getString("pref.tree.import.idHandling");
+	}
+
+	@Override
+	public void handleEvent(Event event) throws Exception {
+		boolean showCodespaceDialog = true;
+		if (((DatabaseConnectionStateEvent)event).isConnected()) {
+			DatabaseAdapter databaseAdapter = ObjectRegistry.getInstance().getDatabaseController().getActiveDatabaseAdapter();
+			DatabaseVersion version = databaseAdapter.getConnectionMetaData().getCityDBVersion();
+			showCodespaceDialog = version.compareTo(3, 1, 0) >= 0;
+		}
+		
+		setEnabledCodespaceDialog(showCodespaceDialog);
 	}
 
 }

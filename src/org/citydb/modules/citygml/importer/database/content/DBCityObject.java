@@ -69,6 +69,7 @@ public class DBCityObject implements DBImporter {
 	private DBAppearance appearanceImporter;
 	private LocalGeometryXlinkResolver resolver;
 
+	private String gmlIdCodespace;
 	private String updatingPerson;
 	private String reasonForUpdate;
 	private String lineage;
@@ -85,7 +86,7 @@ public class DBCityObject implements DBImporter {
 	public DBCityObject(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
 		this.dbImporterManager = dbImporterManager;
-		
+
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		rememberGmlId = config.getProject().getImporter().getGmlId().isSetKeepGmlIdAsExternalReference();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
@@ -118,15 +119,36 @@ public class DBCityObject implements DBImporter {
 			updatingPerson = "'" + updatingPerson + "'";
 		else
 			updatingPerson = null;
-		
+
+		// import gml:id codespace starting from version 3.1
+		if (dbImporterManager.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0) {
+			if (config.getProject().getImporter().getGmlId().isSetRelativeCodeSpaceMode())
+				gmlIdCodespace = "'" + config.getInternal().getCurrentImportFile().getName() + "'";
+			else if (config.getProject().getImporter().getGmlId().isSetAbsoluteCodeSpaceMode())
+				gmlIdCodespace = "'" + config.getInternal().getCurrentImportFile().getAbsolutePath() + "'";
+			else if (config.getProject().getImporter().getGmlId().isSetUserCodeSpaceMode()) {
+				String tmp = config.getProject().getImporter().getGmlId().getCodeSpace();
+				if (tmp != null && tmp.length() > 0)
+					gmlIdCodespace = "'" + tmp + "'";
+			}
+		}
+
 		init();
 	}
 
 	private void init() throws SQLException {
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into CITYOBJECT (ID, OBJECTCLASS_ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, ENVELOPE, CREATION_DATE, TERMINATION_DATE, ")
+		.append("insert into CITYOBJECT (ID, OBJECTCLASS_ID, GMLID, ");
+		if (gmlIdCodespace != null)
+			stmt.append("GMLID_CODESPACE, ");
+
+		stmt.append("NAME, NAME_CODESPACE, DESCRIPTION, ENVELOPE, CREATION_DATE, TERMINATION_DATE, ")
 		.append("RELATIVE_TO_TERRAIN, RELATIVE_TO_WATER, LAST_MODIFICATION_DATE, UPDATING_PERSON, REASON_FOR_UPDATE, LINEAGE, XML_SOURCE) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ")
+		.append("(?, ?, ?, ");
+		if (gmlIdCodespace != null)
+			stmt.append(gmlIdCodespace).append(", ");
+
+		stmt.append("?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ")
 		.append(updatingPerson).append(", ")
 		.append(reasonForUpdate).append(", ")
 		.append(lineage).append(", null)");
@@ -262,7 +284,7 @@ public class DBCityObject implements DBImporter {
 			// creationDate is not set: use current date
 			creationDate = new java.util.Date();
 		}
-				
+
 		psCityObject.setTimestamp(8, new Timestamp(creationDate.getTime()));
 
 		// terminationDate (null is allowed)

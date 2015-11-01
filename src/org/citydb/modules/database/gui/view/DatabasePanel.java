@@ -58,7 +58,10 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
 import org.citydb.api.controller.DatabaseController;
+import org.citydb.api.database.DatabaseAdapter;
 import org.citydb.api.database.DatabaseConfigurationException;
+import org.citydb.api.database.DatabaseConnectionWarning;
+import org.citydb.api.database.DatabaseConnectionWarning.ConnectionWarningType;
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseType;
 import org.citydb.api.database.DatabaseVersionException;
@@ -71,7 +74,6 @@ import org.citydb.api.log.LogLevel;
 import org.citydb.api.plugin.extension.view.ViewListener;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.config.project.database.Database;
@@ -244,9 +246,12 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 		setLayout(new BorderLayout());
 		add(scrollPane);
 
-		// influence focus policy
-		connectionDetails.setFocusCycleRoot(false);
-		connectionButtons.setFocusCycleRoot(true);
+		// influence focus behavior
+		applyButton.setFocusable(false);
+		newButton.setFocusable(false);
+		copyButton.setFocusable(false);
+		deleteButton.setFocusable(false);
+		infoButton.setFocusable(false);
 
 		for (DatabaseType type : DatabaseType.values())
 			databaseTypeCombo.addItem(type);
@@ -325,7 +330,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 					selectConnection();
 			}
 		});
-		
+
 		databaseTypeCombo.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -488,7 +493,9 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	@Override
 	public void printError(DatabaseConfigurationException e, boolean showErrorDialog) {
 		if (showErrorDialog)
-			topFrame.errorMessage(Language.I18N.getString("db.dialog.error.conn.title"), e.getMessage());				
+			topFrame.errorMessage(Language.I18N.getString("db.dialog.error.conn.title"), e.getMessage());
+		else
+			LOG.error(e.getMessage());
 
 		LOG.error("Connection to database could not be established.");
 		topFrame.setStatusText(Language.I18N.getString("main.status.ready.label"));
@@ -496,15 +503,20 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	@Override
 	public void printError(DatabaseVersionException e, boolean showErrorDialog) {
+		String supportedVersions = Util.collection2string(config.getProject().getDatabase().getSupportedVersions(), ", ");
+
 		if (showErrorDialog) {
 			String text = Language.I18N.getString("db.dialog.error.version.error");
-			Object[] args = new Object[]{ e.getUnsupportedVersion(), Util.collection2string(Internal.CITYDB_ACCEPT_VERSIONS, ", ") };
+			Object[] args = new Object[]{ e.getUnsupportedVersion(), supportedVersions };
 			String result = MessageFormat.format(text, args);					
 
 			topFrame.errorMessage(Language.I18N.getString("db.dialog.error.version.title"), result);
+		} else {
+			LOG.error("Version '" + e.getUnsupportedVersion() + "' of the 3D City Database is not supported.");
+			LOG.error("Supported versions are '" + supportedVersions + "'.");
 		}
-		
-		LOG.error("Unsupported version of the 3D City Database instance.");
+
+		LOG.error("Connection to database could not be established.");
 		topFrame.setStatusText(Language.I18N.getString("main.status.ready.label"));
 	}
 
@@ -515,15 +527,48 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			Object[] args = new Object[]{ e.getMessage() };
 			String result = MessageFormat.format(text, args);					
 
-			topFrame.setStatusText(Language.I18N.getString("main.status.ready.label"));	
 			topFrame.errorMessage(Language.I18N.getString("common.dialog.error.db.title"), result);
-		}
+		} else if (e.getMessage() != null)
+			LOG.error(e.getMessage());
 
 		LOG.error("Connection to database could not be established.");
 		if (LOG.getDefaultConsoleLogLevel() == LogLevel.DEBUG) {
 			LOG.debug("Check the following stack trace for details:");
 			e.printStackTrace();
 		}
+
+		topFrame.setStatusText(Language.I18N.getString("main.status.ready.label"));	
+	}
+
+	@Override
+	public void printWarning(DatabaseConnectionWarning warning, boolean showWarningDialog) {
+		if (showWarningDialog) {
+			if (warning.getType() == ConnectionWarningType.OUTDATED_DATABASE_VERSION && config.getGui().isShowOutdatedDatabaseVersionWarning()) {
+				String text = Language.I18N.getString("db.dialog.warn.version.outdated");
+				DatabaseAdapter databaseAdapter = databaseController.getActiveDatabaseAdapter();
+				Object[] args = new Object[]{ databaseAdapter.getConnectionMetaData().getCityDBVersion() };
+				String result = MessageFormat.format(text, args);
+
+				JPanel confirmPanel = new JPanel(new GridBagLayout());
+				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
+				confirmDialogNoShow.setIconTextGap(10);
+				confirmPanel.add(new JLabel(result), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
+				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
+
+				JOptionPane.showMessageDialog(topFrame, confirmPanel, Language.I18N.getString("db.dialog.warn.title"), JOptionPane.WARNING_MESSAGE);	
+				config.getGui().setShowOutdatedDatabaseVersionWarning(!confirmDialogNoShow.isSelected());
+			}
+
+			else {
+				String text = Language.I18N.getString("db.dialog.warn.general");
+				Object[] args = new Object[]{ warning.getMessage() };
+				String result = MessageFormat.format(text, args);
+
+				topFrame.warnMessage(Language.I18N.getString("db.dialog.warn.title"), result);
+			}
+		}
+
+		LOG.warn(warning.getMessage());
 	}
 
 	public void loadSettings() {
@@ -567,7 +612,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	private void setDbConnection(DBConnection dbConnection) {
 		String description = descriptionText.getText().trim();		
-		if (!description.equals("")) {
+		if (description.length() > 0) {
 			boolean repaint = dbConnection == databaseConfig.getActiveConnection() && !description.equals(dbConnection.getDescription());
 			dbConnection.setDescription(description);
 			if (repaint) 

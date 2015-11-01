@@ -50,6 +50,7 @@ import org.citydb.modules.citygml.importer.controller.CityGMLImportException;
 import org.citydb.modules.citygml.importer.controller.Importer;
 import org.citydb.modules.citygml.importer.controller.XMLValidator;
 import org.citydb.modules.kml.controller.KmlExporter;
+import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 
 public class ImpExpCmd {
@@ -243,13 +244,13 @@ public class ImpExpCmd {
 					LOG.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") NOT supported.");
 			}
 
-		} catch (DatabaseConfigurationException e) {
+		} catch (DatabaseConfigurationException | SQLException e) {
 			LOG.error("Connection to database could not be established: " + e.getMessage());
 		} catch (DatabaseVersionException e) {
-			LOG.error("Unsupported version of the 3D City Database instance.");
-		} catch (SQLException e) {
-			LOG.error("Connection to database could not be established: " + e.getMessage());
-		} 
+			LOG.error("Version '" + e.getUnsupportedVersion() + "' of the 3D City Database is not supported.");
+			LOG.error("Supported versions are '" + Util.collection2string(config.getProject().getDatabase().getSupportedVersions(), ", ") + "'.");
+			LOG.error("Connection to database could not be established.");
+		}
 	}
 	
 	private List<File> getFiles(String fileNames, String delim) {

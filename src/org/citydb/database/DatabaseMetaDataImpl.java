@@ -28,6 +28,7 @@ package org.citydb.database;
 
 import org.citydb.api.database.DatabaseMetaData;
 import org.citydb.api.database.DatabaseSrs;
+import org.citydb.api.database.DatabaseVersion;
 import org.citydb.api.log.LogLevel;
 import org.citydb.log.Logger;
 
@@ -35,10 +36,7 @@ public class DatabaseMetaDataImpl implements DatabaseMetaData {
 	private final Logger LOG = Logger.getInstance();	
 	
 	// database related information
-	private String cityDBVersion;
-	private int cityDBMajorVersion;
-	private int cityDBMinorVersion;
-	private int cityDBMinorRevision;
+	private DatabaseVersion cityDBVersion;
 	private String databaseProductName;
 	private String databaseProductString;
 	private int databaseMajorVersion;
@@ -58,41 +56,14 @@ public class DatabaseMetaDataImpl implements DatabaseMetaData {
 	}
 
 	@Override
-	public String getCityDBVersion() {
+	public DatabaseVersion getCityDBVersion() {
 		return cityDBVersion;
 	}
 	
-	public void setCityDBVersion(String cityDBVersion) {
+	public void setCityDBVersion(DatabaseVersion cityDBVersion) {
 		this.cityDBVersion = cityDBVersion;
 	}
 
-	@Override
-	public int getCityDBMajorVersion() {
-		return cityDBMajorVersion;
-	}
-	
-	public void setCityDBMajorVersion(int cityDBMajorVersion) {
-		this.cityDBMajorVersion = cityDBMajorVersion;
-	}
-
-	@Override
-	public int getCityDBMinorVersion() {
-		return cityDBMinorVersion;
-	}
-	
-	public void setCityDBMinorVersion(int cityDBMinorVersion) {
-		this.cityDBMinorVersion = cityDBMinorVersion;
-	}
-
-	@Override
-	public int getCityDBMinorRevision() {
-		return cityDBMinorRevision;
-	}
-	
-	public void setCityDBMinorRevision(int cityDBMinorRevision) {
-		this.cityDBMinorRevision = cityDBMinorRevision;
-	}
-	
 	@Override
 	public String getDatabaseProductName() {
 		return databaseProductName;

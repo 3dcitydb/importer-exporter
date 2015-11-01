@@ -34,6 +34,7 @@ import org.citydb.api.database.DatabaseAdapter;
 import org.citydb.api.database.DatabaseConfigurationException;
 import org.citydb.api.database.DatabaseConnectionDetails;
 import org.citydb.api.database.DatabaseSrs;
+import org.citydb.api.database.DatabaseVersion;
 import org.citydb.api.database.DatabaseVersionException;
 
 public interface DatabaseController {
@@ -45,5 +46,6 @@ public interface DatabaseController {
 	public List<DatabaseConnectionDetails> getConnectionDetails();
 	public List<DatabaseSrs> getDatabaseSrs();
 	
-	public DatabaseAdapter getActiveDatabaseAdapter();	
+	public DatabaseAdapter getActiveDatabaseAdapter();
+	public List<DatabaseVersion> getSupportedVersions();
 }

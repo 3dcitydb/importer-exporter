@@ -26,8 +26,13 @@
  */
 package org.citydb.database.adapter;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.citydb.api.database.BalloonTemplateFactory;
 import org.citydb.api.database.DatabaseAdapter;
+import org.citydb.api.database.DatabaseConnectionWarning;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.database.DatabaseMetaDataImpl;
@@ -41,6 +46,7 @@ public abstract class AbstractDatabaseAdapter implements DatabaseAdapter {
 	protected AbstractWorkspaceManagerAdapter workspaceAdapter;
 	protected AbstractUtilAdapter utilAdapter;
 	protected AbstractSQLAdapter sqlAdapter;
+	private List<DatabaseConnectionWarning> connectionWarnings;
 	
 	public AbstractDatabaseAdapter() {
 		connectionPool = DatabaseConnectionPool.getInstance();
@@ -91,6 +97,18 @@ public abstract class AbstractDatabaseAdapter implements DatabaseAdapter {
 	
 	public AbstractSQLAdapter getSQLAdapter() {
 		return sqlAdapter;
+	}
+
+	@Override
+	public List<DatabaseConnectionWarning> getConnectionWarnings() {
+		return connectionWarnings != null ? connectionWarnings : Collections.<DatabaseConnectionWarning>emptyList();
+	}
+
+	public void addConnectionWarning(DatabaseConnectionWarning connectionWarning) {
+		if (connectionWarnings == null)
+			connectionWarnings = new ArrayList<DatabaseConnectionWarning>();
+		
+		connectionWarnings.add(connectionWarning);
 	}
 	
 }

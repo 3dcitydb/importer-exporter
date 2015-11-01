@@ -26,6 +26,8 @@
  */
 package org.citydb.api.database;
 
+import java.util.List;
+
 
 public interface DatabaseAdapter {
 	public DatabaseType getDatabaseType();
@@ -37,4 +39,5 @@ public interface DatabaseAdapter {
 	public DatabaseGeometryConverter getGeometryConverter();
 	public DatabaseUtil getUtil();
 	public BalloonTemplateFactory getBalloonTemplateFactory();
+	public List<DatabaseConnectionWarning> getConnectionWarnings();
 }

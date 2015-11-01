@@ -463,6 +463,10 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 	public void errorMessage(String title, String text) {
 		JOptionPane.showMessageDialog(this, text, title, JOptionPane.ERROR_MESSAGE);
 	}
+	
+	public void warnMessage(String title, String text) {
+		JOptionPane.showMessageDialog(this, text, title, JOptionPane.WARNING_MESSAGE);
+	}
 
 	public void enableConsoleWindow(boolean enable, boolean resizeMain) {
 		splitPane.setEnabled(!enable);
