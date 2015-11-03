@@ -28,14 +28,27 @@ package org.citydb.api.database;
 
 @SuppressWarnings("serial")
 public class DatabaseVersionException extends Exception {
-	private final String unsupportedVersion;
+	private final DatabaseVersion unsupportedVersion;
+	private final String productName;
 
-	public DatabaseVersionException(String unsupportedVersion) {
+	public DatabaseVersionException(String reason, DatabaseVersion unsupportedVersion, String productName) {
+		super(reason);
 		this.unsupportedVersion = unsupportedVersion;
+		this.productName = productName;
+	}
+	
+	public DatabaseVersionException(String reason, DatabaseVersion unsupportedVersion, String productName, Throwable cause) {
+		super(reason, cause);
+		this.unsupportedVersion = unsupportedVersion;
+		this.productName = productName;
 	}
 
-	public String getUnsupportedVersion() {
+	public DatabaseVersion getUnsupportedVersion() {
 		return unsupportedVersion;
+	}
+
+	public String getProductName() {
+		return productName;
 	}
 	
 }

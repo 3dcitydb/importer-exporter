@@ -45,6 +45,7 @@ import org.citydb.config.gui.window.MapWindow;
 		"console",
 		"map",
 		"showPreferencesConfirmDialog",
+		"showOutdatedDatabaseVersionWarning",
 		"recentlyUsedProjects"
 })
 public class Gui {
@@ -52,6 +53,7 @@ public class Gui {
 	private ConsoleWindow console;
 	private MapWindow map;
 	private boolean showPreferencesConfirmDialog = true;
+	private boolean showOutdatedDatabaseVersionWarning = true;
 	@XmlElementWrapper(name="recentlyUsedProjects")
 	@XmlElement(name="fileName")
 	private List<String> recentlyUsedProjects;
@@ -99,6 +101,14 @@ public class Gui {
 
 	public void setShowPreferencesConfirmDialog(boolean showPreferencesConfirmDialog) {
 		this.showPreferencesConfirmDialog = showPreferencesConfirmDialog;
+	}
+
+	public boolean isShowOutdatedDatabaseVersionWarning() {
+		return showOutdatedDatabaseVersionWarning;
+	}
+
+	public void setShowOutdatedDatabaseVersionWarning(boolean showOutdatedDatabaseVersionWarning) {
+		this.showOutdatedDatabaseVersionWarning = showOutdatedDatabaseVersionWarning;
 	}
 
 	public List<String> getRecentlyUsedProjectFiles() {

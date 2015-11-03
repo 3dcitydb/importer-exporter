@@ -35,20 +35,21 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.List;
 
+import oracle.jdbc.OracleTypes;
+import oracle.spatial.geometry.JGeometry;
+
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseSrsType;
+import org.citydb.api.database.DatabaseVersion;
 import org.citydb.api.geometry.BoundingBox;
 import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.database.DatabaseMetaDataImpl;
-import org.citydb.database.IndexStatusInfo;
 import org.citydb.database.DatabaseMetaDataImpl.Versioning;
+import org.citydb.database.IndexStatusInfo;
 import org.citydb.database.IndexStatusInfo.IndexType;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractUtilAdapter;
 import org.citydb.util.Util;
-
-import oracle.jdbc.OracleTypes;
-import oracle.spatial.geometry.JGeometry;
 
 public class UtilAdapter extends AbstractUtilAdapter {
 
@@ -65,13 +66,14 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			statement = connection.createStatement();
 			rs = statement.executeQuery("select * from table(" + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.citydb_version") + ")");
 			if (rs.next()) {
-				metaData.setCityDBVersion(rs.getString("VERSION"));
-				metaData.setCityDBMajorVersion(rs.getInt("MAJOR_VERSION"));
-				metaData.setCityDBMinorVersion(rs.getInt("MINOR_VERSION"));
-				metaData.setCityDBMinorRevision(rs.getInt("MINOR_REVISION"));
+				String productVersion = rs.getString("VERSION");
+				int major = rs.getInt("MAJOR_VERSION");
+				int minor = rs.getInt("MINOR_VERSION");
+				int revision = rs.getInt("MINOR_REVISION");
+				metaData.setCityDBVersion(new DatabaseVersion(major, minor, revision, productVersion));
 			} 
 		} catch (SQLException e) {
-			throw new SQLException("Failed to retrieve version information from 3D City Database instance.", e);
+			throw new SQLException("Failed to retrieve version information from the 3D City Database instance.", e);
 		} finally {
 			if (rs != null) {
 				try {

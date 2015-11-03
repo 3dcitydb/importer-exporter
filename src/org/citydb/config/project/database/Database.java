@@ -27,16 +27,19 @@
 package org.citydb.config.project.database;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseSrsType;
+import org.citydb.api.database.DatabaseVersion;
 
 @XmlType(name="DatabaseType", propOrder={
 		"referenceSystems",
@@ -57,6 +60,9 @@ public class Database {
 	static {
 		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG::4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGRAPHIC2D, true));
 	}
+	
+	@XmlTransient
+	private final List<DatabaseVersion> supportedVersions = Arrays.asList(new DatabaseVersion(3,1,0), new DatabaseVersion(3,0,0));
 	
 	private DatabaseSrsList referenceSystems;
 	@XmlElement(name="connection", required=true)
@@ -145,6 +151,10 @@ public class Database {
 	public void setOperation(DBOperation operation) {
 		if (operation != null)
 			this.operation = operation;
+	}
+
+	public List<DatabaseVersion> getSupportedVersions() {
+		return new ArrayList<DatabaseVersion>(supportedVersions);
 	}
 
 }

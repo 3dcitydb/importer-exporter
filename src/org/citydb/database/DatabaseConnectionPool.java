@@ -39,8 +39,11 @@ import java.util.concurrent.TimeUnit;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.citydb.api.database.DatabaseConfigurationException;
+import org.citydb.api.database.DatabaseConnectionWarning;
 import org.citydb.api.database.DatabaseSrs;
+import org.citydb.api.database.DatabaseVersion;
 import org.citydb.api.database.DatabaseVersionException;
+import org.citydb.api.database.DatabaseConnectionWarning.ConnectionWarningType;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
@@ -60,9 +63,11 @@ public class DatabaseConnectionPool {
 	private final EventDispatcher eventDispatcher;
 	private AbstractDatabaseAdapter databaseAdapter;
 	private DataSource dataSource;
+	private DatabaseVersionChecker versionChecker;
 
 	private DatabaseConnectionPool() {
 		// just to thwart instantiation
+		versionChecker = new DatabaseVersionChecker();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 	}
 
@@ -150,9 +155,13 @@ public class DatabaseConnectionPool {
 			databaseAdapter.setConnectionMetaData(databaseAdapter.getUtil().getDatabaseInfo());
 			
 			// check for supported 3DCityDB version
-			if (!Internal.CITYDB_ACCEPT_VERSIONS.contains(databaseAdapter.getConnectionMetaData().getCityDBVersion()))
-				throw new DatabaseVersionException(databaseAdapter.getConnectionMetaData().getCityDBVersion());
+			DatabaseVersion version = databaseAdapter.getConnectionMetaData().getCityDBVersion();
+			if (!versionChecker.isSupportedVersion(version, config.getProject().getDatabase().getSupportedVersions(), Internal.CITYDB_PRODUCT_NAME))
+				throw new DatabaseVersionException("Version '" + version + "' of the 3D City Database is not supported.", version, Internal.CITYDB_PRODUCT_NAME);
 
+			if (versionChecker.isOutdatedVersion(version, config.getProject().getDatabase().getSupportedVersions(), Internal.CITYDB_PRODUCT_NAME))
+				databaseAdapter.addConnectionWarning(new DatabaseConnectionWarning("Version '" + version + "' of the 3D City Database is outdated. Consider upgrading.", ConnectionWarningType.OUTDATED_DATABASE_VERSION));
+			
 			// check whether user-defined reference systems are supported
 			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
 				databaseAdapter.getUtil().getSrsInfo(refSys);

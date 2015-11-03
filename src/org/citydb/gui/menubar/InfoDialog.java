@@ -102,7 +102,7 @@ public class InfoDialog extends JDialog {
 			JTabbedPane tabs = new JTabbedPane();
 			add(tabs, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,5,5,5,5));
 
-			tabs.add(getGeneralTab(), Language.I18N.getString("menu.help.info.tab.general"));			
+			tabs.add(getGeneralTab(), Language.I18N.getString("menu.help.info.tab.general"));		
 			tabs.add(getPartnerTab(), Language.I18N.getString("menu.help.info.tab.partner"));			
 
 			button.setMargin(new Insets(button.getMargin().top, 25, button.getMargin().bottom, 25));
@@ -210,7 +210,7 @@ public class InfoDialog extends JDialog {
 				logos.add(moss_logo, GuiUtil.setConstraints(0,2,0,0,GridBagConstraints.NONE,5,5,5,0));
 				JEditorPane moss_label = new JEditorPane("text/html", "<html><b>M.O.S.S. Computer Grafik Systeme GmbH,<br/>Taufkirchen, Germany</b><br/>http://www.moss.de/</html>");
 		        ((HTMLDocument)moss_label.getDocument()).getStyleSheet().addRule(bodyRule);
-		        vcs_label.setEditable(false);				
+		        moss_label.setEditable(false);				
 				logos.add(moss_label, GuiUtil.setConstraints(1,2,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
 
 				logos.add(new JLabel(), GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,5,5,0,5));
