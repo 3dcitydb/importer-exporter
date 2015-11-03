@@ -145,7 +145,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 			if (databaseAdapter.hasVersioningSupport())
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 			
-			List<Integer> classIds = getClassIds(featureClass);
+			List<Integer> classIds = getClassIds(featureClass, false);
 			try {
 				for (Integer classId : classIds) {
 					String call = "{call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.set_envelope_cityobjects") + "(?,?)}";
@@ -192,7 +192,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 			if (databaseAdapter.hasVersioningSupport())
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 			
-			List<Integer> classIds = getClassIds(featureClass);
+			List<Integer> classIds = getClassIds(featureClass, true);
 
 			return calcBoundingBox(classIds, conn);
 		} finally {
@@ -206,7 +206,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 		}
 	}
 	
-	private List<Integer> getClassIds(FeatureClassMode featureClass) {
+	private List<Integer> getClassIds(FeatureClassMode featureClass, boolean setDefault) {
 		
 		List<Integer> classIds = new ArrayList<Integer>();
 		switch (featureClass) {
@@ -249,22 +249,26 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 			classIds.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
 			break;
 		default:
-			classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING));
-			classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE));
-			classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL));
-			classIds.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
-			classIds.add(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP));
-			classIds.add(Util.cityObject2classId(CityGMLClass.GENERIC_CITY_OBJECT));
-			classIds.add(Util.cityObject2classId(CityGMLClass.LAND_USE));
-			classIds.add(Util.cityObject2classId(CityGMLClass.RELIEF_FEATURE));
-			classIds.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATION_COMPLEX));
-			classIds.add(Util.cityObject2classId(CityGMLClass.ROAD));
-			classIds.add(Util.cityObject2classId(CityGMLClass.RAILWAY));
-			classIds.add(Util.cityObject2classId(CityGMLClass.TRACK));
-			classIds.add(Util.cityObject2classId(CityGMLClass.SQUARE));
-			classIds.add(Util.cityObject2classId(CityGMLClass.PLANT_COVER));
-			classIds.add(Util.cityObject2classId(CityGMLClass.SOLITARY_VEGETATION_OBJECT));
-			classIds.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
+			if (setDefault) {
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL));
+				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP));
+				classIds.add(Util.cityObject2classId(CityGMLClass.GENERIC_CITY_OBJECT));
+				classIds.add(Util.cityObject2classId(CityGMLClass.LAND_USE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.RELIEF_FEATURE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATION_COMPLEX));
+				classIds.add(Util.cityObject2classId(CityGMLClass.ROAD));
+				classIds.add(Util.cityObject2classId(CityGMLClass.RAILWAY));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TRACK));
+				classIds.add(Util.cityObject2classId(CityGMLClass.SQUARE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.PLANT_COVER));
+				classIds.add(Util.cityObject2classId(CityGMLClass.SOLITARY_VEGETATION_OBJECT));
+				classIds.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
+			}
+			else
+				classIds.add(0); // UNDEFINED
 		}
 		
 		return classIds;
