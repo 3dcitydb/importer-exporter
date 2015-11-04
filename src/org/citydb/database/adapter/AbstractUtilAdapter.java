@@ -145,7 +145,108 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 			if (databaseAdapter.hasVersioningSupport())
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 			
-			List<Integer> classIds = getClassIds(featureClass, false);
+			List<Integer> classIds = new ArrayList<Integer>();
+			switch (featureClass) {
+			case BUILDING:
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING_WINDOW));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING_DOOR));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING_CEILING_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.INTERIOR_BUILDING_WALL_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING_FLOOR_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING_ROOF_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING_WALL_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING_GROUND_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.OUTER_BUILDING_CEILING_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.OUTER_BUILDING_FLOOR_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING_CLOSURE_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING_INSTALLATION));
+				classIds.add(Util.cityObject2classId(CityGMLClass.INT_BUILDING_INSTALLATION));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING_FURNITURE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING_ROOM));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING_PART));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING));
+				break;
+			case BRIDGE:
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_WINDOW));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_DOOR));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_CEILING_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.INTERIOR_BRIDGE_WALL_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_FLOOR_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_ROOF_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_WALL_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_GROUND_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.OUTER_BRIDGE_CEILING_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.OUTER_BRIDGE_FLOOR_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_CLOSURE_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_INSTALLATION));
+				classIds.add(Util.cityObject2classId(CityGMLClass.INT_BRIDGE_INSTALLATION));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_CONSTRUCTION_ELEMENT));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_FURNITURE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_ROOM));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE_PART));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE));
+				break;
+			case TUNNEL:
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL_WINDOW));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL_DOOR));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL_CEILING_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.INTERIOR_TUNNEL_WALL_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL_FLOOR_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL_ROOF_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL_WALL_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL_GROUND_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.OUTER_TUNNEL_CEILING_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.OUTER_TUNNEL_FLOOR_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL_CLOSURE_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL_INSTALLATION));
+				classIds.add(Util.cityObject2classId(CityGMLClass.INT_TUNNEL_INSTALLATION));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL_FURNITURE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.HOLLOW_SPACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL_PART));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL));
+				break;				
+			case CITYFURNITURE:
+				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
+				break;
+			case CITYOBJECTGROUP:
+				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP));
+				break;
+			case GENERICCITYOBJECT:
+				classIds.add(Util.cityObject2classId(CityGMLClass.GENERIC_CITY_OBJECT));
+				break;
+			case LANDUSE:
+				classIds.add(Util.cityObject2classId(CityGMLClass.LAND_USE));
+				break;
+			case RELIEFFEATURE:
+				classIds.add(Util.cityObject2classId(CityGMLClass.MASSPOINT_RELIEF));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BREAKLINE_RELIEF));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TIN_RELIEF));
+				classIds.add(Util.cityObject2classId(CityGMLClass.RASTER_RELIEF));
+				classIds.add(Util.cityObject2classId(CityGMLClass.RELIEF_FEATURE));
+				break;
+			case TRANSPORTATION:
+				classIds.add(Util.cityObject2classId(CityGMLClass.TRAFFIC_AREA));
+				classIds.add(Util.cityObject2classId(CityGMLClass.AUXILIARY_TRAFFIC_AREA));
+				classIds.add(Util.cityObject2classId(CityGMLClass.ROAD));
+				classIds.add(Util.cityObject2classId(CityGMLClass.RAILWAY));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TRACK));
+				classIds.add(Util.cityObject2classId(CityGMLClass.SQUARE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATION_COMPLEX));
+				break;
+			case VEGETATION:
+				classIds.add(Util.cityObject2classId(CityGMLClass.PLANT_COVER));
+				classIds.add(Util.cityObject2classId(CityGMLClass.SOLITARY_VEGETATION_OBJECT));
+				break;
+			case WATERBODY:
+				classIds.add(Util.cityObject2classId(CityGMLClass.WATER_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.WATER_GROUND_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.WATER_CLOSURE_SURFACE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
+				break;
+			default:
+				classIds.add(0);
+			}
+			
 			try {
 				for (Integer classId : classIds) {
 					String call = "{call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.set_envelope_cityobjects") + "(?,?)}";
@@ -192,7 +293,64 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 			if (databaseAdapter.hasVersioningSupport())
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 			
-			List<Integer> classIds = getClassIds(featureClass, true);
+			List<Integer> classIds = new ArrayList<Integer>();
+			switch (featureClass) {
+			case BUILDING:
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING));
+				break;
+			case BRIDGE:
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE));
+				break;
+			case TUNNEL:
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL));
+				break;				
+			case CITYFURNITURE:
+				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
+				break;
+			case CITYOBJECTGROUP:
+				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP));
+				break;
+			case GENERICCITYOBJECT:
+				classIds.add(Util.cityObject2classId(CityGMLClass.GENERIC_CITY_OBJECT));
+				break;
+			case LANDUSE:
+				classIds.add(Util.cityObject2classId(CityGMLClass.LAND_USE));
+				break;
+			case RELIEFFEATURE:
+				classIds.add(Util.cityObject2classId(CityGMLClass.RELIEF_FEATURE));
+				break;
+			case TRANSPORTATION:
+				classIds.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATION_COMPLEX));
+				classIds.add(Util.cityObject2classId(CityGMLClass.ROAD));
+				classIds.add(Util.cityObject2classId(CityGMLClass.RAILWAY));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TRACK));
+				classIds.add(Util.cityObject2classId(CityGMLClass.SQUARE));
+				break;
+			case VEGETATION:
+				classIds.add(Util.cityObject2classId(CityGMLClass.PLANT_COVER));
+				classIds.add(Util.cityObject2classId(CityGMLClass.SOLITARY_VEGETATION_OBJECT));
+				break;
+			case WATERBODY:
+				classIds.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
+				break;
+			default:
+				classIds.add(Util.cityObject2classId(CityGMLClass.BUILDING));
+				classIds.add(Util.cityObject2classId(CityGMLClass.BRIDGE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TUNNEL));
+				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_FURNITURE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.CITY_OBJECT_GROUP));
+				classIds.add(Util.cityObject2classId(CityGMLClass.GENERIC_CITY_OBJECT));
+				classIds.add(Util.cityObject2classId(CityGMLClass.LAND_USE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.RELIEF_FEATURE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TRANSPORTATION_COMPLEX));
+				classIds.add(Util.cityObject2classId(CityGMLClass.ROAD));
+				classIds.add(Util.cityObject2classId(CityGMLClass.RAILWAY));
+				classIds.add(Util.cityObject2classId(CityGMLClass.TRACK));
+				classIds.add(Util.cityObject2classId(CityGMLClass.SQUARE));
+				classIds.add(Util.cityObject2classId(CityGMLClass.PLANT_COVER));
+				classIds.add(Util.cityObject2classId(CityGMLClass.SOLITARY_VEGETATION_OBJECT));
+				classIds.add(Util.cityObject2classId(CityGMLClass.WATER_BODY));
+			}
 
 			return calcBoundingBox(classIds, conn);
 		} finally {
