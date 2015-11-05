@@ -276,6 +276,8 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				
 				if (success)
 					LOG.info("Envelope for " + featureClass + " features successfully updated.");
+				else
+					LOG.warn("Updating envelopes aborted.");
 
 			} catch (SQLException sqlEx) {
 				SwingUtilities.invokeLater(new Runnable() {

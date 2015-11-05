@@ -313,7 +313,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected void updateTableStats(IndexType type, Connection connection) throws SQLException {
+	protected boolean updateTableStats(IndexType type, Connection connection) throws SQLException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 
@@ -325,21 +325,14 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			rs = pStmt.executeQuery();
 			
 			while (rs.next()) {
-				Statement vacuumStmt = connection.createStatement();
+				interruptableStatement = connection.createStatement();
 				String tableName = rs.getString(1);
 				String attributeName = rs.getString(2);
-				vacuumStmt.executeUpdate("VACUUM ANALYZE " + tableName + " (" + attributeName + ")");
-				
-				if (vacuumStmt != null) {
-					try {
-						vacuumStmt.close();
-					} catch (SQLException e) {
-						throw e;
-					}
-
-					vacuumStmt = null;
-				}
+				interruptableStatement.executeUpdate("VACUUM ANALYZE " + tableName + " (" + attributeName + ")");
 			}
+			
+			return true;
+			
 		} catch (SQLException e) {
 			if (!isInterrupted)
 				throw e;
@@ -362,11 +355,20 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
 				pStmt = null;
 			}
+			if (interruptableStatement != null) {
+				try {
+					interruptableStatement.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+
+				interruptableStatement = null;
+			}
 
 			isInterrupted = false;
 		}
 
-		return;
+		return false;
 	}
 	
 	@Override

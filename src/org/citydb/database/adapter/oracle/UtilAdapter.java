@@ -322,8 +322,8 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 	
 	@Override
-	protected void updateTableStats(IndexType type, Connection connection) throws SQLException {
-		return;
+	protected boolean updateTableStats(IndexType type, Connection connection) throws SQLException {
+		return false;
 	}
 
 	@Override

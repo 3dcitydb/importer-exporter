@@ -45,6 +45,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.citydb.api.controller.ViewController;
+import org.citydb.api.database.DatabaseType;
 import org.citydb.api.log.LogLevel;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
@@ -500,14 +501,29 @@ public class IndexOperation extends DatabaseOperationView {
 				}
 			});
 
+
+			dialog.getButton().addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation();
+						}
+					});
+				}
+			});
+			
 			try {
+				boolean statsUpdated = true;
+				
 				for (IndexType type : IndexType.values()) {
-					if (type == IndexType.SPATIAL && spatial.isSelected()) {
-						LOG.all(LogLevel.INFO, "Updating table statistics for columns with spatial index...");
-						dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsSpatialColumns();
-					} else if (type == IndexType.NORMAL && normal.isSelected()) {
-						LOG.all(LogLevel.INFO, "Updating table statistics for columns with normal index...");
-						dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsNormalColumns();
+					if (statsUpdated) {
+						if (type == IndexType.SPATIAL && spatial.isSelected()) {
+							LOG.all(LogLevel.INFO, "Updating table statistics for columns with spatial index...");
+							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsSpatialColumns();
+						} else if (type == IndexType.NORMAL && normal.isSelected()) {
+							LOG.all(LogLevel.INFO, "Updating table statistics for columns with normal index...");
+							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsNormalColumns();
+						}
 					}
 				}
 
@@ -517,7 +533,15 @@ public class IndexOperation extends DatabaseOperationView {
 					}
 				});
 
-				LOG.all(LogLevel.INFO, "Table statistics successfully updated.");
+				if (statsUpdated)
+					LOG.all(LogLevel.INFO, "Table statistics successfully updated.");
+				else {
+					if (dbConnectionPool.getActiveDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS)
+						LOG.warn("Updating table statistics aborted.");
+					else
+						LOG.warn("Updating table statistics not yet supported for connected DBMS.");
+				}
+					
 			} catch (SQLException sqlEx) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {

@@ -66,7 +66,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 	protected abstract BoundingBox transformBBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException;
 	protected abstract int get2DSrid(DatabaseSrs srs, Connection connection) throws SQLException;	
 	protected abstract IndexStatusInfo manageIndexes(String operation, IndexType type, Connection connection) throws SQLException;
-	protected abstract void updateTableStats(IndexType type, Connection connection) throws SQLException;
+	protected abstract boolean updateTableStats(IndexType type, Connection connection) throws SQLException;
 	
 	public DatabaseMetaDataImpl getDatabaseInfo() throws SQLException {
 		Connection conn = null;
@@ -255,6 +255,9 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 					interruptableCallableStatement.setInt(2, onlyIfNull ? 1 : 0);
 					interruptableCallableStatement.executeUpdate();
 				}
+				
+				return true;
+				
 			} catch (SQLException e) {
 				if (!isInterrupted)
 					throw e;
@@ -271,8 +274,6 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 
 				isInterrupted = false;
 			}
-
-			return true;
 			
 		} finally {
 			if (conn != null) {
@@ -283,6 +284,8 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 				}
 			}
 		}
+		
+		return false;
 	}
 	
 	public BoundingBox calcBoundingBox(Workspace workspace, FeatureClassMode featureClass) throws SQLException {
@@ -420,20 +423,20 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 		}
 	}
 	
-	public void updateTableStatsSpatialColumns() throws SQLException {
-		updateTableStats(IndexType.SPATIAL);
+	public boolean updateTableStatsSpatialColumns() throws SQLException {
+		return updateTableStats(IndexType.SPATIAL);
 	}
 
-	public void updateTableStatsNormalColumns() throws SQLException {
-		updateTableStats(IndexType.NORMAL);
+	public boolean updateTableStatsNormalColumns() throws SQLException {
+		return updateTableStats(IndexType.NORMAL);
 	}
 	
-	private void updateTableStats(IndexType type) throws SQLException {
+	private boolean updateTableStats(IndexType type) throws SQLException {
 		Connection conn = null;
 
 		try {
 			conn = databaseAdapter.connectionPool.getConnection();
-			updateTableStats(type, conn);
+			return updateTableStats(type, conn);
 		} finally {
 			if (conn != null) {
 				try {
