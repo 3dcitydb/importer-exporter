@@ -325,10 +325,13 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			rs = pStmt.executeQuery();
 			
 			while (rs.next()) {
-				interruptableStatement = connection.createStatement();
 				String tableName = rs.getString(1);
 				String attributeName = rs.getString(2);
-				interruptableStatement.executeUpdate("VACUUM ANALYZE " + tableName + " (" + attributeName + ")");
+				StringBuilder vacuumStmt = new StringBuilder("VACUUM ANALYZE ")
+					.append(tableName).append(" (").append(attributeName).append(")");
+				
+				interruptableStatement = connection.createStatement();
+				interruptableStatement.executeUpdate(vacuumStmt.toString());
 			}
 			
 			return true;
