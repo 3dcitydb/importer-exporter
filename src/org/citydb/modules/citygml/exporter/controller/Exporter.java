@@ -245,6 +245,11 @@ public class Exporter implements EventHandler {
 
 		// getting export filter
 		exportFilter = new ExportFilter(config);
+		
+		// cache gml:ids of city objects in case we have to export groups
+		internalConfig.setRegisterGmlIdInCache((!exportFilter.getFeatureClassFilter().isActive() 
+				|| !exportFilter.getFeatureClassFilter().filter(CityGMLClass.CITY_OBJECT_GROUP))
+				&& !config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks());
 
 		// bounding box config
 		Tiling tiling = config.getProject().getExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
