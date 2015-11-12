@@ -294,7 +294,7 @@ public class KmlExporter implements EventHandler {
 		FileOutputStream jsonFileWriterForMasterFile = null;
 
 		boolean jsonHasContent = false;
-		if (config.getProject().getKmlExporter().isWriteJSONFile()) {
+		if (config.getProject().getKmlExporter().isWriteJSONFile() && isBBoxActive) {
 			try {
 				File jsonFile = new File(path + File.separator + fileName + ".json");
 				jsonFileWriter = new FileOutputStream(jsonFile);
