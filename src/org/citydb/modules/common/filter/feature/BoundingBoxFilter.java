@@ -75,14 +75,18 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 		this.mode = mode;
 		this.config = config;
 
-		if (mode == FilterMode.EXPORT)
+		if (mode == FilterMode.EXPORT) {
 			filterConfig = config.getProject().getExporter().getFilter();
-		else if (mode == FilterMode.KML_EXPORT)
+			init();
+		}			
+		else if (mode == FilterMode.KML_EXPORT) {
 			filterConfig = config.getProject().getKmlExporter().getFilter();
-		else
-			filterConfig = config.getProject().getImporter().getFilter();			
-
-		inti2();
+			inti2();
+		}
+		else {
+			filterConfig = config.getProject().getImporter().getFilter();
+			init();
+		}
 	}
 
 	private void init() {
