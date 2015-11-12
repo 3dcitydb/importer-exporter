@@ -45,6 +45,7 @@ import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.GeometryObject;
 import org.citydb.api.geometry.GeometryObject.GeometryType;
 import org.citydb.config.Config;
+import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
 import org.citydb.config.project.kmlExporter.DisplayForm;
@@ -322,6 +323,11 @@ public class Transportation extends KmlGenericObject{
 				else { // curve
 					pointOrCurveGeometry = super.convertToWGS84(pointOrCurveGeometry);
 					LineStringType lineString = kmlFactory.createLineStringType();
+					
+					double zOffset = 0;
+					if (config.getProject().getKmlExporter().getAltitudeOffsetMode().equals(AltitudeOffsetMode.CONSTANT)) {
+						zOffset = config.getProject().getKmlExporter().getAltitudeOffsetValue();
+					};
 
 					for (int i = 0; i < pointOrCurveGeometry.getNumElements(); i++) {
 						double[] ordinatesArray = pointOrCurveGeometry.getCoordinates(i);
@@ -330,10 +336,10 @@ public class Transportation extends KmlGenericObject{
 						for (int j = 0; j < ordinatesArray.length; j = j+3) {
 							lineString.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + "," 
 									+ reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-									+ reducePrecisionForZ(ordinatesArray[j+2])));
+									+ reducePrecisionForZ(ordinatesArray[j+2] + zOffset)));
 						}
 					}
-					lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
+					lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
 					placemark.setAbstractGeometryGroup(kmlFactory.createLineString(lineString));
 				}
 			}
