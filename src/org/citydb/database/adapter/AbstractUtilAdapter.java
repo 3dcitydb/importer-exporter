@@ -249,10 +249,12 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 			
 			try {
 				for (Integer classId : classIds) {
-					String call = "{call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.set_envelope_cityobjects") + "(?,?)}";
+					String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.get_envelope_cityobjects") + "(?,1,?)}";
 					interruptableCallableStatement = conn.prepareCall(call);
-					interruptableCallableStatement.setInt(1, classId);
-					interruptableCallableStatement.setInt(2, onlyIfNull ? 1 : 0);
+					interruptableCallableStatement.registerOutParameter(1, 
+						databaseAdapter.getGeometryConverter().getNullGeometryType(), databaseAdapter.getGeometryConverter().getNullGeometryTypeName());
+					interruptableCallableStatement.setInt(2, classId);
+					interruptableCallableStatement.setInt(3, onlyIfNull ? 1 : 0);
 					interruptableCallableStatement.executeUpdate();
 				}
 				
