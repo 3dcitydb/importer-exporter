@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.citydb.api.database.DatabaseSrs;
+import org.citydb.api.database.DatabaseType;
 import org.citydb.api.database.DatabaseUtil;
 import org.citydb.api.geometry.BoundingBox;
 import org.citydb.config.project.database.Workspace;
@@ -251,8 +252,15 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 				for (Integer classId : classIds) {
 					String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.get_envelope_cityobjects") + "(?,1,?)}";
 					interruptableCallableStatement = conn.prepareCall(call);
-					interruptableCallableStatement.registerOutParameter(1, 
-						databaseAdapter.getGeometryConverter().getNullGeometryType(), databaseAdapter.getGeometryConverter().getNullGeometryTypeName());
+					
+					if (databaseAdapter.getDatabaseType() == DatabaseType.POSTGIS)
+						interruptableCallableStatement.registerOutParameter(1, 
+								databaseAdapter.getGeometryConverter().getNullGeometryType());
+					else
+						interruptableCallableStatement.registerOutParameter(1, 
+								databaseAdapter.getGeometryConverter().getNullGeometryType(), 
+								databaseAdapter.getGeometryConverter().getNullGeometryTypeName());
+					
 					interruptableCallableStatement.setInt(2, classId);
 					interruptableCallableStatement.setInt(3, onlyIfNull ? 1 : 0);
 					interruptableCallableStatement.executeUpdate();
