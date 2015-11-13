@@ -297,7 +297,7 @@ public class Transportation extends KmlGenericObject{
 
 		while (rs.next()) {
 			PlacemarkType placemark = kmlFactory.createPlacemarkType();
-			placemark.setName(work.getGmlId() + "_Transportation_Network");
+			placemark.setName(work.getGmlId());
 			placemark.setId(/* DisplayForm.FOOTPRINT_PLACEMARK_ID + */ placemark.getName());
 			if (footprintSettings.isHighlightingEnabled())
 				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Style");

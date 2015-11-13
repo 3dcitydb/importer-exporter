@@ -1638,7 +1638,7 @@ public abstract class KmlGenericObject {
 				placemark.setStyleUrl("#" + surfaceType + "Normal");			
 			}
 			else{
-				placemark.setName(work.getGmlId() + "_" + getStyleBasisName());
+				placemark.setName(work.getGmlId());
 				placemark.setId(config.getProject().getKmlExporter().getIdPrefixes().getPlacemarkGeometry() + placemark.getName());
 				placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.GEOMETRY_STR + "Normal");				
 			}
