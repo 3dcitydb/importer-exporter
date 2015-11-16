@@ -91,6 +91,50 @@ public class BoundingBox {
 		return srs;
 	}
 	
+	public void updateLowerLeftCorner(double x, double y) {
+		if (x < lowerLeft.getX())
+			lowerLeft.setX(x);
+
+		if (y < lowerLeft.getY())
+			lowerLeft.setY(y);
+	}
+	
+	public void updateLowerLeftCorner(BoundingBoxCorner lowerLeft) {
+		updateLowerLeftCorner(lowerLeft.getX(), lowerLeft.getY());
+	}
+
+	public void updateUpperRightCorner(double x, double y) {
+		if (x > upperRight.getX())
+			upperRight.setX(x);
+
+		if (y > upperRight.getY())
+			upperRight.setY(y);
+	}
+	
+	public void updateUpperRightCorner(BoundingBoxCorner upperRight) {
+		updateUpperRightCorner(upperRight.getX(), upperRight.getY());
+	}
+
+	public void update(double x, double y) {
+		updateLowerLeftCorner(x, y);
+		updateUpperRightCorner(x, y);
+	}
+	
+	public void update(BoundingBoxCorner lowerLeft, BoundingBoxCorner upperRight) {
+		if (lowerLeft != null)
+			updateLowerLeftCorner(lowerLeft);
+		
+		if (upperRight != null)
+			updateUpperRightCorner(upperRight);
+	}
+	
+	public void update(BoundingBox boundingBox) {
+		if (boundingBox != null) {
+			updateLowerLeftCorner(boundingBox.getLowerLeftCorner());
+			updateUpperRightCorner(boundingBox.getUpperRightCorner());
+		}
+	}
+	
 	public void copyFrom(BoundingBox other) {
 		srs = other.srs;
 		lowerLeft = new BoundingBoxCorner(other.getLowerLeftCorner().getX(), other.getLowerLeftCorner().getY());

@@ -27,7 +27,6 @@
 package org.citydb.modules.database.gui.operations;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -36,7 +35,6 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -74,9 +72,14 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 	private JLabel featureLabel;
 	private JComboBox<FeatureClassMode> featureComboBox;
 	private BoundingBoxPanelImpl bboxPanel;
-	private JButton setBboxAllButton;
-	private JButton setBboxNullButton;
-	private JButton getExtentButton;
+	private JButton createAllButton;
+	private JButton createMissingButton;
+	private JButton calculateButton;
+	
+	private enum BoundingBoxMode {
+		FULL,
+		PARTIAL
+	}
 
 	public BoundingBoxOperation(DatabaseOperationsPanel parent, Config config) {
 		this.parent = parent;
@@ -86,7 +89,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 
 		init();
 	}
-	
+
 	private void init() {
 		component = new JPanel();
 		component.setLayout(new GridBagLayout());
@@ -94,62 +97,66 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		featureLabel = new JLabel();
 		bboxPanel = new BoundingBoxPanelImpl(config);
 		bboxPanel.setEditable(false);
+		createAllButton = new JButton();
+		createMissingButton = new JButton();
+		calculateButton = new JButton();
 
 		featureComboBox = new JComboBox<FeatureClassMode>();
 		for (FeatureClassMode type : FeatureClassMode.values())
 			featureComboBox.addItem(type);
 
-		component.add(featureLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,10,5,0,5));
-		component.add(featureComboBox, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,10,5,0,5));
-		
-		setBboxAllButton = new JButton();
-		setBboxNullButton = new JButton();
-		getExtentButton = new JButton();
-		
-		Box buttonsPanel = Box.createHorizontalBox();
-		buttonsPanel.add(setBboxAllButton);
-		buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-		buttonsPanel.add(setBboxNullButton);
-		buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-		buttonsPanel.add(getExtentButton);
-		
-		GridBagConstraints c = GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.NONE,10,5,5,5);
+		JPanel featureBox = new JPanel();
+		featureBox.setLayout(new GridBagLayout());
+		GridBagConstraints c = GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,10,5,0,5);
 		c.gridwidth = 2;
-		component.add(buttonsPanel, c);
-		
-		c = GuiUtil.setConstraints(0,3,0.0,0.0,GridBagConstraints.BOTH,5,5,10,5);
+		component.add(featureBox, c);
+		featureBox.add(featureLabel, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.BOTH,0,0,0,5));
+		featureBox.add(featureComboBox, GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.BOTH,0,5,0,0));
+
+		JPanel calcBboxPanel = new JPanel();
+		calcBboxPanel.setLayout(new GridBagLayout());
+		component.add(calcBboxPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,10,5,0,5));
+		calcBboxPanel.add(bboxPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,5,0,5,5));
+
+		JPanel createBboxPanel = new JPanel();
+		createBboxPanel.setLayout(new GridBagLayout());
+		component.add(createBboxPanel, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.BOTH,10,0,0,5));
+		createBboxPanel.add(createMissingButton, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,5,0,0,0));
+		createBboxPanel.add(createAllButton, GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,5,0,0,0));
+
+		c = GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.NONE,10,0,5,5);
 		c.gridwidth = 2;
-		component.add(bboxPanel, c);
-		
-		setBboxAllButton.addActionListener(new ActionListener() {
+		component.add(calculateButton, c);
+
+		createAllButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Thread thread = new Thread() {
 					public void run() {
-						setEnvelope(SetEnvelopeMode.FULL);
+						createBoundingBox(BoundingBoxMode.FULL);
 					}
 				};
 				thread.setDaemon(true);
 				thread.start();
 			}
 		});
-		
-		setBboxNullButton.addActionListener(new ActionListener() {
+
+		createMissingButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Thread thread = new Thread() {
 					public void run() {
-						setEnvelope(SetEnvelopeMode.PARTIAL);
+						createBoundingBox(BoundingBoxMode.PARTIAL);
 					}
 				};
 				thread.setDaemon(true);
 				thread.start();
 			}
 		});
-		
-		getExtentButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+
+		calculateButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {			
 				Thread thread = new Thread() {
 					public void run() {
-						getExtent();
+						calcBoundingBox();
 					}
 				};
 				thread.setDaemon(true);
@@ -186,9 +193,9 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 	@Override
 	public void doTranslation() {
 		featureLabel.setText(Language.I18N.getString("db.label.operation.bbox.feature"));
-		setBboxAllButton.setText(Language.I18N.getString("db.button.setbbox.all"));
-		setBboxNullButton.setText(Language.I18N.getString("db.button.setbbox.null"));
-		getExtentButton.setText(Language.I18N.getString("db.button.extent"));
+		createAllButton.setText(Language.I18N.getString("db.button.createbbox.all"));
+		createMissingButton.setText(Language.I18N.getString("db.button.createbbox.missing"));
+		calculateButton.setText(Language.I18N.getString("db.button.bbox"));
 	}
 
 	@Override
@@ -196,9 +203,9 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		featureLabel.setEnabled(enable);
 		featureComboBox.setEnabled(enable);
 		bboxPanel.setEnabled(enable);
-		setBboxAllButton.setEnabled(enable);
-		setBboxNullButton.setEnabled(enable);
-		getExtentButton.setEnabled(enable);
+		createAllButton.setEnabled(enable);
+		createMissingButton.setEnabled(enable);
+		calculateButton.setEnabled(enable);
 	}
 
 	@Override
@@ -212,13 +219,8 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		config.getProject().getDatabase().getOperation().setBoundingBoxFeatureClass((FeatureClassMode)featureComboBox.getSelectedItem());
 		config.getProject().getDatabase().getOperation().setBoundingBoxSRS(bboxPanel.getSrsComboBox().getSelectedItem());
 	}
-	
-	private enum SetEnvelopeMode {
-		FULL,
-		PARTIAL
-	}
 
-	private void setEnvelope(SetEnvelopeMode mode) {
+	private void calcBoundingBox() {
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
@@ -228,108 +230,17 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				return;
 
 			viewController.clearConsole();
-			viewController.setStatusText(Language.I18N.getString("main.status.database.setbbox.label"));
-
-			if (mode == SetEnvelopeMode.FULL)
-				LOG.info("Updating envelope for all features...");
-			else
-				LOG.info("Updating envelope for features with no envelope ...");
-			
-			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.existsWorkspace())
-				return;
-
-			final StatusDialog bboxDialog = new StatusDialog(viewController.getTopFrame(), 
-					Language.I18N.getString("db.dialog.setbbox.window"), 
-					Language.I18N.getString("db.dialog.setbbox.title"), 
-					null,
-					Language.I18N.getString("db.dialog.setbbox.details"), 
-					true);
-
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					bboxDialog.setLocationRelativeTo(viewController.getTopFrame());
-					bboxDialog.setVisible(true);
-				}
-			});
-
-			bboxDialog.getButton().addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation();
-						}
-					});
-				}
-			});
-			
-			try {
-				boolean success;
-				
-				FeatureClassMode featureClass = (FeatureClassMode)featureComboBox.getSelectedItem();
-				success = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateEnvelopes(workspace, featureClass,mode == SetEnvelopeMode.PARTIAL ? true : false);
-
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						bboxDialog.dispose();
-					}
-				});
-				
-				if (success)
-					LOG.info("Envelope for " + featureClass + " features successfully updated.");
-				else
-					LOG.warn("Updating envelopes aborted.");
-
-			} catch (SQLException sqlEx) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						bboxDialog.dispose();
-					}
-				});
-
-				bboxPanel.clearBoundingBox();
-
-				String sqlExMsg = sqlEx.getMessage().trim();
-				String text = Language.I18N.getString("db.dialog.error.setbbox");
-				Object[] args = new Object[]{ sqlExMsg };
-				String result = MessageFormat.format(text, args);
-
-				JOptionPane.showMessageDialog(
-						viewController.getTopFrame(), 
-						result, 
-						Language.I18N.getString("common.dialog.error.db.title"),
-						JOptionPane.ERROR_MESSAGE);
-
-				LOG.error("SQL error: " + sqlExMsg);
-			} finally {		
-				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
-			}
-
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	private void getExtent() {
-		final ReentrantLock lock = this.mainLock;
-		lock.lock();
-
-		try {
-			Workspace workspace = parent.getWorkspace();
-			if (workspace == null)
-				return;
-
-			viewController.clearConsole();
-			viewController.setStatusText(Language.I18N.getString("main.status.database.extent.label"));
+			viewController.setStatusText(Language.I18N.getString("main.status.database.bbox.label"));
 
 			LOG.info("Calculating bounding box...");			
 			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.existsWorkspace())
 				return;
 
 			final StatusDialog bboxDialog = new StatusDialog(viewController.getTopFrame(), 
-					Language.I18N.getString("db.dialog.extent.window"), 
-					Language.I18N.getString("db.dialog.extent.title"), 
+					Language.I18N.getString("db.dialog.bbox.window"), 
+					Language.I18N.getString("db.dialog.bbox.title"), 
 					null,
-					Language.I18N.getString("db.dialog.extent.details"), 
+					Language.I18N.getString("db.dialog.bbox.details"), 
 					true);
 
 			SwingUtilities.invokeLater(new Runnable() {
@@ -349,10 +260,9 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				}
 			});
 
-			BoundingBox bbox = null;
 			try {
 				FeatureClassMode featureClass = (FeatureClassMode)featureComboBox.getSelectedItem();
-				bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(workspace, featureClass);
+				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(workspace, featureClass);
 
 				if (bbox != null) {
 					if (bbox.getLowerLeftCorner().getX() != Double.MAX_VALUE && 
@@ -374,9 +284,9 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 						bboxPanel.setBoundingBox(bbox);	
 						bbox.setSrs(targetSrs);
 						BoundingBoxClipboardHandler.getInstance(config).putBoundingBox(bbox);
-						LOG.info("Bounding box for feature " + featureClass + " successfully calculated.");							
+						LOG.info("Bounding box for " + featureClass + " features successfully calculated.");							
 					} else {
-						bboxPanel.clearBoundingBox();							
+						bboxPanel.clearBoundingBox();
 						LOG.warn("The bounding box could not be calculated.");
 						LOG.warn("Either the database does not contain " + featureClass + " features or their ENVELOPE attribute is not set.");
 					}
@@ -400,7 +310,121 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				bboxPanel.clearBoundingBox();
 
 				String sqlExMsg = sqlEx.getMessage().trim();
-				String text = Language.I18N.getString("db.dialog.error.extent");
+				String text = Language.I18N.getString("db.dialog.error.bbox");
+				Object[] args = new Object[]{ sqlExMsg };
+				String result = MessageFormat.format(text, args);
+
+				JOptionPane.showMessageDialog(
+						viewController.getTopFrame(), 
+						result, 
+						Language.I18N.getString("common.dialog.error.db.title"),
+						JOptionPane.ERROR_MESSAGE);
+
+				LOG.error("SQL error: " + sqlExMsg);
+			} finally {		
+				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
+			}
+
+		} finally {
+			lock.unlock();
+		}
+	}
+	
+	private void createBoundingBox(BoundingBoxMode mode) {
+		final ReentrantLock lock = this.mainLock;
+		lock.lock();
+
+		try {
+			Workspace workspace = parent.getWorkspace();
+			if (workspace == null)
+				return;
+
+			viewController.clearConsole();
+			viewController.setStatusText(Language.I18N.getString("main.status.database.createbbox.label"));
+
+			FeatureClassMode featureClass = (FeatureClassMode)featureComboBox.getSelectedItem();
+			if (mode == BoundingBoxMode.FULL)
+				LOG.info("Recreating all bounding boxes for " + featureClass + " features...");
+			else
+				LOG.info("Creating missing bounding boxes for " + featureClass + " features...");
+
+			if (dbConnectionPool.getActiveDatabaseAdapter().hasVersioningSupport() && !parent.existsWorkspace())
+				return;
+
+			final StatusDialog bboxDialog = new StatusDialog(viewController.getTopFrame(), 
+					Language.I18N.getString("db.dialog.createbbox.window"), 
+					Language.I18N.getString("db.dialog.createbbox.title"), 
+					null,
+					Language.I18N.getString("db.dialog.createbbox.details"), 
+					true);
+
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					bboxDialog.setLocationRelativeTo(viewController.getTopFrame());
+					bboxDialog.setVisible(true);
+				}
+			});
+
+			bboxDialog.getButton().addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation();
+						}
+					});
+				}
+			});
+
+			try {
+				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createBoundingBoxes(workspace, featureClass, mode == BoundingBoxMode.PARTIAL ? true : false);
+
+				if (bbox != null) {
+					if (bbox.getLowerLeftCorner().getX() != Double.MAX_VALUE && 
+							bbox.getLowerLeftCorner().getY() != Double.MAX_VALUE &&
+							bbox.getUpperRightCorner().getX() != -Double.MAX_VALUE && 
+							bbox.getUpperRightCorner().getY() != -Double.MAX_VALUE) {
+
+						DatabaseSrs dbSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
+						DatabaseSrs targetSrs = bboxPanel.getSrsComboBox().getSelectedItem();
+
+						if (targetSrs.isSupported() && targetSrs.getSrid() != dbSrs.getSrid()) {
+							try {
+								bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(bbox, dbSrs, targetSrs);
+							} catch (SQLException e) {
+								//
+							}					
+						}
+
+						bboxPanel.setBoundingBox(bbox);	
+						bbox.setSrs(targetSrs);
+						BoundingBoxClipboardHandler.getInstance(config).putBoundingBox(bbox);
+						LOG.info("Bounding box for " + featureClass + " features successfully created.");							
+					} else {
+						bboxPanel.clearBoundingBox();
+						LOG.warn("The bounding box could not be created.");
+						LOG.warn("Check whether the database contains " + featureClass + " features" + (mode == BoundingBoxMode.PARTIAL ? " with missing bounding boxes." : "."));
+					}
+
+				} else
+					LOG.warn("Creation of bounding boxes aborted.");
+				
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						bboxDialog.dispose();
+					}
+				});
+
+			} catch (SQLException sqlEx) {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						bboxDialog.dispose();
+					}
+				});
+
+				bboxPanel.clearBoundingBox();
+
+				String sqlExMsg = sqlEx.getMessage().trim();
+				String text = Language.I18N.getString("db.dialog.error.createbbox");
 				Object[] args = new Object[]{ sqlExMsg };
 				String result = MessageFormat.format(text, args);
 

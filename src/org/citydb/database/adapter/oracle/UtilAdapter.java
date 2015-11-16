@@ -96,7 +96,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			}
 		}
 	}
-	
+
 	@Override
 	protected void getDatabaseMetaData(DatabaseMetaDataImpl metaData, Connection connection) throws SQLException {
 		Statement statement = null;
@@ -231,30 +231,18 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				Struct struct = (Struct)rs.getObject(1);
 				if (!rs.wasNull() && struct != null) {
 					JGeometry jGeom = JGeometry.loadJS(struct);
-					int dim = jGeom.getDimensions();	
-					if (dim == 2 || dim == 3) {
-						double[] points = jGeom.getOrdinatesArray();
-						double xmin, ymin, xmax, ymax;
-						xmin = ymin = Double.MAX_VALUE;
-						xmax = ymax = -Double.MAX_VALUE;
+					double[] points = jGeom.getOrdinatesArray();
+					double xmin, ymin, xmax, ymax;
 
-						if (dim == 2) {
-							xmin = points[0];
-							ymin = points[1];
-							xmax = points[2];
-							ymax = points[3];
-						} else if (dim == 3) {
-							xmin = points[0];
-							ymin = points[1];
-							xmax = points[3];
-							ymax = points[4];
-						}
+					xmin = points[0];
+					ymin = points[1];
+					xmax = points[2];
+					ymax = points[3];
 
-						lowerCorner.setX(xmin);
-						lowerCorner.setY(ymin);
-						upperCorner.setX(xmax);
-						upperCorner.setY(ymax);	
-					}		
+					lowerCorner.setX(xmin);
+					lowerCorner.setY(ymin);
+					upperCorner.setX(xmax);
+					upperCorner.setY(ymax);	
 				}
 			}
 
@@ -320,14 +308,14 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
 		return null;
 	}
-	
+
 	@Override
 	protected boolean updateTableStats(IndexType type, Connection connection) throws SQLException {
 		return false;
 	}
 
 	@Override
-	protected BoundingBox transformBBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException {
+	protected BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException {
 		BoundingBox result = new BoundingBox(bbox);
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
@@ -337,9 +325,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			int targetSrid = get2DSrid(targetSrs, connection);
 
 			StringBuilder query = new StringBuilder()
-			.append("select SDO_CS.TRANSFORM(MDSYS.SDO_GEOMETRY(2003, ").append(sourceSrid)
-			.append(", NULL, MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 1), ")
-			.append("MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), ").append(targetSrid).append(") from dual");
+					.append("select SDO_CS.TRANSFORM(MDSYS.SDO_GEOMETRY(2003, ").append(sourceSrid)
+					.append(", NULL, MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 1), ")
+					.append("MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), ").append(targetSrid).append(") from dual");
 
 			psQuery = connection.prepareStatement(query.toString());
 			psQuery.setDouble(1, bbox.getLowerLeftCorner().getX());
