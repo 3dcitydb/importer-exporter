@@ -191,7 +191,9 @@ public abstract class KmlGenericObject {
 	protected int currentLod;
 	protected DatabaseSrs dbSrs;
 	protected X3DMaterial defaultX3dMaterial;
-
+	protected X3DMaterial defaultX3dWallMaterial;
+	protected X3DMaterial defaultX3dRoofMaterial;
+	
 	private SimpleDateFormat dateFormatter;
 	protected final ImageReader imageReader;
 
@@ -227,6 +229,23 @@ public abstract class KmlGenericObject {
 		defaultX3dMaterial.setDiffuseColor(getX3dColorFromString("0.8 0.8 0.8"));
 		defaultX3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
 		defaultX3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
+		
+		defaultX3dWallMaterial = new X3DMaterial();
+		defaultX3dWallMaterial.setAmbientIntensity(0.2d);
+		defaultX3dWallMaterial.setShininess(0.2d);
+		defaultX3dWallMaterial.setTransparency(0d);
+		defaultX3dWallMaterial.setDiffuseColor(getX3dColorFromString("0.8 0.8 0.8"));
+		defaultX3dWallMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
+		defaultX3dWallMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
+		
+		
+		defaultX3dRoofMaterial = new X3DMaterial();
+		defaultX3dRoofMaterial.setAmbientIntensity(0.2d);
+		defaultX3dRoofMaterial.setShininess(0.2d);
+		defaultX3dRoofMaterial.setTransparency(0d);
+		defaultX3dRoofMaterial.setDiffuseColor(getX3dColorFromString("1.0 0.2 0.2"));
+		defaultX3dRoofMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
+		defaultX3dRoofMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
 
 		imageReader = new ImageReader();
 	}
@@ -1714,8 +1733,26 @@ public abstract class KmlGenericObject {
 						String texImageUri = null;
 						StringTokenizer texCoordsTokenized = null;
 
-						if (selectedTheme.equals(KmlExporter.THEME_NONE))
-							addX3dMaterial(surfaceId, defaultX3dMaterial);
+						if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
+							if (surfaceTypeID != 0){
+								if (Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BUILDING_WALL_SURFACE ||
+										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BRIDGE_WALL_SURFACE ||
+										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.TUNNEL_WALL_SURFACE){
+									addX3dMaterial(surfaceId, defaultX3dWallMaterial);
+								}
+								else if (Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BUILDING_ROOF_SURFACE ||
+										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BRIDGE_ROOF_SURFACE ||
+										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.TUNNEL_ROOF_SURFACE) {
+									addX3dMaterial(surfaceId, defaultX3dRoofMaterial);
+								}
+								else {
+									addX3dMaterial(surfaceId, defaultX3dMaterial);
+								}
+							}
+							else {
+								addX3dMaterial(surfaceId, defaultX3dMaterial);
+							}
+						}
 						else {
 							if (!selectedTheme.equalsIgnoreCase(theme) && !selectedTheme.equalsIgnoreCase("<unknown>")) { // no surface data for this surface and theme
 								if (getX3dMaterial(parentId) != null) // material for parent surface known
