@@ -35,9 +35,6 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.List;
 
-import oracle.jdbc.OracleTypes;
-import oracle.spatial.geometry.JGeometry;
-
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseSrsType;
 import org.citydb.api.database.DatabaseVersion;
@@ -50,6 +47,9 @@ import org.citydb.database.IndexStatusInfo.IndexType;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractUtilAdapter;
 import org.citydb.util.Util;
+
+import oracle.jdbc.OracleTypes;
+import oracle.spatial.geometry.JGeometry;
 
 public class UtilAdapter extends AbstractUtilAdapter {
 
@@ -263,6 +263,69 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				rs = null;
 			}
 
+			if (interruptableStatement != null) {
+				try {
+					interruptableStatement.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+
+				interruptableStatement = null;
+			}
+
+			isInterrupted = false;
+		}
+
+		return bbox;
+	}
+
+	@Override
+	protected BoundingBox createBoundingBoxes(List<Integer> classIds, boolean onlyIfNull, Connection connection) throws SQLException {
+		BoundingBox bbox = null;
+
+		try {
+			for (Integer classId : classIds) {
+				String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.get_envelope_cityobjects") + "(?,1,?)}";
+				interruptableCallableStatement = connection.prepareCall(call);
+				interruptableCallableStatement.registerOutParameter(1, databaseAdapter.getGeometryConverter().getNullGeometryType(), databaseAdapter.getGeometryConverter().getNullGeometryTypeName());
+				interruptableCallableStatement.setInt(2, classId);
+				interruptableCallableStatement.setInt(3, onlyIfNull ? 1 : 0);
+				interruptableCallableStatement.executeUpdate();
+
+				BoundingBoxCorner lowerCorner = new BoundingBoxCorner(Double.MAX_VALUE);
+				BoundingBoxCorner upperCorner = new BoundingBoxCorner(-Double.MAX_VALUE);
+
+				Object geomObject = interruptableCallableStatement.getObject(1);
+				if (geomObject instanceof Struct) {
+					JGeometry jGeom = JGeometry.loadJS((Struct)geomObject);
+					double[] points = jGeom.getOrdinatesArray();
+					double xmin, ymin, xmax, ymax;
+
+					xmin = points[0];
+					ymin = points[1];
+					xmax = points[6];
+					ymax = points[7];
+
+					lowerCorner.setX(xmin);
+					lowerCorner.setY(ymin);
+					upperCorner.setX(xmax);
+					upperCorner.setY(ymax);	
+				}
+
+				if (!isInterrupted) {
+					if (bbox == null)
+						bbox = new BoundingBox(lowerCorner, upperCorner);
+					else 
+						bbox.update(lowerCorner, upperCorner);
+				}
+
+				interruptableCallableStatement.close();
+			}
+
+		} catch (SQLException e) {
+			if (!isInterrupted)
+				throw e;
+		} finally {
 			if (interruptableStatement != null) {
 				try {
 					interruptableStatement.close();

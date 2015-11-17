@@ -193,8 +193,8 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 	@Override
 	public void doTranslation() {
 		featureLabel.setText(Language.I18N.getString("db.label.operation.bbox.feature"));
-		createAllButton.setText(Language.I18N.getString("db.button.createbbox.all"));
-		createMissingButton.setText(Language.I18N.getString("db.button.createbbox.missing"));
+		createAllButton.setText(Language.I18N.getString("db.button.setbbox.all"));
+		createMissingButton.setText(Language.I18N.getString("db.button.setbbox.missing"));
 		calculateButton.setText(Language.I18N.getString("db.button.bbox"));
 	}
 
@@ -340,7 +340,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				return;
 
 			viewController.clearConsole();
-			viewController.setStatusText(Language.I18N.getString("main.status.database.createbbox.label"));
+			viewController.setStatusText(Language.I18N.getString("main.status.database.setbbox.label"));
 
 			FeatureClassMode featureClass = (FeatureClassMode)featureComboBox.getSelectedItem();
 			if (mode == BoundingBoxMode.FULL)
@@ -352,10 +352,10 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				return;
 
 			final StatusDialog bboxDialog = new StatusDialog(viewController.getTopFrame(), 
-					Language.I18N.getString("db.dialog.createbbox.window"), 
-					Language.I18N.getString("db.dialog.createbbox.title"), 
+					Language.I18N.getString("db.dialog.setbbox.window"), 
+					Language.I18N.getString("db.dialog.setbbox.title"), 
 					null,
-					Language.I18N.getString("db.dialog.createbbox.details"), 
+					Language.I18N.getString("db.dialog.setbbox.details"), 
 					true);
 
 			SwingUtilities.invokeLater(new Runnable() {
@@ -401,7 +401,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 						LOG.info("Bounding box for " + featureClass + " features successfully created.");							
 					} else {
 						bboxPanel.clearBoundingBox();
-						LOG.warn("The bounding box could not be created.");
+						LOG.warn("The bounding boxes could not be created.");
 						LOG.warn("Check whether the database contains " + featureClass + " features" + (mode == BoundingBoxMode.PARTIAL ? " with missing bounding boxes." : "."));
 					}
 
@@ -424,7 +424,7 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				bboxPanel.clearBoundingBox();
 
 				String sqlExMsg = sqlEx.getMessage().trim();
-				String text = Language.I18N.getString("db.dialog.error.createbbox");
+				String text = Language.I18N.getString("db.dialog.error.setbbox");
 				Object[] args = new Object[]{ sqlExMsg };
 				String result = MessageFormat.format(text, args);
 
