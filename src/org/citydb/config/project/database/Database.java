@@ -28,6 +28,7 @@ package org.citydb.config.project.database;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 
@@ -82,6 +83,7 @@ public class Database {
 		updateBatching = new UpdateBatching();
 		workspaces = new Workspaces();
 		operation = new DBOperation();
+		Collections.sort(supportedVersions, Collections.reverseOrder());
 	}
 
 	public List<DatabaseSrs> getReferenceSystems() {
@@ -155,6 +157,17 @@ public class Database {
 
 	public List<DatabaseVersion> getSupportedVersions() {
 		return new ArrayList<DatabaseVersion>(supportedVersions);
+	}
+	
+	public void addSupportedVersion(DatabaseVersion version) {
+		supportedVersions.add(version);
+		Collections.sort(supportedVersions, Collections.reverseOrder());
+	}
+	
+	public void setSupportedVersions(List<DatabaseVersion> versions) {
+		supportedVersions.clear();
+		supportedVersions.addAll(versions);
+		Collections.sort(supportedVersions, Collections.reverseOrder());
 	}
 
 }

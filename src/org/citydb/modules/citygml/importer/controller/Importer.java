@@ -288,15 +288,18 @@ public class Importer implements EventHandler {
 				eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
 				LOG.info("Importing file: " + file.toString());	
 
-				// set gml:id codespace
-				if (gmlIdConfig.isSetRelativeCodeSpaceMode())
-					internalConfig.setCurrentGmlIdCodespace(file.getName());
-				else if (gmlIdConfig.isSetAbsoluteCodeSpaceMode())
-					internalConfig.setCurrentGmlIdCodespace(file.toString());
-				else if (gmlIdConfig.isSetUserCodeSpaceMode())
-					internalConfig.setCurrentGmlIdCodespace(gmlIdConfig.getCodeSpace());
-				else if (!gmlIdConfig.isSetUserCodeSpaceMode())
-					internalConfig.setCurrentGmlIdCodespace(null);
+				// set gml:id codespace starting from version 3.1
+				if (dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0) {
+					if (gmlIdConfig.isSetRelativeCodeSpaceMode())
+						internalConfig.setCurrentGmlIdCodespace(file.getName());
+					else if (gmlIdConfig.isSetAbsoluteCodeSpaceMode())
+						internalConfig.setCurrentGmlIdCodespace(file.getAbsolutePath());
+					else if (gmlIdConfig.isSetUserCodeSpaceMode()) {
+						String codespace = gmlIdConfig.getCodeSpace();
+						if (codespace != null && codespace.length() > 0)
+							internalConfig.setCurrentGmlIdCodespace(codespace);
+					}
+				}
 				
 				// create import logger
 				if (importerConfig.getImportLog().isSetLogImportedFeatures()) {

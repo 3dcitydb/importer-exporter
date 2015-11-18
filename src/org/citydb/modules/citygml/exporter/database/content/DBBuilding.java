@@ -66,6 +66,7 @@ import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.measures.Length;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.model.xal.AddressDetails;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 public class DBBuilding implements DBExporter {
 	private final DBExporterManager dbExporterManager;
@@ -83,6 +84,10 @@ public class DBBuilding implements DBExporter {
 
 	private HashMap<Long, AbstractBuilding> buildings;
 	private ProjectionPropertyFilter projectionFilter;
+	private boolean handleAddressGmlId;
+	private boolean useXLink;
+	private boolean appendOldGmlId;
+	private String gmlIdPrefix;
 
 	public DBBuilding(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
@@ -94,41 +99,49 @@ public class DBBuilding implements DBExporter {
 	}
 
 	private void init() throws SQLException {
+		handleAddressGmlId = dbExporterManager.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
+		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
+
+		if (!useXLink) {
+			appendOldGmlId = config.getProject().getExporter().getXlink().getFeature().isSetAppendId();
+			gmlIdPrefix = config.getProject().getExporter().getXlink().getFeature().getIdPrefix();
+		}
+
 		buildings = new HashMap<Long, AbstractBuilding>();
 		String buildingId = projectionFilter.pass(CityGMLModuleType.BUILDING, "consistsOfBuildingPart") ? "BUILDING_ROOT_ID" : "ID";
 
 		if (!config.getInternal().isTransformCoordinates()) {
 			StringBuilder query = new StringBuilder()
-			.append("select b.ID, b.BUILDING_PARENT_ID, b.CLASS, b.CLASS_CODESPACE, b.FUNCTION, b.FUNCTION_CODESPACE, b.USAGE, b.USAGE_CODESPACE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, ")
-			.append("b.ROOF_TYPE, b.ROOF_TYPE_CODESPACE, b.MEASURED_HEIGHT, b.MEASURED_HEIGHT_UNIT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_AG_UNIT, b.STOREY_HEIGHTS_BELOW_GROUND, b.STOREY_HEIGHTS_BG_UNIT, ")
-			.append("b.LOD1_TERRAIN_INTERSECTION, b.LOD2_TERRAIN_INTERSECTION, b.LOD3_TERRAIN_INTERSECTION, b.LOD4_TERRAIN_INTERSECTION, ")
-			.append("b.LOD2_MULTI_CURVE, b.LOD3_MULTI_CURVE, b.LOD4_MULTI_CURVE, ")
-			.append("LOD0_FOOTPRINT_ID, LOD0_ROOFPRINT_ID, ")
-			.append("b.LOD1_SOLID_ID, b.LOD2_SOLID_ID, b.LOD3_SOLID_ID, b.LOD4_SOLID_ID, ")
-			.append("b.LOD1_MULTI_SURFACE_ID, b.LOD2_MULTI_SURFACE_ID, b.LOD3_MULTI_SURFACE_ID, b.LOD4_MULTI_SURFACE_ID, ")
-			.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT, a.XAL_SOURCE ")
-			.append("from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.").append(buildingId).append(" = ?");
+					.append("select b.ID, b.BUILDING_PARENT_ID, b.CLASS, b.CLASS_CODESPACE, b.FUNCTION, b.FUNCTION_CODESPACE, b.USAGE, b.USAGE_CODESPACE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, ")
+					.append("b.ROOF_TYPE, b.ROOF_TYPE_CODESPACE, b.MEASURED_HEIGHT, b.MEASURED_HEIGHT_UNIT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_AG_UNIT, b.STOREY_HEIGHTS_BELOW_GROUND, b.STOREY_HEIGHTS_BG_UNIT, ")
+					.append("b.LOD1_TERRAIN_INTERSECTION, b.LOD2_TERRAIN_INTERSECTION, b.LOD3_TERRAIN_INTERSECTION, b.LOD4_TERRAIN_INTERSECTION, ")
+					.append("b.LOD2_MULTI_CURVE, b.LOD3_MULTI_CURVE, b.LOD4_MULTI_CURVE, ")
+					.append("LOD0_FOOTPRINT_ID, LOD0_ROOFPRINT_ID, ")
+					.append("b.LOD1_SOLID_ID, b.LOD2_SOLID_ID, b.LOD3_SOLID_ID, b.LOD4_SOLID_ID, ")
+					.append("b.LOD1_MULTI_SURFACE_ID, b.LOD2_MULTI_SURFACE_ID, b.LOD3_MULTI_SURFACE_ID, b.LOD4_MULTI_SURFACE_ID, ")
+					.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT, a.XAL_SOURCE").append(handleAddressGmlId ? ", a.GMLID " : " ")
+					.append("from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.").append(buildingId).append(" = ?");
 			psBuilding = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
-			.append("select b.ID, b.BUILDING_PARENT_ID, b.CLASS, b.CLASS_CODESPACE, b.FUNCTION, b.FUNCTION_CODESPACE, b.USAGE, b.USAGE_CODESPACE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, ")
-			.append("b.ROOF_TYPE, b.ROOF_TYPE_CODESPACE, b.MEASURED_HEIGHT, b.MEASURED_HEIGHT_UNIT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_AG_UNIT, b.STOREY_HEIGHTS_BELOW_GROUND, b.STOREY_HEIGHTS_BG_UNIT, ")
-			.append(transformOrNull).append("(b.LOD1_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD1_TERRAIN_INTERSECTION, ")
-			.append(transformOrNull).append("(b.LOD2_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD2_TERRAIN_INTERSECTION, ")
-			.append(transformOrNull).append("(b.LOD3_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD3_TERRAIN_INTERSECTION, ")
-			.append(transformOrNull).append("(b.LOD4_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD4_TERRAIN_INTERSECTION, ")
-			.append(transformOrNull).append("(b.LOD2_MULTI_CURVE, ").append(srid).append(") AS LOD2_MULTI_CURVE, ")
-			.append(transformOrNull).append("(b.LOD3_MULTI_CURVE, ").append(srid).append(") AS LOD3_MULTI_CURVE, ")
-			.append(transformOrNull).append("(b.LOD4_MULTI_CURVE, ").append(srid).append(") AS LOD4_MULTI_CURVE, ")
-			.append("LOD0_FOOTPRINT_ID, LOD0_ROOFPRINT_ID, ")
-			.append("b.LOD1_SOLID_ID, b.LOD2_SOLID_ID, b.LOD3_SOLID_ID, b.LOD4_SOLID_ID, ")
-			.append("b.LOD1_MULTI_SURFACE_ID, b.LOD2_MULTI_SURFACE_ID, b.LOD3_MULTI_SURFACE_ID, b.LOD4_MULTI_SURFACE_ID, ")
-			.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, ")
-			.append(transformOrNull).append("(a.MULTI_POINT, ").append(srid).append(") AS MULTI_POINT, a.XAL_SOURCE ")
-			.append("from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.").append(buildingId).append(" = ?");
+					.append("select b.ID, b.BUILDING_PARENT_ID, b.CLASS, b.CLASS_CODESPACE, b.FUNCTION, b.FUNCTION_CODESPACE, b.USAGE, b.USAGE_CODESPACE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, ")
+					.append("b.ROOF_TYPE, b.ROOF_TYPE_CODESPACE, b.MEASURED_HEIGHT, b.MEASURED_HEIGHT_UNIT, b.STOREYS_ABOVE_GROUND, b.STOREYS_BELOW_GROUND, b.STOREY_HEIGHTS_ABOVE_GROUND, b.STOREY_HEIGHTS_AG_UNIT, b.STOREY_HEIGHTS_BELOW_GROUND, b.STOREY_HEIGHTS_BG_UNIT, ")
+					.append(transformOrNull).append("(b.LOD1_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD1_TERRAIN_INTERSECTION, ")
+					.append(transformOrNull).append("(b.LOD2_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD2_TERRAIN_INTERSECTION, ")
+					.append(transformOrNull).append("(b.LOD3_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD3_TERRAIN_INTERSECTION, ")
+					.append(transformOrNull).append("(b.LOD4_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD4_TERRAIN_INTERSECTION, ")
+					.append(transformOrNull).append("(b.LOD2_MULTI_CURVE, ").append(srid).append(") AS LOD2_MULTI_CURVE, ")
+					.append(transformOrNull).append("(b.LOD3_MULTI_CURVE, ").append(srid).append(") AS LOD3_MULTI_CURVE, ")
+					.append(transformOrNull).append("(b.LOD4_MULTI_CURVE, ").append(srid).append(") AS LOD4_MULTI_CURVE, ")
+					.append("LOD0_FOOTPRINT_ID, LOD0_ROOFPRINT_ID, ")
+					.append("b.LOD1_SOLID_ID, b.LOD2_SOLID_ID, b.LOD3_SOLID_ID, b.LOD4_SOLID_ID, ")
+					.append("b.LOD1_MULTI_SURFACE_ID, b.LOD2_MULTI_SURFACE_ID, b.LOD3_MULTI_SURFACE_ID, b.LOD4_MULTI_SURFACE_ID, ")
+					.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, ")
+					.append(transformOrNull).append("(a.MULTI_POINT, ").append(srid).append(") AS MULTI_POINT, a.XAL_SOURCE").append(handleAddressGmlId ? ", a.GMLID " : " ")
+					.append("from BUILDING b left join ADDRESS_TO_BUILDING a2b on b.ID=a2b.BUILDING_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.").append(buildingId).append(" = ?");
 			psBuilding = connection.prepareStatement(query.toString());
 		}
 
@@ -476,29 +489,50 @@ public class DBBuilding implements DBExporter {
 
 				// address
 				if (projectionFilter.pass(CityGMLModuleType.BUILDING, "address")) {
-					rs.getLong(38);
+					long addressId = rs.getLong(38);
 					if (!rs.wasNull()) {
-						AddressExportFactory factory = dbExporterManager.getAddressExportFactory();					
+						AddressExportFactory factory = dbExporterManager.getAddressExportFactory();
 						AddressObject addressObject = factory.newAddressObject();
+						AddressProperty addressProperty = null;
 
-						fillAddressObject(addressObject, factory.getPrimaryMode(), rs);
-						if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
-							fillAddressObject(addressObject, factory.getFallbackMode(), rs);
+						if (handleAddressGmlId) {
+							String gmlId = rs.getString(48);
+							if (dbExporterManager.lookupAndPutGmlId(gmlId, addressId, CityGMLClass.ADDRESS)) {
+								if (useXLink) {
+									addressProperty = new AddressProperty();
+									addressProperty.setHref("#" + gmlId);
+									abstractBuilding.addAddress(addressProperty);
+								} else {
+									String newGmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
+									if (appendOldGmlId)
+										newGmlId += '-' + gmlId;
 
-						if (addressObject.canCreate()) {
-							// multiPointGeometry
-							Object multiPointObj = rs.getObject(46);
-							if (!rs.wasNull() && multiPointObj != null) {
-								GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
-								MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(multiPoint, false);
-								if (multiPointProperty != null)
-									addressObject.setMultiPointProperty(multiPointProperty);
+									addressObject.setGmlId(newGmlId);	
+								}
+							} else
+								addressObject.setGmlId(gmlId);							
+						}
+
+						if (addressProperty == null) {
+							fillAddressObject(addressObject, factory.getPrimaryMode(), rs);
+							if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
+								fillAddressObject(addressObject, factory.getFallbackMode(), rs);
+
+							if (addressObject.canCreate()) {
+								// multiPointGeometry
+								Object multiPointObj = rs.getObject(46);
+								if (!rs.wasNull() && multiPointObj != null) {
+									GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
+									MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(multiPoint, false);
+									if (multiPointProperty != null)
+										addressObject.setMultiPointProperty(multiPointProperty);
+								}
+
+								// create xAL address
+								addressProperty = factory.create(addressObject);
+								if (addressProperty != null)
+									abstractBuilding.addAddress(addressProperty);
 							}
-
-							// create xAL address
-							AddressProperty addressProperty = factory.create(addressObject);
-							if (addressProperty != null)
-								abstractBuilding.addAddress(addressProperty);
 						}
 					}
 				}
@@ -526,7 +560,7 @@ public class DBBuilding implements DBExporter {
 			addressObject.setZipCode(rs.getString(42));
 			addressObject.setCity(rs.getString(43));
 			addressObject.setState(rs.getString(44));
-			addressObject.setCountry(rs.getString(45));
+			addressObject.setCountry(rs.getString(45));			
 		} else {
 			String xal = rs.getString(47);
 			if (!rs.wasNull()) {

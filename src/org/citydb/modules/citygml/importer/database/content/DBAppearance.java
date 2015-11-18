@@ -64,10 +64,16 @@ public class DBAppearance implements DBImporter {
 
 	private void init() throws SQLException {
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
-
+		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+		
+		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
+			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
+		else
+			gmlIdCodespace = null;		
+		
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into APPEARANCE (ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, THEME, CITYMODEL_ID, CITYOBJECT_ID) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("insert into APPEARANCE (ID, GMLID, ").append(gmlIdCodespace != null ? "GMLID_CODESPACE, " : "").append("NAME, NAME_CODESPACE, DESCRIPTION, THEME, CITYMODEL_ID, CITYOBJECT_ID) values ")
+		.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?)");
 		psAppearance = batchConn.prepareStatement(stmt.toString());
 
 		surfaceDataImporter = (DBSurfaceData)dbImporterManager.getDBImporter(DBImporterEnum.SURFACE_DATA);

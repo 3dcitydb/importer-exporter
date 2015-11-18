@@ -33,6 +33,7 @@ import org.citygml4j.model.xal.AddressDetails;
 public class AddressObject {	
 	private final AddressExportFactory factory;
 	
+	protected String gmlId;
 	protected String street;
 	protected String houseNumber;
 	protected String poBox;
@@ -47,6 +48,14 @@ public class AddressObject {
 		this.factory = factory;
 	}
 	
+	public String getGmlId() {
+		return gmlId;
+	}
+
+	public void setGmlId(String gmlId) {
+		this.gmlId = gmlId;
+	}
+
 	public String getStreet() {
 		return street;
 	}

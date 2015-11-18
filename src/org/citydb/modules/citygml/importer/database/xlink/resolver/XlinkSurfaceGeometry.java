@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.citydb.api.database.DatabaseType;
 import org.citydb.api.geometry.GeometryObject;
 import org.citydb.database.TableEnum;
 import org.citydb.modules.citygml.common.database.cache.CacheTable;
@@ -81,11 +82,23 @@ public class XlinkSurfaceGeometry implements DBXlinkResolver {
 		psSelectSurfGeom = batchConn.prepareStatement(resolverManager.getDatabaseAdapter().getSQLAdapter().getHierarchicalGeometryQuery());
 		psUpdateSurfGeom = batchConn.prepareStatement("update SURFACE_GEOMETRY set IS_XLINK=1 where ID=?");
 
-		psParentElem = batchConn.prepareStatement(new StringBuilder("insert into SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, SOLID_GEOMETRY, CITYOBJECT_ID) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)").toString());
+		StringBuilder parentElemStmt = new StringBuilder("insert into SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, SOLID_GEOMETRY, CITYOBJECT_ID) values ")
+				.append("(?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ");
+
+		if (resolverManager.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS) {
+			// the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface
+			// thus, we have to use the database function ST_GeomFromEWKT to insert such geometries
+			// TODO: rework as soon as the JDBC driver supports PolyhedralSurface
+			parentElemStmt.append("ST_GeomFromEWKT(?), ");	
+		} else
+			parentElemStmt.append("?, ");
+
+		parentElemStmt.append("?)");
+		psParentElem = batchConn.prepareStatement(parentElemStmt.toString());
+
 		psMemberElem = batchConn.prepareStatement(new StringBuilder("insert into SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, CITYOBJECT_ID) values ")
-		.append("(").append(resolverManager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ))
-		.append(", ?, ?, ?, 0, 0, 0, 1, ?, ?, ?)").toString());
+				.append("(").append(resolverManager.getDatabaseAdapter().getSQLAdapter().getNextSequenceValue(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ))
+				.append(", ?, ?, ?, 0, 0, 0, 1, ?, ?, ?)").toString());
 	}
 
 	public boolean insert(DBXlinkSurfaceGeometry xlink) throws SQLException {

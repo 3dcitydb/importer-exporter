@@ -137,6 +137,7 @@ public class AddressExportFactory {
 				xalAddressProperty.setAddressDetails(addressDetails);
 
 				Address address = new Address();
+				address.setId(addressObject.getGmlId());
 				address.setXalAddress(xalAddressProperty);
 
 				// multiPointGeometry

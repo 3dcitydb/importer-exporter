@@ -52,6 +52,7 @@ import org.citygml4j.model.xal.PostalCodeNumber;
 import org.citygml4j.model.xal.Thoroughfare;
 import org.citygml4j.model.xal.ThoroughfareName;
 import org.citygml4j.model.xal.ThoroughfareNumberOrRange;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 /*
  * PLEASE NOTE:
@@ -90,9 +91,12 @@ public class DBAddress implements DBImporter {
 	private DBAddressToBuilding addressToBuildingImporter;
 	private DBAddressToBridge addressToBridgeImporter;
 	private DBOtherGeometry geometryImporter;
-	private int batchCounter;
 
+	private int batchCounter;
 	private boolean importXalSource;
+
+	private boolean handleGmlId;
+	private boolean replaceGmlId;
 
 	public DBAddress(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
@@ -104,10 +108,22 @@ public class DBAddress implements DBImporter {
 
 	private void init() throws SQLException {
 		importXalSource = config.getProject().getImporter().getAddress().isSetImportXAL();
+		handleGmlId = dbImporterManager.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
+		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
+		String gmlIdCodespace = null;
+
+		if (handleGmlId) {
+			gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+
+			if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
+				gmlIdCodespace = "'" + gmlIdCodespace + "', ";
+			else
+				gmlIdCodespace = null;
+		}
 
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into ADDRESS (ID, STREET, HOUSE_NUMBER, PO_BOX, ZIP_CODE, CITY, COUNTRY, MULTI_POINT, XAL_SOURCE) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+				.append("insert into ADDRESS (ID, ").append(handleGmlId ? "GMLID, " : "").append(gmlIdCodespace != null ? "GMLID_CODESPACE, " : "").append("STREET, HOUSE_NUMBER, PO_BOX, ZIP_CODE, CITY, COUNTRY, MULTI_POINT, XAL_SOURCE) values ")
+				.append("(?, ").append(handleGmlId ? "?, " : "").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?)");
 		psAddress = batchConn.prepareStatement(stmt.toString());
 
 		addressToBuildingImporter = (DBAddressToBuilding)dbImporterManager.getDBImporter(DBImporterEnum.ADDRESS_TO_BUILDING);
@@ -126,7 +142,7 @@ public class DBAddress implements DBImporter {
 		long addressId = dbImporterManager.getDBId(DBSequencerEnum.ADDRESS_ID_SEQ);
 		if (addressId == 0)
 			return 0;
-
+		
 		boolean success = false;
 		String streetAttr, houseNoAttr, poBoxAttr, zipCodeAttr, cityAttr, countryAttr, xalSource;
 		streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = xalSource = null;
@@ -272,34 +288,52 @@ public class DBAddress implements DBImporter {
 				success = true;
 		}		
 
-		if (success) {		
-			psAddress.setLong(1, addressId);
-			psAddress.setString(2, streetAttr);
-			psAddress.setString(3, houseNoAttr);
-			psAddress.setString(4, poBoxAttr);
-			psAddress.setString(5, zipCodeAttr);
-			psAddress.setString(6, cityAttr);
-			psAddress.setString(7, countryAttr);
+		if (success) {
+			// gml:id
+			if (replaceGmlId) {
+				String gmlId = DefaultGMLIdManager.getInstance().generateUUID();
+
+				// mapping entry
+				if (address.isSetId())
+					dbImporterManager.putUID(address.getId(), addressId, -1, false, gmlId, address.getCityGMLClass());
+
+				address.setId(gmlId);
+
+			} else {
+				if (address.isSetId())
+					dbImporterManager.putUID(address.getId(), addressId, address.getCityGMLClass());
+				else
+					address.setId(DefaultGMLIdManager.getInstance().generateUUID());
+			}
+			
+			int index = 1;			
+			psAddress.setLong(index++, addressId);
+			if (handleGmlId)
+				psAddress.setString(index++, address.getId());
+
+			psAddress.setString(index++, streetAttr);
+			psAddress.setString(index++, houseNoAttr);
+			psAddress.setString(index++, poBoxAttr);
+			psAddress.setString(index++, zipCodeAttr);
+			psAddress.setString(index++, cityAttr);
+			psAddress.setString(index++, countryAttr);
 
 			if (multiPoint != null) {
 				Object multiPointObj = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getDatabaseObject(multiPoint, batchConn);
-				psAddress.setObject(8, multiPointObj);
+				psAddress.setObject(index++, multiPointObj);
 			} else
-				psAddress.setNull(8, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
+				psAddress.setNull(index++, dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType(),
 						dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName());
 
 			if (xalSource != null)
-				psAddress.setString(9, xalSource);
+				psAddress.setString(index++, xalSource);
 			else
-				psAddress.setNull(9, Types.CLOB);
+				psAddress.setNull(index++, Types.CLOB);
 
 			psAddress.addBatch();
 			if (++batchCounter == dbImporterManager.getDatabaseAdapter().getMaxBatchSize())
 				dbImporterManager.executeBatch(DBImporterEnum.ADDRESS);
 
-			// enable xlinks
-			if (address.isSetId())
-				dbImporterManager.putUID(address.getId(), addressId, address.getCityGMLClass());
 		} else
 			addressId = 0;		
 
@@ -313,7 +347,7 @@ public class DBAddress implements DBImporter {
 
 		return addressId;
 	}
-	
+
 	public long insertBridgeAddress(Address address, long parentId) throws SQLException {
 		long addressId = insert(address);
 		if (addressId != 0)

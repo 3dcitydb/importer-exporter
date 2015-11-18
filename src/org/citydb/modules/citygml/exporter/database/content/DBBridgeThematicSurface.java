@@ -89,6 +89,7 @@ public class DBBridgeThematicSurface implements DBExporter {
 	private DBImplicitGeometry implicitGeometryExporter;
 	private DBOtherGeometry geometryExporter;
 
+	private boolean handleAddressGmlId;
 	private boolean useXLink;
 	private boolean appendOldGmlId;
 	private boolean keepOldGmlId;
@@ -104,6 +105,7 @@ public class DBBridgeThematicSurface implements DBExporter {
 	}
 
 	private void init() throws SQLException {
+		handleAddressGmlId = dbExporterManager.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
 		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
 
 		if (!useXLink) {
@@ -115,11 +117,11 @@ public class DBBridgeThematicSurface implements DBExporter {
 
 		if (!config.getInternal().isTransformCoordinates()) {
 			StringBuilder query = new StringBuilder()
-			.append("select ts.ID as TSID, ts.OBJECTCLASS_ID, ts.LOD2_MULTI_SURFACE_ID, ts.LOD3_MULTI_SURFACE_ID, ts.LOD4_MULTI_SURFACE_ID, ")
-			.append("op.ID as OPID, op.OBJECTCLASS_ID as OPOBJECTCLASS_ID, op.ADDRESS_ID, op.LOD3_MULTI_SURFACE_ID as OPLOD3_MULTI_SURFACE_ID, op.LOD4_MULTI_SURFACE_ID as OPLOD4_MULTI_SURFACE_ID, ")
-			.append("op.LOD3_IMPLICIT_REP_ID, op.LOD4_IMPLICIT_REP_ID, op.LOD3_IMPLICIT_REF_POINT, op.LOD4_IMPLICIT_REF_POINT, op.LOD3_IMPLICIT_TRANSFORMATION, op.LOD4_IMPLICIT_TRANSFORMATION, ")
-			.append("a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT, a.XAL_SOURCE ")
-			.append("from BRIDGE_THEMATIC_SURFACE ts left join BRIDGE_OPEN_TO_THEM_SRF o2t on ts.ID = o2t.BRIDGE_THEMATIC_SURFACE_ID left join BRIDGE_OPENING op on op.ID = o2t.BRIDGE_OPENING_ID left join ADDRESS a on op.ADDRESS_ID=a.ID where ");
+					.append("select ts.ID as TSID, ts.OBJECTCLASS_ID, ts.LOD2_MULTI_SURFACE_ID, ts.LOD3_MULTI_SURFACE_ID, ts.LOD4_MULTI_SURFACE_ID, ")
+					.append("op.ID as OPID, op.OBJECTCLASS_ID as OPOBJECTCLASS_ID, op.ADDRESS_ID, op.LOD3_MULTI_SURFACE_ID as OPLOD3_MULTI_SURFACE_ID, op.LOD4_MULTI_SURFACE_ID as OPLOD4_MULTI_SURFACE_ID, ")
+					.append("op.LOD3_IMPLICIT_REP_ID, op.LOD4_IMPLICIT_REP_ID, op.LOD3_IMPLICIT_REF_POINT, op.LOD4_IMPLICIT_REF_POINT, op.LOD3_IMPLICIT_TRANSFORMATION, op.LOD4_IMPLICIT_TRANSFORMATION, ")
+					.append("a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT, a.XAL_SOURCE").append(handleAddressGmlId ? ", a.GMLID " : " ")
+					.append("from BRIDGE_THEMATIC_SURFACE ts left join BRIDGE_OPEN_TO_THEM_SRF o2t on ts.ID = o2t.BRIDGE_THEMATIC_SURFACE_ID left join BRIDGE_OPENING op on op.ID = o2t.BRIDGE_OPENING_ID left join ADDRESS a on op.ADDRESS_ID=a.ID where ");
 
 			psBridgeThematicSurface = connection.prepareStatement(query.toString() + "ts.BRIDGE_ID = ?");
 			psBridgeInstallationThematicSurface = connection.prepareStatement(query.toString() + "ts.BRIDGE_INSTALLATION_ID = ?");
@@ -130,15 +132,15 @@ public class DBBridgeThematicSurface implements DBExporter {
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
-			.append("select ts.ID as TSID, ts.OBJECTCLASS_ID, ts.LOD2_MULTI_SURFACE_ID, ts.LOD3_MULTI_SURFACE_ID, ts.LOD4_MULTI_SURFACE_ID, ")
-			.append("op.ID as OPID, op.OBJECTCLASS_ID as OPOBJECTCLASS_ID, op.ADDRESS_ID, op.LOD3_MULTI_SURFACE_ID as OPLOD3_MULTI_SURFACE_ID, op.LOD4_MULTI_SURFACE_ID as OPLOD4_MULTI_SURFACE_ID, ")
-			.append("op.LOD3_IMPLICIT_REP_ID, op.LOD4_IMPLICIT_REP_ID, ")
-			.append(transformOrNull).append("(LOD3_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD3_IMPLICIT_REF_POINT, ")
-			.append(transformOrNull).append("(LOD4_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD4_IMPLICIT_REF_POINT, ")
-			.append("op.LOD3_IMPLICIT_TRANSFORMATION, op.LOD4_IMPLICIT_TRANSFORMATION, ")
-			.append("a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, ")
-			.append(transformOrNull).append("(a.MULTI_POINT, ").append(srid).append(") AS MULTI_POINT, a.XAL_SOURCE ")
-			.append("from BRIDGE_THEMATIC_SURFACE ts left join BRIDGE_OPEN_TO_THEM_SRF o2t on ts.ID = o2t.BRIDGE_THEMATIC_SURFACE_ID left join BRIDGE_OPENING op on op.ID = o2t.BRIDGE_OPENING_ID left join ADDRESS a on op.ADDRESS_ID=a.ID where ");
+					.append("select ts.ID as TSID, ts.OBJECTCLASS_ID, ts.LOD2_MULTI_SURFACE_ID, ts.LOD3_MULTI_SURFACE_ID, ts.LOD4_MULTI_SURFACE_ID, ")
+					.append("op.ID as OPID, op.OBJECTCLASS_ID as OPOBJECTCLASS_ID, op.ADDRESS_ID, op.LOD3_MULTI_SURFACE_ID as OPLOD3_MULTI_SURFACE_ID, op.LOD4_MULTI_SURFACE_ID as OPLOD4_MULTI_SURFACE_ID, ")
+					.append("op.LOD3_IMPLICIT_REP_ID, op.LOD4_IMPLICIT_REP_ID, ")
+					.append(transformOrNull).append("(LOD3_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD3_IMPLICIT_REF_POINT, ")
+					.append(transformOrNull).append("(LOD4_IMPLICIT_REF_POINT, ").append(srid).append(") AS LOD4_IMPLICIT_REF_POINT, ")
+					.append("op.LOD3_IMPLICIT_TRANSFORMATION, op.LOD4_IMPLICIT_TRANSFORMATION, ")
+					.append("a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, ")
+					.append(transformOrNull).append("(a.MULTI_POINT, ").append(srid).append(") AS MULTI_POINT, a.XAL_SOURCE").append(handleAddressGmlId ? ", a.GMLID " : " ")
+					.append("from BRIDGE_THEMATIC_SURFACE ts left join BRIDGE_OPEN_TO_THEM_SRF o2t on ts.ID = o2t.BRIDGE_THEMATIC_SURFACE_ID left join BRIDGE_OPENING op on op.ID = o2t.BRIDGE_OPENING_ID left join ADDRESS a on op.ADDRESS_ID=a.ID where ");
 
 			psBridgeThematicSurface = connection.prepareStatement(query.toString() + "ts.BRIDGE_ID = ?");
 			psBridgeInstallationThematicSurface = connection.prepareStatement(query.toString() + "ts.BRIDGE_INSTALLATION_ID = ?");
@@ -155,11 +157,11 @@ public class DBBridgeThematicSurface implements DBExporter {
 	public void read(AbstractBridge bridge, long parentId) throws SQLException {
 		read((AbstractCityObject)bridge, parentId);
 	}
-	
+
 	public void read(BridgeInstallation bridgeInstallation, long parentId) throws SQLException {
 		read((AbstractCityObject)bridgeInstallation, parentId);
 	}
-	
+
 	public void read(IntBridgeInstallation intBridgeInstallation, long parentId) throws SQLException {
 		read((AbstractCityObject)intBridgeInstallation, parentId);
 	}
@@ -167,7 +169,7 @@ public class DBBridgeThematicSurface implements DBExporter {
 	public void read(BridgeRoom room, long parentId) throws SQLException {
 		read((AbstractCityObject)room, parentId);
 	}
-	
+
 	public void read(BridgeConstructionElement constructionElement, long parentId) throws SQLException {
 		read((AbstractCityObject)constructionElement, parentId);
 	}
@@ -439,30 +441,51 @@ public class DBBridgeThematicSurface implements DBExporter {
 					}
 				}
 
-				rs.getLong(8);
+				long addressId = rs.getLong(8);
 				if (!rs.wasNull() && opening.getCityGMLClass() == CityGMLClass.BRIDGE_DOOR) {
 					AddressExportFactory factory = dbExporterManager.getAddressExportFactory();					
 					AddressObject addressObject = factory.newAddressObject();
+					AddressProperty addressProperty = null;
 
-					fillAddressObject(addressObject, factory.getPrimaryMode(), rs);
-					if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
-						fillAddressObject(addressObject, factory.getFallbackMode(), rs);
+					if (handleAddressGmlId) {
+						String gmlId = rs.getString(26);
+						if (dbExporterManager.lookupAndPutGmlId(gmlId, addressId, CityGMLClass.ADDRESS)) {
+							if (useXLink) {
+								addressProperty = new AddressProperty();
+								addressProperty.setHref("#" + gmlId);
+								((Door)opening).addAddress(addressProperty);
+							} else {
+								String newGmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
+								if (appendOldGmlId)
+									newGmlId += '-' + gmlId;
 
-					if (addressObject.canCreate()) {
-						// multiPointGeometry
-						Object multiPointObj = rs.getObject(24);
-						if (!rs.wasNull() && multiPointObj != null) {
-							GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
-							MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(multiPoint, false);
-							if (multiPointProperty != null) {
-								addressObject.setMultiPointProperty(multiPointProperty);
+								addressObject.setGmlId(newGmlId);	
 							}
-						}
+						} else
+							addressObject.setGmlId(gmlId);							
+					}
 
-						// create xAL address
-						AddressProperty addressProperty = factory.create(addressObject);
-						if (addressProperty != null)
-							((Door)opening).addAddress(addressProperty);
+					if (addressProperty == null) {
+						fillAddressObject(addressObject, factory.getPrimaryMode(), rs);
+						if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
+							fillAddressObject(addressObject, factory.getFallbackMode(), rs);
+
+						if (addressObject.canCreate()) {
+							// multiPointGeometry
+							Object multiPointObj = rs.getObject(24);
+							if (!rs.wasNull() && multiPointObj != null) {
+								GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
+								MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(multiPoint, false);
+								if (multiPointProperty != null) {
+									addressObject.setMultiPointProperty(multiPointProperty);
+								}
+							}
+
+							// create xAL address
+							addressProperty = factory.create(addressObject);
+							if (addressProperty != null)
+								((Door)opening).addAddress(addressProperty);
+						}
 					}
 				}
 
