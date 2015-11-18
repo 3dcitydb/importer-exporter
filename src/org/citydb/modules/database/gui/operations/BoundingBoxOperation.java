@@ -76,6 +76,8 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 	private JButton createMissingButton;
 	private JButton calculateButton;
 	
+	private boolean isCreateBboxSupported;
+		
 	private enum BoundingBoxMode {
 		FULL,
 		PARTIAL
@@ -203,9 +205,9 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 		featureLabel.setEnabled(enable);
 		featureComboBox.setEnabled(enable);
 		bboxPanel.setEnabled(enable);
-		createAllButton.setEnabled(enable);
-		createMissingButton.setEnabled(enable);
 		calculateButton.setEnabled(enable);
+		createAllButton.setEnabled(enable && isCreateBboxSupported);
+		createMissingButton.setEnabled(enable && isCreateBboxSupported);
 	}
 
 	@Override
@@ -445,9 +447,11 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 	}
 
 	@Override
-	public void handleDatabaseConnectionStateEvent( DatabaseConnectionStateEvent event) {
+	public void handleDatabaseConnectionStateEvent(DatabaseConnectionStateEvent event) {
 		if (event.wasConnected())
 			bboxPanel.clearBoundingBox();
+		else
+			isCreateBboxSupported = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
 	}
 
 }
