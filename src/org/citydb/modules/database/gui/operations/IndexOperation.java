@@ -46,6 +46,7 @@ import javax.swing.SwingUtilities;
 
 import org.citydb.api.controller.ViewController;
 import org.citydb.api.database.DatabaseType;
+import org.citydb.api.event.global.DatabaseConnectionStateEvent;
 import org.citydb.api.log.LogLevel;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
@@ -75,6 +76,8 @@ public class IndexOperation extends DatabaseOperationView {
 	private JCheckBox spatial;
 	private JCheckBox normal;
 
+	private boolean isStatsSupported;
+	
 	public IndexOperation(Config config) {
 		this.config = config;
 		viewController = ObjectRegistry.getInstance().getViewController();
@@ -208,14 +211,7 @@ public class IndexOperation extends DatabaseOperationView {
 		query.setEnabled(enable);
 		spatial.setEnabled(enable);
 		normal.setEnabled(enable);
-		setEnabledTableStats(enable);
-	}
-	
-	public void setEnabledTableStats(boolean enable) {
-		if (enable && dbConnectionPool.isConnected() && !dbConnectionPool.getActiveDatabaseAdapter().hasTableStatsSupport())
-			enable = false;
-		
-		tableStats.setEnabled(enable);
+		tableStats.setEnabled(enable && isStatsSupported);
 	}
 
 	@Override
@@ -569,6 +565,12 @@ public class IndexOperation extends DatabaseOperationView {
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	@Override
+	public void handleDatabaseConnectionStateEvent(DatabaseConnectionStateEvent event) {
+		if (event.isConnected())
+			isStatsSupported = dbConnectionPool.getActiveDatabaseAdapter().hasTableStatsSupport();
 	}
 
 }
