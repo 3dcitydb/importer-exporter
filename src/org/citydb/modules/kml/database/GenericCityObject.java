@@ -1124,7 +1124,7 @@ public class GenericCityObject extends KmlGenericObject{
 					placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));					
 				}
 
-				placemark.setName(work.getGmlId() + "_" + POINT);
+				placemark.setName(work.getGmlId());
 				// replace default BalloonTemplateHandler with a brand new one, this costs resources!
 				if (pacSettings.getPointBalloon() != null && pacSettings.getPointBalloon().isIncludeDescription() &&
 						pacSettings.getPointBalloon().getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
@@ -1145,7 +1145,7 @@ public class GenericCityObject extends KmlGenericObject{
 							+ reducePrecisionForZ(ordinatesArray[j+2] + zOffset)));
 				}
 
-				placemark.setName(work.getGmlId() + "_" + CURVE);
+				placemark.setName(work.getGmlId());
 
 				// replace default BalloonTemplateHandler with a brand new one, this costs resources!
 				if (pacSettings.isCurveHighlightingEnabled())
