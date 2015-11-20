@@ -294,6 +294,13 @@ public class Transportation extends KmlGenericObject{
 		}
 
 		List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
+		
+		double zOffset = getZOffsetFromConfigOrDB(work.getId());
+		List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(rs, (zOffset == Double.MAX_VALUE));
+		rs.beforeFirst(); // return cursor to beginning
+		if (zOffset == Double.MAX_VALUE) {
+			zOffset = getZOffsetFromGEService(work.getId(), lowestPointCandidates);
+		}
 
 		while (rs.next()) {
 			PlacemarkType placemark = kmlFactory.createPlacemarkType();
@@ -316,7 +323,7 @@ public class Transportation extends KmlGenericObject{
 					PointType point = kmlFactory.createPointType();
 					point.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[0]) + "," 
 							+ reducePrecisionForXorY(ordinatesArray[1]) + ","
-							+ reducePrecisionForZ(ordinatesArray[2])));
+							+ reducePrecisionForZ(ordinatesArray[2]) + zOffset));
 
 					placemark.setAbstractGeometryGroup(kmlFactory.createPoint(point));
 				}
@@ -324,11 +331,6 @@ public class Transportation extends KmlGenericObject{
 					pointOrCurveGeometry = super.convertToWGS84(pointOrCurveGeometry);
 					LineStringType lineString = kmlFactory.createLineStringType();
 					
-					double zOffset = 0;
-					if (config.getProject().getKmlExporter().getAltitudeOffsetMode().equals(AltitudeOffsetMode.CONSTANT)) {
-						zOffset = config.getProject().getKmlExporter().getAltitudeOffsetValue();
-					};
-
 					for (int i = 0; i < pointOrCurveGeometry.getNumElements(); i++) {
 						double[] ordinatesArray = pointOrCurveGeometry.getCoordinates(i);
 						
@@ -339,7 +341,16 @@ public class Transportation extends KmlGenericObject{
 									+ reducePrecisionForZ(ordinatesArray[j+2] + zOffset)));
 						}
 					}
-					lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
+					switch (config.getProject().getKmlExporter().getAltitudeOffsetMode()) {
+					case NO_OFFSET:
+					case CONSTANT:
+					case GENERIC_ATTRIBUTE:
+						lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
+						break;
+					case BOTTOM_ZERO:
+						lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
+						break;
+					}
 					placemark.setAbstractGeometryGroup(kmlFactory.createLineString(lineString));
 				}
 			}
