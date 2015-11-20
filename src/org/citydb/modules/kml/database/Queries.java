@@ -2126,16 +2126,30 @@ public class Queries {
 	// ----------------------------------------------------------------------
 
 	private static final String PLANT_COVER_FOOTPRINT_EXTRUDED_GEOMETRY =
-			"SELECT sg.geometry, 'Vegetation' as type, sg.id " +
-					"FROM SURFACE_GEOMETRY sg, PLANT_COVER pc " + 
+			"SELECT sg.geometry, '8' as objectclass_id, sg.id " +
+					"FROM SURFACE_GEOMETRY sg " +
+					"WHERE sg.root_id IN (" +
+					"SELECT geom.gid FROM (SELECT pc.lod<LoD>_multi_solid_id as gid " +
+					"FROM PLANT_COVER pc " +
 					"WHERE pc.id = ? " +
-					"AND sg.root_id = pc.lod<LoD>_geometry_id " + 
-					"AND sg.geometry IS NOT NULL";
-
+					"UNION " +
+					"SELECT pc.lod<LoD>_multi_surface_id as gid " +
+					"FROM PLANT_COVER pc " +
+					"WHERE pc.id = ? " +
+					") geom) AND sg.geometry IS NOT NULL";
+	
 	private static final String PLANT_COVER_COLLADA_ROOT_IDS =
-			"SELECT pc.lod<LoD>_geometry_id " +
-					"FROM PLANT_COVER pc " + 
-					"WHERE pc.id = ?";
+			"SELECT geom.gid FROM (SELECT pc.lod<LoD>_multi_surface_id as gid " +			
+					"FROM PLANT_COVER pc " +
+					"WHERE " +
+					"pc.id = ? " +
+					"AND pc.lod<LoD>_multi_surface_id IS NOT NULL " + 
+					"UNION " + 
+					"SELECT pc.lod<LoD>_multi_solid_id as gid " +			
+					"FROM PLANT_COVER pc " +
+					"WHERE " +
+					"pc.id = ? " +
+					"AND pc.lod<LoD>_multi_solid_id IS NOT NULL) geom";	
 
 	public static String getPlantCoverQuery (int lodToExportFrom, DisplayForm displayForm) {
 		String query = null;
