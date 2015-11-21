@@ -58,7 +58,6 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
 import org.citydb.api.controller.DatabaseController;
-import org.citydb.api.database.DatabaseAdapter;
 import org.citydb.api.database.DatabaseConfigurationException;
 import org.citydb.api.database.DatabaseConnectionWarning;
 import org.citydb.api.database.DatabaseConnectionWarning.ConnectionWarningType;
@@ -83,7 +82,6 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.log.Logger;
 import org.citydb.modules.database.gui.operations.DatabaseOperationsPanel;
-import org.citydb.util.Util;
 import org.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -503,17 +501,11 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 
 	@Override
 	public void printError(DatabaseVersionException e, boolean showErrorDialog) {
-		String supportedVersions = Util.collection2string(config.getProject().getDatabase().getSupportedVersions(), ", ");
-
-		if (showErrorDialog) {
-			String text = Language.I18N.getString("db.dialog.error.version.error");
-			Object[] args = new Object[]{ e.getUnsupportedVersion(), supportedVersions };
-			String result = MessageFormat.format(text, args);					
-
-			topFrame.errorMessage(Language.I18N.getString("db.dialog.error.version.title"), result);
-		} else {
-			LOG.error("Version '" + e.getUnsupportedVersion() + "' of the 3D City Database is not supported.");
-			LOG.error("Supported versions are '" + supportedVersions + "'.");
+		if (showErrorDialog)
+			topFrame.errorMessage(Language.I18N.getString("db.dialog.error.version.title"), e.getFormattedMessage());
+		else {
+			LOG.error(e.getMessage());
+			LOG.error("Supported versions are '" + e.getSupportedVersions() + "'.");
 		}
 
 		LOG.error("Connection to database could not be established.");
@@ -544,15 +536,10 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	public void printWarning(DatabaseConnectionWarning warning, boolean showWarningDialog) {
 		if (showWarningDialog) {
 			if (warning.getType() == ConnectionWarningType.OUTDATED_DATABASE_VERSION && config.getGui().isShowOutdatedDatabaseVersionWarning()) {
-				String text = Language.I18N.getString("db.dialog.warn.version.outdated");
-				DatabaseAdapter databaseAdapter = databaseController.getActiveDatabaseAdapter();
-				Object[] args = new Object[]{ databaseAdapter.getConnectionMetaData().getCityDBVersion() };
-				String result = MessageFormat.format(text, args);
-
 				JPanel confirmPanel = new JPanel(new GridBagLayout());
 				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
 				confirmDialogNoShow.setIconTextGap(10);
-				confirmPanel.add(new JLabel(result), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
+				confirmPanel.add(new JLabel(warning.getFormattedMessage()), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
 				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
 
 				JOptionPane.showMessageDialog(topFrame, confirmPanel, Language.I18N.getString("db.dialog.warn.title"), JOptionPane.WARNING_MESSAGE);	

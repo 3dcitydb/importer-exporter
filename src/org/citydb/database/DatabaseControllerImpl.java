@@ -37,7 +37,7 @@ import org.citydb.api.database.DatabaseConfigurationException;
 import org.citydb.api.database.DatabaseConnectionDetails;
 import org.citydb.api.database.DatabaseConnectionWarning;
 import org.citydb.api.database.DatabaseSrs;
-import org.citydb.api.database.DatabaseVersion;
+import org.citydb.api.database.DatabaseVersionChecker;
 import org.citydb.api.database.DatabaseVersionException;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
@@ -125,8 +125,8 @@ public class DatabaseControllerImpl implements DatabaseController {
 	}
 
 	@Override
-	public List<DatabaseVersion> getSupportedVersions() {
-		return config.getProject().getDatabase().getSupportedVersions();
+	public DatabaseVersionChecker getDatabaseVersionChecker() {
+		return dbPool.getDatabaseVersionChecker();
 	}
 
 }

@@ -27,20 +27,16 @@
 package org.citydb.config.project.database;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseSrsType;
-import org.citydb.api.database.DatabaseVersion;
 
 @XmlType(name="DatabaseType", propOrder={
 		"referenceSystems",
@@ -51,20 +47,18 @@ import org.citydb.api.database.DatabaseVersion;
 		"operation"
 })
 public class Database {
+	public static final String CITYDB_PRODUCT_NAME = "3D City Database";
 	public static final int MAX_BATCH_SIZE = 65535;
 	public static final EnumMap<PredefinedSrsName, DatabaseSrs> PREDEFINED_SRS = new EnumMap<PredefinedSrsName, DatabaseSrs>(PredefinedSrsName.class);
 
 	public enum PredefinedSrsName {
 		WGS84_2D
 	}
-	
+
 	static {
 		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG::4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGRAPHIC2D, true));
 	}
-	
-	@XmlTransient
-	private final List<DatabaseVersion> supportedVersions = Arrays.asList(new DatabaseVersion(3,1,0), new DatabaseVersion(3,0,0));
-	
+
 	private DatabaseSrsList referenceSystems;
 	@XmlElement(name="connection", required=true)
 	@XmlElementWrapper(name="connections")	
@@ -83,7 +77,6 @@ public class Database {
 		updateBatching = new UpdateBatching();
 		workspaces = new Workspaces();
 		operation = new DBOperation();
-		Collections.sort(supportedVersions, Collections.reverseOrder());
 	}
 
 	public List<DatabaseSrs> getReferenceSystems() {
@@ -98,7 +91,7 @@ public class Database {
 	public void addReferenceSystem(DatabaseSrs referenceSystem) {
 		referenceSystems.addItem(referenceSystem);
 	}
-	
+
 	public void addDefaultReferenceSystems() {
 		referenceSystems.addDefaultItems();
 	}
@@ -119,7 +112,7 @@ public class Database {
 	public DBConnection getActiveConnection() {
 		if (activeConnection == null && !connections.isEmpty())
 			activeConnection = connections.get(0);
-		
+
 		return activeConnection;
 	}
 
@@ -153,21 +146,6 @@ public class Database {
 	public void setOperation(DBOperation operation) {
 		if (operation != null)
 			this.operation = operation;
-	}
-
-	public List<DatabaseVersion> getSupportedVersions() {
-		return new ArrayList<DatabaseVersion>(supportedVersions);
-	}
-	
-	public void addSupportedVersion(DatabaseVersion version) {
-		supportedVersions.add(version);
-		Collections.sort(supportedVersions, Collections.reverseOrder());
-	}
-	
-	public void setSupportedVersions(List<DatabaseVersion> versions) {
-		supportedVersions.clear();
-		supportedVersions.addAll(versions);
-		Collections.sort(supportedVersions, Collections.reverseOrder());
 	}
 
 }

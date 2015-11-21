@@ -31,9 +31,7 @@ import java.io.File;
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.modules.citygml.importer.util.AffineTransformer;
 
-public class Internal {
-	public static final String CITYDB_PRODUCT_NAME = "3D City Database";
-	
+public class Internal {	
 	public static final String CODELIST_DELIMITER = "--/\\--";
 	public static final String GEOMETRY_XLINK = "isXlink";
 	public static final String GEOMETRY_ORIGINAL = "origGeom";

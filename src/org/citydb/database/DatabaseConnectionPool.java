@@ -42,14 +42,14 @@ import org.citydb.api.database.DatabaseConfigurationException;
 import org.citydb.api.database.DatabaseConnectionWarning;
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseVersion;
+import org.citydb.api.database.DatabaseVersionChecker;
 import org.citydb.api.database.DatabaseVersionException;
-import org.citydb.api.database.DatabaseConnectionWarning.ConnectionWarningType;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.database.DBConnection;
+import org.citydb.config.project.database.Database;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.DatabaseAdapterFactory;
 import org.citydb.event.DatabaseConnectionStateEventImpl;
@@ -67,7 +67,7 @@ public class DatabaseConnectionPool {
 
 	private DatabaseConnectionPool() {
 		// just to thwart instantiation
-		versionChecker = new DatabaseVersionChecker();
+		versionChecker = new DefaultDatabaseVersionChecker();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 	}
 
@@ -153,15 +153,16 @@ public class DatabaseConnectionPool {
 
 			// retrieve connection metadata
 			databaseAdapter.setConnectionMetaData(databaseAdapter.getUtil().getDatabaseInfo());
-			
+
 			// check for supported 3DCityDB version
 			DatabaseVersion version = databaseAdapter.getConnectionMetaData().getCityDBVersion();
-			if (!versionChecker.isSupportedVersion(version, config.getProject().getDatabase().getSupportedVersions(), Internal.CITYDB_PRODUCT_NAME))
-				throw new DatabaseVersionException("Version '" + version + "' of the 3D City Database is not supported.", version, Internal.CITYDB_PRODUCT_NAME);
+			try {
+				versionChecker.checkIfSupported(version, Database.CITYDB_PRODUCT_NAME);
+				versionChecker.checkIfOutdated(version, Database.CITYDB_PRODUCT_NAME);
+			} catch (DatabaseConnectionWarning warning) {
+				databaseAdapter.addConnectionWarning(warning);
+			}
 
-			if (versionChecker.isOutdatedVersion(version, config.getProject().getDatabase().getSupportedVersions(), Internal.CITYDB_PRODUCT_NAME))
-				databaseAdapter.addConnectionWarning(new DatabaseConnectionWarning("Version '" + version + "' of the 3D City Database is outdated. Consider upgrading.", ConnectionWarningType.OUTDATED_DATABASE_VERSION));
-			
 			// check whether user-defined reference systems are supported
 			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
 				databaseAdapter.getUtil().getSrsInfo(refSys);
@@ -242,6 +243,15 @@ public class DatabaseConnectionPool {
 
 		// fire property change events
 		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(wasConnected, false, this));
+	}
+
+	public DatabaseVersionChecker getDatabaseVersionChecker() {
+		return versionChecker;
+	}
+
+	public void setDatabaseVersionChecker(DatabaseVersionChecker versionChecker) {
+		if (versionChecker != null)
+			this.versionChecker = versionChecker;
 	}
 
 }

@@ -26,29 +26,29 @@
  */
 package org.citydb.api.database;
 
+import java.util.List;
+
 @SuppressWarnings("serial")
 public class DatabaseVersionException extends Exception {
-	private final DatabaseVersion unsupportedVersion;
-	private final String productName;
-
-	public DatabaseVersionException(String reason, DatabaseVersion unsupportedVersion, String productName) {
-		super(reason);
-		this.unsupportedVersion = unsupportedVersion;
-		this.productName = productName;
-	}
+	private final List<DatabaseVersion> supportedVersions;
+	private final String formattedMessage;
 	
-	public DatabaseVersionException(String reason, DatabaseVersion unsupportedVersion, String productName, Throwable cause) {
-		super(reason, cause);
-		this.unsupportedVersion = unsupportedVersion;
-		this.productName = productName;
+	public DatabaseVersionException(String message, String formattedMessage, List<DatabaseVersion> supportedVersions, Throwable cause) {
+		super(message, cause);
+		this.supportedVersions = supportedVersions;
+		this.formattedMessage = formattedMessage;
 	}
 
-	public DatabaseVersion getUnsupportedVersion() {
-		return unsupportedVersion;
+	public DatabaseVersionException(String message, String formattedMessage, List<DatabaseVersion> supportedVersions) {
+		this(message, formattedMessage, supportedVersions, null);
 	}
 
-	public String getProductName() {
-		return productName;
+	public List<DatabaseVersion> getSupportedVersions() {
+		return supportedVersions;
 	}
-	
+
+	public String getFormattedMessage() {
+		return formattedMessage;
+	}
+
 }
