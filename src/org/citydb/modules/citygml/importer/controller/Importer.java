@@ -290,7 +290,9 @@ public class Importer implements EventHandler {
 
 				// set gml:id codespace starting from version 3.1
 				if (dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0) {
-					if (gmlIdConfig.isSetRelativeCodeSpaceMode())
+					if (gmlIdConfig.isSetNoneCodeSpaceMode())
+						internalConfig.setCurrentGmlIdCodespace(null);
+					else if (gmlIdConfig.isSetRelativeCodeSpaceMode())
 						internalConfig.setCurrentGmlIdCodespace(file.getName());
 					else if (gmlIdConfig.isSetAbsoluteCodeSpaceMode())
 						internalConfig.setCurrentGmlIdCodespace(file.getAbsolutePath());

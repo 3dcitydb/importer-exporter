@@ -41,7 +41,7 @@ public class ImportGmlId {
 	@XmlElement(defaultValue="true")
 	private Boolean keepGmlIdAsExternalReference = true;
 	@XmlElement(required=true)
-	private CodeSpaceMode codeSpaceMode = CodeSpaceMode.USER;
+	private CodeSpaceMode codeSpaceMode = CodeSpaceMode.NONE;
 	@XmlElement(defaultValue="UUID")
 	private String codeSpace = "UUID";
 
@@ -77,6 +77,10 @@ public class ImportGmlId {
 
 	public void setKeepGmlIdAsExternalReference(Boolean keepGmlIdAsExternalReference) {
 		this.keepGmlIdAsExternalReference = keepGmlIdAsExternalReference;
+	}
+	
+	public boolean isSetNoneCodeSpaceMode() {
+		return codeSpaceMode == CodeSpaceMode.NONE;
 	}
 
 	public boolean isSetRelativeCodeSpaceMode() {

@@ -62,6 +62,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 	private JRadioButton impIdRadioAdd;
 	private JRadioButton impIdRadioExchange;
 	private JPanel block2;
+	private JRadioButton impIdCSRadioNone;
 	private JRadioButton impIdCSRadioFile;
 	private JRadioButton impIdCSRadioFilePath;
 	private JRadioButton impIdCSRadioUser;
@@ -82,6 +83,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 		if (impIdRadioAdd.isSelected() != gmlId.isUUIDModeComplement()) return true;
 		if (impIdRadioExchange.isSelected() != gmlId.isUUIDModeReplace()) return true;
 		if (!impIdCSUserText.getText().equals(gmlId.getCodeSpace())) return true;
+		if (impIdCSRadioNone.isSelected() != gmlId.isSetNoneCodeSpaceMode()) return true;
 		if (impIdCSRadioFile.isSelected() != gmlId.isSetRelativeCodeSpaceMode()) return true;
 		if (impIdCSRadioFilePath.isSelected() != gmlId.isSetAbsoluteCodeSpaceMode()) return true;
 		if (impIdCSRadioUser.isSelected() != gmlId.isSetUserCodeSpaceMode()) return true;
@@ -96,10 +98,12 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 		impIdRadio.add(impIdRadioExchange);
 		impIdCheckExtRef = new JCheckBox();
 		
+		impIdCSRadioNone = new JRadioButton();
 		impIdCSRadioFile = new JRadioButton();
 		impIdCSRadioFilePath = new JRadioButton();
 		impIdCSRadioUser = new JRadioButton();
 		ButtonGroup impIdCSRadio = new ButtonGroup();
+		impIdCSRadio.add(impIdCSRadioNone);
 		impIdCSRadio.add(impIdCSRadioFile);
 		impIdCSRadio.add(impIdCSRadioFilePath);
 		impIdCSRadio.add(impIdCSRadioUser);
@@ -125,14 +129,16 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 			add(block2, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,5,0,5,0));
 			block2.setBorder(BorderFactory.createTitledBorder(""));
 			block2.setLayout(new GridBagLayout());
+			impIdCSRadioNone.setIconTextGap(10);
 			impIdCSRadioFile.setIconTextGap(10);
 			impIdCSRadioFilePath.setIconTextGap(10);
 			impIdCSRadioUser.setIconTextGap(10);
 			{
-				block2.add(impIdCSRadioFile, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(impIdCSRadioFilePath, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(impIdCSRadioUser, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
-				block2.add(impIdCSUserText, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
+				block2.add(impIdCSRadioNone, GuiUtil.setConstraints(0,0,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block2.add(impIdCSRadioFile, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block2.add(impIdCSRadioFilePath, GuiUtil.setConstraints(0,2,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block2.add(impIdCSRadioUser, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,0,5,0,5));
+				block2.add(impIdCSUserText, GuiUtil.setConstraints(0,4,1.0,1.0,GridBagConstraints.BOTH,0,lmargin,5,5));
 			}
 		}
 		
@@ -151,6 +157,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 		impIdRadioAdd.addActionListener(gmlIdListener);
 		impIdRadioExchange.addActionListener(gmlIdListener);
 		
+		impIdCSRadioNone.addActionListener(codeSpaceListener);
 		impIdCSRadioFile.addActionListener(codeSpaceListener);
 		impIdCSRadioFilePath.addActionListener(codeSpaceListener);
 		impIdCSRadioUser.addActionListener(codeSpaceListener);
@@ -170,6 +177,7 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 					UIManager.getColor("Label.disabledForeground"));
 		block2.repaint();
 		
+		impIdCSRadioNone.setEnabled(enable);
 		impIdCSRadioFile.setEnabled(enable);
 		impIdCSRadioFilePath.setEnabled(enable);
 		impIdCSRadioUser.setEnabled(enable);
@@ -183,7 +191,8 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 		impIdRadioAdd.setText(Language.I18N.getString("pref.import.idHandling.label.id.add"));
 		impIdRadioExchange.setText(Language.I18N.getString("pref.import.idHandling.label.id.exchange"));
 		
-		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.import.idHandling.border.idCodeSpace"));	
+		((TitledBorder)block2.getBorder()).setTitle(Language.I18N.getString("pref.import.idHandling.border.idCodeSpace"));
+		impIdCSRadioNone.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.none"));
 		impIdCSRadioFile.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.file"));
 		impIdCSRadioFilePath.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.filePath"));
 		impIdCSRadioUser.setText(Language.I18N.getString("pref.import.idHandling.label.idCodeSpace.user"));
@@ -202,7 +211,9 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 		
 		setEnabledGmlId();
 		
-		if (gmlId.isSetUserCodeSpaceMode())
+		if (gmlId.isSetNoneCodeSpaceMode())
+			impIdCSRadioNone.setSelected(true);
+		else if (gmlId.isSetUserCodeSpaceMode())
 			impIdCSRadioUser.setSelected(true);
 		else if (gmlId.isSetRelativeCodeSpaceMode())
 			impIdCSRadioFile.setSelected(true);
@@ -225,7 +236,9 @@ public class IdHandlingPanel extends AbstractPreferencesComponent implements Eve
 
 		gmlId.setKeepGmlIdAsExternalReference(impIdCheckExtRef.isSelected());
 		
-		if (impIdCSRadioFile.isSelected())
+		if (impIdCSRadioNone.isSelected())
+			gmlId.setCodeSpaceMode(CodeSpaceMode.NONE);
+		else if (impIdCSRadioFile.isSelected())
 			gmlId.setCodeSpaceMode(CodeSpaceMode.RELATIVE);
 		else if (impIdCSRadioFilePath.isSelected())
 			gmlId.setCodeSpaceMode(CodeSpaceMode.ABSOLUTE);

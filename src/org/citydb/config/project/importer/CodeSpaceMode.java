@@ -31,7 +31,9 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(name="CodeSpaceModeType")
 public enum CodeSpaceMode {
-	@XmlEnumValue("relativeFileName")
+	@XmlEnumValue("none")
+    NONE("none"),
+    @XmlEnumValue("relativeFileName")
     RELATIVE("relativefileName"),
     @XmlEnumValue("absoluteFileName")
     ABSOLUTE("absoluteFileName"),
@@ -55,6 +57,6 @@ public enum CodeSpaceMode {
             }
         }
 
-        return USER;
+        return NONE;
     }
 }
