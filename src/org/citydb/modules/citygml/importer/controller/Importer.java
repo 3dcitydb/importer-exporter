@@ -299,7 +299,8 @@ public class Importer implements EventHandler {
 						if (codespace != null && codespace.length() > 0)
 							internalConfig.setCurrentGmlIdCodespace(codespace);
 					}
-				}
+				} else
+					internalConfig.setCurrentGmlIdCodespace(null);
 				
 				// create import logger
 				if (importerConfig.getImportLog().isSetLogImportedFeatures()) {
