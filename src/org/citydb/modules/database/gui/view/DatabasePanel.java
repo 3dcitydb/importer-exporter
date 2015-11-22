@@ -535,15 +535,17 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 	@Override
 	public void printWarning(DatabaseConnectionWarning warning, boolean showWarningDialog) {
 		if (showWarningDialog) {
-			if (warning.getType() == ConnectionWarningType.OUTDATED_DATABASE_VERSION && config.getGui().isShowOutdatedDatabaseVersionWarning()) {
-				JPanel confirmPanel = new JPanel(new GridBagLayout());
-				JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
-				confirmDialogNoShow.setIconTextGap(10);
-				confirmPanel.add(new JLabel(warning.getFormattedMessage()), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
-				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
+			if (warning.getType() == ConnectionWarningType.OUTDATED_DATABASE_VERSION) {
+				if (config.getGui().isShowOutdatedDatabaseVersionWarning()) {
+					JPanel confirmPanel = new JPanel(new GridBagLayout());
+					JCheckBox confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
+					confirmDialogNoShow.setIconTextGap(10);
+					confirmPanel.add(new JLabel(warning.getFormattedMessage()), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
+					confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
 
-				JOptionPane.showMessageDialog(topFrame, confirmPanel, Language.I18N.getString("db.dialog.warn.title"), JOptionPane.WARNING_MESSAGE);	
-				config.getGui().setShowOutdatedDatabaseVersionWarning(!confirmDialogNoShow.isSelected());
+					JOptionPane.showMessageDialog(topFrame, confirmPanel, Language.I18N.getString("db.dialog.warn.title"), JOptionPane.WARNING_MESSAGE);	
+					config.getGui().setShowOutdatedDatabaseVersionWarning(!confirmDialogNoShow.isSelected());
+				}
 			}
 
 			else {
