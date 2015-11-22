@@ -41,7 +41,6 @@ import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.citydb.api.database.DatabaseConfigurationException;
 import org.citydb.api.database.DatabaseConnectionWarning;
 import org.citydb.api.database.DatabaseSrs;
-import org.citydb.api.database.DatabaseVersion;
 import org.citydb.api.database.DatabaseVersionChecker;
 import org.citydb.api.database.DatabaseVersionException;
 import org.citydb.api.event.EventDispatcher;
@@ -49,7 +48,6 @@ import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.database.DBConnection;
-import org.citydb.config.project.database.Database;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.DatabaseAdapterFactory;
 import org.citydb.event.DatabaseConnectionStateEventImpl;
@@ -154,11 +152,9 @@ public class DatabaseConnectionPool {
 			// retrieve connection metadata
 			databaseAdapter.setConnectionMetaData(databaseAdapter.getUtil().getDatabaseInfo());
 
-			// check for supported 3DCityDB version
-			DatabaseVersion version = databaseAdapter.getConnectionMetaData().getCityDBVersion();
+			// check for supported database version
 			try {
-				versionChecker.checkIfSupported(version, Database.CITYDB_PRODUCT_NAME);
-				versionChecker.checkIfOutdated(version, Database.CITYDB_PRODUCT_NAME);
+				versionChecker.checkVersionSupport(databaseAdapter);
 			} catch (DatabaseConnectionWarning warning) {
 				databaseAdapter.addConnectionWarning(warning);
 			}
