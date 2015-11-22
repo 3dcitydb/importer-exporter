@@ -60,7 +60,7 @@ public class Internal {
 	private DatabaseSrs exportTargetSRS;
 
 	// internal variables
-	private String currentGmlIdCodespace = "";
+	private String currentGmlIdCodespace = null;
 	private AffineTransformer affineTransformer;
 
 	// internal flags
