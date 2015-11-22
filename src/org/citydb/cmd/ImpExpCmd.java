@@ -105,11 +105,14 @@ public class ImpExpCmd {
 				LOG.error("Cause: " + cause.getMessage());
 				cause = cause.getCause();
 			}
-		}
-		try {
-			eventDispatcher.flushEvents();
-		} catch (InterruptedException e) {
-			//
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			dbPool.disconnect();
 		}
 
 		if (success) {
@@ -159,12 +162,19 @@ public class ImpExpCmd {
 
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		Exporter exporter = new Exporter(cityGMLBuilder, dbPool, config, eventDispatcher);
-		boolean success = exporter.doProcess();
+		boolean success = false;
 
 		try {
-			eventDispatcher.flushEvents();
-		} catch (InterruptedException e) {
-			//
+			success = exporter.doProcess();
+		} finally {
+
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			dbPool.disconnect();
 		}
 
 		if (success) {
@@ -189,23 +199,28 @@ public class ImpExpCmd {
 		if (filter.isSetComplexFilter() && filter.getComplexFilter().getTiledBoundingBox().isSet()) {
 			try {
 				kmlExporter.calculateRowsColumns();
-			}
-			catch (SQLException sqle) {
+			} catch (SQLException e) {
 				String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs() == null ?
 						"": filter.getComplexFilter().getBoundingBox().getSrs().getDescription() + ": ";
-				String message = sqle.getMessage().indexOf("\n") > -1? // cut ORA- stack traces
-						sqle.getMessage().substring(0, sqle.getMessage().indexOf("\n")): sqle.getMessage();
+				String message = e.getMessage().indexOf("\n") > -1? // cut ORA- stack traces
+						e.getMessage().substring(0, e.getMessage().indexOf("\n")): e.getMessage();
 						LOG.error(srsDescription + message);
 						LOG.warn("Database export aborted.");
 						return;
 			}
 		}
-		boolean success = kmlExporter.doProcess();
 
+		boolean success = false;
 		try {
-			eventDispatcher.flushEvents();
-		} catch (InterruptedException e) {
-			//
+			success = kmlExporter.doProcess();
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			dbPool.disconnect();
 		}
 
 		if (success) {
@@ -214,14 +229,15 @@ public class ImpExpCmd {
 			LOG.warn("Database export aborted.");
 		}
 	}
-	
+
 	public boolean doTestConnection() {
 		initDBPool();
 		if (!dbPool.isConnected()) {
 			LOG.error("Aborting...");
 			return false;
 		}
-		
+
+		dbPool.disconnect();
 		return true;
 	}
 

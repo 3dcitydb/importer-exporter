@@ -111,4 +111,11 @@ public abstract class AbstractDatabaseAdapter implements DatabaseAdapter {
 		connectionWarnings.add(connectionWarning);
 	}
 	
+	public void addConnectionWarnings(List<DatabaseConnectionWarning> connectionWarnings) {
+		if (this.connectionWarnings == null)
+			this.connectionWarnings = new ArrayList<DatabaseConnectionWarning>(connectionWarnings);
+		else
+			this.connectionWarnings.addAll(connectionWarnings);
+	}
+	
 }

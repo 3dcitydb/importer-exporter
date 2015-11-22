@@ -20,8 +20,9 @@ public class DefaultDatabaseVersionChecker implements DatabaseVersionChecker {
 	private final List<DatabaseVersion> supportedVersions = Arrays.asList(new DatabaseVersion(3,1,0), new DatabaseVersion(3,0,0));
 
 	@Override
-	public void checkVersionSupport(DatabaseAdapter databaseAdapter) throws DatabaseVersionException, DatabaseConnectionWarning {
+	public List<DatabaseConnectionWarning> checkVersionSupport(DatabaseAdapter databaseAdapter) throws DatabaseVersionException {
 		DatabaseVersion version = databaseAdapter.getConnectionMetaData().getCityDBVersion();
+		List<DatabaseConnectionWarning> warnings = new ArrayList<DatabaseConnectionWarning>();
 		
 		// check for unsupported version
 		if (!supportedVersions.contains(version)) {
@@ -43,9 +44,12 @@ public class DefaultDatabaseVersionChecker implements DatabaseVersionChecker {
 				Object[] args = new Object[]{ version };
 				String formattedMessage = MessageFormat.format(text, args);
 				
-				throw new DatabaseConnectionWarning(message, formattedMessage, Database.CITYDB_PRODUCT_NAME, ConnectionWarningType.OUTDATED_DATABASE_VERSION);				
+				warnings.add(new DatabaseConnectionWarning(message, formattedMessage, Database.CITYDB_PRODUCT_NAME, ConnectionWarningType.OUTDATED_DATABASE_VERSION));				
+				break;
 			}
 		}
+		
+		return warnings;
 	}
 
 	@Override

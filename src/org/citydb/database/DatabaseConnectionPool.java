@@ -28,6 +28,7 @@ package org.citydb.database;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -153,11 +154,9 @@ public class DatabaseConnectionPool {
 			databaseAdapter.setConnectionMetaData(databaseAdapter.getUtil().getDatabaseInfo());
 
 			// check for supported database version
-			try {
-				versionChecker.checkVersionSupport(databaseAdapter);
-			} catch (DatabaseConnectionWarning warning) {
-				databaseAdapter.addConnectionWarning(warning);
-			}
+			List<DatabaseConnectionWarning> warnings = versionChecker.checkVersionSupport(databaseAdapter);
+			if (!warnings.isEmpty())
+				databaseAdapter.addConnectionWarnings(warnings);
 
 			// check whether user-defined reference systems are supported
 			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
