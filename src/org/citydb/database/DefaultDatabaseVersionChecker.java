@@ -29,7 +29,7 @@ public class DefaultDatabaseVersionChecker implements DatabaseVersionChecker {
 			String message = "The version " + version + " of the " + Database.CITYDB_PRODUCT_NAME + " is not supported.";
 			
 			String text = Language.I18N.getString("db.dialog.error.version.error");
-			Object[] args = new Object[]{ version, Util.collection2string(supportedVersions, ", ") };
+			Object[] args = new Object[]{ version, Database.CITYDB_PRODUCT_NAME, Util.collection2string(supportedVersions, ", ") };
 			String formattedMessage = MessageFormat.format(text, args);	
 		
 			throw new DatabaseVersionException(message, formattedMessage, Database.CITYDB_PRODUCT_NAME, new ArrayList<DatabaseVersion>(supportedVersions));
@@ -41,7 +41,7 @@ public class DefaultDatabaseVersionChecker implements DatabaseVersionChecker {
 				String message = "The version " + version + " of the " + Database.CITYDB_PRODUCT_NAME + " is outdated. Consider upgrading.";
 				
 				String text = Language.I18N.getString("db.dialog.warn.version.outdated");
-				Object[] args = new Object[]{ version };
+				Object[] args = new Object[]{ version, Database.CITYDB_PRODUCT_NAME };
 				String formattedMessage = MessageFormat.format(text, args);
 				
 				warnings.add(new DatabaseConnectionWarning(message, formattedMessage, Database.CITYDB_PRODUCT_NAME, ConnectionWarningType.OUTDATED_DATABASE_VERSION));				
