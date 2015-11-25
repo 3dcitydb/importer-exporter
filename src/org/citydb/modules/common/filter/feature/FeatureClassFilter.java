@@ -49,6 +49,9 @@ public class FeatureClassFilter implements Filter<CityGMLClass> {
 		if (mode == FilterMode.EXPORT) {
 			filterConfig = config.getProject().getExporter().getFilter();
 			version = Util.toCityGMLVersion(config.getProject().getExporter().getCityGMLVersion());
+		} else if (mode == FilterMode.KML_EXPORT) {
+			filterConfig = config.getProject().getKmlExporter().getFilter();
+			version = CityGMLVersion.v2_0_0;			
 		} else {
 			filterConfig = config.getProject().getImporter().getFilter();
 			version = CityGMLVersion.v2_0_0;
