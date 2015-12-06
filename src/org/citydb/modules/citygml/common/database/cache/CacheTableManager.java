@@ -67,12 +67,13 @@ public class CacheTableManager {
 
 			try {
 				Class.forName(cacheAdapter.getConnectionFactoryClassName());
+				cacheDir = tempDir.getAbsolutePath() + File.separator + DefaultGMLIdManager.getInstance().generateUUID("");		
+				cacheConnection = DriverManager.getConnection(cacheAdapter.getJDBCUrl(cacheDir + File.separator + "tmp", -1, null), "sa", "");
 			} catch (ClassNotFoundException e) {
 				throw new SQLException(e);
+			} finally {
+				deleteTempFiles(new File(cacheDir));
 			}
-
-			cacheDir = tempDir.getAbsolutePath() + File.separator + DefaultGMLIdManager.getInstance().generateUUID("");		
-			cacheConnection = DriverManager.getConnection(cacheAdapter.getJDBCUrl(cacheDir + File.separator + "tmp", -1, null), "sa", "");			
 		}
 
 		cacheConnection.setAutoCommit(false);
