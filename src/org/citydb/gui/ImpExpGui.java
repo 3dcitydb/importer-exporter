@@ -68,6 +68,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
@@ -203,11 +204,11 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 
 		menuBar = new MenuBar(pluginService, config, jaxbProjectContext, this);
 		setJMenuBar(menuBar);
-
+		
 		console = new JPanel();
 		consoleLabel = new JLabel();
 		consoleText.setAutoscrolls(true);
-		consoleText.setFont(new Font(Font.MONOSPACED, 0, 11));
+		consoleText.setFont(new Font(Font.MONOSPACED, 0, UIManager.getFont("Label.font").getSize()));
 		consoleText.setEditable(false);
 		consoleWindow = new ConsoleWindow(console, config, this);
 		consolePopup = new ConsolePopupMenuWrapper(PopupMenuDecorator.getInstance().decorateAndGet(consoleText));

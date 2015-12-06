@@ -42,6 +42,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -158,6 +159,10 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		renderer.setOpenIcon(null);
 		renderer.setClosedIcon(null);
 		menuTree.setCellRenderer(renderer);
+		
+		// set row height
+		int padding = menuTree.getRowHeight() - UIManager.getFont("Tree.font").getSize();
+		menuTree.setRowHeight(UIManager.getFont("Tree.font").getSize() + Math.max(padding, 5));
 
 		//layout
 		setLayout(new GridBagLayout());
