@@ -2352,12 +2352,24 @@ public class Queries {
 	// WATER BODY QUERIES
 	// ----------------------------------------------------------------------
 
-	private static final String WATERBODY_LOD1_ROOT_IDS =
+/*	private static final String WATERBODY_LOD1_ROOT_IDS =
 			"SELECT wb.lod<LoD>_solid_id " +
 					"FROM WATERBODY wb " +
 					"WHERE wb.id = ? " +
-					"AND wb.lod<LoD>_solid_id IS NOT NULL";
-
+					"AND wb.lod<LoD>_solid_id IS NOT NULL";*/
+	
+	private static final String WATERBODY_LOD1_ROOT_IDS =
+			"SELECT geom.gid FROM (" +
+					"SELECT wb.lod<LoD>_solid_id as gid " +
+					"FROM WATERBODY wb " +
+					"WHERE wb.id = ? " +
+					"AND wb.lod<LoD>_solid_id IS NOT NULL " +
+					"UNION " +
+					"SELECT wb.lod<LoD>_multi_surface_id as gid " + 
+					"FROM WATERBODY wb " +
+					"WHERE wb.id = ? " +
+					"AND wb.lod<LoD>_multi_surface_id IS NOT NULL) geom";
+	
 	private static final String WATERBODY_ROOT_IDS =
 			"SELECT geom.gid FROM (" +
 					"SELECT wb.lod<LoD>_solid_id as gid " +
