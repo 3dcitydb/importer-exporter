@@ -191,8 +191,6 @@ public abstract class KmlGenericObject {
 	protected int currentLod;
 	protected DatabaseSrs dbSrs;
 	protected X3DMaterial defaultX3dMaterial;
-	protected X3DMaterial defaultX3dWallMaterial;
-	protected X3DMaterial defaultX3dRoofMaterial;
 	
 	private SimpleDateFormat dateFormatter;
 	protected final ImageReader imageReader;
@@ -229,23 +227,6 @@ public abstract class KmlGenericObject {
 		defaultX3dMaterial.setDiffuseColor(getX3dColorFromString("0.8 0.8 0.8"));
 		defaultX3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
 		defaultX3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
-		
-		defaultX3dWallMaterial = new X3DMaterial();
-		defaultX3dWallMaterial.setAmbientIntensity(0.2d);
-		defaultX3dWallMaterial.setShininess(0.2d);
-		defaultX3dWallMaterial.setTransparency(0d);
-		defaultX3dWallMaterial.setDiffuseColor(getX3dColorFromString("0.8 0.8 0.8"));
-		defaultX3dWallMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
-		defaultX3dWallMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
-		
-		
-		defaultX3dRoofMaterial = new X3DMaterial();
-		defaultX3dRoofMaterial.setAmbientIntensity(0.2d);
-		defaultX3dRoofMaterial.setShininess(0.2d);
-		defaultX3dRoofMaterial.setTransparency(0d);
-		defaultX3dRoofMaterial.setDiffuseColor(getX3dColorFromString("1.0 0.2 0.2"));
-		defaultX3dRoofMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
-		defaultX3dRoofMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
 
 		imageReader = new ImageReader();
 	}
@@ -1672,11 +1653,40 @@ public abstract class KmlGenericObject {
 		}
 		return placemarkList;
 	}
+	
+	private X3DMaterial getX3dMaterialFromIntColor(int rgbColor) {
+		java.awt.Color color = new java.awt.Color(rgbColor, true);
+		double floatRed = color.getRed() / 255.0;
+		double floatGreen = color.getGreen() / 255.0;
+		double floatBlue = color.getBlue() / 255.0;
+		double floatAlpha = color.getAlpha() / 255.0;
+		X3DMaterial x3dMaterial =  new X3DMaterial();
+		x3dMaterial.setAmbientIntensity(0.2d);
+		x3dMaterial.setShininess(0.2d);		
+		x3dMaterial.setTransparency(Double.valueOf(1 - floatAlpha));
+		x3dMaterial.setDiffuseColor(getX3dColorFromString(String.valueOf(floatRed) + " " + String.valueOf(floatGreen) + " " + String.valueOf(floatBlue)));
+		x3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
+		x3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
+		return x3dMaterial;
+	}
 
 	protected void fillGenericObjectForCollada(ResultSet rs, boolean generateTextureAtlas) throws SQLException {
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
 		int texImageCounter = 0;
+		
+		DisplayForm colladaDisplayForm = null;
+		for (DisplayForm displayForm: getDisplayForms()) {
+			if (displayForm.getForm() == DisplayForm.GEOMETRY) {
+				colladaDisplayForm = displayForm;
+				break;
+			}
+		}
+		
+		X3DMaterial x3dWallMaterial =  getX3dMaterialFromIntColor(colladaDisplayForm.getRgba0());
+		X3DMaterial x3dRoofMaterial = null;
+		if (colladaDisplayForm.isSetRgba2())
+			x3dRoofMaterial =  getX3dMaterialFromIntColor(colladaDisplayForm.getRgba2());
 
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
@@ -1732,25 +1742,25 @@ public abstract class KmlGenericObject {
 
 						String texImageUri = null;
 						StringTokenizer texCoordsTokenized = null;
-
+						
 						if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
 							if (surfaceTypeID != 0){
 								if (Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BUILDING_WALL_SURFACE ||
 										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BRIDGE_WALL_SURFACE ||
 										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.TUNNEL_WALL_SURFACE){
-									addX3dMaterial(surfaceId, defaultX3dWallMaterial);
+									addX3dMaterial(surfaceId, x3dWallMaterial);
 								}
 								else if (Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BUILDING_ROOF_SURFACE ||
 										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BRIDGE_ROOF_SURFACE ||
-										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.TUNNEL_ROOF_SURFACE) {
-									addX3dMaterial(surfaceId, defaultX3dRoofMaterial);
+										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.TUNNEL_ROOF_SURFACE) {						
+									addX3dMaterial(surfaceId, x3dRoofMaterial);
 								}
 								else {
-									addX3dMaterial(surfaceId, defaultX3dMaterial);
+									addX3dMaterial(surfaceId, x3dWallMaterial);
 								}
 							}
 							else {
-								addX3dMaterial(surfaceId, defaultX3dMaterial);
+								addX3dMaterial(surfaceId, x3dWallMaterial);
 							}
 						}
 						else {
@@ -1760,7 +1770,7 @@ public abstract class KmlGenericObject {
 								else if (getX3dMaterial(rootId) != null) // material for root surface known
 									addX3dMaterial(surfaceId, getX3dMaterial(rootId));
 								else
-									addX3dMaterial(surfaceId, defaultX3dMaterial);
+									addX3dMaterial(surfaceId, x3dWallMaterial);
 							}
 							else {
 								texImageUri = rs2.getString("tex_image_uri");
@@ -1823,7 +1833,7 @@ public abstract class KmlGenericObject {
 									addX3dMaterial(surfaceId, x3dMaterial);
 									if (getX3dMaterial(surfaceId) == null) {
 										// untextured surface and no x3dMaterial -> default x3dMaterial (gray)
-										addX3dMaterial(surfaceId, defaultX3dMaterial);
+										addX3dMaterial(surfaceId, x3dWallMaterial);
 									}
 								}
 							}
