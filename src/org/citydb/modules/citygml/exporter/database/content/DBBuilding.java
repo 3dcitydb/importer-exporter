@@ -497,7 +497,7 @@ public class DBBuilding implements DBExporter {
 
 						if (handleAddressGmlId) {
 							String gmlId = rs.getString(48);
-							if (dbExporterManager.lookupAndPutGmlId(gmlId, addressId, CityGMLClass.ADDRESS)) {
+							if (gmlId != null && dbExporterManager.lookupAndPutGmlId(gmlId, addressId, CityGMLClass.ADDRESS)) {
 								if (useXLink) {
 									addressProperty = new AddressProperty();
 									addressProperty.setHref("#" + gmlId);
