@@ -141,6 +141,10 @@ public class KmlExporterManager {
 	public HashMap<CityGMLClass, Long> getFeatureCounter() {
 		return featureCounterMap;
 	}
+	
+	public ExportTracker getExportTracker() {
+		return this.tracker;
+	}
 
 	public void print(List<PlacemarkType> placemarkList,
 					  KmlSplittingResult work,
@@ -555,11 +559,11 @@ public class KmlExporterManager {
 			}
 			else {		
 				if (!config.getProject().getKmlExporter().isOneFilePerObject()) {
-					File tileDirectory = new File(path, org.citydb.modules.kml.controller.KmlExporter.FoldernameOfActiveTile);
+					File tileDirectory = new File(tracker.getCurrentWorkingDirectoryPath());
 					if (!tileDirectory.exists()) {
 						tileDirectory.mkdir();
 					}
-					path = path + File.separator + org.citydb.modules.kml.controller.KmlExporter.FoldernameOfActiveTile;
+					path = tracker.getCurrentWorkingDirectoryPath();
 				}
 			}
 

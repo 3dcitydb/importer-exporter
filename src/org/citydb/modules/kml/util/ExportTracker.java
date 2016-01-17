@@ -30,7 +30,9 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ExportTracker {
+	
 	private final ConcurrentHashMap<Long, CityObject4JSON> map;
+	private String currentWorkingDirectoryPath;
 	
 	public ExportTracker() {
 		map = new ConcurrentHashMap<Long, CityObject4JSON>();
@@ -51,4 +53,13 @@ public class ExportTracker {
 	public Collection<CityObject4JSON> values() {
 		return map.values();
 	}
+
+	public String getCurrentWorkingDirectoryPath() {
+		return currentWorkingDirectoryPath;
+	}
+
+	public void setCurrentWorkingDirectoryPath(String currentWorkingDirectoryPath) {
+		this.currentWorkingDirectoryPath = currentWorkingDirectoryPath;
+	}
+	
 }

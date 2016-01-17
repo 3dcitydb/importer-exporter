@@ -153,8 +153,6 @@ public class KmlExporter implements EventHandler {
 	private final Charset CHARSET = Charset.forName(ENCODING);
 	private final String TEMP_FOLDER = "__temp";
 	private File lastTempFolder = null;
-	public static String FoldernameOfActiveTile;
-
 	private GeometryObject wgs84Extent;
 	private BoundingBox globeWGS84Bbox; 
 	private int rows = 1;
@@ -289,9 +287,8 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 
-		// start writing JSON file if required
+		// start writing cityobject JSON file if required
 		FileOutputStream jsonFileWriter = null;
-		FileOutputStream jsonFileWriterForMasterFile = null;
 
 		boolean jsonHasContent = false;
 		if (config.getProject().getKmlExporter().isWriteJSONFile() && isBBoxActive) {
@@ -305,37 +302,7 @@ public class KmlExporter implements EventHandler {
 			} catch (IOException e) {
 				Logger.getInstance().error("Failed to write JSON file header: " + e.getMessage());
 				return false;
-			}
-			try {
-				File jsonFileForMasterFile = new File(path + File.separator + fileName + "_MasterJSON" + ".json");
-				jsonFileWriterForMasterFile = new FileOutputStream(jsonFileForMasterFile);
-				if (config.getProject().getKmlExporter().isWriteJSONPFile())
-					jsonFileWriterForMasterFile.write((config.getProject().getKmlExporter().getCallbackNameJSONP() + "({\n").getBytes(CHARSET));
-				else
-					jsonFileWriterForMasterFile.write("{\n".getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write(("\t\"" + "layername" + "\": \"" + fileName + "\",").getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write(("\n\t\"" + "fileextension" + "\": \"" + fileExtension + "\",").getBytes(CHARSET));
-				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
-					if (displayForm.isActive()) {
-						jsonFileWriterForMasterFile.write(("\n\t\"" + "displayform" + "\": \"" + displayForm.getName() + "\",").getBytes(CHARSET));	
-						jsonFileWriterForMasterFile.write(("\n\t\"" + "minLodPixels" + "\": " + displayForm.getVisibleFrom() + ",").getBytes(CHARSET));
-						jsonFileWriterForMasterFile.write(("\n\t\"" + "maxLodPixels" + "\": " + displayForm.getVisibleUpTo() + ",").getBytes(CHARSET));
-						break;
-					}
-					
-				}
-				jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": " + (columns -1) + ",").getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write(("\n\t\"" + "rownum" + "\": " + (rows - 1) + ",").getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write(("\n\t\"" + "bbox" + "\":{ ").getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getX() + ",").getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getX() + ",").getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getY() + ",").getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getY()).getBytes(CHARSET));
-				jsonFileWriterForMasterFile.write(("\n\t}").getBytes(CHARSET));
-
-			} catch (IOException e) {
-				Logger.getInstance().error("Failed to write Master JSON file header: " + e.getMessage());
-			}
+			}			
 		}
 
 		// display number of tiles to be exported
@@ -384,18 +351,23 @@ public class KmlExporter implements EventHandler {
 
 					File file = null;
 					ZipOutputStream zipOut = null;
-
+					String currentWorkingDirectoryPath = null;
 					try {
 						if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
-							file = new File(path + File.separator + fileName + "_Tile_"
-									+ i + "_" + j + "_" + displayForm.getName() + fileExtension);
-							FoldernameOfActiveTile = fileName + "_Tile_" + i + "_" + j + "_" + displayForm.getName();
+							File tilesRootDirectory = new File(path, "Tiles");
+							tilesRootDirectory.mkdir();
+							File rowTilesDirectory = new File(tilesRootDirectory.getPath(),  String.valueOf(i));
+							rowTilesDirectory.mkdir();
+							File columnTilesDirectory = new File(rowTilesDirectory.getPath(),  String.valueOf(j));
+							columnTilesDirectory.mkdir();
+							file = new File(columnTilesDirectory.getPath() + File.separator + fileName + "_Tile_" + i + "_" + j + "_" + displayForm.getName() + fileExtension);
+							currentWorkingDirectoryPath = columnTilesDirectory.getPath() + File.separator + fileName + "_Tile_" + i + "_" + j + "_" + displayForm.getName();
 						} else {
 							file = new File(path + File.separator + fileName + "_" + displayForm.getName() + fileExtension);
-
-							FoldernameOfActiveTile = fileName + "_" + displayForm.getName();
+							currentWorkingDirectoryPath = path + File.separator + fileName + "_" + displayForm.getName();
 						}
-
+						tracker.setCurrentWorkingDirectoryPath(currentWorkingDirectoryPath);
+						
 						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("kmlExport.dialog.writingToFile"), this));
 						eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
 
@@ -634,7 +606,7 @@ public class KmlExporter implements EventHandler {
 					}
 				}
 
-				// fill JSON file after tile has been processed
+				// fill cityobject JSON file after tile has been processed
 				if (jsonFileWriter != null && !featureCounterMap.isEmpty()) {
 					try {
 						Iterator<CityObject4JSON> iter = tracker.values().iterator();
@@ -670,8 +642,11 @@ public class KmlExporter implements EventHandler {
 				return false;
 			}
 		}
+		
+		// write master JSON file
+		writeMasterJsonFileTileReference(path, fileName, fileExtension);
 
-		// close JSON file
+		// close cityobject JSON file
 		if (jsonFileWriter != null) {
 			try {
 				if (config.getProject().getKmlExporter().isWriteJSONPFile())
@@ -684,20 +659,7 @@ public class KmlExporter implements EventHandler {
 				Logger.getInstance().error("Failed to close JSON file: " + ioe.getMessage());
 				return false;
 			}
-		}
-		if (jsonFileWriterForMasterFile != null) {
-			try {
-				if (config.getProject().getKmlExporter().isWriteJSONPFile())
-					jsonFileWriterForMasterFile.write("\n});\n".getBytes(CHARSET));
-				else
-					jsonFileWriterForMasterFile.write("\n}\n".getBytes(CHARSET));
-				
-				jsonFileWriterForMasterFile.close();
-			} catch (IOException ioe) {
-				Logger.getInstance().error("Failed to close JSON file for Master file: " + ioe.getMessage());
-				return false;
-			}
-		}
+		}		
 
 		// show exported features
 		if (!totalFeatureCounterMap.isEmpty()) {
@@ -957,7 +919,7 @@ public class KmlExporter implements EventHandler {
 			regionType.setLod(lodType);
 
 			LinkType linkType = kmlFactory.createLinkType();
-			linkType.setHref(tilenameForDisplayForm);
+			linkType.setHref("Tiles" + File.separator + row + File.separator + column + File.separator + tilenameForDisplayForm);
 			linkType.setViewRefreshMode(ViewRefreshModeEnumType.fromValue(config.getProject().getKmlExporter().getViewRefreshMode()));
 			linkType.setViewFormat("");
 			if (linkType.getViewRefreshMode() == ViewRefreshModeEnumType.ON_STOP)
@@ -987,6 +949,47 @@ public class KmlExporter implements EventHandler {
 
 		marshaller.marshal(kml, fragmentWriter);
 		saxWriter.flush();
+	}
+	
+	
+	private void writeMasterJsonFileTileReference(String path, String fileName, String fileExtension) {
+		FileOutputStream jsonFileWriterForMasterFile = null;
+		try {
+			File jsonFileForMasterFile = new File(path + File.separator + fileName + "_MasterJSON" + ".json");
+			jsonFileWriterForMasterFile = new FileOutputStream(jsonFileForMasterFile);
+			jsonFileWriterForMasterFile.write("{\n".getBytes(CHARSET));
+			String versionNumber = "1.0.0";
+			jsonFileWriterForMasterFile.write(("\t\"" + "version" + "\": \"" + versionNumber + "\",").getBytes(CHARSET));
+			jsonFileWriterForMasterFile.write(("\n\t\"" + "layername" + "\": \"" + fileName + "\",").getBytes(CHARSET));
+			jsonFileWriterForMasterFile.write(("\n\t\"" + "fileextension" + "\": \"" + fileExtension + "\",").getBytes(CHARSET));
+			for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
+				if (displayForm.isActive()) {
+					jsonFileWriterForMasterFile.write(("\n\t\"" + "displayform" + "\": \"" + displayForm.getName() + "\",").getBytes(CHARSET));	
+					jsonFileWriterForMasterFile.write(("\n\t\"" + "minLodPixels" + "\": " + displayForm.getVisibleFrom() + ",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\"" + "maxLodPixels" + "\": " + displayForm.getVisibleUpTo() + ",").getBytes(CHARSET));
+					break;
+				}					
+			}
+			jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": " + (columns -1) + ",").getBytes(CHARSET));
+			jsonFileWriterForMasterFile.write(("\n\t\"" + "rownum" + "\": " + (rows - 1) + ",").getBytes(CHARSET));
+			jsonFileWriterForMasterFile.write(("\n\t\"" + "bbox" + "\":{ ").getBytes(CHARSET));
+			jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getX() + ",").getBytes(CHARSET));
+			jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getX() + ",").getBytes(CHARSET));
+			jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getY() + ",").getBytes(CHARSET));
+			jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getY()).getBytes(CHARSET));
+			jsonFileWriterForMasterFile.write(("\n\t}").getBytes(CHARSET));
+		} catch (IOException e) {
+			Logger.getInstance().error("Failed to write Master JSON file header: " + e.getMessage());
+		}
+		
+		if (jsonFileWriterForMasterFile != null) {
+			try {
+				jsonFileWriterForMasterFile.write("\n}\n".getBytes(CHARSET));				
+				jsonFileWriterForMasterFile.close();
+			} catch (IOException ioe) {
+				Logger.getInstance().error("Failed to close Master JSON file: " + ioe.getMessage());
+			}
+		}
 	}
 
 	private void addStyle(DisplayForm currentDisplayForm, CityGMLClass featureClass, SAXWriter saxWriter) throws JAXBException {
