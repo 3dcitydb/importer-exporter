@@ -341,16 +341,19 @@ public class Transportation extends KmlGenericObject{
 									+ reducePrecisionForZ(ordinatesArray[j+2] + zOffset)));
 						}
 					}
-					switch (config.getProject().getKmlExporter().getAltitudeOffsetMode()) {
-					case NO_OFFSET:
-					case CONSTANT:
-					case GENERIC_ATTRIBUTE:
+					
+					switch (config.getProject().getKmlExporter().getAltitudeMode()) {
+					case ABSOLUTE:
 						lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
 						break;
-					case BOTTOM_ZERO:
+					case RELATIVE:
+						lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+						break;
+					case CLAMP_TO_GROUND:
 						lineString.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
 						break;
 					}
+					
 					placemark.setAbstractGeometryGroup(kmlFactory.createLineString(lineString));
 				}
 			}
