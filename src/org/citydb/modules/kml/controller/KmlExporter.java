@@ -32,9 +32,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -83,7 +80,6 @@ import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.event.EventHandler;
 import org.citydb.api.geometry.BoundingBox;
-import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.api.geometry.GeometryObject;
 import org.citydb.config.Config;
 import org.citydb.config.language.Language;
@@ -117,7 +113,6 @@ import org.citydb.modules.kml.database.GenericCityObject;
 import org.citydb.modules.kml.database.KmlSplitter;
 import org.citydb.modules.kml.database.KmlSplittingResult;
 import org.citydb.modules.kml.database.LandUse;
-import org.citydb.modules.kml.database.Queries;
 import org.citydb.modules.kml.database.Relief;
 import org.citydb.modules.kml.database.SolitaryVegetationObject;
 import org.citydb.modules.kml.database.Transportation;
@@ -153,7 +148,7 @@ public class KmlExporter implements EventHandler {
 	private final Charset CHARSET = Charset.forName(ENCODING);
 	private final String TEMP_FOLDER = "__temp";
 	private File lastTempFolder = null;
-	private GeometryObject wgs84Extent;
+	private GeometryObject globeWGS84BboxGeometry;
 	private BoundingBox globeWGS84Bbox; 
 	private int rows = 1;
 	private int columns = 1;
@@ -248,6 +243,15 @@ public class KmlExporter implements EventHandler {
 
 		// get export filter and bounding box config
 		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
+		globeWGS84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
+		globeWGS84BboxGeometry = GeometryObject.createPolygon(new double[]{
+				globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
+				globeWGS84Bbox.getUpperRightCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
+				globeWGS84Bbox.getUpperRightCorner().getX(), globeWGS84Bbox.getUpperRightCorner().getY(),
+				globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getUpperRightCorner().getY(),
+				globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
+		}, 2, 4326);
+		
 		boolean isBBoxActive = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue();
 		Tiling tiling = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
 
@@ -326,7 +330,7 @@ public class KmlExporter implements EventHandler {
 				GeometryObject wgs84Tile = null;
 				if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
 					try {
-						exportFilter.getBoundingBoxFilter().setActiveTile2(i, j);
+						exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
 						BoundingBox wgs84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
 						wgs84Tile = GeometryObject.createPolygon(new double[]{
 								wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
@@ -678,7 +682,7 @@ public class KmlExporter implements EventHandler {
 
 		return shouldRun;
 	}
-
+	
 	public int calculateRowsColumns() throws SQLException {
 		TiledBoundingBox bbox = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox();
 		double autoTileSideLength = config.getProject().getKmlExporter().getAutoTileSideLength();
@@ -689,52 +693,6 @@ public class KmlExporter implements EventHandler {
 		if (bbox.isSetSrs() && bbox.getSrs().getSrid() != dbSrs.getSrid())
 			extent = dbPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(extent, extent.getSrs(), dbSrs);
 
-		// retrieve WGS84 extent of bbox
-		wgs84Extent = convertTileToWGS84(extent);
-
-		// determine tile sizes and derive number of rows and columns
-		switch (bbox.getTiling().getMode()) {
-		case AUTOMATIC:
-			// approximate
-			rows = (int)((extent.getUpperRightCorner().getY() - extent.getLowerLeftCorner().getY()) / autoTileSideLength) + 1;
-			columns = (int)((extent.getUpperRightCorner().getX() - extent.getLowerLeftCorner().getX()) / autoTileSideLength) + 1;
-			bbox.getTiling().setRows(rows);
-			bbox.getTiling().setColumns(columns);
-			break;
-		case NO_TILING:
-			// no_tiling is internally mapped to manual tiling with one tile
-			bbox.getTiling().setMode(TilingMode.MANUAL);
-			bbox.getTiling().setRows(1);
-			bbox.getTiling().setColumns(1);
-		default:
-			rows = bbox.getTiling().getRows();
-			columns = bbox.getTiling().getColumns();
-		}
-
-		return rows * columns;
-	}
-	
-	public int calculateRowsColumns2() throws SQLException {
-		TiledBoundingBox bbox = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox();
-		double autoTileSideLength = config.getProject().getKmlExporter().getAutoTileSideLength();
-		BoundingBox extent = bbox;
-
-		// transform bbox into the database srs if required
-		DatabaseSrs dbSrs = dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
-		if (bbox.isSetSrs() && bbox.getSrs().getSrid() != dbSrs.getSrid())
-			extent = dbPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(extent, extent.getSrs(), dbSrs);
-
-		// retrieve WGS84 extent of bbox
-		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
-		globeWGS84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
-		wgs84Extent = GeometryObject.createPolygon(new double[]{
-				globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
-				globeWGS84Bbox.getUpperRightCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
-				globeWGS84Bbox.getUpperRightCorner().getX(), globeWGS84Bbox.getUpperRightCorner().getY(),
-				globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getUpperRightCorner().getY(),
-				globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
-		}, 2, 4326);
-		
 		// determine tile sizes and derive number of rows and columns
 		switch (bbox.getTiling().getMode()) {
 		case AUTOMATIC:
@@ -785,11 +743,8 @@ public class KmlExporter implements EventHandler {
 		document.setName(fileName);
 		LookAtType lookAtType = kmlFactory.createLookAtType();
 
-		// create bounding box of wgs84 extent
-		BoundingBox bbox = getBBox(wgs84Extent);
-
-		lookAtType.setLongitude(bbox.getLowerLeftCorner().getX() + Math.abs((bbox.getUpperRightCorner().getX() - bbox.getLowerLeftCorner().getX())/2));
-		lookAtType.setLatitude(bbox.getLowerLeftCorner().getY() + Math.abs((bbox.getUpperRightCorner().getY() - bbox.getLowerLeftCorner().getY())/2));
+		lookAtType.setLongitude(globeWGS84Bbox.getLowerLeftCorner().getX() + Math.abs((globeWGS84Bbox.getUpperRightCorner().getX() - globeWGS84Bbox.getLowerLeftCorner().getX())/2));
+		lookAtType.setLatitude(globeWGS84Bbox.getLowerLeftCorner().getY() + Math.abs((globeWGS84Bbox.getUpperRightCorner().getY() - globeWGS84Bbox.getLowerLeftCorner().getY())/2));
 		lookAtType.setAltitude(0.0);
 		lookAtType.setHeading(0.0);
 		lookAtType.setTilt(60.0);
@@ -866,7 +821,7 @@ public class KmlExporter implements EventHandler {
 			frameLineStyleType.setWidth(4.0);
 			style.setLineStyle(frameLineStyleType);
 
-			addBorder(wgs84Extent, style, saxWriter);
+			addBorder(globeWGS84BboxGeometry, style, saxWriter);
 		}
 
 		// make sure header has been written
@@ -881,9 +836,6 @@ public class KmlExporter implements EventHandler {
 		TilingMode tilingMode = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode();
 		Marshaller marshaller = jaxbKmlContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
-
-		// create bounding box of wgs84 tile extent
-		BoundingBox bbox = getBBox(wgs84Tile);
 
 		// tileName should not contain special characters,
 		// since it will be used as filename for all displayForm files
@@ -906,10 +858,10 @@ public class KmlExporter implements EventHandler {
 			RegionType regionType = kmlFactory.createRegionType();
 
 			LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
-			latLonAltBoxType.setNorth(bbox.getUpperRightCorner().getY());
-			latLonAltBoxType.setSouth(bbox.getLowerLeftCorner().getY());
-			latLonAltBoxType.setEast(bbox.getUpperRightCorner().getX());
-			latLonAltBoxType.setWest(bbox.getLowerLeftCorner().getX());
+			latLonAltBoxType.setNorth(globeWGS84Bbox.getUpperRightCorner().getY());
+			latLonAltBoxType.setSouth(globeWGS84Bbox.getLowerLeftCorner().getY());
+			latLonAltBoxType.setEast(globeWGS84Bbox.getUpperRightCorner().getX());
+			latLonAltBoxType.setWest(globeWGS84Bbox.getLowerLeftCorner().getX());
 
 			LodType lodType = kmlFactory.createLodType();
 			lodType.setMinLodPixels((double)displayForm.getVisibleFrom());
@@ -991,7 +943,7 @@ public class KmlExporter implements EventHandler {
 			}
 		}
 	}
-
+	
 	private void addStyle(DisplayForm currentDisplayForm, CityGMLClass featureClass, SAXWriter saxWriter) throws JAXBException {
 		if (!currentDisplayForm.isActive()) return;
 		switch (featureClass) {
@@ -1508,54 +1460,6 @@ public class KmlExporter implements EventHandler {
 		}
 
 		marshaller.marshal(kmlFactory.createPlacemark(placemark), saxWriter);
-	}
-
-	private GeometryObject convertTileToWGS84(BoundingBox bbox) throws SQLException {
-		GeometryObject convertedGeomObj = null;
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			conn = dbPool.getConnection();
-			stmt = conn.prepareStatement(Queries.TRANSFORM_GEOMETRY_TO_WGS84(dbPool.getActiveDatabaseAdapter().getSQLAdapter()));
-
-			GeometryObject geomObj = GeometryObject.createPolygon(new double[]{
-					bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(),
-					bbox.getUpperRightCorner().getX(), bbox.getLowerLeftCorner().getY(),
-					bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY(),
-					bbox.getLowerLeftCorner().getX(), bbox.getUpperRightCorner().getY(),
-					bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(),
-			}, 2, bbox.isSetSrs() ? bbox.getSrs().getSrid() : dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
-
-			Object unconverted = dbPool.getActiveDatabaseAdapter().getGeometryConverter().getDatabaseObject(geomObj, conn);
-			if (unconverted == null)
-				return null;
-
-			stmt.setObject(1, unconverted);
-			rs = stmt.executeQuery();
-			if (rs.next())
-				convertedGeomObj = dbPool.getActiveDatabaseAdapter().getGeometryConverter().getGeometry(rs.getObject(1));
-
-			return convertedGeomObj;
-		} catch (Exception e) {
-			Logger.getInstance().error("Exception when converting tile geometry to WGS84.");
-			throw e;
-		} finally {
-			if (rs != null) try { rs.close(); } catch (SQLException e) { }
-			if (stmt != null) try { stmt.close(); } catch (SQLException e) { }
-			if (conn != null) try { conn.close(); } catch (SQLException e) { }
-		}
-	}
-
-	private BoundingBox getBBox(GeometryObject tile) {	
-		double[] coordinates = tile.getCoordinates(0);		
-		double xmin = Math.max(coordinates[0], coordinates[6]);
-		double ymin = Math.max(coordinates[1], coordinates[3]);
-		double xmax = Math.min(coordinates[2], coordinates[4]);
-		double ymax = Math.min(coordinates[5], coordinates[7]);
-
-		return new BoundingBox(new BoundingBoxCorner(xmin, ymin), new BoundingBoxCorner(xmax, ymax));
 	}
 
 	private byte[] hexStringToByteArray(String hex) {
