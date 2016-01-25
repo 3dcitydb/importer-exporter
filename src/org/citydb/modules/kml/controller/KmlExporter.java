@@ -905,45 +905,46 @@ public class KmlExporter implements EventHandler {
 	
 	
 	private void writeMasterJsonFileTileReference(String path, String fileName, String fileExtension) {
-		FileOutputStream jsonFileWriterForMasterFile = null;
-		try {
-			File jsonFileForMasterFile = new File(path + File.separator + fileName + "_MasterJSON" + ".json");
-			jsonFileWriterForMasterFile = new FileOutputStream(jsonFileForMasterFile);
-			jsonFileWriterForMasterFile.write("{\n".getBytes(CHARSET));
-			String versionNumber = "1.0.0";
-			jsonFileWriterForMasterFile.write(("\t\"" + "version" + "\": \"" + versionNumber + "\",").getBytes(CHARSET));
-			jsonFileWriterForMasterFile.write(("\n\t\"" + "layername" + "\": \"" + fileName + "\",").getBytes(CHARSET));
-			jsonFileWriterForMasterFile.write(("\n\t\"" + "fileextension" + "\": \"" + fileExtension + "\",").getBytes(CHARSET));
-			for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
-				if (displayForm.isActive()) {
+		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
+			if (displayForm.isActive()) {
+				FileOutputStream jsonFileWriterForMasterFile = null;
+				try {
+					File jsonFileForMasterFile = new File(path + File.separator + fileName + "_" + displayForm.getName() + "_MasterJSON" + ".json");
+					jsonFileWriterForMasterFile = new FileOutputStream(jsonFileForMasterFile);
+					jsonFileWriterForMasterFile.write("{\n".getBytes(CHARSET));
+					String versionNumber = "1.0.0";
+					jsonFileWriterForMasterFile.write(("\t\"" + "version" + "\": \"" + versionNumber + "\",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\"" + "layername" + "\": \"" + fileName + "\",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\"" + "fileextension" + "\": \"" + fileExtension + "\",").getBytes(CHARSET));
 					jsonFileWriterForMasterFile.write(("\n\t\"" + "displayform" + "\": \"" + displayForm.getName() + "\",").getBytes(CHARSET));	
 					jsonFileWriterForMasterFile.write(("\n\t\"" + "minLodPixels" + "\": " + displayForm.getVisibleFrom() + ",").getBytes(CHARSET));
 					jsonFileWriterForMasterFile.write(("\n\t\"" + "maxLodPixels" + "\": " + displayForm.getVisibleUpTo() + ",").getBytes(CHARSET));
-					break;
-				}					
-			}
-			jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": " + (columns -1) + ",").getBytes(CHARSET));
-			jsonFileWriterForMasterFile.write(("\n\t\"" + "rownum" + "\": " + (rows - 1) + ",").getBytes(CHARSET));
-			jsonFileWriterForMasterFile.write(("\n\t\"" + "bbox" + "\":{ ").getBytes(CHARSET));
-			jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getX() + ",").getBytes(CHARSET));
-			jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getX() + ",").getBytes(CHARSET));
-			jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getY() + ",").getBytes(CHARSET));
-			jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getY()).getBytes(CHARSET));
-			jsonFileWriterForMasterFile.write(("\n\t}").getBytes(CHARSET));
-		} catch (IOException e) {
-			Logger.getInstance().error("Failed to write Master JSON file header: " + e.getMessage());
-		}
-		
-		if (jsonFileWriterForMasterFile != null) {
-			try {
-				jsonFileWriterForMasterFile.write("\n}\n".getBytes(CHARSET));				
-				jsonFileWriterForMasterFile.close();
-			} catch (IOException ioe) {
-				Logger.getInstance().error("Failed to close Master JSON file: " + ioe.getMessage());
-			}
-		}
+					jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": " + (columns -1) + ",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\"" + "rownum" + "\": " + (rows - 1) + ",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\"" + "bbox" + "\":{ ").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getX() + ",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getX() + ",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getY() + ",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getY()).getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t}").getBytes(CHARSET));
+				} catch (IOException e) {
+					Logger.getInstance().error("Failed to write Master JSON file header: " + e.getMessage());
+				}
+				
+				if (jsonFileWriterForMasterFile != null) {
+					try {
+						jsonFileWriterForMasterFile.write("\n}\n".getBytes(CHARSET));				
+						jsonFileWriterForMasterFile.close();
+					} catch (IOException ioe) {
+						Logger.getInstance().error("Failed to close Master JSON file: " + ioe.getMessage());
+					}
+				}
+			}							
+		}		
 	}
+
 	
+
 	private void addStyle(DisplayForm currentDisplayForm, CityGMLClass featureClass, SAXWriter saxWriter) throws JAXBException {
 		if (!currentDisplayForm.isActive()) return;
 		switch (featureClass) {
