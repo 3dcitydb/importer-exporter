@@ -66,6 +66,7 @@ public class ImpExpCmd {
 			JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
 			Config config) {
+		this.cityGMLBuilder = cityGMLBuilder;
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.config = config;
