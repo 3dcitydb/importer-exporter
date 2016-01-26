@@ -168,6 +168,9 @@ public class KmlExporterManager {
 		DocumentType document = null;
 		ZipOutputStream zipOut = null;
 		OutputStreamWriter fileWriter = null;
+		
+		String path = tracker.getCurrentWorkingDirectoryPath();
+		File directory = new File(path);
 
         try {
         	for (PlacemarkType placemark: placemarkList) {
@@ -178,7 +181,6 @@ public class KmlExporterManager {
 						StringBuilder parentFrame = new StringBuilder(BalloonTemplateHandlerImpl.parentFrameStart);
 
 	        			parentFrame.append('.'); // same folder
-
         				parentFrame.append('/').append(BalloonTemplateHandlerImpl.balloonDirectoryName);
         				parentFrame.append('/').append(work.getGmlId()).append('-').append(work.getId());
         				parentFrame.append(BalloonTemplateHandlerImpl.parentFrameEnd);
@@ -187,10 +189,7 @@ public class KmlExporterManager {
         					placemarkDescription = placemark.getDescription();
 
         					// --------------- create subfolder ---------------
-    						String path = config.getInternal().getExportFileName().trim();
-    						path = path.substring(0, path.lastIndexOf(File.separator));
-    						File directory =  new File(path);
-
+        					
 							if (config.getProject().getKmlExporter().isExportAsKmz()) {
 								if (!isBBoxActive || !config.getProject().getKmlExporter().isOneFilePerObject()) {
         							// export temporarily as kml, it will be later added to kmz if needed
@@ -234,8 +233,7 @@ public class KmlExporterManager {
         			if (isBBoxActive && config.getProject().getKmlExporter().isOneFilePerObject()) {
         				if (gmlId == null) {
         					gmlId = work.getGmlId();
-							String path = config.getInternal().getExportFileName().trim();
-							path = path.substring(0, path.lastIndexOf(File.separator));
+
 							boolean isHighlighting = false;
 
 							String filename = gmlId + "_" + displayFormName;
@@ -315,7 +313,7 @@ public class KmlExporterManager {
 
 							kmlMarshaller.marshal(kmlFactory.createNetworkLink(networkLinkType), buffer);
         				}
-       					placemark.setStyleUrl(".." + File.separator + mainFilename + placemark.getStyleUrl());
+       					placemark.setStyleUrl(".." + File.separator + ".." + File.separator + ".." + File.separator + ".." + File.separator + mainFilename + placemark.getStyleUrl());
         				document.getAbstractFeatureGroup().add(kmlFactory.createPlacemark(placemark));
         			}
         			else {
@@ -383,9 +381,11 @@ public class KmlExporterManager {
         colladaMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
 		PlacemarkType placemark = colladaBundle.getPlacemark();
-		
+		String path = tracker.getCurrentWorkingDirectoryPath();
+
 		if (placemark != null) {
 			String placemarkDescription = placemark.getDescription();
+			
 			if (placemarkDescription != null && balloonInSeparateFile) {
 
 				StringBuilder parentFrame = new StringBuilder(BalloonTemplateHandlerImpl.parentFrameStart);
@@ -411,8 +411,6 @@ public class KmlExporterManager {
 				kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
 				document.getAbstractFeatureGroup().add(kmlFactory.createPlacemark(placemark));
 
-				String path = config.getInternal().getExportFileName().trim();
-				path = path.substring(0, path.lastIndexOf(File.separator));
 				File placemarkDirectory = new File(path + File.separator + colladaBundle.getId());
 				if (!placemarkDirectory.exists()) {
 					placemarkDirectory.mkdir();
@@ -544,9 +542,7 @@ public class KmlExporterManager {
 
 			zipOut.close();
 		}
-		else {
-			String path = config.getInternal().getExportFileName().trim();
-			path = path.substring(0, path.lastIndexOf(File.separator));
+		else {			
 			if (config.getProject().getKmlExporter().isExportAsKmz()) {
 				
 				// export temporarily as kml, it will be later added to kmz if needed
@@ -556,15 +552,6 @@ public class KmlExporterManager {
 					tempFolder.mkdir();
 				}
 				path = path + File.separator + TEMP_FOLDER;
-			}
-			else {		
-				if (!config.getProject().getKmlExporter().isOneFilePerObject()) {
-					File tileDirectory = new File(tracker.getCurrentWorkingDirectoryPath());
-					if (!tileDirectory.exists()) {
-						tileDirectory.mkdir();
-					}
-					path = tracker.getCurrentWorkingDirectoryPath();
-				}
 			}
 
 			// --------------- create subfolder ---------------
@@ -617,7 +604,7 @@ public class KmlExporterManager {
 			// ----------------- balloon saving -----------------
 			if (colladaBundle.getExternalBalloonFileContent() != null) {
 				try {
-					File balloonsDirectory = new File(path + File.separator + BalloonTemplateHandlerImpl.balloonDirectoryName);
+					File balloonsDirectory = new File(buildingDirectory + File.separator + BalloonTemplateHandlerImpl.balloonDirectoryName);
 					if (!balloonsDirectory.exists()) {
 						balloonsDirectory.mkdir();
 					}

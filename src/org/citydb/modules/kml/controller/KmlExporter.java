@@ -239,22 +239,24 @@ public class KmlExporter implements EventHandler {
 		balloonCheck = checkBalloonSettings(CityGMLClass.CITY_OBJECT_GROUP) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.BRIDGE) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.TUNNEL) && balloonCheck;
-		if (!balloonCheck) return false;
-
-		// get export filter and bounding box config
-		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
-		globeWGS84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
-		globeWGS84BboxGeometry = GeometryObject.createPolygon(new double[]{
-				globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
-				globeWGS84Bbox.getUpperRightCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
-				globeWGS84Bbox.getUpperRightCorner().getX(), globeWGS84Bbox.getUpperRightCorner().getY(),
-				globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getUpperRightCorner().getY(),
-				globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
-		}, 2, 4326);
+		if (!balloonCheck) return false;	
 		
 		boolean isBBoxActive = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue();
 		Tiling tiling = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
 
+		// get export filter and bounding box config
+		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
+		if (isBBoxActive) {
+			globeWGS84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
+			globeWGS84BboxGeometry = GeometryObject.createPolygon(new double[]{
+					globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
+					globeWGS84Bbox.getUpperRightCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
+					globeWGS84Bbox.getUpperRightCorner().getX(), globeWGS84Bbox.getUpperRightCorner().getY(),
+					globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getUpperRightCorner().getY(),
+					globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
+			}, 2, 4326);
+		}
+				
 		// create a saxWriter instance 
 		// define indent for xml output and namespace mappings
 		SAXWriter saxWriter = new SAXWriter();
@@ -365,10 +367,10 @@ public class KmlExporter implements EventHandler {
 							File columnTilesDirectory = new File(rowTilesDirectory.getPath(),  String.valueOf(j));
 							columnTilesDirectory.mkdir();
 							file = new File(columnTilesDirectory.getPath() + File.separator + fileName + "_Tile_" + i + "_" + j + "_" + displayForm.getName() + fileExtension);
-							currentWorkingDirectoryPath = columnTilesDirectory.getPath() + File.separator + fileName + "_Tile_" + i + "_" + j + "_" + displayForm.getName();
+							currentWorkingDirectoryPath = columnTilesDirectory.getPath();
 						} else {
 							file = new File(path + File.separator + fileName + "_" + displayForm.getName() + fileExtension);
-							currentWorkingDirectoryPath = path + File.separator + fileName + "_" + displayForm.getName();
+							currentWorkingDirectoryPath = path;
 						}
 						tracker.setCurrentWorkingDirectoryPath(currentWorkingDirectoryPath);
 						
@@ -534,7 +536,7 @@ public class KmlExporter implements EventHandler {
 									zipOut.closeEntry();
 
 									List<File> filesToZip = new ArrayList<File>();
-									File tempFolder = new File(path, TEMP_FOLDER);
+									File tempFolder = new File(currentWorkingDirectoryPath, TEMP_FOLDER);
 									lastTempFolder = tempFolder;
 									int indexOfZipFilePath = tempFolder.getCanonicalPath().length() + 1;
 
@@ -648,8 +650,9 @@ public class KmlExporter implements EventHandler {
 		}
 		
 		// write master JSON file
-		writeMasterJsonFileTileReference(path, fileName, fileExtension);
-
+		if (isBBoxActive)
+			writeMasterJsonFileTileReference(path, fileName, fileExtension);
+		
 		// close cityobject JSON file
 		if (jsonFileWriter != null) {
 			try {

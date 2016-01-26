@@ -1959,13 +1959,7 @@ public abstract class KmlGenericObject {
 		}
 		else {
 			// File.separator would be wrong here, it MUST be "/"
-			if (!config.getProject().getKmlExporter().isExportAsKmz()) {
-				File file = new File(kmlExporterManager.getExportTracker().getCurrentWorkingDirectoryPath());
-				link.setHref(file.getName() + "/" + getId() + "/" + getGmlId() + ".dae");
-			}	
-			else {
-				link.setHref(getId() + "/" + getGmlId() + ".dae");
-			}
+			link.setHref(getId() + "/" + getGmlId() + ".dae");
 		}
 		model.setLink(link);
 
