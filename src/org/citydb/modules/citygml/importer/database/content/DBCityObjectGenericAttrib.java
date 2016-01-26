@@ -79,7 +79,7 @@ public class DBCityObjectGenericAttrib implements DBImporter {
 		insert(genericAttribute, 0, 0, cityObjectId);
 	}
 
-	private void insert(AbstractGenericAttribute genericAttribute,
+	public void insert(AbstractGenericAttribute genericAttribute,
 			long parentId,
 			long rootId,
 			long cityObjectId) throws SQLException {

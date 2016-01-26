@@ -159,7 +159,7 @@ public class KmlSplitter {
 					if (rs.next()) {
 						long id = rs.getLong("id");
 						CityGMLClass cityObjectType = Util.classId2cityObject(rs.getInt("objectclass_id"));
-						addWorkToQueue(id, gmlId, cityObjectType, null, 0, 0);
+						addWorkToQueue(id, gmlId, cityObjectType, null, 0, 0, false);
 					}
 				}
 				catch (SQLException sqlEx) {
@@ -202,7 +202,7 @@ public class KmlSplitter {
 					
 					addWorkToQueue(id, gmlId, cityObjectType, envelope,
 							exportFilter.getBoundingBoxFilter().getTileRow(),
-							exportFilter.getBoundingBoxFilter().getTileColumn());
+							exportFilter.getBoundingBoxFilter().getTileColumn(), false);
 
 					objectCount++;
 				}
@@ -246,41 +246,30 @@ public class KmlSplitter {
 		shouldRun = false;
 	}
 
-	private void addWorkToQueue(long id, String gmlId, CityGMLClass cityObjectType, GeometryObject envelope, int row, int column) throws SQLException {
+	private void addWorkToQueue(long id, String gmlId, CityGMLClass cityObjectType, GeometryObject envelope, int row, int column, boolean isCityObjectGroupMember) throws SQLException {
+		// If CityObjectGroup is selected, only the cityobjectgroup geometries and in addition the selected features, which are group member of cityobjectgroup, will be exported.
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityObjectGroup()
+				&& !cityObjectType.equals(CityGMLClass.CITY_OBJECT_GROUP)
+				&& !isCityObjectGroupMember)
+			return;
 
 		if (CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType)) {
 
-			// check whether center point of the feature's envelope is within the tile extent
-			if (envelope != null && envelope.getGeometryType() == GeometryType.ENVELOPE) {
-				double coordinates[] = envelope.getCoordinates(0);
-				
-				Envelope tmp = new Envelope();
-				tmp.setLowerCorner(new Point(coordinates[0], coordinates[1], 0));
-				tmp.setUpperCorner(new Point(coordinates[3], coordinates[4], 0));
-				
-				if (exportFilter.getBoundingBoxFilter().filter(tmp))
-					return;
-			}
-			
 			// create json
 			CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
 			cityObject4Json.setTileRow(row);
 			cityObject4Json.setTileColumn(column);
 			cityObject4Json.setEnvelope(getEnvelopeInWGS84(envelope));
-
+			
 			// put on work queue
 			KmlSplittingResult splitter = new KmlSplittingResult(id, gmlId, cityObjectType, cityObject4Json, displayForm);
 			dbWorkerPool.addWork(splitter);
 
-			if (splitter.isCityObjectGroup() &&  (filterConfig.isSetSimpleFilter() || CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.size() > 1)) {
+			if (splitter.isCityObjectGroup()) {
 				ResultSet rs = null;
 				PreparedStatement query = null;
 				try {
-					if (filterConfig.isSetComplexFilter() && filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
-						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS_IN_BBOX(databaseAdapter.getDatabaseType()));
-						query.setObject(2, databaseAdapter.getGeometryConverter().getDatabaseObject(GeometryObject.createEnvelope(exportFilter.getBoundingBoxFilter().getFilterState()), connection));
-					} else
-						query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS);
+					query = connection.prepareStatement(Queries.CITYOBJECTGROUP_MEMBERS);
 
 					// set group's id
 					query.setLong(1, id);
@@ -296,7 +285,8 @@ public class KmlSplitter {
 						if (!rs.wasNull() && geomObj != null)
 							_envelope = databaseAdapter.getGeometryConverter().getEnvelope(geomObj);
 						
-						addWorkToQueue(_id,  _gmlId, _cityObjectType, _envelope, row, column);
+						// Recursion in CityObjectGroup
+						addWorkToQueue(_id,  _gmlId, _cityObjectType, _envelope, row, column, true);
 					}
 				}
 				catch (SQLException sqlEx) {

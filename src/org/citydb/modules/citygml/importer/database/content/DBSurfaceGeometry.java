@@ -124,9 +124,15 @@ public class DBSurfaceGeometry implements DBImporter {
 		nullGeometryType = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 
+		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
+			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
+		else
+			gmlIdCodespace = null;		
+		
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into SURFACE_GEOMETRY (ID, GMLID, PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, SOLID_GEOMETRY, IMPLICIT_GEOMETRY, CITYOBJECT_ID) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ");
+		.append("insert into SURFACE_GEOMETRY (ID, GMLID, ").append(gmlIdCodespace != null ? "GMLID_CODESPACE, " : "").append("PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, SOLID_GEOMETRY, IMPLICIT_GEOMETRY, CITYOBJECT_ID) values ")
+		.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?, ");
 
 		if (dbImporterManager.getDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS) {
 			// the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface

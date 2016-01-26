@@ -47,6 +47,12 @@ public class OracleAdapter extends AbstractDatabaseAdapter {
 	public boolean hasVersioningSupport() {
 		return true;
 	}
+	
+	@Override
+	public boolean hasTableStatsSupport() {
+		return false;
+	}
+
 
 	@Override
 	public int getDefaultPort() {

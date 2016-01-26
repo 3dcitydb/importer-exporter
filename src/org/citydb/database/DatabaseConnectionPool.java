@@ -28,6 +28,7 @@ package org.citydb.database;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -39,12 +40,13 @@ import java.util.concurrent.TimeUnit;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.citydb.api.database.DatabaseConfigurationException;
+import org.citydb.api.database.DatabaseConnectionWarning;
 import org.citydb.api.database.DatabaseSrs;
+import org.citydb.api.database.DatabaseVersionChecker;
 import org.citydb.api.database.DatabaseVersionException;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
@@ -60,9 +62,11 @@ public class DatabaseConnectionPool {
 	private final EventDispatcher eventDispatcher;
 	private AbstractDatabaseAdapter databaseAdapter;
 	private DataSource dataSource;
+	private DatabaseVersionChecker versionChecker;
 
 	private DatabaseConnectionPool() {
 		// just to thwart instantiation
+		versionChecker = new DefaultDatabaseVersionChecker();
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 	}
 
@@ -148,10 +152,11 @@ public class DatabaseConnectionPool {
 
 			// retrieve connection metadata
 			databaseAdapter.setConnectionMetaData(databaseAdapter.getUtil().getDatabaseInfo());
-			
-			// check for supported 3DCityDB version
-			if (!Internal.CITYDB_ACCEPT_VERSIONS.contains(databaseAdapter.getConnectionMetaData().getCityDBVersion()))
-				throw new DatabaseVersionException(databaseAdapter.getConnectionMetaData().getCityDBVersion());
+
+			// check for supported database version
+			List<DatabaseConnectionWarning> warnings = versionChecker.checkVersionSupport(databaseAdapter);
+			if (!warnings.isEmpty())
+				databaseAdapter.addConnectionWarnings(warnings);
 
 			// check whether user-defined reference systems are supported
 			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
@@ -233,6 +238,15 @@ public class DatabaseConnectionPool {
 
 		// fire property change events
 		eventDispatcher.triggerSyncEvent(new DatabaseConnectionStateEventImpl(wasConnected, false, this));
+	}
+
+	public DatabaseVersionChecker getDatabaseVersionChecker() {
+		return versionChecker;
+	}
+
+	public void setDatabaseVersionChecker(DatabaseVersionChecker versionChecker) {
+		if (versionChecker != null)
+			this.versionChecker = versionChecker;
 	}
 
 }

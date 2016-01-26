@@ -37,11 +37,12 @@ import java.util.List;
 
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseSrsType;
+import org.citydb.api.database.DatabaseVersion;
 import org.citydb.api.geometry.BoundingBox;
 import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.database.DatabaseMetaDataImpl;
-import org.citydb.database.IndexStatusInfo;
 import org.citydb.database.DatabaseMetaDataImpl.Versioning;
+import org.citydb.database.IndexStatusInfo;
 import org.citydb.database.IndexStatusInfo.IndexType;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractUtilAdapter;
@@ -64,13 +65,14 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			statement = connection.createStatement();
 			rs = statement.executeQuery("select * from " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.citydb_version") + "()");
 			if (rs.next()) {
-				metaData.setCityDBVersion(rs.getString("VERSION"));
-				metaData.setCityDBMajorVersion(rs.getInt("MAJOR_VERSION"));
-				metaData.setCityDBMinorVersion(rs.getInt("MINOR_VERSION"));
-				metaData.setCityDBMinorRevision(rs.getInt("MINOR_REVISION"));
+				String productVersion = rs.getString("VERSION");
+				int major = rs.getInt("MAJOR_VERSION");
+				int minor = rs.getInt("MINOR_VERSION");
+				int revision = rs.getInt("MINOR_REVISION");
+				metaData.setCityDBVersion(new DatabaseVersion(major, minor, revision, productVersion));
 			} 
 		} catch (SQLException e) {
-			throw new SQLException("Failed to retrieve version information from 3D City Database instance.", e);
+			throw new SQLException("Failed to retrieve version information from the 3D City Database instance.", e);
 		} finally {
 			if (rs != null) {
 				try {
@@ -228,22 +230,17 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				PGgeometry pgGeom = (PGgeometry)rs.getObject(1);		
 				if (!rs.wasNull() && pgGeom != null) {
 					Geometry geom = pgGeom.getGeometry();
-					int dim = geom.getDimension();	
-					if (dim == 2 || dim == 3) {
-						double xmin, ymin, xmax, ymax;
-						xmin = ymin = Double.MAX_VALUE;
-						xmax = ymax = -Double.MAX_VALUE;
+					double xmin, ymin, xmax, ymax;
 
-						xmin = (geom.getPoint(0).x);
-						ymin = (geom.getPoint(0).y);
-						xmax = (geom.getPoint(2).x);
-						ymax = (geom.getPoint(2).y);
+					xmin = geom.getPoint(0).x;
+					ymin = geom.getPoint(0).y;
+					xmax = geom.getPoint(2).x;
+					ymax = geom.getPoint(2).y;
 
-						lowerCorner.setX(xmin);
-						lowerCorner.setY(ymin);
-						upperCorner.setX(xmax);
-						upperCorner.setY(ymax);	
-					}		
+					lowerCorner.setX(xmin);
+					lowerCorner.setY(ymin);
+					upperCorner.setX(xmax);
+					upperCorner.setY(ymax);	
 				}
 			}
 
@@ -264,6 +261,68 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				rs = null;
 			}
 
+			if (interruptableStatement != null) {
+				try {
+					interruptableStatement.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+
+				interruptableStatement = null;
+			}
+
+			isInterrupted = false;
+		}
+
+		return bbox;
+	}
+
+	@Override
+	protected BoundingBox createBoundingBoxes(List<Integer> classIds, boolean onlyIfNull, Connection connection) throws SQLException {
+		BoundingBox bbox = null;
+
+		try {					
+			for (Integer classId : classIds) {
+				String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.get_envelope_cityobjects") + "(?,1,?)}";
+				interruptableCallableStatement = connection.prepareCall(call);
+				interruptableCallableStatement.registerOutParameter(1, databaseAdapter.getGeometryConverter().getNullGeometryType());
+				interruptableCallableStatement.setInt(2, classId);
+				interruptableCallableStatement.setInt(3, onlyIfNull ? 1 : 0);
+				interruptableCallableStatement.executeUpdate();
+
+				BoundingBoxCorner lowerCorner = new BoundingBoxCorner(Double.MAX_VALUE);
+				BoundingBoxCorner upperCorner = new BoundingBoxCorner(-Double.MAX_VALUE);
+
+				Object geomObject = interruptableCallableStatement.getObject(1);
+				if (geomObject instanceof PGgeometry) {
+					Geometry geom = ((PGgeometry)geomObject).getGeometry();
+					double xmin, ymin, xmax, ymax;
+
+					xmin = geom.getPoint(0).x;
+					ymin = geom.getPoint(0).y;
+					xmax = geom.getPoint(2).x;
+					ymax = geom.getPoint(2).y;
+
+					lowerCorner.setX(xmin);
+					lowerCorner.setY(ymin);
+					upperCorner.setX(xmax);
+					upperCorner.setY(ymax);						
+				}				
+				
+				if (!isInterrupted) {
+					if (bbox == null)
+						bbox = new BoundingBox(lowerCorner, upperCorner);
+					else 
+						bbox.update(lowerCorner, upperCorner);
+				}
+				
+				interruptableCallableStatement.close();
+			}
+			
+		} catch (SQLException e) {
+			if (!isInterrupted)
+				throw e;
+		} finally {
 			if (interruptableStatement != null) {
 				try {
 					interruptableStatement.close();
@@ -311,7 +370,67 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected BoundingBox transformBBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException {
+	protected boolean updateTableStats(IndexType type, Connection connection) throws SQLException {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+
+		try {
+			pStmt = connection.prepareStatement("SELECT (obj).table_name, (obj).attribute_name FROM index_table WHERE (obj).type = ?");
+			pStmt.setInt(1, type == IndexType.SPATIAL ? 1 : 0);
+			rs = pStmt.executeQuery();
+
+			while (rs.next()) {
+				String tableName = rs.getString(1);
+				String attributeName = rs.getString(2);
+				StringBuilder vacuumStmt = new StringBuilder("VACUUM ANALYZE ")
+						.append(tableName).append(" (").append(attributeName).append(")");
+
+				interruptableStatement = connection.createStatement();
+				interruptableStatement.executeUpdate(vacuumStmt.toString());
+			}
+
+			return true;
+
+		} catch (SQLException e) {
+			if (!isInterrupted)
+				throw e;
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+
+				rs = null;
+			}
+			if (pStmt != null) {
+				try {
+					pStmt.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+
+				pStmt = null;
+			}
+			if (interruptableStatement != null) {
+				try {
+					interruptableStatement.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+
+				interruptableStatement = null;
+			}
+
+			isInterrupted = false;
+		}
+
+		return false;
+	}
+
+	@Override
+	protected BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException {
 		BoundingBox result = new BoundingBox(bbox);
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
@@ -321,15 +440,15 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			int targetSrid = get2DSrid(targetSrs, connection);
 
 			StringBuilder boxGeom = new StringBuilder()
-			.append("SRID=" + sourceSrid + ";POLYGON((")
-			.append(bbox.getLowerLeftCorner().getX()).append(" ").append(bbox.getLowerLeftCorner().getY()).append(",")
-			.append(bbox.getLowerLeftCorner().getX()).append(" ").append(bbox.getUpperRightCorner().getY()).append(",")
-			.append(bbox.getUpperRightCorner().getX()).append(" ").append(bbox.getUpperRightCorner().getY()).append(",")
-			.append(bbox.getUpperRightCorner().getX()).append(" ").append(bbox.getLowerLeftCorner().getY()).append(",")
-			.append(bbox.getLowerLeftCorner().getX()).append(" ").append(bbox.getLowerLeftCorner().getY()).append("))");
+					.append("SRID=" + sourceSrid + ";POLYGON((")
+					.append(bbox.getLowerLeftCorner().getX()).append(" ").append(bbox.getLowerLeftCorner().getY()).append(",")
+					.append(bbox.getLowerLeftCorner().getX()).append(" ").append(bbox.getUpperRightCorner().getY()).append(",")
+					.append(bbox.getUpperRightCorner().getX()).append(" ").append(bbox.getUpperRightCorner().getY()).append(",")
+					.append(bbox.getUpperRightCorner().getX()).append(" ").append(bbox.getLowerLeftCorner().getY()).append(",")
+					.append(bbox.getLowerLeftCorner().getX()).append(" ").append(bbox.getLowerLeftCorner().getY()).append("))");
 
 			StringBuilder query = new StringBuilder()
-			.append("select ST_Transform(ST_GeomFromEWKT(?), ").append(targetSrid).append(')');
+					.append("select ST_Transform(ST_GeomFromEWKT(?), ").append(targetSrid).append(')');
 
 			psQuery = connection.prepareStatement(query.toString());			
 			psQuery.setString(1, boxGeom.toString());

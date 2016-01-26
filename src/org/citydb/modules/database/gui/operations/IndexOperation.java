@@ -45,6 +45,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.citydb.api.controller.ViewController;
+import org.citydb.api.database.DatabaseType;
+import org.citydb.api.event.global.DatabaseConnectionStateEvent;
 import org.citydb.api.log.LogLevel;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
@@ -70,9 +72,12 @@ public class IndexOperation extends DatabaseOperationView {
 	private JButton activate;
 	private JButton deactivate;
 	private JButton query;
+	private JButton tableStats;
 	private JCheckBox spatial;
 	private JCheckBox normal;
 
+	private boolean isStatsSupported;
+	
 	public IndexOperation(Config config) {
 		this.config = config;
 		viewController = ObjectRegistry.getInstance().getViewController();
@@ -88,6 +93,7 @@ public class IndexOperation extends DatabaseOperationView {
 		activate = new JButton();
 		deactivate = new JButton();
 		query = new JButton();
+		tableStats = new JButton();
 
 		spatial = new JCheckBox();
 		normal = new JCheckBox();
@@ -104,10 +110,12 @@ public class IndexOperation extends DatabaseOperationView {
 		buttonsPanel.add(deactivate);
 		buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonsPanel.add(query);
+		buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonsPanel.add(tableStats);
 
 		component.add(checkBox, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.NONE,5,5,0,5));
 		component.add(buttonsPanel, GuiUtil.setConstraints(0,1,1,0,GridBagConstraints.NONE,10,5,5,5));
-
+		
 		activate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Thread thread = new Thread() {
@@ -146,6 +154,19 @@ public class IndexOperation extends DatabaseOperationView {
 				thread.start();
 			}
 		});
+		
+		tableStats.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Thread thread = new Thread() {
+					public void run() {
+						if (spatial.isSelected() || normal.isSelected())
+							updateTableStatsOnColumn();
+					}
+				};
+				thread.setDaemon(true);
+				thread.start();
+			}
+		});
 	}
 
 	@Override
@@ -178,6 +199,7 @@ public class IndexOperation extends DatabaseOperationView {
 		activate.setText(Language.I18N.getString("db.button.index.activate"));
 		deactivate.setText(Language.I18N.getString("db.button.index.deactivate"));
 		query.setText(Language.I18N.getString("db.button.index.query"));
+		tableStats.setText("VACUUM");
 		spatial.setText(Language.I18N.getString("db.label.operation.index.spatial"));
 		normal.setText(Language.I18N.getString("db.label.operation.index.normal"));
 	}
@@ -189,6 +211,7 @@ public class IndexOperation extends DatabaseOperationView {
 		query.setEnabled(enable);
 		spatial.setEnabled(enable);
 		normal.setEnabled(enable);
+		tableStats.setEnabled(enable && isStatsSupported);
 	}
 
 	@Override
@@ -450,6 +473,104 @@ public class IndexOperation extends DatabaseOperationView {
 		} finally {
 			lock.unlock();
 		}
+	}
+	
+	private void updateTableStatsOnColumn() {
+		final ReentrantLock lock = this.mainLock;
+		lock.lock();
+
+		try {
+			viewController.clearConsole();
+			viewController.setStatusText(Language.I18N.getString("main.status.database.index.tableStats"));
+			
+			final StatusDialog dialog = new StatusDialog(viewController.getTopFrame(), 
+					Language.I18N.getString("db.dialog.index.tableStats.window"), 
+					Language.I18N.getString("db.dialog.index.tableStats.title"), 
+					null,
+					Language.I18N.getString("db.dialog.index.tableStats.detail"), 
+					true);		
+
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					dialog.setLocationRelativeTo(viewController.getTopFrame());
+					dialog.setVisible(true);
+				}
+			});
+
+
+			dialog.getButton().addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							dbConnectionPool.getActiveDatabaseAdapter().getUtil().interruptDatabaseOperation();
+						}
+					});
+				}
+			});
+			
+			try {
+				boolean statsUpdated = true;
+				
+				for (IndexType type : IndexType.values()) {
+					if (statsUpdated) {
+						if (type == IndexType.SPATIAL && spatial.isSelected()) {
+							LOG.all(LogLevel.INFO, "Updating table statistics for columns with spatial index...");
+							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsSpatialColumns();
+						} else if (type == IndexType.NORMAL && normal.isSelected()) {
+							LOG.all(LogLevel.INFO, "Updating table statistics for columns with normal index...");
+							statsUpdated = dbConnectionPool.getActiveDatabaseAdapter().getUtil().updateTableStatsNormalColumns();
+						}
+					}
+				}
+
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						dialog.dispose();
+					}
+				});
+
+				if (statsUpdated)
+					LOG.all(LogLevel.INFO, "Table statistics successfully updated.");
+				else {
+					if (dbConnectionPool.getActiveDatabaseAdapter().getDatabaseType() == DatabaseType.POSTGIS)
+						LOG.warn("Updating table statistics aborted.");
+					else
+						LOG.warn("Updating table statistics not yet supported for connected DBMS.");
+				}
+					
+			} catch (SQLException sqlEx) {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						dialog.dispose();
+					}
+				});
+
+				String sqlExMsg = sqlEx.getMessage().trim();
+				String text = Language.I18N.getString("db.dialog.index.tableStats.error");
+				Object[] args = new Object[]{ sqlExMsg };
+				String result = MessageFormat.format(text, args);
+
+				JOptionPane.showMessageDialog(
+						viewController.getTopFrame(), 
+						result, 
+						Language.I18N.getString("common.dialog.error.db.title"),
+						JOptionPane.ERROR_MESSAGE);
+
+				LOG.error("SQL error: " + sqlExMsg);
+
+			} finally {
+				viewController.setStatusText(Language.I18N.getString("main.status.ready.label"));
+			}
+
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	@Override
+	public void handleDatabaseConnectionStateEvent(DatabaseConnectionStateEvent event) {
+		if (event.isConnected())
+			isStatsSupported = dbConnectionPool.getActiveDatabaseAdapter().hasTableStatsSupport();
 	}
 
 }

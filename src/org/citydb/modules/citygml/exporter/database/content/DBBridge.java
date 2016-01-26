@@ -60,6 +60,7 @@ import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.model.xal.AddressDetails;
+import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
 public class DBBridge implements DBExporter {
 	private final DBExporterManager dbExporterManager;
@@ -78,6 +79,10 @@ public class DBBridge implements DBExporter {
 
 	private HashMap<Long, AbstractBridge> bridges;
 	private ProjectionPropertyFilter projectionFilter;
+	private boolean handleAddressGmlId;
+	private boolean useXLink;
+	private boolean appendOldGmlId;
+	private String gmlIdPrefix;
 
 	public DBBridge(Connection connection, ExportFilter exportFilter, Config config, DBExporterManager dbExporterManager) throws SQLException {
 		this.dbExporterManager = dbExporterManager;
@@ -89,37 +94,45 @@ public class DBBridge implements DBExporter {
 	}
 
 	private void init() throws SQLException {
+		handleAddressGmlId = dbExporterManager.getDatabaseAdapter().getConnectionMetaData().getCityDBVersion().compareTo(3, 1, 0) >= 0;
+		useXLink = config.getProject().getExporter().getXlink().getFeature().isModeXLink();
+
+		if (!useXLink) {
+			appendOldGmlId = config.getProject().getExporter().getXlink().getFeature().isSetAppendId();
+			gmlIdPrefix = config.getProject().getExporter().getXlink().getFeature().getIdPrefix();
+		}
+
 		bridges = new HashMap<Long, AbstractBridge>();
 		String bridgeId = projectionFilter.pass(CityGMLModuleType.BRIDGE, "consistsOfBridgePart") ? "BRIDGE_ROOT_ID" : "ID";
 
 		if (!config.getInternal().isTransformCoordinates()) {
 			StringBuilder query = new StringBuilder()
-			.append("select b.ID, b.BRIDGE_PARENT_ID, b.CLASS, b.CLASS_CODESPACE, b.FUNCTION, b.FUNCTION_CODESPACE, b.USAGE, b.USAGE_CODESPACE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, b.IS_MOVABLE, ")
-			.append("b.LOD1_TERRAIN_INTERSECTION, b.LOD2_TERRAIN_INTERSECTION, b.LOD3_TERRAIN_INTERSECTION, b.LOD4_TERRAIN_INTERSECTION, ")
-			.append("b.LOD2_MULTI_CURVE, b.LOD3_MULTI_CURVE, b.LOD4_MULTI_CURVE, ")
-			.append("b.LOD1_SOLID_ID, b.LOD2_SOLID_ID, b.LOD3_SOLID_ID, b.LOD4_SOLID_ID, ")
-			.append("b.LOD1_MULTI_SURFACE_ID, b.LOD2_MULTI_SURFACE_ID, b.LOD3_MULTI_SURFACE_ID, b.LOD4_MULTI_SURFACE_ID, ")
-			.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT, a.XAL_SOURCE ")
-			.append("from BRIDGE b left join ADDRESS_TO_BRIDGE a2b on b.ID=a2b.BRIDGE_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.").append(bridgeId).append(" = ?");
+					.append("select b.ID, b.BRIDGE_PARENT_ID, b.CLASS, b.CLASS_CODESPACE, b.FUNCTION, b.FUNCTION_CODESPACE, b.USAGE, b.USAGE_CODESPACE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, b.IS_MOVABLE, ")
+					.append("b.LOD1_TERRAIN_INTERSECTION, b.LOD2_TERRAIN_INTERSECTION, b.LOD3_TERRAIN_INTERSECTION, b.LOD4_TERRAIN_INTERSECTION, ")
+					.append("b.LOD2_MULTI_CURVE, b.LOD3_MULTI_CURVE, b.LOD4_MULTI_CURVE, ")
+					.append("b.LOD1_SOLID_ID, b.LOD2_SOLID_ID, b.LOD3_SOLID_ID, b.LOD4_SOLID_ID, ")
+					.append("b.LOD1_MULTI_SURFACE_ID, b.LOD2_MULTI_SURFACE_ID, b.LOD3_MULTI_SURFACE_ID, b.LOD4_MULTI_SURFACE_ID, ")
+					.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, a.MULTI_POINT, a.XAL_SOURCE").append(handleAddressGmlId ? ", a.GMLID " : " ")
+					.append("from BRIDGE b left join ADDRESS_TO_BRIDGE a2b on b.ID=a2b.BRIDGE_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.").append(bridgeId).append(" = ?");
 			psBridge = connection.prepareStatement(query.toString());
 		} else {
 			int srid = config.getInternal().getExportTargetSRS().getSrid();
 			String transformOrNull = dbExporterManager.getDatabaseAdapter().getSQLAdapter().resolveDatabaseOperationName("citydb_srs.transform_or_null");
 
 			StringBuilder query = new StringBuilder()
-			.append("select b.ID, b.BRIDGE_PARENT_ID, b.CLASS, b.CLASS_CODESPACE, b.FUNCTION, b.FUNCTION_CODESPACE, b.USAGE, b.USAGE_CODESPACE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, b.IS_MOVABLE, ")
-			.append(transformOrNull).append("(b.LOD1_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD1_TERRAIN_INTERSECTION, ")
-			.append(transformOrNull).append("(b.LOD2_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD2_TERRAIN_INTERSECTION, ")
-			.append(transformOrNull).append("(b.LOD3_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD3_TERRAIN_INTERSECTION, ")
-			.append(transformOrNull).append("(b.LOD4_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD4_TERRAIN_INTERSECTION, ")
-			.append(transformOrNull).append("(b.LOD2_MULTI_CURVE, ").append(srid).append(") AS LOD2_MULTI_CURVE, ")
-			.append(transformOrNull).append("(b.LOD3_MULTI_CURVE, ").append(srid).append(") AS LOD3_MULTI_CURVE, ")
-			.append(transformOrNull).append("(b.LOD4_MULTI_CURVE, ").append(srid).append(") AS LOD4_MULTI_CURVE, ")
-			.append("b.LOD1_SOLID_ID, b.LOD2_SOLID_ID, b.LOD3_SOLID_ID, b.LOD4_SOLID_ID, ")
-			.append("b.LOD1_MULTI_SURFACE_ID, b.LOD2_MULTI_SURFACE_ID, b.LOD3_MULTI_SURFACE_ID, b.LOD4_MULTI_SURFACE_ID, ")
-			.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, ")
-			.append(transformOrNull).append("(a.MULTI_POINT, ").append(srid).append(") AS MULTI_POINT, a.XAL_SOURCE ")
-			.append("from BRIDGE b left join ADDRESS_TO_BRIDGE a2b on b.ID=a2b.BRIDGE_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.").append(bridgeId).append(" = ?");
+					.append("select b.ID, b.BRIDGE_PARENT_ID, b.CLASS, b.CLASS_CODESPACE, b.FUNCTION, b.FUNCTION_CODESPACE, b.USAGE, b.USAGE_CODESPACE, b.YEAR_OF_CONSTRUCTION, b.YEAR_OF_DEMOLITION, b.IS_MOVABLE, ")
+					.append(transformOrNull).append("(b.LOD1_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD1_TERRAIN_INTERSECTION, ")
+					.append(transformOrNull).append("(b.LOD2_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD2_TERRAIN_INTERSECTION, ")
+					.append(transformOrNull).append("(b.LOD3_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD3_TERRAIN_INTERSECTION, ")
+					.append(transformOrNull).append("(b.LOD4_TERRAIN_INTERSECTION, ").append(srid).append(") AS LOD4_TERRAIN_INTERSECTION, ")
+					.append(transformOrNull).append("(b.LOD2_MULTI_CURVE, ").append(srid).append(") AS LOD2_MULTI_CURVE, ")
+					.append(transformOrNull).append("(b.LOD3_MULTI_CURVE, ").append(srid).append(") AS LOD3_MULTI_CURVE, ")
+					.append(transformOrNull).append("(b.LOD4_MULTI_CURVE, ").append(srid).append(") AS LOD4_MULTI_CURVE, ")
+					.append("b.LOD1_SOLID_ID, b.LOD2_SOLID_ID, b.LOD3_SOLID_ID, b.LOD4_SOLID_ID, ")
+					.append("b.LOD1_MULTI_SURFACE_ID, b.LOD2_MULTI_SURFACE_ID, b.LOD3_MULTI_SURFACE_ID, b.LOD4_MULTI_SURFACE_ID, ")
+					.append("a.ID as ADDR_ID, a.STREET, a.HOUSE_NUMBER, a.PO_BOX, a.ZIP_CODE, a.CITY, a.STATE, a.COUNTRY, ")
+					.append(transformOrNull).append("(a.MULTI_POINT, ").append(srid).append(") AS MULTI_POINT, a.XAL_SOURCE").append(handleAddressGmlId ? ", a.GMLID " : " ")
+					.append("from BRIDGE b left join ADDRESS_TO_BRIDGE a2b on b.ID=a2b.BRIDGE_ID left join ADDRESS a on a.ID=a2b.ADDRESS_ID where b.").append(bridgeId).append(" = ?");
 			psBridge = connection.prepareStatement(query.toString());
 		}
 
@@ -373,29 +386,50 @@ public class DBBridge implements DBExporter {
 
 				// address
 				if (projectionFilter.pass(CityGMLModuleType.BRIDGE, "address")) {
-					rs.getLong(27);
+					long addressId = rs.getLong(27);
 					if (!rs.wasNull()) {
 						AddressExportFactory factory = dbExporterManager.getAddressExportFactory();					
 						AddressObject addressObject = factory.newAddressObject();
+						AddressProperty addressProperty = null;
 
-						fillAddressObject(addressObject, factory.getPrimaryMode(), rs);
-						if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
-							fillAddressObject(addressObject, factory.getFallbackMode(), rs);
+						if (handleAddressGmlId) {
+							String gmlId = rs.getString(37);
+							if (gmlId != null && dbExporterManager.lookupAndPutGmlId(gmlId, addressId, CityGMLClass.ADDRESS)) {
+								if (useXLink) {
+									addressProperty = new AddressProperty();
+									addressProperty.setHref("#" + gmlId);
+									abstractBridge.addAddress(addressProperty);
+								} else {
+									String newGmlId = DefaultGMLIdManager.getInstance().generateUUID(gmlIdPrefix);
+									if (appendOldGmlId)
+										newGmlId += '-' + gmlId;
 
-						if (addressObject.canCreate()) {
-							// multiPointGeometry
-							Object multiPointObj = rs.getObject(35);
-							if (!rs.wasNull() && multiPointObj != null) {
-								GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
-								MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(multiPoint, false);
-								if (multiPointProperty != null)
-									addressObject.setMultiPointProperty(multiPointProperty);
+									addressObject.setGmlId(newGmlId);	
+								}
+							} else
+								addressObject.setGmlId(gmlId);							
+						}
+
+						if (addressProperty == null) {
+							fillAddressObject(addressObject, factory.getPrimaryMode(), rs);
+							if (!addressObject.canCreate(factory.getPrimaryMode()) && factory.isUseFallback())
+								fillAddressObject(addressObject, factory.getFallbackMode(), rs);
+
+							if (addressObject.canCreate()) {
+								// multiPointGeometry
+								Object multiPointObj = rs.getObject(35);
+								if (!rs.wasNull() && multiPointObj != null) {
+									GeometryObject multiPoint = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getMultiPoint(multiPointObj);
+									MultiPointProperty multiPointProperty = geometryExporter.getMultiPointProperty(multiPoint, false);
+									if (multiPointProperty != null)
+										addressObject.setMultiPointProperty(multiPointProperty);
+								}
+
+								// create xAL address
+								addressProperty = factory.create(addressObject);
+								if (addressProperty != null)
+									abstractBridge.addAddress(addressProperty);
 							}
-
-							// create xAL address
-							AddressProperty addressProperty = factory.create(addressObject);
-							if (addressProperty != null)
-								abstractBridge.addAddress(addressProperty);
 						}
 					}
 				}

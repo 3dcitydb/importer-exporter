@@ -1,6 +1,6 @@
 #!/bin/sh
 # Shell script to migrate an instance of the 3D City Database from v2.x to v3.0
-# on PostgreSQL/PostGIS
+# on PostgreSQL/PostGIS >= 9.3
 
 # Provide your database details here
 export PGPORT=5432

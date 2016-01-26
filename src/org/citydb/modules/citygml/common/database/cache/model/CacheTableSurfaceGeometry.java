@@ -54,6 +54,7 @@ public class CacheTableSurfaceGeometry extends CacheTableModel {
 			stmt = conn.createStatement();
 			
 			stmt.executeUpdate("create index idx_" + tableName + " on " + tableName + " (PARENT_ID) " + properties);
+			stmt.executeUpdate("create index idx2_" + tableName + " on " + tableName + " (ROOT_ID) " + properties);
 		} finally {
 			if (stmt != null) {
 				stmt.close();

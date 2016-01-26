@@ -29,6 +29,7 @@ package org.citydb.database;
 import java.sql.SQLException;
 
 import org.citydb.api.database.DatabaseConfigurationException;
+import org.citydb.api.database.DatabaseConnectionWarning;
 import org.citydb.api.database.DatabaseVersionException;
 
 public interface ConnectionViewHandler {
@@ -37,4 +38,5 @@ public interface ConnectionViewHandler {
 	public void printError(DatabaseConfigurationException e, boolean showErrorDialog);
 	public void printError(DatabaseVersionException e, boolean showErrorDialog);
 	public void printError(SQLException e, boolean showErrorDialog);
+	public void printWarning(DatabaseConnectionWarning warning, boolean showWarningDialog);
 }

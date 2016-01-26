@@ -1,5 +1,5 @@
 REM Shell script to migrate an instance of the 3D City Database from v2.x to v3.0
-REM on PostgreSQL/PostGIS
+REM on PostgreSQL/PostGIS >= 9.3
 
 REM Provide your database details here
 set PGPORT=5432

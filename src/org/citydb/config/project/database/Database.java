@@ -47,17 +47,18 @@ import org.citydb.api.database.DatabaseSrsType;
 		"operation"
 })
 public class Database {
+	public static final String CITYDB_PRODUCT_NAME = "3D City Database";
 	public static final int MAX_BATCH_SIZE = 65535;
 	public static final EnumMap<PredefinedSrsName, DatabaseSrs> PREDEFINED_SRS = new EnumMap<PredefinedSrsName, DatabaseSrs>(PredefinedSrsName.class);
 
 	public enum PredefinedSrsName {
 		WGS84_2D
 	}
-	
+
 	static {
 		PREDEFINED_SRS.put(PredefinedSrsName.WGS84_2D, new DatabaseSrs(4326, "urn:ogc:def:crs:EPSG::4326", "[Default] WGS 84", "", DatabaseSrsType.GEOGRAPHIC2D, true));
 	}
-	
+
 	private DatabaseSrsList referenceSystems;
 	@XmlElement(name="connection", required=true)
 	@XmlElementWrapper(name="connections")	
@@ -90,7 +91,7 @@ public class Database {
 	public void addReferenceSystem(DatabaseSrs referenceSystem) {
 		referenceSystems.addItem(referenceSystem);
 	}
-	
+
 	public void addDefaultReferenceSystems() {
 		referenceSystems.addDefaultItems();
 	}
@@ -111,7 +112,7 @@ public class Database {
 	public DBConnection getActiveConnection() {
 		if (activeConnection == null && !connections.isEmpty())
 			activeConnection = connections.get(0);
-		
+
 		return activeConnection;
 	}
 

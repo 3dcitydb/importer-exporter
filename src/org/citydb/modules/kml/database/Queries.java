@@ -2013,7 +2013,7 @@ public class Queries {
 					"AND sg.geometry IS NOT NULL ";
 
 	public static final String CITYOBJECTGROUP_MEMBERS = 
-			"SELECT co.id, co.gmlid, co.objectclass_id " + 
+			"SELECT co.id, co.gmlid, co.envelope, co.objectclass_id " + 
 					"FROM CITYOBJECT co " +
 					"WHERE co.ID IN (SELECT g2co.cityobject_id "+  
 					"FROM GROUP_TO_CITYOBJECT g2co "+ 

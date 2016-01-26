@@ -46,6 +46,11 @@ public class H2Adapter extends AbstractDatabaseAdapter {
 	public boolean hasVersioningSupport() {
 		return false;
 	}
+	
+	@Override
+	public boolean hasTableStatsSupport() {
+		return false;
+	}
 
 	@Override
 	public int getDefaultPort() {
@@ -59,7 +64,7 @@ public class H2Adapter extends AbstractDatabaseAdapter {
 
 	@Override
 	public String getJDBCUrl(String server, int port, String database) {
-		return "jdbc:h2:" + server + ";MULTI_THREADED=TRUE;LOG=0;UNDO_LOG=0";
+		return "jdbc:h2:" + server + ";MULTI_THREADED=TRUE;LOG=0;LOCK_MODE=3;UNDO_LOG=0;MV_STORE=FALSE";
 	}
 
 	@Override

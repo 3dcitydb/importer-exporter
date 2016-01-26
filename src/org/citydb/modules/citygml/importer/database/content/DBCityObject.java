@@ -69,6 +69,7 @@ public class DBCityObject implements DBImporter {
 	private DBAppearance appearanceImporter;
 	private LocalGeometryXlinkResolver resolver;
 
+	private String gmlIdCodespace;
 	private String updatingPerson;
 	private String reasonForUpdate;
 	private String lineage;
@@ -85,7 +86,8 @@ public class DBCityObject implements DBImporter {
 	public DBCityObject(Connection batchConn, Config config, DBImporterManager dbImporterManager) throws SQLException {
 		this.batchConn = batchConn;
 		this.dbImporterManager = dbImporterManager;
-		
+
+		gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
 		replaceGmlId = config.getProject().getImporter().getGmlId().isUUIDModeReplace();
 		rememberGmlId = config.getProject().getImporter().getGmlId().isSetKeepGmlIdAsExternalReference();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
@@ -96,6 +98,11 @@ public class DBCityObject implements DBImporter {
 		creationDateMode = config.getProject().getImporter().getContinuation().getCreationDateMode();
 		terminationDateMode = config.getProject().getImporter().getContinuation().getTerminationDateMode();
 
+		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
+			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
+		else
+			gmlIdCodespace = null;
+		
 		if (replaceGmlId && rememberGmlId)
 			importFileName = config.getInternal().getCurrentImportFile().getAbsolutePath();
 
@@ -118,15 +125,15 @@ public class DBCityObject implements DBImporter {
 			updatingPerson = "'" + updatingPerson + "'";
 		else
 			updatingPerson = null;
-		
+
 		init();
 	}
 
 	private void init() throws SQLException {
 		StringBuilder stmt = new StringBuilder()
-		.append("insert into CITYOBJECT (ID, OBJECTCLASS_ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, ENVELOPE, CREATION_DATE, TERMINATION_DATE, ")
+		.append("insert into CITYOBJECT (ID, OBJECTCLASS_ID, GMLID, ").append(gmlIdCodespace != null ? "GMLID_CODESPACE, " : "").append("NAME, NAME_CODESPACE, DESCRIPTION, ENVELOPE, CREATION_DATE, TERMINATION_DATE, ")
 		.append("RELATIVE_TO_TERRAIN, RELATIVE_TO_WATER, LAST_MODIFICATION_DATE, UPDATING_PERSON, REASON_FOR_UPDATE, LINEAGE, XML_SOURCE) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ")
+		.append("(?, ?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ")
 		.append(updatingPerson).append(", ")
 		.append(reasonForUpdate).append(", ")
 		.append(lineage).append(", null)");
@@ -262,7 +269,7 @@ public class DBCityObject implements DBImporter {
 			// creationDate is not set: use current date
 			creationDate = new java.util.Date();
 		}
-				
+
 		psCityObject.setTimestamp(8, new Timestamp(creationDate.getTime()));
 
 		// terminationDate (null is allowed)

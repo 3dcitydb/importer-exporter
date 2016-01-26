@@ -37,11 +37,12 @@ import java.util.List;
 
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseSrsType;
+import org.citydb.api.database.DatabaseVersion;
 import org.citydb.api.geometry.BoundingBox;
 import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.database.DatabaseMetaDataImpl;
-import org.citydb.database.IndexStatusInfo;
 import org.citydb.database.DatabaseMetaDataImpl.Versioning;
+import org.citydb.database.IndexStatusInfo;
 import org.citydb.database.IndexStatusInfo.IndexType;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractUtilAdapter;
@@ -65,13 +66,14 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			statement = connection.createStatement();
 			rs = statement.executeQuery("select * from table(" + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_util.citydb_version") + ")");
 			if (rs.next()) {
-				metaData.setCityDBVersion(rs.getString("VERSION"));
-				metaData.setCityDBMajorVersion(rs.getInt("MAJOR_VERSION"));
-				metaData.setCityDBMinorVersion(rs.getInt("MINOR_VERSION"));
-				metaData.setCityDBMinorRevision(rs.getInt("MINOR_REVISION"));
+				String productVersion = rs.getString("VERSION");
+				int major = rs.getInt("MAJOR_VERSION");
+				int minor = rs.getInt("MINOR_VERSION");
+				int revision = rs.getInt("MINOR_REVISION");
+				metaData.setCityDBVersion(new DatabaseVersion(major, minor, revision, productVersion));
 			} 
 		} catch (SQLException e) {
-			throw new SQLException("Failed to retrieve version information from 3D City Database instance.", e);
+			throw new SQLException("Failed to retrieve version information from the 3D City Database instance.", e);
 		} finally {
 			if (rs != null) {
 				try {
@@ -94,7 +96,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			}
 		}
 	}
-	
+
 	@Override
 	protected void getDatabaseMetaData(DatabaseMetaDataImpl metaData, Connection connection) throws SQLException {
 		Statement statement = null;
@@ -229,30 +231,18 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				Struct struct = (Struct)rs.getObject(1);
 				if (!rs.wasNull() && struct != null) {
 					JGeometry jGeom = JGeometry.loadJS(struct);
-					int dim = jGeom.getDimensions();	
-					if (dim == 2 || dim == 3) {
-						double[] points = jGeom.getOrdinatesArray();
-						double xmin, ymin, xmax, ymax;
-						xmin = ymin = Double.MAX_VALUE;
-						xmax = ymax = -Double.MAX_VALUE;
+					double[] points = jGeom.getOrdinatesArray();
+					double xmin, ymin, xmax, ymax;
 
-						if (dim == 2) {
-							xmin = points[0];
-							ymin = points[1];
-							xmax = points[2];
-							ymax = points[3];
-						} else if (dim == 3) {
-							xmin = points[0];
-							ymin = points[1];
-							xmax = points[3];
-							ymax = points[4];
-						}
+					xmin = points[0];
+					ymin = points[1];
+					xmax = points[2];
+					ymax = points[3];
 
-						lowerCorner.setX(xmin);
-						lowerCorner.setY(ymin);
-						upperCorner.setX(xmax);
-						upperCorner.setY(ymax);	
-					}		
+					lowerCorner.setX(xmin);
+					lowerCorner.setY(ymin);
+					upperCorner.setX(xmax);
+					upperCorner.setY(ymax);	
 				}
 			}
 
@@ -273,6 +263,69 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				rs = null;
 			}
 
+			if (interruptableStatement != null) {
+				try {
+					interruptableStatement.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+
+				interruptableStatement = null;
+			}
+
+			isInterrupted = false;
+		}
+
+		return bbox;
+	}
+
+	@Override
+	protected BoundingBox createBoundingBoxes(List<Integer> classIds, boolean onlyIfNull, Connection connection) throws SQLException {
+		BoundingBox bbox = null;
+
+		try {
+			for (Integer classId : classIds) {
+				String call = "{? = call " + databaseAdapter.getSQLAdapter().resolveDatabaseOperationName("citydb_envelope.get_envelope_cityobjects") + "(?,1,?)}";
+				interruptableCallableStatement = connection.prepareCall(call);
+				interruptableCallableStatement.registerOutParameter(1, databaseAdapter.getGeometryConverter().getNullGeometryType(), databaseAdapter.getGeometryConverter().getNullGeometryTypeName());
+				interruptableCallableStatement.setInt(2, classId);
+				interruptableCallableStatement.setInt(3, onlyIfNull ? 1 : 0);
+				interruptableCallableStatement.executeUpdate();
+
+				BoundingBoxCorner lowerCorner = new BoundingBoxCorner(Double.MAX_VALUE);
+				BoundingBoxCorner upperCorner = new BoundingBoxCorner(-Double.MAX_VALUE);
+
+				Object geomObject = interruptableCallableStatement.getObject(1);
+				if (geomObject instanceof Struct) {
+					JGeometry jGeom = JGeometry.loadJS((Struct)geomObject);
+					double[] points = jGeom.getOrdinatesArray();
+					double xmin, ymin, xmax, ymax;
+
+					xmin = points[0];
+					ymin = points[1];
+					xmax = points[6];
+					ymax = points[7];
+
+					lowerCorner.setX(xmin);
+					lowerCorner.setY(ymin);
+					upperCorner.setX(xmax);
+					upperCorner.setY(ymax);	
+				}
+
+				if (!isInterrupted) {
+					if (bbox == null)
+						bbox = new BoundingBox(lowerCorner, upperCorner);
+					else 
+						bbox.update(lowerCorner, upperCorner);
+				}
+
+				interruptableCallableStatement.close();
+			}
+
+		} catch (SQLException e) {
+			if (!isInterrupted)
+				throw e;
+		} finally {
 			if (interruptableStatement != null) {
 				try {
 					interruptableStatement.close();
@@ -320,7 +373,12 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected BoundingBox transformBBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException {
+	protected boolean updateTableStats(IndexType type, Connection connection) throws SQLException {
+		return false;
+	}
+
+	@Override
+	protected BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException {
 		BoundingBox result = new BoundingBox(bbox);
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
@@ -330,9 +388,9 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			int targetSrid = get2DSrid(targetSrs, connection);
 
 			StringBuilder query = new StringBuilder()
-			.append("select SDO_CS.TRANSFORM(MDSYS.SDO_GEOMETRY(2003, ").append(sourceSrid)
-			.append(", NULL, MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 1), ")
-			.append("MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), ").append(targetSrid).append(") from dual");
+					.append("select SDO_CS.TRANSFORM(MDSYS.SDO_GEOMETRY(2003, ").append(sourceSrid)
+					.append(", NULL, MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 1), ")
+					.append("MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), ").append(targetSrid).append(") from dual");
 
 			psQuery = connection.prepareStatement(query.toString());
 			psQuery.setDouble(1, bbox.getLowerLeftCorner().getX());

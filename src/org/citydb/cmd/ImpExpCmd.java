@@ -36,6 +36,7 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 
 import org.citydb.api.database.DatabaseConfigurationException;
+import org.citydb.api.database.DatabaseConnectionWarning;
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseVersionException;
 import org.citydb.api.event.EventDispatcher;
@@ -50,6 +51,7 @@ import org.citydb.modules.citygml.importer.controller.CityGMLImportException;
 import org.citydb.modules.citygml.importer.controller.Importer;
 import org.citydb.modules.citygml.importer.controller.XMLValidator;
 import org.citydb.modules.kml.controller.KmlExporter;
+import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 
 public class ImpExpCmd {
@@ -60,15 +62,11 @@ public class ImpExpCmd {
 	private JAXBContext jaxbColladaContext;
 	private Config config;
 
-	public ImpExpCmd(JAXBBuilder cityGMLBuilder, Config config) {
-		this.cityGMLBuilder = cityGMLBuilder;
-		this.config = config;
-		dbPool = DatabaseConnectionPool.getInstance();
-	}
-
-	public ImpExpCmd(JAXBContext jaxbKmlContext,
+	public ImpExpCmd(JAXBBuilder cityGMLBuilder,
+			JAXBContext jaxbKmlContext,
 			JAXBContext jaxbColladaContext,
 			Config config) {
+		this.cityGMLBuilder = cityGMLBuilder;
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.config = config;
@@ -83,7 +81,7 @@ public class ImpExpCmd {
 			LOG.error("Aborting...");
 			return;
 		}
-		
+
 		initDBPool();
 		if (!dbPool.isConnected()) {
 			LOG.error("Aborting...");
@@ -95,24 +93,27 @@ public class ImpExpCmd {
 		config.getInternal().setImportFiles(files.toArray(new File[0]));
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		Importer importer = new Importer(cityGMLBuilder, dbPool, config, eventDispatcher);
-		
+
 		boolean success = false;
 		try {
 			success = importer.doProcess();
 		} catch (CityGMLImportException e) {
 			LOG.error("Aborting due to an internal error: " + e.getMessage());
 			success = false;
-			
+
 			Throwable cause = e.getCause();
 			while (cause != null) {
 				LOG.error("Cause: " + cause.getMessage());
 				cause = cause.getCause();
 			}
-		}
-		try {
-			eventDispatcher.flushEvents();
-		} catch (InterruptedException e) {
-			//
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			dbPool.disconnect();
 		}
 
 		if (success) {
@@ -130,7 +131,7 @@ public class ImpExpCmd {
 			LOG.error("Aborting...");
 			return;
 		}
-		
+
 		LOG.info("Initializing XML validation...");
 
 		config.getInternal().setImportFiles(files.toArray(new File[0]));
@@ -162,14 +163,21 @@ public class ImpExpCmd {
 
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		Exporter exporter = new Exporter(cityGMLBuilder, dbPool, config, eventDispatcher);
-		boolean success = exporter.doProcess();
+		boolean success = false;
 
 		try {
-			eventDispatcher.flushEvents();
-		} catch (InterruptedException e) {
-			//
+			success = exporter.doProcess();
+		} finally {
+
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			dbPool.disconnect();
 		}
-		
+
 		if (success) {
 			LOG.info("Database export successfully finished.");
 		} else {
@@ -192,30 +200,46 @@ public class ImpExpCmd {
 		if (filter.isSetComplexFilter() && filter.getComplexFilter().getTiledBoundingBox().isSet()) {
 			try {
 				kmlExporter.calculateRowsColumns();
-			}
-			catch (SQLException sqle) {
+			} catch (SQLException e) {
 				String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs() == null ?
-										"": filter.getComplexFilter().getBoundingBox().getSrs().getDescription() + ": ";
-				String message = sqle.getMessage().indexOf("\n") > -1? // cut ORA- stack traces
-								 sqle.getMessage().substring(0, sqle.getMessage().indexOf("\n")): sqle.getMessage();
-				LOG.error(srsDescription + message);
-				LOG.warn("Database export aborted.");
-				return;
+						"": filter.getComplexFilter().getBoundingBox().getSrs().getDescription() + ": ";
+				String message = e.getMessage().indexOf("\n") > -1? // cut ORA- stack traces
+						e.getMessage().substring(0, e.getMessage().indexOf("\n")): e.getMessage();
+						LOG.error(srsDescription + message);
+						LOG.warn("Database export aborted.");
+						return;
 			}
 		}
-		boolean success = kmlExporter.doProcess();
 
+		boolean success = false;
 		try {
-			eventDispatcher.flushEvents();
-		} catch (InterruptedException e) {
-			//
+			success = kmlExporter.doProcess();
+		} finally {
+			try {
+				eventDispatcher.flushEvents();
+			} catch (InterruptedException e) {
+				//
+			}
+
+			dbPool.disconnect();
 		}
-		
+
 		if (success) {
 			LOG.info("Database export successfully finished.");
 		} else {
 			LOG.warn("Database export aborted.");
 		}
+	}
+
+	public boolean doTestConnection() {
+		initDBPool();
+		if (!dbPool.isConnected()) {
+			LOG.error("Aborting...");
+			return false;
+		}
+
+		dbPool.disconnect();
+		return true;
 	}
 
 	private void initDBPool() {	
@@ -243,18 +267,25 @@ public class ImpExpCmd {
 					LOG.warn("Reference system '" + refSys.getDescription() + "' (SRID: " + refSys.getSrid() + ") NOT supported.");
 			}
 
-		} catch (DatabaseConfigurationException e) {
+			// print connection warnings
+			List<DatabaseConnectionWarning> warnings = dbPool.getActiveDatabaseAdapter().getConnectionWarnings();
+			if (!warnings.isEmpty()) {
+				for (DatabaseConnectionWarning warning : warnings)
+					LOG.warn(warning.getMessage());
+			}
+
+		} catch (DatabaseConfigurationException | SQLException e) {
 			LOG.error("Connection to database could not be established: " + e.getMessage());
 		} catch (DatabaseVersionException e) {
-			LOG.error("Unsupported version of the 3D City Database instance.");
-		} catch (SQLException e) {
-			LOG.error("Connection to database could not be established: " + e.getMessage());
-		} 
+			LOG.error(e.getMessage());
+			LOG.error("Supported versions are '" + Util.collection2string(e.getSupportedVersions(), ", ") + "'.");
+			LOG.error("Connection to database could not be established.");
+		}
 	}
-	
+
 	private List<File> getFiles(String fileNames, String delim) {
 		List<File> files = new ArrayList<File>();
-		
+
 		for (String part : fileNames.split(delim)) {
 			if (part == null || part.trim().isEmpty())
 				continue;

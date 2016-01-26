@@ -108,6 +108,9 @@ public class ImpExp {
 	@Option(name="-kmlExport", usage="export KML/COLLADA data to this file\n(shell version only)", metaVar="fileName")
 	private String kmlExportFile;
 
+	@Option(name="-testConnection", usage="test whether a database connection can be established")
+	private boolean testConnection;
+
 	@Option(name="-noSplash")
 	private boolean noSplash;
 
@@ -173,15 +176,17 @@ public class ImpExp {
 				++commands;
 			if (kmlExportFile != null)
 				++commands;
+			if (testConnection)
+				++commands;
 
 			if (commands == 0) {
-				System.out.println("Choose either command \"-import\", \"-export\", \"-kmlExport\" or \"-validate\" for shell version");
+				System.out.println("Choose either command \"-import\", \"-export\", \"-kmlExport\", \"-validate\" or \"testConnection\" for shell version");
 				printUsage(parser, System.out);
 				System.exit(1);
 			}
 
 			if (commands > 1) {
-				System.out.println("Commands \"-import\", \"-export\", \"-kmlExport\" and \"-validate\" may not be mixed");
+				System.out.println("Commands \"-import\", \"-export\", \"-kmlExport\", \"-validate\" and \"testConnection\" may not be mixed");
 				printUsage(parser, System.out);
 				System.exit(1);
 			}
@@ -506,50 +511,23 @@ public class ImpExp {
 			return;
 		}	
 
-		if (validateFile != null) {
-			new Thread() {
-				public void run() {
-					new ImpExpCmd(jaxbBuilder, config).doValidate(validateFile);
-				}
-			}.start();
-
-			return;
-		}
-
-		if (importFile != null) {
-			new Thread() {
-				public void run() {
-					new ImpExpCmd(jaxbBuilder, config).doImport(importFile);
-				}
-			}.start();
-
-			return;
-		}
-
-		if (exportFile != null) {
-			config.getInternal().setExportFileName(exportFile);
-
-			new Thread() {
-				public void run() {
-					new ImpExpCmd(jaxbBuilder, config).doExport();
-				}
-			}.start();
-
-			return;
-		}
-
-		if (kmlExportFile != null) {
-			config.getInternal().setExportFileName(kmlExportFile);
-
-			new Thread() {
-				public void run() {
-					new ImpExpCmd(kmlContext,
-							colladaContext,
-							config).doKmlExport();
-				}
-			}.start();
-
-			return;
+		else {
+			ImpExpCmd cmd = new ImpExpCmd(jaxbBuilder, kmlContext, colladaContext, config);
+			if (validateFile != null)
+				cmd.doValidate(validateFile);
+			else if (importFile != null)
+				cmd.doImport(importFile);
+			else if (exportFile != null) {
+				config.getInternal().setExportFileName(exportFile);
+				cmd.doExport();
+			} else if (kmlExportFile != null) {
+				config.getInternal().setExportFileName(kmlExportFile);
+				cmd.doKmlExport();
+			} else if (testConnection) {
+				boolean success = cmd.doTestConnection();
+				if (!success)
+					System.exit(1);
+			}
 		}
 	}
 

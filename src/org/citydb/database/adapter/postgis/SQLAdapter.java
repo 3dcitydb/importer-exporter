@@ -182,11 +182,14 @@ public class SQLAdapter extends AbstractSQLAdapter {
 
 	@Override
 	public String getHierarchicalGeometryQuery() {
+		// the current PostGIS JDBC driver lacks support for geometry objects of type PolyhedralSurface
+		// thus, we have to use the database function ST_AsEWKT to load such geometries
+		// TODO: rework as soon as the JDBC driver supports PolyhedralSurface
 		StringBuilder query = new StringBuilder()
 		.append("WITH RECURSIVE geometry_rec (id, gmlid, parent_id, root_id, is_solid, is_composite, is_triangulated, is_xlink, is_reverse, geometry, implicit_geometry, solid_geometry, cityobject_id, level) ")
 		.append("AS (SELECT sg.id, sg.gmlid, sg.parent_id, sg.root_id, sg.is_solid, sg.is_composite, sg.is_triangulated, sg.is_xlink, sg.is_reverse, sg.geometry, sg.implicit_geometry, sg.solid_geometry, sg.cityobject_id, 1 AS level FROM surface_geometry sg WHERE sg.id=? UNION ALL ")
 		.append("SELECT sg.id, sg.gmlid, sg.parent_id, sg.root_id, sg.is_solid, sg.is_composite, sg.is_triangulated, sg.is_xlink, sg.is_reverse, sg.geometry, sg.implicit_geometry, sg.solid_geometry, sg.cityobject_id, g.level + 1 AS level FROM surface_geometry sg, geometry_rec g WHERE sg.parent_id=g.id) ")
-		.append("SELECT * FROM geometry_rec");
+		.append("SELECT id, gmlid, parent_id, root_id, is_solid, is_composite, is_triangulated, is_xlink, is_reverse, geometry, implicit_geometry, ST_AsEWKT(solid_geometry) as solid_geometry, cityobject_id, level FROM geometry_rec");
 		
 		return query.toString();
 	}

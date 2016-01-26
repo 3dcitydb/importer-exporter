@@ -35,7 +35,9 @@ import org.citydb.api.controller.DatabaseController;
 import org.citydb.api.database.DatabaseAdapter;
 import org.citydb.api.database.DatabaseConfigurationException;
 import org.citydb.api.database.DatabaseConnectionDetails;
+import org.citydb.api.database.DatabaseConnectionWarning;
 import org.citydb.api.database.DatabaseSrs;
+import org.citydb.api.database.DatabaseVersionChecker;
 import org.citydb.api.database.DatabaseVersionException;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
@@ -74,6 +76,13 @@ public class DatabaseControllerImpl implements DatabaseController {
 				throw e;
 			}
 
+			// print connection warnings
+			List<DatabaseConnectionWarning> warnings = dbPool.getActiveDatabaseAdapter().getConnectionWarnings();
+			if (!warnings.isEmpty()) {
+				for (DatabaseConnectionWarning warning : warnings)
+					viewHandler.printWarning(warning, showErrorDialog);
+			}			
+			
 			viewHandler.printConnectionState(ConnectionStateEnum.FINISH_CONNECT);
 		}
 	}
@@ -113,6 +122,11 @@ public class DatabaseControllerImpl implements DatabaseController {
 	@Override
 	public DatabaseAdapter getActiveDatabaseAdapter() {
 		return dbPool.getActiveDatabaseAdapter();
+	}
+
+	@Override
+	public DatabaseVersionChecker getDatabaseVersionChecker() {
+		return dbPool.getDatabaseVersionChecker();
 	}
 
 }

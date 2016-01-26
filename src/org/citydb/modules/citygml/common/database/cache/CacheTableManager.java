@@ -71,8 +71,13 @@ public class CacheTableManager {
 				throw new SQLException(e);
 			}
 
-			cacheDir = tempDir.getAbsolutePath() + File.separator + DefaultGMLIdManager.getInstance().generateUUID("");		
-			cacheConnection = DriverManager.getConnection(cacheAdapter.getJDBCUrl(cacheDir + File.separator + "tmp", -1, null), "sa", "");			
+			try {
+				cacheDir = tempDir.getAbsolutePath() + File.separator + DefaultGMLIdManager.getInstance().generateUUID("");		
+				cacheConnection = DriverManager.getConnection(cacheAdapter.getJDBCUrl(cacheDir + File.separator + "tmp", -1, null), "sa", "");
+			} catch (SQLException e) {
+				deleteTempFiles(new File(cacheDir));
+				throw e;
+			}
 		}
 
 		cacheConnection.setAutoCommit(false);

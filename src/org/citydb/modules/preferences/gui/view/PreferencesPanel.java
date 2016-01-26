@@ -42,6 +42,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -158,6 +159,10 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 		renderer.setOpenIcon(null);
 		renderer.setClosedIcon(null);
 		menuTree.setCellRenderer(renderer);
+		
+		// set row height
+		int padding = menuTree.getRowHeight() - UIManager.getFont("Tree.font").getSize();
+		menuTree.setRowHeight(UIManager.getFont("Tree.font").getSize() + Math.max(padding, 5));
 
 		//layout
 		setLayout(new GridBagLayout());
@@ -286,6 +291,7 @@ public class PreferencesPanel extends JPanel implements TreeSelectionListener {
 			if (config.getGui().isShowPreferencesConfirmDialog()) {
 				confirmPanel = new JPanel(new GridBagLayout());
 				confirmDialogNoShow = new JCheckBox(Language.I18N.getString("common.dialog.msg.noShow"));
+				confirmDialogNoShow.setIconTextGap(10);
 				confirmPanel.add(new JLabel(Language.I18N.getString("pref.dialog.apply.msg")), GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,0,0,0,0));
 				confirmPanel.add(confirmDialogNoShow, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.BOTH,10,0,0,0));
 

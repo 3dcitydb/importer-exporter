@@ -2,7 +2,7 @@
 --
 -- Authors:     Felix Kunde <fkunde@virtualcitysystems.de>
 --
--- Copyright:   (c) 2012-2014  Chair of Geoinformatics,
+-- Copyright:   (c) 2012-2015  Chair of Geoinformatics,
 --                             Technische Universität München, Germany
 --                             http://www.gis.bv.tum.de
 --
@@ -13,12 +13,13 @@
 -------------------------------------------------------------------------------
 -- About:
 -- Top-level migration script that starts the migration process for a 3DCityDB 
--- instance of v2.1.0 to v3.0.0
+-- instance of v2.1.0 to v3.1.0 for PostgreSQL databases >= 9.3
 -------------------------------------------------------------------------------
 --
 -- ChangeLog:
 --
 -- Version | Date       | Description                               | Author
+-- 1.1.0     2015-11-02   update for v3.1                             FKun
 -- 1.0.0     2014-12-28   release version                             FKun
 --
 
@@ -28,12 +29,6 @@
 SET client_min_messages TO WARNING;
 
 SELECT srid FROM database_srs \gset
-
---// alternative way for PostgreSQL versions pre 9.3 that have no \gset command
---\echo 'Database SRID:'
---SELECT srid FROM database_srs;
---\prompt 'Please enter the EPSG code of the SRID used in the current database: ' srs_no
---\set srid :srs_no
 
 --// In the previous version binary data of textures could be stored multiple times
 --// when referred to different entries in the surface_data tables (bad for texture atlases).

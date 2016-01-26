@@ -171,7 +171,7 @@
 		<delete file="${dir.resources.plugin-api.javadoc}/overview_adapted.html" />
 	</target>
 
-	<target name="generate_wfs_library" depends="clean" description="generate the WFS interface">
+	<target name="generate_core_library" depends="clean" description="generate a library with core functionality">
 		<!-- create the build directory structure used by compile -->
 		<mkdir dir="${dir.build.base}" />
 		<mkdir dir="${dir.dest}" />
@@ -203,16 +203,16 @@
 		</copy>
 
 		<!-- replace tokens in template files -->
-		<replace file="${dir.dest.license}/LICENSE.txt" token="!software.name!" value="${impexp.wfs.name}" />
+		<replace file="${dir.dest.license}/LICENSE.txt" token="!software.name!" value="${impexp.core.name}" />
 
 		<!-- put everything in ${dir.build} into .jar file -->
-		<jar jarfile="${dir.dest.lib}/${impexp.wfs.jar.filename}" basedir="${dir.build.base}">
+		<jar jarfile="${dir.dest.lib}/${impexp.core.jar.filename}" basedir="${dir.build.base}">
 			<fileset dir="${dir.dest.license}" includes="**/*" />
 			<manifest>
-				<attribute name="Built-Id" value="${user.name}-${impexp.wfs.name.short}-${impexp.wfs.version}" />
+				<attribute name="Built-Id" value="${user.name}-${impexp.core.name.short}-${impexp.core.version}" />
 				<attribute name="Built-Date" value="${TODAY}" />
-				<attribute name="Implementation-Title" value="${impexp.wfs.name}" />
-				<attribute name="Implementation-Version" value="${impexp.wfs.version}-b${build.number}" />
+				<attribute name="Implementation-Title" value="${impexp.core.name}" />
+				<attribute name="Implementation-Version" value="${impexp.core.version}-b${build.number}" />
 				<attribute name="Implementation-Vendor" value="${vendor.shortinfo}" />
 			</manifest>
 		</jar>

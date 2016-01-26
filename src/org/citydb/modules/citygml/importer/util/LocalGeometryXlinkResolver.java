@@ -41,6 +41,7 @@ import org.citygml4j.model.citygml.ade.ADEComponent;
 import org.citygml4j.model.citygml.appearance.AppearanceModuleComponent;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.common.child.Child;
+import org.citygml4j.model.gml.base.AbstractGML;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.FeatureProperty;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -63,10 +64,10 @@ public class LocalGeometryXlinkResolver {
 		GET_GEOMETRY,
 		RESOLVE_XLINKS
 	};
-	
+
 	public LocalGeometryXlinkResolver() {
 		childInfo = new ChildInfo();
-		
+
 		targets = new HashSet<String>();
 		geometries = new HashMap<String, AbstractGeometry>();
 		circularTargets = new Stack<String>();	
@@ -74,15 +75,24 @@ public class LocalGeometryXlinkResolver {
 
 	public boolean resolveGeometryXlinks(AbstractCityObject abstractCityObject) {
 		this.abstractCityObject = abstractCityObject;
+		return resolveGeometryXlinks((AbstractGML)abstractCityObject);
+	}
+	
+	public boolean resolveGeometryXlinks(AbstractGeometry abstractGeometry) {
+		return resolveGeometryXlinks((AbstractGML)abstractGeometry);
+	}
 
+	private boolean resolveGeometryXlinks(AbstractGML abstractGML) {
 		// we follow a three-phase resolving approach which is a 
 		// compromise between performance and memory consumption.
 
+		circularTargets.clear();
+		
 		// phase 1: iterate through all elements and detect 
 		// xlink references to geometry object
 		ResolverWalker resolver = new ResolverWalker();
 		resolver.state = ResolverState.GET_XLINKS;
-		abstractCityObject.accept(resolver);
+		abstractGML.accept(resolver);
 
 		if (targets.isEmpty())
 			return true;
@@ -91,20 +101,20 @@ public class LocalGeometryXlinkResolver {
 		// the geometry objects for the detected xlinks		
 		resolver.reset();
 		resolver.state = ResolverState.GET_GEOMETRY;
-		abstractCityObject.accept(resolver);
+		abstractGML.accept(resolver);
 
 		// phase 3: finally iterate through all elements once more
 		// and actually replace xlinks by geometries
 		resolver.reset();
 		resolver.state = ResolverState.RESOLVE_XLINKS;
-		abstractCityObject.accept(resolver);
+		abstractGML.accept(resolver);
 
 		// clean up
 		targets.clear();
 		geometries.clear();
 		if (!resolver.hasCircularReference)
 			circularTargets.clear();
-		
+
 		return !resolver.hasCircularReference;
 	}
 
@@ -120,7 +130,7 @@ public class LocalGeometryXlinkResolver {
 		@Override
 		public <T extends AbstractGeometry> void visit(GeometryProperty<T> geometryProperty) {
 			if (!geometryProperty.isSetGeometry() && geometryProperty.isSetHref()) {
-				if (state == ResolverState.RESOLVE_XLINKS) {
+				if (state == ResolverState.RESOLVE_XLINKS && shouldWalk()) {
 					final String target = clipGMLId(geometryProperty.getHref());
 					final AbstractGeometry geometry = geometries.get(target);
 
@@ -156,33 +166,39 @@ public class LocalGeometryXlinkResolver {
 							if (!hasCircularReference) {
 								// ok, we can replace the link by a shallow copy of the object
 								T copy = (T)geometry.copy(copyBuilder);
-								
+
 								geometryProperty.setGeometry(copy);
 								geometryProperty.unsetHref();								
 								copy.setLocalProperty(Internal.GEOMETRY_XLINK, true);
 								copy.setLocalProperty(Internal.GEOMETRY_ORIGINAL, geometry);
-								
+
 								geometry.setLocalProperty(Internal.GEOMETRY_XLINK, true);
 
+								targets.remove(target);
 								for (int i = 0; i < parents; ++i)
 									circularTargets.pop();
-							} else
+							} else {
 								// ups, circular reference detected
-								circularTargets.push(geometryProperty.getHref());
+								if (!circularTargets.peek().equals(geometryProperty.getHref()))
+									circularTargets.push(geometryProperty.getHref());
+							}
 						} else {
-							StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-									abstractCityObject.getCityGMLClass(), 
-									abstractCityObject.getId()));
-							msg.append(": Incompatible type of geometry referenced by '")
-							.append(target)
-							.append("'.");
+							if (abstractCityObject != null) {
+								StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
+										abstractCityObject.getCityGMLClass(), 
+										abstractCityObject.getId()));
+								msg.append(": Incompatible type of geometry referenced by '")
+								.append(target)
+								.append("'.");
+
+								LOG.error(msg.toString());
+							}
 							
-							LOG.error(msg.toString());						
 							geometryProperty.unsetHref();
 						}
 					}
 				}
-				
+
 				else if (state == ResolverState.GET_XLINKS)				
 					targets.add(clipGMLId(geometryProperty.getHref()));
 			}
@@ -192,7 +208,7 @@ public class LocalGeometryXlinkResolver {
 
 		@Override
 		public void visit(AbstractGeometry abstractGeometry) {
-			if (state == ResolverState.GET_GEOMETRY && abstractGeometry.isSetId()&& targets.contains(abstractGeometry.getId()))
+			if (state == ResolverState.GET_GEOMETRY && abstractGeometry.isSetId() && targets.contains(abstractGeometry.getId()))
 				geometries.put(abstractGeometry.getId(), abstractGeometry);
 		}
 

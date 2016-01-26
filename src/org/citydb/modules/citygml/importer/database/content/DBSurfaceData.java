@@ -100,23 +100,29 @@ public class DBSurfaceData implements DBImporter {
 		nullGeometryType = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryType();
 		nullGeometryTypeName = dbImporterManager.getDatabaseAdapter().getGeometryConverter().getNullGeometryTypeName();
 
+		String gmlIdCodespace = config.getInternal().getCurrentGmlIdCodespace();
+		if (gmlIdCodespace != null && gmlIdCodespace.length() > 0)
+			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
+		else
+			gmlIdCodespace = null;		
+		
 		StringBuilder x3dStmt = new StringBuilder()
-		.append("insert into SURFACE_DATA (ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, OBJECTCLASS_ID, ")
+		.append("insert into SURFACE_DATA (ID, GMLID, ").append(gmlIdCodespace != null ? "GMLID_CODESPACE, " : "").append("NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, OBJECTCLASS_ID, ")
 		.append("X3D_SHININESS, X3D_TRANSPARENCY, X3D_AMBIENT_INTENSITY, X3D_SPECULAR_COLOR, X3D_DIFFUSE_COLOR, X3D_EMISSIVE_COLOR, X3D_IS_SMOOTH) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psX3DMaterial = batchConn.prepareStatement(x3dStmt.toString());
 
 		StringBuilder paraStmt = new StringBuilder()
-		.append("insert into SURFACE_DATA (ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, OBJECTCLASS_ID, ")
+		.append("insert into SURFACE_DATA (ID, GMLID, ").append(gmlIdCodespace != null ? "GMLID_CODESPACE, " : "").append("NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, OBJECTCLASS_ID, ")
 		.append("TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?)");
 		psParaTex = batchConn.prepareStatement(paraStmt.toString());
 
 		StringBuilder geoStmt = new StringBuilder()
-		.append("insert into SURFACE_DATA (ID, GMLID, NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, OBJECTCLASS_ID, ")
+		.append("insert into SURFACE_DATA (ID, GMLID, ").append(gmlIdCodespace != null ? "GMLID_CODESPACE, " : "").append("NAME, NAME_CODESPACE, DESCRIPTION, IS_FRONT, OBJECTCLASS_ID, ")
 		.append("TEX_TEXTURE_TYPE, TEX_WRAP_MODE, TEX_BORDER_COLOR, ")
 		.append("GT_PREFER_WORLDFILE, GT_ORIENTATION, GT_REFERENCE_POINT) values ")
-		.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		psGeoTex = batchConn.prepareStatement(geoStmt.toString());
 
 		textureParamImporter = (DBTextureParam)dbImporterManager.getDBImporter(DBImporterEnum.TEXTURE_PARAM);
