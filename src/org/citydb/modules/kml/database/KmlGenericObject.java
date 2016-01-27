@@ -1677,7 +1677,7 @@ public abstract class KmlGenericObject {
 		
 		DisplayForm colladaDisplayForm = null;
 		for (DisplayForm displayForm: getDisplayForms()) {
-			if (displayForm.getForm() == DisplayForm.GEOMETRY) {
+			if (displayForm.getForm() == DisplayForm.COLLADA) {
 				colladaDisplayForm = displayForm;
 				break;
 			}
@@ -1686,7 +1686,7 @@ public abstract class KmlGenericObject {
 		X3DMaterial x3dWallMaterial =  getX3dMaterialFromIntColor(colladaDisplayForm.getRgba0());
 		X3DMaterial x3dRoofMaterial = null;
 		if (colladaDisplayForm.isSetRgba2())
-			x3dRoofMaterial =  getX3dMaterialFromIntColor(colladaDisplayForm.getRgba2());
+			x3dRoofMaterial = getX3dMaterialFromIntColor(colladaDisplayForm.getRgba2());
 
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
