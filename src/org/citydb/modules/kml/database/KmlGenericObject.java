@@ -429,10 +429,11 @@ public abstract class KmlGenericObject {
 
 		Mesh mesh = colladaFactory.createMesh();
 		mesh.getSource().add(positionSource);
-		mesh.getSource().add(normalSource);
 		mesh.setVertices(vertices);
 		if (!config.getProject().getKmlExporter().getAppearanceTheme().equals(KmlExporter.THEME_NONE))
-			mesh.getSource().add(texCoordsSource);						
+			mesh.getSource().add(texCoordsSource);		
+		else
+			mesh.getSource().add(normalSource);
 		
 		geometry.setMesh(mesh);
 		libraryGeometries.getGeometry().add(geometry);
