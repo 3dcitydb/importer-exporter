@@ -593,6 +593,17 @@ public abstract class KmlGenericObject {
 						ccott.setColor(color);
 						lambert.setEmission(ccott);
 					}
+					else {
+						// added for Highlighting in Cesium
+						CommonColorOrTextureType.Color color = colladaFactory.createCommonColorOrTextureTypeColor();
+						color.getValue().add(0d);
+						color.getValue().add(0d);
+						color.getValue().add(0d);
+						color.getValue().add(1d); // alpha
+						CommonColorOrTextureType ccott2 = colladaFactory.createCommonColorOrTextureType();
+						ccott2.setColor(color);
+						lambert.setEmission(ccott2);
+					}
 
 					profileCommonTechnique.setLambert(lambert);
 					profileCommon.setTechnique(profileCommonTechnique);
