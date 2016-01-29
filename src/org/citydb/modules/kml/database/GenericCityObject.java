@@ -532,6 +532,16 @@ public class GenericCityObject extends KmlGenericObject{
 
 		String selectedTheme = config.getProject().getKmlExporter().getAppearanceTheme();
 		int texImageCounter = 0;
+		
+		DisplayForm colladaDisplayForm = null;
+		for (DisplayForm displayForm: getDisplayForms()) {
+			if (displayForm.getForm() == DisplayForm.COLLADA) {
+				colladaDisplayForm = displayForm;
+				break;
+			}
+		}
+		
+		X3DMaterial x3dSurfaceMaterial =  super.getX3dMaterialFromIntColor(colladaDisplayForm.getRgba0());
 
 		while (rs.next()) {
 			long surfaceRootId = rs.getLong(1);
@@ -579,7 +589,7 @@ public class GenericCityObject extends KmlGenericObject{
 						StringTokenizer texCoordsTokenized = null;
 
 						if (selectedTheme.equals(KmlExporter.THEME_NONE))
-							addX3dMaterial(surfaceId, defaultX3dMaterial);
+							addX3dMaterial(surfaceId, x3dSurfaceMaterial);
 						else {
 							if (!selectedTheme.equalsIgnoreCase(theme) && !selectedTheme.equalsIgnoreCase("<unknown>")) { // no surface data for this surface and theme
 								if (getX3dMaterial(parentId) != null) // material for parent surface known
@@ -587,7 +597,7 @@ public class GenericCityObject extends KmlGenericObject{
 								else if (getX3dMaterial(rootId) != null) // material for root surface known
 									addX3dMaterial(surfaceId, getX3dMaterial(rootId));
 								else
-									addX3dMaterial(surfaceId, defaultX3dMaterial);
+									addX3dMaterial(surfaceId, x3dSurfaceMaterial);
 							}
 							else {
 								texImageUri = rs2.getString("tex_image_uri");
@@ -648,7 +658,7 @@ public class GenericCityObject extends KmlGenericObject{
 									addX3dMaterial(surfaceId, x3dMaterial);
 									if (getX3dMaterial(surfaceId) == null) {
 										// untextured surface and no x3dMaterial -> default x3dMaterial (gray)
-										addX3dMaterial(surfaceId, defaultX3dMaterial);
+										addX3dMaterial(surfaceId, x3dSurfaceMaterial);
 									}
 								}
 							}

@@ -190,8 +190,7 @@ public abstract class KmlGenericObject {
 
 	protected int currentLod;
 	protected DatabaseSrs dbSrs;
-	protected X3DMaterial defaultX3dMaterial;
-	
+
 	private SimpleDateFormat dateFormatter;
 	protected final ImageReader imageReader;
 
@@ -219,14 +218,6 @@ public abstract class KmlGenericObject {
 		dbSrs = databaseAdapter.getConnectionMetaData().getReferenceSystem();
 
 		dateFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-
-		defaultX3dMaterial = new X3DMaterial();
-		defaultX3dMaterial.setAmbientIntensity(0.2d);
-		defaultX3dMaterial.setShininess(0.2d);
-		defaultX3dMaterial.setTransparency(0d);
-		defaultX3dMaterial.setDiffuseColor(getX3dColorFromString("0.8 0.8 0.8"));
-		defaultX3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
-		defaultX3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
 
 		imageReader = new ImageReader();
 	}
@@ -1655,7 +1646,7 @@ public abstract class KmlGenericObject {
 		return placemarkList;
 	}
 	
-	private X3DMaterial getX3dMaterialFromIntColor(int rgbColor) {
+	protected X3DMaterial getX3dMaterialFromIntColor(int rgbColor) {
 		java.awt.Color color = new java.awt.Color(rgbColor, true);
 		double floatRed = color.getRed() / 255.0;
 		double floatGreen = color.getGreen() / 255.0;
