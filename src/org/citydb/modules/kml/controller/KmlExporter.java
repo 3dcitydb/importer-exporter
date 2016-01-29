@@ -905,8 +905,7 @@ public class KmlExporter implements EventHandler {
 		marshaller.marshal(kml, fragmentWriter);
 		saxWriter.flush();
 	}
-	
-	
+		
 	private void writeMasterJsonFileTileReference(String path, String fileName, String fileExtension) {
 		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 			if (displayForm.isActive()) {
@@ -922,8 +921,8 @@ public class KmlExporter implements EventHandler {
 					jsonFileWriterForMasterFile.write(("\n\t\"" + "displayform" + "\": \"" + displayForm.getName() + "\",").getBytes(CHARSET));	
 					jsonFileWriterForMasterFile.write(("\n\t\"" + "minLodPixels" + "\": " + displayForm.getVisibleFrom() + ",").getBytes(CHARSET));
 					jsonFileWriterForMasterFile.write(("\n\t\"" + "maxLodPixels" + "\": " + displayForm.getVisibleUpTo() + ",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": " + (columns -1) + ",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\"" + "rownum" + "\": " + (rows - 1) + ",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": " + columns + ",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\"" + "rownum" + "\": " + rows + ",").getBytes(CHARSET));
 					jsonFileWriterForMasterFile.write(("\n\t\"" + "bbox" + "\":{ ").getBytes(CHARSET));
 					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getX() + ",").getBytes(CHARSET));
 					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getX() + ",").getBytes(CHARSET));
