@@ -89,7 +89,6 @@ import org.citydb.config.project.resources.Resources;
 		"writeJSONFile",
 		"writeJSONPFile",
 		"callbackNameJSONP",
-		"cropImage",
 		"createGltfModel",
 		"pathOfGltfConverter",
 		"appearanceTheme",
@@ -175,7 +174,6 @@ public class KmlExporter {
 	private boolean writeJSONFile;
 	private boolean writeJSONPFile;
 	private String callbackNameJSONP;
-	private boolean cropImage;
 	private boolean createGltfModel;
 	private String pathOfGltfConverter;
 	private String appearanceTheme;
@@ -242,7 +240,6 @@ public class KmlExporter {
 		writeJSONFile = false;
 		writeJSONPFile = false;
 		callbackNameJSONP = "handle_3DCityDB_data";
-		cropImage = false;
 		createGltfModel = false;
 		pathOfGltfConverter = "";
 		
@@ -396,14 +393,6 @@ public class KmlExporter {
 
 	public boolean isExportAsKmz() {
 		return exportAsKmz;
-	}
-	
-	public void setCropImage(boolean cropImage) {
-		this.cropImage = cropImage;
-	}
-
-	public boolean isCropImage() {
-		return cropImage;
 	}
 	
 	public void setCreateGltfModel(boolean createGltfModel) {

@@ -1067,9 +1067,9 @@ public abstract class KmlGenericObject {
 		
 		// in some cases, several buildings may share one monster texture image.
 		// This function is used to crop such big image into small pieces for each surface geometry before creating the TextureAltas	
-		if (config.getProject().getKmlExporter().isCropImage()) {
+/*		if (config.getProject().getKmlExporter().isCropImage()) {
 			cropImages(packingAlgorithm);
-		}
+		}*/
 				
 		TextureAtlasCreator taCreator = new TextureAtlasCreator();
 		TextureImagesInfo tiInfo = new TextureImagesInfo();
