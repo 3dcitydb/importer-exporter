@@ -101,6 +101,12 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 	private JButton geometryHLLineColorButton = new JButton(" ");
 
 	private JPanel colladaPanel;
+	private JLabel colladaAlphaLabel = new JLabel();
+	private JSpinner colladaAlphaSpinner;
+	private JLabel colladaWallFillColorLabel = new JLabel();
+	private JButton colladaWallFillColorButton = new JButton(" ");
+	private JLabel colladaRoofFillColorLabel = new JLabel();
+	private JButton colladaRoofFillColorButton = new JButton(" ");
 	private JCheckBox ignoreSurfaceOrientationCheckbox = new JCheckBox();
 	private JCheckBox textureAtlasCheckbox = new JCheckBox();
 	private JCheckBox textureAtlasPotsCheckbox = new JCheckBox();
@@ -374,22 +380,59 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 		colladaPanel.add(scaleTexImagesCheckbox, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
 		colladaPanel.add(scaleFactorText, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
 
+		// color settings for collada and gltf
+		JPanel colladaColorSubPanel = new JPanel();
+		colladaColorSubPanel.setLayout(new GridBagLayout());
+		GridBagConstraints cclsp = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS*2,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		cclsp.gridwidth = 2;
+		colladaPanel.add(colladaColorSubPanel, cclsp);
+
+		SpinnerModel cAlphaValueModel = new SpinnerNumberModel(255, 0, 255, 1);
+		colladaAlphaSpinner = new JSpinner(cAlphaValueModel);
+		colladaAlphaSpinner.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
+
+        GridBagConstraints cal = GuiUtil.setConstraints(0,0,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
+        cal.anchor = GridBagConstraints.EAST;
+        colladaColorSubPanel.add(colladaAlphaLabel, cal);
+        colladaColorSubPanel.add(colladaAlphaSpinner, GuiUtil.setConstraints(1,0,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,BORDER_THICKNESS,0));
+        
+		GridBagConstraints cwfcl = GuiUtil.setConstraints(0,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		cwfcl.anchor = GridBagConstraints.EAST;
+		colladaColorSubPanel.add(colladaWallFillColorLabel, cwfcl);
+        
+		colladaWallFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
+		colladaWallFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_WALL_FILL_COLOR, true));
+		colladaWallFillColorButton.setContentAreaFilled(false);
+		colladaWallFillColorButton.setOpaque(true);
+		colladaColorSubPanel.add(colladaWallFillColorButton, GuiUtil.setConstraints(1,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
+
+		GridBagConstraints crfcl = GuiUtil.setConstraints(2,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		crfcl.anchor = GridBagConstraints.EAST;
+		colladaColorSubPanel.add(colladaRoofFillColorLabel, crfcl);
+
+		colladaRoofFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
+		colladaRoofFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_ROOF_FILL_COLOR, true));
+		colladaRoofFillColorButton.setContentAreaFilled(false);
+		colladaRoofFillColorButton.setOpaque(true);
+		colladaColorSubPanel.add(colladaRoofFillColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		
+		// highlighting settings (just for collada and Google Earch)
 		ButtonGroup colladaRadioGroup = new ButtonGroup();
 		colladaRadioGroup.add(groupObjectsRButton);
 		colladaRadioGroup.add(colladaHighlightingRButton);
 
 		groupObjectsRButton.setIconTextGap(10);
-		colladaPanel.add(groupObjectsRButton, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
-		colladaPanel.add(groupSizeText, GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
+		colladaPanel.add(groupObjectsRButton, GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
+		colladaPanel.add(groupSizeText, GuiUtil.setConstraints(1,5,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
 
 		colladaHighlightingRButton.setIconTextGap(10);
-		GridBagConstraints chrb = GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
+		GridBagConstraints chrb = GuiUtil.setConstraints(0,6,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		chrb.gridwidth = 2;
 		colladaPanel.add(colladaHighlightingRButton, chrb);
 
 		JPanel colladaHLSubPanel = new JPanel();
 		colladaHLSubPanel.setLayout(new GridBagLayout());
-		GridBagConstraints chlsp = GuiUtil.setConstraints(0,6,0.0,1.0,GridBagConstraints.BOTH,0,0,0,0);
+		GridBagConstraints chlsp = GuiUtil.setConstraints(0,7,0.0,1.0,GridBagConstraints.BOTH,0,0,0,0);
 		chlsp.gridwidth = 2;
 		colladaPanel.add(colladaHLSubPanel, chlsp);
 		
@@ -549,6 +592,24 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 			}
 		});
 
+		colladaWallFillColorButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Color wallFillColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseWallFillColor"),
+						colladaWallFillColorButton.getBackground());
+				if (wallFillColor != null)
+					colladaWallFillColorButton.setBackground(wallFillColor);
+			}
+		});
+
+		colladaRoofFillColorButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Color roofFillColor = chooseColor(Language.I18N.getString("pref.kmlexport.label.chooseRoofFillColor"),
+						colladaRoofFillColorButton.getBackground());
+				if (roofFillColor != null)
+					colladaRoofFillColorButton.setBackground(roofFillColor);
+			}
+		});
+		
 		colladaHighlightingRButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setEnabledHighlighting();
@@ -607,12 +668,15 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 		geometryHLFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
 		geometryHLLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
 
+		colladaAlphaLabel.setText(Language.I18N.getString("pref.kmlexport.label.alpha"));
+		colladaWallFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.wallFillColor"));
+		colladaRoofFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.roofFillColor"));
 		ignoreSurfaceOrientationCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.ignoreSurfaceOrientation"));
 		textureAtlasCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.generateTextureAtlases"));
 		textureAtlasPotsCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.textureAtlasPots"));
 		scaleTexImagesCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.scaleTexImages"));
 		groupObjectsRButton.setText(Language.I18N.getString("pref.kmlexport.label.groupObjects"));
-		colladaHighlightingRButton.setText(Language.I18N.getString("pref.kmlexport.label.highlighting"));
+		colladaHighlightingRButton.setText(Language.I18N.getString("pref.kmlexport.colladaDisplay.label.highlighting"));
 		colladaHLSurfaceDistanceLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightingDistance"));
 		colladaHLFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedFillColor"));
 		colladaHLLineColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.highlightedLineColor"));
@@ -691,6 +755,12 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 					colladaHLSurfaceDistanceText.setEnabled(true);
 				}
 				
+				if (displayForm.isSetRgba0()) {
+					colladaWallFillColorButton.setBackground(new Color(displayForm.getRgba0()));
+					colladaAlphaSpinner.setValue(new Integer(new Color(displayForm.getRgba0(), true).getAlpha()));
+				}
+				if (displayForm.isSetRgba2())
+					colladaRoofFillColorButton.setBackground(new Color(displayForm.getRgba2()));
 				if (displayForm.isSetRgba4())
 					colladaHLFillColorButton.setBackground(new Color(displayForm.getRgba4()));
 				if (displayForm.isSetRgba5())
@@ -861,6 +931,16 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 			}
 			catch (NumberFormatException nfe) {}
 
+			Color rgba0 = new Color(colladaWallFillColorButton.getBackground().getRed(),
+					colladaWallFillColorButton.getBackground().getGreen(),
+					colladaWallFillColorButton.getBackground().getBlue(),
+					((Integer)colladaAlphaSpinner.getValue()).intValue());
+			df.setRgba0(rgba0.getRGB());
+			Color rgba2 = new Color(colladaRoofFillColorButton.getBackground().getRed(),
+					colladaRoofFillColorButton.getBackground().getGreen(),
+					colladaRoofFillColorButton.getBackground().getBlue(),
+					((Integer)colladaAlphaSpinner.getValue()).intValue());
+			df.setRgba2(rgba2.getRGB());
 			Color rgba4 = new Color(colladaHLFillColorButton.getBackground().getRed(),
 					colladaHLFillColorButton.getBackground().getGreen(),
 					colladaHLFillColorButton.getBackground().getBlue(),
@@ -916,6 +996,8 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 			df.setHighlightingEnabled(false);
 			df.setHighlightingDistance(0.75);
 			
+			df.setRgba0(DisplayForm.DEFAULT_WALL_FILL_COLOR);
+			df.setRgba2(DisplayForm.DEFAULT_ROOF_FILL_COLOR);
 			df.setRgba4(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
 			df.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 		}
