@@ -1588,7 +1588,7 @@ public abstract class KmlGenericObject {
 				}
 				else if (work.isBridge()){
 					surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_WALL_SURFACE).toString();
-					switch (currentLod) {
+/*					switch (currentLod) {
 					case 1:
 						if (probablyRoof && (nz > 0.999)) {
 							surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_ROOF_SURFACE).toString();
@@ -1599,11 +1599,11 @@ public abstract class KmlGenericObject {
 							surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_ROOF_SURFACE).toString();
 						}
 						break;
-					}						
+					}		*/				
 				}
 				else if (work.isTunnel()){
 					surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
-					switch (currentLod) {
+/*					switch (currentLod) {
 					case 1:
 						if (probablyRoof && (nz > 0.999)) {
 							surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_ROOF_SURFACE).toString();
@@ -1614,7 +1614,7 @@ public abstract class KmlGenericObject {
 							surfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_ROOF_SURFACE).toString();
 						}
 						break;
-					}						
+					}	*/					
 				}
 			}
 
