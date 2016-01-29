@@ -152,8 +152,19 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		threeIntFormat.setMaximumIntegerDigits(3);
 		threeIntFormat.setMinimumIntegerDigits(1);
 
+		JPanel gltfSettingsPanel = new JPanel();
+		gltfSettingsPanel.setLayout(new GridBagLayout());
+		add(gltfSettingsPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,0,0));				
+		JPanel collada2gltfConverterPanel = new JPanel();
+		collada2gltfConverterPanel.setLayout(new GridBagLayout());
+		gltfSettingsPanel.add(collada2gltfConverterPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
+		createGltfCheckbox.setIconTextGap(10);
+		collada2gltfConverterPanel.add(createGltfCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		collada2gltfConverterPanel.add(gltfConverterBrowseText, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*6,0,BORDER_THICKNESS));
+		collada2gltfConverterPanel.add(gltfConverterBrowseButton, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
+		
 		JPanel generalPanel = new JPanel();
-		add(generalPanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
+		add(generalPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 		generalPanel.setLayout(new GridBagLayout());
 		kmzCheckbox.setIconTextGap(10);
 		showBoundingBoxCheckbox.setIconTextGap(10);
@@ -210,19 +221,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		generalPanel.add(writeJSONPCheckbox, GuiUtil.setConstraints(0,10,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,0,0,0,1));
 		generalPanel.add(callbackNameJSONPLabel, GuiUtil.setConstraints(0,11,0.0,1.0,GridBagConstraints.EAST,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		generalPanel.add(callbackNameJSONPText, GuiUtil.setConstraints(1,12,1.0,0.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,0,BORDER_THICKNESS));
-				
-		JPanel cesiumPanel = new JPanel();
-		cesiumPanel.setBorder(BorderFactory.createTitledBorder("Settings for Cesium"));
-		cesiumPanel.setLayout(new GridBagLayout());
-		add(cesiumPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS*10,0,BORDER_THICKNESS,0));		
-		
-		JPanel gltfConverterPanel = new JPanel();
-		gltfConverterPanel.setLayout(new GridBagLayout());
-		cesiumPanel.add(gltfConverterPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
-		createGltfCheckbox.setIconTextGap(10);
-		gltfConverterPanel.add(createGltfCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
-		gltfConverterPanel.add(gltfConverterBrowseText, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*6,0,BORDER_THICKNESS));
-		gltfConverterPanel.add(gltfConverterBrowseButton, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 
 		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, visibleFromText, viewRefreshTimeText, callbackNameJSONPText);
 
@@ -278,8 +276,8 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		writeJSONCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.writeJSONFile"));
 		writeJSONPCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.writeJSONPFile"));
 		callbackNameJSONPLabel.setText(Language.I18N.getString("pref.kmlexport.label.callbackNameJSONP"));
-		createGltfCheckbox.setText("Create gltf model when exporting COLLADA model; Path of the gltf converter:");
-		gltfConverterBrowseButton.setText("Browse");
+		createGltfCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.createGlTF"));
+		gltfConverterBrowseButton.setText(Language.I18N.getString("common.button.browse"));
 	}
 
 	@Override
@@ -358,7 +356,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		callbackNameJSONPText.setEnabled(writeJSONPCheckbox.isEnabled() && writeJSONPCheckbox.isSelected());
 		
 		gltfConverterBrowseText.setEnabled(createGltfCheckbox.isSelected());
-		gltfConverterBrowseButton.setEnabled(createGltfCheckbox.isSelected());
+		gltfConverterBrowseButton.setEnabled(createGltfCheckbox.isSelected());				
 	}
 	
 	private void browseGltfConverterFile(String title) {
