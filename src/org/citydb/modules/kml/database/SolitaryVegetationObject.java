@@ -570,7 +570,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 										&&  texCoords != null && texCoords.trim().length() != 0) {
 
 									int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
-									texImageUri = ".." + File.separator + "_" + texImageUri.substring(fileSeparatorIndex + 1);
+									texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1); 
 
 									addTexImageUri(surfaceId, texImageUri);
 									if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
