@@ -33,6 +33,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.util.Locale;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -159,6 +160,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		collada2gltfConverterPanel.setLayout(new GridBagLayout());
 		gltfSettingsPanel.add(collada2gltfConverterPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 		createGltfCheckbox.setIconTextGap(10);
+		gltfConverterBrowseText.setPreferredSize(gltfConverterBrowseText.getSize());
 		collada2gltfConverterPanel.add(createGltfCheckbox, GuiUtil.setConstraints(0,0,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
 		collada2gltfConverterPanel.add(gltfConverterBrowseText, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS*6,0,BORDER_THICKNESS));
 		collada2gltfConverterPanel.add(gltfConverterBrowseButton, GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,BORDER_THICKNESS));
@@ -363,11 +365,6 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle(title);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("executable file (*.exe)", "exe");
-		chooser.addChoosableFileFilter(filter);
-		chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
-		chooser.setFileFilter(filter);
 		
 		if (!gltfConverterBrowseText.getText().trim().isEmpty())
 			chooser.setCurrentDirectory(new File(gltfConverterBrowseText.getText()));
