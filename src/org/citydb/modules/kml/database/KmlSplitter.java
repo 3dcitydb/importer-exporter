@@ -255,6 +255,18 @@ public class KmlSplitter {
 
 		if (CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType)) {
 
+			// check whether center point of the feature's envelope is within the tile extent
+			if (envelope != null && envelope.getGeometryType() == GeometryType.ENVELOPE) {
+				double coordinates[] = envelope.getCoordinates(0);
+				
+				Envelope tmp = new Envelope();
+				tmp.setLowerCorner(new Point(coordinates[0], coordinates[1], 0));
+				tmp.setUpperCorner(new Point(coordinates[3], coordinates[4], 0));
+				
+				if (exportFilter.getBoundingBoxFilter().filter(tmp))
+					return;
+			}
+						
 			// create json
 			CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
 			cityObject4Json.setTileRow(row);
