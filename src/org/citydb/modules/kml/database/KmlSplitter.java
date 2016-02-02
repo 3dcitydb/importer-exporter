@@ -247,13 +247,15 @@ public class KmlSplitter {
 	}
 
 	private void addWorkToQueue(long id, String gmlId, CityGMLClass cityObjectType, GeometryObject envelope, int row, int column, boolean isCityObjectGroupMember) throws SQLException {
-		// If CityObjectGroup is selected, only the cityobjectgroup geometries and in addition the selected features, which are group member of cityobjectgroup, will be exported.
-		if (filterConfig.getComplexFilter().getFeatureClass().isSetCityObjectGroup()
-				&& !cityObjectType.equals(CityGMLClass.CITY_OBJECT_GROUP)
-				&& !isCityObjectGroupMember)
+		
+		// In order to avoid the duplication of export, cityobjectgroup member
+		// object should not be exported if it belongs to the feature types (except CityObjectGroup) that
+		// have been already selected in the featureClasc-Filter
+		if (isCityObjectGroupMember && CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType)
+				&& !cityObjectType.equals(CityGMLClass.CITY_OBJECT_GROUP))
 			return;
 
-		if (CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType)) {
+		if (CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType) || isCityObjectGroupMember) {
 
 			// create json
 			CityObject4JSON cityObject4Json = new CityObject4JSON(gmlId);
@@ -325,5 +327,5 @@ public class KmlSplitter {
 		
 		return result;
 	}
-
+	
 }
