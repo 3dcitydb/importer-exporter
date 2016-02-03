@@ -334,11 +334,13 @@ public class Util {
 		while (iter.hasNext()) {
 			predicate.append(iter.next());
 
-			if (++i == maxItems) {
-				predicate.append(") ").append(logicalOperator).append(" ").append(columnName).append(" in (");
-				i = 0;
-			} else if (iter.hasNext())
-				predicate.append(", ");
+			if (iter.hasNext()) {
+				if (++i == maxItems) {
+					predicate.append(") ").append(logicalOperator).append(" ").append(columnName).append(" in (");
+					i = 0;
+				} else
+					predicate.append(", ");
+			}
 		}
 
 		predicate.append(")");
