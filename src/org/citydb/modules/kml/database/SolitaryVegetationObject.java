@@ -571,6 +571,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 
 									int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
 									texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1); 
+									texImageUri = texImageUri.replaceAll(" ", "_"); //replace spaces with underscores
 
 									addTexImageUri(surfaceId, texImageUri);
 									if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 

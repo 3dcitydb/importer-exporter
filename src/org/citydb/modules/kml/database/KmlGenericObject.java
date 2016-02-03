@@ -1804,6 +1804,7 @@ public abstract class KmlGenericObject {
 										&&  texCoords != null && texCoords.trim().length() != 0) {
 									int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/")); 
 									texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1); // for example: _tex4712047.jpeg
+									texImageUri = texImageUri.replaceAll(" ", "_"); //replace spaces with underscores
 									hasTexture = true;
 
 									if ((getUnsupportedTexImageId(texImageUri) == -1) && (getTexImage(texImageUri) == null)) { 
