@@ -420,11 +420,11 @@ public abstract class KmlGenericObject {
 
 		Mesh mesh = colladaFactory.createMesh();
 		mesh.getSource().add(positionSource);
-		mesh.setVertices(vertices);
-		if (!config.getProject().getKmlExporter().getAppearanceTheme().equals(KmlExporter.THEME_NONE))
-			mesh.getSource().add(texCoordsSource);		
-		else
+		mesh.setVertices(vertices);	
+		if (getColladaOptions().isGenerateSurfaceNormals())
 			mesh.getSource().add(normalSource);
+		if (!config.getProject().getKmlExporter().getAppearanceTheme().equals(KmlExporter.THEME_NONE))
+			mesh.getSource().add(texCoordsSource);	
 		
 		geometry.setMesh(mesh);
 		libraryGeometries.getGeometry().add(geometry);
@@ -634,24 +634,29 @@ public abstract class KmlGenericObject {
 				libraryEffects.getEffect().add(effect);
 
 				// --------------------------- triangles ---------------------------
+				int offset = 0;
+
 				triangles = colladaFactory.createTriangles();
 				triangles.setMaterial(replaceExtensionWithSuffix(texImageName, "_tri"));
 				InputLocalOffset inputV = colladaFactory.createInputLocalOffset();
 				inputV.setSemantic("VERTEX"); // ColladaConstants.INPUT_SEMANTIC_VERTEX
 				inputV.setSource("#" + vertices.getId());
-				inputV.setOffset(BigInteger.ZERO);
+				inputV.setOffset(BigInteger.valueOf(offset++));
 				triangles.getInput().add(inputV);
-				InputLocalOffset inputN = colladaFactory.createInputLocalOffset();
-				inputN.setSemantic("NORMAL"); // ColladaConstants.INPUT_NORMAL_VERTEX
-				inputN.setSource("#" + normalSource.getId());
-				inputN.setOffset(BigInteger.ONE);
-				triangles.getInput().add(inputN);
-				
+
+				if (getColladaOptions().isGenerateSurfaceNormals()) {
+					InputLocalOffset inputN = colladaFactory.createInputLocalOffset();
+					inputN.setSemantic("NORMAL"); // ColladaConstants.INPUT_NORMAL_VERTEX
+					inputN.setSource("#" + normalSource.getId());
+					inputN.setOffset(BigInteger.valueOf(offset++));
+					triangles.getInput().add(inputN);
+				}				
+
 				if (surfaceTextured) {
 					InputLocalOffset inputT = colladaFactory.createInputLocalOffset();
 					inputT.setSemantic("TEXCOORD"); // ColladaConstants.INPUT_SEMANTIC_TEXCOORD
 					inputT.setSource("#" + texCoordsSource.getId());
-					inputT.setOffset(BigInteger.valueOf(2));
+					inputT.setOffset(BigInteger.valueOf(offset++));
 					triangles.getInput().add(inputT);
 				}
 
@@ -725,7 +730,9 @@ public abstract class KmlGenericObject {
 			for (int i = 0; i < indexes.length; i++) {				
 				VertexInfo vertexInfo = vertexInfos.get(indexes[i]);
 				triangles.getP().add(vertexInfo.getVertexId());
-				triangles.getP().add(BigInteger.valueOf(normalIndexes[i] + normalIndexOffset));
+				
+				if (getColladaOptions().isGenerateSurfaceNormals())
+					triangles.getP().add(BigInteger.valueOf(normalIndexes[i] + normalIndexOffset));
 				
 				if (surfaceTextured) {
 					TexCoords texCoords = vertexInfo.getTexCoords(surfaceId);
