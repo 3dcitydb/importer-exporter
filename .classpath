@@ -19,8 +19,8 @@
 	<classpathentry kind="lib" path="lib/citygml4j/relaxngDatatype.jar"/>
 	<classpathentry kind="lib" path="lib/citygml4j/xsom.jar"/>
 	<classpathentry kind="lib" path="lib/h2/h2-1.4.190.jar"/>
-	<classpathentry kind="lib" path="lib/postgis/postgresql-9.4.1207.jre7.jar"/>
 	<classpathentry kind="lib" path="lib/postgis/postgis-jdbc-2.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/args4j/args4j-2.0.21.jar"/>
+	<classpathentry kind="lib" path="lib/postgis/postgresql-9.4-1201.jdbc41.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
