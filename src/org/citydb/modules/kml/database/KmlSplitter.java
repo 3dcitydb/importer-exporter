@@ -248,14 +248,21 @@ public class KmlSplitter {
 
 	private void addWorkToQueue(long id, String gmlId, CityGMLClass cityObjectType, GeometryObject envelope, int row, int column, boolean isCityObjectGroupMember) throws SQLException {
 		
-		// In order to avoid the duplication of export, cityobjectgroup member
-		// object should not be exported if it belongs to the feature types (except CityObjectGroup) that
-		// have been already selected in the featureClasc-Filter
+		// In order to avoid the duplication of export, cityobjectgroup members
+		// should not be exported if it belongs to the feature types (except CityObjectGroup) 
+		// that have been already selected in the featureClass-Filter (ComplexFilter)
 		if (isCityObjectGroupMember && CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType)
-				&& !cityObjectType.equals(CityGMLClass.CITY_OBJECT_GROUP))
+				&& !cityObjectType.equals(CityGMLClass.CITY_OBJECT_GROUP) && filterConfig.isSetComplexFilter())
 			return;
 
-		if (CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType) || isCityObjectGroupMember) {
+		// 1) If only the feature type CityObjectGroup is checked, then all city
+		// object groups and all their group members (independent of their
+		// feature type) are exported.
+		// 2) If further feature types are selected in addition to
+		// CityObjectGroup, then only group members matching those feature types
+		// are exported. Of course, all features that match the type selection
+		// but are not group members are also exported.
+		if (CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.contains(cityObjectType) || (isCityObjectGroupMember && CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.size() == 1)) {
 
 			// check whether center point of the feature's envelope is within the tile extent
 			if (envelope != null && envelope.getGeometryType() == GeometryType.ENVELOPE) {
