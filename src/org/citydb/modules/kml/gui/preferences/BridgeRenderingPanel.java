@@ -108,6 +108,7 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 	private JCheckBox textureAtlasPotsCheckbox = new JCheckBox();
 	private JCheckBox scaleTexImagesCheckbox = new JCheckBox();
 	private JTextField scaleFactorText = new JTextField("", 3);
+	private JPanel colladaColorSubPanel;
 	private JLabel colladaAlphaLabel = new JLabel();
 	private JSpinner colladaAlphaSpinner;
 	private JLabel colladaWallFillColorLabel = new JLabel();
@@ -389,8 +390,9 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 		colladaPanel.add(scaleFactorText, GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
 
 		// color settings for collada and gltf
-		JPanel colladaColorSubPanel = new JPanel();
+		colladaColorSubPanel = new JPanel();
 		colladaColorSubPanel.setLayout(new GridBagLayout());
+		colladaColorSubPanel.setBorder(BorderFactory.createTitledBorder(""));
 		GridBagConstraints cclsp = GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS*2,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		cclsp.gridwidth = 2;
 		colladaPanel.add(colladaColorSubPanel, cclsp);
@@ -402,9 +404,9 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
         GridBagConstraints cal = GuiUtil.setConstraints(0,0,0.25,1.0,GridBagConstraints.NONE,0,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
         cal.anchor = GridBagConstraints.EAST;
         colladaColorSubPanel.add(colladaAlphaLabel, cal);
-        colladaColorSubPanel.add(colladaAlphaSpinner, GuiUtil.setConstraints(1,0,0.25,1.0,GridBagConstraints.HORIZONTAL,0,0,BORDER_THICKNESS,0));
+        colladaColorSubPanel.add(colladaAlphaSpinner, GuiUtil.setConstraints(1,0,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS));
         
-		GridBagConstraints cwfcl = GuiUtil.setConstraints(0,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints cwfcl = GuiUtil.setConstraints(0,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
 		cwfcl.anchor = GridBagConstraints.EAST;
 		colladaColorSubPanel.add(colladaWallFillColorLabel, cwfcl);
         
@@ -412,9 +414,9 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 		colladaWallFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_WALL_FILL_COLOR, true));
 		colladaWallFillColorButton.setContentAreaFilled(false);
 		colladaWallFillColorButton.setOpaque(true);
-		colladaColorSubPanel.add(colladaWallFillColorButton, GuiUtil.setConstraints(1,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,0));
+		colladaColorSubPanel.add(colladaWallFillColorButton, GuiUtil.setConstraints(1,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
 
-		GridBagConstraints crfcl = GuiUtil.setConstraints(2,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints crfcl = GuiUtil.setConstraints(2,1,0.25,1.0,GridBagConstraints.NONE,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS,BORDER_THICKNESS);
 		crfcl.anchor = GridBagConstraints.EAST;
 		colladaColorSubPanel.add(colladaRoofFillColorLabel, crfcl);
 
@@ -422,7 +424,7 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 		colladaRoofFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_ROOF_FILL_COLOR, true));
 		colladaRoofFillColorButton.setContentAreaFilled(false);
 		colladaRoofFillColorButton.setOpaque(true);
-		colladaColorSubPanel.add(colladaRoofFillColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,2*BORDER_THICKNESS,BORDER_THICKNESS));
+		colladaColorSubPanel.add(colladaRoofFillColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,BORDER_THICKNESS,BORDER_THICKNESS));
 		
 		// highlighting settings (just for collada and Google Earch)
 		ButtonGroup colladaRadioGroup = new ButtonGroup();
@@ -681,6 +683,7 @@ public class BridgeRenderingPanel extends AbstractPreferencesComponent {
 		textureAtlasCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.generateTextureAtlases"));
 		textureAtlasPotsCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.textureAtlasPots"));
 		scaleTexImagesCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.scaleTexImages"));
+		((TitledBorder)colladaColorSubPanel.getBorder()).setTitle(Language.I18N.getString("pref.kmlexport.label.colladaGltfColorSettings"));
 		colladaAlphaLabel.setText(Language.I18N.getString("pref.kmlexport.label.alpha"));
 		colladaWallFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.wallFillColor"));
 		colladaRoofFillColorLabel.setText(Language.I18N.getString("pref.kmlexport.label.roofFillColor"));
