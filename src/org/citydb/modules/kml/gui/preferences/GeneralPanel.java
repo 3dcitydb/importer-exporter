@@ -42,12 +42,14 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 
+import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
 import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
@@ -226,6 +228,52 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 
 		PopupMenuDecorator.getInstance().decorate(autoTileSideLengthText, visibleFromText, viewRefreshTimeText, callbackNameJSONPText);
 
+		createGltfCheckbox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (createGltfCheckbox.isSelected() && kmzCheckbox.isSelected()) {	
+					Object[] options = {Language.I18N.getString("pref.kmlexport.label.deactivateKmz"), Language.I18N.getString("common.button.cancel")};
+					int choice = JOptionPane.showOptionDialog(ObjectRegistry.getInstance().getViewController().getTopFrame(), 
+							Language.I18N.getString("pref.kmlexport.label.kmzGltfWarning"), 
+							Language.I18N.getString("common.dialog.warning.title"), 
+							JOptionPane.YES_NO_OPTION,
+						    JOptionPane.QUESTION_MESSAGE,
+						    null,
+						    options,  
+						    options[0]);
+					if (choice == 0) {
+						kmzCheckbox.setSelected(false);
+					} else {
+						createGltfCheckbox.setSelected(false);
+					}
+				}	
+				setEnabledComponents();
+			}
+		});
+		
+		kmzCheckbox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (createGltfCheckbox.isSelected() && kmzCheckbox.isSelected()) {
+					if (createGltfCheckbox.isSelected() && kmzCheckbox.isSelected()) {	
+						Object[] options = {Language.I18N.getString("pref.kmlexport.label.deactivateGlTF"), Language.I18N.getString("common.button.cancel")};
+						int choice = JOptionPane.showOptionDialog(ObjectRegistry.getInstance().getViewController().getTopFrame(), 
+								Language.I18N.getString("pref.kmlexport.label.kmzGltfWarning"), 
+								Language.I18N.getString("common.dialog.warning.title"), 
+								JOptionPane.YES_NO_OPTION,
+							    JOptionPane.QUESTION_MESSAGE,
+							    null,
+							    options,  
+							    options[0]);
+						if (choice == 0) {
+							createGltfCheckbox.setSelected(false);							
+						} else {
+							kmzCheckbox.setSelected(false);
+						}
+					}	
+				}
+				setEnabledComponents();
+			}
+		});
+		
 		oneFilePerObjectCheckbox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setEnabledComponents();
