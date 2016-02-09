@@ -124,6 +124,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 
 		try {
 			conn = databaseAdapter.connectionPool.getConnection();
+			conn.setAutoCommit(true);			
 			if (databaseAdapter.hasVersioningSupport())
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 			
@@ -144,6 +145,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 
 		try {
 			conn = databaseAdapter.connectionPool.getConnection();
+			conn.setAutoCommit(true);			
 			if (databaseAdapter.hasVersioningSupport())
 				databaseAdapter.getWorkspaceManager().gotoWorkspace(conn, workspace);
 
