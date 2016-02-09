@@ -92,6 +92,8 @@ import org.citydb.config.project.resources.Resources;
 		"callbackNameJSONP",
 		"createGltfModel",
 		"pathOfGltfConverter",
+		"notCreateColladaFiles",
+		"embedTexturesInGltfFiles",
 		"appearanceTheme",
 		"altitudeMode",
 		"altitudeOffsetMode",
@@ -163,7 +165,6 @@ public class KmlExporter {
 	private Balloon tunnelBalloon;
 
 	private Lod0FootprintMode lod0FootprintMode;
-	private boolean exportAsKmz;
 	private boolean showBoundingBox;
 	private boolean showTileBorders;
 	private boolean exportEmptyTiles;
@@ -177,6 +178,9 @@ public class KmlExporter {
 	private String callbackNameJSONP;
 	private boolean createGltfModel;
 	private String pathOfGltfConverter;
+	private boolean notCreateColladaFiles;
+	private boolean embedTexturesInGltfFiles;
+	private boolean exportAsKmz;
 	private String appearanceTheme;
 	private AltitudeMode altitudeMode;
 	private AltitudeOffsetMode altitudeOffsetMode;
@@ -243,6 +247,8 @@ public class KmlExporter {
 		callbackNameJSONP = "handle_3DCityDB_data";
 		createGltfModel = false;
 		pathOfGltfConverter = System.getProperty("user.dir") + File.separator + "contribs" + File.separator + "collada2gltf";
+		notCreateColladaFiles = false;
+		embedTexturesInGltfFiles = false;
 		
 		setAppearanceTheme(THEME_NONE);
 		setAltitudeMode(AltitudeMode.ABSOLUTE);
@@ -403,13 +409,29 @@ public class KmlExporter {
 	public boolean isCreateGltfModel() {
 		return createGltfModel;
 	}
-	
+
 	public void setPathOfGltfConverter(String pathOfGltfConverter) {
 		this.pathOfGltfConverter = pathOfGltfConverter;
 	}
 
 	public String getPathOfGltfConverter() {
 		return pathOfGltfConverter;
+	}
+	
+	public void setNotCreateColladaFiles(boolean notCreateColladaFiles) {
+		this.notCreateColladaFiles = notCreateColladaFiles;
+	}
+
+	public boolean isNotCreateColladaFiles() {
+		return notCreateColladaFiles;
+	}
+	
+	public void setEmbedTexturesInGltfFiles(boolean embedTexturesInGltfFiles) {
+		this.embedTexturesInGltfFiles = embedTexturesInGltfFiles;
+	}
+
+	public boolean isEmbedTexturesInGltfFiles() {
+		return embedTexturesInGltfFiles;
 	}
 
 	public void setShowBoundingBox(boolean showBoundingBox) {

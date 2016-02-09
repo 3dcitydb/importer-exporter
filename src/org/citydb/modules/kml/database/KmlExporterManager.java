@@ -31,6 +31,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
@@ -60,6 +62,7 @@ import net.opengis.kml._2.ViewRefreshModeEnumType;
 
 import org.citydb.api.concurrent.WorkerPool;
 import org.citydb.api.event.EventDispatcher;
+import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.database.adapter.BlobExportAdapter;
@@ -565,16 +568,11 @@ public class KmlExporterManager {
 			FileOutputStream fos = new FileOutputStream(buildingModelFile);
 	        colladaMarshaller.marshal(colladaBundle.getCollada(), fos);
 	        fos.close();
-
-	        // ----------------- generate gltf model from collada-----------------
-	        if (config.getProject().getKmlExporter().isCreateGltfModel()) {
-	        	String collada2gltfPath = config.getProject().getKmlExporter().getPathOfGltfConverter();
-		        File collada2gltfFile = new File(collada2gltfPath);
-		        if (collada2gltfFile.exists()) {
-		      	   ProcessBuilder pb = new ProcessBuilder(collada2gltfPath, "-f", buildingDirectory + File.separator + colladaBundle.getGmlId() + ".dae",  "-e", "true"); 
-		      	   pb.start();
-		        }
-	        }
+	        
+	        // ----------------- create glTF without embedded textures-----------------
+			if (config.getProject().getKmlExporter().isCreateGltfModel() && !config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
+				convertColladaToglTF(colladaBundle, buildingDirectory, buildingModelFile);
+			}	        
 	        
 			// ----------------- image saving -----------------
 			if (colladaBundle.getUnsupportedTexImageIds() != null) {
@@ -583,7 +581,7 @@ public class KmlExporterManager {
 				while (iterator.hasNext()) {
 					String imageFilename = iterator.next();
 					String fileName = buildingDirectory + File.separator + imageFilename;
-					textureExportAdapter.getInFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, fileName);
+					textureExportAdapter.getInFile(colladaBundle.getUnsupportedTexImageIds().get(imageFilename), imageFilename, fileName);					
 				}
 			}
 
@@ -597,9 +595,24 @@ public class KmlExporterManager {
 
 					File imageFile = new File(buildingDirectory, imageFilename);
 					if (!imageFile.exists()) // avoid overwriting and access conflicts
-						ImageIO.write(texImage, imageType, imageFile);
+						ImageIO.write(texImage, imageType, imageFile);					
 				}
 			}
+	
+			// ----------------- create glTF with embedded textures-----------------
+			if (config.getProject().getKmlExporter().isCreateGltfModel() && config.getProject().getKmlExporter().isEmbedTexturesInGltfFiles()) {
+				convertColladaToglTF(colladaBundle, buildingDirectory, buildingModelFile);
+				if (config.getProject().getKmlExporter().isNotCreateColladaFiles()) {
+					Set<String> keySet = colladaBundle.getTexImages().keySet();
+					Iterator<String> iterator = keySet.iterator();
+					while (iterator.hasNext()) {
+						String imageFilename = iterator.next();
+						File imageFile = new File(buildingDirectory, imageFilename);
+						if (imageFile.exists()) 
+							imageFile.delete();					
+					}
+				}
+			}			
 			
 			// ----------------- balloon saving -----------------
 			if (colladaBundle.getExternalBalloonFileContent() != null) {
@@ -619,6 +632,22 @@ public class KmlExporterManager {
 			}
 		}
 	}
-
+	
+	private void convertColladaToglTF(ColladaBundle colladaBundle, File buildingDirectory, File buildingModelFile) {
+		String collada2gltfPath = config.getProject().getKmlExporter().getPathOfGltfConverter();
+		File collada2gltfFile = new File(collada2gltfPath);
+		if (collada2gltfFile.exists()) {
+			ProcessBuilder pb = new ProcessBuilder(collada2gltfPath, "-f", colladaBundle.getGmlId() + ".dae", "-e", "true");
+			pb.directory(buildingDirectory);
+			Process process = null;
+			try {
+				process = pb.start();
+				process.waitFor();
+			} catch (IOException|InterruptedException e) {}
+		}
+		if (config.getProject().getKmlExporter().isNotCreateColladaFiles()) {
+			buildingModelFile.delete();
+		}
+	}
 }
 
