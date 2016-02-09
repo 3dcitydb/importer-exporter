@@ -15,7 +15,7 @@
 -------------------------------------------------------------------------------
 -- About:
 -- Top-level migration script that starts the migration process for a 3DCityDB 
--- instance of v2.1.0 to v3.0.0
+-- instance of v2.1 to v3.1
 -------------------------------------------------------------------------------
 --
 -- ChangeLog:
@@ -34,8 +34,8 @@ BEGIN
 END;
 /
 
-ACCEPT SCHEMAINPUT PROMPT 'Enter the user name of 3DCityDB v2.1.0 instance : '
-ACCEPT DBVERSION CHAR DEFAULT 'S' PROMPT 'Which DB license are you using in the v3.0.0 instance? (Spatial(S)/Locator(L), default is S): '
+ACCEPT SCHEMAINPUT PROMPT 'Enter the user name of 3DCityDB v2.1 instance : '
+ACCEPT DBVERSION CHAR DEFAULT 'S' PROMPT 'Which DB license are you using in the v3.1 instance? (Spatial(S)/Locator(L), default is S): '
 ACCEPT TEXOP CHAR DEFAULT 'n' PROMPT 'No texture URI is used for multiple texture files (yes(y)/unknown(n), default is n): '
 
 VARIABLE MGRPBATCHFILE VARCHAR2(50);
@@ -63,6 +63,17 @@ END;
 
 BEGIN
 	dbms_output.put_line('Installing the package with functions and procedures for migration...');	
+END;
+/
+
+-- Drop the existing indexes (non-spatial indexes)
+BEGIN
+	dbms_output.put_line('Indexes are being dropped...');	
+END;
+/
+@@DROP_INDEXES_V3.sql
+BEGIN
+	dbms_output.put_line('Indexes are dropped.');	
 END;
 /
 
@@ -165,6 +176,29 @@ BEGIN
 	dbms_output.put_line('Sequence update is completed.');	
 END;
 /
+
+BEGIN
+	dbms_output.put_line('Indexes are being re-created...');	
+END;
+/
+-- Create the non-spatial indexes again
+@@CREATE_INDEXES_V3.sql
+BEGIN
+	dbms_output.put_line('Index re-creation is completed.');	
+END;
+/
+
+BEGIN
+	dbms_output.put_line('Constraints are being created...');	
+END;
+/
+-- Create the non-spatial indexes again
+@@CONSTRAINTS_V3.sql
+BEGIN
+	dbms_output.put_line('Constraints are created.');	
+END;
+/
+
 
 BEGIN
 	dbms_output.put_line('Migration related Packages, Procedures and Functions are being removed');

@@ -129,7 +129,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			gmlIdCodespace = "'" + gmlIdCodespace + "', ";
 		else
 			gmlIdCodespace = null;		
-		
+
 		StringBuilder stmt = new StringBuilder()
 		.append("insert into SURFACE_GEOMETRY (ID, GMLID, ").append(gmlIdCodespace != null ? "GMLID_CODESPACE, " : "").append("PARENT_ID, ROOT_ID, IS_SOLID, IS_COMPOSITE, IS_TRIANGULATED, IS_XLINK, IS_REVERSE, GEOMETRY, SOLID_GEOMETRY, IMPLICIT_GEOMETRY, CITYOBJECT_ID) values ")
 		.append("(?, ?, ").append(gmlIdCodespace != null ? gmlIdCodespace : "").append("?, ?, ?, ?, ?, ?, ?, ?, ");
@@ -289,6 +289,23 @@ public class DBSurfaceGeometry implements DBImporter {
 			List<Double> points = linearRing.toList3d(reverse);
 			if (applyTransformation)
 				dbImporterManager.getAffineTransformer().transformCoordinates(points);
+
+			// well, taking care about geometry is not enough... this ring could
+			// be referenced by a <textureCoordinates> element. since we cannot store
+			// the gml:id of linear rings in the database, we have to remember its id
+			if (importAppearance && !isCopy) {
+				if (linearRing.isSetId()) {
+					if (localTexCoordResolver != null && localTexCoordResolver.isActive())
+						localTexCoordResolver.registerLinearRing(linearRing.getId(), surfaceGeometryId, reverse);
+
+					// the ring could also be the target of a global appearance
+					dbImporterManager.propagateXlink(new DBXlinkLinearRing(
+							linearRing.getId(),
+							surfaceGeometryId,
+							0,
+							reverse));
+				}
+			}
 
 			double[] coordinates = new double[points.size()];
 

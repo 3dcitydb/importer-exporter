@@ -48,6 +48,7 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 	private final DBXlinkResolverManager resolverManager;
 
 	private PreparedStatement psSelectTexCoords;
+	private PreparedStatement psSelectTexCoordsByGmlId;
 	private PreparedStatement psSelectLinearRings;
 	private PreparedStatement psTextureParam;
 
@@ -66,6 +67,10 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 		psSelectTexCoords = texCoords.getConnection().prepareStatement(new StringBuilder()
 		.append("select GMLID, TEXTURE_COORDINATES from ").append(texCoords.getTableName()).append(" ")
 		.append("where TARGET_ID=? and ID=?").toString());
+
+		psSelectTexCoordsByGmlId = texCoords.getConnection().prepareStatement(new StringBuilder()
+		.append("select GMLID, TEXTURE_COORDINATES from ").append(texCoords.getTableName()).append(" ")
+		.append("where GMLID=?").toString());
 
 		psSelectLinearRings = linearRings.getConnection().prepareStatement(new StringBuilder()
 		.append("select GMLID, RING_NO from ").append(linearRings.getTableName()).append(" where PARENT_ID = ?").toString());
@@ -90,7 +95,7 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 
 			long surfaceGeometryId = xlink.getSurfaceGeometryId();
 			boolean reverse = xlink.isReverse();
-			
+
 			HashMap<String, Integer> ringNos = new HashMap<String, Integer>();
 			while (rs.next()) {
 				String ringId = rs.getString(1);
@@ -102,11 +107,16 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 
 			if (surfaceGeometryId == 0)
 				return false;
-			
+
 			// step 2: get texture coordinates
-			psSelectTexCoords.setLong(1, xlink.getTargetId());
-			psSelectTexCoords.setLong(2, xlink.getId());
-			rs = psSelectTexCoords.executeQuery();
+			if (ringNos.size() == 1) {
+				psSelectTexCoordsByGmlId.setString(1, ringNos.keySet().iterator().next());
+				rs = psSelectTexCoordsByGmlId.executeQuery();
+			} else {			
+				psSelectTexCoords.setLong(1, xlink.getTargetId());
+				psSelectTexCoords.setLong(2, xlink.getId());
+				rs = psSelectTexCoords.executeQuery();
+			}
 
 			double[][] texCoords = new double[ringNos.size()][];
 			while (rs.next()) {
@@ -183,6 +193,7 @@ public class XlinkTexCoordList implements DBXlinkResolver {
 	@Override
 	public void close() throws SQLException {
 		psSelectTexCoords.close();
+		psSelectTexCoordsByGmlId.close();
 		psSelectLinearRings.close();
 		psTextureParam.close();
 	}
