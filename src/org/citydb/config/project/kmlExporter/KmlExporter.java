@@ -26,6 +26,7 @@
  */
 package org.citydb.config.project.kmlExporter;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -241,7 +242,7 @@ public class KmlExporter {
 		writeJSONPFile = false;
 		callbackNameJSONP = "handle_3DCityDB_data";
 		createGltfModel = false;
-		pathOfGltfConverter = "";
+		pathOfGltfConverter = System.getProperty("user.dir") + File.separator + "contribs" + File.separator + "collada2gltf";
 		
 		setAppearanceTheme(THEME_NONE);
 		setAltitudeMode(AltitudeMode.ABSOLUTE);
