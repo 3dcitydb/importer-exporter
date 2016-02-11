@@ -433,7 +433,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (!gltfConverterBrowseText.getText().trim().isEmpty())
 			chooser.setCurrentDirectory(new File(gltfConverterBrowseText.getText()));
 		else
-			chooser.setCurrentDirectory(new File(Internal.USER_PATH));
+			chooser.setCurrentDirectory(new File(System.getProperty("user.dir") + File.separator + "contribs" + File.separator + "collada2gltf"));
 		
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 
