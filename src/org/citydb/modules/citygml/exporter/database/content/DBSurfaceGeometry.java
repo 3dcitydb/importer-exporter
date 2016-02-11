@@ -151,33 +151,27 @@ public class DBSurfaceGeometry implements DBExporter {
 			// flat geometry tree structure
 			while (rs.next()) {
 				long id = rs.getLong(1);
-				String gmlId = rs.getString(2);
-				long parentId = rs.getLong(3);
-				int isSolid = rs.getInt(4);
-				int isComposite = rs.getInt(5);
-				int isTriangulated = rs.getInt(6);
-				int isXlink = rs.getInt(7);
-				int isReverse = rs.getInt(8);
+				
+				// constructing a geometry node
+				GeometryNode geomNode = new GeometryNode();
+				geomNode.id = id;				
+				geomNode.gmlId = rs.getString(2);
+				geomNode.parentId = rs.getLong(3);
+				geomNode.isSolid = rs.getBoolean(4);
+				geomNode.isComposite = rs.getBoolean(5);
+				geomNode.isTriangulated = rs.getBoolean(6);
+				geomNode.isXlink = rs.getBoolean(7);
+				geomNode.isReverse = rs.getBoolean(8);
 
 				GeometryObject geometry = null;
 				Object object = rs.getObject(!isImplicit ? 9 : 10);
 				if (!rs.wasNull() && object != null)
 					geometry = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
 
-				// constructing a geometry node
-				GeometryNode geomNode = new GeometryNode();
-				geomNode.id = id;
-				geomNode.gmlId = gmlId;
-				geomNode.parentId = parentId;
-				geomNode.isSolid = isSolid == 1;
-				geomNode.isComposite = isComposite == 1;
-				geomNode.isTriangulated = isTriangulated == 1;			
-				geomNode.isXlink = isXlink == 1;			
-				geomNode.isReverse = isReverse == 1;
 				geomNode.geometry = geometry;
 
 				// put it into our geometry tree
-				geomTree.insertNode(geomNode, parentId);
+				geomTree.insertNode(geomNode, geomNode.parentId);
 			}
 
 			// interpret geometry tree as a single abstract geometry
