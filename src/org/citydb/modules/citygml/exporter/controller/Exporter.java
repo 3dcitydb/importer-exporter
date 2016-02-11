@@ -508,9 +508,7 @@ public class Exporter implements EventHandler {
 
 					try {
 						dbWorkerPool.shutdownAndWait();
-						if (shouldRun)
-							xlinkExporterPool.shutdownAndWait();
-
+						xlinkExporterPool.shutdownAndWait();
 						ioWriterPool.shutdownAndWait();
 					} catch (InterruptedException e) {
 						LOG.error("Internal error: " + e.getMessage());
@@ -710,7 +708,7 @@ public class Exporter implements EventHandler {
 					dbWorkerPool.drainWorkQueue();
 
 				if (xlinkExporterPool != null)
-					xlinkExporterPool.shutdownNow();
+					xlinkExporterPool.drainWorkQueue();
 			}
 		}
 	}
