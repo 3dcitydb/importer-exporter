@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  * 
- * (C) 2013 - 2015,
+ * (C) 2013 - 2016,
  * Chair of Geoinformatics,
  * Technische Universitaet Muenchen, Germany
  * http://www.gis.bgu.tum.de/
@@ -156,7 +156,7 @@ public class InfoDialog extends JDialog {
 			copy.setEditable(false);
 			copy.setBackground(new Color(255, 255, 255));
 			copy.setFont(authorsHeader.getFont());
-			copy.setText("(C) 2013 - 2015\n" +
+			copy.setText("(C) 2013 - 2016\n" +
 					tum_label_text + "\n" +
 					"http://www.gis.bgu.tum.de/\n\n" +
 					"This program is free software under the GNU Lesser General\n" +
