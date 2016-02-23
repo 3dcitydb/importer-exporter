@@ -31,6 +31,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -314,7 +315,8 @@ public class Util {
 
 				codeList.add(code);
 			}
-		}
+		} else
+			codeList = Collections.emptyList();
 
 		return codeList;
 	}
