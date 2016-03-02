@@ -31,7 +31,7 @@ or visit http://www.gnu.org/licenses/.
 2. Copyright
 ------------
 
-(c) 2013 - 2015  
+(c) 2013 - 2016  
 Chair of Geoinformatics (TUMGI)
 Technische Universitaet Muenchen, Germany
 http://www.gis.bgu.tum.de
