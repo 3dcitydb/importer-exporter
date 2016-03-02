@@ -140,7 +140,8 @@ public class InfoDialog extends JDialog {
 			authors.setFont(authorsHeader.getFont());
 
 			authors.setText("Claus Nagel <cnagel@virtualcitysystems.de>\n" +
-					"Felix Kunde <fkunde@virtualcitysystems.de>\n" +
+					"Richard Redweik <rredweik@virtualcitysystems.de>\n" +
+					"Felix Kunde <felix-kunde@gmx.de>\n" +
 					"Zhihang Yao <zhihang.yao@tum.de>\n" +
 					"György Hudra <ghudra@moss.de>\n" +
 			"Thomas H. Kolbe <thomas.kolbe@tum.de>");				
@@ -156,7 +157,7 @@ public class InfoDialog extends JDialog {
 			copy.setEditable(false);
 			copy.setBackground(new Color(255, 255, 255));
 			copy.setFont(authorsHeader.getFont());
-			copy.setText("(C) 2013 - 2015\n" +
+			copy.setText("(C) 2013 - 2016\n" +
 					tum_label_text + "\n" +
 					"http://www.gis.bgu.tum.de/\n\n" +
 					"This program is free software under the GNU Lesser General\n" +

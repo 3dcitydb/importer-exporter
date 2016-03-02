@@ -85,9 +85,9 @@ third party applications.
 The !impexp.name! can be run on any platform 
 providing appropriate Java support. It has been tested on the 
 following platforms:
-  - Microsoft Windows XP, Vista, Windows 7, 8, 8.1
-  - Apple Mac OS X 10.9
-  - Ubuntu 14
+  - Microsoft Windows XP, Vista, Windows 7, 8, 8.1, 10
+  - Apple Mac OS X 10.9, 10.11
+  - Ubuntu 14, 15
 
 
 5. (Un)Installation
@@ -186,7 +186,8 @@ and with the support from the following cooperation partners:
 --------------------
 
 Claus Nagel <cnagel@virtualcitysystems.de>
-Felix Kunde <fkunde@virtualcitysystems.de>
+Richard Redweik <rredweik@virtualcitysystems.de>
+Felix Kunde <felix-kunde@gmx.de>
 Zhihang Yao <zhihang.yao@tum.de>
 György Hudra <ghudra@moss.de>
 Thomas H. Kolbe <thomas.kolbe@tum.de>
