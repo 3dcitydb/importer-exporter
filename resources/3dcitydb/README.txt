@@ -1,4 +1,4 @@
-3D City Database - The Open Source CityGML Database
+﻿3D City Database - The Open Source CityGML Database
 
   This software is free software and is distributed in the hope
   that it will be useful, but WITHOUT ANY WARRANTY; without even
@@ -36,7 +36,7 @@ visit http://www.gnu.org/licenses/.
 2. Copyright
 ------------
 
-(C) 2013 - 2016
+(C) 2013 - 2015
 Chair of Geoinformatics
 Technische Universität München, Germany
 http://www.gis.bgu.tum.de/
@@ -143,7 +143,8 @@ the following cooperation partners:
 --------------------
 
 Claus Nagel <cnagel@virtualcitysystems.de>
-Felix Kunde <fkunde@virtualcitysystems.de>
+Felix Kunde <felix-kunde@gmx.de>
+Richard Redweik <rredweik@virtualcitysystems.de>
 Zhihang Yao <zhihang.yao@tum.de>
 György Hudra <ghudra@moss.de>
 Arda Müftüoglu <amueftueoglu@moss.de>
