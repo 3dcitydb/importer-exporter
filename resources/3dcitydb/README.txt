@@ -1,4 +1,4 @@
-3D City Database - The Open Source CityGML Database
+﻿3D City Database - The Open Source CityGML Database
 
   This software is free software and is distributed in the hope
   that it will be useful, but WITHOUT ANY WARRANTY; without even
@@ -143,7 +143,8 @@ the following cooperation partners:
 --------------------
 
 Claus Nagel <cnagel@virtualcitysystems.de>
-Felix Kunde <fkunde@virtualcitysystems.de>
+Felix Kunde <felix-kunde@gmx.de>
+Richard Redweik <rredweik@virtualcitysystems.de>
 Zhihang Yao <zhihang.yao@tum.de>
 György Hudra <ghudra@moss.de>
 Arda Müftüoglu <amueftueoglu@moss.de>

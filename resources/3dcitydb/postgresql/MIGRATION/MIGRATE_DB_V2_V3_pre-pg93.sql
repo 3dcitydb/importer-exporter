@@ -1,9 +1,9 @@
 -- MIGRATE_DB_V2_V3_pre-pg93.sql
 --
--- Authors:     Felix Kunde <fkunde@virtualcitysystems.de>
+-- Authors:     Felix Kunde <felix-kunde@gmx.de>
 --
--- Copyright:   (c) 2012-2015  Chair of Geoinformatics,
---                             Technische Universität München, Germany
+-- Copyright:   (c) 2012-2016  Chair of Geoinformatics,
+--                             Technische UniversitÃ¤t MÃ¼nchen, Germany
 --                             http://www.gis.bv.tum.de
 --
 --              This skript is free software under the LGPL Version 2.1.
