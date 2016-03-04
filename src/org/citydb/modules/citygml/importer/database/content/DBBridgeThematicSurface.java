@@ -162,9 +162,9 @@ public class DBBridgeThematicSurface implements DBImporter {
 			}
 
 			if (multiSurfaceId != 0)
-				psThematicSurface.setLong(6 + i, multiSurfaceId);
+				psThematicSurface.setLong(7 + i, multiSurfaceId);
 			else
-				psThematicSurface.setNull(6 + i, Types.NULL);
+				psThematicSurface.setNull(7 + i, Types.NULL);
 		}
 
 		psThematicSurface.addBatch();
