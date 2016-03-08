@@ -496,7 +496,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	}
 
 	private String wrap(String in,int len) {
-		if (in.length() <= len)
+		if (in == null || in.length() <= len)
 			return in;
 
 		int wrapAt = Math.max(in.substring(0, len).lastIndexOf(' '), in.substring(0, len).lastIndexOf('-'));
