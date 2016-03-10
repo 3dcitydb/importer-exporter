@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  * 
- * (C) 2013 - 2015,
+ * (C) 2013 - 2016,
  * Chair of Geoinformatics,
  * Technische Universitaet Muenchen, Germany
  * http://www.gis.bgu.tum.de/
@@ -446,12 +446,14 @@ public class ImpExp {
 
 		// init internationalized labels 
 		LanguageType lang = config.getProject().getGlobal().getLanguage();
-		if (lang == null) {
+		if (lang == null)
 			lang = LanguageType.fromValue(System.getProperty("user.language"));
-			config.getProject().getGlobal().setLanguage(lang);
-		}
 
+		if (!Language.existsLanguagePack(new Locale(lang.value())))
+			lang = LanguageType.EN;
+		
 		Language.I18N = ResourceBundle.getBundle("org.citydb.config.language.Label", new Locale(lang.value()));
+		config.getProject().getGlobal().setLanguage(lang);
 
 		// start application
 		if (!shell) {

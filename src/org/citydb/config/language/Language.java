@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  * 
- * (C) 2013 - 2015,
+ * (C) 2013 - 2016,
  * Chair of Geoinformatics,
  * Technische Universitaet Muenchen, Germany
  * http://www.gis.bgu.tum.de/
@@ -26,9 +26,15 @@
  */
 package org.citydb.config.language;
 
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class Language {
 	// language pack
 	public static ResourceBundle I18N;
+	
+	public static boolean existsLanguagePack(Locale locale) {
+		return Language.class.getResource("/org/citydb/config/language/Label_" + locale.getLanguage() + ".properties") != null;
+	}
+
 }

@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  * 
- * (C) 2013 - 2015,
+ * (C) 2013 - 2016,
  * Chair of Geoinformatics,
  * Technische Universitaet Muenchen, Germany
  * http://www.gis.bgu.tum.de/
@@ -496,7 +496,7 @@ public class SrsPanel extends AbstractPreferencesComponent implements EventHandl
 	}
 
 	private String wrap(String in,int len) {
-		if (in.length() <= len)
+		if (in == null || in.length() <= len)
 			return in;
 
 		int wrapAt = Math.max(in.substring(0, len).lastIndexOf(' '), in.substring(0, len).lastIndexOf('-'));

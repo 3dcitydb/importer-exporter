@@ -7,7 +7,7 @@
 --              Gerhard König <gerhard.koenig@tu-berlin.de>
 --              Alexandra Lorenz <di.alex.lorenz@googlemail.com>
 --
--- Copyright:   (c) 2012-2014  Chair of Geoinformatics,
+-- Copyright:   (c) 2012-2016  Chair of Geoinformatics,
 --                             Technische Universität München, Germany
 --                             http://www.gis.bv.tum.de
 --
@@ -669,7 +669,7 @@ ENABLE;
 ALTER TABLE BRIDGE_THEMATIC_SURFACE
 ADD CONSTRAINT BRD_THEM_SRF_BRD_CONST_FK FOREIGN KEY
 (
-  ID 
+  BRIDGE_CONSTR_ELEMENT_ID  
 )
 REFERENCES BRIDGE_CONSTR_ELEMENT
 (

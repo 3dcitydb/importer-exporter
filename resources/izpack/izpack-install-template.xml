@@ -3,7 +3,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  * 
- * (C) 2013 - 2015,
+ * (C) 2013 - 2016,
  * Chair of Geoinformatics,
  * Technische Universitaet Muenchen, Germany
  * http://www.gis.bgu.tum.de/
@@ -32,7 +32,8 @@
         <appsubpath>!izpack.installation.folder!</appsubpath>
         <authors>
             <author name="Claus Nagel" email="cnagel@virtualcitysystems.de"/>
-            <author name="Felix Kunde" email="fkunde@virtualcitysystems.de"/>
+            <author name="Richard Redweik" email="rredweik@virtualcitysystems.de"/>
+            <author name="Felix Kunde" email="felix-kunde@gmx.de"/>
             <author name="Zhihang Yao" email="zhihang.yao@tum.de"/>
             <author name="György Hudra" email="ghudra@moss.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tum.de"/>

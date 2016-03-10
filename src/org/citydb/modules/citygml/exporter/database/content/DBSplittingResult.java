@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  * 
- * (C) 2013 - 2015,
+ * (C) 2013 - 2016,
  * Chair of Geoinformatics,
  * Technische Universitaet Muenchen, Germany
  * http://www.gis.bgu.tum.de/
@@ -26,31 +26,20 @@
  */
 package org.citydb.modules.citygml.exporter.database.content;
 
-import org.citydb.modules.citygml.exporter.util.GlobalAppearanceResolver;
 import org.citygml4j.model.citygml.CityGMLClass;
 
 public class DBSplittingResult {
 	private final long primaryKey;
 	private final CityGMLClass cityObjectType;
 	private final String gmlId;
-	private final GlobalAppearanceResolver globalAppResolver;
 	
 	private boolean checkIfAlreadyExported = false;
 
 	public DBSplittingResult(long primaryKey, CityGMLClass cityObjectType) {
-		this(null, null, primaryKey, cityObjectType);
-	}
-		
-	public DBSplittingResult(String gmlId, long primaryKey, CityGMLClass cityObjectType) {
-		this(null, gmlId, primaryKey, cityObjectType);
-	}
-	
-	public  DBSplittingResult(GlobalAppearanceResolver globalAppResolver) {
-		this(globalAppResolver, globalAppResolver.getGmlId(), globalAppResolver.getId(), CityGMLClass.APPEARANCE);
+		this(null, primaryKey, cityObjectType);
 	}
 
-	private DBSplittingResult(GlobalAppearanceResolver globalAppResolver, String gmlId, long primaryKey, CityGMLClass cityObjectType) {
-		this.globalAppResolver = globalAppResolver;
+	public DBSplittingResult(String gmlId, long primaryKey, CityGMLClass cityObjectType) {
 		this.gmlId = gmlId;
 		this.primaryKey = primaryKey;
 		this.cityObjectType = cityObjectType;
@@ -74,10 +63,6 @@ public class DBSplittingResult {
 
 	public void setCheckIfAlreadyExported(boolean checkIfAlreadyExported) {
 		this.checkIfAlreadyExported = checkIfAlreadyExported;
-	}
-
-	public GlobalAppearanceResolver getGlobalAppearanceResolver() {
-		return globalAppResolver;
 	}
 	
 }

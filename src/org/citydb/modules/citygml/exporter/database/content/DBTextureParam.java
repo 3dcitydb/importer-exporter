@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  * 
- * (C) 2013 - 2015,
+ * (C) 2013 - 2016,
  * Chair of Geoinformatics,
  * Technische Universitaet Muenchen, Germany
  * http://www.gis.bgu.tum.de/
@@ -34,8 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.citydb.api.geometry.GeometryObject;
-import org.citydb.modules.citygml.exporter.util.GlobalAppearanceResolver.SurfaceDataTarget;
-import org.citydb.modules.citygml.exporter.util.GlobalAppearanceResolver.SurfaceGeometryTarget;
+import org.citydb.modules.citygml.common.database.cache.CacheTable;
 import org.citydb.util.Util;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -53,34 +52,40 @@ public class DBTextureParam implements DBExporter {
 	private final DBExporterManager dbExporterManager;
 	private final DBExporterEnum type;
 	private final Connection connection;
+	private final CacheTable tempTable;
 
 	private PreparedStatement psTextureParam;
-	private int maxItems;
 
-	public DBTextureParam(DBExporterEnum type, Connection connection, DBExporterManager dbExporterManager) throws SQLException {
+	public DBTextureParam(DBExporterEnum type, Connection connection, CacheTable tempTable, DBExporterManager dbExporterManager) throws SQLException {
 		if (type != DBExporterEnum.LOCAL_APPEARANCE_TEXTUREPARAM && type != DBExporterEnum.GLOBAL_APPEARANCE_TEXTUREPARAM)
 			throw new IllegalArgumentException("Only type " + DBExporterEnum.LOCAL_APPEARANCE_TEXTUREPARAM + " is allowed.");
 
 		this.type = type;
 		this.connection = connection;
+		this.tempTable = tempTable;
 		this.dbExporterManager = dbExporterManager;
 
 		init();
 	}
 
-	private void init() throws SQLException {
-		maxItems = dbExporterManager.getDatabaseAdapter().getSQLAdapter().getMaximumNumberOfItemsForInOperator();
-		
+	private void init() throws SQLException {		
 		if (type == DBExporterEnum.LOCAL_APPEARANCE_TEXTUREPARAM) {
 			StringBuilder query = new StringBuilder()
 			.append("select tp.WORLD_TO_TEXTURE, tp.TEXTURE_COORDINATES, sg.GMLID, sg.IS_REVERSE from TEXTUREPARAM tp ")
 			.append("inner join SURFACE_GEOMETRY sg on sg.ID=tp.SURFACE_GEOMETRY_ID ")
 			.append("where tp.SURFACE_DATA_ID=?");
 			psTextureParam = connection.prepareStatement(query.toString());
+		} else {
+			StringBuilder query = new StringBuilder()
+			.append("select tp.WORLD_TO_TEXTURE, tp.TEXTURE_COORDINATES, sg.GMLID, sg.IS_REVERSE from TEXTUREPARAM tp ")
+			.append("inner join " + tempTable.getTableName() + " tmp on tmp.ID = tp.SURFACE_GEOMETRY_ID ")
+			.append("inner join SURFACE_GEOMETRY sg on sg.ID=tmp.ID ")
+			.append("where tp.SURFACE_DATA_ID=?");
+			psTextureParam = tempTable.getConnection().prepareStatement(query.toString());			
 		}
 	}
 
-	public void read(AbstractSurfaceData surfaceData, long surfaceDataId) throws SQLException {
+	public boolean read(AbstractSurfaceData surfaceData, long surfaceDataId) throws SQLException {
 		ResultSet rs = null;
 
 		try {
@@ -95,49 +100,11 @@ public class DBTextureParam implements DBExporter {
 
 				fillTextureParam(surfaceData, worldToTexture, texCoordsObj, target, isReverse);
 			}
+			
+			return rs.isAfterLast();
 		} finally {
 			if (rs != null)
 				rs.close();
-		}
-	}
-	
-	public void read(AbstractSurfaceData surfaceData, long surfaceDataId, SurfaceDataTarget target) throws SQLException {
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			StringBuilder query = new StringBuilder()
-			.append("select WORLD_TO_TEXTURE, TEXTURE_COORDINATES, SURFACE_GEOMETRY_ID from TEXTUREPARAM ")
-			.append("where SURFACE_DATA_ID=").append(surfaceDataId).append(" and ")
-			.append(Util.buildInOperator(target.getSurfaceGeometryIds(), "SURFACE_GEOMETRY_ID", "or", maxItems));
-			
-			stmt = connection.prepareStatement(query.toString());
-			rs = stmt.executeQuery();
-
-			while (rs.next()) {
-				String worldToTexture = rs.getString(1);
-				Object texCoordsObj = rs.getObject(2);
-				long surfaceGeometryId = rs.getLong(3);				
-				SurfaceGeometryTarget geometry = target.getSurfaceGeometryTarget(surfaceGeometryId);
-				
-				fillTextureParam(surfaceData, worldToTexture, texCoordsObj, geometry.getGmlId(), geometry.isReverse());
-			}
-		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					//
-				}
-			}
-
-			if (stmt != null) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					//
-				}
-			}
 		}
 	}
 

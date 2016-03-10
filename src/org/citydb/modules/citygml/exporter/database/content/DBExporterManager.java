@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  * 
- * (C) 2013 - 2015,
+ * (C) 2013 - 2016,
  * Chair of Geoinformatics,
  * Technische Universitaet Muenchen, Germany
  * http://www.gis.bgu.tum.de/
@@ -202,7 +202,10 @@ public class DBExporterManager {
 				break;
 			case LOCAL_APPEARANCE_TEXTUREPARAM:
 			case GLOBAL_APPEARANCE_TEXTUREPARAM:
-				dbExporter = new DBTextureParam(dbExporterType, connection, this);
+				if (config.getInternal().isExportGlobalAppearances())
+					globalAppTempTable = cacheTableManager.getCacheTable(CacheTableModelEnum.GLOBAL_APPEARANCE);
+
+				dbExporter = new DBTextureParam(dbExporterType, connection, globalAppTempTable, this);
 				break;
 			case GENERIC_CITYOBJECT:
 				dbExporter = new DBGenericCityObject(connection, exportFilter, config, this);

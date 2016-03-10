@@ -2,7 +2,7 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  * 
- * (C) 2013 - 2015,
+ * (C) 2013 - 2016,
  * Chair of Geoinformatics,
  * Technische Universitaet Muenchen, Germany
  * http://www.gis.bgu.tum.de/
@@ -162,9 +162,9 @@ public class DBBridgeThematicSurface implements DBImporter {
 			}
 
 			if (multiSurfaceId != 0)
-				psThematicSurface.setLong(6 + i, multiSurfaceId);
+				psThematicSurface.setLong(7 + i, multiSurfaceId);
 			else
-				psThematicSurface.setNull(6 + i, Types.NULL);
+				psThematicSurface.setNull(7 + i, Types.NULL);
 		}
 
 		psThematicSurface.addBatch();
