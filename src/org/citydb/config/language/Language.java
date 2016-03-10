@@ -26,9 +26,15 @@
  */
 package org.citydb.config.language;
 
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class Language {
 	// language pack
 	public static ResourceBundle I18N;
+	
+	public static boolean existsLanguagePack(Locale locale) {
+		return Language.class.getResource("/org/citydb/config/language/Label_" + locale.getLanguage() + ".properties") != null;
+	}
+
 }
