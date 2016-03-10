@@ -184,7 +184,7 @@
 			<exclude name="org/citydb/io/**" />
 			<exclude name="org/citydb/modules/kml/**" />
 			<exclude name="org/citydb/modules/database/**" />
-			<exclude name="org/citydb/modules/preferences/**" />				
+			<exclude name="org/citydb/modules/preferences/**" />
 			<exclude name="org/citydb/modules/**/gui/**" />
 			<exclude name="org/citydb/modules/**/*Plugin.java" />
 			<exclude name="org/citydb/modules/citygml/**/controller/**" />
@@ -249,6 +249,11 @@
 		<!-- copy precompiled plugins -->
 		<copy todir="${dir.dest.plugins}">
 			<fileset dir="${dir.resources.plugins}" includes="**/*" />
+		</copy>
+
+		<!-- copy contents of contribs folder -->
+		<copy todir="${dir.dest.contribs}">
+			<fileset dir="${dir.contribs}" includes="**/*" />
 		</copy>
 
 		<!-- copy LICENSE templates -->
@@ -334,6 +339,8 @@
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest!" value="${dir.dest}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugin.api.relative!" value="${dir.dest.plugin.api.relative}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugin.api!" value="${dir.dest.plugin.api}" />
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.contribs.relative!" value="${dir.dest.contribs.relative}" />
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.contribs!" value="${dir.dest.contribs}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.3dcitydb!" value="${dir.resources.3dcitydb}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.manual!" value="${dir.resources.manual}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.templates!" value="${dir.resources.templates}" />

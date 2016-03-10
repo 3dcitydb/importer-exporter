@@ -115,6 +115,7 @@
             <!-- the following fileset is just to create an empty plugins folder -->
             <fileset dir="!dir.dest.plugins!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!" excludes="**/*"/>
             <fileset dir="!dir.resources.templates!" targetdir="$INSTALL_PATH/templates" override="true"/>
+            <fileset dir="!dir.dest.contribs!" targetdir="$INSTALL_PATH/!dir.dest.contribs.relative!" override="true" />
             <executable targetfile="$INSTALL_PATH/3DCityDB-Importer-Exporter.sh" condition="!izpack.macinstall" stage="never">
                 <os family="unix"/>
             </executable>
