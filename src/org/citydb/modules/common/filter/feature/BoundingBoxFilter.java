@@ -37,6 +37,7 @@ import org.citydb.api.geometry.BoundingBox;
 import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.api.geometry.GeometryObject;
 import org.citydb.config.Config;
+import org.citydb.config.project.database.Database;
 import org.citydb.config.project.filter.AbstractFilterConfig;
 import org.citydb.config.project.filter.FilterBoundingBox;
 import org.citydb.config.project.filter.TiledBoundingBox;
@@ -107,10 +108,8 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 				// check whether we have to transform the bounding box
 				DatabaseSrs targetSrs;
 				if (mode == FilterMode.KML_EXPORT) {
-					targetSrs = DatabaseSrs.createDefaultSrs();
-					targetSrs.setSrid(4326);					
-				}
-				else {
+					targetSrs = Database.PREDEFINED_SRS.get(Database.PredefinedSrsName.WGS84_2D);				
+				} else {
 					targetSrs = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 				}
 
