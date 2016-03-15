@@ -63,6 +63,8 @@ public class DisplayForm {
  	public static final int DEFAULT_WALL_LINE_COLOR = 0xc8666666;
 	public static final int DEFAULT_ROOF_FILL_COLOR = 0xc8ff3333;
 	public static final int DEFAULT_ROOF_LINE_COLOR = 0xc8990000;
+	public static final int DEFAULT_COLLADA_WALL_FILL_COLOR = 0xffcccccc;
+ 	public static final int DEFAULT_COLLADA_ROOF_FILL_COLOR = 0xffff3333;
 
 	public static final int DEFAULT_ALPHA_VALUE = 200; // 0xc8;
 

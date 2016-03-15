@@ -427,7 +427,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		colladaColorSubPanel.add(colladaWallFillColorLabel, cwfcl);
         
 		colladaWallFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
-		colladaWallFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_WALL_FILL_COLOR, true));
+		colladaWallFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_COLLADA_WALL_FILL_COLOR, true));
 		colladaWallFillColorButton.setContentAreaFilled(false);
 		colladaWallFillColorButton.setOpaque(true);
 		colladaColorSubPanel.add(colladaWallFillColorButton, GuiUtil.setConstraints(1,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
@@ -437,7 +437,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		colladaColorSubPanel.add(colladaRoofFillColorLabel, crfcl);
 
 		colladaRoofFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
-		colladaRoofFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_ROOF_FILL_COLOR, true));
+		colladaRoofFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_COLLADA_ROOF_FILL_COLOR, true));
 		colladaRoofFillColorButton.setContentAreaFilled(false);
 		colladaRoofFillColorButton.setOpaque(true);
 		colladaColorSubPanel.add(colladaRoofFillColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,BORDER_THICKNESS,BORDER_THICKNESS));
@@ -1031,8 +1031,8 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 			df.setHighlightingEnabled(false);
 			df.setHighlightingDistance(0.75);
 			
-			df.setRgba0(DisplayForm.DEFAULT_WALL_FILL_COLOR);
-			df.setRgba2(DisplayForm.DEFAULT_ROOF_FILL_COLOR);
+			df.setRgba0(DisplayForm.DEFAULT_COLLADA_WALL_FILL_COLOR);
+			df.setRgba2(DisplayForm.DEFAULT_COLLADA_ROOF_FILL_COLOR);
 			df.setRgba4(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
 			df.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 		}
