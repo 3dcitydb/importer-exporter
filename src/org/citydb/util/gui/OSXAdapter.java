@@ -31,12 +31,13 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Locale;
 
 import org.citydb.log.Logger;
 
 public class OSXAdapter implements InvocationHandler {
 	public static final Logger LOG = Logger.getInstance();
-	public static final boolean IS_MAC_OS_X = System.getProperty("os.name").toLowerCase().startsWith("mac os x");
+	public static final boolean IS_MAC_OS_X = System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac os x");
 
     protected Object targetObject;
     protected Method targetMethod;

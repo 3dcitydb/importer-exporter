@@ -29,6 +29,7 @@ package org.citydb.config.project.kmlExporter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
@@ -76,7 +77,7 @@ import org.citydb.config.project.resources.Resources;
 		"tunnelDisplayForms",
 		"tunnelColladaOptions",
 		"tunnelBalloon",	
-		
+
 		"lod0FootprintMode",
 		"exportAsKmz",
 		"showBoundingBox",
@@ -187,7 +188,7 @@ public class KmlExporter {
 	private double altitudeOffsetValue;
 	private boolean callGElevationService;
 	private boolean useOriginalZCoords;
-	
+
 	private IdPrefixes idPrefixes;
 	private Resources resources;
 
@@ -246,17 +247,23 @@ public class KmlExporter {
 		writeJSONPFile = false;
 		callbackNameJSONP = "handle_3DCityDB_data";
 		createGltfModel = false;
-		pathOfGltfConverter = System.getProperty("user.dir") + File.separator + "contribs" + File.separator + "collada2gltf";
 		notCreateColladaFiles = false;
 		embedTexturesInGltfFiles = false;
-		
+
+		pathOfGltfConverter = "contribs" + File.separator + "collada2gltf";
+		String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
+		if (osName.indexOf("windows") != -1)
+			pathOfGltfConverter += File.separator + "wins_v1.0_x64_draft" + File.separator + "collada2gltf.exe";
+		else if (osName.indexOf("mac") != -1)
+			pathOfGltfConverter += File.separator + "mac_v1.0_x64_draft" + File.separator + "collada2gltf";				
+
 		setAppearanceTheme(THEME_NONE);
 		setAltitudeMode(AltitudeMode.ABSOLUTE);
 		setAltitudeOffsetMode(AltitudeOffsetMode.GENERIC_ATTRIBUTE);
 		altitudeOffsetValue = 0;
 		callGElevationService = true;
 		setUseOriginalZCoords(false);
-		
+
 		idPrefixes = new IdPrefixes();
 		resources = new Resources();
 	}
@@ -282,12 +289,12 @@ public class KmlExporter {
 	public IdPrefixes getIdPrefixes() {
 		return idPrefixes;
 	}
-	
+
 	public void setIdPrefixes(IdPrefixes idPrefixes) {
 		if (idPrefixes != null)
 			this.idPrefixes = idPrefixes;
 	}
-	
+
 	public void setFilter(ExportFilterConfig filter) {
 		if (filter != null)
 			this.filter = filter;
@@ -393,7 +400,7 @@ public class KmlExporter {
 	public void setLod0FootprintMode(Lod0FootprintMode lod0FootprintMode) {
 		this.lod0FootprintMode = lod0FootprintMode;
 	}
-	
+
 	public void setExportAsKmz(boolean exportAsKmz) {
 		this.exportAsKmz = exportAsKmz;
 	}
@@ -401,7 +408,7 @@ public class KmlExporter {
 	public boolean isExportAsKmz() {
 		return exportAsKmz;
 	}
-	
+
 	public void setCreateGltfModel(boolean createGltfModel) {
 		this.createGltfModel = createGltfModel;
 	}
@@ -417,7 +424,7 @@ public class KmlExporter {
 	public String getPathOfGltfConverter() {
 		return pathOfGltfConverter;
 	}
-	
+
 	public void setNotCreateColladaFiles(boolean notCreateColladaFiles) {
 		this.notCreateColladaFiles = notCreateColladaFiles;
 	}
@@ -425,7 +432,7 @@ public class KmlExporter {
 	public boolean isNotCreateColladaFiles() {
 		return notCreateColladaFiles;
 	}
-	
+
 	public void setEmbedTexturesInGltfFiles(boolean embedTexturesInGltfFiles) {
 		this.embedTexturesInGltfFiles = embedTexturesInGltfFiles;
 	}
@@ -717,7 +724,7 @@ public class KmlExporter {
 	public void setCallbackNameJSONP(String callbackNameJSONP) {
 		this.callbackNameJSONP = callbackNameJSONP;
 	}
-	
+
 	public void setBridgeDisplayForms(List<DisplayForm> bridgeDisplayForms) {
 		this.bridgeDisplayForms = bridgeDisplayForms;
 	}
@@ -733,7 +740,7 @@ public class KmlExporter {
 	public ColladaOptions getBridgeColladaOptions() {
 		return bridgeColladaOptions;
 	}
-	
+
 	public void setBridgeBalloon(Balloon bridgeBalloon) {
 		this.bridgeBalloon = bridgeBalloon;
 	}
@@ -741,7 +748,7 @@ public class KmlExporter {
 	public Balloon getBridgeBalloon() {
 		return bridgeBalloon;
 	}
-	
+
 	public void setTunnelDisplayForms(List<DisplayForm> tunnelDisplayForms) {
 		this.tunnelDisplayForms = tunnelDisplayForms;
 	}
@@ -757,7 +764,7 @@ public class KmlExporter {
 	public ColladaOptions getTunnelColladaOptions() {
 		return tunnelColladaOptions;
 	}
-	
+
 	public void setTunnelBalloon(Balloon tunnelBalloon) {
 		this.tunnelBalloon = tunnelBalloon;
 	}

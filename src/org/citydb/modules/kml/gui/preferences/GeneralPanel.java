@@ -33,9 +33,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import java.util.Locale;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -45,18 +43,16 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
-import net.opengis.kml._2.ViewRefreshModeEnumType;
 
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.kmlExporter.KmlExporter;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.preferences.AbstractPreferencesComponent;
 import org.citydb.util.gui.GuiUtil;
+
+import net.opengis.kml._2.ViewRefreshModeEnumType;
 
 @SuppressWarnings("serial")
 public class GeneralPanel extends AbstractPreferencesComponent {
@@ -314,7 +310,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		
 		gltfConverterBrowseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				browseGltfConverterFile("select collada2Gltf converter program");
+				browseGltfConverterFile(Language.I18N.getString("pref.kmlexport.dialog.gltf.title"));
 			}
 		});
 	}
@@ -433,7 +429,7 @@ public class GeneralPanel extends AbstractPreferencesComponent {
 		if (!gltfConverterBrowseText.getText().trim().isEmpty())
 			chooser.setCurrentDirectory(new File(gltfConverterBrowseText.getText()));
 		else
-			chooser.setCurrentDirectory(new File(System.getProperty("user.dir") + File.separator + "contribs" + File.separator + "collada2gltf"));
+			chooser.setCurrentDirectory(new File("contribs" + File.separator + "collada2gltf"));
 		
 		int result = chooser.showOpenDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) 
