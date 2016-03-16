@@ -31,6 +31,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name="ColladaOptions", propOrder={
 		"ignoreSurfaceOrientation",
 		"generateSurfaceNormals",
+		"cropImages",
 		"generateTextureAtlases",
 		"packingAlgorithm",
 		"textureAtlasPots",
@@ -42,6 +43,7 @@ import javax.xml.bind.annotation.XmlType;
 public class ColladaOptions {
 	private boolean ignoreSurfaceOrientation;
 	private boolean generateSurfaceNormals;
+	private boolean cropImages;
 	private boolean generateTextureAtlases;
 	private int packingAlgorithm;
 	private boolean textureAtlasPots;
@@ -53,6 +55,7 @@ public class ColladaOptions {
 	public ColladaOptions() {
 		ignoreSurfaceOrientation = false;
 		generateSurfaceNormals = false;
+		cropImages = false;
 		generateTextureAtlases = true;
 		packingAlgorithm = 5; // TextureAtlasGenerator.TPIM
 		textureAtlasPots = true;
@@ -76,6 +79,14 @@ public class ColladaOptions {
 
 	public boolean isGenerateSurfaceNormals() {
 		return generateSurfaceNormals;
+	}
+	
+	public void setCropImages(boolean cropImages) {
+		this.cropImages = cropImages;
+	}
+
+	public boolean isCropImages() {
+		return cropImages;
 	}
 	
 	public void setGenerateTextureAtlases(boolean generateTextureAtlases) {
