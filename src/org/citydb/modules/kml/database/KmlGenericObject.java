@@ -58,17 +58,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import net.opengis.kml._2.AltitudeModeEnumType;
-import net.opengis.kml._2.BoundaryType;
-import net.opengis.kml._2.LinearRingType;
-import net.opengis.kml._2.LinkType;
-import net.opengis.kml._2.LocationType;
-import net.opengis.kml._2.ModelType;
-import net.opengis.kml._2.MultiGeometryType;
-import net.opengis.kml._2.OrientationType;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PolygonType;
-
 import org.citydb.api.database.DatabaseGeometryConverter;
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.event.EventDispatcher;
@@ -77,6 +66,7 @@ import org.citydb.api.geometry.GeometryObject.ElementType;
 import org.citydb.api.geometry.GeometryObject.GeometryType;
 import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
+import org.citydb.config.project.database.Database;
 import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
@@ -142,6 +132,17 @@ import org.w3c.dom.Element;
 
 import com.sun.j3d.utils.geometry.GeometryInfo;
 import com.sun.j3d.utils.geometry.NormalGenerator;
+
+import net.opengis.kml._2.AltitudeModeEnumType;
+import net.opengis.kml._2.BoundaryType;
+import net.opengis.kml._2.LinearRingType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LocationType;
+import net.opengis.kml._2.ModelType;
+import net.opengis.kml._2.MultiGeometryType;
+import net.opengis.kml._2.OrientationType;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PolygonType;
 
 public abstract class KmlGenericObject {
 	protected final int GEOMETRY_AMOUNT_WARNING = 10000;
@@ -2382,34 +2383,12 @@ public abstract class KmlGenericObject {
 
 	protected GeometryObject convertToWGS84(GeometryObject geomObj) throws SQLException {
 		GeometryObject convertedGeomObj = null;
-		PreparedStatement convertStmt = null;
-		ResultSet rs2 = null;
 		try {
-			convertStmt = (dbSrs.is3D() &&  geomObj.getDimension() == 3) ? connection.prepareStatement(Queries.TRANSFORM_GEOMETRY_TO_WGS84_3D(databaseAdapter.getSQLAdapter())) : 
-				connection.prepareStatement(Queries.TRANSFORM_GEOMETRY_TO_WGS84(databaseAdapter.getSQLAdapter()));
-
-			// now convert to WGS84
-			Object unconverted = geometryConverterAdapter.getDatabaseObject(geomObj, connection);
-			if (unconverted == null)
-				return null;
-
-			convertStmt.setObject(1, unconverted);
-			rs2 = convertStmt.executeQuery();
-			while (rs2.next()) {
-				// ColumnName is SDO_CS.TRANSFORM(JGeometry, 4326)
-				convertedGeomObj = geometryConverterAdapter.getGeometry(rs2.getObject(1));
-			}
-		}
-		catch (Exception e) {
-			Logger.getInstance().warn("Exception when converting geometry to WGS84");
+			DatabaseSrs targetSrs = dbSrs.is3D() ? new DatabaseSrs(4329) : Database.PREDEFINED_SRS.get(Database.PredefinedSrsName.WGS84_2D);
+			convertedGeomObj = databaseAdapter.getUtil().transformGeometry(geomObj, targetSrs);
+		} catch (SQLException e) {
+			Logger.getInstance().warn("SQL exception when converting geometry to WGS84: " + e.getMessage());
 			e.printStackTrace();
-		}
-		finally {
-			try {
-				if (rs2 != null) rs2.close();
-				if (convertStmt != null) convertStmt.close();
-			}
-			catch (Exception e2) {}
 		}
 
 		if (config.getProject().getKmlExporter().isUseOriginalZCoords() && geomObj.getDimension() == 3) {

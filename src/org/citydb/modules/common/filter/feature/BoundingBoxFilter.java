@@ -26,13 +26,11 @@
  */
 package org.citydb.modules.common.filter.feature;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 import org.citydb.api.database.DatabaseSrs;
+import org.citydb.api.database.DatabaseUtil;
 import org.citydb.api.geometry.BoundingBox;
 import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.api.geometry.GeometryObject;
@@ -47,7 +45,6 @@ import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.filter.Filter;
 import org.citydb.modules.common.filter.FilterMode;
-import org.citydb.modules.kml.database.Queries;
 import org.citygml4j.model.gml.geometry.primitives.DirectPosition;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 
@@ -88,7 +85,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 
 	private void init() {
 		isActive = filterConfig.isSetComplexFilter() &&
-		filterConfig.getComplexFilter().getBoundingBox().isSet();
+				filterConfig.getComplexFilter().getBoundingBox().isSet();
 
 		if (isActive) {
 			boundingBoxConfig = filterConfig.getComplexFilter().getBoundingBox();
@@ -105,32 +102,29 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 					LOG.warn("SRS on bounding box filter not set. Choosing database SRS '" + boundingBox.getSrs().getDatabaseSrsName() + "' instead.");
 				}
 
-				// check whether we have to transform the bounding box
-				DatabaseSrs targetSrs;
 				if (mode == FilterMode.KML_EXPORT) {
-					targetSrs = Database.PREDEFINED_SRS.get(Database.PredefinedSrsName.WGS84_2D);				
-				} else {
-					targetSrs = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
-				}
-
-				// targetSrs differs if a coordinate transformation is applied to the CityGML export
-				if (mode == FilterMode.EXPORT) {
-					DatabaseSrs tmp = config.getProject().getExporter().getTargetSRS();
-					if (tmp.isSupported() && tmp.getSrid() != targetSrs.getSrid())
-						targetSrs = tmp;
-				}
-				
-				if (boundingBox.getSrs().isSupported() && boundingBox.getSrs().getSrid() != targetSrs.getSrid()) {			
 					try {
-						if (mode == FilterMode.KML_EXPORT) {
-							boundingBox = convertToWGS84Bbox(boundingBox, targetSrs);
-						}
-						else {
-							boundingBox = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().transformBoundingBox(boundingBox, boundingBox.getSrs(), targetSrs);
-						}
-						
-					} catch (SQLException sqlEx) {
+						boundingBox = convertToWGS84Bbox(boundingBox);
+					} catch (SQLException e) {
 						LOG.error("Failed to initialize bounding box filter.");
+					}
+				} else {
+					// check whether we have to transform the bounding box
+					DatabaseSrs targetSrs = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
+
+					// targetSrs differs if a coordinate transformation is applied to the CityGML export
+					if (mode == FilterMode.EXPORT) {
+						DatabaseSrs tmp = config.getProject().getExporter().getTargetSRS();
+						if (tmp.isSupported() && tmp.getSrid() != targetSrs.getSrid())
+							targetSrs = tmp;
+					}
+
+					if (boundingBox.getSrs().isSupported() && boundingBox.getSrs().getSrid() != targetSrs.getSrid()) {			
+						try {
+							boundingBox = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().transformBoundingBox(boundingBox, boundingBox.getSrs(), targetSrs);
+						} catch (SQLException sqlEx) {
+							LOG.error("Failed to initialize bounding box filter.");
+						}
 					}
 				}
 
@@ -204,11 +198,11 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 			else { // manual tiling				
 				double centroidX = minX + (maxX - minX) / 2;
 				double centroidY = minY + (maxY - minY) / 2;
-				
+
 				if (mode == FilterMode.KML_EXPORT) {
 					Point[] points = new Point[4];
 					double[] coords = activeBoundingBoxGeometry.getCoordinates(0);
-					
+
 					if (activeBoundingBoxGeometry.getDimension() == 2) {
 						points[0] = new Point(coords[0], coords[1]);
 						points[1] = new Point(coords[2], coords[3]);
@@ -221,7 +215,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 						points[2] = new Point(coords[6], coords[7]);
 						points[3] = new Point(coords[9], coords[10]);
 					}			
-					
+
 					boolean result = true;				
 					int i, j;
 					for (i = 0, j = points.length - 1; i < points.length; j = i++) {
@@ -250,7 +244,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	public BoundingBox getFilterState() {
 		return activeBoundingBox;
 	}
-	
+
 	public GeometryObject getFilterStateForKml() {
 		return activeBoundingBoxGeometry;
 	}
@@ -273,8 +267,8 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 				new BoundingBoxCorner(lowerLeftX, lowerLeftY),
 				new BoundingBoxCorner(upperRightX, upperRightY),
 				boundingBox.getSrs()
-		);
-		
+				);
+
 		if (mode == FilterMode.KML_EXPORT) {
 			try {
 				activeBoundingBoxGeometry = this.convertWGS84BboxToDBSrsGeometry(activeBoundingBox);
@@ -283,7 +277,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 			}
 		}
 	}
-	
+
 	public int getTileRow() {
 		return activeRow;
 	}
@@ -293,16 +287,9 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 	}
 
 	private GeometryObject convertWGS84BboxToDBSrsGeometry(BoundingBox bbox) throws SQLException {
-		GeometryObject convertedGeomObj = null;
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
-		DatabaseConnectionPool dbPool = DatabaseConnectionPool.getInstance();
-
 		try {
-			conn = dbPool.getConnection();
-			stmt = conn.prepareStatement(Queries.TRANSFORM_GEOMETRY_TO_DBSRS(dbPool.getActiveDatabaseAdapter().getSQLAdapter()));
+			DatabaseSrs targetSrs = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
+			DatabaseUtil util = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil();
 
 			GeometryObject geomObj = GeometryObject.createPolygon(new double[]{
 					bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(),
@@ -312,52 +299,34 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 					bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(),
 			}, 2, bbox.getSrs().getSrid()); // Srid = 4326
 
-			Object unconverted = dbPool.getActiveDatabaseAdapter().getGeometryConverter().getDatabaseObject(geomObj, conn);
-			if (unconverted == null)
-				return null;
-			
-			stmt.setObject(1, unconverted);
-			int dbSrid2D = dbPool.getActiveDatabaseAdapter().getUtil().get2DSrid(dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem());
-			stmt.setInt(2, dbSrid2D);
-			rs = stmt.executeQuery();
-			if (rs.next())
-				convertedGeomObj = dbPool.getActiveDatabaseAdapter().getGeometryConverter().getGeometry(rs.getObject(1));
-
-			double[] coords = convertedGeomObj.getCoordinates(0);
-			if (dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D()) {
-				convertedGeomObj = GeometryObject.createPolygon(new double[]{
+			GeometryObject convertedGeomObj = util.transformGeometry(geomObj, targetSrs);
+			if (convertedGeomObj != null) {
+				double[] coords = convertedGeomObj.getCoordinates(0);
+				return GeometryObject.createPolygon(new double[]{
 						coords[0], coords[1], 0,
 						coords[2], coords[3], 0,
 						coords[4], coords[5], 0,
 						coords[6], coords[7], 0,
 						coords[8], coords[9], 0
-				}, 3, dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
+				}, 3, targetSrs.getSrid());
 			}
-			return convertedGeomObj;
-							
-		} catch (Exception e) {
-			Logger.getInstance().error("Exception when converting bounding box geometry to DBsrs.");
+
+			throw new SQLException("Transformation returned null geometry.");
+		} catch (SQLException e) {
+			LOG.error("Failed to convert bounding box geometry to database SRS.");
 			throw e;
-		} finally {
-			if (rs != null) try { rs.close(); } catch (SQLException e) { }
-			if (stmt != null) try { stmt.close(); } catch (SQLException e) { }
-			if (conn != null) try { conn.close(); } catch (SQLException e) { }
 		}
 	}
-	
-	private BoundingBox convertToWGS84Bbox(BoundingBox bbox, DatabaseSrs wgs84Srs) throws SQLException {
-		GeometryObject convertedGeomObj = null;
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-		
-		DatabaseConnectionPool dbPool = DatabaseConnectionPool.getInstance();
 
+	private BoundingBox convertToWGS84Bbox(BoundingBox bbox) throws SQLException {	
 		try {
-			conn = dbPool.getConnection();
-			stmt = conn.prepareStatement(Queries.TRANSFORM_GEOMETRY_TO_WGS84(dbPool.getActiveDatabaseAdapter().getSQLAdapter()));
+			DatabaseSrs targetSrs = Database.PREDEFINED_SRS.get(Database.PredefinedSrsName.WGS84_2D);
+			if (bbox.getSrs().getSrid() == targetSrs.getSrid())
+				return bbox;			
 
-			int srid2D = dbPool.getActiveDatabaseAdapter().getUtil().get2DSrid(bbox.getSrs());
+			DatabaseUtil util = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil();
+
+			int srid2D = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().get2DSrid(bbox.getSrs());
 			GeometryObject geomObj = GeometryObject.createPolygon(new double[]{
 					bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(),
 					bbox.getUpperRightCorner().getX(), bbox.getLowerLeftCorner().getY(),
@@ -366,33 +335,24 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 					bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(),
 			}, 2, srid2D);
 
-			Object unconverted = dbPool.getActiveDatabaseAdapter().getGeometryConverter().getDatabaseObject(geomObj, conn);
-			if (unconverted == null)
-				return null;
+			GeometryObject convertedGeomObj = util.transformGeometry(geomObj, targetSrs);
+			if (convertedGeomObj != null) {
+				double[] coordinates = convertedGeomObj.getCoordinates(0);		
+				double xmin = Math.min(coordinates[0], coordinates[6]);
+				double ymin = Math.min(coordinates[1], coordinates[3]);
+				double xmax = Math.max(coordinates[2], coordinates[4]);
+				double ymax = Math.max(coordinates[5], coordinates[7]);
 
-			stmt.setObject(1, unconverted);
-			rs = stmt.executeQuery();
-			if (rs.next())
-				convertedGeomObj = dbPool.getActiveDatabaseAdapter().getGeometryConverter().getGeometry(rs.getObject(1));
+				return new BoundingBox(new BoundingBoxCorner(xmin, ymin), new BoundingBoxCorner(xmax, ymax), targetSrs);
+			}
 
-			double[] coordinates = convertedGeomObj.getCoordinates(0);		
-			double xmin = Math.min(coordinates[0], coordinates[6]);
-			double ymin = Math.min(coordinates[1], coordinates[3]);
-			double xmax = Math.max(coordinates[2], coordinates[4]);
-			double ymax = Math.max(coordinates[5], coordinates[7]);
-
-			return new BoundingBox(new BoundingBoxCorner(xmin, ymin), new BoundingBoxCorner(xmax, ymax), wgs84Srs);
-			
-		} catch (Exception e) {
-			Logger.getInstance().error("Exception when converting to WGS84 Bounding Box.");
+			throw new SQLException("Transformation returned null geometry.");
+		} catch (SQLException e) {
+			LOG.error("Failed to convert bounding box geometry to database SRS.");
 			throw e;
-		} finally {
-			if (rs != null) try { rs.close(); } catch (SQLException e) { }
-			if (stmt != null) try { stmt.close(); } catch (SQLException e) { }
-			if (conn != null) try { conn.close(); } catch (SQLException e) { }
 		}
 	}
-	
+
 	private class Point {
 		public Point(double x, double y) {
 			this.x = x;

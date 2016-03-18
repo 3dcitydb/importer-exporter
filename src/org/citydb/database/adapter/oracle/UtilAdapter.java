@@ -40,6 +40,7 @@ import org.citydb.api.database.DatabaseSrsType;
 import org.citydb.api.database.DatabaseVersion;
 import org.citydb.api.geometry.BoundingBox;
 import org.citydb.api.geometry.BoundingBoxCorner;
+import org.citydb.api.geometry.GeometryObject;
 import org.citydb.database.DatabaseMetaDataImpl;
 import org.citydb.database.DatabaseMetaDataImpl.Versioning;
 import org.citydb.database.IndexStatusInfo;
@@ -434,6 +435,54 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			}
 		}
 
+		return result;
+	}
+	
+	@Override
+	protected GeometryObject transformGeometry(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException {
+		GeometryObject result = null;
+		PreparedStatement psQuery = null;
+		ResultSet rs = null;
+
+		try {
+			int targetSrid = get2DSrid(targetSrs, connection);
+			Object unconverted = databaseAdapter.getGeometryConverter().getDatabaseObject(geometry, connection);
+			if (unconverted == null)
+				return null;
+
+			StringBuilder query = new StringBuilder()
+					.append("select SDO_CS.TRANSFORM(?, ").append(targetSrid).append(") from dual");
+
+			psQuery = connection.prepareStatement(query.toString());			
+			psQuery.setObject(1, unconverted);
+			rs = psQuery.executeQuery();
+			if (rs.next()) {
+				Object converted = rs.getObject(1);
+				if (!rs.wasNull() && converted != null)
+					result = databaseAdapter.getGeometryConverter().getGeometry(converted);
+			}
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				rs = null;
+			}
+
+			if (psQuery != null) {
+				try {
+					psQuery.close();
+				} catch (SQLException sqlEx) {
+					throw sqlEx;
+				}
+
+				psQuery = null;
+			}
+		}
+		
 		return result;
 	}
 
