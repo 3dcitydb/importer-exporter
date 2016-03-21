@@ -67,6 +67,10 @@ public final class DatabaseSrs implements Comparable<DatabaseSrs> {
 		this(generateUUID(), srid, gmlSrsName, description, dbSrsName, type, isSupported);
 	}
 
+	public DatabaseSrs(int srid) {
+		this(srid, "", "n/a", "n/a", DatabaseSrsType.UNKNOWN, false);
+	}
+	
 	public DatabaseSrs(DatabaseSrs other) {
 		this(other.srid, other.gmlSrsName, other.description, other.dbSrsName, other.type, other.isSupported);
 	}

@@ -40,6 +40,7 @@ import java.util.List;
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseUtil;
 import org.citydb.api.geometry.BoundingBox;
+import org.citydb.api.geometry.GeometryObject;
 import org.citydb.config.project.database.Workspace;
 import org.citydb.config.project.general.FeatureClassMode;
 import org.citydb.database.DatabaseMetaDataImpl;
@@ -66,6 +67,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 	protected abstract BoundingBox calcBoundingBox(List<Integer> classIds, Connection connection) throws SQLException;
 	protected abstract BoundingBox createBoundingBoxes(List<Integer> classIds, boolean onlyIfNull, Connection connection) throws SQLException;
 	protected abstract BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException;
+	protected abstract GeometryObject transformGeometry(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException;
 	protected abstract int get2DSrid(DatabaseSrs srs, Connection connection) throws SQLException;	
 	protected abstract IndexStatusInfo manageIndexes(String operation, IndexType type, Connection connection) throws SQLException;
 	protected abstract boolean updateTableStats(IndexType type, Connection connection) throws SQLException;
@@ -406,6 +408,24 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 		}
 	}
 	
+	@Override
+	public GeometryObject transformGeometry(GeometryObject geometry, DatabaseSrs targetSrs) throws SQLException {
+		Connection conn = null;
+
+		try {
+			conn = databaseAdapter.connectionPool.getConnection();
+			return transformGeometry(geometry, targetSrs, conn);
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					throw e;
+				}
+			}
+		}
+	}
+
 	public int get2DSrid(DatabaseSrs srs) throws SQLException {
 		if (!srs.is3D())
 			return srs.getSrid();

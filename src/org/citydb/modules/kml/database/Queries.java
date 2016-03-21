@@ -94,30 +94,6 @@ public class Queries {
 				"VALUES (" + sqlAdapter.getNextSequenceValue(DBSequencerEnum.CITYOBJECT_GENERICATTRIB_ID_SEQ) + ", ?, 1, ?, ?)";
 	}
 
-	public static final String TRANSFORM_GEOMETRY_TO_WGS84(AbstractSQLAdapter sqlAdapter) {
-		String query = "SELECT " + sqlAdapter.resolveDatabaseOperationName("geom_transform") + "(?, 4326)";
-		if (sqlAdapter.requiresPseudoTableInSelect())
-			query += " FROM " + sqlAdapter.getPseudoTableName();
-
-		return query;
-	}
-	
-	public static final String TRANSFORM_GEOMETRY_TO_DBSRS(AbstractSQLAdapter sqlAdapter) {
-		String query = "SELECT " + sqlAdapter.resolveDatabaseOperationName("geom_transform") + "(?, ?)";
-		if (sqlAdapter.requiresPseudoTableInSelect())
-			query += " FROM " + sqlAdapter.getPseudoTableName();
-
-		return query;
-	}
-
-	public static final String TRANSFORM_GEOMETRY_TO_WGS84_3D(AbstractSQLAdapter sqlAdapter) {
-		String query = "SELECT " + sqlAdapter.resolveDatabaseOperationName("geom_transform") + "(?, 4329)";
-		if (sqlAdapter.requiresPseudoTableInSelect())
-			query += " FROM " + sqlAdapter.getPseudoTableName();
-
-		return query;
-	}
-
 	// ----------------------------------------------------------------------
 	// 	BUILDING QUERIES
 	// ----------------------------------------------------------------------
