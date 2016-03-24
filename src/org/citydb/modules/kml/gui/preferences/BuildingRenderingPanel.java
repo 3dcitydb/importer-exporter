@@ -106,6 +106,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 	private JPanel colladaPanel;	
 	private JCheckBox ignoreSurfaceOrientationCheckbox = new JCheckBox();
 	private JCheckBox generateSurfaceNormalsCheckbox = new JCheckBox();
+	private JCheckBox cropImagesCheckbox = new JCheckBox();
 	private JCheckBox textureAtlasCheckbox = new JCheckBox();
 	private JCheckBox textureAtlasPotsCheckbox = new JCheckBox();
 	private JCheckBox scaleTexImagesCheckbox = new JCheckBox();
@@ -176,6 +177,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		if (lod0FootprintComboBox.getSelectedItem() != config.getProject().getKmlExporter().getLod0FootprintMode()) return true;
 		if (ignoreSurfaceOrientationCheckbox.isSelected() != colladaOptions.isIgnoreSurfaceOrientation()) return true;
 		if (generateSurfaceNormalsCheckbox.isSelected() != colladaOptions.isGenerateSurfaceNormals()) return true;
+		if (cropImagesCheckbox.isSelected() != colladaOptions.isCropImages()) return true;
 		if (textureAtlasCheckbox.isSelected() != colladaOptions.isGenerateTextureAtlases()) return true;
 		if (textureAtlasPotsCheckbox.isSelected() != colladaOptions.isTextureAtlasPots()) return true;
 		if (packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue() != colladaOptions.getPackingAlgorithm()) return true;
@@ -383,6 +385,11 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		GridBagConstraints gsn = GuiUtil.setConstraints(0,1,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0);
 		gsn.gridwidth = 2;
 		colladaPanel.add(generateSurfaceNormalsCheckbox, gsn);
+		
+		cropImagesCheckbox.setIconTextGap(10);
+		GridBagConstraints cI = GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,0,0);
+		cI.gridwidth = 2;
+		colladaPanel.add(cropImagesCheckbox, cI);
 
 		packingAlgorithms.put("BASIC", TextureAtlasCreator.BASIC);
 		packingAlgorithms.put("TPIM", TextureAtlasCreator.TPIM);
@@ -393,23 +400,23 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		packingAlgorithmsComboBox.addItem("TPIM w/o image rotation");
 
 		textureAtlasCheckbox.setIconTextGap(10);
-		colladaPanel.add(textureAtlasCheckbox, GuiUtil.setConstraints(0,2,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
-		colladaPanel.add(packingAlgorithmsComboBox, GuiUtil.setConstraints(1,2,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
+		colladaPanel.add(textureAtlasCheckbox, GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
+		colladaPanel.add(packingAlgorithmsComboBox, GuiUtil.setConstraints(1,3,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
 
 		textureAtlasPotsCheckbox.setIconTextGap(10);
-		GridBagConstraints tapc = GuiUtil.setConstraints(0,3,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS + 23,BORDER_THICKNESS,0);
+		GridBagConstraints tapc = GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS,BORDER_THICKNESS + 23,BORDER_THICKNESS,0);
 		tapc.gridwidth = 2;
 		colladaPanel.add(textureAtlasPotsCheckbox, tapc);
 		
 		scaleTexImagesCheckbox.setIconTextGap(10);
-		colladaPanel.add(scaleTexImagesCheckbox, GuiUtil.setConstraints(0,4,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
-		colladaPanel.add(scaleFactorText, GuiUtil.setConstraints(1,4,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
+		colladaPanel.add(scaleTexImagesCheckbox, GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
+		colladaPanel.add(scaleFactorText, GuiUtil.setConstraints(1,5,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
 
 		// color settings for collada and gltf
 		colladaColorSubPanel = new JPanel();
 		colladaColorSubPanel.setLayout(new GridBagLayout());
 		colladaColorSubPanel.setBorder(BorderFactory.createTitledBorder(""));
-		GridBagConstraints cclsp = GuiUtil.setConstraints(0,5,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS*2,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
+		GridBagConstraints cclsp = GuiUtil.setConstraints(0,6,0.0,1.0,GridBagConstraints.BOTH,BORDER_THICKNESS*2,BORDER_THICKNESS,2*BORDER_THICKNESS,BORDER_THICKNESS);
 		cclsp.gridwidth = 2;
 		colladaPanel.add(colladaColorSubPanel, cclsp);
 
@@ -427,7 +434,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		colladaColorSubPanel.add(colladaWallFillColorLabel, cwfcl);
         
 		colladaWallFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
-		colladaWallFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_WALL_FILL_COLOR, true));
+		colladaWallFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_COLLADA_WALL_FILL_COLOR, true));
 		colladaWallFillColorButton.setContentAreaFilled(false);
 		colladaWallFillColorButton.setOpaque(true);
 		colladaColorSubPanel.add(colladaWallFillColorButton, GuiUtil.setConstraints(1,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,BORDER_THICKNESS,0));
@@ -437,7 +444,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		colladaColorSubPanel.add(colladaRoofFillColorLabel, crfcl);
 
 		colladaRoofFillColorButton.setPreferredSize(geometryAlphaSpinner.getPreferredSize());
-		colladaRoofFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_ROOF_FILL_COLOR, true));
+		colladaRoofFillColorButton.setBackground(new Color(DisplayForm.DEFAULT_COLLADA_ROOF_FILL_COLOR, true));
 		colladaRoofFillColorButton.setContentAreaFilled(false);
 		colladaRoofFillColorButton.setOpaque(true);
 		colladaColorSubPanel.add(colladaRoofFillColorButton, GuiUtil.setConstraints(3,1,0.25,1.0,GridBagConstraints.HORIZONTAL,BORDER_THICKNESS,0,BORDER_THICKNESS,BORDER_THICKNESS));
@@ -448,17 +455,17 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		colladaRadioGroup.add(colladaHighlightingRButton);
 
 		groupObjectsRButton.setIconTextGap(10);
-		colladaPanel.add(groupObjectsRButton, GuiUtil.setConstraints(0,6,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
-		colladaPanel.add(groupSizeText, GuiUtil.setConstraints(1,6,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
+		colladaPanel.add(groupObjectsRButton, GuiUtil.setConstraints(0,7,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,0));
+		colladaPanel.add(groupSizeText, GuiUtil.setConstraints(1,7,1.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2,BORDER_THICKNESS));
 
 		colladaHighlightingRButton.setIconTextGap(10);
-		GridBagConstraints chrb = GuiUtil.setConstraints(0,7,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
+		GridBagConstraints chrb = GuiUtil.setConstraints(0,8,0.0,1.0,GridBagConstraints.BOTH,0,BORDER_THICKNESS,2*BORDER_THICKNESS,0);
 		chrb.gridwidth = 2;
 		colladaPanel.add(colladaHighlightingRButton, chrb);
 
 		JPanel colladaHLSubPanel = new JPanel();
 		colladaHLSubPanel.setLayout(new GridBagLayout());
-		GridBagConstraints chlsp = GuiUtil.setConstraints(0,8,0.0,1.0,GridBagConstraints.BOTH,0,0,0,0);
+		GridBagConstraints chlsp = GuiUtil.setConstraints(0,9,0.0,1.0,GridBagConstraints.BOTH,0,0,0,0);
 		chlsp.gridwidth = 2;
 		colladaPanel.add(colladaHLSubPanel, chlsp);
 		
@@ -697,6 +704,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		
 		ignoreSurfaceOrientationCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.ignoreSurfaceOrientation"));
 		generateSurfaceNormalsCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.generateSurfaceNormals"));
+		cropImagesCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.cropTexImages"));
 		textureAtlasCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.generateTextureAtlases"));
 		textureAtlasPotsCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.textureAtlasPots"));
 		scaleTexImagesCheckbox.setText(Language.I18N.getString("pref.kmlexport.label.scaleTexImages"));
@@ -802,6 +810,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 
 		ignoreSurfaceOrientationCheckbox.setSelected(colladaOptions.isIgnoreSurfaceOrientation());
 		generateSurfaceNormalsCheckbox.setSelected(colladaOptions.isGenerateSurfaceNormals());
+		cropImagesCheckbox.setSelected(colladaOptions.isCropImages());
 		textureAtlasCheckbox.setSelected(colladaOptions.isGenerateTextureAtlases());
 		textureAtlasPotsCheckbox.setSelected(colladaOptions.isTextureAtlasPots());
 		for (String key: packingAlgorithms.keySet()) {
@@ -853,6 +862,7 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 		
 		colladaOptions.setIgnoreSurfaceOrientation(ignoreSurfaceOrientationCheckbox.isSelected());
 		colladaOptions.setGenerateSurfaceNormals(generateSurfaceNormalsCheckbox.isSelected());
+		colladaOptions.setCropImages(cropImagesCheckbox.isSelected());
 		colladaOptions.setGenerateTextureAtlases(textureAtlasCheckbox.isSelected());
 		colladaOptions.setTextureAtlasPots(textureAtlasPotsCheckbox.isSelected());
 		colladaOptions.setPackingAlgorithm(packingAlgorithms.get(packingAlgorithmsComboBox.getSelectedItem()).intValue()); 
@@ -1031,13 +1041,15 @@ public class BuildingRenderingPanel extends AbstractPreferencesComponent {
 			df.setHighlightingEnabled(false);
 			df.setHighlightingDistance(0.75);
 			
-			df.setRgba0(DisplayForm.DEFAULT_WALL_FILL_COLOR);
-			df.setRgba2(DisplayForm.DEFAULT_ROOF_FILL_COLOR);
+			df.setRgba0(DisplayForm.DEFAULT_COLLADA_WALL_FILL_COLOR);
+			df.setRgba2(DisplayForm.DEFAULT_COLLADA_ROOF_FILL_COLOR);
 			df.setRgba4(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
 			df.setRgba5(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
 		}
 
 		colladaOptions.setIgnoreSurfaceOrientation(false);
+		colladaOptions.setGenerateSurfaceNormals(false);
+		colladaOptions.setCropImages(false);
 		colladaOptions.setGenerateTextureAtlases(true);
 		colladaOptions.setTextureAtlasPots(true);
 		colladaOptions.setPackingAlgorithm(TextureAtlasCreator.BASIC); 

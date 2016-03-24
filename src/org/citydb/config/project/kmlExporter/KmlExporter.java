@@ -234,7 +234,7 @@ public class KmlExporter {
 		setTunnelBalloon(new Balloon());
 
 		setLod0FootprintMode(Lod0FootprintMode.FOOTPRINT);
-		exportAsKmz = true;
+		exportAsKmz = false;
 		showBoundingBox = false;
 		showTileBorders = false;
 		exportEmptyTiles = true;

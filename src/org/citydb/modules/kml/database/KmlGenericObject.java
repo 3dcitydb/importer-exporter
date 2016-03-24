@@ -1060,7 +1060,88 @@ public abstract class KmlGenericObject {
 		this.setGmlId(String.valueOf(ownLowerLimit) + "_to_" + ownUpperLimit);
 	}
 
-
+	private void cropImages (int packingAlgorithm) {	
+		HashMap<String, TextureImage> newTexImages = new HashMap<String, TextureImage>();		
+		Set<Object> sgIdSet = texImageUris.keySet();
+		Iterator<Object> sgIdIterator = sgIdSet.iterator();
+		
+		// Crop texture image and calculate new texture coordinates for each surface geometry
+		while (sgIdIterator.hasNext()) {
+			Long sgId = (Long) sgIdIterator.next();		
+			
+			// step 1: calculate maximal and minimal texture coordinates
+			VertexInfo vertexInfoIterator = firstVertexInfo;			
+			double maxS = 0;
+			double minS = Double.MAX_VALUE;
+			double maxT = 0;
+			double minT = Double.MAX_VALUE;			
+			while (vertexInfoIterator != null) {
+				if (vertexInfoIterator.getAllTexCoords() != null && vertexInfoIterator.getAllTexCoords().containsKey(sgId)) {
+					double s = vertexInfoIterator.getTexCoords(sgId).getS();
+					double t = vertexInfoIterator.getTexCoords(sgId).getT();
+					if (s > maxS) {
+						maxS = s;
+					}
+					if (s < minS) {
+						minS = s;
+					}
+					if (t > maxT) {
+						maxT = t;
+					}
+					if (t < minT) {
+						minT = t;
+					}
+				}
+				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
+			}
+			
+			// step 2: crop images
+			TextureImage texImage = texImages.get(texImageUris.get(sgId));
+			int imageWidth = texImage.getWidth();
+			int imageHeight = texImage.getHeight();
+			int startX = 0; 
+			int startY = 0; 
+			int endX = 0; 
+			int endY = 0; 
+			int croppedImageWidth = 0; 
+			int croppedImageHeight = 0;			
+			try {				
+				// According to the CityGML Encoding Standard, the lower left corner has been defined as the coordinate origin (0, 0) in the texture space
+				// But in JAVA BufferedImage, the coordinate origin (0, 0) is located at the upper left corner of the image
+				startX = (int) Math.floor(imageWidth * minS);
+				startY = (int) Math.floor(imageHeight * (1 - maxT));
+				endX = (int) Math.ceil(maxS * imageWidth);
+				endY = (int) Math.ceil((1 - minT) * imageHeight);
+				croppedImageWidth = endX - startX;
+				croppedImageHeight = endY - startY;	
+				BufferedImage imageToCrop = texImage.getBufferedImage().getSubimage(startX, startY, croppedImageWidth, croppedImageHeight);
+				String newImageUri = sgId + "_" + texImageUris.get(sgId);
+				texImageUris.put(sgId, newImageUri);
+				newTexImages.put(newImageUri, new TextureImage(imageToCrop));
+			}
+			catch (Exception e) {
+				Logger.getInstance().error(e.getMessage());
+			}
+			
+			// step 3: update the vertex coordinates according to the cropped images
+			vertexInfoIterator = firstVertexInfo;			
+			while (vertexInfoIterator != null) {
+				if (vertexInfoIterator.getAllTexCoords() != null && vertexInfoIterator.getAllTexCoords().containsKey(sgId)) {
+					double s = vertexInfoIterator.getTexCoords(sgId).getS();
+					double t = vertexInfoIterator.getTexCoords(sgId).getT();					
+					double newS = (s * imageWidth - startX) / croppedImageWidth;
+					double newT = (t * imageHeight - (imageHeight - endY)) / croppedImageHeight;
+					vertexInfoIterator.getTexCoords(sgId).setS(newS);
+					vertexInfoIterator.getTexCoords(sgId).setT(newT);
+				}
+				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
+			}
+		} 
+		
+		// step 4: update texture Images
+		texImages = newTexImages;
+	}
+	
 	public void createTextureAtlas(int packingAlgorithm, double imageScaleFactor, boolean pots) throws SQLException, IOException {
 
 		if (texImages.size() < 2) {
@@ -1075,9 +1156,10 @@ public abstract class KmlGenericObject {
 		
 		// in some cases, several buildings may share one monster texture image.
 		// This function is used to crop such big image into small pieces for each surface geometry before creating the TextureAltas	
-/*		if (config.getProject().getKmlExporter().isCropImage()) {
+		ColladaOptions colladaOption = getColladaOptions();
+		if (colladaOption.isCropImages()) {
 			cropImages(packingAlgorithm);
-		}*/
+		}
 				
 		TextureAtlasCreator taCreator = new TextureAtlasCreator();
 		TextureImagesInfo tiInfo = new TextureImagesInfo();
@@ -1130,88 +1212,7 @@ public abstract class KmlGenericObject {
 				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
 			}
 		} 
-	}
-	
-	private void cropImages (int packingAlgorithm) {	
-		
-		if (texImageUris.size() > 1000 && (packingAlgorithm == TextureAtlasCreator.TPIM || packingAlgorithm == TextureAtlasCreator.TPIM_WO_ROTATION)) {
-			// too many pieces lead to crash when using TPIM algorithm
-			return;
-		}
-		
-		HashMap<String, TextureImage> newTexImages = new HashMap<String, TextureImage>();
-		
-		Set<Object> sgIdSet = texImageUris.keySet();
-		Iterator<Object> sgIdIterator = sgIdSet.iterator();
-		while (sgIdIterator.hasNext()) {
-			Long sgId = (Long) sgIdIterator.next();
-			
-			// step 1: get maximal and minimal coordinates
-			VertexInfo vertexInfoIterator = firstVertexInfo;			
-			double maxS = 0;
-			double minS = Double.MAX_VALUE;
-			double maxT = 0;
-			double minT = Double.MAX_VALUE;			
-			while (vertexInfoIterator != null) {
-				if (vertexInfoIterator.getAllTexCoords() != null && vertexInfoIterator.getAllTexCoords().containsKey(sgId)) {
-					double s = vertexInfoIterator.getTexCoords(sgId).getS();
-					double t = vertexInfoIterator.getTexCoords(sgId).getT();
-					if (s > maxS) {
-						maxS = s;
-					}
-					if (s < minS) {
-						minS = s;
-					}
-					if (t > maxT) {
-						maxT = t;
-					}
-					if (t < minT) {
-						minT = t;
-					}
-				}
-				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
-			}
-			
-			// step 2: crop images
-			try {
-				TextureImage texImage = texImages.get(texImageUris.get(sgId));
-				int imageWidth = texImage.getWidth();
-				int imageHeight = texImage.getHeight();
-				int startS = (int) Math.floor(imageWidth * minS);
-				int startT = (int) Math.floor(imageHeight * (1- maxT));
-				int newImageWidth = (int) Math.floor((maxS - minS) * imageWidth);
-				int newImageHeight = (int) Math.floor((maxT - minT) * imageHeight);	
-				if (startT < 0) startT = 0;
-				if (startS < 0) startS = 0;
-				if (newImageWidth <= 0) newImageWidth = 1;
-				if (newImageHeight <= 0) newImageHeight = 1;	
-				BufferedImage imageToCrop = texImage.getBufferedImage().getSubimage(startS, startT, newImageWidth, newImageHeight);
-				String newImageUri = sgId + "_" + texImageUris.get(sgId);
-				texImageUris.put(sgId, newImageUri);
-				newTexImages.put(newImageUri, new TextureImage(imageToCrop));
-			}
-			catch (Exception e) {
-				Logger.getInstance().error(e.getMessage());
-			}
-			
-			// step 3: update the vertex coordinate according to the cropped images 
-			vertexInfoIterator = firstVertexInfo;			
-			while (vertexInfoIterator != null) {
-				if (vertexInfoIterator.getAllTexCoords() != null && vertexInfoIterator.getAllTexCoords().containsKey(sgId)) {
-					double s = vertexInfoIterator.getTexCoords(sgId).getS();
-					double t = vertexInfoIterator.getTexCoords(sgId).getT();					
-					double newS = (s - minS) / (maxS - minS);
-					double newT = (t - minT) / (maxT - minT);
-					vertexInfoIterator.getTexCoords(sgId).setS(newS);
-					vertexInfoIterator.getTexCoords(sgId).setT(newT);
-				}
-				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
-			}
-		} 
-		
-		// step 4: update textImages
-		texImages = newTexImages;
-	}
+	}	
 
 	public void resizeAllImagesByFactor (double factor) throws SQLException, IOException {
 		if (texImages.size() == 0) { // building has no textures at all
