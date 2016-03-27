@@ -253,9 +253,11 @@ public class KmlExporter {
 		pathOfGltfConverter = "contribs" + File.separator + "collada2gltf";
 		String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
 		if (osName.indexOf("windows") != -1)
-			pathOfGltfConverter += File.separator + "wins_v1.0_x64_draft" + File.separator + "collada2gltf.exe";
+			pathOfGltfConverter += File.separator + "windows_v1.0_x64_draft" + File.separator + "collada2gltf.exe";
 		else if (osName.indexOf("mac") != -1)
 			pathOfGltfConverter += File.separator + "mac_v1.0_x64_draft" + File.separator + "collada2gltf";				
+		else if (osName.indexOf("nux") != -1)
+			pathOfGltfConverter += File.separator + "linux_v1.0_x64_draft" + File.separator + "collada2gltf";				
 
 		setAppearanceTheme(THEME_NONE);
 		setAltitudeMode(AltitudeMode.ABSOLUTE);
