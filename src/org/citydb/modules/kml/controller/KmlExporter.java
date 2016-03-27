@@ -48,30 +48,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
-import net.opengis.kml._2.BalloonStyleType;
-import net.opengis.kml._2.BasicLinkType;
-import net.opengis.kml._2.DocumentType;
-import net.opengis.kml._2.FolderType;
-import net.opengis.kml._2.IconStyleType;
-import net.opengis.kml._2.KmlType;
-import net.opengis.kml._2.LabelStyleType;
-import net.opengis.kml._2.LatLonAltBoxType;
-import net.opengis.kml._2.LineStringType;
-import net.opengis.kml._2.LineStyleType;
-import net.opengis.kml._2.LinkType;
-import net.opengis.kml._2.LodType;
-import net.opengis.kml._2.LookAtType;
-import net.opengis.kml._2.NetworkLinkType;
-import net.opengis.kml._2.ObjectFactory;
-import net.opengis.kml._2.PairType;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PolyStyleType;
-import net.opengis.kml._2.RegionType;
-import net.opengis.kml._2.StyleMapType;
-import net.opengis.kml._2.StyleStateEnumType;
-import net.opengis.kml._2.StyleType;
-import net.opengis.kml._2.ViewRefreshModeEnumType;
-
 import org.citydb.api.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.api.concurrent.SingleWorkerPool;
 import org.citydb.api.concurrent.WorkerPool;
@@ -128,6 +104,30 @@ import org.citygml4j.util.xml.SAXFragmentWriter;
 import org.citygml4j.util.xml.SAXFragmentWriter.WriteMode;
 import org.citygml4j.util.xml.SAXWriter;
 import org.xml.sax.SAXException;
+
+import net.opengis.kml._2.BalloonStyleType;
+import net.opengis.kml._2.BasicLinkType;
+import net.opengis.kml._2.DocumentType;
+import net.opengis.kml._2.FolderType;
+import net.opengis.kml._2.IconStyleType;
+import net.opengis.kml._2.KmlType;
+import net.opengis.kml._2.LabelStyleType;
+import net.opengis.kml._2.LatLonAltBoxType;
+import net.opengis.kml._2.LineStringType;
+import net.opengis.kml._2.LineStyleType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LodType;
+import net.opengis.kml._2.LookAtType;
+import net.opengis.kml._2.NetworkLinkType;
+import net.opengis.kml._2.ObjectFactory;
+import net.opengis.kml._2.PairType;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PolyStyleType;
+import net.opengis.kml._2.RegionType;
+import net.opengis.kml._2.StyleMapType;
+import net.opengis.kml._2.StyleStateEnumType;
+import net.opengis.kml._2.StyleType;
+import net.opengis.kml._2.ViewRefreshModeEnumType;
 
 public class KmlExporter implements EventHandler {
 	private final JAXBContext jaxbKmlContext;
@@ -240,7 +240,20 @@ public class KmlExporter implements EventHandler {
 		balloonCheck = checkBalloonSettings(CityGMLClass.BRIDGE) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.TUNNEL) && balloonCheck;
 		if (!balloonCheck) return false;	
-		
+
+		// check collada2gltf tool
+		if (config.getProject().getKmlExporter().isCreateGltfModel()) {
+			File file = new File(config.getProject().getKmlExporter().getPathOfGltfConverter());
+			
+			if (!file.exists()) {
+				Logger.getInstance().error("Failed to find the COLLADA2glTF tool at the provided path " + file.getAbsolutePath() + ".");
+				return false;
+			} else if (!file.canExecute()) {
+				Logger.getInstance().error("Failed to execute the COLLADA2glTF tool at " + file.getAbsolutePath() + ".");
+				return false;
+			}
+		}
+
 		boolean isBBoxActive = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue();
 		Tiling tiling = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
 
@@ -256,7 +269,7 @@ public class KmlExporter implements EventHandler {
 					globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
 			}, 2, 4326);
 		}
-				
+
 		// create a saxWriter instance 
 		// define indent for xml output and namespace mappings
 		SAXWriter saxWriter = new SAXWriter();
@@ -373,7 +386,7 @@ public class KmlExporter implements EventHandler {
 							currentWorkingDirectoryPath = path;
 						}
 						tracker.setCurrentWorkingDirectoryPath(currentWorkingDirectoryPath);
-						
+
 						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("kmlExport.dialog.writingToFile"), this));
 						eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
 
@@ -417,8 +430,8 @@ public class KmlExporter implements EventHandler {
 										kmlFactory,
 										config,
 										eventDispatcher),
-										300,
-										false);
+								300,
+								false);
 
 						// prestart pool workers
 						ioWriterPool.prestartCoreWorkers();
@@ -583,7 +596,7 @@ public class KmlExporter implements EventHandler {
 									+ "_" + exportFilter.getBoundingBoxFilter().getTileColumn() + " is empty. Deleting file " + file.getName() + ".");
 							file.delete();
 						}
-						
+
 						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg"), this));
 					}
 
@@ -648,11 +661,11 @@ public class KmlExporter implements EventHandler {
 				return false;
 			}
 		}
-		
+
 		// write master JSON file
 		if (isBBoxActive)
 			writeMasterJsonFileTileReference(path, fileName, fileExtension);
-		
+
 		// close cityobject JSON file
 		if (jsonFileWriter != null) {
 			try {
@@ -685,7 +698,7 @@ public class KmlExporter implements EventHandler {
 
 		return shouldRun;
 	}
-	
+
 	public int calculateRowsColumns() throws SQLException {
 		TiledBoundingBox bbox = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox();
 		double autoTileSideLength = config.getProject().getKmlExporter().getAutoTileSideLength();
@@ -905,7 +918,7 @@ public class KmlExporter implements EventHandler {
 		marshaller.marshal(kml, fragmentWriter);
 		saxWriter.flush();
 	}
-		
+
 	private void writeMasterJsonFileTileReference(String path, String fileName, String fileExtension) {
 		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 			if (displayForm.isActive()) {
@@ -932,7 +945,7 @@ public class KmlExporter implements EventHandler {
 				} catch (IOException e) {
 					Logger.getInstance().error("Failed to write Master JSON file header: " + e.getMessage());
 				}
-				
+
 				if (jsonFileWriterForMasterFile != null) {
 					try {
 						jsonFileWriterForMasterFile.write("\n}\n".getBytes(CHARSET));				
@@ -945,7 +958,7 @@ public class KmlExporter implements EventHandler {
 		}		
 	}
 
-	
+
 
 	private void addStyle(DisplayForm currentDisplayForm, CityGMLClass featureClass, SAXWriter saxWriter) throws JAXBException {
 		if (!currentDisplayForm.isActive()) return;

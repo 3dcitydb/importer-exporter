@@ -115,11 +115,19 @@
             <!-- the following fileset is just to create an empty plugins folder -->
             <fileset dir="!dir.dest.plugins!" targetdir="$INSTALL_PATH/!dir.dest.plugins.relative!" excludes="**/*"/>
             <fileset dir="!dir.resources.templates!" targetdir="$INSTALL_PATH/templates" override="true"/>
-            <fileset dir="!dir.dest.contribs!" targetdir="$INSTALL_PATH/!dir.dest.contribs.relative!" override="true" />
+            <fileset dir="!dir.contribs.collada2gltf!/!dir.collada2gltf.windows!" targetdir="$INSTALL_PATH/!dir.dest.contribs.collada2gltf.relative!/!dir.collada2gltf.windows!" os="windows" override="true" />
+            <fileset dir="!dir.contribs.collada2gltf!/!dir.collada2gltf.linux!" targetdir="$INSTALL_PATH/!dir.dest.contribs.collada2gltf.relative!/!dir.collada2gltf.linux!" os="unix" condition="!izpack.macinstall" override="true" />
+            <fileset dir="!dir.contribs.collada2gltf!/!dir.collada2gltf.mac!" targetdir="$INSTALL_PATH/!dir.dest.contribs.collada2gltf.relative!/!dir.collada2gltf.mac!" os="mac" override="true" />
             <executable targetfile="$INSTALL_PATH/3DCityDB-Importer-Exporter.sh" condition="!izpack.macinstall" stage="never">
                 <os family="unix"/>
             </executable>
             <executable targetfile="$INSTALL_PATH/3DCityDB-Importer-Exporter.command" stage="never">
+                <os family="mac"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/!dir.dest.contribs.collada2gltf.relative!/!dir.collada2gltf.linux!/collada2gltf" condition="!izpack.macinstall" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/!dir.dest.contribs.collada2gltf.relative!/!dir.collada2gltf.mac!/collada2gltf" stage="never">
                 <os family="mac"/>
             </executable>
         </pack>

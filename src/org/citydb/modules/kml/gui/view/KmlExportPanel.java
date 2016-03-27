@@ -1012,6 +1012,25 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 						Language.I18N.getString("kmlExport.dialog.error.incorrectData.featureClass"));
 				return;
 			}
+			
+			// check collada2gltf tool
+			if (config.getProject().getKmlExporter().isCreateGltfModel()) {
+				File file = new File(config.getProject().getKmlExporter().getPathOfGltfConverter());
+				
+				if (!file.exists()) {
+					String text = Language.I18N.getString("kmlExport.dialog.error.collada2gltf.notExists");
+					Object[] args = new Object[]{ file.getAbsolutePath() };
+					String result = MessageFormat.format(text, args);
+					mainView.errorMessage(Language.I18N.getString("kmlExport.dialog.error.collada2gltf"), result);
+					return;
+				} else if (!file.canExecute()) {
+					String text = Language.I18N.getString("kmlExport.dialog.error.collada2gltf.notExecutable");
+					Object[] args = new Object[]{ file.getAbsolutePath() };
+					String result = MessageFormat.format(text, args);
+					mainView.errorMessage(Language.I18N.getString("kmlExport.dialog.error.collada2gltf"), result);
+					return;
+				}
+			}
 
 			if (!dbPool.isConnected()) {
 				mainView.connectToDatabase();

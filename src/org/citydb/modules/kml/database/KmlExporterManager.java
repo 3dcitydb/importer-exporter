@@ -637,7 +637,7 @@ public class KmlExporterManager {
 		String collada2gltfPath = config.getProject().getKmlExporter().getPathOfGltfConverter();
 		File collada2gltfFile = new File(collada2gltfPath);
 		if (collada2gltfFile.exists()) {
-			ProcessBuilder pb = new ProcessBuilder(collada2gltfPath, "-f", colladaBundle.getGmlId() + ".dae", "-e", "true");
+			ProcessBuilder pb = new ProcessBuilder(collada2gltfFile.getAbsolutePath(), "-f", colladaBundle.getGmlId() + ".dae", "-e", "true");
 			pb.directory(buildingDirectory);
 			Process process = null;
 			try {
