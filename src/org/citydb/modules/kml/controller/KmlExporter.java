@@ -872,12 +872,18 @@ public class KmlExporter implements EventHandler {
 			networkLinkType.setName("Display as " + displayForm.getName());
 
 			RegionType regionType = kmlFactory.createRegionType();
+			
+			double[] coordinates = wgs84Tile.getCoordinates(0);		
+			double xmin = Math.min(coordinates[0], coordinates[6]);
+			double ymin = Math.min(coordinates[1], coordinates[3]);
+			double xmax = Math.max(coordinates[2], coordinates[4]);
+			double ymax = Math.max(coordinates[5], coordinates[7]);
 
-			LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
-			latLonAltBoxType.setNorth(globeWGS84Bbox.getUpperRightCorner().getY());
-			latLonAltBoxType.setSouth(globeWGS84Bbox.getLowerLeftCorner().getY());
-			latLonAltBoxType.setEast(globeWGS84Bbox.getUpperRightCorner().getX());
-			latLonAltBoxType.setWest(globeWGS84Bbox.getLowerLeftCorner().getX());
+			LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();			
+			latLonAltBoxType.setNorth(ymax);
+			latLonAltBoxType.setSouth(ymin);
+			latLonAltBoxType.setEast(xmax);
+			latLonAltBoxType.setWest(xmin);
 
 			LodType lodType = kmlFactory.createLodType();
 			lodType.setMinLodPixels((double)displayForm.getVisibleFrom());
