@@ -521,8 +521,12 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		try {
 			double imageScaleFactor = 1;
 			ColladaOptions colladaOptions = objectGroup.getColladaOptions();
+			
+			if (colladaOptions.isCropImages()) {
+				objectGroup.cropImages();
+			}
+			
 			if (colladaOptions.isGenerateTextureAtlases()) {
-				//				eventDispatcher.triggerEvent(new StatusDialogMessage(Internal.I18N.getString("kmlExport.dialog.creatingAtlases")));
 				if (colladaOptions.isScaleImages()) {
 					imageScaleFactor = colladaOptions.getImageScaleFactor();
 				}

@@ -1060,7 +1060,8 @@ public abstract class KmlGenericObject {
 		this.setGmlId(String.valueOf(ownLowerLimit) + "_to_" + ownUpperLimit);
 	}
 
-	private void cropImages (int packingAlgorithm) {	
+	// This function allows to crop large CityGML texture atlas into small texture images for the corresponding surface geometries
+	public void cropImages () {	
 		HashMap<String, TextureImage> newTexImages = new HashMap<String, TextureImage>();		
 		Set<Object> sgIdSet = texImageUris.keySet();
 		Iterator<Object> sgIdIterator = sgIdSet.iterator();
@@ -1153,13 +1154,6 @@ public abstract class KmlGenericObject {
 	}
 
 	private void useExternalTAGenerator(int packingAlgorithm, double scaleFactor, boolean pots) throws SQLException, IOException {
-		
-		// in some cases, several buildings may share one monster texture image.
-		// This function is used to crop such big image into small pieces for each surface geometry before creating the TextureAltas	
-		ColladaOptions colladaOption = getColladaOptions();
-		if (colladaOption.isCropImages()) {
-			cropImages(packingAlgorithm);
-		}
 				
 		TextureAtlasCreator taCreator = new TextureAtlasCreator();
 		TextureImagesInfo tiInfo = new TextureImagesInfo();
