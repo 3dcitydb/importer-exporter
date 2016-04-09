@@ -1,0 +1,4 @@
+# Always convert line endings in starter scripts (.bat .sh and .command)
+*.bat 		eol=crlf
+*.sh 		eol=lf
+*.command 	eol=lf
