@@ -38,6 +38,7 @@ import org.citydb.api.geometry.GeometryObject;
 import org.citydb.config.Config;
 import org.citydb.log.Logger;
 import org.citydb.modules.citygml.common.database.cache.CacheTable;
+import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -165,8 +166,19 @@ public class DBSurfaceGeometry implements DBExporter {
 
 				GeometryObject geometry = null;
 				Object object = rs.getObject(!isImplicit ? 9 : 10);
-				if (!rs.wasNull() && object != null)
-					geometry = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
+				if (!rs.wasNull() && object != null) {
+					try {
+						geometry = dbExporterManager.getDatabaseAdapter().getGeometryConverter().getPolygon(object);
+					} catch (IllegalArgumentException e) {
+						StringBuilder msg = new StringBuilder("Skipping ").append(Util.getGeometrySignature(
+								GMLClass.POLYGON, 
+								geomNode.gmlId));
+						msg.append(": ").append(e.getMessage());
+
+						LOG.error(msg.toString());
+						continue;
+					}
+				}
 
 				geomNode.geometry = geometry;
 
