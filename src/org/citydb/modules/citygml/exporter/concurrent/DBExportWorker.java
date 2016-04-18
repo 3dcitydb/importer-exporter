@@ -294,6 +294,9 @@ public class DBExportWorker extends Worker<DBSplittingResult> implements EventHa
 			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting export due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
 		} catch (FeatureProcessException e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.FEATURE_PROCESS_ERROR, "Fatal error while processing CityGML features.", LogLevel.WARN, e, eventChannel, this));
+		} catch (Throwable e) {
+			// this is to catch general exceptions that may occur during the export
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
 			runLock.unlock();
 		}

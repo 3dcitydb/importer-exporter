@@ -416,7 +416,7 @@ public class DBImportWorker extends Worker<CityGML> implements EventHandler {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.SQL_ERROR, "Aborting import due to SQL errors.", LogLevel.WARN, e, eventChannel, this));
 		} catch (IOException e) {
 			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.IMPORT_LOG_ERROR, "Aborting import due I/O errors.", LogLevel.WARN, e, eventChannel, this));
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			// this is to catch general exceptions that may occur during the import
 			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.UNKNOWN_ERROR, "Aborting due to an unexpected " + e.getClass().getName() + " error.", LogLevel.ERROR, e, eventChannel, this));
 		} finally {
