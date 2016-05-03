@@ -1097,7 +1097,8 @@ public abstract class KmlGenericObject {
 			}
 			
 			// step 2: crop images
-			TextureImage texImage = texImages.get(texImageUris.get(sgId));
+			String texImageUri = texImageUris.get(sgId);
+			TextureImage texImage = texImages.get(texImageUri);
 			int imageWidth = texImage.getWidth();
 			int imageHeight = texImage.getHeight();
 			int startX = 0; 
@@ -1116,12 +1117,13 @@ public abstract class KmlGenericObject {
 				croppedImageWidth = endX - startX;
 				croppedImageHeight = endY - startY;	
 				BufferedImage imageToCrop = texImage.getBufferedImage().getSubimage(startX, startY, croppedImageWidth, croppedImageHeight);
-				String newImageUri = sgId + "_" + texImageUris.get(sgId);
+				String newImageUri = sgId + "_" + texImageUri;
 				texImageUris.put(sgId, newImageUri);
 				newTexImages.put(newImageUri, new TextureImage(imageToCrop));
 			}
 			catch (Exception e) {
-				Logger.getInstance().error(e.getMessage());
+				newTexImages.put(texImageUri, texImage);
+				Logger.getInstance().debug("City object '" + gmlId + "': " + "A texture coordinate lies outside the range [0, 1] for the texutre image '"  + texImageUri + "'; This image can therefore not be cropped" );				
 			}
 			
 			// step 3: update the vertex coordinates according to the cropped images
