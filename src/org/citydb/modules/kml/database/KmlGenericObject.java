@@ -789,12 +789,15 @@ public abstract class KmlGenericObject {
 			String texImageName = trianglesIterator.next();
 			triangles = trianglesByTexImageName.get(texImageName);
 			triangles.setCount(new BigInteger(String.valueOf(triangles.getP().size()/(3*triangles.getInput().size()))));
-			if (texImageName.startsWith(NO_TEXIMAGE)) { // materials first, textures last
+			
+			// Triangles with textures must be first printed. Otherwise it will cause incorrect textures in glTF model
+			if (!texImageName.startsWith(NO_TEXIMAGE)) { 
 				mesh.getLinesOrLinestripsOrPolygons().add(0, triangles);
 			}
 			else {
 				mesh.getLinesOrLinestripsOrPolygons().add(triangles);
 			}
+			
 			InstanceMaterial instanceMaterial = colladaFactory.createInstanceMaterial();
 			instanceMaterial.setSymbol(triangles.getMaterial());
 			instanceMaterial.setTarget("#" + replaceExtensionWithSuffix(texImageName, "_mat"));
