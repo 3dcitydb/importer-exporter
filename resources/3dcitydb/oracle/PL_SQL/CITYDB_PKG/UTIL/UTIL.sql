@@ -4,11 +4,11 @@
 --              Felix Kunde <felix-kunde@gmx.de>
 --
 -- Copyright:   (c) 2012-2016  Chair of Geoinformatics,
---                             Technische Universität München, Germany
+--                             Technische Universitï¿½t Mï¿½nchen, Germany
 --                             http://www.gis.bv.tum.de
 --
 --              (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
---                             Technische Universität Berlin, Germany
+--                             Technische Universitï¿½t Berlin, Germany
 --                             http://www.igg.tu-berlin.de
 --
 --              This skript is free software under the LGPL Version 2.1.
@@ -207,19 +207,26 @@ AS
   * db_metadata
   *
   ******************************************************************/
-  FUNCTION db_metadata RETURN DB_INFO_TABLE 
+  FUNCTION db_metadata RETURN DB_INFO_TABLE
   IS
     info_ret DB_INFO_TABLE;
     info_tmp DB_INFO_OBJ;
+    wktext3d_exists number;
   BEGIN
     info_ret := DB_INFO_TABLE();
     info_ret.extend;
 
     info_tmp := DB_INFO_OBJ(0, NULL, NULL, 0, NULL, NULL);
-
+  
     EXECUTE IMMEDIATE 'select SRID, GML_SRS_NAME from DATABASE_SRS' INTO info_tmp.schema_srid, info_tmp.schema_gml_srs_name;
     EXECUTE IMMEDIATE 'select COORD_REF_SYS_NAME, COORD_REF_SYS_KIND from SDO_COORD_REF_SYS where SRID=:1' INTO info_tmp.coord_ref_sys_name, info_tmp.coord_ref_sys_kind USING info_tmp.schema_srid;
-    EXECUTE IMMEDIATE 'select nvl(WKTEXT3D, WKTEXT) from CS_SRS where SRID=:1' INTO info_tmp.wktext USING info_tmp.schema_srid;
+    EXECUTE IMMEDIATE 'SELECT count(*) FROM all_tab_cols WHERE column_name = ''WKTEXT3D'' AND table_name = ''CS_SRS''' INTO wktext3d_exists;
+	IF wktext3d_exists = 1 THEN
+	    EXECUTE IMMEDIATE 'select nvl(WKTEXT3D, WKTEXT) from CS_SRS where SRID=:1' INTO info_tmp.wktext USING info_tmp.schema_srid;
+	ELSE
+		EXECUTE IMMEDIATE 'select WKTEXT from CS_SRS where SRID=:1' INTO info_tmp.wktext USING info_tmp.schema_srid;
+	END IF;
+
     info_tmp.versioning := versioning_db;
     info_ret(info_ret.count) := info_tmp;
     RETURN info_ret;
