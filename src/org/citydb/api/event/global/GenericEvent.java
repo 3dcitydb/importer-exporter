@@ -26,29 +26,20 @@
  */
 package org.citydb.api.event.global;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.citydb.api.event.Event;
 
 public final class GenericEvent extends Event {
 	private final String id;
-	private HashMap<String, Object> properties;
+	private Object content;
 
-	public GenericEvent(String id, Map<String, Object> properties, Object channel, Object source) {
+	public GenericEvent(String id, Object content, Object channel, Object source) {
 		super(GlobalEvents.GENERIC_EVENT, channel, source);
 		this.id = id;
-
-		if (properties != null)
-			this.properties = new HashMap<String, Object>(properties);
+		this.content = content;
 	}
 
-	public GenericEvent(String id, Map<String, Object> properties, Object source) {
-		this(id, properties, GLOBAL_CHANNEL, source);
-	}
-	
-	public GenericEvent(String id, Object channel, Object source) {
-		this(id, null, channel, source);
+	public GenericEvent(String id, Object content, Object source) {
+		this(id, content, GLOBAL_CHANNEL, source);
 	}
 	
 	public GenericEvent(String id, Object source) {
@@ -59,15 +50,11 @@ public final class GenericEvent extends Event {
 		return id;
 	}
 
-	public boolean hasProperties() {
-		return !properties.isEmpty();
+	public boolean isSetContent() {
+		return content != null;
 	}
 
-	public Map<String, Object> getProperties() {
-		return properties;
-	}
-
-	public Object getProperty(String key) {
-		return hasProperties() ? properties.get(key) : null;
+	public Object getContent() {
+		return content;
 	}
 }
