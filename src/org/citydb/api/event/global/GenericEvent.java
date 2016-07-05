@@ -41,6 +41,8 @@ public final class GenericEvent extends Event {
 
 		if (properties != null)
 			this.properties = new HashMap<String, Object>(properties);
+		else
+			this.properties = new HashMap<String, Object>();
 	}
 
 	public GenericEvent(String id, Map<String, Object> properties, Object source) {
@@ -62,12 +64,20 @@ public final class GenericEvent extends Event {
 	public boolean hasProperties() {
 		return !properties.isEmpty();
 	}
+	
+	public boolean isSetPropery(String key) {
+		return properties.containsKey(key);
+	}
 
 	public Map<String, Object> getProperties() {
 		return properties;
 	}
 
 	public Object getProperty(String key) {
-		return hasProperties() ? properties.get(key) : null;
+		return properties.get(key);
+	}
+	
+	public Object setProperty(String key, Object property) {
+		return properties.put(key, property);
 	}
 }
