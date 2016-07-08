@@ -1,9 +1,9 @@
 !impexp.plugin.api.name! v!impexp.plugin.api.version!
 
-  This library is free software and is distributed in the hope
-  that it will be useful, but WITHOUT ANY WARRANTY; without even
-  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-  PURPOSE. See the LICENSE.txt file for more details. 
+  This software is free software and is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. 
 
 
 0. Index
@@ -23,11 +23,11 @@
 1. License
 ----------
 
-The !impexp.plugin.api.name! is free software under
-the GNU Lesser General Public License Version 3.0. See the file 
-LICENSE.txt for more details. For a copy of the GNU Lesser General 
-Public License see the files COPYING.txt and COPYING.LESSER.txt or 
-visit http://www.gnu.org/licenses/.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this software except in compliance with the License.
+You may obtain a copy of the License at
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
 
 
 2. Copyright

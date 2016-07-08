@@ -2,27 +2,28 @@
  * 3D City Database - The Open Source CityGML Database
  * http://www.3dcitydb.org/
  * 
- * (C) 2013 - 2016,
- * Chair of Geoinformatics,
- * Technische Universitaet Muenchen, Germany
- * http://www.gis.bgu.tum.de/
+ * Copyright 2013 - 2016
+ * Chair of Geoinformatics
+ * Technical University of Munich, Germany
+ * https://www.gis.bgu.tum.de/
  * 
  * The 3D City Database is jointly developed with the following
  * cooperation partners:
  * 
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
- * M.O.S.S. Computer Grafik Systeme GmbH, Muenchen <http://www.moss.de/>
+ * M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
  * 
- * The 3D City Database Importer/Exporter program is free software:
- * you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *     
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.citydb.gui.menubar;
 
@@ -148,7 +149,7 @@ public class InfoDialog extends JDialog {
 			general.add(authors, GuiUtil.setConstraints(0,1,1.0,1.0,GridBagConstraints.BOTH,2,5,5,5));
 
 			String tum_label_text = config.getProject().getGlobal().getLanguage() == LanguageType.EN ?
-					"Chair of Geoinformatics,\nTechnische Universität München, Germany" : "Lehrstuhl für Geoinformatik,\nTechnische Universität München, Deutschland";
+					"Chair of Geoinformatics,\nTechnical University of Munich, Germany" : "Lehrstuhl für Geoinformatik,\nTechnische Universität München, Deutschland";
 
 			JLabel copyHeader = new JLabel("Copyright");
 			general.add(copyHeader, GuiUtil.setConstraints(0,2,1.0,0.0,GridBagConstraints.HORIZONTAL,15,5,0,5));
@@ -159,9 +160,9 @@ public class InfoDialog extends JDialog {
 			copy.setFont(authorsHeader.getFont());
 			copy.setText("(C) 2013 - 2016\n" +
 					tum_label_text + "\n" +
-					"http://www.gis.bgu.tum.de/\n\n" +
-					"This program is free software under the GNU Lesser General\n" +
-			"Public License Version 3.0. For a copy of the GNU LGPL see\n<http://www.gnu.org/licenses/>.");				
+					"https://www.gis.bgu.tum.de/\n\n" +
+					"This program is free software and licensed under the\n" +
+			"Apache License, Version 2.0. For a copy of the Apache License see\n<http://www.apache.org/licenses/LICENSE-2.0>.");				
 			general.add(copy, GuiUtil.setConstraints(0,3,1.0,1.0,GridBagConstraints.BOTH,2,5,5,5));				
 	
 			PopupMenuDecorator.getInstance().decorate(authors, copy);
@@ -191,11 +192,11 @@ public class InfoDialog extends JDialog {
 		        String bodyRule = "body { font-family: " + font.getFamily() + "; " + "font-size: " + font.getSize() + "pt; }";
 
 				String tum_label_text = config.getProject().getGlobal().getLanguage() == LanguageType.EN ?
-						"Chair of Geoinformatics,<br/>Technische Universität München" : "Lehrstuhl für Geoinformatik,<br/>Technische Universität München";
+						"Chair of Geoinformatics,<br/>nTechnical University of Munich" : "Lehrstuhl für Geoinformatik,<br/>Technische Universität München";
 				
 		        JLabel tum_logo = new JLabel(new ImageIcon(getToolkit().getImage(this.getClass().getResource("/resources/img/partner/tum_logo.png"))));
 				logos.add(tum_logo, GuiUtil.setConstraints(0,0,0,0,GridBagConstraints.NONE,10,0,10,0));
-				JEditorPane tum_label = new JEditorPane("text/html", "<html><b>" + tum_label_text + "</b><br/>http://www.gis.bgu.tum.de/</html>");
+				JEditorPane tum_label = new JEditorPane("text/html", "<html><b>" + tum_label_text + "</b><br/>https://www.gis.bgu.tum.de/</html>");
 		        ((HTMLDocument)tum_label.getDocument()).getStyleSheet().addRule(bodyRule);
 				tum_label.setEditable(false);
 		        logos.add(tum_label, GuiUtil.setConstraints(1,0,1,0,GridBagConstraints.HORIZONTAL,5,15,5,5));
