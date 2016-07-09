@@ -3,6 +3,29 @@
 
 The 3D City Database Importer/Exporter is a Java based front-end for the [3D City Database](http://www.3dcitydb.org/). It allows for high-performance loading and extracting 3D city model data.
 
+* Full support for CityGML versions 2.0.0 and 1.0.0
+* Support for Oracle Spatial, Oracle Locator, and PostGIS
+* Reading/writing CityGML instance documents of arbitrary file size
+* Export of KML/COLLADA/glTF models including tiling schemas for 
+  visualization and interactive exploration of large city models
+  in Digital Earth Browsers, 3D GIS, and computer graphics software
+* Generic KML information balloons
+* Export of thematic object data into tables. Supported data formats are
+  CSV, Microsoft Excel, and direct upload into Google Spreadsheets
+* Resolving and preservation of forward and backwards XLinks in 
+  CityGML datasets
+* Full support of 3D Coordinate Reference Systems (CRS) and 3D 
+  coordinate transformations; support for user-defined CRS 
+* Coordinate transformations for CityGML exports
+* Map window for graphical selection of bounding boxes
+* XML validation of CityGML instance documents
+* Multithreaded programming facilitating high-performance CityGML 
+  processing
+* Proxy support for HTTP, HTTPS, and SOCKS protocols
+
+The 3D City Database Importer/Exporter comes with both a Graphical User Interface (GUI) and a Command Line Interface (CLI). The CLI 
+allows for employing the tool in batch processing workflows and third party applications.
+
 License
 -------
 The 3D City Database Importer/Exporter is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0). See the `LICENSE` file for more details.
