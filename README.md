@@ -1,7 +1,7 @@
 3D City Database Importer/Exporter
 ==================================
 
-The 3D City Database Importer/Exporter is a Java based front-end for the [3D City Database](http://www.3dcitydb.org/). It allows for high-performance loading and extracting 3D city model data.
+The 3D City Database Importer/Exporter is a Java based front-end for the [3D City Database](https://github.com/3dcitydb/3dcitydb). It allows for high-performance loading and extracting 3D city model data.
 
 * Full support for CityGML versions 2.0.0 and 1.0.0
 * Support for Oracle Spatial, Oracle Locator, and PostGIS
