@@ -17,11 +17,9 @@ The 3D City Database Importer/Exporter is a Java based front-end for the [3D Cit
 * Full support of 3D Coordinate Reference Systems (CRS) and 3D 
   coordinate transformations; support for user-defined CRS 
 * Coordinate transformations for CityGML exports
-* Map window for graphical selection of bounding boxes
 * XML validation of CityGML instance documents
 * Multithreaded programming facilitating high-performance CityGML 
   processing
-* Proxy support for HTTP, HTTPS, and SOCKS protocols
 
 The 3D City Database Importer/Exporter comes with both a Graphical User Interface (GUI) and a Command Line Interface (CLI). The CLI 
 allows for employing the tool in batch processing workflows and third party applications.
@@ -36,7 +34,16 @@ Latest release
 --------------
 The latest stable release of the 3D City Database Importer/Exporter is 3.2.0.
 
-Download an executable installer for the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v3.2.0/3DCityDB-Importer-Exporter-3.2-Setup.jar). Previous releases are available from the [releases section](https://github.com/3dcitydb/importer-exporter/releases).
+Download a Java-based executable installer for the software [here](https://github.com/3dcitydb/importer-exporter/releases/download/v3.2.0/3DCityDB-Importer-Exporter-3.2-Setup.jar). Previous releases are available from the [releases section](https://github.com/3dcitydb/importer-exporter/releases).
+
+System requirements
+-------------------
+* Java JRE or JDK >= 1.7
+* [3D City Databse version](https://github.com/3dcitydb/3dcitydb) 3.3.0 on
+  - Oracle DBMS >= 10G R2 with Spatial or Locator option
+  - PostgreSQL DBMS >= 9.1 with PostGIS extension >= 2.0
+  
+The 3D City Database Importer/Exporter can be run on any platform providing appropriate Java support. 
 
 Contributing
 ------------
