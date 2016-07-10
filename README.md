@@ -55,6 +55,18 @@ Contributing
 * To contribute code for fixing filed issues create a pull request with the issue id.
 * To propose a new feature create a GitHub issue and open a discussion.
 
+Cooperation partners and supporters  
+-----------------------------------
+
+The 3D City Database Importer/Exporter has been developed by and with the support from the following cooperation partners:
+
+* Chair of Geoinformatics, Technical University of Munich
+  https://www.gis.bgu.tum.de/
+* virtualcitySYSTEMS GmbH, Berlin
+  http://www.virtualcitysystems.de/
+* M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen
+  http://www.moss.de/
+
 More information
 ----------------
 [OGC CityGML](http://www.opengeospatial.org/standards/citygml) is an open data model and XML-based format for the storage and exchange of semantic 3D city models. It is an application schema for the [Geography Markup Language version 3.1.1 (GML3)](http://www.opengeospatial.org/standards/gml), the extendible international standard for spatial data exchange issued by the Open Geospatial Consortium (OGC) and the ISO TC211. The aim of the development of CityGML is to reach a common definition of the basic entities, attributes, and relations of a 3D city model.
