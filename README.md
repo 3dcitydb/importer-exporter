@@ -47,7 +47,7 @@ The 3D City Database Importer/Exporter can be run on any platform providing appr
 
 Documentation
 -------------
-A comprehensive documentation on the 3D City Database and the Importer/Exporter tool is installed with the software and is available online at http://www.3dcitydb.net/3dcitydb/documentation/.
+A complete and comprehensive documentation on the 3D City Database and the Importer/Exporter tool is installed with the software and is available [online](http://www.3dcitydb.org/3dcitydb/documentation/).
 
 Contributing
 ------------
