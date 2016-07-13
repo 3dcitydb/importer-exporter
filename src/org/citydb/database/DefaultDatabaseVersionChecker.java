@@ -44,7 +44,8 @@ import org.citydb.config.project.database.Database;
 import org.citydb.util.Util;
 
 public class DefaultDatabaseVersionChecker implements DatabaseVersionChecker {
-	private final List<DatabaseVersion> supportedVersions = Arrays.asList(new DatabaseVersion(3,2,0), new DatabaseVersion(3,1,0), new DatabaseVersion(3,0,0));
+	private final List<DatabaseVersion> supportedVersions = Arrays.asList(
+			new DatabaseVersion(3,3,0), new DatabaseVersion(3,2,0), new DatabaseVersion(3,1,0), new DatabaseVersion(3,0,0));
 
 	@Override
 	public List<DatabaseConnectionWarning> checkVersionSupport(DatabaseAdapter databaseAdapter) throws DatabaseVersionException {
