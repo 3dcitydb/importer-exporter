@@ -51,7 +51,7 @@ output formats are Microsoft Excel, CSV, and Google Spreadsheets.
 ---------------
 
 This version of the Spreadsheet Generator Plugin shall only be used with
-version 3.x of the 3D City Database Importer/Exporter. 
+version 3.3 of the 3D City Database Importer/Exporter. 
 It cannot be guaranteed that the extension does correctly work with any
 previous or later version of the 3D City Database Importer/Exporter.
 
@@ -98,7 +98,7 @@ thomas.kolbe@tum.de
 -----------
 
 Official Spreadsheet Generator Plugin website: 
-http://www.3dcitydb.net/
+http://www.3dcitydb.org/
 
 Related websites:
 https://github.com/3dcitydb/plugin-spreadsheet-generator
