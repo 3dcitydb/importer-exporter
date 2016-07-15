@@ -1,7 +1,9 @@
-﻿3D City Database Importer/Exporter Spreadsheet Generator Plugin v2.0
+﻿3D City Database Importer/Exporter Spreadsheet Generator Plugin v2.1
 
-  This program is free software and comes WITHOUT ANY WARRANTY.
-  See the DISCLAIMER at the end of this document for more details.  
+  This software is free software and is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. 
 
 
 0. Index
@@ -21,20 +23,20 @@
 1. License
 ----------
 
-The 3D City Database Importer/Exporter Spreadsheet Generator Plugin is 
-free software under the GNU Lesser General Public License Version 3.0. 
-See the file LICENSE for more details. For a copy of the GNU Lesser 
-General Public License see the files COPYING and COPYING.LESSER 
-or visit http://www.gnu.org/licenses/.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this software except in compliance with the License.
+You may obtain a copy of the License at
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
 
 
 2. Copyright
 ------------
 
-(c) 2013 - 2016  
-Chair of Geoinformatics (TUMGI)
-Technische Universitaet Muenchen, Germany
-http://www.gis.bgu.tum.de
+(C) 2013 - 2016
+Chair of Geoinformatics
+Technical University of Munich, Germany
+https://www.gis.bgu.tum.de/
 
 
 3. About
@@ -49,7 +51,7 @@ output formats are Microsoft Excel, CSV, and Google Spreadsheets.
 ---------------
 
 This version of the Spreadsheet Generator Plugin shall only be used with
-version 3.0/3.1 of the 3D City Database Importer/Exporter. 
+version 3.x of the 3D City Database Importer/Exporter. 
 It cannot be guaranteed that the extension does correctly work with any
 previous or later version of the 3D City Database Importer/Exporter.
 
@@ -62,7 +64,7 @@ called "spreadsheet_generator.jar". Following simple steps will guide you
 through the install process:  
 
 * Open the folder that contains your locally installed instance of the
-  Importer/Exporter version 3.0.0/3.1.0 (the installation directory).
+  Importer/Exporter version 3.x (the installation directory).
 * Open the plugins subfolder. If it is not available, create a new subfolder
   and name it "plugins". 
 * Extract the downloaded zip file in the plugins folder. As a result a new
@@ -109,7 +111,7 @@ http://www.opengeospatial.org/standards/citygml
 9. Disclaimer
 -------------
 
-THIS SOFTWARE IS PROVIDED BY THE CHAIR OF GEOINFORMATICS FROM TU MUNICH
+THIS SOFTWARE IS PROVIDED BY THE CHAIR OF GEOINFORMATION FROM TU MUNICH
 (TUMGI) "AS IS" AND "WITH ALL FAULTS." 
 TUMGI MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY KIND CONCERNING THE 
 QUALITY, SAFETY OR SUITABILITY OF THE SOFTWARE, EITHER EXPRESSED OR 
