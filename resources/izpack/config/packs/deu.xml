@@ -36,8 +36,8 @@
     <str id="manual" txt="Dokumentation"/>
     <str id="manual.description" txt="Die Dokumentation der ${3DCITYDB_NAME} und des ${APP_NAME}."/>
     
-    <str id="3dcitydb-web-map" txt="3D Web Map Client"/>
-    <str id="3dcitydb-web-map.description" txt="Cesium-basierter 3D Web-Viewer für die Visualisierung und interaktive Exploration von Inhalten der ${3DCITYDB_NAME}."/>
+    <str id="3d-web-map-client" txt="3D Web Map Client"/>
+    <str id="3d-web-map-client.description" txt="Cesium-basierter 3D Web-Viewer für die Visualisierung und interaktive Exploration von Inhalten der ${3DCITYDB_NAME}."/>
     
     <str id="samples" txt="CityGML und KML/COLLADA Beispieldaten"/>
     <str id="samples.description" txt="CityGML und KML/COLLADA Beispieldaten zum Testen des ${APP_NAME}."/>

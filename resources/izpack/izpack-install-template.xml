@@ -140,9 +140,9 @@
             <description/>
             <fileset dir="!dir.resources.manual!" targetdir="$INSTALL_PATH/manual" override="true"/>
         </pack>
-        <pack name="3dcitydb-web-map" id="3dcitydb-web-map" required="no" preselected="yes">
+        <pack name="3d-web-map-client" id="3d-web-map-client" required="no" preselected="yes">
         	<description/>
-        	<fileset dir="!dir.resources.3dcitydb-web-map!" targetdir="$INSTALL_PATH/3dcityb-web-map" override="true"/>
+        	<fileset dir="!dir.resources.3d-web-map-client!" targetdir="$INSTALL_PATH/3d-web-map-client" override="true"/>
         </pack>
         <pack name="samples" id="samples" required="no" preselected="yes">
             <description/>
