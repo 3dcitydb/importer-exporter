@@ -351,7 +351,7 @@
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.name!" value="${3dcitydb.name}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.version!" value="${3dcitydb.version}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.homepage!" value="${3dcitydb.homepage}" />
-		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.3dcitydb-web-map!" value="${dir.resources.3dcitydb-web-map}" />
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.3d-web-map-client!" value="${dir.resources.3d-web-map-client}" />
 
 		<!-- tokens related to plugins -->
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugins!" value="${dir.dest.plugins}" />
