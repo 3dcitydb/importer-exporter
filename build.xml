@@ -252,6 +252,11 @@
 			<fileset dir="${dir.resources.plugins}" includes="**/*" />
 		</copy>
 
+		<!-- copy third-party contribs -->
+		<copy todir="${dir.dest.contribs}">
+			<fileset dir="${dir.contribs}" includes="**/*" />
+		</copy>
+
 		<!-- copy LICENSE templates -->
 		<copy todir="${dir.dest.license}">
 			<fileset dir="${dir.resources.license}" includes="**/*" />
@@ -333,6 +338,7 @@
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest!" value="${dir.dest}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugin.api.relative!" value="${dir.dest.plugin.api.relative}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugin.api!" value="${dir.dest.plugin.api}" />
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.contribs.relative!" value="${dir.dest.contribs.relative}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.contribs.collada2gltf!" value="${dir.contribs.collada2gltf}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.contribs.collada2gltf.relative!" value="${dir.dest.contribs.collada2gltf.relative}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.collada2gltf.windows!" value="${dir.collada2gltf.windows}" />
@@ -345,6 +351,7 @@
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.name!" value="${3dcitydb.name}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.version!" value="${3dcitydb.version}" />
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!3dcitydb.homepage!" value="${3dcitydb.homepage}" />
+		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.resources.3dcitydb-web-map!" value="${dir.resources.3dcitydb-web-map}" />
 
 		<!-- tokens related to plugins -->
 		<replace file="${dir.resources.izpack}/izpack-install.xml" token="!dir.dest.plugins!" value="${dir.dest.plugins}" />

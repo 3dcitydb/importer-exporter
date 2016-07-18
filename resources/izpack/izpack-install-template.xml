@@ -34,9 +34,9 @@
         <authors>
             <author name="Claus Nagel" email="cnagel@virtualcitysystems.de"/>
             <author name="Richard Redweik" email="rredweik@virtualcitysystems.de"/>
-            <author name="Felix Kunde" email="felix-kunde@gmx.de"/>
             <author name="Zhihang Yao" email="zhihang.yao@tum.de"/>
             <author name="György Hudra" email="ghudra@moss.de"/>
+            <author name="Felix Kunde" email="felix-kunde@gmx.de"/>
             <author name="Thomas H. Kolbe" email="thomas.kolbe@tum.de"/>
         </authors>
         <url>!3dcitydb.homepage!</url>
@@ -105,7 +105,7 @@
     <packs>
         <pack name="core" id="core" required="yes" preselected="yes">
             <description/>
-            <fileset dir="!dir.dest!" targetdir="$INSTALL_PATH" excludes="!dir.dest.plugin.api.relative!/ !dir.dest.plugins.relative!/ *.bat *.sh *.command" override="true"/>
+            <fileset dir="!dir.dest!" targetdir="$INSTALL_PATH" excludes="!dir.dest.plugin.api.relative!/ !dir.dest.plugins.relative!/ !dir.dest.contribs.relative!/ *.bat *.sh *.command" override="true"/>
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.bat" targetdir="$INSTALL_PATH" os="windows" override="true"/>
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.sh" targetdir="$INSTALL_PATH" os="unix" condition="!izpack.macinstall" override="true"/>
             <file src="!dir.dest!/3DCityDB-Importer-Exporter.command" targetdir="$INSTALL_PATH" os="mac" override="true"/>
@@ -139,6 +139,10 @@
         <pack name="manual" id="manual" required="no" preselected="yes">
             <description/>
             <fileset dir="!dir.resources.manual!" targetdir="$INSTALL_PATH/manual" override="true"/>
+        </pack>
+        <pack name="3dcitydb-web-map" id="3dcitydb-web-map" required="no" preselected="yes">
+        	<description/>
+        	<fileset dir="!dir.resources.3dcitydb-web-map!" targetdir="$INSTALL_PATH/3dcityb-web-map" override="true"/>
         </pack>
         <pack name="samples" id="samples" required="no" preselected="yes">
             <description/>

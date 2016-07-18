@@ -36,6 +36,9 @@
     <str id="manual" txt="Documentation"/>
     <str id="manual.description" txt="The documentation of the ${3DCITYDB_NAME} and the ${APP_NAME}."/>
 
+    <str id="3dcitydb-web-map" txt="3D Web Map Client"/>
+    <str id="3dcitydb-web-map.description" txt="Cesium-based 3D web-viewer for the visualization and interactive exploration of contents from the ${3DCITYDB_NAME}."/>
+
     <str id="samples" txt="Sample CityGML and KML/COLLADA datasets"/>
     <str id="samples.description" txt="Sample CityGML and KML/COLLADA datasets for testing the ${APP_NAME}."/>
     
