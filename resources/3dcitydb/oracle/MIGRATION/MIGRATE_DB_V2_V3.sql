@@ -1,34 +1,29 @@
--- MIGRATE_DB_V2_V3.sql
+-- 3D City Database - The Open Source CityGML Database
+-- http://www.3dcitydb.org/
+-- 
+-- Copyright 2013 - 2016
+-- Chair of Geoinformatics
+-- Technical University of Munich, Germany
+-- https://www.gis.bgu.tum.de/
+-- 
+-- The 3D City Database is jointly developed with the following
+-- cooperation partners:
+-- 
+-- virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+-- M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--     http://www.apache.org/licenses/LICENSE-2.0
+--     
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 --
--- Author:     Arda Muftuoglu <amueftueoglu@moss.de>
---             Felix Kunde <felix-kunde@gmx.de>
---             Gyoergy Hudra <ghudra@moss.de>
---             Richard Redweik <rredweik@virtualcitysystems.de>
---
--- Copyright:  (c) 2012-2016  Chair of Geoinformatics,
---                            Technische Universität München, Germany
---                            http://www.gis.bv.tum.de
---
---              This script is free software under the LGPL Version 2.1.
---              See the GNU Lesser General Public License at
---              http://www.gnu.org/copyleft/lgpl.html
---              for more details.
--------------------------------------------------------------------------------
--- About:
--- Creates an PL/SQL package 'CITYDB_MIGRATE_V2_V3' that contains functions
--- and procedures to perform migration process
--------------------------------------------------------------------------------
---
--- ChangeLog:
---
--- Version | Date       | Description                               | Author
--- 1.0.0     2015-01-22   release version                             AM
---                                                                    FKun
---           2015-03-11   locator/spatial                             GHud
--- 1.0.1     2015-07-07   optimization                                AM
--- 1.0.2     2016-01-21   optimization with create table              AM
--- 1.0.3     2016-02-24   Fix: Fix: Replace spaces around             RRed
---                        seperation string (--/\--)
 
 CREATE OR REPLACE PACKAGE citydb_migrate_v2_v3
 AS

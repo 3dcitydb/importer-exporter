@@ -1,38 +1,28 @@
--- DELETE.sql
---
--- Authors:     Felix Kunde <felix-kunde@gmx.de>
---              Claus Nagel <cnagel@virtualcitysystems.de>
---              György Hudra <hudra@moss.de>
---
--- Copyright:   (c) 2012-2016  Chair of Geoinformatics,
---                             Technische Universität München, Germany
---                             http://www.gis.bv.tum.de
---
---              (c) 2007-2012  Institute for Geodesy and Geoinformation Science,
---                             Technische Universität Berlin, Germany
---                             http://www.igg.tu-berlin.de
---
---              This skript is free software under the LGPL Version 3.0.
---              See the GNU Lesser General Public License at
---              http://www.gnu.org/copyleft/lgpl.html
---              for more details.
--------------------------------------------------------------------------------
--- About:
--- All functions are part of the citydb_pkg.schema and DELETE-"Package" 
---
--------------------------------------------------------------------------------
---
--- ChangeLog:
---
--- Version | Date       | Description                                    | Author
--- 2.3.0     2015-10-15   changed API for delete_genericattrib             FKun
--- 2.2.0     2015-02-10   added functions                                  FKun
--- 2.1.0     2014-11-07   delete with returning id of deleted features     FKun
--- 2.0.0     2014-10-10   complete revision for 3DCityDB V3                FKun
--- 1.2.0     2013-08-08   extended to all thematic classes                 FKun
---                                                                         GHud
--- 1.1.0     2012-02-22   some performance improvements                    CNag
--- 1.0.0     2011-02-11   release version                                  CNag
+-- 3D City Database - The Open Source CityGML Database
+-- http://www.3dcitydb.org/
+-- 
+-- Copyright 2013 - 2016
+-- Chair of Geoinformatics
+-- Technical University of Munich, Germany
+-- https://www.gis.bgu.tum.de/
+-- 
+-- The 3D City Database is jointly developed with the following
+-- cooperation partners:
+-- 
+-- virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
+-- M.O.S.S. Computer Grafik Systeme GmbH, Taufkirchen <http://www.moss.de/>
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--     http://www.apache.org/licenses/LICENSE-2.0
+--     
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 --
 
 /*****************************************************************
@@ -49,7 +39,7 @@
 *   cleanup_tex_images(schema_name TEXT DEFAULT 'citydb') RETURNS SETOF INTEGER
 *   delete_address(ad_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_appearance(app_id INTEGER, cleanup INTEGER DEFAULT 0, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
-*   delete_breakline_relief(blr INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
+*   delete_breakline_relief(blr_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_bridge(brd_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_bridge_constr_element(brdce_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_bridge_furniture(brdf_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
@@ -63,7 +53,6 @@
 *   delete_city_furniture(cf_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_citymodel(cm_id INTEGER, delete_members INTEGER DEFAULT 0, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER 
 *   delete_cityobject(co_id INTEGER, delete_members INTEGER DEFAULT 0, cleanup INTEGER DEFAULT 0, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
-*   delete_cityobject_cascade(co_id INTEGER, cleanup INTEGER DEFAULT 0, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_cityobjectgroup(cog_id INTEGER, delete_members INTEGER DEFAULT 0, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_external_reference(ref_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_grid_coverage(gc_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
@@ -74,7 +63,7 @@
 *   delete_masspoint_relief(mpr_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_opening(o_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_plant_cover(pc_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
-*   delete_raster_relief(rr INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
+*   delete_raster_relief(rr_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_relief_component(rc_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_relief_feature(rf_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_room(r_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
@@ -82,7 +71,7 @@
 *   delete_surface_data(sd_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_surface_geometry(sg_id INTEGER, clean_apps INTEGER := 0 INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_thematic_surface(ts_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
-*   delete_tin_relief(tr INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
+*   delete_tin_relief(tr_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_traffic_area(ta_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_transport_complex(tc_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_tunnel(tun_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
@@ -90,7 +79,7 @@
 *   delete_tunnel_hollow_space(tunhs_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_tunnel_installation(tuni_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_tunnel_opening(tuno_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
-*   delete_tunnel_them_srf(tuntd_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
+*   delete_tunnel_them_srf(tunts_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_waterbnd_surface(wbs_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   delete_waterbody(wb_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
 *   intern_delete_cityobject(co_id INTEGER, schema_name TEXT DEFAULT 'citydb') RETURNS INTEGER
@@ -1643,7 +1632,7 @@ BEGIN
   EXECUTE format('DELETE FROM %I.cityobject_member WHERE citymodel_id = %L', schema_name, cm_id);
 
   -- delete appearances assigned to the city model
-  EXECUTE format('SELECT citydb_pkg.delete_appearance(id, 0, %L) FROM %I.appearance WHERE cityobject_id = %L', 
+  EXECUTE format('SELECT citydb_pkg.delete_appearance(id, 0, %L) FROM %I.appearance WHERE citymodel_id = %L', 
                     schema_name, schema_name, cm_id);
 
   --// DELETE CITY MODEL //--
@@ -2528,8 +2517,8 @@ DECLARE
   gc_id INTEGER;
 BEGIN
   FOR gc_id IN EXECUTE format('SELECT gc.id FROM %I.grid_coverage gc
-                                 LEFT JOIN %I.raster_relief rr ON rr.grid_coverage_id = gc.id
-                                 WHERE sd.grid_coverage_id IS NULL', schema_name, schema_name) LOOP
+                                 LEFT JOIN %I.raster_relief rr ON rr.coverage_id = gc.id
+                                 WHERE rr.coverage_id IS NULL', schema_name, schema_name) LOOP
     --// DELETE GRID COVERAGE //--
     EXECUTE format('DELETE FROM %I.grid_coverage WHERE id = %L RETURNING id', schema_name, gc_id) INTO deleted_id;
     RETURN NEXT deleted_id;
@@ -2806,39 +2795,6 @@ BEGIN
   EXCEPTION
     WHEN OTHERS THEN
       RAISE NOTICE 'delete_cityobject (id: %): %', co_id, SQLERRM;
-END; 
-$$ 
-LANGUAGE plpgsql;
-
-
--- delete a cityobject using its foreign key relations
--- NOTE: all constraints have to be set to ON DELETE CASCADE (function: citydb_pkg.update_schema_constraints)
-CREATE OR REPLACE FUNCTION citydb_pkg.delete_cityobject_cascade(
-  co_id INTEGER,
-  cleanup INTEGER DEFAULT 0,
-  schema_name TEXT DEFAULT 'citydb'
-  ) RETURNS INTEGER AS
-$$
-DECLARE
-  deleted_id INTEGER;
-BEGIN
-  -- delete city object and all entries from other tables referencing the cityobject_id
-  EXECUTE format('DELETE FROM %I.cityobject WHERE id = %L RETURNING id', schema_name, co_id) INTO deleted_id;
-
-  IF cleanup <> 0 THEN
-    EXECUTE 'SELECT citydb_pkg.cleanup_implicit_geometries(1, $1)' USING schema_name;
-    EXECUTE 'SELECT citydb_pkg.cleanup_appearances(1, $1)' USING schema_name;
-    EXECUTE 'SELECT citydb_pkg.cleanup_grid_coverages($1)' USING schema_name;
-    EXECUTE 'SELECT citydb_pkg.cleanup_addresses($1)' USING schema_name;
-    EXECUTE 'SELECT citydb_pkg.cleanup_cityobjectgroups($1)' USING schema_name;
-    EXECUTE 'SELECT citydb_pkg.cleanup_citymodels($1)' USING schema_name;
-  END IF;
-
-  RETURN deleted_id;
-
-  EXCEPTION
-    WHEN OTHERS THEN
-      RAISE NOTICE 'delete_cityobject_cascade (id: %): %', co_id, SQLERRM;
 END; 
 $$ 
 LANGUAGE plpgsql;
