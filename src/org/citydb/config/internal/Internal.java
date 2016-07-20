@@ -40,7 +40,7 @@ public class Internal {
 	public static final String UNIQUE_TEXTURE_FILENAME_PREFIX = "tex_";
 	
 	// path names and files
-	public static final String USER_PATH = System.getProperty("user.home") + File.separator + "3dcitydb" + File.separator + "importer-exporter-3.0";	
+	public static final String USER_PATH = System.getProperty("user.home") + File.separator + "3dcitydb" + File.separator + "importer-exporter";	
 	public static final String PLUGINS_PATH = System.getProperty("user.dir") + File.separator + "plugins";
 	public static final String SRS_TEMPLATES_PATH = System.getProperty("user.dir") + File.separator + "templates" + File.separator + "CoordinateReferenceSystems";
 	public static final String DEFAULT_LOG_PATH = USER_PATH + File.separator + "log";
