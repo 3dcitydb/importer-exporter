@@ -46,7 +46,7 @@
     <str id="plugins.description" txt="Optional extensions for the ${APP_NAME}."/>
 
     <str id="plugin.spreadsheet.generator" txt="Spreadsheet Generator Plugin"/>
-    <str id="plugin.spreadsheet.generator.description" txt="This plugin can export thematic data of the spatial objects into tables. Supported output formats are Microsoft Excel, CSV, and Google Spreadsheets."/>
+    <str id="plugin.spreadsheet.generator.description" txt="This plugin can export thematic data of the spatial objects into tables. Supported output formats are Microsoft Excel and CSV."/>
     
     <str id="plugin-api" txt="Plugin development API"/>
     <str id="plugin-api.description" txt="Java API for the development of own extensions."/>    
