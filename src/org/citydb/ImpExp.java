@@ -339,7 +339,21 @@ public class ImpExp {
 
 		config.getInternal().setConfigPath(confPath);
 		config.getInternal().setConfigProject(projectFileName);
-		File projectFile = new File(confPath + File.separator + projectFileName);
+		File projectFile = new File(confPath, projectFileName);
+		
+		// with v3.3, the config path has been changed to not include the version number.
+		// if the project file cannot be found, we thus check the old path used in v3.0 to v3.2
+		if (!projectFile.exists()) {
+			File oldConfPath = new File(Internal.USER_PATH + "-3.0", "config");
+			File oldProjectFile = new File(oldConfPath, projectFileName);
+			if (oldProjectFile.exists()) {
+				LOG.warn("Failed to read project settings file '" + projectFile + '\'');
+				LOG.warn("Loading settings from previous file '" + oldProjectFile + "\' instead");
+				confPath = oldConfPath.toString();
+				projectFile = oldProjectFile;
+			}
+		}
+		
 		Project configProject = config.getProject();
 
 		try {
@@ -377,7 +391,7 @@ public class ImpExp {
 		}
 
 		if (!shell) {
-			File guiFile = new File(confPath + File.separator + config.getInternal().getConfigGui());
+			File guiFile = new File(confPath, config.getInternal().getConfigGui());
 
 			try {
 				Gui configGui = null;
