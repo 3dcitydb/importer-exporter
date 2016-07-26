@@ -106,7 +106,7 @@ public class ImpExp {
 	@Option(name="-export", usage="export data to this file\n(shell version only)", metaVar="fileName")
 	private String exportFile;
 
-	@Option(name="-kmlExport", usage="export KML/COLLADA data to this file\n(shell version only)", metaVar="fileName")
+	@Option(name="-kmlExport", usage="export KML/COLLADA/glTF data to this file\n(shell version only)", metaVar="fileName")
 	private String kmlExportFile;
 
 	@Option(name="-testConnection", usage="test whether a database connection can be established")
