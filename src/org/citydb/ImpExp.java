@@ -82,6 +82,7 @@ import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.ParserProperties;
 
 public class ImpExp {
 
@@ -142,8 +143,7 @@ public class ImpExp {
 	}
 
 	private void doMain(String[] args) {
-		CmdLineParser parser = new CmdLineParser(this);
-		parser.setUsageWidth(80);
+		CmdLineParser parser = new CmdLineParser(this, ParserProperties.defaults().withUsageWidth(80));
 
 		try {
 			parser.parseArgument(args);			
