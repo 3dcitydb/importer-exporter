@@ -77,8 +77,6 @@ import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import org.citydb.log.Logger;
-import org.citydb.modules.citygml.common.gui.view.FilterPanel;
-import org.citydb.modules.citygml.common.gui.view.FilterPanel.FilterPanelType;
 import org.citydb.modules.citygml.exporter.controller.Exporter;
 import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.event.InterruptEvent;
@@ -126,7 +124,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 		timestampText = new JFormattedTextField(new SimpleDateFormat("dd.MM.yyyy"));
 		timestampText.setFocusLostBehavior(JFormattedTextField.COMMIT);
 		timestampText.setColumns(10);
-		filterPanel = new FilterPanel(config, FilterPanelType.EXPORT);
+		filterPanel = new FilterPanel(config);
 		exportButton = new JButton();
 
 		workspaceText.setEnabled(true);
