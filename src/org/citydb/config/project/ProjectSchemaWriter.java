@@ -46,12 +46,12 @@ public class ProjectSchemaWriter extends SchemaOutputResolver {
 		File file;
 
 		if (namespaceUri.equals("http://www.3dcitydb.org/importer-exporter/config"))
-			file = new File(path + File.separator + "config.xsd");
+			file = new File(path, "config.xsd");
 		else
-			file = new File(path + File.separator + "plugin_" + suggestedFileName);
+			file = new File(path, "plugin_" + suggestedFileName);
 
 		StreamResult res = new StreamResult(file);
-		res.setSystemId(file.toURI().toString());
+		res.setSystemId(file.getAbsolutePath());
 		return res;
 	}
 
