@@ -163,7 +163,9 @@ public class DBSplitter {
 		BoundingBox bbox = boundingBoxFilter.getFilterState();
 		config.getInternal().setUseInternalBBoxFilter(false);
 		if (bbox != null) {
-
+			if (!bbox.getSrs().isSupported())
+				throw new SQLException("The SRID " + bbox.getSrs().getSrid() + " of the bounding box filter is not supported.");
+			
 			// check whether spatial indexes are active
 			if (dbConnectionPool.getActiveDatabaseAdapter().getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")) {			
 				TiledBoundingBox tiledBBox = expFilterConfig.getComplexFilter().getTiledBoundingBox();
