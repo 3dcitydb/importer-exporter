@@ -1531,6 +1531,9 @@ public abstract class KmlGenericObject {
 			case RELATIVE:
 				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
 				break;
+			case CLAMP_TO_GROUND:
+				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
+				break;
 			}
 
 			// just in case surfaceType == null
@@ -1942,6 +1945,9 @@ public abstract class KmlGenericObject {
 		case RELATIVE:
 			model.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
 			break;
+		case CLAMP_TO_GROUND:
+			model.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
+			break;
 		}
 
 		location.setLatitude(this.location.y);
@@ -2069,6 +2075,10 @@ public abstract class KmlGenericObject {
 				case RELATIVE:
 					polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
 					break;
+				case CLAMP_TO_GROUND:
+					polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
+					break;
+					
 				}
 				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 
