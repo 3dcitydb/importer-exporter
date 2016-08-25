@@ -1,4 +1,4 @@
-﻿3D City Database Importer/Exporter Spreadsheet Generator Plugin v2.1
+﻿3D City Database Importer/Exporter Spreadsheet Generator Plugin v2.1.0
 
   This software is free software and is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,7 +44,7 @@ https://www.gis.bgu.tum.de/
 
 By using the SPSHG (Spreadsheet Generator) plugin, it is possible to export 
 data from a 3D City Database (3DCityDB) instance into tables. Supported 
-output formats are Microsoft Excel, CSV, and Google Spreadsheets. 
+output formats are Microsoft Excel and CSV. 
 
 
 4. Requirements
