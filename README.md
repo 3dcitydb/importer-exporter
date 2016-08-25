@@ -38,7 +38,7 @@ Download a Java-based executable installer for the software [here](https://githu
 
 System requirements
 -------------------
-* Java JRE or JDK >= 1.7
+* Java JRE or JDK >= 1.8
 * [3D City Databse](https://github.com/3dcitydb/3dcitydb) on
   - Oracle DBMS >= 10G R2 with Spatial or Locator option
   - PostgreSQL DBMS >= 9.1 with PostGIS extension >= 2.0

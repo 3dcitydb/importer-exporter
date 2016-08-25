@@ -77,7 +77,7 @@ third party applications.
 4. System requirements
 ----------------------
 
-* Java JRE or JDK >= 1.7
+* Java JRE or JDK >= 1.8
 * !3dcitydb.name! version !3dcitydb.version! on
   - Oracle Spatial DBMS >= 10G R2 with Spatial or Locator option
   - PostgreSQL DBMS >= 9.1 with PostGIS extension >= 2.0
