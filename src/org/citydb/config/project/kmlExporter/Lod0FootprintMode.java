@@ -27,6 +27,8 @@
  */
 package org.citydb.config.project.kmlExporter;
 
+import java.util.Locale;
+
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
@@ -63,7 +65,7 @@ public enum Lod0FootprintMode {
     }
     
 	public String toString() {
-		return Language.I18N.getString("pref.kmlexport.lod0footprint.mode.label." + this.name().toLowerCase());
+		return Language.I18N.getString("pref.kmlexport.lod0footprint.mode.label." + this.name().toLowerCase(Locale.ROOT));
 	}
 
 }
