@@ -349,7 +349,6 @@ public class ImpExp {
 			if (oldProjectFile.exists()) {
 				LOG.warn("Failed to read project settings file '" + projectFile + '\'');
 				LOG.warn("Loading settings from previous file '" + oldProjectFile + "\' instead");
-				confPath = oldConfPath.toString();
 				projectFile = oldProjectFile;
 			}
 		}
