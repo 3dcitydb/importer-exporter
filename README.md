@@ -11,7 +11,7 @@ The 3D City Database Importer/Exporter is a Java based front-end for the [3D Cit
   in Digital Earth Browsers, 3D GIS, and computer graphics software
 * Generic KML information balloons
 * Export of thematic object data into tables. Supported data formats are
-  CSV, Microsoft Excel, and direct upload into Google Spreadsheets
+  CSV and Microsoft Excel
 * Resolving and preservation of forward and backwards XLinks in 
   CityGML datasets
 * Full support of 3D Coordinate Reference Systems (CRS) and 3D 
