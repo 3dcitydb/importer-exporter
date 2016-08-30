@@ -51,10 +51,11 @@ public class DatabaseVersionSupport {
 
 	public boolean contains(DatabaseVersion version) {
 		int result = isRevisionForwardCompatible ? targetVersion.compareTo(version.getMajorVersion(), version.getMinorVersion()) : targetVersion.compareTo(version);
-		if (result < 0)
+	
+		if (fromVersion == null && result != 0)
 			return false;
-
-		if (fromVersion != null && fromVersion.compareTo(version) > 0)
+	
+		else if (fromVersion != null && (result < 0 || fromVersion.compareTo(version) > 0))
 			return false;
 
 		return true;
