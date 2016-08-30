@@ -33,16 +33,16 @@ import java.util.List;
 public class DatabaseVersionException extends Exception {
 	private final String formattedMessage;
 	private final String productName;
-	private final List<DatabaseVersion> supportedVersions;
+	private final List<DatabaseVersionSupport> supportedVersions;
 	
-	public DatabaseVersionException(String message, String formattedMessage, String productName, List<DatabaseVersion> supportedVersions, Throwable cause) {
+	public DatabaseVersionException(String message, String formattedMessage, String productName, List<DatabaseVersionSupport> supportedVersions, Throwable cause) {
 		super(message, cause);
 		this.formattedMessage = formattedMessage;
 		this.productName = productName;
 		this.supportedVersions = supportedVersions;
 	}
 
-	public DatabaseVersionException(String message, String formattedMessage, String productName, List<DatabaseVersion> supportedVersions) {
+	public DatabaseVersionException(String message, String formattedMessage, String productName, List<DatabaseVersionSupport> supportedVersions) {
 		this(message, formattedMessage, productName, supportedVersions, null);
 	}
 	
@@ -54,7 +54,7 @@ public class DatabaseVersionException extends Exception {
 		return productName;
 	}
 
-	public List<DatabaseVersion> getSupportedVersions() {
+	public List<DatabaseVersionSupport> getSupportedVersions() {
 		return supportedVersions;
 	}
 }

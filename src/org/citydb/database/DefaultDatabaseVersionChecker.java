@@ -39,50 +39,52 @@ import org.citydb.api.database.DatabaseConnectionWarning.ConnectionWarningType;
 import org.citydb.api.database.DatabaseVersion;
 import org.citydb.api.database.DatabaseVersionChecker;
 import org.citydb.api.database.DatabaseVersionException;
+import org.citydb.api.database.DatabaseVersionSupport;
 import org.citydb.config.language.Language;
 import org.citydb.config.project.database.Database;
 import org.citydb.util.Util;
 
 public class DefaultDatabaseVersionChecker implements DatabaseVersionChecker {
-	private final List<DatabaseVersion> supportedVersions = Arrays.asList(
-			new DatabaseVersion(3,3,0), new DatabaseVersion(3,2,0), new DatabaseVersion(3,1,0), new DatabaseVersion(3,0,0));
+	private final DatabaseVersionSupport[] supportedVersions = new DatabaseVersionSupport[]{
+			DatabaseVersionSupport.targetVersion(3, 3, 0).withBackwardsCompatibility(3, 0, 0).withRevisionForwardCompatibility(true)
+	};
 
 	@Override
 	public List<DatabaseConnectionWarning> checkVersionSupport(DatabaseAdapter databaseAdapter) throws DatabaseVersionException {
 		DatabaseVersion version = databaseAdapter.getConnectionMetaData().getCityDBVersion();
 		List<DatabaseConnectionWarning> warnings = new ArrayList<DatabaseConnectionWarning>();
-		
+
 		// check for unsupported version
-		if (!supportedVersions.contains(version)) {
+		if (!version.isSupportedBy(supportedVersions)) {
 			String message = "The version " + version + " of the " + Database.CITYDB_PRODUCT_NAME + " is not supported.";
-			
+
 			String text = Language.I18N.getString("db.dialog.error.version.error");
-			Object[] args = new Object[]{ version, Database.CITYDB_PRODUCT_NAME, Util.collection2string(supportedVersions, ", ") };
+			Object[] args = new Object[]{ version, Database.CITYDB_PRODUCT_NAME, Util.collection2string(Arrays.asList(supportedVersions), ", ") };
 			String formattedMessage = MessageFormat.format(text, args);	
-		
-			throw new DatabaseVersionException(message, formattedMessage, Database.CITYDB_PRODUCT_NAME, new ArrayList<DatabaseVersion>(supportedVersions));
+
+			throw new DatabaseVersionException(message, formattedMessage, Database.CITYDB_PRODUCT_NAME, Arrays.asList(supportedVersions));
 		}
-		
+
 		// check for outdated version
-		for (DatabaseVersion tmp : supportedVersions) {
-			if (tmp.compareTo(version) > 0) {
+		for (DatabaseVersionSupport supportedVersion : supportedVersions) {
+			if (supportedVersion.getTargetVersion().compareTo(version) > 0) {
 				String message = "The version " + version + " of the " + Database.CITYDB_PRODUCT_NAME + " is outdated. Consider upgrading.";
-				
+
 				String text = Language.I18N.getString("db.dialog.warn.version.outdated");
 				Object[] args = new Object[]{ version, Database.CITYDB_PRODUCT_NAME };
 				String formattedMessage = MessageFormat.format(text, args);
-				
+
 				warnings.add(new DatabaseConnectionWarning(message, formattedMessage, Database.CITYDB_PRODUCT_NAME, ConnectionWarningType.OUTDATED_DATABASE_VERSION));				
 				break;
 			}
 		}
-		
+
 		return warnings;
 	}
 
 	@Override
-	public List<DatabaseVersion> getSupportedVersions(String productName) {
-		return Database.CITYDB_PRODUCT_NAME.equals(productName) ? new ArrayList<DatabaseVersion>(supportedVersions) : Collections.<DatabaseVersion>emptyList();
+	public List<DatabaseVersionSupport> getSupportedVersions(String productName) {
+		return Database.CITYDB_PRODUCT_NAME.equals(productName) ? Arrays.asList(supportedVersions) : Collections.<DatabaseVersionSupport>emptyList();
 	}
-	
+
 }

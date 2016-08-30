@@ -83,6 +83,7 @@ import org.citydb.gui.ImpExpGui;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.log.Logger;
 import org.citydb.modules.database.gui.operations.DatabaseOperationsPanel;
+import org.citydb.util.Util;
 import org.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
@@ -506,7 +507,7 @@ public class DatabasePanel extends JPanel implements ConnectionViewHandler, Even
 			topFrame.errorMessage(Language.I18N.getString("db.dialog.error.version.title"), e.getFormattedMessage());
 		else {
 			LOG.error(e.getMessage());
-			LOG.error("Supported versions are '" + e.getSupportedVersions() + "'.");
+			LOG.error("Supported versions are '" + Util.collection2string(e.getSupportedVersions(), ", ") + "'.");
 		}
 
 		LOG.error("Connection to database could not be established.");

@@ -77,6 +77,15 @@ public class DatabaseVersion implements Comparable<DatabaseVersion> {
 	public String getVersionNumber() {
 		return new StringBuilder().append(major).append('.').append(minor).append('.').append(revision).toString();
 	}
+	
+	public boolean isSupportedBy(DatabaseVersionSupport... supportedVersions) {
+		for (DatabaseVersionSupport supportedVersion : supportedVersions) {
+			if (supportedVersion.contains(this))
+				return true;
+		}
+		
+		return false;
+	}
 
 	@Override
 	public int compareTo(DatabaseVersion other) {
@@ -93,6 +102,14 @@ public class DatabaseVersion implements Comparable<DatabaseVersion> {
 			return result;
 
 		return this.revision - revision;
+	}
+	
+	public int compareTo(int major, int minor) {
+		return compareTo(major, minor, revision);
+	}
+	
+	public int compareTo(int major) {
+		return compareTo(major, minor, revision);
 	}
 	
 	@Override

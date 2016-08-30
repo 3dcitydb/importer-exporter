@@ -31,5 +31,5 @@ import java.util.List;
 
 public interface DatabaseVersionChecker {
 	public List<DatabaseConnectionWarning> checkVersionSupport(DatabaseAdapter databaseAdapter) throws DatabaseVersionException;
-	public List<DatabaseVersion> getSupportedVersions(String productName);
+	public List<DatabaseVersionSupport> getSupportedVersions(String productName);
 }
