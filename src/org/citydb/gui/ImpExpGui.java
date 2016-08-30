@@ -462,10 +462,12 @@ public final class ImpExpGui extends JFrame implements ViewController, EventHand
 		}
 	}
 
+	@Override
 	public void errorMessage(String title, String text) {
 		JOptionPane.showMessageDialog(this, text, title, JOptionPane.ERROR_MESSAGE);
 	}
 	
+	@Override
 	public void warnMessage(String title, String text) {
 		JOptionPane.showMessageDialog(this, text, title, JOptionPane.WARNING_MESSAGE);
 	}

@@ -36,6 +36,8 @@ public interface ViewController {
 	public void clearConsole();
 	public void setStatusText(String statusText);
 	public void setDefaultStatus();	
+	public void errorMessage(String title, String message);
+	public void warnMessage(String title, String message);
 	
 	public ComponentFactory getComponentFactory();
 }
