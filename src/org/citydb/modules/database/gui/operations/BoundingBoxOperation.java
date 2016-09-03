@@ -268,10 +268,10 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().calcBoundingBox(workspace, featureClass);
 
 				if (bbox != null) {
-					if (bbox.getLowerLeftCorner().getX() != Double.MAX_VALUE && 
-							bbox.getLowerLeftCorner().getY() != Double.MAX_VALUE &&
-							bbox.getUpperRightCorner().getX() != -Double.MAX_VALUE && 
-							bbox.getUpperRightCorner().getY() != -Double.MAX_VALUE) {
+					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE && 
+							bbox.getLowerCorner().getY() != Double.MAX_VALUE &&
+							bbox.getUpperCorner().getX() != -Double.MAX_VALUE && 
+							bbox.getUpperCorner().getY() != -Double.MAX_VALUE) {
 
 						DatabaseSrs dbSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 						DatabaseSrs targetSrs = bboxPanel.getSrsComboBox().getSelectedItem();
@@ -382,10 +382,10 @@ public class BoundingBoxOperation extends DatabaseOperationView {
 				BoundingBox bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().createBoundingBoxes(workspace, featureClass, mode == BoundingBoxMode.PARTIAL ? true : false);
 
 				if (bbox != null) {
-					if (bbox.getLowerLeftCorner().getX() != Double.MAX_VALUE && 
-							bbox.getLowerLeftCorner().getY() != Double.MAX_VALUE &&
-							bbox.getUpperRightCorner().getX() != -Double.MAX_VALUE && 
-							bbox.getUpperRightCorner().getY() != -Double.MAX_VALUE) {
+					if (bbox.getLowerCorner().getX() != Double.MAX_VALUE && 
+							bbox.getLowerCorner().getY() != Double.MAX_VALUE &&
+							bbox.getUpperCorner().getX() != -Double.MAX_VALUE && 
+							bbox.getUpperCorner().getY() != -Double.MAX_VALUE) {
 
 						DatabaseSrs dbSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 						DatabaseSrs targetSrs = bboxPanel.getSrsComboBox().getSelectedItem();

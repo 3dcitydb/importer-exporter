@@ -54,8 +54,8 @@ public class ExportComplexFilter extends AbstractComplexFilter {
 			this.boundingBox = (TiledBoundingBox)boundingBox;
 		else {
 			this.boundingBox.setActive(boundingBox.getActive());
-			this.boundingBox.setLowerLeftCorner(boundingBox.getLowerLeftCorner());
-			this.boundingBox.setUpperRightCorner(boundingBox.getUpperRightCorner());
+			this.boundingBox.setLowerCorner(boundingBox.getLowerCorner());
+			this.boundingBox.setUpperCorner(boundingBox.getUpperCorner());
 			this.boundingBox.setMode(boundingBox.getMode());
 			this.boundingBox.setSrs(boundingBox.getSrs());
 		}

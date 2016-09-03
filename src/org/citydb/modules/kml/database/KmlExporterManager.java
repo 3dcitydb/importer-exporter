@@ -32,8 +32,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
@@ -50,20 +48,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import net.opengis.kml._2.DocumentType;
-import net.opengis.kml._2.KmlType;
-import net.opengis.kml._2.LatLonAltBoxType;
-import net.opengis.kml._2.LinkType;
-import net.opengis.kml._2.LodType;
-import net.opengis.kml._2.NetworkLinkType;
-import net.opengis.kml._2.ObjectFactory;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.RegionType;
-import net.opengis.kml._2.ViewRefreshModeEnumType;
-
 import org.citydb.api.concurrent.WorkerPool;
 import org.citydb.api.event.EventDispatcher;
-import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.database.adapter.BlobExportAdapter;
@@ -75,6 +61,17 @@ import org.citydb.modules.kml.util.CityObject4JSON;
 import org.citydb.modules.kml.util.ExportTracker;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
+
+import net.opengis.kml._2.DocumentType;
+import net.opengis.kml._2.KmlType;
+import net.opengis.kml._2.LatLonAltBoxType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LodType;
+import net.opengis.kml._2.NetworkLinkType;
+import net.opengis.kml._2.ObjectFactory;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.RegionType;
+import net.opengis.kml._2.ViewRefreshModeEnumType;
 
 public class KmlExporterManager {
 	private final JAXBContext jaxbKmlContext;

@@ -303,10 +303,10 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			int tileAmount = 0;
 			if (filter.isSetComplexFilter() &&
 					filter.getComplexFilter().getTiledBoundingBox().isSet()) {
-				Double xMin = filter.getComplexFilter().getTiledBoundingBox().getLowerLeftCorner().getX();
-				Double yMin = filter.getComplexFilter().getTiledBoundingBox().getLowerLeftCorner().getY();
-				Double xMax = filter.getComplexFilter().getTiledBoundingBox().getUpperRightCorner().getX();
-				Double yMax = filter.getComplexFilter().getTiledBoundingBox().getUpperRightCorner().getY();
+				Double xMin = filter.getComplexFilter().getTiledBoundingBox().getLowerCorner().getX();
+				Double yMin = filter.getComplexFilter().getTiledBoundingBox().getLowerCorner().getY();
+				Double xMax = filter.getComplexFilter().getTiledBoundingBox().getUpperCorner().getX();
+				Double yMax = filter.getComplexFilter().getTiledBoundingBox().getUpperCorner().getY();
 
 				if (xMin == null || yMin == null || xMax == null || yMax == null) {
 					mainView.errorMessage(Language.I18N.getString("export.dialog.error.incorrectData"),

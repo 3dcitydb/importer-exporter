@@ -274,10 +274,10 @@ public class Exporter implements EventHandler {
 						String suffix = "";
 
 						BoundingBox bbox = exportFilter.getBoundingBoxFilter().getFilterState();
-						double minX = bbox.getLowerLeftCorner().getX();
-						double minY = bbox.getLowerLeftCorner().getY();
-						double maxX = bbox.getUpperRightCorner().getX();
-						double maxY = bbox.getUpperRightCorner().getY();
+						double minX = bbox.getLowerCorner().getX();
+						double minY = bbox.getLowerCorner().getY();
+						double maxX = bbox.getUpperCorner().getX();
+						double maxY = bbox.getUpperCorner().getY();
 
 						switch (suffixMode) {
 						case XMIN_YMIN:

@@ -33,8 +33,8 @@ import java.util.List;
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseUtil;
 import org.citydb.api.geometry.BoundingBox;
-import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.api.geometry.GeometryObject;
+import org.citydb.api.geometry.Position;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.filter.AbstractFilterConfig;
@@ -93,10 +93,10 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 			if (mode == FilterMode.EXPORT || mode == FilterMode.KML_EXPORT)
 				useTiling = ((TiledBoundingBox)boundingBoxConfig).getTiling().getMode() != TilingMode.NO_TILING;
 
-			if (boundingBoxConfig.getLowerLeftCorner().getX() != null && 
-					boundingBoxConfig.getLowerLeftCorner().getY() != null &&
-					boundingBoxConfig.getUpperRightCorner().getX() != null && 
-					boundingBoxConfig.getUpperRightCorner().getY() != null) {
+			if (boundingBoxConfig.getLowerCorner().getX() != null && 
+					boundingBoxConfig.getLowerCorner().getY() != null &&
+					boundingBoxConfig.getUpperCorner().getX() != null && 
+					boundingBoxConfig.getUpperCorner().getY() != null) {
 				boundingBox = new BoundingBox(boundingBoxConfig);
 				if (boundingBox.getSrs() == null) {
 					boundingBox.setSrs(DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem());
@@ -135,8 +135,8 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 					Tiling tiling = ((TiledBoundingBox)boundingBoxConfig).getTiling();					
 					rows = tiling.getRows();
 					columns = tiling.getColumns();
-					rowHeight = (boundingBox.getUpperRightCorner().getY() - boundingBox.getLowerLeftCorner().getY()) / rows;  
-					columnWidth = (boundingBox.getUpperRightCorner().getX() - boundingBox.getLowerLeftCorner().getX()) / columns;
+					rowHeight = (boundingBox.getUpperCorner().getY() - boundingBox.getLowerCorner().getY()) / rows;  
+					columnWidth = (boundingBox.getUpperCorner().getX() - boundingBox.getLowerCorner().getX()) / columns;
 				}
 			} else
 				isActive = false;
@@ -177,20 +177,20 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 
 			if (!useTiling) { // no tiling, just for CityGML Mode. Because "no_tiling" in KML_Export mode was internally mapped to manual tiling with one tile 
 				if (boundingBoxConfig.isSetContainMode()) {
-					if (minX >= activeBoundingBox.getLowerLeftCorner().getX() &&
-							minY >= activeBoundingBox.getLowerLeftCorner().getY() &&
-							maxX <= activeBoundingBox.getUpperRightCorner().getX() &&
-							maxY <= activeBoundingBox.getUpperRightCorner().getY())
+					if (minX >= activeBoundingBox.getLowerCorner().getX() &&
+							minY >= activeBoundingBox.getLowerCorner().getY() &&
+							maxX <= activeBoundingBox.getUpperCorner().getX() &&
+							maxY <= activeBoundingBox.getUpperCorner().getY())
 						return false;
 					else
 						return true;
 				}
 
 				else if (boundingBoxConfig.isSetOverlapMode()) {
-					if (minX >= activeBoundingBox.getUpperRightCorner().getX() ||
-							maxX <= activeBoundingBox.getLowerLeftCorner().getX() ||
-							minY >= activeBoundingBox.getUpperRightCorner().getY() ||
-							maxY <= activeBoundingBox.getLowerLeftCorner().getY())
+					if (minX >= activeBoundingBox.getUpperCorner().getX() ||
+							maxX <= activeBoundingBox.getLowerCorner().getX() ||
+							minY >= activeBoundingBox.getUpperCorner().getY() ||
+							maxY <= activeBoundingBox.getLowerCorner().getY())
 						return true;
 					else 
 						return false;
@@ -228,10 +228,10 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 					return result;
 				}
 				else {
-					if (centroidX >= activeBoundingBox.getLowerLeftCorner().getX() &&
-							centroidY > activeBoundingBox.getLowerLeftCorner().getY() &&
-							centroidX < activeBoundingBox.getUpperRightCorner().getX() &&
-							centroidY <= activeBoundingBox.getUpperRightCorner().getY())
+					if (centroidX >= activeBoundingBox.getLowerCorner().getX() &&
+							centroidY > activeBoundingBox.getLowerCorner().getY() &&
+							centroidX < activeBoundingBox.getUpperCorner().getX() &&
+							centroidY <= activeBoundingBox.getUpperCorner().getY())
 						return false;
 					else
 						return true;
@@ -259,14 +259,14 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 		this.activeRow = activeRow;
 		this.activeColumn = activeColumn;
 
-		double lowerLeftX = boundingBox.getLowerLeftCorner().getX() + (activeColumn * columnWidth);
-		double lowerLeftY = boundingBox.getLowerLeftCorner().getY() + (activeRow * rowHeight);
+		double lowerLeftX = boundingBox.getLowerCorner().getX() + (activeColumn * columnWidth);
+		double lowerLeftY = boundingBox.getLowerCorner().getY() + (activeRow * rowHeight);
 		double upperRightX = lowerLeftX + columnWidth;
 		double upperRightY = lowerLeftY + rowHeight;
 
 		activeBoundingBox = new BoundingBox(
-				new BoundingBoxCorner(lowerLeftX, lowerLeftY),
-				new BoundingBoxCorner(upperRightX, upperRightY),
+				new Position(lowerLeftX, lowerLeftY),
+				new Position(upperRightX, upperRightY),
 				boundingBox.getSrs()
 				);
 
@@ -293,11 +293,11 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 			DatabaseUtil util = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil();
 
 			GeometryObject geomObj = GeometryObject.createPolygon(new double[]{
-					bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(),
-					bbox.getUpperRightCorner().getX(), bbox.getLowerLeftCorner().getY(),
-					bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY(),
-					bbox.getLowerLeftCorner().getX(), bbox.getUpperRightCorner().getY(),
-					bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(),
+					bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(),
+					bbox.getUpperCorner().getX(), bbox.getLowerCorner().getY(),
+					bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(),
+					bbox.getLowerCorner().getX(), bbox.getUpperCorner().getY(),
+					bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(),
 			}, 2, bbox.getSrs().getSrid()); // Srid = 4326
 
 			GeometryObject convertedGeomObj = util.transformGeometry(geomObj, targetSrs);
@@ -329,11 +329,11 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 
 			int srid2D = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().get2DSrid(bbox.getSrs());
 			GeometryObject geomObj = GeometryObject.createPolygon(new double[]{
-					bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(),
-					bbox.getUpperRightCorner().getX(), bbox.getLowerLeftCorner().getY(),
-					bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY(),
-					bbox.getLowerLeftCorner().getX(), bbox.getUpperRightCorner().getY(),
-					bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(),
+					bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(),
+					bbox.getUpperCorner().getX(), bbox.getLowerCorner().getY(),
+					bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(),
+					bbox.getLowerCorner().getX(), bbox.getUpperCorner().getY(),
+					bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(),
 			}, 2, srid2D);
 
 			GeometryObject convertedGeomObj = util.transformGeometry(geomObj, targetSrs);
@@ -344,7 +344,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 				double xmax = Math.max(coordinates[2], coordinates[4]);
 				double ymax = Math.max(coordinates[5], coordinates[7]);
 
-				return new BoundingBox(new BoundingBoxCorner(xmin, ymin), new BoundingBoxCorner(xmax, ymax), targetSrs);
+				return new BoundingBox(new Position(xmin, ymin), new Position(xmax, ymax), targetSrs);
 			}
 
 			throw new SQLException("Transformation returned null geometry.");

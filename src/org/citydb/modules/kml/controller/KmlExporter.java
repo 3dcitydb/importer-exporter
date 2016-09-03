@@ -263,11 +263,11 @@ public class KmlExporter implements EventHandler {
 		if (isBBoxActive) {
 			globeWGS84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
 			globeWGS84BboxGeometry = GeometryObject.createPolygon(new double[]{
-					globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
-					globeWGS84Bbox.getUpperRightCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
-					globeWGS84Bbox.getUpperRightCorner().getX(), globeWGS84Bbox.getUpperRightCorner().getY(),
-					globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getUpperRightCorner().getY(),
-					globeWGS84Bbox.getLowerLeftCorner().getX(), globeWGS84Bbox.getLowerLeftCorner().getY(),
+					globeWGS84Bbox.getLowerCorner().getX(), globeWGS84Bbox.getLowerCorner().getY(),
+					globeWGS84Bbox.getUpperCorner().getX(), globeWGS84Bbox.getLowerCorner().getY(),
+					globeWGS84Bbox.getUpperCorner().getX(), globeWGS84Bbox.getUpperCorner().getY(),
+					globeWGS84Bbox.getLowerCorner().getX(), globeWGS84Bbox.getUpperCorner().getY(),
+					globeWGS84Bbox.getLowerCorner().getX(), globeWGS84Bbox.getLowerCorner().getY(),
 			}, 2, 4326);
 		}
 
@@ -349,11 +349,11 @@ public class KmlExporter implements EventHandler {
 						exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
 						BoundingBox wgs84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
 						wgs84Tile = GeometryObject.createPolygon(new double[]{
-								wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
-								wgs84Bbox.getUpperRightCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
-								wgs84Bbox.getUpperRightCorner().getX(), wgs84Bbox.getUpperRightCorner().getY(),
-								wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getUpperRightCorner().getY(),
-								wgs84Bbox.getLowerLeftCorner().getX(), wgs84Bbox.getLowerLeftCorner().getY(),
+								wgs84Bbox.getLowerCorner().getX(), wgs84Bbox.getLowerCorner().getY(),
+								wgs84Bbox.getUpperCorner().getX(), wgs84Bbox.getLowerCorner().getY(),
+								wgs84Bbox.getUpperCorner().getX(), wgs84Bbox.getUpperCorner().getY(),
+								wgs84Bbox.getLowerCorner().getX(), wgs84Bbox.getUpperCorner().getY(),
+								wgs84Bbox.getLowerCorner().getX(), wgs84Bbox.getLowerCorner().getY(),
 						}, 2, 4326);
 					} catch (Exception e) {
 						Logger.getInstance().error("Failed to transform tile extent to WGS84: " + e.getMessage());
@@ -714,8 +714,8 @@ public class KmlExporter implements EventHandler {
 		switch (bbox.getTiling().getMode()) {
 		case AUTOMATIC:
 			// approximate
-			rows = (int)((extent.getUpperRightCorner().getY() - extent.getLowerLeftCorner().getY()) / autoTileSideLength) + 1;
-			columns = (int)((extent.getUpperRightCorner().getX() - extent.getLowerLeftCorner().getX()) / autoTileSideLength) + 1;
+			rows = (int)((extent.getUpperCorner().getY() - extent.getLowerCorner().getY()) / autoTileSideLength) + 1;
+			columns = (int)((extent.getUpperCorner().getX() - extent.getLowerCorner().getX()) / autoTileSideLength) + 1;
 			bbox.getTiling().setRows(rows);
 			bbox.getTiling().setColumns(columns);
 			break;
@@ -760,8 +760,8 @@ public class KmlExporter implements EventHandler {
 		document.setName(fileName);
 		LookAtType lookAtType = kmlFactory.createLookAtType();
 
-		lookAtType.setLongitude(globeWGS84Bbox.getLowerLeftCorner().getX() + Math.abs((globeWGS84Bbox.getUpperRightCorner().getX() - globeWGS84Bbox.getLowerLeftCorner().getX())/2));
-		lookAtType.setLatitude(globeWGS84Bbox.getLowerLeftCorner().getY() + Math.abs((globeWGS84Bbox.getUpperRightCorner().getY() - globeWGS84Bbox.getLowerLeftCorner().getY())/2));
+		lookAtType.setLongitude(globeWGS84Bbox.getLowerCorner().getX() + Math.abs((globeWGS84Bbox.getUpperCorner().getX() - globeWGS84Bbox.getLowerCorner().getX())/2));
+		lookAtType.setLatitude(globeWGS84Bbox.getLowerCorner().getY() + Math.abs((globeWGS84Bbox.getUpperCorner().getY() - globeWGS84Bbox.getLowerCorner().getY())/2));
 		lookAtType.setAltitude(0.0);
 		lookAtType.setHeading(0.0);
 		lookAtType.setTilt(60.0);
@@ -944,10 +944,10 @@ public class KmlExporter implements EventHandler {
 					jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": " + columns + ",").getBytes(CHARSET));
 					jsonFileWriterForMasterFile.write(("\n\t\"" + "rownum" + "\": " + rows + ",").getBytes(CHARSET));
 					jsonFileWriterForMasterFile.write(("\n\t\"" + "bbox" + "\":{ ").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getX() + ",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getX() + ",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymin" + "\": " + globeWGS84Bbox.getLowerLeftCorner().getY() + ",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymax" + "\": " + globeWGS84Bbox.getUpperRightCorner().getY()).getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmin" + "\": " + globeWGS84Bbox.getLowerCorner().getX() + ",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmax" + "\": " + globeWGS84Bbox.getUpperCorner().getX() + ",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymin" + "\": " + globeWGS84Bbox.getLowerCorner().getY() + ",").getBytes(CHARSET));
+					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymax" + "\": " + globeWGS84Bbox.getUpperCorner().getY()).getBytes(CHARSET));
 					jsonFileWriterForMasterFile.write(("\n\t}").getBytes(CHARSET));
 				} catch (IOException e) {
 					Logger.getInstance().error("Failed to write Master JSON file header: " + e.getMessage());

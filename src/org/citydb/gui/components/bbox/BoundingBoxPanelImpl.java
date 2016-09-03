@@ -53,7 +53,7 @@ import org.citydb.api.event.Event;
 import org.citydb.api.event.EventHandler;
 import org.citydb.api.event.global.GlobalEvents;
 import org.citydb.api.geometry.BoundingBox;
-import org.citydb.api.geometry.BoundingBoxCorner;
+import org.citydb.api.geometry.Position;
 import org.citydb.api.gui.BoundingBoxPanel;
 import org.citydb.api.gui.DatabaseSrsComboBox;
 import org.citydb.api.registry.ObjectRegistry;
@@ -241,10 +241,10 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		BoundingBox bbox = clipboardHandler.getBoundingBox();
 
 		if (bbox != null) {
-			xmin.setValue(bbox.getLowerLeftCorner().getX());
-			ymin.setValue(bbox.getLowerLeftCorner().getY());
-			xmax.setValue(bbox.getUpperRightCorner().getX());
-			ymax.setValue(bbox.getUpperRightCorner().getY());
+			xmin.setValue(bbox.getLowerCorner().getX());
+			ymin.setValue(bbox.getLowerCorner().getY());
+			xmax.setValue(bbox.getUpperCorner().getX());
+			ymax.setValue(bbox.getUpperCorner().getY());
 
 			if (bbox.isSetSrs())
 				srsComboBox.setSelectedItem(bbox.getSrs());
@@ -292,10 +292,10 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 		BoundingBox bbox = new BoundingBox();
 		bbox.setSrs(srsComboBox.getSelectedItem());
 
-		bbox.getLowerLeftCorner().setX(xmin.isEditValid() && xmin.getValue() != null ? ((Number)xmin.getValue()).doubleValue() : null);
-		bbox.getLowerLeftCorner().setY(ymin.isEditValid() && ymin.getValue() != null ? ((Number)ymin.getValue()).doubleValue() : null);
-		bbox.getUpperRightCorner().setX(xmax.isEditValid() && xmax.getValue() != null ? ((Number)xmax.getValue()).doubleValue() : null);
-		bbox.getUpperRightCorner().setY(ymax.isEditValid() && ymax.getValue() != null ? ((Number)ymax.getValue()).doubleValue() : null);
+		bbox.getLowerCorner().setX(xmin.isEditValid() && xmin.getValue() != null ? ((Number)xmin.getValue()).doubleValue() : null);
+		bbox.getLowerCorner().setY(ymin.isEditValid() && ymin.getValue() != null ? ((Number)ymin.getValue()).doubleValue() : null);
+		bbox.getUpperCorner().setX(xmax.isEditValid() && xmax.getValue() != null ? ((Number)xmax.getValue()).doubleValue() : null);
+		bbox.getUpperCorner().setY(ymax.isEditValid() && ymax.getValue() != null ? ((Number)ymax.getValue()).doubleValue() : null);
 
 		return bbox;
 	}
@@ -303,8 +303,8 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 	@Override
 	public void setBoundingBox(BoundingBox boundingBox) {
 		if (boundingBox != null) {
-			BoundingBoxCorner lowerLeft = boundingBox.getLowerLeftCorner();
-			BoundingBoxCorner upperRight = boundingBox.getUpperRightCorner();
+			Position lowerLeft = boundingBox.getLowerCorner();
+			Position upperRight = boundingBox.getUpperCorner();
 
 			xmin.setValue(lowerLeft.getX());
 			ymin.setValue(lowerLeft.getY());

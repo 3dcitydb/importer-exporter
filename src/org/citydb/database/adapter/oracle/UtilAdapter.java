@@ -40,8 +40,8 @@ import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseSrsType;
 import org.citydb.api.database.DatabaseVersion;
 import org.citydb.api.geometry.BoundingBox;
-import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.api.geometry.GeometryObject;
+import org.citydb.api.geometry.Position;
 import org.citydb.database.DatabaseMetaDataImpl;
 import org.citydb.database.DatabaseMetaDataImpl.Versioning;
 import org.citydb.database.IndexStatusInfo;
@@ -223,8 +223,8 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			if (!classIds.isEmpty()) 
 				query += " and OBJECTCLASS_ID in (" + Util.collection2string(classIds, ", ") +") ";
 
-			BoundingBoxCorner lowerCorner = new BoundingBoxCorner(Double.MAX_VALUE);
-			BoundingBoxCorner upperCorner = new BoundingBoxCorner(-Double.MAX_VALUE);
+			Position lowerCorner = new Position(Double.MAX_VALUE, Double.MAX_VALUE);
+			Position upperCorner = new Position(-Double.MAX_VALUE, -Double.MAX_VALUE);
 
 			interruptableStatement = connection.createStatement();
 			rs = interruptableStatement.executeQuery(query);
@@ -294,8 +294,8 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				interruptableCallableStatement.setInt(3, onlyIfNull ? 1 : 0);
 				interruptableCallableStatement.executeUpdate();
 
-				BoundingBoxCorner lowerCorner = new BoundingBoxCorner(Double.MAX_VALUE);
-				BoundingBoxCorner upperCorner = new BoundingBoxCorner(-Double.MAX_VALUE);
+				Position lowerCorner = new Position(Double.MAX_VALUE, Double.MAX_VALUE);
+				Position upperCorner = new Position(-Double.MAX_VALUE, -Double.MAX_VALUE);
 
 				Object geomObject = interruptableCallableStatement.getObject(1);
 				if (geomObject instanceof Struct) {
@@ -395,10 +395,10 @@ public class UtilAdapter extends AbstractUtilAdapter {
 					.append("MDSYS.SDO_ORDINATE_ARRAY(?,?,?,?)), ").append(targetSrid).append(") from dual");
 
 			psQuery = connection.prepareStatement(query.toString());
-			psQuery.setDouble(1, bbox.getLowerLeftCorner().getX());
-			psQuery.setDouble(2, bbox.getLowerLeftCorner().getY());
-			psQuery.setDouble(3, bbox.getUpperRightCorner().getX());
-			psQuery.setDouble(4, bbox.getUpperRightCorner().getY());
+			psQuery.setDouble(1, bbox.getLowerCorner().getX());
+			psQuery.setDouble(2, bbox.getLowerCorner().getY());
+			psQuery.setDouble(3, bbox.getUpperCorner().getX());
+			psQuery.setDouble(4, bbox.getUpperCorner().getY());
 
 			rs = psQuery.executeQuery();
 			if (rs.next()) {
@@ -407,10 +407,10 @@ public class UtilAdapter extends AbstractUtilAdapter {
 					JGeometry geom = JGeometry.loadJS(struct);
 					double[] ordinatesArray = geom.getOrdinatesArray();
 
-					result.getLowerLeftCorner().setX(ordinatesArray[0]);
-					result.getLowerLeftCorner().setY(ordinatesArray[1]);
-					result.getUpperRightCorner().setX(ordinatesArray[2]);
-					result.getUpperRightCorner().setY(ordinatesArray[3]);
+					result.getLowerCorner().setX(ordinatesArray[0]);
+					result.getLowerCorner().setY(ordinatesArray[1]);
+					result.getUpperCorner().setX(ordinatesArray[2]);
+					result.getUpperCorner().setY(ordinatesArray[3]);
 					result.setSrs(targetSrs);
 				}
 			}

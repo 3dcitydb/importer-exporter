@@ -585,10 +585,10 @@ public class MapWindow extends JDialog implements EventHandler {
 				double ymax = ((Number)maxY.getValue()).doubleValue();
 
 				final BoundingBox bbox = new BoundingBox();
-				bbox.getLowerLeftCorner().setX(Math.min(xmin, xmax));
-				bbox.getLowerLeftCorner().setY(Math.min(ymin, ymax));
-				bbox.getUpperRightCorner().setX(Math.max(xmin, xmax));
-				bbox.getUpperRightCorner().setY(Math.max(ymin, ymax));		
+				bbox.getLowerCorner().setX(Math.min(xmin, xmax));
+				bbox.getLowerCorner().setY(Math.min(ymin, ymax));
+				bbox.getUpperCorner().setX(Math.max(xmin, xmax));
+				bbox.getUpperCorner().setY(Math.max(ymin, ymax));		
 
 				DatabaseSrs wgs84 = null;
 				for (DatabaseSrs srs : config.getProject().getDatabase().getReferenceSystems()) {
@@ -684,10 +684,10 @@ public class MapWindow extends JDialog implements EventHandler {
 						indicateInvisibleBoundingBox(bbox);
 						break;
 					default:
-						minX.setValue(bbox.getLowerLeftCorner().getX());
-						minY.setValue(bbox.getLowerLeftCorner().getY());
-						maxX.setValue(bbox.getUpperRightCorner().getX());
-						maxY.setValue(bbox.getUpperRightCorner().getY());
+						minX.setValue(bbox.getLowerCorner().getX());
+						minY.setValue(bbox.getLowerCorner().getY());
+						maxX.setValue(bbox.getUpperCorner().getX());
+						maxY.setValue(bbox.getUpperCorner().getY());
 						showBoundingBox();
 					}
 				} catch (InterruptedException e) {
@@ -700,8 +700,8 @@ public class MapWindow extends JDialog implements EventHandler {
 	}
 
 	public boolean isBoundingBoxVisible(BoundingBox bbox) {
-		GeoPosition southWest = new GeoPosition(bbox.getLowerLeftCorner().getY().doubleValue(), bbox.getLowerLeftCorner().getX().doubleValue());
-		GeoPosition northEast = new GeoPosition(bbox.getUpperRightCorner().getY().doubleValue(), bbox.getUpperRightCorner().getX().doubleValue());
+		GeoPosition southWest = new GeoPosition(bbox.getLowerCorner().getY().doubleValue(), bbox.getLowerCorner().getX().doubleValue());
+		GeoPosition northEast = new GeoPosition(bbox.getUpperCorner().getY().doubleValue(), bbox.getUpperCorner().getX().doubleValue());
 
 		return map.getSelectionPainter().isVisibleOnScreen(southWest, northEast);
 	}
@@ -714,10 +714,10 @@ public class MapWindow extends JDialog implements EventHandler {
 			maxY.commitEdit();
 
 			BoundingBox bbox = new BoundingBox();
-			bbox.getLowerLeftCorner().setX(minX.isEditValid() && minX.getValue() != null ? ((Number)minX.getValue()).doubleValue() : null);
-			bbox.getLowerLeftCorner().setY(minY.isEditValid() && minY.getValue() != null ? ((Number)minY.getValue()).doubleValue() : null);
-			bbox.getUpperRightCorner().setX(maxX.isEditValid() && maxX.getValue() != null ? ((Number)maxX.getValue()).doubleValue() : null);
-			bbox.getUpperRightCorner().setY(maxY.isEditValid() && maxY.getValue() != null ? ((Number)maxY.getValue()).doubleValue() : null);
+			bbox.getLowerCorner().setX(minX.isEditValid() && minX.getValue() != null ? ((Number)minX.getValue()).doubleValue() : null);
+			bbox.getLowerCorner().setY(minY.isEditValid() && minY.getValue() != null ? ((Number)minY.getValue()).doubleValue() : null);
+			bbox.getUpperCorner().setX(maxX.isEditValid() && maxX.getValue() != null ? ((Number)maxX.getValue()).doubleValue() : null);
+			bbox.getUpperCorner().setY(maxY.isEditValid() && maxY.getValue() != null ? ((Number)maxY.getValue()).doubleValue() : null);
 
 			for (DatabaseSrs srs : config.getProject().getDatabase().getReferenceSystems()) {
 				if (srs.getSrid() == Database.PREDEFINED_SRS.get(Database.PredefinedSrsName.WGS84_2D).getSrid()) {
@@ -760,8 +760,8 @@ public class MapWindow extends JDialog implements EventHandler {
 	}
 	
 	private void indicateInvisibleBoundingBox(BoundingBox bbox) {
-		double x = bbox.getLowerLeftCorner().getX() + (bbox.getUpperRightCorner().getX() - bbox.getLowerLeftCorner().getX()) / 2;
-		double y = bbox.getLowerLeftCorner().getY() + (bbox.getUpperRightCorner().getY() - bbox.getLowerLeftCorner().getY()) / 2;
+		double x = bbox.getLowerCorner().getX() + (bbox.getUpperCorner().getX() - bbox.getLowerCorner().getX()) / 2;
+		double y = bbox.getLowerCorner().getY() + (bbox.getUpperCorner().getY() - bbox.getLowerCorner().getY()) / 2;
 
 		GeoPosition pos = new GeoPosition(y, x);
 		map.getWaypointPainter().clearWaypoints();

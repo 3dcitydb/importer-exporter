@@ -28,7 +28,6 @@
 package org.citydb.modules.kml.database;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -40,16 +39,6 @@ import java.util.StringTokenizer;
 
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
-
-import net.opengis.kml._2.AltitudeModeEnumType;
-import net.opengis.kml._2.BoundaryType;
-import net.opengis.kml._2.LinearRingType;
-import net.opengis.kml._2.LinkType;
-import net.opengis.kml._2.LocationType;
-import net.opengis.kml._2.ModelType;
-import net.opengis.kml._2.MultiGeometryType;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PolygonType;
 
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.GeometryObject;
@@ -69,6 +58,16 @@ import org.citydb.textureAtlas.model.TextureImage;
 import org.citydb.util.Util;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
+
+import net.opengis.kml._2.AltitudeModeEnumType;
+import net.opengis.kml._2.BoundaryType;
+import net.opengis.kml._2.LinearRingType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LocationType;
+import net.opengis.kml._2.ModelType;
+import net.opengis.kml._2.MultiGeometryType;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PolygonType;
 
 public class CityFurniture extends KmlGenericObject{
 

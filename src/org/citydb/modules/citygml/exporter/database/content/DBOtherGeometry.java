@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.citydb.api.geometry.GeometryObject;
-import org.citydb.api.geometry.GeometryObject.GeometryType;
+import org.citydb.api.geometry.GeometryType;
 import org.citydb.config.Config;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;

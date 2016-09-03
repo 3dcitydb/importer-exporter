@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.citydb.api.geometry.GeometryObject;
-import org.citydb.api.geometry.GeometryObject.ElementType;
+import org.citydb.api.geometry.ElementType;
 import org.citydb.database.adapter.AbstractGeometryConverterAdapter;
 
 import oracle.jdbc.driver.OracleConnection;

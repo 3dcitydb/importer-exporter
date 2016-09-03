@@ -41,20 +41,9 @@ import java.util.StringTokenizer;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
-import net.opengis.kml._2.AltitudeModeEnumType;
-import net.opengis.kml._2.BoundaryType;
-import net.opengis.kml._2.LineStringType;
-import net.opengis.kml._2.LinearRingType;
-import net.opengis.kml._2.LinkType;
-import net.opengis.kml._2.LocationType;
-import net.opengis.kml._2.ModelType;
-import net.opengis.kml._2.MultiGeometryType;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PointType;
-import net.opengis.kml._2.PolygonType;
-
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.GeometryObject;
+import org.citydb.api.geometry.GeometryType;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.AltitudeMode;
 import org.citydb.config.project.kmlExporter.Balloon;
@@ -75,6 +64,18 @@ import org.citydb.textureAtlas.model.TextureImage;
 import org.citydb.util.Util;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
+
+import net.opengis.kml._2.AltitudeModeEnumType;
+import net.opengis.kml._2.BoundaryType;
+import net.opengis.kml._2.LineStringType;
+import net.opengis.kml._2.LinearRingType;
+import net.opengis.kml._2.LinkType;
+import net.opengis.kml._2.LocationType;
+import net.opengis.kml._2.ModelType;
+import net.opengis.kml._2.MultiGeometryType;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PointType;
+import net.opengis.kml._2.PolygonType;
 
 public class GenericCityObject extends KmlGenericObject{
 
@@ -874,7 +875,7 @@ public class GenericCityObject extends KmlGenericObject{
 
 			eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
-			if (pointOrCurveGeometry.getGeometryType() == GeometryObject.GeometryType.POINT) { // point
+			if (pointOrCurveGeometry.getGeometryType() == GeometryType.POINT) { // point
 				isPoint = true; // dirty hack, don't try this at home
 				double[] ordinatesArray = super.convertPointCoordinatesToWGS84(pointOrCurveGeometry.getCoordinates(0));
 				double zOrdinate = ordinatesArray[2] + zOffset;

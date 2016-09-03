@@ -160,11 +160,11 @@ public class SQLAdapter extends AbstractSQLAdapter {
 		StringBuilder geometry = new StringBuilder()
 		.append("ST_GeomFromEWKT('SRID=").append(bbox.getSrs().getSrid())
 		.append(";POLYGON((")
-		.append(bbox.getLowerLeftCorner().getX()).append(" ").append(bbox.getLowerLeftCorner().getY()).append(",")
-		.append(bbox.getLowerLeftCorner().getX()).append(" ").append(bbox.getUpperRightCorner().getY()).append(",")
-		.append(bbox.getUpperRightCorner().getX()).append(" ").append(bbox.getUpperRightCorner().getY()).append(",")
-		.append(bbox.getUpperRightCorner().getX()).append(" ").append(bbox.getLowerLeftCorner().getY()).append(",")
-		.append(bbox.getLowerLeftCorner().getX()).append(" ").append(bbox.getLowerLeftCorner().getY()).append("))')");
+		.append(bbox.getLowerCorner().getX()).append(" ").append(bbox.getLowerCorner().getY()).append(",")
+		.append(bbox.getLowerCorner().getX()).append(" ").append(bbox.getUpperCorner().getY()).append(",")
+		.append(bbox.getUpperCorner().getX()).append(" ").append(bbox.getUpperCorner().getY()).append(",")
+		.append(bbox.getUpperCorner().getX()).append(" ").append(bbox.getLowerCorner().getY()).append(",")
+		.append(bbox.getLowerCorner().getX()).append(" ").append(bbox.getLowerCorner().getY()).append("))')");
 
 		StringBuilder predicate = new StringBuilder();
 

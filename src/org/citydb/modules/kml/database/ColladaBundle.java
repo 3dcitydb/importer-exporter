@@ -29,10 +29,10 @@ package org.citydb.modules.kml.database;
 
 import java.util.HashMap;
 
-import net.opengis.kml._2.PlacemarkType;
-
 import org.citydb.textureAtlas.model.TextureImage;
 import org.collada._2005._11.colladaschema.COLLADA;
+
+import net.opengis.kml._2.PlacemarkType;
 
 public class ColladaBundle {
 	

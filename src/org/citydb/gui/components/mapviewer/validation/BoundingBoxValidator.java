@@ -93,10 +93,10 @@ public class BoundingBoxValidator {
 		boolean isDBConnected = dbController.isConnected();
 
 		// invalid bbox
-		if (bbox.getLowerLeftCorner().getX() == null ||
-				bbox.getLowerLeftCorner().getY() == null ||
-				bbox.getUpperRightCorner().getX() == null ||
-				bbox.getUpperRightCorner().getY() == null)
+		if (bbox.getLowerCorner().getX() == null ||
+				bbox.getLowerCorner().getY() == null ||
+				bbox.getUpperCorner().getX() == null ||
+				bbox.getUpperCorner().getY() == null)
 			return ValidationResult.SKIP;
 
 		// unknown srs
@@ -156,10 +156,10 @@ public class BoundingBoxValidator {
 		else if (bbox.getSrs().getSrid() == Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D).getSrid()) {
 
 			// ...but coordinate values are out of range
-			if (!(bbox.getLowerLeftCorner().getX() != null && bbox.getLowerLeftCorner().getX() >= -180 && bbox.getLowerLeftCorner().getX() <= 180 && 
-					bbox.getUpperRightCorner().getX() != null && bbox.getUpperRightCorner().getX() >= -180 && bbox.getUpperRightCorner().getX() <= 180 &&
-					bbox.getLowerLeftCorner().getY() != null && bbox.getLowerLeftCorner().getY() >= -90 && bbox.getLowerLeftCorner().getY() <= 90 &&
-					bbox.getUpperRightCorner().getY() != null && bbox.getUpperRightCorner().getY() >= -90 && bbox.getUpperRightCorner().getY() <= 90)) {
+			if (!(bbox.getLowerCorner().getX() != null && bbox.getLowerCorner().getX() >= -180 && bbox.getLowerCorner().getX() <= 180 && 
+					bbox.getUpperCorner().getX() != null && bbox.getUpperCorner().getX() >= -180 && bbox.getUpperCorner().getX() <= 180 &&
+					bbox.getLowerCorner().getY() != null && bbox.getLowerCorner().getY() >= -90 && bbox.getLowerCorner().getY() <= 90 &&
+					bbox.getUpperCorner().getY() != null && bbox.getUpperCorner().getY() >= -90 && bbox.getUpperCorner().getY() <= 90)) {
 
 				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"), config);
 				validator.addErrorMessage(Language.I18N.getString("map.dialog.label.error.range"));
@@ -176,8 +176,8 @@ public class BoundingBoxValidator {
 			}
 			
 			// ...but coordinate values are invalid
-			else if (bbox.getLowerLeftCorner().getX() >= bbox.getUpperRightCorner().getX() ||
-					bbox.getLowerLeftCorner().getY() >= bbox.getUpperRightCorner().getY()) {
+			else if (bbox.getLowerCorner().getX() >= bbox.getUpperCorner().getX() ||
+					bbox.getLowerCorner().getY() >= bbox.getUpperCorner().getY()) {
 				ValidatorDialog validator = new ValidatorDialog(bbox, Language.I18N.getString("map.dialog.title.error"), config);
 				validator.addErrorMessage(Language.I18N.getString("map.dialog.label.error.noArea"));
 				validator.addBoundingBox();
@@ -319,8 +319,8 @@ public class BoundingBoxValidator {
 			JLabel lowerLabel = new JLabel("Xmin / Ymin");
 			JLabel upperLabel = new JLabel("Xmax / Ymax");
 
-			JLabel lower = new JLabel(String.valueOf(bbox.getLowerLeftCorner().getX()) + " / " + String.valueOf(bbox.getLowerLeftCorner().getY()));
-			JLabel upper = new JLabel(String.valueOf(bbox.getUpperRightCorner().getX()) + " / " + String.valueOf(bbox.getUpperRightCorner().getY()));
+			JLabel lower = new JLabel(String.valueOf(bbox.getLowerCorner().getX()) + " / " + String.valueOf(bbox.getLowerCorner().getY()));
+			JLabel upper = new JLabel(String.valueOf(bbox.getUpperCorner().getX()) + " / " + String.valueOf(bbox.getUpperCorner().getY()));
 
 			bboxPanel.add(title, GuiUtil.setConstraints(0,0,0.0,0.0,GridBagConstraints.HORIZONTAL,0,2,0,5));
 			bboxPanel.add(new JSeparator(JSeparator.HORIZONTAL), GuiUtil.setConstraints(1,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,10,0,5));

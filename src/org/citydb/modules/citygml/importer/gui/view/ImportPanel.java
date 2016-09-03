@@ -350,10 +350,10 @@ public class ImportPanel extends JPanel implements EventHandler {
 			// BoundingBox
 			if (filter.isSetComplexFilter() &&
 					filter.getComplexFilter().getBoundingBox().isSet()) {
-				Double xMin = filter.getComplexFilter().getBoundingBox().getLowerLeftCorner().getX();
-				Double yMin = filter.getComplexFilter().getBoundingBox().getLowerLeftCorner().getY();
-				Double xMax = filter.getComplexFilter().getBoundingBox().getUpperRightCorner().getX();
-				Double yMax = filter.getComplexFilter().getBoundingBox().getUpperRightCorner().getY();
+				Double xMin = filter.getComplexFilter().getBoundingBox().getLowerCorner().getX();
+				Double yMin = filter.getComplexFilter().getBoundingBox().getLowerCorner().getY();
+				Double xMax = filter.getComplexFilter().getBoundingBox().getUpperCorner().getX();
+				Double yMax = filter.getComplexFilter().getBoundingBox().getUpperCorner().getY();
 
 				if (xMin == null || yMin == null || xMax == null || yMax == null) {
 					mainView.errorMessage(Language.I18N.getString("import.dialog.error.incorrectData"),

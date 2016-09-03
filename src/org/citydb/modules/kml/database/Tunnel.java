@@ -37,13 +37,6 @@ import java.util.List;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
-import net.opengis.kml._2.AltitudeModeEnumType;
-import net.opengis.kml._2.BoundaryType;
-import net.opengis.kml._2.LinearRingType;
-import net.opengis.kml._2.MultiGeometryType;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PolygonType;
-
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.GeometryObject;
 import org.citydb.config.Config;
@@ -55,6 +48,13 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.balloon.BalloonTemplateHandlerImpl;
+
+import net.opengis.kml._2.AltitudeModeEnumType;
+import net.opengis.kml._2.BoundaryType;
+import net.opengis.kml._2.LinearRingType;
+import net.opengis.kml._2.MultiGeometryType;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PolygonType;
 
 public class Tunnel extends KmlGenericObject{
 

@@ -68,10 +68,10 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 	public void putBoundingBox(BoundingBox bbox) {
 		StringBuilder content = new StringBuilder();
 		content.append("bbox=")
-		.append(bbox.getLowerLeftCorner().getX()).append(",")
-		.append(bbox.getLowerLeftCorner().getY()).append(",")
-		.append(bbox.getUpperRightCorner().getX()).append(",")
-		.append(bbox.getUpperRightCorner().getY());
+		.append(bbox.getLowerCorner().getX()).append(",")
+		.append(bbox.getLowerCorner().getY()).append(",")
+		.append(bbox.getUpperCorner().getX()).append(",")
+		.append(bbox.getUpperCorner().getY());
 
 		if (bbox.isSetSrs()) {
 			content.append("&3dcitydb_srs=")
@@ -140,10 +140,10 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 						if (coords != null && coords.length == 4) {
 							try {
 								NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
-								bbox.getLowerLeftCorner().setX(format.parse(coords[0].trim()).doubleValue());
-								bbox.getLowerLeftCorner().setY(format.parse(coords[1].trim()).doubleValue());
-								bbox.getUpperRightCorner().setX(format.parse(coords[2].trim()).doubleValue());
-								bbox.getUpperRightCorner().setY(format.parse(coords[3].trim()).doubleValue());
+								bbox.getLowerCorner().setX(format.parse(coords[0].trim()).doubleValue());
+								bbox.getLowerCorner().setY(format.parse(coords[1].trim()).doubleValue());
+								bbox.getUpperCorner().setX(format.parse(coords[2].trim()).doubleValue());
+								bbox.getUpperCorner().setY(format.parse(coords[3].trim()).doubleValue());
 
 								success = true;
 							} catch (Exception e) {
@@ -205,10 +205,10 @@ public class BoundingBoxClipboardHandler implements ClipboardOwner {
 				if (lower.matches() && upper.matches()) {
 					BoundingBox bbox = new BoundingBox();
 
-					bbox.getLowerLeftCorner().setX(format.parse(lower.group(1)).doubleValue());
-					bbox.getLowerLeftCorner().setY(format.parse(lower.group(3)).doubleValue());
-					bbox.getUpperRightCorner().setX(format.parse(upper.group(1)).doubleValue());
-					bbox.getUpperRightCorner().setY(format.parse(upper.group(3)).doubleValue());
+					bbox.getLowerCorner().setX(format.parse(lower.group(1)).doubleValue());
+					bbox.getLowerCorner().setY(format.parse(lower.group(3)).doubleValue());
+					bbox.getUpperCorner().setX(format.parse(upper.group(1)).doubleValue());
+					bbox.getUpperCorner().setY(format.parse(upper.group(3)).doubleValue());
 
 					return bbox;
 				}

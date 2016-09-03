@@ -163,8 +163,8 @@ public class SQLAdapter extends AbstractSQLAdapter {
 		.append("MDSYS.SDO_GEOMETRY(2003, ").append(bbox.getSrs().getSrid()).append(", NULL, ")
 		.append("MDSYS.SDO_ELEM_INFO_ARRAY(1, 1003, 3), ")
 		.append("MDSYS.SDO_ORDINATE_ARRAY(")
-		.append(bbox.getLowerLeftCorner().getX()).append(", ").append(bbox.getLowerLeftCorner().getY()).append(", ")
-		.append(bbox.getUpperRightCorner().getX()).append(", ").append(bbox.getUpperRightCorner().getY()).append("))");
+		.append(bbox.getLowerCorner().getX()).append(", ").append(bbox.getLowerCorner().getY()).append(", ")
+		.append(bbox.getUpperCorner().getX()).append(", ").append(bbox.getUpperCorner().getY()).append("))");
 
 		StringBuilder predicate = new StringBuilder();
 

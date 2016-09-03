@@ -32,27 +32,6 @@ import java.util.List;
 
 public class GeometryObject {
 
-	public enum GeometryType {
-		SOLID,
-		COMPOSITE_SOLID,
-		POLYGON,
-		MULTI_POLYGON,
-		CURVE,
-		POINT,
-		MULTI_CURVE,
-		MULTI_POINT,
-		ENVELOPE
-	};
-
-	public enum ElementType {
-		SHELL,
-		EXTERIOR_LINEAR_RING,
-		INTERIOR_LINEAR_RING,
-		LINE_STRING,
-		POINT,
-		BOUNDING_RECTANGLE
-	};
-
 	public static GeometryObject createEnvelope(double[] coordinates, int dimension, int srid) {
 		GeometryObject geometryObject = new GeometryObject(GeometryType.ENVELOPE, dimension, srid);
 		geometryObject.elementTypes = new ElementType[]{ElementType.BOUNDING_RECTANGLE};
@@ -70,7 +49,7 @@ public class GeometryObject {
 	}
 
 	public static GeometryObject createEnvelope(BoundingBox bbox) {
-		return createEnvelope(new double[]{bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY(), bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY()}, 2, bbox.getSrs().getSrid());
+		return createEnvelope(new double[]{bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()}, 2, bbox.getSrs().getSrid());
 	}
 
 	public static GeometryObject createPoint(double[] coordinates, int dimension, int srid) {

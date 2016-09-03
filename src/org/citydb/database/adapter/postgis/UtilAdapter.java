@@ -40,8 +40,8 @@ import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseSrsType;
 import org.citydb.api.database.DatabaseVersion;
 import org.citydb.api.geometry.BoundingBox;
-import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.api.geometry.GeometryObject;
+import org.citydb.api.geometry.Position;
 import org.citydb.database.DatabaseMetaDataImpl;
 import org.citydb.database.DatabaseMetaDataImpl.Versioning;
 import org.citydb.database.IndexStatusInfo;
@@ -222,8 +222,8 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			if (!classIds.isEmpty()) 
 				query += " and OBJECTCLASS_ID in (" + Util.collection2string(classIds, ", ") +") ";
 
-			BoundingBoxCorner lowerCorner = new BoundingBoxCorner(Double.MAX_VALUE);
-			BoundingBoxCorner upperCorner = new BoundingBoxCorner(-Double.MAX_VALUE);
+			Position lowerCorner = new Position(Double.MAX_VALUE, Double.MAX_VALUE);
+			Position upperCorner = new Position(-Double.MAX_VALUE, -Double.MAX_VALUE);
 
 			interruptableStatement = connection.createStatement();
 			rs = interruptableStatement.executeQuery(query);
@@ -292,8 +292,8 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				interruptableCallableStatement.setInt(3, onlyIfNull ? 1 : 0);
 				interruptableCallableStatement.executeUpdate();
 
-				BoundingBoxCorner lowerCorner = new BoundingBoxCorner(Double.MAX_VALUE);
-				BoundingBoxCorner upperCorner = new BoundingBoxCorner(-Double.MAX_VALUE);
+				Position lowerCorner = new Position(Double.MAX_VALUE, Double.MAX_VALUE);
+				Position upperCorner = new Position(-Double.MAX_VALUE, -Double.MAX_VALUE);
 
 				Object geomObject = interruptableCallableStatement.getObject(1);
 				if (geomObject instanceof PGgeometry) {
@@ -443,11 +443,11 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
 			StringBuilder boxGeom = new StringBuilder()
 					.append("SRID=" + sourceSrid + ";POLYGON((")
-					.append(bbox.getLowerLeftCorner().getX()).append(" ").append(bbox.getLowerLeftCorner().getY()).append(",")
-					.append(bbox.getLowerLeftCorner().getX()).append(" ").append(bbox.getUpperRightCorner().getY()).append(",")
-					.append(bbox.getUpperRightCorner().getX()).append(" ").append(bbox.getUpperRightCorner().getY()).append(",")
-					.append(bbox.getUpperRightCorner().getX()).append(" ").append(bbox.getLowerLeftCorner().getY()).append(",")
-					.append(bbox.getLowerLeftCorner().getX()).append(" ").append(bbox.getLowerLeftCorner().getY()).append("))");
+					.append(bbox.getLowerCorner().getX()).append(" ").append(bbox.getLowerCorner().getY()).append(",")
+					.append(bbox.getLowerCorner().getX()).append(" ").append(bbox.getUpperCorner().getY()).append(",")
+					.append(bbox.getUpperCorner().getX()).append(" ").append(bbox.getUpperCorner().getY()).append(",")
+					.append(bbox.getUpperCorner().getX()).append(" ").append(bbox.getLowerCorner().getY()).append(",")
+					.append(bbox.getLowerCorner().getX()).append(" ").append(bbox.getLowerCorner().getY()).append("))");
 
 			StringBuilder query = new StringBuilder()
 					.append("select ST_Transform(ST_GeomFromEWKT(?), ").append(targetSrid).append(')');
@@ -460,10 +460,10 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				PGgeometry pgGeom = (PGgeometry)rs.getObject(1);
 				if (!rs.wasNull() && pgGeom != null) {
 					Geometry geom = pgGeom.getGeometry();
-					result.getLowerLeftCorner().setX(geom.getPoint(0).x);
-					result.getLowerLeftCorner().setY(geom.getPoint(0).y);
-					result.getUpperRightCorner().setX(geom.getPoint(2).x);
-					result.getUpperRightCorner().setY(geom.getPoint(2).y);
+					result.getLowerCorner().setX(geom.getPoint(0).x);
+					result.getLowerCorner().setY(geom.getPoint(0).y);
+					result.getUpperCorner().setX(geom.getPoint(2).x);
+					result.getUpperCorner().setY(geom.getPoint(2).y);
 					result.setSrs(targetSrs);
 				}
 			}

@@ -37,16 +37,10 @@ import java.util.List;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
-import net.opengis.kml._2.AltitudeModeEnumType;
-import net.opengis.kml._2.LineStringType;
-import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PointType;
-
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.GeometryObject;
-import org.citydb.api.geometry.GeometryObject.GeometryType;
+import org.citydb.api.geometry.GeometryType;
 import org.citydb.config.Config;
-import org.citydb.config.project.kmlExporter.AltitudeOffsetMode;
 import org.citydb.config.project.kmlExporter.Balloon;
 import org.citydb.config.project.kmlExporter.ColladaOptions;
 import org.citydb.config.project.kmlExporter.DisplayForm;
@@ -55,6 +49,11 @@ import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.balloon.BalloonTemplateHandlerImpl;
 import org.citydb.modules.common.event.GeometryCounterEvent;
+
+import net.opengis.kml._2.AltitudeModeEnumType;
+import net.opengis.kml._2.LineStringType;
+import net.opengis.kml._2.PlacemarkType;
+import net.opengis.kml._2.PointType;
 
 public class Transportation extends KmlGenericObject{
 

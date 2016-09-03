@@ -36,9 +36,9 @@ import java.util.HashSet;
 import org.citydb.api.concurrent.WorkerPool;
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.geometry.BoundingBox;
-import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.api.geometry.GeometryObject;
-import org.citydb.api.geometry.GeometryObject.GeometryType;
+import org.citydb.api.geometry.GeometryType;
+import org.citydb.api.geometry.Position;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Database.PredefinedSrsName;
@@ -334,15 +334,15 @@ public class KmlSplitter {
 			return null;
 		
 		double[] coordinates = envelope.getCoordinates(0);
-		BoundingBox bbox = new BoundingBox(new BoundingBoxCorner(coordinates[0], coordinates[1]), new BoundingBoxCorner(coordinates[3], coordinates[4]));
+		BoundingBox bbox = new BoundingBox(new Position(coordinates[0], coordinates[1]), new Position(coordinates[3], coordinates[4]));
 		BoundingBox wgs84 = databaseAdapter.getUtil().transformBoundingBox(bbox, dbSrs, Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D));
 		
 		double[] result = new double[6];
-		result[0] = wgs84.getLowerLeftCorner().getX();
-		result[1] = wgs84.getLowerLeftCorner().getY();
+		result[0] = wgs84.getLowerCorner().getX();
+		result[1] = wgs84.getLowerCorner().getY();
 		result[2] = 0;
-		result[3] = wgs84.getUpperRightCorner().getX();
-		result[4] = wgs84.getUpperRightCorner().getY();
+		result[3] = wgs84.getUpperCorner().getX();
+		result[4] = wgs84.getUpperCorner().getY();
 		result[5] = 0;
 		
 		return result;
