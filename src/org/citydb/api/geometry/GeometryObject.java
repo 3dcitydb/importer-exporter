@@ -83,7 +83,7 @@ public class GeometryObject {
 		if (coordinates.length < dimension)
 			throw new IllegalArgumentException("Number of coordinate values must at least match geometry dimension.");
 
-		GeometryObject geometryObject = new GeometryObject(GeometryType.CURVE, dimension, srid);
+		GeometryObject geometryObject = new GeometryObject(GeometryType.LINE_STRING, dimension, srid);
 		geometryObject.elementTypes = new ElementType[]{ElementType.LINE_STRING};
 		geometryObject.coordinates = new double[1][];
 		geometryObject.coordinates[0] = coordinates;
@@ -92,7 +92,7 @@ public class GeometryObject {
 	}
 
 	public static GeometryObject createMultiCurve(double[][] coordinates, int dimension, int srid) {
-		GeometryObject geometryObject = new GeometryObject(GeometryType.MULTI_CURVE, dimension, srid);
+		GeometryObject geometryObject = new GeometryObject(GeometryType.MULTI_LINE_STRING, dimension, srid);
 		geometryObject.elementTypes = new ElementType[coordinates.length];
 		geometryObject.coordinates = coordinates;
 

@@ -165,9 +165,9 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		case POLYGON:
 			geometry = convertPolygonToJTS(geomObj);
 			break;
-		case CURVE:
+		case LINE_STRING:
 		case POINT:
-		case MULTI_CURVE:
+		case MULTI_LINE_STRING:
 		case MULTI_POINT:
 		case ENVELOPE:
 		case MULTI_POLYGON:

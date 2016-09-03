@@ -300,13 +300,13 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		case POLYGON:
 			geometry = convertPolygonToJGeometry(geomObj);
 			break;
-		case CURVE:
+		case LINE_STRING:
 			geometry = convertCurveToJGeometry(geomObj);
 			break;
 		case POINT:
 			geometry = convertPointToJGeometry(geomObj);
 			break;
-		case MULTI_CURVE:
+		case MULTI_LINE_STRING:
 			geometry = convertMultiCurveToJGeometry(geomObj);
 			break;
 		case MULTI_POINT:

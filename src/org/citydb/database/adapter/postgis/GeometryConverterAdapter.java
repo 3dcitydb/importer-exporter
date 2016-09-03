@@ -395,9 +395,9 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 
 		switch (geomObj.getGeometryType()) {
 		case POLYGON:
-		case CURVE:
+		case LINE_STRING:
 		case POINT:
-		case MULTI_CURVE:
+		case MULTI_LINE_STRING:
 		case MULTI_POINT:
 		case ENVELOPE:
 		case MULTI_POLYGON:
@@ -430,13 +430,13 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		case POLYGON:
 			ewkt.append("POLYGON");
 			break;
-		case CURVE:
+		case LINE_STRING:
 			ewkt.append("LINESTRING");
 			break;
 		case POINT:
 			ewkt.append("POINT");
 			break;
-		case MULTI_CURVE:
+		case MULTI_LINE_STRING:
 			ewkt.append("MULTILINESTRING");
 			break;
 		case MULTI_POINT:
@@ -501,7 +501,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		switch (geomObj.getGeometryType()) {
 		case POLYGON:
 		case MULTI_POINT:
-		case MULTI_CURVE:
+		case MULTI_LINE_STRING:
 		case ENVELOPE:
 			ewkt.append("(");
 			break;
@@ -531,7 +531,7 @@ public class GeometryConverterAdapter extends AbstractGeometryConverterAdapter {
 		switch (geomObj.getGeometryType()) {
 		case POLYGON:
 		case MULTI_POINT:
-		case MULTI_CURVE:
+		case MULTI_LINE_STRING:
 		case ENVELOPE:
 			ewkt.append(")");
 			break;

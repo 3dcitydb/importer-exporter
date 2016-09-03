@@ -187,7 +187,7 @@ public class DBOtherGeometry implements DBExporter {
 	public LineString getLineString(GeometryObject geomObj, boolean setSrsName) {
 		LineString lineString = null;
 
-		if (geomObj != null && geomObj.getGeometryType() == GeometryType.CURVE) {
+		if (geomObj != null && geomObj.getGeometryType() == GeometryType.LINE_STRING) {
 			lineString = new LineString();
 
 			DirectPositionList directPositionList = new DirectPositionList();
@@ -218,7 +218,7 @@ public class DBOtherGeometry implements DBExporter {
 		MultiCurve multiCurve = null;
 
 		if (geomObj != null) {
-			if (geomObj.getGeometryType() == GeometryType.MULTI_CURVE) {
+			if (geomObj.getGeometryType() == GeometryType.MULTI_LINE_STRING) {
 				multiCurve = new MultiCurve();
 
 				for (int i = 0; i < geomObj.getNumElements(); i++) {
@@ -235,7 +235,7 @@ public class DBOtherGeometry implements DBExporter {
 				}
 			}
 
-			else if (geomObj.getGeometryType() == GeometryType.CURVE) {
+			else if (geomObj.getGeometryType() == GeometryType.LINE_STRING) {
 				multiCurve = new MultiCurve();
 
 				LineString lineString = getLineString(geomObj, setSrsName);
@@ -263,7 +263,7 @@ public class DBOtherGeometry implements DBExporter {
 		List<LineStringSegmentArrayProperty> arrayPropertyList = null;
 
 		if (geomObj != null) {
-			if (geomObj.getGeometryType() == GeometryType.MULTI_CURVE) {
+			if (geomObj.getGeometryType() == GeometryType.MULTI_LINE_STRING) {
 				arrayPropertyList = new ArrayList<LineStringSegmentArrayProperty>();
 				MultiCurve multiCurve = getMultiCurve(geomObj, setSrsName);
 				
@@ -276,7 +276,7 @@ public class DBOtherGeometry implements DBExporter {
 				}
 			}
 
-			else if (geomObj.getGeometryType() == GeometryType.CURVE) {
+			else if (geomObj.getGeometryType() == GeometryType.LINE_STRING) {
 				arrayPropertyList = new ArrayList<LineStringSegmentArrayProperty>();
 				LineString lineString = getLineString(geomObj, setSrsName);
 				
@@ -295,7 +295,7 @@ public class DBOtherGeometry implements DBExporter {
 		GeometricComplex complex = null;
 
 		if (geomObj != null) {
-			if (geomObj.getGeometryType() == GeometryType.MULTI_CURVE) {
+			if (geomObj.getGeometryType() == GeometryType.MULTI_LINE_STRING) {
 				complex = new GeometricComplex();
 				MultiCurve multiCurve = getMultiCurve(geomObj, setSrsName);
 				
@@ -305,7 +305,7 @@ public class DBOtherGeometry implements DBExporter {
 				}
 			}
 
-			else if (geomObj.getGeometryType() == GeometryType.CURVE) {
+			else if (geomObj.getGeometryType() == GeometryType.LINE_STRING) {
 				complex = new GeometricComplex();
 				LineString lineString = getLineString(geomObj, setSrsName);
 				
@@ -350,9 +350,9 @@ public class DBOtherGeometry implements DBExporter {
 	public AbstractGeometry getPointOrCurveGeometry(GeometryObject geomObj, boolean setSrsName) {
 		if (geomObj != null) {
 			switch (geomObj.getGeometryType()) {
-			case MULTI_CURVE:
+			case MULTI_LINE_STRING:
 				return getMultiCurve(geomObj, setSrsName);
-			case CURVE:
+			case LINE_STRING:
 				return getLineString(geomObj, setSrsName);
 			case MULTI_POINT:
 				return getMultiPoint(geomObj, setSrsName);
