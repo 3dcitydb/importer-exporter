@@ -13,7 +13,7 @@ import org.citydb.api.database.DatabaseSrs;
 })
 public abstract class AbstractGeometry {
 	@XmlIDREF
-	@XmlAttribute(required=false)
+	@XmlAttribute(name="srsRef", required=false)
 	private DatabaseSrs srs;
 	
 	public abstract boolean isValid();
