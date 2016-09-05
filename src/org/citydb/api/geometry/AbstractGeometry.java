@@ -9,13 +9,20 @@ import org.citydb.api.database.DatabaseSrs;
 
 @XmlType(name="AbstractGeometryType")
 @XmlSeeAlso({
-	BoundingBox.class
+	BoundingBox.class,
+	Point.class,
+	MultiPoint.class,
+	LineString.class,
+	MultiLineString.class,
+	Polygon.class,
+	MultiPolygon.class
 })
 public abstract class AbstractGeometry {
 	@XmlIDREF
 	@XmlAttribute(name="srsRef", required=false)
 	private DatabaseSrs srs;
 	
+	public abstract boolean is3D();
 	public abstract boolean isValid();
 	public abstract GeometryType getGeometryType();
 	

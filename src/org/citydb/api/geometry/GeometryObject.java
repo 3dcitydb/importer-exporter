@@ -48,14 +48,14 @@ public class GeometryObject {
 		return geometryObject;
 	}
 
-	public static GeometryObject createEnvelope(BoundingBox bbox) {
+	@Deprecated public static GeometryObject createEnvelope(BoundingBox bbox) {
 		return createEnvelope(new double[]{bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()}, 2, bbox.getSrs().getSrid());
 	}
 
 	public static GeometryObject createPoint(double[] coordinates, int dimension, int srid) {
 		if (coordinates.length != dimension)
 			throw new IllegalArgumentException("Number of coordinate values does not match geometry dimension.");
-		
+
 		GeometryObject geometryObject = new GeometryObject(GeometryType.POINT, dimension, srid);
 		geometryObject.elementTypes = new ElementType[]{ElementType.POINT};
 		geometryObject.coordinates = new double[1][];
@@ -90,7 +90,7 @@ public class GeometryObject {
 
 		return geometryObject;
 	}
-
+	
 	public static GeometryObject createMultiCurve(double[][] coordinates, int dimension, int srid) {
 		GeometryObject geometryObject = new GeometryObject(GeometryType.MULTI_LINE_STRING, dimension, srid);
 		geometryObject.elementTypes = new ElementType[coordinates.length];
@@ -114,10 +114,10 @@ public class GeometryObject {
 		geometryObject.elementTypes = new ElementType[]{ElementType.EXTERIOR_LINEAR_RING};
 		geometryObject.coordinates = new double[1][];
 		geometryObject.coordinates[0] = coordinates;
-		
+
 		return geometryObject;
 	}
-
+	
 	public static GeometryObject createPolygon(double[][] coordinates, int dimension, int srid) {
 		GeometryObject geometryObject = new GeometryObject(GeometryType.POLYGON, dimension, srid);
 		geometryObject.elementTypes = new ElementType[coordinates.length];
@@ -140,39 +140,39 @@ public class GeometryObject {
 	public static GeometryObject createSolid(double[][] coordinates, int[] exteriorRings, int srid) {
 		return createPolygonCollection(GeometryType.SOLID, coordinates, exteriorRings, 3, srid);
 	}
-	
+
 	private static GeometryObject createPolygonCollection(GeometryType type, double[][] coordinates, int[] exteriorRings, int dimension, int srid) {
 		if (exteriorRings.length > coordinates.length)
 			throw new IllegalArgumentException("The number of exterior linear rings exceeds the number of coordinate arrays.");
-		
+
 		if (exteriorRings[0] != 0)
 			throw new IllegalArgumentException("First geometry element must be an exterior linear ring.");
-		
+
 		GeometryObject geometryObject = new GeometryObject(type, dimension, srid);
 		geometryObject.elementTypes = new ElementType[coordinates.length];
 		geometryObject.coordinates = coordinates;
-		
+
 		for (int i = 0; i < geometryObject.elementTypes.length; i++) {
 			if (coordinates[i].length < 4 * dimension)
 				throw new IllegalArgumentException("The " + (i + 1) + ". linear ring must contain at least four coordinate tuples.");
-			
+
 			geometryObject.elementTypes[i] = ElementType.INTERIOR_LINEAR_RING;
 		}
-		
+
 		for (int i = 0; i < exteriorRings.length; i++) {
 			if (exteriorRings[i] >= coordinates.length)
 				throw new IllegalArgumentException("The " + (i + 1) + ". exterior linear ring is not backed by a coordinate array.");
-			
+
 			geometryObject.elementTypes[i] = ElementType.EXTERIOR_LINEAR_RING;			
 		}
 
 		return geometryObject;
 	}
-	
+
 	public static GeometryObject createCompositeSolid(GeometryObject[] solids, int srid) {
 		if (solids == null || solids.length == 0)
 			throw new IllegalArgumentException("No solid geometry objects provided.");
-			
+
 		int numElements = 0;
 		for (GeometryObject solid : solids) {
 			if (solid.getGeometryType() != GeometryType.SOLID)
@@ -180,22 +180,22 @@ public class GeometryObject {
 
 			numElements += solid.getNumElements();
 		}
-		
+
 		GeometryObject geometryObject = new GeometryObject(GeometryType.COMPOSITE_SOLID, 3, srid);
 		geometryObject.elementTypes = new ElementType[numElements + solids.length];
 		geometryObject.coordinates = new double[numElements + solids.length][];
-		
+
 		int i = 0;
 		for (GeometryObject solid : solids) {
 			geometryObject.elementTypes[i] = ElementType.SHELL;
 			geometryObject.coordinates[i++] = new double[0];
-			
+
 			for (int j = 0; j < solid.getNumElements(); j++) {
 				geometryObject.elementTypes[i] = solid.getElementType(j);
 				geometryObject.coordinates[i++] = solid.getCoordinates(j);
 			}
 		}
-		
+
 		return geometryObject;
 	}
 	
@@ -230,19 +230,19 @@ public class GeometryObject {
 	public int getNumElements() {
 		return elementTypes.length;
 	}
-	
+
 	public int getNumCoordinates() {
 		int size = 0;
 		for (double[] element : coordinates)
 			size += element.length;
-		
+
 		return size;
 	}
 
 	public ElementType getElementType(int i) {
 		return elementTypes[i];
 	}
-	
+
 	public double[][] getCoordinates() {
 		return coordinates;
 	}

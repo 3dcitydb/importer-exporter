@@ -1,10 +1,12 @@
 package org.citydb.api.geometry;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.citydb.api.database.DatabaseSrs;
 
+@XmlRootElement(name="envelope")
 @XmlType(name="BoundingBoxType", propOrder = {
 		"lowerCorner",
 		"upperCorner"
@@ -51,10 +53,6 @@ public class BoundingBox extends AbstractGeometry {
 		this.upperCorner = upperCorner;
 	}
 	
-	public boolean is3D() {
-		return lowerCorner.is3D() && upperCorner.is3D();
-	}
-	
 	public void update(Position lowerCorner, Position upperCorner) {
 		if (lowerCorner.getX() < this.lowerCorner.getX())
 			this.lowerCorner.setX(lowerCorner.getX());
@@ -81,6 +79,11 @@ public class BoundingBox extends AbstractGeometry {
 		setSrs(other.getSrs());
 		lowerCorner = new Position(other.getLowerCorner().getX(), other.getLowerCorner().getY());
 		upperCorner = new Position(other.getUpperCorner().getX(), other.getUpperCorner().getY());
+	}
+	
+	@Override
+	public boolean is3D() {
+		return isValid() && lowerCorner.is3D() && upperCorner.is3D();
 	}
 	
 	@Override
