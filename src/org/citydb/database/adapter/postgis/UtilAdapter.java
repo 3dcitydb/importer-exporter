@@ -53,6 +53,7 @@ import org.postgis.Geometry;
 import org.postgis.PGgeometry;
 
 public class UtilAdapter extends AbstractUtilAdapter {
+	private final DatabaseSrs WGS843D_SRS = new DatabaseSrs(4326, "", "", "", DatabaseSrsType.GEOGRAPHIC2D, true);
 
 	protected UtilAdapter(AbstractDatabaseAdapter databaseAdapter) {
 		super(databaseAdapter);
@@ -438,8 +439,8 @@ public class UtilAdapter extends AbstractUtilAdapter {
 		ResultSet rs = null;
 
 		try {
-			int sourceSrid = get2DSrid(sourceSrs, connection);
-			int targetSrid = get2DSrid(targetSrs, connection);
+			int sourceSrid = sourceSrs.getSrid();
+			int targetSrid = targetSrs.getSrid();
 
 			StringBuilder boxGeom = new StringBuilder()
 					.append("SRID=" + sourceSrid + ";POLYGON((")
@@ -493,22 +494,20 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 
 	@Override
-	protected GeometryObject transformGeometry(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException {
+	protected GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException {
 		GeometryObject result = null;
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 
 		try {
-			int targetSrid = get2DSrid(targetSrs, connection);
 			Object unconverted = databaseAdapter.getGeometryConverter().getDatabaseObject(geometry, connection);
 			if (unconverted == null)
 				return null;
 
-			StringBuilder query = new StringBuilder()
-					.append("select ST_Transform(?, ").append(targetSrid).append(')');
-
+			StringBuilder query = new StringBuilder("select ST_Transform(?, ").append(targetSrs.getSrid()).append(')');
 			psQuery = connection.prepareStatement(query.toString());			
 			psQuery.setObject(1, unconverted);
+			
 			rs = psQuery.executeQuery();
 			if (rs.next()) {
 				Object converted = rs.getObject(1);
@@ -542,57 +541,12 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
 	@Override
 	protected int get2DSrid(DatabaseSrs srs, Connection connection) throws SQLException {
-		if (!srs.is3D())
-			return srs.getSrid();
-
-		// at the moment the spatial_ref_sys-table does not hold 3D-SRIDs by default
-		// for proper INSERT-Statements check www.spatialreference.org
-		// unfortunately Geographic2D and Geographic3D are equally classified as GEOGCS
-		// so the function is3D() wouldn't detect Geographic3D unless the INSERT-command is not changed
-		// e.g. srtext: "GEOGCS["WGS 84 (3D)", ... to "GEOGCS3D["WGS 84 (3D)", ...
-
-		Statement stmt = null;
-		ResultSet rs = null;
-
-		try {
-			stmt = connection.createStatement();
-			rs = stmt.executeQuery(srs.getType() == DatabaseSrsType.COMPOUND ?
-					// get id of compound-reference-system from srtext-field of spatial_ref_sys-table
-					"select split_part((split_part(srtext,'AUTHORITY[\"EPSG\",\"',5)),'\"',1) from spatial_ref_sys where auth_srid = " + srs.getSrid() :
-						// searching 2D equivalent for 3D SRID
-						"select min(crs2d.auth_srid) from spatial_ref_sys crs3d, spatial_ref_sys crs2d " +
-						"where (crs3d.auth_srid = " + srs.getSrid() + " " +
-						"and split_part(crs3d.srtext, '[', 1) LIKE 'GEOGCS' AND split_part(crs2d.srtext, '[', 1) LIKE 'GEOGCS' " +
-						//do they have the same Datum_ID?
-						"and split_part((split_part(crs3d.srtext,'AUTHORITY[\"EPSG\",\"',3)),'\"',1) = split_part((split_part(crs2d.srtext,'AUTHORITY[\"EPSG\",\"',3)),'\"',1)) OR " +
-						// if srtext has been changed for Geographic3D
-						"(crs3d.auth_srid = " + srs.getSrid() + " " +
-						"and split_part(crs3d.srtext, '[', 1) LIKE 'GEOGCS3D' AND split_part(crs2d.srtext, '[', 1) LIKE 'GEOGCS' " +
-						//do they have the same Datum_ID?
-					"and split_part((split_part(crs3d.srtext,'AUTHORITY[\"EPSG\",\"',3)),'\"',1) = split_part((split_part(crs2d.srtext,'AUTHORITY[\"EPSG\",\"',3)),'\"',1))");
-
-			return rs.next() ? rs.getInt(1) : -1;
-		} finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException e) {
-					throw e;
-				}
-
-				rs = null;
-			}
-
-			if (stmt != null) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					throw e;
-				}
-
-				stmt = null;
-			}
-		}
+		return srs.getSrid();
+	}
+	
+	@Override
+	public DatabaseSrs getWGS843D() {
+		return WGS843D_SRS;
 	}
 
 	private DatabaseSrsType getSrsType(String srsType) {

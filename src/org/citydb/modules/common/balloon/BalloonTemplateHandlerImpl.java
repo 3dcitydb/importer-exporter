@@ -3312,7 +3312,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}
 	
 	private String getCentroidInWGS84ById() {
-		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? databaseAdapter.getUtil().getWGS843D().getSrid() : 4326;
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
 			return new StringBuilder("SELECT SDO_CS.TRANSFORM(SDO_GEOM.SDO_CENTROID(co.envelope, 0.001), ")
@@ -3330,7 +3330,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}
 	
 	private String getCentroidLatInWGS84ById() {
-		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? databaseAdapter.getUtil().getWGS843D().getSrid() : 4326;
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
 			return new StringBuilder("SELECT v.Y FROM TABLE(")
@@ -3348,7 +3348,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}
 	
 	private String getCentroidLonInWGS84ById() {
-		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? databaseAdapter.getUtil().getWGS843D().getSrid() : 4326;
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
 			return new StringBuilder("SELECT v.X FROM TABLE(")
@@ -3366,7 +3366,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}
 	
 	private String getEnvelopeLatMinInWGS84ById() {
-		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? databaseAdapter.getUtil().getWGS843D().getSrid() : 4326;
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
 			return new StringBuilder("SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, ").append(srid).append("), 2) ")
@@ -3382,7 +3382,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}
 	
 	private String getEnvelopeLatMaxInWGS84ById() {
-		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? databaseAdapter.getUtil().getWGS843D().getSrid() : 4326;
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
 			return new StringBuilder("SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, ").append(srid).append("), 2) ")
@@ -3398,7 +3398,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}
 	
 	private String getEnvelopeLonMinInWGS84ById() {
-		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? databaseAdapter.getUtil().getWGS843D().getSrid() : 4326;
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
 			return new StringBuilder("SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, ").append(srid).append("), 1) ")
@@ -3414,7 +3414,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}
 	
 	private String getEnvelopeLonMaxInWGS84ById() {
-		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? databaseAdapter.getUtil().getWGS843D().getSrid() : 4326;
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
 			return new StringBuilder("SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, ").append(srid).append("), 1) ")
@@ -3430,7 +3430,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}
 	
 	private String getEnvelopeHeightMinInWGS84ById() {
-		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? databaseAdapter.getUtil().getWGS843D().getSrid() : 4326;
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
 			return new StringBuilder("SELECT SDO_GEOM.SDO_MIN_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, ").append(srid).append("), 3) ")
@@ -3446,7 +3446,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}
 	
 	private String getEnvelopeHeightMaxInWGS84ById() {
-		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? 4329 : 4326;
+		int srid = databaseAdapter.getConnectionMetaData().getReferenceSystem().is3D() ? databaseAdapter.getUtil().getWGS843D().getSrid() : 4326;
 		switch (databaseAdapter.getDatabaseType()) {
 		case ORACLE:
 			return new StringBuilder("SELECT SDO_GEOM.SDO_MAX_MBR_ORDINATE(SDO_CS.TRANSFORM(co.envelope, ").append(srid).append("), 3) ")

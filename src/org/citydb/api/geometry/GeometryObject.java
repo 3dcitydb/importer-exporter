@@ -258,4 +258,9 @@ public class GeometryObject {
 
 		return coordinates;
 	}
+	
+	public void changeSrid(int srid) {
+		if (this.srid != srid)
+			this.srid = srid;
+	}
 }

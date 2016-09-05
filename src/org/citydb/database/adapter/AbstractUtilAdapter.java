@@ -37,6 +37,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseUtil;
@@ -55,10 +56,12 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 
 	protected CallableStatement interruptableCallableStatement;
 	protected Statement interruptableStatement;
-	protected volatile boolean isInterrupted; 
+	protected volatile boolean isInterrupted;
+	protected ConcurrentHashMap<Integer, DatabaseSrs> srsMap;
 
 	protected AbstractUtilAdapter(AbstractDatabaseAdapter databaseAdapter) {
 		this.databaseAdapter = databaseAdapter;
+		srsMap = new ConcurrentHashMap<>();
 	}
 	
 	protected abstract void getCityDBVersion(DatabaseMetaDataImpl metaData, Connection connection) throws SQLException;
@@ -68,10 +71,11 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 	protected abstract BoundingBox calcBoundingBox(List<Integer> classIds, Connection connection) throws SQLException;
 	protected abstract BoundingBox createBoundingBoxes(List<Integer> classIds, boolean onlyIfNull, Connection connection) throws SQLException;
 	protected abstract BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs, Connection connection) throws SQLException;
-	protected abstract GeometryObject transformGeometry(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException;
+	protected abstract GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException;
 	protected abstract int get2DSrid(DatabaseSrs srs, Connection connection) throws SQLException;	
 	protected abstract IndexStatusInfo manageIndexes(String operation, IndexType type, Connection connection) throws SQLException;
 	protected abstract boolean updateTableStats(IndexType type, Connection connection) throws SQLException;
+	public abstract DatabaseSrs getWGS843D();
 	
 	public DatabaseMetaDataImpl getDatabaseInfo() throws SQLException {
 		Connection conn = null;
@@ -90,6 +94,9 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 			metaData.setDatabaseProductVersion(vendorMetaData.getDatabaseProductVersion());
 			metaData.setDatabaseMajorVersion(vendorMetaData.getDatabaseMajorVersion());
 			metaData.setDatabaseMinorVersion(vendorMetaData.getDatabaseMinorVersion());
+			
+			// put database srs info on internal map
+			srsMap.put(metaData.getReferenceSystem().getSrid(), metaData.getReferenceSystem());
 
 			return metaData;
 		} finally {
@@ -107,8 +114,11 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 		Connection conn = null;
 
 		try {
-			conn = databaseAdapter.connectionPool.getConnection();
-			getSrsInfo(srs, conn);			
+			conn = databaseAdapter.connectionPool.getConnection();			
+			getSrsInfo(srs, conn);
+			
+			// put database srs info on internal map
+			srsMap.put(srs.getSrid(), srs);
 		} finally {
 			if (conn != null) {
 				try {
@@ -410,12 +420,12 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 	}
 	
 	@Override
-	public GeometryObject transformGeometry(GeometryObject geometry, DatabaseSrs targetSrs) throws SQLException {
+	public GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs) throws SQLException {
 		Connection conn = null;
 
 		try {
-			conn = databaseAdapter.connectionPool.getConnection();
-			return transformGeometry(geometry, targetSrs, conn);
+			conn = databaseAdapter.connectionPool.getConnection();		
+			return transform(geometry, targetSrs, conn);
 		} finally {
 			if (conn != null) {
 				try {
@@ -435,11 +445,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 
 		try {
 			conn = databaseAdapter.connectionPool.getConnection();
-			int srid = get2DSrid(srs, conn);
-			if (srid > 0)
-				return srid;
-
-			throw new SQLException("Failed to discover 2D equivalent for the 3D SRID " + srs.getSrid());
+			return get2DSrid(srs, conn);
 		} finally {
 			if (conn != null) {
 				try {

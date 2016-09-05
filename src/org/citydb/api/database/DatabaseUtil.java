@@ -34,6 +34,6 @@ import org.citydb.api.geometry.GeometryObject;
 
 public interface DatabaseUtil {
 	public BoundingBox transformBoundingBox(BoundingBox bbox, DatabaseSrs sourceSrs, DatabaseSrs targetSrs) throws SQLException;
-	public GeometryObject transformGeometry(GeometryObject geometry, DatabaseSrs targetSrs) throws SQLException;
+	public GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs) throws SQLException;
 	public boolean isIndexEnabled(String tableName, String columnName) throws SQLException;
 }

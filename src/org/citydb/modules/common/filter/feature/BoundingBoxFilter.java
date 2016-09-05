@@ -300,7 +300,7 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 					bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(),
 			}, 2, bbox.getSrs().getSrid()); // Srid = 4326
 
-			GeometryObject convertedGeomObj = util.transformGeometry(geomObj, targetSrs);
+			GeometryObject convertedGeomObj = util.transform(geomObj, targetSrs);
 			if (convertedGeomObj != null) {
 				double[] coords = convertedGeomObj.getCoordinates(0);
 				return GeometryObject.createPolygon(new double[]{
@@ -327,16 +327,15 @@ public class BoundingBoxFilter implements Filter<Envelope> {
 
 			DatabaseUtil util = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil();
 
-			int srid2D = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter().getUtil().get2DSrid(bbox.getSrs());
 			GeometryObject geomObj = GeometryObject.createPolygon(new double[]{
 					bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(),
 					bbox.getUpperCorner().getX(), bbox.getLowerCorner().getY(),
 					bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(),
 					bbox.getLowerCorner().getX(), bbox.getUpperCorner().getY(),
 					bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(),
-			}, 2, srid2D);
+			}, 2, bbox.getSrs().getSrid());
 
-			GeometryObject convertedGeomObj = util.transformGeometry(geomObj, targetSrs);
+			GeometryObject convertedGeomObj = util.transform(geomObj, targetSrs);
 			if (convertedGeomObj != null) {
 				double[] coordinates = convertedGeomObj.getCoordinates(0);		
 				double xmin = Math.min(coordinates[0], coordinates[6]);

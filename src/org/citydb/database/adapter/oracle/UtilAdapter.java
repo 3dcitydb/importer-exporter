@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Struct;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.database.DatabaseSrsType;
@@ -54,9 +55,12 @@ import oracle.jdbc.OracleTypes;
 import oracle.spatial.geometry.JGeometry;
 
 public class UtilAdapter extends AbstractUtilAdapter {
-
+	private final DatabaseSrs WGS843D_SRS = new DatabaseSrs(4979, "", "", "", DatabaseSrsType.GEOGRAPHIC3D, true);
+	private final ConcurrentHashMap<Integer, Integer> srs2DMap; 
+	
 	protected UtilAdapter(AbstractDatabaseAdapter databaseAdapter) {
 		super(databaseAdapter);
+		srs2DMap = new ConcurrentHashMap<>();
 	}
 
 	@Override
@@ -440,22 +444,37 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	}
 	
 	@Override
-	protected GeometryObject transformGeometry(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException {
+	protected GeometryObject transform(GeometryObject geometry, DatabaseSrs targetSrs, Connection connection) throws SQLException {
 		GeometryObject result = null;
 		PreparedStatement psQuery = null;
 		ResultSet rs = null;
 
 		try {
-			int targetSrid = get2DSrid(targetSrs, connection);
+			// get source srs
+			DatabaseSrs sourceSrs = srsMap.get(geometry.getSrid());
+			if (sourceSrs == null) {
+				sourceSrs = DatabaseSrs.createDefaultSrs();
+				sourceSrs.setSrid(geometry.getSrid());
+				getSrsInfo(sourceSrs);
+			}
+			
+			// get target srid
+			int targetSrid = targetSrs.getSrid();
+
+			// change srids if required
+			if (sourceSrs.is3D() && !targetSrs.is3D())
+				geometry.changeSrid(get2DSrid(sourceSrs, connection));
+			else if (!sourceSrs.is3D() && targetSrs.is3D())
+				targetSrid = get2DSrid(targetSrs, connection);
+			
 			Object unconverted = databaseAdapter.getGeometryConverter().getDatabaseObject(geometry, connection);
 			if (unconverted == null)
 				return null;
 
-			StringBuilder query = new StringBuilder()
-					.append("select SDO_CS.TRANSFORM(?, ").append(targetSrid).append(") from dual");
-
+			StringBuilder query = new StringBuilder("select SDO_CS.TRANSFORM(?, ").append(targetSrid).append(") from dual");
 			psQuery = connection.prepareStatement(query.toString());			
 			psQuery.setObject(1, unconverted);
+			
 			rs = psQuery.executeQuery();
 			if (rs.next()) {
 				Object converted = rs.getObject(1);
@@ -491,6 +510,10 @@ public class UtilAdapter extends AbstractUtilAdapter {
 	protected int get2DSrid(DatabaseSrs srs, Connection connection) throws SQLException {
 		if (!srs.is3D())
 			return srs.getSrid();
+			
+		Integer srid = srs2DMap.get(srs.getSrid());
+		if (srid != null)
+			return srid.intValue();
 
 		ResultSet rs = null;
 		Statement stmt = null;
@@ -502,8 +525,17 @@ public class UtilAdapter extends AbstractUtilAdapter {
 					+ srs.getSrid() + " and crs2d.coord_ref_sys_kind = 'GEOGRAPHIC2D' and crs3d.datum_id = crs2d.datum_id" :
 						"select cmpd_horiz_srid from sdo_coord_ref_sys where srid = " + srs.getSrid());
 
-			return rs.next() ? rs.getInt(1) : -1;
-
+			int result = 0;
+			if (rs.next())
+				result = rs.getInt(1);
+			
+			if (result == 0)
+				throw new SQLException("Failed to discover 2D equivalent for the 3D SRID " + srs.getSrid() + '.');
+			
+			// put 2d srid on internal map
+			srs2DMap.put(srs.getSrid(), result);
+			
+			return result;
 		} finally {
 			if (rs != null) {
 				try {
@@ -525,6 +557,11 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				stmt = null;
 			}
 		}
+	}
+
+	@Override
+	public DatabaseSrs getWGS843D() {
+		return WGS843D_SRS;
 	}
 
 	private DatabaseSrsType getSrsType(String srsType) {
