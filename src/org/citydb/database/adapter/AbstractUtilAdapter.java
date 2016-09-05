@@ -53,15 +53,15 @@ import org.citygml4j.model.citygml.CityGMLClass;
 
 public abstract class AbstractUtilAdapter implements DatabaseUtil {
 	protected final AbstractDatabaseAdapter databaseAdapter;
+	protected final ConcurrentHashMap<Integer, DatabaseSrs> srsInfoMap;
 
 	protected CallableStatement interruptableCallableStatement;
 	protected Statement interruptableStatement;
 	protected volatile boolean isInterrupted;
-	protected ConcurrentHashMap<Integer, DatabaseSrs> srsMap;
 
 	protected AbstractUtilAdapter(AbstractDatabaseAdapter databaseAdapter) {
 		this.databaseAdapter = databaseAdapter;
-		srsMap = new ConcurrentHashMap<>();
+		srsInfoMap = new ConcurrentHashMap<>();
 	}
 	
 	protected abstract void getCityDBVersion(DatabaseMetaDataImpl metaData, Connection connection) throws SQLException;
@@ -96,7 +96,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 			metaData.setDatabaseMinorVersion(vendorMetaData.getDatabaseMinorVersion());
 			
 			// put database srs info on internal map
-			srsMap.put(metaData.getReferenceSystem().getSrid(), metaData.getReferenceSystem());
+			srsInfoMap.put(metaData.getReferenceSystem().getSrid(), metaData.getReferenceSystem());
 
 			return metaData;
 		} finally {
@@ -118,7 +118,7 @@ public abstract class AbstractUtilAdapter implements DatabaseUtil {
 			getSrsInfo(srs, conn);
 			
 			// put database srs info on internal map
-			srsMap.put(srs.getSrid(), srs);
+			srsInfoMap.put(srs.getSrid(), srs);
 		} finally {
 			if (conn != null) {
 				try {

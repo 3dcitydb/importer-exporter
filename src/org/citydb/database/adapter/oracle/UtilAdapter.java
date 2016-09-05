@@ -451,7 +451,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 
 		try {
 			// get source srs
-			DatabaseSrs sourceSrs = srsMap.get(geometry.getSrid());
+			DatabaseSrs sourceSrs = srsInfoMap.get(geometry.getSrid());
 			if (sourceSrs == null) {
 				sourceSrs = DatabaseSrs.createDefaultSrs();
 				sourceSrs.setSrid(geometry.getSrid());
