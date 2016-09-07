@@ -36,6 +36,7 @@ import java.util.List;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
+import org.citydb.api.database.BalloonTemplateHandler;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.config.Config;
 import org.citydb.config.project.kmlExporter.Balloon;
@@ -44,7 +45,6 @@ import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
-import org.citydb.modules.common.balloon.BalloonTemplateHandlerImpl;
 
 import net.opengis.kml._2.PlacemarkType;
 
@@ -61,7 +61,7 @@ public class Relief extends KmlGenericObject{
 			AbstractDatabaseAdapter databaseAdapter,
 			BlobExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
-			BalloonTemplateHandlerImpl balloonTemplateHandler,
+			BalloonTemplateHandler balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
 			Config config) {
 

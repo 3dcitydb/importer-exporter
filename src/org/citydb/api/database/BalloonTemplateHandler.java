@@ -27,6 +27,7 @@
  */
 package org.citydb.api.database;
 
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -38,7 +39,9 @@ public interface BalloonTemplateHandler {
 	public static final String FOREACH_TAG = "FOREACH";
 	public static final String END_FOREACH_TAG = "END FOREACH";
 
-	public String getBalloonContent(String gmlId, int lod) throws Exception;	
+	public String getBalloonContent(String gmlId, int lod, Connection connection) throws Exception;
+	public String getBalloonContent(long id, int lod, Connection connection) throws Exception;
+	public String getBalloonContent(String temporaryTemplate, long id, int lod, Connection connection) throws Exception;
 	public Set<String> getSupportedAggregationFunctions();
 	public HashMap<String, Set<String>> getSupportedTablesAndColumns();		
 }

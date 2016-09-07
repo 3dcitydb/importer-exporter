@@ -35,10 +35,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.xml.bind.JAXBContext;
 
-import net.opengis.kml._2.ObjectFactory;
-
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool;
+import org.citydb.api.database.BalloonTemplateHandler;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.Database;
@@ -51,7 +50,6 @@ import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.database.adapter.BlobType;
-import org.citydb.modules.common.balloon.BalloonTemplateHandlerImpl;
 import org.citydb.modules.common.event.FeatureCounterEvent;
 import org.citydb.modules.kml.database.Bridge;
 import org.citydb.modules.kml.database.Building;
@@ -74,6 +72,8 @@ import org.citydb.modules.kml.util.ExportTracker;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 
+import net.opengis.kml._2.ObjectFactory;
+
 public class KmlExportWorker extends Worker<KmlSplittingResult> {
 	private final ReentrantLock runLock = new ReentrantLock();
 	private volatile boolean shouldRun = true;
@@ -92,7 +92,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 	private EnumMap<CityGMLClass, Integer>objectGroupCounter = new EnumMap<CityGMLClass, Integer>(CityGMLClass.class);
 	private EnumMap<CityGMLClass, Integer>objectGroupSize = new EnumMap<CityGMLClass, Integer>(CityGMLClass.class);
 	private EnumMap<CityGMLClass, KmlGenericObject>objectGroup = new EnumMap<CityGMLClass, KmlGenericObject>(CityGMLClass.class);
-	private EnumMap<CityGMLClass, BalloonTemplateHandlerImpl>balloonTemplateHandler = new EnumMap<CityGMLClass, BalloonTemplateHandlerImpl>(CityGMLClass.class);
+	private EnumMap<CityGMLClass, BalloonTemplateHandler>balloonTemplateHandler = new EnumMap<CityGMLClass, BalloonTemplateHandler>(CityGMLClass.class);
 
 	private ElevationServiceHandler elevationServiceHandler;
 
@@ -559,8 +559,8 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 		}
 	}
 
-	private BalloonTemplateHandlerImpl getBalloonTemplateHandler(CityGMLClass cityObjectType) {
-		BalloonTemplateHandlerImpl currentBalloonTemplateHandler = balloonTemplateHandler.get(cityObjectType);
+	private BalloonTemplateHandler getBalloonTemplateHandler(CityGMLClass cityObjectType) {
+		BalloonTemplateHandler currentBalloonTemplateHandler = balloonTemplateHandler.get(cityObjectType);
 
 		if (currentBalloonTemplateHandler == null) {
 			Balloon balloonSettings = getBalloonSettings(cityObjectType);
@@ -568,7 +568,7 @@ public class KmlExportWorker extends Worker<KmlSplittingResult> {
 					balloonSettings.getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
 				String balloonTemplateFilename = balloonSettings.getBalloonContentTemplateFile();
 				if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
-					currentBalloonTemplateHandler = new BalloonTemplateHandlerImpl(new File(balloonTemplateFilename), connection);
+					currentBalloonTemplateHandler = databaseAdapter.getBalloonTemplateHandler(new File(balloonTemplateFilename));
 					balloonTemplateHandler.put(cityObjectType, currentBalloonTemplateHandler);
 				}
 			}

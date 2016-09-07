@@ -37,6 +37,7 @@ import java.util.List;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
+import org.citydb.api.database.BalloonTemplateHandler;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.GeometryObject;
 import org.citydb.config.Config;
@@ -48,7 +49,6 @@ import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
-import org.citydb.modules.common.balloon.BalloonTemplateHandlerImpl;
 
 import net.opengis.kml._2.AltitudeModeEnumType;
 import net.opengis.kml._2.BoundaryType;
@@ -67,7 +67,7 @@ public class Building extends KmlGenericObject{
 			AbstractDatabaseAdapter databaseAdapter,
 			BlobExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
-			BalloonTemplateHandlerImpl balloonTemplateHandler,
+			BalloonTemplateHandler balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
 			Config config) {
 

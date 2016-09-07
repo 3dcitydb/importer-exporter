@@ -27,6 +27,7 @@
  */
 package org.citydb.api.database;
 
+import java.io.File;
 import java.util.List;
 
 
@@ -40,6 +41,8 @@ public interface DatabaseAdapter {
 	public DatabaseWorkspaceManager getWorkspaceManager();
 	public DatabaseGeometryConverter getGeometryConverter();
 	public DatabaseUtil getUtil();
-	public BalloonTemplateFactory getBalloonTemplateFactory();
 	public List<DatabaseConnectionWarning> getConnectionWarnings();
+
+	public BalloonTemplateHandler getBalloonTemplateHandler(File template);
+	public BalloonTemplateHandler getBalloonTemplateHandler(String template);
 }

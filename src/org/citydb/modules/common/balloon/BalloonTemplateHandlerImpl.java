@@ -46,7 +46,6 @@ import java.util.StringTokenizer;
 
 import org.citydb.api.database.BalloonTemplateHandler;
 import org.citydb.api.geometry.GeometryObject;
-import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.log.Logger;
 import org.citydb.util.Util;
@@ -1093,6 +1092,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		put(WATERBOUNDARY_SURFACE_TABLE, WATERBOUNDARY_SURFACE_COLUMNS);
 	}};
 
+	@Override
 	public HashMap<String, Set<String>> getSupportedTablesAndColumns() {
 		return _3DCITYDB_TABLES_AND_COLUMNS;
 	}
@@ -1118,31 +1118,20 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			"  </body>\n" +
 			"</html>";
 
-	private Connection connection;
+	private final AbstractDatabaseAdapter databaseAdapter;
 	private CityGMLClass cityGMLClassForBalloonHandler = null;
 
-	private AbstractDatabaseAdapter databaseAdapter;
 	List<BalloonStatement> statementList = null;
 	List<String> htmlChunkList = null;
-
-	public BalloonTemplateHandlerImpl() {
-		databaseAdapter = DatabaseConnectionPool.getInstance().getActiveDatabaseAdapter();		
-	}
 	
-	public BalloonTemplateHandlerImpl(File templateFile, Connection connection) {
-		this();
-		setConnection(connection);
+	public BalloonTemplateHandlerImpl(File templateFile, AbstractDatabaseAdapter databaseAdapter) {
+		this.databaseAdapter = databaseAdapter;
 		setTemplate(templateFile);
 	}
 
-	public BalloonTemplateHandlerImpl(String templateString, Connection connection) {
-		this();
-		setConnection(connection);
+	public BalloonTemplateHandlerImpl(String templateString, AbstractDatabaseAdapter databaseAdapter) {
+		this.databaseAdapter = databaseAdapter;
 		setTemplate(templateString);
-	}
-
-	private void setConnection(Connection connection) {
-		this.connection = connection;
 	}
 
 	private void setTemplate(File templateFile) {
@@ -1192,7 +1181,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		}
 	}
 
-	public String getBalloonContent(String template, long id, int lod) throws Exception {
+	@Override
+	public String getBalloonContent(String template, long id, int lod, Connection connection) throws Exception {
 		if (connection == null) throw new SQLException("Null or invalid connection");
 
 		String balloonContent = "";
@@ -1202,7 +1192,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		htmlChunkList = new ArrayList<String>();
 		try {
 			fillStatementAndHtmlChunkList(template);
-			balloonContent = getBalloonContent(id, lod);
+			balloonContent = getBalloonContent(id, lod, connection);
 		}
 		catch (Exception e) {
 			Logger.getInstance().warn("Following message applies to generic attribute 'Balloon_Content' for cityobject with id = " + id);
@@ -1213,7 +1203,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		return balloonContent;
 	}
 
-	public String getBalloonContent(String gmlId, int lod) throws Exception {
+	@Override
+	public String getBalloonContent(String gmlId, int lod, Connection connection) throws Exception {
 		if (connection == null) throw new SQLException("Null or invalid connection");
 		if (statementList == null && htmlChunkList == null) throw new Exception("Invalid template file"); 
 
@@ -1261,7 +1252,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 
 			List<String> resultList = new ArrayList<String>();
 			for (BalloonStatement statement: statementList) {
-				resultList.add(executeStatement(statement, id, lod));
+				resultList.add(executeStatement(statement, id, lod, connection));
 			}
 
 			Iterator<String> htmlChunkIterator = htmlChunkList.iterator();
@@ -1277,7 +1268,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		return balloonContent.toString();
 	}
 
-	public String getBalloonContent(long id, int lod) throws Exception {
+	@Override
+	public String getBalloonContent(long id, int lod, Connection connection) throws Exception {
 		if (connection == null) throw new SQLException("Null or invalid connection");
 		if (statementList == null && htmlChunkList == null) throw new Exception("Invalid template file"); 
 
@@ -1323,7 +1315,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 
 			List<String> resultList = new ArrayList<String>();
 			for (BalloonStatement statement: statementList) {
-				resultList.add(executeStatement(statement, id, lod));
+				resultList.add(executeStatement(statement, id, lod, connection));
 			}
 
 			Iterator<String> htmlChunkIterator = htmlChunkList.iterator();
@@ -1339,14 +1331,15 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		return balloonContent.toString();
 	}
 
-	private String executeStatement(BalloonStatement statement, long id, int lod) {
+	private String executeStatement(BalloonStatement statement, long id, int lod, Connection connection) {
 		String result = "";
+		
 		if (statement != null) {
 			PreparedStatement preparedStatement = null;
 			ResultSet rs = null;
 			try {
 				if (statement.isForeach()) {
-					return executeForeachStatement(statement, id, lod);
+					return executeForeachStatement(statement, id, lod, connection);
 				}
 
 				if (statement.isNested()) {
@@ -1388,7 +1381,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					if (nestedStatementList != null) {
 						List<String> resultList = new ArrayList<String>();
 						for (BalloonStatement nestedStatement: nestedStatementList) {
-							resultList.add(executeStatement(nestedStatement, id, lod));
+							resultList.add(executeStatement(nestedStatement, id, lod, connection));
 						}
 
 						Iterator<String> textIterator = textBetweenNestedStatements.iterator();
@@ -1471,8 +1464,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		return result;
 	}
 
-	private String executeForeachStatement(BalloonStatement statement, long id, int lod) {
+	private String executeForeachStatement(BalloonStatement statement, long id, int lod, Connection connection) {
 		String resultBody = "";
+		
 		PreparedStatement preparedStatement = null;
 		ResultSet rs = null;
 		try {

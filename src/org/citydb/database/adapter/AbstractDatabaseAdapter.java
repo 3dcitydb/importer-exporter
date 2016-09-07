@@ -27,17 +27,18 @@
  */
 package org.citydb.database.adapter;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.citydb.api.database.BalloonTemplateFactory;
+import org.citydb.api.database.BalloonTemplateHandler;
 import org.citydb.api.database.DatabaseAdapter;
 import org.citydb.api.database.DatabaseConnectionWarning;
 import org.citydb.config.project.database.DBConnection;
 import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.database.DatabaseMetaDataImpl;
-import org.citydb.modules.common.balloon.BalloonTemplateFactoryImpl;
+import org.citydb.modules.common.balloon.BalloonTemplateHandlerImpl;
 
 public abstract class AbstractDatabaseAdapter implements DatabaseAdapter {
 	protected DatabaseConnectionPool connectionPool;	
@@ -92,10 +93,15 @@ public abstract class AbstractDatabaseAdapter implements DatabaseAdapter {
 	}
 
 	@Override
-	public BalloonTemplateFactory getBalloonTemplateFactory() {
-		return BalloonTemplateFactoryImpl.getInstance();
+	public BalloonTemplateHandler getBalloonTemplateHandler(File template) {
+		return new BalloonTemplateHandlerImpl(template, this);
 	}
-	
+
+	@Override
+	public BalloonTemplateHandler getBalloonTemplateHandler(String template) {
+		return new BalloonTemplateHandlerImpl(template, this);
+	}
+
 	public AbstractSQLAdapter getSQLAdapter() {
 		return sqlAdapter;
 	}

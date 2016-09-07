@@ -40,6 +40,7 @@ import java.util.StringTokenizer;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
+import org.citydb.api.database.BalloonTemplateHandler;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.GeometryObject;
 import org.citydb.config.Config;
@@ -50,7 +51,6 @@ import org.citydb.config.project.kmlExporter.KmlExporter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
-import org.citydb.modules.common.balloon.BalloonTemplateHandlerImpl;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.GeometryCounterEvent;
@@ -86,7 +86,7 @@ public class SolitaryVegetationObject extends KmlGenericObject{
 			AbstractDatabaseAdapter databaseAdapter,
 			BlobExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
-			BalloonTemplateHandlerImpl balloonTemplateHandler,
+			BalloonTemplateHandler balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
 			Config config) {
 

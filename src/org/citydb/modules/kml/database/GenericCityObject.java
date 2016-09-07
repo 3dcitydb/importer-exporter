@@ -41,6 +41,7 @@ import java.util.StringTokenizer;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
+import org.citydb.api.database.BalloonTemplateHandler;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.GeometryObject;
 import org.citydb.api.geometry.GeometryType;
@@ -56,7 +57,6 @@ import org.citydb.config.project.kmlExporter.PointDisplayMode;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
-import org.citydb.modules.common.balloon.BalloonTemplateHandlerImpl;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.GeometryCounterEvent;
@@ -98,7 +98,7 @@ public class GenericCityObject extends KmlGenericObject{
 			AbstractDatabaseAdapter databaseAdapter,
 			BlobExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
-			BalloonTemplateHandlerImpl balloonTemplateHandler,
+			BalloonTemplateHandler balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
 			Config config) {
 
@@ -1143,7 +1143,7 @@ public class GenericCityObject extends KmlGenericObject{
 						pacSettings.getPointBalloon().getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
 					String balloonTemplateFilename = pacSettings.getPointBalloon().getBalloonContentTemplateFile();
 					if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
-						setBalloonTemplateHandler(new BalloonTemplateHandlerImpl(new File(balloonTemplateFilename), connection));
+						setBalloonTemplateHandler(databaseAdapter.getBalloonTemplateHandler(new File(balloonTemplateFilename)));
 					}
 					addBalloonContents(placemark, work.getId());
 				}
@@ -1170,7 +1170,7 @@ public class GenericCityObject extends KmlGenericObject{
 						pacSettings.getCurveBalloon().getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
 					String balloonTemplateFilename = pacSettings.getCurveBalloon().getBalloonContentTemplateFile();
 					if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
-						setBalloonTemplateHandler(new BalloonTemplateHandlerImpl(new File(balloonTemplateFilename), connection));
+						setBalloonTemplateHandler(databaseAdapter.getBalloonTemplateHandler(new File(balloonTemplateFilename)));
 					}
 					// this is the reason for the isPoint dirty hack
 					addBalloonContents(placemark, work.getId());

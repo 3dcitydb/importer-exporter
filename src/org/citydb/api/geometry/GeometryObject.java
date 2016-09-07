@@ -48,7 +48,7 @@ public class GeometryObject {
 		return geometryObject;
 	}
 
-	@Deprecated public static GeometryObject createEnvelope(BoundingBox bbox) {
+	public static GeometryObject createEnvelope(BoundingBox bbox) {
 		return createEnvelope(new double[]{bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()}, 2, bbox.getSrs().getSrid());
 	}
 

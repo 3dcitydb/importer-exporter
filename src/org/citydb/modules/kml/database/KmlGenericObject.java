@@ -32,7 +32,6 @@ import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.Connection;
@@ -59,11 +58,12 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.citydb.api.database.BalloonTemplateHandler;
 import org.citydb.api.database.DatabaseGeometryConverter;
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.event.EventDispatcher;
-import org.citydb.api.geometry.GeometryObject;
 import org.citydb.api.geometry.ElementType;
+import org.citydb.api.geometry.GeometryObject;
 import org.citydb.api.geometry.GeometryType;
 import org.citydb.api.log.LogLevel;
 import org.citydb.config.Config;
@@ -76,7 +76,6 @@ import org.citydb.config.project.kmlExporter.KmlExporter;
 import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
-import org.citydb.modules.common.balloon.BalloonTemplateHandlerImpl;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.GeometryCounterEvent;
@@ -186,7 +185,7 @@ public abstract class KmlGenericObject {
 	protected BlobExportAdapter textureExportAdapter;
 	protected DatabaseGeometryConverter geometryConverterAdapter;
 	protected ElevationServiceHandler elevationServiceHandler;
-	protected BalloonTemplateHandlerImpl balloonTemplateHandler;
+	protected BalloonTemplateHandler balloonTemplateHandler;
 	protected EventDispatcher eventDispatcher;
 	protected Config config;
 
@@ -202,7 +201,7 @@ public abstract class KmlGenericObject {
 			AbstractDatabaseAdapter databaseAdapter,
 			BlobExportAdapter textureExportAdapter,
 			ElevationServiceHandler elevationServiceHandler,
-			BalloonTemplateHandlerImpl balloonTemplateHandler,
+			BalloonTemplateHandler balloonTemplateHandler,
 			EventDispatcher eventDispatcher,
 			Config config) {
 
@@ -232,11 +231,11 @@ public abstract class KmlGenericObject {
 	protected abstract String getHighlightingQuery();
 
 
-	protected BalloonTemplateHandlerImpl getBalloonTemplateHandler() {
+	protected BalloonTemplateHandler getBalloonTemplateHandler() {
 		return balloonTemplateHandler;
 	}
 
-	protected void setBalloonTemplateHandler(BalloonTemplateHandlerImpl balloonTemplateHandler) {
+	protected void setBalloonTemplateHandler(BalloonTemplateHandler balloonTemplateHandler) {
 		this.balloonTemplateHandler = balloonTemplateHandler;
 	}
 
@@ -2148,21 +2147,21 @@ public abstract class KmlGenericObject {
 				String balloonTemplate = getBalloonContentFromGenericAttribute(id);
 				if (balloonTemplate != null) {
 					if (getBalloonTemplateHandler() == null) { // just in case
-						setBalloonTemplateHandler(new BalloonTemplateHandlerImpl((File) null, connection));
+						setBalloonTemplateHandler(databaseAdapter.getBalloonTemplateHandler(balloonTemplate));
 					}
-					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(balloonTemplate, id, currentLod));
+					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(balloonTemplate, id, currentLod, connection));
 				}
 				break;
 			case GEN_ATTRIB_AND_FILE:
 				balloonTemplate = getBalloonContentFromGenericAttribute(id);
 				if (balloonTemplate != null) {
-					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(balloonTemplate, id, currentLod));
+					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(balloonTemplate, id, currentLod, connection));
 					break;
 				}
 			case FILE :
 				if (getBalloonTemplateHandler() != null) {
-					getBalloonTemplateHandler().getBalloonContent(id, currentLod);
-					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(id, currentLod));
+					getBalloonTemplateHandler().getBalloonContent(id, currentLod, connection);
+					placemark.setDescription(getBalloonTemplateHandler().getBalloonContent(id, currentLod, connection));
 				}
 				break;
 			}
