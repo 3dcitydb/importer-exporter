@@ -1,4 +1,4 @@
-﻿3D City Database Importer/Exporter Spreadsheet Generator Plugin v2.1.0
+﻿3D City Database Importer/Exporter Spreadsheet Generator Plugin v2.2.0
 
   This software is free software and is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
