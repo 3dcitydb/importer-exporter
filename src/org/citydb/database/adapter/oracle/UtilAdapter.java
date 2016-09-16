@@ -238,17 +238,11 @@ public class UtilAdapter extends AbstractUtilAdapter {
 				if (!rs.wasNull() && struct != null) {
 					JGeometry jGeom = JGeometry.loadJS(struct);
 					double[] points = jGeom.getOrdinatesArray();
-					double xmin, ymin, xmax, ymax;
 
-					xmin = points[0];
-					ymin = points[1];
-					xmax = points[2];
-					ymax = points[3];
-
-					lowerCorner.setX(xmin);
-					lowerCorner.setY(ymin);
-					upperCorner.setX(xmax);
-					upperCorner.setY(ymax);	
+					lowerCorner.setX(points[0]);
+					lowerCorner.setY(points[1]);
+					upperCorner.setX(points[2]);
+					upperCorner.setY(points[3]);	
 				}
 			}
 

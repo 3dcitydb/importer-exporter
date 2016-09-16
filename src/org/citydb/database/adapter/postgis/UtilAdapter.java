@@ -50,6 +50,7 @@ import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.AbstractUtilAdapter;
 import org.citydb.util.Util;
 import org.postgis.Geometry;
+import org.postgis.PGbox2d;
 import org.postgis.PGgeometry;
 
 public class UtilAdapter extends AbstractUtilAdapter {
@@ -219,7 +220,7 @@ public class UtilAdapter extends AbstractUtilAdapter {
 		ResultSet rs = null;
 
 		try {		
-			String query = "select ST_Extent(ST_Force_2d(envelope))::geometry from cityobject where envelope is not null";
+			String query = "select ST_Extent(envelope) from cityobject where envelope is not null";
 			if (!classIds.isEmpty()) 
 				query += " and OBJECTCLASS_ID in (" + Util.collection2string(classIds, ", ") +") ";
 
@@ -230,20 +231,12 @@ public class UtilAdapter extends AbstractUtilAdapter {
 			rs = interruptableStatement.executeQuery(query);
 
 			if (rs.next()) {
-				PGgeometry pgGeom = (PGgeometry)rs.getObject(1);		
-				if (!rs.wasNull() && pgGeom != null) {
-					Geometry geom = pgGeom.getGeometry();
-					double xmin, ymin, xmax, ymax;
-
-					xmin = geom.getPoint(0).x;
-					ymin = geom.getPoint(0).y;
-					xmax = geom.getPoint(2).x;
-					ymax = geom.getPoint(2).y;
-
-					lowerCorner.setX(xmin);
-					lowerCorner.setY(ymin);
-					upperCorner.setX(xmax);
-					upperCorner.setY(ymax);	
+				PGbox2d geom = (PGbox2d)rs.getObject(1);	
+				if (!rs.wasNull() && geom != null) {
+					lowerCorner.setX(geom.getLLB().x);
+					lowerCorner.setY(geom.getLLB().y);
+					upperCorner.setX(geom.getURT().x);
+					upperCorner.setY(geom.getURT().y);	
 				}
 			}
 
