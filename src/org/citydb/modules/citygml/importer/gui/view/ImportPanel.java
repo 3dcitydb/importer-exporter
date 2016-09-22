@@ -416,7 +416,7 @@ public class ImportPanel extends JPanel implements EventHandler {
 			try {
 				success = importer.doProcess();
 			} catch (CityGMLImportException e) {
-				LOG.error("Aborting due to an internal error: " + e.getMessage());
+				LOG.error(e.getMessage());
 				success = false;
 				
 				Throwable cause = e.getCause();
