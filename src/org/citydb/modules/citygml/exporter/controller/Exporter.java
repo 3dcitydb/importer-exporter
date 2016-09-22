@@ -216,9 +216,9 @@ public class Exporter implements EventHandler {
 		// bounding box config
 		Tiling tiling = config.getProject().getExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
 		useTiling = exportFilter.getBoundingBoxFilter().isActive() && tiling.getMode() != TilingMode.NO_TILING;
-
 		int rows = useTiling ? tiling.getRows() : 1;  
 		int columns = useTiling ? tiling.getColumns() : 1;
+		
 		// prepare files and folders
 		File exportFile = new File(config.getInternal().getExportFileName());
 		String fileName = exportFile.getName();
