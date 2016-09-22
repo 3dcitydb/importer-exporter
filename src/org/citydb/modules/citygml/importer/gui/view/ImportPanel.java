@@ -417,7 +417,6 @@ public class ImportPanel extends JPanel implements EventHandler {
 				success = importer.doProcess();
 			} catch (CityGMLImportException e) {
 				LOG.error(e.getMessage());
-				success = false;
 				
 				Throwable cause = e.getCause();
 				while (cause != null) {
