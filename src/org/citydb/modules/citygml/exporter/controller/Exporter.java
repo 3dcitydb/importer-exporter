@@ -467,8 +467,9 @@ public class Exporter implements EventHandler {
 					// write footer element and flush sax writer
 					try {
 						writer.writeEndDocument();						
-						saxWriter.close();
-					} catch (CityGMLWriteException | SAXException e) {
+						saxWriter.flush();
+						saxWriter.getOutputWriter().close();
+					} catch (CityGMLWriteException | SAXException | IOException e) {
 						throw new CityGMLExportException("Failed to write CityGML file.", e);
 					}
 
