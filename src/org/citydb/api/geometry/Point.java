@@ -4,6 +4,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.citydb.api.database.DatabaseSrs;
+
 @XmlRootElement(name="point")
 @XmlType(name = "PointType", propOrder={
 		"pos"
@@ -15,17 +17,30 @@ public class Point extends AbstractGeometry {
 	public Point() {
 		pos = new Position();
 	}
-	
-	public Point(Position pos) {
+
+	public Point(Position pos, DatabaseSrs srs) {
 		this.pos = pos;
+		setSrs(srs);
 	}
 	
-	public Point(Double x, Double y) {
-		pos = new Position(x, y);
+	public Point(Double x, Double y, DatabaseSrs srs) {
+		this(new Position(x, y), srs);
+	}
+	
+	public Point(Double x, Double y, Double z, DatabaseSrs srs) {
+		this(new Position(x, y, z), srs);
+	}
+	
+	public Point(Position pos) {
+		this(pos, null);
 	}
 	
 	public Point(Double x, Double y, Double z) {
-		pos = new Position(x, y, z);
+		this(new Position(x, y, z), null);
+	}
+	
+	public Point(Double x, Double y) {
+		this(new Position(x, y), null);
 	}
 
 	public Position getPos() {
