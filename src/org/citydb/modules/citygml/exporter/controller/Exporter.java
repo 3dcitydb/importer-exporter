@@ -46,16 +46,12 @@ import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.event.EventHandler;
 import org.citydb.api.geometry.BoundingBox;
 import org.citydb.config.Config;
-import org.citydb.config.internal.Internal;
 import org.citydb.config.language.Language;
-import org.citydb.config.project.database.Database;
 import org.citydb.config.project.database.Workspace;
-import org.citydb.config.project.exporter.ExportAppearance;
 import org.citydb.config.project.filter.TileNameSuffixMode;
 import org.citydb.config.project.filter.TileSuffixMode;
 import org.citydb.config.project.filter.Tiling;
 import org.citydb.config.project.filter.TilingMode;
-import org.citydb.config.project.resources.Resources;
 import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.database.IndexStatusInfo.IndexType;
 import org.citydb.log.Logger;
@@ -86,11 +82,9 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.module.Module;
 import org.citygml4j.model.module.ModuleContext;
-import org.citygml4j.model.module.citygml.AppearanceModule;
 import org.citygml4j.model.module.citygml.CityGMLModule;
 import org.citygml4j.model.module.citygml.CityGMLModuleType;
 import org.citygml4j.model.module.citygml.CityGMLVersion;
-import org.citygml4j.model.module.citygml.CoreModule;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
 import org.citygml4j.xml.io.writer.CityGMLWriteException;
@@ -138,49 +132,38 @@ public class Exporter implements EventHandler {
 		eventDispatcher.removeEventHandler(this);
 	}
 
-	public boolean doProcess() {
-		// get config shortcuts
-		Resources resources = config.getProject().getExporter().getResources();
-		Database database = config.getProject().getDatabase();
-
-		// worker pool settings
-		int minThreads = resources.getThreadPool().getDefaultPool().getMinThreads();
-		int maxThreads = resources.getThreadPool().getDefaultPool().getMaxThreads();
-
-		// gml:id lookup cache update
-		int lookupCacheBatchSize = database.getUpdateBatching().getGmlIdCacheBatchValue();		
-
+	public boolean doProcess() throws CityGMLExportException {
 		// adding listeners
 		eventDispatcher.addEventHandler(EventType.FEATURE_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 
 		// checking workspace
-		Workspace workspace = database.getWorkspaces().getExportWorkspace();
+		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getExportWorkspace();
 		if (shouldRun && dbPool.getActiveDatabaseAdapter().hasVersioningSupport() && 
 				!dbPool.getActiveDatabaseAdapter().getWorkspaceManager().equalsDefaultWorkspaceName(workspace.getName()) &&
 				!dbPool.getActiveDatabaseAdapter().getWorkspaceManager().existsWorkspace(workspace, true))
 			return false;
 
-		// set module context according to CityGML version and create SAX writer
-		CityGMLVersion version = Util.toCityGMLVersion(config.getProject().getExporter().getCityGMLVersion());
-		ModuleContext moduleContext = new ModuleContext(version);
-		CityModelInfo cityModel = new CityModelInfo();
-
+		// prepare SAX writer
 		SAXWriter saxWriter = new SAXWriter();
 		saxWriter.setWriteEncoding(true);
 		saxWriter.setIndentString("  ");
 		saxWriter.setHeaderComment("Written by " + this.getClass().getPackage().getImplementationTitle() + ", version \"" +
 				this.getClass().getPackage().getImplementationVersion() + '"', 
 				this.getClass().getPackage().getImplementationVendor());
+
+		// set CityGML prefixes and schema locations
+		CityGMLVersion version = Util.toCityGMLVersion(config.getProject().getExporter().getCityGMLVersion());
+		ModuleContext moduleContext = new ModuleContext(version);
 		saxWriter.setDefaultNamespace(moduleContext.getModule(CityGMLModuleType.CORE).getNamespaceURI());
 
 		for (Module module : moduleContext.getModules()) {
-			if (module instanceof CoreModule)
+			if (module.getType() == CityGMLModuleType.CORE)
 				continue;
 
-			if (!config.getProject().getExporter().getAppearances().isSetExportAppearance() &&
-					module instanceof AppearanceModule)
+			if (!config.getProject().getExporter().getAppearances().isSetExportAppearance() 
+					&& module.getType() == CityGMLModuleType.APPEARANCE)
 				continue;
 
 			saxWriter.setPrefix(module.getNamespacePrefix(), module.getNamespaceURI());
@@ -188,41 +171,21 @@ public class Exporter implements EventHandler {
 				saxWriter.setSchemaLocation(module.getNamespaceURI(), module.getSchemaLocation());
 		}
 
-		// checking file
-		Internal internalConfig = config.getInternal();
-		File exportFile = new File(internalConfig.getExportFileName());
-		String fileName = exportFile.getName();
-		String folderName = new File(exportFile.getAbsolutePath()).getParent();
-
-		String fileExtension = Util.getFileExtension(fileName);		
-		if (fileExtension == null)
-			fileExtension = "gml";
-		else
-			fileName = Util.stripFileExtension(fileName);
-
-		// create export folder
-		File folder = new File(folderName);
-		if (!folder.exists() && !folder.mkdirs()) {
-			LOG.error("Failed to create folder '" + folderName + "'.");
-			return false;
-		}
-
 		// set target reference system for export
 		DatabaseSrs targetSRS = config.getProject().getExporter().getTargetSRS();
 		if (!targetSRS.isSupported())
 			targetSRS = dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();
 
-		internalConfig.setExportTargetSRS(targetSRS);
-		internalConfig.setTransformCoordinates(targetSRS.isSupported() && 
+		config.getInternal().setExportTargetSRS(targetSRS);
+		config.getInternal().setTransformCoordinates(targetSRS.isSupported() && 
 				targetSRS.getSrid() != dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid());
 
-		if (internalConfig.isTransformCoordinates()) {
+		if (config.getInternal().isTransformCoordinates()) {
 			if (targetSRS.is3D() == dbPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem().is3D()) {
 				LOG.info("Transforming geometry representation to reference system '" + targetSRS.getDescription() + "' (SRID: " + targetSRS.getSrid() + ").");
 				LOG.warn("Transformation is NOT applied to height reference system.");
 			} else {
-				LOG.error("Dimensionality of reference system for geometry transformation does not match.");
-				return false;
+				throw new CityGMLExportException("Dimensionality of reference system for geometry transformation does not match.");
 			}
 		}
 
@@ -231,35 +194,48 @@ public class Exporter implements EventHandler {
 			for (IndexType type : IndexType.values())
 				dbPool.getActiveDatabaseAdapter().getUtil().getIndexStatus(type).printStatusToConsole();
 		} catch (SQLException e) {
-			LOG.error("Database error while querying index status: " + e.getMessage());
-			return false;
+			throw new CityGMLExportException("Database error while querying index status.", e);
 		}
 
 		// check whether database contains global appearances and set internal flag
 		try {
-			internalConfig.setExportGlobalAppearances(config.getProject().getExporter().getAppearances().isSetExportAppearance() && 
+			config.getInternal().setExportGlobalAppearances(config.getProject().getExporter().getAppearances().isSetExportAppearance() && 
 					dbPool.getActiveDatabaseAdapter().getUtil().getNumGlobalAppearances(workspace) > 0);
 		} catch (SQLException e) {
-			LOG.error("Database error while querying the number of global appearances: " + e.getMessage());
-			return false;
+			throw new CityGMLExportException("Database error while querying the number of global appearances.", e);
 		}
 
 		// getting export filter
 		exportFilter = new ExportFilter(config);
-		
+
 		// cache gml:ids of city objects in case we have to export groups
-		internalConfig.setRegisterGmlIdInCache((!exportFilter.getFeatureClassFilter().isActive() 
+		config.getInternal().setRegisterGmlIdInCache((!exportFilter.getFeatureClassFilter().isActive() 
 				|| !exportFilter.getFeatureClassFilter().filter(CityGMLClass.CITY_OBJECT_GROUP))
 				&& !config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks());
 
 		// bounding box config
 		Tiling tiling = config.getProject().getExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
 		useTiling = exportFilter.getBoundingBoxFilter().isActive() && tiling.getMode() != TilingMode.NO_TILING;
-		
+
 		int rows = useTiling ? tiling.getRows() : 1;  
 		int columns = useTiling ? tiling.getColumns() : 1;
+		// prepare files and folders
+		File exportFile = new File(config.getInternal().getExportFileName());
+		String fileName = exportFile.getName();
+		String folderName = exportFile.getAbsoluteFile().getParent();
+
+		String fileExtension = Util.getFileExtension(fileName);		
+		if (fileExtension == null)
+			fileExtension = "gml";
+		else
+			fileName = Util.stripFileExtension(fileName);
+
+		File folder = new File(folderName);
+		if (!folder.exists() && !folder.mkdirs())
+			throw new CityGMLExportException("Failed to create folder '" + folderName + "'.");
+
 		long start = System.currentTimeMillis();
-		
+
 		for (int i = 0; shouldRun && i < rows; i++) {
 			for (int j = 0; shouldRun && j < columns; j++) {
 
@@ -268,7 +244,7 @@ public class Exporter implements EventHandler {
 
 					if (useTiling) {
 						exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
-						
+
 						// create suffix for folderName and fileName
 						TileSuffixMode suffixMode = tiling.getTilePathSuffix();
 						String suffix = "";
@@ -299,94 +275,79 @@ public class Exporter implements EventHandler {
 							suffix = String.valueOf(i) + '_' + String.valueOf(j);
 						}
 
-						String subfolderName = folderName + File.separator + tiling.getTilePath() + '_'  + suffix;
-						File subfolder = new File(subfolderName);
-						if (!subfolder.exists() && !subfolder.mkdirs()) {
-							LOG.error("Failed to create tiling subfolder '" + subfolderName + "'.");
-							return false;
-						}
+						File subfolder = new File(folderName, tiling.getTilePath() + '_'  + suffix);
+						if (!subfolder.exists() && !subfolder.mkdirs())
+							throw new CityGMLExportException("Failed to create tiling subfolder '" + subfolder + "'.");
 
 						if (tiling.getTileNameSuffix() == TileNameSuffixMode.SAME_AS_PATH)
-							file = new File(subfolderName + File.separator + fileName + '_'  + suffix + '.' + fileExtension);
+							file = new File(subfolder, fileName + '_'  + suffix + '.' + fileExtension);
 						else // no suffix for filename
-							file = new File(subfolderName + File.separator + fileName + '.' + fileExtension);
+							file = new File(subfolder, fileName + '.' + fileExtension);
 					}
 
 					else // no tiling
-						file = new File(folderName + File.separator + fileName + '.' + fileExtension);
+						file = new File(folderName, fileName + '.' + fileExtension);
 
 					config.getInternal().setExportFileName(file.getAbsolutePath());
 					File path = new File(file.getAbsolutePath());
-					internalConfig.setExportPath(path.getParent());
+					config.getInternal().setExportPath(path.getParent());
 
 					eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.cityObj.msg"), this));
 					eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
 
 					// checking export path for texture images
-					ExportAppearance appearances = config.getProject().getExporter().getAppearances();
-					if (appearances.isSetExportAppearance()) {
-						// read user input
+					if (config.getProject().getExporter().getAppearances().isSetExportAppearance()) {
 						String textureExportPath = null;
-						boolean isRelative = appearances.getTexturePath().isRelative();
+						boolean isRelative = config.getProject().getExporter().getAppearances().getTexturePath().isRelative();
 
 						if (isRelative)
-							textureExportPath = appearances.getTexturePath().getRelativePath();
+							textureExportPath = config.getProject().getExporter().getAppearances().getTexturePath().getRelativePath();
 						else
-							textureExportPath = appearances.getTexturePath().getAbsolutePath();
+							textureExportPath = config.getProject().getExporter().getAppearances().getTexturePath().getAbsolutePath();
 
 						if (textureExportPath != null && textureExportPath.length() > 0) {
-							// convert into system readable path name
 							File tmp = new File(textureExportPath);
 							textureExportPath = tmp.getPath();
 
 							if (isRelative) {
-								File exportPath = new File(path.getParent() + File.separator + textureExportPath);
+								File exportPath = new File(path.getParent(), textureExportPath);
 
 								if (exportPath.isFile() || (exportPath.isDirectory() && !exportPath.canWrite())) {
-									LOG.error("Failed to open texture files subfolder '" + exportPath.toString() + "' for writing.");
-									return false;
+									throw new CityGMLExportException("Failed to open texture files subfolder '" + exportPath.toString() + "' for writing.");
 								} else if (!exportPath.isDirectory()) {
 									boolean success = exportPath.mkdirs();
 
-									if (!success) {
-										LOG.error("Failed to create texture files subfolder '" + exportPath.toString() + "'.");
-										return false;
-									} else
+									if (!success)
+										throw new CityGMLExportException("Failed to create texture files subfolder '" + exportPath.toString() + "'.");
+									else
 										LOG.info("Created texture files subfolder '" + textureExportPath + "'.");
 								}
 
-								internalConfig.setExportTextureFilePath(textureExportPath);
+								config.getInternal().setExportTextureFilePath(textureExportPath);
 							} else {
 								File exportPath = new File(tmp.getAbsolutePath());
+								if (!exportPath.exists() || !exportPath.isDirectory() || !exportPath.canWrite())
+									throw new CityGMLExportException("Failed to open texture files folder '" + exportPath.toString() + "' for writing.");
 
-								if (!exportPath.exists() || !exportPath.isDirectory() || !exportPath.canWrite()) {
-									LOG.error("Failed to open texture files folder '" + exportPath.toString() + "' for writing.");
-									return false;
-								}
-
-								internalConfig.setExportTextureFilePath(exportPath.toString());
+								config.getInternal().setExportTextureFilePath(exportPath.toString());
 							}
 						}
 					}
 
 					// open file for writing
 					try {
-						OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
-						saxWriter.setOutput(fileWriter);
-					} catch (IOException ioE) {
-						LOG.error("Failed to open file '" + fileName + "' for writing: " + ioE.getMessage());
-						return false;
+						saxWriter.setOutput(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+					} catch (IOException e) {
+						throw new CityGMLExportException("Failed to open file '" + fileName + "' for writing.", e);
 					}					
 
 					// create instance of temp table manager
 					try {
-						cacheTableManager = new CacheTableManager(dbPool, maxThreads, config);
-					} catch (SQLException e) {
-						LOG.error("SQL error while initializing cache manager: " + e.getMessage());
-						return false;
-					} catch (IOException e) {
-						LOG.error("I/O error while initializing cache manager: " + e.getMessage());
-						return false;
+						cacheTableManager = new CacheTableManager(dbPool, 
+								config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads(), 
+								config);
+					} catch (SQLException | IOException e) {
+						throw new CityGMLExportException("Failed to initialize internal cache manager.", e);
 					}
 
 					// create instance of gml:id lookup server manager...
@@ -397,31 +358,30 @@ public class Exporter implements EventHandler {
 						uidCacheManager.initCache(
 								UIDCacheType.GEOMETRY,
 								new GeometryGmlIdCache(cacheTableManager, 
-										resources.getGmlIdCache().getGeometry().getPartitions(),
-										lookupCacheBatchSize),
-										resources.getGmlIdCache().getGeometry().getCacheSize(),
-										resources.getGmlIdCache().getGeometry().getPageFactor(),
-										maxThreads);
+										config.getProject().getExporter().getResources().getGmlIdCache().getGeometry().getPartitions(),
+										config.getProject().getDatabase().getUpdateBatching().getGmlIdCacheBatchValue()),
+								config.getProject().getExporter().getResources().getGmlIdCache().getGeometry().getCacheSize(),
+								config.getProject().getExporter().getResources().getGmlIdCache().getGeometry().getPageFactor(),
+								config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads());
 
 						uidCacheManager.initCache(
 								UIDCacheType.FEATURE,
 								new FeatureGmlIdCache(cacheTableManager, 
-										resources.getGmlIdCache().getFeature().getPartitions(), 
-										lookupCacheBatchSize),
-										resources.getGmlIdCache().getFeature().getCacheSize(),
-										resources.getGmlIdCache().getFeature().getPageFactor(),
-										maxThreads);
-					} catch (SQLException sqlEx) {
-						LOG.error("SQL error while initializing database export: " + sqlEx.getMessage());
-						return false;
-					}
+										config.getProject().getExporter().getResources().getGmlIdCache().getFeature().getPartitions(), 
+										config.getProject().getDatabase().getUpdateBatching().getGmlIdCacheBatchValue()),
+								config.getProject().getExporter().getResources().getGmlIdCache().getFeature().getCacheSize(),
+								config.getProject().getExporter().getResources().getGmlIdCache().getFeature().getPageFactor(),
+								config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads());
+					} catch (SQLException e) {
+						throw new CityGMLExportException("Failed to initialize internal gml:id caches.", e);
+					}	
 
 					// create worker pools
 					// here we have an open issue: queue sizes are fix...
 					xlinkExporterPool = new WorkerPool<DBXlink>(
 							"xlink_exporter_pool",
 							1,
-							Math.max(1, maxThreads / 2),
+							Math.max(1, config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads() / 2),
 							PoolSizeAdaptationStrategy.AGGRESSIVE,
 							new DBExportXlinkWorkerFactory(dbPool, config, eventDispatcher),
 							300,
@@ -435,8 +395,8 @@ public class Exporter implements EventHandler {
 
 					dbWorkerPool = new WorkerPool<DBSplittingResult>(
 							"db_exporter_pool",
-							minThreads,
-							maxThreads,
+							config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMinThreads(),
+							config.getProject().getExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
 							PoolSizeAdaptationStrategy.AGGRESSIVE,
 							new DBExportWorkerFactory(
 									dbPool,
@@ -448,19 +408,17 @@ public class Exporter implements EventHandler {
 									exportFilter,
 									config,
 									eventDispatcher),
-									300,
-									false);
-					
+							300,
+							false);
+
 					// prestart pool workers
 					xlinkExporterPool.prestartCoreWorkers();
 					ioWriterPool.prestartCoreWorkers();
 					dbWorkerPool.prestartCoreWorkers();
-					
+
 					// fail if we could not start a single import worker
-					if (dbWorkerPool.getPoolSize() == 0) {
-						LOG.error("Failed to start database export worker pool. Check the database connection pool settings.");
-						return false;
-					}
+					if (dbWorkerPool.getPoolSize() == 0)
+						throw new CityGMLExportException("Failed to start database export worker pool. Check the database connection pool settings.");
 
 					// ok, preparations done. inform user...
 					LOG.info("Exporting to file: " + file.getAbsolutePath());
@@ -472,19 +430,12 @@ public class Exporter implements EventHandler {
 								saxWriter, 
 								(JAXBOutputFactory)jaxbBuilder.createCityGMLOutputFactory(moduleContext), 
 								moduleContext, 
-								cityModel);
-						writer.writeStartDocument();
-					} catch (CityGMLWriteException e) {
-						LOG.error("I/O error: " + e.getCause().getMessage());
-						return false;
-					}
+								new CityModelInfo());
 
-					// flush writer to make sure header has been written
-					try {
+						writer.writeStartDocument();
 						saxWriter.flush();
-					} catch (SAXException e) {
-						LOG.error("I/O error: " + e.getMessage());
-						return false;
+					} catch (CityGMLWriteException | SAXException e) {
+						throw new CityGMLExportException("Failed to write CityGML file.", e);
 					}
 
 					// get database splitter and start query
@@ -501,10 +452,8 @@ public class Exporter implements EventHandler {
 
 						if (shouldRun)
 							dbSplitter.startQuery();
-					} catch (SQLException sqlE) {
-						LOG.error("SQL error: " + sqlE.getMessage());
-						LOG.error("Failed to query the database. Check the database connection pool settings.");
-						return false;
+					} catch (SQLException e) {
+						throw new CityGMLExportException("Failed to query the database.", e);
 					}
 
 					try {
@@ -512,71 +461,18 @@ public class Exporter implements EventHandler {
 						xlinkExporterPool.shutdownAndWait();
 						ioWriterPool.shutdownAndWait();
 					} catch (InterruptedException e) {
-						LOG.error("Internal error: " + e.getMessage());
+						throw new CityGMLExportException("Failed to shutdown worker pools.", e);
 					}
 
-					// write footer element
+					// write footer element and flush sax writer
 					try {
-						writer.writeEndDocument();
-					} catch (CityGMLWriteException e) {
-						LOG.error("I/O error: " + e.getCause().getMessage());
-						return false;
-					}
-
-					// flush sax writer
-					try {
-						saxWriter.flush();
-						saxWriter.getOutputWriter().close();
-					} catch (SAXException e) {
-						LOG.error("I/O error: " + e.getMessage());
-						return false;
-					} catch (IOException e) {
-						LOG.error("I/O error: " + e.getMessage());
-						return false;
+						writer.writeEndDocument();						
+						saxWriter.close();
+					} catch (CityGMLWriteException | SAXException e) {
+						throw new CityGMLExportException("Failed to write CityGML file.", e);
 					}
 
 					eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg"), this));
-
-					// cleaning up...
-					try {
-						uidCacheManager.shutdownAll();
-					} catch (SQLException e) {
-						LOG.error("SQL error: " + e.getMessage());
-					}
-
-					try {
-						LOG.info("Cleaning temporary cache.");
-						cacheTableManager.dropAll();
-						cacheTableManager = null;
-					} catch (SQLException sqlE) {
-						LOG.error("SQL error: " + sqlE.getMessage());
-						return false;
-					}
-
-					// finally join eventDispatcher
-					try {
-						eventDispatcher.flushEvents();
-					} catch (InterruptedException iE) {
-						LOG.error("Internal error: " + iE.getMessage());
-						return false;
-					}
-					
-					// show exported features
-					if (!featureCounterMap.isEmpty()) {
-						LOG.info("Exported CityGML features:");
-						for (CityGMLClass type : featureCounterMap.keySet())
-							LOG.info(type + ": " + featureCounterMap.get(type));
-					}
-
-					long geometryObjects = 0;
-					for (GMLClass type : geometryCounterMap.keySet())
-						geometryObjects += geometryCounterMap.get(type);
-
-					if (geometryObjects != 0)
-						LOG.info("Processed geometry objects: " + geometryObjects);
-
-					featureCounterMap.clear();
-					geometryCounterMap.clear();
 				} finally {
 					// clean up
 					if (xlinkExporterPool != null && !xlinkExporterPool.isTerminated())
@@ -587,24 +483,44 @@ public class Exporter implements EventHandler {
 
 					if (ioWriterPool != null && !ioWriterPool.isTerminated())
 						ioWriterPool.shutdownNow();
-					
-					if (cacheTableManager != null) {
-						try {
-							LOG.info("Cleaning temporary cache.");
-							cacheTableManager.dropAll();
-							cacheTableManager = null;
-						} catch (SQLException sqlEx) {
-							LOG.error("SQL error while finishing database export: " + sqlEx.getMessage());
-						}
+
+					try {
+						eventDispatcher.flushEvents();
+					} catch (InterruptedException e) {
+						//
 					}
 
-					// set null
-					uidCacheManager = null;
-					xlinkExporterPool = null;
-					ioWriterPool = null;
-					dbWorkerPool = null;
-					dbSplitter = null;
+					try {
+						uidCacheManager.shutdownAll();
+					} catch (SQLException e) {
+						throw new CityGMLExportException("Failed to clean gml:id caches.", e);
+					}
+
+					try {
+						LOG.info("Cleaning temporary cache.");
+						cacheTableManager.dropAll();
+						cacheTableManager = null;
+					} catch (SQLException e) {
+						throw new CityGMLExportException("Failed to clean temporary cache.", e);
+					}					
 				}
+
+				// show exported features
+				if (!featureCounterMap.isEmpty()) {
+					LOG.info("Exported CityGML features:");
+					for (CityGMLClass type : featureCounterMap.keySet())
+						LOG.info(type + ": " + featureCounterMap.get(type));
+				}
+
+				long geometryObjects = 0;
+				for (GMLClass type : geometryCounterMap.keySet())
+					geometryObjects += geometryCounterMap.get(type);
+
+				if (geometryObjects != 0)
+					LOG.info("Processed geometry objects: " + geometryObjects);
+
+				featureCounterMap.clear();
+				geometryCounterMap.clear();
 			}
 		}
 
@@ -623,10 +539,10 @@ public class Exporter implements EventHandler {
 			if (geometryObjects != 0)
 				LOG.info("Total processed geometry objects: " + geometryObjects);
 		}
-		
+
 		if (shouldRun)
 			LOG.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
-		
+
 		return shouldRun;
 	}
 
@@ -636,21 +552,14 @@ public class Exporter implements EventHandler {
 			HashMap<CityGMLClass, Long> counterMap = ((FeatureCounterEvent)e).getCounter();
 
 			for (CityGMLClass type : counterMap.keySet()) {
-				Long counter = featureCounterMap.get(type);
 				Long update = counterMap.get(type);
 
-				if (counter == null)
-					featureCounterMap.put(type, update);
-				else
-					featureCounterMap.put(type, counter + update);
+				Long counter = featureCounterMap.get(type);
+				featureCounterMap.put(type, counter == null ? update : counter + update);
 
 				if (useTiling) {
 					counter = totalFeatureCounterMap.get(type);
-
-					if (counter == null)
-						totalFeatureCounterMap.put(type, update);
-					else
-						totalFeatureCounterMap.put(type, counter + update);
+					totalFeatureCounterMap.put(type, counter == null ? update : counter + update);
 				}
 			}
 		}
@@ -659,21 +568,14 @@ public class Exporter implements EventHandler {
 			HashMap<GMLClass, Long> counterMap = ((GeometryCounterEvent)e).getCounter();
 
 			for (GMLClass type : counterMap.keySet()) {
-				Long counter = geometryCounterMap.get(type);
 				Long update = counterMap.get(type);
 
-				if (counter == null)
-					geometryCounterMap.put(type, update);
-				else
-					geometryCounterMap.put(type, counter + update);
+				Long counter = geometryCounterMap.get(type);
+				geometryCounterMap.put(type, counter == null ? update : counter + update);
 
 				if (useTiling) {
 					counter = totalGeometryCounterMap.get(type);
-
-					if (counter == null)
-						totalGeometryCounterMap.put(type, update);
-					else
-						totalGeometryCounterMap.put(type, counter + update);
+					totalGeometryCounterMap.put(type, counter == null ? update : counter + update);
 				}
 			}
 		}
@@ -697,7 +599,7 @@ public class Exporter implements EventHandler {
 							LOG.error("Cause: " + cause.getMessage().trim());
 					}
 				}
-				
+
 				String log = interruptEvent.getLogMessage();
 				if (log != null)
 					LOG.log(interruptEvent.getLogLevelType(), log);

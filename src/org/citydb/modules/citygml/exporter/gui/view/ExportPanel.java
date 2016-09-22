@@ -77,9 +77,10 @@ import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.gui.factory.SrsComboBoxFactory.SrsComboBox;
 import org.citydb.log.Logger;
+import org.citydb.modules.citygml.exporter.controller.CityGMLExportException;
 import org.citydb.modules.citygml.exporter.controller.Exporter;
-import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.modules.common.event.InterruptEvent;
+import org.citydb.modules.common.event.InterruptReason;
 import org.citydb.util.Util;
 import org.citydb.util.gui.GuiUtil;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -362,7 +363,18 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 				}
 			});
 
-			boolean success = exporter.doProcess();
+			boolean success = false;
+			try {
+				success = exporter.doProcess();
+			} catch (CityGMLExportException e) {
+				LOG.error(e.getMessage());
+				
+				Throwable cause = e.getCause();
+				while (cause != null) {
+					LOG.error("Cause: " + cause.getMessage());
+					cause = cause.getCause();
+				}
+			}
 
 			try {
 				eventDispatcher.flushEvents();
