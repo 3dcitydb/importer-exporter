@@ -1,12 +1,10 @@
 package org.citydb.api.geometry;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.citydb.api.database.DatabaseSrs;
 
-@XmlRootElement(name="point")
 @XmlType(name = "PointType", propOrder={
 		"pos"
 })

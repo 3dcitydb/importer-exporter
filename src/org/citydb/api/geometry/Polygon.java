@@ -3,10 +3,8 @@ package org.citydb.api.geometry;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="polygon")
 @XmlType(name="PolygonType", propOrder={
 		"exterior",
 		"interior"
