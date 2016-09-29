@@ -93,12 +93,14 @@ import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.modules.common.event.InterruptReason;
+import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.util.Util;
 import org.citydb.util.gui.GuiUtil;
 
 @SuppressWarnings("serial")
 public class KmlExportPanel extends JPanel implements EventHandler {
-
+	private final Logger LOG = Logger.getInstance();
+	
 	protected static final int BORDER_THICKNESS = 5;
 	protected static final int MAX_TEXTFIELD_HEIGHT = 20;
 	protected static final int MAX_LABEL_WIDTH = 60;
@@ -1048,14 +1050,14 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				}
 				catch (SQLException sqle) {
 					String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs().getDescription();
-					Logger.getInstance().error(srsDescription + " " + sqle.getMessage());
+					LOG.error(srsDescription + " " + sqle.getMessage());
 					return;
 				}
 			}
 			tileAmount = tileAmount * activeDisplayFormsAmount;
 
 			mainView.setStatusText(Language.I18N.getString("main.status.kmlExport.label"));
-			Logger.getInstance().info("Initializing database export...");
+			LOG.info("Initializing database export...");
 
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(mainView, 
 					Language.I18N.getString("kmlExport.dialog.window"),
@@ -1084,7 +1086,18 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 				}
 			});
 
-			boolean success = kmlExporter.doProcess();
+			boolean success = false;
+			try {
+				success = kmlExporter.doProcess();
+			} catch (KmlExportException e) {
+				LOG.error(e.getMessage());
+				
+				Throwable cause = e.getCause();
+				while (cause != null) {
+					LOG.error("Cause: " + cause.getMessage());
+					cause = cause.getCause();
+				}
+			}
 
 			try {
 				eventDispatcher.flushEvents();
@@ -1102,9 +1115,9 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 			kmlExporter.cleanup();
 
 			if (success) {
-				Logger.getInstance().info("Database export successfully finished.");
+				LOG.info("Database export successfully finished.");
 			} else {
-				Logger.getInstance().warn("Database export aborted.");
+				LOG.warn("Database export aborted.");
 			}
 
 			mainView.setStatusText(Language.I18N.getString("main.status.ready.label"));
@@ -1292,7 +1305,7 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					themeComboBox.setEnabled(true);
 				}
 			} catch (SQLException e) {
-				Logger.getInstance().error("Failed to query appearance themes from database: " + e.getMessage());
+				LOG.error("Failed to query appearance themes from database: " + e.getMessage());
 			} finally {
 				fetchThemesButton.setEnabled(true);
 			}

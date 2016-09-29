@@ -52,6 +52,7 @@ import org.citydb.modules.citygml.exporter.controller.Exporter;
 import org.citydb.modules.citygml.importer.controller.CityGMLImportException;
 import org.citydb.modules.citygml.importer.controller.Importer;
 import org.citydb.modules.citygml.importer.controller.XMLValidator;
+import org.citydb.modules.kml.controller.KmlExportException;
 import org.citydb.modules.kml.controller.KmlExporter;
 import org.citydb.util.Util;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -224,6 +225,14 @@ public class ImpExpCmd {
 		boolean success = false;
 		try {
 			success = kmlExporter.doProcess();
+		} catch (KmlExportException e) {
+			LOG.error(e.getMessage());
+			
+			Throwable cause = e.getCause();
+			while (cause != null) {
+				LOG.error("Cause: " + cause.getMessage());
+				cause = cause.getCause();
+			}
 		} finally {
 			try {
 				eventDispatcher.flushEvents();

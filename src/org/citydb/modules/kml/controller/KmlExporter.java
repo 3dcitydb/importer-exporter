@@ -70,7 +70,6 @@ import org.citydb.config.project.kmlExporter.BalloonContentMode;
 import org.citydb.config.project.kmlExporter.DisplayForm;
 import org.citydb.config.project.kmlExporter.PointAndCurve;
 import org.citydb.config.project.kmlExporter.PointDisplayMode;
-import org.citydb.config.project.resources.Resources;
 import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.concurrent.IOWriterWorkerFactory;
@@ -131,6 +130,8 @@ import net.opengis.kml._2.StyleType;
 import net.opengis.kml._2.ViewRefreshModeEnumType;
 
 public class KmlExporter implements EventHandler {
+	private final Logger LOG = Logger.getInstance();
+
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
 	private final DatabaseConnectionPool dbPool;
@@ -176,13 +177,7 @@ public class KmlExporter implements EventHandler {
 		eventDispatcher.removeEventHandler(this);
 	}
 
-	public boolean doProcess() {
-		// get config shortcuts
-		Resources resources = config.getProject().getKmlExporter().getResources();
-
-		// worker pool settings
-		int maxThreads = resources.getThreadPool().getDefaultPool().getMaxThreads();
-
+	public boolean doProcess() throws KmlExportException {
 		// adding listener
 		eventDispatcher.addEventHandler(EventType.FEATURE_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
@@ -196,17 +191,16 @@ public class KmlExporter implements EventHandler {
 			return false;
 
 		// check whether spatial indexes are enabled
-		Logger.getInstance().info("Checking for spatial indexes on geometry columns of involved tables...");
+		LOG.info("Checking for spatial indexes on geometry columns of involved tables...");
 		try {
 			if (!dbPool.getActiveDatabaseAdapter().getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE") || 
 					!dbPool.getActiveDatabaseAdapter().getUtil().isIndexEnabled("SURFACE_GEOMETRY", "GEOMETRY")) {
-				Logger.getInstance().error("Spatial indexes are not activated.");
-				Logger.getInstance().error("Please use the database tab to activate the spatial indexes.");
+				LOG.error("Spatial indexes are not activated.");
+				LOG.error("Please use the database tab to activate the spatial indexes.");
 				return false;
 			}
 		} catch (SQLException e) {
-			Logger.getInstance().error("Failed to retrieve status of spatial indexes: " + e.getMessage());
-			return false;
+			throw new KmlExportException("Failed to retrieve status of spatial indexes.", e);
 		}
 
 		// check whether the selected theme existed in the database,just for Building Class...
@@ -217,14 +211,13 @@ public class KmlExporter implements EventHandler {
 				for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 					if (displayForm.getForm() == DisplayForm.COLLADA && displayForm.isActive()) {
 						if (!dbPool.getActiveDatabaseAdapter().getUtil().getAppearanceThemeList(workspace).contains(selectedTheme)) {
-							Logger.getInstance().error("Database does not contain appearance theme \"" + selectedTheme + "\"");
+							LOG.error("Database does not contain appearance theme \"" + selectedTheme + "\"");
 							return false;
 						}
 					}
 				}
 			} catch (SQLException e) {
-				Logger.getInstance().error("Generic DB error: " + e.getMessage());
-				return false;
+				throw new KmlExportException("Generic database error.", e);
 			}
 		}
 
@@ -240,19 +233,17 @@ public class KmlExporter implements EventHandler {
 		balloonCheck = checkBalloonSettings(CityGMLClass.CITY_OBJECT_GROUP) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.BRIDGE) && balloonCheck;
 		balloonCheck = checkBalloonSettings(CityGMLClass.TUNNEL) && balloonCheck;
-		if (!balloonCheck) return false;	
+		if (!balloonCheck) 
+			return false;	
 
 		// check collada2gltf tool
 		if (config.getProject().getKmlExporter().isCreateGltfModel()) {
 			File file = new File(config.getProject().getKmlExporter().getPathOfGltfConverter());
-			
-			if (!file.exists()) {
-				Logger.getInstance().error("Failed to find the COLLADA2glTF tool at the provided path " + file.getAbsolutePath() + ".");
-				return false;
-			} else if (!file.canExecute()) {
-				Logger.getInstance().error("Failed to execute the COLLADA2glTF tool at " + file.getAbsolutePath() + ".");
-				return false;
-			}
+
+			if (!file.exists())
+				throw new KmlExportException("Failed to find the COLLADA2glTF tool at the provided path " + file.getAbsolutePath() + ".");
+			else if (!file.canExecute())
+				throw new KmlExportException("Failed to execute the COLLADA2glTF tool at " + file.getAbsolutePath() + ".");
 		}
 
 		boolean isBBoxActive = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue();
@@ -302,14 +293,12 @@ public class KmlExporter implements EventHandler {
 			try {
 				masterFileWriter = writeMasterFileHeader(fileName, path);
 			} catch (JAXBException | IOException | SAXException e) {
-				Logger.getInstance().error("Failed to write KML master file header: " + e.getMessage());
-				return false;
+				throw new KmlExportException("Failed to write KML master file header.", e);
 			}
 		}
 
 		// start writing cityobject JSON file if required
 		FileOutputStream jsonFileWriter = null;
-
 		boolean jsonHasContent = false;
 		if (config.getProject().getKmlExporter().isWriteJSONFile() && isBBoxActive) {
 			try {
@@ -320,15 +309,14 @@ public class KmlExporter implements EventHandler {
 				else
 					jsonFileWriter.write("{\n".getBytes(CHARSET));
 			} catch (IOException e) {
-				Logger.getInstance().error("Failed to write JSON file header: " + e.getMessage());
-				return false;
+				throw new KmlExportException("Failed to write JSON file header.", e);
 			}			
 		}
 
 		// display number of tiles to be exported
 		if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
 			int activeDisplayFormsAmount = config.getProject().getKmlExporter().getActiveDisplayFormsAmount(config.getProject().getKmlExporter().getBuildingDisplayForms());
-			Logger.getInstance().info(String.valueOf(rows * columns * activeDisplayFormsAmount) +
+			LOG.info(String.valueOf(rows * columns * activeDisplayFormsAmount) +
 					" (" + rows + "x" + columns + "x" + activeDisplayFormsAmount +
 					") tiles will be generated."); 
 		}
@@ -345,20 +333,15 @@ public class KmlExporter implements EventHandler {
 				// set active tile and get tile extent in WGS84
 				GeometryObject wgs84Tile = null;
 				if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
-					try {
-						exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
-						BoundingBox wgs84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
-						wgs84Tile = GeometryObject.createPolygon(new double[]{
-								wgs84Bbox.getLowerCorner().getX(), wgs84Bbox.getLowerCorner().getY(),
-								wgs84Bbox.getUpperCorner().getX(), wgs84Bbox.getLowerCorner().getY(),
-								wgs84Bbox.getUpperCorner().getX(), wgs84Bbox.getUpperCorner().getY(),
-								wgs84Bbox.getLowerCorner().getX(), wgs84Bbox.getUpperCorner().getY(),
-								wgs84Bbox.getLowerCorner().getX(), wgs84Bbox.getLowerCorner().getY(),
-						}, 2, 4326);
-					} catch (Exception e) {
-						Logger.getInstance().error("Failed to transform tile extent to WGS84: " + e.getMessage());
-						return false;
-					}
+					exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
+					BoundingBox wgs84Bbox = exportFilter.getBoundingBoxFilter().getFilterState();
+					wgs84Tile = GeometryObject.createPolygon(new double[]{
+							wgs84Bbox.getLowerCorner().getX(), wgs84Bbox.getLowerCorner().getY(),
+							wgs84Bbox.getUpperCorner().getX(), wgs84Bbox.getLowerCorner().getY(),
+							wgs84Bbox.getUpperCorner().getX(), wgs84Bbox.getUpperCorner().getY(),
+							wgs84Bbox.getLowerCorner().getX(), wgs84Bbox.getUpperCorner().getY(),
+							wgs84Bbox.getLowerCorner().getX(), wgs84Bbox.getLowerCorner().getY(),
+					}, 2, 4326);
 				}
 
 				// iterate over display forms
@@ -404,9 +387,8 @@ public class KmlExporter implements EventHandler {
 
 							// set output for SAXWriter
 							saxWriter.setOutput(fileWriter);	
-						} catch (IOException ioE) {
-							Logger.getInstance().error("Failed to open file '" + file.getName() + "' for writing: " + ioE.getMessage());
-							return false;
+						} catch (IOException e) {
+							throw new KmlExportException("Failed to open file '" + file.getName() + "' for writing.", e);
 						}
 
 						// create worker pools
@@ -419,8 +401,8 @@ public class KmlExporter implements EventHandler {
 
 						kmlWorkerPool = new WorkerPool<KmlSplittingResult>(
 								"db_exporter_pool",
-								maxThreads,
-								maxThreads,
+								config.getProject().getKmlExporter().getResources().getThreadPool().getDefaultPool().getMinThreads(),
+								config.getProject().getKmlExporter().getResources().getThreadPool().getDefaultPool().getMaxThreads(),
 								PoolSizeAdaptationStrategy.AGGRESSIVE,
 								new KmlExportWorkerFactory(
 										jaxbKmlContext,
@@ -439,16 +421,14 @@ public class KmlExporter implements EventHandler {
 						kmlWorkerPool.prestartCoreWorkers();
 
 						// fail if we could not start a single import worker
-						if (kmlWorkerPool.getPoolSize() == 0) {
-							Logger.getInstance().error("Failed to start database export worker pool. Check the database connection pool settings.");
-							return false;
-						}
+						if (kmlWorkerPool.getPoolSize() == 0)
+							throw new KmlExportException("Failed to start database export worker pool. Check the database connection pool settings.");
 
 						// create file header writer
 						SAXFragmentWriter fragmentWriter = new SAXFragmentWriter(kmlFactory.createDocument(null).getName(), saxWriter);
 
 						// ok, preparations done. inform user...
-						Logger.getInstance().info("Exporting to file: " + file.getAbsolutePath());
+						LOG.info("Exporting to file: " + file.getAbsolutePath());
 
 						// create kml root element
 						KmlType kmlType = kmlFactory.createKmlType();
@@ -477,12 +457,8 @@ public class KmlExporter implements EventHandler {
 								addBorder(wgs84Tile, null, saxWriter);
 
 							saxWriter.flush();
-						} catch (JAXBException jaxBE) {
-							Logger.getInstance().error("JAXB error: " + jaxBE.getMessage());
-							return false;
-						} catch (SAXException saxE) {
-							Logger.getInstance().error("I/O error: " + saxE.getMessage());
-							return false;
+						} catch (JAXBException | SAXException e) {
+							throw new KmlExportException("Failed to write output file.", e);
 						}
 
 						// get database splitter and start query
@@ -496,10 +472,8 @@ public class KmlExporter implements EventHandler {
 
 							if (shouldRun)
 								kmlSplitter.startQuery();
-						} catch (SQLException sqlE) {
-							Logger.getInstance().error("SQL error: " + sqlE.getMessage());
-							Logger.getInstance().error("Failed to query the database. Check the database connection pool settings.");
-							return false;
+						} catch (SQLException e) {
+							throw new KmlExportException("Failed to query the database.", e);
 						}
 
 						// shutdown worker pools
@@ -507,15 +481,7 @@ public class KmlExporter implements EventHandler {
 							kmlWorkerPool.shutdownAndWait();
 							ioWriterPool.shutdownAndWait();
 						} catch (InterruptedException e) {
-							Logger.getInstance().error("Internal error: " + e.getMessage());
-						}
-
-						// join eventDispatcher
-						try {
-							eventDispatcher.flushEvents();
-						} catch (InterruptedException iE) {
-							Logger.getInstance().error("Internal error: " + iE.getMessage());
-							return false;
+							throw new KmlExportException("Failed to shutdown worker pools.", e);
 						}
 
 						try {
@@ -528,18 +494,16 @@ public class KmlExporter implements EventHandler {
 										addStyle(displayForm, type, saxWriter);
 								}
 							}
-						} catch (JAXBException jaxBE) {
-							Logger.getInstance().error("I/O error: " + jaxBE.getMessage());
-							return false;
+						} catch (JAXBException e) {
+							throw new KmlExportException("Failed to write styles.", e);
 						}
 
 						// write footer element
 						try {
 							fragmentWriter.setWriteMode(WriteMode.TAIL);
 							marshaller.marshal(kml, fragmentWriter);
-						} catch (JAXBException jaxBE) {
-							Logger.getInstance().error("I/O error: " + jaxBE.getMessage());
-							return false;
+						} catch (JAXBException e) {
+							throw new KmlExportException("Failed to write output file.", e);
 						}
 
 						// flush sax writer and close file
@@ -555,7 +519,7 @@ public class KmlExporter implements EventHandler {
 									int indexOfZipFilePath = tempFolder.getCanonicalPath().length() + 1;
 
 									if (tempFolder.exists()) { // !config.getProject().getKmlExporter().isOneFilePerObject()
-										Logger.getInstance().info("Zipping to kmz archive from temporary folder...");
+										LOG.info("Zipping to kmz archive from temporary folder...");
 										getAllFiles(tempFolder, filesToZip);
 										for (File fileToZip : filesToZip) {
 											if (!fileToZip.isDirectory()) {
@@ -574,34 +538,31 @@ public class KmlExporter implements EventHandler {
 												zipOut.closeEntry();
 											}
 										}
-										Logger.getInstance().info("Removing temporary folder...");
+										LOG.info("Removing temporary folder...");
 										deleteFolder(tempFolder);
 									}
 									zipOut.close();
 								}
 							}
-						} catch (Exception ioe) {
-							Logger.getInstance().error("I/O error: " + ioe.getMessage());
-							return false;
+						} catch (Exception e) {
+							throw new KmlExportException("Failed to write output file.", e);
 						}
 
 						try {
 							saxWriter.close();
 						} catch (Exception e) {
-							Logger.getInstance().error("I/O error: " + e.getMessage());
+							throw new KmlExportException("Failed to close output file.", e);
 						}
 
 						// delete empty tile file if requested
 						if (isBBoxActive && featureCounterMap.isEmpty() && !config.getProject().getKmlExporter().isExportEmptyTiles()) {
-							Logger.getInstance().debug("Tile_" + exportFilter.getBoundingBoxFilter().getTileRow()
+							LOG.debug("Tile_" + exportFilter.getBoundingBoxFilter().getTileRow()
 									+ "_" + exportFilter.getBoundingBoxFilter().getTileColumn() + " is empty. Deleting file " + file.getName() + ".");
 							file.delete();
 						}
 
 						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.finish.msg"), this));
-					}
-
-					finally {
+					} finally {
 						// clean up
 						if (ioWriterPool != null && !ioWriterPool.isTerminated())
 							ioWriterPool.shutdownNow();
@@ -609,10 +570,11 @@ public class KmlExporter implements EventHandler {
 						if (kmlWorkerPool != null && !kmlWorkerPool.isTerminated())
 							kmlWorkerPool.shutdownNow();
 
-						// set null
-						ioWriterPool = null;
-						kmlWorkerPool = null;
-						kmlSplitter = null;
+						try {
+							eventDispatcher.flushEvents();
+						} catch (InterruptedException e) {
+							//
+						}
 					}
 				}
 
@@ -621,8 +583,8 @@ public class KmlExporter implements EventHandler {
 					try {
 						writeMasterFileTileReference(fileName, i, j, wgs84Tile, masterFileWriter);
 					} catch (JAXBException e) {
-						Logger.getInstance().error("Failed to write tile reference to master file: " + e.getMessage());
-						return false;
+						if (jsonFileWriter != null) try { jsonFileWriter.close(); } catch (IOException ioe) { }
+						throw new KmlExportException("Failed to write tile reference to master file.", e);
 					}
 				}
 
@@ -642,9 +604,9 @@ public class KmlExporter implements EventHandler {
 							if (iter.hasNext())
 								jsonFileWriter.write(",\n".getBytes(CHARSET));
 						}
-					} catch (IOException ioe) {
-						Logger.getInstance().error("I/O error: " + ioe.getMessage());
-						return false;
+					} catch (IOException e) {
+						if (jsonFileWriter != null) try { jsonFileWriter.close(); } catch (IOException ioe) { }
+						throw new KmlExportException("Failed to write JSON file.", e);
 					}
 				}
 
@@ -658,14 +620,18 @@ public class KmlExporter implements EventHandler {
 				writeMasterFileFooter(masterFileWriter);
 				masterFileWriter.close();
 			} catch (JAXBException | SAXException e) {
-				Logger.getInstance().error("Failed to write KML master file footer: " + e.getMessage());
-				return false;
+				throw new KmlExportException("Failed to write KML master file footer.", e);
 			}
 		}
 
 		// write master JSON file
-		if (isBBoxActive)
-			writeMasterJsonFileTileReference(path, fileName, fileExtension);
+		if (isBBoxActive) {
+			try {
+				writeMasterJsonFileTileReference(path, fileName, fileExtension);
+			} catch (IOException e) {
+				throw new KmlExportException("Failed to write master JSON file.", e);
+			}
+		}
 
 		// close cityobject JSON file
 		if (jsonFileWriter != null) {
@@ -676,26 +642,25 @@ public class KmlExporter implements EventHandler {
 					jsonFileWriter.write("\n}\n".getBytes(CHARSET));
 
 				jsonFileWriter.close();
-			} catch (IOException ioe) {
-				Logger.getInstance().error("Failed to close JSON file: " + ioe.getMessage());
-				return false;
+			} catch (IOException e) {
+				throw new KmlExportException("Failed to close JSON file.", e);
 			}
 		}		
 
 		// show exported features
 		if (!totalFeatureCounterMap.isEmpty()) {
-			Logger.getInstance().info("Exported CityGML features:");
+			LOG.info("Exported CityGML features:");
 			for (CityGMLClass type : totalFeatureCounterMap.keySet())
-				Logger.getInstance().info(type + ": " + totalFeatureCounterMap.get(type));
+				LOG.info(type + ": " + totalFeatureCounterMap.get(type));
 		}
 
-		Logger.getInstance().info("Processed geometry objects: " + geometryCounter);
+		LOG.info("Processed geometry objects: " + geometryCounter);
 
 		if (lastTempFolder != null && lastTempFolder.exists()) 
 			deleteFolder(lastTempFolder); // just in case
 
 		if (shouldRun)
-			Logger.getInstance().info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
+			LOG.info("Total export time: " + Util.formatElapsedTime(System.currentTimeMillis() - start) + ".");
 
 		return shouldRun;
 	}
@@ -873,7 +838,7 @@ public class KmlExporter implements EventHandler {
 			networkLinkType.setName("Display as " + displayForm.getName());
 
 			RegionType regionType = kmlFactory.createRegionType();
-			
+
 			double[] coordinates = wgs84Tile.getCoordinates(0);		
 			double xmin = Math.min(coordinates[0], coordinates[6]);
 			double ymin = Math.min(coordinates[1], coordinates[3]);
@@ -926,46 +891,32 @@ public class KmlExporter implements EventHandler {
 		saxWriter.flush();
 	}
 
-	private void writeMasterJsonFileTileReference(String path, String fileName, String fileExtension) {
+	private void writeMasterJsonFileTileReference(String path, String fileName, String fileExtension) throws IOException {
 		for (DisplayForm displayForm : config.getProject().getKmlExporter().getBuildingDisplayForms()) {
 			if (displayForm.isActive()) {
-				FileOutputStream jsonFileWriterForMasterFile = null;
-				try {
-					File jsonFileForMasterFile = new File(path + File.separator + fileName + "_" + displayForm.getName() + "_MasterJSON" + ".json");
-					jsonFileWriterForMasterFile = new FileOutputStream(jsonFileForMasterFile);
-					jsonFileWriterForMasterFile.write("{\n".getBytes(CHARSET));
-					String versionNumber = "1.0.0";
-					jsonFileWriterForMasterFile.write(("\t\"" + "version" + "\": \"" + versionNumber + "\",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\"" + "layername" + "\": \"" + fileName + "\",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\"" + "fileextension" + "\": \"" + fileExtension + "\",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\"" + "displayform" + "\": \"" + displayForm.getName() + "\",").getBytes(CHARSET));	
-					jsonFileWriterForMasterFile.write(("\n\t\"" + "minLodPixels" + "\": " + displayForm.getVisibleFrom() + ",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\"" + "maxLodPixels" + "\": " + displayForm.getVisibleUpTo() + ",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": " + columns + ",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\"" + "rownum" + "\": " + rows + ",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\"" + "bbox" + "\":{ ").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmin" + "\": " + globeWGS84Bbox.getLowerCorner().getX() + ",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmax" + "\": " + globeWGS84Bbox.getUpperCorner().getX() + ",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymin" + "\": " + globeWGS84Bbox.getLowerCorner().getY() + ",").getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymax" + "\": " + globeWGS84Bbox.getUpperCorner().getY()).getBytes(CHARSET));
-					jsonFileWriterForMasterFile.write(("\n\t}").getBytes(CHARSET));
-				} catch (IOException e) {
-					Logger.getInstance().error("Failed to write Master JSON file header: " + e.getMessage());
-				}
-
-				if (jsonFileWriterForMasterFile != null) {
-					try {
-						jsonFileWriterForMasterFile.write("\n}\n".getBytes(CHARSET));				
-						jsonFileWriterForMasterFile.close();
-					} catch (IOException ioe) {
-						Logger.getInstance().error("Failed to close Master JSON file: " + ioe.getMessage());
-					}
-				}
+				File jsonFileForMasterFile = new File(path + File.separator + fileName + "_" + displayForm.getName() + "_MasterJSON" + ".json");
+				FileOutputStream jsonFileWriterForMasterFile = new FileOutputStream(jsonFileForMasterFile);
+				jsonFileWriterForMasterFile.write("{\n".getBytes(CHARSET));
+				String versionNumber = "1.0.0";
+				jsonFileWriterForMasterFile.write(("\t\"" + "version" + "\": \"" + versionNumber + "\",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "layername" + "\": \"" + fileName + "\",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "fileextension" + "\": \"" + fileExtension + "\",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "displayform" + "\": \"" + displayForm.getName() + "\",").getBytes(CHARSET));	
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "minLodPixels" + "\": " + displayForm.getVisibleFrom() + ",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "maxLodPixels" + "\": " + displayForm.getVisibleUpTo() + ",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "colnum" + "\": " + columns + ",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "rownum" + "\": " + rows + ",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\"" + "bbox" + "\":{ ").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmin" + "\": " + globeWGS84Bbox.getLowerCorner().getX() + ",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "xmax" + "\": " + globeWGS84Bbox.getUpperCorner().getX() + ",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymin" + "\": " + globeWGS84Bbox.getLowerCorner().getY() + ",").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t\t\"" + "ymax" + "\": " + globeWGS84Bbox.getUpperCorner().getY()).getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write(("\n\t}").getBytes(CHARSET));
+				jsonFileWriterForMasterFile.write("\n}\n".getBytes(CHARSET));				
+				jsonFileWriterForMasterFile.close();
 			}							
 		}		
 	}
-
-
 
 	private void addStyle(DisplayForm currentDisplayForm, CityGMLClass featureClass, SAXWriter saxWriter) throws JAXBException {
 		if (!currentDisplayForm.isActive()) return;
@@ -1566,7 +1517,7 @@ public class KmlExporter implements EventHandler {
 				if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
 					File ballonTemplateFile = new File(balloonTemplateFilename);
 					if (!ballonTemplateFile.exists()) {
-						Logger.getInstance().error("Balloon template file \"" + balloonTemplateFilename + "\" not found.");
+						LOG.error("Balloon template file \"" + balloonTemplateFilename + "\" not found.");
 						success = false;
 					}
 				}
@@ -1632,28 +1583,27 @@ public class KmlExporter implements EventHandler {
 
 					if (cause instanceof SQLException) {
 						Iterator<Throwable> iter = ((SQLException)cause).iterator();
-						Logger.getInstance().error("A SQL error occured: " + iter.next().getMessage().trim());
+						LOG.error("A SQL error occured: " + iter.next().getMessage().trim());
 						while (iter.hasNext())
-							Logger.getInstance().error("Cause: " + iter.next().getMessage().trim());
+							LOG.error("Cause: " + iter.next().getMessage().trim());
 					} else {
-						Logger.getInstance().error("An error occured: " + cause.getMessage().trim());
+						LOG.error("An error occured: " + cause.getMessage().trim());
 						while ((cause = cause.getCause()) != null)
-							Logger.getInstance().error("Cause: " + cause.getMessage().trim());
+							LOG.error("Cause: " + cause.getMessage().trim());
 					}
 				}
 
 				String log = interruptEvent.getLogMessage();
 				if (log != null)
-					Logger.getInstance().log(interruptEvent.getLogLevelType(), log);
+					LOG.log(interruptEvent.getLogLevelType(), log);
 
-				Logger.getInstance().info("Waiting for objects being currently processed to end...");
+				LOG.info("Waiting for objects being currently processed to end...");
 
 				if (kmlSplitter != null)
 					kmlSplitter.shutdown();
 
-				if (kmlWorkerPool != null) {
+				if (kmlWorkerPool != null)
 					kmlWorkerPool.drainWorkQueue();
-				}
 
 				if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
 			}
