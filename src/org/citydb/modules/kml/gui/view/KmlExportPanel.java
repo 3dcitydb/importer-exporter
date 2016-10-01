@@ -1042,27 +1042,13 @@ public class KmlExportPanel extends JPanel implements EventHandler {
 					return;
 			}
 
-			// tile amount calculation
-			int tileAmount = 1;
-			if (filter.isSetComplexFilter() && filter.getComplexFilter().getTiledBoundingBox().isSet()) {
-				try {
-					tileAmount = kmlExporter.calculateRowsColumns();
-				}
-				catch (SQLException sqle) {
-					String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs().getDescription();
-					LOG.error(srsDescription + " " + sqle.getMessage());
-					return;
-				}
-			}
-			tileAmount = tileAmount * activeDisplayFormsAmount;
-
 			mainView.setStatusText(Language.I18N.getString("main.status.kmlExport.label"));
 			LOG.info("Initializing database export...");
 
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(mainView, 
 					Language.I18N.getString("kmlExport.dialog.window"),
 					Language.I18N.getString("export.dialog.msg"),
-					tileAmount);
+					true);
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {

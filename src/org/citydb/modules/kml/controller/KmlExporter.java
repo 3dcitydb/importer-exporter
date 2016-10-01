@@ -73,6 +73,8 @@ import org.citydb.config.project.kmlExporter.PointDisplayMode;
 import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.concurrent.IOWriterWorkerFactory;
+import org.citydb.modules.common.event.CounterEvent;
+import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.EventType;
 import org.citydb.modules.common.event.FeatureCounterEvent;
 import org.citydb.modules.common.event.InterruptEvent;
@@ -249,6 +251,19 @@ public class KmlExporter implements EventHandler {
 		boolean isBBoxActive = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getActive().booleanValue();
 		Tiling tiling = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
 
+		// calculate and display number of tiles to be exported
+		int remainingTiles = 1;
+		if (isBBoxActive) {
+			try {
+				remainingTiles = calculateRowsColumns();
+				int displayFormats = config.getProject().getKmlExporter().getActiveDisplayFormsAmount(config.getProject().getKmlExporter().getBuildingDisplayForms());
+				remainingTiles *= displayFormats;
+				LOG.info(String.valueOf(rows * columns * displayFormats) + " (" + rows + "x" + columns + "x" + displayFormats + ") tiles will be generated."); 
+			} catch (SQLException e) {
+				throw new KmlExportException("Failed to calculate the number of tiles to be exported.", e);
+			}
+		}
+
 		// get export filter and bounding box config
 		ExportFilter exportFilter = new ExportFilter(config, FilterMode.KML_EXPORT);
 		if (isBBoxActive) {
@@ -313,14 +328,6 @@ public class KmlExporter implements EventHandler {
 			}			
 		}
 
-		// display number of tiles to be exported
-		if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
-			int activeDisplayFormsAmount = config.getProject().getKmlExporter().getActiveDisplayFormsAmount(config.getProject().getKmlExporter().getBuildingDisplayForms());
-			LOG.info(String.valueOf(rows * columns * activeDisplayFormsAmount) +
-					" (" + rows + "x" + columns + "x" + activeDisplayFormsAmount +
-					") tiles will be generated."); 
-		}
-
 		long start = System.currentTimeMillis();
 
 		// iterate over tiles
@@ -373,7 +380,8 @@ public class KmlExporter implements EventHandler {
 
 						eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("kmlExport.dialog.writingToFile"), this));
 						eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
-
+						eventDispatcher.triggerEvent(new CounterEvent(CounterType.REMAINING_TILES, --remainingTiles, this));
+						
 						// open file for writing
 						try {
 							OutputStreamWriter fileWriter = null;
@@ -665,7 +673,7 @@ public class KmlExporter implements EventHandler {
 		return shouldRun;
 	}
 
-	public int calculateRowsColumns() throws SQLException {
+	private int calculateRowsColumns() throws SQLException {
 		TiledBoundingBox bbox = config.getProject().getKmlExporter().getFilter().getComplexFilter().getTiledBoundingBox();
 		double autoTileSideLength = config.getProject().getKmlExporter().getAutoTileSideLength();
 		BoundingBox extent = bbox;

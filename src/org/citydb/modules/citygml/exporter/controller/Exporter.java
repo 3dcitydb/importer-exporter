@@ -67,6 +67,8 @@ import org.citydb.modules.citygml.exporter.database.uid.FeatureGmlIdCache;
 import org.citydb.modules.citygml.exporter.database.uid.GeometryGmlIdCache;
 import org.citydb.modules.citygml.exporter.util.FeatureWriterFactory;
 import org.citydb.modules.common.concurrent.IOWriterWorkerFactory;
+import org.citydb.modules.common.event.CounterEvent;
+import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.EventType;
 import org.citydb.modules.common.event.FeatureCounterEvent;
 import org.citydb.modules.common.event.GeometryCounterEvent;
@@ -234,6 +236,7 @@ public class Exporter implements EventHandler {
 		if (!folder.exists() && !folder.mkdirs())
 			throw new CityGMLExportException("Failed to create folder '" + folderName + "'.");
 
+		int remainingTiles = rows * columns;
 		long start = System.currentTimeMillis();
 
 		for (int i = 0; shouldRun && i < rows; i++) {
@@ -294,6 +297,7 @@ public class Exporter implements EventHandler {
 
 					eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("export.dialog.cityObj.msg"), this));
 					eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
+					eventDispatcher.triggerEvent(new CounterEvent(CounterType.REMAINING_TILES, --remainingTiles, this));
 
 					// checking export path for texture images
 					if (config.getProject().getExporter().getAppearances().isSetExportAppearance()) {

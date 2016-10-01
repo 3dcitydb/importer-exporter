@@ -30,5 +30,6 @@ package org.citydb.modules.common.event;
 public enum CounterType {
 	TEXTURE_IMAGE,
 	TOPLEVEL_FEATURE,
-	FILE
+	FILE,
+	REMAINING_TILES
 }

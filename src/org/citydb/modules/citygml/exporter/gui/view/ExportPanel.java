@@ -337,7 +337,7 @@ public class ExportPanel extends JPanel implements DropTargetListener, EventHand
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(mainView, 
 					Language.I18N.getString("export.dialog.window"),
 					Language.I18N.getString("export.dialog.msg"),
-					tileAmount);
+					tileAmount > 1);
 
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {

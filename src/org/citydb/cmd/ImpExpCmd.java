@@ -44,7 +44,6 @@ import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
 import org.citydb.config.project.database.DBConnection;
-import org.citydb.config.project.exporter.ExportFilterConfig;
 import org.citydb.database.DatabaseConnectionPool;
 import org.citydb.log.Logger;
 import org.citydb.modules.citygml.exporter.controller.CityGMLExportException;
@@ -207,22 +206,8 @@ public class ImpExpCmd {
 
 		EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		KmlExporter kmlExporter = new KmlExporter(jaxbKmlContext, jaxbColladaContext, dbPool, config, eventDispatcher);
-		ExportFilterConfig filter = config.getProject().getKmlExporter().getFilter();
-		if (filter.isSetComplexFilter() && filter.getComplexFilter().getTiledBoundingBox().isSet()) {
-			try {
-				kmlExporter.calculateRowsColumns();
-			} catch (SQLException e) {
-				String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs() == null ?
-						"": filter.getComplexFilter().getBoundingBox().getSrs().getDescription() + ": ";
-				String message = e.getMessage().indexOf("\n") > -1? // cut ORA- stack traces
-						e.getMessage().substring(0, e.getMessage().indexOf("\n")): e.getMessage();
-						LOG.error(srsDescription + message);
-						LOG.warn("Database export aborted.");
-						return;
-			}
-		}
-
 		boolean success = false;
+		
 		try {
 			success = kmlExporter.doProcess();
 		} catch (KmlExportException e) {

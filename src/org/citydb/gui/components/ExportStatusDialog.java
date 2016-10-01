@@ -78,14 +78,14 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 	private long featureCounter;
 	private long textureCounter;
 	private volatile boolean acceptStatusUpdate = true;
-
-	private int totalTileAmount;
+	private boolean showTileCounter;
 
 	public ExportStatusDialog(JFrame frame, 
 			String impExpTitle,
 			String impExpMessage,
-			int totalTileAmount) {
+			boolean showTileCounter) {
 		super(frame, impExpTitle, true);
+		this.showTileCounter = showTileCounter;
 
 		eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		eventDispatcher.addEventHandler(EventType.COUNTER, this);
@@ -93,8 +93,6 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_MESSAGE, this);
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_TITLE, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-
-		this.totalTileAmount = totalTileAmount;
 
 		initGUI(impExpTitle, impExpMessage);
 	}
@@ -141,9 +139,9 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 					row.add(textureLabel, GuiUtil.setConstraints(0,1,0.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
 					row.add(textureCounterLabel, GuiUtil.setConstraints(1,1,1.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
 
-					if (totalTileAmount > 0) {
+					if (showTileCounter) {
 						tileLabel = new JLabel(Language.I18N.getString("common.status.dialog.tileCounter"));
-						tileCounterLabel = new JLabel("0", SwingConstants.TRAILING);
+						tileCounterLabel = new JLabel("n/a", SwingConstants.TRAILING);
 						tileCounterLabel.setPreferredSize(new Dimension(100, tileCounterLabel.getPreferredSize().height));
 
 						row.add(tileLabel, GuiUtil.setConstraints(0,2,0.0,0.0,GridBagConstraints.HORIZONTAL,1,5,5,5));
@@ -172,16 +170,17 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 	@Override
 	public void handleEvent(Event e) throws Exception {
 
-		if (e.getEventType() == EventType.COUNTER &&
-				((CounterEvent)e).getType() == CounterType.TOPLEVEL_FEATURE) {
-			featureCounter += ((CounterEvent)e).getCounter();
-			featureCounterLabel.setText(String.valueOf(featureCounter));
-		}
-
-		else if (e.getEventType() == EventType.COUNTER &&
-				((CounterEvent)e).getType() == CounterType.TEXTURE_IMAGE) {
-			textureCounter += ((CounterEvent)e).getCounter();
-			textureCounterLabel.setText(String.valueOf(textureCounter));
+		if (e.getEventType() == EventType.COUNTER) {
+			CounterEvent counter = (CounterEvent)e;
+			if (counter.getType() == CounterType.TOPLEVEL_FEATURE) {
+				featureCounter += counter.getCounter();
+				featureCounterLabel.setText(String.valueOf(featureCounter));
+			} else if (counter.getType() == CounterType.TEXTURE_IMAGE) {
+				textureCounter += counter.getCounter();
+				textureCounterLabel.setText(String.valueOf(textureCounter));
+			} else if (counter.getType() == CounterType.REMAINING_TILES && showTileCounter) {
+				tileCounterLabel.setText(String.valueOf(counter.getCounter()));
+			}
 		}
 
 		else if (e.getEventType() == EventType.INTERRUPT) {
@@ -224,9 +223,6 @@ public class ExportStatusDialog extends JDialog implements EventHandler {
 
 		else if (e.getEventType() == EventType.STATUS_DIALOG_TITLE && acceptStatusUpdate) {
 			fileName.setText(((StatusDialogTitle)e).getTitle());
-			if (totalTileAmount > 0) {
-				tileCounterLabel.setText(String.valueOf(--totalTileAmount));
-			}
 		}
 	}
 }
