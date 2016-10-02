@@ -30,27 +30,28 @@ package org.citydb.modules.common.event;
 import org.citydb.api.event.Event;
 
 public class StatusDialogProgressBar extends Event {
-	private int currentValue;
-	private int maxValue;
-	private boolean setIntermediate = false;
+	private final ProgressBarEventType type;
+	private int value;
+	private boolean setIntermediate;
 	
-	public StatusDialogProgressBar(int currentValue, int maxValue, Object source) {
+	public StatusDialogProgressBar(ProgressBarEventType type, int value, Object source) {
 		super(EventType.STATUS_DIALOG_PROGRESS_BAR, GLOBAL_CHANNEL, source);
-		this.currentValue = currentValue;
-		this.maxValue = maxValue;
+		this.type = type;
+		this.value = value;
 	}
 	
 	public StatusDialogProgressBar(boolean setIntermediate, Object source) {
 		super(EventType.STATUS_DIALOG_PROGRESS_BAR, GLOBAL_CHANNEL, source);
+		type = ProgressBarEventType.INIT;		
 		this.setIntermediate = setIntermediate;
 	}
-	
-	public int getCurrentValue() {
-		return currentValue;
+
+	public ProgressBarEventType getType() {
+		return type;
 	}
 
-	public int getMaxValue() {
-		return maxValue;
+	public int getValue() {
+		return value;
 	}
 
 	public boolean isSetIntermediate() {

@@ -54,7 +54,6 @@ import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.EventType;
 import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.modules.common.event.StatusDialogMessage;
-import org.citydb.modules.common.event.StatusDialogProgressBar;
 import org.citydb.modules.common.event.StatusDialogTitle;
 import org.citydb.util.Util;
 import org.citygml4j.xml.schema.SchemaHandler;
@@ -128,7 +127,6 @@ public class XMLValidator implements EventHandler {
 
 			eventDispatcher.triggerEvent(new StatusDialogTitle(file.getName(), this));
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.validate.msg"), this));
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 			eventDispatcher.triggerEvent(new CounterEvent(CounterType.FILE, --remainingFiles, this));
 
 			// ok, preparation done. inform user and start validating the input file
@@ -147,7 +145,6 @@ public class XMLValidator implements EventHandler {
 			}
 
 			eventDispatcher.triggerEvent(new StatusDialogMessage(Language.I18N.getString("validate.dialog.finish.msg"), this));
-			eventDispatcher.triggerEvent(new StatusDialogProgressBar(true, this));
 
 			// show XML validation errors
 			if (errorHandler.errors > 0)

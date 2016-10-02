@@ -42,7 +42,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 
 import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
@@ -52,7 +51,6 @@ import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.EventType;
 import org.citydb.modules.common.event.StatusDialogMessage;
-import org.citydb.modules.common.event.StatusDialogProgressBar;
 import org.citydb.modules.common.event.StatusDialogTitle;
 import org.citydb.util.gui.GuiUtil;
 
@@ -69,6 +67,7 @@ public class XMLValidationStatusDialog extends JDialog implements EventHandler {
 	private JPanel main;
 	private JPanel row;
 	private JButton button;
+	
 	private volatile boolean acceptStatusUpdate = true;
 
 	public XMLValidationStatusDialog(JFrame frame, 
@@ -82,7 +81,6 @@ public class XMLValidationStatusDialog extends JDialog implements EventHandler {
 		
 		this.eventDispatcher = eventDispatcher;
 		eventDispatcher.addEventHandler(EventType.COUNTER, this);
-		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_PROGRESS_BAR, this);
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_MESSAGE, this);
 		eventDispatcher.addEventHandler(EventType.STATUS_DIALOG_TITLE, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
@@ -193,34 +191,6 @@ public class XMLValidationStatusDialog extends JDialog implements EventHandler {
 			acceptStatusUpdate = false;
 			messageLabel.setText(Language.I18N.getString("common.dialog.msg.abort"));
 			progressBar.setIndeterminate(true);
-		}
-
-		else if (e.getEventType() == EventType.STATUS_DIALOG_PROGRESS_BAR && acceptStatusUpdate) {		
-			if (((StatusDialogProgressBar)e).isSetIntermediate()) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {		
-						if (!progressBar.isIndeterminate())
-							progressBar.setIndeterminate(true);
-					}
-				});
-
-				return;
-			}
-
-			if (progressBar.isIndeterminate()) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						progressBar.setIndeterminate(false);
-					}
-				});
-			} 
-
-			int max = ((StatusDialogProgressBar)e).getMaxValue();
-			int current = ((StatusDialogProgressBar)e).getCurrentValue();
-
-			if (max != progressBar.getMaximum())
-				progressBar.setMaximum(max);
-			progressBar.setValue(current);
 		}
 
 		else if (e.getEventType() == EventType.STATUS_DIALOG_MESSAGE && acceptStatusUpdate) {

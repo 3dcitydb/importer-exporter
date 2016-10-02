@@ -25,7 +25,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.citydb.modules.common.balloon;
+package org.citydb.modules.kml.balloon;
 
 import java.io.File;
 import java.io.FileInputStream;
