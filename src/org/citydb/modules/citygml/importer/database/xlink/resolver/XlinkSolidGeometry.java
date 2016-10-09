@@ -38,10 +38,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.database.DatabaseType;
 import org.citydb.api.geometry.GeometryObject;
+import org.citydb.log.Logger;
 import org.citydb.modules.citygml.common.database.xlink.DBXlinkSolidGeometry;
 
 public class XlinkSolidGeometry implements DBXlinkResolver {
 	private static final ReentrantLock mainLock = new ReentrantLock();
+	private final Logger LOG = Logger.getInstance();
 
 	private final Connection batchConn;
 	private final DBXlinkResolverManager resolverManager;
@@ -78,6 +80,10 @@ public class XlinkSolidGeometry implements DBXlinkResolver {
 
 	public boolean insert(DBXlinkSolidGeometry xlink) throws SQLException {
 		GeometryNode root = read(xlink.getId());
+		if (root == null) {
+			LOG.error("Failed to read solid geometry with id '" + xlink.getId() + "'.");
+			return false;
+		}
 
 		// get solids from SURFACE_GEOMETRY as GeometryObject instances
 		List<GeometryObject> solids = new ArrayList<>();
@@ -173,9 +179,13 @@ public class XlinkSolidGeometry implements DBXlinkResolver {
 				geomNode.isComposite = isComposite == 1;
 				geomNode.geometry = geometry;
 
-				if (root != null)
-					parentMap.get(parentId).childNodes.add(geomNode);
-				else
+				if (root != null) {
+					GeometryNode parentNode = parentMap.get(parentId);
+					if (parentNode == null)
+						return null;
+					
+					parentNode.childNodes.add(geomNode);
+				} else
 					root = geomNode;
 
 				// make this node the parent for the next hierarchy level
