@@ -45,7 +45,7 @@ public class ThreadPoolConfig {
 	
 	public ThreadPoolConfig() {
 		minThreads = 2;
-		maxThreads = Runtime.getRuntime().availableProcessors();
+		maxThreads = Math.max(minThreads, Runtime.getRuntime().availableProcessors());
 	}
 
 	public Integer getMinThreads() {
