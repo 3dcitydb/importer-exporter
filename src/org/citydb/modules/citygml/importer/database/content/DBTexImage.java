@@ -80,8 +80,11 @@ public class DBTexImage implements DBImporter {
 	}
 
 	public long insert(AbstractTexture abstractTexture, long surfaceDataId) throws SQLException {
-		long texImageId = 0;
 		String imageURI = abstractTexture.getImageURI().trim();
+		if (imageURI.isEmpty())
+			return 0;
+		
+		long texImageId = 0;
 		String md5URI = toHexString(md5.digest(imageURI.getBytes()));
 		boolean insertIntoTexImage = false;
 

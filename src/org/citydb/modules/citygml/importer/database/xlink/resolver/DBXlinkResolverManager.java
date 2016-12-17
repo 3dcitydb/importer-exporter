@@ -27,6 +27,12 @@
  */
 package org.citydb.modules.citygml.importer.database.xlink.resolver;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -59,6 +65,7 @@ public class DBXlinkResolverManager {
 	private HashMap<DBXlinkResolverEnum, DBXlinkResolver> dbWriterMap;
 	private DBGmlIdResolver dbGmlIdResolver;
 	private DBSequencer dbSequencer;
+	private boolean replacePathSeparator;
 
 	public DBXlinkResolverManager(
 			Connection batchConn,
@@ -80,6 +87,8 @@ public class DBXlinkResolverManager {
 		dbWriterMap = new HashMap<DBXlinkResolverEnum, DBXlinkResolver>();
 		dbGmlIdResolver = new DBGmlIdResolver(batchConn, uidCacheManager);
 		dbSequencer = new DBSequencer(batchConn, databaseAdapter);
+		
+        replacePathSeparator = File.separatorChar == '/';
 	}
 
 	public DBXlinkResolver getDBXlinkResolver(DBXlinkResolverEnum dbResolverType) throws SQLException {
@@ -112,16 +121,16 @@ public class DBXlinkResolverManager {
 					dbResolver = new XlinkTextureAssociation(connection, texAssHeapView, this);
 				break;
 			case TEXTURE_IMAGE:
-				dbResolver = new XlinkTextureImage(connection, config, this);
+				dbResolver = new XlinkTextureImage(connection, this);
 				break;
 			case SURFACE_DATA_TO_TEX_IMAGE:
 				dbResolver = new XlinkSurfaceDataToTexImage(connection, this);
 				break;
 			case LIBRARY_OBJECT:
-				dbResolver = new XlinkLibraryObject(connection, config, this);
+				dbResolver = new XlinkLibraryObject(connection, this);
 				break;
 			case WORLD_FILE:
-				dbResolver = new XlinkWorldFile(connection, config, this);
+				dbResolver = new XlinkWorldFile(connection, this);
 				break;
 			case XLINK_DEPRECATED_MATERIAL:
 				dbResolver = new XlinkDeprecatedMaterial(connection, this);
@@ -170,6 +179,25 @@ public class DBXlinkResolverManager {
 
 	public AbstractDatabaseAdapter getCacheAdapter() {
 		return cacheTableManager.getDatabaseAdapter();
+	}
+	
+	public InputStream openStream(String fileURI) throws IOException {        
+		try {
+			return new URL(fileURI).openStream();
+		} catch (MalformedURLException e) {
+			if (replacePathSeparator)
+				fileURI = fileURI.replace("\\", "/");
+
+			File file = new File(fileURI);
+			if (!file.isAbsolute())
+				file = new File(config.getInternal().getImportPath(), file.getPath());
+
+			// skip zero byte file
+			if (file.isFile() && file.length() == 0)
+				throw new IOException("Zero byte file.");
+
+			return new FileInputStream(file);
+		}
 	}
 	
 	public void executeBatch() throws SQLException {

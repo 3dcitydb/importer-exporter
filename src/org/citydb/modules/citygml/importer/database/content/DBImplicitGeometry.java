@@ -119,7 +119,7 @@ public class DBImplicitGeometry implements DBImporter {
 
 		ResultSet rs = null;
 		try {
-			if (libraryURI != null) {
+			if (libraryURI != null && !libraryURI.isEmpty()) {
 				// check if we have the same library object in database
 				psSelectLibraryObject.setString(1, libraryURI);
 				rs = psSelectLibraryObject.executeQuery();
