@@ -191,8 +191,14 @@ public class Exporter implements EventHandler {
 			}
 		}
 
-		// log index status
+		// check and log index status
 		try {
+			if (!dbPool.getActiveDatabaseAdapter().getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")) {
+				LOG.error("Spatial indexes are not activated.");
+				LOG.error("Please use the database tab to activate the spatial indexes.");
+				return false;
+			}
+			
 			for (IndexType type : IndexType.values())
 				dbPool.getActiveDatabaseAdapter().getUtil().getIndexStatus(type).printStatusToConsole();
 		} catch (SQLException e) {

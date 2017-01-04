@@ -69,7 +69,6 @@ public class DBCityObject implements DBExporter {
 	private DBCityObjectGenericAttrib genericAttributeExporter;
 	private String gmlSrsName;
 	private boolean exportAppearance;
-	private boolean useInternalBBoxFilter;
 	private boolean useTiling;
 	private boolean setTileInfoAsGenericAttribute;
 	private BoundingBoxFilter boundingBoxFilter;
@@ -91,7 +90,6 @@ public class DBCityObject implements DBExporter {
 
 	private void init() throws SQLException {
 		exportAppearance = config.getProject().getExporter().getAppearances().isSetExportAppearance();
-		useInternalBBoxFilter = config.getInternal().isUseInternalBBoxFilter();
 
 		tiling = config.getProject().getExporter().getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
 		useTiling = boundingBoxFilter != null && boundingBoxFilter.isActive() && tiling.getMode() != TilingMode.NO_TILING;
@@ -162,7 +160,7 @@ public class DBCityObject implements DBExporter {
 				}
 
 				// check bounding volume filter
-				if (isTopLevelObject && (useInternalBBoxFilter || useTiling)) {
+				if (isTopLevelObject && useTiling) {
 					if (!cityObject.isSetBoundedBy() ||
 							!cityObject.getBoundedBy().isSetEnvelope() ||
 							boundingBoxFilter.filter(cityObject.getBoundedBy().getEnvelope()))

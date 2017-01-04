@@ -65,7 +65,6 @@ public class Internal {
 	private AffineTransformer affineTransformer;
 
 	// internal flags
-	private boolean useInternalBBoxFilter = false;
 	private boolean transformCoordinates = false;
 	private boolean exportGlobalAppearances = false;
 	private boolean registerGmlIdInCache = false;
@@ -147,14 +146,6 @@ public class Internal {
 
 	public void setConfigPath(String configPath) {
 		this.configPath = configPath;
-	}
-
-	public boolean isUseInternalBBoxFilter() {
-		return useInternalBBoxFilter;
-	}
-
-	public void setUseInternalBBoxFilter(boolean useInternalBBoxFilter) {
-		this.useInternalBBoxFilter = useInternalBBoxFilter;
 	}
 
 	public boolean isTransformCoordinates() {

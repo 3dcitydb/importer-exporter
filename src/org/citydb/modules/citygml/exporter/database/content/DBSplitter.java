@@ -161,37 +161,28 @@ public class DBSplitter {
 
 		// bounding box filter
 		BoundingBox bbox = boundingBoxFilter.getFilterState();
-		config.getInternal().setUseInternalBBoxFilter(false);
 		if (bbox != null) {
 			if (!bbox.getSrs().isSupported())
 				throw new SQLException("The SRID " + bbox.getSrs().getSrid() + " of the bounding box filter is not supported.");
-			
-			// check whether spatial indexes are active
-			if (dbConnectionPool.getActiveDatabaseAdapter().getUtil().isIndexEnabled("CITYOBJECT", "ENVELOPE")) {			
-				TiledBoundingBox tiledBBox = expFilterConfig.getComplexFilter().getTiledBoundingBox();
 
-				// convert the srid of the bbox to that of the database
-				DatabaseSrs dbSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();				
-				if (bbox.getSrs().getSrid() != dbSrs.getSrid())	{
-					try {
-						bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(bbox, bbox.getSrs(), dbSrs);
-					} catch (SQLException e) {
-						throw new SQLException("Failed to transform bounding box filter to database SRID.", e);
-					}
+			TiledBoundingBox tiledBBox = expFilterConfig.getComplexFilter().getTiledBoundingBox();
+
+			// convert the srid of the bbox to that of the database
+			DatabaseSrs dbSrs = dbConnectionPool.getActiveDatabaseAdapter().getConnectionMetaData().getReferenceSystem();				
+			if (bbox.getSrs().getSrid() != dbSrs.getSrid())	{
+				try {
+					bbox = dbConnectionPool.getActiveDatabaseAdapter().getUtil().transformBoundingBox(bbox, bbox.getSrs(), dbSrs);
+				} catch (SQLException e) {
+					throw new SQLException("Failed to transform bounding box filter to database SRID.", e);
 				}
-
-				boolean overlap = tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode();
-				bboxFilter = dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().getBoundingBoxPredicate("ENVELOPE", "co", bbox, overlap);
-
-				// check whether a no_index hint for the objectclass_id column improves query performance
-				if (dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().spatialPredicateRequiresNoIndexHint())
-					optimizerHint = "/*+ no_index(co cityobject_objectclass_fkx) */";
-
-			} else {
-				LOG.warn("Bounding box filter is enabled although spatial indexes are disabled.");
-				LOG.warn("Filtering will not be performed using spatial database operations.");
-				config.getInternal().setUseInternalBBoxFilter(true);
 			}
+
+			boolean overlap = tiledBBox.getTiling().getMode() != TilingMode.NO_TILING || tiledBBox.isSetOverlapMode();
+			bboxFilter = dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().getBoundingBoxPredicate("ENVELOPE", "co", bbox, overlap);
+
+			// check whether a no_index hint for the objectclass_id column improves query performance
+			if (dbConnectionPool.getActiveDatabaseAdapter().getSQLAdapter().spatialPredicateRequiresNoIndexHint())
+				optimizerHint = "/*+ no_index(co cityobject_objectclass_fkx) */";
 		}
 	}
 
@@ -405,12 +396,12 @@ public class DBSplitter {
 			// second step: export group members
 			if (!config.getProject().getExporter().getCityObjectGroup().isExportMemberAsXLinks()) {
 				StringBuilder memberQuery = new StringBuilder("select co.ID, co.OBJECTCLASS_ID, co.GMLID from CITYOBJECT co ")
-				.append("where co.ID in (select co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co ")
-				.append("where gtc.CITYOBJECT_ID=co.ID ")
-				.append("and gtc.CITYOBJECTGROUP_ID=? ")
-				.append(classIdsString).append(" ")
-				.append("union all ")
-				.append("select grp.PARENT_CITYOBJECT_ID from CITYOBJECTGROUP grp where grp.ID=?) ");
+						.append("where co.ID in (select co.ID from GROUP_TO_CITYOBJECT gtc, CITYOBJECT co ")
+						.append("where gtc.CITYOBJECT_ID=co.ID ")
+						.append("and gtc.CITYOBJECTGROUP_ID=? ")
+						.append(classIdsString).append(" ")
+						.append("union all ")
+						.append("select grp.PARENT_CITYOBJECT_ID from CITYOBJECTGROUP grp where grp.ID=?) ");
 
 				if (bboxFilter != null)
 					memberQuery.append("and ").append(bboxFilter);
@@ -522,18 +513,18 @@ public class DBSplitter {
 			globalAppTemplTable.createIndexes();
 
 			StringBuilder query = new StringBuilder("select distinct a.ID from APPEARANCE a ")
-			.append("inner join APPEAR_TO_SURFACE_DATA asd on asd.APPEARANCE_ID = a.ID ")
-			.append("inner join SURFACE_DATA sd on sd.ID = asd.SURFACE_DATA_ID ")
-			.append("inner join TEXTUREPARAM tp on tp.SURFACE_DATA_ID = sd.ID ")
-			.append("inner join " + globalAppTemplTable.getTableName() + " tmp on tmp.ID = tp.SURFACE_GEOMETRY_ID ")
-			.append("where a.CITYOBJECT_ID is null");
+					.append("inner join APPEAR_TO_SURFACE_DATA asd on asd.APPEARANCE_ID = a.ID ")
+					.append("inner join SURFACE_DATA sd on sd.ID = asd.SURFACE_DATA_ID ")
+					.append("inner join TEXTUREPARAM tp on tp.SURFACE_DATA_ID = sd.ID ")
+					.append("inner join " + globalAppTemplTable.getTableName() + " tmp on tmp.ID = tp.SURFACE_GEOMETRY_ID ")
+					.append("where a.CITYOBJECT_ID is null");
 
 			stmt = globalAppTemplTable.getConnection().prepareStatement(query.toString());
 			rs = stmt.executeQuery();
 
 			while (rs.next() && shouldRun) {
 				long appearanceId = rs.getLong(1);
-				
+
 				// send appearance to export workers
 				DBSplittingResult splitter = new DBSplittingResult(appearanceId, CityGMLClass.APPEARANCE);
 				dbWorkerPool.addWork(splitter);
