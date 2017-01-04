@@ -436,8 +436,6 @@ public class DBBridge implements DBExporter {
 				}
 			}
 
-			bridges.clear();
-
 			dbExporterManager.processFeature(root);
 
 			if (root.isSetId() && config.getInternal().isRegisterGmlIdInCache())
@@ -445,6 +443,8 @@ public class DBBridge implements DBExporter {
 
 			return true;
 		} finally {
+			bridges.clear();
+
 			if (rs != null)
 				rs.close();
 		}

@@ -177,9 +177,9 @@ public class DBCityObjectGenericAttrib implements DBExporter {
 				}
 			}
 
+		} finally {
 			attributeSets.clear();
 
-		} finally {
 			if (rs != null)
 				rs.close();
 		}

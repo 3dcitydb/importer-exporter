@@ -351,8 +351,6 @@ public class DBTunnel implements DBExporter {
 				}
 			}
 
-			tunnels.clear();
-
 			dbExporterManager.processFeature(root);
 
 			if (root.isSetId() && config.getInternal().isRegisterGmlIdInCache())
@@ -360,6 +358,8 @@ public class DBTunnel implements DBExporter {
 
 			return true;
 		} finally {
+			tunnels.clear();
+
 			if (rs != null)
 				rs.close();
 		}

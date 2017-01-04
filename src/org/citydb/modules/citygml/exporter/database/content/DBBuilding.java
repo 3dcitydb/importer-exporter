@@ -539,8 +539,6 @@ public class DBBuilding implements DBExporter {
 				}
 			}
 
-			buildings.clear();
-
 			dbExporterManager.processFeature(root);
 
 			if (root.isSetId() && config.getInternal().isRegisterGmlIdInCache())
@@ -548,6 +546,8 @@ public class DBBuilding implements DBExporter {
 
 			return true;
 		} finally {
+			buildings.clear();
+
 			if (rs != null)
 				rs.close();
 		}
