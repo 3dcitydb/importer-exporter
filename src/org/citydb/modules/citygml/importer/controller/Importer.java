@@ -659,13 +659,13 @@ public class Importer implements EventHandler {
 
 					if (cause instanceof SQLException) {
 						Iterator<Throwable> iter = ((SQLException)cause).iterator();
-						LOG.error("A SQL error occured: " + iter.next().getMessage().trim());
+						LOG.error("A SQL error occured: " + iter.next().getMessage());
 						while (iter.hasNext())
-							LOG.error("Cause: " + iter.next().getMessage().trim());
+							LOG.error("Cause: " + iter.next().getMessage());
 					} else {
-						LOG.error("An error occured: " + cause.getMessage().trim());
+						LOG.error("An error occured: " + cause.getMessage());
 						while ((cause = cause.getCause()) != null)
-							LOG.error("Cause: " + cause.getMessage().trim());
+							LOG.error("Cause: " + cause.getMessage());
 					}
 				}
 
