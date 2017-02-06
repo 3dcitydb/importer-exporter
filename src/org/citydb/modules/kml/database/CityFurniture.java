@@ -529,7 +529,7 @@ public class CityFurniture extends KmlGenericObject{
 								addX3dMaterial(surfaceId, x3dMaterial);
 							}
 							else if (theme == null) { // no theme for this parent surface
-								if (getX3dMaterial(parentId) != null) { // material for parent's parent known
+								if (getX3dMaterial(parentId) != null && getX3dMaterial(surfaceId) == null) { // material for parent's parent known
 									addX3dMaterial(surfaceId, getX3dMaterial(parentId));
 								}
 							}
@@ -542,16 +542,20 @@ public class CityFurniture extends KmlGenericObject{
 						String texImageUri = null;
 						StringTokenizer texCoordsTokenized = null;
 
-						if (selectedTheme.equals(KmlExporter.THEME_NONE))
-							addX3dMaterial(surfaceId, x3dSurfaceMaterial);
+						if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
+							if (getX3dMaterial(surfaceId) == null)
+								addX3dMaterial(surfaceId, x3dSurfaceMaterial);
+						}
 						else {
 							if (!selectedTheme.equalsIgnoreCase(theme) && !selectedTheme.equalsIgnoreCase("<unknown>")) { // no surface data for this surface and theme
-								if (getX3dMaterial(parentId) != null) // material for parent surface known
-									addX3dMaterial(surfaceId, getX3dMaterial(parentId));
-								else if (getX3dMaterial(rootId) != null) // material for root surface known
-									addX3dMaterial(surfaceId, getX3dMaterial(rootId));
-								else
-									addX3dMaterial(surfaceId, x3dSurfaceMaterial);
+								if (getX3dMaterial(surfaceId) == null) {
+									if (getX3dMaterial(parentId) != null) // material for parent surface known
+										addX3dMaterial(surfaceId, getX3dMaterial(parentId));
+									else if (getX3dMaterial(rootId) != null) // material for root surface known
+										addX3dMaterial(surfaceId, getX3dMaterial(rootId));
+									else
+										addX3dMaterial(surfaceId, x3dSurfaceMaterial);
+								}
 							}
 							else {
 								texImageUri = rs2.getString("tex_image_uri");
@@ -612,8 +616,12 @@ public class CityFurniture extends KmlGenericObject{
 									// x3dMaterial will only added if not all x3dMaterial members are null
 									addX3dMaterial(surfaceId, x3dMaterial);
 									if (getX3dMaterial(surfaceId) == null) {
-										// untextured surface and no x3dMaterial -> default x3dMaterial (gray)
-										addX3dMaterial(surfaceId, x3dSurfaceMaterial);
+										if (getX3dMaterial(parentId) != null) // material for parent surface known
+											addX3dMaterial(surfaceId, getX3dMaterial(parentId));
+										else if (getX3dMaterial(rootId) != null) // material for root surface known
+											addX3dMaterial(surfaceId, getX3dMaterial(rootId));
+										else // untextured surface and no x3dMaterial -> default x3dMaterial (gray)
+											addX3dMaterial(surfaceId, x3dSurfaceMaterial);
 									}
 								}
 							}
