@@ -49,7 +49,18 @@ public class GeometryObject {
 	}
 
 	public static GeometryObject createEnvelope(BoundingBox bbox) {
-		return createEnvelope(new double[]{bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()}, 2, bbox.getSrs().getSrid());
+		if (!bbox.isSetSrs())
+			throw new IllegalArgumentException("The bounding box lacks a spatial reference system.");
+		
+		if (bbox.is3D()) {
+			return createEnvelope(new double[]{
+					bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), bbox.getLowerCorner().getZ(), 
+					bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY(), bbox.getUpperCorner().getZ()}, 3, bbox.getSrs().getSrid());
+		} else {
+			return createEnvelope(new double[]{
+					bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), 
+					bbox.getUpperCorner().getX(), bbox.getUpperCorner().getY()}, 2, bbox.getSrs().getSrid());
+		}
 	}
 
 	public static GeometryObject createPoint(double[] coordinates, int dimension, int srid) {
@@ -263,4 +274,42 @@ public class GeometryObject {
 		if (this.srid != srid)
 			this.srid = srid;
 	}
+
+	public GeometryObject toEnvelope() {
+		GeometryObject envelope = new GeometryObject(GeometryType.ENVELOPE, dimension, srid);
+		envelope.elementTypes = new ElementType[]{ElementType.BOUNDING_RECTANGLE};
+		envelope.coordinates = new double[1][];
+
+		double bbox[] = dimension == 2 ? new double[]{Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE} :
+			new double[]{Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
+
+		for (int i = 0; i < elementTypes.length; i++) {
+			if (elementTypes[i] == ElementType.INTERIOR_LINEAR_RING || elementTypes[i] == ElementType.SHELL)
+				continue;
+
+			double[] coords = coordinates[i];
+			for (int j = 0; j < coords.length; j += dimension) {
+				if (coords[j] < bbox[0])
+					bbox[0] = coords[j];
+				else if (coords[j] > bbox[dimension])
+					bbox[dimension] = coords[j];
+
+				if (coords[j + 1] < bbox[1])
+					bbox[1] = coords[j + 1];
+				else if (coords[j + 1] > bbox[dimension + 1])
+					bbox[dimension + 1] = coords[j + 1];
+
+				if (dimension == 3) {
+					if (coords[j + 2] < bbox[2])
+						bbox[2] = coords[j + 2];
+					else if (coords[j + 2] > bbox[5])
+						bbox[5] = coords[j + 2];
+				}
+			}
+		}
+
+		envelope.coordinates[0] = bbox;
+		return envelope;
+	}
+
 }
