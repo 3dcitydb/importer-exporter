@@ -89,7 +89,6 @@ public class IOWriterWorker extends Worker<SAXEventBuffer> {
 
         try {
         	work.send(saxWriter, true);
-        	saxWriter.flush();
         } catch (SAXException e) {
         	LOG.error("XML error: " + e.getMessage());
         } finally {
