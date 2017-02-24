@@ -51,7 +51,7 @@ public class GeometryObject {
 	public static GeometryObject createEnvelope(BoundingBox bbox) {
 		if (!bbox.isSetSrs())
 			throw new IllegalArgumentException("The bounding box lacks a spatial reference system.");
-		
+
 		if (bbox.is3D()) {
 			return createEnvelope(new double[]{
 					bbox.getLowerCorner().getX(), bbox.getLowerCorner().getY(), bbox.getLowerCorner().getZ(), 
@@ -101,7 +101,7 @@ public class GeometryObject {
 
 		return geometryObject;
 	}
-	
+
 	public static GeometryObject createMultiCurve(double[][] coordinates, int dimension, int srid) {
 		GeometryObject geometryObject = new GeometryObject(GeometryType.MULTI_LINE_STRING, dimension, srid);
 		geometryObject.elementTypes = new ElementType[coordinates.length];
@@ -116,7 +116,7 @@ public class GeometryObject {
 
 		return geometryObject;
 	}
-	
+
 	public static GeometryObject createPolygon(double[] coordinates, int dimension, int srid) {
 		if (coordinates.length < 4 * dimension)
 			throw new IllegalArgumentException("The exterior linear ring must contain at least four coordinate tuples.");
@@ -128,7 +128,7 @@ public class GeometryObject {
 
 		return geometryObject;
 	}
-	
+
 	public static GeometryObject createPolygon(double[][] coordinates, int dimension, int srid) {
 		GeometryObject geometryObject = new GeometryObject(GeometryType.POLYGON, dimension, srid);
 		geometryObject.elementTypes = new ElementType[coordinates.length];
@@ -143,11 +143,11 @@ public class GeometryObject {
 
 		return geometryObject;
 	}
-	
+
 	public static GeometryObject createMultiPolygon(double[][] coordinates, int[] exteriorRings, int dimension, int srid) {
 		return createPolygonCollection(GeometryType.MULTI_POLYGON, coordinates, exteriorRings, dimension, srid);
 	}
-	
+
 	public static GeometryObject createSolid(double[][] coordinates, int[] exteriorRings, int srid) {
 		return createPolygonCollection(GeometryType.SOLID, coordinates, exteriorRings, 3, srid);
 	}
@@ -209,7 +209,7 @@ public class GeometryObject {
 
 		return geometryObject;
 	}
-	
+
 	private final GeometryType geometryType;
 	private final int dimension;
 	private int srid;
@@ -269,7 +269,7 @@ public class GeometryObject {
 
 		return coordinates;
 	}
-	
+
 	public void changeSrid(int srid) {
 		if (this.srid != srid)
 			this.srid = srid;
@@ -280,35 +280,43 @@ public class GeometryObject {
 		envelope.elementTypes = new ElementType[]{ElementType.BOUNDING_RECTANGLE};
 		envelope.coordinates = new double[1][];
 
-		double bbox[] = dimension == 2 ? new double[]{Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE} :
-			new double[]{Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
+		if (geometryType != GeometryType.POINT) {
+			double bbox[] = dimension == 2 ? new double[]{Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE} :
+				new double[]{Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
 
-		for (int i = 0; i < elementTypes.length; i++) {
-			if (elementTypes[i] == ElementType.INTERIOR_LINEAR_RING || elementTypes[i] == ElementType.SHELL)
-				continue;
+			for (int i = 0; i < elementTypes.length; i++) {
+				if (elementTypes[i] == ElementType.INTERIOR_LINEAR_RING || elementTypes[i] == ElementType.SHELL)
+					continue;
 
-			double[] coords = coordinates[i];
-			for (int j = 0; j < coords.length; j += dimension) {
-				if (coords[j] < bbox[0])
-					bbox[0] = coords[j];
-				else if (coords[j] > bbox[dimension])
-					bbox[dimension] = coords[j];
+				double[] coords = coordinates[i];
+				for (int j = 0; j < coords.length; j += dimension) {
+					if (coords[j] < bbox[0])
+						bbox[0] = coords[j];
+					else if (coords[j] > bbox[dimension])
+						bbox[dimension] = coords[j];
 
-				if (coords[j + 1] < bbox[1])
-					bbox[1] = coords[j + 1];
-				else if (coords[j + 1] > bbox[dimension + 1])
-					bbox[dimension + 1] = coords[j + 1];
+					if (coords[j + 1] < bbox[1])
+						bbox[1] = coords[j + 1];
+					else if (coords[j + 1] > bbox[dimension + 1])
+						bbox[dimension + 1] = coords[j + 1];
 
-				if (dimension == 3) {
-					if (coords[j + 2] < bbox[2])
-						bbox[2] = coords[j + 2];
-					else if (coords[j + 2] > bbox[5])
-						bbox[5] = coords[j + 2];
+					if (dimension == 3) {
+						if (coords[j + 2] < bbox[2])
+							bbox[2] = coords[j + 2];
+						else if (coords[j + 2] > bbox[5])
+							bbox[5] = coords[j + 2];
+					}
 				}
 			}
+
+			envelope.coordinates[0] = bbox;
+		}
+		
+		else {
+			envelope.coordinates[0] = dimension == 2 ? new double[]{coordinates[0][0], coordinates[0][1], coordinates[0][0], coordinates[0][1]} :
+				new double[]{coordinates[0][0], coordinates[0][1], coordinates[0][2], coordinates[0][0], coordinates[0][1], coordinates[0][2]};
 		}
 
-		envelope.coordinates[0] = bbox;
 		return envelope;
 	}
 
