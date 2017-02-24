@@ -39,6 +39,7 @@ public class IOWriterWorker extends Worker<SAXEventBuffer> {
 	private final Logger LOG = Logger.getInstance();
 	private final ReentrantLock runLock = new ReentrantLock();	
 	private volatile boolean shouldRun = true;
+	private volatile boolean isWriting = false;
 
 	private final SAXWriter saxWriter;
 
@@ -59,7 +60,8 @@ public class IOWriterWorker extends Worker<SAXEventBuffer> {
 
 		if (runLock.tryLock()) {
 			try {
-				workerThread.interrupt();
+				if (!isWriting)
+					workerThread.interrupt();
 			} finally {
 				runLock.unlock();
 			}
@@ -88,7 +90,9 @@ public class IOWriterWorker extends Worker<SAXEventBuffer> {
         runLock.lock();
 
         try {
+        	isWriting = true;
         	work.send(saxWriter, true);
+        	isWriting = false;
         } catch (SAXException e) {
         	LOG.error("XML error: " + e.getMessage());
         } finally {
