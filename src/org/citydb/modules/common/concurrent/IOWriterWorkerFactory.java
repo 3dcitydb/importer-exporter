@@ -29,18 +29,21 @@ package org.citydb.modules.common.concurrent;
 
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerFactory;
+import org.citydb.api.event.EventDispatcher;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
 
 public class IOWriterWorkerFactory implements WorkerFactory<SAXEventBuffer> {
 	private final SAXWriter saxWriter;
+	private final EventDispatcher eventDispatcher;
 
-	public IOWriterWorkerFactory(SAXWriter saxWriter) {
+	public IOWriterWorkerFactory(SAXWriter saxWriter, EventDispatcher eventDispatcher) {
 		this.saxWriter = saxWriter;
+		this.eventDispatcher = eventDispatcher;
 	}
 
 	@Override
 	public Worker<SAXEventBuffer> createWorker() {
-		return new IOWriterWorker(saxWriter);
+		return new IOWriterWorker(saxWriter, eventDispatcher);
 	}
 }

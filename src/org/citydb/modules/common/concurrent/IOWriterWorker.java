@@ -30,20 +30,24 @@ package org.citydb.modules.common.concurrent;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.concurrent.Worker;
-import org.citydb.log.Logger;
+import org.citydb.api.event.EventDispatcher;
+import org.citydb.api.log.LogLevel;
+import org.citydb.modules.common.event.InterruptEvent;
+import org.citydb.modules.common.event.InterruptReason;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
 import org.xml.sax.SAXException;
 
 public class IOWriterWorker extends Worker<SAXEventBuffer> {
-	private final Logger LOG = Logger.getInstance();
 	private final ReentrantLock runLock = new ReentrantLock();	
 	private volatile boolean shouldRun = true;
 
 	private final SAXWriter saxWriter;
+	private final EventDispatcher eventDispatcher;
 
-	public IOWriterWorker(SAXWriter saxWriter) {
+	public IOWriterWorker(SAXWriter saxWriter, EventDispatcher eventDispatcher) {
 		this.saxWriter = saxWriter;
+		this.eventDispatcher = eventDispatcher;
 	}
 
 	@Override
@@ -59,7 +63,10 @@ public class IOWriterWorker extends Worker<SAXEventBuffer> {
 
 		if (runLock.tryLock()) {
 			try {
+				saxWriter.flush();
 				workerThread.interrupt();
+			} catch (SAXException e) {
+				eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.XML_ERROR, "Failed to write XML content.", LogLevel.ERROR, e, eventChannel, this));
 			} finally {
 				runLock.unlock();
 			}
@@ -90,7 +97,7 @@ public class IOWriterWorker extends Worker<SAXEventBuffer> {
         try {
         	work.send(saxWriter, true);
         } catch (SAXException e) {
-        	LOG.error("XML error: " + e.getMessage());
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.XML_ERROR, "Failed to write XML content.", LogLevel.ERROR, e, eventChannel, this));
         } finally {
         	runLock.unlock();
         }

@@ -403,7 +403,7 @@ public class KmlExporter implements EventHandler {
 						// here we have an open issue: queue sizes are fix...
 						ioWriterPool = new SingleWorkerPool<SAXEventBuffer>(
 								"kml_writer_pool",
-								new IOWriterWorkerFactory(saxWriter),
+								new IOWriterWorkerFactory(saxWriter, eventDispatcher),
 								100,
 								true);
 

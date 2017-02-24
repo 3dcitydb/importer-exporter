@@ -399,7 +399,7 @@ public class Exporter implements EventHandler {
 
 					ioWriterPool = new SingleWorkerPool<SAXEventBuffer>(
 							"citygml_writer_pool",
-							new IOWriterWorkerFactory(saxWriter),
+							new IOWriterWorkerFactory(saxWriter, eventDispatcher),
 							100,
 							false);
 
