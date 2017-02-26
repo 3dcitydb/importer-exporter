@@ -30,18 +30,15 @@ package org.citydb.modules.common.concurrent;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citydb.api.concurrent.Worker;
-import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
-import org.citydb.api.event.EventHandler;
 import org.citydb.api.log.LogLevel;
-import org.citydb.modules.common.event.EventType;
 import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.modules.common.event.InterruptReason;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXWriter;
 import org.xml.sax.SAXException;
 
-public class IOWriterWorker extends Worker<SAXEventBuffer> implements EventHandler {
+public class IOWriterWorker extends Worker<SAXEventBuffer> {
 	private final ReentrantLock runLock = new ReentrantLock();	
 	private volatile boolean shouldRun = true;
 	private volatile boolean shouldWork = true;
@@ -52,7 +49,6 @@ public class IOWriterWorker extends Worker<SAXEventBuffer> implements EventHandl
 	public IOWriterWorker(SAXWriter saxWriter, EventDispatcher eventDispatcher) {
 		this.saxWriter = saxWriter;
 		this.eventDispatcher = eventDispatcher;
-		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
 	}
 
 	@Override
@@ -71,7 +67,7 @@ public class IOWriterWorker extends Worker<SAXEventBuffer> implements EventHandl
 				try {
 					saxWriter.flush();
 				} catch (SAXException e) {
-					eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.XML_ERROR, "Failed to write XML content.", LogLevel.ERROR, e, eventChannel, this));
+					eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.IO_WRITE_ERROR, "Failed to write XML content.", LogLevel.ERROR, e, eventChannel, this));
 				}
 				
 				workerThread.interrupt();
@@ -108,15 +104,11 @@ public class IOWriterWorker extends Worker<SAXEventBuffer> implements EventHandl
 			
 			work.send(saxWriter, true);
 		} catch (SAXException e) {
-			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.XML_ERROR, "Failed to write XML content.", LogLevel.ERROR, e, eventChannel, this));
+			eventDispatcher.triggerSyncEvent(new InterruptEvent(InterruptReason.IO_WRITE_ERROR, "Failed to write XML content.", LogLevel.ERROR, e, eventChannel, this));
+			shouldWork = false;
 		} finally {
 			runLock.unlock();
 		}
 	}
 	
-	@Override
-	public void handleEvent(Event event) throws Exception {
-		if (event.getChannel() == eventChannel)
-			shouldWork = false;
-	}
 }
