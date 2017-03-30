@@ -463,9 +463,8 @@ public class KmlExporter implements EventHandler {
 									&& config.getProject().getKmlExporter().getFilter().isSetComplexFilter() 
 									&& config.getProject().getKmlExporter().isShowTileBorders())
 								addBorder(wgs84Tile, null, saxWriter);
-
-							saxWriter.flush();
-						} catch (JAXBException | SAXException e) {
+							
+						} catch (JAXBException e) {
 							throw new KmlExportException("Failed to write output file.", e);
 						}
 
@@ -513,8 +512,7 @@ public class KmlExporter implements EventHandler {
 						} catch (JAXBException e) {
 							throw new KmlExportException("Failed to write output file.", e);
 						}
-
-						// flush sax writer and close file
+						
 						try {
 							if (!featureCounterMap.isEmpty()) {
 								saxWriter.flush();
@@ -555,9 +553,11 @@ public class KmlExporter implements EventHandler {
 						} catch (Exception e) {
 							throw new KmlExportException("Failed to write output file.", e);
 						}
-
+						
+						// flush sax writer and close file
 						try {
-							saxWriter.close();
+							saxWriter.flush();
+							saxWriter.getOutputWriter().close();
 						} catch (Exception e) {
 							throw new KmlExportException("Failed to close output file.", e);
 						}
@@ -814,8 +814,6 @@ public class KmlExporter implements EventHandler {
 			addBorder(globeWGS84BboxGeometry, style, saxWriter);
 		}
 
-		// make sure header has been written
-		saxWriter.flush();
 		return saxWriter;
 	}
 
@@ -896,7 +894,6 @@ public class KmlExporter implements EventHandler {
 		kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
 
 		marshaller.marshal(kml, fragmentWriter);
-		saxWriter.flush();
 	}
 
 	private void writeMasterJsonFileTileReference(String path, String fileName, String fileExtension) throws IOException {

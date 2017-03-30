@@ -443,8 +443,7 @@ public class Exporter implements EventHandler {
 								new CityModelInfo());
 
 						writer.writeStartDocument();
-						saxWriter.flush();
-					} catch (CityGMLWriteException | SAXException e) {
+					} catch (CityGMLWriteException e) {
 						throw new CityGMLExportException("Failed to write CityGML file.", e);
 					}
 
