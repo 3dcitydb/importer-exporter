@@ -412,7 +412,7 @@ public class WorkerPool<T> {
 			boolean daemon) {
 		if (corePoolSize <= 0)
 			throw new IllegalArgumentException("Core pool size must be greater than zero.");
-		
+
 		if  (maximumPoolSize < corePoolSize)
 			throw new IllegalArgumentException("Maximum pool size must be greater or equal to core pool size.");
 
@@ -461,11 +461,11 @@ public class WorkerPool<T> {
 	public void setContextClassLoader(ClassLoader contextClassLoader) {
 		this.contextClassLoader = contextClassLoader;
 	}
-	
+
 	public void setEventSource(Object eventSource) {
 		this.eventSource = eventSource;
 	}
-	
+
 	private boolean addWorker(T firstWork) {
 		final ReentrantLock mainLock = this.mainLock;
 		mainLock.lock();
@@ -487,7 +487,7 @@ public class WorkerPool<T> {
 					worker.eventChannel = eventSource != null ? eventSource : Event.GLOBAL_CHANNEL;
 					if (firstWork != null)
 						worker.firstWork = firstWork;
-					
+
 					workers.put(worker, DUMMY);
 					workerThread.start();
 					++poolSize;
@@ -733,38 +733,44 @@ public class WorkerPool<T> {
 		final ReentrantLock mainLock = this.mainLock;
 		final ReentrantLock queueLock = workQueue.lock;
 		mainLock.lockInterruptibly();
-		try {
-			workQueue.blockAndFlush = true;
-
-			// make sure we really can join
-			if (poolSize == 0)
-				addWorker(null);
-
-			queueLock.lock();
+		try {		
 			try {
-				while (!workQueue.isEmpty())
-					workQueue.empty.await();
+				workQueue.blockAndFlush = true;
 
-			} catch (InterruptedException ie) {
-				// re-try
+				// make sure we really can join
+				if (poolSize == 0)
+					addWorker(null);
+
+				queueLock.lock();
+				try {
+					while (!workQueue.isEmpty())
+						workQueue.empty.await();
+
+				} catch (InterruptedException ie) {
+					// re-try
+				}
+
+				workQueue.blockAndFlush = false;
+				workQueue.flushed.signalAll();
+
+				interruptWorkersIfIdle();
+			} finally {
+				queueLock.unlock();
 			}
 
-			workQueue.blockAndFlush = false;
-			workQueue.flushed.signalAll();
-
-			interruptWorkersIfIdle();
-		} finally {
-			queueLock.unlock();
-			mainLock.unlock();
-		}
-
-		try {
-			joinWorkerThreads();
-		} catch (InterruptedException ie) {
-			//
-		} finally {
+			try {
+				joinWorkerThreads();
+			} catch (InterruptedException ie) {
+				//
+			}
+			
+			int poolSize = this.poolSize;
 			clearWorkers();
-			prestartCoreWorkers();
+			for (int i = 0; i < poolSize; i++)
+				addWorker(null);
+			
+		} finally {
+			mainLock.unlock();
 		}
 	}
 
