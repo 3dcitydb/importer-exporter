@@ -400,7 +400,6 @@ public class DBImporterManager {
 			saxWriter.setNamespaceContext(ctx);
 
 			Marshaller marshaller = jaxbBuilder.getJAXBContext().createMarshaller();
-			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 			JAXBElement<?> jaxbElement = jaxbMarshaller.marshalJAXBElement(object);
 			if (jaxbElement != null)
 				marshaller.marshal(jaxbElement, saxWriter);
