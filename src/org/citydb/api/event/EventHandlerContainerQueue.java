@@ -32,15 +32,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.citydb.api.controller.LogController;
-import org.citydb.api.registry.ObjectRegistry;
-
 public class EventHandlerContainerQueue {
-	private final LogController LOG;
 	private ConcurrentLinkedQueue<EventHandlerContainer> containerQueue;
 
 	public EventHandlerContainerQueue() {
-		LOG = ObjectRegistry.getInstance().getLogController();
 		containerQueue = new ConcurrentLinkedQueue<EventHandlerContainer>();
 	}
 
@@ -85,7 +80,6 @@ public class EventHandlerContainerQueue {
 			try {
 				handler.handleEvent(event);
 			} catch (Exception e) {
-				LOG.error("The following error occurred while processing an event:");
 				e.printStackTrace();
 				break;
 			}
