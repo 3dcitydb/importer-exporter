@@ -70,7 +70,7 @@ public class ConcurrentLockManager {
 
 	public synchronized void clear() {
 		if (instances != null) {
-			instances.remove(this);
+			instances.values().removeIf(v -> v == this);
 			
 			if (instances.isEmpty()) {
 				instances.clear();
