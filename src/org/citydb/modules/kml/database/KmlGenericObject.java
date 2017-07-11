@@ -1733,7 +1733,7 @@ public abstract class KmlGenericObject {
 								addX3dMaterial(surfaceId, x3dMaterial);
 							}
 							else if (theme == null) { // no theme for this parent surface
-								if (getX3dMaterial(parentId) != null) { // material for parent's parent known
+								if (getX3dMaterial(parentId) != null && getX3dMaterial(surfaceId) == null) { // material for parent's parent known
 									addX3dMaterial(surfaceId, getX3dMaterial(parentId));
 								}
 							}
@@ -1758,33 +1758,37 @@ public abstract class KmlGenericObject {
 						StringTokenizer texCoordsTokenized = null;
 						
 						if (selectedTheme.equals(KmlExporter.THEME_NONE)) {
-							if (surfaceTypeID != 0){
-								if (Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BUILDING_WALL_SURFACE ||
-										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BRIDGE_WALL_SURFACE ||
-										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.TUNNEL_WALL_SURFACE){
-									addX3dMaterial(surfaceId, x3dWallMaterial);
-								}
-								else if (Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BUILDING_ROOF_SURFACE ||
-										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.BRIDGE_ROOF_SURFACE ||
-										Util.classId2cityObject(surfaceTypeID)==CityGMLClass.TUNNEL_ROOF_SURFACE) {						
-									addX3dMaterial(surfaceId, x3dRoofMaterial);
-								}
-								else {
-									addX3dMaterial(surfaceId, x3dWallMaterial);
-								}
-							}
-							else {
-								addX3dMaterial(surfaceId, x3dWallMaterial);
-							}
+							if (getX3dMaterial(surfaceId) == null) {
+                                if (surfaceTypeID != 0) {
+                                    if (Util.classId2cityObject(surfaceTypeID) == CityGMLClass.BUILDING_WALL_SURFACE ||
+                                            Util.classId2cityObject(surfaceTypeID) == CityGMLClass.BRIDGE_WALL_SURFACE ||
+                                            Util.classId2cityObject(surfaceTypeID) == CityGMLClass.TUNNEL_WALL_SURFACE) {
+                                        addX3dMaterial(surfaceId, x3dWallMaterial);
+                                    }
+                                    else if (Util.classId2cityObject(surfaceTypeID) == CityGMLClass.BUILDING_ROOF_SURFACE ||
+                                            Util.classId2cityObject(surfaceTypeID) == CityGMLClass.BRIDGE_ROOF_SURFACE ||
+                                            Util.classId2cityObject(surfaceTypeID) == CityGMLClass.TUNNEL_ROOF_SURFACE) {
+                                        addX3dMaterial(surfaceId, x3dRoofMaterial);
+                                    }
+                                    else {
+                                        addX3dMaterial(surfaceId, x3dWallMaterial);
+                                    }
+                                }
+                                else {
+                                    addX3dMaterial(surfaceId, x3dWallMaterial);
+                                }
+                            }
 						}
 						else {
 							if (!selectedTheme.equalsIgnoreCase(theme) && !selectedTheme.equalsIgnoreCase("<unknown>")) { // no surface data for this surface and theme
-								if (getX3dMaterial(parentId) != null) // material for parent surface known
-									addX3dMaterial(surfaceId, getX3dMaterial(parentId));
-								else if (getX3dMaterial(rootId) != null) // material for root surface known
-									addX3dMaterial(surfaceId, getX3dMaterial(rootId));
-								else
-									addX3dMaterial(surfaceId, x3dWallMaterial);
+                                if (getX3dMaterial(surfaceId) == null) {
+                                    if (getX3dMaterial(parentId) != null) // material for parent surface known
+                                        addX3dMaterial(surfaceId, getX3dMaterial(parentId));
+                                    else if (getX3dMaterial(rootId) != null) // material for root surface known
+                                        addX3dMaterial(surfaceId, getX3dMaterial(rootId));
+                                    else
+                                        addX3dMaterial(surfaceId, x3dWallMaterial);
+                                }
 							}
 							else {
 								texImageUri = rs2.getString("tex_image_uri");
@@ -1847,8 +1851,13 @@ public abstract class KmlGenericObject {
 									// x3dMaterial will only added if not all x3dMaterial members are null
 									addX3dMaterial(surfaceId, x3dMaterial);
 									if (getX3dMaterial(surfaceId) == null) {
-										// untextured surface and no x3dMaterial -> default x3dMaterial (gray)
-										addX3dMaterial(surfaceId, x3dWallMaterial);
+                                        if (getX3dMaterial(parentId) != null) // material for parent surface known
+                                            addX3dMaterial(surfaceId, getX3dMaterial(parentId));
+                                        else if (getX3dMaterial(rootId) != null) // material for root surface known
+                                            addX3dMaterial(surfaceId, getX3dMaterial(rootId));
+                                        else
+                                            // untextured surface and no x3dMaterial -> default x3dMaterial (gray)
+                                            addX3dMaterial(surfaceId, x3dWallMaterial);
 									}
 								}
 							}
