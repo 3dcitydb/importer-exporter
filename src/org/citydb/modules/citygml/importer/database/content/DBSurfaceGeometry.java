@@ -561,7 +561,7 @@ public class DBSurfaceGeometry implements DBImporter {
 			AbstractSurface abstractSurface = null;
 
 			boolean negativeOrientation = false;
-			if (texturedSurface.isSetOrientation() && texturedSurface.getOrientation().equals("-")) {
+			if (texturedSurface.isSetOrientation() && texturedSurface.getOrientation() == Sign.MINUS) {
 				reverse = !reverse;
 				negativeOrientation = true;
 			}
