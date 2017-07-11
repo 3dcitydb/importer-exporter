@@ -678,7 +678,7 @@ public class DBSurfaceGeometry implements DBImporter {
 						}
 
 						boolean isFront = !(appearanceProperty.isSetOrientation() && 
-								appearanceProperty.getOrientation().equals("-"));
+								appearanceProperty.getOrientation() == Sign.MINUS);
 
 						materialModelImporter.insert(appearance, abstractSurface, cityObjectId, isFront, targetURI);
 					} else {
