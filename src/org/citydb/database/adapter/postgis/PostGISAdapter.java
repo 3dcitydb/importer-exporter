@@ -67,7 +67,7 @@ public class PostGISAdapter extends AbstractDatabaseAdapter {
 
 	@Override
 	public String getJDBCUrl(String server, int port, String database) {
-		return "jdbc:postgresql://" + server + ":" + port + "/" + database + "?reWriteBatchedInserts=true";
+		return "jdbc:postgresql://" + server + ":" + port + "/" + database + "?reWriteBatchedInserts=true&defaultRowFetchSize=10000";
 	}
 
 	@Override
