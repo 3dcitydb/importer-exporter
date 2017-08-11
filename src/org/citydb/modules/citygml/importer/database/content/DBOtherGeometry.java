@@ -88,7 +88,7 @@ public class DBOtherGeometry implements DBImporter {
 		ringValidator = new RingValidator();
 		dbSrid = dbImporterManager.getDatabaseAdapter().getConnectionMetaData().getReferenceSystem().getSrid();
 		affineTransformation = config.getProject().getImporter().getAffineTransformation().isSetUseAffineTransformation();
-		
+
 		// solid geometries are only supported in Oracle 11g or higher
 		hasSolidSupport = dbImporterManager.getDatabaseAdapter().getDatabaseType() != DatabaseType.ORACLE ||
 				dbImporterManager.getDatabaseAdapter().getConnectionMetaData().getDatabaseMajorVersion() > 10;
@@ -116,9 +116,9 @@ public class DBOtherGeometry implements DBImporter {
 		GeometryObject pointGeom = null;
 
 		if (point != null) {
-			List<Double> values = point.toList3d();
-			if (values != null && !values.isEmpty())
-				pointGeom = GeometryObject.createPoint(convertPrimitive(values), 3, dbSrid);
+			List<Double> coords = point.toList3d();
+			if (!coords.isEmpty())
+				pointGeom = GeometryObject.createPoint(convertPrimitive(coords), 3, dbSrid);
 		}
 
 		return pointGeom;
@@ -133,8 +133,11 @@ public class DBOtherGeometry implements DBImporter {
 			for (GeometricPrimitiveProperty primitiveProperty : geometricComplex.getElement()) {
 				if (primitiveProperty.isSetGeometricPrimitive()) {
 					AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
-					if (primitive.getGMLClass() == GMLClass.POINT)
-						pointList.add(((Point)primitive).toList3d());					
+					if (primitive.getGMLClass() == GMLClass.POINT) {
+						List<Double> coords = ((Point)primitive).toList3d();
+						if (!coords.isEmpty())
+							pointList.add(coords);
+					}
 				}
 			}
 
@@ -158,13 +161,19 @@ public class DBOtherGeometry implements DBImporter {
 
 			if (multiPoint.isSetPointMember()) {
 				for (PointProperty pointProperty : multiPoint.getPointMember())
-					if (pointProperty.isSetPoint())
-						pointList.add(pointProperty.getPoint().toList3d());
+					if (pointProperty.isSetPoint()) {
+						List<Double> coords = pointProperty.getPoint().toList3d();
+						if (!coords.isEmpty())
+							pointList.add(coords);
+					}
 
 			} else if (multiPoint.isSetPointMembers()) {
 				PointArrayProperty pointArrayProperty = multiPoint.getPointMembers();
-				for (Point point : pointArrayProperty.getPoint())
-					pointList.add(point.toList3d());
+				for (Point point : pointArrayProperty.getPoint()) {
+					List<Double> coords = point.toList3d();
+					if (!coords.isEmpty())
+						pointList.add(coords);
+				}
 			}
 
 			if (!pointList.isEmpty())
@@ -181,19 +190,25 @@ public class DBOtherGeometry implements DBImporter {
 			List<List<Double>> pointList = new ArrayList<List<Double>>();
 
 			if (controlPoint.isSetPosList()) {
-				List<Double> posList = controlPoint.getPosList().toList3d();
-				if (posList != null && !posList.isEmpty())
-					for (int i = 0; i < posList.size(); i += 3)
-						pointList.add(posList.subList(i, i + 3));
+				List<Double> coords = controlPoint.getPosList().toList3d();
+				if (!coords.isEmpty()) {
+					for (int i = 0; i < coords.size(); i += 3)
+						pointList.add(coords.subList(i, i + 3));
+				}
 
 			} else if (controlPoint.isSetGeometricPositionGroup()) {					
 				for (GeometricPositionGroup posGroup : controlPoint.getGeometricPositionGroup()) {
-					if (posGroup.isSetPos())
-						pointList.add(posGroup.getPos().toList3d()); 
-					else if (posGroup.isSetPointProperty()) {
+					if (posGroup.isSetPos()) {
+						List<Double> coords = posGroup.getPos().toList3d();
+						if (!coords.isEmpty())
+							pointList.add(coords); 
+					} else if (posGroup.isSetPointProperty()) {
 						PointProperty pointProperty = posGroup.getPointProperty();
-						if (pointProperty.isSetPoint())
-							pointList.add(pointProperty.getPoint().toList3d());
+						if (pointProperty.isSetPoint()) {
+							List<Double> coords = pointProperty.getPoint().toList3d();
+							if (!coords.isEmpty())
+								pointList.add(coords);
+						}
 					}
 				}
 			}
@@ -302,8 +317,11 @@ public class DBOtherGeometry implements DBImporter {
 				if (property.isSetLineStringSegment()) {
 					List<Double> points = new ArrayList<Double>();
 
-					for (LineStringSegment segment : property.getLineStringSegment())
-						points.addAll(segment.toList3d());
+					for (LineStringSegment segment : property.getLineStringSegment()) {
+						List<Double> coords = segment.toList3d();
+						if (!coords.isEmpty())
+							points.addAll(coords);
+					}
 
 					if (!points.isEmpty())
 						pointList.add(points);
@@ -372,10 +390,9 @@ public class DBOtherGeometry implements DBImporter {
 	private void generatePointList(AbstractCurve abstractCurve, List<Double> pointList, boolean reverse) {
 		if (abstractCurve.getGMLClass() == GMLClass.LINE_STRING) {	
 			LineString lineString = (LineString)abstractCurve;
-			List<Double> points = lineString.toList3d(reverse);
-
-			if (points != null && !points.isEmpty())
-				pointList.addAll(points);				
+			List<Double> coords = lineString.toList3d(reverse);
+			if (!coords.isEmpty())
+				pointList.addAll(coords);				
 		}
 
 		else if (abstractCurve.getGMLClass() == GMLClass.CURVE) {
@@ -387,8 +404,11 @@ public class DBOtherGeometry implements DBImporter {
 					List<Double> points = new ArrayList<Double>();
 
 					for (AbstractCurveSegment abstractCurveSegment : arrayProperty.getCurveSegment())
-						if (abstractCurveSegment.getGMLClass() == GMLClass.LINE_STRING_SEGMENT)
-							points.addAll(((LineStringSegment)abstractCurveSegment).toList3d());
+						if (abstractCurveSegment.getGMLClass() == GMLClass.LINE_STRING_SEGMENT) {
+							List<Double> coords = ((LineStringSegment)abstractCurveSegment).toList3d();
+							if (!coords.isEmpty())
+								points.addAll(coords);
+						}
 
 					if (!points.isEmpty()) {
 						if (!reverse)
@@ -476,7 +496,7 @@ public class DBOtherGeometry implements DBImporter {
 
 		if (polygon != null) {
 			List<List<Double>> pointList = generatePointList(polygon, is2d, false);
-			if (pointList != null && !pointList.isEmpty())
+			if (!pointList.isEmpty())
 				polygonGeom = GeometryObject.createPolygon(convertAggregate(pointList), is2d ? 2 : 3, dbSrid);
 		}
 
@@ -501,17 +521,22 @@ public class DBOtherGeometry implements DBImporter {
 				if (!ringValidator.validate(exteriorLinearRing, polygon.getId()))
 					return null;
 
-				pointList.add(exteriorLinearRing.toList3d(reverse));
+				List<Double> coords = exteriorLinearRing.toList3d(reverse);
+				if (!coords.isEmpty()) {
+					pointList.add(coords);
 
-				if (polygon.isSetInterior()) {
-					for (AbstractRingProperty abstractRingProperty : polygon.getInterior()) {
-						AbstractRing interiorAbstractRing = abstractRingProperty.getRing();
-						if (interiorAbstractRing instanceof LinearRing) {
-							LinearRing interiorLinearRing = (LinearRing)interiorAbstractRing;
-							if (!ringValidator.validate(interiorLinearRing, polygon.getId()))
-								return null;
+					if (polygon.isSetInterior()) {
+						for (AbstractRingProperty abstractRingProperty : polygon.getInterior()) {
+							AbstractRing interiorAbstractRing = abstractRingProperty.getRing();
+							if (interiorAbstractRing instanceof LinearRing) {
+								LinearRing interiorLinearRing = (LinearRing)interiorAbstractRing;
+								if (!ringValidator.validate(interiorLinearRing, polygon.getId()))
+									return null;
 
-							pointList.add(interiorLinearRing.toList3d(reverse));
+								coords = interiorLinearRing.toList3d(reverse);
+								if (!coords.isEmpty())
+									pointList.add(coords);
+							}
 						}
 					}
 				}
@@ -542,7 +567,7 @@ public class DBOtherGeometry implements DBImporter {
 	public GeometryObject getSolid(Solid solid) {
 		if (!hasSolidSupport)
 			return null;
-		
+
 		GeometryObject solidGeom = null;
 
 		if (solid != null) {
@@ -574,7 +599,7 @@ public class DBOtherGeometry implements DBImporter {
 
 				public void visit(Polygon polygon) {
 					List<List<Double>> points = generatePointList(polygon, false, reverse);
-					if (points == null || points.isEmpty()) {
+					if (points.isEmpty()) {
 						setShouldWalk(false);
 						pointList.clear();
 						return;
@@ -614,7 +639,7 @@ public class DBOtherGeometry implements DBImporter {
 	public GeometryObject getCompositeSolid(CompositeSolid compositeSolid) {
 		if (!hasSolidSupport)
 			return null;
-		
+
 		GeometryObject compositeSolidGeom = null;
 
 		if (compositeSolid != null) {
