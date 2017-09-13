@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ConcurrentLockManager {
-	private static HashMap<Class<?>, ConcurrentLockManager> instances;	
+	private static HashMap<String, ConcurrentLockManager> instances;	
 	private final ConcurrentHashMap<String, ReentrantLock> locks;
 
 	private ConcurrentLockManager() {
@@ -41,12 +41,12 @@ public class ConcurrentLockManager {
 
 	public static synchronized ConcurrentLockManager getInstance(Class<?> className) {
 		if (instances == null)
-			instances = new HashMap<Class<?>, ConcurrentLockManager>();
+			instances = new HashMap<String, ConcurrentLockManager>();
 
-		ConcurrentLockManager instance = instances.get(className);
+		ConcurrentLockManager instance = instances.get(className.getName());
 		if (instance == null) {
 			instance = new ConcurrentLockManager();
-			instances.put(className, instance);
+			instances.put(className.getName(), instance);
 		}
 
 		return instance;
